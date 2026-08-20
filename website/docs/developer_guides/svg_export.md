@@ -154,7 +154,7 @@ interface SequenceDisplayModel extends SvgExportable {
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderState: DrawSequenceState
   // terminal static-message state (zoomed past base resolution, or every row
-  // toggled off), folded into svgReady via svgReadyExtraTerminal; still read
+  // toggled off), folded into svgReady via fetchInert; still read
   // here to skip painting bases
   placeholderMessage: string | undefined
 }

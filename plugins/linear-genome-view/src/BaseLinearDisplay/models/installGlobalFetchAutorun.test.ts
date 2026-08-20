@@ -66,7 +66,7 @@ const TestDisplay = types
     regionTooLarge: false,
     gateMeasurementStale: true,
     // FetchMixin's, and the retry check's "deliberately not fetching" exemption
-    loadingSuppressed: false,
+    fetchInert: false,
     // stands in for HiC's `effectiveResolution === undefined`, and read by
     // NOTHING else — which is what makes it a probe for whether the retry
     // check's reads leak into the autorun's dependency set. See the two
@@ -126,7 +126,7 @@ const TestDisplay = types
       self.gateMeasurementStale = stale
     },
     setLoadingSuppressed(flag: boolean) {
-      self.loadingSuppressed = flag
+      self.fetchInert = flag
     },
     setPrereqPending(flag: boolean) {
       self.prereqPending = flag
@@ -146,7 +146,9 @@ type TestDisplayModel = Instance<typeof TestDisplay>
 // `shouldFetch` reads as `prepare` returning undefined, which is the whole of
 // the phase collapse from this file's point of view: `gateCalls` counts the
 // runs that reached `prepare`, `fetched` the ones that reached `run`.
-function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
+// Async because the leading edge is a microtask: every test here starts from
+// "the first run has happened", rather than each one remembering to flush.
+async function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
   const view = TestView.create({ display: {} })
   const { display } = view
   const gateCalls = { count: 0 }
@@ -164,13 +166,14 @@ function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
     delay: DELAY,
     name: 'TestGlobalFetch',
   })
+  await Promise.resolve()
   return { view, display, gateCalls, fetched }
 }
 
 // The phases, with their own fixture: `setup` above collapses `prepare` to a
 // boolean, and these are about what the skeleton does with what the phases
 // return. Each is a rule the three displays used to write out themselves.
-function setupPhases({ run }: { run: () => unknown }) {
+async function setupPhases({ run }: { run: () => unknown }) {
   const view = TestView.create({ display: {} })
   const { display } = view
   const committed: { result: unknown; args: unknown }[] = []
@@ -183,12 +186,13 @@ function setupPhases({ run }: { run: () => unknown }) {
     delay: DELAY,
     name: 'TestPhases',
   })
+  await Promise.resolve()
   return { view, display, committed }
 }
 
 describe('the phases', () => {
   it('hands the commit what prepare captured, not a live re-read', async () => {
-    const { display, committed } = setupPhases({ run: () => 'data' })
+    const { display, committed } = await setupPhases({ run: () => 'data' })
     // the setting the fetch was issued at moves while the RPC is out
     display.setSetting('b')
     await settle()
@@ -202,7 +206,7 @@ describe('the phases', () => {
   // the byte-gate shape: the pre-flight stopped this fetch, so there is nothing
   // to commit and the model must not be written
   it('skips the commit when run yields nothing', async () => {
-    const { committed } = setupPhases({ run: () => undefined })
+    const { committed } = await setupPhases({ run: () => undefined })
     await settle()
     expect(committed).toEqual([])
   })
@@ -210,8 +214,15 @@ describe('the phases', () => {
   // a superseded fetch resolving late, which is the write every display used to
   // guard with its own `if (ctx.isStale()) return`
   it('skips the commit when the fetch went stale', async () => {
-    const { display, committed } = setupPhases({ run: () => 'data' })
+    // held open, so the staleness lands while the fetch is genuinely in flight
+    // rather than after it has already committed
+    let release!: (value: string) => void
+    const inFlight = new Promise<string>(resolve => {
+      release = resolve
+    })
+    const { display, committed } = await setupPhases({ run: () => inFlight })
     display.setStale(true)
+    release('data')
     await settle()
     expect(committed).toEqual([])
   })
@@ -234,8 +245,10 @@ async function settle() {
 const reports = () => takeDisplayContractReports()
 
 describe('installGlobalFetchAutorun', () => {
-  it('fetches immediately on install, without waiting out the debounce', () => {
-    const { fetched } = setup(() => true)
+  it('fetches immediately on install, without waiting out the debounce', async () => {
+    // no timer advanced: `setup` awaits only the microtask the leading edge
+    // yields for — see leadingEdgeAutorun
+    const { fetched } = await setup(() => true)
     expect(fetched.count).toBe(1)
   })
 
@@ -243,7 +256,7 @@ describe('installGlobalFetchAutorun', () => {
   // keep their gate open after loading, which is why reload always worked for
   // them even with the trigger reads under the gate.
   it('refetches on reload() when the gate stays open', async () => {
-    const { display, fetched } = setup(() => true)
+    const { display, fetched } = await setup(() => true)
     expect(fetched.count).toBe(1)
     await settle()
 
@@ -258,7 +271,7 @@ describe('installGlobalFetchAutorun', () => {
   // asserted in "the retry contract" below — two halves of one story, kept apart
   // because every other trigger in this suite is legitimately allowed to decline.
   it('re-evaluates on a reload() bump after the gate has closed', async () => {
-    const { display, gateCalls, fetched } = setup(d => !d.loaded)
+    const { display, gateCalls, fetched } = await setup(d => !d.loaded)
     expect(fetched.count).toBe(1)
     display.setLoaded(true)
     await settle()
@@ -271,7 +284,7 @@ describe('installGlobalFetchAutorun', () => {
   })
 
   it('re-evaluates on an rpcProps() change after the gate has closed', async () => {
-    const { display, gateCalls } = setup(d => !d.loaded)
+    const { display, gateCalls } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
 
@@ -285,7 +298,7 @@ describe('installGlobalFetchAutorun', () => {
   // axis), so an observable rpcProps() merely consults doesn't refetch — this is
   // what keeps a global display off refetches the per-region family wouldn't do
   it('ignores an observable rpcProps() reads but does not return', async () => {
-    const { display, gateCalls } = setup(() => true)
+    const { display, gateCalls } = await setup(() => true)
     await settle()
 
     const before = gateCalls.count
@@ -295,7 +308,7 @@ describe('installGlobalFetchAutorun', () => {
   })
 
   it('re-evaluates when the viewport changes after the gate has closed', async () => {
-    const { view, display, gateCalls } = setup(d => !d.loaded)
+    const { view, display, gateCalls } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
 
@@ -306,7 +319,7 @@ describe('installGlobalFetchAutorun', () => {
   })
 
   it('re-evaluates on un-minimize after the gate has closed', async () => {
-    const { display, gateCalls } = setup(d => !d.loaded)
+    const { display, gateCalls } = await setup(d => !d.loaded)
     display.setLoaded(true)
     display.setMinimized(true)
     await settle()
@@ -320,7 +333,7 @@ describe('installGlobalFetchAutorun', () => {
   it('refetches when a reload() bump also reopens the gate', async () => {
     // what a display gets by pairing the counter bump with dropping its own
     // freshness signal (ArcFetchModel.reload clears loadedRegionSignature)
-    const { display, fetched } = setup(d => !d.loaded)
+    const { display, fetched } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
     expect(fetched.count).toBe(1)
@@ -343,7 +356,7 @@ describe('installGlobalFetchAutorun', () => {
 describe('the retry contract', () => {
   it('reports a reload() that re-runs the autorun but reaches no fetch', async () => {
     // the arc shape, before its `reload()` override existed
-    const { display } = setup(d => !d.loaded)
+    const { display } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
     expect(reports()).toEqual([])
@@ -360,7 +373,7 @@ describe('the retry contract', () => {
   it('stays silent when reload() also reopens the gate', async () => {
     // the arc shape as shipped: the counter bump paired with dropping its own
     // freshness signal
-    const { display, fetched } = setup(d => !d.loaded)
+    const { display, fetched } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
 
@@ -375,7 +388,7 @@ describe('the retry contract', () => {
     // LD with the triangle off: `reload()` correctly does nothing, because there
     // is nothing to load. Same flag the loading scrim reads, so this exemption
     // is not a second thing to remember.
-    const { display } = setup(d => !d.loadingSuppressed)
+    const { display } = await setup(d => !d.fetchInert)
     display.setLoadingSuppressed(true)
     await settle()
 
@@ -386,10 +399,10 @@ describe('the retry contract', () => {
 
   // HiC's shape: `reload()` wakes a prerequisite fetch in another autorun, this
   // one declines only until that lands, and the landing wakes it again through
-  // the same tracked read. `loadingSuppressed` is the wrong claim for it — HiC
+  // the same tracked read. `fetchInert` is the wrong claim for it — HiC
   // wants the scrim meanwhile — so the display says this instead.
   it('holds the verdict over a decline that is waiting on a prerequisite', async () => {
-    const { display, fetched } = setup(d => d.loaded)
+    const { display, fetched } = await setup(d => d.loaded)
     display.setPrereqPending(true)
     await settle()
 
@@ -411,7 +424,7 @@ describe('the retry contract', () => {
   // called preliminary. Here the prerequisite lands and the gate declines
   // anyway — a genuinely dead button that an exemption would have waved past.
   it('reports when the run after the prerequisite declines too', async () => {
-    const { display } = setup(() => false)
+    const { display } = await setup(() => false)
     display.setPrereqPending(true)
     await settle()
 
@@ -430,7 +443,7 @@ describe('the retry contract', () => {
   // the negative control: the arc shape, behind a display that never claims a
   // decline, still reports
   it('still reports a decline the display does not claim', async () => {
-    const { display } = setup(d => !d.loaded)
+    const { display } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
 
@@ -443,7 +456,7 @@ describe('the retry contract', () => {
   // skipped answers the bump legitimately — and consuming it there is what stops
   // the report landing on whichever unrelated run clears the gate later
   it('stays silent while the byte gate is holding, and after it clears', async () => {
-    const { view, display } = setup(() => true)
+    const { view, display } = await setup(() => true)
     await settle()
 
     display.setTooLarge(true, /* stale */ false)
@@ -459,7 +472,7 @@ describe('the retry contract', () => {
 
   // a plain settings change or pan that declines to fetch is not a retry
   it('says nothing about a decline with no reload behind it', async () => {
-    const { display } = setup(d => !d.loaded)
+    const { display } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
 
@@ -477,7 +490,7 @@ describe('the retry contract', () => {
 // only thing that can release the banner.
 describe('a blocked display still re-measures', () => {
   it('skips a viewport whose estimate is current, and fetches once when it moves', async () => {
-    const { view, display, fetched } = setup(() => true)
+    const { view, display, fetched } = await setup(() => true)
     await settle()
     const afterFirst = fetched.count
 
@@ -509,7 +522,7 @@ describe('a blocked display still re-measures', () => {
 // whether or not `prepare` then returns args.
 describe('the retry check leaks nothing into the dependency set', () => {
   it('does not track awaitingPrerequisite', async () => {
-    const { display, gateCalls } = setup(() => false)
+    const { display, gateCalls } = await setup(() => false)
     display.setPrereqPending(true)
     display.reload()
     await settle()
@@ -527,10 +540,10 @@ describe('the retry check leaks nothing into the dependency set', () => {
     expect(reports().join('\n')).toMatch(/Retry is a dead button/)
   })
 
-  it('does not track loadingSuppressed', async () => {
+  it('does not track fetchInert', async () => {
     // read only once `retried && declined` both hold — JS short-circuits before
     // it otherwise — so the reload is what gets the check as far as reading it
-    const { display, gateCalls } = setup(d => !d.loaded)
+    const { display, gateCalls } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
     display.reload()

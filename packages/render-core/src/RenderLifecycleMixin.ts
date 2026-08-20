@@ -183,7 +183,7 @@ export function RenderLifecycleMixin() {
        *
        * The two `rendersCanvas: false` states each had three of their four
        * consumers wired by hand — the loading scrim (`rendersCanvas` /
-       * `loadingSuppressed`) and the SVG export (`svgReadyExtraTerminal`) —
+       * `fetchInert`) and the SVG export (`fetchInert`) —
        * while the fourth, `data-display-drawn`, went on publishing `"false"`
        * forever off the raw flag. That attribute is what `PENDING_DISPLAYS`
        * (`@jbrowse/browser-test-utils`) selects on, so a zoomed-out reference

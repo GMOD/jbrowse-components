@@ -273,7 +273,7 @@ export function planRegionFetch({
     //
     // The retry check watches half of that rather than leaving it to this
     // comment: a `covered` plan following a `reload()` reports unless the
-    // display says `loadingSuppressed` (sequence, whose `zoomedOut` implies it)
+    // display says `fetchInert` (sequence, whose `zoomedOut` implies it)
     // or `awaitingPrerequisite` (variants, until `sourcesBase` lands).
     if (
       !gateBlocked &&

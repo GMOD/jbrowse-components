@@ -70,7 +70,7 @@ All three foundations call it and supply exactly one argument, their staleness
 predicate: per-region its spatial one, global and arc `() => true`. Arc goes
 through `foundationDisplayStatusPhase`, the same mapping returning the narrower
 phase and supplying the two canvas terms it has no canvas for. Customize it
-through `loadingSuppressed` / `rendersCanvas`, **never by overriding
+through `fetchInert` / `rendersCanvas`, **never by overriding
 `displayPhase`** — an override restates every term and then silently misses the
 next one added. Same rule the precedence has, one level down.
 
@@ -392,7 +392,8 @@ and confirm the display can leave that state. Cancel is one of them.
 
 **The first of those three shapes reports itself.** `makeRetryContractCheck`
 (`assertDisplayContract.ts`) runs inside **both** fetch foundations —
-`installGlobalFetchAutorun` and `MultiRegionDisplayMixin`'s `afterAttach` — so
+`installGlobalFetchAutorun`, `installComparativeFetchAutorun` and
+`MultiRegionDisplayMixin`'s `afterAttach` — so
 every fetching display gets it with no per-display test: a run that follows a
 `reloadCounter` bump and declines to fetch *is* the dead button, and it says so
 through the same `console.error` channel as the rest of the contract checks,
@@ -400,7 +401,7 @@ naming the fix. Dev-only, and everything it reads is `untracked` — a tracked r
 would put an observable in the fetch autorun's dependency set in development and
 not in production. The one legitimate decline, a display deliberately not
 fetching at all (LD with the triangle off), exempts itself with
-`loadingSuppressed`.
+`fetchInert`.
 
 **The bump is what arms it, so a `reload()` override is how the whole check gets
 turned off.** MST replaces an action outright, so an override that neither bumps
@@ -456,7 +457,7 @@ removed.
 
 Sequence and variants are the two per-region displays whose `fetchNeeded`
 declines. Sequence needed nothing: `zoomedOut` implies `placeholderMessage`
-implies `!rendersCanvas`, which is already its `loadingSuppressed`. Variants
+implies `!rendersCanvas`, which is already its `fetchInert`. Variants
 declares `awaitingPrerequisite` (`!sourcesBase`), HiC's two-stage shape in this
 family, and unlike HiC's it is genuinely narrower: `FetchVisibleRegions` declines
 whenever every visible block is covered, and that decline is judged as soon as
@@ -467,7 +468,7 @@ there.
 
 **Both flags live on `FetchMixin`**, the one mixin all three foundations
 compose, and the check reads them off the node. That is the same argument the
-`loadingSuppressed` docstring makes about its own home, and `awaitingPrerequisite`
+`fetchInert` docstring makes about its own home, and `awaitingPrerequisite`
 briefly ignored it: it shipped as an `installGlobalFetchAutorun` option on one
 side and a `MultiRegionDisplayMixin` getter on the other, which is one concept in
 two spellings and a third surface on the check's own signature. The three fetch
@@ -499,19 +500,21 @@ behave identically, because the second bump is its own unanswered retry.
 The other two stay manual. **Work `reload()` never re-runs** can't be seen from
 here, because the autorun does reach a fetch.
 
-**A display rendering its own banner** (dotplot, synteny) is uncovered rather than
-exempt, and the distinction matters — both banners carry a live Retry wired to the
-same `reload()`, `SyntenyFetchStateMixin.reload` bumps the same `reloadCounter`,
-and `installComparativeFetchAutorun` reads it unconditionally above its gate for
-exactly the reason the other two do. What is missing is the classification: that
-gate is `prepare()` returning `undefined`, which means both "nothing to fetch" and
-"not ready yet", so the installer cannot tell a decline from a skip. The exemption
-half already exists: `SyntenyFetchStateMixin.fetchInert` is this family's
-`loadingSuppressed`, an overridable hook defaulting to false that the loading
-overlay and the SVG export already read, and synteny's folds in `isMinimized`. The
-hole is dotplot, whose `prepare()` bails on `!view.initialized` — a transient that
-must not go into `fetchInert`, since a display about to fetch should still show its
-overlay. Closing it means `prepare()` saying which of the two it meant.
+**A display rendering its own banner** (dotplot, synteny) is covered too.
+`installComparativeFetchAutorun` installs the check, classifying off the same
+gate the other two do — `prepare()` returning `undefined` is the decline — and
+exempting on the same `fetchInert`, which is one name across all three families
+rather than this one's private spelling. Its own test provokes the dead button
+and asserts the report.
+
+What that gate still cannot say is *which* decline it meant: `prepare()`
+returning `undefined` covers both "nothing to fetch" and "not ready yet", and
+dotplot's bails on `!view.initialized`. That transient must not become
+`fetchInert` — a display about to fetch should still show its overlay — so it
+would report if a `reload()` were outstanding across it. Nothing gets one there
+today, since the only Retry lives on an error banner and an error needs a fetch
+that ran; a `prepare()` that says which of the two it meant is what would close
+it properly.
 
 A report is only useful if something can hear it. Nine `testEnv.ts` harnesses set
 `console.error = jest.fn()` as copied boilerplate, muting every contract check in
@@ -631,10 +634,9 @@ raw flag can never flip:
 
 - **`!rendersCanvas`** — a display deliberately showing a static placeholder
   never calls `canvasRef`, so no backend is built. Both such displays — sequence
-  past base resolution, LD with the triangle off — had wired the *scrim*
-  (`loadingSuppressed` / `rendersCanvas`) and the *export*
-  (`svgReadyExtraTerminal`) by hand and missed the third reader, the one outside
-  the display.
+  past base resolution, LD with the triangle off — had wired the *scrim* and the
+  *export* by hand, through two hooks that have since become one (`fetchInert`),
+  and missed the third reader, the one outside the display.
 - **`paintInert`** — a fetch that failed before first paint. The error bar is an
   *overlay*, so the canvas stays mounted, nothing draws into it, and the flag
   stays false for the rest of the session. Both families fill the hook with

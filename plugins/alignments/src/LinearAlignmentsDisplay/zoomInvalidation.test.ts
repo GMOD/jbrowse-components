@@ -14,6 +14,12 @@ function simulateLoaded(
     display.setLoadedRegion(b.displayedRegionIndex, b.region)
   }
   display.markCanvasDrawn()
+  // Attaching the display starts a real fetch — the autorun runs on the leading
+  // edge — and these tests are about the phase mapping over loaded regions, not
+  // about that fetch. `stopActiveFetch` drops it without bumping
+  // `fetchGeneration` or setting `fetchCanceled`, so nothing re-triggers and the
+  // phase reads off the state the test staged.
+  display.stopActiveFetch()
 }
 
 // Worker output is absolute genomic uint32, so alignment data stays valid under

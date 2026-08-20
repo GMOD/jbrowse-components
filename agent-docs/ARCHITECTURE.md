@@ -557,7 +557,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 <!-- BEGIN GENERATED DISPLAY_HOOK_OVERRIDES -->
 
 
-20 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
+18 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
 
 <!-- prettier-ignore -->
 | Hook | Sitting on the default | Declared by |
@@ -568,8 +568,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `fetchNeeded` | nothing is ever fetched | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
 | `dataCurrent` | false forever, so `svgReady` never settles and one track hangs the whole view’s export (fail-hung over fail-stale, deliberately) | `arc/shared`, `dotplot-view/DotplotDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LinearSyntenyDisplay`, `variants/LDDisplay` |
 | `layoutReady` | overlays are dropped rather than pinned to a stale layout | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
-| `svgReadyExtraTerminal` | a resting state that never fetches hangs the export — see §SVG export | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
-| `loadingSuppressed` | the loading scrim covers a deliberate static placeholder, and a user cancel parks "Loading canceled / Retry" over it permanently | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
+| `fetchInert` | false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled` | `linear-comparative-view/LinearSyntenyDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
 | `rendersCanvas` | `painted` waits on a canvas that is never mounted, so `data-display-drawn` stays false for the display’s whole life and every `waitForDisplaysDone` on the page burns its timeout | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
 | `paintInert` | same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own | `linear-genome-view/BaseLinearDisplay` |
 | `measuresBytesPreFlight` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
@@ -579,7 +578,6 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `byteGateAdapterConfig` | the estimate measures the display’s own adapter — wrong for a display that reads a different file at different zooms | `maf/LinearMafDisplay` |
 | `scrollableHeight` | `Infinity` — the display does not scroll internally | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
 | `growTargetHeight` | grow mode targets the raw `height` slot | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
-| `fetchInert` | false, the strict answer — a comparative display that grows an inert state and does not declare it hangs `displaysSettled` (diagnosable) rather than reporting done with nothing drawn | `linear-comparative-view/LinearSyntenyDisplay` |
 | `featureNoun` | `feature`, which is right wherever the generic word already fits — an override changes what CONTENT is called ("Showing 3 variants"), never what a control is called, since "Variant height" reads as a different setting from "Feature height" | `alignments/LinearAlignmentsDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `variants/LinearVariantDisplay` |
 | `featureWidgetType` | the generic `BaseFeatureWidget`. An override is a display whose features have a vocabulary of their own, and its `id` decides which displays share one drawer panel | `alignments/LinearAlignmentsDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `variants/LinearVariantDisplay`, `variants/shared` |
 <!-- END GENERATED DISPLAY_HOOK_OVERRIDES -->
@@ -641,9 +639,9 @@ call to `installPerRegionFetchAutoruns`, which installs these:
 | Autorun | Fires on | Action |
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — one of the two places the cached byte estimate is dropped (the other is a tier swap) |
-| `FetchVisibleRegions` | the viewport, `fetchGeneration` after a fetch ends, or `reloadCounter` on a user retry (immediate, then debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 | `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()` |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
+| `FetchVisibleRegions` | the viewport, `fetchGeneration` after a fetch ends, or `reloadCounter` on a user retry (immediate, then debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 
 <!-- FETCH_AUTORUNS END -->
 
@@ -696,6 +694,40 @@ callback returns. Which set depends on the mode: regular mode takes
 `visibleRegions` only — its columns lay out by feature *index* across the visible
 width, so a buffered feature would be crammed into the viewport and draw a
 connector to an off-screen position.
+
+### Every fetch autorun runs on the leading edge
+
+All three fetch installers schedule through `leadingEdgeAutorun`
+(`@jbrowse/core/util/leadingEdgeAutorun`), and so does the dotplot view's region
+autorun. MobX's own `autorun(fn, { delay })` is trailing-edge only — it schedules
+the *first* run through `setTimeout` too — so a cold open spent the whole delay
+waiting for no interaction to coalesce, and that latency landed on first paint.
+The per-region family was the last one still on it, which is the nine
+display types that cover the common case: display creation to first
+`fetchNeeded` measured **683 ms** under `{ delay: 600 }` and **112 ms** after.
+
+Two properties make it safe, and both were found by breaking them:
+
+- **The body reports whether it started work, and only that arms the debounce.**
+  A run that bails on a guard — a view not measured, a minimized track, a gate
+  shut — returns nothing and stays on the leading edge. `prime()` used to be an
+  imperative call the body could misplace; a return value cannot be forgotten.
+- **The leading edge is one microtask, not the install call.** A model is
+  routinely built and then configured in the same synchronous block, and a fetch
+  issued between those two lines is issued against the un-configured state,
+  invalidated by the setting that follows, and reissued. Yielding once collapses
+  that pair back into one run while still starting three orders of magnitude
+  sooner than the timer did. A change arriving after an `await` is a later
+  decision and correctly costs a refetch.
+
+**`installPerRegionFetchAutoruns` installs `FetchVisibleRegions` last**, and that
+is load-bearing for the same reason: the three autoruns above it each fire once
+at install and two of them call `clearAllRpcData`. Installed first, the fetch
+autorun's immediate run was cancelled by `SettingsInvalidate`'s own first pass
+and reissued with identical arguments — a duplicate round trip per track on every
+track open, invisible to everything but a call count. Under the trailing-edge
+delay the ordering could not matter, because nothing ran until every install was
+long past.
 
 ### The global-fetch trigger list must be read unconditionally
 
@@ -1029,7 +1061,7 @@ what leaves it false indefinitely — a user toggle inside it (LD's
 `showLDTriangle`), an unmet prerequisite (HiC's `prepare` needs an
 `effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
 (sequence). Each such state has to reach `svgReady` through `error`,
-`regionTooLarge`, or `svgReadyExtraTerminal`, or one track hangs the whole
+`regionTooLarge`, or `fetchInert`, or one track hangs the whole
 view's export with the dialog spinner up and nothing said. Minimized tracks are
 the one case already handled for you — `SVGLinearGenomeView` filters them out.
 
@@ -1584,13 +1616,13 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't leave a resting state that never fetches non-terminal. `awaitSvgReady`
   has no time bound, so a user toggle, an unmet prerequisite or a static "zoom
   in" mode must reach `svgReady` through `error`, `regionTooLarge` or
-  `svgReadyExtraTerminal` — otherwise one track hangs the whole view's export
+  `fetchInert` — otherwise one track hangs the whole view's export
   with the dialog spinner up. Enumerate every way the prerequisite fails, not
   just the throw. See [SVG export](#svg-export).
 - Don't derive the export's terminal set separately from the loading overlay's.
-  They are the same states, plus a reader outside the display
-  (`displaysSettled`), which is why `fetchInert` is a mixin hook rather than a
-  getter each display invents.
+  They are the same states, plus two readers outside the display
+  (`displaysSettled`, the retry check), which is why `fetchInert` is one mixin
+  hook rather than a getter each display invents — ADR-082.
 - Don't stage theme-derived colors in a volatile that a React `useEffect`
   pushes in. The effect only runs on mount, so SVG export and RPC — neither of
   which has a component — render blank; derive them in a getter. And read

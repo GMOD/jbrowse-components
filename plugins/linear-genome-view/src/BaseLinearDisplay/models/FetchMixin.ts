@@ -216,10 +216,32 @@ export default function FetchMixin() {
 
       /**
        * #getter
-       * Overridable hook (default false): a subclass returns true when its body
-       * is deliberately showing a static message instead of data, so the loading
-       * scrim must not cover it. Sequence sets it past base resolution ("Zoom in
-       * to see sequence"); LD sets it with the triangle toggled off.
+       * Overridable hook (default false): the states where this display
+       * deliberately never fetches, so it holds no data and none is coming.
+       * Sequence sets it past base resolution ("Zoom in to see sequence"); LD
+       * sets it with the triangle toggled off.
+       *
+       * **One hook, three readers**, and that is the whole point — a display
+       * that grows such a state has one thing to say rather than three, and the
+       * reader it would have forgotten is always the one outside itself:
+       *
+       * - the loading scrim (`computeLoadingTerm`), which otherwise parks over
+       *   the placeholder, permanently once a cancel has been clicked;
+       * - the SVG export (`computeSvgReady`'s `extraTerminal`), whose
+       *   `awaitSvgReady` is an unbounded `when`, so one such display hangs the
+       *   whole view's export;
+       * - the dev-only retry check (`makeRetryContractCheck`), which would
+       *   otherwise report a dead Retry on a display correctly declining to
+       *   load anything.
+       *
+       * It was three hooks — `loadingSuppressed`, `svgReadyExtraTerminal` on
+       * each of the two foundations, and `fetchInert` on the comparative
+       * family, which had already collapsed them. Both LGV displays that
+       * override it returned one expression for all three, and one of the
+       * three was hard-coded `false` on the global family for a while, which is
+       * how LD came to be able to express only half its own state. Same name
+       * and same meaning as `SyntenyFetchStateMixin.fetchInert` now, so the
+       * retry check reads one field across all three fetch families.
        *
        * A hook rather than a `displayPhase` override, because overriding the
        * getter means restating the whole loading condition — which is how
@@ -227,14 +249,10 @@ export default function FetchMixin() {
        * away from silently missing the next one added.
        *
        * It lives **here** because this is the one mixin all three display
-       * foundations compose. On `MultiRegionDisplayMixin` it was reachable by
-       * one of the three, so the global family hard-coded `false` and LD could
-       * express only the half `rendersCanvas` reaches — which drops the
-       * pre-first-paint term alone and leaves the scrim free to park over the
-       * placeholder on the durable cancel term. Same argument, one level down,
-       * that put `rendersCanvas` on `RenderLifecycleMixin` beside `canvasDrawn`.
+       * foundations compose. Same argument, one level down, that put
+       * `rendersCanvas` on `RenderLifecycleMixin` beside `canvasDrawn`.
        */
-      get loadingSuppressed(): boolean {
+      get fetchInert(): boolean {
         return false
       },
 
@@ -248,7 +266,7 @@ export default function FetchMixin() {
        * preliminary.
        *
        * Two displays say it, one per fetch foundation, which is why it lives
-       * beside `loadingSuppressed` rather than on either: HiC's contacts fetch
+       * beside `fetchInert` rather than on either: HiC's contacts fetch
        * declines until `CoreGetInfo` lands, and `MultiSampleVariantBaseModel`'s
        * `fetchNeeded` declines until `sourcesBase` does. Both have a `reload()`
        * that wakes the prerequisite's autorun as well as their own.
@@ -261,7 +279,7 @@ export default function FetchMixin() {
        * `LinearHicDisplay/infoFetchFailure.test.ts`.
        *
        * Not for a display deliberately not fetching at all — that is
-       * `loadingSuppressed` above, which the loading scrim reads too.
+       * `fetchInert` above, which the loading scrim reads too.
        */
       get awaitingPrerequisite(): boolean {
         return false

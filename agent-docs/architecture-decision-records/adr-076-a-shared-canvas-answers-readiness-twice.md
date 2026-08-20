@@ -40,7 +40,7 @@ each view publishes as `surfaceReadiness`:
 
 - **`comparativeDisplayPhase`** — is this display still WORKING? Built from
   `computeDisplayStatusPhase` and `computeLoadingTerm`, with each term in the slot
-  its documented meaning names: `fetchInert` is `loadingSuppressed`,
+  its documented meaning names: `fetchInert` is the scrim-suppressing term,
   `loading || refetching` is `isLoadingOrCanceled`, and the surface supplies first
   paint plus the two not-the-answer-yet flags. Feeds each display's
   `displayPhase`, and through it the app marker.

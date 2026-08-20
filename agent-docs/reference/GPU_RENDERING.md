@@ -124,7 +124,7 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
                                   computeDisplayPhase(self, () => computeLoadingTerm({...}, () =>
                                     self.viewportWithinLoadedData))
                                   (this family supplies the staleness axis and constants out rendersCanvas;
-                                   customize via the loadingSuppressed hook, never by overriding this getter)
+                                   customize via the fetchInert hook, never by overriding this getter)
 ```
 
 Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase ===
@@ -135,13 +135,13 @@ re-encoded per model.
 (`@jbrowse/render-core/displayPhase`), evaluated by both foundations:
 
 ```
-!loadingSuppressed &&
+!fetchInert &&
   (isLoadingOrCanceled || (rendersCanvas && !canvasDrawn) || !viewportCurrent())
 ```
 
 Each family constants out the axis it doesn't have — per-region passes
 `viewportCurrent = () => viewportWithinLoadedData` and `rendersCanvas: true`,
-global passes `viewportCurrent = () => true` and `loadingSuppressed: false` — so
+global passes `viewportCurrent = () => true` and `fetchInert: false` — so
 the only per-family difference is the staleness axis described below. It was two
 hand-written expressions that had drifted three ways, equivalent only by
 accident; adding a term now reaches every display. `viewportCurrent` stays a

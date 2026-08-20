@@ -48,9 +48,16 @@ const TestDisplay = types
     // unconditionally
     reloadCounter: 0,
   }))
-  .views(() => ({
+  .views(self => ({
     get adapterConfig() {
       return { type: 'TestAdapter' }
+    },
+    // `SyntenyFetchStateMixin`'s hook, read by the retry check the skeleton
+    // installs. `gated` is a state this display deliberately does not fetch in,
+    // which is exactly what the hook names — so a decline there is not the dead
+    // Retry the check hunts for.
+    get fetchInert() {
+      return self.gated
     },
   }))
   .actions(self => ({
@@ -105,7 +112,10 @@ interface Args {
   geometry: number
 }
 
-function setup({
+// Async because the leading edge is a microtask: every test starts from "the
+// first run has happened", so a mutation made after it supersedes a fetch in
+// flight rather than being coalesced into the first one.
+async function setup({
   run,
   prepare,
 }: {
@@ -133,6 +143,7 @@ function setup({
       committed.push({ result, args })
     },
   })
+  await Promise.resolve()
   return { display, prepared, committed }
 }
 
@@ -142,14 +153,20 @@ async function settle() {
 }
 
 describe('installComparativeFetchAutorun', () => {
-  it('runs the first fetch on the leading edge, without waiting out the debounce', () => {
-    const { prepared, display } = setup({ run: () => new Promise(() => {}) })
+  it('runs the first fetch on the leading edge, without waiting out the debounce', async () => {
+    // no timer advanced: `setup` awaits only the microtask the leading edge
+    // yields for — see leadingEdgeAutorun
+    const { prepared, display } = await setup({
+      run: () => new Promise(() => {}),
+    })
     expect(prepared).toHaveLength(1)
     expect(display.fetching).toBe(true)
   })
 
   it('commits the result and clears the loading flags', async () => {
-    const { display, committed } = setup({ run: () => Promise.resolve('r1') })
+    const { display, committed } = await setup({
+      run: () => Promise.resolve('r1'),
+    })
     await settle()
     expect(committed).toEqual([
       { result: 'r1', args: { fetchKey: 'k1', geometry: 0 } },
@@ -158,8 +175,8 @@ describe('installComparativeFetchAutorun', () => {
     expect(display.statusMessage).toBeUndefined()
   })
 
-  it('skips the fetch entirely when prepare declines', () => {
-    const { display, prepared } = setup({
+  it('skips the fetch entirely when prepare declines', async () => {
+    const { display, prepared } = await setup({
       run: () => Promise.resolve('r1'),
       prepare: d =>
         d.gated ? { fetchKey: d.fetchKey, geometry: 0 } : undefined,
@@ -170,7 +187,9 @@ describe('installComparativeFetchAutorun', () => {
   })
 
   it('re-runs when an observable prepare read changes, and not on an untracked one', async () => {
-    const { display, prepared } = setup({ run: () => Promise.resolve('r1') })
+    const { display, prepared } = await setup({
+      run: () => Promise.resolve('r1'),
+    })
     await settle()
     expect(prepared).toHaveLength(1)
 
@@ -184,7 +203,7 @@ describe('installComparativeFetchAutorun', () => {
 
   it('commits against the args its own prepare captured, not the live state', async () => {
     const gate = deferred<string>()
-    const { display, committed } = setup({ run: () => gate.promise })
+    const { display, committed } = await setup({ run: () => gate.promise })
 
     // the view moves while the RPC is in flight; the commit must still be
     // tagged with the key the data was fetched for
@@ -202,7 +221,7 @@ describe('installComparativeFetchAutorun', () => {
     it('does not commit a superseded fetch', async () => {
       const gates = [deferred<string>(), deferred<string>()]
       let n = 0
-      const { display, committed } = setup({
+      const { display, committed } = await setup({
         run: () => gates[n++]!.promise,
       })
       display.setFetchKey('k2')
@@ -220,7 +239,7 @@ describe('installComparativeFetchAutorun', () => {
     it('does not let a superseded fetch clear the flags the newer one set', async () => {
       const gates = [deferred<string>(), deferred<string>()]
       let n = 0
-      const { display } = setup({ run: () => gates[n++]!.promise })
+      const { display } = await setup({ run: () => gates[n++]!.promise })
       display.setFetchKey('k2')
       await settle()
 
@@ -238,7 +257,7 @@ describe('installComparativeFetchAutorun', () => {
       const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
       const gates = [deferred<string>(), deferred<string>()]
       let n = 0
-      const { display } = setup({ run: () => gates[n++]!.promise })
+      const { display } = await setup({ run: () => gates[n++]!.promise })
       display.setFetchKey('k2')
       await settle()
 
@@ -252,7 +271,7 @@ describe('installComparativeFetchAutorun', () => {
 
   it('sets the error and clears fetching when the current fetch fails', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    const { display } = setup({
+    const { display } = await setup({
       run: () => Promise.reject(new Error('boom')),
     })
     await settle()
@@ -263,7 +282,7 @@ describe('installComparativeFetchAutorun', () => {
 
   it('swallows an abort but still clears fetching', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    const { display } = setup({
+    const { display } = await setup({
       run: () => Promise.reject(new Error('aborted')),
     })
     await settle()
@@ -278,7 +297,7 @@ describe('installComparativeFetchAutorun', () => {
   it('clears a prior error when the next fetch begins', async () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
     let fail = true
-    const { display } = setup({
+    const { display } = await setup({
       run: () =>
         fail ? Promise.reject(new Error('boom')) : Promise.resolve('r'),
     })
@@ -301,7 +320,7 @@ describe('installComparativeFetchAutorun', () => {
 test('reload() refires the fetch with no input change', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   let attempt = 0
-  const { display, prepared } = setup({
+  const { display, prepared } = await setup({
     run: () => {
       attempt += 1
       return attempt === 1
@@ -325,7 +344,7 @@ test('reload() refires even while the gate is closed, so the wake chain holds', 
   // `prepare` returning undefined still records its reads as dependencies; the
   // counter is read BEFORE that bail-out, so a reload during a gated state is
   // not swallowed.
-  const { display, prepared } = setup({
+  const { display, prepared } = await setup({
     run: () => Promise.resolve('ok'),
     prepare: d => (d.gated ? undefined : { fetchKey: d.fetchKey, geometry: 0 }),
   })
@@ -343,4 +362,31 @@ test('reload() refires even while the gate is closed, so the wake chain holds', 
   display.setGated(false)
   await settle()
   expect(prepared).toHaveLength(2)
+})
+
+// The retry check the skeleton installs, which this family shipped a Retry
+// button without. Its `reloadCounter` read guarantees the autorun re-RUNS, never
+// that the run reaches a fetch — and after a failure every fetch input is
+// unchanged, which is precisely when the button is dead.
+test('a reload the gate does not clear is reported as a dead button', async () => {
+  const { display, prepared } = await setup({
+    run: () => Promise.resolve('ok'),
+    // declines on something `reload()` does not touch, and does NOT say
+    // `fetchInert` — the shape the check exists for
+    prepare: d =>
+      d.geometry > 0 ? undefined : { fetchKey: d.fetchKey, geometry: 0 },
+  })
+  await settle()
+  expect(prepared).toHaveLength(1)
+  expect(takeDisplayContractReports()).toEqual([])
+
+  display.setGeometry(1)
+  await settle()
+  display.reload()
+  await settle()
+
+  expect(prepared).toHaveLength(1)
+  expect(takeDisplayContractReports().join('\n')).toMatch(
+    /Retry is a dead button/,
+  )
 })

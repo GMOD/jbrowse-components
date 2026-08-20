@@ -1,4 +1,7 @@
-import { assertDisplayContract } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
+import {
+  assertDisplayContract,
+  makeRetryContractCheck,
+} from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import {
   createStopTokenRotation,
   getSession,
@@ -40,6 +43,14 @@ interface ComparativeFetchHost extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   /** `SyntenyFetchStateMixin`'s retry counter — see the read in the autorun */
   reloadCounter: number
+  /**
+   * `SyntenyFetchStateMixin`'s: the states where this display's fetch autorun
+   * deliberately never runs, so a `prepare` declining in one of them is not the
+   * dead Retry the check below hunts for. Same name and same meaning as
+   * `FetchMixin.fetchInert` on the LGV side, which is what lets one check serve
+   * all three fetch families.
+   */
+  fetchInert: boolean
   setError: (error?: unknown) => void
   setFetching: (fetching: boolean) => void
   setStatusMessage: (status?: RpcStatus) => void
@@ -94,6 +105,11 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
   // by whichever installer put the display's autoruns in, so a family that
   // grows its own skeleton does not also have to remember to ask.
   assertDisplayContract(self, `${name}'s installComparativeFetchAutorun`)
+  // The other half of the same doctrine. This family is the one that shipped a
+  // Retry without it: the `reloadCounter` read below guarantees `reload()`
+  // re-RUNS the autorun, never that the run reaches a fetch, and after a
+  // failure every fetch input is unchanged. See makeRetryContractCheck.
+  const noteFetchAutorunRun = makeRetryContractCheck(self)
 
   const fetch = createStopTokenRotation(self, self)
 
@@ -158,8 +174,10 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
       // run, and getContainingView on a detached node warns then throws.
       const args = isAlive(self) ? prepare() : undefined
       if (args === undefined) {
+        noteFetchAutorunRun('declined')
         return false
       }
+      noteFetchAutorunRun('fetched')
       void runFetch(args)
       // arms the debounce; the runs `prepare` bails on (pre-init, minimized)
       // return false and stay on the leading edge, so the first real fetch is

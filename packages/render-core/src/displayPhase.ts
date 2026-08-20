@@ -76,7 +76,7 @@ export interface DisplayLoadingInputs {
    * fetch terms free to scrim over the placeholder, and `isLoadingOrCanceled`
    * includes a cancel that is deliberately durable.
    */
-  loadingSuppressed: boolean
+  fetchInert: boolean
   /**
    * A fetch is in flight, or the user canceled one. **Never a bare
    * `isLoading`**: cancel drops the stop token synchronously, so without the
@@ -104,7 +104,7 @@ export interface DisplayLoadingInputs {
  * three ways that were equivalent only by accident: the per-region family spelled
  * the cancel term out by hand (`!isReady || … || fetchCanceled`, over a bare
  * `isLoading`) rather than reading `isLoadingOrCanceled`, and each family carried
- * exactly one of the two suppression hooks — `loadingSuppressed` on per-region,
+ * exactly one of the two suppression hooks — `fetchInert` on per-region,
  * `rendersCanvas` on global — so a display in the other family could express its
  * case only by overriding `displayPhase`, which is the thing both hooks exist to
  * prevent. Single-sourcing the expression is the same argument the precedence
@@ -112,13 +112,13 @@ export interface DisplayLoadingInputs {
  * instead of reaching whichever family the author happened to be reading.
  *
  * The four inputs all now live on a mixin every foundation composes —
- * `loadingSuppressed` / `isLoadingOrCanceled` on `FetchMixin`, `rendersCanvas` /
+ * `fetchInert` / `isLoadingOrCanceled` on `FetchMixin`, `rendersCanvas` /
  * `canvasDrawn` on `RenderLifecycleMixin` — so `foundationDisplayPhase` passes
  * the model straight through and the only thing a family supplies is
  * `viewportCurrent`: per-region its staleness predicate, global `() => true` (it
  * keeps the last frame up through a refetch rather than scrimming). Two hooks
  * used to be hard-coded per family instead, which is how the second drift
- * happened after the first was fixed — LD needed `loadingSuppressed` and the
+ * happened after the first was fixed — LD needed `fetchInert` and the
  * global family did not have it.
  *
  * `viewportCurrent` is a **thunk** for the same MobX reason `computeDisplayPhase`'s
@@ -129,7 +129,7 @@ export interface DisplayLoadingInputs {
  */
 export function computeLoadingTerm(
   {
-    loadingSuppressed,
+    fetchInert,
     isLoadingOrCanceled,
     rendersCanvas,
     canvasDrawn,
@@ -137,7 +137,7 @@ export function computeLoadingTerm(
   viewportCurrent: () => boolean,
 ): boolean {
   return (
-    !loadingSuppressed &&
+    !fetchInert &&
     (isLoadingOrCanceled ||
       (rendersCanvas && !canvasDrawn) ||
       !viewportCurrent())

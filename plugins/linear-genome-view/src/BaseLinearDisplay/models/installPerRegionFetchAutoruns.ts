@@ -36,7 +36,7 @@ export interface PerRegionFetchHost extends IStateTreeNode {
   fetchGeneration: number
   reloadCounter: number
   isLoading: boolean
-  loadingSuppressed: boolean
+  fetchInert: boolean
   awaitingPrerequisite: boolean
   gateSkipsMeasuredViewport: boolean
   /** read by the hover-clear reaction, which the too-large banner also fires */
@@ -108,6 +108,50 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     'DisplayedRegionsChange',
   )
 
+  // Re-fetch when the RPC payload changes. The cache key is what rpcProps()
+  // *returns*, not what building it reads — see the `rpcPropsCacheKey` getter.
+  //
+  // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()`
+  if ((self as { rpcProps?: () => unknown }).rpcProps) {
+    const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
+    autorunOnReadyView(
+      self,
+      () => {
+        void self.rpcPropsCacheKey
+        loopGuard()
+        self.clearAllRpcData()
+      },
+      { name: 'SettingsInvalidate' },
+    )
+  }
+
+  // When the viewport moves while an error or a canceled fetch is set, clear so
+  // the fetch autorun retries. (The too-large gate is derived — a pure function
+  // of the last measurement — so it clears on the next one and needs no clear
+  // here; only the terminal error/cancel states, which are imperative flags,
+  // do.) Reads them untracked so setting them doesn't trigger this autorun to
+  // immediately wipe them — only the viewport read should fire it.
+  //
+  // #autorun `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself
+  autorunOnReadyView(
+    self,
+    view => {
+      void view.visibleRegions
+      if (untracked(() => self.fetchCanceled || self.error)) {
+        self.clearAllRpcData()
+      }
+    },
+    { name: 'ClearBlockingStateOnViewportChange' },
+  )
+
+  // Installed LAST, and that is load-bearing now the body runs on the leading
+  // edge: the three autoruns above each fire once at install, and two of them
+  // call `clearAllRpcData` when they do. Installed first, this one's immediate
+  // fetch was cancelled by `SettingsInvalidate`'s own first pass and reissued
+  // with identical arguments — a duplicate round trip per track, on every track
+  // open, invisible to everything but a call count. Under MobX's trailing-edge
+  // `{ delay }` the ordering could not matter, because nothing here ran until
+  // every install was long past.
   // Fetch data when the visible viewport isn't covered by loaded data, with an
   // explicit buffer so scrolling doesn't blank the fringe.
   //
@@ -189,42 +233,6 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     // this call to write the docs' autorun table, so a named constant would put
     // the number back in the docs' hands
     { name: 'FetchVisibleRegions', delay: 600 },
-  )
-
-  // Re-fetch when the RPC payload changes. The cache key is what rpcProps()
-  // *returns*, not what building it reads — see the `rpcPropsCacheKey` getter.
-  //
-  // #autorun `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()`
-  if ((self as { rpcProps?: () => unknown }).rpcProps) {
-    const loopGuard = makeSettingsLoopGuard('SettingsInvalidate')
-    autorunOnReadyView(
-      self,
-      () => {
-        void self.rpcPropsCacheKey
-        loopGuard()
-        self.clearAllRpcData()
-      },
-      { name: 'SettingsInvalidate' },
-    )
-  }
-
-  // When the viewport moves while an error or a canceled fetch is set, clear so
-  // the fetch autorun retries. (The too-large gate is derived — a pure function
-  // of the last measurement — so it clears on the next one and needs no clear
-  // here; only the terminal error/cancel states, which are imperative flags,
-  // do.) Reads them untracked so setting them doesn't trigger this autorun to
-  // immediately wipe them — only the viewport read should fire it.
-  //
-  // #autorun `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself
-  autorunOnReadyView(
-    self,
-    view => {
-      void view.visibleRegions
-      if (untracked(() => self.fetchCanceled || self.error)) {
-        self.clearAllRpcData()
-      }
-    },
-    { name: 'ClearBlockingStateOnViewportChange' },
   )
 
   // Drop a stored hover whenever the content it names moves or goes away.

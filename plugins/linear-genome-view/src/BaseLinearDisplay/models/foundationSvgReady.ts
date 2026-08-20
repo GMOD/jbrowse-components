@@ -7,8 +7,8 @@ import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 export interface SvgReadyFoundation {
   error: unknown
   regionTooLarge: boolean
-  /** the display-specific extra terminal (sequence zoomed out, LD triangle off) */
-  svgReadyExtraTerminal: boolean
+  /** `FetchMixin`'s: this display will never fetch here, so nothing is coming */
+  fetchInert: boolean
   /** the family's own freshness answer */
   dataCurrent: boolean
 }
@@ -36,7 +36,7 @@ export function foundationSvgReady(self: SvgReadyFoundation): boolean {
     {
       error: self.error,
       regionTooLarge: self.regionTooLarge,
-      extraTerminal: self.svgReadyExtraTerminal,
+      extraTerminal: self.fetchInert,
     },
     () => self.dataCurrent,
   )

@@ -56,12 +56,14 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // the true top hit, each flip wiping the data and refetching — forever, with
   // the plot never painting. Gating on a settled load makes topSnp a fixpoint.
   it('settles on the global top hit without refetching forever', async () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      colorBy: 'ld',
+    })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
         Promise.resolve(makeResult(args.region)),
     )
-    const { display } = createDisplay({ colorBy: 'ld' })
+    const { display } = createDisplay()
 
     await settle(8)
     await waitFor(() => {
@@ -83,7 +85,9 @@ describe('LinearManhattanDisplay LD auto-index', () => {
   // order it would flip between the tied SNPs and never converge — the same
   // livelock as above, reached a different way.
   it('breaks a score tie by region index, not by which region landed first', () => {
-    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      colorBy: 'ld',
+    })
     mockRpcCall.mockImplementation(
       (_sessionId: string, _method: string, args: { region: Region }) =>
         Promise.resolve(makeResult(args.region)),
@@ -95,12 +99,12 @@ describe('LinearManhattanDisplay LD auto-index', () => {
       scores: new Float32Array([9]),
     })
 
-    const first = createDisplay({ colorBy: 'ld' }).display
+    const first = createDisplay().display
     first.setRpcData(0, tied(100))
     first.setRpcData(1, tied(500))
     expect(first.topSnp).toBe('ctgA:101')
 
-    const second = createDisplay({ colorBy: 'ld' }).display
+    const second = createDisplay().display
     second.setRpcData(1, tied(500))
     second.setRpcData(0, tied(100))
     expect(second.topSnp).toBe('ctgA:101')

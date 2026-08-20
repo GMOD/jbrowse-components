@@ -91,4 +91,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [079](adr-079-a-display-installs-a-lifecycle.md) | Accepted | A display installs one of three rendering lifecycles; nothing outside render-core calls attachRenderingBackend, and the setup thunk is what makes the once-only semantics structural |
 | [080](adr-080-a-phase-ends-when-it-stops-reporting.md) | Accepted | A fan-out slot retires a phase on any status that is not that phase moving forward, credits it once, and never blanks the shared label |
 | [081](adr-081-a-status-field-is-one-fan-out.md) | Accepted | A status field aggregates across the concurrent OPERATIONS that share it, not just the regions of one fetch; a stream ends by retiring its slot, and blanks the field only when it was the last |
+| [082](adr-082-one-hook-for-a-display-that-will-not-fetch.md) | Accepted | `loadingSuppressed`, `svgReadyExtraTerminal` and the comparative `fetchInert` were one state under three names; the readers a display forgets are the ones outside it, so it publishes one name |
 <!-- END GENERATED ADR INDEX -->

@@ -76,8 +76,9 @@ export interface ComparativeDisplayFetchState {
  *
  * `computeDisplayStatusPhase` and `computeLoadingTerm` rather than a hand-written
  * conjunction, and each term goes where its documented meaning puts it:
- * `fetchInert` is `loadingSuppressed` (a display drawing nothing by design gets
- * no scrim and no wait), `loading || refetching` is `isLoadingOrCanceled`, and
+ * `fetchInert` is the same field `computeLoadingTerm` reads on an LGV display
+ * (a display drawing nothing by design gets no scrim and no wait),
+ * `loading || refetching` is `isLoadingOrCanceled`, and
  * the surface supplies first paint plus the two "what is on screen is not the
  * answer" flags through the `viewportCurrent` thunk. Neither view has a
  * `regionTooLarge` state — synteny never gates on region size and dotplot gates
@@ -96,7 +97,7 @@ export function comparativeDisplayPhase(
     () =>
       computeLoadingTerm(
         {
-          loadingSuppressed: display.fetchInert,
+          fetchInert: display.fetchInert,
           isLoadingOrCanceled: display.loading || display.refetching,
           rendersCanvas: true,
           canvasDrawn: surface.painted,

@@ -68,7 +68,7 @@ describe('computeDisplayPhase lazy loading evaluation', () => {
 // here, so each test below flips exactly one input and asserts it alone raises
 // the scrim.
 const DRAWN = {
-  loadingSuppressed: false,
+  fetchInert: false,
   isLoadingOrCanceled: false,
   rendersCanvas: true,
   canvasDrawn: true,
@@ -121,11 +121,11 @@ describe('computeLoadingTerm', () => {
 
   // Sequence past base resolution: a static "zoom in" message, no fetch. Unlike
   // rendersCanvas this outranks every term, including an in-flight fetch.
-  test('loadingSuppressed outranks every other term', () => {
+  test('fetchInert outranks every other term', () => {
     expect(
       computeLoadingTerm(
         {
-          loadingSuppressed: true,
+          fetchInert: true,
           isLoadingOrCanceled: true,
           rendersCanvas: true,
           canvasDrawn: false,
@@ -140,7 +140,7 @@ describe('computeLoadingTerm', () => {
   // subscribing to visibleRegions/loadedRegions churn is the hazard
   // computeDisplayPhase's own `loading` thunk exists to avoid.
   test.each([
-    ['suppressed', { ...DRAWN, loadingSuppressed: true }],
+    ['suppressed', { ...DRAWN, fetchInert: true }],
     ['already loading', { ...DRAWN, isLoadingOrCanceled: true }],
     ['pre-first-paint', { ...DRAWN, canvasDrawn: false }],
   ])('does not read the viewport when %s', (_label, inputs) => {
@@ -157,13 +157,13 @@ describe('computeLoadingTerm', () => {
 // than in a screenshot.
 describe('computeLoadingTerm matches the expressions it replaced', () => {
   const bools = [false, true]
-  const cases = bools.flatMap(loadingSuppressed =>
+  const cases = bools.flatMap(fetchInert =>
     bools.flatMap(isLoading =>
       bools.flatMap(fetchCanceled =>
         bools.flatMap(canvasDrawn =>
           bools.flatMap(rendersCanvas =>
             bools.map(viewportWithinLoadedData => ({
-              loadingSuppressed,
+              fetchInert,
               isLoading,
               fetchCanceled,
               canvasDrawn,
@@ -178,16 +178,16 @@ describe('computeLoadingTerm matches the expressions it replaced', () => {
 
   test.each(cases)('per-region parity %o', c => {
     // MultiRegionDisplayMixin, before the hoist:
-    //   !loadingSuppressed && (!isReady || !viewportWithinLoadedData || fetchCanceled)
+    //   !fetchInert && (!isReady || !viewportWithinLoadedData || fetchCanceled)
     // with isReady = canvasDrawn && !isLoading
     const isReady = c.canvasDrawn && !c.isLoading
     const before =
-      !c.loadingSuppressed &&
+      !c.fetchInert &&
       (!isReady || !c.viewportWithinLoadedData || c.fetchCanceled)
     expect(
       computeLoadingTerm(
         {
-          loadingSuppressed: c.loadingSuppressed,
+          fetchInert: c.fetchInert,
           isLoadingOrCanceled: c.isLoading || c.fetchCanceled,
           canvasDrawn: c.canvasDrawn,
           rendersCanvas: true,
@@ -205,7 +205,7 @@ describe('computeLoadingTerm matches the expressions it replaced', () => {
     expect(
       computeLoadingTerm(
         {
-          loadingSuppressed: false,
+          fetchInert: false,
           isLoadingOrCanceled,
           canvasDrawn: c.canvasDrawn,
           rendersCanvas: c.rendersCanvas,

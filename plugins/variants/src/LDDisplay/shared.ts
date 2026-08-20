@@ -264,39 +264,18 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * The scrim's other half, and the one this display could not reach until
-       * `loadingSuppressed` moved onto `FetchMixin` (the global family used to
-       * hard-code it `false`). `rendersCanvas` alone drops only the
-       * pre-first-paint term, which leaves the *fetch* terms free to scrim over
-       * the EmptyState: toggling the triangle off mid-fetch parks the overlay
-       * there until the fetch lands, and cancelling a load first parks it
-       * permanently — `fetchCanceled` is deliberately durable, so "Loading
-       * canceled / Retry" would sit over "Enable LD triangle" for the rest of
-       * the session.
-       *
-       * Same slot as the two hooks around it, spelled out separately for the
-       * reason `svgReadyExtraTerminal` is: the three answer the scrim, the
-       * export and first paint, and only coincide here.
-       */
-      get loadingSuppressed(): boolean {
-        return !getConf(self, 'showLDTriangle')
-      },
-      /**
-       * #getter
-       * The same toggle, answering the *export* question rather than the scrim
-       * one. With the triangle off `prepare` declines forever, so `rpcData`
-       * stays null and `dataCurrent` can never flip — and `awaitSvgReady` is an
-       * unbounded `when`, so one such track hangs the whole view's SVG export.
-       * Marking it terminal lets the export proceed; `LdSvgBody` already returns
-       * null on absent `rpcData`. Same hook, same reason, as the sequence
-       * display past base resolution.
+       * With the triangle off the display shows an EmptyState and its
+       * `prepare` declines forever, so nothing is loading and nothing ever
+       * will. Both readers need that: the scrim would otherwise park over the
+       * placeholder — permanently, once a cancel has been clicked, since
+       * `fetchCanceled` is durable — and `awaitSvgReady` is an unbounded
+       * `when`, so one such track hangs the whole view's SVG export.
        *
        * Deliberately not spelled `!self.rendersCanvas`: "paints no canvas" and
-       * "will never fetch" are independent axes that merely coincide here, and a
-       * display could well do the first without the second. Keying both on the
-       * slot keeps them independent while making the shared cause obvious.
+       * "will never fetch" are independent axes that merely coincide here, and
+       * arc is the display that has the second without the first.
        */
-      get svgReadyExtraTerminal(): boolean {
+      get fetchInert(): boolean {
         return !getConf(self, 'showLDTriangle')
       },
       /**

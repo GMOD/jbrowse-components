@@ -7,7 +7,7 @@ import { createTestEnvironment } from './testEnv.ts'
 //
 // LD has such a state: with the triangle toggled off `prepare` declines
 // forever, so `rpcData` stays null and `dataCurrent` never flips. That is the
-// same shape the sequence display's `svgReadyExtraTerminal` exists for.
+// same shape the sequence display's `fetchInert` exists for.
 describe('LD svgReady terminal states', () => {
   it('does not resolve on a loaded-nothing triangle-on display', () => {
     const { display } = createTestEnvironment().createDisplay()

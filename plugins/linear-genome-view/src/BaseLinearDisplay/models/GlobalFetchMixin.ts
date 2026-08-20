@@ -82,15 +82,6 @@ export default function GlobalFetchMixin() {
       get dataCurrent(): boolean {
         return false
       },
-      /**
-       * #getter
-       * Overridable hook (default false): a subclass returns true to mark an
-       * extra terminal state where off-screen export can proceed with no loaded
-       * data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).
-       */
-      get svgReadyExtraTerminal(): boolean {
-        return false
-      },
     }))
     .views(self => ({
       /**

@@ -57,7 +57,7 @@ function testStateModel(pm: PluginManager, schema: AnyConfigurationSchemaType) {
       prereqPending: false,
     }))
     .views(self => ({
-      get loadingSuppressed() {
+      get fetchInert() {
         return self.suppressed
       },
       get awaitingPrerequisite() {
@@ -196,7 +196,7 @@ test('the report names the fix, not just the symptom', async () => {
 
   const message = reports().join('\n')
   expect(message).toMatch(/reload\(\) has to invalidate/)
-  expect(message).toMatch(/loadingSuppressed/)
+  expect(message).toMatch(/fetchInert/)
   expect(message).toMatch(/awaitingPrerequisite/)
 })
 
@@ -215,7 +215,7 @@ test('says nothing about a decline with no reload behind it', async () => {
   expect(reports()).toEqual([])
 })
 
-// `loadingSuppressed` is the one outright exemption: a display deliberately not
+// `fetchInert` is the one outright exemption: a display deliberately not
 // fetching at all has a `reload()` that correctly does nothing. Sequence reaches
 // it through `zoomedOut`, which its `placeholderMessage` implies.
 test('a display that says it is not fetching is exempt', async () => {

@@ -168,18 +168,6 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Overridable hook (default false): a subclass returns true to mark an
-         * extra terminal state where off-screen export can proceed with no loaded
-         * data. Sequence sets it when zoomed past base resolution — it renders a
-         * static "zoom in" message and fetches nothing, so `svgReady` would
-         * otherwise never resolve.
-         */
-        get svgReadyExtraTerminal(): boolean {
-          return false
-        },
-
-        /**
-         * #getter
          * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
          * failed fetch has to read as finished to the consumers outside the
          * display. The global family declares the identical override.
@@ -343,7 +331,7 @@ export default function MultiRegionDisplayMixin() {
          * debounce. A thunk, so a suppressed or already-loading display doesn't
          * subscribe to viewport churn.
          *
-         * A subclass customizes this through `loadingSuppressed` (FetchMixin),
+         * A subclass customizes this through `fetchInert` (FetchMixin),
          * never by overriding the getter — see that hook.
          */
         get displayPhase(): DisplayPhase {

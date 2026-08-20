@@ -113,8 +113,12 @@ export type FetchAutorunOutcome =
 
 interface RetryContractHost {
   reloadCounter: number
-  loadingSuppressed: boolean
-  awaitingPrerequisite: boolean
+  fetchInert: boolean
+  /**
+   * Optional: the comparative family has no two-stage fetch, so nothing there
+   * declares it. A family that grows one declares it and gets the deferral.
+   */
+  awaitingPrerequisite?: boolean
 }
 
 // Displays whose fetch has started since the last time the caller looked, and
@@ -203,7 +207,7 @@ export function takeFetchStarted(self: object) {
  *
  * A display deliberately not fetching at all is the one exempt decline — LD with
  * the triangle off, whose `reload()` correctly does nothing because there is
- * nothing to load. That is already a named state: `loadingSuppressed`, which the
+ * nothing to load. That is already a named state: `fetchInert`, which the
  * loading scrim reads for the same reason, so the exemption is not a second
  * thing to remember. A display that suppresses the scrim and still wants the
  * retry checked has the two questions genuinely apart and should say so here.
@@ -218,7 +222,7 @@ export function takeFetchStarted(self: object) {
  * lands is the one that has to reach a fetch — if it declines too, the report
  * lands then. A display cannot spend its retry on a decline it called
  * preliminary, which is what an exemption here would have let it do.
- * `loadingSuppressed` is the wrong thing for HiC to say in any case, because it
+ * `fetchInert` is the wrong thing for HiC to say in any case, because it
  * does want the scrim while the header is re-read.
  *
  * Both flags are read off the node, and both are declared once on `FetchMixin`
@@ -237,7 +241,7 @@ export function takeFetchStarted(self: object) {
  * lands there, and pick a narrower predicate wherever one exists.
  *
  * **Everything it reads is `untracked`.** It runs inside the fetch autorun, so a
- * tracked read of `loadingSuppressed` — or of whatever `awaitingPrerequisite`
+ * tracked read of `fetchInert` — or of whatever `awaitingPrerequisite`
  * reaches — would put that observable in the autorun's dependency set in dev and
  * not in production, a display whose fetch re-fires only in development, which
  * is worse than the bug being checked for.
@@ -269,7 +273,7 @@ export function makeRetryContractCheck(
       // not Retry), and leaving the bump unconsumed would report against
       // whichever unrelated run cleared the gate later.
       lastCounter = self.reloadCounter
-      if (retried && outcome === 'declined' && !self.loadingSuppressed) {
+      if (retried && outcome === 'declined' && !self.fetchInert) {
         report(
           `${getMembers(self).name}: reload() bumped reloadCounter but the ` +
             `fetch autorun's gate still declines, so Retry is a dead ` +
@@ -277,9 +281,9 @@ export function makeRetryContractCheck(
             `to invalidate whatever that gate reads, not just bump the ` +
             `counter (ArcFetchModel.reload drops loadedRegionSignature so its ` +
             `dataCurrent goes false). If this display is deliberately not ` +
-            `fetching, say so with loadingSuppressed — the loading scrim reads ` +
-            `it too; if this run declined only because a prerequisite fetch ` +
-            `in another autorun has not landed, say so with ` +
+            `fetching, say so with fetchInert — the loading scrim and the SVG ` +
+            `export read it too; if this run declined only because a ` +
+            `prerequisite fetch in another autorun has not landed, say so with ` +
             `awaitingPrerequisite and the retry is judged on the run after ` +
             `it does. See DISPLAYCHROME.md §"The retry contract".`,
         )

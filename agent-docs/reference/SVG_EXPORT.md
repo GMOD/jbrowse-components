@@ -176,7 +176,7 @@ blob vs per-region map) its fetch happens to take:
   (On-screen, the render autorun legitimately sees `undefined` pre-load — a real
   branch there, just not in export.)
 - **Sequence** is the genuinely-different case: a *terminal* gate (`if
-  (zoomedOut)`) wired through `svgReadyExtraTerminal`, not a data narrow.
+  (zoomedOut)`) wired through `fetchInert`, not a data narrow.
 
 These narrows stay (rather than being deleted) only because the field is `T |
 null` at the type level and can't be made non-nullable without a fake
@@ -234,7 +234,7 @@ their terminals differently and keep their own call.
   loaded data; `loadedRegions.size` rules out the vacuously-true empty viewport.
   `viewportWithinLoadedData` stays a separate getter — it is the raw coverage
   predicate the fetch autorun and loading overlay use.
-  `svgReadyExtraTerminal` is the overridable hook the sequence display uses.
+  `fetchInert` is the overridable hook the sequence display uses.
 - **`GlobalFetchMixin`** (whole-view single-blob — HiC, LD, and arc): a global
   display has no per-region spatial axis, so it requires the single dataset to
   actually be current — deliberately **not** `displayPhase !== 'loading'`,
@@ -278,7 +278,7 @@ blank canvas: the circular view sitting on its import form has no figure, only
 its padding, and used to export a 160px white square.
 
 The **sequence** display adds one extra terminal disjunct — it overrides
-`svgReadyExtraTerminal` to return `zoomedOut`, because zoomed past its
+`fetchInert` to return `zoomedOut`, because zoomed past its
 base-render threshold it shows a static "zoom in" message and issues no fetch,
 so `svgReady` alone would never resolve.
 
@@ -288,7 +288,7 @@ A correct `dataCurrent` is not sufficient. `dataCurrent` answers "is the held
 data current"; it cannot answer "will data ever arrive". So the rule is one
 level up: **if a display can sit indefinitely in a state where its fetch trigger
 is false, that state has to reach `svgReady` some other way** — `error`,
-`regionTooLarge`, or `svgReadyExtraTerminal`. Otherwise one such track hangs the
+`regionTooLarge`, or `fetchInert`. Otherwise one such track hangs the
 whole view's export, because `renderToSvg` awaits every display and
 `awaitSvgReady` has no time bound.
 
@@ -297,7 +297,7 @@ Three shapes have shipped this bug:
 
 - **A user toggle in the gate.** LD's `prepare` returns `undefined` while
   `showLDTriangle` is off, so with the triangle off nothing ever loads. It now
-  overrides `svgReadyExtraTerminal` to `!showLDTriangle` — the same hook, and
+  overrides `fetchInert` to `!showLDTriangle` — the same hook, and
   the same reason, as sequence's `zoomedOut`.
 - **A failed prerequisite fetch.** HiC gates on `effectiveResolution`, which
   exists only once a one-shot `CoreGetInfo` lands. That failure used to go to a

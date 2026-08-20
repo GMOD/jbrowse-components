@@ -99,12 +99,12 @@ test('displayPhase is not loading pre-paint when rendersCanvas is false', () => 
 
 // `rendersCanvas: false` drops the pre-paint term ALONE, which is not enough for
 // a placeholder: the fetch terms still apply, and `fetchCanceled` is deliberately
-// durable. That is `loadingSuppressed`'s job — and this family used to hard-code
+// durable. That is `fetchInert`'s job — and this family used to hard-code
 // it `false`, so LD (the display that needed it) could express only the half it
 // could reach and the "Loading canceled / Retry" chip could park permanently over
 // "Enable LD triangle". The hook now lives on FetchMixin, which all three display
 // foundations compose.
-test('loadingSuppressed silences the scrim over a placeholder, cancel included', () => {
+test('fetchInert silences the scrim over a placeholder, cancel included', () => {
   const Suppressed = types
     .compose(
       'TestSuppressedDisplay',
@@ -115,7 +115,7 @@ test('loadingSuppressed silences the scrim over a placeholder, cancel included',
       get rendersCanvas() {
         return false
       },
-      get loadingSuppressed() {
+      get fetchInert() {
         return true
       },
     }))

@@ -38,7 +38,7 @@ const Host = types
   .model('RetryLedgerHost', {})
   .volatile(() => ({
     reloadCounter: 0,
-    loadingSuppressed: false,
+    fetchInert: false,
     awaitingPrerequisite: false,
   }))
   .actions(self => ({
@@ -46,7 +46,7 @@ const Host = types
       self.reloadCounter++
     },
     setLoadingSuppressed(flag: boolean) {
-      self.loadingSuppressed = flag
+      self.fetchInert = flag
     },
     setAwaitingPrerequisite(flag: boolean) {
       self.awaitingPrerequisite = flag
@@ -57,7 +57,7 @@ type HostModel = ReturnType<typeof Host.create>
 
 function makeHost(overrides: Partial<Record<string, boolean>> = {}) {
   const host = Host.create({})
-  host.setLoadingSuppressed(!!overrides.loadingSuppressed)
+  host.setLoadingSuppressed(!!overrides.fetchInert)
   host.setAwaitingPrerequisite(!!overrides.awaitingPrerequisite)
   return host
 }
@@ -158,9 +158,9 @@ describe('with a retry outstanding', () => {
   })
 })
 
-describe('loadingSuppressed is an exemption', () => {
+describe('fetchInert is an exemption', () => {
   it('waives the report', () => {
-    const host = makeHost({ loadingSuppressed: true })
+    const host = makeHost({ fetchInert: true })
     const run = drive(host)
     host.reload()
     expect(run('declined')).toBe(false)
@@ -170,7 +170,7 @@ describe('loadingSuppressed is an exemption', () => {
   // a display deliberately not fetching has answered its retry — there is
   // nothing coming later to judge. So the bump is spent.
   it('spends the bump, so a later decline is silent', () => {
-    const host = makeHost({ loadingSuppressed: true })
+    const host = makeHost({ fetchInert: true })
     const run = drive(host)
     host.reload()
     expect(run('declined')).toBe(false)
@@ -181,7 +181,7 @@ describe('loadingSuppressed is an exemption', () => {
   // Read at report time, not at bump time: a display that starts fetching again
   // between the bump and the decline gets judged on what it is now.
   it('is read at the decline, not at the bump', () => {
-    const host = makeHost({ loadingSuppressed: true })
+    const host = makeHost({ fetchInert: true })
     const run = drive(host)
     host.reload()
     host.setLoadingSuppressed(false)
@@ -346,10 +346,10 @@ describe('deferred is the same hold, reached from inside the foundation', () => 
     expect(run('declined')).toBe(true)
   })
 
-  // It defers ahead of every other term, `loadingSuppressed` included — the run
+  // It defers ahead of every other term, `fetchInert` included — the run
   // did not reach the display's gate at all, so nothing about it is a verdict.
-  it('does not consult loadingSuppressed', () => {
-    const host = makeHost({ loadingSuppressed: true })
+  it('does not consult fetchInert', () => {
+    const host = makeHost({ fetchInert: true })
     const run = drive(host)
     host.reload()
     run('deferred')

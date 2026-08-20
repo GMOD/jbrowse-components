@@ -239,20 +239,12 @@ export function modelFactory(
       },
       /**
        * #getter
-       * A placeholder is a terminal renderable state (static message, no
-       * fetch), so it makes `svgReady` resolve even though no data loads. See
-       * MultiRegionDisplayMixin.svgReadyExtraTerminal.
+       * Past base resolution the body is a static message and no fetch is
+       * coming, which is what every consumer of this hook needs to know: the
+       * loading scrim must not cover it, and `svgReady` must resolve without
+       * data. See FetchMixin.fetchInert.
        */
-      get svgReadyExtraTerminal() {
-        return !this.rendersCanvas
-      },
-      /**
-       * #getter
-       * The body is deliberately showing a static message, so the loading scrim
-       * must not cover it. One term, not a `displayPhase` override — see
-       * FetchMixin.loadingSuppressed.
-       */
-      get loadingSuppressed() {
+      get fetchInert() {
         return !this.rendersCanvas
       },
       /**

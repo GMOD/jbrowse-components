@@ -45,9 +45,21 @@ interface Hook {
    * consumers to re-spread named fields. Its column therefore lists every
    * display that HAS one, and the interesting entry is the absence.
    */
-  owner: string | null
+  owner: string | string[] | null
   /** What a display sitting on the default gets. One line, no hedging. */
   ifNotOverridden: string
+}
+
+// A hook whose default lives in more than one file declares each of them, and
+// every one has to still be there. `fetchInert` is the case: the LGV foundations
+// and the comparative one compose no mixin in common, so one name is declared
+// twice on purpose — which is also why a single row is the honest rendering.
+function ownersOf(hook: Hook) {
+  return hook.owner === null
+    ? []
+    : Array.isArray(hook.owner)
+      ? hook.owner
+      : [hook.owner]
 }
 
 // The pick, deliberately. Adding a hook here is how it joins the table — no
@@ -95,18 +107,13 @@ const HOOKS: Hook[] = [
       'overlays are dropped rather than pinned to a stale layout',
   },
   {
-    name: 'svgReadyExtraTerminal',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
-    ifNotOverridden:
-      'a resting state that never fetches hangs the export — see §SVG export',
-  },
-  {
-    name: 'loadingSuppressed',
-    owner:
+    name: 'fetchInert',
+    owner: [
       'plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts',
+      'packages/synteny-core/src/SyntenyFetchStateMixin.ts',
+    ],
     ifNotOverridden:
-      'the loading scrim covers a deliberate static placeholder, and a user cancel parks "Loading canceled / Retry" over it permanently',
+      'false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled`',
   },
   {
     name: 'rendersCanvas',
@@ -159,12 +166,6 @@ const HOOKS: Hook[] = [
     owner:
       'plugins/linear-genome-view/src/BaseLinearDisplay/models/HeightModeMixin.ts',
     ifNotOverridden: 'grow mode targets the raw `height` slot',
-  },
-  {
-    name: 'fetchInert',
-    owner: 'packages/synteny-core/src/SyntenyFetchStateMixin.ts',
-    ifNotOverridden:
-      'false, the strict answer — a comparative display that grows an inert state and does not declare it hangs `displaysSettled` (diagnosable) rather than reporting done with nothing drawn',
   },
   {
     name: 'featureNoun',
@@ -283,16 +284,15 @@ function main() {
   // The owner check. A hook whose default has been renamed away leaves every
   // consumer reading a name nothing declares — silently, since a missing getter
   // is `undefined` and every one of these is read as a boolean.
-  const orphaned = HOOKS.filter(
-    hook =>
-      hook.owner !== null && !declarers.get(hook.name)!.files.has(hook.owner),
+  const orphaned = HOOKS.filter(hook =>
+    ownersOf(hook).some(owner => !declarers.get(hook.name)!.files.has(owner)),
   )
   if (orphaned.length > 0) {
     console.error(
       `display hook table: these hooks are no longer declared by the file that owns their default.\n` +
         `Either the hook was renamed (update HOOKS, and RegionTooLargeMixin’s RENAMED_HOOKS\n` +
         `if it is a gate hook) or the default moved (update \`owner\`):\n${orphaned
-          .map(h => `  ${h.name} — expected in ${h.owner!}`)
+          .map(h => `  ${h.name} — expected in ${ownersOf(h).join(', ')}`)
           .join('\n')}`,
     )
     process.exit(1)
@@ -300,10 +300,10 @@ function main() {
 
   const rows = HOOKS.map(hook => {
     const { units } = declarers.get(hook.name)!
-    const ownerUnit = hook.owner
-      ? unitOf(join(repoRoot, hook.owner))
-      : undefined
-    const overriders = [...units].filter(u => u !== ownerUnit).sort()
+    const ownerUnits = new Set(
+      ownersOf(hook).map(owner => unitOf(join(repoRoot, owner))),
+    )
+    const overriders = [...units].filter(u => !ownerUnits.has(u)).sort()
     return `| \`${hook.name}\` | ${hook.ifNotOverridden} | ${
       overriders.length > 0 ? overriders.map(u => `\`${u}\``).join(', ') : '—'
     } |`

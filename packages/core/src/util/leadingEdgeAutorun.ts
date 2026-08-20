@@ -11,8 +11,8 @@ export interface LeadingEdgeAutorunOptions {
 }
 
 /**
- * An autorun that runs immediately until its body reports having started work,
- * and debounces every run after that.
+ * An autorun that runs on the leading edge until its body reports having
+ * started work, and debounces every run after that.
  *
  * MobX's own `autorun(fn, { delay })` is trailing-edge only: it schedules the
  * *first* run through `setTimeout` too, so a cold open waits the whole delay
@@ -27,6 +27,17 @@ export interface LeadingEdgeAutorunOptions {
  * armed by work that did not happen. Priming off the body's return rather than
  * an imperative `prime()` call is what makes a bail-out path unable to arm it
  * by accident: there is nothing to forget and nothing to misplace.
+ *
+ * **The leading edge is a microtask, not the install call itself**, and that
+ * one hop is what keeps the debounce's whole point. A model is routinely built
+ * and then configured in the same synchronous block — a session applying a
+ * display setting, a caller flipping a mode right after `create` — and a fetch
+ * issued between those two lines is issued against the un-configured state,
+ * invalidated by the setting that follows, and reissued. Yielding once collapses
+ * every such pair back into one run, while still starting three orders of
+ * magnitude sooner than the timer did. What it deliberately does not coalesce is
+ * a change that arrives after an await: that is a later decision, and it costs
+ * the refetch it should.
  *
  * The debounce is per-installation, so two autoruns on one model coalesce
  * independently.
@@ -51,7 +62,7 @@ export function leadingEdgeAutorun(
           if (primed) {
             setTimeout(run, delay)
           } else {
-            run()
+            queueMicrotask(run)
           }
         },
       },

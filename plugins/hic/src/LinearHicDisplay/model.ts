@@ -123,7 +123,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * contacts one, the contacts one runs first and declines because the
        * header it needs has not landed, and the header arriving wakes it again
        * through the same tracked read. So the retry contract is judged on that
-       * later run. Not `loadingSuppressed`, which would be the wrong claim —
+       * later run. Not `fetchInert`, which would be the wrong claim —
        * HiC does want the scrim meanwhile.
        *
        * This is the header not having landed, which is also exactly when

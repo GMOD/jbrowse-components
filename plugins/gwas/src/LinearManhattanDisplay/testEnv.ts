@@ -18,8 +18,19 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
   assemblyName: 'volvox',
 }))
 
-// The shared display harness wired for the Manhattan display.
-export function createTestEnvironment() {
+/**
+ * The shared display harness wired for the Manhattan display.
+ *
+ * `colorBy` is an environment option rather than a `createDisplay` one because
+ * it is a config slot, and the fetch autorun runs on the leading edge: a slot
+ * written after the display attaches is a *user flipping the setting*, which
+ * legitimately costs a refetch. A session restoring a track with `colorBy: 'ld'`
+ * has the slot before `afterAttach`, so the harness must too, or every LD test
+ * measures one round trip that production never makes.
+ */
+export function createTestEnvironment({
+  colorBy = 'normal',
+}: { colorBy?: 'normal' | 'ld' } = {}) {
   const env = createDisplayTestEnvironment<LinearManhattanDisplayModel>({
     plugins: [new LinearGenomeViewPlugin()],
     trackType: 'GWASTrack',
@@ -35,23 +46,12 @@ export function createTestEnvironment() {
     configSchema: () => configSchemaFactory(),
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
+    displayConfig: { colorBy },
     regions: REGIONS,
     onViewReady: view => {
       view.showAllRegions()
     },
   })
 
-  function createDisplay({
-    colorBy = 'normal',
-  }: { colorBy?: 'normal' | 'ld' } = {}) {
-    const made = env.createDisplay()
-    if (colorBy !== 'normal') {
-      // colorBy is a config slot, so it has to be written through the action
-      // rather than passed in the display snapshot
-      made.display.setColorBy(colorBy)
-    }
-    return made
-  }
-
-  return { createDisplay, mockRpcCall: env.mockRpcCall }
+  return { createDisplay: env.createDisplay, mockRpcCall: env.mockRpcCall }
 }

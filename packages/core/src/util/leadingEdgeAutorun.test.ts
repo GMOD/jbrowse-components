@@ -27,7 +27,7 @@ test('mobx built-in delay defers the first run (the problem being solved)', asyn
   dispose()
 })
 
-test('runs the first pass synchronously, then debounces', async () => {
+test('runs the first pass on a microtask, then debounces', async () => {
   const o = observable.box(0)
   const seen: number[] = []
   leadingEdgeAutorun(
@@ -39,7 +39,9 @@ test('runs the first pass synchronously, then debounces', async () => {
     { name: 'test', delay: 50 },
   )
 
-  // leading edge: no timer wait before the first run
+  // leading edge: one microtask, not a timer
+  expect(seen).toEqual([])
+  await Promise.resolve()
   expect(seen).toEqual([0])
 
   runInAction(() => {
@@ -72,21 +74,47 @@ test('stays on the leading edge until the body reports work', async () => {
     { name: 'test', delay: 50 },
   )
 
+  await Promise.resolve()
   expect(seen).toEqual([0])
   runInAction(() => {
     o.set(1)
   })
+  await Promise.resolve()
   expect(seen).toEqual([0, 1])
   runInAction(() => {
     o.set(2)
   })
+  await Promise.resolve()
   expect(seen).toEqual([0, 1, 2])
   runInAction(() => {
     o.set(3)
   })
+  await Promise.resolve()
   expect(seen).toEqual([0, 1, 2])
   await new Promise(r => setTimeout(r, 120))
   expect(seen).toEqual([0, 1, 2, 3])
+})
+
+// The reason the leading edge yields once rather than running inside the
+// install call: a model is routinely built and configured in one synchronous
+// block, and the run has to see the finished state.
+test('a change made in the same tick as the install is coalesced into the first run', async () => {
+  const o = observable.box(0)
+  const seen: number[] = []
+  leadingEdgeAutorun(
+    host(),
+    () => {
+      seen.push(o.get())
+      return true
+    },
+    { name: 'test', delay: 50 },
+  )
+  runInAction(() => {
+    o.set(7)
+  })
+
+  await Promise.resolve()
+  expect(seen).toEqual([7])
 })
 
 test('destroying the host disposes the autorun', async () => {
@@ -101,10 +129,12 @@ test('destroying the host disposes the autorun', async () => {
     },
     { name: 'test', delay: 50 },
   )
+  await Promise.resolve()
   expect(ran).toBe(1)
   destroy(self)
   runInAction(() => {
     o.set(1)
   })
+  await Promise.resolve()
   expect(ran).toBe(1)
 })

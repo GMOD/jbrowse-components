@@ -2,8 +2,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // MultiRegionDisplayMixin exposes overridable *getter* hooks with base defaults
-// that a subclass is expected to replace: `svgReadyExtraTerminal` (default
-// false, sequence overrides it), `loadingSuppressed` (default false, sequence
+// that a subclass is expected to replace: `fetchInert` (default
+// false, sequence overrides it), `fetchInert` (default false, sequence
 // overrides it) and `layoutReady` (default false, alignments and canvas override
 // it). Unlike the action hooks, nothing about a getter override
 // is enforced by the type system — a base default and a subclass getter are both
@@ -63,17 +63,17 @@ describe('overridable getter hooks', () => {
   })
 })
 
-// `loadingSuppressed` is the same mechanism carrying the `displayPhase` loading
+// `fetchInert` is the same mechanism carrying the `displayPhase` loading
 // term, and it exists because the alternative — overriding `displayPhase`
 // itself — means restating every term the base ORs together. Sequence held such
 // a copy; the day the base grows a fourth term, the copy is wrong and nothing
 // says so. This models the real shape: a base phase getter built from the
 // production `computeDisplayPhase` over a hook a subclass replaces.
-describe('loadingSuppressed drives displayPhase without a getter override', () => {
+describe('fetchInert drives displayPhase without a getter override', () => {
   const PhaseBase = types
     .model('PhaseBase', { fetching: types.boolean })
     .views(() => ({
-      get loadingSuppressed(): boolean {
+      get fetchInert(): boolean {
         return false
       },
     }))
@@ -81,7 +81,7 @@ describe('loadingSuppressed drives displayPhase without a getter override', () =
       get displayPhase() {
         return computeDisplayPhase(
           { renderError: undefined, regionTooLarge: false, error: undefined },
-          () => !self.loadingSuppressed && self.fetching,
+          () => !self.fetchInert && self.fetching,
         )
       },
     }))
@@ -94,7 +94,7 @@ describe('loadingSuppressed drives displayPhase without a getter override', () =
     const ZoomedOut = types
       .compose('ZoomedOut', PhaseBase, types.model({}))
       .views(() => ({
-        get loadingSuppressed() {
+        get fetchInert() {
           return true
         },
       }))

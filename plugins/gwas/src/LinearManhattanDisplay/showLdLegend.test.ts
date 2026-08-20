@@ -21,7 +21,7 @@ function ldLegendRow(items: MenuItem[]) {
 
 describe('Manhattan showLdLegend', () => {
   it('is on by default, from promotedBase rather than a volatile initializer', () => {
-    const { display } = createTestEnvironment().createDisplay({ colorBy: 'ld' })
+    const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
     expect(display.showLdLegend).toBe(true)
     expect(display.showLdLegendDisplayTypeDefault.active).toBe(false)
   })
@@ -30,7 +30,7 @@ describe('Manhattan showLdLegend', () => {
   // on the next retick; a config write lands on the display's config node,
   // which outlives the display instance.
   it('an explicit off is written to the config node, so it survives a retick', () => {
-    const { display } = createTestEnvironment().createDisplay({ colorBy: 'ld' })
+    const { display } = createTestEnvironment({ colorBy: 'ld' }).createDisplay()
     display.setShowLdLegend(false)
 
     expect(display.showLdLegend).toBe(false)
@@ -40,9 +40,9 @@ describe('Manhattan showLdLegend', () => {
   })
 
   it('follows a session-wide default of off when the track is not customized', () => {
-    const { session, display } = createTestEnvironment().createDisplay({
+    const { session, display } = createTestEnvironment({
       colorBy: 'ld',
-    })
+    }).createDisplay()
     session.setDisplayTypeDefault(
       'LinearManhattanDisplay',
       'showLdLegend',
@@ -57,9 +57,9 @@ describe('Manhattan showLdLegend', () => {
   // off, which a plain boolean could not express (`true` would read as the
   // un-set default and re-inherit).
   it('a track can turn it back on over an off session default', () => {
-    const { session, display } = createTestEnvironment().createDisplay({
+    const { session, display } = createTestEnvironment({
       colorBy: 'ld',
-    })
+    }).createDisplay()
     session.setDisplayTypeDefault(
       'LinearManhattanDisplay',
       'showLdLegend',
@@ -72,9 +72,9 @@ describe('Manhattan showLdLegend', () => {
   })
 
   it('ignores a non-boolean session default', () => {
-    const { session, display } = createTestEnvironment().createDisplay({
+    const { session, display } = createTestEnvironment({
       colorBy: 'ld',
-    })
+    }).createDisplay()
     session.setDisplayTypeDefault(
       'LinearManhattanDisplay',
       'showLdLegend',
@@ -84,9 +84,9 @@ describe('Manhattan showLdLegend', () => {
   })
 
   it('the menu row carries the pin, and it promotes the current value', () => {
-    const { session, display } = createTestEnvironment().createDisplay({
+    const { session, display } = createTestEnvironment({
       colorBy: 'ld',
-    })
+    }).createDisplay()
     display.setShowLdLegend(false)
     const row = ldLegendRow(display.trackMenuItems())
     expect(row && 'pin' in row ? row.pin : undefined).toBeDefined()

@@ -162,7 +162,7 @@ interface GlobalFetchAutorunHost extends GlobalFetchHost {
   // Both `FetchMixin`'s, which `GlobalFetchMixin` composes, and both read only
   // by the dev-only retry check below: the "deliberately not fetching"
   // exemption, and the "a prerequisite fetch has not landed" deferral.
-  loadingSuppressed: boolean
+  fetchInert: boolean
   awaitingPrerequisite: boolean
   // `FetchMixin`'s too. `rpcProps` itself is deliberately absent — the getter
   // looks it up dynamically so a subclass keeps its narrow return type.

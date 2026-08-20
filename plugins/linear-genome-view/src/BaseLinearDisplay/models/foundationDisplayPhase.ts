@@ -27,7 +27,7 @@ export interface DisplayPhaseFoundation
 export interface DisplayStatusPhaseFoundation
   extends
     DisplayStatusPhaseInputs,
-    Pick<DisplayLoadingInputs, 'loadingSuppressed' | 'isLoadingOrCanceled'> {}
+    Pick<DisplayLoadingInputs, 'fetchInert' | 'isLoadingOrCanceled'> {}
 
 /**
  * `displayPhase` for a display foundation: the shared precedence
@@ -42,7 +42,7 @@ export interface DisplayStatusPhaseFoundation
  * its own header describes ("a term added here reaches every display, instead of
  * reaching whichever family the author happened to be reading"), one level down,
  * and the copies had already drifted: the global one hard-coded
- * `loadingSuppressed: false`.
+ * `fetchInert: false`.
  *
  * `viewportCurrent` is all that genuinely differs, so it stays a parameter:
  * per-region passes its spatial-staleness predicate, global and arc pass
@@ -80,7 +80,7 @@ export function foundationDisplayStatusPhase(
   return computeDisplayStatusPhase(self, () =>
     computeLoadingTerm(
       {
-        loadingSuppressed: self.loadingSuppressed,
+        fetchInert: self.fetchInert,
         isLoadingOrCanceled: self.isLoadingOrCanceled,
         rendersCanvas: false,
         canvasDrawn: false,

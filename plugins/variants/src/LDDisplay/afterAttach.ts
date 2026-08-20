@@ -16,7 +16,7 @@ interface LDModel extends LDFetchSelf {
   // legitimately reaches no fetch, and LD answers `!showLDTriangle` there off
   // the same slot. It takes the default `false` for the second — its fetch
   // waits on no other autorun.
-  loadingSuppressed: boolean
+  fetchInert: boolean
   awaitingPrerequisite: boolean
   // `FetchMixin`'s serialization of `rpcProps()`, which is what the skeleton
   // tracks — the payload's own reads must not enter the dependency set.
