@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
+import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocString,
   getContainingView,
@@ -420,8 +421,7 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
       ? []
       : [
           {
-            label: `Show only this ${self.featureNoun}`,
-            subLabel: replaces,
+            label: withHint(`Show only this ${self.featureNoun}`, replaces),
             icon: FilterAltIcon,
             onClick: () => {
               self.soloFeature(featureId)

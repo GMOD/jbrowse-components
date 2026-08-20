@@ -76,13 +76,13 @@ export function contextMenuLabels(display: TestDisplay) {
 }
 
 // The context-menu row with this label, submenus included — for a test
-// asserting on something other than the label (a subLabel, a disabled gate).
+// asserting on something other than the label (an icon, a disabled gate).
 // Throws rather than answering undefined, so a renamed or dropped row fails
 // where the test names it instead of one assertion later.
 //
-// Left as the whole `MenuItem` union rather than narrowed to the rows that
-// carry a subLabel: `toMatchObject` reads through it, and the narrowing would
-// be a second list of which union members have which optional field.
+// Left as the whole `MenuItem` union rather than narrowed: `toMatchObject`
+// reads through it, and the narrowing would be a second list of which union
+// members have which optional field.
 export function contextMenuItem(display: TestDisplay, label: string) {
   const item = flattenMenuItems(display.contextMenuItems()).find(
     m => 'label' in m && m.label === label,

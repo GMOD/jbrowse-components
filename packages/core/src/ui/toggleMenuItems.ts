@@ -10,10 +10,12 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 // live in `promotableMenuItems.ts`; reach for those when the setting has a
 // `Pin`.
 
-// The row decorations no builder here decides for itself. `subLabel` renders
-// inline under the label; `helpText` claims a "?" column that
-// `getMenuColumnFlags` then reserves on EVERY row of the menu, so prefer a
-// subLabel for a short clarifier and keep helpText for real prose.
+// The row decorations no builder here decides for itself. `helpText` claims a
+// "?" column that `getMenuColumnFlags` then reserves on EVERY row of the menu,
+// so it is for real prose worth that cost. `subLabel` renders inline under the
+// label and is NOT the answer to a short clarifier: a menu whose rows are each
+// two lines tall is harder to scan than the labels it buried. Put a short
+// clarifier in the label -- `withHint` for a conditional one.
 // `keepMenuOpen: false` is for a settings row whose click opens a dialog.
 //
 // One bag for both row kinds, named rather than inlined, because each
@@ -22,10 +24,28 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 // checkbox silently lacking `disabled` and the promotable radio the same three.
 export interface SettingRowOptions {
   helpText?: string
-  subLabel?: string
   disabled?: boolean
   disabledHelpText?: string
   keepMenuOpen?: boolean
+}
+
+/**
+ * A label plus a parenthetical that is only sometimes there: `withHint('Show
+ * row separators', tooShort ? 'needs rows 4px or taller' : undefined)`.
+ *
+ * The rows that want this are the ones that can be on, correctly on, and doing
+ * nothing observable -- a band overridden by the summary tier, a separator
+ * below the height it draws at. The tick keeps reporting what the user chose,
+ * so silence would leave the setting looking broken.
+ *
+ * IN THE LABEL rather than a `subLabel`, which is what these were: a second
+ * line under the row is heavy for a clarifier this short, and rather than a
+ * `helpText`, which would reserve a "?" column across the whole menu for one
+ * conditional row and hide the reason behind a hover -- on a control the reader
+ * has no reason to hover, since from the tick it looks like it already works.
+ */
+export function withHint(label: string, hint: string | undefined) {
+  return hint ? `${label} (${hint})` : label
 }
 
 /** #menuBuilder checkboxItem | one checkbox setting row */
@@ -56,9 +76,9 @@ export function checkboxItem(
  * It is also the shape `radioItems` already takes (`setMode: (m: T) => void`),
  * so the two group builders now agree about who computes the new value.
  *
- * MAF had this as a local wrapper, and it had already lost three of
- * `SettingRowOptions`' five fields to a hand-narrowed `{ subLabel? }` — the
- * exact drift the comment on that interface warns about.
+ * MAF had this as a local wrapper, and it had already lost most of
+ * `SettingRowOptions` to a hand-narrowed one-field bag — the exact drift the
+ * comment on that interface warns about.
  */
 export function toggleItem(
   label: string,
@@ -100,7 +120,6 @@ export function radioItem(
 export interface RadioOption<T extends string> {
   value: T
   label: string
-  subLabel?: string
   helpText?: string
 }
 

@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
+import {
+  makeRadioSubMenu,
+  toggleItem,
+  withHint,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -123,14 +127,14 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
   return self.annotationAdapterConfig
     ? [
         toggleItem(
-          'Show CDS frames',
-          self.showAnnotations,
-          self.setShowAnnotations,
-          {
-            subLabel: self.framesGateBlocked
+          withHint(
+            'Show CDS frames',
+            self.framesGateBlocked
               ? 'too much frame data at this zoom — zoom in'
               : undefined,
-          },
+          ),
+          self.showAnnotations,
+          self.setShowAnnotations,
         ),
       ]
     : []
@@ -171,13 +175,20 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
       ...ROW_RENDERINGS,
       // Codons need a reading frame, so the option appears only where a
       // mafFrames adapter can define one — same gate as the CDS-frame row.
-      ...(self.annotationAdapterConfig ? [CODON_ROW_RENDERING] : []),
+      ...(self.annotationAdapterConfig
+        ? [
+            [
+              CODON_ROW_RENDERING[0],
+              withHint(
+                CODON_ROW_RENDERING[1],
+                self.zoomedToBaseLevel
+                  ? undefined
+                  : 'zoom in to base level to see them',
+              ),
+            ] as const,
+          ]
+        : []),
     ],
-    subLabels: {
-      codon: self.zoomedToBaseLevel
-        ? undefined
-        : 'zoom in to base level to see them',
-    },
     extraItems: [
       // Named for what it does, not for the mechanism. "Auto-switch by zoom"
       // said neither which two things swap nor which way round — so the only
@@ -221,15 +232,22 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
     // with the tree off the toggle would change nothing
     showRowLabelsMenuItem(self, { requiresTree: true }),
     treeBranchLengthMenuItem(self),
-    toggleItem('Show coverage', self.showCoverage, self.setShowCoverage, {
-      subLabel: self.showSummary ? ZOOM_IN_FOR_BAND : undefined,
-    }),
+    toggleItem(
+      withHint(
+        'Show coverage',
+        self.showSummary ? ZOOM_IN_FOR_BAND : undefined,
+      ),
+      self.showCoverage,
+      self.setShowCoverage,
+    ),
     toggleItem('Show alignments', self.showAlignments, self.setShowAlignments),
     toggleItem(
-      'Show conservation (% identity)',
+      withHint(
+        'Show conservation (% identity)',
+        self.showSummary ? ZOOM_IN_FOR_BAND : undefined,
+      ),
       self.showConservation,
       self.setShowConservation,
-      { subLabel: self.showSummary ? ZOOM_IN_FOR_BAND : undefined },
     ),
     // Per-codon (amino-acid) conservation needs a reading frame, so the
     // resolution radio only appears alongside the other frame-gated items.

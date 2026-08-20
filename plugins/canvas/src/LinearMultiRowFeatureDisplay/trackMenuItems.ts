@@ -6,6 +6,7 @@ import {
   radioItems,
   showLegendCheckboxItem,
   toggleItem,
+  withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
@@ -126,12 +127,14 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     // taller rows make it appear) but says so, rather than silently doing
     // nothing on a dense painting
     toggleItem(
-      'Show row separators',
+      withHint(
+        'Show row separators',
+        self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
+          ? `needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`
+          : undefined,
+      ),
       self.showRowSeparators,
       self.setShowRowSeparators,
-      self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
-        ? { subLabel: `Needs rows ${MIN_SEPARATOR_ROW_PX}px or taller` }
-        : undefined,
     ),
     treeBranchLengthMenuItem(self),
   ]

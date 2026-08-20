@@ -8,14 +8,15 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // pre-flight declined. In each case the tick deliberately keeps reporting what
 // the user chose (so the state is restored without a second click), which is
 // what makes silence the wrong answer: the setting is not what is wrong.
+// The hint lives in the label (`withHint` appends it parenthesized), so rows are
+// found by their base label and the assertion is on what got appended.
 // Annotated because it recurses into its own return type (TS7023 otherwise).
-function findRow(
-  items: MenuItem[],
-  label: string,
-): (MenuItem & { subLabel?: string }) | undefined {
+function findRow(items: MenuItem[], label: string): string | undefined {
   for (const item of items) {
-    if ('label' in item && item.label === label) {
-      return item
+    if ('label' in item && typeof item.label === 'string') {
+      if (item.label === label || item.label.startsWith(`${label} (`)) {
+        return item.label
+      }
     }
     if ('subMenu' in item) {
       const hit = findRow(item.subMenu, label)
@@ -25,6 +26,15 @@ function findRow(
     }
   }
   return undefined
+}
+
+// What findRow returned, minus the base label: the hint, or undefined when the
+// row is bare.
+function hintOn(items: MenuItem[], label: string) {
+  const found = findRow(items, label)
+  return found && found !== label
+    ? found.slice(label.length + 2, -1)
+    : undefined
 }
 
 const BAND_ROWS = ['Show coverage', 'Show conservation (% identity)']
@@ -40,7 +50,7 @@ describe('the band toggles say when the summary tier has overridden them', () =>
 
     const items = display.trackMenuItems()
     for (const label of BAND_ROWS) {
-      expect(findRow(items, label)?.subLabel).toBe(HINT)
+      expect(hintOn(items, label)).toBe(HINT)
     }
   })
 
@@ -53,7 +63,7 @@ describe('the band toggles say when the summary tier has overridden them', () =>
 
     const items = display.trackMenuItems()
     for (const label of BAND_ROWS) {
-      expect(findRow(items, label)?.subLabel).toBeUndefined()
+      expect(hintOn(items, label)).toBeUndefined()
     }
   })
 
@@ -64,7 +74,7 @@ describe('the band toggles say when the summary tier has overridden them', () =>
     view.zoomTo(400)
     const items = display.trackMenuItems()
     for (const label of BAND_ROWS) {
-      expect(findRow(items, label)?.subLabel).toBeUndefined()
+      expect(hintOn(items, label)).toBeUndefined()
     }
   })
 })
@@ -98,14 +108,14 @@ describe('the codon row coloring says when it is out of zoom range', () => {
     const { display, view } = framesEnv().createDisplay()
     zoomAndSettle(view, 100)
     expect(display.zoomedToBaseLevel).toBe(false)
-    expect(findRow(display.trackMenuItems(), CODON)?.subLabel).toBe(ZOOM_HINT)
+    expect(hintOn(display.trackMenuItems(), CODON)).toBe(ZOOM_HINT)
   })
 
   it('drops the hint at base level, where the option does what it says', () => {
     const { display, view } = framesEnv().createDisplay()
     zoomAndSettle(view, 0.5)
     expect(display.zoomedToBaseLevel).toBe(true)
-    expect(findRow(display.trackMenuItems(), CODON)?.subLabel).toBeUndefined()
+    expect(hintOn(display.trackMenuItems(), CODON)).toBeUndefined()
   })
 
   // The option only exists where a mafFrames adapter can define a reading
@@ -127,13 +137,13 @@ describe('the CDS strip says when its read was declined as too large', () => {
   it('is quiet while the frames are being read', () => {
     const { display } = framesEnv().createDisplay()
     expect(display.framesGateBlocked).toBe(false)
-    expect(findRow(display.trackMenuItems(), STRIP)?.subLabel).toBeUndefined()
+    expect(hintOn(display.trackMenuItems(), STRIP)).toBeUndefined()
   })
 
   it('says so once the pre-flight declines', () => {
     const { display } = framesEnv().createDisplay()
     display.setFramesGateBlocked(true)
-    expect(findRow(display.trackMenuItems(), STRIP)?.subLabel).toBe(
+    expect(hintOn(display.trackMenuItems(), STRIP)).toBe(
       'too much frame data at this zoom — zoom in',
     )
   })
@@ -146,6 +156,6 @@ describe('the CDS strip says when its read was declined as too large', () => {
     display.setFramesGateBlocked(true)
     display.clearDisplaySpecificData()
     expect(display.framesGateBlocked).toBe(false)
-    expect(findRow(display.trackMenuItems(), STRIP)?.subLabel).toBeUndefined()
+    expect(hintOn(display.trackMenuItems(), STRIP)).toBeUndefined()
   })
 })

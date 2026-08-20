@@ -4,6 +4,7 @@ import {
   promotableRadioItems,
   showLegendCheckboxItem,
   toggleItem,
+  withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
@@ -47,7 +48,7 @@ const RECOVERY_PRIORITY = -100
 function inlineRadioGroup<T extends string>(
   header: string,
   current: T,
-  options: readonly { value: T; label: string; subLabel?: string }[],
+  options: readonly { value: T; label: string }[],
   onSelect: (value: T) => void,
   pin: (value: T) => Pin,
 ): MenuItem[] {
@@ -152,11 +153,12 @@ export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
     self.showLabelsMode,
     SHOW_LABELS_OPTIONS.map(({ value, label }) => ({
       value,
-      label,
-      subLabel:
+      label: withHint(
+        label,
         inert && value === self.showLabelsMode && value !== 'none'
-          ? 'Hidden while collapsed'
+          ? 'hidden while collapsed'
           : undefined,
+      ),
     })),
     mode => {
       self.setShowLabels(mode)

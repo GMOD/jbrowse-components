@@ -22,9 +22,9 @@ import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 //
 // **The row itself is `checkboxItem`'s**, so the two builders can only ever
 // differ by the pin. They used to be two literals, and had already drifted: this
-// one accepted `helpText` and `keepMenuOpen` while silently dropping `subLabel`,
-// `disabled` and `disabledHelpText`, so a promotable row could not be greyed out
-// the way its plain sibling could. Sharing the body is also what makes a future
+// one accepted `helpText` and `keepMenuOpen` while silently dropping `disabled`
+// and `disabledHelpText`, so a promotable row could not be greyed out the way
+// its plain sibling could. Sharing the body is also what makes a future
 // change to what a checkbox row *is* reach both — the failure `checkboxItem`'s
 // own comment records is a menu regressing by omission.
 //
@@ -64,8 +64,8 @@ export function promotableToggleItem({
 //
 // **The row itself is `radioItem`'s**, for the reason `promotableToggleItem`'s
 // is `checkboxItem`'s: it was a second literal, and it had drifted the same way
-// its checkbox sibling had — naming `subLabel`/`helpText`/`keepMenuOpen` by hand
-// and so silently dropping `disabled` and `disabledHelpText`, which the
+// its checkbox sibling had — naming `helpText`/`keepMenuOpen` by hand and so
+// silently dropping `disabled` and `disabledHelpText`, which the
 // alignments size presets have to bolt back on afterwards (`needsContent`).
 /** #menuBuilder promotableRadioItem | `radioItem` plus a promote-to-default pin */
 export function promotableRadioItem({

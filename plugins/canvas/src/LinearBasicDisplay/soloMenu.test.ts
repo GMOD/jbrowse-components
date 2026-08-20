@@ -4,7 +4,6 @@ import {
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
   clickContextMenuItem,
-  contextMenuItem,
   contextMenuLabels,
   createTestEnvironment,
   rightClick,
@@ -33,10 +32,13 @@ function load(display: TestDisplay) {
   display.setLoadedRegion(0, ctgA)
 }
 
-// The one-shot isolate row itself, for the assertions below that read more than
-// its label.
-function soloRow(display: TestDisplay) {
-  return contextMenuItem(display, 'Show only this feature')
+// The one-shot isolate row's label, which is where the "replaces the N
+// selected" note lives when there is a collection to lose (`withHint`), so the
+// row is found by its base label rather than an exact match.
+function soloLabel(display: TestDisplay) {
+  return contextMenuLabels(display).find(l =>
+    String(l).startsWith('Show only this feature'),
+  )
 }
 
 // Only the show-only rows, in menu order — the rest of the menu is other tests'.
@@ -71,7 +73,9 @@ describe('show-only list context menu', () => {
     rightClick(display, geneA!)
 
     expect(soloLabels(display)).toEqual([
-      'Show only this feature',
+      // two are collected and none applied, so the isolate row says what it
+      // would discard
+      'Show only this feature (replaces the 2 selected)',
       'Remove from show-only list',
     ])
     // collecting hides nothing until applied, so there is nothing to undo yet —
@@ -126,10 +130,9 @@ describe('show-only list context menu', () => {
     load(display)
 
     rightClick(display, geneA!)
-    expect(soloRow(display)).toMatchObject({
-      label: 'Show only this feature',
-      subLabel: 'replaces the 3 selected',
-    })
+    expect(soloLabel(display)).toBe(
+      'Show only this feature (replaces the 3 selected)',
+    )
   })
 
   it('says nothing about replacing when there is nothing to lose', () => {
@@ -138,7 +141,7 @@ describe('show-only list context menu', () => {
     load(display)
 
     rightClick(display, geneA!)
-    expect(soloRow(display)).toMatchObject({ subLabel: undefined })
+    expect(soloLabel(display)).toBe('Show only this feature')
 
     // nor once applied, where the list IS what is shown and narrowing it is the
     // row's advertised job rather than a loss
@@ -149,7 +152,7 @@ describe('show-only list context menu', () => {
     load(applied)
 
     rightClick(applied, geneA!)
-    expect(soloRow(applied)).toMatchObject({ subLabel: undefined })
+    expect(soloLabel(applied)).toBe('Show only this feature')
   })
 
   it('offers only the undo once the list holds this feature alone', () => {

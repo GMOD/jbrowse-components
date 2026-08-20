@@ -26,28 +26,9 @@ export function makeRadioSubMenu<T extends string>(opts: {
   value: T
   onChange: (value: T) => void
   options: readonly (readonly [T, string])[]
-  /**
-   * Per-option clarifiers, keyed by value. Separate from the `options` table
-   * rather than a third tuple slot because that table is a display's *static*
-   * source of truth — shared with its config enumeration — while the reason an
-   * option is currently inert is not: it moves with zoom, with a sibling
-   * setting, with what the adapter turned out to hold. `radioItems` has carried
-   * `subLabel` all along; this is only the passthrough, whose absence meant a
-   * caller wanting one had to hand-roll the whole submenu and lose the
-   * keep-menu-open behaviour above.
-   */
-  subLabels?: Partial<Record<T, string>>
   extraItems?: MenuItem[]
 }): MenuItem {
-  const {
-    label,
-    icon,
-    value,
-    onChange,
-    options,
-    subLabels,
-    extraItems = [],
-  } = opts
+  const { label, icon, value, onChange, options, extraItems = [] } = opts
   return {
     label,
     icon,
@@ -55,11 +36,7 @@ export function makeRadioSubMenu<T extends string>(opts: {
       // via radioItems so these keep the menu open like every other
       // setting row — a plot type is usually picked by trying a couple
       ...radioItems(
-        options.map(([value, label]) => ({
-          value,
-          label,
-          subLabel: subLabels?.[value],
-        })),
+        options.map(([value, label]) => ({ value, label })),
         value,
         onChange,
       ),

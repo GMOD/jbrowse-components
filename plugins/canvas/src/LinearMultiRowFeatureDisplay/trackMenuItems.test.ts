@@ -116,12 +116,17 @@ describe('multi-row track menu', () => {
           makeSelf({ effectiveRowHeight: rowHeight }),
         ),
         'Show...',
-      ).find(i => 'label' in i && i.label === 'Show row separators')
+      ).find(
+        i =>
+          'label' in i &&
+          typeof i.label === 'string' &&
+          i.label.startsWith('Show row separators'),
+      )
 
     expect(sub(2)).toMatchObject({
-      subLabel: 'Needs rows 4px or taller',
+      label: 'Show row separators (needs rows 4px or taller)',
     })
-    expect(sub(14)).not.toHaveProperty('subLabel')
+    expect(sub(14)).toMatchObject({ label: 'Show row separators' })
   })
 
   it('keeps the tree controls in one place, not one copy per submenu', () => {

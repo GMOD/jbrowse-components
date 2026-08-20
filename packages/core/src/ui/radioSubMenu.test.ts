@@ -32,26 +32,10 @@ describe('makeRadioSubMenu', () => {
     expect(picked).toEqual(['a'])
   })
 
-  // `radioItems` has carried `subLabel` all along and this builder simply
-  // dropped it, so a caller wanting to say why an option is currently inert had
-  // to hand-roll the whole submenu — and lose the keep-menu-open behaviour that
-  // going through `radioItems` is what buys.
-  it('passes per-option subLabels through', () => {
-    const rows = radios(
-      makeRadioSubMenu({
-        label: 'Mode',
-        value: 'a',
-        onChange: () => {},
-        options: OPTIONS,
-        subLabels: { b: 'zoom in to see it' },
-      }),
-    )
-    expect(rows.map(r => r.subLabel)).toEqual([undefined, 'zoom in to see it'])
-  })
-
-  // The reason an option is inert moves with zoom and with sibling settings, so
-  // it is normal for the map to be absent or to name nothing this time round.
-  it('leaves every row bare when none is given', () => {
+  // A caller saying why an option is currently inert puts that in the option's
+  // own label (`withHint`), so this builder has no per-row decoration to pass
+  // through and its rows carry nothing but what the options table names.
+  it('leaves every row bare', () => {
     const rows = radios(
       makeRadioSubMenu({
         label: 'Mode',
@@ -60,7 +44,7 @@ describe('makeRadioSubMenu', () => {
         options: OPTIONS,
       }),
     )
-    expect(rows.map(r => r.subLabel)).toEqual([undefined, undefined])
+    expect(rows.map(r => 'subLabel' in r && r.subLabel)).toEqual([false, false])
   })
 
   it('appends extraItems after the radios', () => {

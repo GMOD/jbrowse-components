@@ -228,23 +228,16 @@ describe('canvas track menu shape', () => {
     const { display } = createDisplay()
     display.setShowLabels('nameAndDescription')
 
-    const enabled = find(
-      subMenuOf(display.trackMenuItems(), 'Show...'),
-      'Name + description',
-    )
-    expect('subLabel' in enabled ? enabled.subLabel : undefined).toBeUndefined()
+    find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Name + description')
 
     // collapsed drops every label kind, but the mode is deliberately left alone
-    // — without the subLabel the row reads as a selected radio doing nothing
+    // — without the note the row reads as a selected radio doing nothing
     display.setDisplayMode('collapsed')
     const inert = find(
       subMenuOf(display.trackMenuItems(), 'Show...'),
-      'Name + description',
+      'Name + description (hidden while collapsed)',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
-    expect('subLabel' in inert ? inert.subLabel : undefined).toBe(
-      'Hidden while collapsed',
-    )
   })
 })
 

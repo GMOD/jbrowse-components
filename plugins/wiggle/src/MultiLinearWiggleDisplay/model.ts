@@ -7,7 +7,11 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
-import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
+import {
+  showLegendCheckboxItem,
+  toggleItem,
+  withHint,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -656,14 +660,14 @@ export default function stateModelFactory(
                 // bring it back — but says so, the same row the multi-row
                 // feature display offers off the same threshold.
                 toggleItem(
-                  'Show row separators',
+                  withHint(
+                    'Show row separators',
+                    self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
+                      ? `needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`
+                      : undefined,
+                  ),
                   self.showRowSeparators,
                   self.setShowRowSeparators,
-                  self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
-                    ? {
-                        subLabel: `Needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`,
-                      }
-                    : undefined,
                 ),
                 showRowLabelsMenuItem(self),
               ]),
