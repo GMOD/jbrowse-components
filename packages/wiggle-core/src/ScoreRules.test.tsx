@@ -2,7 +2,7 @@ import { renderToString } from 'react-dom/server'
 
 import { ScoreRuleLines } from './ScoreRules.tsx'
 
-import type { ScoreRuleMark } from './scoreRules.ts'
+import type { ScoreRuleMark } from './scoreRuleMarks.ts'
 
 function render(marks: ScoreRuleMark[], offsetY?: number) {
   return renderToString(

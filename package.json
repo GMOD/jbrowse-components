@@ -15,6 +15,7 @@
     "build:esm": "node node_modules/typescript7/bin/tsc --build tsconfig.build.json",
     "gen-tsconfig-refs": "node --experimental-strip-types scripts/generate-tsconfig-references.ts",
     "gen-component-test-pins": "node --experimental-strip-types scripts/gen-component-test-pins.ts",
+    "check-case-collisions": "node --experimental-strip-types scripts/check-case-collisions.ts",
     "check-declaration-leaks": "node --experimental-strip-types scripts/check-declaration-leaks.ts",
     "check-gated-adapter-budgets": "node --experimental-strip-types scripts/check-gated-adapter-budgets.ts",
     "check-shell-pipefail": "node --experimental-strip-types scripts/check-shell-pipefail.ts",

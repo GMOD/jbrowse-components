@@ -46,6 +46,10 @@ const pnpm = (script: string) => ['pnpm', script]
 const GATES: Gate[] = [
   // Cheapest first, so the common failure is also the fastest to hear about.
   { name: 'format', argv: pnpm('check-format') },
+  // Milliseconds, and it is the only gate that sees a case-only module
+  // collision at all: `typecheck` runs --noEmit, so nothing collides there, and
+  // `build:esm` is not a gate here. See the script's header.
+  { name: 'case collisions', argv: pnpm('check-case-collisions') },
   { name: 'spelling', argv: ['typos'], optionalBinary: 'typos' },
   { name: 'lint', argv: pnpm('lint') },
   { name: 'lint (eslint)', argv: pnpm('lint:eslint') },

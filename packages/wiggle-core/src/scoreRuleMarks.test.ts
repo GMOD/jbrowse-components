@@ -8,7 +8,7 @@ import {
   parseScoreRules,
   scoreRuleMarks,
   widenRangeToRules,
-} from './scoreRules.ts'
+} from './scoreRuleMarks.ts'
 import { axisPlotBox } from './yScaleTicks.ts'
 
 const linear = (min: number, max: number) =>

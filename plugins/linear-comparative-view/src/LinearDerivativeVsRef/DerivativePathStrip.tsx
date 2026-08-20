@@ -1,6 +1,6 @@
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
 
-import { pathStripBlocks } from './derivativePathStrip.ts'
+import { pathStripBlocks } from './pathStripBlocks.ts'
 
 import type { DerivativeSegment } from '@jbrowse/plugin-alignments'
 
@@ -53,7 +53,7 @@ function Chevron({ cx, strand }: { cx: number; strand: number }) {
  *
  * The picture answers what the row's total-bp figure could not — whether one arm
  * dominates (a rearrangement) or the segments are all the same read-sized piece
- * (an aligner splitting a read). See `derivativePathStrip.ts`.
+ * (an aligner splitting a read). See `pathStripBlocks.ts`.
  */
 export default function DerivativePathStrip({
   segments,

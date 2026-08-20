@@ -1,7 +1,7 @@
 import CascadingMenuHelpIconButton, {
   CascadingMenuHelpIconSpacer,
 } from './CascadingMenuHelpIconButton.tsx'
-import { MenuItemEndDecoration } from './MenuItems.tsx'
+import { MenuItemEndDecoration } from './MenuItemEndDecoration.tsx'
 import { menuItemAdornment } from './menuItemAdornment.tsx'
 
 import type { ClickableMenuItem } from './MenuTypes.ts'

@@ -45,8 +45,8 @@ export {
   parseScoreRules,
   scoreRuleMarks,
   widenRangeToRules,
-} from './scoreRules.ts'
-export type { ScoreRule, ScoreRuleMark } from './scoreRules.ts'
+} from './scoreRuleMarks.ts'
+export type { ScoreRule, ScoreRuleMark } from './scoreRuleMarks.ts'
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
 export { makeScatterPointSizeMenuItem } from './pointSizeMenu.tsx'
 export {

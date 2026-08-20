@@ -168,7 +168,7 @@ missing value or a non-numeric one all have to survive being read.
 (value: unknown) => ScoreRule[]
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRules.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
 
 ## resolveSymlogConstant
 
@@ -212,7 +212,7 @@ whole-genome triplication is not diploid, plenty of genomes are not diploid to
 begin with, and a cancer sample can be neither — so "2 copies" is a claim only
 the person looking at the track can make.
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRules.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
 
 ## scoreRuleMarks
 
@@ -239,7 +239,7 @@ differently, and the alignments coverage band does.
 ({…}: { rules: readonly ScoreRule[]; domain: [number, number] | undefined; box: { yTop: number; yBottom: number; }; normalize: (score: number) => number; }) => ScoreRuleMark[]
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRules.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
 
 ## widenRangeToRules
 
@@ -262,4 +262,4 @@ one the config asked not to be shown, and it drops as before.
 (range: [number, number], ruleValues: readonly number[]) => [number, number]
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRules.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)

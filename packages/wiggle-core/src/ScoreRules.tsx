@@ -1,6 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 
-import type { ScoreRuleMark } from './scoreRules.ts'
+import type { ScoreRuleMark } from './scoreRuleMarks.ts'
 
 const DEFAULT_RULE_COLOR = 'rgb(120,120,120)'
 

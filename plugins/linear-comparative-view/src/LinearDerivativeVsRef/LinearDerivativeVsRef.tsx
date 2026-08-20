@@ -29,7 +29,7 @@ import {
   selectedCandidateIndex,
 } from './buildDerivativeVsRefSpec.ts'
 import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
-import { segmentSizeSummary } from './derivativePathStrip.ts'
+import { segmentSizeSummary } from './pathStripBlocks.ts'
 
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

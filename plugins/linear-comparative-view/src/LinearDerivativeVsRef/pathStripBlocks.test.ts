@@ -1,4 +1,4 @@
-import { pathStripBlocks, segmentSizeSummary } from './derivativePathStrip.ts'
+import { pathStripBlocks, segmentSizeSummary } from './pathStripBlocks.ts'
 
 import type { DerivativeSegment } from '@jbrowse/plugin-alignments'
 
