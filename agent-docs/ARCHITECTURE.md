@@ -800,6 +800,27 @@ Read the table as the checklist for a fourth: if you add a fetch skeleton with a
 gate, it needs a signal the gate never consults, read above the gate, and a test
 that fails when the read is deleted.
 
+### One latest-wins machine, one phase contract
+
+What the three families share is now shared as three named things rather than as
+three copies:
+
+| what | where | who runs on it |
+| --- | --- | --- |
+| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them — `FetchMixin.runFetch` wraps it and adds the observable bookkeeping (`isLoading`, `error`, `fetchGeneration`, `fetchCanceled`); the comparative installer and the two second-fetch autoruns hold one directly |
+| the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the global and comparative families; per-region is deliberately not this shape, see `RegionFetchContext` |
+| the leading-edge scheduler | `leadingEdgeAutorun` | all three installers, plus the dotplot view's region autorun |
+
+`FetchMixin` reimplemented the rotation rather than wrapping it until
+2026-08-20, and the two copies had drifted over whether a completed fetch
+releases its token. `GlobalFetchPhases` and the comparative installer's inline
+`{ prepare, run, commit }` were the same contract declared twice, with the same
+three rules explained twice.
+
+What is left per family is the part that genuinely differs: the trigger list
+(which reads wake it), the commit shape (one payload versus N streaming
+regions), and the context a `run` is handed.
+
 ### The region-too-large gate (summary)
 
 `regionTooLarge` raises the "region too large" banner and holds off the fetch.

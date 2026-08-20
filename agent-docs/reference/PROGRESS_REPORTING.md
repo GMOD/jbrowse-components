@@ -318,9 +318,11 @@ retiring the last slot does; `window.reset()` is for teardown, where the trailin
 timer outlives everything that could make it a no-op. The owners, so progress
 cadence is uniform whichever path a status took:
 
-- `FetchMixin` — the LGV displays
-- `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny,
-  multi-sample-variant sources, breakpoint split view's overlay features)
+- `createStopTokenRotation` — every fetch with a latest-wins guard: the LGV
+  displays through `FetchMixin.runFetch`, which wraps one and lends it the
+  display's window, and the bare-autorun fetches (dotplot, synteny,
+  multi-sample-variant sources, breakpoint split view's overlay features) which
+  hold one directly
 - `withDiagonalizeProgress` and `DiagonalizeDialog` — the diagonalize RPC,
   which drives a spinner and a dialog rather than a display's status fields
 - `useFetch` — every dialog and widget fetch, one window per effect run

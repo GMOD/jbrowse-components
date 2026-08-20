@@ -43,6 +43,16 @@ while the sources fetch is a second concurrent one.
 observable wrapper around it for the display's *primary* fetch. A second consumer
 of the primitive is not evidence of an unfinished migration.
 
+**2026-08-20: that last sentence is now literally true, and it was not when this
+was written.** `FetchMixin.runFetch` reimplemented the rotation rather than
+wrapping it — same seven behaviours, twice, including two copies of the ADR-080
+supersede rule — and the two had already drifted over whether a completed fetch
+releases its token. It is a wrapper now: `begin` / `isCurrent` / `end` /
+`cancel`, plus the observable bookkeeping (`isLoading`, `error`,
+`fetchGeneration`, `fetchCanceled`). Nothing about the decision below changes;
+what changed is that there is one machine, which is what makes the argument in
+this section a description rather than a hope.
+
 ### 2. `FetchMixin`'s net-new surface is mostly inapplicable or unreachable
 
 - the per-region status fan-out. Both comparative fetches are a single RPC —

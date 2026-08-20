@@ -1,13 +1,14 @@
 import { noteFetchStarted } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import {
   createStatusWindow,
+  createStopTokenRotation,
   isAbortException,
   localStorageGetBoolean,
   progressLabel,
   statusFraction,
   statusMessageText,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
@@ -140,14 +141,6 @@ export default function FetchMixin() {
        */
       statusWindow: createStatusWindow(writeStatus(self)),
 
-      /**
-       * #volatile
-       * The in-flight fetch's slot, so a cancel can retire it now rather than
-       * whenever the worker gets around to noticing the stop token. `runFetch`
-       * retires it again in its `finally`; retiring twice is a no-op.
-       */
-      activeStatusStream: undefined as StatusStream | undefined,
-
       // error / statusMessage / statusProgress below duplicate BaseDisplay's,
       // so this mixin composes standalone (its own tests) as well as onto a
       // display. In a real composition one set wins — which is exactly why the
@@ -185,6 +178,38 @@ export default function FetchMixin() {
        * Any new fetch clears it (`runFetch` resets it at the start).
        */
       fetchCanceled: false,
+    }))
+    .volatile(self => ({
+      /**
+       * #volatile
+       * **The latest-wins machine this mixin is a wrapper around**, and not a
+       * second one: `createStopTokenRotation` owns token rotation, the
+       * `isCurrent` guard, the status slot and the supersede-versus-end rule
+       * (ADR-080, ADR-081), for every fetch in the codebase that has one.
+       * `runFetch` adds the observable bookkeeping a display needs on top —
+       * `isLoading`, `error`, `fetchGeneration`, `fetchCanceled` — and nothing
+       * else.
+       *
+       * It was two implementations of that machine until 2026-08-20, which is
+       * how they came to disagree about whether a completed fetch releases its
+       * token. A display's *primary* fetch is this wrapper; a second concurrent
+       * fetch on the same node holds a rotation of its own, which is why the
+       * primitive is the thing that exists and this is the thing built on it
+       * (ADR-054 §1).
+       *
+       * It is lent this display's `statusWindow`, so the fetch takes a slot on
+       * the one field rather than opening a second window over it — the whole
+       * point of `StatusReporter`.
+       */
+      fetchRotation: createStopTokenRotation(self, {
+        statusWindow: self.statusWindow,
+        // The window above is what the rotation actually reports through, so
+        // this is only the fallback branch's writer. It goes through
+        // `writeStatus` for the reason that helper exists: `setStatusMessage`
+        // is an action further down the chain, so it is not on `self` yet here
+        // and can only be resolved at call time.
+        setStatusMessage: writeStatus(self),
+      }),
     }))
     .views(self => ({
       /**
@@ -237,11 +262,11 @@ export default function FetchMixin() {
        * It was three hooks — `loadingSuppressed`, `svgReadyExtraTerminal` on
        * each of the two foundations, and `fetchInert` on the comparative
        * family, which had already collapsed them. Both LGV displays that
-       * override it returned one expression for all three, and one of the
-       * three was hard-coded `false` on the global family for a while, which is
-       * how LD came to be able to express only half its own state. Same name
-       * and same meaning as `SyntenyFetchStateMixin.fetchInert` now, so the
-       * retry check reads one field across all three fetch families.
+       * override it returned one expression for all three, and one of the three
+       * was hard-coded `false` on the global family for a while, which is how
+       * LD came to be able to express only half its own state. Same name and
+       * same meaning as `SyntenyFetchStateMixin.fetchInert` now, so the retry
+       * check reads one field across all three fetch families. ADR-082.
        *
        * A hook rather than a `displayPhase` override, because overriding the
        * getter means restating the whole loading condition — which is how
@@ -279,7 +304,7 @@ export default function FetchMixin() {
        * `LinearHicDisplay/infoFetchFailure.test.ts`.
        *
        * Not for a display deliberately not fetching at all — that is
-       * `fetchInert` above, which the loading scrim reads too.
+       * `fetchInert` above, which the loading scrim and the export read too.
        */
       get awaitingPrerequisite(): boolean {
         return false
@@ -326,33 +351,6 @@ export default function FetchMixin() {
           progressLabel(self.statusMessage, self.statusProgress) || '<blank>',
         )
       },
-      /**
-       * #action
-       * Drop the active stop token and retire the fetch's status slot. Shared
-       * by both cancel paths and runFetch's cleanup.
-       *
-       * Retiring, not blanking: the field goes blank only if this fetch was the
-       * last operation reporting on the display. A **superseded** fetch is the
-       * case that made it matter first — the one case where the display does
-       * not stop loading, and blanking there flashed the overlay's "Loading"
-       * fallback between every pan and the phase the view was already in — but
-       * a sources fetch or a clustering run beside it is the same problem
-       * without the timing coincidence to hide it (ADR-081).
-       */
-      resetStatus() {
-        self.activeStopToken = undefined
-        self.activeStatusStream?.clear()
-        self.activeStatusStream = undefined
-      },
-      /**
-       * #action
-       * Hold the in-flight fetch's slot so a cancel can reach it. `runFetch`
-       * keeps its own reference, so this is only for the paths that end a fetch
-       * from outside the flow.
-       */
-      setActiveStatusStream(stream?: StatusStream) {
-        self.activeStatusStream = stream
-      },
     }))
     .actions(self => ({
       /**
@@ -362,10 +360,18 @@ export default function FetchMixin() {
        * they do to `fetchCanceled` / `fetchGeneration` afterward.
        */
       stopActiveFetch() {
-        if (self.activeStopToken) {
-          stopStopToken(self.activeStopToken)
-          self.resetStatus()
-        }
+        // Unconditional, unlike the token check it replaced: `cancel` is
+        // already a no-op with nothing in flight, and calling it anyway retires
+        // a slot a torn-down fetch left voting.
+        self.fetchRotation.cancel()
+        self.activeStopToken = undefined
+        // and the window, which this display owns and only lends: a display
+        // stopped BETWEEN fetches — the common case, since a fetch that
+        // finished retired its own slot — still has a trailing write standing
+        // on a timer. The write itself is already a no-op (the window's sink
+        // re-reads `isAlive`), but the timer is not, and jest reports a worker
+        // that will not exit rather than anything about a display.
+        self.statusWindow.reset()
       },
       /**
        * #action
@@ -432,19 +438,10 @@ export default function FetchMixin() {
        * display can still define its own beforeDestroy.
        */
       beforeDestroy() {
+        // Second of two owners of a window that end it with the thing that owns
+        // it; `useFetch`'s effect cleanup is the other, and the rotation's own
+        // `dispose` is this same call one layer down.
         self.stopActiveFetch()
-        self.resetStatus()
-        // and the window regardless of whether there was a fetch to stop: a
-        // display torn down BETWEEN fetches — the common case, since a fetch
-        // that finished retired its own slot — left its trailing write standing
-        // on a timer. The write itself is already a no-op (the window's sink
-        // re-reads `isAlive`), but the timer is not, and jest reports a worker
-        // that will not exit rather than anything about a display.
-        //
-        // Third of three: `createStopTokenRotation.dispose` and `useFetch`'s
-        // effect cleanup are the other two owners of a window, and both end it
-        // with the thing that owns it.
-        self.statusWindow.reset()
       },
       /**
        * #action
@@ -460,12 +457,17 @@ export default function FetchMixin() {
         // that fetches directly instead of leaving it to a fetch autorun.
         noteFetchStarted(self)
         if (self.activeStopToken) {
-          stopStopToken(self.activeStopToken)
           debugStatus(self.fetchGeneration, 'superseded')
         }
+        // Rotating IS the supersede: it stops the prior token and opens this
+        // fetch's slot before the run being replaced reaches its `finally`,
+        // which is what keeps the label the overlay is showing alive across the
+        // handover. The guard it hands back closes on a newer fetch, on
+        // `cancel`, on teardown, and on this fetch's own `end` — the four ways a
+        // fetch stops being the answer.
+        const { stopToken, isCurrent, statusCallback, end } =
+          self.fetchRotation.begin()
         debugStatus(self.fetchGeneration, 'fetch-start')
-        const stopToken = createStopToken()
-        const gen = self.fetchGeneration
         self.activeStopToken = stopToken
         self.error = undefined
         // a load is starting, so the display is no longer in a user-canceled
@@ -473,48 +475,34 @@ export default function FetchMixin() {
         // path (reload, viewport change, settings invalidate)
         self.fetchCanceled = false
 
-        const isStale = () =>
-          !isAlive(self) ||
-          self.fetchGeneration !== gen ||
-          self.activeStopToken !== stopToken
-
-        // Opened before the superseded fetch retires its own, which is what
-        // keeps the label the overlay is showing alive across the handover: the
-        // fetch being replaced is suspended at an await and reaches its
-        // `finally` a microtask from now, by which point this slot is voting.
-        const stream = self.openStatusStream(() => !isStale())
-        self.setActiveStatusStream(stream)
-
         try {
           yield work({
             stopToken,
-            isStale,
-            statusCallback: stream.statusCallback,
+            isStale: () => !isCurrent(),
+            statusCallback,
           })
         } catch (e) {
           if (!isAbortException(e)) {
             console.error('Fetch failed:', e)
-            if (!isStale()) {
+            if (isCurrent()) {
               self.error = e
             }
           }
         } finally {
-          // unconditional, unlike everything below it: a superseded fetch has to
-          // retire its slot too, or it goes on voting for the phase it stopped
-          // in for as long as the display lives
-          stream.clear()
-          if (!isStale()) {
+          if (isCurrent()) {
             // Release this fetch's stop token now that it has ended, which drops
-            // the AbortSignal controllers taken against it — resetStatus only
-            // drops the model's reference, so without this a completed fetch's
-            // token keeps holding them. The stale branch is a
-            // superseded fetch: whoever superseded it (runFetch start or
-            // stopActiveFetch) already released this token, so skip it.
+            // the AbortSignal controllers taken against it. The stale branch is
+            // a superseded fetch: whoever superseded it — a newer `begin`, or
+            // `cancel` — already released this token, so skip it.
             stopStopToken(stopToken)
-            self.resetStatus()
+            self.activeStopToken = undefined
             self.fetchGeneration++
             debugStatus(self.fetchGeneration, 'fetch-end')
           }
+          // Unconditional, unlike everything above it: a superseded fetch has to
+          // retire its slot too, or it goes on voting for the phase it stopped
+          // in for as long as the display lives.
+          end()
         }
       }),
     }))

@@ -61,7 +61,7 @@ throttle's single `pending` slot, so it displaces the percentage queued behind i
 rather than queueing after it, and a finished phase's progress can never reappear
 on screen. What the change costs is latency: a `''` with nothing behind it lands
 up to a window late. No owner depends on that, because each ends its stream with
-an explicit clear of its own — `FetchMixin.resetStatus`,
+an explicit clear of its own — `FetchMixin.stopActiveFetch`,
 `createStopTokenRotation.end`, `assembly.loadPre`'s `finally`, `useFetch`'s
 `finally`, and the clustering autorun's `setStatusMessage(undefined)`.
 

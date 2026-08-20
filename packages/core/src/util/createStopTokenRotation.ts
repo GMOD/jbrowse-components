@@ -159,6 +159,30 @@ export function createStopTokenRotation(
       }
     })
   let openStream: StatusStream | undefined
+  /**
+   * Stop the in-flight fetch without starting one, and retire its slot.
+   *
+   * Dropping `currentStopToken` rather than only stopping it is what closes
+   * every outstanding guard: `isCurrent` compares against this field, so one
+   * assignment makes a fetch already past its await stale, whether it is the one
+   * being cancelled or a superseded predecessor still unwinding.
+   *
+   * Retiring, not blanking — the field goes blank only if this was the last
+   * operation reporting on it (ADR-081).
+   *
+   * Named rather than reached through `this`, so a destructured `dispose` still
+   * works: `addDisposer(self, rotation.dispose)` is a shape callers reach for.
+   */
+  const cancel = () => {
+    if (currentStopToken) {
+      stopStopToken(currentStopToken)
+      currentStopToken = undefined
+    }
+    // a fetch in flight when this is called never reaches its `finally`, and a
+    // slot nobody retires goes on voting
+    openStream?.clear()
+    openStream = undefined
+  }
   return {
     begin(): ActiveFetch {
       if (currentStopToken) {
@@ -194,14 +218,9 @@ export function createStopTokenRotation(
         },
       }
     },
+    cancel,
     dispose() {
-      if (currentStopToken) {
-        stopStopToken(currentStopToken)
-      }
-      // a fetch in flight when the host is torn down never reaches its
-      // `finally`, and a slot nobody retires goes on voting
-      openStream?.clear()
-      openStream = undefined
+      cancel()
       // the window outlives the token: a trailing write is queued on a timer,
       // and while the sink's `isCurrent` makes it a no-op rather than a write to
       // a dead node, the timer itself still stands for up to a window past

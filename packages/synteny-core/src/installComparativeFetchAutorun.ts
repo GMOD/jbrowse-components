@@ -19,6 +19,7 @@ import type {
   RpcStatus,
   StopToken,
 } from '@jbrowse/core/util'
+import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface ComparativeFetchContext {
@@ -62,23 +63,8 @@ interface ComparativeFetchHost extends IStateTreeNode {
  * refName reconciliation, and the latest-wins staleness discipline. A display
  * supplies only its own gate, RPC args and result handling.
  *
- * The three phases exist to make the staleness rules structural rather than
- * remembered, since getting any of them wrong strands the display:
- *
- * - `prepare` runs synchronously inside the autorun, so its reads — and only
- *   its reads — are the dependency set. Returning undefined skips the run
- *   (view not initialized, display minimized); the reads that decided that are
- *   still tracked, so the autorun rewakes. Prefer folding the fetch's inputs
- *   into one `currentFetchKey` computed over tracking them individually: a pan
- *   inside the buffered window then recomputes the same string and doesn't
- *   refire, and that same string tags the committed data so it can't drift
- *   from what was fetched even if the view moves again mid-RPC.
- * - `run` owns every await — the RPC and any post-RPC async derivation whose
- *   result the commit needs. Nothing it does writes to the model.
- * - `commit` is synchronous and runs only while this is still the latest
- *   fetch, so a superseded fetch resolving late can't clobber fresher data.
- *   Async work here would reopen exactly that window, which is why it isn't
- *   allowed to await.
+ * The three phases are {@link FetchPhases}, the same contract the LGV global
+ * family runs on, over this family's own context. The rules are there.
  *
  * The `finally` clears the loading flags under the same staleness guard: an
  * abort raised while still current is the one exit neither commit nor the
@@ -92,12 +78,9 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     prepare,
     run,
     commit,
-  }: {
+  }: FetchPhases<TArgs, TResult, ComparativeFetchContext> & {
     name: string
     delay: number
-    prepare: () => TArgs | undefined
-    run: (args: TArgs, ctx: ComparativeFetchContext) => Promise<TResult>
-    commit: (result: TResult, args: TArgs) => void
   },
 ) {
   // Dev-only, and the reason this call is here rather than in each comparative
@@ -127,7 +110,7 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
     try {
       const sessionId = getRpcSessionId(self)
       const { assemblyManager } = getSession(self)
-      const result = await run(args, {
+      const result: TResult | undefined = await run(args, {
         adapterConfig,
         sessionId,
         stopToken,
@@ -141,7 +124,10 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
             regions,
           }),
       })
-      if (isCurrent()) {
+      // `undefined` is "nothing to commit" — a pre-flight that stopped this
+      // fetch — so it is not a result to record. Neither display returns one
+      // today; the contract is shared, so the guard is too.
+      if (result !== undefined && isCurrent()) {
         commit(result, args)
       }
     } catch (e) {

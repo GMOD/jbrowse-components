@@ -166,11 +166,12 @@ label outright — and the loading overlay renders a missing label as its
   another fetch replaced one in flight, which is the single case where the
   display does not stop loading — so a pan, or a linked view resyncing, flashed
   "Loading" between the phase it was in and the phase it was about to re-enter.
-  `supersedeStatus` keeps the label and drops only the token and the throttle
+  A supersede keeps the label and drops only the token and the throttle
   window; the fetch that actually *ends* still clears.
 - **And so did a superseded rotation**, for the same reason and with the same
-  fix. `createStopTokenRotation.begin()` is `runFetch`'s supersede for every
-  fetch that runs in a bare autorun instead — dotplot and synteny through
+  fix. `createStopTokenRotation.begin()` is the supersede for every fetch there
+  is — the LGV displays reach it through `runFetch`, and the bare-autorun
+  fetches hold a rotation of their own: dotplot and synteny through
   `installComparativeFetchAutorun`, the breakpoint split view's overlay features,
   the circular chord display, the multi-sample-variant sources — and those are
   the displays a pan supersedes most. It now reopens the window without touching
@@ -196,7 +197,7 @@ and over steps it every time.
   reading — the batch cannot finish until it does — and the bar says how much of
   the phase is left rather than how far the majority has gone.
 - The shared label now outlives the batch by however long the owner takes to
-  clear it. Every owner does clear it (`runFetch`'s `resetStatus`,
+  clear it. Every owner does clear it (`createStopTokenRotation`'s `end`,
   `assembly.loadPre`'s `finally`, `createStopTokenRotation`'s `end`), and the end
   of a batch was never something the fan-out could see.
 - The bar still goes indeterminate — label, no percentage — while every slot is

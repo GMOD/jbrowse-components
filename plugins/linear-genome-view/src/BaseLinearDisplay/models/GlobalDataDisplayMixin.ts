@@ -10,6 +10,7 @@ import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
+import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -102,50 +103,16 @@ export type GlobalDataDisplayMixinType = ReturnType<
 >
 
 /**
- * The three phases a global display's fetch is written in, so the two rules
- * that strand a display when either is got wrong are structural rather than
- * remembered. Same contract as the comparative family's
- * `installComparativeFetchAutorun`, over `FetchMixin.runFetch` instead of its
- * own stop-token rotation.
+ * This family's spelling of the shared three-phase contract, over
+ * `FetchMixin.runFetch` and its `FetchContext`. The rules live on
+ * {@link FetchPhases}; the comparative family names the same type over its own
+ * context.
  */
-export interface GlobalFetchPhases<TArgs, TResult> {
-  /**
-   * Runs synchronously inside the autorun, so its reads — on top of the
-   * skeleton's own trigger list — are the dependency set. Returning `undefined`
-   * skips the run (minimized, an empty viewport, the display's own gate shut);
-   * the reads that decided that stay tracked, so the autorun rewakes. Everything
-   * the round trip has to be judged against is captured here and travels in
-   * `TArgs`: the viewport, the region set, the resolution.
-   */
-  prepare: () => TArgs | undefined
-  /**
-   * Owns every await — the RPC, the byte-gate pre-flight, any post-RPC
-   * derivation the commit needs — and writes nothing to the model. Returns
-   * `undefined` for "nothing to commit", which is what a pre-flight that stopped
-   * this fetch says.
-   *
-   * Reached inside `runFetch`, an MST flow, so nothing it reads is tracked: the
-   * payload it assembles cannot widen the autorun's dependency set the way
-   * calling `rpcProps()` in the body would.
-   */
-  run: (args: TArgs, ctx: FetchContext) => Promise<TResult | undefined>
-  /**
-   * Synchronous, and reached only while this is still the latest fetch, so a
-   * superseded fetch resolving late cannot clobber fresher data. Async work here
-   * would reopen exactly that window, which is why it may not await. It takes
-   * `args` back, so what it stamps onto the committed data is what the fetch was
-   * issued for and not a live re-read.
-   *
-   * **Reached only when `run` produced a result**, which is what keeps this
-   * family from ever recording data it did not receive. The per-region family
-   * gets the same invariant from `RegionFetchContext.commitRegion` instead —
-   * N regions stream and four displays decide something across them mid-fetch,
-   * so there is nowhere to put a single phase — and the note there is worth
-   * reading beside this one: it is the same rule, and per-region learned it the
-   * hard way.
-   */
-  commit: (result: TResult, args: TArgs) => void
-}
+export type GlobalFetchPhases<TArgs, TResult> = FetchPhases<
+  TArgs,
+  TResult,
+  FetchContext
+>
 
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves through
 // `STNValue<any, …>` to `any`, so extending it silently turns off checking for

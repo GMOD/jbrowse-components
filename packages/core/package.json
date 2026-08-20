@@ -161,6 +161,7 @@
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/eventPoint": "./src/util/eventPoint.ts",
     "./util/fetchHub": "./src/util/fetchHub.ts",
+    "./util/fetchPhases": "./src/util/fetchPhases.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
@@ -834,6 +835,10 @@
         "types": "./esm/util/fetchHub.d.ts",
         "import": "./esm/util/fetchHub.js"
       },
+      "./util/fetchPhases": {
+        "types": "./esm/util/fetchPhases.d.ts",
+        "import": "./esm/util/fetchPhases.js"
+      },
       "./util/fileHandleStore": {
         "types": "./esm/util/fileHandleStore.d.ts",
         "import": "./esm/util/fileHandleStore.js"
@@ -1487,6 +1492,9 @@
         ],
         "util/fetchHub": [
           "esm/util/fetchHub.d.ts"
+        ],
+        "util/fetchPhases": [
+          "esm/util/fetchPhases.d.ts"
         ],
         "util/fileHandleStore": [
           "esm/util/fileHandleStore.d.ts"

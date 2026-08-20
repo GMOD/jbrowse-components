@@ -845,12 +845,13 @@ stop a slow load or retry a failed one. Every LGV display has both.
 This is what is left of the old "fold the non-LGV fetches onto `FetchMixin`"
 entry, which
 [ADR-054](architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md)
-rejected — read it before re-proposing the fold. The short version: it retires
-neither stop-token machine (`createStopTokenRotation` has a third consumer that
-`FetchMixin` structurally cannot host), most of what it would add is per-region
-machinery these single-RPC fetches don't use, and the two getters worth hoisting
-read `self.error`, which that mixin cannot see without a third declaration of
-`BaseDisplay`'s five status members — the trap ADR-041 records.
+rejected — read it before re-proposing the fold. The short version: there is only
+one stop-token machine now and both families already run on it
+(`FetchMixin.runFetch` wraps `createStopTokenRotation`, which also has a
+consumer `FetchMixin` structurally cannot host), most of what the fold would add
+is per-region machinery these single-RPC fetches don't use, and the two getters
+worth hoisting read `self.error`, which that mixin cannot see without a third
+declaration of `BaseDisplay`'s five status members — the trap ADR-041 records.
 
 **Retry is a button, never automatic.** A failed comparative fetch stays failed
 until the user asks again — no backoff, no re-arming on error. This is a
