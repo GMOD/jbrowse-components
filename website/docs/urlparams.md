@@ -967,6 +967,7 @@ restores natively:
 | [`lockAspectRatio`](/docs/models/dotplotview#property-lockaspectratio) | When true, hview and vview are kept at the same bpPerPx so the dotplot stays square. Wheel zoom already preserves the ratio; box-zoom and other independent ops trigger an autorun resync. |
 | [`lodMode`](/docs/models/dotplotview#property-lodmode) | Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all displays render at the same tier and the menu doesn't need to fan out per display. |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
+| [`showGridlines`](/docs/models/dotplotview#property-showgridlines) | carry each axis' ruler ticks across the plot as faint lines, the way LinearGenomeView's gridlines carry its own down over the tracks |
 | [`showHighlightChips`](/docs/models/highlightsmixin#property-showhighlightchips) | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default |
 | [`trackColorBy`](/docs/models/trackcolorsmixin#property-trackcolorby) | trackId -> color-by mode for that track alone. Absent means the track follows the view-wide `colorBy`. |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |

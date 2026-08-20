@@ -620,6 +620,20 @@ export interface StringColors {
   gridlineMinor: string
   /** Major vertical gridlines behind the genome */
   gridlineMajor: string
+  /**
+   * Minor coordinate gridlines inside a plot area, e.g. the dotplot's. Lighter
+   * than the genome gridlines above: a 2D grid crosses itself, so it lays down
+   * far more ink at the same alpha than one running behind a linear genome
+   */
+  plotGridlineMinor: string
+  /** Major coordinate gridlines inside a plot area. See plotGridlineMinor */
+  plotGridlineMajor: string
+  /**
+   * Line marking a chromosome or region boundary, well above both plot gridline
+   * weights: it is the landmark the coordinates hang off, so it has to stay
+   * readable as a boundary on a plot that also draws a full grid
+   */
+  regionBoundary: string
   /** Hover shading over a single feature */
   featureHover: string
   /** Hover shading over a feature group, e.g. a linked-read chain */
@@ -699,6 +713,12 @@ const lightStringColors: StringColors = {
   // vertical gridlines behind the genome
   gridlineMinor: 'rgba(0,0,0,0.12)',
   gridlineMajor: 'rgba(0,0,0,0.26)',
+  // a plot area's own coordinate grid, and the region boundary that has to read
+  // as a landmark through it — three steps apart on purpose, so the boundary is
+  // never mistaken for a major and the grid stays under the data
+  plotGridlineMinor: 'rgba(0,0,0,0.06)',
+  plotGridlineMajor: 'rgba(0,0,0,0.13)',
+  regionBoundary: 'rgba(0,0,0,0.42)',
   // hover shading over a feature
   featureHover: 'rgba(0,0,0,0.15)',
   // stronger shade for a hovered group (e.g. a linked-read chain), so the group
@@ -717,6 +737,9 @@ const darkStringColors: Partial<StringColors> = {
   coverage: grey[700],
   gridlineMinor: 'rgba(255,255,255,0.06)',
   gridlineMajor: 'rgba(255,255,255,0.15)',
+  plotGridlineMinor: 'rgba(255,255,255,0.05)',
+  plotGridlineMajor: 'rgba(255,255,255,0.1)',
+  regionBoundary: 'rgba(255,255,255,0.3)',
   featureHover: 'rgba(255,255,255,0.25)',
   featureHoverStrong: 'rgba(255,255,255,0.4)',
   featureSelected: 'rgba(120,180,255,0.9)',

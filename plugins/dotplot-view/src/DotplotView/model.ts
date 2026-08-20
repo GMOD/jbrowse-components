@@ -44,7 +44,9 @@ import {
   computeTickPositions,
   getBlockLabelKeysToHide,
   makeTicks,
+  regionBoundaryLines,
   thinTickPositions,
+  tickLines,
   truncateRefNames,
 } from './components/util.ts'
 import { DRAG_THRESHOLD_PX, HOVER_SLACK_PX, LS_CURSOR_MODE } from './types.ts'
@@ -273,6 +275,12 @@ export default function stateModelFactory(pm: PluginManager) {
            * plotting it as a single straight segment
            */
           drawCigar: types.stripDefault(types.boolean, true),
+          /**
+           * #property
+           * carry each axis' ruler ticks across the plot as faint lines, the way
+           * LinearGenomeView's gridlines carry its own down over the tracks
+           */
+          showGridlines: types.stripDefault(types.boolean, true),
           /**
            * #property
            * Level-of-detail tier override for PIF adapters. 'auto' uses the
@@ -681,6 +689,75 @@ export default function stateModelFactory(pm: PluginManager) {
             this.vTickPositions.filter(
               t => t.alongPx > 0 && t.alongPx < this.viewHeight,
             ),
+          )
+        },
+        /**
+         * #getter
+         * Region-boundary lines for the horizontal axis, in plot px. Computed
+         * here rather than in the grid component so the screen and the SVG
+         * export cannot drift apart, and so the gridlines below can see which
+         * pixels a boundary already owns.
+         */
+        get hRegionLines() {
+          const { offsetPx, displayedRegionsTotalPx } = self.hview
+          return regionBoundaryLines(
+            self.hview.dynamicBlocks.contentBlocks,
+            b => b.offsetPx - offsetPx,
+            displayedRegionsTotalPx - offsetPx,
+            this.viewWidth,
+          )
+        },
+        /**
+         * #getter
+         * See hRegionLines. The vertical axis lays out bottom-up, so its block
+         * offsets are mirrored into screen y here — the same mirror its ticks
+         * and labels take.
+         */
+        get vRegionLines() {
+          const { offsetPx, displayedRegionsTotalPx } = self.vview
+          return regionBoundaryLines(
+            self.vview.dynamicBlocks.contentBlocks,
+            b => this.viewHeight - (b.offsetPx - offsetPx),
+            this.viewHeight - (displayedRegionsTotalPx - offsetPx),
+            this.viewHeight,
+          )
+        },
+        /**
+         * #getter
+         * The faint coordinate lines the horizontal ruler casts across the
+         * plot, in its two weights. Empty when the setting is off, and empty
+         * with it on wherever no chromosome on this axis could be numbered —
+         * which at whole-genome zoom is usually the whole axis.
+         */
+        get hGridlines() {
+          return self.showGridlines
+            ? tickLines(this.visibleHTickPositions, px => px, this.hRegionLines)
+            : []
+        },
+        /**
+         * #getter
+         * See hGridlines.
+         */
+        get vGridlines() {
+          return self.showGridlines
+            ? tickLines(
+                this.visibleVTickPositions,
+                px => this.viewHeight - px,
+                this.vRegionLines,
+              )
+            : []
+        },
+        /**
+         * #getter
+         * The setting is on and neither axis has a ruler to cast — a ticked
+         * checkbox doing nothing observable, which the menu says out loud
+         * rather than looking broken.
+         */
+        get gridlinesEmpty() {
+          return (
+            self.showGridlines &&
+            this.hGridlines.length === 0 &&
+            this.vGridlines.length === 0
           )
         },
         /**
@@ -1094,6 +1171,12 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setDrawCigar(flag: boolean) {
           self.drawCigar = flag
+        },
+        /**
+         * #action
+         */
+        setShowGridlines(flag: boolean) {
+          self.showGridlines = flag
         },
         /**
          * #action

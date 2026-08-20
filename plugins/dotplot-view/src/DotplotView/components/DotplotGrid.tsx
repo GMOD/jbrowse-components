@@ -3,26 +3,28 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { TickLine } from './util.ts'
 
-// One line per block boundary, carrying the position it draws at. Blocks that
-// round to the same pixel as the previous one are dropped — at whole-genome
-// zoom hundreds of scaffolds land on the same column and would stack identical
-// <line> elements (visible as a darker band in SVG export).
-function gridLines(
-  blocks: ContentBlock[],
-  toPx: (block: ContentBlock) => number,
+// Both axes' gridlines collapse into one <path> per weight, the way
+// LinearGenomeView's do: a whole-genome plot can carry a couple of hundred of
+// them, and two `d` strings redraw on a pan instead of that many <line> nodes
+// reconciling. The horizontal axis' lines run down the plot, the vertical
+// axis' across it, and they share a path because they share a stroke.
+function gridPath(
+  hlines: TickLine[],
+  vlines: TickLine[],
+  major: boolean,
+  viewWidth: number,
+  viewHeight: number,
 ) {
-  const out: { key: string; px: number }[] = []
-  let prev: number | undefined
-  for (const block of blocks) {
-    const px = toPx(block)
-    if (Math.floor(px) !== prev) {
-      out.push({ key: block.key, px })
-      prev = Math.floor(px)
-    }
-  }
-  return out
+  return [
+    ...hlines
+      .filter(l => l.major === major)
+      .map(l => `M${l.px} 0V${viewHeight}`),
+    ...vlines
+      .filter(l => l.major === major)
+      .map(l => `M0 ${l.px}H${viewWidth}`),
+  ].join('')
 }
 
 // Mounted only under `hasVisibleRegions`, which is what makes each axis's first
@@ -40,7 +42,11 @@ const RegionGrid = observer(function RegionGrid({
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
   const hbottom = hblocks[0]!.offsetPx - hview.offsetPx
   const vbottom = vblocks[0]!.offsetPx - vview.offsetPx
-  const stroke = theme.palette.divider
+  // `regionBoundary`, not the divider tint this used to draw at: that tint is
+  // lighter than a MAJOR gridline, which made the chromosome seam disappear into
+  // a plot that now draws fifty lines — and the seam is the landmark every
+  // coordinate here hangs off.
+  const stroke = theme.palette.regionBoundary
 
   // Clamp both of the rect's edges to the viewport and take the span between
   // them — very large offscreen SVG rects can sometimes fail to draw. Sizing it
@@ -53,17 +59,13 @@ const RegionGrid = observer(function RegionGrid({
   const w = Math.max(Math.min(htop, viewWidth) - rx, 0)
   const h = Math.max(Math.min(viewHeight - vbottom, viewHeight) - ry, 0)
 
-  const hlines = gridLines(hblocks, b => b.offsetPx - hview.offsetPx)
-  const vlines = gridLines(
-    vblocks,
-    b => viewHeight - (b.offsetPx - vview.offsetPx),
-  )
-
-  // the far end of the last region on each axis, drawn only when it lands
-  // inside the plot. Both surfaces clip it away otherwise, but the coordinates
-  // run thousands of px out (see the rect clamp above), and in SVG export that
-  // is serialized geometry nothing can ever see.
-  const vy = viewHeight - vtop
+  // Both line sets come from the model: the SVG export renders this same
+  // component, and the gridlines have to be able to see which pixels a boundary
+  // already owns. Gridlines first, so a boundary wins any pixel they still end
+  // up sharing.
+  const { hRegionLines, vRegionLines, hGridlines, vGridlines } = model
+  const minorD = gridPath(hGridlines, vGridlines, false, viewWidth, viewHeight)
+  const majorD = gridPath(hGridlines, vGridlines, true, viewWidth, viewHeight)
 
   return (
     <>
@@ -74,7 +76,19 @@ const RegionGrid = observer(function RegionGrid({
         height={h}
         {...getFillProps(theme.palette.background.default)}
       />
-      {hlines.map(({ key, px }) => (
+      <path
+        d={minorD}
+        fill="none"
+        strokeWidth={1}
+        {...getStrokeProps(theme.palette.plotGridlineMinor)}
+      />
+      <path
+        d={majorD}
+        fill="none"
+        strokeWidth={1}
+        {...getStrokeProps(theme.palette.plotGridlineMajor)}
+      />
+      {hRegionLines.map(({ key, px }) => (
         <line
           key={key}
           x1={px}
@@ -84,7 +98,7 @@ const RegionGrid = observer(function RegionGrid({
           {...getStrokeProps(stroke)}
         />
       ))}
-      {vlines.map(({ key, px }) => (
+      {vRegionLines.map(({ key, px }) => (
         <line
           key={key}
           x1={0}
@@ -94,24 +108,6 @@ const RegionGrid = observer(function RegionGrid({
           {...getStrokeProps(stroke)}
         />
       ))}
-      {htop >= 0 && htop <= viewWidth ? (
-        <line
-          x1={htop}
-          y1={0}
-          x2={htop}
-          y2={viewHeight}
-          {...getStrokeProps(stroke)}
-        />
-      ) : null}
-      {vy >= 0 && vy <= viewHeight ? (
-        <line
-          x1={0}
-          y1={vy}
-          x2={viewWidth}
-          y2={vy}
-          {...getStrokeProps(stroke)}
-        />
-      ) : null}
     </>
   )
 })

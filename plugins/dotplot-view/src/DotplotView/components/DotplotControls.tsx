@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ColorBySelector } from '@jbrowse/synteny-core'
@@ -157,6 +158,22 @@ const DotplotControls = observer(function DotplotControls({
                 helpText:
                   'When enabled, both axes are kept at the same bp/px so the dotplot stays square as you zoom and pan.',
               },
+              toggleItem(
+                // a plot with no room for a ruler on either axis has no
+                // gridlines to draw, and the box stays ticked through it
+                withHint(
+                  'Gridlines',
+                  model.gridlinesEmpty ? 'none at this zoom' : undefined,
+                ),
+                model.showGridlines,
+                flag => {
+                  model.setShowGridlines(flag)
+                },
+                {
+                  helpText:
+                    "Carries each axis' ruler ticks across the plot as faint lines, in two weights, so a point can be read back to a coordinate without tracing to the axis. Only chromosomes the axis could number get them — at whole-genome zoom that is usually none — and a tick already marked by a chromosome boundary is left to the boundary.",
+                },
+              ),
             ],
           },
         ]}

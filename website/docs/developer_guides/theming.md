@@ -48,6 +48,9 @@ is optional in a config theme; anything you don't set keeps its preset value.
 | `missingData` | `string` | MAF bridged-row fill where a species has no alignment |
 | `gridlineMinor` | `string` | Minor vertical gridlines behind the genome |
 | `gridlineMajor` | `string` | Major vertical gridlines behind the genome |
+| `plotGridlineMinor` | `string` | Minor coordinate gridlines inside a plot area, e.g. the dotplot's. Lighter than the genome gridlines above: a 2D grid crosses itself, so it lays down far more ink at the same alpha than one running behind a linear genome |
+| `plotGridlineMajor` | `string` | Major coordinate gridlines inside a plot area. See plotGridlineMinor |
+| `regionBoundary` | `string` | Line marking a chromosome or region boundary, well above both plot gridline weights: it is the landmark the coordinates hang off, so it has to stay readable as a boundary on a plot that also draws a full grid |
 | `featureHover` | `string` | Hover shading over a single feature |
 | `featureHoverStrong` | `string` | Hover shading over a feature group, e.g. a linked-read chain |
 | `featureSelected` | `string` | Border accent around the click-selected feature |

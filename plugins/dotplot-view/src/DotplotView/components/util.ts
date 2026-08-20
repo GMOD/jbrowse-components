@@ -266,6 +266,110 @@ export function thinTickPositions(positioned: PositionedTick[]): VisibleTick[] {
   )
 }
 
+// A line drawn across the plot, at a plot-px position, keyed for React.
+export interface AxisLine {
+  key: string
+  px: number
+}
+
+// One line per region boundary, carrying the position it draws at. Blocks that
+// round to the same pixel as the previous one are dropped — at whole-genome
+// zoom hundreds of scaffolds land on the same column and would stack identical
+// <line> elements (visible as a darker band in SVG export).
+//
+// A block gives the NEAR edge of its region, so the far end of the last one is
+// nobody's block and is passed separately. It is the one line bounds-checked
+// here: both surfaces clip the rest away, but `farEndPx` runs thousands of px
+// out at any zoom short of whole-genome, and in SVG export that is serialized
+// geometry nothing can ever see.
+export function regionBoundaryLines(
+  blocks: ContentBlock[],
+  toPx: (block: ContentBlock) => number,
+  farEndPx: number,
+  lengthPx: number,
+) {
+  const out: AxisLine[] = []
+  let prev: number | undefined
+  for (const block of blocks) {
+    const px = toPx(block)
+    if (Math.floor(px) !== prev) {
+      out.push({ key: block.key, px })
+      prev = Math.floor(px)
+    }
+  }
+  if (farEndPx >= 0 && farEndPx <= lengthPx) {
+    out.push({ key: 'far-end', px: farEndPx })
+  }
+  return out
+}
+
+// Minimum spacing between two gridlines. `chooseGridPitch` already targets
+// 15px minors within a region, so inside one this drops nothing; it bites only
+// where two regions meet and ticks from different coordinate origins pile onto
+// one column, which in a 2D plot is a moiré rather than a dense ruler.
+const MIN_GRIDLINE_PX = 12
+
+// A gridline across the plot, at a plot-px position, in one of the ruler's two
+// weights.
+export interface TickLine {
+  px: number
+  major: boolean
+}
+
+// Which of an axis' visible ticks earn a line across the plot.
+//
+// Within a chromosome, the axis' own ticks in both weights — the way
+// LinearGenomeView's gridlines carry its ruler down over the tracks, so the grid
+// and the ruler beside it agree by construction rather than being two rules kept
+// in step.
+//
+// But only within a chromosome the axis actually NUMBERED. Pitch is chosen for
+// the whole axis, so at whole-genome zoom a short chromosome's band catches two
+// or three lines from a pitch far coarser than its own span: a mix of weights
+// with no major to key them to, ruling a square a few pixels wide into pieces
+// that measure nothing. That is the same thing `dropLoneTickLabels` already
+// decided about that chromosome's numbers, so it is decided the same way and
+// from the same evidence — no number in this region, no grid in it either. It
+// also means every gridline on the plot can be read back to a coordinate on the
+// axis beside it, which is the whole of what a grid is for.
+//
+// Never doubled onto a region boundary, which draws its own stronger line at
+// that pixel: the two together read as one heavier boundary, and the gridline is
+// the copy carrying nothing the boundary didn't already say.
+export function tickLines(
+  ticks: VisibleTick[],
+  toPx: (alongPx: number) => number,
+  boundaries: AxisLine[],
+) {
+  const numbered = new Set(
+    ticks.filter(t => t.labeled).map(t => tickRegion(t.tick)),
+  )
+  const taken = new Set(
+    boundaries.flatMap(({ px }) => [
+      Math.floor(px) - 1,
+      Math.floor(px),
+      Math.floor(px) + 1,
+    ]),
+  )
+  const out: TickLine[] = []
+  let last = Number.NEGATIVE_INFINITY
+  // `thinTickPositions` sorted these by alongPx, so one forward pass measures
+  // real neighbours — ascending on the horizontal axis, descending once the
+  // vertical axis' `toPx` mirrors them, hence the abs.
+  for (const { tick, alongPx } of ticks) {
+    const px = toPx(alongPx)
+    if (
+      numbered.has(tickRegion(tick)) &&
+      !taken.has(Math.floor(px)) &&
+      Math.abs(px - last) >= MIN_GRIDLINE_PX
+    ) {
+      out.push({ px, major: tick.type === 'major' })
+      last = px
+    }
+  }
+  return out
+}
+
 interface Interval {
   start: number
   end: number

@@ -8,8 +8,10 @@ import {
   getBlockLabelKeysToHide,
   locstr,
   makeTicks,
+  regionBoundaryLines,
   thinTickPositions,
   tickKey,
+  tickLines,
   truncateRefName,
   truncateRefNames,
 } from './util.ts'
@@ -453,6 +455,145 @@ describe('thinTickPositions', () => {
       inRegion(1, 'chr1', 'major', 400),
     ])
     expect(out.some(t => t.labeled)).toBe(false)
+  })
+})
+
+describe('regionBoundaryLines', () => {
+  const blocks = (...offsets: number[]) =>
+    offsets.map((offsetPx, i) => ({
+      ...staticBlock(0, 100),
+      key: `b${i}`,
+      offsetPx,
+    }))
+
+  test('one line per block, at the block position', () => {
+    const out = regionBoundaryLines(
+      blocks(0, 300, 700),
+      b => b.offsetPx,
+      -1,
+      800,
+    )
+    expect(out).toEqual([
+      { key: 'b0', px: 0 },
+      { key: 'b1', px: 300 },
+      { key: 'b2', px: 700 },
+    ])
+  })
+
+  // whole-genome zoom on a fragmented assembly puts hundreds of scaffolds on
+  // one column; stacked identical <line>s stroke visibly darker than a single
+  // one, and the SVG export carries every copy
+  test('blocks landing on one pixel draw one line', () => {
+    const out = regionBoundaryLines(
+      blocks(10, 10.4, 10.9, 12),
+      b => b.offsetPx,
+      -1,
+      800,
+    )
+    expect(out.map(l => l.key)).toEqual(['b0', 'b3'])
+  })
+
+  test('the far end is drawn when it lands inside the plot', () => {
+    expect(regionBoundaryLines([], () => 0, 500, 800).map(l => l.px)).toEqual([
+      500,
+    ])
+  })
+
+  test('an offscreen far end is not serialized at all', () => {
+    expect(regionBoundaryLines([], () => 0, 9000, 800)).toEqual([])
+    expect(regionBoundaryLines([], () => 0, -9000, 800)).toEqual([])
+  })
+})
+
+describe('tickLines', () => {
+  const at = (
+    alongPx: number,
+    type: 'major' | 'minor',
+    labeled = type === 'major',
+    region = 0,
+  ) => ({
+    tick: {
+      type,
+      base: alongPx,
+      refName: `chr${region}`,
+      displayedRegionIndex: region,
+    },
+    alongPx,
+    labeled,
+  })
+  const same = (px: number) => px
+
+  // inside a numbered chromosome the grid carries the ruler the axis already
+  // drew, both weights, rather than being a second rule kept in step with it
+  test('every visible tick earns a line, in its own weight', () => {
+    const out = tickLines(
+      [at(0, 'major'), at(15, 'minor'), at(30, 'minor'), at(60, 'major')],
+      same,
+      [],
+    )
+    expect(out).toEqual([
+      { px: 0, major: true },
+      { px: 15, major: false },
+      { px: 30, major: false },
+      { px: 60, major: true },
+    ])
+  })
+
+  // The whole-genome case, and the reason this is gated on the numbers rather
+  // than on a line count: pitch comes from the whole axis, so a short
+  // chromosome's band catches a couple of lines from a pitch far coarser than
+  // its own span, ruling a few-pixel square into pieces that measure nothing.
+  test('a chromosome the axis could not number gets no grid', () => {
+    const out = tickLines(
+      [at(0, 'minor', false, 1), at(20, 'minor', false, 1)],
+      same,
+      [],
+    )
+    expect(out).toEqual([])
+  })
+
+  test('the quorum is per chromosome, so a numbered neighbour keeps its own', () => {
+    const out = tickLines(
+      [
+        at(0, 'minor', false, 1),
+        at(200, 'major', true, 2),
+        at(260, 'minor', false, 2),
+      ],
+      same,
+      [],
+    )
+    expect(out.map(l => l.px)).toEqual([200, 260])
+  })
+
+  // chooseGridPitch targets 15px minors inside a region, so this only bites
+  // where two regions meet and their ticks pile onto one column
+  test('a pile-up at a region seam is thinned', () => {
+    const out = tickLines(
+      [at(100, 'minor'), at(103, 'major'), at(106, 'minor'), at(130, 'minor')],
+      same,
+      [],
+    )
+    expect(out.map(l => l.px)).toEqual([100, 130])
+  })
+
+  // the boundary already draws a stronger line there; the two together read as
+  // one heavier boundary and the gridline adds nothing
+  test('a tick under a region boundary is left to the boundary', () => {
+    const out = tickLines([at(100, 'major'), at(200, 'major')], same, [
+      { key: 'b', px: 100.6 },
+    ])
+    expect(out.map(l => l.px)).toEqual([200])
+  })
+
+  // the vertical axis mirrors alongPx into screen y, so its kept ticks descend
+  // and a signed spacing test would keep every one of them
+  test('a mirrored axis is spaced in screen px', () => {
+    const out = tickLines(
+      [at(0, 'major'), at(5, 'minor'), at(60, 'major')],
+      px => 500 - px,
+      [],
+    )
+    expect(out.map(l => l.px)).toEqual([500, 440])
   })
 })
 
