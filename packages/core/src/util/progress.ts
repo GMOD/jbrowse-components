@@ -377,6 +377,16 @@ export async function downloadStatus<T>(
 }
 
 /**
+ * One concurrent operation's contribution to a fan-out's shared status: what it
+ * is reporting right now, plus the determinate phases it has already finished
+ * (see {@link createStatusFanOut}, which is what records them).
+ */
+export interface StatusSlot {
+  status: RpcStatus | undefined
+  completed: StatusWithProgress[]
+}
+
+/**
  * Combine the in-flight statuses of several concurrent operations (one RPC per
  * visible region, say) into the single status the loading UI shows, so N regions
  * read as one bar instead of each clobbering the shared field. Returns undefined
@@ -384,67 +394,100 @@ export async function downloadStatus<T>(
  *
  * **Only operations in the same phase are summed.** `current`/`total` are
  * additive within a phase — bytes with bytes, features with features — and
- * incommensurable across one, so the phase the most operations are in wins and
- * the rest are charged as unmeasured below. ADR-072; a plain Σcurrent/Σtotal put
- * a bar under whichever slot had the largest raw total. A tie breaks to the
- * earliest, so a fan-out whose slots share one phase — the common case, and what
- * the sum was written for — is summed exactly as before.
+ * incommensurable across one, so the phase the most operations are *measuring*
+ * wins and the rest are charged below. ADR-072; a plain Σcurrent/Σtotal put a
+ * bar under whichever slot had the largest raw total. A fan-out whose slots
+ * share one phase — the common case, and what the sum was written for — is
+ * summed exactly as before.
  *
- * An operation with no comparable measurement is still an operation in flight, so
- * it is charged the mean of the totals we do know, with nothing completed against
- * it. That covers both an operation reporting no total at all and one measuring a
- * different phase. Dropping the first outright is what let a fan-out where one
- * region's response carried no Content-Length read 100% with that region still
- * downloading.
+ * A tie goes to the phase that appeared first in `phaseOrder`, so the label
+ * advances with the batch rather than flapping. Two regions, one downloading and
+ * one already laying out, tie at one slot each; deciding that on slot order made
+ * the label and the whole denominator under it swap on every write, because
+ * which slot is measuring anything changes with every phase boundary either one
+ * crosses. Deciding it on which phase the batch reached first means the label
+ * leaves "Downloading features" when the last region does. `phaseOrder` is the
+ * fan-out's record of first appearance; with none, every phase ranks the same
+ * and the tie falls back to slot order.
  *
- * `''` is not one of those. It is how every phase helper says "this phase is
- * over", so an operation reporting it is not in flight and cannot be charged as
- * one — charging it at zero is a bar that runs *backwards* as regions finish
+ * Each slot is then priced against that phase on its own, which is the part that
+ * has to be per-slot rather than a Σ over two flat lists:
+ *
+ * - measuring it: its own `current`/`total`, plus whatever it already finished
+ *   of that phase in both halves.
+ * - not measuring it, but it finished some of it: that finished work in both
+ *   halves and **nothing more**. It is not also charged the mean below. Charging
+ *   both is what made the bar fall every time a region moved on — a region that
+ *   had downloaded its 100kb and gone on to parse read as 100kb done *and* an
+ *   unmeasured 100kb still to do.
+ * - neither: it is an operation in flight with nothing comparable to measure, so
+ *   it is charged the mean of the totals we do know, with nothing completed
+ *   against it. That covers a response with no Content-Length and a slot in a
+ *   different phase alike. Dropping the first outright is what let a fan-out
+ *   where one region's response carried no Content-Length read 100% with that
+ *   region still downloading.
+ *
+ * A retired slot (`''` or nothing yet) is not in flight and is never charged the
+ * mean — charging it at zero is a bar that runs *backwards* as regions finish
  * (three done and one at half of its 1000 reading 500/4000 rather than
- * 500/1000), and it can win the `present[0]` fallback below, blanking the label
- * of a region still working.
- *
- * `completed` is the other half of that, and the reason the bar no longer drops
- * as the batch lands: work that FINISHED is charged in full, to numerator and
- * denominator alike, so 500/1000 becomes 3500/4000 and the fraction only ever
- * rises. Only the entries in the winning phase count, on the same
- * incommensurability rule as everything else, and they cannot make the result
- * anything on their own — a batch whose every slot is done is a batch with no
- * bar, not a bar at 100%. Reconstructing them is the caller's job, since only a
- * slot's own channel saw the total it retired at; {@link createStatusFanOut}
- * does it, and a caller passing nothing gets the in-flight-only reading.
+ * 500/1000), and it can win the label fallback below, blanking the label of a
+ * region still working. Its finished work still counts, which is
+ * the reason the bar no longer drops as the batch lands: 500/1000 becomes
+ * 3500/4000 and the fraction only ever rises. Finished work cannot make the
+ * result anything on its own — a batch whose every slot is done is a batch with
+ * no bar, not a bar at 100%.
  */
 export function aggregateStatus(
-  statuses: (RpcStatus | undefined)[],
-  completed: StatusWithProgress[] = [],
+  slots: StatusSlot[],
+  phaseOrder: string[] = [],
 ): RpcStatus | undefined {
-  const present = statuses.filter(
-    (s): s is RpcStatus => s !== undefined && s !== '',
+  const inFlight = slots.filter(s => s.status !== undefined && s.status !== '')
+  const measuring = inFlight.filter(
+    (s): s is StatusSlot & { status: StatusWithProgress } =>
+      typeof s.status === 'object',
   )
-  const determinate = present.filter(
-    (s): s is StatusWithProgress => typeof s === 'object',
-  )
-  if (determinate.length === 0) {
-    return present[0]
+  if (measuring.length === 0) {
+    return inFlight[0]?.status
   }
   const perPhase = new Map<string, number>()
-  for (const s of determinate) {
-    perPhase.set(s.message, (perPhase.get(s.message) ?? 0) + 1)
+  for (const s of measuring) {
+    perPhase.set(s.status.message, (perPhase.get(s.status.message) ?? 0) + 1)
   }
-  const { message } = determinate.reduce((best, s) =>
-    perPhase.get(s.message)! > perPhase.get(best.message)! ? s : best,
-  )
-  const summable = determinate.filter(s => s.message === message)
+  // an unseen phase ranks last, and with no order at all every phase ranks the
+  // same — which leaves the reduce keeping its incumbent, the slot-order
+  // tie-break this had before
+  const rank = (m: string) => {
+    const at = phaseOrder.indexOf(m)
+    return at === -1 ? phaseOrder.length : at
+  }
+  const { message } = measuring.reduce((best, s) => {
+    const count = perPhase.get(s.status.message)!
+    const bestCount = perPhase.get(best.status.message)!
+    return count > bestCount ||
+      (count === bestCount &&
+        rank(s.status.message) < rank(best.status.message))
+      ? s
+      : best
+  }).status
+  const inPhase = measuring.filter(s => s.status.message === message)
+  const mean = sumTotals(inPhase.map(s => s.status)) / inPhase.length
+
   let current = 0
-  let measured = 0
-  for (const s of summable) {
-    current += s.current
-    measured += s.total
+  let total = 0
+  for (const slot of slots) {
+    const done = sumTotals(slot.completed.filter(c => c.message === message))
+    const { status } = slot
+    if (typeof status === 'object' && status.message === message) {
+      current += status.current + done
+      total += status.total + done
+    } else if (done > 0 || status === undefined || status === '') {
+      current += done
+      total += done
+    } else {
+      total += mean
+    }
   }
-  const unmeasured = present.length - summable.length
-  const total = measured + (unmeasured * measured) / summable.length
-  const done = sumTotals(completed.filter(s => s.message === message))
-  return { message, current: current + done, total: total + done }
+  return { message, current, total }
 }
 
 function sumTotals(statuses: StatusWithProgress[]) {
@@ -458,11 +501,12 @@ function sumTotals(statuses: StatusWithProgress[]) {
 /**
  * Fan one status field out to several concurrent operations that would
  * otherwise fight over it. Each `slot()` returns a {@link StatusCallback}
- * remembering only its own latest value; every write re-derives the shared
- * status from all slots through {@link aggregateStatus}, so N concurrent
- * downloads read as one Σcurrent/Σtotal bar instead of last-writer-wins — and
- * the first one to finish (which writes the `''` every phase helper clears
- * with) can't blank the label while the others are still running.
+ * remembering its own latest value and the determinate phases it has been
+ * through; every write re-derives the shared status from all slots through
+ * {@link aggregateStatus}, so N concurrent downloads read as one bar instead of
+ * last-writer-wins — and the first one to finish (which writes the `''` every
+ * phase helper clears with) can't blank the label while the others are still
+ * running.
  *
  * Use it wherever several operations are handed one `statusCallback` at once —
  * a `Promise.all`, an rxjs `merge`, or the per-region fan-out the LGV displays'
@@ -470,30 +514,82 @@ function sumTotals(statuses: StatusWithProgress[]) {
  * taken for the batch's lifetime and it is the batch that ends, so a long-lived
  * one accumulates slots for work that is over.
  *
- * A slot holding `''` needs no special handling here — {@link aggregateStatus}
- * reads it as the "phase over" it is. Retiring it to `undefined` on the way in
- * was a second statement of the same rule, and the two drifted.
+ * **A slot's finished phases are recorded here** because only a slot's own
+ * channel ever sees the total it retired at, and they are what keep a landing
+ * batch's bar from walking backwards. A phase is over the moment the slot stops
+ * reporting it forward — see {@link continuesPhase}, and note that the `''` it
+ * ends on is only one of the ways it can say so.
+ *
+ * **It never writes `''`.** A slot between two phases and a slot that is done
+ * both read as idle from here, so an empty aggregate cannot mean "the batch is
+ * over" — it means "no slot is reporting this instant". Writing `''` for that
+ * blanked the shared label mid-batch, and the loading UI renders a blank label
+ * as its "Loading" fallback: two regions crossing a phase boundary together
+ * flapped between "Loading" and the phase they were both still in. What goes out
+ * instead is the last label alone, with no bar — indeterminate, which is exactly
+ * what "still in this phase, nothing measuring it right now" is.
+ *
+ * The label alone rather than nothing at all, because a write that lands is also
+ * how a phase's last progress value is *displaced*: statuses are throttled, so a
+ * percentage queued behind the window would otherwise fire after the work it
+ * measured had ended (ADR-071). Every owner of a status field clears it when its
+ * own work ends (`runFetch`'s `resetStatus`, `assembly.loadPre`'s `finally`,
+ * `createStopTokenRotation`'s `clearStatus`), and the end of the batch is theirs
+ * to declare, not ours to guess.
  */
 export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
-  const slots: (RpcStatus | undefined)[] = []
-  // What the retired slots got through, so the shared bar keeps their bytes in
-  // both halves of the fraction. Without it the denominator shrank as regions
-  // landed and the bar walked backwards near the end — see aggregateStatus.
-  // Only a slot's own channel ever saw the total it retired at, so this is the
-  // one place that can record it.
-  const completed: StatusWithProgress[] = []
+  const slots: StatusSlot[] = []
+  // the phases this batch has been through, in the order it reached them, so a
+  // tie between two slots in different phases resolves the same way twice
+  const phaseOrder: string[] = []
+  let lastMessage: string | undefined
   return (): StatusCallback => {
-    const index = slots.length
-    slots.push(undefined)
+    const slot: StatusSlot = { status: undefined, completed: [] }
+    slots.push(slot)
     return status => {
-      const previous = slots[index]
-      if (status === '' && typeof previous === 'object') {
-        completed.push({ ...previous, current: previous.total })
+      const previous = slot.status
+      if (typeof previous === 'object' && !continuesPhase(previous, status)) {
+        slot.completed.push({ ...previous, current: previous.total })
       }
-      slots[index] = status
-      statusCallback?.(aggregateStatus(slots, completed) ?? '')
+      if (typeof status === 'object' && !phaseOrder.includes(status.message)) {
+        phaseOrder.push(status.message)
+      }
+      slot.status = status
+      const aggregate = aggregateStatus(slots, phaseOrder)
+      if (aggregate !== undefined) {
+        lastMessage =
+          typeof aggregate === 'string' ? aggregate : aggregate.message
+        statusCallback?.(aggregate)
+      } else if (lastMessage !== undefined) {
+        statusCallback?.(lastMessage)
+      }
     }
   }
+}
+
+/**
+ * Is `status` the same determinate phase as `previous`, still running? Only a
+ * measurement of the same phase moving forward is; everything else retires it.
+ *
+ * The `''` a phase helper clears with is the obvious retirement and used to be
+ * the only one recognized, which meant the common shape recorded nothing at all:
+ * phases nest, so an inner phase closes onto its *enclosing* phase's label (see
+ * {@link openPhase}) — a plain string, not `''` — and the canvas feature fetch
+ * is exactly that, an adapter's byte-counted "Downloading features" inside the
+ * RPC's own "Downloading features". Every region's bytes fell out of both halves
+ * of the fraction the instant its download finished.
+ *
+ * A measurement that moves *backwards* under the same label retires the phase
+ * too: it is a second phase of the same name starting at zero, which is what the
+ * tabix redispatch does when a feature overhangs the query and the region is
+ * read a second time.
+ */
+function continuesPhase(previous: StatusWithProgress, status: RpcStatus) {
+  return (
+    typeof status === 'object' &&
+    status.message === previous.message &&
+    status.current >= previous.current
+  )
 }
 
 /**

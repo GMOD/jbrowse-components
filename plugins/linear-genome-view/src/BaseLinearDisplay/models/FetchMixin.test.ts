@@ -365,15 +365,22 @@ describe('FetchMixin: progress reporting', () => {
     expect(m.statusProgress).toBeCloseTo(0.5)
   })
 
-  it('clears the bar when the last region finishes', () => {
+  // A region between two phases and a region that is done look the same from the
+  // fan-out, so the last region retiring does not mean the fetch is over — and a
+  // blank label is what the loading UI shows as "Loading", which is the flap two
+  // regions crossing a phase boundary together produced. The bar goes, the label
+  // stays, and `runFetch`'s own `resetStatus` is what clears the field.
+  it('drops the bar but holds the label when the last region finishes', () => {
     const { m, ctxs } = twoRegions()
     const [a, b] = ctxs
     a!.statusCallback({ message: 'Downloading', current: 1, total: 2 })
     step()
     a!.statusCallback('')
     b!.statusCallback('')
-    expect(m.statusMessage).toBeUndefined()
+    expect(m.statusMessage).toBe('Downloading')
     expect(m.statusProgress).toBeUndefined()
+    m.cancelFetch()
+    expect(m.statusMessage).toBeUndefined()
   })
 
   // A phase clear is throttled like every other status (ADR-071), so a phase
@@ -394,7 +401,9 @@ describe('FetchMixin: progress reporting', () => {
       expect(m.statusProgress).toBeCloseTo(0.5)
       step()
       jest.advanceTimersByTime(100)
-      expect(m.statusMessage).toBeUndefined()
+      // the label survives the clear (the fetch is not over until runFetch says
+      // so) but the percentage does not come back
+      expect(m.statusMessage).toBe('Downloading')
       expect(m.statusProgress).toBeUndefined()
     } finally {
       jest.useRealTimers()

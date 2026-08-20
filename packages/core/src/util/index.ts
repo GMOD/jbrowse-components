@@ -123,6 +123,7 @@ export {
   type ProgressReporter,
   type RpcStatus,
   type StatusCallback,
+  type StatusSlot,
   type StatusWithProgress,
   aggregateStatus,
   createGuardedStatusSink,

@@ -13,7 +13,7 @@ import {
   withProgress,
 } from './progress.ts'
 
-import type { RpcStatus } from './progress.ts'
+import type { RpcStatus, StatusCallback } from './progress.ts'
 
 describe('createProgressReporter', () => {
   it('auto-increments the counter when called with no argument', () => {
@@ -620,17 +620,21 @@ describe('withProgress', () => {
 })
 
 describe('aggregateStatus', () => {
+  // the slot shape with no finished phases: these cases are about the in-flight
+  // reading, and the finished half is exercised through createStatusFanOut below
+  const aggOf = (statuses: (RpcStatus | undefined)[]) =>
+    aggregateStatus(statuses.map(status => ({ status, completed: [] })))
   it('returns undefined when nothing is in flight', () => {
-    expect(aggregateStatus([])).toBeUndefined()
-    expect(aggregateStatus([undefined, undefined])).toBeUndefined()
+    expect(aggOf([])).toBeUndefined()
+    expect(aggOf([undefined, undefined])).toBeUndefined()
   })
 
   it('passes a lone string through unchanged', () => {
-    expect(aggregateStatus(['Downloading'])).toBe('Downloading')
+    expect(aggOf(['Downloading'])).toBe('Downloading')
   })
 
   it('sums determinate statuses into one bar', () => {
-    const agg = aggregateStatus([
+    const agg = aggOf([
       { message: 'Downloading', current: 30, total: 100 },
       { message: 'Downloading', current: 10, total: 100 },
     ])
@@ -642,7 +646,7 @@ describe('aggregateStatus', () => {
     // the string status is a region still downloading with no Content-Length;
     // dropping it read as 50/100 — a half-full bar for a fetch that is really
     // only a quarter done, and 100% once that one region finished
-    const agg = aggregateStatus([
+    const agg = aggOf([
       'Processing',
       { message: 'Downloading', current: 50, total: 100 },
     ])
@@ -650,7 +654,7 @@ describe('aggregateStatus', () => {
   })
 
   it('cannot read complete while an indeterminate operation is in flight', () => {
-    const agg = aggregateStatus([
+    const agg = aggOf([
       'Processing',
       { message: 'Downloading', current: 100, total: 100 },
     ])
@@ -658,14 +662,14 @@ describe('aggregateStatus', () => {
   })
 
   it('falls back to the first message when all are indeterminate', () => {
-    expect(statusMessageText(aggregateStatus(['Processing', 'Indexing']))).toBe(
+    expect(statusMessageText(aggOf(['Processing', 'Indexing']))).toBe(
       'Processing',
     )
   })
 
   it('does not let one region clobber another (no thrash)', () => {
     // region A at 90%, region B just started: aggregate reflects both, not B
-    const agg = aggregateStatus([
+    const agg = aggOf([
       { message: 'Downloading', current: 90, total: 100 },
       { message: 'Downloading', current: 1, total: 100 },
     ])
@@ -687,7 +691,7 @@ describe('aggregateStatus', () => {
     const layingOut = { message: 'Computing layout', current: 150, total: 300 }
     // one of each: the tie breaks to the earliest, and the other is charged as
     // unmeasured rather than summed — 0 of 400000 doubled, not 150/400300
-    expect(aggregateStatus([downloading, layingOut])).toEqual({
+    expect(aggOf([downloading, layingOut])).toEqual({
       message: 'Downloading features',
       current: 0,
       total: 800_000,
@@ -696,7 +700,7 @@ describe('aggregateStatus', () => {
     // the one that has moved on
     expect(
       statusFraction(
-        aggregateStatus([
+        aggOf([
           { ...downloading, current: 200_000 },
           { ...downloading, current: 200_000 },
           { ...downloading, current: 200_000 },
@@ -722,10 +726,10 @@ describe('aggregateStatus', () => {
       current: 399_000,
       total: 400_000,
     }
-    expect(
-      statusFraction(aggregateStatus([nearlyDownloaded, layingOut])),
-    ).toBeCloseTo(0.499)
-    expect(statusFraction(aggregateStatus(['', layingOut]))).toBeCloseTo(0)
+    expect(statusFraction(aggOf([nearlyDownloaded, layingOut]))).toBeCloseTo(
+      0.499,
+    )
+    expect(statusFraction(aggOf(['', layingOut]))).toBeCloseTo(0)
   })
 })
 
@@ -808,15 +812,136 @@ describe('createStatusFanOut', () => {
     })
   })
 
-  it('clears once every slot is done', () => {
+  // A slot between two phases reads exactly like a slot that is done, so an
+  // empty aggregate cannot mean "the batch is over". Writing it anyway blanked
+  // the shared label mid-batch, and the loading UI renders a blank label as
+  // "Loading" — the flap between "Loading" and "Downloading features" that a
+  // two-region GFF3 fetch showed on every phase boundary the regions crossed
+  // together. The owner's own clear is what ends the stream.
+  it('never writes the empty status, even once every slot is done', () => {
     const seen: RpcStatus[] = []
-    const slot = createStatusFanOut(s => seen.push(s))
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
     const a = slot()
     const b = slot()
     a({ message: 'Downloading', current: 1, total: 2 })
     b('')
     a('')
-    expect(seen.at(-1)).toBe('')
+    expect(seen.every(s => s !== '')).toBe(true)
+    // the label alone: still that phase, nothing measuring it. It displaces the
+    // percentage rather than blanking the field, and the owner's own clear is
+    // what ends the stream
+    expect(seen.at(-1)).toBe('Downloading')
+  })
+
+  // The shape the canvas feature RPC actually runs: the adapter's byte-counted
+  // "Downloading features" nests inside the RPC's own phase of the same name, so
+  // the download closes onto that enclosing label rather than onto `''`. Only
+  // `''` used to retire a phase, so every region's bytes left both halves of the
+  // fraction the instant its download finished and the bar fell back.
+  it('retires a phase that closes onto an enclosing label, not just on empty', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading features', current: 1000, total: 1000 })
+    b({ message: 'Downloading features', current: 500, total: 1000 })
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.75)
+    // a's download ends; the enclosing phase of the same name is what it lands on
+    a('Downloading features')
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.75)
+    b({ message: 'Downloading features', current: 750, total: 1000 })
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.875)
+  })
+
+  // A region read twice (tabix redispatches when a feature overhangs the query)
+  // reports a second "Downloading features" starting at zero. The first read's
+  // bytes are finished work, not a measurement to overwrite.
+  it('retires a phase that restarts under the same label', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    a({ message: 'Downloading features', current: 1000, total: 1000 })
+    a({ message: 'Downloading features', current: 0, total: 1000 })
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading features',
+      current: 1000,
+      total: 2000,
+    })
+  })
+
+  // The double charge: a slot that finished the winning phase and moved on was
+  // counted at its full total AND charged the mean as an unmeasured operation on
+  // top, so the bar dropped every time a region crossed into its next phase.
+  it('does not charge a finished phase the unmeasured mean as well', () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const a = slot()
+    const b = slot()
+    a({ message: 'Downloading', current: 1000, total: 1000 })
+    b({ message: 'Downloading', current: 900, total: 1000 })
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.95)
+    a({ message: 'Computing layout', current: 0, total: 50 })
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.95)
+  })
+
+  // Assembled from the real helpers rather than hand-written statuses, because
+  // the shape that broke this is one no hand-written case had: the canvas
+  // feature RPC opens "Downloading features" and the adapter opens its own
+  // byte-counted phase of the same name inside it, so a region's download closes
+  // onto that enclosing label instead of onto `''`. Two regions share the
+  // fan-out, and every phase boundary either one crosses used to drop its bytes
+  // out of the fraction and blank the shared label.
+  it('reads as one rising bar across the shape the canvas fetch runs', async () => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const region = async (cb: StatusCallback, bytes: number) => {
+      await updateStatus('Downloading features', cb, () =>
+        downloadStatus('Downloading features', cb, async onProgress => {
+          for (let i = 1; i <= 4; i++) {
+            await Promise.resolve()
+            onProgress?.((bytes * i) / 4, bytes)
+          }
+        }),
+      )
+      await withProgress(
+        { label: 'Computing layout', total: 2, statusCallback: cb },
+        async report => {
+          for (let i = 0; i < 2; i++) {
+            await Promise.resolve()
+            report()
+          }
+        },
+      )
+    }
+    await Promise.all([region(slot(), 1000), region(slot(), 3000)])
+
+    expect(seen).not.toContain('')
+    const downloading = seen.filter(
+      s => statusMessageText(s) === 'Downloading features',
+    )
+    const fractions = downloading
+      .map(statusFraction)
+      .filter(f => f !== undefined)
+    for (const [i, f] of fractions.entries()) {
+      expect(f).toBeGreaterThanOrEqual(fractions[i - 1] ?? 0)
+    }
+    expect(fractions.at(-1)).toBeCloseTo(1)
+    // and the label moves forward with the batch: these two regions cross
+    // together, so nothing reads as downloading once either is laying out
+    const messages = seen.map(statusMessageText)
+    expect(messages.lastIndexOf('Downloading features')).toBeLessThan(
+      messages.indexOf('Computing layout'),
+    )
   })
 
   it('is inert without a downstream callback', () => {
