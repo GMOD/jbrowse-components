@@ -257,6 +257,15 @@ vertical at both ends and twice the chord slope at the middle, so a rearranged
 block is at its *widest* perpendicular exactly where it meets the frame — and one
 number per ribbon cannot say that. The GPU is the accurate side.
 
+**Scoped to the ALPHA, since `ribbonMaxPerpWidth` split off.** The same one
+number used to decide fill-vs-centerline-stroke, and through that pickability,
+which put a curved ribbon several px wide at both ends on the stroke branch as a
+1px hairline that could not be clicked. That half is fixed: the branch asks the
+widest the ribbon ever gets, which on a bezier is an end and is foreshortened by
+nothing. What is left here is the fade applied once the branch has settled on a
+stroke — i.e. ribbons genuinely under a pixel everywhere, which is the whole of
+the whole-genome case measured below.
+
 It is the whole of synteny's only cross-backend drift, measured three ways in
 [CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) and reproducible with
 `probe-synteny-backend-drift.ts`: 1.54% curved vs 0.53% straight on the same

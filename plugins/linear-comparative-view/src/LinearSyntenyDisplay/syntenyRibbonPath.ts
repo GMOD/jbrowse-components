@@ -35,6 +35,28 @@ export interface CanvasLike {
   stroke(): void
 }
 
+// Trace ONE ribbon edge, from the current point at (x0, y0) to (x1, y1). Five
+// call sites below traced it by hand — two in the silhouette, two in the
+// side-edge outline, one in the centerline — and the control points are the
+// load-bearing part (see the cubic note below), so the spelling lives here once
+// rather than five times. Symmetric in y, so an edge traced bottom-to-top gets
+// the same curve read backwards.
+function edgeTo(
+  ctx: CanvasLike,
+  x0: number,
+  x1: number,
+  y0: number,
+  y1: number,
+  isCurve: boolean,
+) {
+  if (isCurve) {
+    const halfY = (y0 + y1) * 0.5
+    ctx.bezierCurveTo(x0, halfY, x1, halfY, x1, y1)
+  } else {
+    ctx.lineTo(x1, y1)
+  }
+}
+
 // The same cubic the curve shaders trace — syntenyTypes.slang's `sBlend` (the
 // smoothstep X-blend) and `yCurve` (`1.5 t (1-t) + t³`) together form the cubic
 // Bezier from (sx?, 0) to (sx?, height) with both control points at midheight
@@ -69,18 +91,10 @@ export function buildFeaturePath(
 ) {
   const yBot = yTop + height
   ctx.beginPath()
-  if (isCurve) {
-    const halfH = yTop + height * 0.5
-    ctx.moveTo(c.sx1, yTop)
-    ctx.bezierCurveTo(c.sx1, halfH, c.sx4, halfH, c.sx4, yBot)
-    ctx.lineTo(c.sx3, yBot)
-    ctx.bezierCurveTo(c.sx3, halfH, c.sx2, halfH, c.sx2, yTop)
-  } else {
-    ctx.moveTo(c.sx1, yTop)
-    ctx.lineTo(c.sx4, yBot)
-    ctx.lineTo(c.sx3, yBot)
-    ctx.lineTo(c.sx2, yTop)
-  }
+  ctx.moveTo(c.sx1, yTop)
+  edgeTo(ctx, c.sx1, c.sx4, yTop, yBot, isCurve)
+  ctx.lineTo(c.sx3, yBot)
+  edgeTo(ctx, c.sx3, c.sx2, yBot, yTop, isCurve)
   ctx.closePath()
 }
 
@@ -98,18 +112,10 @@ export function strokeFeatureSideEdges(
 ) {
   const yBot = yTop + height
   ctx.beginPath()
-  if (isCurve) {
-    const halfH = yTop + height * 0.5
-    ctx.moveTo(c.sx1, yTop)
-    ctx.bezierCurveTo(c.sx1, halfH, c.sx4, halfH, c.sx4, yBot)
-    ctx.moveTo(c.sx2, yTop)
-    ctx.bezierCurveTo(c.sx2, halfH, c.sx3, halfH, c.sx3, yBot)
-  } else {
-    ctx.moveTo(c.sx1, yTop)
-    ctx.lineTo(c.sx4, yBot)
-    ctx.moveTo(c.sx2, yTop)
-    ctx.lineTo(c.sx3, yBot)
-  }
+  ctx.moveTo(c.sx1, yTop)
+  edgeTo(ctx, c.sx1, c.sx4, yTop, yBot, isCurve)
+  ctx.moveTo(c.sx2, yTop)
+  edgeTo(ctx, c.sx2, c.sx3, yTop, yBot, isCurve)
   ctx.stroke()
 }
 
@@ -142,15 +148,9 @@ export function strokeCenterline(
 ) {
   const xt = centerlineTopX(c)
   const xb = centerlineBottomX(c)
-  const yBot = yTop + height
   ctx.beginPath()
   ctx.moveTo(xt, yTop)
-  if (isCurve) {
-    const halfH = yTop + height * 0.5
-    ctx.bezierCurveTo(xt, halfH, xb, halfH, xb, yBot)
-  } else {
-    ctx.lineTo(xb, yBot)
-  }
+  edgeTo(ctx, xt, xb, yTop, yTop + height, isCurve)
   ctx.stroke()
 }
 
@@ -219,18 +219,54 @@ export function projectCorners(
   return out
 }
 
-// Ribbon perpendicular (visual) thickness in px. A steep diagonal can span
-// several px horizontally yet be razor-thin perpendicular, so keying on
-// horizontal span alone mis-measures it. Shared by the fill path (fill vs
-// centerline-stroke decision in Canvas2DSyntenyRenderer.drawSyntenyTrack) and the
-// pick path (pickFeatureAtPoint) so "drawn as a solid fill" and "pickable" stay
-// the same boundary. Mirrors the perpFactor/perpW pair in syntenyTypes.slang's
-// perpCoverage — measured from the whole ribbon's corners here, per-fragment
-// from each edge's own foreshortening there.
+// The ribbon's horizontal width at whichever END is wider. Its two edges'
+// separation is affine in the blend, so the extremes are always at the ends —
+// which is what makes the two measures below one expression apart.
+function widestEdgePx(c: ProjectedCorners) {
+  return Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3))
+}
+
+// Ribbon perpendicular (visual) thickness in px, in the one-number-per-ribbon
+// chord model. A steep diagonal can span several px horizontally yet be
+// razor-thin perpendicular, so keying on horizontal span alone mis-measures it.
+//
+// Feeds the sub-pixel density fade (`thinWidthFade`) on the stroke branch, which
+// is where its divergence from the shader's per-fragment `perpCoverage` is
+// measured, accepted and parked — synteny's only cross-backend drift, see
+// CROSS_BACKEND_GATE.md and agent-docs/TODO.md. It does NOT decide fill vs
+// stroke; see ribbonMaxPerpWidth for why those came apart.
 export function ribbonPerpWidth(c: ProjectedCorners, height: number) {
   const slope = (centerlineBottomX(c) - centerlineTopX(c)) / Math.max(height, 1)
   const perpFactor = Math.sqrt(1 + slope * slope)
-  return Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3)) / perpFactor
+  return widestEdgePx(c) / perpFactor
+}
+
+// The widest the ribbon is perpendicular to itself ANYWHERE along its length,
+// which is the question "is this ever more than a hairline" — so it is what
+// decides fill vs centerline-stroke in Canvas2DSyntenyRenderer.drawSyntenyTrack,
+// and through that pickability in pickFeatureAtPoint. Both call this, so "drawn
+// as a solid fill" and "pickable" stay one boundary.
+//
+// The widest point is an end (see widestEdgePx), and CURVE MODE IS WHY THIS IS
+// NOT `ribbonPerpWidth`: the x-curve is momentarily vertical at both ends, so
+// the widest point is foreshortened by nothing at all, while the chord factor
+// there is the whole ribbon's travel. Corners (0, 15, 2015, 2000) at h=100
+// measure 0.75 that way against a true 15px at each end — so a band the GPU
+// draws 15px wide (tapering to 0.75 at its middle, which is the shape a bezier
+// connector has) was a 1px hairline in Canvas2D and in the SVG export, and was
+// not clickable. Straight mode carries one slope everywhere and is unchanged.
+//
+// Filling is the accurate branch once the ribbon clears a pixel anywhere: it
+// traces the true silhouette, pinch included, where the stroke branch replaces
+// the whole shape with a 1px line. The remaining gap — the fill does not fade
+// the pinch the way the GPU does — is the same accepted approximation
+// `ribbonPerpWidth` above carries, not a new one.
+export function ribbonMaxPerpWidth(
+  c: ProjectedCorners,
+  height: number,
+  isCurve: boolean,
+) {
+  return isCurve ? widestEdgePx(c) : ribbonPerpWidth(c, height)
 }
 
 // Slack on the hull cull below, covering the widest thing a ribbon can paint

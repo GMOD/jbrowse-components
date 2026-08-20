@@ -6,7 +6,7 @@ import {
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,
-  ribbonPerpWidth,
+  ribbonMaxPerpWidth,
 } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -252,7 +252,8 @@ describe('per-candidate rejection', () => {
 
 // The index does not hold every instance: `buildPickIndex` leaves out the ones
 // whose horizontal width is under 1px on BOTH axes, because `perpFactor >= 1`
-// makes that sufficient to rule out `ribbonPerpWidth >= 1`, and because the pan
+// makes that sufficient to rule out `ribbonMaxPerpWidth >= 1` in either draw
+// mode, and because the pan
 // cancels out of that measure so it is settled by the two scales the index is
 // already keyed on. That is a real narrowing of what a stab can return, so it
 // wants a test that is not about one hand-placed ribbon: a selection predicate
@@ -292,7 +293,7 @@ function bruteForcePick(
     if (isRibbonCulled(c, canvasLogicalWidth, overdrawPx)) {
       continue
     }
-    if (ribbonPerpWidth(c, height) < 1) {
+    if (ribbonMaxPerpWidth(c, height, params.drawCurves) < 1) {
       continue
     }
     buildFeaturePath(ctx, c, 0, height, params.drawCurves)

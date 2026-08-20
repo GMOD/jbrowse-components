@@ -247,3 +247,70 @@ test('sub-pixel ribbons are the unpickable ones, not the reverse', () => {
   expect(isDrawnAsFill(10)).toBe(true)
   expect(isPickable(10)).toBe(true)
 })
+
+// Everything above is a ribbon with zero slope, where the two draw modes trace
+// the same shape and there is nothing for the curve to do. The boundary is NOT
+// mode-independent, and that is where it went wrong: `ribbonPerpWidth` divides
+// the widest edge by the CHORD's foreshortening, which on a bezier describes the
+// ribbon nowhere — its tangent is vertical at both ends, so the widest point is
+// foreshortened by nothing at all, and steepest at the middle.
+//
+// The ribbon below is 5px wide on both edges with 700px of travel over a 100px
+// band. Straight, it really is 0.71px thick the whole way down. Curved, it is a
+// 5px band at the top and bottom that pinches in the middle — which the GPU
+// draws (perpCoverage measures the local width per fragment) and Canvas2D drew
+// as a 1px hairline, unclickable, in the app and in the SVG export.
+const SLOPED_W = 5
+const SLOPED_TRAVEL = 700
+
+function makeSlopedData(): SyntenyInstanceData {
+  return {
+    ...makeData(SLOPED_W),
+    bp3: Float32Array.from([LEFT_BP + SLOPED_TRAVEL + SLOPED_W]),
+    bp4: Float32Array.from([LEFT_BP + SLOPED_TRAVEL]),
+  }
+}
+
+function slopedVerdicts(drawCurves: boolean) {
+  const params = { ...makeParams(), drawCurves }
+  const rec = createDrawCtx()
+  drawSyntenyTrack(rec.ctx, makeSlopedData(), params, 800, 300)
+  expect(rec.filled + rec.stroked).toBe(1)
+  const hit = pickFeatureAtPoint({
+    ctx: createPickCtx(),
+    state: { overdrawPx: 300, perTrack: new Map([[0, params]]) },
+    regions: new Map([[0, makeSlopedData()]]),
+    pickIndices: new Map<number, PickIndex>(),
+    canvasLogicalWidth: 800,
+    // mid-height, where the ribbon's centre sits half its travel along
+    x: LEFT_BP + SLOPED_TRAVEL / 2 + SLOPED_W / 2,
+    y: HEIGHT / 2,
+  })
+  return { filled: rec.filled === 1, pickable: hit !== undefined }
+}
+
+test('a steep ribbon fills and picks when curved, and neither when straight', () => {
+  expect(slopedVerdicts(true)).toEqual({ filled: true, pickable: true })
+  expect(slopedVerdicts(false)).toEqual({ filled: false, pickable: false })
+})
+
+test('drawn and pickable stay one boundary in curve mode too', () => {
+  for (const w of WIDTHS) {
+    const params = { ...makeParams(), drawCurves: true }
+    const rec = createDrawCtx()
+    drawSyntenyTrack(rec.ctx, makeData(w), params, 800, 300)
+    const hit = pickFeatureAtPoint({
+      ctx: createPickCtx(),
+      state: { overdrawPx: 300, perTrack: new Map([[0, params]]) },
+      regions: new Map([[0, makeData(w)]]),
+      pickIndices: new Map<number, PickIndex>(),
+      canvasLogicalWidth: 800,
+      x: LEFT_BP + w / 2,
+      y: HEIGHT / 2,
+    })
+    expect({ width: w, pickable: hit !== undefined }).toEqual({
+      width: w,
+      pickable: rec.filled === 1,
+    })
+  }
+})

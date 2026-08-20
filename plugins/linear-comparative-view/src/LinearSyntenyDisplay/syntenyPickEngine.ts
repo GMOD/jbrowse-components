@@ -7,7 +7,7 @@ import {
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,
-  ribbonPerpWidth,
+  ribbonMaxPerpWidth,
 } from './syntenyRibbonPath.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -115,11 +115,12 @@ const MAX_PAN_SKEW_PX = 2000
 //
 // UNPICKABLE INSTANCES ARE NEVER INSERTED, which is the whole reason this scales.
 // A ribbon is pickable only where it is drawn as a solid fill, i.e. where
-// `ribbonPerpWidth(c, height) >= 1`; that is
+// `ribbonMaxPerpWidth(c, height, drawCurves) >= 1`; that is
 // `max(|sx2-sx1|, |sx4-sx3|) >= perpFactor`, and `perpFactor = sqrt(1+slope²)`
-// is at least 1, so `max(|sx2-sx1|, |sx4-sx3|) < 1` px rules an instance out
-// outright. Two properties make it a build-time question rather than a
-// per-candidate one:
+// is at least 1 (and exactly 1 in curve mode, where the widest point is an end),
+// so `max(|sx2-sx1|, |sx4-sx3|) < 1` px rules an instance out outright in either
+// mode — which is what keeps the draw mode out of the invalidation key. Two
+// properties make it a build-time question rather than a per-candidate one:
 //
 //   - the PAN CANCELS. `sx2 - sx1 = (bp2 - bp1) * bpPerPxInv0` exactly (both
 //     corners carry the same `panPx0`), and likewise for the bottom edge, so
@@ -130,7 +131,7 @@ const MAX_PAN_SKEW_PX = 2000
 //     way the constant y extent above keeps it out.
 //
 // It is a NECESSARY condition, not the full test, so the loop still evaluates
-// `ribbonPerpWidth` exactly on what survives — this can only remove instances
+// `ribbonMaxPerpWidth` exactly on what survives — this can only remove instances
 // the query was going to reject anyway. What it removes is most of them: at
 // whole-genome zoom nearly every ribbon is sub-pixel, which is also where the
 // tree is largest and where a distant-mate ribbon's x-hull spans the whole
@@ -287,10 +288,12 @@ export function pickFeatureAtPoint(
       if (isRibbonCulled(c, canvasLogicalWidth, state.overdrawPx)) {
         continue
       }
-      // The other half of the perpW<1 fill/stroke split in
+      // The other half of the fill/stroke split in
       // Canvas2DSyntenyRenderer.drawSyntenyTrack — not a copy of it: both call
-      // the same `ribbonPerpWidth`, and `syntenyPickRenderAgreement.test.ts`
-      // pins the one thing that could still drift, this threshold.
+      // the same `ribbonMaxPerpWidth`, and `syntenyPickRenderAgreement.test.ts`
+      // pins the one thing that could still drift, this threshold. `drawCurves`
+      // has to be threaded through with it: a bezier ribbon is at its widest
+      // where its edges are vertical, so the two modes do not answer alike.
       //
       // A ribbon thinner than 1px
       // perpendicular is drawn as a 1px centerline (or faded on the GPU), not a
@@ -299,7 +302,7 @@ export function pickFeatureAtPoint(
       // drawn as solid fills are exactly the ones that stay pickable. Evaluated
       // per candidate rather than at index-build time because both the cull and
       // the perpendicular width depend on the live pan.
-      if (ribbonPerpWidth(c, height) < 1) {
+      if (ribbonMaxPerpWidth(c, height, params.drawCurves) < 1) {
         continue
       }
 

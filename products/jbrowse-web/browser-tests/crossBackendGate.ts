@@ -213,6 +213,11 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // rearranged ribbon's ends, 1.00x in straight mode, and 1.00x for grape/peach
   // at any slope because 0.006px floors both. That is the whole of it.
   //
+  // Only the ALPHA is left here. The same one number also decided fill vs
+  // centerline-stroke, and through that pickability — see `ribbonMaxPerpWidth`,
+  // which split that half off. It does not move this measurement: every ribbon
+  // in this view is 0.22px wide, so the branch is the stroke one either way.
+  //
   // NOT a bug to fix on the GPU side: the local width is the more honest
   // statement of what that pixel row covers, and Canvas2D is the approximation.
   // Closing it there means stroking the centerline in N pieces at N alphas

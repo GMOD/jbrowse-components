@@ -23,6 +23,7 @@ import {
   isRibbonCulled,
   makeCornerScratch,
   projectCorners,
+  ribbonMaxPerpWidth,
   ribbonPerpWidth,
   strokeCenterline,
   strokeFeatureSideEdges,
@@ -222,9 +223,16 @@ export function drawSyntenyTrack(
     // yet razor-thin perpendicular, and ctx.fill() of such a degenerate sliver
     // antialiases poorly (ragged diagonals in SVG export). Below 1px thick we
     // instead stroke the centerline at 1px, which canvas renders cleanly at any
-    // slope; above it we fill the silhouette. The same perpW<1 boundary gates
-    // pickability (syntenyPickEngine.pickFeatureAtPoint via ribbonPerpWidth), so a
-    // ribbon is clickable exactly when it's drawn as a solid fill.
+    // slope; above it we fill the silhouette. The same boundary gates pickability
+    // (syntenyPickEngine.pickFeatureAtPoint calls the same function), so a ribbon
+    // is clickable exactly when it's drawn as a solid fill.
+    //
+    // TWO measures, because a curved ribbon has no single width: the branch asks
+    // the WIDEST it ever gets, since a shape that clears a pixel anywhere is one
+    // ctx.fill() traces better than a 1px line replaces; the fade then describes
+    // the shape that branch settled on. Identical in straight mode, where the
+    // ribbon is the same width all the way down. See ribbonMaxPerpWidth.
+    //
     // The BASE alpha fade is the shader's own `thinWidthFade` — a lone thin
     // ribbon stays a faint locatable line while a whole-genome tangle fades
     // instead of stacking hard full-opacity lines. CIGAR keeps full alpha
@@ -237,8 +245,8 @@ export function drawSyntenyTrack(
     // two side edges coincide, so outlining one here would just overstrike the
     // centerline darker — and a sub-pixel ribbon isn't pickable in the first
     // place, so it can only be the clicked one after a zoom-out.
-    const perpW = ribbonPerpWidth(c, height)
-    if (perpW < 1) {
+    if (ribbonMaxPerpWidth(c, height, drawCurves) < 1) {
+      const perpW = ribbonPerpWidth(c, height)
       const widthFade = thinWidthFade(perpW, fadeThinAlignments && !isCigar)
       style.stroke(ctx, r, g, b, fa * widthFade)
       strokeCenterline(ctx, c, yTop, height, drawCurves)
