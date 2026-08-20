@@ -1,7 +1,12 @@
 /// <reference types="@webgpu/types" />
 
 import { syncCanvasSize } from '../canvas2dUtils.ts'
-import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
+import {
+  canvasConfiguredBy,
+  canvasContextError,
+  noteCanvasConfigured,
+  noteCanvasContext,
+} from '../canvasContext.ts'
 import { getGpuDevice } from '../gpuDevice.ts'
 import {
   STANDARD_BLEND_STATE,
@@ -235,6 +240,11 @@ export class WebGPUHal implements GpuHal {
   // both fire).
   private disposed = false
 
+  // One-shot flags for `acquireTextureView`: the warn fires once per HAL rather
+  // than once per frame, and a reconfigure that failed is not attempted again.
+  private warnedSwapChainLoss = false
+  private swapChainUnrecoverable = false
+
   private oom = new OomReporter('WebGPUHal')
 
   private constructor(
@@ -272,6 +282,24 @@ export class WebGPUHal implements GpuHal {
     this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
       buf.dataBuffer.destroy()
     })
+    this.configureContext()
+  }
+
+  /**
+   * Claim the canvas's swap chain, and record that this HAL is the one holding
+   * it — see `noteCanvasConfigured` for why that ownership has to be tracked.
+   *
+   * Called from the constructor rather than from `create`, so that the object
+   * doing the claiming exists, and so a throwing constructor leaves no
+   * configured context behind with nothing to release it.
+   */
+  private configureContext() {
+    this.context.configure({
+      device: this.device,
+      format: navigator.gpu.getPreferredCanvasFormat(),
+      alphaMode: 'premultiplied',
+    })
+    noteCanvasConfigured(this.canvas, this)
   }
 
   static async create(
@@ -299,11 +327,6 @@ export class WebGPUHal implements GpuHal {
       throw canvasContextError(canvas, 'webgpu')
     }
     noteCanvasContext(canvas, 'webgpu')
-    context.configure({
-      device,
-      format: navigator.gpu.getPreferredCanvasFormat(),
-      alphaMode: 'premultiplied',
-    })
     return new WebGPUHal(
       device,
       canvas,
@@ -539,6 +562,50 @@ export class WebGPUHal implements GpuHal {
     }
   }
 
+  /**
+   * The canvas texture to draw this frame into, or null when the swap chain is
+   * gone and could not be rebuilt.
+   *
+   * **A configuration can disappear under a live HAL.** The case we have seen is
+   * a sibling HAL on a reused canvas element releasing a context it turned out
+   * not to own (`noteCanvasConfigured` has the shape), and a browser is free to
+   * drop one for its own reasons too. Firefox reports it as `InvalidStateError:
+   * GPUCanvasContext.getCurrentTexture: Canvas not configured` — on this call
+   * and, measured, on no other. Nothing else in the stack hears about it: there
+   * is no context-lost event to fire the recovery in `useRenderingBackend`, so
+   * unguarded the throw leaves `RenderLifecycleMixin`'s render autorun, lands in
+   * `renderError`, and the display banners a raw DOMException until the tab is
+   * reloaded.
+   *
+   * Reconfiguring restores it in full, so this frame goes on to paint. A
+   * reconfigure that does *not* restore it is reported and not retried — every
+   * later frame would rebuild a swap chain to no effect, and the display's own
+   * Retry is what builds a fresh HAL.
+   */
+  private acquireTextureView() {
+    try {
+      return this.context.getCurrentTexture().createView()
+    } catch (e) {
+      if (this.swapChainUnrecoverable) {
+        return null
+      }
+      if (!this.warnedSwapChainLoss) {
+        this.warnedSwapChainLoss = true
+        console.warn(`[WebGPUHal] canvas lost its swap chain, rebuilding: ${e}`)
+      }
+      try {
+        this.configureContext()
+        return this.context.getCurrentTexture().createView()
+      } catch (retryError) {
+        this.swapChainUnrecoverable = true
+        this.oom.report(
+          `This canvas lost its GPU swap chain and could not reclaim one, so it cannot draw. Retry to rebuild the renderer. (${retryError})`,
+        )
+        return null
+      }
+    }
+  }
+
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
     // Skip the frame entirely rather than encode one that cannot be valid.
     // Zero-size canvas: nothing to draw. Missing MSAA target while MSAA is
@@ -549,22 +616,27 @@ export class WebGPUHal implements GpuHal {
     // through `oom`, so the user has the real message and there is nothing to
     // gain from also spraying validation errors each frame.
     if (
+      this.disposed ||
       this.canvas.width === 0 ||
       this.canvas.height === 0 ||
       (MSAA_SAMPLE_COUNT > 1 && !this.msaaView)
     ) {
       return
     }
-    // Push error scopes so endFrame can report OOM/validation errors after submit.
-    // Must be pushed here (after the early-return) so endFrame's early-return on
-    // !currentEncoder stays paired: scopes are pushed iff an encoder is created.
+    // Before the error scopes, so a failed acquisition needs no unwinding: the
+    // scopes stay pushed iff an encoder is created, which is what endFrame's
+    // early-return on !currentEncoder is paired with.
+    const textureView = this.acquireTextureView()
+    if (!textureView) {
+      return
+    }
     this.device.pushErrorScope('validation')
     this.device.pushErrorScope('out-of-memory')
     this.scissorRect = null
     this.viewportRect = null
     this.seedApplied(this.appliedScissor)
     this.seedApplied(this.appliedViewport)
-    this.currentTextureView = this.context.getCurrentTexture().createView()
+    this.currentTextureView = textureView
     this.currentEncoder = this.device.createCommandEncoder()
     this.uniformSlot = 0
 
@@ -785,7 +857,12 @@ export class WebGPUHal implements GpuHal {
     this.passBindGroups.clear()
     this.msaaTexture?.destroy()
     // Release the swapchain so the browser can reclaim GPU memory immediately
-    // rather than waiting for the canvas to be GC'd.
-    this.context.unconfigure()
+    // rather than waiting for the canvas to be GC'd — but only while it is still
+    // ours to release. A `GPUCanvasContext` belongs to the element, not to the
+    // HAL that configured it, so on a reused canvas this call can take a live
+    // sibling's swap chain instead; `noteCanvasConfigured` has the full shape.
+    if (canvasConfiguredBy(this.canvas, this)) {
+      this.context.unconfigure()
+    }
   }
 }

@@ -29,6 +29,33 @@ const KIND_LABELS: Record<CanvasContextKind, string> = {
 
 const acquired = new WeakMap<HTMLCanvasElement, CanvasContextKind>()
 
+const configuredBy = new WeakMap<HTMLCanvasElement, object>()
+
+/**
+ * Record `owner` as the holder of `canvas`'s current WebGPU configuration.
+ *
+ * `getContext('webgpu')` hands back the **same** `GPUCanvasContext` object every
+ * time, so a configuration is per-element state that two HALs can end up
+ * sharing: a re-init on a reused element (a display whose `model` prop swaps
+ * under it, an init that overlaps a cancelled one) builds a second HAL on the
+ * same context, and `unconfigure()` from whichever loses the race takes the
+ * winner's swap chain with it. Firefox then throws `InvalidStateError:
+ * GPUCanvasContext.getCurrentTexture: Canvas not configured` on every frame the
+ * live HAL draws, forever — the browser fires no context-lost event for it, so
+ * none of the loss recovery in `useRenderingBackend` ever runs.
+ *
+ * Last configure wins, which is the live one: a cancelled init is disposed, and
+ * disposal is the only thing that unconfigures.
+ */
+export function noteCanvasConfigured(canvas: HTMLCanvasElement, owner: object) {
+  configuredBy.set(canvas, owner)
+}
+
+/** Whether `owner`'s configuration is still the one on `canvas`. */
+export function canvasConfiguredBy(canvas: HTMLCanvasElement, owner: object) {
+  return configuredBy.get(canvas) === owner
+}
+
 /**
  * Record that `canvas` is now permanently committed to `kind`. Call on every
  * **successful** `getContext`, in every HAL and every Canvas2D backend — a kind
