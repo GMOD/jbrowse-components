@@ -34,7 +34,6 @@ import type {
   HicRenderingBackend,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
@@ -633,6 +632,13 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * view's SVG export on an unbounded `awaitSvgReady`.
        */
       async fetchHicInfo() {
+        // One of the display's operations, so it takes a slot on the status
+        // field rather than writing it (ADR-081). `reload()` re-reads the header
+        // while `effectiveResolution` is still set from the last load, so the
+        // contacts fetch runs beside this one — and the `''` this RPC's
+        // outermost phase closes on used to blank the label that fetch was
+        // still producing.
+        const stream = self.openStatusStream(() => isAlive(self))
         try {
           const { rpcManager } = getSession(self)
           const rpcSessionId = getRpcSessionId(self)
@@ -654,18 +660,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               // whose norm-vector index has to be discovered by walking the file
               // sits on a bare "Loading..." for the whole chain of range reads.
               //
-              // `setStatusMessage` directly rather than `makeStatusCallback`:
-              // this emits a handful of distinct phase labels, not a progress
-              // stream, and a window sized for ~40 events/s only guarantees the
-              // LAST of a burst — the intermediate labels are exactly what this
-              // is here to show. (It does not lose the closing `''`: the window
-              // has had a trailing edge since ADR-071, so a clear that falls
-              // inside one lands a window later rather than never.)
-              statusCallback: (status: RpcStatus) => {
-                if (isAlive(self)) {
-                  self.setStatusMessage(status)
-                }
-              },
+              // The labels this emits are distinct phases rather than a progress
+              // stream, and the 100ms window only guarantees the last of a
+              // burst — but each of them fronts a network range read, so none of
+              // them lands inside another's window.
+              statusCallback: stream.statusCallback,
             },
           )) as { norms?: string[]; resolutions?: number[] }
           if (isAlive(self)) {
@@ -697,6 +696,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           if (isAlive(self)) {
             self.setError(e)
           }
+        } finally {
+          stream.clear()
         }
       },
     }))

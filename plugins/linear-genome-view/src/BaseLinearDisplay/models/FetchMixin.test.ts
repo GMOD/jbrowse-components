@@ -487,6 +487,73 @@ describe('FetchMixin: status callback throttle', () => {
   })
 })
 
+// A display runs more than one operation at a time — the viewport fetch, a
+// bare-autorun fetch through a lent `createStopTokenRotation`, a clustering run
+// — and all of them report into this one field. Before ADR-081 each of them
+// blanked it outright when it finished, so whichever finished first wiped the
+// label the others were still producing, and the loading overlay renders a
+// missing label as its 'Loading' fallback.
+describe('FetchMixin: two operations on one field', () => {
+  // The shape `getMultiSampleVariantSourcesAutorun` and
+  // `setupRunClusteringAutorun` both have: a second operation on a display that
+  // is also fetching its viewport.
+  function fetchAndSideOperation() {
+    const m = makeModel()
+    let fetchCtx!: FetchContext
+    m.runFetch(ctx => {
+      fetchCtx = ctx
+      return new Promise<void>(() => {})
+    })
+    return { m, fetchCtx, side: m.openStatusStream(() => true) }
+  }
+
+  it('a side operation ending leaves the fetch label alone', () => {
+    const { m, fetchCtx, side } = fetchAndSideOperation()
+    fetchCtx.statusCallback('Downloading features')
+    side.statusCallback('Reading sources')
+    side.clear()
+    expect(m.statusMessage).toBe('Downloading features')
+  })
+
+  it('the fetch ending leaves a side operation still running', async () => {
+    const { m, side } = fetchAndSideOperation()
+    side.statusCallback('Reading sources')
+    m.cancelFetch()
+    await tick()
+    await tick()
+    expect(m.statusMessage).toBe('Reading sources')
+    // and the last one to retire is what blanks the field
+    side.clear()
+    expect(m.statusMessage).toBeUndefined()
+  })
+
+  // Only one phase is summable (ADR-072), so what a two-operation aggregate
+  // does is pick: the phase the display reached first holds the label, and the
+  // bar under it is that phase's own.
+  it('the earlier phase holds the label while both are reporting', () => {
+    const { m, fetchCtx, side } = fetchAndSideOperation()
+    fetchCtx.statusCallback({
+      message: 'Downloading features',
+      current: 1,
+      total: 4,
+    })
+    side.statusCallback({ message: 'Reading sources', current: 1, total: 2 })
+    expect(m.statusMessage).toBe('Downloading features')
+    side.clear()
+  })
+
+  // The slot goes with the operation, so a display that keeps fetching for
+  // hours does not accumulate them — and the phase order it recorded is dropped
+  // with the last of them, since idle is the batch boundary.
+  it('retiring the last slot blanks the field', () => {
+    const { m, fetchCtx, side } = fetchAndSideOperation()
+    fetchCtx.statusCallback('Downloading features')
+    side.clear()
+    m.cancelFetch()
+    expect(m.statusMessage).toBeUndefined()
+  })
+})
+
 describe('FetchMixin: isStale contract for work callbacks', () => {
   it('isStale is false during a normal fetch', async () => {
     const m = makeModel()

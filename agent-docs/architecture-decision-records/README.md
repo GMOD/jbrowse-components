@@ -90,4 +90,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [078](adr-078-one-upload-autorun-and-a-diff.md) | Accepted | Per-region streamed upload is one autorun over the map plus a reference diff, not an autorun per key |
 | [079](adr-079-a-display-installs-a-lifecycle.md) | Accepted | A display installs one of three rendering lifecycles; nothing outside render-core calls attachRenderingBackend, and the setup thunk is what makes the once-only semantics structural |
 | [080](adr-080-a-phase-ends-when-it-stops-reporting.md) | Accepted | A fan-out slot retires a phase on any status that is not that phase moving forward, credits it once, and never blanks the shared label |
+| [081](adr-081-a-status-field-is-one-fan-out.md) | Accepted | A status field aggregates across the concurrent OPERATIONS that share it, not just the regions of one fetch; a stream ends by retiring its slot, and blanks the field only when it was the last |
 <!-- END GENERATED ADR INDEX -->

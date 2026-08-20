@@ -63,6 +63,23 @@ export interface FetchContext {
   statusCallback: StatusCallback
 }
 
+// The status field's single writer, which is what the window is opened over.
+// `self` inside a volatile initializer is the empty model the chain starts from
+// and `setStatusMessage` arrives three steps later, so the cast names the one
+// member it calls; the write itself runs long after the chain is finished.
+interface StatusWriter extends IStateTreeNode {
+  setStatusMessage: (status?: RpcStatus) => void
+}
+
+function writeStatus(self: unknown) {
+  return (status: RpcStatus | undefined) => {
+    const model = self as StatusWriter
+    if (isAlive(model)) {
+      model.setStatusMessage(status)
+    }
+  }
+}
+
 // Cancel-safe fetch lifecycle for any display that loads data over RPC.
 //
 // The mixin owns the entire fetch state machine (stop-token rotation,
@@ -96,14 +113,6 @@ export interface FetchContext {
  * error capture, status reporting); consumers see only `runFetch`,
  * `cancelFetch`, `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
  */
-// What the window's write reaches forward for. `self` inside the volatile
-// initializer is the empty model the chain starts from, and `setStatusMessage`
-// arrives three steps later — the write runs long after that, so naming the one
-// member it calls is the whole of the cast.
-interface StatusWriter extends IStateTreeNode {
-  setStatusMessage: (status?: RpcStatus) => void
-}
-
 export default function FetchMixin() {
   return types
     .model('FetchMixin', {})
@@ -129,12 +138,7 @@ export default function FetchMixin() {
        * to `createStopTokenRotation` by a display that also runs a bare-autorun
        * fetch — see `StatusReporter`.
        */
-      statusWindow: createStatusWindow(status => {
-        const model = self as unknown as StatusWriter
-        if (isAlive(model)) {
-          model.setStatusMessage(status)
-        }
-      }),
+      statusWindow: createStatusWindow(writeStatus(self)),
 
       /**
        * #volatile
@@ -292,7 +296,8 @@ export default function FetchMixin() {
        * #action
        * Unthrottled: a display writing a phase label by hand must see every
        * write land. The high-frequency RPC stream is thinned one level up, by
-       * the sinks `self.statusWindow` hands out.
+       * the streams `self.statusWindow` hands out — and aggregated across them,
+       * which a write by hand is not.
        */
       setStatusMessage(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
@@ -323,6 +328,9 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * Hold the in-flight fetch's slot so a cancel can reach it. `runFetch`
+       * keeps its own reference, so this is only for the paths that end a fetch
+       * from outside the flow.
        */
       setActiveStatusStream(stream?: StatusStream) {
         self.activeStatusStream = stream
@@ -331,7 +339,7 @@ export default function FetchMixin() {
     .actions(self => ({
       /**
        * #action
-       * Abort the in-flight fetch (if any) and clear its status. The shared
+       * Abort the in-flight fetch (if any) and retire its slot. The shared
        * preamble of both cancel paths; the difference between them is only what
        * they do to `fetchCanceled` / `fetchGeneration` afterward.
        */

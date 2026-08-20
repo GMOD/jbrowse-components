@@ -253,6 +253,14 @@ the same field. There is one answer on both sides of the RPC boundary:
 from every slot on every write. N downloads then read as one honest bar instead
 of last-writer thrash.
 
+**The same answer one level up**, for the concurrent *operations* that share one
+owner's field rather than the regions of one fetch: the window aggregates too
+(ADR-081), so a display's viewport fetch, a lent `createStopTokenRotation` and a
+clustering run each take a slot and none of them can end another's label. Which
+one holds the label is ADR-072's rule unchanged — only a phase's own slots are
+summable, so the phase the owner reached first wins and the rest are charged
+below it.
+
 On the main thread nobody calls it directly, because the fan-out helpers own it:
 `callEachRegion` — and `fetchEachRegion` through it — hands each region a copy of
 the `FetchContext` whose `statusCallback` is that region's slot. So a display
@@ -280,30 +288,35 @@ completed.
 
 An adapter emits progress ~40/s and each observable write repaints the overlay
 (and repositions its MUI Popper) — measured outpacing the view's own animation.
-`createStatusWindow()` (`@jbrowse/core/util`) is the one window (100ms), leading
+`createStatusWindow(write)` (`@jbrowse/core/util`) is the one window (100ms), leading
 **and trailing**: the last write of a burst is the one that matters most and is
 exactly the one a leading-edge-only gate drops, which froze a determinate bar at
 whatever percentage happened to land on a boundary. Because a trailing write
 fires on a timer, its guard has to be re-read inside the throttled body — which
-is what `window.open({isCurrent, write})` does, and why nothing else builds a
-status callback by hand.
+is what `window.open({isCurrent})` does, and why nothing else builds a status
+callback by hand.
 
 **One per owner**, and the streams come off the window rather than taking one as
 an argument, so N parallel region fetches thin to one flow between them rather
 than N. That used to be a paragraph asking callers not to pass a fresh throttle
 per callback; a per-callback window now has no spelling short of
-`createStatusWindow().open(…)`.
+`createStatusWindow(write).open(…)`.
 
 `open` returns `{statusCallback, clear}` together, because a stream nobody
 closes is the failure mode the rest of this design rests on not happening: a
 fan-out cannot see the end of a batch and no longer guesses at one (ADR-080), so
-**the owner blanking its own field when its work ends is what ends the stream**.
-Call `clear()` in the `finally` of the operation. `write` takes that
-`undefined` as well as a status, so the field has exactly one writer and
-whatever guards it — `isAlive(self)`, a React `alive` flag — guards the clear by
-construction. `window.reset()` reopens without writing, for the start of the
-next operation. The owners, so progress cadence is uniform whichever path a
-status took:
+**an operation retiring its own slot when its work ends is what ends the
+stream**. Call `clear()` in the `finally` of the operation; it blanks the field
+only when no other operation is still reporting (ADR-081), so a superseded run
+calls it too and must.
+
+`createStatusWindow(write)` takes the field's single writer at creation, so
+whatever guards it — `isAlive(self)`, a React `alive` flag — guards every status
+and every clear by construction rather than by a copy of the check at each
+`finally`. The window reopens itself when the field goes idle, which is what
+retiring the last slot does; `window.reset()` is for teardown, where the trailing
+timer outlives everything that could make it a no-op. The owners, so progress
+cadence is uniform whichever path a status took:
 
 - `FetchMixin` — the LGV displays
 - `createStopTokenRotation` — the bare-autorun fetches (dotplot, synteny,
@@ -315,6 +328,12 @@ status took:
 - `useMateDiscovery` — the synteny launch dialog's mate discovery
 - `useClusterRun` — a "Run clustering" dialog, one window per run
 
+The operations that take a *slot* on a display's window, rather than opening one
+of their own: `runFetch` (the viewport fetch, one per fetch),
+`setupRunClusteringAutorun` (one per run), and a `createStopTokenRotation` the
+display lent its window to. All three used to blank the field when they finished
+— see ADR-081 for what that did to the other two.
+
 They are listed rather than counted for the reason
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) states at "ordering is the
 contract": this said "Three owners" while the last two were already here.
@@ -324,15 +343,23 @@ Two rules the shape enforces:
 - **`setStatusMessage` itself is never throttled.** A display writing a phase
   label by hand ("Downloading" → "Parsing") is a sequence of distinct labels, and
   a trailing edge only guarantees the *last* of a burst, not each one in turn.
-- **The `''` a phase helper closes with IS throttled — the owner's `clear` is
-  not.** They are easy to conflate and ADR-071 turns on the difference. The `''`
-  goes through the stream like every other status, so a phase that opens and
+- **The `''` a phase helper closes with IS throttled — the operation's `clear`
+  is not.** They are easy to conflate and ADR-071 turns on the difference. The
+  `''` goes through the stream like every other status, so a phase that opens and
   closes inside one window paints nothing; it still displaces the percentage
   queued behind it, because the window holds one pending write, so a finished
-  phase's progress can never come back. `clear()` is the other thing: the owner's
-  last word when its work ends, which has to *land* — nothing is coming to
-  displace it — and has to reopen the window, or the next operation's first label
-  is charged a full window it did nothing to earn.
+  phase's progress can never come back. A `''` never *reaches* the field, either:
+  the window writes what its slots add up to, and an idle aggregate writes the
+  last label alone. `clear()` is the other thing: the operation's last word, which
+  has to *land* when it is the last one — nothing is coming to displace it — and
+  which reopens the window for whatever starts after the lull.
+
+- **Hold the last determinate reading only where the slots are raw reporters.**
+  `createStatusFanOut` does; `createStatusWindow` does not. A slot fed by another
+  aggregate has already had ADR-080's hold applied to it, and re-applying it puts
+  back a percentage the child retired — which is the write ADR-071 exists to
+  cancel. The shared `createStatusAggregate` takes it as a flag so the arithmetic
+  has one copy.
 
 ## A silent `rpcManager.call` is a lint error, not a judgement call
 
