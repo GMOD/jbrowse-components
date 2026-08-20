@@ -120,11 +120,33 @@ predicate, which draws one ribbon twice at doubled alpha (the artifact
 `markReciprocalDuplicates` exists to remove). Both have a sabotage in
 `bidirectionalFetch.test.ts`.
 
-**What a recovered ribbon looks like.** Its query end is at least a pan buffer
-off the edge by construction, so it draws as the steep sliver leaving the top of
-the band rather than as a full ribbon — which is exactly what this view has
-always drawn in the other direction, for an alignment anchored in the query
-window whose target end is far away. The asymmetry was the bug.
+## What a recovered ribbon actually draws, which is nothing by default
+
+**Checked by looking, after asserting otherwise.** A recovered ribbon's query
+end is at least a pan buffer off the edge *by construction* — that is what put
+it outside the first fetch — and `isRibbonCulled` drops a ribbon when EITHER
+edge is outside `overdrawPx`, not when both are. The default overdraw is 1000px
+and `syntenyPanBufferPx` is at least 2000, so **at the default this class is
+culled at draw time, every one of it.** `numFeats` goes 576 → 1029 on the probe
+above and the picture does not change.
+
+Raise `overdrawPx` past the buffer and they appear: a dense fan sweeping from
+the target row up to the edge the query end lies beyond. That is a legal
+setting — the config help already says values above the buffer draw ribbons
+whose CIGAR detail stops partway — so the class is reachable, just not on the
+defaults.
+
+**So the asymmetry this closes is narrower than it first looked.** It is not
+"one direction draws and the other does not": a query-anchored alignment whose
+TARGET end is far off-screen is culled by the same per-edge rule. What the
+second fetch fixes is that one direction was never *fetched*, so raising the
+overdraw could not reveal it however far you raised it. With the second fetch
+the setting works both ways.
+
+Do not widen `isRibbonCulled` to make this visible by default. At whole-genome
+zoom every far-off-screen pair would draw as a near-vertical line at the frame
+edge, which is a red wall down both sides — the per-edge test is why that does
+not happen.
 
 ## The state this class lives in, which is easy to test your way out of
 

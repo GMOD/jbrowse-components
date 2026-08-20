@@ -215,11 +215,13 @@ export async function executeSyntenyFeaturesAndPositions({
    *   mismatches draws one ribbon twice at doubled alpha.
    * - on a query contig the row above IS displaying, outside that window → a
    *   real ribbon the query-axis fetch could not have seen, so it is flipped
-   *   into the query perspective and joins the pile below. Its query end is at
-   *   least a pan buffer off the edge, so what it draws is the steep sliver
-   *   leaving the top of the band — the same picture this view has always drawn
-   *   in the other direction, for an alignment anchored in the query window
-   *   whose target end is far away.
+   *   into the query perspective and joins the pile below. NOTHING DRAWS IT AT
+   *   THE DEFAULT: its query end is at least a pan buffer off the edge by
+   *   construction, and `isRibbonCulled` drops a ribbon when EITHER edge is
+   *   outside `overdrawPx`, which defaults to less than that buffer. Raising
+   *   the overdraw past the buffer is what reveals them, and what this fetch
+   *   changes is that there is then something to reveal — see
+   *   agent-docs/ideas/two-axis-synteny-fetch.md.
    * - on a contig the row above is not displaying at all → there is no second
    *   endpoint to run a ribbon to, so it is counted and marked on the target
    *   axis: the mirror of `offscreenMates` below.
