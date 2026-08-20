@@ -78,6 +78,30 @@ export function makeNameColorFunction(
   return (index: number) => lut[ids[index]!]!
 }
 
+/**
+ * #api
+ * One name's chromosome-painting color, resolved against an assembly's refName
+ * list and handed back as CSS — what a Canvas2D overlay needs, where the
+ * renderers want packed ABGR.
+ *
+ * The single-name form of the LUT above, because a second reader has turned up
+ * that is not painting features: the off-screen mate marks stand for alignments
+ * to a contig the facing row is not showing, and a mark colored like the ribbons
+ * to that contig is what says a ribbon did not vanish, it moved. Two palettes
+ * would put a mark and its ribbons in different colors, which is exactly the
+ * drift this module exists to prevent — see the header.
+ */
+export function nameColorCss(
+  refName: string,
+  nameOrder: readonly string[] | undefined,
+) {
+  const position = nameOrder?.indexOf(refName)
+  return refNameColor(
+    refName,
+    position === undefined || position < 0 ? undefined : position,
+  )
+}
+
 function buildLut(toRgb: (norm: number) => Rgb) {
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {

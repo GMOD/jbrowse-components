@@ -5,6 +5,31 @@ description: SV-type classification, `syntenyGroupId`, all-vs-all PAF, PIF limit
 
 # Synteny / comparative
 
+**A followed row's snap grid never repeats, so it refetches per settle.**
+`syntenyFetchRegions` snaps its window to a grid whose PITCH is
+`syntenyPanBufferPx(width) * bpPerPx` — the scale does not merely size the buffer,
+it moves every grid line. A row under `SyntenyFollow` matches the anchor's scale
+and that scale changes step to step on purpose (`SyntenyFollow/CLAUDE.md`: "the
+row's scale is no longer constant through a pan, and that is the fix, not a side
+effect"), so the snapping that is supposed to make a sub-buffer pan reuse its
+fetch never repeats there. Measured at 800px on one locus, feeding seven scale
+wobbles all under 2% (100, 100.4, 101.1, 99.6, 100.9, 102.2, 98.7 bp/px): seven
+distinct windows, so `fetchRegionsKey` flips on every settle and the level
+refetches.
+
+It is a COST, not the reason the picture changes. Moving the row changes which
+alignments have both ends in view, so the ribbon set turns over under follow
+whatever the fetch key does — that is what the colored off-screen mate marks are
+for. This is the RPC per settle underneath it.
+
+The fix is not to coarsen the grid alone: its pitch is load-bearing, since the
+distance a pan travels before rollover is exactly the distance the worker emitted
+geometry for, and a coarser grid lets a pan reach past the emitted band and pop
+ribbons out. It means quantizing `bpPerPx` UP a ladder and feeding that one value
+to all three windows (fetch, whole-feature cull, geometry emit) so they stay in
+step — costing one ladder step more geometry per level, ~10% on a 1.1 ladder and
+~25% on 1.25.
+
 **Linked dotplot + linear synteny.** Selections/zoom propagate between both views.
 
 **Swap axes** (dotplot & linear synteny). Flip comparison perspective or reverse

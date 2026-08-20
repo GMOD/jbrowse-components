@@ -28,13 +28,20 @@ lives here rather than being copied into both models.
 | <span id="property-trackcolors">**trackColors**</span><br><code>trackColors: types.map(types.string)</code> | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |
 | <span id="property-showcolorlegend">**showColorLegend**</span><br><code>showColorLegend: types.stripDefault(types.boolean, false)</code> | Show the floating color-by legend. Dismissible via the legend's close button; re-enable from the color-by (palette) menu. |
 
+## Volatiles
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="volatile-seenattributeranges">**seenAttributeRanges**</span><br><code>seenAttributeRanges: {} as Record&lt;string, AttributeRange&gt;</code> | The widest span each numeric channel has been seen to cover, over every fetch this view has taken — what keeps an `attribute:<column>` ramp from re-scaling under a pan. Widened by `observeAttributeRanges`, read through `attributeRanges`, which is where the reasoning is. |
+
 ## Getters
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
 | <span id="getter-colorableattributes">**colorableAttributes**</span><br><code>string[]</code> | Distinct numeric columns across the overlaid tracks, in first-seen order — two tracks declaring `dn` offer one `dn` mode, not two. |
-| <span id="getter-attributeranges">**attributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> | The span each numeric channel covered, unioned over the loaded displays. An `attribute:<column>` mode has no declared domain, so this is what its ramp scales to and what the legend labels it with.<br><br>View-wide rather than per display because the floating legend is one box for the whole view: two displays labelling the same ramp from different spans would make that one legend lie. The renderers scale per display, so this is a labelling domain, not a painting one. |
+| <span id="getter-attributeranges">**attributeRanges**</span><br><code>Record&lt;string, AttributeRange&gt;</code> | The span each numeric channel covers: unioned over the loaded displays, and over every fetch this view has already taken (`seenAttributeRanges`). An `attribute:<column>` mode has no declared domain, so this is what its ramp scales to, what the legend labels it with, and — since it is the one domain — what the two cannot disagree about.<br><br>MONOTONIC, which is the point. A fetch's payload reports the span of the slice it holds, and that slice is the snapped window: painting straight off it re-maps every feature onto the ramp each time a pan rolls the window over, so a ribbon in the middle of the ramp turns into one at the bottom while the reader is scrolling and its value has not changed. A domain that only ever widens still says what the reader is looking at — the legend prints the actual numbers — and settles instead of oscillating.<br><br>View-wide rather than per display because the floating legend is one box for the whole view: two displays scaling the same ramp from different spans would make that one legend lie about one of them. |
 | <span id="getter-colorabletracks">**colorableTracks**</span><br><code>ColorableTrack[]</code> | `colorableTrackConfigs` paired with whatever color the user pinned. This is the single definition of "the tracks that get colors" — the palette, the legend and the palette menu all read it, so they cannot disagree about which tracks are in play. |
 | <span id="getter-trackcolorassignments">**trackColorAssignments**</span><br><code>Map&lt;string, string&gt;</code> | trackId -> the color it draws in under `colorBy: 'track'`. Assigned across the whole view rather than per display, so an automatic slot can't duplicate a color pinned on a sibling. |
 | <span id="getter-uniformcolorby">**uniformColorBy**</span><br><code>SyntenyColorBy &#124; undefined</code> | The mode to report as "the view's mode" — undefined when tracks disagree, so the menu shows nothing checked and the legend says so instead of picking one track's answer for everyone. |
@@ -56,6 +63,7 @@ lives here rather than being copied into both models.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="action-observeattributeranges">**observeAttributeRanges**</span><br><code>(ranges: Record&lt;string, AttributeRange&gt;) =&gt; void</code> | Fold one fetch's observed attribute spans into the domain this view paints and labels its ramps with. Called by each display as its fetch lands, because the accumulation has to outlive the payload it came from: the previous window's span is gone from `loadedAttributeRanges` the moment the next one commits. |
 | <span id="action-setcolorby">**setColorBy**</span><br><code>(value: SyntenyColorBy) =&gt; void</code> | Set the view-wide mode. Clears every per-track override, so picking a mode from the top level of the palette menu really does mean "all tracks". |
 | <span id="action-settrackcolorby">**setTrackColorBy**</span><br><code>(trackId: string, value: SyntenyColorBy &#124; undefined) =&gt; void</code> | Point one track at its own mode, or back at the view-wide one. |
 | <span id="action-settrackcolor">**setTrackColor**</span><br><code>(trackId: string, value: string &#124; undefined) =&gt; void</code> | Pin one track's color under `colorBy: 'track'`, or release it back to an automatic palette slot. |

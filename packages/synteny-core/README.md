@@ -190,6 +190,26 @@ blendOverWhite for a legend chip, floored at LEGEND_CHIP_ALPHA_FLOOR.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
+### nameColorCss
+
+One name's chromosome-painting color, resolved against an assembly's refName
+list and handed back as CSS — what a Canvas2D overlay needs, where the renderers
+want packed ABGR.
+
+The single-name form of the LUT above, because a second reader has turned up
+that is not painting features: the off-screen mate marks stand for alignments to
+a contig the facing row is not showing, and a mark colored like the ribbons to
+that contig is what says a ribbon did not vanish, it moved. Two palettes would
+put a mark and its ribbons in different colors, which is exactly the drift this
+module exists to prevent — see the header.
+
+```js
+// type signature
+(refName: string, nameOrder: readonly string[] | undefined) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorFunctions.ts)
+
 ### trackLegendChips
 
 The legend rows that name the overlaid tracks. Two cases produce them, and both

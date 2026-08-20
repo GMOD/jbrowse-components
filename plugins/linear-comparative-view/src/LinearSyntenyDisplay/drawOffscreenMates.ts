@@ -88,8 +88,13 @@ const MAX_LABEL_ROWS = 3
 // — a dark grey ideogram over a field of 0.2-alpha ribbons — which inverts what
 // the reader should look at first. Alpha rather than a lighter grey so the
 // strip recedes against either theme's ground, and it composites correctly
-// because the marks are filled as ONE path (see `drawOffscreenMates`).
-const MARK_ALPHA = 0.35
+// because marks of one color are filled as ONE path (see `drawOffscreenMates`).
+//
+// Exported because a lane painting its marks by contig
+// (`offscreenMateMarkColorFor`) has to reach the same weight through a different
+// palette: a strip that is grey at 0.35 in one mode and full-strength category10
+// in another is two features, not one with a color key.
+export const MARK_ALPHA = 0.35
 
 // One source for both surfaces: the screen overlay and the SVG export run the
 // same draw, and a figure whose marks are a different grey from the ones the
@@ -128,6 +133,14 @@ export interface OffscreenMateLane {
   // shader applies it to ribbons: a whole-genome hairball filtered down to its
   // real blocks should not keep a fringe of marks for the noise it just hid.
   minAlignmentLength: number
+  // The color for the contig a mark NAMES, or absent to leave this lane's marks
+  // in the band's grey.
+  //
+  // PER LANE, because the two lanes hold contigs of different assemblies — and
+  // because only one of them is usually keyed the same way the ribbons are. See
+  // `offscreenMateMarkColors`, which is where the decision lives; this file only
+  // paints what it is handed.
+  markColorFor?: (refName: string) => string
 }
 
 // One lane against the band it is drawn in — what the geometry needs, and what
@@ -529,6 +542,32 @@ export function offscreenMateAt(
  * actually means, and a run too narrow for its contig name is exactly the one
  * whose neighbours would have overprinted it.
  */
+// The strip's marks grouped into one path per fill, in a stable order: a lane
+// with no `markColorFor` contributes every rect to the band's grey, so the
+// uncolored case is one group and one fill exactly as it was.
+function markPathsByColor(
+  laneRects: OffscreenMateRect[][],
+  lanes: OffscreenMateLane[],
+  markColor: string,
+) {
+  const byColor = new Map<string, OffscreenMateRect[]>()
+  for (const [i, rects] of laneRects.entries()) {
+    const colorFor = lanes[i]!.markColorFor
+    for (const r of rects) {
+      const color = colorFor
+        ? colorFor(offscreenMateRefName(r.data, r.index))
+        : markColor
+      let group = byColor.get(color)
+      if (!group) {
+        group = []
+        byColor.set(color, group)
+      }
+      group.push(r)
+    }
+  }
+  return byColor
+}
+
 export function drawOffscreenMates(
   ctx: Ctx2D,
   lanes: OffscreenMateLane[],
@@ -547,14 +586,23 @@ export function drawOffscreenMates(
   // it saturates to near-black and reads as a solid ideogram rather than as
   // marks. Filled as one path they take the color once. It is also what the SVG
   // export wants: one `<path>` instead of a `<rect>` per alignment.
-  ctx.fillStyle = markColor
-  ctx.beginPath()
-  for (const rects of laneRects) {
+  // ONE PATH PER COLOR, which is the same rule as one path for one color: marks
+  // sharing a color are the same contig, so filling them together is what stops
+  // the strip darkening with density (see above). Marks of DIFFERENT colors do
+  // composite against each other where they overlap, and that is honest — they
+  // are alignments to different places.
+  for (const [fillStyle, rects] of markPathsByColor(
+    laneRects,
+    lanes,
+    markColor,
+  )) {
+    ctx.fillStyle = fillStyle
+    ctx.beginPath()
     for (const r of rects) {
       ctx.rect(r.x, r.y, r.width, r.height)
     }
+    ctx.fill()
   }
-  ctx.fill()
 
   ctx.font = LABEL_FONT
   ctx.textBaseline = 'alphabetic'

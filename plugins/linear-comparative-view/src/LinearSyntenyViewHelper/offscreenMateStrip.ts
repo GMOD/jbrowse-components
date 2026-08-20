@@ -1,10 +1,13 @@
 import { offscreenMateAt } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 
 import type {
   OffscreenMateLane,
   OffscreenMateSide,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+import type { MarkColorSource } from './offscreenMateMarkColors.ts'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 // One row of marks: the off-screen mates every display on the level fetched for
 // one axis, and the ruler to place them against — plus the one thing the draw
@@ -19,7 +22,7 @@ export interface OffscreenMateStrip extends OffscreenMateLane {
 // The structural slice the overlay and the SVG export read, so what decides
 // where a mark lands is checkable without a canvas — which jsdom does not give
 // one of anyway.
-export interface OffscreenMateSource {
+export interface OffscreenMateSource extends MarkColorSource {
   level: number
   linearSyntenyDisplays: {
     featureData?: {
@@ -28,6 +31,10 @@ export interface OffscreenMateSource {
       // view has not asked for one
       targetOffscreenMates?: OffscreenMateData
     }
+    // what the ribbons beside these marks are keyed by, which is what decides
+    // whether a mark may be colored by the contig it names
+    effectiveColorBy?: SyntenyColorBy
+    paintedChromosomeOrder?: readonly string[]
   }[]
   parentView: {
     showOffscreenMates: boolean
@@ -104,6 +111,7 @@ export function offscreenMateStrips(
             minAlignmentLength,
             side,
             navRow,
+            markColorFor: offscreenMateMarkColorFor(model, side),
           },
         ]
       : []

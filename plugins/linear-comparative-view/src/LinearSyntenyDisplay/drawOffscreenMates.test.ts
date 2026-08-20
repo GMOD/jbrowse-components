@@ -30,42 +30,48 @@ const LABEL_ASCENT_PX = 8
 
 function fakeCtx() {
   const rects: Rect[] = []
+  // The same rects grouped by the style each fill() was made under, which is
+  // what says whether marks of one color went down as one path
+  const fills: { style: string; rects: Rect[] }[] = []
   const texts: { text: string; x: number; y: number }[] = []
   const strokes: { text: string; x: number; y: number }[] = []
   // Recorded on fill(), not on rect(), so a path built and never filled records
   // nothing — which is the whole failure mode of drawing the strip as one path.
   let pending: Rect[] = []
+  const ctx = {
+    fillStyle: '',
+    strokeStyle: '',
+    font: '',
+    textBaseline: '',
+    lineWidth: 0,
+    lineJoin: '',
+    beginPath() {
+      pending = []
+    },
+    rect(x: number, y: number, w: number, h: number) {
+      pending.push({ x, y, w, h })
+    },
+    fill() {
+      rects.push(...pending)
+      fills.push({ style: ctx.fillStyle, rects: pending })
+      pending = []
+    },
+    fillText(text: string, x: number, y: number) {
+      texts.push({ text, x, y })
+    },
+    strokeText(text: string, x: number, y: number) {
+      strokes.push({ text, x, y })
+    },
+    measureText(text: string) {
+      return { width: text.length * CHAR_PX }
+    },
+  }
   return {
     rects,
+    fills,
     texts,
     strokes,
-    ctx: {
-      fillStyle: '',
-      strokeStyle: '',
-      font: '',
-      textBaseline: '',
-      lineWidth: 0,
-      lineJoin: '',
-      beginPath() {
-        pending = []
-      },
-      rect(x: number, y: number, w: number, h: number) {
-        pending.push({ x, y, w, h })
-      },
-      fill() {
-        rects.push(...pending)
-        pending = []
-      },
-      fillText(text: string, x: number, y: number) {
-        texts.push({ text, x, y })
-      },
-      strokeText(text: string, x: number, y: number) {
-        strokes.push({ text, x, y })
-      },
-      measureText(text: string) {
-        return { width: text.length * CHAR_PX }
-      },
-    } as unknown as CanvasRenderingContext2D,
+    ctx: ctx as unknown as CanvasRenderingContext2D,
   }
 }
 
@@ -782,4 +788,52 @@ test('the merge tolerance scales with the name it is tolerating a gap for', () =
     },
   )
   expect(long.texts.map(t => t.text)).toEqual(['ctgBBBBBBBBB'])
+})
+
+// A mark stands for an alignment to a contig the facing row is not showing, and
+// coloring it that contig's own ribbon color is what says the alignment moved
+// rather than vanished — see `offscreenMateMarkColorFor`, which decides WHEN.
+describe('marks colored by the contig they name', () => {
+  const spans: [number, number][] = [
+    [100, 400],
+    [500, 700],
+    [800, 900],
+  ]
+  const names = ['chr7', 'chr2', 'chr7']
+
+  test('without a color function the strip is one fill in the band grey', () => {
+    const { ctx, fills } = fakeCtx()
+    draw(ctx, [{ datasets: [data(spans, names)] }])
+    expect(fills.map(f => f.style)).toEqual(['red'])
+    expect(fills[0]!.rects).toHaveLength(3)
+  })
+
+  // One path PER COLOR, for the reason the strip was one path to begin with:
+  // the mark color carries alpha, so same-contig marks filled separately
+  // composite against each other and the strip darkens with density.
+  test('with one, each contig is a single fill of its own color', () => {
+    const { ctx, fills } = fakeCtx()
+    draw(ctx, [
+      {
+        datasets: [data(spans, names)],
+        markColorFor: (refName: string) => `color:${refName}`,
+      },
+    ])
+    expect(fills.map(f => f.style)).toEqual(['color:chr7', 'color:chr2'])
+    expect(fills.map(f => f.rects.length)).toEqual([2, 1])
+  })
+
+  // The two lanes hold contigs of different assemblies, and only one of them is
+  // usually keyed the way the ribbons are.
+  test('a colored lane and a grey one share a band', () => {
+    const { ctx, fills } = fakeCtx()
+    draw(ctx, [
+      {
+        datasets: [data([[100, 400]], ['chr7'])],
+        markColorFor: (refName: string) => `color:${refName}`,
+      },
+      { datasets: [data([[500, 700]], ['chr2'])], side: 'bottom' as const },
+    ])
+    expect(fills.map(f => f.style)).toEqual(['color:chr7', 'red'])
+  })
 })

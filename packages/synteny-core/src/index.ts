@@ -122,6 +122,7 @@ export {
   createComparativeColorFunction,
   makeContinuousColorFunction,
   makeNameColorFunction,
+  nameColorCss,
   paletteColorAt,
 } from './colorFunctions.ts'
 export type { ColorFunctionInputs } from './colorFunctions.ts'
