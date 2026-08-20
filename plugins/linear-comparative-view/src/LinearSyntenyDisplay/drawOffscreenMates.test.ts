@@ -217,6 +217,38 @@ test('below the stub is not a hit, which is where the ribbons are', () => {
   ).toBeUndefined()
 })
 
+// ...and it answers that without looking at one. The strip is a few pixels of a
+// band ~100 tall, so nearly every pointer position asked about is below it, and
+// this runs ahead of the ribbon pick on every hover frame. Laying out the level
+// first to answer "no" made a hover cost 6.4ms on a 50k-stub level; the
+// rejection is what makes it independent of how much the level fetched, and it
+// is a property a rewrite loses while every other test here stays green.
+test('a hover below the strip reads no alignment at all', () => {
+  const layout = { ...params, data: data([[100, 400]], ['ctgB']) }
+  let reads = 0
+  const watched = {
+    ...layout,
+    data: {
+      ...layout.data,
+      starts: new Proxy(layout.data.starts, {
+        get(target, prop) {
+          if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+            reads++
+          }
+          return (target as unknown as Record<string, unknown>)[prop as string]
+        },
+      }),
+    },
+  }
+  expect(
+    offscreenMateAt(watched, 20, OFFSCREEN_MATE_HEIGHT_PX + 1),
+  ).toBeUndefined()
+  expect(reads).toBe(0)
+  // and the counter counts, so the zero above is a fact rather than a broken probe
+  offscreenMateAt(watched, 20, 3)
+  expect(reads).toBeGreaterThan(0)
+})
+
 test('beside every stub is not a hit', () => {
   const layout = { ...params, data: data([[100, 400]], ['ctgB']) }
   expect(offscreenMateAt(layout, 60, 3)).toBeUndefined()

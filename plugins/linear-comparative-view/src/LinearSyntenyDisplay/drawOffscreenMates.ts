@@ -136,64 +136,97 @@ function screenX(cumBp: number, bpPerPx: number, offsetPx: number) {
  * their two paths are separate code; these have one path, so a stub the eye can
  * see and the pointer cannot is not a shape this can take.
  */
-export function offscreenMateRects({
-  data,
-  bpPerPx,
-  offsetPx,
-  width,
-  height,
-  minAlignmentLength = 0,
-}: OffscreenMateLayout): OffscreenMateRect[] {
-  const { starts, ends } = data
+export function offscreenMateRects(
+  layout: OffscreenMateLayout,
+): OffscreenMateRect[] {
+  const { width, height, data } = layout
   if (width <= 0 || height <= 0) {
     return []
   }
-  const stubHeight = Math.max(
+  const stubHeight = offscreenMateStripHeight(height)
+  const out: OffscreenMateRect[] = []
+  for (let i = 0; i < data.starts.length; i++) {
+    const rect = offscreenMateRectAt(layout, i, stubHeight)
+    if (rect) {
+      out.push(rect)
+    }
+  }
+  return out
+}
+
+// Every stub in a level is the same height, so the strip is a constant the hit
+// test can reject a whole pointer position against before it looks at any
+// alignment.
+function offscreenMateStripHeight(height: number) {
+  return Math.max(
     1,
     Math.min(OFFSCREEN_MATE_HEIGHT_PX, height * MAX_BAND_FRACTION),
   )
-  const out: OffscreenMateRect[] = []
-  for (let i = 0; i < starts.length; i++) {
-    const start = starts[i]!
-    const end = ends[i]!
-    if (end - start < minAlignmentLength) {
-      continue
-    }
-    const x1 = screenX(start, bpPerPx, offsetPx)
-    const x2 = screenX(end, bpPerPx, offsetPx)
-    if (x2 < 0 || x1 > width) {
-      continue
-    }
-    out.push({
-      index: i,
-      x: x1,
-      width: Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1),
-      height: stubHeight,
-    })
+}
+
+// The one place a stub's geometry is decided, so the array the canvas paints and
+// the scan the pointer runs cannot describe different rectangles.
+function offscreenMateRectAt(
+  {
+    data,
+    bpPerPx,
+    offsetPx,
+    width,
+    minAlignmentLength = 0,
+  }: OffscreenMateLayout,
+  i: number,
+  stubHeight: number,
+): OffscreenMateRect | undefined {
+  const start = data.starts[i]!
+  const end = data.ends[i]!
+  if (end - start < minAlignmentLength) {
+    return undefined
   }
-  return out
+  const x1 = screenX(start, bpPerPx, offsetPx)
+  const x2 = screenX(end, bpPerPx, offsetPx)
+  if (x2 < 0 || x1 > width) {
+    return undefined
+  }
+  return {
+    index: i,
+    x: x1,
+    width: Math.max(MIN_OFFSCREEN_MATE_WIDTH_PX, x2 - x1),
+    height: stubHeight,
+  }
 }
 
 /**
  * The stub under a point, or undefined.
  *
  * LAST MATCH WINS, so the answer is whatever a reader sees on top where two
- * stubs overlap — `offscreenMateRects` is draw order and the canvas paints
- * later over earlier.
+ * stubs overlap — the scan runs backwards over the array the canvas paints
+ * forwards, and later paints over earlier.
+ *
+ * THE STRIP IS TESTED BEFORE ANY ALIGNMENT IS. Every stub has the same height,
+ * and the strip is a few pixels of a band ~100 tall, so the overwhelming
+ * majority of pointer positions this is asked about are not in it. Answering
+ * those with one comparison rather than by laying out every stub first is what
+ * keeps a hover over the ribbons costing nothing, whatever the level fetched.
  */
 export function offscreenMateAt(
   layout: OffscreenMateLayout,
   x: number,
   y: number,
 ) {
-  const rects = offscreenMateRects(layout)
-  for (let i = rects.length - 1; i >= 0; i--) {
-    const r = rects[i]!
-    if (y >= 0 && y <= r.height && x >= r.x && x <= r.x + r.width) {
+  const { width, height, data } = layout
+  if (width <= 0 || height <= 0) {
+    return undefined
+  }
+  const stubHeight = offscreenMateStripHeight(height)
+  if (y < 0 || y > stubHeight) {
+    return undefined
+  }
+  for (let i = data.starts.length - 1; i >= 0; i--) {
+    const rect = offscreenMateRectAt(layout, i, stubHeight)
+    if (rect && x >= rect.x && x <= rect.x + rect.width) {
       return {
-        refName:
-          layout.data.mateRefNameDict[layout.data.mateRefNameIds[r.index]!],
-        rect: r,
+        refName: data.mateRefNameDict[data.mateRefNameIds[i]!],
+        rect,
       }
     }
   }

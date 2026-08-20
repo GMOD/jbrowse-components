@@ -177,6 +177,37 @@ reports nothing.
   hang off v2 and need their own layer; they must not be folded into this one,
   which is positioned against `views[level]` alone.
 
+## What it costs the frame it runs in
+
+<!-- BEGIN GENERATED MEASUREMENT offscreen-mate-overlay -->
+
+|   stubs | hover over ribbons | hover, before | hover in the strip | one repaint |
+| ------: | -----------------: | ------------: | -----------------: | ----------: |
+|   2,767 |           <0.001ms |       0.034ms |            0.027ms |      0.18ms |
+|  50,000 |           <0.001ms |        1.06ms |              0.5ms |      3.08ms |
+| 250,000 |           <0.001ms |        5.97ms |             2.53ms |  **16.6ms** |
+
+<!-- END GENERATED MEASUREMENT offscreen-mate-overlay -->
+
+On the shape this was designed against the overlay is free: a repaint is a fifth
+of a millisecond, against the 12.5ms the pick engine's own warm hover costs on an
+all-vs-all PAF (`reference/SYNTENY_PICKING.md`).
+
+**The hover is independent of the stub count, and deliberately.** The strip is a
+few pixels of a band ~100 tall, so nearly every pointer position `offscreenMateHit`
+is asked about is not in it — and it runs ahead of the ribbon pick on every
+mousemove. Testing the strip height before any alignment is what collapses that
+column; laying the level out first to answer "no" is what the `hover, before`
+column is, and at 250k stubs it was 6ms of every frame the pointer moved.
+
+**The repaint is the ceiling, and it is real at the top row.** 250k stubs is a
+frame and a half of `fillRect` calls. Reaching it takes a query row on the whole
+genome with the target row narrowed to one contig, and the toggle is off by
+default, so nothing pays this without asking — but a stub count is a stub count,
+and coalescing per pixel column is the fix if anyone lands there. It would change
+what overlapping stubs look like (their alpha compounds today), so it is a
+deliberate change rather than a free one.
+
 ## Cheaper thing this is not
 
 Panning the facing view so the mate comes on screen is not the same feature and
