@@ -1164,7 +1164,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // gets exercised. Read glyphs are canvas-drawn, so the rightclick names the
   // insertion's coordinate and a depth into the pileup rather than a viewport
   // point. "Curved lines" is then turned on in the synteny view's settings
-  // panel.
+  // menu.
   {
     mode: 'url',
     name: 'read_vs_ref_insertion',
@@ -1208,18 +1208,13 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Reference sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
-      { type: 'waitForText', text: 'Curved lines:' },
-      // by selector rather than by text: every toggle row in the panel has an
-      // "On", and the group's aria-label is what tells them apart
-      {
-        type: 'click',
-        selector: '[aria-label="Curved lines"] [value="on"]',
-      },
-      // the panel stays up until it is dismissed, so close it before the
-      // capture — the hidden wait fails the spec rather than baking an open
-      // settings panel into the figure
+      { type: 'waitForText', text: 'Curved lines' },
+      { type: 'click', text: 'Curved lines' },
+      // a checkbox row leaves the menu up (CascadingMenu keeps settings rows
+      // open), so dismiss it before the capture — the hidden wait fails the
+      // spec rather than baking an open menu into the figure
       { type: 'press', key: 'Escape' },
-      { type: 'waitForText', text: 'Curved lines:', hidden: true },
+      { type: 'waitForText', text: 'Curved lines', hidden: true },
       { type: 'delay', ms: 2000 },
     ],
   },

@@ -48,7 +48,12 @@ import type {
   LodMode,
 } from '@jbrowse/synteny-core'
 
-const DEFAULT_OVERDRAW_PX = 1000
+// Exported because the settings menu's slider rows carry a reset-to-default
+// button, and a default spelled twice is a reset that silently stops agreeing
+// with the property it resets.
+export const DEFAULT_OVERDRAW_PX = 1000
+export const DEFAULT_ALPHA = 0.2
+export const DEFAULT_MIN_ALIGNMENT_LENGTH = 0
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -168,14 +173,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * unfiltered hairballs; a whole-genome view with minAlignmentLength set
          * can use a higher value (~0.4) for stronger color.
          */
-        alpha: types.stripDefault(types.number, 0.2),
+        alpha: types.stripDefault(types.number, DEFAULT_ALPHA),
         /**
          * #property
          * Hide alignment blocks shorter than this many bp. Enforced per-feature
          * by its own span in buildSyntenyGeometry, then culled in the shader
          * (isCulled) and pick engine. Cuts whole-genome hairball noise.
          */
-        minAlignmentLength: types.stripDefault(types.number, 0),
+        minAlignmentLength: types.stripDefault(
+          types.number,
+          DEFAULT_MIN_ALIGNMENT_LENGTH,
+        ),
         /**
          * #property
          * Level-of-detail tier selection for PIF adapters. 'auto' uses the
@@ -763,7 +771,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * SIX ROWS WHATEVER THE STACK HOLDS. The menu answers what the view IS
          * — where the rows point, which genomes it stacks, what leaves it — and
          * nothing about how the ribbons are drawn: every render setting is in
-         * the header's settings panel, and `SyntenySettingsPopover` states that
+         * the header's settings menu, and `SyntenySettingsMenu` states that
          * division from the other side.
          *
          * A group in THIS menu names a CHOICE ("Link views") or what varies

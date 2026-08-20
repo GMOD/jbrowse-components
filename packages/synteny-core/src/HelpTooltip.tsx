@@ -5,9 +5,8 @@ import { Tooltip } from '@mui/material'
 // trailing column so icons line up in a consistent column across rows. Renders
 // nothing when there is no help text.
 //
-// `pre-line` so a row whose control is a dropdown can give one line per option:
-// the menu form of such a setting hangs its own help off each option row, and
-// collapsed into a paragraph those read as one run-on sentence. A single-
+// `pre-line` so help composed one line per option keeps those lines: collapsed
+// into a paragraph, option descriptions read as one run-on sentence. A single-
 // paragraph string is unaffected — it has no newlines to honour.
 export default function HelpTooltip({ help }: { help?: string }) {
   return help ? (

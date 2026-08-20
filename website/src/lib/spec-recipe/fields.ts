@@ -392,7 +392,7 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
 ])
 
 // The synteny view's CIGAR modes, imported. Its row is in the header's settings
-// panel, gated on the data (coarse-tier PIF and CIGAR-less PAF have no ops), not
+// menu, gated on the data (coarse-tier PIF and CIGAR-less PAF have no ops), not
 // on config.
 const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
@@ -1457,31 +1457,43 @@ const DIAGONALIZE_MENUS: Record<string, string> = {
   DotplotView: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
 }
 
-// The settings popover behind the sliders (TuneIcon) button in each view's
-// header — one shared SettingsPopover whose tooltip is the title each view
-// passes it, so the button a reader looks for is named differently per view
-// while the row inside is the same 'Min length:'.
-const SETTINGS_POPOVERS: Record<string, string> = {
+// The settings surface behind the sliders (TuneIcon) button in each view's
+// header, named by that button's tooltip so the button a reader looks for is
+// named per view while the row inside is the same setting.
+//
+// The two surfaces are not the same widget: the dotplot's is a popover of
+// laid-out rows, whose labels carry a trailing colon, and the synteny view's is
+// a cascading menu, whose rows are menu items and do not. `settingsPath` spells
+// that difference once, so the fields serving both views don't each carry it.
+const SETTINGS_SURFACES: Record<string, string> = {
   LinearSyntenyView: 'Synteny display settings',
   DotplotView: 'Dotplot display settings',
 }
 
+function settingsPath(viewType: string | undefined, row: string) {
+  const surface = viewType ? SETTINGS_SURFACES[viewType] : undefined
+  const label = viewType === 'DotplotView' ? `${row}:` : row
+  return surface
+    ? `${surface} (the sliders button in the view header) → ${label}`
+    : undefined
+}
+
 export const viewFields: Record<string, FieldRecipe> = {
   alpha: (value, { viewType }) => {
-    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
-    return typeof value === 'number' && popover
+    const path = settingsPath(viewType, 'Opacity')
+    return typeof value === 'number' && path
       ? {
-          path: `${popover} (the sliders button in the view header) → Opacity: → drag to ${value}`,
+          path: `${path} → drag to ${value}`,
           note: 'Lower values let dense overlapping ribbons show through each other.',
         }
       : undefined
   },
   cigarMode: (value, { viewType }) => {
     const label = typeof value === 'string' ? CIGAR_MODES[value] : undefined
-    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
-    return label && popover && viewType === 'LinearSyntenyView'
+    const path = settingsPath(viewType, 'CIGAR indels')
+    return label && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${popover} (the sliders button in the view header) → CIGAR indels: → ${label}`,
+          path: `${path} → ${label}`,
           note: 'The row appears only when the alignments actually carry CIGAR ops — a coarse-tier PIF or a CIGAR-less PAF has none to draw.',
         }
       : undefined
@@ -1527,10 +1539,10 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined
   },
   minAlignmentLength: (value, { viewType }) => {
-    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
-    return typeof value === 'number' && popover
+    const path = settingsPath(viewType, 'Min length')
+    return typeof value === 'number' && path
       ? {
-          path: `${popover} (the sliders button in the view header) → Min length: → drag to ${value.toLocaleString('en-US')}bp`,
+          path: `${path} → drag to ${value.toLocaleString('en-US')}bp`,
           note: 'Hides alignments shorter than this, which is what clears the hairball of short spurious chains at whole-genome zoom.',
         }
       : undefined
@@ -1550,32 +1562,28 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
         }
   },
-  // One control over two properties, so both fields point at the same row and
-  // differ only in which step they name. The per-contig numbers are on the marks
+  // One control over two properties, so both fields point at the same submenu
+  // and differ only in which step they name. The per-contig numbers are on the marks
   // themselves — hover one and it names the contig and how many alignments on
   // this band go there — rather than on the control that turns them on.
   showOffscreenMates: (value, { viewType }) => {
-    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
-    return typeof value === 'boolean' &&
-      popover &&
-      viewType === 'LinearSyntenyView'
+    const path = settingsPath(viewType, 'Off-screen mates')
+    return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${popover} (the sliders button in the view header) → Off-screen mates: → ${value ? 'Mark them' : 'Off'}`,
+          path: `${path} → ${value ? 'Mark them' : 'Off'}`,
           note: 'On by default. A locus syntenic to a contig the facing row is not displaying draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing.',
         }
       : undefined
   },
   // The one setting here that changes what is FETCHED rather than what is drawn,
-  // which is why it is the last step of the same row rather than a control of
-  // its own: what a reader picks there is how hard to look, and only this step
+  // which is why it is the last step of the same submenu rather than a control
+  // of its own: what a reader picks there is how hard to look, and only this step
   // costs a query.
   bidirectionalFetch: (value, { viewType }) => {
-    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
-    return typeof value === 'boolean' &&
-      popover &&
-      viewType === 'LinearSyntenyView'
+    const path = settingsPath(viewType, 'Off-screen mates')
+    return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${popover} (the sliders button in the view header) → Off-screen mates: → ${value ? 'Mark them, both rows' : 'Mark them'}`,
+          path: `${path} → ${value ? 'Mark them, both rows' : 'Mark them'}`,
           note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair.',
         }
       : undefined
@@ -1719,10 +1727,10 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined,
   drawCurves: (value, { viewType }) => {
-    const popover = viewType ? SETTINGS_POPOVERS[viewType] : undefined
-    return typeof value === 'boolean' && popover
+    const path = settingsPath(viewType, 'Curved lines')
+    return typeof value === 'boolean' && path
       ? {
-          path: `${popover} (the sliders button in the view header) → Curved lines: → ${value ? 'On' : 'Off'}`,
+          path: `${path} (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined
   },

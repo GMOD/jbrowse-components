@@ -4,7 +4,7 @@ import HelpTooltip from './HelpTooltip.tsx'
 
 import type { ReactNode } from 'react'
 
-// One row of a synteny/dotplot settings popover. Shares a fixed 3-column grid
+// One row of the dotplot's settings popover. Shares a fixed 3-column grid
 // (label | control | help) with every other row so controls all start at the
 // same x and help icons line up in a consistent trailing column.
 export default function SettingRow({

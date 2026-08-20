@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 import FollowSyntenyToggle from './FollowSyntenyToggle.tsx'
-import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
+import SyntenySettingsMenu from './SyntenySettingsMenu.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
 import TrackSelectorMenuButton from './TrackSelectorMenuButton.tsx'
 import ViewOptionsMenuButton from './ViewOptionsMenuButton.tsx'
@@ -56,7 +56,7 @@ const Header = observer(function Header({
             // query/target
             showReference={syntenyModel.levels.length > 1}
           />
-          <SyntenySettingsPopover model={syntenyModel} />
+          <SyntenySettingsMenu model={syntenyModel} />
         </>
       ) : null}
 

@@ -1,18 +1,18 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { when } from 'mobx'
 
 import { packSyntenyFeatureData } from '../../LinearSyntenyDisplay/testUtils.ts'
-import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
+import SyntenySettingsMenu from './SyntenySettingsMenu.tsx'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 // Showing a synteny track starts a real fetch through the main-thread RPC
-// driver, and there are no fixture files behind these adapters — the panel is
+// driver, and there are no fixture files behind these adapters — the menu is
 // what is under test, not the data, and every gate it reads answers before a
 // byte lands. So each test logs one adapter error while it runs, and would
 // leave that fetch in flight at teardown as well; closing the view is what the
@@ -69,7 +69,7 @@ const PIF = {
   assemblyNames: ['volvox', 'volvox2'],
 }
 
-async function openPanel(adapter: Record<string, unknown> = PAF) {
+async function openMenu(adapter: Record<string, unknown> = PAF) {
   const session = createTestSession()
   session.addAssemblyConf(assembly('volvox'))
   session.addAssemblyConf(assembly('volvox2'))
@@ -96,7 +96,7 @@ async function openPanel(adapter: Record<string, unknown> = PAF) {
 
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <SyntenySettingsPopover model={view} />
+      <SyntenySettingsMenu model={view} />
     </ThemeProvider>,
   )
   fireEvent.click(screen.getByRole('button'))
@@ -104,46 +104,54 @@ async function openPanel(adapter: Record<string, unknown> = PAF) {
   return view
 }
 
-function pick(label: string, option: string) {
-  fireEvent.mouseDown(screen.getByLabelText(label))
-  fireEvent.click(within(screen.getByRole('listbox')).getByText(option))
+// Opens a radio submenu and clicks one of its options. The submenu rows carry
+// the testid `CascadingMenu` slugs from their label, which is what tells two
+// open-at-once "Off" rows apart.
+function pick(row: string, option: string) {
+  const slug = row.toLowerCase().replaceAll(' ', '_')
+  fireEvent.click(screen.getByTestId(`cascading-submenu-${slug}`))
+  fireEvent.click(screen.getByText(option))
 }
 
-// The division this panel exists to state: everything about how the ribbons
-// look, in one place, whether it is a slider, a segmented toggle or a dropdown.
-// The three at the end are the ones that used to be top-level rows of the header
-// menu, where a reader tuning the picture had to know which of two surfaces held
-// which half of it.
-test('one panel holds every render setting', async () => {
-  await openPanel()
+// The division this menu exists to state: everything about how the ribbons
+// look, in one place, whether it is a slider row, a checkbox or a submenu of
+// radios.
+test('one menu holds every render setting', async () => {
+  await openMenu()
   for (const label of [
-    'Opacity:',
-    'Identity fade:',
-    'Thin fade:',
-    'Curved lines:',
-    'Location markers:',
-    'CIGAR indels:',
-    'Off-screen mates:',
-    'Min length:',
-    'Overdraw:',
+    'Identity fade',
+    'Thin fade',
+    'Curved lines',
+    'Location markers',
+    'CIGAR indels',
+    'Off-screen mates',
   ]) {
     expect(screen.getByText(label)).toBeTruthy()
+  }
+  // the three continuous ones draw a slider each, behind the lazy chunk every
+  // inline menu slider row loads through
+  for (const testid of [
+    'opacity-slider',
+    'min-length-slider',
+    'overdraw-slider',
+  ]) {
+    expect(await screen.findByTestId(testid)).toBeTruthy()
   }
 })
 
 // Gated on the data rather than shown inert: PAFAdapter has one tier, so there
 // is nothing for this row to switch between.
 test('an adapter with no tiers is offered no level of detail', async () => {
-  await openPanel()
-  expect(screen.queryByText('Level of detail:')).toBeNull()
+  await openMenu()
+  expect(screen.queryByText('Level of detail')).toBeNull()
   // and the heading over that section stays, because the CIGAR row is still
   // under it — a PAF carries ops whether or not it carries a coarse tier
   expect(screen.getByText('Detail')).toBeTruthy()
 })
 
 test('an indexed adapter is offered the tier it can switch to', async () => {
-  await openPanel(PIF)
-  expect(screen.getByText('Level of detail:')).toBeTruthy()
+  await openMenu(PIF)
+  expect(screen.getByText('Level of detail')).toBeTruthy()
 })
 
 // The one combination that would leave a heading with nothing under it: a PAF
@@ -151,11 +159,11 @@ test('an indexed adapter is offered the tier it can switch to', async () => {
 // optimistic until a display has reported back, so this has to land a fetch
 // that says so rather than configure it.
 test('a section whose every row is gated out takes its heading with it', async () => {
-  const view = await openPanel()
+  const view = await openMenu()
   expect(screen.getByText('Detail')).toBeTruthy()
 
   // in `act`, because this writes the model directly rather than through a
-  // click: without it the getter flips and the panel has not re-rendered yet,
+  // click: without it the getter flips and the menu has not re-rendered yet,
   // so the assertion below reads the previous frame
   act(() => {
     for (const d of view.allSyntenyDisplays) {
@@ -177,7 +185,7 @@ test('a section whose every row is gated out takes its heading with it', async (
 // repaint of what the worker already counted and the last costs a query, so what
 // a reader picks is how hard to look.
 test('the last off-screen step is the one that adds the second query', async () => {
-  const view = await openPanel()
+  const view = await openMenu()
   expect(view.showOffscreenMates).toBe(true)
   expect(view.bidirectionalFetch).toBe(false)
 
@@ -190,14 +198,28 @@ test('the last off-screen step is the one that adds the second query', async () 
 })
 
 test('the CIGAR row sets the mode it names', async () => {
-  const view = await openPanel()
+  const view = await openMenu()
   pick('CIGAR indels', 'Transparent indels')
   expect(view.cigarMode).toBe('matches')
 })
 
-test('a toggle row writes its boolean', async () => {
-  const view = await openPanel()
+// A settings row keeps the menu open, so the reader can flip several in one
+// visit — which is what `CascadingMenu` gives a checkbox row by its type.
+test('a checkbox row writes its boolean and leaves the menu up', async () => {
+  const view = await openMenu()
   expect(view.drawCurves).toBe(false)
-  fireEvent.click(within(screen.getByLabelText('Curved lines')).getByText('On'))
+  fireEvent.click(screen.getByText('Curved lines'))
   expect(view.drawCurves).toBe(true)
+  expect(screen.getByText('Location markers')).toBeTruthy()
+})
+
+// A custom row draws its own content, so the value it reports is the model's
+// rather than a menu decoration — the caption is where a reader reads it back.
+test('a slider row captions the value it is set to', async () => {
+  const view = await openMenu()
+  expect(await screen.findByText('Opacity: 0.200')).toBeTruthy()
+  act(() => {
+    view.setAlpha(0.5)
+  })
+  expect(screen.getByText('Opacity: 0.500')).toBeTruthy()
 })

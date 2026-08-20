@@ -195,12 +195,13 @@ out without spending the color channel.
 
 ## Display settings
 
-The sliders button in the header opens every setting that decides what the
-ribbons look like, in three groups — how one alignment is drawn, how much of it
-is loaded, and which alignments are drawn at all. The hamburger menu next to it
-is the other half of that division: it answers what the view _is_ — which
-genomes it stacks, where they point, what leaves it — and holds no render
-settings at all.
+The sliders button in the header opens a menu of every setting that decides what
+the ribbons look like, in three groups — how one alignment is drawn, how much of
+it is loaded, and which alignments are drawn at all. Booleans are checkboxes,
+choices open a submenu of their options, and the three continuous settings draw
+a slider in the row itself. The hamburger menu next to it is the other half of
+that division: it answers what the view _is_ — which genomes it stacks, where
+they point, what leaves it — and holds no render settings at all.
 
 **Ribbons** — **Opacity** for how much dense overlapping alignments show through
 each other; **Identity fade** and **Thin fade** described above and below;
@@ -213,10 +214,10 @@ the ribbons, so each tick shows where a round coordinate up there lands below.
 is how per-base insertions and deletions inside one are shown: **Colored
 indels** paints them, **Transparent indels** leaves them as see-through gaps in
 the ribbon, and **Off - don't draw CIGAR indels** draws each alignment as one
-solid block. That last one carries a warning icon, in the list and on the closed
-control: overlapping blocks run together with nothing to tell them apart, and a
-gap inside a block is painted as though it matched across. **Level of detail**
-picks which stored tier is fetched.
+solid block. That last one carries a warning icon: overlapping blocks run
+together with nothing to tell them apart, and a gap inside a block is painted as
+though it matched across. **Level of detail** picks which stored tier is
+fetched.
 
 Both rows are gated on the data rather than shown inert: a CIGAR-less PAF has no
 indels to draw, and an adapter with one stored tier has nothing to switch
@@ -259,7 +260,7 @@ contig the facing panel is not displaying has only one end, so the view draws
 nothing for it — and a locus syntenic to a chromosome you did not stack then
 looks exactly like a locus syntenic to nothing.
 
-**Off-screen mates** in the settings panel is where **Mark them** turns on a
+**Off-screen mates** in the settings menu is where **Mark them** turns on a
 strip of marks along the query axis, and it is on by default. Each mark sits
 where the alignment is on the panel it does have, stopping short of the ribbons
 so it cannot be read as an alignment to whatever is directly below. A run of
@@ -286,7 +287,7 @@ contig the lower panel is showing — whose other end is somewhere the upper pan
 is not — is never asked for at all. The same two genomes therefore report
 differently depending on which one you stacked on top.
 
-**Mark them, both rows** — the last step of that same row — adds the second
+**Mark them, both rows** — the last step of that same submenu — adds the second
 query, and what it finds splits two ways.
 
 An alignment whose other end is on a contig the upper panel is not displaying at

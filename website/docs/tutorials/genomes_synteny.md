@@ -96,9 +96,9 @@ use it when more than one liftOver track is on. See
 ## Ribbon display settings
 
 Three settings change how the ribbons read. Two are in the synteny view's
-settings panel, the sliders button in its header:
+settings menu, the sliders button in its header:
 
-- **Curved lines** → **On** draws each ribbon as a curve instead of a straight
+- **Curved lines**, ticked, draws each ribbon as a curve instead of a straight
   shear, so a block that lands far from where it started is easier to follow
   across the gap.
 - **CIGAR indels** → **Transparent indels** stops painting the insertions and

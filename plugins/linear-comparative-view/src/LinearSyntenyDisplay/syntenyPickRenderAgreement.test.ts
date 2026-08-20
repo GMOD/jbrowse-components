@@ -203,8 +203,9 @@ test('the sweep actually crosses the boundary', () => {
   expect(WIDTHS.some(w => !isDrawnAsFill(w))).toBe(true)
 })
 
-// The opacity slider reaches 0 (OpacitySlider's `min`), and the same "drawn and
-// pickable are one boundary" rule has to survive the bottom of it. The pick used
+// The opacity slider reaches 0 (the settings menu's Opacity row bottoms out
+// there), and the same "drawn and pickable are one boundary" rule has to
+// survive the bottom of it. The pick used
 // to weigh the packed byte alone, so a band faded to nothing kept every ribbon
 // hoverable and clickable — a tooltip and a feature widget off a blank canvas.
 // Well clear of the perpW gate at 10px wide, so the only thing varying is alpha.

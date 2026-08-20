@@ -59,6 +59,10 @@ const sizeRowFallbackHeight = 46
 interface SizeMenuOptions {
   label: string
   title: string
+  // prose for the row's "?" button, the same affordance a checkbox/radio row's
+  // `helpText` gets — a custom row draws its own content and so never reaches
+  // the menu's shared trailing column
+  help?: string
   getValue: () => number
   min?: number
   max?: number
@@ -119,6 +123,7 @@ function sizeMenu(
   const {
     label,
     title,
+    help,
     getValue,
     min = 0.5,
     max = 12,
@@ -155,6 +160,7 @@ function sizeMenu(
       >
         <SizeSliderRow
           title={title}
+          help={help}
           getValue={getValue}
           min={min}
           max={max}

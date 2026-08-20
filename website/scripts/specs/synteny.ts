@@ -2955,21 +2955,21 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'genomes_synteny/ribbons_default',
     url: tnnt3Session(),
     // The top frame also has to answer "where are those two settings?", so it
-    // opens the header's settings panel: both rows the section asks the reader
-    // to change are in it, side by side, which is what this frame used to need
-    // an open menu plus an open submenu to show. The live link still opens the
-    // plain default state.
+    // opens the header's settings menu: both rows the section asks the reader
+    // to change are in it, one under the other, which is what this frame used
+    // to need an open menu plus an open submenu to show. The live link still
+    // opens the plain default state.
     actions: [
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
-      { type: 'waitForText', text: 'CIGAR indels:' },
-      // the popover is its own compositor layer and swiftshader rasterizes it a
-      // frame or two late: the capture came out with the panel blank and the
+      { type: 'waitForText', text: 'CIGAR indels' },
+      // the menu is its own compositor layer and swiftshader rasterizes it a
+      // frame or two late: the capture came out with the menu blank and the
       // boxes floating over the track behind it. Same race as
       // bigwig/whole_genome_coverage, same fix.
       { type: 'delay', ms: 1000 },
     ],
     // box the two controls the section asks the reader to change, rather than
-    // labelling the frame "As it opens" (which said nothing about the panel)
+    // labelling the frame "As it opens" (which said nothing about the menu)
     annotations: [
       {
         type: 'text',
@@ -2978,8 +2978,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
         fontSize: 22,
         text: 'Straight ribbons, colored indels',
       },
-      { type: 'box', anchor: { text: 'CIGAR indels:' } },
-      { type: 'box', anchor: { text: 'Curved lines:' } },
+      { type: 'box', anchor: { text: 'CIGAR indels' } },
+      { type: 'box', anchor: { text: 'Curved lines' } },
     ],
   },
   {

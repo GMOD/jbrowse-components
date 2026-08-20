@@ -26,13 +26,7 @@ export function sourceLabels(roots: string[]) {
       .replaceAll(/\{'\s*'\}/g, ' ')
       .replaceAll(/\s+/g, ' ')
       .trim()
-    // 2, not 3: a segmented toggle's "On" is a real label a click path names,
-    // and at a floor of 3 it could never be in the corpus however faithfully the
-    // app rendered it — so the one check able to catch that pair being reworded
-    // had to be told to skip it. The cost is that a 2-character path segment now
-    // has a wider set to match against, which is a narrow way to be wrong
-    // compared with a whole label class being unverifiable.
-    if (t.length >= 2) {
+    if (t.length >= 3) {
       labels.add(t)
     }
   }

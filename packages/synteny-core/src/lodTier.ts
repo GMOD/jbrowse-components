@@ -158,6 +158,13 @@ export function lodMenuItems(model: {
     ? [
         {
           label: 'Level of detail',
+          // The row says what the setting IS; each option says what it does.
+          // Without it the group is the one submenu in a settings menu with no
+          // "?" at all, and a reader has to open it to learn what a tier is.
+          helpText:
+            'Which stored tier of the alignment file is fetched. A tiered file ' +
+            'carries a coarse copy with no base-level detail, which draws far ' +
+            'faster when zoomed out.',
           subMenu: LOD_MODES.map(({ label, value, helpText }) => ({
             helpText,
             label,

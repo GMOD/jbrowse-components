@@ -677,12 +677,12 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
 
   // The markers, in ONE frame with the menu that turned them on still open
   // (review: "ideally just show fig 4 with the menu from fig 3 open"). They were
-  // frames 3 and 4 of the four-up above -- a control, then a ribbon -- and the
-  // settings panel stays up until it is dismissed, so the state right after the
-  // click IS both frames at once: the row is on screen, set, and what it drew is
+  // frames 3 and 4 of the four-up above -- a control, then a ribbon -- and a
+  // checkbox row keeps CascadingMenu open, so the state right after the click IS
+  // both frames at once: the row is on screen, ticked, and what it drew is
   // under it.
   //
-  // The panel opens from the view's own settings button at the top RIGHT and the
+  // The menu opens from the view's own settings button at the top RIGHT and the
   // markers are drawn across the ribbon, so unlike the submenu in the old frame
   // 3 the two do not fight for the same pixels.
   //
@@ -700,7 +700,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       [CHAIN_BLOCKS],
     ),
     // the same height as the figure above, whose end state this continues from,
-    // plus the room the settings panel needs below the header: the annotation
+    // plus the room the settings menu needs below the header: the annotation
     // anchors on a row partway down it, and at 445 it landed 0.42px past the
     // frame
     viewportHeight: 500,
@@ -712,13 +712,8 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       // panel refetching at its new window
       { type: 'delay', ms: 10000 },
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
-      { type: 'waitForText', text: 'Location markers:' },
-      // by selector rather than by text: every toggle row in the panel has an
-      // "On", and the group's aria-label is what tells them apart
-      {
-        type: 'click',
-        selector: '[aria-label="Location markers"] [value="on"]',
-      },
+      { type: 'waitForText', text: 'Location markers' },
+      { type: 'click', text: 'Location markers' },
       // the markers come back through the synteny RPC rather than from a repaint
       // of what is already on the GPU, so this waits on a refetch
       { type: 'delay', ms: 5000 },
@@ -745,7 +740,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'box',
-        anchor: { text: 'Location markers:' },
+        anchor: { text: 'Location markers' },
         strokeWidth: 3,
       },
     ],

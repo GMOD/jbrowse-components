@@ -7,6 +7,7 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
 import { ResetToDefaultButton } from './InlineMenuControls.tsx'
 import { PinAdornment } from './PinAdornment.tsx'
 import SingleSlider from './SingleSlider.tsx'
@@ -32,6 +33,7 @@ const useStyles = makeStyles()(theme => ({
 
 export const SizeSliderRow = observer(function SizeSliderRow({
   title,
+  help,
   getValue,
   min,
   max,
@@ -45,6 +47,7 @@ export const SizeSliderRow = observer(function SizeSliderRow({
   pin,
 }: {
   title: string
+  help?: string
   getValue: () => number
   min: number
   max: number
@@ -73,6 +76,9 @@ export const SizeSliderRow = observer(function SizeSliderRow({
         >
           {title}: {format(value)}
         </Typography>
+        {help ? (
+          <CascadingMenuHelpIconButton helpText={help} label={title} />
+        ) : null}
         <ResetToDefaultButton
           disabled={isDefault}
           onClick={() => {

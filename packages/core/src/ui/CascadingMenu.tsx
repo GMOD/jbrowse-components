@@ -13,6 +13,7 @@ import {
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { staysOpenOnClick } from './MenuTypes.ts'
@@ -194,6 +195,7 @@ function CascadingSubmenu({
   inset,
   disabled,
   disabledHelpText,
+  helpText,
   endAdornment,
   menuItems,
   onMenuItemClick,
@@ -210,6 +212,11 @@ function CascadingSubmenu({
   inset: boolean
   disabled?: boolean
   disabledHelpText?: string
+  // A submenu row's own help, for the question the rows inside it are answers
+  // to — an option table whose entries each carry a `helpText` still leaves
+  // nowhere to say what the setting IS. Same "?" button a clickable row gets,
+  // sitting before the chevron.
+  helpText?: string
   // `endAdornment` is declared on BaseMenuItem, which SubMenuItem extends, so a
   // submenu row can carry a control (a color swatch, a toggle) the same way a
   // clickable row can. It sits before the chevron; the content stops its own
@@ -247,6 +254,9 @@ function CascadingSubmenu({
         >
           <MenuItemLeadingIcon Icon={Icon} />
           <ListItemText primary={title} inset={inset} />
+          {helpText && !disabled ? (
+            <CascadingMenuHelpIconButton helpText={helpText} label={title} />
+          ) : null}
           {endAdornment}
           <ChevronRight />
         </MenuItem>
@@ -383,6 +393,7 @@ function CascadingMenuList({
               inset={hasIcon && !item.icon}
               disabled={item.disabled}
               disabledHelpText={item.disabledHelpText}
+              helpText={item.helpText}
               endAdornment={menuItemAdornment(item)}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}

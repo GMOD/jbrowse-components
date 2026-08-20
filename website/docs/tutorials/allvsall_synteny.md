@@ -405,7 +405,7 @@ describes rather than every assembly at the locus.
 A launched view is a few kilobases wide, which is where the alignment's own
 CIGAR starts to matter. `minimap2 -c` wrote one for every record in this PAF, so
 each insertion and deletion is drawn where it falls; the palette button's **Show
-color legend** names the colors, and **CIGAR indels** in the settings panel
+color legend** names the colors, and **CIGAR indels** in the settings menu
 switches between colored indels, transparent ones, and none.
 
 <Figure caption="Rubberband-select a window of the shared backbone, then Launch → Linear synteny view." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
