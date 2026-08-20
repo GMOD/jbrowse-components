@@ -45,7 +45,20 @@ const LinearComparativeRenderArea = observer(
       <div className={classes.container}>
         {views.map((view, i) => (
           <Fragment key={view.id}>
-            {i > 0 ? <LevelSection model={model} levelIdx={i - 1} /> : null}
+            {/* Keyed by the LEVEL, not by its position under this view: a
+              band's model is replaced wholesale whenever `setViews` empties and
+              re-reconciles `levels`, and without a key of its own the section
+              would hand the new level the previous one's mounted subtree — its
+              canvas (a re-init on a reused element, which is what a WebGPU swap
+              chain cannot survive) and its in-flight pointer state (a drag
+              anchor, a hovered contig) along with it. */}
+            {i > 0 ? (
+              <LevelSection
+                key={model.levels[i - 1]?.id}
+                model={model}
+                levelIdx={i - 1}
+              />
+            ) : null}
             <View view={view} />
           </Fragment>
         ))}

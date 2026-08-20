@@ -182,9 +182,42 @@ export function useRenderingBackend<
     undefined,
   )
 
+  // The element the component is showing RIGHT NOW, written in the commit phase
+  // by the ref callback — ahead of the passive effects, which is what makes it
+  // able to answer a question `canvas` cannot. See the init effect.
+  const currentCanvasRef = useRef<HTMLCanvasElement | null>(null)
+
   const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
+    currentCanvasRef.current = node
     setCanvas(node)
   }, [])
+
+  // A DIFFERENT model on the same component is a re-init, so it needs the fresh
+  // canvas element every other re-init gets, plus a clean recovery history —
+  // inheriting the old display's `gaveUp` latch would leave the new one unable
+  // to recover at all.
+  //
+  // Reachable, and not exotic: a container that renders its children by position
+  // hands this hook a new model whenever its list is rebuilt.
+  // `LinearComparativeView.setViews` empties and re-reconciles `levels`, so every
+  // synteny band's model is replaced while its canvas element survives — and the
+  // launch path fires it more than once. Before this, the band re-initialized on
+  // the element it was already using: a `dispose()` (which unconfigures the
+  // canvas's WebGPU swap chain) racing a `create()` on the same context, and
+  // whichever landed last decided whether the band could draw again.
+  //
+  // During render rather than in an effect, because the effect below must never
+  // observe the mismatched pair — a new model with the previous one's element.
+  // This is React's documented "adjust state when a prop changes": the render
+  // whose output is discarded is this one, before anything commits.
+  const lastModelRef = useRef(model)
+  if (lastModelRef.current !== model) {
+    lastModelRef.current = model
+    contextLostRef.current = false
+    gaveUpRef.current = false
+    budgetOf(budgetRef).reset()
+    setContextVersion(v => v + 1)
+  }
 
   useEffect(() => {
     if (canvas) {
@@ -332,7 +365,21 @@ export function useRenderingBackend<
   }, [model])
 
   useEffect(() => {
-    if (canvas) {
+    // Initialize the element the component is CURRENTLY showing, which the
+    // `canvas` state alone does not identify. Bumping `contextVersion` remounts
+    // the canvas, and the ref callback's `setCanvas(node2)` lands in a later
+    // render than the commit that swapped the element — so this effect runs once
+    // with the new version still paired to the previous, now-superseded element.
+    // Initializing there builds an entire backend (device, pipelines, swap
+    // chain) on an element nothing can see, attaches it, and discards it on the
+    // next render. That was the second live init behind the WebGPU swap-chain
+    // race: two overlapping `factory` calls whose teardown order decided which
+    // context was left configured.
+    //
+    // Compared against the ref rather than `canvas.isConnected`, which answers
+    // this only for a host that mounts into the document and would silently
+    // refuse to initialize for one that does not.
+    if (canvas && canvas === currentCanvasRef.current) {
       let cancelled = false
       let backend: RenderingBackendType | null = null
       factory(canvas)

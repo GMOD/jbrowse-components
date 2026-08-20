@@ -512,6 +512,113 @@ describe('useRenderingBackend', () => {
     expect(result.current.canvasKey).not.toBe(afterRestore)
   })
 
+  test('a new model on the same component gets a fresh canvas element', async () => {
+    // A container that renders its children by position hands this hook a new
+    // model whenever its list is rebuilt — `LinearComparativeView.setViews`
+    // empties and re-reconciles `levels`, so every synteny band's model is
+    // replaced under a canvas that survives. Re-initializing on that element is
+    // a `dispose()` racing a `create()` on one WebGPU context, and whichever
+    // landed last decided whether the band could draw again.
+    const canvas = document.createElement('canvas')
+    const factory = createMockFactory()
+    const first = createMockModel()
+    const second = createMockModel()
+
+    const { result, rerender } = renderHook(
+      ({ model }) => useRenderingBackend(factory, model),
+      { initialProps: { model: first } },
+    )
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+    const keyBefore = result.current.canvasKey
+
+    rerender({ model: second })
+    await act(async () => {})
+
+    expect(result.current.canvasKey).not.toBe(keyBefore)
+  })
+
+  test("a new model does not inherit the previous display's given-up recovery", async () => {
+    // gaveUp is latched per display. Carried across a model swap it would leave
+    // the new one unable to auto-recover from its first context loss, silently —
+    // the listener returns early and nothing rebuilds.
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose: jest.fn(), setErrorHandler: jest.fn() })
+    const first = createReactiveModel()
+    const second = createReactiveModel()
+    const canvas = document.createElement('canvas')
+
+    const { result, rerender } = renderHook(
+      ({ model }) => useRenderingBackend(factory, model),
+      { initialProps: { model: first } },
+    )
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+
+    // Spend the whole budget on the first model: 1 initial init + 2 rebuilds,
+    // then the give-up banner.
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        simulateDeviceLost()
+      })
+      await act(async () => {})
+    }
+    expect(factory).toHaveBeenCalledTimes(3)
+    expect(isGpuContextLostError(first.renderError)).toBe(true)
+
+    // The swap itself re-initializes, on the fresh element the app's keyed
+    // canvas gives it.
+    rerender({ model: second })
+    await act(async () => {})
+    expect(factory).toHaveBeenCalledTimes(4)
+
+    // And the new display's first loss is recovered rather than refused.
+    act(() => {
+      simulateDeviceLost()
+    })
+    await act(async () => {})
+    expect(factory).toHaveBeenCalledTimes(5)
+    expect(second.renderError).toBeUndefined()
+  })
+
+  test('a superseded canvas element is not initialized', async () => {
+    // The stale pairing this hook used to act on: a `contextVersion` bump
+    // remounts the canvas in the commit phase, but the ref callback's
+    // `setCanvas` lands in a later render — so the init effect fires once with
+    // the new version still holding the previous element. That built a whole
+    // backend on an element nothing shows and threw it away, which is the second
+    // of the two overlapping inits.
+    const canvas1 = document.createElement('canvas')
+    const canvas2 = document.createElement('canvas')
+    const factory = jest
+      .fn()
+      .mockResolvedValue({ dispose: jest.fn(), setErrorHandler: jest.fn() })
+    const model = createMockModel()
+
+    const { result } = renderHook(() => useRenderingBackend(factory, model))
+    act(() => {
+      result.current.canvasRef(canvas1)
+    })
+    await act(async () => {})
+    expect(factory).toHaveBeenCalledTimes(1)
+
+    // retry() bumps the version; the element it remounts is already superseded
+    // by the time the effect runs, which is what the ref callback records.
+    act(() => {
+      result.current.canvasRef(canvas2)
+      result.current.retry()
+    })
+    await act(async () => {})
+
+    expect(factory).toHaveBeenCalledTimes(2)
+    expect(factory).toHaveBeenLastCalledWith(canvas2)
+  })
+
   test('cleans up device lost listener on unmount', () => {
     const cleanup = jest.fn()
     jest.mocked(onDeviceLost).mockReturnValueOnce(cleanup)
