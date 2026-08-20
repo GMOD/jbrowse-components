@@ -9,9 +9,10 @@ import type { WiggleScaleType } from '@jbrowse/wiggle-core'
  * their own hardcoded floor, which is how `minScore` came to be a setting that
  * changed nothing.
  *
- * Both are `undefined` until the debounced autoscale resolves
- * (`coarseDynamicBlocks` is 500ms-debounced), which is what gates the
- * depth-scaled passes on both backends.
+ * Both are `undefined` until data lands, which is what gates the depth-scaled
+ * passes on both backends. Not until the 500ms coarse debounce resolves — the
+ * scan clips to `settledDynamicBlocks`, which answers over the live blocks while
+ * the coarse ones are empty.
  */
 export interface CoverageScaleState {
   coverageMinDepth: number | undefined

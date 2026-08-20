@@ -45,7 +45,7 @@ const Host = types
     reload() {
       self.reloadCounter++
     },
-    setLoadingSuppressed(flag: boolean) {
+    setFetchInert(flag: boolean) {
       self.fetchInert = flag
     },
     setAwaitingPrerequisite(flag: boolean) {
@@ -57,7 +57,7 @@ type HostModel = ReturnType<typeof Host.create>
 
 function makeHost(overrides: Partial<Record<string, boolean>> = {}) {
   const host = Host.create({})
-  host.setLoadingSuppressed(!!overrides.fetchInert)
+  host.setFetchInert(!!overrides.fetchInert)
   host.setAwaitingPrerequisite(!!overrides.awaitingPrerequisite)
   return host
 }
@@ -174,7 +174,7 @@ describe('fetchInert is an exemption', () => {
     const run = drive(host)
     host.reload()
     expect(run('declined')).toBe(false)
-    host.setLoadingSuppressed(false)
+    host.setFetchInert(false)
     expect(run('declined')).toBe(false)
   })
 
@@ -184,7 +184,7 @@ describe('fetchInert is an exemption', () => {
     const host = makeHost({ fetchInert: true })
     const run = drive(host)
     host.reload()
-    host.setLoadingSuppressed(false)
+    host.setFetchInert(false)
     expect(run('declined')).toBe(true)
   })
 })
@@ -353,7 +353,7 @@ describe('deferred is the same hold, reached from inside the foundation', () => 
     const run = drive(host)
     host.reload()
     run('deferred')
-    host.setLoadingSuppressed(false)
+    host.setFetchInert(false)
     expect(run('declined')).toBe(true)
   })
 

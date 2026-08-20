@@ -2,10 +2,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 // MultiRegionDisplayMixin exposes overridable *getter* hooks with base defaults
-// that a subclass is expected to replace: `fetchInert` (default
-// false, sequence overrides it), `fetchInert` (default false, sequence
-// overrides it) and `layoutReady` (default false, alignments and canvas override
-// it). Unlike the action hooks, nothing about a getter override
+// that a subclass is expected to replace: `fetchInert` (default false, sequence
+// and LD override it) and `layoutReady` (default false, alignments and canvas
+// override it). Unlike the action hooks, nothing about a getter override
 // is enforced by the type system — a base default and a subclass getter are both
 // just properties, so if composition order ever stopped favoring the subclass
 // the base's value would win SILENTLY.

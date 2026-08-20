@@ -43,11 +43,11 @@ export interface CoverageLayer {
  *
  * Two axes, and only one of them is uniform across the list:
  *
- * - **The depth domain.** Four layers scale to it and are skipped until the
- *   debounced autoscale resolves (`coarseDynamicBlocks` is 500ms-debounced), so
- *   they gate on `hasCoverageScale` — the predicate `makeCoverageScale` answers
- *   by returning `undefined`. `indicator` does not: its triangles are fixed-size,
- *   and gating them here would blank them for that half-second.
+ * - **The depth domain.** Four layers scale to it and are skipped until it
+ *   resolves, so they gate on `hasCoverageScale` — the predicate
+ *   `makeCoverageScale` answers by returning `undefined`. `indicator` does not:
+ *   its triangles are fixed-size, and gating them on data would blank them for
+ *   the whole fetch.
  * - **The interbase toggle.** `showInterbaseIndicators` governs ALL interbase
  *   marks — the count bars and the triangles alike, which is why the one setting
  *   appears twice.

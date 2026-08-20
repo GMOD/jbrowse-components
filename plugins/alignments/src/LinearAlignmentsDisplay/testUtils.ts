@@ -586,13 +586,15 @@ export function isMenuItemClickable(items: MenuItem[], label: string) {
 /**
  * Put the view at a scale, and settle what a real one settles asynchronously.
  *
- * `coarseDynamicBlocks` is fed by a 500ms-debounced autorun, and it is what
- * `coverageStats` — hence `coverageDomain`, hence every drawn and hit-tested
- * bar height in the coverage band — is computed over. A test that only calls
- * `setNewView` gets an undefined domain and a band that hit-tests as if it had
- * no interbase bars in it at all, which looks like the marks being absent
- * rather than the view not having caught up. `moveTo` flushes it for the same
- * reason.
+ * `coverageStats` — hence `coverageDomain`, hence every drawn and hit-tested bar
+ * height in the coverage band — is computed over `settledDynamicBlocks`, which
+ * reads the coarse blocks and those are fed by a 500ms-debounced autorun. A test
+ * that left them describing the previous viewport would hit-test the band as if
+ * it had no interbase bars in it at all, which looks like the marks being absent
+ * rather than the view not having caught up.
+ *
+ * The settle is `setNewView`'s own now (`settleCoarseBlocks`), so this is a name
+ * for why a test wants one rather than a step it has to take.
  */
 export function applyView(
   view: LinearGenomeViewModel,
@@ -600,7 +602,6 @@ export function applyView(
   offsetPx: number,
 ) {
   view.setNewView(bpPerPx, offsetPx)
-  view.setCoarseDynamicBlocks(view.dynamicBlocks, bpPerPx)
 }
 
 /**

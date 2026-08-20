@@ -27,7 +27,9 @@ export function coverageLayout(coverageHeight: number) {
  * Full-scale height in px of the interbase histogram — what a bar whose stacked
  * fractions sum to 1 occupies, hanging from just below the indicator triangles.
  * 0 means "draw nothing": no interbase events, or the autoscaled domain has not
- * resolved yet (`coarseDynamicBlocks` is 500ms-debounced).
+ * resolved yet, which now means only that no data has landed —
+ * `settledDynamicBlocks` covers the window where the coarse blocks are empty and
+ * `settleCoarseBlocks` the one where they describe somewhere else.
  *
  * Inverted clip/insertion bars scale to HALF the coverage drawing height
  * (origin/main's `range: [0, height/2]`), so they grow with the track rather
