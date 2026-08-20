@@ -198,6 +198,14 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // decision off. The residual is the alpha half — real, understood, and parked
   // with its numbers in agent-docs/TODO.md — and it no longer needs its own line
   // here. Don't re-add one without a gate run saying which pair wants it.
+  //
+  // Nor a zoomed synteny entry, which is the obvious response to "the bug lived
+  // in a regime no entry covers" and measures false: `--loc=chr1,` on the probe
+  // reads 0.02% with the fix and 0.02% without it. This is a fraction-of-pixels
+  // oracle, so its sensitivity tracks ribbon COUNT rather than how wrong any one
+  // ribbon is — a zoomed view holds a handful of blocks and a handful drawn
+  // wrong rounds to nothing, which is why the whole-genome pair was the one that
+  // caught this.
 ]
 
 function thresholdFor(name: string) {

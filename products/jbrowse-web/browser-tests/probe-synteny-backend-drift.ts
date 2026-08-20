@@ -7,14 +7,26 @@
 //   --curves / --straight   drawCurves (default: both, reported side by side)
 //   --dataset=hs1|grape     which whole-genome pair
 //   --loc=<a>,<b>           zoom the two rows to these loci instead of showing
-//                           the whole genomes. THE REGIME THE WHOLE-GENOME
-//                           DEFAULT CANNOT REACH: at 2.23 Mbp/px every ribbon is
-//                           sub-pixel, so every ribbon takes the same drawing
-//                           branch in both backends and anything that turns on
-//                           which branch a ribbon takes measures zero here. A
-//                           zoomed rearrangement is where blocks are wide enough
-//                           to be filled and steep enough for the two measures of
-//                           "how thick is this" to disagree.
+//                           the whole genomes.
+//
+//                           ADDED ON A THEORY THAT MEASURED FALSE, and kept for
+//                           the next person to have it: that the whole-genome
+//                           views cannot reach the regime where a ribbon is wide
+//                           enough to be filled and steep enough for the two
+//                           measures of its thickness to disagree, so a zoom was
+//                           needed to see it. `--loc=chr1,` reads 0.02% curved,
+//                           and 0.02% again on a build with the fill-vs-stroke
+//                           fix reverted — it does not exercise that bug at all.
+//
+//                           What this gate measures is the FRACTION OF DIFFERING
+//                           PIXELS, so its sensitivity goes with ribbon COUNT and
+//                           not with how wrong any one ribbon is. A zoomed view
+//                           holds a handful of blocks, and a handful drawn wrong
+//                           is a rounding error on a 1400x350 frame; the
+//                           whole-genome view holds thousands, which is why that
+//                           one carried the bug as most of its 1.58% and fell to
+//                           0.64% when it was fixed. Zoom in to look at a ribbon,
+//                           not to make the gate sensitive.
 //   --out=<dir>             also write the captures
 import fs from 'node:fs'
 import path from 'node:path'
