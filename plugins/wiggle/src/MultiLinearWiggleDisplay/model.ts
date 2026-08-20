@@ -7,11 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
-import {
-  showLegendCheckboxItem,
-  toggleItem,
-  withHint,
-} from '@jbrowse/core/ui/menuItems'
+import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -23,7 +19,6 @@ import {
   fetchAllRegions,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
-  MIN_SEPARATOR_ROW_PX,
   TreeSidebarMixin,
   buildSpatialIndex,
   clusteringMenuItem,
@@ -37,6 +32,7 @@ import {
   setupRunClusteringAutorun,
   setupTreeDrawingAutorun,
   showRowLabelsMenuItem,
+  showRowSeparatorsMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -654,23 +650,7 @@ export default function stateModelFactory(
           // overlays — an overlay is one row and names itself by the track name
           ...(self.isOverlay
             ? []
-            : [
-                // Stays clickable below the height the grid draws at — the
-                // toggle is a setting, and fewer subtracks or a taller track
-                // bring it back — but says so, the same row the multi-row
-                // feature display offers off the same threshold.
-                toggleItem(
-                  withHint(
-                    'Show row separators',
-                    self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
-                      ? `needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`
-                      : undefined,
-                  ),
-                  self.showRowSeparators,
-                  self.setShowRowSeparators,
-                ),
-                showRowLabelsMenuItem(self),
-              ]),
+            : [showRowSeparatorsMenuItem(self), showRowLabelsMenuItem(self)]),
           // the color key only renders as an overlay of >1 source
           ...(self.overlayLegendApplies
             ? [

@@ -5,18 +5,17 @@ import {
   checkboxItem,
   radioItems,
   showLegendCheckboxItem,
-  toggleItem,
-  withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import {
-  MIN_SEPARATOR_ROW_PX,
   clusteringMenuItem,
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
+  showRowSeparatorsMenuItem,
+  showTreeSidebarMenuItem,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
@@ -100,11 +99,7 @@ interface MultiRowMenuSelf
 // the two tree controls sit together.
 function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   return [
-    toggleItem(
-      'Show sidebar with tree and labels',
-      self.showTree,
-      self.setShowTree,
-    ),
+    showTreeSidebarMenuItem(self),
     showRowLabelsMenuItem(self),
     // Both keys, because `showLegend` governs both and the legend's own "×"
     // writes it: the row-group key draws on a track whose `colorLegend` is
@@ -123,19 +118,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
           ),
         ]
       : []),
-    // stays clickable below the draw threshold (the toggle is a setting, and
-    // taller rows make it appear) but says so, rather than silently doing
-    // nothing on a dense painting
-    toggleItem(
-      withHint(
-        'Show row separators',
-        self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
-          ? `needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`
-          : undefined,
-      ),
-      self.showRowSeparators,
-      self.setShowRowSeparators,
-    ),
+    showRowSeparatorsMenuItem(self),
     treeBranchLengthMenuItem(self),
   ]
 }

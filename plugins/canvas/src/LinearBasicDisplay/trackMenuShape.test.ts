@@ -242,7 +242,7 @@ describe('canvas track menu shape', () => {
     // "Make <label> the default for all tracks of this type" and into an
     // aria-label, so a hint folded into the option before the pin is attached
     // is read out as part of the setting's name.
-    expect(inert.pin?.label).toBe('Name + description')
+    expect('pin' in inert && inert.pin?.label).toBe('Name + description')
   })
 
   // The two label groups sit adjacent in one submenu under the same
@@ -261,7 +261,7 @@ describe('canvas track menu shape', () => {
       'Below — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
-    expect(inert.pin?.label).toBe('Below')
+    expect('pin' in inert && inert.pin?.label).toBe('Below')
     // 'Off' is already describing the absence, so it never carries the note
     find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Off')
   })

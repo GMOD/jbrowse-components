@@ -72,11 +72,14 @@ export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export {
+  TREE_SIDEBAR_LABEL,
   clearSubtreeFilterMenuItems,
   clusterProvenanceMenuItems,
   clusteringMenuItem,
   resetRowOrderMenuItems,
   showRowLabelsMenuItem,
+  showRowSeparatorsMenuItem,
+  showTreeSidebarMenuItem,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
 export { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'

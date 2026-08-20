@@ -63,11 +63,10 @@ export function inlineRadioGroup<T extends string>(
 ): MenuItem[] {
   return [
     { type: 'subHeader' as const, label: header },
-    ...promotableRadioItems(options, current, onSelect, pin).map((item, i) =>
-      hint
-        ? { ...item, label: withHint(item.label, hint(options[i]!.value)) }
-        : item,
-    ),
+    ...promotableRadioItems(options, current, onSelect, pin).map((item, i) => {
+      const { value, label } = options[i]!
+      return hint ? { ...item, label: withHint(label, hint(value)) } : item
+    }),
   ]
 }
 

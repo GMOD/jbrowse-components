@@ -13,6 +13,7 @@ import {
   rowArrangementMenuItem,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
+  showTreeSidebarMenuItem,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -222,11 +223,7 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showAsUpperCase,
       self.setShowAsUpperCase,
     ),
-    toggleItem(
-      'Show sidebar with tree and labels',
-      self.showTree,
-      self.setShowTree,
-    ),
+    showTreeSidebarMenuItem(self),
     // gated: this display mounts its label overlay only under `showTree`, so
     // with the tree off the toggle would change nothing
     showRowLabelsMenuItem(self, { requiresTree: true }),

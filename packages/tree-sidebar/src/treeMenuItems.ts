@@ -1,11 +1,16 @@
-import { toggleItem } from '@jbrowse/core/ui/menuItems'
+import { toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 
+import { MIN_SEPARATOR_ROW_PX } from './RowSeparatorLines.tsx'
 import { describeClusterProvenance } from './clusterProvenance.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+// The sidebar toggle's label. Exported because the website's figure recipes
+// name it in a click path and must not re-spell it.
+export const TREE_SIDEBAR_LABEL = 'Show sidebar with tree and labels'
 
 interface BranchLengthMenuModel {
   showTree: boolean
@@ -70,6 +75,50 @@ export function showRowLabelsMenuItem(
         'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
     },
   )
+}
+
+interface RowSeparatorsMenuModel {
+  showRowSeparators: boolean
+  effectiveRowHeight: number
+  setShowRowSeparators: (arg: boolean) => void
+}
+
+/**
+ * Shared "Show row separators" toggle, for the same reason
+ * {@link showRowLabelsMenuItem} is shared: the canvas multi-row painting and
+ * the multi-wiggle display had written it out identically, down to the hint
+ * text, off the same `MIN_SEPARATOR_ROW_PX` threshold.
+ *
+ * Stays clickable below the height the lines draw at — the toggle is a setting,
+ * and fewer rows or a taller track bring it back — but says so, rather than
+ * silently doing nothing on a dense painting.
+ */
+export function showRowSeparatorsMenuItem(
+  self: RowSeparatorsMenuModel,
+): MenuItem {
+  return toggleItem(
+    withHint(
+      'Show row separators',
+      self.effectiveRowHeight < MIN_SEPARATOR_ROW_PX
+        ? `needs rows ${MIN_SEPARATOR_ROW_PX}px or taller`
+        : undefined,
+    ),
+    self.showRowSeparators,
+    self.setShowRowSeparators,
+  )
+}
+
+interface TreeSidebarMenuModel {
+  showTree: boolean
+  setShowTree: (arg: boolean) => void
+}
+
+// Shared "Show sidebar with tree and labels" toggle — the row every
+// tree-sidebar consumer opens its sidebar group with, and the row
+// `showRowLabelsMenuItem` and `treeBranchLengthMenuItem` both gate off. One
+// label, so the three read as one group wherever they are assembled.
+export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
+  return toggleItem(TREE_SIDEBAR_LABEL, self.showTree, self.setShowTree)
 }
 
 interface SubtreeFilterMenuModel {
