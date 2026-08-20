@@ -10,6 +10,7 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 // assemblyNames is ordered [query, target]: index 0 is the PAF/delta/chain
@@ -310,10 +311,11 @@ export function indexRecordsByName<T>(
   return index
 }
 
-// A whole-number field, read off the text without slicing it out. BED
-// coordinates are integers, so the digit loop answers every real row; anything
-// else falls back to the slice-and-coerce the split-based parse always did.
-function bedNum(text: string, from: number, to: number) {
+// A whole-number column, read off the text without slicing it out. BED and PAF
+// coordinates are both integers, so the digit loop answers every real row;
+// anything else falls back to the slice-and-coerce the split-based parses always
+// did. Shared by {@link parseBedLine} and {@link parsePAFLine}.
+function columnNum(text: string, from: number, to: number) {
   if (to <= from) {
     return Number.NaN
   }
@@ -376,11 +378,11 @@ function parseBedLine(
   const name = text.slice(t3 + 1, t4)
   // BED writes an absent score as `.` (and jcvi's BEDs often do), which
   // coercing turned into a NaN that rode all the way out to the feature
-  const score = bedNum(text, t4 + 1, t5)
+  const score = columnNum(text, t4 + 1, t5)
   result.set(name, {
     refName: text.slice(pos, t1),
-    start: bedNum(text, t1 + 1, t2),
-    end: bedNum(text, t2 + 1, t3),
+    start: columnNum(text, t1 + 1, t2),
+    end: columnNum(text, t2 + 1, t3),
     score: Number.isFinite(score) ? score : 0,
     name,
     // the column is `-` and nothing else, so a `-` with anything after it is
@@ -466,27 +468,13 @@ export function collectLines<T>({
   return records
 }
 
-export function parsePAFLine(line: string) {
+// A row missing one of PAF's 12 mandatory columns, which therefore carries no
+// optional tags either (they are columns 13 and up). Coercing the absent columns
+// is what the split-based parse did with them — `+undefined` is NaN, a missing
+// name is undefined — and callers already tolerate that, so the degenerate row
+// keeps its answer rather than acquiring a new one.
+function parseShortPAFLine(line: string) {
   const parts = line.split('\t')
-  const extra: Record<string, string | number> = {
-    numMatches: +parts[9]!,
-    blockLen: +parts[10]!,
-    mappingQual: +parts[11]!,
-  }
-
-  for (let i = 12; i < parts.length; i++) {
-    const field = parts[i]!
-    // `TAG:t:value`, so the first colon ends the tag name and the value starts
-    // two characters later — a `cs` value's own colons are inside the value. A
-    // column that is not a tag at all is skipped rather than filed under a
-    // truncated key: it would otherwise be spread onto the feature and shown in
-    // the tooltip as a garbage field.
-    const colonIndex = field.indexOf(':')
-    if (colonIndex !== -1) {
-      extra[field.slice(0, colonIndex)] = field.slice(colonIndex + 3)
-    }
-  }
-
   return {
     tname: parts[5]!,
     tstart: +parts[7]!,
@@ -495,6 +483,97 @@ export function parsePAFLine(line: string) {
     qstart: +parts[2]!,
     qend: +parts[3]!,
     strand: parts[4] === '-' ? -1 : 1,
+    extra: {
+      numMatches: +parts[9]!,
+      blockLen: +parts[10]!,
+      mappingQual: +parts[11]!,
+    } as Record<string, string | number>,
+  }
+}
+
+// One PAF (or PIF) row, walked by tab offset rather than `line.split('\t')`.
+// The split allocated the whole column array plus a substring per column to keep
+// six of them, and on a fine-tier PIF row it did that around a CIGAR that is
+// most of the line: `hs1ToMm39.over.chain.pif.gz` averages 1,789 bytes a row, so
+// the split was scanning and re-wrapping ~1.7kB per row to read twelve short
+// fields off the front. Measured 1.84x on that file's fine and coarse tiers and
+// 1.49x on a 10-tag minimap2 PAF —
+// `plugins/comparative-adapters/benches/pafLineParse.bench.ts`.
+//
+// The offsets must strictly increase, and testing that is not decoration:
+// `indexOf` answers -1 at the end of a short row, and the next call then reads
+// `indexOf('\t', -1 + 1)`, which restarts the search at 0 and silently returns
+// offsets from the front of the line again. The first -1 always breaks the
+// chain, so one monotonic test catches every short row.
+export function parsePAFLine(line: string) {
+  const len = line.length
+  const t0 = line.indexOf('\t')
+  const t1 = line.indexOf('\t', t0 + 1)
+  const t2 = line.indexOf('\t', t1 + 1)
+  const t3 = line.indexOf('\t', t2 + 1)
+  const t4 = line.indexOf('\t', t3 + 1)
+  const t5 = line.indexOf('\t', t4 + 1)
+  const t6 = line.indexOf('\t', t5 + 1)
+  const t7 = line.indexOf('\t', t6 + 1)
+  const t8 = line.indexOf('\t', t7 + 1)
+  const t9 = line.indexOf('\t', t8 + 1)
+  const t10 = line.indexOf('\t', t9 + 1)
+  if (
+    !(
+      t0 < t1 &&
+      t1 < t2 &&
+      t2 < t3 &&
+      t3 < t4 &&
+      t4 < t5 &&
+      t5 < t6 &&
+      t6 < t7 &&
+      t7 < t8 &&
+      t8 < t9 &&
+      t9 < t10
+    )
+  ) {
+    return parseShortPAFLine(line)
+  }
+  // the last mandatory column runs to the end of the line when the row states
+  // no optional tags at all
+  let t11 = line.indexOf('\t', t10 + 1)
+  if (t11 === -1) {
+    t11 = len
+  }
+  const extra: Record<string, string | number> = {
+    numMatches: columnNum(line, t8 + 1, t9),
+    blockLen: columnNum(line, t9 + 1, t10),
+    mappingQual: columnNum(line, t10 + 1, t11),
+  }
+
+  let pos = t11 + 1
+  while (pos < len) {
+    let end = line.indexOf('\t', pos)
+    if (end === -1) {
+      end = len
+    }
+    // `TAG:t:value`, so the first colon ends the tag name and the value starts
+    // two characters later — a `cs` value's own colons are inside the value. A
+    // column that is not a tag at all is skipped rather than filed under a
+    // truncated key: it would otherwise be copied onto the feature and shown in
+    // the tooltip as a garbage field.
+    const colon = line.indexOf(':', pos)
+    if (colon !== -1 && colon < end) {
+      extra[line.slice(pos, colon)] = line.slice(colon + 3, end)
+    }
+    pos = end + 1
+  }
+
+  return {
+    tname: line.slice(t4 + 1, t5),
+    tstart: columnNum(line, t6 + 1, t7),
+    tend: columnNum(line, t7 + 1, t8),
+    qname: line.slice(0, t0),
+    qstart: columnNum(line, t1 + 1, t2),
+    qend: columnNum(line, t2 + 1, t3),
+    // the column is `-` and nothing else, so a `-` with anything after it is not
+    // a minus strand
+    strand: t4 - t3 === 2 && line.charCodeAt(t3 + 1) === 45 ? -1 : 1,
     extra,
   }
 }
@@ -864,6 +943,43 @@ export function resolveCoarseTier({
   return hasCoarseTier && lodMode === 'coarse'
 }
 
+/**
+ * Copy a row's remaining optional tags onto a synteny feature's data, so they
+ * reach the tooltip and the feature-detail card.
+ *
+ * A loop rather than the `{...known, ...rest, ...more}` spread both feature
+ * builders used to write. A spread in the MIDDLE of an object literal is what
+ * costs: V8 cannot give the literal a static hidden class, so every field after
+ * the spread is added dynamically, once per feature. Building the whole literal
+ * statically and copying the tags on afterwards measured 2.0-5.2x on the object
+ * construction alone (`benches/pafLineParse.bench.ts`), which is the larger half
+ * of the read path — bigger than the parse it follows.
+ *
+ * `cg`/`cs` are excluded because the caller has already turned them into
+ * `CIGAR`/`cs`, and `id` (odgi untangle's identity tag) because `pafIdentity`
+ * reads it and as feature data it would become the feature's `id`, which the
+ * synteny tooltip falls back to for a name — a row tagged `id:f:0.98` labelled
+ * itself "0.98".
+ *
+ * A tag colliding with a field already set is dropped rather than overwriting
+ * it, which is what listing those fields after the spread did.
+ */
+export function copyPafTags(
+  data: SimpleFeatureSerialized,
+  extra: Record<string, string | number | undefined>,
+) {
+  for (const key in extra) {
+    if (
+      key !== 'cg' &&
+      key !== 'cs' &&
+      key !== 'id' &&
+      !Object.hasOwn(data, key)
+    ) {
+      data[key] = extra[key]
+    }
+  }
+}
+
 // Build a SyntenyFeature from a parsed PIF row. Unlike the in-memory adapters'
 // makeSyntenyFeature, no read-time reorientation happens: make-pif already
 // oriented the CIGAR/cs for the indexed perspective, so cg (or a hand-built cs)
@@ -883,10 +999,7 @@ export function makeIndexedSyntenyFeature({
   mate: { start: number; end: number; refName: string; assemblyName: string }
 }) {
   const { extra, strand, indexedStart, indexedEnd } = line
-  // `id` is dropped for the reason makeSyntenyFeature drops it: pafIdentity
-  // reads it below, and as feature data it would become the feature's `id` and
-  // be shown as its name.
-  const { numMatches = 0, blockLen = 1, cg, cs, id: _id, ...rest } = extra
+  const { numMatches = 0, blockLen = 1, cg, cs } = extra
   // a PIF row's tags are untyped strings/numbers, so both tags are narrowed
   // rather than assumed to be strings
   const CIGAR =
@@ -895,7 +1008,7 @@ export function makeIndexedSyntenyFeature({
       : typeof cs === 'string'
         ? csToCigar(cs)
         : undefined
-  return new SyntenyFeature({
+  const data: SimpleFeatureSerialized = {
     uniqueId: fileOffset + assemblyName,
     assemblyName,
     start: indexedStart,
@@ -903,7 +1016,6 @@ export function makeIndexedSyntenyFeature({
     type: 'match',
     refName,
     strand,
-    ...rest,
     CIGAR,
     cs: typeof cs === 'string' ? cs : undefined,
     syntenyId: fileOffset,
@@ -911,5 +1023,7 @@ export function makeIndexedSyntenyFeature({
     numMatches,
     blockLen,
     mate,
-  })
+  }
+  copyPafTags(data, extra)
+  return new SyntenyFeature(data)
 }

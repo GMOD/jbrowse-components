@@ -4,12 +4,14 @@ import { fetchAndMaybeUnzip, updateStatus } from '@jbrowse/core/util'
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import {
   collectLines,
+  copyPafTags,
   getOrCreate,
   indexRecordsByName,
   parsePAFLine,
 } from '../util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export interface PAFRecord {
@@ -206,13 +208,9 @@ export function makeSyntenyFeature({
   flip: boolean
   mate: { refName: string; start: number; end: number; assemblyName: string }
 }) {
-  // `id` (odgi untangle's identity tag) is read by pafIdentity below and then
-  // dropped rather than spread: as feature data it becomes the feature's `id`,
-  // which the synteny tooltip falls back to for a name — so a row tagged
-  // id:f:0.98 labelled itself "0.98".
-  const { numMatches = 0, blockLen = 1, cg, cs, id: _id, ...rest } = extra
+  const { numMatches = 0, blockLen = 1, cg, cs } = extra
   const { CIGAR, cs: orientedCs } = orientAlignment({ cg, cs, flip, strand })
-  return new SyntenyFeature({
+  const data: SimpleFeatureSerialized = {
     uniqueId: syntenyId + assemblyName,
     assemblyName,
     start,
@@ -220,7 +218,6 @@ export function makeSyntenyFeature({
     type: 'match',
     refName,
     strand,
-    ...rest,
     CIGAR,
     cs: orientedCs,
     syntenyId,
@@ -228,5 +225,9 @@ export function makeSyntenyFeature({
     numMatches,
     blockLen,
     mate,
-  })
+  }
+  // the tags land after the fields above rather than before them — see
+  // copyPafTags, which is also where the three it drops are accounted for
+  copyPafTags(data, extra)
+  return new SyntenyFeature(data)
 }
