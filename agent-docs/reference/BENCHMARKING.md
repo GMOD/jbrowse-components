@@ -127,6 +127,24 @@ bars, it **moves the answer** — and here it moved it in the direction that
 flattered the change. Size the window from the working set, not from what runs
 fast.
 
+**A window LARGE enough that the arms' own garbage decides the result.** The
+entry above says size the window from the working set; this is the other end of
+the same knob, and it bites much sooner than anyone expects. `pafLineParse.bench`
+builds one object graph per input row and drops it — an ordinary parse-and-build
+shape — and it stops resolving anything at about **4,000 rows per arm**. Three
+byte-identical arms scored 1.00x, 0.94x and 1.38x when the features were retained
+in an array; dropping them helped, but the control still read **0.79x at 8,000
+rows, 0.68x at 20,000 and 0.63x at 16,066**, against 0.99-1.05x at 4,000.
+
+It is row count, not bytes: 4,000 rows of 1.8kB (7.2 MB of text) resolve cleanly
+and 20,000 rows of 96 bytes (1.9 MB) do not. **More rounds do not fix it** — 45
+rounds read the same as 20 — so the usual response to a wobbly control makes it
+worse by costing minutes. Cut the fixture down and re-run.
+
+The reason to catalogue it rather than shrug: the candidate arms went on
+reporting plausible, stable, correctly-ordered ratios the whole time. Only the
+control said anything was wrong.
+
 **A degenerate microbench.** A pure-allocation microbench claimed **5.2x** for
 removing two throwaway objects per record. The same change on a real 300x BAM
 measured **1.013x**. Microbenches are for finding a mechanism, never for sizing

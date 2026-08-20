@@ -92,6 +92,23 @@ tier that loop is already short (no `cg`). The double-wrap is a low-single-digit
 win at best, not the "10–15%" a prior note claimed; not worth touching without a
 profiler open on a real regression.
 
+**Measured 2026-08-20, and both halves of that paragraph held.** Removing the
+double-wrap — parsing straight into the `PifLine` shape, one object per row
+instead of two — came back at 1.24-1.38x on one fixture and 1.30-1.42x *against
+it* on another, i.e. nothing, so `parsePifLine` still wraps and still reads the
+way its docstring argues for. The `split('\t')` this section names as the real
+cost was worth 1.84x on either PIF tier and 1.49x on a minimap2 PAF, and it
+landed: `parsePAFLine` walks tab offsets, priced by
+`plugins/comparative-adapters/benches/pafLineParse.bench.ts`.
+
+What the section did not anticipate is that the parse is not the larger half.
+Building the `SyntenyFeature` costs more than parsing the row it comes from, and
+almost all of that was one line of syntax — a `...rest` spread in the MIDDLE of
+the data object literal, which denies V8 a static hidden class and adds every
+subsequent field dynamically, once per feature. Removing it measured 2.0-5.2x on
+the construction alone. Neither change touches the row count, so the deferred
+binned tier is still the only N→M lever and still deferred.
+
 ## Consequences
 
 - The synteny perf backlog carries exactly one real item — the binned make-pif

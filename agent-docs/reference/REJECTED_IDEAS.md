@@ -579,6 +579,42 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   at all. The reasoning is kept at the arm it is not, in
   `plugins/comparative-adapters/benches/mcscanParseBed.bench.ts`.
 
+- **Parsing a PIF row straight into its `PifLine` shape, skipping the
+  `PAFRecord` it is renamed from** — measured 2026-08-20 and declined, which is
+  the third time ADR-039's reading of this has held. `parsePifLine` builds a
+  second shallow object per row that only *references* the same `extra` map, so
+  one object per row instead of two looked free. It measured **1.38x** on a
+  16,066-row fine PIF tier and **0.88x** — the wrong way — on an 84k-row coarse
+  tier, in the same harness, minutes apart. Both readings are noise: at that row
+  count the control was 0.94-1.38x, so the harness resolved nothing (see the row
+  ceiling in `benches/pafLineParse.bench.ts`). Nothing survives it, and the
+  rename is what makes the anchor/mate roles readable at the two call sites that
+  consume them.
+
+  **The same session's two accepted changes were both work, not allocation** —
+  the tab-offset parse stops scanning and re-wrapping a 1.8kB CIGAR to read
+  twelve short fields, and the spread removal stops rebuilding the feature's data
+  object dynamically. This entry is the allocation, and it measured nothing,
+  again.
+
+- **A `cl:i:` CIGAR-length tag in the PIF format, so the reader can jump the
+  `cg:Z:` value instead of scanning it** — measured 2026-08-20 and declined on
+  price. The parse has to find the tab that ENDS the CIGAR, which on a fine-tier
+  row means touching ~1.8kB it otherwise never reads (the value it keeps is a
+  sliced string, O(1)); writing the length beside it in `make-pif` turns that
+  scan into arithmetic, and unlike an ordering invariant it degrades safely —
+  a file without the tag takes the scan. It works, and it is small: **1.257x
+  against a control of 1.000x** on 4,000 hs1-vs-mm39 fine rows.
+
+  That 1.257x is of the tag loop, which is 0.49 µs of a 1.4 µs row. The whole
+  change is therefore **~7% of the read path**, and it is 7% that only reaches a
+  user who regenerates their PIF files — against 1.6-2.2x that reached every
+  existing file the day it landed. A format invariant whose sole consumer is a
+  parser fast path is also the kind that rots quietly. Re-open it if the parse
+  ever dominates again. Re-measuring it is a fifth arm in `pafLineParse.bench.ts`
+  that reads the CIGAR's start and length out of a precomputed array, which
+  prices the bound without writing either the tag or the generator half.
+
 - **Fusing the synteny worker's `dedupe` into the decorate pass that follows
   it** — measured 2026-08-20 and declined. The two passes read `id()` twice and
   allocate two intermediate arrays the length of the fetch, so one pass over a
