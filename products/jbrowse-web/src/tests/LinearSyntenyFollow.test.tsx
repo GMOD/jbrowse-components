@@ -31,6 +31,7 @@ interface SyntenyView {
   setWidth: (n: number) => void
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
   setFollowAnchorIndex: (idx: number) => void
+  showAllRegions: () => void
 }
 
 async function openSyntenyView() {
@@ -50,6 +51,55 @@ async function openSyntenyView() {
     expect(display.featureData).toBeDefined()
   }, timeout)
   return view
+}
+
+// volvox_contig_swap.paf, volvox against itself, two blocks: ctgA's first 6079
+// bases align to ctgB and ctgB's to ctgA. The SWAP is the point — with a 1:1
+// self-alignment a followed row is already sitting on its answer, so a follow
+// that placed it on one contig alone would look like a follow that did nothing.
+async function openTwoContigView() {
+  const { session } = getTestSession()
+  const added = session.addTrackConf({
+    type: 'SyntenyTrack',
+    trackId: 'volvox_contig_swap',
+    name: 'volvox_contig_swap',
+    assemblyNames: [TARGET_ASM, TARGET_ASM],
+    adapter: {
+      type: 'PAFAdapter',
+      uri: 'volvox_contig_swap.paf',
+      assemblyNames: [TARGET_ASM, TARGET_ASM],
+    },
+  }) as { trackId: string }
+  const view = session.addView('LinearSyntenyView', {
+    init: {
+      views: [{ assembly: TARGET_ASM }, { assembly: TARGET_ASM }],
+      tracks: [added.trackId],
+    },
+  }) as unknown as SyntenyView
+  view.setWidth(800)
+  await waitFor(() => {
+    expect(view.initialized).toBe(true)
+  }, timeout)
+  const display = view.levels[0]!.linearSyntenyDisplays[0]!
+  await waitFor(() => {
+    expect(display.featureData).toBeDefined()
+  }, timeout)
+  return view
+}
+
+// What a row is showing, as "show all regions" means it: which contigs, and how
+// much of them. THE BP MATTERS AS MUCH AS THE CONTIGS — a row sent to the whole
+// of ctgB still has ctgA in its leftmost pixel, since the two regions are laid
+// out end to end, so a contig set alone calls that row a whole-genome view.
+// volvox is 50001bp of ctgA and 6079 of ctgB.
+const WHOLE_GENOME_BP = 56_080
+
+function shownBy(lgv: LinearGenomeViewModel) {
+  const blocks = lgv.dynamicBlocks.contentBlocks
+  return {
+    contigs: [...new Set(blocks.map(b => b.refName))].sort(),
+    bp: Math.round(blocks.reduce((a, b) => a + b.end - b.start, 0)),
+  }
 }
 
 // The visible span of a row, as the follow itself reads it.
@@ -139,6 +189,127 @@ test('a window wider than any one alignment does not zoom the followed row in', 
     // everything under the window covers nearly the whole 50kb contig
     const followed = windowOf(target!)
     expect(followed.end - followed.start).toBeGreaterThan(35000)
+  }, timeout)
+})
+
+// REPORTED ON THE GRAPE/PEACH/CACAO DEMO: with following on, "show all regions"
+// left the anchor row showing its whole genome and sent every other row to one
+// chromosome. The anchor's window was read as its widest contig alone, and one
+// contig is all an answer of one `ResolvedSpan` can name, so the rows below were
+// placed on whichever single contig aligned to it.
+test('a whole-genome overview is a place every row can be, not just the anchor', async () => {
+  const view = await openTwoContigView()
+  const [anchor, target] = view.views
+  view.setRowSyncMode('follow')
+
+  // long enough that every settle this woke has run, so this is "it stayed",
+  // not "it has not moved yet"
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(shownBy(anchor!)).toEqual({
+    contigs: ['ctgA', 'ctgB'],
+    bp: WHOLE_GENOME_BP,
+  })
+  // the whole genome, not the 6kb of it the widest contig's alignment names
+  expect(shownBy(target!)).toEqual({
+    contigs: ['ctgA', 'ctgB'],
+    bp: WHOLE_GENOME_BP,
+  })
+})
+
+test('show all regions puts every row back on all of them while following', async () => {
+  const view = await openTwoContigView()
+  const [anchor, target] = view.views
+  view.setRowSyncMode('follow')
+
+  // zoom the stack into one locus first: ctgB's first 3kb aligns to ctgA, so
+  // this is the follow doing its single-contig job and the rows sitting on
+  // different contigs
+  await anchor!.navToLocString('ctgB:1..3000', TARGET_ASM)
+  await waitFor(() => {
+    expect(shownBy(target!).contigs).toEqual(['ctgA'])
+  }, timeout)
+
+  view.showAllRegions()
+
+  await waitFor(() => {
+    expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
+  }, timeout)
+  // and it stays there rather than being pulled back one settle later
+  await new Promise(resolve => setTimeout(resolve, 1500))
+  expect(shownBy(anchor!)).toEqual({
+    contigs: ['ctgA', 'ctgB'],
+    bp: WHOLE_GENOME_BP,
+  })
+  expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
+})
+
+// A window spanning contigs is never inside one alignment, so the walk that
+// costs an RPC has nothing to walk — the overview rung is arithmetic over blocks
+// the main thread already holds. Worth pinning: this rung runs on the frame
+// clock too, and an RPC on that clock is one per frame.
+test('an overview places its rows without asking the worker anything', async () => {
+  const view = await openTwoContigView()
+  const [anchor, target] = view.views
+  const call = jest.spyOn(getSession(anchor!).rpcManager, 'call')
+  view.setRowSyncMode('follow')
+
+  await waitFor(() => {
+    expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
+  }, timeout)
+  await new Promise(resolve => setTimeout(resolve, 1500))
+
+  expect(
+    call.mock.calls.filter(
+      c =>
+        c[1] === 'SyntenyResolveMatchingRegion' ||
+        c[1] === 'SyntenyGetCigarMap',
+    ),
+  ).toHaveLength(0)
+})
+
+// The rung places with `moveTo`, which reaches only what the row has a region
+// for. A row whose regions have been narrowed to a stretch that aligns to
+// nothing is past that, so the rung falls back to the navigation that can move
+// it — the widest contig under the anchor's window. It cannot restore the
+// regions the row no longer has, and must not try: a follow that rewrites a
+// row's region set is how a whole-genome row got collapsed in the first place.
+test('a row narrowed onto an unaligned stretch is still moved', async () => {
+  const view = await openTwoContigView()
+  const [, target] = view.views
+  view.setRowSyncMode('follow')
+  await waitFor(() => {
+    expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
+  }, timeout)
+
+  // ctgA past 6079 aligns to nothing, and this leaves the row no region for
+  // either contig the anchor's window maps onto
+  target!.setDisplayedRegions([
+    { assemblyName: TARGET_ASM, refName: 'ctgA', start: 20_000, end: 30_000 },
+  ])
+
+  await waitFor(() => {
+    expect(shownBy(target!)).toEqual({ contigs: ['ctgB'], bp: 6079 })
+  }, timeout)
+})
+
+// The mode's promise, at the zoom the mode is least obviously doing anything:
+// the rows agree, so a followed row zoomed by hand goes back to the overview
+// rather than sitting there with following still reported as on.
+test('a followed row zoomed away from an overview by hand is put back', async () => {
+  const view = await openTwoContigView()
+  const [, target] = view.views
+  view.setRowSyncMode('follow')
+  await waitFor(() => {
+    expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
+  }, timeout)
+
+  // its own regions, kept — this is a zoom, not a navigation
+  target!.zoomTo(target!.bpPerPx / 8)
+  expect(shownBy(target!).bp).toBeLessThan(WHOLE_GENOME_BP / 4)
+
+  await waitFor(() => {
+    expect(shownBy(target!).bp).toBeGreaterThan(WHOLE_GENOME_BP - 100)
   }, timeout)
 })
 

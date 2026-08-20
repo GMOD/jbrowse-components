@@ -6,18 +6,25 @@ export interface FollowWindow {
   end: number
 }
 
+// A contig showing less than a pixel is not part of what the reader is looking
+// at, and a whole-genome view of a fragmented assembly has thousands of them.
+const MIN_VISIBLE_PX = 1
+
+// Enough for any chromosome-scale assembly, and a bound on what a scaffold-level
+// one can cost: the widest few dozen contigs are most of the screen, and the
+// answer is an INTERVAL spanning them, so a contig dropped here almost always
+// falls between two that were kept.
+const MAX_WINDOWS = 64
+
 /**
- * The window a follow reads off the anchor panel: its visible span on the ONE
- * refName it is mostly showing, since an alignment lives on one contig pair.
+ * The windows a follow reads off the anchor panel: its visible span on each
+ * refName it is showing, widest by SCREEN px first.
  *
- * The widest by SCREEN px, which is what the eye picks as "where the view is"
- * and stays true across contigs differing in size by orders of magnitude; and
- * the union of that refName's blocks, so a contig split by a padding block
- * still yields the whole visible stretch.
+ * Per refName because an alignment lives on one contig pair, and the union of
+ * that refName's blocks so a contig split by a padding block still yields the
+ * whole visible stretch.
  */
-export function followAnchorWindow(
-  blocks: ContentBlock[],
-): FollowWindow | undefined {
+export function followAnchorWindows(blocks: ContentBlock[]): FollowWindow[] {
   const byRefName = new Map<string, FollowWindow & { widthPx: number }>()
   for (const b of blocks) {
     const prev = byRefName.get(b.refName)
@@ -34,18 +41,26 @@ export function followAnchorWindow(
       })
     }
   }
-  let best: (FollowWindow & { widthPx: number }) | undefined
-  for (const entry of byRefName.values()) {
-    if (!best || entry.widthPx > best.widthPx) {
-      best = entry
-    }
-  }
-  // rebuilt so `widthPx` does not ride along undeclared
-  return best
-    ? {
-        refName: best.refName,
-        start: best.start,
-        end: best.end,
-      }
-    : undefined
+  return (
+    [...byRefName.values()]
+      .filter(w => w.widthPx >= MIN_VISIBLE_PX)
+      .sort((a, b) => b.widthPx - a.widthPx)
+      .slice(0, MAX_WINDOWS)
+      // rebuilt so `widthPx` does not ride along undeclared
+      .map(({ refName, start, end }) => ({ refName, start, end }))
+  )
+}
+
+/**
+ * The one window a single-contig follow reads off the anchor panel: the widest
+ * by SCREEN px, which is what the eye picks as "where the view is" and stays
+ * true across contigs differing in size by orders of magnitude.
+ *
+ * The right operand for everything that maps a window through ONE alignment. A
+ * pass placing a row from a whole-genome overview wants `followAnchorWindows`
+ * instead — this drops every contig but one, which at that zoom is most of the
+ * screen.
+ */
+export function followAnchorWindow(blocks: ContentBlock[]) {
+  return followAnchorWindows(blocks)[0]
 }

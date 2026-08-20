@@ -64,6 +64,63 @@ The map is not the whole answer and must not be made into one. The exact pass
 still navigates — a matching region on another contig is a `navTo`, which the
 frame pass may not do — and a block with no CIGAR has no map at all.
 
+## Three rungs, coarsening as the anchor's window widens
+
+1. **Inside one alignment** — the CIGAR walk, exact.
+2. **Wider than one alignment, inside one contig** — `followWindowMapping`'s
+   envelope, approximate.
+3. **Wider than one contig** — `followSpreadSpans`, the union of what each
+   visible contig maps to, placed as an interval of the moving row's own layout.
+
+Rung 3 is what makes a **whole-genome overview a place a row can be**. Without
+it `followAnchorWindow` kept the anchor's widest contig and threw the other
+eighteen away, and one `ResolvedSpan` names one contig — so "show all regions"
+left the anchor showing everything and sent every row below it to whichever
+single chromosome aligned to that widest one. Reported on grape/peach/cacao, and
+it is not specific to that command: any overview did it.
+
+**Every visible contig is asked, not the two outer edges.** Mapping the leftmost
+and rightmost visible bp is the obvious cheaper spelling and is wrong whenever
+the two assemblies order their contigs differently — which the multiway demo
+deliberately does, to minimize ribbon crossing. The anchor's first contig then
+maps to the mate's _last_ region and the interval between the two edges runs
+backwards over a slice of the row.
+
+**One scan of the blocks, not one per contig.** `followWindowsMapping` takes the
+windows as a list for that reason: the per-frame cost is the block loop, and a
+whole-genome anchor has as many contigs as the assembly does.
+`followAnchorWindows` drops sub-pixel contigs and caps the list, so a
+scaffold-level assembly cannot turn one pass into thousands.
+
+**The answer is an interval of the MOVING row's layout, so it is not a
+`ResolvedSpan`.** `positionViewOnSpans` takes the min and max of the mapped
+spans in that row's offset space, which is why rung 3 places with `moveTo` and
+never with a locstring — a locstring names one contig and `navToLocString` would
+collapse the row onto it. The fallback for a row that has no region for any of
+the answer is the one navigation this rung makes, guarded by `lastNav`, and it
+can only reach a single contig: the follow may not widen a row's region set any
+more than it may narrow one.
+
+**Rung 3 drops the level's pick.** No one block places the row, and the frame
+pass steers by the last pick — left standing, it went on placing the row through
+an alignment this rung has decided does not describe the window. The frame pass
+recomputes rung 3 itself rather than steering by anything cached, which it can
+because the rung chooses no block, holds no strand and needs no transform.
+
+**Rung 3 does not read the moving row**, where the rung below reads it on
+purpose. It still re-asserts over a row zoomed by hand, because the level's
+fetch is keyed on BOTH rows' windows: the hand zoom refetches, the new
+`featureData` wakes this pass, and it places the row back. Measured on
+`volvox_contig_swap` at ~1s, the same order as the debounce the rung below waits
+on. Adding the read would make that immediate at the cost of a re-entry per
+placement — cheap here, since re-placing writes the same numbers and no RPC is
+involved, so it is the fix if this ever reads as slow.
+
+The overview is a fixed point only **up to the unaligned flanks**: the union
+starts at the first block's mate edge, so a row with unaligned ends settles a
+hair inside its full extent, once, and stays. It reports itself as
+`followApproximate`, which it is.
+
 ## Ordering is outward from the anchor, not by level index
 
 An alignment relates one pair of rows, so the follow propagates one level at a

@@ -1,5 +1,8 @@
 import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
-import { followWindowMapping } from './followWindowMapping.ts'
+import {
+  followWindowMapping,
+  followWindowsMapping,
+} from './followWindowMapping.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
@@ -131,5 +134,53 @@ test('a reverse-strand block maps its left edge to the mate right', () => {
     refName: 'Pp01',
     start: 1_075_000,
     end: 1_100_000,
+  })
+})
+
+// A whole-genome anchor shows every contig at once, and the blocks are the
+// expensive part — so the several windows are answered in ONE scan of them.
+describe('several windows at once', () => {
+  const genome = data([
+    { start: 100_000, end: 900_000, mateStart: 100_000, mateEnd: 900_000 },
+    {
+      refName: 'chr2',
+      start: 50_000,
+      end: 450_000,
+      mateRefName: 'Pp02',
+      mateStart: 50_000,
+      mateEnd: 450_000,
+    },
+  ])
+
+  test('each window is answered on its own contig', () => {
+    expect(
+      followWindowsMapping({
+        data: genome,
+        windows: [win(0, 1_000_000), win(0, 500_000, 'chr2')],
+        toMate: true,
+      }),
+    ).toEqual([
+      { refName: 'Pp01', start: 100_000, end: 900_000 },
+      { refName: 'Pp02', start: 50_000, end: 450_000 },
+    ])
+  })
+
+  test('a window with nothing under it answers undefined in place', () => {
+    expect(
+      followWindowsMapping({
+        data: genome,
+        windows: [win(0, 500_000, 'chr9'), win(0, 1_000_000)],
+        toMate: true,
+      }).map(s => s?.refName),
+    ).toEqual([undefined, 'Pp01'])
+  })
+
+  // the one-pass form has to be the same arithmetic, or the rung it serves
+  // would place rows differently from the rung below it
+  test('an answer is the same as asking for that window alone', () => {
+    const windows = [win(0, 1_000_000), win(0, 500_000, 'chr2')]
+    expect(
+      followWindowsMapping({ data: genome, windows, toMate: true }),
+    ).toEqual(windows.map(w => map(genome, w)))
   })
 })

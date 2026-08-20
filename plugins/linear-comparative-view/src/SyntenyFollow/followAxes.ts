@@ -17,15 +17,19 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * integers rather than strings over hundreds of thousands of blocks. A name no
  * dictionary holds gives -1, which is not a valid id and so matches no block —
  * the same answer the string compare gave, reached without a special case.
+ *
+ * `windows` is a LIST because the anchor row can be showing several contigs at
+ * once, which is what a whole-genome overview is. One window is that list with
+ * one entry, and the ids come back in the order they were asked for.
  */
 export function followAxes({
   data,
-  window,
+  windows,
   toMate,
   mateAssembly,
 }: {
   data: SyntenyFeatureData
-  window: FollowWindow
+  windows: FollowWindow[]
   toMate: boolean
   // undefined where the caller cannot name it, which skips the filter rather
   // than dropping every candidate
@@ -39,9 +43,11 @@ export function followAxes({
     otherRefNameDict: toMate ? data.mateRefNameDict : data.refNameDict,
     otherStarts: toMate ? data.mateStarts : data.starts,
     otherEnds: toMate ? data.mateEnds : data.ends,
-    windowRefNameId: (toMate ? data.refNameDict : data.mateRefNameDict).indexOf(
-      window.refName,
+    windowRefNameIds: windows.map(w =>
+      (toMate ? data.refNameDict : data.mateRefNameDict).indexOf(w.refName),
     ),
+    windowRefNameDictLength: (toMate ? data.refNameDict : data.mateRefNameDict)
+      .length,
     // KEEPS AN ALL-VS-ALL TRACK IN ITS LANE — belt to the adapter's braces. The
     // fetch is single-axis, so nothing in the shape of what arrives says the
     // mates all belong to the level's lower row; that is a property of the

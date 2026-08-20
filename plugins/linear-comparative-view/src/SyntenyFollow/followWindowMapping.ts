@@ -81,24 +81,55 @@ function resolve(a: Accumulator) {
   return hasLeft ? a.leftAt : hasRight ? a.rightAt : undefined
 }
 
+// The window's two mapped edges as a span, once its target contig is known.
+function span(target: Target): ResolvedSpan | undefined {
+  const p = resolve(target.startAt)
+  const q = resolve(target.endAt)
+  if (p === undefined || q === undefined) {
+    return undefined
+  }
+  const lo = Math.min(p, q)
+  const hi = Math.max(p, q)
+  // No zero-clamp: every value `resolve` can return is a block coordinate or a
+  // point between two of them, so it is already in range — and clamping only
+  // `start` while `end` came off the unclamped `lo` would invert the span it was
+  // added to protect.
+  return hi > lo
+    ? {
+        refName: target.name,
+        start: Math.floor(lo),
+        // at least one base, since a zero-width span assembles into an inverted
+        // locstring
+        end: Math.max(Math.floor(lo) + 1, Math.ceil(hi)),
+      }
+    : undefined
+}
+
 /**
- * Where the anchor window maps to, across every alignment under it.
+ * Where each anchor window maps to, across every alignment under it.
  *
  * Each window EDGE mapped, not the union of the mapped blocks. The union is the
  * right answer but a step function — its edges jump as blocks enter and leave —
  * which measured as 1 movement in 30 drag steps on grape/peach at 5 Mb.
+ *
+ * SEVERAL WINDOWS IN ONE PASS, one per contig the anchor row is showing. The
+ * blocks are the expensive part — hundreds of thousands of them, scanned per
+ * frame — so calling the single-window form once per contig would multiply the
+ * pass by the contig count, which at whole-genome zoom is the whole assembly.
+ * The answers come back positionally, `undefined` where nothing under that
+ * window mapped.
  */
-export function followWindowMapping({
+export function followWindowsMapping({
   data,
-  window,
+  windows,
   toMate,
   mateAssembly,
 }: {
   data: SyntenyFeatureData
-  window: FollowWindow
+  windows: FollowWindow[]
   toMate: boolean
   mateAssembly?: string
-}): ResolvedSpan | undefined {
+}): (ResolvedSpan | undefined)[] {
   const {
     refNameIds,
     starts,
@@ -107,19 +138,19 @@ export function followWindowMapping({
     otherRefNameDict,
     otherStarts,
     otherEnds,
-    windowRefNameId,
+    windowRefNameIds,
+    windowRefNameDictLength,
     mateAssemblyNameIds,
     mateAssemblyId,
-  } = followAxes({ data, window, toMate, mateAssembly })
-  const { start: windowStartBp, end: windowEndBp } = window
+  } = followAxes({ data, windows, toMate, mateAssembly })
   const n = refNameIds.length
 
   // One pass, and NOTHING ALLOCATED PER BLOCK — that is the measurement, not
   // "no objects": this runs per frame over hundreds of thousands of blocks on a
   // whole-genome PAF, where a small object per block measured 51ms a frame at
-  // 500k against 5ms for a bare pass. A `Target` is per CONTIG, of which even a
-  // whole-genome window reaches a few dozen, so the loop below allocates once
-  // per contig and then only reads.
+  // 500k against 5ms for a bare pass. A `Target` is per CONTIG PAIR, of which
+  // even a whole-genome window reaches a few dozen, so the loop below allocates
+  // once per pair and then only reads.
   //
   // A slot per dictionary id, not a search. Blocks do NOT arrive grouped by
   // contig — `executeSyntenyFeaturesAndPositions` sorts them by feature LENGTH
@@ -128,36 +159,57 @@ export function followWindowMapping({
   // block. Ids are dense, since `renameDictLane` re-interns the lane. Measured
   // both ways at 300k blocks over 8, 24 and 200 contigs and there is no
   // difference; this spelling is simply the one that assumes no ordering.
-  const targets: Target[] = []
-  const byNameId = new Array<Target | undefined>(otherRefNameDict.length).fill(
-    undefined,
-  )
+  //
+  // Which window a block belongs to is the same lookup one step earlier, so a
+  // multi-contig pass costs one array read per block over a single-contig one
+  // rather than a pass per contig. The mate-side slots are allocated LAZILY,
+  // per window that a block actually reaches: an anchor showing 200 contigs
+  // against a dictionary of 200 would otherwise allocate 40,000 slots to fill a
+  // few hundred.
+  const windowOfRefNameId = new Int32Array(windowRefNameDictLength).fill(-1)
+  for (const [w, id] of windowRefNameIds.entries()) {
+    if (id >= 0) {
+      windowOfRefNameId[id] = w
+    }
+  }
+  const targetsPerWindow = windows.map(() => [] as Target[])
+  const slotsPerWindow = new Array<Int32Array | undefined>(windows.length)
   for (let i = 0; i < n; i++) {
+    const w = windowOfRefNameId[refNameIds[i]!]!
     if (
-      refNameIds[i] !== windowRefNameId ||
+      w < 0 ||
       (mateAssemblyId !== undefined &&
         mateAssemblyNameIds[i] !== mateAssemblyId)
     ) {
       continue
     }
+    const { start: windowStartBp, end: windowEndBp } = windows[w]!
+    const targets = targetsPerWindow[w]!
+    let slots = slotsPerWindow[w]
+    if (!slots) {
+      slots = new Int32Array(otherRefNameDict.length)
+      slotsPerWindow[w] = slots
+    }
     const nameId = otherRefNameIds[i]!
-    let target = byNameId[nameId]
-    if (!target) {
-      target = {
+    // 0 is "no target yet", so a slot holds the index one on
+    let slot = slots[nameId]!
+    if (slot === 0) {
+      slot = targets.length + 1
+      slots[nameId] = slot
+      targets.push({
         name: otherRefNameDict[nameId]!,
         total: 0,
         startAt: newAccumulator(windowStartBp),
         endAt: newAccumulator(windowEndBp),
-      }
-      byNameId[nameId] = target
-      targets.push(target)
+      })
     }
+    const target = targets[slot - 1]!
     const aLo = starts[i]!
     const aHi = ends[i]!
-    // ONE TARGET CONTIG, by summed overlap: a genome-scale window reaches
-    // several of the other assembly's, and an answer spanning them is not a
-    // place. One only reached by blocks off the window's ends totals zero and
-    // so never wins, which is what stops a neighbour from being picked.
+    // ONE TARGET CONTIG PER WINDOW, by summed overlap: a genome-scale window
+    // reaches several of the other assembly's, and an answer spanning them is
+    // not a place. One only reached by blocks off the window's ends totals zero
+    // and so never wins, which is what stops a neighbour from being picked.
     const overlap = Math.min(aHi, windowEndBp) - Math.max(aLo, windowStartBp)
     if (overlap > 0) {
       target.total += overlap
@@ -171,33 +223,36 @@ export function followWindowMapping({
     offer(target.startAt, aLo, aHi, atLo, atHi)
     offer(target.endAt, aLo, aHi, atLo, atHi)
   }
-  let best: Target | undefined
-  for (const t of targets) {
-    if (!best || t.total > best.total) {
-      best = t
-    }
-  }
-  if (!best || best.total <= 0) {
-    return undefined
-  }
-  const p = resolve(best.startAt)
-  const q = resolve(best.endAt)
-  if (p === undefined || q === undefined) {
-    return undefined
-  }
-  const lo = Math.min(p, q)
-  const hi = Math.max(p, q)
-  // No zero-clamp: every value `resolve` can return is a block coordinate or a
-  // point between two of them, so it is already in range — and clamping only
-  // `start` while `end` came off the unclamped `lo` would invert the span it was
-  // added to protect.
-  return hi > lo
-    ? {
-        refName: best.name,
-        start: Math.floor(lo),
-        // at least one base, since a zero-width span assembles into an inverted
-        // locstring
-        end: Math.max(Math.floor(lo) + 1, Math.ceil(hi)),
+  return targetsPerWindow.map(targets => {
+    let best: Target | undefined
+    for (const t of targets) {
+      if (!best || t.total > best.total) {
+        best = t
       }
-    : undefined
+    }
+    return best && best.total > 0 ? span(best) : undefined
+  })
+}
+
+/**
+ * Where one anchor window maps to. The single-contig case of
+ * {@link followWindowsMapping}, which is every case below whole-genome zoom.
+ */
+export function followWindowMapping({
+  data,
+  window,
+  toMate,
+  mateAssembly,
+}: {
+  data: SyntenyFeatureData
+  window: FollowWindow
+  toMate: boolean
+  mateAssembly?: string
+}) {
+  return followWindowsMapping({
+    data,
+    windows: [window],
+    toMate,
+    mateAssembly,
+  })[0]
 }

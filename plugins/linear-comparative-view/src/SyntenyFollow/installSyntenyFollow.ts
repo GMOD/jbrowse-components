@@ -4,12 +4,19 @@ import { autorun, untracked } from 'mobx'
 
 import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { alreadyShowing } from './alreadyShowing.ts'
-import { followAnchorWindow } from './followAnchorWindow.ts'
+import {
+  followAnchorWindow,
+  followAnchorWindows,
+} from './followAnchorWindow.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
 import { createFollowLevelStates } from './followLevelStates.ts'
+import { followSpreadSpans } from './followSpreadSpans.ts'
 import { followTransform } from './followTransform.ts'
 import { planFollowStep } from './planFollowStep.ts'
-import { positionViewOnSpan } from './positionViewOnSpan.ts'
+import {
+  positionViewOnSpan,
+  positionViewOnSpans,
+} from './positionViewOnSpan.ts'
 import { requestCigarMap } from './requestCigarMap.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -59,11 +66,22 @@ interface FollowWork {
   generation: number
 }
 
+// One level's placement when the anchor is showing SEVERAL contigs. No RPC and
+// no block: the answer is the union of what those contigs map to, and the row
+// is placed across the interval of its own layout that covers it.
+interface SpreadWork {
+  level: FollowLevel
+  movingView: LinearGenomeViewModel
+  spans: ResolvedSpan[]
+}
+
 // One level's share of a settled pass: what to resolve, and what the header
 // should say if there is nothing to.
 interface FollowPlan {
   // absent when nothing loaded covers the anchor's window
   work?: FollowWork
+  // the rung above `work`, and never set alongside it
+  spread?: SpreadWork
   unaligned: boolean
   approximate: boolean
 }
@@ -179,6 +197,43 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   }
 
   /**
+   * Place a row from a multi-contig anchor window: one `moveTo` across whatever
+   * interval of its layout the union covers.
+   *
+   * NOT ASYNC and NOT A NAVIGATION in the ordinary case. `positionViewOnSpans`
+   * leaves the row's displayed regions alone, which is what lets a row showing
+   * a whole genome go on showing one — a locstring cannot name two contigs, and
+   * `navToLocString` would collapse the row onto whichever one it did name.
+   *
+   * DROPPING THE PICK IS PART OF THE PLACEMENT. No one block places the row
+   * here, and the frame pass steers by whatever the last settle chose — leaving
+   * a pick standing kept placing the row through a single alignment this rung
+   * has just decided does not describe the window.
+   */
+  function executeSpread({ level, movingView, spans }: SpreadWork) {
+    const state = levelStates.get(level)
+    state.pick = undefined
+    if (positionViewOnSpans(movingView, spans)) {
+      state.lastNav = undefined
+      return
+    }
+    // The row displays none of what it should be showing, which only a
+    // navigation reaches. The widest span, since a row that can hold one contig
+    // is being sent to a contig — and once it lands, the pass after this one
+    // places it properly.
+    const widest = spans.reduce((a, b) =>
+      b.end - b.start > a.end - a.start ? b : a,
+    )
+    const nav = `spread>${widest.refName}:${widest.start}-${widest.end}`
+    if (nav !== state.lastNav) {
+      state.lastNav = nav
+      navToResolvedSpan(movingView, widest).catch((e: unknown) => {
+        reportError(level, e)
+      })
+    }
+  }
+
+  /**
    * Fetch this block's CIGAR map, once, if the frame pass could use one.
    *
    * NOT AWAITED, and its failure is not this pass's failure: the row is already
@@ -256,10 +311,33 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // anyway — while the header reported it as holding, which is the one thing
     // that state promises.
     const seq = ++state.seq
-    const window = followAnchorWindow(stayingView.coarseDynamicBlocks)
+    const windows = followAnchorWindows(stayingView.coarseDynamicBlocks)
+    const window = windows[0]
     if (!window) {
       // an anchor with no window says nothing about alignment either way
       return { unaligned: false, approximate: false }
+    }
+    // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
+    // than one it is the envelope of what lies under the window — and wider
+    // than one CONTIG there is no single matching region at all, so the answer
+    // is the union across the contigs on screen. Without it a whole-genome
+    // overview placed every other row on whichever single contig aligned to the
+    // anchor's widest, which is what "show all regions" then only did to the
+    // anchor row.
+    if (windows.length > 1) {
+      const spans = followSpreadSpans({
+        displays: level.linearSyntenyDisplays,
+        windows,
+        toMate,
+        mateAssembly,
+      })
+      return {
+        spread: spans.length ? { level, movingView, spans } : undefined,
+        unaligned:
+          !spans.length && level.linearSyntenyDisplays.some(d => d.featureData),
+        // an interpolation over several alignments at once, never a walk
+        approximate: spans.length > 0,
+      }
     }
     // reading the moving row makes it a dependency, which is what re-asserts
     // the follow over a row nudged by hand
@@ -311,7 +389,10 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // as a dependency of the debounced pass, costing an extra full plan
         // (the envelope scan included) per settle.
         untracked(() => {
-          for (const { work } of plans) {
+          for (const { work, spread } of plans) {
+            if (spread) {
+              executeSpread(spread)
+            }
             if (work) {
               execute(work).catch((e: unknown) => {
                 reportError(work.level, e)
@@ -359,7 +440,24 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           const blocks = written.has(stayingView)
             ? untracked(() => stayingView.dynamicBlocks.contentBlocks)
             : stayingView.dynamicBlocks.contentBlocks
-          const window = followAnchorWindow(blocks)
+          const windows = followAnchorWindows(blocks)
+          const window = windows[0]
+          // The multi-contig rung, recomputed here rather than steered by the
+          // settle: it chooses no block, so there is nothing cached to steer by
+          // and the whole answer is this pass's own arithmetic over the live
+          // window.
+          if (windows.length > 1) {
+            const spans = followSpreadSpans({
+              displays: level.linearSyntenyDisplays,
+              windows,
+              toMate,
+              mateAssembly,
+            })
+            if (spans.length && positionViewOnSpans(movingView, spans)) {
+              written.add(movingView)
+            }
+            continue
+          }
           // the block the last settle chose, rather than re-picking one per
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since

@@ -1,4 +1,7 @@
-import { followAnchorWindow } from './followAnchorWindow.ts'
+import {
+  followAnchorWindow,
+  followAnchorWindows,
+} from './followAnchorWindow.ts'
 
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
@@ -70,4 +73,40 @@ test('summed width decides, not the widest single block', () => {
       block({ refName: 'chrB', start: 0, end: 100, widthPx: 400 }),
     ]),
   ).toMatchObject({ refName: 'chrA', start: 0, end: 300 })
+})
+
+test('a panel showing several contigs yields one window each, widest first', () => {
+  expect(
+    followAnchorWindows([
+      block({ refName: 'chr2', start: 0, end: 1000, widthPx: 200 }),
+      block({ refName: 'chr1', start: 0, end: 3000, widthPx: 600 }),
+    ]),
+  ).toEqual([
+    { refName: 'chr1', start: 0, end: 3000 },
+    { refName: 'chr2', start: 0, end: 1000 },
+  ])
+})
+
+// a whole-genome view of a scaffold-level assembly has thousands of contigs on
+// screen, most of them thinner than a pixel, and the answer is an interval
+// spanning what is kept — so a sub-pixel scaffold falls between two neighbours
+// rather than out of the picture
+test('a contig with less than a pixel on screen is not one of the windows', () => {
+  expect(
+    followAnchorWindows([
+      block({ refName: 'chr1', start: 0, end: 3000, widthPx: 799.5 }),
+      block({ refName: 'scaffold_9021', start: 0, end: 10, widthPx: 0.5 }),
+    ]).map(w => w.refName),
+  ).toEqual(['chr1'])
+})
+
+test('the count of windows is capped, keeping the widest', () => {
+  const windows = followAnchorWindows(
+    Array.from({ length: 200 }, (_, i) =>
+      block({ refName: `ctg${i}`, start: 0, end: 100, widthPx: i + 1 }),
+    ),
+  )
+  expect(windows).toHaveLength(64)
+  expect(windows[0]).toMatchObject({ refName: 'ctg199' })
+  expect(windows.at(-1)).toMatchObject({ refName: 'ctg136' })
 })

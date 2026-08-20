@@ -50,10 +50,11 @@ export function pickFollowFeature({
     refNameIds,
     starts,
     ends,
-    windowRefNameId,
+    windowRefNameIds,
     mateAssemblyNameIds,
     mateAssemblyId,
-  } = followAxes({ data, window, toMate, mateAssembly })
+  } = followAxes({ data, windows: [window], toMate, mateAssembly })
+  const windowRefNameId = windowRefNameIds[0]
   let best: FollowCandidate | undefined
   let incumbent: FollowCandidate | undefined
   for (let i = 0; i < refNameIds.length; i++) {
