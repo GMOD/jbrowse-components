@@ -758,22 +758,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #method
          * Still a subset of `menuItems()`: the full list is overwhelming.
          *
-         * FOUR ROWS WHATEVER THE STACK HOLDS, because the menu answers what the
-         * view IS — which genomes it stacks, where they point, what leaves it —
-         * and nothing about how the ribbons are drawn. Every render setting is
-         * in the header's settings panel next to the sliders that were always
-         * there, so a reader tuning the picture has one place to look rather
-         * than a panel for the continuous half and a menu for the discrete one.
-         * `SyntenySettingsPopover` states the division from the other side.
+         * SIX ROWS WHATEVER THE STACK HOLDS. The menu answers what the view IS
+         * — where the rows point, which genomes it stacks, what leaves it — and
+         * nothing about how the ribbons are drawn: every render setting is in
+         * the header's settings panel, and `SyntenySettingsPopover` states that
+         * division from the other side.
          *
-         * What varies with row count — remove, auto-scale, compact-all, one
-         * entry per genome — varies inside the "Rows" group instead of growing
-         * the list a reader first sees, so a six-genome view opens the same menu
-         * a pairwise one does.
+         * A group here names a CHOICE ("Link views") or what varies with row
+         * count ("Rows"), never a topic. The "Navigation" group that used to
+         * hold the zoom commands was named after what the whole menu is about,
+         * and charged a popup for it.
          */
         headerMenuItems(): MenuItem[] {
           return [
             ...superHeaderMenuItems(),
+            ...navigationMenuItems(self),
             {
               label: 'Rows',
               icon: ViewStreamIcon,
@@ -820,7 +819,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ...rowMenuItems(self),
               ],
             },
-            ...navigationMenuItems(self),
             exportSvgMenuItem,
           ]
         },

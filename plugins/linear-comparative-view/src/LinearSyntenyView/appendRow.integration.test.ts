@@ -156,3 +156,19 @@ test('the header menu offers Add assembly row only once there is a row', async (
   const { view } = await openStack(2)
   expect(menuLabels(view)).toContain('Add assembly row...')
 })
+
+// A six-row stack is the case that would grow the top level, so it is the one
+// worth asserting on.
+test('the header menu opens the same six rows at any row count', async () => {
+  const { view } = await openStack(6)
+  expect(
+    view.headerMenuItems().map(item => ('label' in item ? item.label : '')),
+  ).toEqual([
+    'Square view - average bp per pixel',
+    'Show all regions - each row fit to width',
+    'Show all regions - same bp per pixel',
+    'Link views',
+    'Rows',
+    'Export SVG',
+  ])
+})
