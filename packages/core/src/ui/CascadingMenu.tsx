@@ -130,6 +130,15 @@ function getMenuColumnFlags(menuItems: JBMenuItem[]) {
     hasIcon: menuItems.some(m => 'icon' in m && m.icon),
     hasCheckboxOrRadioWithHelp,
     hasEndAdornment,
+    // Gated on a submenu row that actually draws help, not on there being a
+    // submenu at all: the reservation exists to pull the clickable rows' "?"
+    // into the column a chevron pushes a submenu row's "?" out of. In a menu
+    // where no submenu row has help there is nothing to line up with, and
+    // reserving it there would only unalign a checkbox glyph from the chevron
+    // it currently sits level with.
+    hasSubmenuWithHelp: menuItems.some(
+      m => 'subMenu' in m && m.helpText && !m.disabled,
+    ),
     // when help and adornment never collide on one row, they collapse into one
     // shared trailing column instead of each claiming its own, so a menu mixing
     // help-only and pin-only rows doesn't reserve a wasted third column
@@ -293,6 +302,7 @@ function CascadingMenuItem({
   hasIcon,
   hasCheckboxOrRadioWithHelp,
   hasEndAdornment,
+  hasSubmenuWithHelp,
   sharedActionColumn,
   closeAfterItemClick,
   onMenuItemClick,
@@ -304,6 +314,7 @@ function CascadingMenuItem({
   hasIcon: boolean
   hasCheckboxOrRadioWithHelp: boolean
   hasEndAdornment: boolean
+  hasSubmenuWithHelp: boolean
   sharedActionColumn: boolean
   closeAfterItemClick: boolean
   onMenuItemClick: (callback: MenuItemClickHandler) => void
@@ -348,6 +359,7 @@ function CascadingMenuItem({
           item={item}
           hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
           hasEndAdornment={hasEndAdornment}
+          hasSubmenuWithHelp={hasSubmenuWithHelp}
           sharedActionColumn={sharedActionColumn}
         />
       </MenuItem>
@@ -373,6 +385,7 @@ function CascadingMenuList({
     hasIcon,
     hasCheckboxOrRadioWithHelp,
     hasEndAdornment,
+    hasSubmenuWithHelp,
     sharedActionColumn,
   } = getMenuColumnFlags(menuItems)
 
@@ -447,6 +460,7 @@ function CascadingMenuList({
             hasIcon={hasIcon}
             hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
             hasEndAdornment={hasEndAdornment}
+            hasSubmenuWithHelp={hasSubmenuWithHelp}
             sharedActionColumn={sharedActionColumn}
             closeAfterItemClick={closeAfterItemClick}
             onMenuItemClick={onMenuItemClick}

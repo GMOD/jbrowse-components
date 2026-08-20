@@ -15,7 +15,7 @@ import { IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { CursorMouse, CursorMove } from './CursorIcon.tsx'
-import DotplotSettingsPopover from './DotplotSettingsPopover.tsx'
+import DotplotSettingsMenu from './DotplotSettingsMenu.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -189,7 +189,7 @@ const DotplotControls = observer(function DotplotControls({
       />
 
       {model.dotplotDisplays.length > 0 ? (
-        <DotplotSettingsPopover model={model} />
+        <DotplotSettingsMenu model={model} />
       ) : null}
     </div>
   )

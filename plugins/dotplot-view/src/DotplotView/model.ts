@@ -27,7 +27,6 @@ import {
   collectTrackWarnings,
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
-  lodMenuItems,
   regionSignature,
   releaseTemporaryAssemblies,
   trackHasLodTiers,
@@ -195,7 +194,12 @@ function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
 // (exported so a launcher building a DotplotView snapshot can size its initial
 // bpPerPx against the height the view will actually come up at)
 export const defaultHeight = 600
-const defaultLineWidth = 2.5
+// Exported because the settings menu's slider rows carry a reset-to-default
+// button, and a default spelled twice is a reset that silently stops agreeing
+// with the property it resets.
+export const DEFAULT_LINE_WIDTH = 2.5
+export const DEFAULT_ALPHA = 1
+export const DEFAULT_MIN_ALIGNMENT_LENGTH = 0
 
 // Floor for the resize handle. Below this the axis borders (which floor at
 // MIN_BORDER=50 each) would eat the whole box and viewWidth/viewHeight would go
@@ -306,7 +310,7 @@ export default function stateModelFactory(pm: PluginManager) {
            * display in this view. View-level because the GPU pass renders all
            * displays with one uniform.
            */
-          lineWidth: types.stripDefault(types.number, defaultLineWidth),
+          lineWidth: types.stripDefault(types.number, DEFAULT_LINE_WIDTH),
           /**
            * #property
            * Plot-wide alpha applied to every point. View-level for the same
@@ -314,14 +318,17 @@ export default function stateModelFactory(pm: PluginManager) {
            * per display meant a track shown after the slider moved rendered at
            * the default while the slider said otherwise.
            */
-          alpha: types.stripDefault(types.number, 1),
+          alpha: types.stripDefault(types.number, DEFAULT_ALPHA),
           /**
            * #property
            * Hide alignments shorter than this many bp. Enforced per feature in
            * buildLineSegments. Cuts whole-genome hairball noise. View-level, see
            * alpha.
            */
-          minAlignmentLength: types.stripDefault(types.number, 0),
+          minAlignmentLength: types.stripDefault(
+            types.number,
+            DEFAULT_MIN_ALIGNMENT_LENGTH,
+          ),
           /**
            * #property
            * the horizontal axis, as a full 1D view state. A spec writes
@@ -1650,7 +1657,6 @@ export default function stateModelFactory(pm: PluginManager) {
                 ])
               },
             },
-            ...lodMenuItems(self),
             ...(isSessionModelWithWidgets(session)
               ? [
                   {

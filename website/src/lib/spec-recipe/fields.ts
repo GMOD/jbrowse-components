@@ -1457,14 +1457,11 @@ const DIAGONALIZE_MENUS: Record<string, string> = {
   DotplotView: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
 }
 
-// The settings surface behind the sliders (TuneIcon) button in each view's
-// header, named by that button's tooltip so the button a reader looks for is
-// named per view while the row inside is the same setting.
-//
-// The two surfaces are not the same widget: the dotplot's is a popover of
-// laid-out rows, whose labels carry a trailing colon, and the synteny view's is
-// a cascading menu, whose rows are menu items and do not. `settingsPath` spells
-// that difference once, so the fields serving both views don't each carry it.
+// The settings menu behind the sliders (TuneIcon) button in each comparative
+// view's header, named by that button's tooltip so the button a reader looks
+// for is named per view while the row inside is the same setting. The two menus
+// are the same widget and their shared rows are worded identically, which is
+// what lets one field recipe serve both.
 const SETTINGS_SURFACES: Record<string, string> = {
   LinearSyntenyView: 'Synteny display settings',
   DotplotView: 'Dotplot display settings',
@@ -1472,9 +1469,8 @@ const SETTINGS_SURFACES: Record<string, string> = {
 
 function settingsPath(viewType: string | undefined, row: string) {
   const surface = viewType ? SETTINGS_SURFACES[viewType] : undefined
-  const label = viewType === 'DotplotView' ? `${row}:` : row
   return surface
-    ? `${surface} (the sliders button in the view header) → ${label}`
+    ? `${surface} (the sliders button in the view header) → ${row}`
     : undefined
 }
 

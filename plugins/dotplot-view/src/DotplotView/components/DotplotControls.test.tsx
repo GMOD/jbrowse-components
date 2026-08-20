@@ -63,10 +63,10 @@ test('the palette button says which mode the plot is in', () => {
   )
 })
 
-// the settings popover's sliders are all about drawn points, so it stays out of
-// the header until there is a track to draw. Found by title, the only handle its
-// trigger has.
-test('the settings popover appears only once a track is loaded', () => {
+// the settings menu is all about drawn points, so it stays out of the header
+// until there is a track to draw. Found by title, the only handle its trigger
+// has.
+test('the settings menu appears only once a track is loaded', () => {
   setup()
   expect(
     screen.queryByLabelText('Dotplot display settings'),

@@ -1,0 +1,113 @@
+import { makeSizeMenu } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { toLocale } from '@jbrowse/core/util'
+import {
+  MAX_MIN_LENGTH_BP,
+  MIN_LENGTH_HELP,
+  lodMenuItems,
+} from '@jbrowse/synteny-core'
+import TuneIcon from '@mui/icons-material/Tune'
+import { observer } from 'mobx-react'
+
+import {
+  DEFAULT_ALPHA,
+  DEFAULT_LINE_WIDTH,
+  DEFAULT_MIN_ALIGNMENT_LENGTH,
+} from '../model.ts'
+
+import type { DotplotViewModel } from '../model.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
+
+/**
+ * Every setting that decides what the plot looks like and how much detail feeds
+ * it, in the shape the synteny view's settings menu uses — so the two
+ * comparative views cannot present the same settings as different kinds of
+ * control. Opacity and Min length are literally the same settings in both.
+ *
+ * LEVEL OF DETAIL IS HERE, not in the ⋮ menu it used to sit in. It was the last
+ * of these settings split off by widget type rather than by subject: a radio
+ * group in one surface while the sliders it belongs beside were in another, and
+ * nothing about the setting predicted which one held it.
+ *
+ * FLAT, with no section headings. The synteny view's menu earns its three
+ * because it has ten rows to group; four do not, and a heading over a single
+ * gated row is more rule than list.
+ */
+const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
+  return (
+    <CascadingMenuButton
+      tooltip="Dotplot display settings"
+      menuItems={() =>
+        [
+          makeSizeMenu({
+            label: 'opacity',
+            title: 'Opacity',
+            help: 'Overall opacity of every plotted point. Lower values let dense overlapping alignments show through each other.',
+            min: 0,
+            max: 1,
+            step: 0.01,
+            // cubic gives fine control near 0, where a small opacity change is
+            // perceptually large
+            scale: 'cubic',
+            format: n => n.toFixed(3),
+            getValue: () => model.alpha,
+            isDefault: model.alpha === DEFAULT_ALPHA,
+            onChange: v => {
+              model.setAlpha(v)
+            },
+            onReset: () => {
+              model.setAlpha(DEFAULT_ALPHA)
+            },
+          }),
+          makeSizeMenu({
+            label: 'line width',
+            title: 'Line width',
+            help: 'Screen-space thickness of each alignment, in pixels. Sub-pixel alignments render as dots, so a wider line makes a sparse whole-genome plot legible; a narrower one keeps a dense one from filling in.',
+            min: 0.5,
+            max: 10,
+            step: 0.5,
+            getValue: () => model.lineWidth,
+            isDefault: model.lineWidth === DEFAULT_LINE_WIDTH,
+            onChange: v => {
+              model.setLineWidth(v)
+            },
+            onReset: () => {
+              model.setLineWidth(DEFAULT_LINE_WIDTH)
+            },
+          }),
+          makeSizeMenu({
+            label: 'min length',
+            title: 'Min length',
+            help: MIN_LENGTH_HELP,
+            min: DEFAULT_MIN_ALIGNMENT_LENGTH,
+            max: MAX_MIN_LENGTH_BP,
+            step: 1,
+            scale: 'log',
+            format: n => `${toLocale(n)}bp`,
+            // raising the filter re-runs the geometry stage, so the model is
+            // written when the drag ends rather than on every pixel of it
+            commitOnRelease: true,
+            getValue: () => model.minAlignmentLength,
+            isDefault:
+              model.minAlignmentLength === DEFAULT_MIN_ALIGNMENT_LENGTH,
+            onChange: bp => {
+              model.setMinAlignmentLength(bp)
+            },
+            onReset: () => {
+              model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
+            },
+          }),
+          ...lodMenuItems(model),
+        ] satisfies MenuItem[]
+      }
+    >
+      <TuneIcon />
+    </CascadingMenuButton>
+  )
+})
+
+export default DotplotSettingsMenu

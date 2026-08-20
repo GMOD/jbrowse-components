@@ -38,9 +38,9 @@ below uses the second:
   the color for one track at a time. A plot whose blocks are all a single pixel
   wide reads no better in color than in black, so reach for **Min length**
   first.
-- **Min length**, in the settings popover, drops alignments shorter than the
-  slider value. Divergent genomes align in many short fragments, and hiding them
-  is usually what makes the syntenic blocks visible at all.
+- **Min length**, in the settings menu, drops alignments shorter than the slider
+  value. Divergent genomes align in many short fragments, and hiding them is
+  usually what makes the syntenic blocks visible at all.
 
 <Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
 

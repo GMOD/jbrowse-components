@@ -13,6 +13,14 @@ const valueActionGap = 8
 // fixed footprint reserved for the endAdornment column so pins right-align
 const endAdornmentColumnWidth = 28
 
+// A submenu row ends in a chevron, so its help "?" sits a chevron's width in
+// from the edge while a clickable row's sits at the edge. Reserved on the
+// clickable rows of a menu whose submenus draw help, so the two land in one
+// column instead of ~24px apart — visible the moment a settings menu carries
+// help on both kinds, which the comparative views' settings menus do on nearly
+// every row.
+const submenuChevronColumnWidth = 24
+
 // The checkbox/radio glyph reflecting a row's value. Held slightly apart from
 // the action column when the menu has one, so state and actions don't blur.
 function MenuItemValueGlyph({
@@ -60,11 +68,13 @@ export function MenuItemTrailing({
   item,
   hasCheckboxOrRadioWithHelp,
   hasEndAdornment,
+  hasSubmenuWithHelp,
   sharedActionColumn,
 }: {
   item: ClickableMenuItem
   hasCheckboxOrRadioWithHelp: boolean
   hasEndAdornment: boolean
+  hasSubmenuWithHelp: boolean
   sharedActionColumn: boolean
 }) {
   const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
@@ -108,6 +118,9 @@ export function MenuItemTrailing({
           ) : null}
         </>
       )}
+      {hasSubmenuWithHelp ? (
+        <div style={{ width: submenuChevronColumnWidth }} />
+      ) : null}
     </>
   )
 }

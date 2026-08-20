@@ -1,9 +1,10 @@
 import HelpIcon from '@mui/icons-material/Help'
 import { Tooltip } from '@mui/material'
 
-// Help icon + tooltip used inside settings popover rows. Sits in the row grid's
-// trailing column so icons line up in a consistent column across rows. Renders
-// nothing when there is no help text.
+// Help icon + tooltip for a labelled field in a dialog or form row — the
+// synteny launch dialog's options are what it draws. Renders nothing when there
+// is no help text. A MENU row's help is not this: it is `helpText` on the item,
+// which `CascadingMenu` draws as a "?" opening a dialog.
 //
 // `pre-line` so help composed one line per option keeps those lines: collapsed
 // into a paragraph, option descriptions read as one run-on sentence. A single-

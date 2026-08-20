@@ -132,8 +132,8 @@ alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view
 serves this tier automatically, drawing clean ribbons without parsing
 megabyte-scale CIGAR strings; zooming in switches back to the fine `t`/`q` tier.
 No configuration is needed: the "Level of detail" control defaults to `auto`,
-and `fine`/`coarse` pin a tier. It is a submenu of the synteny view's settings
-menu, and of the track menu on the dotplot and the LGV synteny track.
+and `fine`/`coarse` pin a tier. It is a submenu of the settings menu on both
+comparative views, and of the track menu on the LGV synteny track.
 
 A coarse row has no CIGAR, so it is drawn as a straight ribbon between its
 endpoints. To keep that honest, a row is split wherever its CIGAR contains an

@@ -3,6 +3,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 import {
+  MAX_MIN_LENGTH_BP,
   MIN_LENGTH_HELP,
   PAN_BUFFER_PX,
   lodMenuItems,
@@ -37,8 +38,6 @@ const THIN_FADE_HELP =
   'enables it only when the view is dense enough to tangle; a genuinely ' +
   'sparse comparison (e.g. distant species, every alignment sub-pixel) stays ' +
   'unfaded so the fade does not wash it out. On/Off pin it.'
-
-const MAX_MIN_LENGTH_BP = 1_000_000
 
 /**
  * Every setting that decides what the ribbons look like and how much detail

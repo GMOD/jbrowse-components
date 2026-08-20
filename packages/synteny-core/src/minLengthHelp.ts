@@ -1,12 +1,9 @@
-import { useState } from 'react'
-
-import { SingleSlider, sliderScale } from '@jbrowse/core/ui'
-import { toLocale } from '@jbrowse/core/util'
-
-const { toSlider, fromSlider, sliderStep } = sliderScale('log')
-
 // What the "Min length" row says in both comparative views, so the two cannot
 // describe the same control differently.
+//
+// A leaf module, for the reason `cigarModes.ts` is one: it is read by menu
+// builders that must stay clear of React, and by the website's recipe tables,
+// whose node script cannot load a module importing MUI or a lazy `.tsx`.
 //
 // The second sentence is the one that earns its place. `buildSyntenyGeometry`
 // filters each drawn block by its OWN span and deliberately cannot group blocks
@@ -23,36 +20,6 @@ export const MIN_LENGTH_HELP =
   'tier that splits a long alignment on its large indels is filtered piece by ' +
   'piece.'
 
-// Log2-scaled slider for minimum alignment length in bp. Drag state is held
-// locally in slider space; the model is only updated on commit so dragging
-// doesn't refetch.
-export default function MinLengthSlider({
-  value,
-  onCommit,
-  maxBp = 1_000_000,
-}: {
-  value: number
-  onCommit: (bp: number) => void
-  maxBp?: number
-}) {
-  const [dragValue, setDragValue] = useState<number | null>(null)
-  const sliderValue = dragValue ?? toSlider(value)
-  return (
-    <SingleSlider
-      value={sliderValue}
-      onChange={v => {
-        setDragValue(v)
-      }}
-      onChangeCommitted={v => {
-        setDragValue(null)
-        onCommit(fromSlider(v))
-      }}
-      min={0}
-      max={toSlider(maxBp)}
-      step={sliderStep}
-      valueLabelDisplay="auto"
-      valueLabelFormat={v => toLocale(fromSlider(v))}
-      size="small"
-    />
-  )
-}
+// Where the log-scaled Min length slider tops out, in bp. Shared so the synteny
+// view and the dotplot cannot offer different ranges over the same setting.
+export const MAX_MIN_LENGTH_BP = 1_000_000

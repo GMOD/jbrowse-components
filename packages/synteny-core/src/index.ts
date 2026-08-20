@@ -147,10 +147,7 @@ export type {
 } from './colorLegend.ts'
 export type { SyntenyViewSharedInit } from './SyntenyViewInit.ts'
 export { launchSyntenyView } from './launchSyntenyView.ts'
-export { default as SettingsPopover } from './SettingsPopover.tsx'
-export { default as SettingRow } from './SettingRow.tsx'
 export { default as HelpTooltip } from './HelpTooltip.tsx'
-export { default as OpacitySlider } from './OpacitySlider.tsx'
 export { default as DiagonalizeLoadingScreen } from './DiagonalizeLoadingScreen.tsx'
 export { default as DiagonalizeDialog } from './DiagonalizeDialog.tsx'
 export type {
@@ -184,10 +181,7 @@ export { default as TrackWarningsDialog } from './TrackWarningsDialog.tsx'
 // looks the same in each — see the component for the drift it ends.
 export { default as ComparativeFetchStatus } from './ComparativeFetchStatus.tsx'
 export type { ComparativeStatusModel } from './ComparativeFetchStatus.tsx'
-export {
-  default as MinLengthSlider,
-  MIN_LENGTH_HELP,
-} from './MinLengthSlider.tsx'
+export { MAX_MIN_LENGTH_BP, MIN_LENGTH_HELP } from './minLengthHelp.ts'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {
   connectedEndpoints,
