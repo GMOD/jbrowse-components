@@ -24,7 +24,7 @@ const OTHER_SV_COLOR = '#808080'
 
 // Bucket for a record whose ALT alleles span more than one SV class (e.g.
 // ALT=<DEL>,<DUP>): a distinct flag color rather than silently picking one.
-export const MIXED_SV_TYPE = 'MIXED'
+const MIXED_SV_TYPE = 'MIXED'
 
 // Canonical SV-type buckets in legend order, with their predefined colors and
 // human-readable labels. Colors are all `set1` entries — the same palette

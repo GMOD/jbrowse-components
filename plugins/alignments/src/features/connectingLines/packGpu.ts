@@ -12,9 +12,7 @@ export const CONN_LINE_PASS = {
   pack: packConnectingLines,
 }
 
-export function packConnectingLines(
-  data: ConnectingLinesUploadData,
-): ArrayBuffer {
+function packConnectingLines(data: ConnectingLinesUploadData): ArrayBuffer {
   const n = data.connectingLinePositions.length / 2
   const F_F32 = connectingLineShader.INSTANCE_OFFSET_F32
   const F_U32 = connectingLineShader.INSTANCE_OFFSET_U32

@@ -243,7 +243,7 @@ function assertTightLayoutIsReadable(
 
 // `source` is required rather than defaulted, so a new call site has to say
 // which layout rule applies instead of inheriting the laxer one by omission.
-export function instanceAttrs(
+function instanceAttrs(
   vs: StructType,
   source: 'attributes' | 'buffer',
 ): InstanceAttr[] {

@@ -4,7 +4,7 @@ import type { ProcessedSource } from './types.ts'
 
 // A row with nothing to say at a site. Sorts last, and never groups rows
 // together: two rows both missing here are still refined by the next site.
-export const MISSING_VALUE = -1
+const MISSING_VALUE = -1
 
 // Read outward from `anchor`, alternating left and right, so the sites nearest
 // the anchor break ties first and the ones furthest away break them last.

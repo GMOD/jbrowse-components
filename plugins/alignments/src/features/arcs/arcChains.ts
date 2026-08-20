@@ -122,7 +122,7 @@ export function emitsOffScreenPartner(
   return ctx.drawLongRange || (ctx.drawInter && interchromosomal)
 }
 
-export function entrySeg(entry: ReadEntry): SegAln {
+function entrySeg(entry: ReadEntry): SegAln {
   return {
     refName: entry.refName,
     ...spanOf(entry),
@@ -140,14 +140,14 @@ export function entrySeg(entry: ReadEntry): SegAln {
 // (buildBaseReadArrays): a start clipped to the region would never match its SA
 // twin's un-clipped one, leaving both copies in the chain to be joined as a
 // spurious same-strand "deletion".
-export function segLocusKey(seg: SegAln) {
+function segLocusKey(seg: SegAln) {
   return `${seg.refName}:${seg.start}`
 }
 
 // The off-screen segments one entry's SA tag names, canonical-refName'd.
 // Truncated / placeholder-CIGAR / non-numeric-position SA records parse to a
 // zero-length or NaN span and would emit a junk arc, so they're dropped here.
-export function saSegments(
+function saSegments(
   entry: ReadEntry,
   canonicalRefName: CanonicalRefName,
 ): SegAln[] {
@@ -239,7 +239,7 @@ export function computeReadChains(
 // reverse segment. One spelling of the `connectionEndpointBps` call, so the
 // SegAln path can't disagree with the entry path (`pendingArcFromConnection`)
 // about which edges a split junction connects.
-export function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
+function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
   const { bp1, bp2, dir1, dir2 } = connectionEndpointBps({
     s1: a1.strand,
     start1: a1.start,
@@ -274,7 +274,7 @@ export function splitJunctionArc(a1: SegAln, a2: SegAln): PendingArc {
 // chromosome exactly the way an off-screen mate does, so it takes the same gate:
 // dropping it whenever off-screen mates were off left "Show inter-chromosomal
 // pairs" with no split-read evidence to draw.
-export function unpairedChainArcs(
+function unpairedChainArcs(
   entries: ReadEntry[],
   ctx: ArcChainContext,
 ): PendingArc[] {

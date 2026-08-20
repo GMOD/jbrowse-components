@@ -65,7 +65,7 @@ export interface FeatureBlock {
   mateAssembly?: string
 }
 
-export function emptyOffscreenMates(): SyntenyFeatureData['offscreenMates'] {
+function emptyOffscreenMates(): SyntenyFeatureData['offscreenMates'] {
   return {
     mateRefNameDict: [],
     counts: new Uint32Array(0),

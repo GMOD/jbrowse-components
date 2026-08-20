@@ -256,14 +256,14 @@ export interface OffscreenMateRect {
   height: number
 }
 
-export function offscreenMateRefName(r: OffscreenMateRect) {
+function offscreenMateRefName(r: OffscreenMateRect) {
   return r.data.mateRefNameDict[r.data.mateRefNameIds[r.index]!]!
 }
 
 // How many alignments this display holds for the contig this mark points at —
 // the same per-contig tally the menu's headline is summed from, so a mark
 // reports the number that turning the marks on reported.
-export function offscreenMateContigCount(r: OffscreenMateRect) {
+function offscreenMateContigCount(r: OffscreenMateRect) {
   return r.data.counts[r.data.mateRefNameIds[r.index]!] ?? 0
 }
 
@@ -284,9 +284,7 @@ function screenX(cumBp: number, bpPerPx: number, offsetPx: number) {
  * their two paths are separate code; these have one path, so a mark the eye can
  * see and the pointer cannot is not a shape this can take.
  */
-export function offscreenMateRects(
-  layout: OffscreenMateLayout,
-): OffscreenMateRect[] {
+function offscreenMateRects(layout: OffscreenMateLayout): OffscreenMateRect[] {
   const { width, height, datasets } = layout
   if (width <= 0 || height <= 0) {
     return []

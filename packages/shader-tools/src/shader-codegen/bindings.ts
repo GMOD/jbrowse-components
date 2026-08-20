@@ -247,7 +247,7 @@ export function assertBindingsMatchWgsl(
 // anything. `PipelineDescriptor.bindings` carries the shader's own table to the HAL.
 const RENDER_SHAPES = ['uniform@1', 'uniform@1,texture@2,sampler@3'] as const
 
-export function bindingShape(bindings: readonly ShaderBinding[]) {
+function bindingShape(bindings: readonly ShaderBinding[]) {
   return bindings.map(b => `${b.kind}@${b.index}`).join(',')
 }
 

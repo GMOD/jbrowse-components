@@ -95,7 +95,7 @@ export function someAcrossGroups(
 // Max pileup rows a layout may produce before overflow reads collapse to the
 // bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
 // `readYs`) and the overflow sentinel never wrap.
-export function maxRowsFor(maxHeight: number, rowHeight: number) {
+function maxRowsFor(maxHeight: number, rowHeight: number) {
   return Math.max(
     1,
     Math.min(65534, Math.floor(maxHeight / Math.max(1, rowHeight))),
@@ -108,7 +108,7 @@ export function maxRowsFor(maxHeight: number, rowHeight: number) {
 export function ceilingCap(rows: number): RowCap {
   return { rows, source: 'ceiling' }
 }
-export function overrideCap(rows: number): RowCap {
+function overrideCap(rows: number): RowCap {
   return { rows, source: 'override' }
 }
 
@@ -683,9 +683,7 @@ export function groupClipSource(map: ReadonlyMap<number, PileupLayoutArrays>) {
 
 // Whether any of a group's rows were hidden, whichever cap did it. Drives the
 // fit-budget reclaim and the height drag's "is there anything to grow into".
-export function anyRegionTruncated(
-  map: ReadonlyMap<number, PileupLayoutArrays>,
-) {
+function anyRegionTruncated(map: ReadonlyMap<number, PileupLayoutArrays>) {
   return groupClipSource(map) !== undefined
 }
 

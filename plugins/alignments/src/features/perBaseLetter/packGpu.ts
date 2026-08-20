@@ -15,7 +15,7 @@ export const PER_BASE_LETTER_PASS = {
   pack: packPerBaseLetter,
 }
 
-export function packPerBaseLetter(data: PerBaseLetterUploadData): ArrayBuffer {
+function packPerBaseLetter(data: PerBaseLetterUploadData): ArrayBuffer {
   const n = data.perBaseLetterPositions.length
   const F_F32 = mismatchShader.INSTANCE_OFFSET_F32
   const F_U32 = mismatchShader.INSTANCE_OFFSET_U32

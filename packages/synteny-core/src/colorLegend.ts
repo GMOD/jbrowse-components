@@ -64,7 +64,7 @@ export const CIGAR_OP_N = 4
 // carries. N (skip) is opt-in — it only appears in spliced alignments, so the
 // preview omits it while the data-driven legend still surfaces it when present.
 export const NO_CIGAR_OPS: CigarOpMask = 0
-export const DEFAULT_CIGAR_OPS: CigarOpMask = CIGAR_OP_I | CIGAR_OP_D
+const DEFAULT_CIGAR_OPS: CigarOpMask = CIGAR_OP_I | CIGAR_OP_D
 
 // A continuous mode maps to a gradient ramp with domain labels; the structural
 // modes (default/strand) map to a set of discrete labeled chips — including the

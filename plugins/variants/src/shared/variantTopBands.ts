@@ -161,7 +161,7 @@ export const VARIANT_LANE_BOUNDS = {
  * setter, which additionally leaves a config-declared sub-floor lane where it
  * is; see `@jbrowse/core/util/bandHeight`.
  */
-export function boundVariantLaneHeight(n: number) {
+function boundVariantLaneHeight(n: number) {
   return boundBandHeight(n, VARIANT_LANE_BOUNDS)
 }
 

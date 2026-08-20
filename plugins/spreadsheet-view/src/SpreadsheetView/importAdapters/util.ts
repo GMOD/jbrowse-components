@@ -1,6 +1,6 @@
 import { isNumber } from './isNumber.ts'
 
-export function parseExtraColNames(
+function parseExtraColNames(
   lastHeaderLine: string | undefined,
   coreColCount: number,
   numExtraColumns: number,

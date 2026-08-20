@@ -1,5 +1,4 @@
 import { objectHash } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
 import {
   UNKNOWN,
   UNSUPPORTED,
@@ -9,7 +8,7 @@ import {
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 
-import type { RefSeq, RefSeqs, Track } from './types.ts'
+import type { Track } from './types.ts'
 
 interface Jb2Track {
   trackId: string
@@ -411,68 +410,5 @@ function generateFromConfigTrackConfig(
     ...jb2TrackConfig,
     type: 'FeatureTrack',
     adapter: { type: 'FromConfigAdapter', features },
-  }
-}
-
-export async function createRefSeqsAdapter(
-  refSeqs: string | RefSeqs,
-): Promise<Jb2Adapter> {
-  if (typeof refSeqs === 'string') {
-    refSeqs = { url: refSeqs }
-  }
-
-  if (refSeqs.url) {
-    if (/.fai$/.test(refSeqs.url)) {
-      return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation: {
-          uri: refSeqs.url.slice(0, -4),
-          locationType: 'UriLocation',
-        },
-        faiLocation: {
-          uri: refSeqs.url,
-          locationType: 'UriLocation',
-        },
-      }
-    }
-    if (/.2bit$/.test(refSeqs.url)) {
-      return {
-        type: 'TwoBitAdapter',
-        twoBitLocation: { uri: refSeqs.url, locationType: 'UriLocation' },
-      }
-    }
-    if (/.fa$/.test(refSeqs.url)) {
-      throw new Error('Unindexed FASTA adapter not available')
-    }
-    if (/.sizes/.test(refSeqs.url)) {
-      throw new Error('chromosome SIZES adapter not available')
-    }
-    const refSeqsJson = await openLocation({
-      uri: refSeqs.url,
-      locationType: 'UriLocation',
-    }).readFile('utf8')
-    const refSeqsData: RefSeq[] = JSON.parse(refSeqsJson)
-    return refSeqAdapterFromConfig(refSeqsData)
-  }
-  if ('data' in refSeqs) {
-    return refSeqAdapterFromConfig(refSeqs.data ?? [])
-  }
-  throw new Error(
-    `Could not determine adapter for JBrowse1 refSeqs: ${
-      refSeqs.url || JSON.stringify(refSeqs)
-    }`,
-  )
-}
-
-function refSeqAdapterFromConfig(refSeqsData: RefSeq[]): Jb2Adapter {
-  const features = refSeqsData.map((refSeq): Jb2Feature => ({
-    refName: refSeq.name,
-    uniqueId: refSeq.name,
-    start: refSeq.start,
-    end: refSeq.end,
-  }))
-  return {
-    type: 'FromConfigAdapter',
-    features,
   }
 }

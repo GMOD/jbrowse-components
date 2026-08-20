@@ -132,7 +132,7 @@ function clamp(p: number, length: number) {
 // Default excluded SAM flags mirror `samtools consensus`: UNMAP (0x4),
 // SECONDARY (0x100), QCFAIL (0x200), DUP (0x400). SUPPLEMENTARY is intentionally
 // kept, as samtools keeps it.
-export const DEFAULT_CONSENSUS_EXCLUDE_FLAGS = 0x704
+const DEFAULT_CONSENSUS_EXCLUDE_FLAGS = 0x704
 
 export function buildConsensusTally(
   features: Iterable<ConsensusFeature>,

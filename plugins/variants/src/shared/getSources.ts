@@ -15,7 +15,7 @@ export function resolveSampleName(source: Source) {
 // ploidy fallback of their own.
 export type HaplotypeSource = ProcessedSource & { HP: number }
 
-export function makeHaplotypeSources(
+function makeHaplotypeSources(
   source: Source,
   ploidy: number,
 ): HaplotypeSource[] {

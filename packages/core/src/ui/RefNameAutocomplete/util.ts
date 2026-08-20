@@ -20,7 +20,7 @@ const WIDTH_STEP_PX = 30
 
 // MUI Autocomplete is not virtualized, so a broad query that returns thousands
 // of hits would render thousands of DOM nodes; cap the visible list instead
-export const MAX_OPTIONS = 100
+const MAX_OPTIONS = 100
 
 export interface Option {
   isLimit?: boolean

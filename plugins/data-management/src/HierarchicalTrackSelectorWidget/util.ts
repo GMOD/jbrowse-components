@@ -30,7 +30,7 @@ export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
 
 // The category a non-admin's added/copied tracks nest under. Leading space so
 // it sorts above the config's own categories.
-export const sessionTracksCategory = ' Session tracks'
+const sessionTracksCategory = ' Session tracks'
 
 // Everything the tree needs from a track's config, read once into
 // model.allTracks instead of on every filterText keystroke. searchText covers

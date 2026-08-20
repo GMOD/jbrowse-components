@@ -11,7 +11,7 @@ const METADATA_PREFIX = 'metadata.'
 // A facet field id is either a top-level row key ('category') or a
 // metadata-prefixed key ('metadata.assay'); this strips the prefix to the bare
 // key name (used for column headers).
-export function bareFacet(facet: string) {
+function bareFacet(facet: string) {
   return facet.startsWith(METADATA_PREFIX)
     ? facet.slice(METADATA_PREFIX.length)
     : facet

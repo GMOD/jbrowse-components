@@ -30,7 +30,7 @@ export function regionIndexOf(
   return undefined
 }
 
-export function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
+function bucketByRef<T>(items: T[], refOf: (item: T) => string) {
   const byRef = new Map<string, T[]>()
   for (const item of items) {
     getOrCreate(byRef, refOf(item), () => []).push(item)

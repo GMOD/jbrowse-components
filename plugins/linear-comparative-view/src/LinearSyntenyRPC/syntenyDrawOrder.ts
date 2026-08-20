@@ -3,7 +3,7 @@ import { cmpStr } from '@jbrowse/core/util'
 // The same 1px the pick engine splits on: a ribbon narrower than this
 // perpendicular draws as a centerline rather than a solid fill and never enters
 // the pick index, so where it sorts is a compositing choice only.
-export const MIN_PICKABLE_PX = 1
+const MIN_PICKABLE_PX = 1
 
 export function drawTier(px: number) {
   return px < MIN_PICKABLE_PX ? 0 : 1

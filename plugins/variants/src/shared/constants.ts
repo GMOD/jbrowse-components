@@ -25,7 +25,7 @@ export const SIDEBAR_BACKGROUND_OPACITY = 0.8
 // declare 0 to turn the zone off entirely; only a *drag* comes through here,
 // which is also why this is the resize form and takes the current height: a zone
 // a config declared below the floor is not snapped up by its first drag.
-export const LINE_ZONE_BOUNDS = { min: 10, max: 1000 }
+const LINE_ZONE_BOUNDS = { min: 10, max: 1000 }
 
 export function clampLineZoneHeight(current: number, target: number) {
   return clampBandHeight(current, target, LINE_ZONE_BOUNDS)
@@ -55,8 +55,8 @@ export const SECONDARY_ALT_COLOR = set1[1]!
 export const BLACK_ABGR = 0xff000000
 
 // Allele count mode colors (HSL values)
-export const ALT_COLOR_HUE = 200
-export const ALT_COLOR_SATURATION = 50
+const ALT_COLOR_HUE = 200
+const ALT_COLOR_SATURATION = 50
 export const OTHER_ALT_COLOR = 'hsl(0,100%,20%)'
 
 // Helper to get alt color based on dosage (0-1). Single source of truth for the

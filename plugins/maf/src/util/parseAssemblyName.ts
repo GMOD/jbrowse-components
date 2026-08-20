@@ -23,7 +23,7 @@ export interface ParsedAssemblyName {
  *
  * A contig containing `#` keeps it: only the first two fields are the row.
  */
-export function splitPanSn(token: string): ParsedAssemblyName | undefined {
+function splitPanSn(token: string): ParsedAssemblyName | undefined {
   const first = token.indexOf('#')
   if (first === -1) {
     return undefined

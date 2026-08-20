@@ -27,10 +27,7 @@ function configPlugins(session: AbstractSessionModel) {
  * or global plugin recorded no install url, and a definition naming no loader
  * reads back as the display string 'unknown url'. Neither may match anything.
  */
-export function isSessionPlugin(
-  plugin: BasePlugin,
-  session: AbstractSessionModel,
-) {
+function isSessionPlugin(plugin: BasePlugin, session: AbstractSessionModel) {
   const { pluginManager } = getEnv(session)
   const installedUrl = pluginManager.pluginMetadata[plugin.name]?.url
   return isSessionWithSessionPlugins(session)

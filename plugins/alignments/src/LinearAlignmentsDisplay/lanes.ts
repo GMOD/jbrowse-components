@@ -62,7 +62,7 @@ const EMPTY_KEYS: ReadonlySet<string> = new Set()
 // The lane `sections` is handed before any fetch lands, and on a grouped fetch
 // over a region with no reads — where the partition yields zero lanes and the
 // pipeline below still has to produce one section (see `drawnLanes`).
-export const SYNTHETIC_LANE: AlignmentLane = {
+const SYNTHETIC_LANE: AlignmentLane = {
   groupKey: '',
   label: '',
   rawPileupMap: EMPTY_RAW,

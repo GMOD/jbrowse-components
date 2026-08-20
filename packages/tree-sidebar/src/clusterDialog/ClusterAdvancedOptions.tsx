@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 // Both tabs share the one localStorage flag, so opening advanced options in one
 // leaves them open in the other.
-export function useShowAdvanced() {
+function useShowAdvanced() {
   return useLocalStorage('cluster-showAdvanced', false)
 }
 

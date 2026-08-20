@@ -90,15 +90,15 @@ const RD_YL_BU_R: readonly Rgb[] = [
   [215, 48, 39],
 ]
 
-export function viridisRgb(norm: number): Rgb {
+function viridisRgb(norm: number): Rgb {
   return sampleStops(VIRIDIS, norm)
 }
 
-export function cividisRgb(norm: number): Rgb {
+function cividisRgb(norm: number): Rgb {
   return sampleStops(CIVIDIS, norm)
 }
 
-export function rdYlBuReversedRgb(norm: number): Rgb {
+function rdYlBuReversedRgb(norm: number): Rgb {
   return sampleStops(RD_YL_BU_R, norm)
 }
 

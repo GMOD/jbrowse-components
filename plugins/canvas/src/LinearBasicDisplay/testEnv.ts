@@ -83,7 +83,7 @@ export function contextMenuLabels(display: TestDisplay) {
 // Left as the whole `MenuItem` union rather than narrowed: `toMatchObject`
 // reads through it, and the narrowing would be a second list of which union
 // members have which optional field.
-export function contextMenuItem(display: TestDisplay, label: string) {
+function contextMenuItem(display: TestDisplay, label: string) {
   const item = flattenMenuItems(display.contextMenuItems()).find(
     m => 'label' in m && m.label === label,
   )

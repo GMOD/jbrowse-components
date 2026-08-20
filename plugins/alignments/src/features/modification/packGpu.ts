@@ -15,7 +15,7 @@ export const MODIFICATION_PASS = {
   pack: packModifications,
 }
 
-export function packModifications(data: ModificationUploadData): ArrayBuffer {
+function packModifications(data: ModificationUploadData): ArrayBuffer {
   // Pure field-for-field copy — delegate to the generated packInstances so the
   // instance layout (offsets, stride, per-field view) can't drift from the
   // shader struct.

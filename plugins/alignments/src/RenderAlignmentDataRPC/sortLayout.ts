@@ -676,7 +676,7 @@ export interface RegionBounds {
 // The sort that applies to these regions, or undefined. Both layout paths go
 // through it; see CLAUDE.md. No bounds to check against means the caller's sort
 // stands.
-export function sortForRegions(
+function sortForRegions(
   sortedBy: SortedBy | undefined,
   regionIndices: number[],
   regions: ReadonlyMap<number, RegionBounds> | undefined,

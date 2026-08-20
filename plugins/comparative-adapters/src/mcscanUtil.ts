@@ -54,7 +54,7 @@ export function joinBedPair(
 // A file whose every row failed to join is a misconfiguration (swapped or
 // unrelated BEDs), not missing genes: that is worth an error naming the file,
 // where silently drawing nothing looks like an empty region.
-export function checkAnyRowsJoined(rows: BlockRow[], sourceRows: number) {
+function checkAnyRowsJoined(rows: BlockRow[], sourceRows: number) {
   if (sourceRows > 0 && rows.length === 0) {
     throw new Error(
       `none of the ${sourceRows} rows in this file name genes present in both BED files; check that bed1Location and bed2Location match it`,

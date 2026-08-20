@@ -156,10 +156,7 @@ function meanSpread(values: ArrayLike<number>, numSds: number): RobustSpread {
 // sum-of-squares form (len*Σx² − (Σx)²)/len² is unstable at high coverage: both
 // terms grow as O(len²·x̄²), overflow 2^53, and lose precision to catastrophic
 // cancellation — a slightly-negative result then yields sd = NaN.
-export function robustSpread(
-  values: ArrayLike<number>,
-  numSds = 3,
-): RobustSpread {
+function robustSpread(values: ArrayLike<number>, numSds = 3): RobustSpread {
   const sorted = sortedCopy(values)
   const med = median(sorted)
   const mad = medianAbsDevFromSorted(sorted, med)

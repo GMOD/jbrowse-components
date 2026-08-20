@@ -74,7 +74,7 @@ function sampleRows<T>(rows: T[] | undefined) {
  * rebuilding it deep-clones and re-validates the whole callset. Comparing the
  * lookups is one linear scan, which is far less than that.
  */
-export function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
+function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
   if (a === b) {
     return true
   }

@@ -29,7 +29,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 }
 
 /** display type name → its config slot names, for one track type. */
-export function trackDisplaySlots(trackType: TrackTypeLike) {
+function trackDisplaySlots(trackType: TrackTypeLike) {
   const displaySlots = new Map<string, Set<string>>()
   for (const d of trackType.displayTypes) {
     displaySlots.set(d.name, schemaSlotNames(d.configSchema))

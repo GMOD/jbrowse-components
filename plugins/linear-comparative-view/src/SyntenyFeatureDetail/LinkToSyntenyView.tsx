@@ -61,7 +61,7 @@ export function findAnchorAssembly({ view, level }: SyntenyFeatureDetailModel) {
 // the same two shapes findAnchorAssembly resolves, so the tracks and the
 // assembly always come from the same panel. A ribbon click with no `level` names
 // no row, so it offers nothing rather than guessing one.
-export function findAnchorTracks({
+function findAnchorTracks({
   view,
   level,
 }: SyntenyFeatureDetailModel): TrackInit[] {

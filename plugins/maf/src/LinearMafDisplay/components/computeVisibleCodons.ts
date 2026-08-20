@@ -85,7 +85,7 @@ const COMPLEMENT: Record<string, string> = {
  * Non-standard bases (`N`) are kept verbatim, so the triplet stays 3 chars for
  * display while `codonTable` still yields no amino acid for it.
  */
-export function orientedTriplet(
+function orientedTriplet(
   b0: number,
   b1: number,
   b2: number,

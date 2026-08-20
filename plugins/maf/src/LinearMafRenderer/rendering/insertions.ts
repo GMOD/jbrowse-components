@@ -21,7 +21,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * large insertion shrinks to the narrow bar rather than an empty wide box.
  * Callers must set `ctx.font` and `ctx.textBaseline = 'middle'` first.
  */
-export function drawMafInsertionMarker(
+function drawMafInsertionMarker(
   ctx: Ctx2D,
   xCenter: number,
   rowTop: number,

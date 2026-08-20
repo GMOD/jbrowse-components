@@ -162,7 +162,7 @@ export interface SectionRender {
 // HAL/region key namespacing: section 0 keys equal the raw displayedRegionIndex
 // so the ungrouped path is byte-identical to pre-grouping. Higher sections are
 // offset by a stride larger than any region count or the overlay-region id.
-export const SECTION_KEY_STRIDE = 1 << 20
+const SECTION_KEY_STRIDE = 1 << 20
 
 export function sectionRegionKey(sectionIdx: number, regionIdx: number) {
   return sectionIdx * SECTION_KEY_STRIDE + regionIdx

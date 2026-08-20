@@ -142,7 +142,7 @@ export interface BelowCoverageBandsInput {
 // coverage band they hang off, and only when a junction is actually bound for it.
 // The single spelling of that rule, read by `belowCoverageBandsGeometry` (global
 // geometry, fit budget) and `computeStackedSections` (per-section stacking).
-export function reservesSashimiBand(s: {
+function reservesSashimiBand(s: {
   showSashimiArcs: boolean
   showCoverage: boolean
   hasSashimiDownArcs: boolean

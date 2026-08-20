@@ -49,7 +49,7 @@ export const RENAMED_HOOKS: Record<string, string> = {
 
 // The same failure for a removed hook rather than a renamed one, over ACTIONS
 // because that is what these were.
-export const REMOVED_ACTION_HOOKS: Record<string, string> = {
+const REMOVED_ACTION_HOOKS: Record<string, string> = {
   onRegionTooLarge:
     'installClearHoverOnViewportChange, which clears on the `regionTooLarge` ' +
     'flip as well as on the three viewport axes',

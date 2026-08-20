@@ -48,13 +48,13 @@ export const COLOR_LONG_INSERT = 1
 // inspection. It is the slot two palettes used to disagree on — the endpoint
 // squares carried a pale fill where the curves carried a saturated stroke —
 // which is why it, alone of the nine, is a shared constant.
-export const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
+const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
 // Interchrom has no local alias: arcLine.slang names ARC_COLOR_INTERCHROM
 // directly now that a tick carries no per-instance color, and ARC_SLOT_CATEGORY
 // is what puts the legend's interchrom swatch on the color the ticks paint.
 // LL slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
-export const COLOR_PAIR_LL = 4
-export const COLOR_PAIR_RR = 5
+const COLOR_PAIR_LL = 4
+const COLOR_PAIR_RR = 5
 export const COLOR_PAIR_RL = 6
 // Split-read inversion, EITHER strand-flip direction (rf/fr) → one magenta
 // slot, matching the read-fill + connector split-inversion color.

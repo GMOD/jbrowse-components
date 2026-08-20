@@ -12,7 +12,7 @@ export const OVERLAP_PASS = {
   pack: packOverlaps,
 }
 
-export function packOverlaps(data: OverlapsUploadData): ArrayBuffer {
+function packOverlaps(data: OverlapsUploadData): ArrayBuffer {
   const n = data.overlapPositions.length / 2
   const F_F32 = overlapShader.INSTANCE_OFFSET_F32
   const F_U32 = overlapShader.INSTANCE_OFFSET_U32

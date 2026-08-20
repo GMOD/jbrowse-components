@@ -43,7 +43,7 @@ interface DisplayConf {
   type: string
 }
 
-export function getCompatibleDisplays(self: IAnyStateTreeNode) {
+function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
   // which of THIS track's configured displays the view draws — a different

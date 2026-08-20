@@ -596,7 +596,7 @@ function bucketItems(
  * reaches. `OVERLAP_ALPHA` is the shader's own constant (adr-051), so the
  * composite cannot drift from the ink it describes.
  */
-export function getOverlapLegendItem(
+function getOverlapLegendItem(
   palette: ColorPalette,
   collapsed: boolean,
 ): LegendItem {

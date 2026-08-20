@@ -84,9 +84,7 @@ const WGSL_TYPES: Record<string, { align: number; size: number }> = {
  * name suffix slangc mangles on (`bpHi_0`) is stripped, same as the vertex-input
  * check does through `demangle`.
  */
-export function parseGlslUniformBlock(
-  glsl: string,
-): DeclaredField[] | undefined {
+function parseGlslUniformBlock(glsl: string): DeclaredField[] | undefined {
   const block = /layout\(std140\)\s*uniform\s+\w+\s*\{([\s\S]*?)\n\}/.exec(glsl)
   if (!block) {
     return undefined
@@ -124,9 +122,7 @@ export function parseGlslUniformBlock(
  * treatment and `Uniforms_0` when none did, and hardcoding either spelling is
  * how this check would quietly stop finding anything.
  */
-export function parseWgslUniformStruct(
-  wgsl: string,
-): DeclaredField[] | undefined {
+function parseWgslUniformStruct(wgsl: string): DeclaredField[] | undefined {
   const decl = /var<uniform>\s+\w+\s*:\s*(\w+)\s*;/.exec(wgsl)
   if (!decl) {
     return undefined

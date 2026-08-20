@@ -65,7 +65,7 @@ export function isBezierArcPair({ e1, e2, c }: LinkedPair): boolean {
 // join them: each block clips to its own bp range and projects the far end off
 // its edge. This overlay is the only one that resolves each end through its own
 // region index, which is what makes it the fallback in `crossRegion` scope.
-export function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
+function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
   return e1.displayedRegionIndex !== e2.displayedRegionIndex
 }
 

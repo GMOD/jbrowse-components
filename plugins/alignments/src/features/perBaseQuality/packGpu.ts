@@ -13,9 +13,7 @@ export const PER_BASE_QUALITY_PASS = {
   pack: packPerBaseQuality,
 }
 
-export function packPerBaseQuality(
-  data: PerBaseQualityUploadData,
-): ArrayBuffer {
+function packPerBaseQuality(data: PerBaseQualityUploadData): ArrayBuffer {
   const n = data.perBaseQualPositions.length
   const F_U32 = perBaseQualityShader.INSTANCE_OFFSET_U32
   const s32 = perBaseQualityShader.INSTANCE_STRIDE_WORDS

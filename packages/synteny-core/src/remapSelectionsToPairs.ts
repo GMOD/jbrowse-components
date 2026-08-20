@@ -43,7 +43,7 @@ function selectionPair(selection: ImportFormSyntenyTrack, pair: string[]) {
  * padded with `none` — a deliberate no-track, which would suppress the form's
  * warning.
  */
-export function remapPairIndices(
+function remapPairIndices(
   selections: (ImportFormSyntenyTrack | undefined)[],
   fromAssemblyNames: string[],
   toAssemblyNames: string[],

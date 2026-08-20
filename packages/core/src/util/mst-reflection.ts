@@ -44,11 +44,6 @@ export function getSubType(type: IAnyType): IAnyType {
 }
 
 /**
- * get the array of the subtypes in a union (drills through optional/refinement/
- * late wrappers that inherit the union flag)
- */
-
-/**
  * get the type of one of the properties of the given MST model type
  */
 export function getPropertyType(

@@ -56,7 +56,7 @@ export interface MafCellColorConfig {
  * (which would produce GPU-vs-Canvas2D pixel mismatches). `Base` means "look up
  * the aligned base's own color"; the caller still holds `alnByte`.
  */
-export const CellCategory = {
+const CellCategory = {
   Skip: 0, // reference insertion — drawn separately
   Gap: 1,
   Match: 2,

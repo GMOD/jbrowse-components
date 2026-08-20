@@ -25,7 +25,7 @@ export function parseSmallFasta(text: string) {
 
 type FileHandle = GenericFilehandle
 
-export class FetchableSmallFasta {
+class FetchableSmallFasta {
   data: Promise<ReturnType<typeof parseSmallFasta>>
 
   constructor(filehandle: FileHandle) {

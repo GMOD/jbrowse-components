@@ -1,4 +1,4 @@
-export const complementBase: Record<string, string> = {
+const complementBase: Record<string, string> = {
   C: 'G',
   G: 'C',
   A: 'T',

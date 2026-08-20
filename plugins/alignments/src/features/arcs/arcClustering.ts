@@ -360,7 +360,7 @@ const FORWARD_NEIGHBORS = [
  * neighbourhood at all: the cell key is then the exact coordinate pair, which is
  * `arcKey`'s coincidence count arrived at through this pass — see `windowFor`.
  */
-export function linkWithinWindow(entries: ClusterEntry[], windowBp: number) {
+function linkWithinWindow(entries: ClusterEntry[], windowBp: number) {
   const parent = entries.map((_, i) => i)
   function find(i: number): number {
     let root = i

@@ -16,9 +16,7 @@ export const LINKED_READ_LINE_PASS = {
   pack: packLinkedReadLines,
 }
 
-export function packLinkedReadLines(
-  data: LinkedReadLinesUploadData,
-): ArrayBuffer {
+function packLinkedReadLines(data: LinkedReadLinesUploadData): ArrayBuffer {
   const n = data.numLinkedReadLines
   const F_F32 = linkedReadLineShader.INSTANCE_OFFSET_F32
   const F_U32 = linkedReadLineShader.INSTANCE_OFFSET_U32

@@ -259,7 +259,7 @@ const cppLiteral = (type: string, v: number) =>
  * linearly, which is not coverage and is not claimed to be; it just stops the
  * thinnest-sampled functions being the ones with the most room to hide a bug.
  */
-export const drawsFor = (fn: JsExportFn, base: number) =>
+const drawsFor = (fn: JsExportFn, base: number) =>
   base * Math.max(1, fn.paramTypes.length)
 
 export function buildOracleMain(

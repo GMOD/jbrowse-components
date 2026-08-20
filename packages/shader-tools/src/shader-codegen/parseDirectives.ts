@@ -400,7 +400,7 @@ export function parseDeclaredFunctions(sources: readonly string[]) {
  * same syntax is how the two would come to disagree" — one level up, in the
  * types rather than the syntax.
  */
-export function unsupportedSignatureTypes(fn: JsExportFn) {
+function unsupportedSignatureTypes(fn: JsExportFn) {
   return [
     // A float2 return is in the subset; a float2 anywhere else is not, so it is
     // dropped from the check here rather than added to SLANG_SCALARS.
@@ -502,11 +502,7 @@ export function parseTargets(source: string): ShaderTarget[] {
  * — and a shader whose passes disagree simply declares neither and says so at
  * each pass.
  */
-export const TOPOLOGIES = [
-  'triangle-list',
-  'triangle-strip',
-  'line-list',
-] as const
+const TOPOLOGIES = ['triangle-list', 'triangle-strip', 'line-list'] as const
 export type Topology = (typeof TOPOLOGIES)[number]
 
 /**

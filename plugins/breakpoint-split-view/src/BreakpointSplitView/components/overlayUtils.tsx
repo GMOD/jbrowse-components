@@ -37,7 +37,7 @@ export interface OverlayProps {
   domYOffsets?: (number | undefined)[]
 }
 
-export function useMouseoverElt() {
+function useMouseoverElt() {
   const [mouseoverElt, setMouseoverElt] = useState<string>()
   useEffect(() => {
     function clear() {
@@ -106,7 +106,7 @@ function hoverHandlers(
 // `getFeatureData` is resolved at click time, not per render: it serializes a
 // feature to JSON, and every overlay path in the view would otherwise pay for
 // that on every pan/zoom frame to fill in a widget nobody has opened.
-export function createVariantMouseHandlers(
+function createVariantMouseHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
   session: ReturnType<typeof getSession>,
@@ -250,7 +250,7 @@ export function buildBreakpointPath(
     : `M ${x1Tick} ${y1} L ${x1} ${y1} L ${x2} ${y2} L ${x2Tick} ${y2}`
 }
 
-export function featureTooltipLabel(feature: Feature) {
+function featureTooltipLabel(feature: Feature) {
   const name = feature.get('name')
   const loc = assembleLocString({
     refName: feature.get('refName'),

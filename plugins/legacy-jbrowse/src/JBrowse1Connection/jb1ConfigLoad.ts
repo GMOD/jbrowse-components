@@ -88,7 +88,7 @@ export async function fetchJb1(
   return createFinalConfig(newConfig)
 }
 
-export async function createFinalConfig(
+async function createFinalConfig(
   baseConfig: Config,
   defaults = configDefaults,
 ): Promise<Config> {
@@ -100,7 +100,7 @@ export async function createFinalConfig(
   return finalConfig
 }
 
-export async function fetchConfigFile(location: FileLocation): Promise<Config> {
+async function fetchConfigFile(location: FileLocation): Promise<Config> {
   const result = await openLocation(location).readFile('utf8')
   if (isUriLocation(location)) {
     return parseJb1(result, location.uri)
@@ -111,7 +111,7 @@ export async function fetchConfigFile(location: FileLocation): Promise<Config> {
   return parseJb1(result)
 }
 
-export function parseJb1(config: string, url = ''): Config {
+function parseJb1(config: string, url = ''): Config {
   if (config.trimStart().startsWith('{')) {
     return parseJB1Json(config, url)
   }

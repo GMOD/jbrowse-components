@@ -13,7 +13,7 @@ import type { YScaleTicks } from '@jbrowse/wiggle-core'
 // alignments coverage axis's had drifted apart into two identical copies.
 // Shared by the on-screen axes and SVG export so those can't drift either.
 export const YSCALE_AXIS_WIDTH = AXIS_GUTTER_WIDTH_PX
-export const YSCALE_AXIS_X = leftAxisSpineX()
+const YSCALE_AXIS_X = leftAxisSpineX()
 
 /**
  * A left-oriented Y-axis in the shared gutter, at a vertical band offset.

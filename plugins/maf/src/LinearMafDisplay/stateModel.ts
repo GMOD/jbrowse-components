@@ -149,7 +149,7 @@ export interface MafSource extends RowSource {
  * tracks, where each region names only the genomes its own blocks contain — see
  * `setSamples`.
  */
-export function unionSources(
+function unionSources(
   known: readonly MafSource[],
   incoming: readonly MafSource[],
 ): MafSource[] {
