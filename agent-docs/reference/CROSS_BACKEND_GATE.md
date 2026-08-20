@@ -537,8 +537,13 @@ same views agree to 1.58% live:
 | `targeted_hs1-mm39-synteny-wholegenome` | 36.58% | 0.62% |
 
 That gap IS the staleness test from the section above, run the other way round.
-`targeted_multiway-dotplot-grape-peach-zoomed` is a second tell — the two stored
-goldens are different SIZES (1193x530 vs 1179x530), which no render can cause.
+`targeted_multiway-dotplot-grape-peach-zoomed` is a second tell — its stored
+goldens do not agree on a pixel size, which no render can cause. The sizes sit
+beside each path in `snapshots.lock`; quoting them here would only date the
+sentence to the last refresh, which is what happened to the pair this once read.
+The picture itself is nearly empty — gridlines and one alignment — so a drift
+percentage over this pair says little; the size disagreement is the whole
+signal.
 
 A shader change to this scope therefore moves goldens that were already wrong by
 three orders of magnitude more than the change: the straight-mode quad fix
