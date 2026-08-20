@@ -990,9 +990,11 @@ export default function stateModelFactory(
           if (!view.initialized) {
             return undefined
           }
-          // coarseDynamicBlocks (500ms debounced) instead of dynamicBlocks so
+          // settledDynamicBlocks (the 500ms-debounced coarse ones, or the live
+          // ones before the view has settled once) instead of dynamicBlocks, so
           // the per-bp depth scan doesn't recompute on every animation frame
-          // during pan/zoom — same approach as wiggle's visibleScoreRange.
+          // during pan/zoom — same approach, and the same getter, as wiggle's
+          // visibleScoreRange.
           //
           // The domain spans every SHOWN group (expand each block into one entry
           // per group's coverage): a shared scale is what makes stacked sections
@@ -1005,7 +1007,7 @@ export default function stateModelFactory(
             end: number
             cov: WorkerPileupData
           }[] = []
-          for (const b of view.coarseDynamicBlocks) {
+          for (const b of view.settledDynamicBlocks) {
             const grouped =
               b.displayedRegionIndex === undefined
                 ? undefined

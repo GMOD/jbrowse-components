@@ -65,6 +65,10 @@ const confNode = (self: object) => self as WiggleCommonHost
 // animation frame during zoom. `undefined` until the view + data are ready.
 // A free function rather than a getter to keep the mixin's `.views` layering
 // shallow enough for MST's compose type inference.
+//
+// `settledDynamicBlocks`, not `coarseDynamicBlocks`: empty coarse blocks yield
+// no entries, and no entries is not a stale domain but the fallback one. See
+// that getter.
 function visibleEntries(
   self: IStateTreeNode & {
     rpcDataMap: ObservableMap<number, WiggleDataResult>
@@ -76,7 +80,7 @@ function visibleEntries(
     return undefined
   }
   const names = self.autoscaleSourceNames
-  return view.coarseDynamicBlocks.flatMap(block => {
+  return view.settledDynamicBlocks.flatMap(block => {
     const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
     if (!regionData) {
       return []

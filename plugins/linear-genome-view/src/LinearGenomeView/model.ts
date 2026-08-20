@@ -2463,6 +2463,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
+         * **What a debounced consumer clips to**: the coarse blocks once the
+         * view has settled at least once, the live ones before that.
+         *
+         * The coarse blocks exist so a per-bp scan does not recompute on every
+         * animation frame during a pan or zoom — wiggle's autoscale domain and
+         * the alignments coverage scale are the two — and while they are stale
+         * the answer is merely a frame or two old, which is what the debounce
+         * means. **Empty is different in kind.** A scan over no blocks yields no
+         * entries, and no entries is not a stale domain, it is the fallback one:
+         * `[0,1]`, which draws a line plot blank and a density plot saturated.
+         * That window is the 500ms between a view initializing and the coarse
+         * autorun's first run, and data can now land inside it — the per-region
+         * fetch used to be trailing-edge at 600ms, so it never did.
+         *
+         * One recompute at that transition, against N per frame, which is the
+         * trade the guard was making anyway.
+         */
+        get settledDynamicBlocks(): ContentBlock[] {
+          return self.coarseDynamicBlocks.length
+            ? self.coarseDynamicBlocks
+            : this.dynamicBlocks.contentBlocks
+        },
+
+        /**
+         * #getter
          * same as visibleLocStrings, but only updated every 500ms
          */
         get coarseVisibleLocStrings() {
