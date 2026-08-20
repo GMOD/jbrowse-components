@@ -26,7 +26,7 @@ What follows is local.
 when a `reloadCounter` bump re-runs the autorun and the gate still declines —
 the dead Retry button. All three fetch installers install it. Opt out with
 `fetchInert` if the display deliberately isn't fetching — the loading scrim and
-the SVG export read the same hook (ADR-081). A two-stage `reload()` says
+the SVG export read the same hook (ADR-082). A two-stage `reload()` says
 `awaitingPrerequisite` instead (HiC, whose contacts fetch declines until the
 header lands; variants, until `sourcesBase` does), which **defers** the verdict
 to the run after the prerequisite arrives rather than waiving it. Reports reach
