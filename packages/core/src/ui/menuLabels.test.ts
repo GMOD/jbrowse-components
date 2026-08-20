@@ -1,4 +1,4 @@
-import { withHint } from './toggleMenuItems.ts'
+import { withHint } from './menuLabels.ts'
 
 // The rows this serves can be on, correctly on, and doing nothing observable,
 // so the hint has to be visible on the row itself rather than behind a hover —

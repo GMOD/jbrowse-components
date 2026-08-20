@@ -23,8 +23,8 @@ export {
   radioItem,
   radioItems,
   toggleItem,
-  withHint,
 } from './toggleMenuItems.ts'
+export { withHint } from './menuLabels.ts'
 export { makeRadioSubMenu } from './radioSubMenu.ts'
 export { showLegendCheckboxItem } from './legendMenuItem.ts'
 export {
