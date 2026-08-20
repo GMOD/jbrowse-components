@@ -34,8 +34,9 @@ describe('makeRadioSubMenu', () => {
 
   // A caller saying why an option is currently inert puts that in the option's
   // own label (`withHint`), so this builder has no per-row decoration to pass
-  // through and its rows carry nothing but what the options table names.
-  it('leaves every row bare', () => {
+  // through: a row is its label, its type and its checked state, and nothing
+  // that would make it taller than its siblings.
+  it('builds rows carrying nothing but label, type and checked', () => {
     const rows = radios(
       makeRadioSubMenu({
         label: 'Mode',
@@ -44,7 +45,14 @@ describe('makeRadioSubMenu', () => {
         options: OPTIONS,
       }),
     )
-    expect(rows.map(r => 'subLabel' in r && r.subLabel)).toEqual([false, false])
+    for (const row of rows) {
+      expect(Object.keys(row).sort()).toEqual([
+        'checked',
+        'label',
+        'onClick',
+        'type',
+      ])
+    }
   })
 
   it('appends extraItems after the radios', () => {

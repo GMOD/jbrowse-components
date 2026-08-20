@@ -8,15 +8,21 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // pre-flight declined. In each case the tick deliberately keeps reporting what
 // the user chose (so the state is restored without a second click), which is
 // what makes silence the wrong answer: the setting is not what is wrong.
-// The hint lives in the label (`withHint` appends it parenthesized), so rows are
-// found by their base label and the assertion is on what got appended.
+// The hint lives in the label, after an em dash (`withHint`), so rows are found
+// by their base label and the assertion is on what got appended. Splitting on
+// the separator rather than slicing by the base label's length means a reworded
+// base label fails as "no such row" rather than as a mangled hint.
+const SEP = ' — '
+
 // Annotated because it recurses into its own return type (TS7023 otherwise).
 function findRow(items: MenuItem[], label: string): string | undefined {
   for (const item of items) {
-    if ('label' in item && typeof item.label === 'string') {
-      if (item.label === label || item.label.startsWith(`${label} (`)) {
-        return item.label
-      }
+    if (
+      'label' in item &&
+      typeof item.label === 'string' &&
+      item.label.split(SEP)[0] === label
+    ) {
+      return item.label
     }
     if ('subMenu' in item) {
       const hit = findRow(item.subMenu, label)
@@ -28,17 +34,13 @@ function findRow(items: MenuItem[], label: string): string | undefined {
   return undefined
 }
 
-// What findRow returned, minus the base label: the hint, or undefined when the
-// row is bare.
+// The hint on that row, or undefined where the row is bare.
 function hintOn(items: MenuItem[], label: string) {
-  const found = findRow(items, label)
-  return found && found !== label
-    ? found.slice(label.length + 2, -1)
-    : undefined
+  return findRow(items, label)?.split(SEP)[1]
 }
 
 const BAND_ROWS = ['Show coverage', 'Show conservation (% identity)']
-const HINT = 'zoom in past the summary tier to see it'
+const HINT = 'zoom in past the summary tier'
 
 describe('the band toggles say when the summary tier has overridden them', () => {
   it('adds the hint past the floor', () => {
@@ -102,7 +104,7 @@ function zoomAndSettle(
 // swap for a while; this is the same sentence for the one that never had it.
 describe('the codon row coloring says when it is out of zoom range', () => {
   const CODON = 'Codon changes (amino acids)'
-  const ZOOM_HINT = 'zoom in to base level to see them'
+  const ZOOM_HINT = 'zoom in to base level'
 
   it('hints while zoomed out', () => {
     const { display, view } = framesEnv().createDisplay()
@@ -144,7 +146,7 @@ describe('the CDS strip says when its read was declined as too large', () => {
     const { display } = framesEnv().createDisplay()
     display.setFramesGateBlocked(true)
     expect(hintOn(display.trackMenuItems(), STRIP)).toBe(
-      'too much frame data at this zoom — zoom in',
+      'too much frame data here, zoom in',
     )
   })
 

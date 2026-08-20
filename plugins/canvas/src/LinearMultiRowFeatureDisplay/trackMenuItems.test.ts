@@ -124,7 +124,7 @@ describe('multi-row track menu', () => {
       )
 
     expect(sub(2)).toMatchObject({
-      label: 'Show row separators (needs rows 4px or taller)',
+      label: 'Show row separators — needs rows 4px or taller',
     })
     expect(sub(14)).toMatchObject({ label: 'Show row separators' })
   })

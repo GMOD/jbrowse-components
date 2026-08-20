@@ -158,7 +158,7 @@ Every variant except `divider` and `subHeader` also takes these:
 | `id` | `string` | stable identifier, for tests and for finding a row again |
 | `label` (required) | `React.ReactNode` | the row's text |
 | `priority` | `number` | sort weight within the menu; higher sorts earlier |
-| `subLabel` | `string` | secondary text under the label |
+| `subLabel` | `string` | secondary text under the label; prefer `withHint` in the label |
 | `icon` | `React.ElementType` | any [MUI icon](https://mui.com/material-ui/material-icons/) component |
 | `disabled` | `boolean` | renders the row unclickable |
 | `helpText` | `string` | tooltip shown from a help icon at the trailing edge |
@@ -194,6 +194,7 @@ installs the plugin.
 | `radioItems` | a radio group, one row per option |
 | `showLegendCheckboxItem` | the shared "Show legend" checkbox |
 | `toggleItem` | a checkbox row whose setter takes the new value |
+| `withHint` | a row label carrying an aside that is only sometimes there |
 
 <!-- MENU_ITEM_BUILDERS END -->
 

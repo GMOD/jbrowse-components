@@ -235,7 +235,7 @@ describe('canvas track menu shape', () => {
     display.setDisplayMode('collapsed')
     const inert = find(
       subMenuOf(display.trackMenuItems(), 'Show...'),
-      'Name + description (hidden while collapsed)',
+      'Name + description — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
   })

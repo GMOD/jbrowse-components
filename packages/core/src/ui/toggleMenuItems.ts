@@ -30,8 +30,10 @@ export interface SettingRowOptions {
 }
 
 /**
- * A label plus a parenthetical that is only sometimes there: `withHint('Show
- * row separators', tooShort ? 'needs rows 4px or taller' : undefined)`.
+ * #menuBuilder withHint | a row label carrying an aside that is only sometimes there
+ *
+ * `withHint('Show row separators', tooShort ? 'needs rows 4px or taller' :
+ * undefined)`.
  *
  * The rows that want this are the ones that can be on, correctly on, and doing
  * nothing observable -- a band overridden by the summary tier, a separator
@@ -43,9 +45,19 @@ export interface SettingRowOptions {
  * `helpText`, which would reserve a "?" column across the whole menu for one
  * conditional row and hide the reason behind a hover -- on a control the reader
  * has no reason to hover, since from the tick it looks like it already works.
+ *
+ * AN EM DASH, NOT PARENTHESES. Two of these labels already end in a
+ * parenthetical of their own ("Show conservation (% identity)", "Codon changes
+ * (amino acids)"), and a second pair straight after the first reads as a typo.
+ * It also keeps the aside distinct from the ` - ` that names a permanent half of
+ * a label ("Square view - average bp per pixel").
+ *
+ * KEEP THE HINT SHORT -- a few words, not a sentence. A menu sizes to its widest
+ * row, so a long one widens every row for as long as it fires, which is the same
+ * cost that rules out `helpText` above.
  */
 export function withHint(label: string, hint: string | undefined) {
-  return hint ? `${label} (${hint})` : label
+  return hint ? `${label} — ${hint}` : label
 }
 
 /** #menuBuilder checkboxItem | one checkbox setting row */

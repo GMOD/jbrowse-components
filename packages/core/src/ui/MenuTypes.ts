@@ -27,7 +27,15 @@ export interface BaseMenuItem {
   label: React.ReactNode
   /** #menuField sort weight within the menu; higher sorts earlier */
   priority?: number
-  /** #menuField secondary text under the label */
+  /**
+   * #menuField secondary text under the label; prefer `withHint` in the label
+   *
+   * Renders as a second line under the label, which makes the row two lines
+   * tall. Nothing in this repo uses it any more: a menu whose rows are each two
+   * lines is harder to scan than the labels it buried, so a short clarifier
+   * goes in the label (`withHint` where it is conditional) and real prose goes
+   * in `helpText`. Kept because it renders and plugins may pass one.
+   */
   subLabel?: string
   /** #menuField any [MUI icon](https://mui.com/material-ui/material-icons/) component */
   icon?: React.ElementType

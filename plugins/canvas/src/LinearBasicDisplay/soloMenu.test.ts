@@ -75,7 +75,7 @@ describe('show-only list context menu', () => {
     expect(soloLabels(display)).toEqual([
       // two are collected and none applied, so the isolate row says what it
       // would discard
-      'Show only this feature (replaces the 2 selected)',
+      'Show only this feature — replaces the 2 selected',
       'Remove from show-only list',
     ])
     // collecting hides nothing until applied, so there is nothing to undo yet —
@@ -131,7 +131,7 @@ describe('show-only list context menu', () => {
 
     rightClick(display, geneA!)
     expect(soloLabel(display)).toBe(
-      'Show only this feature (replaces the 3 selected)',
+      'Show only this feature — replaces the 3 selected',
     )
   })
 

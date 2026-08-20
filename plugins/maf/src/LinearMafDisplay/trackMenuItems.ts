@@ -43,7 +43,7 @@ const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 // summary tier does not read — so past the floor they collapse and the tick
 // keeps reporting what the user chose. Said out loud, because otherwise the
 // only feedback for ticking either one there is nothing happening.
-const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier to see it'
+const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier'
 
 // Row-height presets for the shared "Row height" menu. Each pairs a height with
 // the glyph proportion that reads best at it — maf is the one display that has
@@ -130,7 +130,7 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
           withHint(
             'Show CDS frames',
             self.framesGateBlocked
-              ? 'too much frame data at this zoom — zoom in'
+              ? 'too much frame data here, zoom in'
               : undefined,
           ),
           self.showAnnotations,
@@ -164,6 +164,7 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
  * sentence for the option that never had it.
  */
 function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
+  const [codonValue, codonLabel] = CODON_ROW_RENDERING
   return makeRadioSubMenu({
     label: 'Row coloring',
     icon: PaletteIcon,
@@ -178,12 +179,10 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
       ...(self.annotationAdapterConfig
         ? [
             [
-              CODON_ROW_RENDERING[0],
+              codonValue,
               withHint(
-                CODON_ROW_RENDERING[1],
-                self.zoomedToBaseLevel
-                  ? undefined
-                  : 'zoom in to base level to see them',
+                codonLabel,
+                self.zoomedToBaseLevel ? undefined : 'zoom in to base level',
               ),
             ] as const,
           ]
