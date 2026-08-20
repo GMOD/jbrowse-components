@@ -143,9 +143,22 @@ bug with an extra layer.
   flashing "Loading". The owner's clear is what blanks it, as before.
 - **An operation that never retires its slot pins a label up for good**, where
   before it merely lost a race. That is the failure mode this trades for, and it
-  is why `openStatusStream` hands back the clear beside the callback and why
+  is why `openStatusStream` hands back the clear beside the callback, why
   `createStopTokenRotation.dispose` retires a fetch that was in flight when the
-  host went away.
+  host went away, and why `createStatusWindow` reports in dev once a window
+  holds more streams than any owner has concurrent operations.
+  `ChordVariantDisplay` was already in that shape — `rotation.begin()` with no
+  matching `end()`, so its last label stayed up for good and, under this ADR, a
+  slot leaked per fetch. Fixed here.
+- **Two more operations came off the direct-write path.**
+  `setupRunClusteringAutorun` blanked the field in its `finally` over a viewport
+  fetch a pan could have started at any point in the many seconds a cohort-sized
+  cluster takes, and `LinearHicDisplay.fetchHicInfo` wrote it unslotted, so the
+  `''` its outermost phase closes on reached the field as a blank while the
+  contacts fetch was still going. Both take a slot now. A display writing a phase
+  label by hand through `setStatusMessage` is still supported and still
+  unthrottled — it is a sequence of distinct labels, not a stream — it is simply
+  not a participant in the aggregate.
 - `FetchMixin` gains an `activeStatusStream` volatile, so a cancel can retire
   the slot now rather than whenever the worker notices the stop token.
 - `createStatusWindow` taking its `write` at creation means `FetchMixin` builds
