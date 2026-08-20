@@ -83,10 +83,14 @@ fires after the work it measured has ended — the bar comes back to 90% on a ph
 that is over. `FetchMixin.test.ts` pins that.
 
 **Clamp the shared fraction so it can never decrease.** Answers the complaint
-directly and lies about the rest: work genuinely discovered late (the redispatch
-read is real bytes nobody knew about) would sit behind a frozen bar. The drops
-this removes are the accounting ones; a drop that means "there turned out to be
-more to do" stays.
+directly and lies about the rest: work genuinely discovered late would sit behind
+a frozen bar. The drops this removes are the accounting ones; a drop that means
+"there turned out to be more to do" stays — and the largest of those was not
+accounting at all. Tabix's redispatch re-read the *union* of the query and an
+overhanging feature's bounds, so a region that had just reported 100% doubled its
+own denominator and dropped to 50%. That is `readTabixLinesRedispatched` reading
+the query range twice, and it now reads only the flanks; the bar was reporting it
+correctly.
 
 ## Consequences
 

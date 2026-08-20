@@ -1,4 +1,4 @@
-import { downloadStatus } from './progress.ts'
+import { createStatusFanOut, downloadStatus } from './progress.ts'
 import { calculateRedispatchRange } from './range.ts'
 import { withStopTokenSignal } from './stopToken.ts'
 
@@ -100,14 +100,31 @@ export function readTabixLines(
 
 /**
  * Read a region's tabix lines, then — if any feature found there extends past
- * the query — read once more over the union of the query and those feature
- * bounds, so a parent line's children (a gene's exons, a transcript's CDS)
- * outside the original window are pulled in and the parent/child tree resolves
- * fully. Types in `dontRedispatchSet` are excluded from the bounds, so one
- * chromosome-spanning record can't force a whole-chromosome refetch.
+ * the query — read the overhang on either side, so a parent line's children (a
+ * gene's exons, a transcript's CDS) outside the original window are pulled in
+ * and the parent/child tree resolves fully. Types in `dontRedispatchSet` are
+ * excluded from the bounds, so one chromosome-spanning record can't force a
+ * whole-chromosome refetch.
  *
- * Exactly one expansion happens: the second read's own overhang is not chased,
- * which bounds the work at two reads per query.
+ * **The flanks, not the union.** Re-reading `[minStart, maxEnd]` returns
+ * everything the first read already had — a second full read of the query range
+ * to collect a gene's tail. At the window sizes a GFF3 track is browsed at that
+ * is most of the work done twice, and it is the reason the download bar halved:
+ * the expansion arrived as a second phase whose total was the whole region
+ * again, so a region that had just reported 100% dropped to 50% and climbed back
+ * (measured: two `65536/65536` phases for one query). Reading only what is
+ * missing leaves the second phase the size of the overhang.
+ *
+ * The line sequence is unchanged by that. Tabix returns the lines *overlapping*
+ * a range, so the three ranges' lines are the union range's lines, with the ones
+ * straddling a boundary appearing twice; `offset` is a line's position in the
+ * file, so deduplicating and sorting on it reconstructs file order — which for
+ * an indexed file is coordinate order — exactly.
+ *
+ * The two flanks are read concurrently and so need a status slot each, or they
+ * take turns overwriting one label. Exactly one expansion happens: a flank's own
+ * overhang is not chased, which bounds the work at three reads per query and
+ * usually two.
  *
  * Shared by the GFF3 and GTF tabix adapters, which differ only in how they
  * parse the returned lines.
@@ -121,17 +138,44 @@ export async function readTabixLinesRedispatched(
   opts: { statusCallback?: StatusCallback; stopToken?: StopToken } = {},
 ): Promise<TabixLine[]> {
   const { statusCallback, stopToken } = opts
-  const read = (start: number, end: number) =>
-    readTabixLines(file, query.refName, start, end, statusCallback, stopToken)
+  const read = (start: number, end: number, cb?: StatusCallback) =>
+    readTabixLines(file, query.refName, start, end, cb, stopToken)
 
-  const lines = await read(query.start, query.end)
+  const lines = await read(query.start, query.end, statusCallback)
   const redispatch = calculateRedispatchRange(
     lines,
     dontRedispatchSet,
     query.start,
     query.end,
   )
-  return redispatch ? read(redispatch.start, redispatch.end) : lines
+  if (redispatch) {
+    const slot = createStatusFanOut(statusCallback)
+    const flanks = await Promise.all([
+      redispatch.start < query.start
+        ? read(redispatch.start, query.start, slot())
+        : [],
+      redispatch.end > query.end ? read(query.end, redispatch.end, slot()) : [],
+    ])
+    return mergeTabixLines([lines, ...flanks])
+  }
+  return lines
+}
+
+/**
+ * The lines of several overlapping reads as one file-ordered run, each line
+ * once. Keyed on `offset` because that is what a line *is* — its position in the
+ * file — so a line two ranges both returned collapses to one entry and the sort
+ * puts the whole set back in the order a single read over their union would have
+ * produced.
+ */
+function mergeTabixLines(groups: TabixLine[][]) {
+  const byOffset = new Map<number, TabixLine>()
+  for (const group of groups) {
+    for (const line of group) {
+      byOffset.set(line.offset, line)
+    }
+  }
+  return [...byOffset.values()].sort((a, b) => a.offset - b.offset)
 }
 
 /**

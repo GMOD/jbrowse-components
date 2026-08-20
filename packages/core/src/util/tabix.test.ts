@@ -168,7 +168,11 @@ describe('readTabixLinesRedispatched', () => {
     expect(lines).toHaveLength(1)
   })
 
-  it('re-reads the union of the query and an overhanging feature', async () => {
+  // The flanks, not the union: re-reading [50, 5000] would fetch the query range
+  // a second time, which is most of the work of a browsed window done twice and
+  // is what halved the download bar — a second phase whose total was the whole
+  // region again.
+  it('reads only the overhang on each side of the query', async () => {
     const source = overhangingSource([{ type: 'gene', start: 50, end: 5000 }])
     await readTabixLinesRedispatched(
       source,
@@ -177,20 +181,51 @@ describe('readTabixLinesRedispatched', () => {
     )
     expect(source.reads).toEqual([
       [100, 200],
-      [50, 5000],
+      [50, 100],
+      [200, 5000],
     ])
   })
 
-  it('expands exactly once, never chasing the second read', async () => {
-    // the expanded read returns the same overhanging line, so a loop would keep
-    // going; the contract is two reads per query at most
+  it('reads one flank when the feature overhangs one side', async () => {
+    const source = overhangingSource([{ type: 'gene', start: 120, end: 5000 }])
+    await readTabixLinesRedispatched(
+      source,
+      { refName: 'ctgA', start: 100, end: 200 },
+      new Set(),
+    )
+    expect(source.reads).toEqual([
+      [100, 200],
+      [200, 5000],
+    ])
+  })
+
+  it('expands exactly once, never chasing the flanks', async () => {
+    // every read returns the same overhanging line, so a loop would keep going;
+    // the contract is the query plus its two flanks at most
     const source = overhangingSource([{ type: 'gene', start: 50, end: 5000 }])
     await readTabixLinesRedispatched(
       source,
       { refName: 'ctgA', start: 100, end: 200 },
       new Set(),
     )
-    expect(source.reads).toHaveLength(2)
+    expect(source.reads).toHaveLength(3)
+  })
+
+  // Tabix returns the lines OVERLAPPING a range, so a line straddling a flank
+  // boundary comes back from two reads. `offset` is the line's position in the
+  // file, which is what makes the collapse exact and the order file order.
+  it('returns a line found by two reads once, in file order', async () => {
+    const source = overhangingSource([
+      { type: 'gene', start: 50, end: 5000 },
+      { type: 'mRNA', start: 60, end: 4000 },
+    ])
+    const lines = await readTabixLinesRedispatched(
+      source,
+      { refName: 'ctgA', start: 100, end: 200 },
+      new Set(),
+    )
+    expect(lines.map(l => l.offset)).toEqual([0, 1])
+    expect(lines.map(l => l.type)).toEqual(['gene', 'mRNA'])
   })
 
   it('leaves a dontRedispatch type out of the bounds', async () => {
