@@ -132,8 +132,12 @@ test('a track added in the same tick shows on the level it was added for', async
   expect(view.levels[0]!.tracks.length).toBe(0)
 })
 
+// flattened one level: the row-management commands live in the "Rows" group
 const menuLabels = (view: LinearSyntenyViewModel) =>
-  view.headerMenuItems().map(item => ('label' in item ? item.label : ''))
+  view
+    .headerMenuItems()
+    .flatMap(item => ('subMenu' in item ? item.subMenu : [item]))
+    .map(item => ('label' in item ? item.label : ''))
 
 // A row is appended to the stack the user is looking at, and the import form is
 // what they are looking at when there is no stack. Anchored to a view with no

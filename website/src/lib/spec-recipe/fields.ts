@@ -391,9 +391,9 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMultiRowFeatureDisplay',
 ])
 
-// The synteny view's 'CIGAR display mode' radios, imported. Its submenu sits in
-// headerMenuItems beside Re-order chromosomes, gated on the data (coarse-tier
-// PIF and CIGAR-less PAF have no ops), not on config.
+// The synteny view's 'CIGAR display mode' radios, imported. Its submenu is one
+// of the header menu's top-level rows, gated on the data (coarse-tier PIF and
+// CIGAR-less PAF have no ops), not on config.
 const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
@@ -1447,12 +1447,13 @@ const graphSettingsField = (
 
 // Both views run the same reorder — runDiagonalize, behind the identical
 // 'Re-order chromosomes' item — but reach it from different headers: the synteny
-// view's is in headerMenuItems, under the "View options" button
+// view's is in headerMenuItems' "Rows" group, under the "View options" button
 // (ViewOptionsMenuButton), and the dotplot's is in the overflow menu in
 // DotplotControls. The init flag runs it once as the view opens rather than
 // naming a different feature, so the step is the menu item either way.
 const DIAGONALIZE_MENUS: Record<string, string> = {
-  LinearSyntenyView: 'Synteny view header → View options → Re-order chromosomes',
+  LinearSyntenyView:
+    'Synteny view header → View options → Rows → Re-order chromosomes',
   DotplotView: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
 }
 
@@ -1683,7 +1684,9 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined,
   trackLabels: value => {
     const option = typeof value === 'string' ? TRACK_LABELS[value] : undefined
-    return option ? { path: `View menu → Track labels → ${option}` } : undefined
+    return option
+      ? { path: `View menu → Show... → Track labels → ${option}` }
+      : undefined
   },
   colorByCDS: value =>
     typeof value === 'boolean'
@@ -1714,13 +1717,13 @@ export const viewFields: Record<string, FieldRecipe> = {
       : undefined,
   // An action rather than a checkbox, so only a `true` has a click-path: it
   // re-fits every row to one shared bp/px, and there is no un-checking it —
-  // you'd re-navigate instead. In the reframe group beside "Square view", and
-  // inside "Show all regions" — the two zoom-outs share that name, so it is
-  // said once and the submenu carries only what differs between them.
+  // you'd re-navigate instead. Under "Navigation" with the rest of what points
+  // the rows, below the "Show all regions" subheader — the two zoom-outs share
+  // that name, so it is said once and each row carries only what differs.
   sameScale: value =>
     value === true
       ? {
-          path: 'Synteny view header → View options → Show all regions → Same bp per pixel',
+          path: 'Synteny view header → View options → Navigation → Same bp per pixel',
           note: 'Row length becomes genome size, which is what makes the rows comparable.',
         }
       : undefined,

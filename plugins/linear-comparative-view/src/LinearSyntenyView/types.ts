@@ -63,8 +63,8 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedInit {
   // Open any genome row this init gives no tracks collapsed to its ruler. The
   // "No tracks active / Open track selector" block costs ~90px per row, which on
   // a five-row launch is more of the viewport than the ribbons; a row is one
-  // click from expanding again (MiniControls, or the view menu's "Genome views"
-  // → "Expand all views"). Off by default so an authored session keeps its rows
+  // click from expanding again (MiniControls, or the view menu's "Rows" →
+  // "Expand all views"). Off by default so an authored session keeps its rows
   // as written — the launch dialog turns it on, and offers a checkbox to not.
   collapseEmptyRows?: boolean
   // Put every genome row on one bp/px, the coarsest row's, instead of fitting

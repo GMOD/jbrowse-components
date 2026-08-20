@@ -80,9 +80,9 @@ hexaploid row reads as groups rather than as subgenomes, without being told
 which chromosomes are homoeologs.
 
 The rows also share one bp/px rather than each being fitted to the pane width,
-which is **Show all regions → Same bp per pixel** in the view menu and
-`sameScale` in a session spec. A row's drawn length is then its genome size: the
-diploid donors are drawn short and the hexaploid fills the frame.
+which is **Navigation → Same bp per pixel** in the view menu and `sameScale` in
+a session spec. A row's drawn length is then its genome size: the diploid donors
+are drawn short and the hexaploid fills the frame.
 
 <Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, in evolutionary order. All six rows are on one genomic scale, so a row's length is its genome size: the two diploid donors against the hexaploid they built, with the tetraploids between." src="/img/orthofinder_synteny/wheat.png" />
 

@@ -1,19 +1,19 @@
 import {
   cigarModeMenuItems,
   displayCanShowCigar,
+  navigationMenuItems,
   offscreenMateMenuItems,
-  rowSyncMenuItems,
-  scaleRowsMenuItems,
 } from './menus.ts'
 
 import type { CigarMode } from './cigarModes.ts'
 import type { OffscreenMateMode } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The three row-sync modes are mutually exclusive in substance, not just in
-// presentation — a pixel lock and a synteny follow place the same row twice per
-// pan — so the menu is a radio group and the model has one setter for all three.
-describe('rowSyncMenuItems', () => {
+// One submenu for everything that decides where the rows are pointed and at
+// what scale. The three sync modes are mutually exclusive in substance, not just
+// in presentation — a pixel lock and a synteny follow place the same row twice
+// per pan — so they are a radio group and the model has one setter for all three.
+describe('navigationMenuItems', () => {
   function build(
     state: Partial<{
       linkViews: boolean
@@ -22,12 +22,15 @@ describe('rowSyncMenuItems', () => {
     }> = {},
   ) {
     const calls: unknown[] = []
-    const items = rowSyncMenuItems({
+    const items = navigationMenuItems({
       views: [{ assemblyNames: ['hg002mat'] }, { assemblyNames: ['hg002pat'] }],
       linkViews: false,
       followSynteny: false,
       followAnchorIndex: 0,
       ...state,
+      squareView: () => calls.push('square'),
+      showAllRegions: () => calls.push('fit'),
+      showAllRegionsSameScale: () => calls.push('sameScale'),
       setRowSyncMode: mode => calls.push(mode),
       setFollowAnchorIndex: idx => calls.push(idx),
     })
@@ -35,7 +38,9 @@ describe('rowSyncMenuItems', () => {
   }
 
   function labelled(items: MenuItem[], label: string) {
-    return items.find(i => 'label' in i && i.label === label) as
+    return items.find(
+      i => 'label' in i && i.label === label && i.type !== 'subHeader',
+    ) as
       | {
           checked?: boolean
           subLabel?: string
@@ -44,6 +49,40 @@ describe('rowSyncMenuItems', () => {
         }
       | undefined
   }
+
+  test('one group, and nothing in it opens another popup', () => {
+    // every section is a radio group or a pair of commands whose shared half of
+    // the name is its subheader, and none is long enough to earn a third level
+    const { subMenu } = build({ followSynteny: true })
+    expect(subMenu.some(i => 'subMenu' in i)).toBe(false)
+    expect(
+      subMenu.flatMap(i =>
+        i.type === 'subHeader' && 'label' in i ? [i.label] : [],
+      ),
+    ).toEqual(['Show all regions', 'Link views', 'Anchor row'])
+  })
+
+  test('the two zoom-outs sit under the name they share', () => {
+    const { subMenu, calls } = build()
+    expect(
+      labelled(subMenu, 'Square view - average bp per pixel'),
+    ).toBeDefined()
+    labelled(subMenu, 'Square view - average bp per pixel')?.onClick?.()
+    labelled(subMenu, 'Each row fit to width')?.onClick?.()
+    labelled(subMenu, 'Same bp per pixel')?.onClick?.()
+    expect(calls).toEqual(['square', 'fit', 'sameScale'])
+  })
+
+  test('the zoom commands are one-shot, not state', () => {
+    const { subMenu } = build()
+    for (const label of [
+      'Square view - average bp per pixel',
+      'Each row fit to width',
+      'Same bp per pixel',
+    ]) {
+      expect(labelled(subMenu, label)).not.toHaveProperty('type')
+    }
+  })
 
   test('exactly one mode is checked at a time', () => {
     const modes = [
@@ -74,7 +113,10 @@ describe('rowSyncMenuItems', () => {
     // names next to each other do not carry it
     const { subMenu } = build()
     const coupled = subMenu.flatMap(i =>
-      'label' in i && typeof i.label === 'string' && i.label !== 'Independent'
+      'label' in i &&
+      typeof i.label === 'string' &&
+      i.label.includes(' - ') &&
+      !i.label.startsWith('Square view')
         ? [i.label]
         : [],
     )
@@ -89,14 +131,6 @@ describe('rowSyncMenuItems', () => {
     expect(
       labelled(build({ followSynteny: true }).subMenu, 'hg002mat'),
     ).toBeDefined()
-  })
-
-  test('the anchor rows sit inline under a subheader, not in a nested submenu', () => {
-    // which row drives is half of what there is to set here; a second level put
-    // it three deep from the hamburger for no gain
-    const { subMenu } = build({ followSynteny: true })
-    expect(subMenu.some(i => i.type === 'subHeader')).toBe(true)
-    expect(subMenu.some(i => 'subMenu' in i)).toBe(false)
   })
 
   test('the anchor rows are named by assembly, with the current one marked', () => {
@@ -229,59 +263,6 @@ describe('offscreenMateMenuItems', () => {
     const { group, calls } = build([{ refName: 'ctgB', count: 3 }], 'query')
     row(group.subMenu, 'Mark them, searching both rows').onClick()
     expect(calls).toEqual(['both'])
-  })
-})
-
-// "Show all regions" is a navigation gesture, not a visibility toggle, so it
-// sits at the top level rather than in the "Show..." submenu it was filed under
-// by its first word — and its two variants nest under it, since the name they
-// share is most of what either one is called.
-describe('scaleRowsMenuItems', () => {
-  function build() {
-    const calls: string[] = []
-    const items = scaleRowsMenuItems({
-      squareView: () => calls.push('square'),
-      showAllRegions: () => calls.push('fit'),
-      showAllRegionsSameScale: () => calls.push('sameScale'),
-    })
-    return { items, calls }
-  }
-
-  function click(item?: MenuItem) {
-    if (item && 'onClick' in item) {
-      item.onClick()
-    }
-  }
-
-  test('the two zoom-outs nest under the name they share', () => {
-    const [square, showAll] = build().items
-    expect(square).toMatchObject({
-      label: 'Square view - average bp per pixel',
-    })
-    expect(showAll).toMatchObject({
-      label: 'Show all regions',
-      subMenu: [
-        { label: 'Each row fit to width' },
-        { label: 'Same bp per pixel' },
-      ],
-    })
-  })
-
-  test('each row runs a different command', () => {
-    const { items, calls } = build()
-    const [square, showAll] = items
-    click(square)
-    if (showAll && 'subMenu' in showAll) {
-      for (const item of showAll.subMenu) {
-        click(item)
-      }
-    }
-    expect(calls).toEqual(['square', 'fit', 'sameScale'])
-  })
-
-  test('nothing here is a toggle — these are one-shot commands, not state', () => {
-    const { items } = build()
-    expect(items.every(i => !('type' in i && i.type))).toBe(true)
   })
 })
 

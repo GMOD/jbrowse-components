@@ -13,6 +13,7 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
+import ViewStreamIcon from '@mui/icons-material/ViewStream'
 import { observable } from 'mobx'
 
 import baseModel from '../LinearComparativeView/model.ts'
@@ -21,13 +22,13 @@ import { FADE_AUTO_MIN_FEATURES, fadesThinAt } from './fadeThin.ts'
 import {
   autoScaleMenuItems,
   cigarModeMenuItems,
+  compactViewsMenuItems,
   displayCanShowCigar,
-  genomeViewsMenuItems,
+  navigationMenuItems,
   offscreenMateMenuItems,
   removeRowMenuItems,
-  rowSyncMenuItems,
+  rowMenuItems,
   rowViewMenuItems,
-  scaleRowsMenuItems,
 } from './menus.ts'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
@@ -760,7 +761,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #method
          * Visibility toggles only. The two "show all regions" commands read as
          * belonging here and don't: they reframe the view, which is what
-         * "Square view" does, so all three sit together a level up.
+         * "Square view" does, so all three sit together under "Navigation".
          */
         showMenuItems(): MenuItem[] {
           return [
@@ -786,51 +787,67 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #method
          * Still a subset of `menuItems()`: the full list is overwhelming.
+         *
+         * SEVEN ROWS WHATEVER THE STACK HOLDS. What varies with row count —
+         * remove, auto-scale, compact-all, one entry per genome — varies inside
+         * the "Rows" group instead of growing the list a reader first sees, so
+         * a six-genome view opens the same menu a pairwise one does.
+         *
+         * The three that stayed flat are the ones with nothing to pair with:
+         * CIGAR detail, the LOD tier and the off-screen mates are each a single
+         * radio group about a different thing, and a "Rendering" bucket over the
+         * three of them would have bought one row for a third popup level.
          */
         headerMenuItems(): MenuItem[] {
           return [
             ...superHeaderMenuItems(),
-            ...rowViewMenuItems(self),
-            ...scaleRowsMenuItems(self),
-            ...autoScaleMenuItems(self),
-            ...genomeViewsMenuItems(self),
-            // A row is appended to the stack the user is looking at, so there
-            // is nothing to append to while the import form is up — that form
-            // is how the stack gets built, and the dialog anchored to a view
-            // with no rows offers datasets it cannot open on a level that does
-            // not exist.
-            ...(self.showImportForm
-              ? []
-              : [
-                  {
-                    label: 'Add assembly row...',
-                    icon: AddIcon,
-                    onClick: () => {
-                      getSession(self).queueDialog(handleClose => [
-                        AddRowDialog,
-                        {
-                          handleClose,
-                          model: self,
-                        },
-                      ])
-                    },
-                  },
-                ]),
-            ...removeRowMenuItems(self),
             {
-              label: 'Re-order chromosomes',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ReorderChromosomesDialog,
-                  {
-                    handleClose,
-                    model: self,
+              label: 'Rows',
+              icon: ViewStreamIcon,
+              subMenu: [
+                // A row is appended to the stack the user is looking at, so
+                // there is nothing to append to while the import form is up —
+                // that form is how the stack gets built, and the dialog
+                // anchored to a view with no rows offers datasets it cannot
+                // open on a level that does not exist.
+                ...(self.showImportForm
+                  ? []
+                  : [
+                      {
+                        label: 'Add assembly row...',
+                        icon: AddIcon,
+                        onClick: () => {
+                          getSession(self).queueDialog(handleClose => [
+                            AddRowDialog,
+                            {
+                              handleClose,
+                              model: self,
+                            },
+                          ])
+                        },
+                      },
+                    ]),
+                ...removeRowMenuItems(self),
+                {
+                  label: 'Re-order chromosomes',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      ReorderChromosomesDialog,
+                      {
+                        handleClose,
+                        model: self,
+                      },
+                    ])
                   },
-                ])
-              },
-              icon: ShuffleIcon,
+                  icon: ShuffleIcon,
+                },
+                ...autoScaleMenuItems(self),
+                ...compactViewsMenuItems(self),
+                { type: 'subHeader', label: 'Row menus' },
+                ...rowMenuItems(self),
+              ],
             },
-            ...rowSyncMenuItems(self),
+            ...navigationMenuItems(self),
             ...cigarModeMenuItems(self),
             ...lodMenuItems(self),
             ...offscreenMateMenuItems(self),

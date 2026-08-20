@@ -1,9 +1,8 @@
 import { radioItems } from '@jbrowse/core/ui/menuItems'
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import LinkIcon from '@mui/icons-material/Link'
+import ExploreIcon from '@mui/icons-material/Explore'
 import RemoveIcon from '@mui/icons-material/Remove'
 import WarningIcon from '@mui/icons-material/WarningAmber'
-import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap'
 
 import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
 import { CIGAR_MODE_OPTIONS } from './cigarModes.ts'
@@ -12,10 +11,10 @@ import type { CigarMode } from './types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LodTier } from '@jbrowse/synteny-core'
 
-// The conditional sections of the LinearSyntenyView header menu, each gated on
-// the state that gives it meaning and returning [] when inapplicable so they
-// spread cleanly into the flat list. Kept out of the model so the model's
-// `.views()` block holds only the three menu #methods themselves.
+// The sections of the LinearSyntenyView header menu, each gated on the state
+// that gives it meaning and returning [] when inapplicable so they spread
+// cleanly into the group they belong to. Kept out of the model so the model's
+// `.views()` block holds the menu #methods and the two dialogs it opens.
 //
 // Each takes the narrow structural slice it reads rather than the whole view
 // model: the model chain can then pass `self` with no cast, and each section
@@ -42,46 +41,81 @@ export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
     : []
 }
 
-interface ScaleRowsModel {
+interface NavigationModel {
+  views: { assemblyNames: string[] }[]
   squareView: () => void
   showAllRegions: () => void
   showAllRegionsSameScale: () => void
+  linkViews: boolean
+  followSynteny: boolean
+  followAnchorIndex: number
+  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
+  setFollowAnchorIndex: (idx: number) => void
 }
 
+const ROW_SYNC_MODES = [
+  { value: 'independent', label: 'Independent' },
+  {
+    value: 'link',
+    label: 'Locked together - rows move together pixel-by-pixel',
+  },
+  {
+    // "matching", not "syntenic", because at whole-genome zoom a CIGAR-less
+    // tier is interpolated across the block rather than walked — close enough
+    // to follow by, not a base-level correspondence
+    value: 'follow',
+    label: 'Follow - auto-aligns views together based on visible features',
+  },
+] as const
+
 /**
- * The commands that set zoom across every row at once, together because they
- * are only meaningful against each other: each one answers "what do the rows
- * agree on" differently, and any of them read alone looks like the only way to
- * zoom out.
+ * Everything that decides where the rows are pointed and at what scale: the
+ * three zoom commands that act on every row at once, and the coupling that
+ * decides whether a pan of one row is a pan of the others. One submenu because
+ * they are answers to one question — the zooms set what the rows agree on now,
+ * the coupling sets whether they keep agreeing — and because a reader who has
+ * just squared the view is the reader about to lock it.
  *
- * THE TWO ZOOM-OUTS NEST UNDER ONE "Show all regions", so the shared half of
- * the name is said once and the submenu holds only what differs. Flat, both
- * rows opened with the same four words and the reader had to get to the dash
- * before either row said anything.
+ * FLAT, UNDER SUBHEADERS, rather than a submenu per section. Each section is a
+ * radio group or a pair of commands whose shared half of the name is the
+ * heading, which is what a subheader is for; nesting them would put a row three
+ * popups deep from the hamburger and none of the sections is long enough to
+ * earn that.
  *
- * LABELLED IN THE DOTPLOT'S STYLE — the quantity held equal — because that
- * vocabulary already ships ("Square view - same bp per pixel"). Square view
- * keeps its dash clause even alone at the top level: THIS view's squareView
- * AVERAGES the rows' scales where the dotplot's EQUALIZES them, so a bare
- * "Square view" in both places names two different operations.
+ * The zoom labels are the DOTPLOT'S STYLE — the quantity held equal — because
+ * that vocabulary already ships ("Square view - same bp per pixel"). Square view
+ * keeps its dash clause: THIS view's squareView AVERAGES the rows' scales where
+ * the dotplot's EQUALIZES them, so a bare "Square view" in both places names two
+ * different operations.
  *
- * NOT under "Show...", despite the name: that submenu is visibility toggles and
- * these are navigation gestures. Same call, and the same reasoning, as the
- * LGV's scroll-zoom item.
+ * The three sync modes are MUTUALLY EXCLUSIVE, so a radio group rather than the
+ * two independent checkboxes this would otherwise be. They are exclusive in
+ * substance, not just in presentation: a pixel lock and a synteny follow
+ * disagree about where a row belongs the moment an indel separates them, and
+ * with both on the row is placed twice per pan. The two couplings are told apart
+ * by their dash clauses and nothing else — the whole difference is *by pixels*
+ * vs *by the alignment*, which two bare names next to each other do not carry.
+ *
+ * The anchor picker is offered even for the ordinary two-row view: which
+ * haplotype drives and which follows is exactly the choice someone comparing two
+ * of them wants, and nothing about the pan reveals it.
  */
-export function scaleRowsMenuItems(model: ScaleRowsModel): MenuItem[] {
+export function navigationMenuItems(model: NavigationModel): MenuItem[] {
+  const { linkViews, followSynteny, followAnchorIndex } = model
+  const mode = followSynteny ? 'follow' : linkViews ? 'link' : 'independent'
   return [
     {
-      label: 'Square view - average bp per pixel',
-      icon: CropFreeIcon,
-      onClick: () => {
-        model.squareView()
-      },
-    },
-    {
-      label: 'Show all regions',
-      icon: ZoomOutMapIcon,
+      label: 'Navigation',
+      icon: ExploreIcon,
       subMenu: [
+        {
+          label: 'Square view - average bp per pixel',
+          icon: CropFreeIcon,
+          onClick: () => {
+            model.squareView()
+          },
+        },
+        { type: 'subHeader', label: 'Show all regions' },
         {
           label: 'Each row fit to width',
           onClick: () => {
@@ -94,6 +128,25 @@ export function scaleRowsMenuItems(model: ScaleRowsModel): MenuItem[] {
             model.showAllRegionsSameScale()
           },
         },
+        { type: 'subHeader', label: 'Link views' },
+        ...radioItems(ROW_SYNC_MODES, mode, m => {
+          model.setRowSyncMode(m)
+        }),
+        ...(followSynteny
+          ? [
+              { type: 'subHeader' as const, label: 'Anchor row' },
+              ...radioItems(
+                rowLabels(model.views).map((label, idx) => ({
+                  value: `${idx}`,
+                  label,
+                })),
+                `${followAnchorIndex}`,
+                idx => {
+                  model.setFollowAnchorIndex(Number(idx))
+                },
+              ),
+            ]
+          : []),
       ],
     },
   ]
@@ -118,138 +171,58 @@ export function autoScaleMenuItems(model: AutoScaleModel): MenuItem[] {
     : []
 }
 
-interface GenomeViewsModel {
-  views: { assemblyNames: string[] }[]
+interface RowMenusModel {
+  views: { assemblyNames: string[]; menuItems: () => MenuItem[] }[]
   compactAllViews: () => void
   expandAllViews: () => void
-  isViewCompact: (idx: number) => boolean
-  toggleCompactView: (idx: number) => void
 }
 
-// Per-row compact toggles, worth a submenu only once there are more rows than
-// the two a plain pairwise view has.
-export function genomeViewsMenuItems(model: GenomeViewsModel): MenuItem[] {
+// Collapse or expand every genome row at once, worth offering only once there
+// are more rows than the two a plain pairwise view has — with two, the per-row
+// item next to it does the same thing in the same number of clicks.
+export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
   return model.views.length > 2
     ? [
         {
-          label: 'Genome views',
-          subMenu: [
-            {
-              label: 'Compact all views',
-              onClick: () => {
-                model.compactAllViews()
-              },
-            },
-            {
-              label: 'Expand all views',
-              onClick: () => {
-                model.expandAllViews()
-              },
-            },
-            ...rowLabels(model.views).map((label, idx) => ({
-              label,
-              type: 'checkbox' as const,
-              checked: !model.isViewCompact(idx),
-              onClick: () => {
-                model.toggleCompactView(idx)
-              },
-            })),
-          ],
+          label: 'Compact all views',
+          onClick: () => {
+            model.compactAllViews()
+          },
+        },
+        {
+          label: 'Expand all views',
+          onClick: () => {
+            model.expandAllViews()
+          },
         },
       ]
     : []
 }
 
-interface RowViewMenusModel {
-  views: { assemblyNames: string[]; menuItems: () => MenuItem[] }[]
+/**
+ * The per-row LGV menus, reachable from the synteny view's own menu: each row's
+ * hamburger is otherwise only available from that row's header, which a compact
+ * row doesn't show.
+ *
+ * ONE ROW PER GENOME, which is why the old per-row compact checkboxes are gone:
+ * `isViewCompact` IS the row's `scalebarOnly`, so the checkbox and that row's
+ * own "Collapse to ruler" were two spellings of one toggle listed in two
+ * submenus, under labels that shared nothing.
+ */
+export function rowMenuItems(model: RowMenusModel): MenuItem[] {
+  return rowLabels(model.views).map((label, idx) => ({
+    label,
+    subMenu: model.views[idx]!.menuItems(),
+  }))
 }
 
-// The per-row LGV menus, reachable from the synteny view's own menu: each row's
-// hamburger is otherwise only available from that row's header, which a compact
-// row doesn't show.
-export function rowViewMenuItems(model: RowViewMenusModel): MenuItem[] {
+// The same per-row menus for the app's view menu, where there is no surrounding
+// "Rows" group to sit in and so the name has to carry the whole idea.
+export function rowViewMenuItems(model: RowMenusModel): MenuItem[] {
   return [
     {
       label: 'Row view menus',
-      subMenu: rowLabels(model.views).map((label, idx) => ({
-        label,
-        subMenu: model.views[idx]!.menuItems(),
-      })),
-    },
-  ]
-}
-
-interface RowSyncModel {
-  views: { assemblyNames: string[] }[]
-  linkViews: boolean
-  followSynteny: boolean
-  followAnchorIndex: number
-  setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
-  setFollowAnchorIndex: (idx: number) => void
-}
-
-const ROW_SYNC_MODES = [
-  { value: 'independent', label: 'Independent' },
-  {
-    value: 'link',
-    label: 'Locked together - rows move together pixel-by-pixel',
-  },
-  {
-    // "matching", not "syntenic", because at whole-genome zoom a CIGAR-less
-    // tier is interpolated across the block rather than walked — close enough
-    // to follow by, not a base-level correspondence
-    value: 'follow',
-    label: 'Follow - auto-aligns views together based on visible features',
-  },
-] as const
-
-/**
- * How the genome rows track each other — three MUTUALLY EXCLUSIVE modes, so a
- * radio group rather than the two independent checkboxes this would otherwise
- * be. They are exclusive in substance, not just in presentation: a pixel lock
- * and a synteny follow disagree about where a row belongs the moment an indel
- * separates them, and with both on the row is placed twice per pan. The two
- * couplings are told apart by their dash clauses and nothing else — the whole
- * difference is *by pixels* vs *by the alignment*, which two bare
- * names next to each other do not carry.
- *
- * ONE SUBMENU, ANCHOR ROWS INLINE UNDER A SUBHEADER, rather than a nested
- * "Anchor row" submenu: which row drives is half of what there is to set here,
- * and a second level put it three deep from the hamburger for no gain — the
- * rows are radio rows in the same group style as the modes above them, and
- * only appear when there is a follow for them to anchor.
- *
- * The anchor picker is offered even for the ordinary two-row view: which
- * haplotype drives and which follows is exactly the choice someone comparing
- * two of them wants, and nothing about the pan reveals it.
- */
-export function rowSyncMenuItems(model: RowSyncModel): MenuItem[] {
-  const { linkViews, followSynteny, followAnchorIndex } = model
-  const mode = followSynteny ? 'follow' : linkViews ? 'link' : 'independent'
-  return [
-    {
-      label: 'Link views',
-      icon: LinkIcon,
-      subMenu: [
-        ...radioItems(ROW_SYNC_MODES, mode, m => {
-          model.setRowSyncMode(m)
-        }),
-        ...(followSynteny
-          ? [
-              { type: 'subHeader' as const, label: 'Anchor row' },
-              ...radioItems(
-                rowLabels(model.views).map((label, idx) => ({
-                  value: `${idx}`,
-                  label,
-                })),
-                `${followAnchorIndex}`,
-                idx => {
-                  model.setFollowAnchorIndex(Number(idx))
-                },
-              ),
-            ]
-          : []),
-      ],
+      subMenu: rowMenuItems(model),
     },
   ]
 }
@@ -302,7 +275,7 @@ function formatCount(n: number) {
  * they are deciding how much of what this view cannot draw they want to know
  * about, and the second step costs a query where the first is free.
  *
- * ONE CONTROL, TWO PROPERTIES, which is what `rowSyncMenuItems` above does with
+ * ONE CONTROL, TWO PROPERTIES, which is what `navigationMenuItems` above does with
  * `linkViews`/`followSynteny` and for the same reason. They stay separate
  * properties because they are separate KINDS: `showOffscreenMates` is a
  * repaint — the worker counted and placed those marks whichever way it sits —

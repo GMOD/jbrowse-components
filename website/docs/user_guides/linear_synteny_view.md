@@ -195,26 +195,32 @@ out without spending the color channel.
 
 ## View options
 
-The view's hamburger menu controls how the ribbons are drawn:
+The view's hamburger menu keeps seven rows however many genomes are stacked.
+What varies with the stack is inside **Rows**, and what points the rows is
+inside **Navigation**:
 
-- Show curved lines - draw ribbons as bezier curves instead of straight
-  connectors
-- CIGAR display mode - how per-base insertions and deletions inside each
+- **Rows** - **Add assembly row** to compare three or more assemblies stacked
+  vertically, **Remove bottom row**, **Re-order chromosomes**, and one entry per
+  genome opening that row's own view menu (which is otherwise reachable only
+  from that row's header, and a collapsed row has none)
+- **Navigation** - **Show all regions** zooms every row out to its whole
+  assembly, two ways: **Each row fit to width** gives each row its own scale so
+  it fills its own pane, and **Same bp per pixel** puts all rows on one scale,
+  so a smaller genome draws proportionally shorter instead of being stretched to
+  the same on-screen length as a larger one. **Square view - average bp per
+  pixel** puts every row on the average of the rows' current scales, keeping
+  each row's center. **Link views** decides whether panning one row pans the
+  others, and by what — pixels, or the alignment
+- **CIGAR display mode** - how per-base insertions and deletions inside each
   alignment are shown: **Colored indels** paints them, **Transparent indels**
   leaves them as see-through gaps in the ribbon, and **Off - don't draw CIGAR
   indels** draws each alignment as one solid block. That last one is marked with
   a warning: overlapping blocks run together with nothing to tell them apart,
   and a gap inside a block is painted as though it matched across
-- Show location markers - continue the top panel's scalebar grid down through
-  the ribbons, so each tick shows where a round coordinate up there lands below
-- Show all regions - zoom every row out to its whole assembly, two ways. **Each
-  row fit to width** gives each row its own scale so it fills its own pane;
-  **Same bp per pixel** puts all rows on one scale, so a smaller genome draws
-  proportionally shorter instead of being stretched to the same on-screen length
-  as a larger one
-- Square view - average bp per pixel - put every row on the average of the rows'
-  current scales, keeping each row's center
-- Add assembly row - compare three or more assemblies stacked vertically
+- **Show...** - **Show curved lines** draws ribbons as bezier curves instead of
+  straight connectors, and **Show location markers** continues the top panel's
+  scalebar grid down through the ribbons, so each tick shows where a round
+  coordinate up there lands below
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 

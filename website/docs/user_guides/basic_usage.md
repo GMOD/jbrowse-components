@@ -299,15 +299,16 @@ half triangle.
 ### Track label positioning
 
 Track labels can be positioned on their own row, overlapping the data to save
-vertical space, or hidden entirely, via the view's hamburger menu.
+vertical space, or hidden entirely, from **Show...** in the view's hamburger
+menu.
 
 <Figure caption="The overlap and offset track label positioning options." src="/img/tracklabels.png" />
 
 ### Horizontally flip
 
 The view can be horizontally flipped (reverse complemented), reversing the
-coordinate direction. Triangles in the overview bar indicate the current
-orientation.
+coordinate direction, from **Navigation** in the view's hamburger menu.
+Triangles in the overview bar indicate the current orientation.
 
 <Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" links="Normal orientation=horizontally_flip_before,Flipped=horizontally_flip_after" />
 

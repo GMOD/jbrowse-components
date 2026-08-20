@@ -88,12 +88,12 @@ auto-picked resolution is finer than anything the file holds for that pair, the
 cross-block is absent while the intra-chromosomal triangles still draw. Step
 **Coarser** until it appears.
 
-The same thing scales to the whole genome. **View → Show all regions in
-assembly** puts every chromosome in the view at once, which makes the fetch
-every chromosome against every other one and the drawing a block diagonal: each
-chromosome is a triangle along the bottom edge, each pair of chromosomes is the
-block between their two triangles, and the whole pyramid is the genome against
-itself.
+The same thing scales to the whole genome. **View → Navigation → Show all
+regions in assembly** puts every chromosome in the view at once, which makes the
+fetch every chromosome against every other one and the drawing a block diagonal:
+each chromosome is a triangle along the bottom edge, each pair of chromosomes is
+the block between their two triangles, and the whole pyramid is the genome
+against itself.
 
 <Figure caption="GM12878 in situ Hi-C at its coarsest 2.5 Mb binsize, hg38 chr1 to chrY in one view. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
 

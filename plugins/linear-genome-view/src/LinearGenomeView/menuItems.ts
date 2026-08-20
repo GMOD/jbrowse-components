@@ -1,4 +1,5 @@
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 import {
   SCROLL_ZOOM_HELP,
   SCROLL_ZOOM_LABEL,
@@ -13,8 +14,8 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ExploreIcon from '@mui/icons-material/Explore'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import LabelIcon from '@mui/icons-material/Label'
 import LaunchIcon from '@mui/icons-material/Launch'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -24,7 +25,6 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
-import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap'
 
 import {
   ExportSvgDialog,
@@ -40,6 +40,12 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))
 }
+
+const TRACK_LABEL_OPTIONS = [
+  { value: 'overlapping', label: 'Overlapping' },
+  { value: 'offset', label: 'Offset' },
+  { value: 'hidden', label: 'Hidden' },
+] as const
 
 /**
  * The scroll-to-zoom toggle, shared by the view menu and the header's zoom menu
@@ -76,12 +82,13 @@ export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
  * out 100x" ladder, and it is where someone already zooming looks.
  *
  * The label is the import form's button text verbatim (`ImportForm.tsx`), which
- * is where most people meet the phrase.
+ * is where most people meet the phrase. No icon: the four-arrows glyph it
+ * carried reads as "fullscreen", and every row it sits beside in the zoom menu
+ * is bare.
  */
 export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   return {
     label: 'Show all regions in assembly',
-    icon: ZoomOutMapIcon,
     onClick: () => {
       self.showAllRegionsInAssembly()
     },
@@ -154,21 +161,26 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
       icon: TrackSelectorIcon,
     },
+    // Not under "Show...", which is visibility toggles: these three are
+    // navigation gestures, and each was previously a top-level row filed by
+    // nothing. "Show all regions in assembly" read as a Show... item by its
+    // first word alone, and scroll-to-zoom's label was the only thing naming it,
+    // so it was findable only by someone who already knew it existed.
     {
-      label: 'Horizontally flip',
-      icon: SyncAltIcon,
-      onClick: () => {
-        self.horizontallyFlip()
-      },
+      label: 'Navigation',
+      icon: ExploreIcon,
+      subMenu: [
+        showAllRegionsMenuItem(self),
+        {
+          label: 'Horizontally flip',
+          icon: SyncAltIcon,
+          onClick: () => {
+            self.horizontallyFlip()
+          },
+        },
+        scrollZoomMenuItem(self),
+      ],
     },
-    // top level, not under "Show...": that submenu is visibility toggles, and
-    // these are navigation gestures. Scroll-to-zoom's label was also the only
-    // thing naming it, so it was findable only by someone who already knew it
-    // existed; "Show all regions in assembly" was filed by its first word
-    // rather than by what it does, among eight checkboxes it has nothing in
-    // common with.
-    scrollZoomMenuItem(self),
-    showAllRegionsMenuItem(self),
     {
       label: 'Color CDS by reading frame',
       type: 'checkbox',
@@ -258,39 +270,21 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
               },
             ]
           : []),
-      ],
-    },
-    {
-      label: 'Track labels',
-      icon: LabelIcon,
-      subMenu: [
-        {
-          label: 'Overlapping',
-          icon: VisibilityIcon,
-          type: 'radio',
-          checked: self.effectiveTrackLabels === 'overlapping',
-          onClick: () => {
-            self.setTrackLabels('overlapping')
+        // Where a track's name is drawn, and "Hidden" is one of the three
+        // answers, so this is a visibility setting like everything above it.
+        // Inline under a subheader rather than in a submenu of its own: it was a
+        // top-level row for three radios, and nesting it here instead would have
+        // put those radios a popup further from the hamburger than they were.
+        // The icons went with it — all three rows carried the same one, which
+        // told a reader nothing about which to pick.
+        { type: 'subHeader', label: 'Track labels' },
+        ...radioItems(
+          TRACK_LABEL_OPTIONS,
+          self.effectiveTrackLabels,
+          setting => {
+            self.setTrackLabels(setting)
           },
-        },
-        {
-          label: 'Offset',
-          icon: VisibilityIcon,
-          type: 'radio',
-          checked: self.effectiveTrackLabels === 'offset',
-          onClick: () => {
-            self.setTrackLabels('offset')
-          },
-        },
-        {
-          label: 'Hidden',
-          icon: VisibilityIcon,
-          type: 'radio',
-          checked: self.effectiveTrackLabels === 'hidden',
-          onClick: () => {
-            self.setTrackLabels('hidden')
-          },
-        },
+        ),
       ],
     },
   ]
