@@ -13,11 +13,7 @@ import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
-import type {
-  RpcStatus,
-  StatusCallback,
-  StatusStream,
-} from '@jbrowse/core/util'
+import type { RpcStatus, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
