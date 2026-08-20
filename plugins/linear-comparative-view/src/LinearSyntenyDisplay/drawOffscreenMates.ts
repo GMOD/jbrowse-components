@@ -42,6 +42,17 @@ const LABEL_BASELINE_PX = 16
 // annotation a reader wanted.
 const LABEL_MERGE_GAP_PX = 20
 
+// Line pitch when a stretch's label cannot go on the row above it.
+const LABEL_ROW_PX = 12
+
+// How deep the labels may stack. The case this whole feature exists for is one
+// query segment with SEVERAL counterparts — peach chr1 has about three grape
+// chromosomes over each of its segments — so those stretches overlap in x by
+// construction, and one row of labels can only ever name one of them. Three
+// rows names the paleohexaploid case; past that the band is a wall of grey text
+// over the ribbons, and a stretch with nowhere to go goes unlabelled.
+const MAX_LABEL_ROWS = 3
+
 // One source for both surfaces. The screen overlay and the SVG export run the
 // same draw, and a figure whose stubs are a different grey from the ones the
 // user turned on is a difference nothing would report.
@@ -97,6 +108,70 @@ function labelRuns(
     }
   }
   return runs
+}
+
+interface PlacedLabel {
+  refName: string
+  x: number
+  y: number
+}
+
+/**
+ * Where each stretch's name goes, on the first row it does not collide on.
+ *
+ * TWO STRETCHES CAN COVER THE SAME PIXELS, and in the case this feature exists
+ * for they usually do: a query segment with three counterparts is three runs
+ * over one span. Drawn on one baseline they land within a few pixels of each
+ * other, the last one's halo erases the two before it, and the figure then names
+ * one contig where three apply — with nothing to say two are missing.
+ *
+ * Placement is left to right so it does not depend on the adapter's order, and a
+ * stretch with no free row goes unlabelled rather than on top of another name.
+ */
+function placeLabels(
+  runs: LabelRun[],
+  measure: (text: string) => number,
+  height: number,
+): PlacedLabel[] {
+  const maxRows = Math.max(
+    1,
+    Math.min(
+      MAX_LABEL_ROWS,
+      Math.floor((height - LABEL_BASELINE_PX) / LABEL_ROW_PX) + 1,
+    ),
+  )
+  const rows: { x: number; end: number }[][] = []
+  const placed: PlacedLabel[] = []
+  for (const run of [...runs].sort((a, b) => a.x - b.x)) {
+    const textWidth = measure(run.refName)
+    if (textWidth + MIN_LABEL_PADDING_PX > run.end - run.x) {
+      continue
+    }
+    const x = run.x + (run.end - run.x - textWidth) / 2
+    // the padding is the gap between neighbours as well as the fit test, so a
+    // row's labels never touch
+    const box = {
+      x: x - MIN_LABEL_PADDING_PX / 2,
+      end: x + textWidth + MIN_LABEL_PADDING_PX / 2,
+    }
+    let row = 0
+    while (
+      row < maxRows &&
+      rows[row]?.some(b => box.x < b.end && b.x < box.end)
+    ) {
+      row++
+    }
+    if (row >= maxRows) {
+      continue
+    }
+    ;(rows[row] ??= []).push(box)
+    placed.push({
+      refName: run.refName,
+      x,
+      y: LABEL_BASELINE_PX + row * LABEL_ROW_PX,
+    })
+  }
+  return placed
 }
 
 export interface OffscreenMateLayout {
@@ -276,13 +351,13 @@ export function drawOffscreenMates(
   ctx.lineWidth = LABEL_HALO_PX
   ctx.lineJoin = 'round'
   ctx.strokeStyle = haloColor
-  for (const run of labelRuns(rects, data)) {
-    const textWidth = ctx.measureText(run.refName).width
-    if (textWidth + MIN_LABEL_PADDING_PX > run.end - run.x) {
-      continue
-    }
-    const x = run.x + (run.end - run.x - textWidth) / 2
-    ctx.strokeText(run.refName, x, LABEL_BASELINE_PX)
-    ctx.fillText(run.refName, x, LABEL_BASELINE_PX)
+  const labels = placeLabels(
+    labelRuns(rects, data),
+    text => ctx.measureText(text).width,
+    layout.height,
+  )
+  for (const { refName, x, y } of labels) {
+    ctx.strokeText(refName, x, y)
+    ctx.fillText(refName, x, y)
   }
 }

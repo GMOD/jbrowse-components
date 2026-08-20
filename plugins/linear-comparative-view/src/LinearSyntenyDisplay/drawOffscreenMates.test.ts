@@ -343,3 +343,69 @@ test('the same draw emits stubs and labels through SvgCanvas', () => {
   expect(out.match(/<text/g)).toHaveLength(2)
   expect(out).toContain('ctgB')
 })
+
+// The case the whole feature exists for is one query segment with SEVERAL
+// counterparts — peach chr1 has about three grape chromosomes over each of its
+// segments — so those stretches cover the same pixels by construction. On one
+// baseline they land within a few pixels of each other and the last one's halo
+// erases the two before it, which is a figure naming one contig where three
+// apply, with nothing to say two are missing.
+function interleaved(contigs: string[], n = 300) {
+  const spans: [number, number][] = []
+  const names: string[] = []
+  for (let i = 0; i < n; i++) {
+    spans.push([i * 1000, i * 1000 + 900])
+    names.push(contigs[i % contigs.length]!)
+  }
+  return data(spans, names)
+}
+
+test('three contigs over one stretch are named on three rows, not one', () => {
+  const { ctx, texts } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    bpPerPx: 300,
+    width: 1500,
+    height: 100,
+    data: interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC']),
+  })
+  expect(texts.map(t => t.text).sort()).toEqual(['ctgAAA', 'ctgBBB', 'ctgCCC'])
+  expect(new Set(texts.map(t => t.y)).size).toBe(3)
+})
+
+// ...and a fourth has nowhere left to go, so it is dropped rather than drawn
+// over a name already there.
+test('a stretch with no free row goes unlabelled', () => {
+  const { ctx, texts } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    bpPerPx: 300,
+    width: 1500,
+    height: 100,
+    data: interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC', 'ctgDDD']),
+  })
+  expect(texts).toHaveLength(3)
+  const boxes = texts.map(t => ({ ...t, w: t.text.length * CHAR_PX }))
+  for (const a of boxes) {
+    for (const b of boxes) {
+      if (a !== b && a.y === b.y) {
+        expect(a.x >= b.x + b.w || b.x >= a.x + a.w).toBe(true)
+      }
+    }
+  }
+})
+
+// A compact band has no room to stack into, and the rows must not run past it
+// into the view below.
+test('a short band keeps the labels on one row', () => {
+  const { ctx, texts } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    bpPerPx: 300,
+    width: 1500,
+    height: 18,
+    data: interleaved(['ctgAAA', 'ctgBBB', 'ctgCCC']),
+  })
+  expect(new Set(texts.map(t => t.y)).size).toBe(1)
+  expect(texts).toHaveLength(1)
+})
