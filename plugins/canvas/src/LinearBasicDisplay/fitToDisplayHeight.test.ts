@@ -387,6 +387,21 @@ describe('canvas display fit-to-display-height', () => {
     expect(display.growTargetHeight).toBe(50)
   })
 
+  // ...but the `maxHeight` ceiling still wins over that floor. The floor is a
+  // guess about what makes a usable track; the slot is an instruction. Ordered
+  // the other way (a bare `clamp`, whose floor is tested first) a track capped
+  // below 50px grew past the cap it was given.
+  it('growTargetHeight honors a maxHeight below the floor', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    setConf(display, 'maxHeight', 30)
+    expect(display.growTargetHeight).toBe(30)
+
+    display.setRpcData(0, stackedRegionData(12, 20), ctgA)
+    expect(display.settledMaxY).toBeGreaterThan(30)
+    expect(display.growTargetHeight).toBe(30)
+  })
+
   // Grow drives `height` from the laid-out content reactively — via the `height`
   // getter, NOT by writing the height config slot. So a settled zoom in grow mode
   // never mutates the persisted session (no autosave churn) nor bakes a momentary

@@ -13,7 +13,6 @@ import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
   canonicalizeViewRefName,
-  clamp,
   createStatusFanOut,
   getContainingView,
   getSession,
@@ -1666,7 +1665,14 @@ export default function baseStateModelFactory(
         // `grownHeight`, the `height` override and the grow-aware `resizeHeight`
         // all come from the mixin.
         get growTargetHeight() {
-          return clamp(this.settledMaxY, MIN_GROW_HEIGHT, self.maxHeight)
+          // Ceiling last, so a `maxHeight` configured below MIN_GROW_HEIGHT
+          // still wins: `clamp` tests its floor first and would hand back a
+          // height above the cap the config asked for. The floor is a guess
+          // about usable tracks, the ceiling is an instruction.
+          return Math.min(
+            self.maxHeight,
+            Math.max(MIN_GROW_HEIGHT, this.settledMaxY),
+          )
         },
 
         /**
