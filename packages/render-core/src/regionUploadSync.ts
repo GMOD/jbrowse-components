@@ -5,9 +5,8 @@ interface RegionUploadTarget<T> {
 
 /**
  * Incremental whole-map GPU upload, and **the one diff every per-region upload
- * in the tree runs on**: displays whose data is a single MobX computed that
- * re-clones the map on any change (canvas, alignments) call it directly, and
- * `installPerRegionLifecycle` calls it underneath an encode step (ADR-078).
+ * in the tree runs on**: `installPerRegionLifecycle` calls it underneath an
+ * encode step (ADR-078), for every per-region display there is.
  *
  * The returned function diffs the current map against the last upload by
  * reference and:
@@ -23,8 +22,11 @@ interface RegionUploadTarget<T> {
  * memoizes per ref-group). With an always-fresh map every region re-uploads,
  * which is correct but defeats the optimization.
  *
- * Hold one instance per backend lifecycle (call from `startRenderingBackend`); the
- * closure keeps the last-uploaded references.
+ * **A display does not hold one of these.** {@link installPerRegionLifecycle}
+ * owns it, built inside the `attachRenderingBackend` setup thunk so the closure
+ * keeping the last-uploaded references lives exactly as long as the callbacks
+ * that read it — which is what makes the backend swap above the only way it is
+ * ever dropped.
  *
  * @see regionUploadSync.test.ts — covers the reference-diff skip, prune, and
  * backend-swap re-upload paths.

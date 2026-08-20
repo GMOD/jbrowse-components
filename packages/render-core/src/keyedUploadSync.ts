@@ -21,21 +21,14 @@ interface KeyedUploadTarget<T> {
  * A backend swap (context-loss recovery hands back a fresh one with empty GPU
  * buffers) drops the memo, so the next run re-uploads every key.
  *
- * Hold one instance per backend lifecycle — create it in
- * `startRenderingBackend` *outside* the `attachRenderingBackend` call, since
- * the mixin captures the callbacks from the first call only:
+ * **A display does not hold one of these.** {@link installKeyedLifecycle} owns
+ * it, built inside the `attachRenderingBackend` setup thunk so the memo lives
+ * exactly as long as the callbacks that read it — which is what makes the
+ * backend-swap clause above the only way it is ever dropped. A display declares
+ * `entries` and `render` and never sees this function.
  *
- * ```ts
- * startRenderingBackend(backend: DotplotRenderingBackend) {
- *   const syncUpload = createKeyedUploadSync<DotplotGeometryData, DotplotRenderingBackend>()
- *   self.attachRenderingBackend(backend, {
- *     upload: b => { syncUpload(b, self.geometryByDisplayKey) },
- *     render: …,
- *   })
- * }
- * ```
- *
- * @see keyedUploadSync.test.ts
+ * @see keyedUploadSync.test.ts for the diff, installKeyedLifecycle.ts for the
+ * only caller.
  */
 export function createKeyedUploadSync<T, B extends KeyedUploadTarget<T>>() {
   const uploaded = new Map<number, T>()

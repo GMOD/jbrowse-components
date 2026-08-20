@@ -16,19 +16,21 @@
  * hands back a fresh one with empty GPU buffers) drops every memo, so the next
  * run re-uploads all slots.
  *
- * Hold one instance per backend lifecycle — create it in `startRenderingBackend`
- * *outside* the `attachRenderingBackend` call, since the mixin captures the
- * callbacks from the first call only and the closure must outlive them:
+ * **A display does not hold one of these.** {@link installGlobalLifecycle} owns
+ * it, built inside the `attachRenderingBackend` setup thunk so the memo lives
+ * exactly as long as the callbacks that read it — which is what makes the
+ * backend-swap clause above the only way it is ever dropped. A display declares
+ * `upload` and `render`, and reaches the slots through the `slot` argument that
+ * installer hands it:
  *
  * ```ts
  * startRenderingBackend(backend: HicRenderingBackend) {
- *   const syncUpload = createGlobalUploadSync<HicRenderingBackend>()
- *   self.attachRenderingBackend(backend, {
- *     upload: b => {
- *       syncUpload(b, 'data', self.rpcData, (bb, data) => {
+ *   installGlobalLifecycle<HicRenderingBackend>(self, backend, {
+ *     upload: (b, slot) => {
+ *       slot('data', self.rpcData, (bb, data) => {
  *         if (data) { bb.uploadData(data) }
  *       })
- *       syncUpload(b, 'colorRamp', self.colorScheme, (bb, scheme) => {
+ *       slot('colorRamp', self.colorScheme, (bb, scheme) => {
  *         bb.uploadColorRamp(generateColorRamp(scheme))
  *       })
  *     },
@@ -42,7 +44,8 @@
  * it, the same hazard `installGlobalFetchAutorun` documents for its trigger
  * list. Let the `upload` callback handle the empty case instead.
  *
- * @see globalUploadSync.test.ts
+ * @see globalUploadSync.test.ts for the diff, installGlobalLifecycle.ts for the
+ * only caller.
  */
 export function createGlobalUploadSync<B>() {
   const uploaded = new Map<string, unknown>()
