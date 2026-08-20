@@ -83,6 +83,14 @@ the same region set the first fetch was handed. `bidirectionalFetch.test.ts`
 pins it, including the case a join would have had to catch: the same alignment
 returned from both perspectives with two unrelated ids.
 
+**Confirmed against the running app**, which is where a predicate like that can
+still be wrong for reasons no unit test reaches:
+`BIDIRECTIONAL=1 node website/scripts/probe-offscreen-mates.ts` on the
+grape/peach figure's own view reports 2767 marks on the query axis and **74 on
+the target axis, all to peach `NC_034012.1`** — the same 74 this doc measured
+offline for the reverse stacking, arrived at down a completely different path.
+The probe reports either lane.
+
 **The adapters already answer from either side.** `PairwiseAdapterBase.sideFor`
 picks the side off the queried region's own `assemblyName`, `orientPafRecord`
 orients the row to it, and `orientAlignment` swaps the indel CIGAR

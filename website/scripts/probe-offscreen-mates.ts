@@ -19,6 +19,11 @@
 // into one lives in `LevelSyntenyCanvas`, whose rendering backend no jsdom test
 // stands up. The hover is measured against the LEVEL canvas rather than the
 // overlay, so the two disagreeing shows up here as a miss.
+//
+// BOTH LANES. `SPEC=<name>` picks the figure to load; `BIDIRECTIONAL=1` turns
+// the second fetch on afterwards and waits for it, which is the only way to see
+// the target-axis lane at all — no committed figure has it on, and what it
+// holds is the class no single-axis fetch can produce.
 import {
   BASE_CHROME_ARGS,
   createTestServer,
@@ -32,9 +37,10 @@ import { captureUrl } from './screenshot-ready.ts'
 import { specs } from './screenshot-specs.ts'
 
 const PORT = 3413
-const spec = specs.find(s => s.name === 'synteny_offscreen_mates_on')
+const SPEC = process.env.SPEC ?? 'synteny_offscreen_mates_on'
+const spec = specs.find(s => s.name === SPEC)
 if (!spec || spec.mode !== 'url') {
-  throw new Error('synteny_offscreen_mates_on is not a url spec')
+  throw new Error(`${SPEC} is not a url spec`)
 }
 
 const server = await createTestServer(PORT, {
@@ -51,103 +57,120 @@ const browser = await launch({
     deviceScaleFactor: 2,
   },
 })
+const sides = process.env.BIDIRECTIONAL ? ['query', 'target'] : ['query']
+
 try {
   const page = await browser.newPage()
   await captureUrl(page, spec, PORT)
   await waitForAppSettled(page)
 
-  const out = await page.evaluate(() => {
-    const view = (window as any).JBrowseSession.views[0]
-    const display = view.levels[0].linearSyntenyDisplays[0]
-    const data = display.featureData?.offscreenMates
-    const { bpPerPx, offsetPx } = view.views[0]
-    const ctx = document.createElement('canvas').getContext('2d')!
-    ctx.font = '10px sans-serif'
+  if (process.env.BIDIRECTIONAL) {
+    await page.evaluate(() => {
+      ;(window as any).JBrowseSession.views[0].setBidirectionalFetch(true)
+    })
+    await waitForAppSettled(page)
+  }
 
-    // one stretch per run of marks to one contig closer together than a couple
-    // of its own names — the merge drawOffscreenMates does before it decides
-    // what to name, in labels rather than pixels so it holds at every zoom
-    const MERGE_GAP_LABELS = 2
-    const per = new Map<string, { x: number; end: number }[]>()
-    for (let i = 0; i < (data?.starts.length ?? 0); i++) {
-      const name = data.mateRefNameDict[data.mateRefNameIds[i]] as string
-      const x1 = data.starts[i] / bpPerPx - offsetPx
-      const x2 = data.ends[i] / bpPerPx - offsetPx
-      if (x2 < 0 || x1 > view.width) {
-        continue
+  for (const side of sides) {
+    const out = await page.evaluate((side: string) => {
+      const view = (window as any).JBrowseSession.views[0]
+      const display = view.levels[0].linearSyntenyDisplays[0]
+      const target = side === 'target'
+      const data = target
+        ? display.featureData?.targetOffscreenMates
+        : display.featureData?.offscreenMates
+      // the axis the lane is placed against: its own row, never the other one
+      const { bpPerPx, offsetPx } = view.views[target ? 1 : 0]
+      const ctx = document.createElement('canvas').getContext('2d')!
+      ctx.font = '10px sans-serif'
+
+      // one stretch per run of marks to one contig closer together than a couple
+      // of its own names — the merge drawOffscreenMates does before it decides
+      // what to name, in labels rather than pixels so it holds at every zoom
+      const MERGE_GAP_LABELS = 2
+      const per = new Map<string, { x: number; end: number }[]>()
+      for (let i = 0; i < (data?.starts.length ?? 0); i++) {
+        const name = data.mateRefNameDict[data.mateRefNameIds[i]] as string
+        const x1 = data.starts[i] / bpPerPx - offsetPx
+        const x2 = data.ends[i] / bpPerPx - offsetPx
+        if (x2 < 0 || x1 > view.width) {
+          continue
+        }
+        let list = per.get(name)
+        if (!list) {
+          list = []
+          per.set(name, list)
+        }
+        list.push({ x: x1, end: x1 + Math.max(1.5, x2 - x1) })
       }
-      let list = per.get(name)
-      if (!list) {
-        list = []
-        per.set(name, list)
-      }
-      list.push({ x: x1, end: x1 + Math.max(1.5, x2 - x1) })
-    }
-    const stretches: { refName: string; x: number; span: number }[] = []
-    for (const [name, list] of per) {
-      list.sort((a, b) => a.x - b.x)
-      const mergeGap = ctx.measureText(name).width * MERGE_GAP_LABELS
-      const runs: { x: number; end: number }[] = []
-      for (const r of list) {
-        const last = runs.at(-1)
-        if (last && r.x - last.end <= mergeGap) {
-          last.end = Math.max(last.end, r.end)
-        } else {
-          runs.push({ ...r })
+      const stretches: { refName: string; x: number; span: number }[] = []
+      for (const [name, list] of per) {
+        list.sort((a, b) => a.x - b.x)
+        const mergeGap = ctx.measureText(name).width * MERGE_GAP_LABELS
+        const runs: { x: number; end: number }[] = []
+        for (const r of list) {
+          const last = runs.at(-1)
+          if (last && r.x - last.end <= mergeGap) {
+            last.end = Math.max(last.end, r.end)
+          } else {
+            runs.push({ ...r })
+          }
+        }
+        for (const r of runs) {
+          // clipped to the window, as placeLabels is: a stretch wider than the
+          // view is named over the part in view, so predicting from its full span
+          // would call a label placed and put it somewhere the figure has none
+          const x = Math.max(r.x, 0)
+          stretches.push({
+            refName: name,
+            x,
+            span: Math.min(r.end, view.width) - x,
+          })
         }
       }
-      for (const r of runs) {
-        // clipped to the window, as placeLabels is: a stretch wider than the
-        // view is named over the part in view, so predicting from its full span
-        // would call a label placed and put it somewhere the figure has none
-        const x = Math.max(r.x, 0)
-        stretches.push({
-          refName: name,
-          x,
-          span: Math.min(r.end, view.width) - x,
-        })
+      stretches.sort((a, b) => a.x - b.x)
+
+      const canvas = document.querySelector<HTMLCanvasElement>(
+        '[data-testid="offscreen_mate_overlay"]',
+      )
+      const box = canvas?.getBoundingClientRect()
+      return {
+        width: view.width as number,
+        placed: data?.starts.length ?? 0,
+        tally: (target
+          ? display.targetOffscreenMateTally
+          : display.offscreenMateTally) as { refName: string; count: number }[],
+        overlay:
+          canvas && box
+            ? {
+                css: `${Math.round(box.width)}x${Math.round(box.height)}`,
+                backing: `${canvas.width}x${canvas.height}`,
+              }
+            : undefined,
+        stretches: stretches.map(s => ({
+          refName: s.refName,
+          x: Math.round(s.x),
+          span: Math.round(s.span),
+          named: ctx.measureText(s.refName).width + 6 <= s.span,
+        })),
       }
-    }
-    stretches.sort((a, b) => a.x - b.x)
+    }, side)
 
-    const canvas = document.querySelector<HTMLCanvasElement>(
-      '[data-testid="offscreen_mate_overlay"]',
-    )
-    const box = canvas?.getBoundingClientRect()
-    return {
-      width: view.width as number,
-      placed: data?.starts.length ?? 0,
-      tally: view.offscreenMateTally as { refName: string; count: number }[],
-      overlay:
-        canvas && box
-          ? {
-              css: `${Math.round(box.width)}x${Math.round(box.height)}`,
-              backing: `${canvas.width}x${canvas.height}`,
-            }
-          : undefined,
-      stretches: stretches.map(s => ({
-        refName: s.refName,
-        x: Math.round(s.x),
-        span: Math.round(s.span),
-        named: ctx.measureText(s.refName).width + 6 <= s.span,
-      })),
+    console.log(`${side} axis: ${out.width}px wide, ${out.placed} marks placed`)
+    // the CSS box is what has to match the band; the backing store is DPR-scaled
+    // and is always the larger of the two
+    console.log(`overlay canvas: ${JSON.stringify(out.overlay)}`)
+    console.log('drops per contig:')
+    for (const e of out.tally) {
+      console.log(`  ${e.refName.padEnd(14)} ${String(e.count).padStart(6)}`)
     }
-  })
-
-  console.log(`view ${out.width}px wide, ${out.placed} marks placed`)
-  // the CSS box is what has to match the band; the backing store is DPR-scaled
-  // and is always the larger of the two
-  console.log(`overlay canvas: ${JSON.stringify(out.overlay)}`)
-  console.log('drops per contig:')
-  for (const e of out.tally) {
-    console.log(`  ${e.refName.padEnd(14)} ${String(e.count).padStart(6)}`)
-  }
-  console.log('stretches, left to right:')
-  for (const s of out.stretches) {
-    console.log(
-      `  ${s.refName.padEnd(14)} x=${String(s.x).padStart(5)} ` +
-        `span=${String(s.span).padStart(5)}px ${s.named ? 'NAMED' : ''}`,
-    )
+    console.log('stretches, left to right:')
+    for (const s of out.stretches) {
+      console.log(
+        `  ${s.refName.padEnd(14)} x=${String(s.x).padStart(5)} ` +
+          `span=${String(s.span).padStart(5)}px ${s.named ? 'NAMED' : ''}`,
+      )
+    }
   }
 
   // The widest single mark on screen, which on this view is under 2px — so this
