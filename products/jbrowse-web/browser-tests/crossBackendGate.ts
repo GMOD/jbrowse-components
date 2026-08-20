@@ -185,61 +185,19 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // it was a separate connector bug; the equal figures refuted that before it
   // landed.
   { match: 'inversion-pbsim', threshold: 0.1 },
-  // The only synteny pair that has ever drifted, and the first entry here that
-  // is a CURVE-mode effect rather than a pileup one. 1.58% against the 1.5%
-  // default, identical under swiftshader and on a real GPU.
+  // NO SYNTENY ENTRY, and there was one — `hs1-mm39-synteny-clean-ribbon` at 2%,
+  // the only synteny pair that ever drifted and the only curve-mode entry this
+  // list has held. It sat at 1.58% against the 1.5% default and is now 0.64%
+  // (measured, this gate, both backends under swiftshader), so there is nothing
+  // left for a special case to accommodate.
   //
-  // Whole-genome hs1/mm39 is 2.23 Mbp/px, so the 500kb minimum alignment is
-  // 0.22px wide and every ribbon takes the sub-pixel path: a ~1px band whose
-  // ALPHA carries how much of a pixel it really covers (thinWidthFade). The GPU
-  // computes that per fragment from the LOCAL perpendicular width; Canvas2D
-  // computes it once per ribbon off the centerline chord (ribbonPerpWidth).
-  // Those are the same number in straight mode and not on a bezier, whose
-  // tangent is vertical at both ends and twice the chord slope at the middle —
-  // so a rearranged block is at its widest perpendicular exactly where it meets
-  // the frame, and one number per ribbon cannot say that.
-  //
-  // Three measurements, each varying one thing (probe-synteny-backend-drift.ts):
-  //
-  //   hs1/mm39 diagonalized       curves 1.54%   straight 0.53%
-  //   hs1/mm39 NOT diagonalized   curves 1.72%   straight 0.44%
-  //   grape/peach, same settings  curves 0.00%   straight 0.01%
-  //
-  // Re-measured after `ribbonMaxPerpWidth` split the fill-vs-stroke branch off
-  // this number (one build either side of that line, everything else held):
-  //
-  //   hs1/mm39 diagonalized       curves 0.57%   straight 0.58%
-  //   hs1/mm39 NOT diagonalized   curves 0.78%   straight 0.47%
-  //   grape/peach, same settings  curves 0.01%   straight 0.01%
-  //
-  // Most of what the three rows above measured was the branch, not the fade: the
-  // diagonalized view no longer tells the two modes apart. THE THRESHOLD BELOW IS
-  // UNCHANGED because it gates a targeted screenshot pair rather than this probe's
-  // view — tighten it from a gate run, not from these figures.
-  //
-  // Turning curves off at identical data and ribbon count takes 3/4 of it, and
-  // making the ribbons steeper moves the two modes in OPPOSITE directions —
-  // worse curved, better straight, because steeper drives both models further
-  // below WIDTH_FADE_FLOOR where they agree again. probe-synteny-thin-fade.ts
-  // is the two models side by side with no browser: 1.42-1.47x apart at a
-  // rearranged ribbon's ends, 1.00x in straight mode, and 1.00x for grape/peach
-  // at any slope because 0.006px floors both. That is the whole of it.
-  //
-  // Only the ALPHA is left here. The same one number also decided fill vs
-  // centerline-stroke, and through that pickability — see `ribbonMaxPerpWidth`,
-  // which split that half off. It does not move this measurement: every ribbon
-  // in this view is 0.22px wide, so the branch is the stroke one either way.
-  //
-  // NOT a bug to fix on the GPU side: the local width is the more honest
-  // statement of what that pixel row covers, and Canvas2D is the approximation.
-  // Closing it there means stroking the centerline in N pieces at N alphas
-  // instead of one `ctx.stroke()`, in the loop `StyleCache` exists because
-  // `rgba()` construction alone cost >100ms at 500k instances. Filed in
-  // agent-docs/TODO.md; 2%, with the gap understood rather than mysterious.
-  //
-  // Matches `fullpage_` too (0.68%, already under the default) — same drawing,
-  // smaller share of the frame.
-  { match: 'hs1-mm39-synteny-clean-ribbon', threshold: 0.02 },
+  // What it was accommodating was `ribbonPerpWidth` deciding fill-vs-stroke as
+  // well as the sub-pixel alpha: a curved ribbon wide at both ends and pinched in
+  // the middle measured under a pixel by the chord and came out a 1px hairline on
+  // Canvas2D against a filled band on the GPU. `ribbonMaxPerpWidth` split that
+  // decision off. The residual is the alpha half — real, understood, and parked
+  // with its numbers in agent-docs/TODO.md — and it no longer needs its own line
+  // here. Don't re-add one without a gate run saying which pair wants it.
 ]
 
 function thresholdFor(name: string) {

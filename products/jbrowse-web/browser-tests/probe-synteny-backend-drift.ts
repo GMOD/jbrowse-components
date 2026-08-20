@@ -6,6 +6,15 @@
 //
 //   --curves / --straight   drawCurves (default: both, reported side by side)
 //   --dataset=hs1|grape     which whole-genome pair
+//   --loc=<a>,<b>           zoom the two rows to these loci instead of showing
+//                           the whole genomes. THE REGIME THE WHOLE-GENOME
+//                           DEFAULT CANNOT REACH: at 2.23 Mbp/px every ribbon is
+//                           sub-pixel, so every ribbon takes the same drawing
+//                           branch in both backends and anything that turns on
+//                           which branch a ribbon takes measures zero here. A
+//                           zoomed rearrangement is where blocks are wide enough
+//                           to be filled and steep enough for the two measures of
+//                           "how thick is this" to disagree.
 //   --out=<dir>             also write the captures
 import fs from 'node:fs'
 import path from 'node:path'
@@ -42,6 +51,10 @@ if (minlenArg) {
   ;(rest as { minAlignmentLength: number }).minAlignmentLength =
     Number(minlenArg)
 }
+// Two comma-separated loci, one per row, in the order the dataset lists its
+// assemblies. Left unset the rows show their whole assemblies, which is what
+// every entry in the cross-backend gate does.
+const locs = arg('loc')?.split(',')
 const outDir = arg('out')
 if (outDir) {
   fs.mkdirSync(outDir, { recursive: true })
@@ -58,6 +71,7 @@ async function capture(drawCurves: boolean, backend: 'canvas2d' | 'webgl') {
   const view = {
     type: 'LinearSyntenyView',
     ...rest,
+    views: rest.views.map((v, i) => (locs?.[i] ? { ...v, loc: locs[i] } : v)),
     drawCurves,
     autoDiagonalize: !args.includes('--no-diagonalize'),
     colorBy: 'query',
@@ -99,7 +113,8 @@ async function capture(drawCurves: boolean, backend: 'canvas2d' | 'webgl') {
 
 console.log(
   `dataset ${key}, minAlignmentLength ${rest.minAlignmentLength}, ` +
-    `autoDiagonalize ${!args.includes('--no-diagonalize')}`,
+    `autoDiagonalize ${!args.includes('--no-diagonalize')}` +
+    (locs ? `, loc ${locs.join(' / ')}` : ', whole genome'),
 )
 for (const drawCurves of modes) {
   const c2d = await capture(drawCurves, 'canvas2d')
