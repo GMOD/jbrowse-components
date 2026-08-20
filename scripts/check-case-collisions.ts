@@ -20,15 +20,17 @@
 // Test files are included even though the ESM build excludes them: the pair is
 // just as confusing to a reader and to an editor's file switcher, and the same
 // rename fixes it.
+//
+// The decision is in `caseCollisions.ts`, with its own tests. This file only
+// supplies the paths and prints.
 
 import { execFileSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+import { findCaseCollisions } from './caseCollisions.ts'
 
-// What tsc (and bundlers) compile to a shared output name.
-const COMPILED = /\.(?:[cm]?tsx?|[cm]?jsx?)$/
+const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 
 const tracked = execFileSync('git', ['ls-files', '-z'], {
   cwd: root,
@@ -38,24 +40,7 @@ const tracked = execFileSync('git', ['ls-files', '-z'], {
   .split('\0')
   .filter(Boolean)
 
-// dir + lowercased stem -> the spellings actually on disk
-const byFoldedStem = new Map<string, Set<string>>()
-for (const path of tracked) {
-  if (!COMPILED.test(path)) {
-    continue
-  }
-  const stem = path.replace(COMPILED, '')
-  const spellings = byFoldedStem.get(stem.toLowerCase())
-  if (spellings) {
-    spellings.add(stem)
-  } else {
-    byFoldedStem.set(stem.toLowerCase(), new Set([stem]))
-  }
-}
-
-const collisions = [...byFoldedStem.values()]
-  .filter(spellings => spellings.size > 1)
-  .map(spellings => [...spellings].sort())
+const { stems, collisions } = findCaseCollisions(tracked)
 
 if (collisions.length > 0) {
   console.error(
@@ -68,6 +53,4 @@ if (collisions.length > 0) {
   process.exit(1)
 }
 
-console.log(
-  `${byFoldedStem.size} compiled module name(s); none differ only by case`,
-)
+console.log(`${stems} compiled module name(s); none differ only by case`)
