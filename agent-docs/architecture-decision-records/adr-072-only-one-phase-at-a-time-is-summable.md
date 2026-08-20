@@ -1,13 +1,26 @@
 ---
-status: Accepted
-summary: 'aggregateStatus sums only the concurrent operations in the same phase; the rest are charged as unmeasured'
+status: Superseded
+summary: 'One phase at a time is summable and the rest are charged as unmeasured — that half stands. Which phase is no longer the one holding the most slots: ADR-080 takes the earliest the batch is still in, because a majority changes hands as regions cross and the label went back and forth with it'
 ---
 
 # ADR-072: Only operations in the same phase are summable
 
 ## Status
 
-Accepted
+**Superseded on which phase wins; the incommensurability half stands.**
+
+Phases are still not summable across, one of them is still the only one summed,
+and every other in-flight slot is still charged the mean. What ADR-080 replaces
+is the sentence below that picks it: *"the phase most of them are in"*. A count
+changes hands as regions cross a boundary and changes back as they finish, so
+three regions of different sizes made the label read `Downloading features` →
+`Computing layout` → `Downloading features` → `Computing layout` inside one
+fetch. It is now the earliest phase the batch is still in, which it leaves when
+its last slot does.
+
+The worked example below is unaffected — three downloading beside one laying out
+picks `Downloading features` under either rule. The two differ only when the
+majority has moved *ahead* of a slot that has not.
 
 ## Context
 
@@ -60,8 +73,8 @@ construction, and every producer would have to adopt it in step.
   slots is worse (the bar runs backwards instead) — and this ADR does not change
   it. What it removes is the *false* reading, a bar near full because of a
   neighbour's unit rather than because the work was nearly done.
-- A fan-out split evenly between two phases picks one arbitrarily, by slot order.
-  Arbitrary is acceptable here: both readings are true of half the work, and the
-  alternative is inventing a cross-phase weight.
+- ~~A fan-out split evenly between two phases picks one arbitrarily, by slot
+  order.~~ Superseded: it picks the earlier of the two, and keeps picking it
+  until the last slot leaves. See ADR-080.
 - ADR-071 hid most of this defect by keeping sub-window statuses off the screen,
   which is the reason to fix it deliberately rather than the reason it is fixed.

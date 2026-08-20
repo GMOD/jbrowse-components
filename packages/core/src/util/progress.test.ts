@@ -987,10 +987,16 @@ describe('createStatusFanOut', () => {
     }
   })
 
-  // The straggler holds the label only while it is half the batch. ADR-072's
-  // majority rule is unchanged — three regions downloading are not repriced by
-  // the one that has moved on, and the reverse holds too.
-  it('lets the majority phase win over one region left behind', () => {
+  // A batch leaves a phase when its LAST slot does, not when a majority has. On
+  // a count the label changed hands as the regions crossed and changed back as
+  // they finished: three regions of different sizes produced "Downloading
+  // features" → "Computing layout" → "Downloading features" → "Computing
+  // layout" in one ordinary fetch. Nothing about that stream is false, and it
+  // reads as the load restarting.
+  //
+  // The bar under it is the phase's own: the three finished regions count in
+  // full, so it rises toward the straggler rather than being repriced by it.
+  it('holds the phase until the last region leaves it', () => {
     const seen: RpcStatus[] = []
     const slot = createStatusFanOut(s => {
       seen.push(s)
@@ -1004,7 +1010,18 @@ describe('createStatusFanOut', () => {
       s('Downloading features')
       s({ message: 'Computing layout', current: 1, total: 10 })
     }
+    expect(statusMessageText(seen.at(-1))).toBe('Downloading features')
+    // three of four regions' bytes are in, and the fourth is what is left
+    expect(statusFraction(seen.at(-1))).toBeCloseTo(0.75)
+    // and the last one leaving is what moves the label on, once
+    slots[3]!({ message: 'Downloading features', current: 1000, total: 1000 })
+    slots[3]!('Downloading features')
+    slots[3]!({ message: 'Computing layout', current: 1, total: 10 })
     expect(statusMessageText(seen.at(-1))).toBe('Computing layout')
+    const labels = seen.map(statusMessageText)
+    expect(labels.lastIndexOf('Downloading features')).toBeLessThan(
+      labels.indexOf('Computing layout'),
+    )
   })
 
   // What separates a phase a region is still working through from one it has

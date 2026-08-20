@@ -66,24 +66,33 @@ counts its own numbers plus what it has already finished of it; a slot that
 finished it and moved on counts that finished work and **nothing more**, no mean
 on top; a slot with nothing comparable is charged the mean, as ADR-072 has it.
 
-**The phase that wins is the one the most slots are IN, not the one the most are
-measuring.** A slot's phase is the label it last reported, whatever shape that
-status arrived in, so sitting between two reads no longer takes it out of the
-count. Ties then break to a phase with something to measure, and only then to the
-phase the batch reached first — the fan-out records first appearance, of every
-label and not only the determinate ones, and passes it down. Both terms are
-load-bearing and each is pinned:
+**The phase that wins is the earliest one the batch is still in.** A batch is in
+every phase any of its slots is in — the label that slot last reported, whatever
+shape the status arrived in — and it leaves one when its LAST slot does. The
+label therefore moves forward once per phase, in order, and the bar under it is
+that phase's own: the slots that finished it count in full, so it rises toward
+the straggler rather than being repriced by it. The fan-out records first
+appearance, of every label and not only the determinate ones, and passes it down.
 
-- without "something to measure", a region still sizing its own request holds the
-  label, and the bar, over a region already reporting bytes;
-- without first appearance, two regions one phase apart tie at one slot each and
-  flap on whichever of them is measuring.
+That replaces ADR-072's majority rule, which was wrong twice over. Counting only
+the slots *measuring* each phase dropped a region out of its own phase every time
+it sat between two reads reporting the label alone — the several-times-a-second
+swap above. Counting the slots *in* each phase fixed that and left the slower
+half: a count changes hands as regions cross a boundary and changes back as they
+finish, so three regions of 1kb, 9kb and 50kb produced `Downloading features` →
+`Computing layout` → `Downloading features` → `Computing layout` in one ordinary
+fetch. Nothing in that stream is false, and it reads as the load restarting.
 
-"Something to measure" counts finished work as well as a live reading, which is
-what tells the two apart: a phase this batch has already measured is one it is
-genuinely still working through. A winning phase nothing is measuring right now
-comes back as its label alone — summing what its slots retired at reads 100% for
-a batch that is still going, which is exactly the moment it would be summed.
+Rank alone would hand the label to a phase with nothing to say, so a phase the
+batch has anything to measure in — a reading now, or work already finished —
+beats one it does not. That is the term that keeps a region still sizing its
+request from holding the label, and the bar, over a region already reporting
+bytes; and counting finished work is what tells a phase a region is still working
+through from one it has merely announced.
+
+A winning phase nothing is measuring right now comes back as its label alone —
+summing what its slots retired at reads 100% for a batch that is still going,
+which is exactly the moment it would be summed.
 
 The fan-out never writes `''`. An empty aggregate means "no slot is reporting
 this instant", so it writes the last label alone — indeterminate, which is what
@@ -174,14 +183,18 @@ and over steps it every time.
 
 ## Consequences
 
-- ADR-072's consequence "a fan-out split evenly between two phases picks one
-  arbitrarily, by slot order" no longer holds — it picks the phase the batch
-  reached first, and keeps picking it until the last slot leaves that phase.
-- ADR-072's majority rule is otherwise unchanged, and now decides on where the
-  slots *are* rather than on what they are measuring, so it no longer moves
-  between one write and the next. Three regions downloading are still not
-  repriced by the one that has moved on, and the one left behind no longer holds
-  the other three.
+- **ADR-072's majority rule is superseded**, along with its consequence "a
+  fan-out split evenly between two phases picks one arbitrarily, by slot order".
+  The rest of ADR-072 stands: phases are still incommensurable, only one is
+  summed, and everything else is charged the mean. What changes is which one —
+  the earliest the batch is still in, rather than the one holding the most slots.
+  Its own worked example is unaffected, because three regions downloading beside
+  one laying out picks `Downloading features` either way; the two rules differ
+  only when the majority has moved *ahead* of a slot that has not, which is the
+  case that flapped.
+- A straggler now holds the label for the whole batch. That is the intended
+  reading — the batch cannot finish until it does — and the bar says how much of
+  the phase is left rather than how far the majority has gone.
 - The shared label now outlives the batch by however long the owner takes to
   clear it. Every owner does clear it (`runFetch`'s `resetStatus`,
   `assembly.loadPre`'s `finally`, `createStopTokenRotation`'s `end`), and the end

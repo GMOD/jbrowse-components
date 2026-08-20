@@ -434,9 +434,7 @@ function finished(slot: StatusSlot, message: string) {
  */
 interface PhaseVote {
   message: string
-  /** in-flight slots reporting it */
-  count: number
-  /** of those, how many are measuring it this instant */
+  /** in-flight slots measuring it this instant */
   live: number
   /** Σ `total` over those, for the mean an unmeasured slot is charged */
   liveTotal: number
@@ -469,24 +467,31 @@ function measurable(vote: PhaseVote) {
  * largest raw total. A fan-out whose slots share one phase — the common case,
  * and what the sum was written for — is summed exactly as before.
  *
- * The phase that wins is the one the most operations are **in**, which is the
- * phase they last reported and not the phase they happen to be measuring this
- * instant. Voting on the measurement instead let a slot drop out of its own
- * phase's count every time it sat between two reads reporting only the label:
- * two regions, one laying out and one downloading, alternated 1-1 and 1-0, so
- * the shared label and the whole denominator under it swapped back and forth
- * several times a second (measured: "Computing layout 10%" → "Downloading
- * features 67%" → "Computing layout 20%").
+ * **The phase that wins is the earliest one the batch is still in.** A batch is
+ * in every phase any of its operations is in — which is the phase that operation
+ * last reported, not the phase it happens to be measuring this instant — and it
+ * leaves one when its LAST operation does. So the label moves forward once per
+ * phase, in order, and the bar under it is that phase's own: the operations that
+ * finished it count in full, so it rises toward the straggler rather than being
+ * repriced by it.
  *
- * Ties break to the phase with something to measure, and then to the phase the
- * batch reached first (`phaseOrder`). Both terms earn their place: without the
- * first, a region still opening its index holds the label — and its bar — over
- * a region already reporting bytes; without the second, two regions one phase
- * apart flap, since which one is measuring changes at every phase boundary
- * either one crosses. "Something to measure" counts finished work as well as a
- * live reading, which is what separates the two cases — a phase this batch has
- * already measured is one it is genuinely still in. With no order at all every
- * phase ranks the same and the tie falls back to slot order.
+ * Neither half of that was true of counting the operations in each phase, which
+ * is what this did (ADR-072's majority rule):
+ *
+ * - a count changes hands as regions cross a boundary and changes back as they
+ *   finish, so three regions of different sizes produced "Downloading features"
+ *   → "Computing layout" → "Downloading features" → "Computing layout" in one
+ *   ordinary fetch, and
+ * - counting only the operations *measuring* each phase dropped a region out of
+ *   its own phase every time it sat between two reads reporting the label alone,
+ *   which made the same swap happen several times a second.
+ *
+ * Rank alone would hand the label to a phase with nothing to say, so a phase the
+ * batch has anything to measure in — a reading now, or work already finished —
+ * beats one it does not. That is what keeps a region still sizing its request
+ * from holding the label, and its bar, over a region already reporting bytes.
+ * `phaseOrder` is the fan-out's record of first appearance; with none, every
+ * phase ranks the same and the choice falls back to slot order.
  *
  * Each slot is then priced against the winning phase on its own, which is the
  * part that has to be per-slot rather than a Σ over two flat lists:
@@ -540,7 +545,6 @@ export function aggregateStatus(
       const at = phaseOrder.indexOf(message)
       vote = {
         message,
-        count: 0,
         live: 0,
         liveTotal: 0,
         rank: at === -1 ? phaseOrder.length : at,
@@ -548,20 +552,16 @@ export function aggregateStatus(
       }
       votes.set(message, vote)
     }
-    vote.count++
     if (typeof slot.status === 'object') {
       vote.live++
       vote.liveTotal += slot.status.total
     }
   }
-  // lexicographic: how many slots are in the phase, then whether it has anything
-  // to measure at all, then how early the batch reached it
+  // Whether the phase has anything to measure at all, and then how early the
+  // batch reached it. Not how many slots are in it: a count changes hands as
+  // regions cross, and the label went back and forth with it.
   const better = (a: PhaseVote, b: PhaseVote) =>
-    a.count !== b.count
-      ? a.count > b.count
-      : measurable(a) !== measurable(b)
-        ? measurable(a)
-        : a.rank < b.rank
+    measurable(a) !== measurable(b) ? measurable(a) : a.rank < b.rank
   const best = [...votes.values()].reduce((winner, vote) =>
     better(vote, winner) ? vote : winner,
   )
