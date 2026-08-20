@@ -301,6 +301,43 @@ export function buildSyntenyGeometry({
   const markerPitchPx = markerPitchBp * bpPerPxInv0
   const markerGridExists = markerPitchPx > 0 && Number.isFinite(markerPitchPx)
 
+  // The stretch of the QUERY AXIS a tick can be emitted over, so both the ladder
+  // below and the budget it is sized against are bounded by the viewport rather
+  // than by how wide the alignment is.
+  //
+  // Every other budget here is already bounded by something: a ribbon is one per
+  // feature, and `cigarBudget` takes a `min` against the CIGAR's own length. The
+  // marker ladder was bounded by the feature's whole width, which is not a
+  // viewport quantity — a CIGAR-less block wider than the window keeps its full
+  // corner span, because `clipLargeBlockToWindow` re-anchors only blocks that
+  // carry a CIGAR. Measured: one 40Mb CIGAR-less block at 1bp/px reserved
+  // 1,000,003 slots (25MB across the seven lanes) to emit 85 ticks, and the
+  // reservation scales with zoom — the same block at base-level zoom asks for
+  // about a gigabyte, in a worker, and the lanes are handed out as `subarray`
+  // views so the whole allocation crosses the RPC boundary.
+  //
+  // The bound is what the two DRAW-time marker rules leave room for, in view-0
+  // screen px. A tick paints only if its hull meets the band (so one end is
+  // within `overdrawPx` of it) AND its two ends are no further apart than the
+  // view is wide (`markerTravelsTooFar`) — together those pin its top end to
+  // `[-(overdrawPx + viewWidth), 2*viewWidth + overdrawPx]`. Each axis then pans
+  // up to `emitBufferPx` before the fetch key rolls over, which moves the tick
+  // relative to where it was emitted, so the fetch-time window is that widened
+  // by the buffer on each side.
+  //
+  // `overdrawPx` is a draw parameter the worker does not have, and standing in
+  // `emitBufferPx` for it assumes `overdrawPx <= emitBufferPx` — which is the
+  // assumption the per-tick cull below already makes (its whole justification is
+  // that the emit window IS the pan buffer), and which the overdraw slider caps
+  // at. So this narrows nothing that was surviving to the screen.
+  //
+  // 3 view widths and 4 buffers: 12,200px on a 1400px view, or ~400 ticks at the
+  // 30px floor, against the 1,000,003 above.
+  const markerWindowPx = 3 * viewWidth + 4 * emitBufferPx
+  const markerWindowLoBp = (viewOff0 - viewWidth - 2 * emitBufferPx) * bpPerPx0
+  const markerWindowHiBp =
+    (viewOff0 + 2 * viewWidth + 2 * emitBufferPx) * bpPerPx0
+
   const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? The base ribbon is always
   // KIND_BASE. When true, the emit loop runs the visitor over the feature's
@@ -364,14 +401,22 @@ export function buildSyntenyGeometry({
     // tightly: a whole-genome hairball emits none at all, since nothing in it
     // clears 30px.
     //
-    // Grid ticks inside a query-axis span of widthPx0 number at most
-    // widthPx0/markerPitchPx + 1, whether the span arrives whole or as the CIGAR
-    // segments that partition it — the +2 is slack for the segments' floating
-    // point not summing to exactly the corner span, and matters because
-    // addMarker drops silently past capacity.
+    // Grid ticks inside a query-axis span number at most span/markerPitchPx + 1,
+    // whether the span arrives whole or as the CIGAR segments that partition it
+    // — the +2 is slack for the segments' floating point not summing to exactly
+    // the corner span, and matters because addMarker drops silently past
+    // capacity.
+    //
+    // The span counted is the feature's width INTERSECTED WITH the emit window,
+    // which is the same clamp `emitGridMarkers` applies to the ladder — so the
+    // gate, the count and the emit still cannot disagree, and a block far wider
+    // than the viewport no longer reserves a slot per grid step across its whole
+    // genomic span. See markerWindowPx.
     const wantMarkers = markerGridExists && widthPx0 >= MIN_MARKER_FEATURE_PX
     wantMarkersArr[i] = wantMarkers ? 1 : 0
-    markerCapacity += wantMarkers ? Math.ceil(widthPx0 / markerPitchPx) + 2 : 0
+    markerCapacity += wantMarkers
+      ? Math.ceil(Math.min(widthPx0, markerWindowPx) / markerPitchPx) + 2
+      : 0
     ribbonCapacity += 1 + cigarBudget
   }
 
@@ -493,8 +538,12 @@ export function buildSyntenyGeometry({
     bp2Start: number,
     bp2End: number,
   ) {
-    const lo = Math.min(bp1Start, bp1End)
-    const hi = Math.max(bp1Start, bp1End)
+    // Clamped to the emit window, so the walk is over what can be drawn rather
+    // than over the alignment. One interval, shared by every span of every
+    // feature, so it cannot break the half-open property above: intersecting a
+    // partition with a common interval leaves it a partition.
+    const lo = Math.max(Math.min(bp1Start, bp1End), markerWindowLoBp)
+    const hi = Math.min(Math.max(bp1Start, bp1End), markerWindowHiBp)
     const anchor = queryGridAnchors[featureIdx]!
     // Grid steps landing in [lo, hi), as a count rather than a `break` on the
     // tick position: a non-finite corner would leave a position test never
@@ -505,10 +554,10 @@ export function buildSyntenyGeometry({
 
     for (let n = 0; n < stepCount; n++) {
       const markerBp1 = anchor + (firstStep + n) * markerPitchBp
-      // No zero-travel guard on the divide: a span with bp1End === bp1Start has
-      // lo === hi, so stepCount is 0 and this line is never reached. That is the
-      // same fact the half-open note above states about insertions, which are
-      // the only way to get one.
+      // No zero-travel guard on the divide: a span with bp1End === bp1Start
+      // leaves hi <= lo, so stepCount is not positive and this line is never
+      // reached. That is the same fact the half-open note above states about
+      // insertions, which are the only way to get one.
       const t = (markerBp1 - bp1Start) / (bp1End - bp1Start)
       const markerBp2 = bp2Start + (bp2End - bp2Start) * t
 

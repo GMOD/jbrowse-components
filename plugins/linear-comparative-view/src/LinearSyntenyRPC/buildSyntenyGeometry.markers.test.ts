@@ -216,3 +216,53 @@ test('markers follow the CIGAR through a deletion', () => {
     0, 0, 0, 0, 0, 39, 40, 40, 40, 40,
   ])
 })
+
+// The marker ladder is the one budget in this file with no natural bound: a
+// ribbon is one instance per feature and `cigarBudget` takes a `min` against the
+// CIGAR's own length, but grid steps are a property of the feature's genomic
+// width. A block wider than the viewport keeps its full corner span unless it
+// carries a CIGAR (`clipLargeBlockToWindow` re-anchors only those), so this used
+// to reserve — and, because the lanes are `subarray` views, transfer — a slot per
+// grid step across the whole alignment: 1,000,003 of them for the 85 ticks below,
+// scaling to about a gigabyte at base-level zoom.
+//
+// Asserted against the ALLOCATION rather than the emitted count, because the
+// emitted count was always right; what was wrong was how much was reserved to
+// arrive at it.
+test('a block far wider than the view budgets for the window, not the block', () => {
+  const span = 40_000_000
+  const viewWidth = 1400
+  const g = buildSyntenyGeometry({
+    p11_cumBp: new Float64Array([0]),
+    p12_cumBp: new Float64Array([span]),
+    p21_cumBp: new Float64Array([0]),
+    p22_cumBp: new Float64Array([span]),
+    queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
+    strands: new Int8Array([1]),
+    // no CIGAR, which is what leaves the corners at their full span
+    parsedCigars: [[]],
+    starts: new Uint32Array([0]),
+    ends: new Uint32Array([span]),
+    drawCIGAR: false,
+    drawCIGARMatchesOnly: false,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
+    viewOff0: 0,
+    viewOff1: 0,
+    viewWidth,
+  })
+  // 3 view widths + 4 pan buffers, over the pitch, plus the ribbon and the slack
+  // — a few hundred, against span/PITCH = a million.
+  const allocatedSlots =
+    g.bp1.buffer.byteLength / Float32Array.BYTES_PER_ELEMENT
+  expect(allocatedSlots).toBeLessThan(1000)
+  expect(allocatedSlots).toBeGreaterThanOrEqual(g.instanceCount)
+  // and the ticks that survive the emit cull are unchanged: every grid step from
+  // the block's left edge out to the far side of the window
+  const bp1s = markerIndices(g.kinds).map(i => g.bp1[i]!)
+  expect(bp1s[0]).toBe(PITCH - 1)
+  expect(new Set(bp1s.map((b, i) => b - (i * PITCH + PITCH - 1)))).toEqual(
+    new Set([0]),
+  )
+  expect(bp1s.length).toBeGreaterThan(30)
+})
