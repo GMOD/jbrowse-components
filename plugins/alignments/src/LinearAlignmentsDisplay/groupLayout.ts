@@ -27,6 +27,7 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
+import type { RefNamePosition } from './colorTagUtils.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
 import type { GroupId } from './groupedDataMaps.ts'
 
@@ -221,6 +222,13 @@ export interface ReadColorContext {
 
   colorScheme: number
   readColorOpts: ReadColorOpts
+  // Chromosome painting's assembly order — see `RefNamePosition`. Undefined
+  // under every other scheme, and before the assembly loads.
+  //
+  // Required-but-nullable rather than optional, so dropping it from the model's
+  // context is a compile error instead of a silent fall back onto the hash —
+  // which paints a real colour and looks like the feature working.
+  refNamePosition: RefNamePosition | undefined
 }
 
 /**
@@ -321,7 +329,7 @@ export function applyReadColorsByGroup(
     out.set(
       key,
       overlayReadColorCategories(
-        overlayReadTagColors(map, ctx.colorBy),
+        overlayReadTagColors(map, ctx.colorBy, ctx.refNamePosition),
         ctx.colorScheme,
         ctx.readColorOpts,
       ),

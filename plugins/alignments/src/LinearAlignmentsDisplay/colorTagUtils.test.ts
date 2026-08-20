@@ -1,4 +1,4 @@
-import { getQueryColor } from '@jbrowse/core/ui/colors'
+import { getQueryColor, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 
 import { TAG_COLOR_PALETTE, bakedValueColor } from './colorTagUtils.ts'
 
@@ -47,12 +47,40 @@ test('values naming prototype members take real colors', () => {
   }
 })
 
-// Chromosome painting hashes each name through getQueryColor, so the legend
-// swatch matches what buildReadTagColors bakes into the reads — the same
-// function the synteny view's Query mode paints with.
-test('query names take their stable hashed color', () => {
-  expect(bakedValueColor(MATE, 'ctgA')).toBe(getQueryColor('ctgA'))
-  expect(bakedValueColor(MATE, 'ctgB')).toBe(getQueryColor('ctgB'))
+// Chromosome painting resolves through `refNameColor`, so the legend swatch
+// matches what buildReadTagColors bakes into the reads — and matches what the
+// synteny view's Query mode paints the same contig, which is the whole reason
+// the rule lives in core.
+test('a refName takes its assembly position, not a hash of its name', () => {
+  const positions = new Map([
+    ['chr1', 0],
+    ['chr12', 11],
+    ['chr21', 20],
+    ['chrY', 23],
+  ])
+  const at = (name: string) =>
+    bakedValueColor(MATE, name, n => positions.get(n))
+  expect(at('chr1')).toBe(refNamePaletteColorAt(0))
+  expect(at('chr12')).toBe(refNamePaletteColorAt(11))
+
+  // The bug this rule replaced, stated as the property it broke: category10
+  // hashes all four of these onto ONE colour, so from a chr1 view a
+  // translocation to chr12, chr21 or chrY painted the colour of the reads
+  // around it. Held against `getQueryColor` rather than a literal, so it is
+  // still the old rule being described and not a copied hex.
+  const hashed = [...positions.keys()].map(getQueryColor)
+  expect(new Set(hashed).size).toBe(1)
+  expect(new Set([...positions.keys()].map(at)).size).toBe(4)
+})
+
+// The order is not always available — an assembly still loading, or a scaffold
+// the assembly does not list. A stable arbitrary colour beats no colour, so the
+// hash stays as the fallback and every other property here still holds over it.
+test('a refName with no known position falls back to a stable color', () => {
+  const unplaced = (name: string) =>
+    bakedValueColor(MATE, name, () => undefined)
+  expect(unplaced('ctgA')).toBe(bakedValueColor(MATE, 'ctgA'))
+  expect(unplaced('ctgA')).not.toBe(unplaced('ctgB'))
 })
 
 // The one thing that is NOT a function of the value alone, and the model test

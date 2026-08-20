@@ -111,7 +111,9 @@ export function extractFeatureArrays<T extends FeatureData>(
   // Chromosome painting reuses the tag channel: both resolve one string per
   // read that the main thread bakes into a color (see buildReadTagColors), so
   // the mate refName travels as a `tagColorValues` entry rather than earning a
-  // parallel array. Only synteny features carry a mate, hence the ?? ''.
+  // parallel array. The `?? ''` is a feature with neither of the two sources
+  // `getMateRefName` reads — a synteny block's `mate`, a BAM read's `next_ref`
+  // — which is uncolored rather than a hash of the empty string.
   const isMateRefNameMode = colorBy?.type === 'mateRefName'
   const sortTagValues: string[] | undefined = sortTag ? [] : undefined
 

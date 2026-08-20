@@ -225,9 +225,6 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
 // hand the layout a fresh map per evaluation.
 const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 
-// Material UI 200-tone palette for color-by-tag values. The first value
-// hit gets index 0, the eleventh wraps to index 0 again.
-
 /**
  * #stateModel LinearAlignmentsDisplay
  * #displayFoundation MultiRegionDisplayMixin
@@ -1270,6 +1267,7 @@ export default function stateModelFactory(
             detectedModifications: this.detectedModifications,
             presentTagValues: this.presentTagValues,
             presentModifications: this.presentModifications,
+            refNamePosition: this.paintedRefNamePosition,
             chainFramed: framesUnpairedChainStrand(
               colorSchemeIndexFor(this.colorBy.type),
               this.readColorOpts,
@@ -1545,7 +1543,41 @@ export default function stateModelFactory(
             colorBy: this.colorBy,
             colorScheme: colorSchemeIndexFor(this.colorBy.type),
             readColorOpts: this.readColorOpts,
+            refNamePosition: this.paintedRefNamePosition,
           }
+        },
+
+        /**
+         * #getter
+         * Where a mate's reference sits in this assembly's own chromosome order,
+         * for chromosome painting — the alignments twin of
+         * `LinearSyntenyDisplay.paintedChromosomeOrder`, and the thing that lets
+         * the palette be handed out rather than hashed into (`refNameColor`).
+         *
+         * It has to come from the ASSEMBLY rather than from the reads on screen,
+         * or a chromosome's color would change with what else was in view.
+         *
+         * Canonicalizing first is not optional: a mate reference is `next_ref`,
+         * which names a location this fetch did not ask for and so arrives in the
+         * FILE's spelling (`1` against an assembly whose canonical name is
+         * `chr1`) — see REFNAME_NAMESPACES.md. An uncanonicalized probe misses,
+         * and a miss is SILENT: it falls back to the hash and paints a plausible
+         * wrong color rather than raising anything.
+         *
+         * Undefined under every other scheme and until the assembly initializes,
+         * where the fallback is the right answer rather than a failure.
+         */
+        get paintedRefNamePosition() {
+          const assembly =
+            this.colorBy.type === 'mateRefName'
+              ? self.loadedAssembly
+              : undefined
+          return assembly
+            ? (refName: string) =>
+                assembly.refNameToIndex?.get(
+                  assembly.getCanonicalRefName2(refName),
+                )
+            : undefined
         },
 
         /**
@@ -1655,10 +1687,8 @@ export default function stateModelFactory(
          * #getter
          * Normalizer for a refName that arrives in the BAM's own spelling (an SA
          * tag's or RNEXT's `chr1`) rather than the assembly-canonical one a
-         * fetched read carries (`1`). Undefined when no assembly is resolved,
-         * where the consumers fall back to identity — `getCanonicalRefName2`
-         * throws before `refNameAliases` load, hence the `initialized` gate. In
-         * practice `rpcDataMap` only holds data once the assembly is loaded.
+         * fetched read carries (`1`). Undefined when no assembly is resolved
+         * (`loadedAssembly`), where the consumers fall back to identity.
          *
          * Shared rather than resolved per consumer because both need it for the
          * same reason: without it a same-chromosome split junction reads as
@@ -1666,11 +1696,8 @@ export default function stateModelFactory(
          * doesn't have.
          */
         get canonicalRefName() {
-          const firstRegion = self.loadedRegions.values().next().value
-          const assembly = firstRegion
-            ? getSession(self).assemblyManager.get(firstRegion.assemblyName)
-            : undefined
-          return assembly?.initialized
+          const assembly = self.loadedAssembly
+          return assembly
             ? (refName: string) => assembly.getCanonicalRefName2(refName)
             : undefined
         },

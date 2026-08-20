@@ -239,7 +239,6 @@ export function drawReads(
       region.readColorCategories[i]!,
       i,
       region,
-      state.colorScheme,
       state.colors,
     )
     if (fill !== lastFill) {

@@ -1453,6 +1453,40 @@ linear ramp, so they are the control rather than the target.
 
 ## Blocked on a visual call
 
+### Should chromosome painting colour a mate on the SAME chromosome
+
+`mateRefName` paints every read by its mate's reference, with no
+interchromosomal gate — `extractFeatureArrays` pushes `getMateRefName(feature)`
+for all of them and `next_ref` resolves to the read's own contig for an ordinary
+pair. So a locus with no translocations is a wall of one saturated hue, and the
+signal the scheme exists for is a colour difference against that rather than
+against a neutral.
+
+It was worse than that until the palette fix (see
+[ALIGNMENTS_COLOR_PARITY.md](reference/ALIGNMENTS_COLOR_PARITY.md)): with 25
+chromosomes hashed into 10 colours, a translocated read stood a real chance of
+being painted the background colour exactly. That part is closed. What is left is
+the visual question — does a chr1 view read better with its own reads blue, or
+with them neutral and only the mates elsewhere coloured — plus a real
+constraint:
+
+**The gate cannot be unconditional, because LGVSyntenyDisplay uses this same
+scheme.** There it is "Query name", and every PAF block must be painted: a block
+always aligns to the other assembly, so an "only if elsewhere" rule paints the
+whole track. Any gate has to be about a BAM read's mate specifically, which means
+the scheme stops meaning one thing. Weigh that against the picture before
+changing it.
+
+### Chain mode flags an unmapped mate but not an interchromosomal one
+
+`readColorCategory` gives `unmappedMate` its own bucket under the plain `normal`
+scheme when chain mode is on (`isOrientationScheme || (colorScheme ===
+ColorScheme.normal && isChain)`), and the `interchrom` test one line below is
+gated on `isOrientationScheme` alone. Both produce the same thing on screen — a
+chain drawn with a partner that never arrives — so the asymmetry is either a
+deliberate call nobody wrote down or an omission. `colorUtils.test.ts` covers
+only the orientation-scheme half of each, so nothing pins it either way.
+
 ### What colour is an arc with no pair orientation
 
 The last meaning still split between the read fills and the arc overlay. A pair

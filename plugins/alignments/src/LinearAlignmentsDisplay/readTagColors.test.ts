@@ -1,4 +1,4 @@
-import { getQueryColor } from '@jbrowse/core/ui/colors'
+import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
@@ -24,14 +24,31 @@ const packed = (color: string) => {
 }
 
 describe('mateRefName (chromosome painting) colors', () => {
-  const build = (names: string[]) =>
-    buildReadTagColors(pileupWith(names), { type: 'mateRefName' })
+  const build = (
+    names: string[],
+    position?: (n: string) => number | undefined,
+  ) => buildReadTagColors(pileupWith(names), { type: 'mateRefName' }, position)
 
-  test('hashes each mate refName to its category10 color', () => {
+  test('bakes each mate refName the color its own value resolves', () => {
     expect([...build(['chr1', 'chr2'])]).toEqual([
-      packed(getQueryColor('chr1')),
-      packed(getQueryColor('chr2')),
+      packed(bakedValueColor({ type: 'mateRefName' }, 'chr1')),
+      packed(bakedValueColor({ type: 'mateRefName' }, 'chr2')),
     ])
+  })
+
+  // The bake is the only caller that can supply the assembly order, so it is
+  // the one that has to pass it through — bakedValueColor's own test covers
+  // what the order then does to the colour. A pileup on hg38 without it puts
+  // chr1 and chr12 on one colour.
+  test('an assembly position reaches the resolver', () => {
+    const at = new Map([
+      ['chr1', 0],
+      ['chr12', 11],
+    ])
+    const [a, b] = build(['chr1', 'chr12'], n => at.get(n))
+    expect(a).not.toBe(b)
+    expect(a).toBe(packed(refNamePaletteColorAt(0)))
+    expect(b).toBe(packed(refNamePaletteColorAt(11)))
   })
 
   test('the same refName always paints the same color', () => {
@@ -40,9 +57,9 @@ describe('mateRefName (chromosome painting) colors', () => {
     expect(out[0]).not.toBe(out[1])
   })
 
-  test('a feature with no mate falls back to the palette rather than hashing an empty name', () => {
+  test('a feature with no mate falls back to the palette rather than coloring an empty name', () => {
     expect([...build([''])]).toEqual([0])
-    expect(packed(getQueryColor(''))).not.toBe(0)
+    expect(packed(bakedValueColor({ type: 'mateRefName' }, ''))).not.toBe(0)
   })
 
   test('every read is colored', () => {

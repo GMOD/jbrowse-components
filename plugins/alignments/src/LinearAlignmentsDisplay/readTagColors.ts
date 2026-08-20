@@ -13,6 +13,7 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy } from '../shared/types.ts'
+import type { RefNamePosition } from './colorTagUtils.ts'
 
 type ColorRgbTuple = [number, number, number]
 
@@ -40,7 +41,10 @@ const NO_TAG_COLORS = new Uint32Array(0)
 // dispatch and the value→pack cache happen here, so both leave the per-read hot
 // loop and the cache is reused across every region rather than rebuilt per
 // region.
-function makeColorResolver(colorBy: ColorBy): ColorResolver {
+function makeColorResolver(
+  colorBy: ColorBy,
+  refNamePosition?: RefNamePosition,
+): ColorResolver {
   // The strand tags first, and they have to be: they are `type: 'tag'` like any
   // other, but encode a strand rather than a categorical value, so they take
   // the fixed strand colors instead of a per-value one.
@@ -87,7 +91,9 @@ function makeColorResolver(colorBy: ColorBy): ColorResolver {
     }
     let color = cache.get(value)
     if (color === undefined) {
-      color = packRgb(cssColorToRgb(bakedValueColor(colorBy, value)))
+      color = packRgb(
+        cssColorToRgb(bakedValueColor(colorBy, value, refNamePosition)),
+      )
       cache.set(value, color)
     }
     return color
@@ -98,8 +104,16 @@ function applyResolver(
   data: WorkerPileupData,
   resolve: ColorResolver,
 ): Uint32Array {
-  const tagValues = data.readTagValues ?? []
+  const tagValues = data.readTagValues
   const strands = data.readStrands
+  // No values to bake from — a region fetched under a scheme that extracts none,
+  // which the mid-switch window leaves laid out while the new colorBy is already
+  // applied. Shares NO_TAG_COLORS rather than minting an empty array, for the
+  // reason that constant exists: a fresh one reports a recolor by identity and
+  // rewrites the read pass.
+  if (tagValues === undefined) {
+    return NO_TAG_COLORS
+  }
   const n = tagValues.length
   const out = new Uint32Array(n)
   for (let i = 0; i < n; i++) {
@@ -116,8 +130,9 @@ function applyResolver(
 export function buildReadTagColors(
   data: WorkerPileupData,
   colorBy: ColorBy,
+  refNamePosition?: RefNamePosition,
 ): Uint32Array {
-  return applyResolver(data, makeColorResolver(colorBy))
+  return applyResolver(data, makeColorResolver(colorBy, refNamePosition))
 }
 
 // Overlay freshly-baked `readTagColors` onto each laid-out region. Baking here
@@ -134,11 +149,13 @@ export function buildReadTagColors(
 export function overlayReadTagColors(
   map: Map<number, LaidOutPileupData>,
   colorBy: ColorBy | undefined,
+  refNamePosition?: RefNamePosition,
 ): Map<number, TagColoredPileupData> {
   const baked =
     colorBy?.type === 'mateRefName' ||
     (colorBy?.type === 'tag' && !!colorBy.tag)
-  const resolve = colorBy && baked ? makeColorResolver(colorBy) : undefined
+  const resolve =
+    colorBy && baked ? makeColorResolver(colorBy, refNamePosition) : undefined
   const out = new Map<number, TagColoredPileupData>()
   for (const [idx, data] of map) {
     out.set(idx, {

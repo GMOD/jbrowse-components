@@ -24,6 +24,7 @@ import {
   usesMethylationLegend,
 } from './types.ts'
 
+import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type {
   ReadColorCategory,
   SwatchCategory,
@@ -459,8 +460,8 @@ const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
 ]
 
 // Tags that encode strand rather than a categorical value; buildReadTagColors
-// paints these from the fixed strand colors (not colorTagMap), so their legend
-// is the strand key, not a per-value list.
+// paints these from the fixed strand colors rather than from the value, so their
+// legend is the strand key, not a per-value list.
 const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
 
 // The methylation views key exactly what extractMethylation/extractBisulfite
@@ -789,11 +790,15 @@ function modificationLegend(
 function bakedValueLegend(
   colorBy: ColorBy,
   present: ReadonlySet<string> | undefined,
+  refNamePosition: RefNamePosition | undefined,
 ): LegendItem[] {
   return [...(present ?? [])]
     .filter(value => value !== '')
     .sort((a, b) => a.localeCompare(b))
-    .map(value => ({ color: bakedValueColor(colorBy, value), label: value }))
+    .map(value => ({
+      color: bakedValueColor(colorBy, value, refNamePosition),
+      label: value,
+    }))
 }
 
 // XS/TS/ts encode strand rather than a categorical value, so they are keyed by
@@ -824,13 +829,27 @@ function hasUnstrandedValue(present: ReadonlySet<string> | undefined) {
 
 // The scheme's own key, before the cross-cutting buckets are appended. Every
 // branch returns just its own swatches; nothing here reads presentCategories.
-function schemeLegend(
-  colorBy: ColorBy | undefined,
-  palette: ColorPalette,
-  detectedModifications: ReadonlyMap<string, string> | undefined,
-  presentTagValues: ReadonlySet<string> | undefined,
-  presentModifications: ReadonlySet<string> | undefined,
-): LegendItem[] {
+//
+// Takes the caller's own bag, minus the fields only the cross-cutting tail
+// reads. Six positional arguments of which four are optional maps and sets was
+// the alternative, and three of them are the same shape.
+type SchemeLegendArgs = Pick<
+  ReadDisplayLegendArgs,
+  | 'colorBy'
+  | 'detectedModifications'
+  | 'presentModifications'
+  | 'presentTagValues'
+  | 'refNamePosition'
+> & { palette: ColorPalette }
+
+function schemeLegend({
+  colorBy,
+  palette,
+  detectedModifications,
+  presentTagValues,
+  presentModifications,
+  refNamePosition,
+}: SchemeLegendArgs): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing.
@@ -853,7 +872,7 @@ function schemeLegend(
     ]
   }
   if (colorType === 'tag' || colorType === 'mateRefName') {
-    return bakedValueLegend(colorBy, presentTagValues)
+    return bakedValueLegend(colorBy, presentTagValues, refNamePosition)
   }
   if (colorType === 'mappingQuality') {
     // Ramp stops, not buckets: hue IS the score in degrees (categoryColor /
@@ -896,6 +915,36 @@ function schemeLegend(
   return []
 }
 
+// The display-supplied half of the legend's inputs — everything but the live
+// palette and the bucket scan, which the two consumers below split differently.
+interface ReadDisplayLegendArgs {
+  colorBy: ColorBy | undefined
+  detectedModifications?: ReadonlyMap<string, string>
+  // Which overlap tint is on screen, or undefined for none — the display's
+  // `overlapLegendKind`, which is the draw gate and a real overlap interval,
+  // not just the layout. Last in the list because it modifies the colors above
+  // it rather than adding one.
+  overlaps?: 'chain' | 'collapsed'
+  // Whether the unpaired chain-strand framing is live — `framesUnpairedChainStrand`
+  // in the display, which is the same predicate that gates the consensus pass.
+  // Only the `strand` scheme's wording turns on it; every other scheme already
+  // words fwd/rev as something other than the read's own strand.
+  chainFramed?: boolean
+  // Values the rendered reads carry, for the CPU-baked schemes — the display's
+  // `presentTagValues`, and the whole swatch list for those schemes. Undefined
+  // means "not known here" and keys none; the empty set means the scheme has
+  // values and none are on screen, which lists none either.
+  presentTagValues?: ReadonlySet<string>
+  // The same, for the modification types drawn on screen — the display's
+  // `presentModifications`, off the marks rather than off the MM/ML parse.
+  presentModifications?: ReadonlySet<string>
+  // The display's `paintedRefNamePosition`, so a chromosome-painting swatch is
+  // drawn by the same rule the reads are — hand the palette out by assembly
+  // position, hash only where the order is unknown. Omitting it here is how the
+  // box would key a colour no read paints.
+  refNamePosition?: RefNamePosition
+}
+
 /**
  * Legend items for the alignments display: the active scheme's own key followed
  * by the cross-cutting buckets (unmapped mate, inter-chromosomal, supplementary,
@@ -916,31 +965,12 @@ export function getReadDisplayLegendItems({
   detectedModifications,
   presentTagValues,
   presentModifications,
+  refNamePosition,
   chainFramed = false,
   overlaps,
-}: {
-  colorBy: ColorBy | undefined
-  presentCategories: ReadonlySet<ReadColorCategory>
+}: ReadDisplayLegendArgs & {
   palette: ColorPalette
-  detectedModifications?: ReadonlyMap<string, string>
-  // Which overlap tint is on screen, or undefined for none — the display's
-  // `overlapLegendKind`, which is the draw gate and a real overlap interval,
-  // not just the layout. Last in the list because it modifies the colors above
-  // it rather than adding one.
-  overlaps?: 'chain' | 'collapsed'
-  // Whether the unpaired chain-strand framing is live — `framesUnpairedChainStrand`
-  // in the display, which is the same predicate that gates the consensus pass.
-  // Only the `strand` scheme's wording turns on it; every other scheme already
-  // words fwd/rev as something other than the read's own strand.
-  chainFramed?: boolean
-  // Values the rendered reads carry, for the CPU-baked schemes — the display's
-  // `presentTagValues`, and the whole swatch list for those schemes. Undefined
-  // means "not known here" and keys none; the empty set means the scheme has
-  // values and none are on screen, which lists none either.
-  presentTagValues?: ReadonlySet<string>
-  // The same, for the modification types drawn on screen — the display's
-  // `presentModifications`, off the marks rather than off the MM/ML parse.
-  presentModifications?: ReadonlySet<string>
+  presentCategories: ReadonlySet<ReadColorCategory>
 }): LegendItem[] {
   // A strand tag keys fwd/rev itself, in those exact colors, so drop them from
   // the cross-cutting tail rather than listing the same two swatches again
@@ -953,13 +983,14 @@ export function getReadDisplayLegendItems({
       )
     : presentCategories
   return [
-    ...schemeLegend(
+    ...schemeLegend({
       colorBy,
       palette,
       detectedModifications,
       presentTagValues,
       presentModifications,
-    ),
+      refNamePosition,
+    }),
     ...bucketItems(
       categories,
       palette,

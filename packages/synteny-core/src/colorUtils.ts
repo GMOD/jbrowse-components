@@ -5,10 +5,13 @@ import { ATTRIBUTE_PREFIX } from './colorRamps.ts'
 /**
  * #api
  * `hashString` is a deterministic non-negative 32-bit hash of a string;
- * `getQueryColor` is the stable category10 color it maps a query name to. Both
- * now live in core, which owns them so that every by-refName coloring — this
- * package's views and the alignments display's mateRefName scheme — hashes a
- * contig to the same color. Re-exported here to keep the published API stable.
+ * `getQueryColor` is the stable category10 color it maps a query name to.
+ *
+ * Both live in core, which owns the whole by-refName vocabulary so that every
+ * display painting by contig — this package's views and the alignments display's
+ * mateRefName scheme — gives one contig one color. `refNameColor` is that rule;
+ * `getQueryColor` is only its no-assembly-order fallback, kept exported because
+ * it is published API. Re-exported here for the same reason.
  */
 export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 

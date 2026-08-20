@@ -1,4 +1,4 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
@@ -16,6 +16,7 @@ import { makeCommitChecks } from './regionCommit.ts'
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Region } from '@jbrowse/core/util'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
@@ -291,6 +292,31 @@ export default function MultiRegionDisplayMixin() {
          */
         get dataCurrent(): boolean {
           return self.viewportWithinLoadedData && self.loadedRegions.size > 0
+        },
+
+        /**
+         * #getter
+         * The assembly the data in hand came from, once it can answer about
+         * refNames — `undefined` before that.
+         *
+         * Off the first LOADED region rather than the view's displayed ones,
+         * which is the distinction that makes it belong here: a display holding
+         * fetched data is asking about the assembly THAT data is on, and the
+         * view's regions can already have moved on.
+         *
+         * The `initialized` gate is why this returns the assembly rather than
+         * its name. `getCanonicalRefName2` and `refNameToIndex` answer WRONGLY
+         * rather than throwing before the aliases land — identity, and a miss —
+         * so a caller that skips the gate gets a plausible answer and no signal.
+         * Handing back `undefined` until it can answer is what makes the caller
+         * write its fallback.
+         */
+        get loadedAssembly(): Assembly | undefined {
+          const firstRegion = self.loadedRegions.values().next().value
+          const assembly = firstRegion
+            ? getSession(self).assemblyManager.get(firstRegion.assemblyName)
+            : undefined
+          return assembly?.initialized ? assembly : undefined
         },
       }))
       .views(self => ({

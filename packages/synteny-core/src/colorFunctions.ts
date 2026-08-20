@@ -1,9 +1,8 @@
-import { category10 } from '@jbrowse/core/ui/colors'
-import { relight } from '@jbrowse/core/util/color'
+import { refNameColor, refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { rampNorm, resolveContinuousMode } from './colorRamps.ts'
-import { colorSchemes, hashString } from './colorUtils.ts'
+import { colorSchemes } from './colorUtils.ts'
 
 import type { AttributeRange, ContinuousMode, Rgb } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
@@ -39,54 +38,16 @@ export const MISSING_VALUE_COLOR = cssColorToABGR(
 const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
 const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)
 
-// Query/target chromosome-painting palette. category10's grey (#7f7f7f) is
-// dropped: a grey ribbon or point reads as "uncolored/broken", and a genome
-// whose sole (or hashed) chromosome lands on that slot paints the whole view
-// muddy grey — the exact failure a single-contig assembly named "chr" hits.
-const nameColorHexes = category10.filter(hex => hex.toLowerCase() !== '#7f7f7f')
-const nameColorPalette = nameColorHexes.map(hex => cssColorToABGR(hex))
-
-// Nine do not cover a karyotype, so each LAP around the list re-lights the same
-// hues: chromosome 10 is a deep version of chromosome 1's blue, chromosome 19 a
-// pale one. Three laps is 27 colors, past every karyotype these figures anchor
-// on (human 24, rice 12, bread wheat 21), and a fourth lap starts the tones
-// again rather than fading to nothing — a repeat 27 positions away is one no
-// reader is comparing.
-//
-// THE COLORS ARE THE PALETTE'S, not a ramp's. This spent a round as the next hue
-// on the golden angle at a fixed HSL 70%/50%, which is collision-free for any
-// karyotype and was rejected on sight by figure review ("the previous palette is
-// better"): an even hue circle at one saturation is a rainbow, and a five-genome
-// synteny figure drawn in one is a hundred thousand ribbons of pure red, green,
-// blue and magenta. category10's nine are uneven on purpose — that is what makes
-// them read as a set.
-//
-// It is not the weaker option for distinguishability either, which is what the
-// ramp was reached for. Closest pair in OKLab over 24 positions: 0.077 for these
-// laps, 0.019 for the golden angle at HSL 70%/50% — an even hue circle is even
-// in HSL's hue, and HSL's hue is not perceptually even.
-const PALETTE_LAP_TONES = [
-  // lap 0 is the palette color itself, untouched
-  undefined,
-  // deep before pale, because these are drawn at a low alpha over white (the
-  // OrthoFinder figures run at 0.06) and a pale color at 0.06 is a color a
-  // reader cannot see. Chroma held, and the gamut takes what it must down here.
-  { lightnessShift: -0.17, chromaScale: 1 },
-  // pale. Chroma comes down with lightness: held at full, the light lap's reds
-  // and pinks all pin against the top of the sRGB gamut and converge there.
-  { lightnessShift: 0.18, chromaScale: 0.8 },
-]
-
-/** The palette color for a chromosome at `position` in its assembly. */
+/**
+ * The palette color for a chromosome at `position` in its assembly, packed.
+ *
+ * The palette itself is core's (`refNamePaletteColorAt`), because the alignments
+ * display's chromosome painting has to hand out the same colors — it used to
+ * hash where this hands out, so the same contig took one color in a synteny view
+ * and another in a pileup beside it.
+ */
 export function paletteColorAt(position: number) {
-  const hex = nameColorHexes[position % nameColorHexes.length]!
-  const lap =
-    PALETTE_LAP_TONES[
-      Math.floor(position / nameColorHexes.length) % PALETTE_LAP_TONES.length
-    ]
-  return cssColorToABGR(
-    lap ? relight(hex, lap.lightnessShift, lap.chromaScale) : hex,
-  )
+  return cssColorToABGR(refNamePaletteColorAt(position))
 }
 
 /**
@@ -95,13 +56,8 @@ export function paletteColorAt(position: number) {
  * BY POSITION IN THE ASSEMBLY when the caller knows the chromosome order, which
  * both displays do — they read the relevant axis' assembly refName list. So the
  * palette is handed out rather than hashed into, and a genome cannot paint two
- * of its chromosomes the same color the way the hash below does: it buckets a
- * name into nine slots, so ten or more chromosomes RE-USE colors, and by the
- * birthday bound long before that.
- *
- * The hash stays as the fallback for the case the order genuinely is not
- * available: an assembly still loading, or a refName the assembly does not list
- * (a scaffold under an alias). There a stable arbitrary color beats no color.
+ * of its chromosomes the same color the way a hash does. `refNameColor` is that
+ * rule and its fallback; see it for what the hash costs.
  *
  * The dictionary is at most a scaffold count long, so its colors resolve once
  * into a LUT and the per-feature path is a double array index — no hash and no
@@ -116,12 +72,9 @@ export function makeNameColorFunction(
   const orderOf = nameOrder?.length
     ? new Map(nameOrder.map((n, i) => [n, i]))
     : undefined
-  const lut = Uint32Array.from(dict, name => {
-    const position = orderOf?.get(name)
-    return position === undefined
-      ? nameColorPalette[hashString(name) % nameColorPalette.length]!
-      : paletteColorAt(position)
-  })
+  const lut = Uint32Array.from(dict, name =>
+    cssColorToABGR(refNameColor(name, orderOf?.get(name))),
+  )
   return (index: number) => lut[ids[index]!]!
 }
 

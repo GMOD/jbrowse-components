@@ -120,11 +120,12 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     menu: { kind: 'special', label: 'Tag' },
     workerExtracts: true,
   },
-  // Chromosome painting: hash the name of whatever this feature aligns TO — a
-  // read's RNEXT, a PAF block's query contig — to a stable color, matching the
-  // synteny view's 'query' mode (both go through core's getQueryColor, so one
-  // contig paints the same color in both views). Rides the 'tag' shader path —
-  // the color is baked per-read on the CPU either way.
+  // Chromosome painting: color by the name of whatever this feature aligns TO —
+  // a read's RNEXT, a PAF block's query contig — matching the synteny view's
+  // 'query' mode. Both go through core's `refNameColor`, so one contig paints
+  // the same color in both views: by position in the assembly's own chromosome
+  // order, hashed only where that order is unknown. Rides the 'tag' shader path
+  // — the color is baked per-read on the CPU either way.
   //
   // In the 'pairedEnd' group because on a BAM the name it paints is the MATE's
   // reference (`getMateRefName` reads `next_ref`), which makes it the standard

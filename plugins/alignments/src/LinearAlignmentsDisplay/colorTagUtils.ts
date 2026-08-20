@@ -1,7 +1,16 @@
-import { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
+import { hashString, refNameColor } from '@jbrowse/core/ui/colors'
 import { tagColorPalette } from '@jbrowse/core/ui/palette'
 
 import type { ColorBy } from '../shared/types.ts'
+
+/**
+ * Where a refName sits in its assembly's own chromosome order, for chromosome
+ * painting — the display's `paintedRefNamePosition`, which canonicalizes the
+ * name first because a mate reference arrives in the FILE's spelling. Undefined
+ * for every other scheme, and while the assembly is still loading, where
+ * `refNameColor` falls back to its hash.
+ */
+export type RefNamePosition = (refName: string) => number | undefined
 
 export const TAG_COLOR_PALETTE = tagColorPalette
 
@@ -44,12 +53,25 @@ function tagValueColor(value: string) {
  * colors are unchanged: this is the same pair of functions the map's entries
  * were filled from.
  *
- * Chromosome painting hashes through `getQueryColor` — the same one the synteny
- * view's Query mode uses — and a tag value takes a palette slot. Both are
- * stable across sessions, so a figure is reproducible from its session file.
+ * Chromosome painting goes through `refNameColor` — the same rule and the same
+ * palette the synteny and dotplot views paint a query contig with, so one contig
+ * takes one color wherever it is drawn. A tag value takes a palette slot. Both
+ * are stable across sessions, so a figure is reproducible from its session file.
+ *
+ * `refNamePosition` is what makes the chromosome case hand the palette out
+ * rather than hash into it. It used to hash unconditionally (`getQueryColor`),
+ * which on hg38 painted chr1, chr12, chr21 and chrY one color and left every
+ * other human chromosome sharing with at least one more — so from a chr1 view a
+ * translocation to chr12 was invisible against the reads around it. Synteny had
+ * already been moved off the hash for the same collision on rice; the comment
+ * here claiming the two matched was written before that.
  */
-export function bakedValueColor(colorBy: ColorBy, value: string) {
+export function bakedValueColor(
+  colorBy: ColorBy,
+  value: string,
+  refNamePosition?: RefNamePosition,
+) {
   return colorBy.type === 'mateRefName'
-    ? getQueryColor(value)
+    ? refNameColor(value, refNamePosition?.(value))
     : tagValueColor(value)
 }

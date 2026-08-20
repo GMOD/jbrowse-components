@@ -466,11 +466,15 @@ export function readColorCategory(
 // read.slang's `categoryPaletteColor` is the GPU twin, but a flat table rather
 // than a mirrored rule set, and colorCategory.test.ts machine-compares the two
 // via `swatchPaletteKeys` — so this is checked, not a SYNC promise.
+// It takes NO color scheme, and that is the painter/classifier split stated in
+// a signature rather than in the paragraph above: everything a fill depends on
+// is either the category or the read's own datum by the time this runs. It used
+// to take one, threaded down from `RenderState.colorScheme` through two call
+// sites and read by nothing.
 function categoryColor(
   cat: ReadColorCategory,
   i: number,
   data: ReadColorData,
-  colorScheme: number,
   palette: ColorPalette,
 ): string {
   switch (cat) {
@@ -499,14 +503,12 @@ export function readColorFromCategoryIndex(
   categoryIndex: number,
   i: number,
   data: ReadColorData,
-  colorScheme: number,
   palette: ColorPalette,
 ) {
   return categoryColor(
     READ_COLOR_CATEGORY_BY_INDEX[categoryIndex]!,
     i,
     data,
-    colorScheme,
     palette,
   )
 }
@@ -528,7 +530,6 @@ export function getReadColor(
     readColorCategory(i, data, colorScheme, opts),
     i,
     data,
-    colorScheme,
     palette,
   )
 }

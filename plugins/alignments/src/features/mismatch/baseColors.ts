@@ -33,25 +33,22 @@ export function effectiveBaseColors(state: BaseColorState) {
   }
 }
 
-// The color a byte that is not A/C/G/T/N takes. Reachable in ordinary data:
-// BAM's 4-bit alphabet is `=ACMGRSVTWYHKDBN`, so IUPAC ambiguity codes and '='
-// both reach the per-base draws, and the extractors only upper-case the byte
-// (`& ~0x20`) rather than folding it to N.
+// One 256-entry table per palette, filled from a five-entry map so both tables
+// below are built the same way and index the raw base byte directly.
 //
-// It is N's color, muted or not, rather than a second reading of
+// The fill is the color a byte that is not A/C/G/T/N takes, and it is reachable
+// in ordinary data: BAM's 4-bit alphabet is `=ACMGRSVTWYHKDBN`, so IUPAC
+// ambiguity codes and '=' both reach the per-base draws, and the extractors only
+// upper-case the byte (`& ~0x20`) rather than folding it to N.
+//
+// It is N's own entry, muted or not, rather than a second reading of
 // `showModifications`: the GPU reaches this same case through mismatch.slang's
 // `default: colorBaseN`, so the fallback IS whatever N resolved to. Spelling it
 // as its own ternary is what once painted a stray IUPAC base blue on Canvas2D
 // while the GPU painted it grey.
-function baseColorFallback(state: BaseColorState): RGBColor {
-  return effectiveBaseColors(state).N
-}
-
-// One 256-entry table per palette, filled from a five-entry map so both tables
-// below are built the same way and index the raw base byte directly.
 function baseTable<T>(state: BaseColorState, of: (c: RGBColor) => T): T[] {
   const c = effectiveBaseColors(state)
-  const table = new Array<T>(256).fill(of(baseColorFallback(state)))
+  const table = new Array<T>(256).fill(of(c.N))
   table[65] = of(c.A)
   table[67] = of(c.C)
   table[71] = of(c.G)

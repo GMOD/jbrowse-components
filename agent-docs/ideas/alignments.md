@@ -265,3 +265,33 @@ policy number instead of a memory ceiling; coalesce the buffers after, if the
 allocation count still shows up. Roughly 150 lines of ceiling machinery come out
 only at the end of that, and `MAX_GROUPS = 40` is still worth keeping as a
 cardinality sanity check on `tag`, which is the one dimension the data decides.
+
+**Intern `readTagValues` the way `readNextRefs` was interned.** Both CPU-baked
+colour schemes (`tag`, `mateRefName`) ship `readTagValues: string[]` — one string
+per read across the RPC boundary — and it is the shape this plugin has already
+measured and deleted once, one field over. `shared/readNextRefs.ts` records the
+number for the identical array: **153,677 strings holding one distinct value,
+16.5 ms to build and 8.0 ms to structured-clone, against 8.8 ms for a
+slots-plus-table**, i.e. 2.8x, with a bench at `benches/readNextRefs.bench.ts`.
+The tag case has the same distribution — HP carries two or three values over a
+whole pileup, RG a handful, a mate reference usually one.
+
+The shape is `readNextRefs`': a transferable `Int32Array` of slots plus a table
+of distinct values, read through an accessor. `presentTagValues` (the legend's
+whole swatch list for these schemes) then comes off the table rather than off an
+O(reads) scan.
+
+**What does NOT work, checked**: reusing `readNextRefIds` / `nextRefNames` for
+`mateRefName` rather than adding a second dictionary. `buildReadNextRefs` reads
+only `next_ref`, while `getMateRefName` also reads a synteny block's
+`mate.refName` — so LGVSyntenyDisplay's "Query name" would resolve `''` for
+every block. Teaching the nextRefs table to read `mate.refName` fixes that and
+breaks something quieter: `buildReadInterchrom` compares those names against the
+region's refName, and a PAF block's mate is a query contig on the *other*
+assembly, so every synteny block would come back interchromosomal and lose its
+chevron (`dirMoot`).
+
+That also kills the tempting corollary — that `mateRefName` could drop
+`workerExtracts` and become a tier-2 recolor instead of a refetch. It cannot: the
+worker still has to extract the value. The win here is payload and clone time
+only.

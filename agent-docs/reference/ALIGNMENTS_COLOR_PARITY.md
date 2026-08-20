@@ -70,11 +70,44 @@ configuration everybody looks at:
 | connector labels vs read key | the day each was written | any later wording edit |
 | connector slot rule, Canvas2D vs GPU | every slot in use | slot 10+ (see below) |
 | mate-link pair fields | both primaries on screen | a mate whose primary is off-screen |
+| chromosome painting vs the synteny views | nothing, once synteny moved | every assembly (see below) |
 
 Every one was described correctly in a comment and enforced by nothing. Figures
 are captured in light mode with well-formed data, so the corpus could not catch
 any of them. That is the pattern to look for elsewhere in the plugin: a comment
 asserting two things match is a derivation waiting to be written.
+
+## The parity claim that outlived the thing it named
+
+`mateRefName` ("Mate chromosome"; "Query name" on LGVSyntenyDisplay) said in
+`colorSchemes.ts` that it and the synteny view's `query` mode "both go through
+core's getQueryColor, so one contig paints the same color in both views". They
+did once. Synteny then moved to `paletteColorAt` — handing the palette out by
+position in the assembly, with re-lit laps — after a figure review caught rice's
+twelve chromosomes colliding in nine hash buckets. The alignments sentence was
+not edited, so it went on describing a shared function only one side still
+called.
+
+**That is a fourth shape, and the one to watch for across plugins**: not two
+rules drifting, but one of them being fixed somewhere the other's comment could
+not see. Both had a single named function; the parity failed anyway.
+
+What the alignments side was left painting, measured on hg38 through
+`bakedValueColor` itself: 25 chromosome names onto **10** colours, every one of
+them shared. `chr1 chr12 chr21 chrY` are one pink, `chr2 chr13 chr22` are
+category10's grey — the slot the synteny palette deliberately drops for reading
+as "uncolored/broken". So from a chr1 view, a translocation to chr12 painted
+exactly the colour of the reads around it, in the scheme whose whole purpose is
+showing translocations.
+
+Now both sides call `refNameColor` (core, beside `getQueryColor`), which takes a
+position and hashes only when there is none. The alignments position comes from
+`paintedRefNamePosition`, the twin of `LinearSyntenyDisplay.paintedChromosomeOrder`
+— **canonicalized first**, because a mate reference is `next_ref` and arrives in
+the file's spelling (REFNAME_NAMESPACES.md). Both halves fail silently, so both
+are sabotage-checked in `chromosomePainting.test.ts`: dropping the
+canonicalization and dropping the whole position both fall back to a real,
+plausible colour.
 
 ## Deriving the rule is not the same as calling it
 
