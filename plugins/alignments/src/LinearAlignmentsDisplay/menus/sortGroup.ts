@@ -153,12 +153,14 @@ export function getSortByMenuItem(
 // is dropped because it needs a tag name, so it is added back below as a
 // dialog-opener rather than a direct select. Chain mode's narrowing is not here —
 // `groupByRadioMenuItem` applies it to whatever it is handed, so this display and
-// LGVSyntenyDisplay can't answer it differently.
-function offeredGroupByTypes() {
-  return Object.values(GROUP_BY_DIMENSIONS)
+// LGVSyntenyDisplay can't answer it differently. Built once, like the synteny
+// menu's own list: the registry is a module constant, so a menu open cannot
+// produce a different answer.
+const GROUP_OPTIONS = pickGroupByOptions(
+  ...Object.values(GROUP_BY_DIMENSIONS)
     .filter(d => !d.hidden && d.type !== 'tag')
-    .map(d => d.type)
-}
+    .map(d => d.type),
+)
 
 // The dialog's surface plus what the radios themselves need. The same node is
 // passed on to GroupByDialog, so it has to be a superset.
@@ -177,7 +179,7 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
   const groupTag = groupBy?.type === 'tag' ? groupBy.tag : undefined
   return groupByRadioMenuItem({
     current: groupBy?.type,
-    options: pickGroupByOptions(...offeredGroupByTypes()),
+    options: GROUP_OPTIONS,
     isChainMode: model.isChainMode,
     onSelect: type => {
       model.setGroupBy({ type })

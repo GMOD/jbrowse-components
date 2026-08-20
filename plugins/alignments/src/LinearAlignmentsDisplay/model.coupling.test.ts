@@ -475,6 +475,24 @@ describe('ordering controls in chain mode', () => {
     expect(display.rpcProps().sortTag).toBeUndefined()
   })
 
+  // A per-read grouping is the third thing chain mode drops (`groupByForMode`,
+  // which the worker re-applies to whatever it is sent), so it has to leave the
+  // key the same way. The menu won't offer one in chain mode, but a session or
+  // the settings editor can hold one — and then clearing or changing it dropped
+  // every fetched region to re-read byte-identical data.
+  test('a per-read grouping leaves the fetch key when chain mode drops it', () => {
+    const display = createDisplay()
+    display.setGroupBy({ type: 'strand' })
+    expect(display.rpcProps().groupBy).toEqual({ type: 'strand' })
+
+    display.setLinkedReads('normal')
+    expect(display.rpcProps().groupBy).toBeUndefined()
+
+    // a chain-groupable dimension still reaches the worker
+    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    expect(display.rpcProps().groupBy).toEqual({ type: 'tag', tag: 'HP' })
+  })
+
   // The collapse is the same shape of no-op, and the one you can arrive at with
   // the slot already on: tick it under a chain-consistent grouping, then switch
   // to linked reads. The menu row goes with `canCollapseGroupRows`, so from

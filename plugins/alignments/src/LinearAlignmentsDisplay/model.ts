@@ -221,6 +221,10 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
     .map(s => s.type),
 )
 
+// One identity for "no lane sizes itself", so `groupHeightOverrides` doesn't
+// hand the layout a fresh map per evaluation.
+const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
+
 // Material UI 200-tone palette for color-by-tag values. The first value
 // hit gets index 0, the eleventh wraps to index 0 again.
 
@@ -923,9 +927,12 @@ export default function stateModelFactory(
          * Whether a stacked group carries a custom pileup-height override — set
          * by expanding it (show all reads) or dragging its resize handle (taller
          * or shorter). Drives the group label's restore-to-fit affordance.
+         *
+         * The overrides IN EFFECT, so it cannot say a lane is sized while the
+         * layout lays it out on the shared budget — see `groupHeightOverrides`.
          */
         hasGroupHeightOverride(key: string) {
-          return self.groupMaxHeightOverrides.has(key)
+          return this.groupHeightOverrides.has(key)
         },
 
         /**
@@ -943,6 +950,29 @@ export default function stateModelFactory(
          */
         get canSizeGroupHeights() {
           return self.showPileup && !self.fitHeightToDisplay
+        },
+
+        /**
+         * #getter
+         * The per-lane pileup-height overrides IN EFFECT, which is not the set
+         * banked. Fit derives one read pitch from every lane's FULL row count
+         * (`fittedReadPitch`), so a lane the layout still caps at its own
+         * override shows fewer rows than the pitch was solved for and leaves
+         * exactly that much of the display blank — the one thing the mode
+         * promises not to do.
+         *
+         * `setHeightMode` drops the overrides on the explicit switch, but the
+         * resolved mode also moves without it (the promotable cascade, a track
+         * reset), and there `canSizeGroupHeights` had already taken away both
+         * surfaces that could clear one — leaving the lane clipped by a cap
+         * `groupClippedBy` reports as `'override'`, which fires no affordance.
+         * Inert rather than dropped, so returning to fixed restores what the
+         * user set.
+         */
+        get groupHeightOverrides(): ReadonlyMap<string, number> {
+          return self.fitHeightToDisplay
+            ? NO_GROUP_HEIGHT_OVERRIDES
+            : self.groupMaxHeightOverrides
         },
 
         /**
@@ -1424,7 +1454,7 @@ export default function stateModelFactory(
             // `FitViewportInput.totalOverhead`.
             totalOverhead: () => this.totalBandOverhead,
             collapsedKeys: self.collapsedGroups,
-            heightOverridesPx: self.groupMaxHeightOverrides,
+            heightOverridesPx: this.groupHeightOverrides,
           })
         },
 
@@ -1921,7 +1951,7 @@ export default function stateModelFactory(
             arcInkKeys: self.arcsResult.inkGroupKeys,
             sashimiDownKeysByGroup: self.sashimiDownKeysByGroup,
             collapsedKeys: self.collapsedGroups,
-            heightOverrideKeys: self.groupMaxHeightOverrides,
+            heightOverrideKeys: self.groupHeightOverrides,
             showPileup: self.showPileup,
             fitHeightToDisplay: self.fitHeightToDisplay,
           })
@@ -2677,18 +2707,21 @@ export default function stateModelFactory(
             // orientation …) leaves these props identical and repaints from the
             // data already in memory instead of refetching the region.
             colorBy: workerColorBy(self.colorBy),
-            // Both mirror what `executeRenderAlignmentData` does with them in
-            // chain mode — it forces soft clipping off and drops the sort tag —
-            // so that the cache key names the fetch the worker will actually
-            // perform. Sending the raw values instead made two settings that
-            // cannot reach chain output invalidate every fetched region anyway:
-            // "Show soft clipping" is a live checkbox in chain mode, so each
-            // click dropped `rpcDataMap` and re-read the region to receive
-            // byte-identical data, and a `sortedBy` carried in from before the
-            // mode was entered kept a tag name in the key that only ever
-            // extracted `sortTagValues` nothing reads (see `canSortReads`).
+            // All three mirror what `executeRenderAlignmentData` does with them
+            // in chain mode — it forces soft clipping off, drops the sort tag
+            // and degrades a per-read grouping to ungrouped (`groupByForMode`,
+            // which this getter is the main-thread half of) — so that the cache
+            // key names the fetch the worker will actually perform. Sending the
+            // raw values instead made settings that cannot reach chain output
+            // invalidate every fetched region anyway: "Show soft clipping" is a
+            // live checkbox in chain mode, so each click dropped `rpcDataMap`
+            // and re-read the region to receive byte-identical data; a
+            // `sortedBy` carried in from before the mode was entered kept a tag
+            // name in the key that only ever extracted `sortTagValues` nothing
+            // reads (see `canSortReads`); and a `groupBy` chain mode drops is
+            // reachable the same way, from a session or the settings editor.
             sortTag: self.isChainMode ? undefined : self.sortTag,
-            groupBy: self.groupBy,
+            groupBy: self.effectiveGroupBy,
             showSoftClipping: self.isChainMode ? false : self.showSoftClipping,
             // showCoverage is here (not just renderState) because the worker
             // skips the entire coverage-band pipeline — including the per-bp GPU

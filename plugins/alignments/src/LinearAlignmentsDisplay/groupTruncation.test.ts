@@ -229,3 +229,36 @@ test('a lane clipped by its own override raises nothing', () => {
   // and its sibling, still on the shared budget, is unaffected
   expect(display.groupClippedBy('2')).toBe('ceiling')
 })
+
+// Fit solves one read pitch from every lane's FULL row count, so a lane the
+// layout still caps at its own override shows fewer rows than the pitch was
+// solved for and leaves that much of the display blank. `setHeightMode` drops
+// the overrides on the explicit switch, but the resolved mode also moves without
+// it — the promotable cascade writes the slot, a track reset clears the delta —
+// and there `canSizeGroupHeights` has already taken away both surfaces that
+// could clear one.
+test('fit ignores a banked height override rather than clipping under it', () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 400 },
+    { key: '2', label: 'HP: 2', n: 400 },
+  ])
+  display.setMaxHeight(4000)
+  display.resizeGroupHeight('1', -100)
+  expect(display.groupClippedBy('1')).toBe('override')
+
+  // the mode arriving without setHeightMode, which is what leaves the override
+  display.configuration.setSlot('heightMode', 'fit')
+  expect(display.fitHeightToDisplay).toBe(true)
+  expect(display.canSizeGroupHeights).toBe(false)
+
+  expect(display.groupClippedBy('1')).toBe('budget')
+  expect(display.hasGroupHeightOverride('1')).toBe(false)
+  // both lanes take the same slice, and the stack fills the display
+  expect(rowsIn(display, 0)).toBe(rowsIn(display, 1))
+  expect(display.sections.contentHeight).toBe(display.height)
+
+  // inert, not dropped — leaving fit hands the lane back its own cap
+  display.configuration.setSlot('heightMode', 'fixed')
+  expect(display.groupClippedBy('1')).toBe('override')
+  expect(display.hasGroupHeightOverride('1')).toBe(true)
+})
