@@ -205,6 +205,18 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   //   hs1/mm39 NOT diagonalized   curves 1.72%   straight 0.44%
   //   grape/peach, same settings  curves 0.00%   straight 0.01%
   //
+  // Re-measured after `ribbonMaxPerpWidth` split the fill-vs-stroke branch off
+  // this number (one build either side of that line, everything else held):
+  //
+  //   hs1/mm39 diagonalized       curves 0.57%   straight 0.58%
+  //   hs1/mm39 NOT diagonalized   curves 0.78%   straight 0.47%
+  //   grape/peach, same settings  curves 0.01%   straight 0.01%
+  //
+  // Most of what the three rows above measured was the branch, not the fade: the
+  // diagonalized view no longer tells the two modes apart. THE THRESHOLD BELOW IS
+  // UNCHANGED because it gates a targeted screenshot pair rather than this probe's
+  // view — tighten it from a gate run, not from these figures.
+  //
   // Turning curves off at identical data and ribbon count takes 3/4 of it, and
   // making the ribbons steeper moves the two modes in OPPOSITE directions —
   // worse curved, better straight, because steeper drives both models further

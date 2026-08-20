@@ -34,7 +34,7 @@ before anyone noticed.
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
 | [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
-| [Canvas2D fades a curved sub-pixel ribbon by one number](#canvas2d-fades-a-curved-sub-pixel-ribbon-by-one-number) | synteny, canvas2d | measured and understood; the cost is N strokes in the 500k-instance loop |
+| [Canvas2D fades a curved sub-pixel ribbon by one number](#canvas2d-fades-a-curved-sub-pixel-ribbon-by-one-number) | synteny, canvas2d | most of the measured drift was the fill-vs-stroke branch and is fixed; 0.31pp of fade left, at N strokes in the 500k-instance loop |
 | [Move the four cubic AA ramps onto the linear one](#move-the-four-cubic-aa-ramps-onto-the-linear-one) | shaders, GPU | the measurement is done; convert the dotplot capsule and read the cross-backend gate's drift, which should fall |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
@@ -257,19 +257,30 @@ vertical at both ends and twice the chord slope at the middle, so a rearranged
 block is at its *widest* perpendicular exactly where it meets the frame — and one
 number per ribbon cannot say that. The GPU is the accurate side.
 
-**Scoped to the ALPHA, since `ribbonMaxPerpWidth` split off.** The same one
-number used to decide fill-vs-centerline-stroke, and through that pickability,
-which put a curved ribbon several px wide at both ends on the stroke branch as a
-1px hairline that could not be clicked. That half is fixed: the branch asks the
-widest the ribbon ever gets, which on a bezier is an end and is foreshortened by
-nothing. What is left here is the fade applied once the branch has settled on a
-stroke — i.e. ribbons genuinely under a pixel everywhere, which is the whole of
-the whole-genome case measured below.
+**Scoped to the ALPHA, since `ribbonMaxPerpWidth` split off — and most of what
+was measured here was the other half.** The same one number used to decide
+fill-vs-centerline-stroke, and through that pickability, which put a curved
+ribbon several px wide at both ends on the stroke branch as a 1px hairline that
+could not be clicked. That is fixed: the branch asks the widest the ribbon ever
+gets, which on a bezier is an end and is foreshortened by nothing. What is left
+here is the fade applied once the branch has settled on a stroke — ribbons
+genuinely under a pixel everywhere.
 
-It is the whole of synteny's only cross-backend drift, measured three ways in
-[CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) and reproducible with
-`probe-synteny-backend-drift.ts`: 1.54% curved vs 0.53% straight on the same
-data, and 1.72% / 0.44% once the ribbons are made steeper.
+Re-measured with `probe-synteny-backend-drift.ts`, one build either side of that
+one line, everything else held:
+
+| hs1/mm39 | curved | straight |
+| --- | --- | --- |
+| diagonalized, before | 1.59% | 0.58% |
+| diagonalized, after | **0.57%** | 0.58% |
+| not diagonalized, after | **0.78%** | 0.47% |
+| grape/peach, after | 0.01% | 0.01% |
+
+So the curve-mode excess was about 1.0pp of branch error and about 0.3pp of
+fade, not 1.0pp of fade — the numbers this entry was opened on
+(1.54% / 0.53%, and 1.72% / 0.44% steeper) were reading both at once. What
+remains is the 0.31pp gap in the steepest arm; the diagonalized view no longer
+distinguishes the two modes at all.
 
 **Why it is parked rather than fixed:** closing it means replacing one
 `ctx.stroke()` of the centerline with N segments at N alphas, in
