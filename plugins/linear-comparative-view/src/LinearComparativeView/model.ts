@@ -670,8 +670,10 @@ function stateModelFactory(pluginManager: PluginManager) {
     .views(() => ({
       /**
        * #method
-       * includes a subset of view menu options because the full list is a
-       * little overwhelming. overridden by subclasses
+       * The view header's own hamburger, overridden by subclasses. A SEPARATE
+       * list from `menuItems()`, not a subset of it: that one is what the app
+       * menubar shows for any view, this one is what the view's own header
+       * offers, and a subclass fills them independently.
        */
       headerMenuItems(): MenuItem[] {
         return []

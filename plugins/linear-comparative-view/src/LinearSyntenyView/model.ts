@@ -756,7 +756,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * #method
-         * Still a subset of `menuItems()`: the full list is overwhelming.
+         * The header hamburger, which is NOT a subset of `menuItems()` — the
+         * two share only Export SVG. This one is the synteny surface; the app
+         * menubar's is the generic view one.
          *
          * SIX ROWS WHATEVER THE STACK HOLDS. The menu answers what the view IS
          * — where the rows point, which genomes it stacks, what leaves it — and
@@ -764,10 +766,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * the header's settings panel, and `SyntenySettingsPopover` states that
          * division from the other side.
          *
-         * A group here names a CHOICE ("Link views") or what varies with row
-         * count ("Rows"), never a topic. The "Navigation" group that used to
-         * hold the zoom commands was named after what the whole menu is about,
-         * and charged a popup for it.
+         * A group in THIS menu names a CHOICE ("Link views") or what varies
+         * with row count ("Rows"), never a topic: the "Navigation" group that
+         * used to hold the zoom commands was named after what the whole menu is
+         * about, and charged a popup for it. LGV's menu keeps a "Navigation"
+         * whose three items had no other home, which is a different case.
          */
         headerMenuItems(): MenuItem[] {
           return [

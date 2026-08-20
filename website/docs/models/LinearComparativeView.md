@@ -60,7 +60,7 @@ the whole surface.
 | --- | --- |
 | <span id="method-isviewcompact">**isViewCompact**</span><br><code>(idx: number) =&gt; boolean</code> |  |
 | <span id="method-trackcontainerfor">**trackContainerFor**</span><br><code>(id: string) =&gt; TrackContainer &#124; undefined</code> | The level that owns a given track list. This view holds one track list per synteny band rather than one of its own, so the track-selector and add-track widgets target a level through here instead of referencing this view directly. By id, not index: reconcileLevels pops levels when a genome row is removed, and an index would silently retarget a different pair. |
-| <span id="method-headermenuitems">**headerMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | includes a subset of view menu options because the full list is a little overwhelming. overridden by subclasses |
+| <span id="method-headermenuitems">**headerMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | The view header's own hamburger, overridden by subclasses. A SEPARATE list from `menuItems()`, not a subset of it: that one is what the app menubar shows for any view, this one is what the view's own header offers, and a subclass fills them independently. |
 | <span id="method-showmenuitems">**showMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | items for the "Show..." submenu in the header. overridden by subclasses to add view-specific toggle options |
 | <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-rubberbandmenuitems">**rubberBandMenuItems**</span><br><code>() =&gt; { label: string; onClick: () =&gt; void; }[]</code> |  |
