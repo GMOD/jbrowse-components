@@ -485,7 +485,7 @@ describe('supplementary / split read coloring', () => {
     const rows = subMenuOf(item)
     expect(rows).toHaveLength(2)
     // the strand flip is long-read only; orange covers both kinds
-    expect(rows.map(r => ('subLabel' in r ? r.subLabel : ''))).toEqual([
+    expect(rows.map(r => ('helpText' in r ? r.helpText : ''))).toEqual([
       expect.stringContaining('long (unpaired) reads'),
       expect.stringContaining('paired and long reads alike'),
     ])

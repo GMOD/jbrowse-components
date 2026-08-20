@@ -201,9 +201,10 @@ function arcColorItem(
 }
 
 // Both rows recolor a chain that carries a supplementary segment, and orange
-// wins where they overlap (see readColorCategory's ladder). Each subLabel says
-// which reads it reaches and what the result looks like, because "supplementary"
-// alone doesn't distinguish them and the difference is the whole choice. Greyed
+// wins where they overlap (see readColorCategory's ladder). Each row's helpText
+// says which reads it reaches and what the result looks like, because
+// "supplementary" alone doesn't distinguish them and the difference is the whole
+// choice. Prose, so a tooltip rather than a subLabel under every row. Greyed
 // out rather than hidden while chain mode is off, matching the read-connection
 // band options: the settings stay discoverable, and the tooltip names the one
 // switch that makes them live.
@@ -221,7 +222,7 @@ function supplementaryItem(
         supp.flipStrandLongReadChains,
         supp.setFlipStrandLongReadChains,
         {
-          subLabel:
+          helpText:
             'long (unpaired) reads: segments agreeing with the orientation most reads on screen share stay red and the ones inverted at a junction go blue, so an inversion reads as a color flip',
         },
       ),
@@ -230,7 +231,7 @@ function supplementaryItem(
         supp.colorSupplementaryChains,
         supp.setColorSupplementaryChains,
         {
-          subLabel:
+          helpText:
             'one flat color for the whole chain, paired and long reads alike — marks the split without classifying it, so it replaces both the strand flip and the inversion/deletion hues',
         },
       ),

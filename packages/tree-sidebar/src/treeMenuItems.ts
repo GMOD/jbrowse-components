@@ -44,8 +44,8 @@ interface RowLabelsMenuModel {
  * Shared "Show row labels" toggle. Every display with a sidebar had written its
  * own, and they had drifted in three ways at once — one called the slot
  * `showSidebarLabels`, one dropped the row from the menu entirely while the
- * tree was off, and one carried a `subLabel` explaining the swatch degradation
- * that is true of all of them (`SvgRowLabels` falls back to a `labelColor`
+ * tree was off, and one explained the swatch degradation that is true of all of
+ * them (`SvgRowLabels` falls back to a `labelColor`
  * stripe below `MIN_TEXT_ROW_HEIGHT` whoever is drawing).
  *
  * `requiresTree` is a real difference rather than more drift: MAF mounts its
@@ -66,7 +66,7 @@ export function showRowLabelsMenuItem(
     {
       disabled: requiresTree && !self.showTree,
       disabledHelpText: 'Show the tree first',
-      subLabel:
+      helpText:
         'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
     },
   )

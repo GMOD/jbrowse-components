@@ -272,7 +272,6 @@ function getCopySubMenu(self: IStateTreeNode, feat: Feature): MenuItem[] {
     })
     sub.push({
       label: 'Copy location',
-      subLabel: 'e.g. to paste into the location search box',
       onClick: () => {
         void copyText(self, locString, 'location')
       },
@@ -281,15 +280,13 @@ function getCopySubMenu(self: IStateTreeNode, feat: Feature): MenuItem[] {
   if (seq) {
     sub.push({
       label: 'Copy read sequence',
-      subLabel: 'raw read bases, e.g. to paste into BLAT/BLAST',
       onClick: () => {
         void copyText(self, String(seq), 'read sequence')
       },
     })
   }
   sub.push({
-    label: 'Copy feature info',
-    subLabel: 'all fields as JSON',
+    label: 'Copy feature info as JSON',
     onClick: () => {
       copyFeatureInfo(self, feat)
     },

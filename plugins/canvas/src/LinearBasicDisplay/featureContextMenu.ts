@@ -464,11 +464,9 @@ function copyItem(
   label: string,
   text: string,
   what: string,
-  subLabel?: string,
 ): MenuItem {
   return {
     label,
-    subLabel,
     icon: ContentCopyIcon,
     onClick: () => {
       void copyText(self, text, what)
@@ -554,7 +552,6 @@ function copyItems(ctx: MenuContext): MenuItem[] {
               end: endBp,
             }),
             'location',
-            'e.g. to paste into the location search box',
           ),
         ]
       : []),

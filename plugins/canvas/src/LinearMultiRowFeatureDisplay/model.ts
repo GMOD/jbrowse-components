@@ -1255,7 +1255,6 @@ export default function stateModelFactory(
                 // block's span.
                 {
                   label: 'Copy location',
-                  subLabel: 'e.g. to paste into the location search box',
                   icon: ContentCopyIcon,
                   onClick: () => {
                     void copyText(

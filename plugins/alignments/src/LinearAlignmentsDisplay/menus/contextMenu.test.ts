@@ -561,7 +561,7 @@ test('copy submenu offers name, sequence, and info when both are present', () =>
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
     'Copy read sequence',
-    'Copy feature info',
+    'Copy feature info as JSON',
   ])
 })
 
@@ -572,7 +572,7 @@ test('copy submenu omits read sequence when the feature has no seq', () => {
   const copy = findSubMenu(run(model), 'Copy')
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
-    'Copy feature info',
+    'Copy feature info as JSON',
   ])
 })
 
@@ -589,7 +589,7 @@ test('copy submenu includes 1-based location when the feature has a refName', ()
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
     'Copy location',
-    'Copy feature info',
+    'Copy feature info as JSON',
   ])
 })
 

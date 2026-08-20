@@ -189,7 +189,7 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
         self.setRowIdentityAutoZoom,
         // The dependency stated rather than gated on: it qualifies the two
         // identity options above and is inert under the others.
-        { subLabel: 'for the identity plots above' },
+        { helpText: 'for the identity plots above' },
       ),
     ],
   })
