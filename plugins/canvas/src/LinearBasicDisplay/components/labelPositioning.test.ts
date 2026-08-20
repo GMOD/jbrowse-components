@@ -417,17 +417,27 @@ describe('computeLabelExtraWidth', () => {
 
   test('returns positive extra width when label is wider than feature', () => {
     const labelWidth = measureText('BRCA1_longGeneName', LABEL_FONT)
-    const result = computeLabelExtraWidth(withLabels(['BRCA1_longGeneName']), 2)
+    const result = computeLabelExtraWidth(
+      withLabels(['BRCA1_longGeneName']),
+      2,
+      true,
+      true,
+      LABEL_FONT,
+    )
     expect(result).toBeCloseTo(labelWidth - 2)
     expect(result).toBeGreaterThan(0)
   })
 
   test('returns 0 when feature is wider than label', () => {
-    expect(computeLabelExtraWidth(withLabels(['A']), 500)).toBe(0)
+    expect(
+      computeLabelExtraWidth(withLabels(['A']), 500, true, true, LABEL_FONT),
+    ).toBe(0)
   })
 
   test('returns 0 when there are no labels', () => {
-    expect(computeLabelExtraWidth(withLabels([]), 2)).toBe(0)
+    expect(
+      computeLabelExtraWidth(withLabels([]), 2, true, true, LABEL_FONT),
+    ).toBe(0)
   })
 
   test('uses widest label when multiple labels exist', () => {
@@ -435,13 +445,22 @@ describe('computeLabelExtraWidth', () => {
     const result = computeLabelExtraWidth(
       withLabels(['X', 'LongLabelText_description']),
       5,
+      true,
+      true,
+      LABEL_FONT,
     )
     expect(result).toBeCloseTo(widest - 5)
   })
 
   test('SNP-like feature (1bp, very narrow) gets large extra width', () => {
     const labelWidth = measureText('rs12345', LABEL_FONT)
-    const result = computeLabelExtraWidth(withLabels(['rs12345']), 0.5)
+    const result = computeLabelExtraWidth(
+      withLabels(['rs12345']),
+      0.5,
+      true,
+      true,
+      LABEL_FONT,
+    )
     expect(result).toBeCloseTo(labelWidth - 0.5)
     expect(result).toBeGreaterThan(labelWidth - 1)
   })

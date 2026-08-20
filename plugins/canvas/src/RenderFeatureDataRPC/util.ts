@@ -21,8 +21,10 @@ const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i
 // mouseover/labels already route through readConfigValueSafe).
 const INVALID_COLOR = 'magenta'
 
-export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
-  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
+export function truncateLabel(text: string) {
+  return text.length > MAX_LABEL_LENGTH
+    ? `${text.slice(0, MAX_LABEL_LENGTH - 1)}…`
+    : text
 }
 
 // Truncates text so its rendered width at fontSize never exceeds maxWidthPx,

@@ -558,6 +558,44 @@ describe('collectRenderData stacked-transcript (Subfeatures) emit', () => {
     })
   })
 
+  // `Box` is a self-labeling glyph (SELF_LABELING_GLYPHS), so a leaf child of a
+  // gene spends its own `below` label row and `memoizeChildLayouts` marks it
+  // `ownsLabelRow`. The parent's `labelRows` counts that row, and
+  // `applyLayoutToRegion` is what turns the flag into height — so a leaf that
+  // arrives here without it gets a hit box one label row short of the row the
+  // packer reserved for it, and the label under it resolves to the gene.
+  it("carries a bare leaf child's own below-label row into its hit box", () => {
+    const leaf = mockFeature({
+      type: 'regulatory_region',
+      id: 'reg1',
+      start: 150,
+      end: 170,
+      attributes: { name: 'reg1' },
+    })
+    const gene = mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 100,
+      end: 170,
+      subfeatures: [leaf],
+    })
+    const layout: FeatureLayout = {
+      feature: gene,
+      glyphType: 'Subfeatures',
+      y: 0,
+      height: 10,
+      totalLayoutHeight: 10,
+      children: [{ ...boxLayout(leaf), y: 0, ownsLabelRow: true }],
+    }
+    const result = collect(layout, {
+      config: { ...config, subfeatureLabels: 'below' },
+    })
+
+    expect(
+      result.subfeatureInfos.find(s => s.featureId === 'reg1'),
+    ).toMatchObject({ ownsLabelRow: true })
+  })
+
   it('parents a container-inside-a-container to the record root, not the container', () => {
     // Three generic levels — a match with match_parts that themselves have
     // parts, which nests one Subfeatures glyph inside another. `parentFeatureId`

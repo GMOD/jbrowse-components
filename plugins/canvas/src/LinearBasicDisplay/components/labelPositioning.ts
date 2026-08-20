@@ -136,12 +136,18 @@ function maxRenderedLabelWidth(
 // mode's resolved label size: the baked widths are measured at the base size, so
 // a compact mode must scale them down or every one of those boxes overhangs the
 // text it is meant to cover.
+//
+// Every parameter is required. The three that carried defaults never took them
+// — all three callers pass all five — and the defaults were the wrong answer
+// anyway: `LABEL_FONT_SIZE` is the BASE size, so a caller in a compact mode that
+// let it stand would silently reserve the 43% overhang `renderedTextWidth`
+// exists to convert away.
 export function computeLabelExtraWidth(
   labelData: FeatureLabelData,
   featureWidthPx: number,
-  showLabels = true,
-  showDescriptions = true,
-  fontSize = LABEL_FONT_SIZE,
+  showLabels: boolean,
+  showDescriptions: boolean,
+  fontSize: number,
 ) {
   const widest = maxRenderedLabelWidth(
     labelData,

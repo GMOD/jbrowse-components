@@ -645,6 +645,12 @@ function emitBox(
         topPx: baseTopPx,
         heightPx: height,
         labelRowsAbove,
+        // `Box` is a self-labeling glyph, so a leaf child of a gene spends its
+        // own `below` row and the parent's `labelRows` already counts it. Left
+        // off, the row was reserved and the child's hit box stopped one label
+        // row short of it — the label under a bare-box child resolved to the
+        // gene, and its hover shading was shorter than a sibling transcript's.
+        ownsLabelRow: layout.ownsLabelRow,
         displayLabel: resolveSubfeatureLabel(feature, ctx),
       },
       ctx,

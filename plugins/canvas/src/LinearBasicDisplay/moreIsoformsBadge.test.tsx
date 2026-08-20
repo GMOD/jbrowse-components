@@ -265,11 +265,10 @@ describe('the badge rides the gene name label', () => {
 
   it('counts toward the label width the hit box and highlight reserve', () => {
     const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!
-    const withBadge = computeLabelExtraWidth(data, 0)
-    const withoutBadge = computeLabelExtraWidth(
-      { ...data, moreIsoformsLabel: undefined },
-      0,
-    )
+    const extra = (d: typeof data) =>
+      computeLabelExtraWidth(d, 0, true, true, LABEL_FONT_SIZE)
+    const withBadge = extra(data)
+    const withoutBadge = extra({ ...data, moreIsoformsLabel: undefined })
     expect(withBadge).toBeGreaterThan(withoutBadge)
     // the badge AND the gap it sits after (resolveFeatureLabels places it at
     // the name's end plus a LABEL_PADDING_PX), or every box built off this

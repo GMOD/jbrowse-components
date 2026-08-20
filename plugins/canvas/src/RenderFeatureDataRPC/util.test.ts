@@ -259,11 +259,6 @@ describe('truncateLabel', () => {
     expect(result.length).toBe(50)
     expect(result.endsWith('…')).toBe(true)
   })
-
-  it('respects custom maxLength', () => {
-    const label = 'ABCDEFGHIJ'
-    expect(truncateLabel(label, 5)).toBe('ABCD…')
-  })
 })
 
 describe('getBoxColor (BED itemRgb)', () => {
