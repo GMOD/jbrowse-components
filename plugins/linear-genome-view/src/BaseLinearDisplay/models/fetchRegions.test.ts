@@ -5,11 +5,15 @@ import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 
-// `fetchRegions` is twelve lines carrying one rule: run the work, then mark the
-// regions loaded — and only if the fetch is still current. Both halves are
-// silent when wrong. Marking first publishes a `loadedRegions` entry the GPU
-// upload autorun observes before the data behind it exists; skipping the
-// staleness guard writes a superseded fetch's regions over a fresher one's.
+// `fetchRegions` carries one rule: a region is marked loaded by whoever stores
+// its payload, through `ctx.commitRegion`, and only while the fetch is still
+// current. Every half is silent when wrong. Marking before the store publishes a
+// `loadedRegions` entry the GPU upload autorun observes before the data behind
+// it exists; skipping the staleness guard writes a superseded fetch's regions
+// over a fresher one's; and marking a region the work stored NOTHING for — which
+// is what this function used to do for the whole `needed` list, from the request
+// rather than the response — leaves the viewport reading as covered against data
+// that does not exist. See `RegionFetchContext`.
 //
 // Against the real model, not a transcription of it: the rule is about
 // `runFetch`'s stop-token rotation and `loadedRegions`, so a stand-in with its
@@ -83,19 +87,33 @@ describe('the loading flag', () => {
 
 // The invariant the action exists for: an entry in `loadedRegions` is a promise
 // that the data behind it is committed.
-describe('a region is marked loaded only after its data lands', () => {
-  it('marks it after the work returns, never before', async () => {
+describe('a region is marked loaded only when its data lands', () => {
+  it('marks it at the commit, never before', async () => {
     const { display } = setup()
     await afterFirstFetch(display)
 
-    let loadedDuringWork = 0
-    await display.fetchRegions([region], async () => {
-      loadedDuringWork = display.loadedRegions.size
+    let loadedBeforeStore = 0
+    await display.fetchRegions([region], async ctx => {
+      loadedBeforeStore = display.loadedRegions.size
       display.setLoaded(0, 'data')
+      ctx.commitRegion(0, region.region)
     })
-    expect(loadedDuringWork).toBe(0)
+    expect(loadedBeforeStore).toBe(0)
     expect(display.loadedRegions.size).toBe(1)
     expect(display.loadedData.get(0)).toBe('data')
+  })
+
+  // The case the old shape could not express. A fetch that comes back refused
+  // for size stores nothing, and the region must not then claim the span the
+  // fetch asked for: `isBlockCovered` would read the viewport as covered, the
+  // plan would answer `covered` on every later run, and — since the ordinary
+  // fetch IS the gate's re-measure — nothing would refetch OR re-measure.
+  it('does not mark a region the work stored nothing for', async () => {
+    const { display } = setup()
+    await afterFirstFetch(display)
+
+    await display.fetchRegions([region], async () => {})
+    expect(display.loadedRegions.size).toBe(0)
   })
 
   it('does not mark it when the work throws', async () => {
@@ -123,9 +141,11 @@ describe('a region is marked loaded only after its data lands', () => {
 
     await display.fetchRegions([region], async ctx => {
       // whatever supersedes it — a newer fetch, a clear — `isStale` is what the
-      // commit consults, and the guard is around the mark as well as the data
+      // commit consults, so a commit issued after it is dropped rather than
+      // trusted to a caller's own guard
       display.cancelFetch()
       expect(ctx.isStale()).toBe(true)
+      ctx.commitRegion(0, region.region)
     })
     expect(display.loadedRegions.size).toBe(0)
   })

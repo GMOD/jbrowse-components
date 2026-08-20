@@ -117,7 +117,7 @@ whole batch rather than per region:
 <!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
 ```ts
-await self.fetchRegions(needed, async (ctx: FetchContext) => {
+await self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
   // The CDS-frame annotation overlay (when configured) fetches in the same
   // stop-token-guarded pass as the main data so the two share staleness +
   // loadedRegions book-keeping; the two RPCs run concurrently.
@@ -142,6 +142,12 @@ await self.fetchRegions(needed, async (ctx: FetchContext) => {
     self.setSamples(sampleSet)
   }
   commit(results)
+  // beside the store, and every region gets one: MAF's size gate is the
+  // pre-flight kind, so a refusal returns from `fetchRegions` before this
+  // callback runs at all and nothing here can arrive empty-handed.
+  for (const { displayedRegionIndex, region } of needed) {
+    ctx.commitRegion(displayedRegionIndex, region)
+  }
 })
 ```
 

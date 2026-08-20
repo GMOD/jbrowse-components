@@ -71,6 +71,7 @@ function inputs(over: Partial<RegionFetchInputs> = {}): RegionFetchInputs {
     error: undefined,
     fetchCanceled: false,
     gateSkipsMeasuredViewport: false,
+    gateBlocked: false,
     isLoading: () => false,
     minimized: () => false,
     sources: () => sources(),
@@ -512,5 +513,104 @@ describe('retryOutcomeForPlan', () => {
     }
     // @ts-expect-error a fetch plan is excluded from the parameter type
     expect(() => retryOutcomeForPlan(fetchPlan)).toBeDefined()
+  })
+})
+
+// While the banner is up, the ordinary fetch is the only thing that re-measures
+// — there is no measurement-only path — so `covered` must not answer for it.
+// Holding data for a span says nothing about whether the gate would still refuse
+// that span, and while the banner is up the display is painting none of that
+// data anyway. Zooming back into a region the display had already loaded is
+// exactly where the two meet, and there the banner outlived every zoom that
+// would have released it.
+describe('a blocked gate outranks coverage', () => {
+  const blocked = {
+    gateBlocked: true,
+    sources: () =>
+      sources({
+        loadedRegion: () => region(0, 100000),
+        isCacheValid: () => true,
+      }),
+  }
+
+  it('fetches a covered block so the gate can re-measure', () => {
+    expect(planRegionFetch(inputs(blocked)).kind).toBe('fetch')
+  })
+
+  it('still declines once that viewport has been measured', () => {
+    expect(
+      planRegionFetch(inputs({ ...blocked, gateSkipsMeasuredViewport: true })),
+    ).toEqual({ kind: 'idle', reason: 'measured' })
+  })
+
+  it('is not what decides an unblocked covered block', () => {
+    expect(planRegionFetch(inputs({ ...blocked, gateBlocked: false }))).toEqual(
+      { kind: 'idle', reason: 'covered' },
+    )
+  })
+})
+
+// The property both halves of the freeze violated, stated once over the whole
+// input space rather than as the two scenarios that happened to be reported.
+//
+// **If the display owes the viewport something, the plan must ask for it.** The
+// only reasons it may decline are the ones that describe a state that will
+// change on its own: a terminal flag the viewport clears, a fetch already in
+// flight, a minimized track, or a gate that has already measured this very
+// viewport. `covered` is not one of those — it is a claim that nothing is owed,
+// and it was being made off `loadedRegions` alone, which used to be written from
+// the fetch REQUEST. A region the worker refused was then "covered" by data
+// nobody received, permanently.
+describe('the plan asks for anything the viewport is owed', () => {
+  const axes = {
+    error: [undefined, new Error('x')],
+    fetchCanceled: [false, true],
+    gateSkipsMeasuredViewport: [false, true],
+    gateBlocked: [false, true],
+    loading: [false, true],
+    minimizedTrack: [false, true],
+    // "does loaded data cover the one visible block", and "is the display's own
+    // content rule still satisfied" — the two terms `covered` is built from
+    covered: [false, true],
+    cacheValid: [false, true],
+  }
+
+  const cases = Object.entries(axes).reduce<Record<string, unknown>[]>(
+    (acc, [key, values]) =>
+      acc.flatMap(row => values.map(value => ({ ...row, [key]: value }))),
+    [{}],
+  )
+
+  it.each(cases)('%o', c => {
+    const owed = !(c.covered && c.cacheValid) || c.gateBlocked
+    const mayDecline =
+      c.error !== undefined ||
+      c.fetchCanceled ||
+      c.gateSkipsMeasuredViewport ||
+      c.loading ||
+      c.minimizedTrack
+    const plan = planRegionFetch(
+      inputs({
+        error: c.error,
+        fetchCanceled: c.fetchCanceled as boolean,
+        gateSkipsMeasuredViewport: c.gateSkipsMeasuredViewport as boolean,
+        gateBlocked: c.gateBlocked as boolean,
+        isLoading: () => c.loading as boolean,
+        minimized: () => c.minimizedTrack as boolean,
+        sources: () =>
+          sources({
+            loadedRegion: () => (c.covered ? region(0, 100000) : undefined),
+            isCacheValid: () => c.cacheValid as boolean,
+          }),
+      }),
+    )
+    if (owed && !mayDecline) {
+      expect(plan.kind).toBe('fetch')
+    }
+    // and the converse for the one reason that is a claim rather than a state:
+    // nothing may report `covered` while something is owed
+    if (owed) {
+      expect(plan).not.toEqual({ kind: 'idle', reason: 'covered' })
+    }
   })
 })

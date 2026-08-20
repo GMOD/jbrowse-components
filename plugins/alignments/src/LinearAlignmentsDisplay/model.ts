@@ -186,8 +186,8 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  FetchContext,
   HeightMode,
+  RegionFetchContext,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
@@ -3650,7 +3650,7 @@ export default function stateModelFactory(
           async fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
-            await self.fetchRegions(needed, async (ctx: FetchContext) => {
+            await self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
               // `callEachRegion` rather than `fetchEachRegion`: the tag-map
               // union below is a cross-region decision, so this guards once
               // around the whole batch instead of per region.
@@ -3665,8 +3665,13 @@ export default function stateModelFactory(
               for (const r of results) {
                 newDataMap.set(r.displayedRegionIndex, r.result)
               }
-              for (const [displayedRegionIndex, data] of newDataMap) {
-                self.setRpcData(displayedRegionIndex, data)
+              for (const { region, displayedRegionIndex } of needed) {
+                const data = newDataMap.get(displayedRegionIndex)
+                if (data) {
+                  // beside the store — see RegionFetchContext
+                  self.setRpcData(displayedRegionIndex, data)
+                  ctx.commitRegion(displayedRegionIndex, region)
+                }
               }
             })
           },

@@ -149,6 +149,7 @@ export type {
   GlobalFetchPhases,
   HeightMode,
   HeightModeMenuModel,
+  RegionFetchContext,
   StatusChromeModel,
   TooLargeMessageModel,
 } from './BaseLinearDisplay/index.ts'

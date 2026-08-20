@@ -16,6 +16,7 @@
 import { fetchEachRegion } from './MultiRegionDisplayMixin.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
+import type { RegionFetchContext } from './MultiRegionDisplayMixin.ts'
 
 const NEEDED = [
   {
@@ -31,12 +32,18 @@ const NEEDED = [
 // `self` only has to supply `fetchRegions`, which normally rotates the stop
 // token and applies the byte gate. Running `work` directly with a ctx the test
 // controls isolates the guards from that machinery.
-function selfWith(ctx: FetchContext) {
+function selfWith(ctx: FetchContext, loaded: number[] = []) {
   return {
     fetchRegions: (
       _needed: typeof NEEDED,
-      work: (ctx: FetchContext) => Promise<void>,
-    ) => work(ctx),
+      work: (ctx: RegionFetchContext) => Promise<void>,
+    ) =>
+      work({
+        ...ctx,
+        commitRegion: idx => {
+          loaded.push(idx)
+        },
+      }),
   }
 }
 

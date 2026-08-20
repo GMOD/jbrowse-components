@@ -76,6 +76,19 @@ export interface RegionFetchInputs {
    */
   gateSkipsMeasuredViewport: boolean
   /**
+   * The banner is up. Past `gateSkipsMeasuredViewport` that also means the
+   * measurement behind it describes a viewport the user has left, so this run
+   * owes a re-measure — and the ordinary fetch IS the re-measure, there being no
+   * measurement-only path.
+   *
+   * Read below as the one thing that outranks `covered`: holding data for a span
+   * says nothing about whether the gate would still refuse it, and while the
+   * banner is up the display is showing none of that data anyway. Zooming back
+   * into a span the display had already loaded is precisely where the two meet,
+   * and the fetch that would have released the banner never ran.
+   */
+  gateBlocked: boolean
+  /**
    * A fetch is in flight. A **thunk**, and untracked at the call site: tracking
    * it would re-fire the autorun on the `isLoading` flip mid-fetch, when
    * `fetchGeneration` at fetch end is the real re-trigger.
@@ -197,6 +210,7 @@ export function planRegionFetch({
   error,
   fetchCanceled,
   gateSkipsMeasuredViewport,
+  gateBlocked,
   isLoading,
   minimized,
   sources,
@@ -262,6 +276,7 @@ export function planRegionFetch({
     // display says `loadingSuppressed` (sequence, whose `zoomedOut` implies it)
     // or `awaitingPrerequisite` (variants, until `sourcesBase` lands).
     if (
+      !gateBlocked &&
       isBlockCovered(loadedRegion(block.displayedRegionIndex), block) &&
       isCacheValid(block.displayedRegionIndex)
     ) {

@@ -35,6 +35,36 @@ export {
 export { isBlockCovered, planRegionFetch } from './planRegionFetch.ts'
 
 /**
+ * A {@link FetchContext} plus the one thing a per-region fetch can do that a
+ * global one cannot: record that a region is loaded.
+ *
+ * **`commitRegion` is called where the payload is stored, and that is the whole
+ * rule.** `loadedRegions` is the span `isBlockCovered` judges the viewport
+ * against, so it has to describe data that exists. It used to be written by
+ * `fetchRegions` from the region list it *asked* for, once the work callback
+ * returned — a second writer, working off the request while the display worked
+ * off the response, and the two disagree exactly when a fetch stores less than
+ * it asked for. A region refused by the in-fetch size gate then read as covered
+ * against data it never received: the plan answered `covered` on every later
+ * run, so nothing refetched and — because the ordinary fetch IS the gate's
+ * re-measure — nothing re-measured either. On the byte axis that is a banner no
+ * zoom can release; on the density axis, which falls with `bpPerPx`, the banner
+ * goes and the display paints the previous, narrower payload across the whole
+ * viewport with nothing on screen to say so.
+ *
+ * Forgetting the call now costs a redundant refetch. Getting it wrong the other
+ * way cost a display frozen until reload, and no test could see it.
+ */
+export interface RegionFetchContext extends FetchContext {
+  /**
+   * Record that this region's data is now held, over `region`. Ignored once the
+   * fetch is stale — the same guard the write has always had, moved to where
+   * the write happens.
+   */
+  commitRegion: (displayedRegionIndex: number, region: Region) => void
+}
+
+/**
  * #stateModel MultiRegionDisplayMixin
  * #displayFoundationDef Per-region fetch + render: the fetch autoruns, `rpcProps()` refetch wiring, and byte gating. The common case.
  * #category display
@@ -233,15 +263,26 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #method
-         * Overridable hook (default true): whether the last fetch actually
-         * stored data for this region. `fetchRegions` marks every needed region
-         * loaded once the work callback returns, including one the worker
-         * refused for size, so a display holding a per-region data map answers
-         * off that map and the region refetches the moment the gate releases.
+         * Overridable hook (default true): whether the display can actually
+         * draw what this region is marked loaded over. Two different displays
+         * want it for two different reasons, and both are real:
          *
-         * Separate from `regionFetchKey` on purpose: the mixin cannot see a
-         * display's data map, and a key that changed when data arrived would be
-         * the `rpcProps()` loop in different clothes.
+         * - **The reader-side check of the write-side rule.** `loadedRegions` is
+         *   written where the payload is stored (`RegionFetchContext`), so an
+         *   entry with nothing behind it means that rule was broken somewhere.
+         *   Answering off the data map costs a lookup and decides which way the
+         *   break fails: a refetch, or a viewport that reads as covered against
+         *   data nobody has and never asks again. Both canvas displays.
+         * - **Which of several held payloads answers.** MAF caches a summary
+         *   tier and a detail tier side by side under one
+         *   `displayedRegionIndex`, so crossing the threshold inside an
+         *   already-loaded region changes which map has to answer — something
+         *   the coverage bounds cannot see at all.
+         *
+         * Separate from `regionFetchKey` on purpose: for MAF a key would refetch
+         * the summary on every zoom back out, since both tiers are still held.
+         * And the mixin cannot see a display's data map, so a key that changed
+         * when data arrived would be the `rpcProps()` loop in different clothes.
          *
          * A view, not an action, for the reason `regionFetchKey` is a getter.
          */
@@ -437,20 +478,22 @@ export default function MultiRegionDisplayMixin() {
       .actions(self => ({
         /**
          * #action
-         * Run a per-region fetch with byte-estimate gating. Marks regions as
-         * loaded only AFTER the work callback has populated display-specific
-         * data (rpcDataMap, cellData, etc) so the GPU upload autorun sees
-         * committed data when it observes loadedRegions.
+         * Run a per-region fetch with byte-estimate gating. The work callback
+         * calls `ctx.commitRegion` as it stores each region's payload, which is
+         * what marks it loaded — see {@link RegionFetchContext} for why this
+         * function no longer does that itself. The fan-out helpers
+         * (`fetchEachRegion`, `fetchAllRegions`) make the call for the displays
+         * that use them.
          *
-         * The fetch key is captured here, at issue, and committed below — never
-         * re-read after the await. `ctx.isStale()` trips on a newer fetch or a
-         * cancel, not on a viewport that moved under a fetch that is still
-         * current, so a key read at commit would stamp this data with a zoom it
-         * was not fetched at.
+         * The fetch key is captured here, at issue, and carried into every
+         * commit — never re-read after the await. `ctx.isStale()` trips on a
+         * newer fetch or a cancel, not on a viewport that moved under a fetch
+         * that is still current, so a key read at commit time would stamp this
+         * data with a zoom it was not fetched at.
          */
         async fetchRegions(
           needed: IndexedRegion[],
-          work: (ctx: FetchContext) => Promise<void>,
+          work: (ctx: RegionFetchContext) => Promise<void>,
         ) {
           const fetchKey = self.regionFetchKey
           await self.runFetch(async ctx => {
@@ -464,12 +507,14 @@ export default function MultiRegionDisplayMixin() {
             ) {
               return
             }
-            await work(ctx)
-            if (!ctx.isStale()) {
-              for (const { displayedRegionIndex, region } of needed) {
-                self.setLoadedRegion(displayedRegionIndex, region, fetchKey)
-              }
-            }
+            await work({
+              ...ctx,
+              commitRegion: (displayedRegionIndex, region) => {
+                if (!ctx.isStale()) {
+                  self.setLoadedRegion(displayedRegionIndex, region, fetchKey)
+                }
+              },
+            })
           })
         },
       }))

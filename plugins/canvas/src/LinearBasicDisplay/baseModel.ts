@@ -8,6 +8,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
@@ -153,10 +154,10 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  FetchContext,
   GateFetchState,
   LegendItem,
   LinearGenomeViewModel,
+  RegionFetchContext,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -2521,10 +2522,15 @@ export default function baseStateModelFactory(
         /**
          * #method
          */
-        // Missing rpcData means the region was pruned off-screen, or the fetch
-        // came back too-large and stored nothing — refetch either way. The
-        // FetchVisibleRegions autorun gates on regionTooLarge before calling
-        // this, so the density-blocking case is handled there, not here.
+        // The reader-side check of the write-side rule: `loadedRegions` is
+        // written where the payload is stored (`RegionFetchContext`), so an
+        // entry here without one in `rpcDataMap` is that rule being broken. It
+        // costs a map lookup and it decides which way the break fails — a
+        // refetch, or a viewport that reads as covered against data nobody has
+        // and never asks again — a display frozen until the page reloads.
+        //
+        // A view, not an action: as an action MobX untracks the `rpcDataMap`
+        // read and `FetchVisibleRegions` keeps a stale answer.
         regionHasData(displayedRegionIndex: number) {
           return self.rpcDataMap.has(displayedRegionIndex)
         },
@@ -2616,10 +2622,16 @@ export default function baseStateModelFactory(
         function applyFetchResults(
           fetches: RegionFetch[],
           issued: GateFetchState,
+          ctx: RegionFetchContext,
         ) {
           for (const { displayedRegionIndex, region, result } of fetches) {
-            if (!('regionTooLarge' in result)) {
+            // The commit sits beside the store, and a region the worker refused
+            // for size gets neither: `loadedRegions` has to describe data that
+            // exists, or every later run of the plan reads the viewport as
+            // covered against a payload nobody received. See RegionFetchContext.
+            if (!isRegionRefused(result)) {
               self.setRpcData(displayedRegionIndex, result, region)
+              ctx.commitRegion(displayedRegionIndex, region)
             }
           }
           // Commit the per-region byte/density estimates to the shared gate (byte
@@ -2678,7 +2690,7 @@ export default function baseStateModelFactory(
                 view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
               ),
             )
-            void self.fetchRegions(needed, async (ctx: FetchContext) => {
+            void self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
               // `createStatusFanOut` by hand rather than through
               // `callEachRegion`, which is what hands the other multi-region
               // displays their slots — this one keeps its own `Promise.all` for
@@ -2700,7 +2712,7 @@ export default function baseStateModelFactory(
               if (ctx.isStale()) {
                 return
               }
-              applyFetchResults(results, issued)
+              applyFetchResults(results, issued, ctx)
             })
           },
         }

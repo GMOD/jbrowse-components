@@ -30,10 +30,14 @@ const NEEDED = [
 
 function makeSelf() {
   const reported: RpcStatus[] = []
+  // what `fetchEachRegion` marked loaded: a region the worker refused is
+  // deliberately absent, so `loadedRegions` never claims a span nothing stored
+  const loadedIndices: number[] = []
   const committed: RegionGateMeasurement[][] = []
   return {
     reported,
     committed,
+    loadedIndices,
     self: {
       adapterConfig: {},
       // the whole settings payload, exactly as the model hands it over — the
@@ -53,6 +57,9 @@ function makeSelf() {
             stopToken: 'tok',
             isStale: () => false,
             statusCallback: (s: RpcStatus) => reported.push(s),
+            commitRegion: (idx: number) => {
+              loadedIndices.push(idx)
+            },
           }),
         ).then(() => {}),
       setRpcData: () => {},
@@ -136,5 +143,25 @@ describe('fetchMultiRowFeatures', () => {
         },
       ],
     ])
+  })
+
+  // A refused region stores nothing, so it must not be marked loaded: with the
+  // span claimed anyway, `isBlockCovered` reads the viewport as covered against
+  // data nobody received, the plan answers `covered` forever, and the ordinary
+  // fetch that IS the gate's re-measure never runs again. Invisible on a region
+  // fetched for the first time, permanent on one the reader already had data
+  // for. See `RegionFetchContext`.
+  test('marks the regions that stored data, and only those', async () => {
+    const { self, loadedIndices } = makeSelf()
+    mockRpcCall.mockImplementation((_s, _m, args: any) =>
+      Promise.resolve(
+        args.region.start === NEEDED[0]!.region.start
+          ? { regionTooLarge: true, bytes: 9_000_000 }
+          : { bytes: 42, featureCount: 7 },
+      ),
+    )
+    await fetchMultiRowFeatures(self as any, NEEDED)
+
+    expect(loadedIndices).toEqual([NEEDED[1]!.displayedRegionIndex])
   })
 })

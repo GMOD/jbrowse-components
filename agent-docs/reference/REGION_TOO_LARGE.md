@@ -205,13 +205,32 @@ means deciding whether `FetchVisibleRegions` re-running off the released
 copying either onto the other.
 
 Losing a budget swing as an invalidation trigger loses no protection. A region
-the worker rejected stores nothing, so `regionHasData` is already false and it
-refetches once the gate releases. Zooming back *out* re-gates from the live
-main-thread verdict, since `densityStatsPerRegion` is committed on every
-successful fetch regardless of budget and the byte estimate survives a no-budget
-one. The worker re-gates whenever a fetch actually happens, which is when a
-download would occur. Pinned by "gate budgets are not RPC cache keys" in
+the worker rejected stores nothing, so nothing marks it loaded and it refetches
+once the gate releases. Zooming back *out* re-gates from the live main-thread
+verdict, since `densityStatsPerRegion` is committed on every successful fetch
+regardless of budget and the byte estimate survives a no-budget one. The worker
+re-gates whenever a fetch actually happens, which is when a download would occur.
+Pinned by "gate budgets are not RPC cache keys" in
 `LinearBasicDisplay/fetchAutorun.test.ts`.
+
+That "nothing marks it loaded" is a property of where the mark is written, and it
+was not true until 2026-08-20. `fetchRegions` used to mark every region it had
+*asked* for once the work callback returned, while the display stored from what
+came *back* — two writers, one fact, and they disagree exactly when a fetch
+stores less than it asked for. A refused region then claimed the whole span:
+`isBlockCovered` read the viewport as covered against data nobody received, the
+plan answered `covered` on every later run, and — the ordinary fetch being the
+only re-measure there is — nothing refetched **or** re-measured. Invisible on a
+region fetched for the first time, because the data map really was empty;
+permanent on one the reader already had data for, which is every region they
+zoomed out from. On the byte axis it left a banner no zoom could release; on the
+density axis, which falls with `bpPerPx`, the banner came down and the display
+painted the previous, narrower payload across the whole viewport with nothing on
+screen to say so. The mark is now written by whoever writes the data, through
+`ctx.commitRegion` — see `RegionFetchContext` — and `covered` no longer outranks
+a re-measure the banner is waiting on (`gateBlocked` in `planRegionFetch`).
+`LinearBasicDisplay/loadedRegionCoverage.test.ts` carries both, as two scenarios
+and as a seeded random walk over zoom and pan.
 
 ## The sub-floor budget tier
 
@@ -563,15 +582,18 @@ place to drift.
 axis for a display painting into fixed lanes, such as multi-row, leaving
 byte-only gating.
 
-A display opts in by composing the mixin, calling `commitGateMeasurements` from
-its fetch (with the `visibleBp` captured *before* the fetch), and overriding
-`regionHasData` to answer off the map that fetch fills. That last part matters
-because a too-large region is marked loaded but stores nothing, so without the
-override it would never refetch once the gate released. The mixin's own
-`afterAttach` clears stale stats on chromosome navigation, so a composing
-display can't forget it and mis-gate a reused `displayedRegionIndex`.
-`baseModel` keeps only what is genuinely its own: the per-region
-`RenderFeatureData` fetch and `applyFetchResults`, its peptide-aware
+A display opts in by composing the mixin and calling `commitGateMeasurements`
+from its fetch (with the `visibleBp` captured *before* the fetch). It does **not**
+have to teach anything that a refused region holds no data: the refusal is a
+typed answer (`isRegionRefused`, beside the byte budget in core), and nothing
+that sees one commits the region. `regionHasData` stays, but its job is now the
+reader-side check of that rule rather than the thing standing in for it — an
+entry in `loadedRegions` with nothing behind it means the rule was broken
+somewhere, and answering off the data map is what makes that a refetch instead of
+a freeze. The mixin's own `afterAttach` clears stale stats on chromosome
+navigation, so a composing display can't forget it and mis-gate a reused
+`displayedRegionIndex`. `baseModel` keeps only what is genuinely its own: the
+per-region `RenderFeatureData` fetch and `applyFetchResults`, its peptide-aware
 `regionFetchKey` and the `regionHasData` beside it, and
 `pruneRpcDataMapToVisible`, which trims `densityStatsPerRegion` alongside
 `rpcDataMap`.

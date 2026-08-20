@@ -1,5 +1,6 @@
 import type { IsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
@@ -229,20 +230,12 @@ export type RegionRenderData = Pick<
   | 'outlineColor'
 >
 
-export interface RegionTooLargeResult {
-  regionTooLarge: true
-  // Which gate tripped, plus everything measured on the way there — NOT one or
-  // the other. The byte stage runs first, so a density rejection still carries
-  // the index estimate it cleared (`tooManyFeaturesResult` takes it as an
-  // argument for exactly this reason), and `commitGateMeasurements` records both
-  // axes off one result. A byte short-circuit returns before any features are
-  // counted, so that one carries `bytes` alone.
-  //
-  // `bytes` is absent when the adapter offers no index estimate, or when the
-  // fetch carried no `byteLimit` and so measured nothing.
-  featureCount?: number
-  bytes?: number
-}
+// The refusal marker moved to core (`@jbrowse/core/rpc/byteBudget`) once the
+// fan-out helpers needed to recognize it too: whether a region was refused
+// decides whether `loadedRegions` may claim it, and that decision cannot live
+// in a plugin the display foundation can't import. Re-exported here so the two
+// canvas RPCs still name it from one place.
+export type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 export type RenderFeatureDataResult = FeatureDataResult | RegionTooLargeResult
 

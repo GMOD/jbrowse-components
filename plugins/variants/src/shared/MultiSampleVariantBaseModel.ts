@@ -63,9 +63,9 @@ import type { Feature, Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 import type {
-  FetchContext,
   LegendSection,
   LinearGenomeViewModel,
+  RegionFetchContext,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // Apply a `colorBy` palette to the sample sources. Returns the colored sources,
@@ -1579,7 +1579,7 @@ export default function MultiSampleVariantBaseModelF(
           const { adapterConfig } = self
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
-          await self.fetchRegions(regions, async (ctx: FetchContext) => {
+          await self.fetchRegions(regions, async (ctx: RegionFetchContext) => {
             const result = await rpcManager.call(
               sessionId,
               'MultiSampleVariantGetCellData',
@@ -1598,6 +1598,11 @@ export default function MultiSampleVariantBaseModelF(
             )
             if (!ctx.isStale() && isAlive(self)) {
               self.setCellData(result)
+              // beside the store: one RPC serves every region, so the whole
+              // batch is held or none of it is
+              for (const { displayedRegionIndex, region } of regions) {
+                ctx.commitRegion(displayedRegionIndex, region)
+              }
             }
           })
         },

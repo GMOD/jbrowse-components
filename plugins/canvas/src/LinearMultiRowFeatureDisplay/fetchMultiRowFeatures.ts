@@ -1,3 +1,4 @@
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
@@ -8,8 +9,8 @@ import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTyp
 import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
-  FetchContext,
   GateFetchState,
+  RegionFetchContext,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type Needed = { region: Region; displayedRegionIndex: number }[]
@@ -40,7 +41,7 @@ interface FetchSelf extends IStateTreeNode {
   resolvedByteLimit: () => number | undefined
   fetchRegions: (
     needed: Needed,
-    work: (ctx: FetchContext) => Promise<void>,
+    work: (ctx: RegionFetchContext) => Promise<void>,
   ) => Promise<void>
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
   gateFetchState: () => GateFetchState
@@ -79,9 +80,12 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
         // per-region calls aggregate into one bar instead of clobbering
         statusCallback: ctx.statusCallback,
       }),
+    // `fetchEachRegion` marks the region loaded for us, and skips a refused one
+    // — same `isRegionRefused` test as here, so what we store and what
+    // `loadedRegions` claims cannot come apart.
     onResult: (idx, result) => {
       gateResults.set(idx, result)
-      if (!('regionTooLarge' in result)) {
+      if (!isRegionRefused(result)) {
         self.setRpcData(idx, result)
       }
     },

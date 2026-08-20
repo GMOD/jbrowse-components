@@ -6,7 +6,7 @@ import {
 
 import type { Sample } from '../types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
+import type { RegionFetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 const mockRpcCall = jest.fn()
 
@@ -84,11 +84,15 @@ const NEEDED = [
 // which this test exercises — it just runs the work callback with a fresh ctx.
 function makeSelf() {
   const reported: RpcStatus[] = []
+  // what the fetch marked loaded — MAF gates pre-flight, so a refusal returns
+  // before the work callback and everything reaching it is stored
+  const loadedIndices: number[] = []
   const cleared: string[] = []
   const framesFetched: number[] = []
   const framesBlocked: boolean[] = []
   return {
     reported,
+    loadedIndices,
     cleared,
     framesFetched,
     framesBlocked,
@@ -98,12 +102,18 @@ function makeSelf() {
       annotationAdapterConfig: undefined as Record<string, unknown> | undefined,
       gateByteLimit: 1_000_000,
       gateActive: true,
-      fetchRegions: (_needed: unknown, work: (ctx: FetchContext) => unknown) =>
+      fetchRegions: (
+        _needed: unknown,
+        work: (ctx: RegionFetchContext) => unknown,
+      ) =>
         Promise.resolve(
           work({
             stopToken: 'tok',
             isStale: () => false,
             statusCallback: (s: RpcStatus) => reported.push(s),
+            commitRegion: (idx: number) => {
+              loadedIndices.push(idx)
+            },
           }),
         ).then(() => {}),
       setRpcData: () => {},

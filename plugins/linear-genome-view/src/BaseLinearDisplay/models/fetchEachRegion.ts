@@ -1,13 +1,15 @@
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { createStatusFanOut } from '@jbrowse/core/util'
 
 import type { FetchContext } from './FetchMixin.ts'
+import type { RegionFetchContext } from './MultiRegionDisplayMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { Region } from '@jbrowse/core/util'
 
 interface FetchEachRegionModel {
   fetchRegions: (
     needed: IndexedRegion[],
-    work: (ctx: FetchContext) => Promise<void>,
+    work: (ctx: RegionFetchContext) => Promise<void>,
   ) => Promise<void>
 }
 
@@ -26,7 +28,7 @@ interface FetchEachRegionModel {
  * The fan-out's lifetime is this batch's: slots are never reclaimed, and the
  * batch is the thing that ends.
  */
-function fanOutStatus(ctx: FetchContext, count: number) {
+function fanOutStatus<C extends FetchContext>(ctx: C, count: number): C[] {
   const slot = createStatusFanOut(ctx.statusCallback)
   return Array.from({ length: count }, () => ({
     ...ctx,
@@ -118,6 +120,13 @@ export async function fetchEachRegion<R>(
         )
         if (!ctx.isStale()) {
           opts.onResult(displayedRegionIndex, result)
+          // beside the store, and skipped for a region the worker refused for
+          // size — `loadedRegions` must describe data that exists, or the
+          // viewport reads as covered against a payload nobody received. See
+          // RegionFetchContext.
+          if (!isRegionRefused(result)) {
+            ctx.commitRegion(displayedRegionIndex, region)
+          }
         }
       }),
     )
@@ -160,8 +169,12 @@ export async function fetchAllRegions<R>(
           `fetchAllRegions: adapter returned ${results.length} results for ${needed.length} regions`,
         )
       }
-      needed.forEach(({ displayedRegionIndex }, i) => {
-        opts.onResult(displayedRegionIndex, results[i]!)
+      needed.forEach(({ displayedRegionIndex, region }, i) => {
+        const result = results[i]!
+        opts.onResult(displayedRegionIndex, result)
+        if (!isRegionRefused(result)) {
+          ctx.commitRegion(displayedRegionIndex, region)
+        }
       })
       opts.onComplete?.()
     }

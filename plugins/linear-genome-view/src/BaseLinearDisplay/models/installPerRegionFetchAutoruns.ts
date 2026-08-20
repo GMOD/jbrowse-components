@@ -129,6 +129,10 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
         error: self.error,
         fetchCanceled: self.fetchCanceled,
         gateSkipsMeasuredViewport: self.gateSkipsMeasuredViewport,
+        // tracked, and above the coverage read: while the banner is up this
+        // run owes a re-measure, and the flip back to false has to re-fire
+        // the autorun or the release lands a viewport late
+        gateBlocked: self.regionTooLarge,
         // untracked: isLoading flips at fetch start, and tracking it would
         // re-fire this autorun mid-fetch. `fetchGeneration` at fetch end is
         // the real re-trigger.

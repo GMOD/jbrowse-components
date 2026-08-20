@@ -1114,11 +1114,15 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #method
-       * A too-large region is marked loaded (so the fetch autorun doesn't spin)
-       * but stores no rpcData, so this answers false and the region refetches
-       * the moment the gate releases (zoom-in or force-load). No zoom rule
-       * beside it: the worker's output is absolute genomic uint32, so
-       * `regionFetchKey` stays at its empty default.
+       * The reader-side check of the write-side rule: `loadedRegions` is written
+       * where the payload is stored (`RegionFetchContext`), so an entry here
+       * without one in `rpcDataMap` is that rule being broken. It costs a map
+       * lookup and it decides which way the break fails — a refetch, or a
+       * viewport that reads as covered against data nobody has and never asks
+       * again.
+       *
+       * No zoom rule beside it: the worker's output is absolute genomic uint32,
+       * so `regionFetchKey` stays at its empty default.
        *
        * A view, not an action: as an action MobX untracks the `rpcDataMap` read
        * and `FetchVisibleRegions` keeps a stale answer.

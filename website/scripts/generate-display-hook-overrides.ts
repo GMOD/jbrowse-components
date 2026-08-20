@@ -66,7 +66,7 @@ const HOOKS: Hook[] = [
     owner:
       'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
     ifNotOverridden:
-      'true — `fetchRegions` marks a region loaded even where the worker refused it for size, so a display holding a per-region data map and sitting on this default never refetches one the gate has since released',
+      'true — nothing checks that a region marked loaded has data behind it, so a display whose commit sites drift from its stores reads the viewport as covered against data nobody holds, and never asks again',
   },
   {
     name: 'rpcProps',

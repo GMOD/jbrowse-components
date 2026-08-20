@@ -6,7 +6,10 @@ import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackend
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  FetchContext,
+  RegionFetchContext,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // `IStateTreeNode`, not `IAnyStateTreeNode`: the latter resolves to `any` and
 // would turn off checking for every member below — including `subtreeFilterSet`,
@@ -26,7 +29,7 @@ interface MafFetchSelf extends IStateTreeNode {
   gateActive: boolean
   fetchRegions: (
     needed: Needed,
-    work: (ctx: FetchContext) => Promise<void>,
+    work: (ctx: RegionFetchContext) => Promise<void>,
   ) => Promise<void>
   setRpcData: (regionIndex: number, data: MafWireRegionData) => void
   setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
@@ -107,7 +110,7 @@ async function fetchMafRegions<R extends SampleSet>(
   commit: (results: { displayedRegionIndex: number; result: R }[]) => void,
 ) {
   // #region rawFetchRegions
-  await self.fetchRegions(needed, async (ctx: FetchContext) => {
+  await self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
     // The CDS-frame annotation overlay (when configured) fetches in the same
     // stop-token-guarded pass as the main data so the two share staleness +
     // loadedRegions book-keeping; the two RPCs run concurrently.
@@ -132,6 +135,12 @@ async function fetchMafRegions<R extends SampleSet>(
       self.setSamples(sampleSet)
     }
     commit(results)
+    // beside the store, and every region gets one: MAF's size gate is the
+    // pre-flight kind, so a refusal returns from `fetchRegions` before this
+    // callback runs at all and nothing here can arrive empty-handed.
+    for (const { displayedRegionIndex, region } of needed) {
+      ctx.commitRegion(displayedRegionIndex, region)
+    }
   })
   // #endregion
 }
