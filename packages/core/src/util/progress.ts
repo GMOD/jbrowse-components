@@ -7,6 +7,16 @@ import { createTimeGate } from './timeGate.ts'
 
 import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
+// The out-of-band progress channel, from a worker's phase helpers to the one
+// status field a loading indicator reads. Why it is shaped this way:
+// ADR-071 (every status goes through the window), ADR-072 (only one phase at a
+// time is summable), ADR-080 (a phase ends when its slot stops reporting it).
+// Those hold the defects each rule was written against; this file states the
+// rules.
+//
+// `''` is the phase-over sentinel throughout, and nothing may rewrite it into a
+// label — see {@link statusMessageText}.
+
 // The phases currently open on one status channel, keyed by the callback that
 // *is* that channel. Entries are objects rather than strings so a phase removes
 // its own on the way out by identity: two phases running concurrently on one
@@ -14,8 +24,7 @@ import type { StopToken, StopTokenChecker } from './stopToken.ts'
 // LIFO pop would retire the wrong one.
 //
 // A WeakMap, so a channel that goes away takes its stack with it, and a caller
-// that builds a fresh callback per call simply gets a fresh stack — which is
-// the pre-stack behavior, not a regression.
+// that builds a fresh callback per call gets a fresh stack.
 interface OpenPhase {
   label: string
 }
@@ -24,19 +33,12 @@ const openPhases = new WeakMap<StatusCallback, OpenPhase[]>()
 /**
  * Open a phase on `cb`'s channel and return its close. The close emits the
  * enclosing phase's label, or `''` when this was the outermost — which is what
- * makes phases nest.
+ * makes phases nest, so an inner phase cannot blank the label its caller set for
+ * the rest of the caller's work.
  *
- * They used to not: the clear was absolute, so an inner phase blanked the label
- * its caller had set for the whole rest of the caller's work, and the rule was
- * "run phases in sequence, or give the inner one no `statusCallback`". That is a
- * rule about code you cannot see from the call site — `cachedSetup` wrapping a
- * `setup` that reaches `fetchAndMaybeUnzip` is two files apart — so it was a
- * rule waiting to be broken rather than one anybody could follow.
- *
- * `''` still closes the outermost phase, so nothing downstream changes: it is
- * how every consumer already reads "this phase is over", it is what a
- * {@link StatusWindow} sink thins like any other status, and it is what
- * {@link aggregateStatus} reads as "not in flight".
+ * `''` closing the outermost phase is what every consumer reads as "this phase
+ * is over": a {@link StatusWindow} thins it like any other status, and
+ * {@link aggregateStatus} reads it as "not in flight".
  */
 function openPhase(cb: StatusCallback | undefined, label: string) {
   if (cb === undefined) {
@@ -66,10 +68,9 @@ function openPhase(cb: StatusCallback | undefined, label: string) {
  * neither check has to be remembered at the call site. The determinate
  * counterpart is {@link withProgress}.
  *
- * Nests, and see {@link openPhase} for what that replaced. An inner phase's
- * determinate bar is not restored with its caller's label, only the label — the
- * enclosing phase's next `report()` re-establishes it, and an enclosing phase
- * that has none to send was indeterminate anyway.
+ * Nests — see {@link openPhase}. An inner phase's close restores the enclosing
+ * label and not its bar; the enclosing phase's next `report()` re-establishes
+ * it, and one with none to send was indeterminate anyway.
  */
 export async function updateStatus<U>(
   msg: string,
@@ -90,12 +91,8 @@ export async function updateStatus<U>(
 }
 
 /**
- * A value flowing through the RPC `statusCallback` channel.
- *
- * Historically this was always a plain human-readable string (e.g. "Loading
- * features"). It may now also carry determinate progress, which the loading UI
- * renders as a progress bar in addition to the message. Plain strings remain
- * valid for indeterminate phases, so existing callers are unaffected.
+ * A determinate reading on the status channel: a phase label plus how far
+ * through it the operation is. The loading UI renders the message and a bar.
  */
 export interface StatusWithProgress {
   message: string
@@ -126,12 +123,16 @@ function phaseOf(status: RpcStatus) {
  * Extract the human-readable text from any status value, or `undefined` when
  * there is none.
  *
- * `''` is none: it is the phase-over sentinel, not a label. Passing it through
- * as an empty string gave every model that stores a `statusMessage` two spellings
- * of "nothing to show" — `undefined` from a reset, `''` from the last phase
- * ending — which read the same on screen (`message || 'Loading'`) and differently
- * to everything else. Normalizing here covers all three writers, which are the
- * same line of code (`assembly`, `BaseDisplayModel`, `FetchMixin`).
+ * `''` is none: it is the phase-over sentinel, not a label. Normalizing it here
+ * leaves one spelling of "nothing to show" for the three models that store a
+ * `statusMessage` (`assembly`, `BaseDisplayModel`, `FetchMixin`) — otherwise a
+ * reset's `undefined` and a phase's `''` read the same on screen
+ * (`message || 'Loading'`) and differently to everything else.
+ *
+ * The corollary binds anything that *transforms* a status: rewriting `''` into
+ * any other string — a prefix, a default — makes a phase that never ends, since
+ * a slot's last word is what {@link aggregateStatus} weighs. `levelStatusCallback`
+ * in `runDiagonalize.ts` is the one transformer in the tree.
  */
 export function statusMessageText(status: RpcStatus | undefined) {
   const text = status === undefined ? undefined : phaseOf(status)
@@ -150,12 +151,10 @@ export function statusFraction(status: RpcStatus | undefined) {
 
 /**
  * One operation's stream through a {@link StatusWindow}, and the last word that
- * ends it. They come back together because they are not separable in practice:
- * the shared bar's whole design rests on **every owner clearing its own field
- * when its work ends** — a fan-out cannot see the end of a batch and no longer
- * guesses at one (ADR-080), so a stream nobody closes leaves its last label on
- * screen for good. That used to be a list of owners in a doc comment, and one of
- * them was not on it.
+ * ends it. They come back together because **every owner must clear its own
+ * field when its work ends**: a fan-out cannot see the end of a batch and does
+ * not guess at one (ADR-080), so a stream nobody closes leaves its last label on
+ * screen for good.
  */
 export interface StatusStream {
   /** The RPC `statusCallback` for this operation. */
@@ -165,13 +164,12 @@ export interface StatusStream {
    * and drops what was queued behind it. Call it once, in the `finally` of the
    * operation this stream describes.
    *
-   * It must land, because nothing else is coming to displace the last label of a
-   * fetch that is over; it must supersede what is queued, or the trailing timer
-   * puts that label back a window later. It is **not** guarded by `isCurrent` —
-   * a run that has just finished is no longer current, and closing the guard
-   * before clearing is exactly how an owner stops a still-running sibling from
-   * writing over the clear. `write` is the one place that decides whether the
-   * field can be touched at all.
+   * It must land, because nothing else is coming to displace the last label of
+   * a fetch that is over, and it must supersede what is queued or the trailing
+   * timer puts that label back a window later. It is **not** guarded by
+   * `isCurrent`: a run that has just finished is no longer current, and closing
+   * the guard before clearing is how an owner stops a still-running sibling from
+   * writing over the clear. `write` decides whether the field can be touched.
    */
   clear: () => void
 }
@@ -180,14 +178,9 @@ export interface StatusStream {
  * One owner's outlet for a progress stream: a throttle window, and the guarded
  * streams that share it.
  *
- * The two are one object because they were never separable. Every owner of a
- * status field wants the same pair — thin the stream, and drop what a
- * superseded or torn-down operation writes — and the pairing carries a
- * cardinality rule that two functions could not state: **one window per owner,
- * N streams on it**, which is what makes a display's parallel per-region fetches
- * thin to one flow between them rather than to N. As a `throttle` argument that
- * rule lived in a paragraph asking callers not to pass a fresh one; here the
- * wrong thing has no spelling.
+ * The two are one object so the cardinality rule has only one spelling: **one
+ * window per owner, N streams on it**, which is what makes a display's parallel
+ * per-region fetches thin to one flow between them rather than to N.
  */
 export interface StatusWindow {
   /**
@@ -208,11 +201,11 @@ export interface StatusWindow {
    * copy of the check at the `finally`.
    *
    * **Every status goes through the window, the `''` closing a phase
-   * included** — so a phase that opens and closes inside it paints nothing.
-   * ADR-071. The `''` still displaces the percentage queued behind it, because
-   * the window holds one pending write, so a finished phase's progress cannot
-   * reappear; it just lands on the trailing edge, where {@link
-   * StatusStream.clear} supersedes it in turn.
+   * included** (ADR-071), so a phase that opens and closes inside one paints
+   * nothing. The window holds a single pending write, so that `''` still
+   * displaces the percentage queued behind it and a finished phase's progress
+   * cannot reappear; it lands on the trailing edge, where
+   * {@link StatusStream.clear} supersedes it in turn.
    */
   open: (args: {
     isCurrent: () => boolean
@@ -248,12 +241,8 @@ const STATUS_THROTTLE_MS = 100
  * sequence of distinct labels, and a trailing edge only guarantees the *last*
  * of a burst, not each one in turn.
  *
- * Trailing, not merely leading: the last write of a phase is the one that
- * matters most and is exactly the one a leading-edge-only gate drops. A
- * determinate bar otherwise froze at whatever percentage happened to land on a
- * window boundary, and the `''` that {@link updateStatus}/{@link withProgress}
- * clear with — always the write closing a dense burst — left a finished phase's
- * label on screen until something else wrote.
+ * Trailing as well as leading, so the last write of a phase always lands: it is
+ * the one that matters most and exactly the one a leading-edge-only gate drops.
  *
  * Both fetch families own one: `FetchMixin` for the LGV displays, and
  * `createStopTokenRotation` for the bare-autorun fetches (dotplot, synteny)
@@ -288,11 +277,10 @@ export function createStatusWindow(): StatusWindow {
       pending = apply
       timer ??= setTimeout(() => {
         timer = undefined
-        // a live timer always has a write behind it: it is scheduled in the
-        // line above, right after `pending` is set, and `clearPending` drops
-        // the two together. So this is an assertion rather than a fallback —
-        // a `if (run)` here reads as a case that can happen, and would
-        // silently skip the `lastMs` bump if it ever did
+        // an assertion, not a fallback: the timer is scheduled right after
+        // `pending` is set and `clearPending` drops the two together, so an
+        // `if (pending)` here would read as a reachable case and silently skip
+        // the `lastMs` bump
         const queued = pending!
         pending = undefined
         lastMs = Date.now()
@@ -360,14 +348,13 @@ export function statusProgressLabel(status: RpcStatus | undefined) {
  * transport, labelling each tick with `message`. Returns undefined when there's
  * no `statusCallback`, so the reader can skip its progress bookkeeping entirely.
  *
- * That skip is not a saving, which is the opposite of what the shape suggests
- * and of what four comments in this tree used to claim. Handed an `onProgress`,
- * generic-filehandle2 streams the body into one pre-sized buffer; handed none it
- * calls `res.bytes()` — and in a Chrome worker the streaming read is roughly
- * 1.8x *faster* up to 10MB, giving that back only past ~25MB. So a progress bar
- * on a whole-file load is free or better at the sizes most of them are, and
- * withholding this reporter is about honoring a caller who asked for no
- * reporting, never about speed. Numbers and the bench that retakes them:
+ * **That skip is not a saving**, which is the opposite of what the shape
+ * suggests. Handed an `onProgress`, generic-filehandle2 streams the body into
+ * one pre-sized buffer; handed none it calls `res.bytes()` — and in a Chrome
+ * worker the streaming read is roughly 1.8x *faster* up to 10MB, giving that
+ * back only past ~25MB. So withholding this reporter honors a caller who asked
+ * for no reporting; it is never about speed. Numbers and the bench that retakes
+ * them:
  * agent-docs/measurements/download-read-path.json.
  *
  * `total` is optional because not every reader knows the size up front
@@ -463,66 +450,44 @@ function measurable(vote: PhaseVote) {
  *
  * **Only operations in the same phase are summed.** `current`/`total` are
  * additive within a phase — bytes with bytes, features with features — and
- * incommensurable across one, so one phase wins and the rest are charged below.
- * ADR-072; a plain Σcurrent/Σtotal put a bar under whichever slot had the
- * largest raw total. A fan-out whose slots share one phase — the common case,
- * and what the sum was written for — is summed exactly as before.
+ * incommensurable across one, so one phase wins and the rest are charged below
+ * (ADR-072). A fan-out whose slots share one phase, the common case, is a plain
+ * Σcurrent/Σtotal.
  *
- * **The phase that wins is the earliest one the batch is still in.** A batch is
- * in every phase any of its operations is in — which is the phase that operation
- * last reported, not the phase it happens to be measuring this instant — and it
+ * **The phase that wins is the earliest one the batch is still in** (ADR-080). A
+ * batch is in every phase any of its operations is in — the phase that operation
+ * last *reported*, not the one it happens to be measuring this instant — and it
  * leaves one when its LAST operation does. So the label moves forward once per
- * phase, in order, and the bar under it is that phase's own: the operations that
- * finished it count in full, so it rises toward the straggler rather than being
- * repriced by it.
- *
- * Neither half of that was true of counting the operations in each phase, which
- * is what this did (ADR-072's majority rule):
- *
- * - a count changes hands as regions cross a boundary and changes back as they
- *   finish, so three regions of different sizes produced "Downloading features"
- *   → "Computing layout" → "Downloading features" → "Computing layout" in one
- *   ordinary fetch, and
- * - counting only the operations *measuring* each phase dropped a region out of
- *   its own phase every time it sat between two reads reporting the label alone,
- *   which made the same swap happen several times a second.
+ * phase, in order, and the bar under it is that phase's own.
  *
  * Rank alone would hand the label to a phase with nothing to say, so a phase the
  * batch has anything to measure in — a reading now, or work already finished —
- * beats one it does not. That is what keeps a region still sizing its request
- * from holding the label, and its bar, over a region already reporting bytes.
- * `phaseOrder` is the fan-out's record of first appearance; with none, every
- * phase ranks the same and the choice falls back to slot order.
+ * beats one it does not. `phaseOrder` is the fan-out's record of first
+ * appearance; with none, every phase ranks the same and the choice falls back to
+ * slot order.
  *
- * Each slot is then priced against the winning phase on its own, which is the
- * part that has to be per-slot rather than a Σ over two flat lists:
+ * Each slot is then priced against the winning phase on its own, which is why
+ * this cannot be a Σ over two flat lists:
  *
  * - measuring it: its own `current`/`total`, plus whatever it already finished
- *   of that phase in both halves.
- * - not measuring it, but it finished some of it: that finished work in both
- *   halves and **nothing more**. It is not also charged the mean below. Charging
- *   both is what made the bar fall every time a region moved on — a region that
- *   had downloaded its 100kb and gone on to parse read as 100kb done *and* an
- *   unmeasured 100kb still to do.
- * - neither: it is an operation in flight with nothing comparable to measure, so
- *   it is charged the mean of the totals we do know, with nothing completed
- *   against it. That covers a response with no Content-Length and a slot in a
- *   different phase alike. Dropping the first outright is what let a fan-out
- *   where one region's response carried no Content-Length read 100% with that
- *   region still downloading.
+ *   of that phase, in both halves.
+ * - not measuring it but having finished some: that finished work in both halves
+ *   and **nothing more** — never the mean as well, or the bar falls every time a
+ *   region moves on.
+ * - neither: in flight with nothing comparable to measure, so charged the mean
+ *   of the totals we do know with nothing completed against it. That covers a
+ *   response with no Content-Length and a slot in another phase alike; dropping
+ *   either outright reads 100% while it is still downloading.
  *
- * A winning phase that nothing is measuring right now comes back as its label
- * alone. Its finished work cannot stand in for a reading — every slot being
- * between reads at that instant is exactly when it would, and summing what they
- * retired at reads 100% for a batch that is still working. {@link
- * createStatusFanOut} re-sends that phase's last real reading instead.
+ * A winning phase nothing is measuring right now comes back as its label alone —
+ * summing what its slots retired at reads 100% for a batch that is still
+ * working, and every slot being between reads is exactly when that happens.
+ * {@link createStatusFanOut} re-sends the phase's last real reading instead.
  *
- * A retired slot (`''` or nothing yet) is not in flight: it never votes and is
- * never charged the mean — charging it at zero is a bar that runs *backwards* as
- * regions finish (three done and one at half of its 1000 reading 500/4000 rather
- * than 500/1000). Its finished work still counts, which is the reason the bar no
- * longer drops as the batch lands: 500/1000 becomes 3500/4000 and the fraction
- * only ever rises.
+ * A retired slot (`''` or nothing yet) never votes and is never charged the
+ * mean; charging it at zero is a bar that runs *backwards* as regions finish.
+ * Its finished work still counts, which is what keeps the fraction rising as the
+ * batch lands.
  */
 export function aggregateStatus(
   slots: StatusSlot[],
@@ -612,38 +577,29 @@ export function aggregateStatus(
  * taken for the batch's lifetime and it is the batch that ends, so a long-lived
  * one accumulates slots for work that is over.
  *
- * **A slot's finished phases are recorded here** because only a slot's own
+ * **A slot's finished phases are recorded here**, because only a slot's own
  * channel ever sees the total it retired at, and they are what keep a landing
  * batch's bar from walking backwards. A phase is over the moment the slot stops
- * reporting it forward — see {@link continuesPhase}, and note that the `''` it
- * ends on is only one of the ways it can say so.
+ * reporting it forward — see {@link continuesPhase}; the `''` it ends on is only
+ * one of the ways it can say so.
  *
  * **It never writes `''`.** A slot between two phases and a slot that is done
- * both read as idle from here, so an empty aggregate cannot mean "the batch is
- * over" — it means "no slot is reporting this instant". Writing `''` for that
- * blanked the shared label mid-batch, and the loading UI renders a blank label
- * as its "Loading" fallback: two regions crossing a phase boundary together
- * flapped between "Loading" and the phase they were both still in. What goes out
- * instead is the last label alone, with no bar — indeterminate, which is exactly
- * what "still in this phase, nothing measuring it right now" is.
+ * both read as idle from here, so an empty aggregate means "no slot is reporting
+ * this instant", not "the batch is over". What goes out is the last label alone,
+ * with no bar — which is what that state is. The end of a batch is the owner's
+ * to declare (ADR-080): every one of them clears its field when its work ends.
  *
- * Something rather than nothing, because a write that lands is also how a phase's
- * last progress value is *displaced*: statuses are throttled, so a percentage
- * queued behind the window would otherwise fire after the work it measured had
- * ended (ADR-071). Every owner of a status field clears it when its own work ends
- * (`runFetch`'s `resetStatus`, `assembly.loadPre`'s `finally`,
- * `createStopTokenRotation`'s `end`), and the end of the batch is theirs to
- * declare, not ours to guess.
+ * Something rather than nothing, because a write that lands is also how a
+ * phase's last progress value is *displaced* — statuses are throttled, so a
+ * percentage queued behind the window would otherwise fire after the work it
+ * measured had ended (ADR-071).
  *
  * **A phase does not lose its bar because nothing is measuring it this
- * instant.** Between a slot's reads it reports the label alone, and when every
- * slot in a fan-out is between reads at once the aggregate has no measurement to
- * report — so the determinate bar dropped to an indeterminate spinner and came
- * back a tick later. Three blocks doing their redispatch flanks made that happen
- * seven times in two seconds, which is what a "Downloading features" that blinks
- * actually is. The phase's last reading is held and re-sent instead: it is the
- * most recent true statement about that phase, and it stops being sent the moment
- * the phase changes.
+ * instant.** Between reads a slot reports the label alone, and when every slot
+ * is between reads at once the aggregate has no measurement — a determinate bar
+ * would drop to an indeterminate spinner and return a tick later. The phase's
+ * last reading is held and re-sent instead, and dropped the moment the phase
+ * changes.
  */
 export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   const slots: StatusSlot[] = []
@@ -706,17 +662,14 @@ export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
 
 /**
  * Does this reading say the work is finished? A fan-out's aggregate exists only
- * while a slot is in flight, so a full one is never the truth — a slot that has
- * retired its read while another is still measuring is what produces it, and the
- * moment the retired one opens its next read the fraction falls back. Three
- * blocks taking their redispatch flanks made the bar toggle 100/98 nine times in
- * two seconds.
+ * while a slot is in flight, so a full one is never the truth: it is produced by
+ * a slot that has retired its read while another is still measuring, and the
+ * moment the retired one opens its next read the fraction falls back.
  *
- * So it is neither held nor shown when there is a real reading to show instead;
- * the phase ending is what moves the label on. Not a clamp on the arithmetic —
- * {@link aggregateStatus} still reports what it computes, and a bar that falls
- * because a region *joined* the batch still falls, which is a true statement
- * about work that was not there before.
+ * So a complete reading is neither held nor shown when there is a real one to
+ * show instead; the phase ending is what moves the label on. Not a clamp on the
+ * arithmetic — {@link aggregateStatus} still reports what it computes, and a bar
+ * that falls because a region *joined* the batch still falls, which is true.
  */
 function readsComplete(status: StatusWithProgress) {
   return status.total > 0 && status.current >= status.total
@@ -724,20 +677,16 @@ function readsComplete(status: StatusWithProgress) {
 
 /**
  * Is `status` the same determinate phase as `previous`, still running? Only a
- * measurement of the same phase moving forward is; everything else retires it.
+ * measurement of the same phase moving forward is; everything else retires it
+ * (ADR-080). Three shapes that are easy to miss, and all of them common:
  *
- * The `''` a phase helper clears with is the obvious retirement and used to be
- * the only one recognized, which meant the common shape recorded nothing at all:
- * phases nest, so an inner phase closes onto its *enclosing* phase's label (see
- * {@link openPhase}) — a plain string, not `''` — and the canvas feature fetch
- * is exactly that, an adapter's byte-counted "Downloading features" inside the
- * RPC's own "Downloading features". Every region's bytes fell out of both halves
- * of the fraction the instant its download finished.
- *
- * A measurement that moves *backwards* under the same label retires the phase
- * too: it is a second phase of the same name starting at zero, which is what the
- * tabix redispatch does when a feature overhangs the query and the region is
- * read a second time.
+ * - the *enclosing* label a nested phase closes onto — a plain string, not `''`.
+ *   The canvas feature fetch is exactly that, an adapter's byte-counted
+ *   "Downloading features" inside the RPC's own.
+ * - a different phase's label, with no `''` between them.
+ * - a measurement moving *backwards* under the same label, which is a second
+ *   phase of that name starting at zero. Tabix's redispatch does it when a
+ *   feature overhangs the query.
  */
 function continuesPhase(previous: StatusWithProgress, status: RpcStatus) {
   return (
@@ -768,21 +717,14 @@ export type ProgressReporter = (current?: number) => void
  *   the postMessage channel.
  *
  * Both jobs are optional: with no `statusCallback`/`total` this is purely a
- * throttled cancellation tick (the replacement for calling {@link
- * checkStopTokenThrottled} directly in a loop), so a loop has exactly one inner
- * callback whether or not it drives the progress UI.
+ * throttled cancellation tick, so a loop has exactly one inner callback whether
+ * or not it drives the progress UI.
  *
  * Emission is gated on wall-clock time (`throttleMs`) through {@link
- * createTimeGate}, which caps emits at ~1/throttleMs. This used to read the
- * clock on every call, reasoning that it was negligible next to the per-item
- * work; at a 666k-read pileup that measured ~28ms, so the gate now thins the
- * clock reads too — see createTimeGate for why its stride is learned rather
- * than fixed (a fixed one froze this bar at 0% for low-count/heavy phases).
- * Keep the loop a plain `for`; just call `report()` once per item (it owns the
- * counter) — or `report(n)` to report an explicit position.
- *
- * Reuses {@link createStopTokenChecker}, matching the cancellation convention
- * already used across the variant/alignments/gwas RPC paths.
+ * createTimeGate}, which thins the `Date.now()` reads as well as the emits —
+ * see there for why its stride is learned rather than fixed. Keep the loop a
+ * plain `for` and call `report()` once per item (it owns the counter), or
+ * `report(n)` for an explicit position.
  */
 export function createProgressReporter({
   label = '',
@@ -843,12 +785,11 @@ export async function withProgress<T>(
   })
   const endPhase = openPhase(statusCallback, label)
   try {
-    // inside the try, because `report` checks the stop token before it emits:
-    // on a token already stopped it throws here, and outside the try that threw
-    // past the close and left this phase open on the channel forever. A slot
-    // that ends on a label rather than the `''` is one {@link aggregateStatus}
-    // counts as in flight for the rest of the batch, so a single cancelled
-    // region pinned the shared bar to a phase nothing was running.
+    // inside the try, because `report` checks the stop token before it emits and
+    // so throws here on a token already stopped. Outside, that threw past the
+    // close and left the phase open on the channel — a slot whose last word is a
+    // label is one `aggregateStatus` counts as in flight for the rest of the
+    // batch.
     report(0)
     return await withStopTokenCheck(stopToken, () => fn(report))
   } finally {

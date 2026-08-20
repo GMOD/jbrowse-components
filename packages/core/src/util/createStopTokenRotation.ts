@@ -16,16 +16,9 @@ export interface StatusReporter {
   setStatusMessage: (status?: RpcStatus) => void
   /**
    * The host's own window, present on any display composing the LGV fetch
-   * mixins. When it is, the rotation reports and flushes through it rather than
-   * opening a SECOND on the same status field — which is the thing
-   * one-window-per-owner exists to prevent, and which the multi-sample-variant
-   * sources fetch had done to a display whose region fetches were already
-   * thinning through the mixin's.
-   *
-   * Lent whole rather than as the two callbacks it used to be. Reporting
-   * through one window and flushing another is a state nobody would choose, and
-   * as two independently-optional members it was one a caller could reach by
-   * supplying half.
+   * mixins. When it is, the rotation reports through it rather than opening a
+   * SECOND on the same status field — which is what one-window-per-owner exists
+   * to prevent.
    *
    * Optional because the displays this helper was written for (dotplot,
    * synteny) compose no fetch mixin; the rotation opens its own for them.
@@ -36,20 +29,15 @@ export interface StatusReporter {
 /**
  * A {@link StatusReporter} a model can hold in **one** volatile, for something
  * that has one operation to narrate and no reason to grow a status vocabulary
- * of its own.
+ * of its own. `ProgressChip` takes `message`/`fraction` straight off it.
  *
- * The alternative is what every display does: two volatiles and an action that
- * calls {@link statusMessageText} and {@link statusFraction}. That is the right
- * shape where the fields are part of the model's own surface — `BaseDisplay`
- * and `FetchMixin` declare them because half the display API reads them, and
- * ADR-041 is why those two keep their own copies rather than sharing a mixin.
- * It is a lot of declaration for a view that wants a corner chip while one
- * fetch runs.
- *
- * A plain function rather than a mixin, for the reason ADR-041 gives: a compose
- * layer is what the model chains here cannot afford. Holding it costs one
- * `.volatile` line, and `ProgressChip` takes `message`/`fraction` straight off
- * it.
+ * The alternative is what every display does: two volatiles and an action
+ * calling {@link statusMessageText} and {@link statusFraction}. That is the
+ * right shape where the fields are part of the model's own surface —
+ * `BaseDisplay` and `FetchMixin` declare them because half the display API reads
+ * them — and a lot of declaration for a view that wants a corner chip while one
+ * fetch runs. A plain function rather than a mixin because a compose layer is
+ * what the model chains here cannot afford (ADR-041).
  */
 export interface StatusChannel extends StatusReporter {
   readonly message: string | undefined
@@ -109,13 +97,11 @@ export interface ActiveFetch {
    * `isCurrent`, drops the write queued behind the window, and clears the
    * status field.
    *
-   * All three, because a caller doing it by hand got some subset. `isCurrent`
-   * is `token === current && isAlive`, and a run that *completes* never rotates
-   * its own token — so the guard stays open after the work ends and a trailing
-   * write lands on top of a hand-written `setStatusMessage(undefined)` up to a
-   * window later. That is the shape `installComparativeFetchAutorun` had; the
-   * multi-sample-variant sources fetch had no clear at all and pinned a
-   * progress chip on any failure its worker didn't clear for it.
+   * All three together, because a caller doing it by hand gets a subset.
+   * `isCurrent` is `token === current && isAlive`, and a run that *completes*
+   * never rotates its own token — so without this the guard stays open past the
+   * work and a trailing write lands on top of a hand-written
+   * `setStatusMessage(undefined)` up to a window later.
    */
   end: () => void
 }
@@ -130,10 +116,8 @@ export interface ActiveFetch {
  * data. The guard is the return value, so a caller can't forget to compare a
  * token by hand.
  *
- * `end()` in the run's `finally` is the other half, and for the same reason:
- * ending a fetch means three things (close the guard, drop the window's queued
- * write, clear the status field) and a caller writing them out got a subset. Both callers did — one cleared without dropping the queued write,
- * the other never cleared at all.
+ * `end()` in the run's `finally` is the other half, and for the same reason —
+ * see {@link ActiveFetch.end} for the three things it does together.
  *
  * Owns the token mechanics and the status channel; the caller keeps its own
  * loading/error/commit side-effects in its autorun. Used by any bare-autorun
@@ -177,20 +161,17 @@ export function createStopTokenRotation(
       const stopToken = createStopToken()
       currentStopToken = stopToken
       // The window reopens; the label is deliberately left alone. A fetch being
-      // SUPERSEDED is the one case where the display does not stop loading, and
-      // the loading overlay renders a missing label as its `'Loading'` fallback
-      // — so clearing here flashed "Loading" between every pan and the phase the
-      // view was already in. The replacing fetch overwrites the label as soon as
-      // it has one of its own, and `end()` still clears on the fetch that
-      // actually stops. ADR-080; `FetchMixin.supersedeStatus` is the same
-      // decision for the LGV displays.
+      // SUPERSEDED is the one case where the display does not stop loading, so
+      // clearing here flashes the overlay's `'Loading'` fallback between every
+      // pan and the phase the view was already in. The replacing fetch
+      // overwrites the label once it has one, and `end()` still clears on the
+      // fetch that actually stops. ADR-080; `FetchMixin.supersedeStatus` is the
+      // same decision for the LGV displays.
       statusWindow.reset()
-      // `ended` is the term a completed fetch has no other way to express: a
-      // SUPERSEDED one is caught by the token comparison, but a fetch that
-      // simply finished still holds the current token, so without this its
-      // guard stays open and a trailing status write lands after the run that
-      // owned it is over. Read by the stream as well as by the caller's commit
-      // guard, which is why both go through this one closure.
+      // `ended` is the term a completed fetch has no other way to express: the
+      // token comparison catches a SUPERSEDED one, but a fetch that simply
+      // finished still holds the current token. The stream reads it as well as
+      // the caller's commit guard, which is why both go through this closure.
       let ended = false
       const isCurrent = () =>
         !ended && stopToken === currentStopToken && isAlive(self)
