@@ -29,9 +29,19 @@ read likewise.
   group allocates region-width depth arrays and its own GPU coverage buffer.
 - `mapq` bins by confidence, not by decade — real MAPQ is bimodal at the
   aligner's ceiling.
-- `tag` is the one the data decides, so the dialog blocks Submit and names the
-  count. The `''` untagged group is held out of the overflow merge — reads
-  _lacking_ the tag are a distinct answer users look for.
+- `tag` and `mateAssembly` are the two the DATA decides, and they are answered
+  at opposite ends. `tag` has a dialog, which scans the visible blocks and
+  blocks Submit on the count (`tagGroupingVerdict`, which also names the other
+  end — a tag no read carries). `mateAssembly` has no point of choice to refuse
+  at: an all-vs-all track names its mates from the file, an unlisted sample
+  falling back to its bare PanSN prefix (`assemblyForPanSNName`), so config
+  cannot bound the count and only a second scan could. It is told after the fact
+  instead, by the overflow lane's own chip (`overflowLabel`).
+- The `''` untagged group is held out of the overflow merge — reads _lacking_
+  the tag are a distinct answer users look for.
+- **The cap is per call, so the overflow lane's COUNT is not.** Each region
+  merges its own tail; the drawn lane holds the union, which only
+  `orderedGroups` can size. That is why the merged keys ride along on the group.
 - Chain mode allows only dimensions that resolve one chain to one key —
   `fragmentLevel` (the chain's representative read answers for the fragment)
   **or** a `chainKey` that answers for the whole chain, which is why

@@ -592,7 +592,12 @@ export async function executeRenderAlignmentData({
   for (let i = 0; i < featureGroups.length; i++) {
     const fg = featureGroups[i]!
     const data = await buildGroupResult(extractions[i]!, fg.features, ctx)
-    groups.push({ key: fg.key, label: fg.label, data })
+    groups.push({
+      key: fg.key,
+      label: fg.label,
+      data,
+      mergedKeys: fg.mergedKeys,
+    })
   }
 
   return rpcResult({ groups }, collectGroupedTransferables(groups))

@@ -2003,8 +2003,11 @@ export default function stateModelFactory(
         /**
          * #method
          * True when a lane's pileup was clipped by a cap the per-lane expand can
-         * actually raise. Drives the "show all" affordance on the section label,
-         * which must not appear where it would do nothing.
+         * actually raise — the rule behind the "show all" affordance, which must
+         * not appear where it would do nothing. The chip itself asks
+         * `laneExpandable` off the section it already holds; this is the same
+         * question for the callers that have only a key, like
+         * `isGroupCeilingClipped` beside it.
          *
          * Two of the caps qualify: a lane's viewport slice, and the single row
          * `collapseGroupRows` gives it. Both expand into a true stack, because

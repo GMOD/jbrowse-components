@@ -29,6 +29,11 @@ export interface FeatureGroup {
   key: string
   label: string
   features: Feature[]
+  // The keys this group swallowed, on the overflow bucket alone. Present so the
+  // main thread can UNION them across regions: the cap runs per worker call, so
+  // no one region knows how many values the drawn lane ends up holding — see
+  // `overflowLabel`.
+  mergedKeys?: string[]
 }
 
 interface GroupKey {
@@ -222,12 +227,29 @@ export function compareGroupKeys(a: string, b: string) {
 function capGroups(groups: FeatureGroup[]) {
   const untagged = groups.at(-1)?.key === '' ? groups.pop() : undefined
   const overflow = groups.splice(MAX_GROUPS - (untagged ? 2 : 1))
+  const mergedKeys = overflow.map(g => g.key)
   const merged = {
     key: OVERFLOW_GROUP_KEY,
-    label: `${overflow.length} more values`,
+    label: overflowLabel(mergedKeys.length),
     features: overflow.flatMap(g => g.features),
+    mergedKeys,
   }
   return untagged ? [...groups, untagged, merged] : [...groups, merged]
+}
+
+// The overflow lane's chip. Says MERGED because the lane is the one entry in the
+// stack that is not a value: it reads as a group of its own beside 39 real ones,
+// and this is the only place a reader is told the cap fired at all. The
+// dimensions that can reach the cap are `tag` and `mateAssembly`, and only `tag`
+// has a dialog to refuse it up front — an all-vs-all pangenome names its mate
+// assemblies from the FILE (an unlisted sample falls back to its PanSN prefix,
+// `assemblyForPanSNName`), so the count is not knowable from config and there is
+// no point of choice at which to say it.
+//
+// Exported so `orderedGroups` can rebuild it over the cross-region union rather
+// than re-spelling the wording.
+export function overflowLabel(count: number) {
+  return `${count} merged values`
 }
 
 function orderGroups(groups: FeatureGroup[]) {

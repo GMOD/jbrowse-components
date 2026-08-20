@@ -484,6 +484,12 @@ export interface AlignmentGroup {
   key: string
   label: string
   data: WorkerPileupData
+  // Only on the overflow bucket (`OVERFLOW_GROUP_KEY`): the group keys this call
+  // merged into it. `MAX_GROUPS` is enforced per call and one call sees one
+  // region, so the count baked into `label` here describes THIS region — the
+  // drawn lane holds the union across every fetched one. `orderedGroups` unions
+  // these and relabels; nothing else reads them.
+  mergedKeys?: string[]
 }
 
 // The RenderAlignmentData RPC return. Always at least one group.

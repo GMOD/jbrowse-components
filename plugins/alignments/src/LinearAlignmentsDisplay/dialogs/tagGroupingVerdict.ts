@@ -18,7 +18,7 @@ export interface TagGroupingVerdict {
  * is the only one that can produce a section list nobody asked for — and it can
  * do that at BOTH ends. The values are already in hand at the point of choice,
  * which is the whole reason this dialog scans: the worker would otherwise answer
- * either end silently, with 39 sections plus an opaque "N more values" one, or
+ * either end silently, with 39 sections plus one opaque merged bucket, or
  * with a single section named for a tag no read carries.
  *
  * One verdict rather than a message here and a refusal there, because both are

@@ -399,7 +399,13 @@ test('group count is capped, with the tail merged into one overflow section', ()
   expect(groups).toHaveLength(MAX_GROUPS)
   const overflow = groups.at(-1)!
   expect(overflow.key).toBe(OVERFLOW_GROUP_KEY)
-  expect(overflow.label).toBe('11 more values')
+  expect(overflow.label).toBe('11 merged values')
+  // the keys it swallowed ride along, because only the main thread can say how
+  // many the drawn lane ends up holding — see `orderedGroups`
+  expect(overflow.mergedKeys).toHaveLength(11)
+  expect(overflow.mergedKeys).toContain(
+    `v${String(MAX_GROUPS + 9).padStart(3, '0')}`,
+  )
   // no read is dropped: the merged tail carries every one of its groups' reads
   expect(groups.flatMap(g => g.features)).toHaveLength(MAX_GROUPS + 10)
   expect(overflow.features).toHaveLength(11)
@@ -422,7 +428,7 @@ test('exactly MAX_GROUPS values needs no overflow section', () => {
 // Reads *lacking* the grouping tag are a distinct answer, not one arbitrary value
 // among the merged tail — so the cap holds the untagged group out of the merge and
 // re-pins it just ahead of the overflow bucket. It sorts into the tail
-// (groupKeyRank), so a plain splice would have buried it under "N more values".
+// (groupKeyRank), so a plain splice would have buried it in the merged bucket.
 test('the untagged group survives the cap, pinned just ahead of the overflow', () => {
   // one untagged read plus enough tagged values to trip the cap
   const features = [feat('none', {}), ...umiFeatures(MAX_GROUPS + 5)]
@@ -434,7 +440,7 @@ test('the untagged group survives the cap, pinned just ahead of the overflow', (
   expect(untagged.features.map(f => f.id())).toEqual(['none'])
   // holding it out costs one named slot, and the merged tail grows by one to
   // match; still no reads dropped
-  expect(groups.at(-1)!.label).toBe('7 more values')
+  expect(groups.at(-1)!.label).toBe('7 merged values')
   expect(groups.at(-1)!.features).toHaveLength(7)
   expect(groups.flatMap(g => g.features)).toHaveLength(MAX_GROUPS + 6)
 })

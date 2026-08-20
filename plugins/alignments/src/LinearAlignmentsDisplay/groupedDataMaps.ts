@@ -2,7 +2,11 @@ import {
   downJunctionKeys,
   mergeJunctions,
 } from '../features/sashimi/junctions.ts'
-import { compareGroupKeys } from '../shared/groupFeatures.ts'
+import {
+  OVERFLOW_GROUP_KEY,
+  compareGroupKeys,
+  overflowLabel,
+} from '../shared/groupFeatures.ts'
 import { readIdAt } from '../shared/readIdentity.ts'
 import { getOrCreate } from '../shared/util.ts'
 
@@ -31,9 +35,9 @@ export function* eachGroup(
   hidden: ReadonlySet<string> = NO_HIDDEN_GROUPS,
 ) {
   for (const [displayedRegionIndex, grouped] of rpcDataMap) {
-    for (const { key, label, data } of grouped.groups) {
+    for (const { key, label, data, mergedKeys } of grouped.groups) {
       if (!hidden.has(key)) {
-        yield { displayedRegionIndex, key, label, data }
+        yield { displayedRegionIndex, key, label, data, mergedKeys }
       }
     }
   }
@@ -141,10 +145,26 @@ export function orderedGroups(
   hidden?: ReadonlySet<string>,
 ): GroupId[] {
   const order = new Map<string, GroupId>()
-  for (const { key, label } of eachGroup(rpcDataMap, hidden)) {
+  // The overflow lane is the one whose label a single region cannot answer for:
+  // `MAX_GROUPS` is enforced per worker call, so each region merges whatever its
+  // own tail was and the DRAWN lane holds the union. First-seen-wins named it for
+  // whichever region happened to arrive first — "8 more values" over a lane
+  // holding 15. Unioned here, where every other cross-region answer about group
+  // identity is already resolved.
+  const merged = new Set<string>()
+  for (const { key, label, mergedKeys } of eachGroup(rpcDataMap, hidden)) {
+    if (mergedKeys) {
+      for (const k of mergedKeys) {
+        merged.add(k)
+      }
+    }
     if (!order.has(key)) {
       order.set(key, { key, label })
     }
+  }
+  const overflow = order.get(OVERFLOW_GROUP_KEY)
+  if (overflow) {
+    overflow.label = overflowLabel(merged.size)
   }
   return [...order.values()].sort((a, b) => compareGroupKeys(a.key, b.key))
 }

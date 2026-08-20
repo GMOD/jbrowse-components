@@ -1,7 +1,11 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { partitionFeatures } from '../shared/groupFeatures.ts'
+import {
+  OVERFLOW_GROUP_KEY,
+  overflowLabel,
+  partitionFeatures,
+} from '../shared/groupFeatures.ts'
 import {
   buildSashimiDownKeys,
   buildReadIdsByChainName,
@@ -34,9 +38,14 @@ function data(
 }
 
 function grouped(
-  groups: { key: string; data: PileupDataResult }[],
+  groups: {
+    key: string
+    data: PileupDataResult
+    label?: string
+    mergedKeys?: string[]
+  }[],
 ): GroupedAlignmentsResult {
-  return { groups: groups.map(g => ({ ...g, label: g.key })) }
+  return { groups: groups.map(g => ({ label: g.key, ...g })) }
 }
 
 test('orderedGroups dedupes group identities across regions, untagged last', () => {
@@ -84,6 +93,53 @@ test('orderedGroups sorts the cross-region union, not by first-seen region', () 
     ]),
   )
   expect(order.map(g => g.key)).toEqual(['+', '-', ''])
+})
+
+// `MAX_GROUPS` is enforced per worker call and one call sees one region, so each
+// region merges its own tail and no one of them knows what the DRAWN lane holds.
+// First-seen-wins took region 0's label — "2 merged values" over a lane holding
+// four distinct ones, since region 1 merged an overlapping but larger set.
+test('orderedGroups counts the overflow lane over the cross-region union', () => {
+  const order = orderedGroups(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: 'v1', data: data(['a']) },
+          {
+            key: OVERFLOW_GROUP_KEY,
+            data: data(['b']),
+            label: overflowLabel(2),
+            mergedKeys: ['v8', 'v9'],
+          },
+        ]),
+      ],
+      [
+        1,
+        grouped([
+          { key: 'v1', data: data(['c']) },
+          {
+            key: OVERFLOW_GROUP_KEY,
+            data: data(['d']),
+            label: overflowLabel(3),
+            mergedKeys: ['v9', 'v10', 'v11'],
+          },
+        ]),
+      ],
+    ]),
+  )
+  expect(order.map(g => g.key)).toEqual(['v1', OVERFLOW_GROUP_KEY])
+  // v8, v9, v10, v11 — the union, not either region's own count
+  expect(order.at(-1)!.label).toBe(overflowLabel(4))
+})
+
+// Nothing to relabel when the cap never fired, and the union must not invent a
+// lane out of an absent one.
+test('orderedGroups leaves an uncapped fetch alone', () => {
+  const order = orderedGroups(
+    new Map([[0, grouped([{ key: 'v1', data: data(['a']) }])]]),
+  )
+  expect(order).toEqual([{ key: 'v1', label: 'v1' }])
 })
 
 test('orderedGroups keeps untagged last even when it is a region’s only group', () => {
