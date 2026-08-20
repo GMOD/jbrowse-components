@@ -50,12 +50,15 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   the one way this breaks is a patch landing in a different lane than the pack.
   Its geometry token must be a **coordinate** array (replaced atomically on
   refetch); a color array would never invalidate.
-- **An `installPerRegionLifecycle` `encode` reads a narrow inputs getter
-  (`gpuProps()`), never the display's `renderState`.** The encode runs inside
-  the per-key autorun, so every observable it touches re-encodes _every_ region
-  — and a `renderState` carries the canvas box and row geometry, which move on
-  each frame of a height drag, rebuilding byte-identical output at tens of MB
-  per frame. `encode: data => data` is the other safe shape.
+- **An `installPerRegionLifecycle` declares a narrow `inputs` getter
+  (`gpuProps()`), never the display's `renderState`.** Its identity re-encodes
+  _every_ region, and a `renderState` carries the canvas box and row geometry,
+  which move on each frame of a height drag — rebuilding byte-identical output
+  at tens of MB per frame. Omitting `inputs` is the other safe shape, for an
+  encode that needs nothing (`encode: data => data`). Reading an observable
+  inside `encode` is no longer the trap it was (ADR-078: it invalidates
+  nothing), but state the dependency in `inputs` or a settings change will not
+  reach the buffer.
 - **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
   before it looks at the count, so an empty pack IS the release.
 

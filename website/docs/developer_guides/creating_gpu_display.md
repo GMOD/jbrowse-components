@@ -34,15 +34,15 @@ JBrowse GPU displays follow a three-layer model:
 
 The rest of this section is that same picture with the mechanisms in it.
 
-<Figure caption="Two autoruns, each with its own trigger: a per-region-key upload autorun on an rpcDataMap entry changing, and a render autorun on renderTick or a frame-level change like scroll. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted also flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
+<Figure caption="Two autoruns, each with its own trigger: one upload autorun on any rpcDataMap entry changing, which diffs the map and uploads what moved, and a render autorun on renderTick or a frame-level change like scroll. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted also flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
 `RenderLifecycleMixin`, installed by `installPerRegionLifecycle`):
 
-- An upload autorun _per region key_ fires when that region's `rpcDataMap` entry
-  or the backend changes; it calls `backend.uploadRegion()` for the region that
-  changed. Per-key autoruns keep a streaming whole-genome fetch at O(N) uploads
-  instead of O(N²).
+- One upload autorun fires when any `rpcDataMap` entry or the backend changes;
+  it diffs the map against what it last sent and calls `backend.uploadRegion()`
+  only for regions that moved. That diff keeps a streaming whole-genome fetch at
+  O(N) uploads instead of O(N²).
 - The render autorun fires when `renderTick` bumps (after every upload) or when
   frame-level state like scroll position changes; it calls
   `backend.renderBlocks()`.
@@ -420,28 +420,30 @@ here is the render wiring:
 // the only part of the model that knows a backend exists, and it is
 // identical whether that backend is the GPU or the Canvas2D one.
 startRenderingBackend(backend: ScoreRenderingBackend) {
-  installPerRegionLifecycle(
-    self,
-    self.rpcDataMap,
-    backend,
-    data => data,
-    (b, regions) => {
+  installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+    encode: data => data,
+    render: (b, regions) => {
       if (regions.size === 0) {
         return false // keep the loading overlay up until data lands
       }
       b.renderBlocks(self.renderBlocks, regions, self.renderState)
       return true
     },
-  )
+  })
 },
 ```
 
 `installPerRegionLifecycle` wraps the lower-level
 [`attachRenderingBackend`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
-contract, giving each region key its own upload autorun to avoid O(N²)
-re-uploads as regions stream in. Only displays that lay features into Y-rows
-_across_ regions (`LinearBasicDisplay`, alignments) need the whole-map
-`laidOutDataMap` form instead.
+contract. It remembers what it last sent for each region and uploads only what
+changed, so N regions streaming in cost N uploads rather than N². Only displays
+that lay features into Y-rows _across_ regions (`LinearBasicDisplay`,
+alignments) need the whole-map `laidOutDataMap` form instead.
+
+An encode that needs more than the region's own data — a color scheme, a scale —
+declares it as `inputs`, and a change there re-encodes every loaded region.
+Reading it inside `encode` instead does not work: the helper invalidates on
+`inputs` and on the region's own data, and on nothing else.
 
 Three settings buckets, and putting one in the wrong place is the common
 mistake: `rpcProps()` refetches in the worker, so scroll and zoom must stay out

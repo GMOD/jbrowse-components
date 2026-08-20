@@ -1,5 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
-import { observable, runInAction } from 'mobx'
+import { computed, observable, runInAction } from 'mobx'
 
 import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
 import { installPerRegionLifecycle } from './installPerRegionLifecycle.ts'
@@ -50,4 +50,42 @@ test('an arrival uploads before anything paints, whether or not render reads the
     // Every paint sees a backend holding every region the map holds.
     expect(log).toEqual(['upload:0', 'render:1', 'upload:1', 'render:2'])
   }
+})
+
+// The same question for the indirect shape, because ARCHITECTURAL_LIMITS named
+// it as the one that could not be fixed by deleting a direct read: a display
+// whose render callback reaches the data through a computed chain
+// (`renderState` → lanes → the map) rather than reading it. Both reactions are
+// woken by the same write, and the upload still lands first.
+test('a render callback reaching the map through a computed chain also paints after the upload', () => {
+  const log: string[] = []
+  const model = TestModel.create()
+  const data = observable.map<number, number>(undefined, { deep: false })
+  const backend = {
+    uploadRegion(key: number) {
+      log.push(`upload:${key}`)
+    },
+    pruneRegions() {},
+  }
+  const lanes = computed(() => [...data.keys()].map(k => k * 2))
+  const renderState = computed(() => ({ laneCount: lanes.get().length }))
+
+  installPerRegionLifecycle(model, data, backend, {
+    encode: (value: number) => ({ value }),
+    render: (_b, encoded) => {
+      log.push(`render:${renderState.get().laneCount}/${encoded.size}`)
+      return true
+    },
+  })
+
+  log.length = 0
+  runInAction(() => {
+    data.set(0, 10)
+  })
+  runInAction(() => {
+    data.set(1, 20)
+  })
+
+  // The lane count and the backend's region count agree on every paint.
+  expect(log).toEqual(['upload:0', 'render:1/1', 'upload:1', 'render:2/2'])
 })

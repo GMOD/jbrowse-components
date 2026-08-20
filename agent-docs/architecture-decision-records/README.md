@@ -26,7 +26,7 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [012](adr-012-synteny-worker-output-split.md) | Accepted | Synteny worker emits geometry only; main thread owns colors and picking IDs (picking part superseded by ADR-019) |
 | 013–015 | Removed | Graph-genome ADRs (bubble shape, chain contraction, cross-path symmetry) — deleted with `graph-core`; numbers not reused |
 | [016](adr-016-bicolorpivot-stays-in-worker.md) | Accepted | `bicolorPivot` split stays in the worker, not `gpuProps` |
-| [017](adr-017-wiggle-per-key-autoruns.md) | Accepted | Per-region streamed wiggle upload uses per-key autoruns |
+| [017](adr-017-wiggle-per-key-autoruns.md) | Superseded | Per-region streamed wiggle upload uses per-key autoruns — superseded by ADR-078, which keeps the O(1)-per-arrival property with one autorun and a reference diff |
 | [018](adr-018-synteny-cumbp-hpmath-storage.md) | Superseded | Synteny corner storage moves to cumulative-bp hi/lo Float32 — superseded by ADR-067 (window-relative Float32) |
 | [019](adr-019-synteny-cpu-picking.md) | Accepted | Synteny picking moves from GPU framebuffer readback to CPU (supersedes ADR-012 picking) |
 | [020](adr-020-wiggle-line-plot-encoding.md) | Accepted | Wiggle line-plot single-polyline encoding |
@@ -87,4 +87,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [075](adr-075-the-isoform-cap-runs-in-the-worker.md) | Accepted | The per-gene isoform cap collapses in the worker's layoutSubfeatures and puts the expanded-gene set in the RPC cache key, reversing the main-thread design the parked canvas-glyph proposal argued for — the worker→main boundary carries no isoform structure to relayout over |
 | [076](adr-076-a-shared-canvas-answers-readiness-twice.md) | Accepted | The comparative views answer readiness twice — a per-display phase for "still working" and the surface `settled` gate for "finished content" — because an error is terminal to one and not the other |
 | [077](adr-077-format-guessing-is-a-table-plus-the-adapter-registry.md) | Accepted | One format table both the app and the CLI read, and the adapter registry — not a per-plugin registration — decides whether a build can open a format |
+| [078](adr-078-one-upload-autorun-and-a-diff.md) | Accepted | Per-region streamed upload is one autorun over the map plus a reference diff, not an autorun per key |
 <!-- END GENERATED ADR INDEX -->

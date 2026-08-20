@@ -29,10 +29,11 @@ function makeDisplay() {
   return display
 }
 
-// `installPerRegionLifecycle` runs the encode inside a per-key autorun, so
-// whatever it reads decides how often every region's instance buffer is rebuilt.
-// This stands in for that autorun: the real one needs a GPU backend, and what is
-// under test is which observables the encode's input depends on, not the upload.
+// `installPerRegionLifecycle` memoizes the display's declared `inputs`, so what
+// that getter reads decides how often every region's instance buffer is rebuilt.
+// This stands in for the helper's computed: the real one needs a GPU backend,
+// and what is under test is which observables the encode's input depends on, not
+// the upload.
 function countRecomputes(read: () => unknown) {
   let n = 0
   const dispose = autorun(() => {

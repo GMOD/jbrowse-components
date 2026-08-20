@@ -42,7 +42,7 @@ digraph gpu_display_lifecycle {
     color="#aed581"
 
     rpcdata [label="rpcDataMap\none entry per region", fillcolor="#dcedc8"]
-    uploadrun [label="upload autorun\none per region key", shape=ellipse]
+    uploadrun [label="upload autorun\none per display, diffed", shape=ellipse]
     // Scroll and zoom are why renderState exists. Without them it reads as a
     // node nothing feeds, and the render autorun looks like it has one trigger
     // when the whole point of the pair is that it has two. Inside this lane
@@ -82,7 +82,7 @@ digraph gpu_display_lifecycle {
   drawn [label="canvasDrawn = true\n(readiness testids, DisplayChrome)", fillcolor="#ffe0b2"]
 
   exec -> rpcdata [label="  structured clone"]
-  rpcdata -> uploadrun [label="  entry changed"]
+  rpcdata -> uploadrun [label="  any entry changed"]
   uploadrun -> upload
 
   // renderNow() bumps renderTick on the MODEL and the RENDER AUTORUN is what

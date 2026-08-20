@@ -4,11 +4,10 @@ interface RegionUploadTarget<T> {
 }
 
 /**
- * Incremental whole-map GPU upload for displays whose per-region data is a
- * single MobX computed that re-clones the whole map on any change (canvas,
- * alignments). Per-key autoruns can't help those — reading the computed in a
- * per-key autorun still tracks the whole computed (see
- * `installPerRegionLifecycle` for the per-key case that *can*).
+ * Incremental whole-map GPU upload, and **the one diff every per-region upload
+ * in the tree runs on**: displays whose data is a single MobX computed that
+ * re-clones the map on any change (canvas, alignments) call it directly, and
+ * `installPerRegionLifecycle` calls it underneath an encode step (ADR-078).
  *
  * The returned function diffs the current map against the last upload by
  * reference and:

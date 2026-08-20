@@ -1,13 +1,25 @@
 ---
-status: Accepted
-summary: "Per-region streamed wiggle upload uses per-key autoruns"
+status: Superseded
+summary: "Per-region streamed wiggle upload uses per-key autoruns — superseded by ADR-078, which keeps the O(1)-per-arrival property with one autorun and a reference diff"
 ---
 
 # ADR-017: Per-region streamed wiggle upload uses per-key autoruns
 
 ## Status
 
-Accepted. **Update:** the helper was subsequently promoted to
+**Superseded by [ADR-078](adr-078-one-upload-autorun-and-a-diff.md)** (one
+upload autorun and a diff).
+
+The quadratic upload count below is real, and it is a property of the whole-map
+loop *as written here* — one that re-uploads every entry because it remembers
+nothing. `createRegionUploadSync` remembers, so the same loop uploads once per
+arrival, and ADR-078 collapses the two mechanisms onto it. What the per-key
+autoruns carried alone was encode invalidation, which is now a declared `inputs`
+getter the helper memoizes.
+
+Retained for the dependency-tracking reasoning, which is still the clearest
+account of what `ObservableMap.keys()` and `.get()` each track. **Update:** the
+helper had already been promoted to
 `packages/render-core/src/installPerRegionLifecycle.ts` (its "Revisit if" clause
 fired — see below), reversing this ADR's *Rejected alternative* against lifting it
 to a shared package. Filenames in this ADR are reconciled to current source.

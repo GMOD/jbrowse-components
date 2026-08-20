@@ -733,80 +733,87 @@ so a backend that doesn't extend a base is a compile error rather than a display
 silently forgoing its error channel. `?.` on a capability every implementer
 should have reads as tolerance and spends as silence.
 
-#### Per-region streamed: per-key autoruns (`installPerRegionLifecycle`)
+#### Per-region streamed: one autorun and a diff (`installPerRegionLifecycle`)
 
 **Plain English:** The naive implementation re-uploads every chromosome to the
 GPU each time any chromosome finishes loading — 300 uploads instead of 24 for a
-whole-genome wiggle track. The fix gives each chromosome its own tiny MobX
-watcher. When chromosome 5 arrives, only chromosome 5's watcher fires and
-uploads. When the user changes a color setting, all 24 watchers fire and all 24
-re-upload — which is the right behavior.
+whole-genome wiggle track. The helper remembers what it last sent for each
+chromosome and sends only what changed. When chromosome 5 arrives, chromosome 5
+uploads. When the user changes a color setting, all 24 re-encode and re-upload —
+which is the right behavior, and is why the display has to *declare* that the
+color is an encode input.
 
-Naive per-region upload iterates the full `rpcDataMap` inside the upload callback.
-Because `for (const [k, v] of rpcDataMap)` makes MobX track the entire map, every
-`rpcDataMap.set(key, data)` re-fires the autorun and re-uploads all N regions —
-O(N²) total GPU uploads when N regions arrive sequentially.
+Naive per-region upload iterates the full `rpcDataMap` inside the upload callback
+and re-uploads all N regions on every `rpcDataMap.set` — O(N²) GPU uploads when N
+regions arrive sequentially. The loop is fine; the missing piece was memory of
+what it already sent.
 
-**The fix lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is used
-by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
+**The helper lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is
+used by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
 `LinearMultiRowFeatureDisplay`. It does **not** apply to the canvas plugin's other
 display, `LinearBasicDisplay`, whose whole-map Y-layout keeps it on the
 computed-map form described below. (The canvas plugin's two displays sit on
 opposite upload strategies, so they're always spelled out where they diverge.
 `LinearMultiSampleVariantDisplay` is per-region too but derives its regions map
-from a single `cellData` computed, so per-key autoruns can't help it — it takes
-the same `createRegionUploadSync` reference-diff canvas does.) Each plugin's
-`startRenderingBackend` collapses to a single call:
+from a single `cellData` computed and takes `createRegionUploadSync` — the same
+diff this helper runs on — directly.) Each plugin's `startRenderingBackend`
+collapses to a single call:
 
 ```ts
 startRenderingBackend(backend: XxxRenderingBackend) {
-  installPerRegionLifecycle(
-    self,
-    self.rpcDataMap,
-    backend,
-    data => encode(data, self.gpuProps()),       // optional encode step
-    (b, encoded) =>                               // render callback
+  installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+    inputs: () => self.gpuProps(),     // omit for an encode that needs nothing
+    encode: (data, props) => encode(data, props),
+    render: (b, encoded) =>
       b.renderBlocks(
         self.renderBlocks,
         /* rpcDataMap or `encoded` */,
         self.renderState,
       ),
-  )
+  })
 }
 ```
 
-The helper spawns one autorun per `rpcDataMap` key. When a new key arrives only
-its autorun fires (O(1) upload). When an encoder-tracked observable changes
-(theme, color, scale), all per-key autoruns fire (O(N) re-encode).
+One upload autorun runs over the whole map with two reference diffs under it: a
+region re-encodes when its own entry is replaced or when `inputs` changes
+identity, and re-uploads when its encoded payload changes. A new key costs one
+encode and one upload; a settings change costs N of each. The quadratic term left
+is N `Map.get`s per arrival. [ADR-078](../architecture-decision-records/adr-078-one-upload-autorun-and-a-diff.md)
+has the reasoning, including why ADR-017's per-key autoruns are gone.
 
-**This fixes uploads only. Draws keep the O(N²) shape.** `renderBlocks` clears
-the canvas and redraws every loaded region, so N sequential arrivals still cost
-about N²/2 block draws, and each arrival draws twice wherever the render autorun
-observes the data map. That is measured, accepted and not worth chasing (24
-regions cost 72 draws, and removing two thirds of them moved no user-visible
-number), but read
+**`inputs` is the whole contract.** `encode`'s own reads still run inside the
+upload autorun, so they wake it, but they invalidate nothing — a wide read there
+re-runs the diff and encodes nothing. Anything a settings change must reach the
+buffer through therefore goes in `inputs`, which the helper memoizes as a
+computed.
+
+**This fixes uploads and encodes only. Draws keep the O(N²) shape.**
+`renderBlocks` clears the canvas and redraws every loaded region, so N sequential
+arrivals still cost about N²/2 block draws. Each arrival no longer draws *twice*
+— the upload now happens inside the upload autorun's own run, so there is no pass
+where the map holds a region the backend does not — but read
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#a-region-arrival-draws-twice-wherever-the-render-autorun-observes-the-data)
-before trying, because the obvious fix (deferring the per-region `renderNow()`
-bump to the next frame) is one of the things measured not to work.
-
-Key MobX fact: `ObservableMap.get(existingKey)` tracks `hasMap_.get(key)` (per-key
-existence atom), not `keysAtom_`. Adding a new key fires `keysAtom_` (waking the
-key-manager only) and that new key's `hasMap_` entry. Existing per-key autoruns
-are **not** re-fired.
+before chasing the rest: 24 regions cost 72 draws, the double draw explains 24 of
+them, and removing two thirds moved no user-visible number.
 
 The helper also caches successful encode outputs in a `Map<number, Encoded>` and
 passes it to the render callback — wiggle's renderer reads from this map because
 its renderer is stateless; other callers ignore the arg and read `rpcDataMap`
-directly. Cleanup is automatic via `addDisposer(self, …)`.
+directly.
 
-**Why the helper doesn't apply to `LinearBasicDisplay` / alignments:** those lay
-out features into Y-rows across all loaded regions together (a gene spanning two
-adjacent regions lands on the same row in both), so any new arrival can in
+**Why `LinearBasicDisplay` / alignments call the diff directly instead:** those
+lay out features into Y-rows across all loaded regions together (a gene spanning
+two adjacent regions lands on the same row in both), so any new arrival can in
 principle change the layout of everything already loaded. They route through a
 whole-map MobX computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates
-on any `rpcDataMap` change; per-key autoruns can't help, because reading
-`laidOutDataMap.get(key)` still tracks the whole-map computed. This cross-region
-coupling is load-bearing (collapsed-intron views split one chromosome into many
+on any `rpcDataMap` change, and their upload payload *is* that computed's output
+— no encode step, so nothing to declare `inputs` for. Until ADR-078 the reason
+was stronger than that: per-key autoruns could not help a whole-map computed at
+all, because reading `laidOutDataMap.get(key)` still tracks the whole thing. Now
+the two paths run the same diff and the split is thin, so a display moving from
+one to the other is a small change rather than a different strategy. This
+cross-region coupling is load-bearing (collapsed-intron views split one
+chromosome into many
 displayed regions, and a long gene must hold the same Y row in each) and is why
 layout runs on the main thread — row assignment needs the union of all visible
 regions' features. For alignments that placement is settled by

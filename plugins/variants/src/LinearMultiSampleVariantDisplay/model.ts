@@ -377,10 +377,11 @@ export function stateModelFactory(
       }))
       .actions(self => ({
         startRenderingBackend(backend: VariantRenderingBackend) {
-          // Same whole-map reference diff canvas uses: perRegionCellMap is one
-          // MobX computed rebuilt on any cellData change, so per-key autoruns
-          // (installPerRegionLifecycle) can't help here — they'd still track the
-          // whole computed. The helper owns the prune and the context-loss reset.
+          // Same whole-map reference diff canvas uses, called directly rather
+          // than through installPerRegionLifecycle: perRegionCellMap is one MobX
+          // computed and its entries are the upload payload, so there is no
+          // encode step to declare inputs for. The helper owns the prune and the
+          // context-loss reset.
           const syncRegions = createRegionUploadSync<
             VariantUploadData,
             VariantRenderingBackend

@@ -70,12 +70,15 @@ arrays were never the cost. The objects holding them were.
 
 ### Coarser tracking is unobservable here
 
-The only behavioral difference is granularity, and both consumer shapes are
-already coarser than the atoms being dropped: `installPerRegionLifecycle`'s
-per-key autorun tracks `map.get(key)` — the entry, not its contents, which is
-exactly what ADR-017 relies on — and a whole-map consumer tracks the keys atom.
-Both still fire on the `.set`/`.delete`/`.clear` that is the only way an entry
-ever changes.
+The only behavioral difference is granularity, and every consumer shape is
+already coarser than the atoms being dropped: a consumer tracks the keys atom
+and each entry's own atom, never a field inside an entry. Both fire on the
+`.set`/`.delete`/`.clear` that is the only way an entry ever changes. (Written
+when `installPerRegionLifecycle` tracked `map.get(key)` from an autorun per key,
+which was the finest-grained reader in tree and is what
+[ADR-017](adr-017-wiggle-per-key-autoruns.md) relied on;
+[ADR-078](adr-078-one-upload-autorun-and-a-diff.md) replaced it with one autorun
+over the map, which is coarser still. The argument holds a fortiori.)
 
 ### A named constructor, not a flag at each site
 

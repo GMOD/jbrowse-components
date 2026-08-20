@@ -327,28 +327,30 @@ global because they are reporting the device, not drawing on it.
 
 ### A region arrival draws twice wherever the render autorun observes the data
 
-**Status:** Accepted, and measured rather than assumed. Removing the redundant
-draws changes nothing a user can perceive.
+**Status:** The systematic half is retired ([ADR-078](../architecture-decision-records/adr-078-one-upload-autorun-and-a-diff.md),
+2026-08-19). What remains is a measured surplus nobody has explained, and it was
+already known not to matter.
 
-**Never rely on the upload autorun running before the render autorun.** Both can
-observe the same arrival — upload through the key set, render through any read
-that reaches `rpcDataMap` — and MobX notifies in observer order, not creation
-order. A render autorun that observes the map therefore paints the pre-upload
-state on each arrival, and the `renderTick` bump paints the real one. Both draws
-land in one task, so the browser composites only the second; the cost is a wasted
-GPU submit per arrival, not a visible flash.
+**The cause was a deferred upload, not observer order.** This entry used to say
+the render autorun can be notified before the upload autorun and that nothing
+should rely on the order. The upload autorun ran first all along; what it did was
+*spawn* the per-key autorun that owned the upload, and an `autorun` created inside
+a running reaction is scheduled rather than run inline. So the upload could not
+happen in the pass that decided to do it: a render callback observing the map
+painted the pre-upload state, and the real state followed on the `renderTick`
+bump. `installPerRegionLifecycle` now uploads inside the upload autorun's own
+run, which closes the window — `uploadOrder.test.ts` pins upload-then-paint for
+both the direct read and the computed chain, and the count that used to read
+**9** renders for 4 arrivals reads **5**, the same as a callback that ignores the
+map.
 
-**What matters is the render autorun's dependency set, not any one syntactic
-read.** A direct `rpcDataMap` read in the callback does it, and so does a
-computed chain the callback reaches through `renderState`.
-`installPerRegionLifecycle.test.ts` pins the direct form: 4 arrivals in separate
-actions give 4 uploads and, counting the one render at attach before any data,
-**5** renders when the callback ignores the map (the per-key `renderNow()` and
-the upload autorun's `renderNow()` land in one reaction batch and coalesce)
-against **9** when it reads it.
+**What matters is still the render autorun's dependency set, not any one
+syntactic read** — a direct `rpcDataMap` read and a computed chain reached
+through `renderState` both wake it. That is why the fix had to be on the upload
+side: the reads are legitimate, and the two tests pin both shapes.
 
-Three code paths have such a dependency, so the double draw is not confined to
-one display:
+Three code paths have such a dependency. Only the first is outside the helper,
+so only it is untouched by ADR-078:
 
 - **`LinearAlignmentsDisplay`** reads the map directly (`rpcDataMap.size === 0`,
   for the zero-group grouped-fetch reason in [HISTORICAL.md](HISTORICAL.md)
@@ -368,21 +370,21 @@ one display:
 
 Two things that already coalesce correctly, so don't "fix" them:
 
-- **Settings fan-out.** One encoder-input change with 4 regions loaded fires all
-  4 per-key autoruns and yields exactly **1** render: the per-key `renderNow()`
-  bumps land while the render reaction is already scheduled, and MobX dedupes.
+- **Settings fan-out.** One encoder-input change with 4 regions loaded re-encodes
+  all 4 regions and yields exactly **1** render: it is one upload autorun run,
+  and its single `renderNow()` bump lands while the render reaction is already
+  scheduled.
 - **Pan and zoom.** Wheel, drag and side-scroll batch their MST writes into one
   `requestAnimationFrame` (`useSideScroll`, `useVirtualScrollWheel`,
   `usePointerDrag`, `useRafCommit`),
   so a gesture commits at most once per frame.
 
-**Deferring the `renderTick` bump does not help, and the arrival draw is the
-stale one.** The obvious fix — a `renderSoon()` replacing the `renderNow()` in
-`installPerRegionLifecycle` — cannot work: the render autorun is scheduled by the
-`rpcDataMap` write itself and runs *before* the upload autorun, so deferring the
-tick defers only the correct, post-upload draw and leaves the pre-upload one as
-the single draw in that frame. Measured with a frame-coalesced `renderNow`: 4
-arrivals gave 9 renders, exactly the un-deferred count.
+**Deferring the `renderTick` bump was the wrong end, and that is worth keeping.**
+A `renderSoon()` replacing the `renderNow()` could not work while the upload was
+deferred: the stale draw was the one already scheduled, so deferring the tick
+deferred the *correct* draw and left the stale one as the frame's only paint.
+Measured with a frame-coalesced `renderNow`: 4 arrivals gave 9 renders, exactly
+the un-deferred count. Moving the upload rather than the paint is what fixed it.
 
 **A scheduler on the render autorun works, and buys nothing in the app.**
 `autorun(fn, { scheduler })` coalesces every case. A/B on
@@ -397,7 +399,9 @@ arrivals gave 9 renders, exactly the un-deferred count.
 | `setTimeout(0)` | 25 | 11.7s | 18 | 174ms | 1.4s |
 
 24 regions cost **72** draws, not the 48 the double-draw alone predicts, so there
-is more redundancy here than this entry describes. Removing two thirds of it
+is more redundancy here than this entry describes. Both arms predate ADR-078,
+which removes 24 of that 72 on this display and explains none of the rest —
+whatever the other 24 are, they are not the arrival draw. Removing two thirds of it
 moves nothing: every column is inside baseline run-to-run spread (11.1s to 12.7s
 to-ready). The draws are not on the critical path — fetch, parse and clustering
 are, and the long tasks are JS. A microtask scheduler scores the same as rAF,
@@ -932,17 +936,18 @@ only on a real violation):
   looks like that and is not: its `prepare` reads it before deciding. The rest
   is held by convention — every in-tree `prepare` bails on something the
   skeleton already tracks, or on an observable of its own that it read first.
-- **An `installPerRegionLifecycle` `encode` must read a narrow inputs getter,
-  never `renderState`.** The encode body runs inside the per-key autorun, so
-  every observable it touches re-encodes *every* region — and a `renderState`
-  carries the canvas box and row geometry, which move on each frame of a height
-  drag. The failure is not wrong pixels but tens of MB per frame of
-  byte-identical output, which reads as "the GPU path is slow". Two call sites
-  each carry a paragraph about the time they got it wrong
-  (`LinearMultiRowFeatureDisplay`'s model, MAF's `stateModel`), and prose is the
-  whole enforcement. Probably checkable — the encode is a pure function the
+- **An `installPerRegionLifecycle` declares a narrow `inputs` getter, never
+  `renderState`.** ADR-078 moved this from a trap to a declaration: an
+  observable read inside `encode` no longer invalidates anything, so the old
+  failure — a `renderState` read rebuilding tens of MB per frame of
+  byte-identical output during a height drag, which reads as "the GPU path is
+  slow" — now needs `inputs` itself to be the wide one. Getting it too narrow is
+  the live risk instead, and it fails visibly (a settings change that never
+  reaches the buffer) rather than silently. Prose is still the whole
+  enforcement. Probably checkable — the encode is a pure function the
   installer calls, so it could run once at attach inside a MobX probe that
-  reports which observables it touched, and compare against `gpuProps()`'s set.
+  reports which observables it touched, and compare against what `inputs`
+  reads — a set that now has a name to compare against.
 
 - **The comparative family's `reload()` is unchecked.** The retry contract check
   covers the per-region and global foundations; `installComparativeFetchAutorun`
