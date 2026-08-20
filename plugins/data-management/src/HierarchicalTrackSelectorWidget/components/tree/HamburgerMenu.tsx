@@ -119,16 +119,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
             ],
           },
           {
-            // e.g. the "vs mm10" a synteny track's row carries. Off is the
-            // right answer for a config whose track names already say it
-            label: 'Show track annotations',
-            type: 'checkbox',
-            checked: model.activeTrackAdornments,
-            onClick: () => {
-              model.setTrackAdornments(!model.activeTrackAdornments)
-            },
-          },
-          {
             label: 'Collapse...',
             subMenu: [
               ...(model.hasAnySubcategories

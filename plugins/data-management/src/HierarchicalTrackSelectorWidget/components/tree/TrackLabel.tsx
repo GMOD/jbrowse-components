@@ -9,7 +9,6 @@ import OverrideBadge from './OverrideBadge.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { TrackRowAdornment } from '../../trackRowAdornment.ts'
 import type { TreeTrackNode } from '../../types.ts'
 
 // checkboxLabel merges MUI FormControlLabel's root styles, so the row renders a
@@ -37,7 +36,7 @@ const useStyles = makeStyles()(theme => ({
     marginLeft: -11,
     marginRight: 0,
     // shrinkable, so the name inside can ellipsise rather than the row running
-    // past the drawer and taking the adornment and the ... menu with it
+    // past the drawer and taking the ... menu with it
     minWidth: 0,
     '&:hover': {
       backgroundColor: theme.palette.action.selected,
@@ -58,25 +57,14 @@ const useStyles = makeStyles()(theme => ({
     minWidth: 0,
   },
   // The name is what yields when the drawer is narrow: it shrinks and
-  // truncates with an ellipsis while the adornment beside it keeps its full
-  // width, because a few words half-truncated ("vs pea") read as damage rather
-  // than as information. Needs the whole flex chain above it to allow shrinking —
-  // rowContent, the label, and this — since each one's automatic minimum size
-  // would otherwise be its own content.
+  // truncates with an ellipsis. Needs the whole flex chain above it to allow
+  // shrinking — rowContent, the label, and this — since each one's automatic
+  // minimum size would otherwise be its own content.
   name: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     minWidth: 0,
-  },
-  adornmentIcon: {
-    color: theme.palette.primary.main,
-    flex: 'none',
-  },
-  adornmentLabel: {
-    color: theme.palette.text.secondary,
-    flex: 'none',
-    fontSize: '0.85em',
   },
 }))
 
@@ -112,41 +100,24 @@ const TrackLabelText = observer(function TrackLabelText({
   id,
   name,
   trackId,
-  adornment,
   selectedClass,
 }: {
   model: HierarchicalTrackSelectorModel
   id: string
   name: string
   trackId: string
-  adornment?: TrackRowAdornment
   selectedClass: string
 }) {
   const { classes } = useStyles()
   const selected = model.selectionSet.has(trackId)
-  const AdornmentIcon = adornment?.icon
   return (
     <div
       data-testid={`htsTrackLabel-${id}`}
       className={`${classes.label} ${selected ? selectedClass : ''}`}
     >
-      {/* fontSize inherit, not a class: MUI's default 20px icon would push the
-      22px row taller, and the prop settles that without depending on which of
-      two stylesheets was injected last */}
-      {AdornmentIcon ? (
-        <AdornmentIcon fontSize="inherit" className={classes.adornmentIcon} />
-      ) : null}
       <span className={classes.name}>
         <SanitizedHTML html={name} />
       </span>
-      {adornment?.label ? (
-        <span
-          className={classes.adornmentLabel}
-          data-testid={`htsTrackAdornment-${id}`}
-        >
-          {adornment.label}
-        </span>
-      ) : null}
       <OverrideBadge model={model} trackId={trackId} name={name} />
     </div>
   )
@@ -160,17 +131,14 @@ const TrackLabel = observer(function TrackLabel({
   item: TreeTrackNode
 }) {
   const { classes } = useStyles()
-  const { id, name, conf, trackId, description, adornment } = item
-  // one string, because the tree shares a single tooltip element keyed off this
-  // attribute (SharedTooltip)
-  const tooltip = [description, adornment?.detail].filter(Boolean).join(' — ')
+  const { id, name, conf, trackId, description } = item
 
   return (
     <>
       <label
         className={classes.checkboxLabel}
-        data-tooltip={tooltip}
-        aria-description={tooltip}
+        data-tooltip={description}
+        aria-description={description}
         onClick={event => {
           if (event.ctrlKey || event.metaKey) {
             if (model.selectionSet.has(trackId)) {
@@ -193,7 +161,6 @@ const TrackLabel = observer(function TrackLabel({
           id={id}
           name={name}
           trackId={trackId}
-          adornment={adornment}
           selectedClass={classes.selected}
         />
       </label>

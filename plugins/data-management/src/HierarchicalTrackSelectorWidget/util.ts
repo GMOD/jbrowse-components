@@ -2,14 +2,12 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import { buildSearchText } from '../shared/searchText.ts'
-import { trackRowAdornmentFor } from './trackRowAdornment.ts'
 
 import type {
   TrackNodeSource,
   TreeCategoryNode,
   TreeTrackNode,
 } from './types.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -47,20 +45,14 @@ export const sessionTracksCategory = ' Session tracks'
 // hierarchy is built, so it is one of the categories for every purpose that
 // reads them — sorting, the subcategory count, and searching. The tree draws
 // that folder, and the rule is that the filter box searches what the tree
-// shows. An adornment's label joins searchText for the same reason.
+// shows.
 export function trackNodeSourceFor(
   conf: AnyConfigurationModel,
   {
     session,
-    pluginManager,
-    viewAssemblyNames,
-    adornments = true,
     isSessionTrack = false,
   }: {
     session: AbstractSessionModel
-    pluginManager: PluginManager
-    viewAssemblyNames: string[]
-    adornments?: boolean
     isSessionTrack?: boolean
   },
 ): TrackNodeSource {
@@ -72,25 +64,13 @@ export function trackNodeSourceFor(
     : ownCategories
   const description =
     (readConfObject(conf, 'description') as string | undefined) ?? ''
-  // gated here rather than at render, so an adornment the user turned off is
-  // also out of searchText — the tree searches what it shows, and a hidden
-  // suffix is not shown
-  const adornment = adornments
-    ? trackRowAdornmentFor({ conf, session, pluginManager, viewAssemblyNames })
-    : undefined
   return {
     conf,
     name,
     sortName: String(readConfObject(conf, 'name') ?? ''),
     description,
     categories,
-    adornment,
-    searchText: buildSearchText([
-      name,
-      description,
-      ...categories,
-      adornment?.label,
-    ]),
+    searchText: buildSearchText([name, description, ...categories]),
   }
 }
 

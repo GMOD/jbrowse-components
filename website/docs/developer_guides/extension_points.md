@@ -521,7 +521,6 @@ plugin before you put there.
 | `LinearSyntenyView-SyntenyFileFormats` | sync | list | Add synteny file formats to the linear synteny import form |
 | `TrackSelector-folderDialog` | sync |  | Replace the dialog shown when a folder category is clicked |
 | `TrackSelector-multiTrackMenuItems` | sync | list | Add items to the multi-track (shopping cart) menu |
-| `TrackSelector-trackRowAdornment` | sync | single | Add a glyph, a short suffix and a tooltip line to a track's row in the hierarchical track selector |
 
 <!-- EXTENSION_POINTS_INDEX END -->
 

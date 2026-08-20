@@ -1,4 +1,3 @@
-import type { TrackRowAdornment } from './trackRowAdornment.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // A resolved track plus where the tree put it. Extends the source rather than
@@ -56,7 +55,6 @@ export interface TreeRow {
 export interface TrackNodeSource {
   conf: AnyConfigurationModel
   name: string
-  adornment?: TrackRowAdornment
   sortName: string
   description: string
   categories: string[]

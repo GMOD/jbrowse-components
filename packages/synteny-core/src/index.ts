@@ -17,7 +17,6 @@ export {
   pairwiseTypes,
   syntenyTypes,
 } from './syntenyTypes.ts'
-export { syntenyMateLabel, syntenyRowAdornment } from './syntenyRowAdornment.ts'
 export { clampBlockToRegions } from './clampBlockToRegions.ts'
 export type { ClampedBlock } from './clampBlockToRegions.ts'
 export { makeStringDict } from './stringDict.ts'

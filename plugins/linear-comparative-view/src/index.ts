@@ -15,7 +15,6 @@ import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFea
 import SyntenyResolveMatchingRegion from './LinearSyntenyRPC/SyntenyResolveMatchingRegion.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
-import SyntenyRowAdornmentF from './SyntenyRowAdornment/index.ts'
 import SyntenyTrackF from './SyntenyTrack/index.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -57,7 +56,6 @@ export default class LinearComparativeViewPlugin extends Plugin {
     LinearSyntenyDisplayF(pluginManager)
     SyntenyFeatureWidgetF(pluginManager)
     LGVSyntenyDisplayF(pluginManager)
-    SyntenyRowAdornmentF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     LinearViewMenuItemsF(pluginManager)
     SyntenyTrackF(pluginManager)

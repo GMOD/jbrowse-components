@@ -1261,6 +1261,27 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   split was separately unsound: the adapter convention is `[query, target]` but
   the open-custom-track path writes `[target, query]`, so those tracks would be
   mislabeled.
+
+  **The adornment was then removed too** (2026-08-19), so the issue is open
+  again and none of the three shapes above is the answer. Two things killed it.
+  The label repeated the track name: real configs name synteny tracks
+  `r64_vs_yjm1447_paf`, which made "vs yjm1447" pure duplication on every row —
+  the config slot and the "Show track annotations" toggle existed only because
+  that was already obvious when it shipped. Worse, in a dotplot or synteny view
+  it was *structurally* empty: `filterTracks` lists only tracks covering every
+  view assembly, so every row compared the same pair and got the same suffix,
+  and subtracting all the view's assemblies left a genuine cross-species track
+  with no mate — every row read "vs self". A column that is constant across the
+  list carries nothing; one that is constant *and wrong* costs. What went with
+  it: `TrackSelector-trackRowAdornment` (declared in core, never published — it
+  postdates v4.3.0, so no ABI removal record), `syntenyRowAdornment` in
+  synteny-core, `hierarchical.trackAdornments`, the toggle, and the adornment's
+  contribution to the row's search text and tooltip. Anything rebuilt here has
+  to beat the track name, which usually already says it, and has to say
+  something that differs between rows of the same list. The one fact a name
+  cannot carry is that an all-vs-all adapter draws against samples that are not
+  configured assemblies at all — if that needs saying, say it on the track
+  itself, not as a per-row suffix.
 - **Reads on the reconstructed derivative allele, the two halves that were not
   built** — closed 2026-08-18, with the middle one shipped (see
   [SV_MULTIHOP.md](SV_MULTIHOP.md) §"Reads on the allele"). Both came out of the

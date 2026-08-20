@@ -30,19 +30,6 @@ export function HierarchicalConfigSchemaFactory() {
       },
     }),
     /**
-     * #slot configuration.hierarchical.trackAdornments
-     * show the short suffix a plugin can add after a track's name to say what
-     * turning it on will do — for a synteny track, which assembly it compares
-     * against. Worth turning off for a config whose track names already carry
-     * that (`hg38_vs_mm10`), where the suffix only repeats the name. Only the
-     * initial state — the selector's own "Show track annotations" toggle
-     * overrides it from then on
-     */
-    trackAdornments: {
-      type: 'boolean',
-      defaultValue: true,
-    },
-    /**
      * #slot configuration.hierarchical.defaultFolderCategories
      */
     defaultFolderCategories: {

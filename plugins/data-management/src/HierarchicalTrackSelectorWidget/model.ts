@@ -1,6 +1,5 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
-  getEnv,
   getSession,
   isSessionWithSessionTracks,
   localStorageGetJSON,
@@ -46,7 +45,6 @@ const overscan = 20
 const MAX_RECENTLY_USED = 10
 const sortTrackNamesK = 'sortTrackNames'
 const sortCategoriesK = 'sortCategories'
-const trackAdornmentsK = 'trackAdornments'
 
 // the group holding the config's own tracks, as opposed to a connection's
 const mainGroupId = 'Tracks'
@@ -236,15 +234,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       ),
       /**
        * #volatile
-       * user override of the config's `hierarchical.trackAdornments`; undefined
-       * means "follow the config". Read activeTrackAdornments
-       */
-      trackAdornments: localStorageGetJSON<boolean | undefined>(
-        trackAdornmentsK,
-        undefined,
-      ),
-      /**
-       * #volatile
        * per-category rendering mode; absent means expanded. Collapsed and
        * folder are mutually exclusive by construction, so un-foldering a
        * category can't reveal a stale collapse underneath it
@@ -316,12 +305,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       setSortCategories(val: boolean) {
         self.sortCategories = val
-      },
-      /**
-       * #action
-       */
-      setTrackAdornments(val: boolean) {
-        self.trackAdornments = val
       },
       /**
        * #action
@@ -582,18 +565,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * whether a plugin's per-row annotation is shown. A track name that
-       * already says what it compares against ("hg38_vs_mm10") makes the suffix
-       * pure repetition, so it is switchable per config and per user
-       */
-      get activeTrackAdornments(): boolean {
-        return (
-          self.trackAdornments ??
-          getConf(getSession(self), ['hierarchical', 'trackAdornments'])
-        )
-      },
-      /**
-       * #getter
        * filter out tracks that don't match the current assembly/display types
        */
       get configAndSessionTrackConfigurations() {
@@ -614,15 +585,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get allTracks() {
         const session = getSession(self)
-        const { pluginManager } = getEnv(self)
-        const { assemblyNames: viewAssemblyNames } = self
         const { connectionInstances = [], connections } = session
         const liveByConnectionId = new Map(
           connectionInstances.map(c => [c.connectionId, c]),
         )
         // a connection's tracks are never the session's own, so only the main
         // group can put a track under the session-tracks pseudo-category
-        const { sessionTrackIds, activeTrackAdornments } = this
+        const { sessionTrackIds } = this
         const resolve = (
           tracks: AnyConfigurationModel[],
           sessionTracks = false,
@@ -631,9 +600,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
             tracks.map(t =>
               trackNodeSourceFor(t, {
                 session,
-                pluginManager,
-                viewAssemblyNames,
-                adornments: activeTrackAdornments,
                 isSessionTrack: sessionTracks && sessionTrackIds.has(t.trackId),
               }),
             ),
@@ -979,7 +945,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const {
           sortTrackNames,
           sortCategories,
-          trackAdornments,
           favorites,
           recentlyUsed,
           assemblyNames,
@@ -993,7 +958,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           localStorageSetJSON(favoritesK(), favorites)
           localStorageSetJSON(sortTrackNamesK, sortTrackNames)
           localStorageSetJSON(sortCategoriesK, sortCategories)
-          localStorageSetJSON(trackAdornmentsK, trackAdornments)
           if (view) {
             localStorageSetJSON(
               scopedK('collapsedCategories', assemblyNames, view.type),

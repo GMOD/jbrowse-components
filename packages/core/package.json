@@ -131,7 +131,6 @@
     "./ui/showSubMenu": "./src/ui/showSubMenu.ts",
     "./ui/styleTheme": "./src/ui/styleTheme.ts",
     "./ui/theme": "./src/ui/theme.ts",
-    "./ui/trackRowAdornment": "./src/ui/trackRowAdornment.ts",
     "./ui/useCoalescedPointer": "./src/ui/useCoalescedPointer.ts",
     "./ui/useMouseTracking": "./src/ui/useMouseTracking.ts",
     "./ui/zIndexes": "./src/ui/zIndexes.ts",
@@ -714,10 +713,6 @@
       "./ui/theme": {
         "types": "./esm/ui/theme.d.ts",
         "import": "./esm/ui/theme.js"
-      },
-      "./ui/trackRowAdornment": {
-        "types": "./esm/ui/trackRowAdornment.d.ts",
-        "import": "./esm/ui/trackRowAdornment.js"
       },
       "./ui/useCoalescedPointer": {
         "types": "./esm/ui/useCoalescedPointer.d.ts",
@@ -1402,9 +1397,6 @@
         ],
         "ui/theme": [
           "esm/ui/theme.d.ts"
-        ],
-        "ui/trackRowAdornment": [
-          "esm/ui/trackRowAdornment.d.ts"
         ],
         "ui/useCoalescedPointer": [
           "esm/ui/useCoalescedPointer.d.ts"

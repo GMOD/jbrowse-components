@@ -28,9 +28,10 @@ order of how often someone has wanted them:
 - a display's own body, distinct from replacing the whole widget
 - the LGV header and its search box
 - the import form, per view type
-- the hierarchical selector's row — `TrackSelector-trackRowAdornment` is a
-  half-measure at this already, and accumulates a `TrackRowAdornment | undefined`
-  rather than a component, so it is a fourth shape nobody else uses
+- the hierarchical selector's row — `TrackSelector-trackRowAdornment` was a
+  half-measure at this and has since been removed (see REJECTED_IDEAS.md,
+  "Comparative and pangenome"); a seam here would be the component, not another
+  accumulated data shape
 - the drawer widget header
 
 Two things to settle before naming any of them.
