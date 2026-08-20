@@ -160,9 +160,9 @@ try {
   const stroked = paths.filter(p => p.includes('fill="none"')).length
   const filled = paths.filter(p => p.includes('stroke="none"')).length
   console.log(
-    `dataset ${key}, ${view.drawCurves ? 'curves' : 'straight'}, ` +
-      (locs ? `loc ${locs.join(' / ')}` : 'whole genome') +
-      (args.includes('--vector') ? ', vector' : ', rasterized (the default)'),
+    `dataset ${key}, ${view.drawCurves ? 'curves' : 'straight'}, ${
+      locs ? `loc ${locs.join(' / ')}` : 'whole genome'
+    }${args.includes('--vector') ? ', vector' : ', rasterized (the default)'}`,
   )
   console.log(`  <path> total          ${paths.length}`)
   console.log(`  centerline strokes N  ${stroked}   <- the parked item's N`)

@@ -125,8 +125,9 @@ async function capture(drawCurves: boolean, backend: 'canvas2d' | 'webgl') {
 
 console.log(
   `dataset ${key}, minAlignmentLength ${rest.minAlignmentLength}, ` +
-    `autoDiagonalize ${!args.includes('--no-diagonalize')}` +
-    (locs ? `, loc ${locs.join(' / ')}` : ', whole genome'),
+    `autoDiagonalize ${!args.includes('--no-diagonalize')}${
+      locs ? `, loc ${locs.join(' / ')}` : ', whole genome'
+    }`,
 )
 for (const drawCurves of modes) {
   const c2d = await capture(drawCurves, 'canvas2d')
