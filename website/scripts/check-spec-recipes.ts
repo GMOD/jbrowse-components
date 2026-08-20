@@ -13,6 +13,7 @@ import {
 import { GRAPH_LABELS } from '../src/lib/spec-recipe/fields.ts'
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { check } from './check-utils.ts'
+import { dropExemptionLines } from './dropExemptionLines.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
 import { pluginCheckout, repoRoot } from './paths.ts'
 import {
@@ -248,59 +249,12 @@ if (unrendered.size > 0) {
   )
   process.exit(1)
 }
-// Delete each of `entries` from the exemption sets in recipe-path-labels.ts,
-// and the comment above it once nothing that comment covers is left — a reason
-// standing over the next entry down reads as that entry's reason.
-//
-// Line-wise rather than through the TypeScript printer, which reprints the
-// whole file and drops its comments to remove one line.
+// Drop each dead entry from the exemption sets in recipe-path-labels.ts. The
+// rewrite itself is `dropExemptionLines`, which is pure and tested — this only
+// says which file.
 function dropExemptions(entries: string[]) {
-  const dead = new Set(entries)
   const file = join(repoRoot, 'website/scripts/recipe-path-labels.ts')
-  const out: string[] = []
-  let comments: string[] = []
-  let kept: string[] = []
-  let sawEntry = false
-  let inSet = false
-  // One group: a comment block and the entries under it. Emitted whole, or not
-  // at all when every entry it covered was dead.
-  const flush = () => {
-    if (kept.length > 0) {
-      out.push(...comments, ...kept)
-    }
-    comments = []
-    kept = []
-    sawEntry = false
-  }
-  for (const line of readFileSync(file, 'utf8').split('\n')) {
-    const text = line.trim()
-    if (!inSet) {
-      out.push(line)
-      inSet = text.includes('new Set([')
-      continue
-    }
-    if (text.startsWith('//')) {
-      // a comment below entries opens the next group rather than joining theirs
-      if (sawEntry) {
-        flush()
-      }
-      comments.push(line)
-      continue
-    }
-    const literal = /^(['"])((?:\\.|[^\\])*?)\1,?$/.exec(text)
-    if (literal) {
-      sawEntry = true
-      if (!dead.has(literal[2]!.replaceAll(/\\(.)/g, '$1'))) {
-        kept.push(line)
-      }
-      continue
-    }
-    flush()
-    out.push(line)
-    inSet = !text.startsWith('])')
-  }
-  flush()
-  writeFileSync(file, out.join('\n'))
+  writeFileSync(file, dropExemptionLines(readFileSync(file, 'utf8'), entries))
 }
 
 // An exemption covering nothing is the part of a check that rots: reword the
