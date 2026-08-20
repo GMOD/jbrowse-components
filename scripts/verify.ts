@@ -1,7 +1,7 @@
 // One command for the CI gates that nothing local runs.
 //
 //   pnpm verify          the fast gates (seconds to ~2 min)
-//   pnpm verify --full   adds `autogen --check` and `check-docs` (~5 min)
+//   pnpm verify --full   adds `autogen --check`, `check-docs`, `build:esm` (~5 min)
 //
 // The definition of done in agent-docs/CLAUDE.md is typecheck, scoped tests,
 // lint. Three CI jobs are gated by none of those — `check-format`, `check-docs`
@@ -60,6 +60,19 @@ const GATES: Gate[] = [
     slow: true,
   },
   { name: 'docs', argv: pnpm('check-docs'), slow: true },
+  // Last, and the only gate here that is not also a CI job: `build:esm` runs in
+  // the pre-push hook and nowhere else, which makes it a gate you cannot run
+  // until the moment it blocks you. It is the only thing that compiles what we
+  // PUBLISH — each package's own tsconfig, without node types and without the
+  // React compiler — so `typecheck` does not stand in for it: a node-only helper
+  // imported from browser source typechecks against the root config and breaks
+  // here. That is how main broke on 2026-08-13, and a case-only module collision
+  // (see the gate above) is how it broke again for days on 2026-08-20, with
+  // TS6305 cascades that read as ordinary staleness.
+  //
+  // Incremental, so the cost is seconds once warm and minutes on a cold
+  // checkout — which is why it is `slow` rather than in the cheap tier.
+  { name: 'esm build', argv: pnpm('build:esm'), slow: true },
 ]
 
 function have(bin: string) {
@@ -98,7 +111,7 @@ for (const gate of GATES) {
 
 if (!full) {
   console.log(
-    `\nSkipped the slow gates (generated artifacts, docs). ` +
+    `\nSkipped the slow gates (generated artifacts, docs, esm build). ` +
       `Run \`pnpm verify --full\` before pushing something that touched a doc, ` +
       `a JSDoc tag, or anything a generator reads.`,
   )
