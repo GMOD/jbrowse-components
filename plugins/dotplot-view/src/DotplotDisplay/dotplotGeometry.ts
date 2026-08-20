@@ -99,6 +99,20 @@ function trimToCount(
 // tighter of the two and costs a loop over `count` reading lanes already in
 // memory.
 //
+// WHAT THIS TRADES, since it is a whole pass added to every build to bound a
+// case most builds do not hit. The pass is O(count) over four Float64 lanes and
+// no allocation, against an emit loop that is O(count + segments) and walks
+// CIGARs — so it does not register on an ordinary view. What it buys is not the
+// 37MB above but the shape of it: the reservation is ~9x the size of the parsed
+// CIGAR, so a chain track whose ops reach 100MB asks for most of a gigabyte, in
+// a worker, and nothing else in the build is sized off the data that way.
+//
+// It also makes the bound TIGHT where a loose one was previously safe by
+// construction, which is why the emit gained a guard at the same time. If this
+// is ever suspected of dropping segments, check that guard's counter before
+// re-deriving the arithmetic: a bound that is wrong here is silent, and the
+// guard is the only thing standing between it and NaN corners.
+//
 // `+ 4` is slack for the visitor's final flush and for the segments' floating
 // point not summing to exactly the corner span. It matters because the emit
 // drops silently past capacity, and it is why this is exported: a test that

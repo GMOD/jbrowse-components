@@ -196,6 +196,13 @@ public bool spanOutsideBand(float lo, float hi, float w, float pad) {
 // all of them keep drawing, which is the near-horizontal line back again — and
 // ticks dropped at fetch time stayed dropped once a pan brought their ends
 // together. Both backends ask it per frame instead, against the live pan.
+// A WORKER-SIDE WINDOW IS SIZED OFF THIS RULE. `buildSyntenyGeometry` clamps the
+// tick ladder to the stretch of query axis where a tick could still satisfy both
+// this cap and the hull test, which is what keeps its allocation bounded by the
+// viewport instead of by the alignment's genomic width. Loosening the cap here
+// without widening that window leaves the grid stopping short at the edges of a
+// sheared view, with nothing failing — see the `markerWindowPx` comment for the
+// derivation and for which direction is safe.
 public bool markerTravelsTooFar(float topX, float bottomX, float w) {
   return abs(topX - bottomX) > w;
 }

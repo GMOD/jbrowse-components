@@ -233,6 +233,16 @@ export function drawSyntenyTrack(
     // the shape that branch settled on. Identical in straight mode, where the
     // ribbon is the same width all the way down. See ribbonMaxPerpWidth.
     //
+    // NOT TIMED, and worth saying so where the branch is rather than in a commit
+    // message: this moved some curved ribbons from the stroke arm to the fill
+    // arm, and a fill is a path plus a rasterize where a stroke is one 1px line.
+    // The correctness case for it was measured (cross-backend drift 1.59% ->
+    // 0.57%) and the cost was not. It is bounded — a ribbon only moves when it
+    // is genuinely a pixel wide somewhere, so a whole-genome hairball, which is
+    // where this loop is hot, has almost none that qualify — and this is the
+    // fallback backend besides. But if a Canvas2D-only view ever measures slow
+    // in curve mode, start here.
+    //
     // The BASE alpha fade is the shader's own `thinWidthFade` — a lone thin
     // ribbon stays a faint locatable line while a whole-genome tangle fades
     // instead of stacking hard full-opacity lines. CIGAR keeps full alpha

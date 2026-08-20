@@ -339,6 +339,20 @@ export function buildSyntenyGeometry({
   // that the emit window IS the pan buffer), and which the overdraw slider caps
   // at. So this narrows nothing that was surviving to the screen.
   //
+  // WHAT THIS COUPLES, and the reason to read the paragraph above before
+  // touching either end: a FETCH-time window is now derived from a DRAW-time
+  // rule. Loosen `markerTravelsTooFar` — raise the cap, make it depend on the
+  // band's height instead of the view's width, drop it — and this window becomes
+  // too narrow for the ticks that rule would now keep, which shows up as the
+  // grid stopping short at the edges of a sheared view and nothing failing
+  // anywhere. The old code had no such dependency because it over-emitted and
+  // let the frame decide; that is what the allocation above cost.
+  //
+  // The safe direction if that rule ever moves is to widen this by another view
+  // width or two rather than to re-derive it. The allocation stays bounded by
+  // the viewport either way, which is the whole point — the constant is slack,
+  // not a budget anyone is spending.
+  //
   // 3 view widths and 4 buffers: 12,200px on a 1400px view, or ~400 ticks at the
   // 30px floor, against the 1,000,003 above.
   const markerWindowPx = 3 * viewWidth + 4 * emitBufferPx
