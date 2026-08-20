@@ -460,14 +460,25 @@ test('partitionChains caps groups too, keeping each chain whole', () => {
 // The `groupBy` config slot is `frozen`, so anything can be in it. An unknown type
 // used to index the registry to `undefined` and throw inside the worker.
 test('normalizeGroupBy keeps a valid dimension', () => {
-  expect(normalizeGroupBy({ type: 'strand' })).toEqual({
-    type: 'strand',
-    tag: undefined,
-  })
+  expect(normalizeGroupBy({ type: 'strand' })).toEqual({ type: 'strand' })
   expect(normalizeGroupBy({ type: 'tag', tag: 'HP' })).toEqual({
     type: 'tag',
     tag: 'HP',
   })
+})
+
+// A tag on a dimension that takes no parameter is residue from a hand-written
+// config or an edited session. Carried, it names a key space of its own, so
+// re-picking the SAME dimension from the menu — which writes the bare object —
+// looked like a grouping change: `AlignmentsGroupKeySpaceReset` dropped every
+// lane's collapse and height override, and `rpcProps` refetched the region.
+test('normalizeGroupBy drops a tag the dimension has no use for', () => {
+  expect(normalizeGroupBy({ type: 'strand', tag: 'HP' })).toEqual({
+    type: 'strand',
+  })
+  expect(groupKeySpaceOf(normalizeGroupBy({ type: 'strand', tag: 'HP' }))).toBe(
+    groupKeySpaceOf(normalizeGroupBy({ type: 'strand' })),
+  )
 })
 
 test('normalizeGroupBy rejects anything the registry cannot key', () => {

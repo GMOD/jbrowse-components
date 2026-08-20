@@ -15,7 +15,7 @@ import { observer } from 'mobx-react'
 
 import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
-import { MAX_GROUPS, compareGroupKeys } from '../../shared/groupFeatures.ts'
+import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
 import type { ColorBy, FilterBy, GroupBy } from '../../shared/types.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -119,18 +119,10 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   // The fetch lags the field by the debounce, so its values describe
   // `debouncedTag`; only trust them once it matches what Submit would apply.
   const values = debouncedTag === groupByTag ? tagSet : undefined
-  // `tag` is the one dimension whose cardinality the data decides, so it's the
-  // one that can flood the track with sections. The values are already in hand
-  // here, so refuse at the point of choice — the worker's MAX_GROUPS cap would
-  // silently return 39 sections plus an opaque "N more values" one.
-  //
-  // `>=`, not `>`: the scan reports only the values reads actually carry (it
-  // drops the '' sentinel), and reads LACKING the tag take a section of their own
-  // besides. So exactly MAX_GROUPS distinct values is already over the cap the
-  // moment one read is untagged, which is the overflow merge this exists to
-  // prevent. One value of headroom is the price of not knowing whether any read
-  // is untagged without a second scan.
-  const tooManyValues = values !== undefined && values.length >= MAX_GROUPS
+  // What those values mean for the grouping, and whether Submit is refused —
+  // one answer, in `tagGroupingVerdict`, which says why both ends of the count
+  // are decided here rather than left to the worker.
+  const verdict = tagGroupingVerdict(groupByTag, values)
 
   const handleSubmit = () => {
     model.setGroupBy({ type: 'tag', tag: groupByTag })
@@ -146,7 +138,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       open
       title="Group by tag"
       // Worker only needs a valid tag name; groupByTag holds a valid tag or ''.
-      submitDisabled={groupByTag === '' || tooManyValues}
+      submitDisabled={groupByTag === '' || !!verdict?.blocks}
       onCancel={handleClose}
       onSubmit={handleSubmit}
     >
@@ -173,19 +165,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
             statusProgressLabel(status) || 'Scanning reads for tag values'
           }
         />
-      ) : tooManyValues ? (
-        <Typography variant="caption" color="error">
-          {debouncedTag} takes {values.length} distinct values here — too many
-          to stack, and each section costs its own render pass. Color reads by
-          this tag instead, or group by a low-cardinality one (HP, RG).
-        </Typography>
-      ) : values?.length ? (
-        // Fewer than MAX_GROUPS of them, since that many blocks Submit above.
-        // Listed in the order the sections will stack — the scan returns them in
-        // whichever order the reads arrived, so an HP preview read "2, 1" over a
-        // track about to draw HP 1 first.
-        <Typography variant="caption" color="text.secondary">
-          Found values: {[...values].sort(compareGroupKeys).join(', ')}
+      ) : verdict ? (
+        <Typography variant="caption" color={verdict.color}>
+          {verdict.text}
         </Typography>
       ) : null}
       <div>

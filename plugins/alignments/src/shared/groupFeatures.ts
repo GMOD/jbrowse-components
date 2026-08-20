@@ -449,14 +449,26 @@ export function partitionChains(
 // with no tag name collapses every read into one `"<tag>: none"` section. The
 // display's `groupBy` getter runs this, so the menu, the layout and `rpcProps`
 // all see only values the registry can key.
+//
+// `tag` is carried by the one dimension that takes a parameter and dropped from
+// every other, so "a tag is present exactly when the dimension is `tag`" holds
+// downstream rather than being hoped for. Two things key off the WHOLE object
+// and so can see a stray one: the fetch cache key, and `groupKeySpaceOf` — under
+// which a hand-written `{type:'strand', tag:'HP'}` names a different key space
+// than the identical grouping the menu writes, so re-picking Strand from the
+// menu there dropped every lane's collapse and refetched the region.
 export function normalizeGroupBy(groupBy: unknown): GroupBy | undefined {
   const obj =
     typeof groupBy === 'object' && groupBy !== null ? groupBy : undefined
   const type = readStringField(obj, 'type')
+  if (type === undefined || !isGroupByType(type)) {
+    return undefined
+  }
+  if (type !== 'tag') {
+    return { type }
+  }
   const tag = readStringField(obj, 'tag')
-  return type !== undefined && isGroupByType(type) && (type !== 'tag' || !!tag)
-    ? { type, tag }
-    : undefined
+  return tag ? { type, tag } : undefined
 }
 
 function readStringField(obj: object | undefined, field: string) {

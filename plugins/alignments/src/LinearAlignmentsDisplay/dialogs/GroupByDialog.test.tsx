@@ -2,7 +2,9 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
+import { MAX_GROUPS } from '../../shared/groupFeatures.ts'
 import GroupByDialog from './GroupByDialog.tsx'
+import { tagGroupingVerdict } from './tagGroupingVerdict.ts'
 
 import type { ColorBy, GroupBy } from '../../shared/types.ts'
 import type { GroupByDialogModel } from './GroupByDialog.tsx'
@@ -96,4 +98,46 @@ test('unticking drops the matching coloring and stays unticked', () => {
   expect(checkbox().checked).toBe(false)
   submit()
   expect(setColorScheme).toHaveBeenCalledWith({ type: 'normal' })
+})
+
+// The scan's verdict, unit-tested rather than driven through the dialog: the
+// lookup is debounced a second behind the box and goes out over an RPC, so
+// reaching these states through the component would need a view and a worker to
+// assert on three strings.
+describe('tagGroupingVerdict', () => {
+  // Nothing describes the tag in the box yet — the dialog is showing the scan's
+  // error or its progress line, and this must not claim an answer over either.
+  test('says nothing before a scan lands', () => {
+    expect(tagGroupingVerdict('HP', undefined)).toBeUndefined()
+  })
+
+  // The end this dialog was built for: `tag` is the one dimension whose
+  // cardinality the DATA decides. `>=` because reads LACKING the tag take a
+  // section besides — see the function.
+  test('refuses a tag that would flood the track with sections', () => {
+    const many = Array.from({ length: MAX_GROUPS }, (_, i) => `${i}`)
+    const verdict = tagGroupingVerdict('RX', many)
+    expect(verdict?.blocks).toBe(true)
+    expect(verdict?.text).toContain(`${MAX_GROUPS} distinct values`)
+
+    expect(tagGroupingVerdict('RX', many.slice(0, -1))?.blocks).toBe(false)
+  })
+
+  // The other end, which used to fall through to no caption at all: every read
+  // files under the '' sentinel, so the grouping draws one section named for a
+  // tag nothing carries. Warned about rather than refused — the scan only sees
+  // the blocks in view.
+  test('warns when no read carries the tag, without refusing', () => {
+    const verdict = tagGroupingVerdict('HP', [])
+    expect(verdict?.blocks).toBe(false)
+    expect(verdict?.color).toBe('warning.main')
+    expect(verdict?.text).toContain('No read in view carries HP')
+  })
+
+  // Listed in the order the sections will stack, not the order the reads arrived.
+  test('lists the found values in stacking order', () => {
+    expect(tagGroupingVerdict('HP', ['10', '2', '1'])?.text).toBe(
+      'Found values: 1, 2, 10',
+    )
+  })
 })
