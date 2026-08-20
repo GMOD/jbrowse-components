@@ -1,6 +1,7 @@
 {
   "id": "offscreen-mate-overlay",
   "measured": "2026-08-19",
+  "published": false,
   "source": {
     "kind": "bench",
     "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 \u2014 min of rounds, two samples, control 0.97-1.01. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",

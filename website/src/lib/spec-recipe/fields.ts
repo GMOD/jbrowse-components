@@ -1548,6 +1548,18 @@ export const viewFields: Record<string, FieldRecipe> = {
           note: 'Re-order chromosomes is the opt-in, and this figure leaves it alone on purpose: the order along the axis is part of what the figure is showing.',
         }
   },
+  // The label IS the count, so there is no fixed string to click: the item reads
+  // "2,767 alignments map to 9 contigs not shown" on the figure's own view and
+  // something else on anyone else's. It also appears only once a fetch has
+  // landed and only when the count is above zero, which is why the note says
+  // where to look rather than what it will say.
+  showOffscreenMates: (value, { viewType }) =>
+    typeof value === 'boolean' && viewType === 'LinearSyntenyView'
+      ? {
+          path: 'Synteny view header → the checkbox naming how many alignments map to contigs not shown',
+          note: 'The item names the count and the number of contigs, so its label differs per view. It is absent while the count is zero — both rows are showing every contig the alignments reach, and there is nothing to mark.',
+        }
+      : undefined,
   // Applied while the view is built (afterAttach sets scalebarOnly on any row
   // the launch gave no tracks), so the control is the launch dialog's checkbox
   // rather than anything on the finished view.
