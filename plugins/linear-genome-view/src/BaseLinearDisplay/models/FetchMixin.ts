@@ -359,15 +359,17 @@ export default function FetchMixin() {
         // Unconditional, unlike the token check it replaced: `cancel` is
         // already a no-op with nothing in flight, and calling it anyway retires
         // a slot a torn-down fetch left voting.
+        //
+        // It retires this fetch's SLOT and nothing else. The window is not reset
+        // here — `reset` is for teardown, and this runs on every
+        // `clearAllRpcData`, so a display with a second operation reporting
+        // (HiC's header read, the multi-sample sources fetch, a clustering run)
+        // would have that operation's queued write dropped by every settings
+        // change. The write that goes first is the re-derive `clear` queues to
+        // move the field off the fetch's label and onto the sibling's, which is
+        // the ADR-081 failure exactly.
         self.fetchRotation.cancel()
         self.activeStopToken = undefined
-        // and the window, which this display owns and only lends: a display
-        // stopped BETWEEN fetches — the common case, since a fetch that
-        // finished retired its own slot — still has a trailing write standing
-        // on a timer. The write itself is already a no-op (the window's sink
-        // re-reads `isAlive`), but the timer is not, and jest reports a worker
-        // that will not exit rather than anything about a display.
-        self.statusWindow.reset()
       },
       /**
        * #action
@@ -434,10 +436,18 @@ export default function FetchMixin() {
        * display can still define its own beforeDestroy.
        */
       beforeDestroy() {
+        self.stopActiveFetch()
+        // and the window, which nothing short of teardown may reset: a display
+        // destroyed BETWEEN fetches — the common case, since a fetch that
+        // finished retired its own slot — still has a trailing write standing on
+        // a timer. The write itself is already a no-op (the window's sink
+        // re-reads `isAlive`), but the timer is not, and jest reports a worker
+        // that will not exit rather than anything about a display.
+        //
         // Second of two owners of a window that end it with the thing that owns
         // it; `useFetch`'s effect cleanup is the other, and the rotation's own
         // `dispose` is this same call one layer down.
-        self.stopActiveFetch()
+        self.statusWindow.reset()
       },
       /**
        * #action

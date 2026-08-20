@@ -527,6 +527,34 @@ describe('FetchMixin: two operations on one field', () => {
     expect(m.statusMessage).toBeUndefined()
   })
 
+  // The same handover, with the throttle actually engaged — which is the state
+  // it is in during any real fetch, since an RPC reports many times a second.
+  // The write that moves the field off the fetch's label is the re-derive
+  // `clear` queues, and it is a THROTTLED write, so a `statusWindow.reset()`
+  // anywhere on the cancel path drops it and the display goes on showing a
+  // label for work that has stopped. `reset` is for teardown, and `cancelFetch`
+  // is what every `clearAllRpcData` runs.
+  it('a cancel does not drop the sibling write queued behind the throttle', () => {
+    jest.useFakeTimers()
+    try {
+      const { m, fetchCtx, side } = fetchAndSideOperation()
+      // the fetch takes the leading edge, so what follows is queued rather than
+      // landing at once
+      fetchCtx.statusCallback('Downloading features')
+      expect(m.statusMessage).toBe('Downloading features')
+      side.statusCallback('Reading sources')
+      expect(m.statusMessage).toBe('Downloading features')
+
+      m.cancelFetch()
+      jest.advanceTimersByTime(500)
+
+      expect(m.statusMessage).toBe('Reading sources')
+      side.clear()
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
   // Only one phase is summable (ADR-072), so what a two-operation aggregate
   // does is pick: the phase the display reached first holds the label, and the
   // bar under it is that phase's own.
