@@ -21,8 +21,11 @@ interface SyntenyView {
   levels: { linearSyntenyDisplays: { featureData?: unknown }[] }[]
   offscreenMateTally: { refName: string; count: number }[]
   showOffscreenMates: boolean
+  bidirectionalFetch: boolean
+  offscreenMateMode: 'off' | 'query' | 'both'
   setWidth: (n: number) => void
   setShowOffscreenMates: (arg: boolean) => void
+  setOffscreenMateMode: (mode: 'off' | 'query' | 'both') => void
   headerMenuItems: () => { label?: string }[]
 }
 
@@ -45,8 +48,13 @@ async function openSyntenyView() {
   return view
 }
 
+// The half that makes marking-by-default cheap: a view with nothing hidden
+// claims nothing, whatever the setting says, so the default only changes the
+// views that WERE hiding something. What it draws in that state — nothing, for
+// want of a strip — is `offscreenMateStrip.test.ts`'s.
 test('both rows showing every contig hides nothing, and says nothing', async () => {
   const view = await openSyntenyView()
+  expect(view.showOffscreenMates).toBe(true)
   expect(view.offscreenMateTally).toEqual([])
   expect(view.headerMenuItems().some(i => i.label?.includes('not shown'))).toBe(
     false,
@@ -69,7 +77,7 @@ test('a row narrowed to one contig reports what it can no longer pair', async ()
   expect(view.offscreenMateTally[0]!.count).toBeGreaterThan(0)
 })
 
-test('and offers to draw them, naming the number in the label', async () => {
+test('and marks them by default, naming the number in the label', async () => {
   const view = await openSyntenyView()
   const [, target] = view.views
   await target!.navToLocString('ctgA')
@@ -82,5 +90,24 @@ test('and offers to draw them, naming the number in the label', async () => {
   expect(item?.label).toBe(
     `${count.toLocaleString()} alignments map to 1 contig not shown`,
   )
+  // ON BY DEFAULT, which is the whole decision: a locus syntenic to a contig
+  // the facing row is not showing looked exactly like a locus syntenic to
+  // nothing, and a reader who never opens this menu never learned otherwise.
+  expect(view.offscreenMateMode).toBe('query')
+})
+
+// The step that costs a QUERY stays opt-in, and it is the same control: the
+// three modes are one question about how hard to look, and only the last one
+// goes back to the adapter.
+test('searching the other row is a step further in, not the default', async () => {
+  const view = await openSyntenyView()
+  expect(view.bidirectionalFetch).toBe(false)
+
+  view.setOffscreenMateMode('both')
+  expect(view.showOffscreenMates).toBe(true)
+  expect(view.bidirectionalFetch).toBe(true)
+
+  view.setOffscreenMateMode('off')
   expect(view.showOffscreenMates).toBe(false)
+  expect(view.bidirectionalFetch).toBe(false)
 })

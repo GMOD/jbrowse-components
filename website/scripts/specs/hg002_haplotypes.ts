@@ -699,8 +699,12 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       [CHAIN_BLOCKS],
       [CHAIN_BLOCKS],
     ),
-    // the same height as the figure above, whose end state this continues from
-    viewportHeight: 445,
+    // the same height as the figure above, whose end state this continues from,
+    // plus the row the off-screen mate control adds to every synteny menu — the
+    // annotation anchors on a row near the bottom of the open menu, and at 445
+    // it landed 0.42px past the frame, and the "Show..." submenu it opens needs
+    // the room below that row as well
+    viewportHeight: 500,
     hideTooltip: true,
     actions: [
       { type: 'click', selector: '[data-testid="follow-synteny-toggle"]' },

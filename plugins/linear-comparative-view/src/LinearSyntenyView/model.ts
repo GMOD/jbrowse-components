@@ -129,7 +129,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // whichever way this sits, so toggling repaints and never refetches;
         // `drawLocationMarkers` above is in the fetch key's history for exactly
         // the mistake this avoids.
-        showOffscreenMates: types.stripDefault(types.boolean, false),
+        //
+        // ON BY DEFAULT, on the asymmetry between being wrong in each
+        // direction. Marked when a reader did not want it costs a few pixels of
+        // band and one menu click. NOT marked when they did costs a conclusion:
+        // a locus syntenic to a chromosome they did not stack looks exactly
+        // like a locus syntenic to nothing, which on the demo this repo ships
+        // is 73% of peach chr1's anchors. A view with nothing hidden mounts no
+        // strip at all, so this changes only the views that were hiding
+        // something.
+        showOffscreenMates: types.stripDefault(types.boolean, true),
         /**
          * #property
          * Ask each level's adapter for the alignments anchored on its LOWER row

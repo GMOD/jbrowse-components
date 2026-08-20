@@ -164,7 +164,7 @@ The two tracks describe the same run at different granularity. Add a linear
 synteny view (**Add → Linear synteny view**), pick peach and grape, and turn on
 both.
 
-<Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks." src="/img/mcscan_anchors.png" />
+<Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks. The marks along the top of the band are anchors whose grape gene is on a chromosome this panel is not showing — most of this peach chromosome has counterparts elsewhere in grape." src="/img/mcscan_anchors.png" />
 
 The block track is drawn here as an `LGVSyntenyDisplay`: a synteny track in an
 ordinary linear genome view row, drawn as features rather than a ribbon band.

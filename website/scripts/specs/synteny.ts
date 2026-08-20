@@ -633,9 +633,11 @@ function peachGrapeChr1({
       views: [
         {
           type: 'LinearSyntenyView',
-          // omitted rather than false in the off state, so that URL encodes
-          // byte-identically to one written without the parameter
-          ...(marks ? { showOffscreenMates: true } : {}),
+          // stated in the OFF state, which is the one that now differs from the
+          // default: this pair exists to show the contrast, so the frame
+          // without the marks has to ask for their absence rather than inherit
+          // it
+          ...(marks ? {} : { showOffscreenMates: false }),
           // hideNoTracksActive on both rows: neither carries a track at
           // whole-chromosome zoom, so each was painting the LGV's "No tracks
           // active / OPEN TRACK SELECTOR" block — two dark call-to-action
