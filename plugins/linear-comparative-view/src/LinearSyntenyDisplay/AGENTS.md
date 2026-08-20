@@ -67,9 +67,9 @@
   layout, which is what lets a record packed for the fill be read by the edge.
 - `instanceInterleave.ts` hand-writes the pack loop instead of calling the
   generated `packInstances`, because `featureId` is `instanceFeatureIdx[i] + 1`
-  and the generated packer only takes flat arrays. Its `patchInstanceColors`
-  twin is the recolor fast path — dotplot's
-  `DotplotDisplay/instanceInterleave.ts` is the same two functions for the same
+  and the generated packer only takes flat arrays. Its `SYNTENY_INSTANCE_CACHE`
+  twin declares the recolor fast path `createInstanceCache` runs — dotplot's
+  `DotplotDisplay/instanceInterleave.ts` is the same two exports for the same
   reason.
 - **The pick context is never the render context.** `makePickCtx` (in
   `syntenyPickEngine.ts`) hands each backend a private 1x1 offscreen 2D context,

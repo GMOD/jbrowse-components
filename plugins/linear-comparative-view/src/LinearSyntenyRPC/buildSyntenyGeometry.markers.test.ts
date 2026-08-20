@@ -266,3 +266,42 @@ test('a block far wider than the view budgets for the window, not the block', ()
   )
   expect(bp1s.length).toBeGreaterThan(30)
 })
+
+// Direction, which the grid passes through in two independent places: the CIGAR
+// walk's start corner and per-axis sign (`cigarWalkBp1`/`cigarWalkRev1`), and the
+// anchor's own (`cumBpAtGenomicCoord` encodes a reversed DISPLAYED REGION —
+// tested there). An inversion is the case a marker is most worth reading, so it
+// is also the case worth pinning: the ticks stay on the query ruler and the
+// pairing runs the other way.
+test('an inverted alignment keeps the query grid and pairs backwards', () => {
+  const g = buildSyntenyGeometry({
+    p11_cumBp: new Float64Array([0]),
+    p12_cumBp: new Float64Array([400]),
+    // target corners swapped: query 0 pairs with target 400
+    p21_cumBp: new Float64Array([400]),
+    p22_cumBp: new Float64Array([0]),
+    queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
+    strands: new Int8Array([-1]),
+    parsedCigars: [Array.from({ length: 20 }, () => op(20, CIGAR_M))],
+    starts: new Uint32Array([0]),
+    ends: new Uint32Array([400]),
+    drawCIGAR: true,
+    drawCIGARMatchesOnly: false,
+    bpPerPx0: 1,
+    bpPerPx1: 1,
+    viewOff0: 0,
+    viewOff1: 0,
+    viewWidth: 400,
+  })
+  const markers = markerIndices(g.kinds)
+  // The same ten query coordinates a forward feature over this span takes — the
+  // walk runs the other way, so they arrive descending, which nothing downstream
+  // reads (instance order is draw order, and every tick is drawn identically).
+  expect([...markers.map(i => g.bp1[i]!)].sort((a, b) => a - b)).toEqual([
+    39, 79, 119, 159, 199, 239, 279, 319, 359, 399,
+  ])
+  // and each pairs at the target coordinate the inversion sends it to
+  for (const i of markers) {
+    expect(g.bp3[i]!).toBeCloseTo(400 - g.bp1[i]!, 6)
+  }
+})

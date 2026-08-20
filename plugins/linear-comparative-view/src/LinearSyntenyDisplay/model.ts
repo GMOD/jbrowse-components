@@ -555,8 +555,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           // re-downloaded and re-parsed the whole track to arrive at the
           // identical features. The worker emits the ticks unconditionally now
           // and `computedColors` paints them transparent when the toggle is off,
-          // which makes the toggle a `patchInstanceColors` write on the color
-          // lane — the same path colorBy takes to avoid an RPC.
+          // which makes the toggle a color-lane patch through
+          // `SYNTENY_INSTANCE_CACHE` — the same path colorBy takes to avoid an
+          // RPC.
           view.drawCIGAR,
           view.drawCIGARMatchesOnly,
           // a second query per level, so it belongs here for the same reason the
@@ -673,8 +674,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        *
        * `drawLocationMarkers` rides the same lane, which is what keeps it out of
        * `currentFetchKey`: the worker always emits the ticks, and a zero alpha
-       * here is what "off" means. So the toggle costs one `patchInstanceColors`
-       * write rather than a refetch of the whole track.
+       * here is what "off" means. So the toggle costs one color-lane patch
+       * (`SYNTENY_INSTANCE_CACHE`) rather than a refetch of the whole track.
        */
       get computedColors() {
         const { instanceData, featureData } = self

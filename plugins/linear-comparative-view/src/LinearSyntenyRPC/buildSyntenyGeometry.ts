@@ -210,7 +210,9 @@ export function markerGridPitch(bpPerPx: number) {
     MARKER_GRID_MIN_MAJOR_PX,
     MARKER_MIN_TICK_PX,
   )
-  return minorPitch || majorPitch
+  // 0 is chooseGridPitch's "no whole-bp divisor leaves 30px of room" answer,
+  // i.e. the undivided ruler — a sentinel, not a pitch of zero.
+  return minorPitch === 0 ? majorPitch : minorPitch
 }
 
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
@@ -282,6 +284,12 @@ export function buildSyntenyGeometry({
   const emitBufferPx = syntenyPanBufferPx(viewWidth)
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
+
+  // cumBp -> screen px on each axis, which every cull below is expressed in.
+  // Named so the marker cull and the segment cull are visibly the same
+  // comparison at two pads rather than four open-coded copies of the projection.
+  const screenX0 = (cumBp: number) => cumBp * bpPerPxInv0 - viewOff0
+  const screenX1 = (cumBp: number) => cumBp * bpPerPxInv1 - viewOff1
 
   // Per-axis fetch-time base cumBp (the viewport-start cumBp). Corners are
   // stored relative to this so on-screen magnitudes stay small (Float32-exact
@@ -579,8 +587,8 @@ export function buildSyntenyGeometry({
       // answer to it goes stale on the pan that makes it wrong. The hull is safe
       // to answer here because the emit window IS the pan buffer: anything a pan
       // can bring on screen before the fetch key rolls over was emitted.
-      const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
-      const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
+      const screenTopX = screenX0(markerBp1)
+      const screenBottomX = screenX1(markerBp2)
       if (
         spanOutsideBand(
           Math.min(screenTopX, screenBottomX),
@@ -629,10 +637,10 @@ export function buildSyntenyGeometry({
     bp2Start: number,
     bp2End: number,
   ) {
-    const topMin = Math.min(bp1Start, bp1End) * bpPerPxInv0 - viewOff0
-    const topMax = Math.max(bp1Start, bp1End) * bpPerPxInv0 - viewOff0
-    const botMin = Math.min(bp2Start, bp2End) * bpPerPxInv1 - viewOff1
-    const botMax = Math.max(bp2Start, bp2End) * bpPerPxInv1 - viewOff1
+    const topMin = screenX0(Math.min(bp1Start, bp1End))
+    const topMax = screenX0(Math.max(bp1Start, bp1End))
+    const botMin = screenX1(Math.min(bp2Start, bp2End))
+    const botMax = screenX1(Math.max(bp2Start, bp2End))
     return (
       spanOutsideBand(topMin, topMax, viewWidth, emitBufferPx) &&
       spanOutsideBand(botMin, botMax, viewWidth, emitBufferPx)

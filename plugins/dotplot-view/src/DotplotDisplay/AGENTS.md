@@ -24,8 +24,8 @@
   export target, doesn't implement it). Baking it in made one drag frame
   recompute the colors array, re-pack every instance and re-upload the buffer.
   Same split as the synteny renderer's `fillShade`.
-- `instanceInterleave.ts` owns the pack loop and the `patchInstanceColors`
-  recolor fast path, keyed in `GpuDotplotRenderer.getInterleaved` on
+- `instanceInterleave.ts` owns the pack loop and declares the recolor fast path
+  (`DOTPLOT_INSTANCE_CACHE`, which `createInstanceCache` runs), keyed on
   `(x1 identity, colors identity)`. It is deliberately the twin of
   `LinearSyntenyDisplay/instanceInterleave.ts` — same two exports, same reason
   for not using the generated `packInstances` (both apply a per-element
