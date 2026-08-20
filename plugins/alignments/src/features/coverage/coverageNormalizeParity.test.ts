@@ -2,7 +2,9 @@ import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
-  resolveSymlogConstant, makeScoreNormalizer 
+  makeScoreNormalizer,
+  resolveSymlogConstant,
+  scaleTypeFromString,
 } from '@jbrowse/wiggle-core'
 
 import {
@@ -108,21 +110,34 @@ describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
     },
   )
 
-  test.each(['linear', 'log'])('every tick lands on its own data (%s)', scaleType => {
-    const height = 150
-    const { items, yBottom } = computeCoverageTicks([min, max], height, scaleType)
-    const normalize = makeScoreNormalizer(
-      min,
-      max,
-      scaleType === 'log' ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
-    )
-    // effectiveH for a 150px band with the 5px label inset at both ends
-    const effectiveH = height - 10
-    expect(items.length).toBeGreaterThan(0)
-    for (const { value, y } of items) {
-      expect(y).toBeCloseTo(yBottom - normalize(value) * effectiveH, 9)
-    }
-  })
+  // symlog is in this sweep because it was the one scale left out of it: the
+  // display passed no constant, `computeCoverageTicks` defaulted the RESOLVED
+  // one to 1, and the axis labelled log(depth + 1) over bars normalized against
+  // a thousandth of the visible max. It now takes the raw slot and resolves it
+  // the way the renderer does, which is what this asserts.
+  test.each(['linear', 'log', 'symlog'])(
+    'every tick lands on its own data (%s)',
+    scaleType => {
+      const height = 150
+      const { items, yBottom } = computeCoverageTicks(
+        [min, max],
+        height,
+        scaleType,
+      )
+      const normalize = makeScoreNormalizer(
+        min,
+        max,
+        scaleTypeFromString(scaleType),
+        resolveSymlogConstant(min, max, 0),
+      )
+      // effectiveH for a 150px band with the 5px label inset at both ends
+      const effectiveH = height - 10
+      expect(items.length).toBeGreaterThan(0)
+      for (const { value, y } of items) {
+        expect(y).toBeCloseTo(yBottom - normalize(value) * effectiveH, 9)
+      }
+    },
+  )
 })
 
 // The gate and the scale are one value, so a layer cannot be drawn against a

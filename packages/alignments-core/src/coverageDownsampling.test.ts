@@ -1,4 +1,10 @@
 import {
+  SCALE_TYPE_SYMLOG,
+  makeScoreNormalizer,
+  resolveSymlogConstant,
+} from '@jbrowse/wiggle-core/normalize'
+
+import {
   buildCoverageTooltipBin,
   computeCoverageTicks,
   computeVisibleCoverageStats,
@@ -104,6 +110,65 @@ describe('computeCoverageTicks', () => {
     const { items, yTop, yBottom } = computeCoverageTicks([0, 100], 40, 'log')
     expect(items[0]!.y).toBe(yBottom)
     expect(items.at(-1)!.y).toBe(yTop)
+  })
+
+  // What symlog is for on a depth axis: the octave ladder log draws, plus the
+  // "no reads at all" a log domain has to floor away. It shared the LINEAR
+  // ladder until now, which spaces its rungs evenly across the depths while the
+  // band places them by the transform — 0, 50 and 100 with the last two a tenth
+  // of the band apart.
+  describe('a symlog depth axis', () => {
+    test('draws the octave ladder from zero', () => {
+      expect(
+        computeCoverageTicks([0, 100], 150, 'symlog').items.map(t => t.value),
+      ).toEqual([0, 1, 2, 4, 8, 16, 32, 64])
+    })
+
+    test('a minScore bound starts the ladder at the bound', () => {
+      expect(
+        computeCoverageTicks([10, 100], 150, 'symlog').items.map(t => t.value),
+      ).toEqual([10, 20, 40, 80])
+    })
+
+    test('a short band still shows exactly its endpoints', () => {
+      expect(
+        computeCoverageTicks([0, 100], 40, 'symlog').items.map(t => t.value),
+      ).toEqual([0, 100])
+    })
+
+    test('a max under one read has no ladder to draw', () => {
+      expect(
+        computeCoverageTicks([0, 0.5], 150, 'symlog').items.map(t => t.value),
+      ).toEqual([0, 0.5])
+    })
+
+    // The constant arrives RAW — `0` means "derive from the domain" — and is
+    // resolved from the same domain the renderer resolves it from. Taking an
+    // already-resolved one defaulted to 1, so the axis drew log(depth + 1) over
+    // bars normalized against a thousandth of the visible max.
+    test('every tick lands on its own data at the derived constant', () => {
+      const domain: [number, number] = [0, 100]
+      const height = 150
+      const { items, yBottom } = computeCoverageTicks(domain, height, 'symlog')
+      const normalize = makeScoreNormalizer(
+        domain[0],
+        domain[1],
+        SCALE_TYPE_SYMLOG,
+        resolveSymlogConstant(domain[0], domain[1], 0),
+      )
+      for (const { value, y } of items) {
+        expect(y).toBeCloseTo(yBottom - normalize(value) * (height - 10), 9)
+      }
+    })
+
+    test('an explicitly configured constant is honoured', () => {
+      const domain: [number, number] = [0, 100]
+      const { items, yBottom } = computeCoverageTicks(domain, 150, 'symlog', 1)
+      const normalize = makeScoreNormalizer(0, 100, SCALE_TYPE_SYMLOG, 1)
+      for (const { value, y } of items) {
+        expect(y).toBeCloseTo(yBottom - normalize(value) * 140, 9)
+      }
+    })
   })
 })
 

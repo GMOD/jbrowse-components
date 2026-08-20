@@ -7,6 +7,7 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import {
   makeScoreNormalizer,
+  resolveSymlogConstant,
   scaleTypeFromString,
 } from '@jbrowse/wiggle-core/normalize'
 
@@ -111,6 +112,29 @@ function octaveTickValues(baseline: number, max: number) {
   return values
 }
 
+/**
+ * The octave ladder, with the baseline itself under it — which is exactly what
+ * symlog buys a depth axis over log: the same 1, 2, 4, 8 … rungs, plus the no
+ * reads at all that a log domain has to floor away.
+ *
+ * Not the linear ladder it shared with the linear branch until now. Depth is
+ * spaced logarithmically up a symlog axis just as it is up a log one, so an
+ * evenly stepped ladder piles its labels into the top of the band: a depth-100
+ * pileup drew 0, 50 and 100 with the last two 10% of the band apart.
+ */
+function symlogOctaveTickValues(baseline: number, max: number) {
+  // The rungs start at one whole read however low the baseline is, since a
+  // fraction of a read is not a depth. `octaveTickValues` doubles from its own
+  // floor, and a floor of 0 would double forever.
+  const firstRung = Math.max(1, baseline)
+  return firstRung < max
+    ? [
+        ...(baseline < firstRung ? [baseline] : []),
+        ...octaveTickValues(firstRung, max),
+      ]
+    : endpointTickValues(baseline, max)
+}
+
 /** The baseline, then nice steps up from it, to the last one at or below `max`. */
 function niceStepTickValues(baseline: number, max: number) {
   // Depth is integer-valued, so floor the nice step to 1: for a span under 3
@@ -139,7 +163,9 @@ function coverageTickValues(
   }
   return scaleType === 'log'
     ? octaveTickValues(baseline, max)
-    : niceStepTickValues(baseline, max)
+    : scaleType === 'symlog'
+      ? symlogOctaveTickValues(baseline, max)
+      : niceStepTickValues(baseline, max)
 }
 
 /**
@@ -150,12 +176,20 @@ function coverageTickValues(
  * shader's `normalizeDepth` use. It used to take a bare max and carry a
  * hand-written normalizer of its own, which is how a `minScore` bound came to be
  * computed into `coverageDomain[0]` and then read by nothing at all.
+ *
+ * `symlogConstant` is the RAW config value — `0` means "derive from the domain"
+ * — and is resolved here, from the same domain the renderer resolves it from.
+ * The same contract `computeYTicks` has, and for the reason it has it: taking an
+ * already-resolved constant defaulted to 1, so the display that forgot to pass
+ * one got `log(depth + 1)` on the axis over bars drawn against a constant a
+ * thousandth of the visible max. On a 150px band over a depth-100 pileup that
+ * put the "20" label 15px above the top of its own bar.
  */
 export function computeCoverageTicks(
   domain: readonly [number, number],
   coverageHeight: number,
   scaleType = 'linear',
-  symlogConstant = 1,
+  symlogConstant = 0,
 ): YScaleTicks {
   // The box the coverage marks are drawn in, not a second spelling of it: the
   // bars measure up from `bottom` over `effectiveH` (rendererUtils, and the
@@ -177,7 +211,7 @@ export function computeCoverageTicks(
     domainMin,
     max,
     scaleTypeFromString(scaleType),
-    symlogConstant,
+    resolveSymlogConstant(domainMin, max, symlogConstant),
   )
   const yOf = (value: number) => yBottom - normalize(value) * effectiveH
 

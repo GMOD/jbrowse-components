@@ -1041,6 +1041,10 @@ export default function stateModelFactory(
                 this.coverageDepthDomain,
                 self.coverageHeight,
                 self.scaleType,
+                // Raw slot; computeCoverageTicks resolves it from the same
+                // domain `renderState` resolves it from, so the labels sit on
+                // the bars rather than on a second symlog curve.
+                getConf(self, 'symlogConstant'),
               )
             : undefined
         },

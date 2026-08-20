@@ -1,4 +1,5 @@
 import { resolveSymlogConstant } from './normalize.ts'
+import { symlogTicks } from './symlogTicks.ts'
 import {
   type ScaleSpec,
   niceDomain,
@@ -22,7 +23,13 @@ function buildScale(spec: ScaleSpec): Scale {
   const scale = ((x: number) => scaleValue(spec, x)) as Scale
   scale.domain = () => [...spec.domain]
   scale.range = () => [...spec.range]
-  scale.ticks = (count?: number) => scaleTicks(spec, count)
+  // symlog gets its ticks spaced down the axis rather than across the scores —
+  // see symlogTicks, which is this module's choice and not d3's. `scaleTicks`
+  // goes on answering exactly what d3 answers for all three kinds.
+  scale.ticks = (count?: number) =>
+    spec.kind === 'symlog'
+      ? symlogTicks(spec.domain, spec.constant ?? 1, count)
+      : scaleTicks(spec, count)
   return scale
 }
 
