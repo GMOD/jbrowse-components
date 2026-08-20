@@ -95,7 +95,15 @@ try {
         }
       }
       for (const r of runs) {
-        stretches.push({ refName: name, x: r.x, span: r.end - r.x })
+        // clipped to the window, as placeLabels is: a stretch wider than the
+        // view is named over the part in view, so predicting from its full span
+        // would call a label placed and put it somewhere the figure has none
+        const x = Math.max(r.x, 0)
+        stretches.push({
+          refName: name,
+          x,
+          span: Math.min(r.end, view.width) - x,
+        })
       }
     }
     stretches.sort((a, b) => a.x - b.x)

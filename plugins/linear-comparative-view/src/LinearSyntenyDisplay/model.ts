@@ -365,15 +365,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * How many alignments this level is not drawing at all. The headline
-       * number, and the one a user needs before concluding a locus is syntenic
-       * to nothing.
-       */
-      get offscreenMateCount() {
-        return this.offscreenMateTally.reduce((sum, e) => sum + e.count, 0)
-      },
-      /**
-       * #getter
        * Summed genomic length (axis 0) of every loaded alignment block. Zoom-
        * independent, so it recomputes only when featureData changes;
        * alignmentCoverageFraction derives the on-screen density from it.

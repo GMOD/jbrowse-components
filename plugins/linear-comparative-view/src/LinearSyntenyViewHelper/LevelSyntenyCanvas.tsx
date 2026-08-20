@@ -304,7 +304,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // through to clear the clicked feature on its way.
     const contig = offscreenMateHit(model, coords.x, coords.y)
     if (contig !== undefined) {
-      showOffscreenMateContig(contig)
+      model.showOffscreenMateContig(contig)
       return
     }
     // A release outside the band answers no hit (the pick engine rejects a y
@@ -322,23 +322,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   // this the drag anchor outlives it and every later move still pans.
   function handlePointerCancel() {
     dragRef.current = undefined
-  }
-
-  /**
-   * Show the contig a mark points at, on the row that is not displaying it.
-   *
-   * `navToLocString` REPLACES that row's displayed regions, which is exactly the
-   * narrowing the synteny follow must never do to itself — but here it is the
-   * whole request. The user clicked a mark that says "these go to ctgB", and the
-   * only thing that turns those marks into ribbons is that row showing ctgB.
-   * The row keeps its own header, so undoing it is "Show all regions".
-   */
-  function showOffscreenMateContig(refName: string) {
-    parentView.views[model.level + 1]
-      ?.navToLocString(refName)
-      .catch((e: unknown) => {
-        getSession(model).notifyError(`${e}`, e)
-      })
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {

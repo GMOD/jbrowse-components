@@ -119,6 +119,13 @@ interface PlacedLabel {
  * each other, the last one's halo erases the two before it, and the figure then
  * names one contig where three apply — with nothing to say two are missing.
  *
+ * A STRETCH IS MEASURED BY THE PART IN VIEW. One wider than the window has its
+ * own midpoint off the edge, so centring on it put the name of the contig
+ * covering everything the reader can see outside the frame — and the fit test
+ * read that same off-screen width, so the label passed the test and then drew
+ * where nothing could show it. Zooming into a block was enough: the one contig
+ * the whole window maps to was the one contig never named.
+ *
  * Placement is left to right so it does not depend on the adapter's order, and
  * a stretch with no free row goes unlabelled rather than on top of another
  * name.
@@ -126,6 +133,7 @@ interface PlacedLabel {
 function placeLabels(
   runs: LabelRun[],
   measure: (text: string) => number,
+  width: number,
   height: number,
 ): PlacedLabel[] {
   const maxRows = Math.min(
@@ -140,11 +148,13 @@ function placeLabels(
   const rows: { x: number; end: number }[][] = []
   const placed: PlacedLabel[] = []
   for (const run of [...runs].sort((a, b) => a.x - b.x)) {
+    const from = Math.max(run.x, 0)
+    const to = Math.min(run.end, width)
     const textWidth = measure(run.refName)
-    if (textWidth + MIN_LABEL_PADDING_PX > run.end - run.x) {
+    if (textWidth + MIN_LABEL_PADDING_PX > to - from) {
       continue
     }
-    const x = run.x + (run.end - run.x - textWidth) / 2
+    const x = from + (to - from - textWidth) / 2
     // the padding is the gap between neighbours as well as the fit test, so a
     // row's labels never touch
     const box = {
@@ -200,6 +210,13 @@ export interface OffscreenMateRect {
 
 export function offscreenMateRefName(r: OffscreenMateRect) {
   return r.data.mateRefNameDict[r.data.mateRefNameIds[r.index]!]!
+}
+
+// How many alignments this display holds for the contig this mark points at —
+// the same per-contig tally the menu's headline is summed from, so a mark
+// reports the number that turning the marks on reported.
+export function offscreenMateContigCount(r: OffscreenMateRect) {
+  return r.data.counts[r.data.mateRefNameIds[r.index]!] ?? 0
 }
 
 // Same expression the ribbons project with, written out rather than reused:
@@ -307,7 +324,11 @@ export function offscreenMateAt(
     for (let i = data.starts.length - 1; i >= 0; i--) {
       const rect = offscreenMateRectAt(layout, data, i, markHeight)
       if (rect && x >= rect.x && x <= rect.x + rect.width) {
-        return { refName: offscreenMateRefName(rect), rect }
+        return {
+          refName: offscreenMateRefName(rect),
+          count: offscreenMateContigCount(rect),
+          rect,
+        }
       }
     }
   }
@@ -368,6 +389,7 @@ export function drawOffscreenMates(
   const labels = placeLabels(
     labelRuns(rects),
     text => ctx.measureText(text).width,
+    layout.width,
     layout.height,
   )
   for (const { refName, x, y } of labels) {

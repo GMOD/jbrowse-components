@@ -256,9 +256,11 @@ export function offscreenMateMenuItems(model: OffscreenMateModel): MenuItem[] {
   }
   const total = tally.reduce((sum, e) => sum + e.count, 0)
   const contigs = tally.length === 1 ? '1 contig' : `${tally.length} contigs`
+  const alignments =
+    total === 1 ? '1 alignment maps' : `${formatCount(total)} alignments map`
   return [
     {
-      label: `${formatCount(total)} alignments map to ${contigs} not shown`,
+      label: `${alignments} to ${contigs} not shown`,
       type: 'checkbox' as const,
       checked: model.showOffscreenMates,
       onClick: () => {

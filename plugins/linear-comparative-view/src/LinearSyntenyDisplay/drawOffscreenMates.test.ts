@@ -210,9 +210,59 @@ test('a run of marks to one contig says its name once, not per mark', () => {
   expect(texts).toHaveLength(1)
 })
 
+// Zooming into a block is enough to reach this: the stretch then runs past both
+// edges, its own midpoint is off screen, and the contig the whole window maps to
+// was the one contig never named. The fit test read that off-screen width too,
+// so the label passed it and drew where nothing could show it.
+test('a stretch wider than the window is named inside the window', () => {
+  const { ctx, texts } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    datasets: [data([[0, 100000]], ['ctgB'])],
+  })
+  expect(texts).toHaveLength(1)
+  expect(texts[0]!.x).toBeGreaterThanOrEqual(0)
+  expect(texts[0]!.x + 'ctgB'.length * CHAR_PX).toBeLessThanOrEqual(
+    params.width,
+  )
+})
+
+// One edge is the same bug: a stretch starting off the left is centred left of
+// where the reader can see, by half of whatever fell off.
+test('a stretch running off one edge is named over the part in view', () => {
+  const { ctx, texts } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    offsetPx: 50,
+    datasets: [data([[0, 1000]], ['ctgB'])],
+  })
+  // 0..1000bp at 10bp/px panned 50px is -50..50, so the visible half is 0..50
+  expect(texts).toEqual([{ text: 'ctgB', x: 13, y: 16 }])
+})
+
+// ...and the fit test is asked about the same part, so a stretch with only a
+// sliver in view goes unlabelled rather than carrying a name wider than it.
+test('a stretch with only a sliver in view goes unlabelled', () => {
+  const { ctx, rects, texts } = fakeCtx()
+  drawOffscreenMates(ctx, {
+    ...params,
+    offsetPx: 95,
+    datasets: [data([[0, 1000]], ['ctgB'])],
+  })
+  expect(rects).toHaveLength(1)
+  expect(texts).toEqual([])
+})
+
 test('the hit test answers the contig under the pointer', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
   expect(offscreenMateAt(layout, 20, 3)?.refName).toBe('ctgB')
+})
+
+// What the tooltip reports for the mark under the pointer: the per-contig tally
+// the menu's headline is summed from, not the number of marks drawn.
+test('the hit carries how many alignments go to that contig', () => {
+  const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
+  expect(offscreenMateAt(layout, 20, 3)?.count).toBe(1)
 })
 
 // Draw and hit test read one layout, so this is the shape the bug cannot take —

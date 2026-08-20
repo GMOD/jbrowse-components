@@ -1,4 +1,8 @@
-import { displayCanShowCigar, rowSyncMenuItems } from './menus.ts'
+import {
+  displayCanShowCigar,
+  offscreenMateMenuItems,
+  rowSyncMenuItems,
+} from './menus.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -136,5 +140,57 @@ describe('displayCanShowCigar', () => {
         featureData: { hasCigar: false },
       }),
     ).toBe(true)
+  })
+})
+
+// The item's label IS the finding, so it is the part with something to get
+// wrong: a checkbox reading "Show unpaired alignments" tells a reader nothing,
+// where a count and a contig number is the whole point of the feature.
+describe('offscreenMateMenuItems', () => {
+  function build(
+    tally: { refName: string; count: number }[],
+    showOffscreenMates = false,
+  ) {
+    const calls: boolean[] = []
+    const items = offscreenMateMenuItems({
+      offscreenMateTally: tally,
+      showOffscreenMates,
+      setShowOffscreenMates: arg => calls.push(arg),
+    })
+    return { items, calls }
+  }
+
+  test('the label reports the total and how many contigs it spans', () => {
+    const { items } = build([
+      { refName: 'ctgB', count: 2000 },
+      { refName: 'ctgC', count: 767 },
+    ])
+    expect(items).toHaveLength(1)
+    expect(items[0]).toMatchObject({
+      label: '2,767 alignments map to 2 contigs not shown',
+      type: 'checkbox',
+      checked: false,
+    })
+  })
+
+  test('one of each is not "1 alignments ... 1 contigs"', () => {
+    const { items } = build([{ refName: 'ctgB', count: 1 }])
+    expect(items[0]).toMatchObject({
+      label: '1 alignment maps to 1 contig not shown',
+    })
+  })
+
+  // Before a fetch lands the tally is empty, and the honest answer then is not
+  // zero but unknown — so the item is absent rather than claiming nothing is
+  // hidden. A two-contig comparison with everything drawn reads the same way.
+  test('nothing hidden carries no item at all', () => {
+    expect(build([]).items).toEqual([])
+  })
+
+  test('the item toggles the marks the label counts', () => {
+    const { items, calls } = build([{ refName: 'ctgB', count: 3 }], true)
+    expect(items[0]).toMatchObject({ checked: true })
+    ;(items[0] as { onClick: () => void }).onClick()
+    expect(calls).toEqual([false])
   })
 })
