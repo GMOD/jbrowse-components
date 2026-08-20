@@ -138,7 +138,9 @@ export async function readTabixLinesRedispatched(
   opts: { statusCallback?: StatusCallback; stopToken?: StopToken } = {},
 ): Promise<TabixLine[]> {
   const { statusCallback, stopToken } = opts
-  const read = (start: number, end: number, cb?: StatusCallback) =>
+  // `cb` is not optional: each read decides where it reports, and the flanks
+  // report somewhere the first read does not
+  const read = (start: number, end: number, cb: StatusCallback | undefined) =>
     readTabixLines(file, query.refName, start, end, cb, stopToken)
 
   const lines = await read(query.start, query.end, statusCallback)
@@ -156,7 +158,7 @@ export async function readTabixLinesRedispatched(
         : [],
       redispatch.end > query.end ? read(query.end, redispatch.end, slot()) : [],
     ])
-    return mergeTabixLines([lines, ...flanks])
+    return mergeTabixLines(lines, ...flanks)
   }
   return lines
 }
@@ -168,7 +170,7 @@ export async function readTabixLinesRedispatched(
  * puts the whole set back in the order a single read over their union would have
  * produced.
  */
-function mergeTabixLines(groups: TabixLine[][]) {
+function mergeTabixLines(...groups: TabixLine[][]) {
   const byOffset = new Map<number, TabixLine>()
   for (const group of groups) {
     for (const line of group) {

@@ -1208,3 +1208,84 @@ describe('a fan-out behind one guarded sink', () => {
     }
   })
 })
+
+// Randomized, because the shape that broke this module twice is one no
+// hand-written case had: the cases above each pin one situation somebody thought
+// of, and every defect ADR-080 lists came from regions interleaving in a way
+// nobody wrote down. This drives N slots through the sequence the real helpers
+// produce — a label, readings that only move forward, the enclosing label
+// between reads, the next phase, then `''` — interleaved at random, and asserts
+// only what must hold of EVERY stream the fan-out can emit.
+//
+// Seeded, so a failure is reproducible and a green run is not luck.
+describe('createStatusFanOut: the shape of any stream it can emit', () => {
+  const PHASES = ['Downloading features', 'Computing layout', 'Sizing region']
+
+  function makeRandom(seed: number) {
+    let state = seed
+    return () => {
+      state = (state * 1103515245 + 12345) & 0x7fffffff
+      return state / 0x7fffffff
+    }
+  }
+
+  function* oneSlotsWork(rnd: () => number): Generator<RpcStatus> {
+    const phases = PHASES.filter(() => rnd() < 0.7)
+    for (const message of phases.length > 0 ? phases : [PHASES[0]!]) {
+      yield message
+      for (let read = 1 + Math.floor(rnd() * 3); read > 0; read--) {
+        const total = Math.floor(rnd() * 9000) + 1
+        const ticks = 1 + Math.floor(rnd() * 4)
+        for (let i = 1; i <= ticks; i++) {
+          yield { message, current: Math.floor((total * i) / ticks), total }
+        }
+        // an inner phase closes onto the enclosing label, not onto `''`
+        yield message
+      }
+    }
+    yield ''
+  }
+
+  function runBatch(rnd: () => number) {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const regions = Array.from({ length: 1 + Math.floor(rnd() * 5) }, () => ({
+      report: slot(),
+      work: oneSlotsWork(rnd),
+      done: false,
+    }))
+    while (regions.some(r => !r.done)) {
+      const live = regions.filter(r => !r.done)
+      const region = live[Math.floor(rnd() * live.length)]!
+      const next = region.work.next()
+      if (next.done === true) {
+        region.done = true
+      } else {
+        region.report(next.value)
+      }
+    }
+    return seen
+  }
+
+  it('emits a well-formed status every time, and ends on the label', () => {
+    for (let trial = 0; trial < 200; trial++) {
+      const seen = runBatch(makeRandom(trial * 7919 + 1))
+      for (const status of seen) {
+        // `''` is the batch's owner to write, never ours
+        expect(status).not.toBe('')
+        if (typeof status === 'object') {
+          // a bar that overshoots is the arithmetic having double-counted a
+          // slot's finished work, which is the defect ADR-080 opens on
+          expect(status.current).toBeGreaterThanOrEqual(0)
+          expect(status.current).toBeLessThanOrEqual(status.total)
+          expect(Number.isFinite(status.total)).toBe(true)
+        }
+      }
+      // a percentage left standing for work that is over is the write ADR-071
+      // exists to cancel: the last thing out is always the label alone
+      expect(typeof seen.at(-1)).toBe('string')
+    }
+  })
+})

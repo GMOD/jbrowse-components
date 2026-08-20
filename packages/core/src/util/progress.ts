@@ -113,6 +113,15 @@ export type RpcStatus = string | StatusWithProgress
 export type StatusCallback = (status: RpcStatus) => void
 
 /**
+ * The phase a status names, verbatim — its label, whichever shape it arrived in.
+ * The raw form, `''` and all, for the two places that have to reason about the
+ * sentinel itself. Everywhere else wants {@link statusMessageText}.
+ */
+function phaseOf(status: RpcStatus) {
+  return typeof status === 'object' ? status.message : status
+}
+
+/**
  * Extract the human-readable text from any status value, or `undefined` when
  * there is none.
  *
@@ -124,7 +133,7 @@ export type StatusCallback = (status: RpcStatus) => void
  * same line of code (`assembly`, `BaseDisplayModel`, `FetchMixin`).
  */
 export function statusMessageText(status: RpcStatus | undefined) {
-  const text = typeof status === 'string' ? status : status?.message
+  const text = status === undefined ? undefined : phaseOf(status)
   return text === '' ? undefined : text
 }
 
@@ -395,9 +404,32 @@ function finished(slot: StatusSlot, message: string) {
   return slot.completed.get(message) ?? 0
 }
 
-/** The phase a status names — its label, whatever shape it arrived in. */
-function phaseOf(status: RpcStatus) {
-  return typeof status === 'object' ? status.message : status
+/**
+ * A phase some in-flight slot is reporting, and everything the vote in
+ * {@link aggregateStatus} weighs about it.
+ */
+interface PhaseVote {
+  message: string
+  /** in-flight slots reporting it */
+  count: number
+  /** of those, how many are measuring it this instant */
+  live: number
+  /** Σ `total` over those, for the mean an unmeasured slot is charged */
+  liveTotal: number
+  /** position in `phaseOrder`; an unseen phase ranks last */
+  rank: number
+  /** some slot has already finished part of it */
+  anyFinished: boolean
+}
+
+/**
+ * Does the batch have a measurement for this phase at all — one running now, or
+ * one it already retired? This is what separates a phase a region is still
+ * working through from one it has merely announced, and so what a tie between
+ * two phases turns on before their order does.
+ */
+function measurable(vote: PhaseVote) {
+  return vote.live > 0 || vote.anyFinished
 }
 
 /**
@@ -473,66 +505,66 @@ export function aggregateStatus(
   if (inFlight.length === 0) {
     return undefined
   }
-  const votes = new Map<
-    string,
-    { message: string; slots: number; live: number }
-  >()
+  const votes = new Map<string, PhaseVote>()
   for (const slot of inFlight) {
     const message = phaseOf(slot.status)
-    const live = typeof slot.status === 'object' ? 1 : 0
-    const vote = votes.get(message)
+    let vote = votes.get(message)
     if (vote === undefined) {
-      votes.set(message, { message, slots: 1, live })
-    } else {
-      vote.slots++
-      vote.live += live
+      // an unseen phase ranks last, and with no order at all every phase ranks
+      // the same — which leaves the reduce below keeping its incumbent, the
+      // slot-order tie-break this had before
+      const at = phaseOrder.indexOf(message)
+      vote = {
+        message,
+        count: 0,
+        live: 0,
+        liveTotal: 0,
+        rank: at === -1 ? phaseOrder.length : at,
+        anyFinished: slots.some(s => finished(s, message) > 0),
+      }
+      votes.set(message, vote)
+    }
+    vote.count++
+    if (typeof slot.status === 'object') {
+      vote.live++
+      vote.liveTotal += slot.status.total
     }
   }
-  const candidates = [...votes.values()].map(vote => {
-    // an unseen phase ranks last, and with no order at all every phase ranks
-    // the same — which leaves the reduce below keeping its incumbent, the
-    // slot-order tie-break this had before
-    const at = phaseOrder.indexOf(vote.message)
-    return {
-      ...vote,
-      rank: at === -1 ? phaseOrder.length : at,
-      measured: vote.live > 0 || slots.some(s => finished(s, vote.message) > 0),
-    }
-  })
-  type Candidate = (typeof candidates)[number]
-  const better = (a: Candidate, b: Candidate) =>
-    a.slots !== b.slots
-      ? a.slots > b.slots
-      : a.measured !== b.measured
-        ? a.measured
+  // lexicographic: how many slots are in the phase, then whether it has anything
+  // to measure at all, then how early the batch reached it
+  const better = (a: PhaseVote, b: PhaseVote) =>
+    a.count !== b.count
+      ? a.count > b.count
+      : measurable(a) !== measurable(b)
+        ? measurable(a)
         : a.rank < b.rank
-  const best = candidates.reduce((winner, c) =>
-    better(c, winner) ? c : winner,
+  const best = [...votes.values()].reduce((winner, vote) =>
+    better(vote, winner) ? vote : winner,
   )
   const { message } = best
+  // nothing is measuring the winner, so its label alone goes out: summing what
+  // its slots retired at reads 100% for a batch that is still going
   if (best.live === 0) {
     return message
   }
-  let liveTotal = 0
-  for (const slot of inFlight) {
-    if (typeof slot.status === 'object' && slot.status.message === message) {
-      liveTotal += slot.status.total
-    }
-  }
-  const mean = liveTotal / best.live
+  const mean = best.liveTotal / best.live
 
   let current = 0
   let total = 0
   for (const slot of slots) {
+    // finished work is charged in full to both halves, which is what stops the
+    // denominator shrinking as regions land
     const done = finished(slot, message)
+    current += done
+    total += done
     const { status } = slot
     if (typeof status === 'object' && status.message === message) {
-      current += status.current + done
-      total += status.total + done
-    } else if (done > 0 || status === undefined || status === '') {
-      current += done
-      total += done
-    } else {
+      current += status.current
+      total += status.total
+    } else if (done === 0 && status !== undefined && status !== '') {
+      // in flight with nothing comparable to measure, so charged the mean — and
+      // only here. A slot already credited for this phase is not charged for it
+      // a second time, which is what made the bar fall as regions moved on.
       total += mean
     }
   }
@@ -593,48 +625,53 @@ export function createStatusFanOut(statusCallback: StatusCallback | undefined) {
   // the phases this batch has been through, in the order it reached them, so a
   // tie between two slots in different phases resolves the same way twice
   const phaseOrder: string[] = []
-  // the phase's last determinate reading, and its label — what a moment with
-  // nothing to measure falls back to, rather than downgrading what we know
+  // the current phase's last determinate reading — what a moment with nothing
+  // measuring it falls back to, rather than downgrading what we already know.
+  // Dropped the moment the batch is in some other phase, or in none.
   let held: StatusWithProgress | undefined
+  // the last label of any kind, which outlives that: it is all there is to say
+  // once nothing is in flight, and saying it is what displaces the percentage
+  // queued behind the throttle
   let lastMessage: string | undefined
   return (): StatusCallback => {
     const slot: StatusSlot = { status: undefined, completed: new Map() }
     slots.push(slot)
     return status => {
+      // what this slot just finished, credited at the total it retired at —
+      // only its own channel ever saw that number
       const previous = slot.status
       if (typeof previous === 'object' && !continuesPhase(previous, status)) {
         const { message, total } = previous
         slot.completed.set(message, finished(slot, message) + total)
       }
+      slot.status = status
       // every label, not only the determinate ones: an indeterminate phase that
       // ties with another has to rank somewhere too, and it is the first slot to
       // say the words that dates the phase either way
-      const phase = phaseOf(status)
-      if (phase !== '' && !phaseOrder.includes(phase)) {
+      const phase = statusMessageText(status)
+      if (phase !== undefined && !phaseOrder.includes(phase)) {
         phaseOrder.push(phase)
       }
-      slot.status = status
       const aggregate = aggregateStatus(slots, phaseOrder)
       const message = statusMessageText(aggregate)
-      if (message !== undefined) {
-        if (held?.message !== message) {
-          held = undefined
-        }
-        lastMessage = message
-      }
-      const measured =
-        typeof aggregate === 'object' && !readsComplete(aggregate)
-      if (measured) {
-        held = aggregate
-      }
-      if (aggregate === undefined) {
-        // nothing in flight at all — not a gap between one slot's reads but a
-        // batch with no work outstanding, so its bar is over. Holding one here
-        // is a percentage re-sent for work that has ENDED, which is the write
-        // ADR-071 exists to cancel; the label alone is what goes out.
+      // A held reading describes one phase, and survives exactly as long as the
+      // batch is still in it. "Nothing in flight" is not that phase either: an
+      // empty aggregate is a batch with no work outstanding, and re-sending a
+      // percentage for work that has ENDED is the write ADR-071 exists to
+      // cancel. Both cases are one comparison, because an empty aggregate names
+      // no phase.
+      if (held?.message !== message) {
         held = undefined
       }
-      const out = measured ? aggregate : (held ?? aggregate ?? lastMessage)
+      if (typeof aggregate === 'object' && !readsComplete(aggregate)) {
+        held = aggregate
+      }
+      if (message !== undefined) {
+        lastMessage = message
+      }
+      // the best available answer to "what is this batch doing", in order: a
+      // reading we trust, whatever the aggregate says, the last label we saw
+      const out = held ?? aggregate ?? lastMessage
       if (out !== undefined) {
         statusCallback?.(out)
       }
