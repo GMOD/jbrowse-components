@@ -1,7 +1,5 @@
 import {
   demoSessions,
-  galleryDemos,
-  recentConfigs,
   sampleConfigs,
   syntenyConfigs,
 } from './NoConfigMessageSampleData.ts'
@@ -11,10 +9,8 @@ import {
 // browser navigate to that path and serve the raw file instead of the app.
 test.each([
   ['sampleConfigs', sampleConfigs],
-  ['recentConfigs', recentConfigs],
   ['syntenyConfigs', syntenyConfigs],
   ['demoSessions', demoSessions],
-  ['galleryDemos', galleryDemos],
 ])('%s hrefs are query-string-only', (_name, links) => {
   for (const { href } of links) {
     if (href) {

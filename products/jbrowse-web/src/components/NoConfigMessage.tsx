@@ -1,8 +1,6 @@
 import NoConfigMessageLinkList from './NoConfigMessageLinkList.tsx'
 import {
   demoSessions,
-  galleryDemos,
-  recentConfigs,
   sampleConfigs,
   syntenyConfigs,
 } from './NoConfigMessageSampleData.ts'
@@ -29,32 +27,18 @@ export default function NoConfigMessage() {
           links={sampleConfigs}
           buildUrl={buildConfigUrl}
         />
+      </div>
 
-        <h3 style={{ margin: '16px 0 4px' }}>Recently added</h3>
-        <NoConfigMessageLinkList
-          links={recentConfigs}
-          buildUrl={buildConfigUrl}
-        />
-
-        <h3 style={{ margin: '16px 0 4px' }}>Synteny and dotplot</h3>
+      <div style={{ flex: 1 }}>
+        <h3 style={{ margin: '0 0 4px' }}>Synteny and dotplot</h3>
         <NoConfigMessageLinkList
           links={syntenyConfigs}
           buildUrl={buildConfigUrl}
         />
-      </div>
 
-      <div style={{ flex: 1 }}>
-        <h3 style={{ margin: '0 0 4px' }}>Demo sessions</h3>
+        <h3 style={{ margin: '16px 0 4px' }}>Demo sessions</h3>
         <NoConfigMessageLinkList
           links={demoSessions}
-          buildUrl={buildConfigUrl}
-        />
-      </div>
-
-      <div style={{ flex: 1 }}>
-        <h3 style={{ margin: '0 0 4px' }}>Gallery demos</h3>
-        <NoConfigMessageLinkList
-          links={galleryDemos}
           buildUrl={buildConfigUrl}
         />
       </div>
