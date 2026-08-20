@@ -17,7 +17,7 @@ import { snpLaneOf } from './snpCoverage.ts'
 
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
-export function niceStep(maxDepth: number) {
+function niceStep(maxDepth: number) {
   const rough = maxDepth / 3
   const exp = Math.floor(Math.log10(rough))
   const pow = Math.pow(10, exp)
@@ -764,12 +764,6 @@ export function buildCoverageTooltipBin(
     snps: depth > 0 ? countSnpsAtPosition(position, mismatches) : {},
     interbase,
   }
-}
-
-export interface MismatchEntry {
-  position: number
-  base: number // ASCII code: 65=A, 67=C, 71=G, 84=T
-  strand: number
 }
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'

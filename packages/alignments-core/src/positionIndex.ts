@@ -85,11 +85,6 @@ export interface PositionIndex {
    * indirection at every step.
    */
   sorted: Uint32Array
-  /**
-   * The stride this index was built at. Read by the memo, not by consumers —
-   * see the cache comment below for why it is stored rather than keyed on.
-   */
-  stride: number
 }
 
 // An empty array has no entries at ANY stride, so one shared object would be a
@@ -107,7 +102,7 @@ export interface PositionIndex {
 // branch is the ordinary path rather than an edge. A zero-length allocation
 // costs nothing; sharing one costs a fetch.
 function emptyIndex(): PositionIndex {
-  return { order: new Uint32Array(0), sorted: new Uint32Array(0), stride: 1 }
+  return { order: new Uint32Array(0), sorted: new Uint32Array(0) }
 }
 
 /**
@@ -175,7 +170,7 @@ function buildPositionIndex(
   for (let i = 0; i < n; i++) {
     sorted[i] = positions[order[i]! * stride]!
   }
-  return { order, sorted, stride }
+  return { order, sorted }
 }
 
 /**
