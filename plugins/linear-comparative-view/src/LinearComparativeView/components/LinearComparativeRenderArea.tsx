@@ -53,10 +53,18 @@ const LinearComparativeRenderArea = observer(
               is the only action that replaces levels and it replaces the views
               too, so the Fragment key above already remounts this. `views`
               otherwise only grows and shrinks at the end, which leaves every
-              surviving row's level where it was. */}
+              surviving row's level where it was.
+
+              Asserted, not optional-chained: `reconcileLevels` keeps one level
+              per gap, so `i > 0` has one, and `LevelSection` reads the same
+              element the same way. An `?.` here would not survive a missing
+              level either — it spells the key `undefined`, which is React for
+              unkeyed, and the band still throws on `level.height` a moment
+              later. `levels` is `any` (a declared `IAnyModelType`, breaking the
+              view/level/display type cycle), so no lint can tell us which. */}
             {i > 0 ? (
               <LevelSection
-                key={model.levels[i - 1]?.id}
+                key={model.levels[i - 1]!.id}
                 model={model}
                 levelIdx={i - 1}
               />
