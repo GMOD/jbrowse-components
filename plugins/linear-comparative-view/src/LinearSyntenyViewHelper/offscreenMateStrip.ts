@@ -36,20 +36,32 @@ export interface OffscreenMateSource {
   }
 }
 
-type FeatureDataOf = NonNullable<
-  OffscreenMateSource['linearSyntenyDisplays'][number]['featureData']
->
+// Which of a display's two lanes a side names. One place says so, because a hit
+// reports the side it was found on and the tally it is then counted against has
+// to be the lane that answered — the two hold contigs of DIFFERENT assemblies.
+function laneData(
+  display: OffscreenMateSource['linearSyntenyDisplays'][number],
+  side: OffscreenMateSide,
+) {
+  const { featureData } = display
+  return side === 'top'
+    ? featureData?.offscreenMates
+    : featureData?.targetOffscreenMates
+}
 
 // One lane across every display on the level: they paint one strip, so the
 // label placement and the "on top" the pointer answers with have to run across
-// all of them at once.
-function lane(
-  model: OffscreenMateSource,
-  pick: (data: FeatureDataOf) => OffscreenMateData | undefined,
-) {
-  return model.linearSyntenyDisplays
-    .map(d => (d.featureData ? pick(d.featureData) : undefined))
-    .filter(data => data !== undefined)
+// all of them at once. A dataset with nothing placed is dropped here rather than
+// carried, so "has a strip" is one question rather than two.
+function lane(model: OffscreenMateSource, side: OffscreenMateSide) {
+  const out: OffscreenMateData[] = []
+  for (const display of model.linearSyntenyDisplays) {
+    const data = laneData(display, side)
+    if (data && data.starts.length > 0) {
+      out.push(data)
+    }
+  }
+  return out
 }
 
 /**
@@ -73,26 +85,20 @@ export function offscreenMateStrips(
     return []
   }
   const { minAlignmentLength, views } = parentView
-  const lanes = [
+  const sides = [
+    { side: 'top' as const, row: views[model.level], navRow: model.level + 1 },
     {
-      row: views[model.level],
-      datasets: lane(model, d => d.offscreenMates),
-      side: 'top' as const,
-      navRow: model.level + 1,
-    },
-    {
-      row: views[model.level + 1],
-      datasets: lane(model, d => d.targetOffscreenMates),
       side: 'bottom' as const,
+      row: views[model.level + 1],
       navRow: model.level,
     },
   ]
-  return lanes.flatMap(({ row, datasets, side, navRow }) => {
-    const drawable = datasets.filter(data => data.starts.length > 0)
-    return row && drawable.length > 0
+  return sides.flatMap(({ side, row, navRow }) => {
+    const datasets = lane(model, side)
+    return row && datasets.length > 0
       ? [
           {
-            datasets: drawable,
+            datasets,
             bpPerPx: row.bpPerPx,
             offsetPx: row.offsetPx,
             minAlignmentLength,
@@ -170,11 +176,8 @@ export function offscreenMateCount(
   side: OffscreenMateSide,
 ) {
   let total = 0
-  for (const d of model.linearSyntenyDisplays) {
-    const data =
-      side === 'top'
-        ? d.featureData?.offscreenMates
-        : d.featureData?.targetOffscreenMates
+  for (const display of model.linearSyntenyDisplays) {
+    const data = laneData(display, side)
     const id = data?.mateRefNameDict.indexOf(refName) ?? -1
     if (data && id >= 0) {
       total += data.counts[id] ?? 0

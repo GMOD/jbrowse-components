@@ -53,8 +53,9 @@ test('the overlay lays out at the band, not at its backing store', () => {
   expect(canvas.style.height).toBe('100px')
 })
 
-// The setting is off by default, so an unconditional overlay meant a band-sized
-// DPR-scaled backing store per level for a strip nobody had asked for.
+// The setting is ON by default, so an unconditional overlay is a band-sized
+// DPR-scaled backing store on every level of every synteny view — and empty on
+// all of the ones hiding nothing.
 test('nothing to mark is no canvas at all', () => {
   const { queryByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>

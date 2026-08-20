@@ -19,9 +19,11 @@ import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
  * canvas is what a non-instance element costs, and it is cheap: these are
  * thousands of rects, not the millions the instance path exists for.
  *
- * NO MARKS, NO CANVAS. The setting is off by default, so mounting this
- * unconditionally allocated a band-sized DPR-scaled backing store per level for
- * a strip nobody had asked for. The SVG export has always been gated this way.
+ * NO MARKS, NO CANVAS, and the setting going ON by default is what made that
+ * load-bearing rather than tidy: mounted unconditionally this is a band-sized
+ * DPR-scaled backing store on every level of every synteny view, for a strip
+ * that is empty in all the ones hiding nothing. The SVG export is gated the
+ * same way.
  *
  * ONE CALL FOR BOTH STRIPS, not one per strip: the band is the drawing unit.
  * Its two strips share a fill and, more to the point, share the vertical room

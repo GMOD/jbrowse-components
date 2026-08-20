@@ -250,8 +250,17 @@ alignment.
 bench's context is a mark, so nothing there measures what the GPU or Canvas2D
 does with the path. What it does bound is the per-frame JS, and at 250k marks
 that alone is a frame. Reaching that takes a query row on the whole genome with
-the target row narrowed to one contig, and the toggle is off by default, so
-nothing pays it without asking.
+the target row narrowed to one contig.
+
+*2026-08-20:* the toggle **went on by default** after this table was measured,
+so that state now pays the repaint column without asking for it — which is the
+one thing the default costs that a few pixels of band does not. The hover column
+is not in that: it is what the pointer pays on every move, and testing the strip
+height before any alignment is what makes it independent of the mark count. What
+a reader in that state is looking at is a strip whose marks outnumber its pixels,
+so if the column is ever worth attacking, the answer is a per-pixel-column
+occupancy pass rather than a rect per alignment — and the label placement, which
+runs off those same rects, is what makes that more than a draw-loop change.
 
 ## Cheaper thing this is not
 

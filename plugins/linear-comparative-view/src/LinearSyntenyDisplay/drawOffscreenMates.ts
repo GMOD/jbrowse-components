@@ -169,7 +169,7 @@ function labelRuns(
 ): LabelRun[] {
   const byContig = new Map<string, OffscreenMateRect[]>()
   for (const r of rects) {
-    const refName = offscreenMateRefName(r)
+    const refName = offscreenMateRefName(r.data, r.index)
     let list = byContig.get(refName)
     if (!list) {
       list = []
@@ -207,6 +207,12 @@ interface BandSpan {
   to: number
 }
 
+// The strip's own top edge: 0 for a top strip, the band height less the mark
+// height for a bottom one.
+function markTop(side: OffscreenMateSide, height: number, markHeight: number) {
+  return side === 'bottom' ? height - markHeight : 0
+}
+
 // The pixels one lane's marks occupy. Reserved against LABELS — every lane's,
 // not just its own — because a name printed over the marks is a name over the
 // thing it is naming.
@@ -215,9 +221,8 @@ function markZone(
   height: number,
   markHeight: number,
 ): BandSpan {
-  return side === 'bottom'
-    ? { from: height - markHeight, to: height }
-    : { from: 0, to: markHeight }
+  const from = markTop(side, height, markHeight)
+  return { from, to: from + markHeight }
 }
 
 /**
@@ -355,8 +360,8 @@ export interface OffscreenMateRect {
   height: number
 }
 
-function offscreenMateRefName(r: OffscreenMateRect) {
-  return r.data.mateRefNameDict[r.data.mateRefNameIds[r.index]!]!
+function offscreenMateRefName(data: OffscreenMateData, i: number) {
+  return data.mateRefNameDict[data.mateRefNameIds[i]!]!
 }
 
 // Same expression the ribbons project with, written out rather than reused:
@@ -377,16 +382,14 @@ function screenX(cumBp: number, bpPerPx: number, offsetPx: number) {
  * see and the pointer cannot is not a shape this can take.
  */
 function offscreenMateRects(layout: OffscreenMateLayout): OffscreenMateRect[] {
-  const { width, height, datasets } = layout
-  if (width <= 0 || height <= 0) {
+  const strip = stripGeometry(layout)
+  if (!strip) {
     return []
   }
-  const markHeight = offscreenMateMarkHeight(height)
-  const markY = markZone(layout.side, height, markHeight).from
   const out: OffscreenMateRect[] = []
-  for (const data of datasets) {
+  for (const data of layout.datasets) {
     for (let i = 0; i < data.starts.length; i++) {
-      const rect = offscreenMateRectAt(layout, data, i, markHeight, markY)
+      const rect = offscreenMateRectAt(layout, data, i, strip)
       if (rect) {
         out.push(rect)
       }
@@ -405,14 +408,39 @@ function offscreenMateMarkHeight(height: number) {
   )
 }
 
+// The strip's box in the band — the half of a mark's geometry every mark in a
+// lane shares, resolved once so the draw and the hit test cannot place their
+// marks a pixel apart, and undefined for a band with no pixels to draw in.
+interface StripGeometry {
+  markY: number
+  markHeight: number
+}
+
+function stripGeometry({
+  width,
+  height,
+  side,
+}: OffscreenMateLayout): StripGeometry | undefined {
+  if (width <= 0 || height <= 0) {
+    return undefined
+  }
+  const markHeight = offscreenMateMarkHeight(height)
+  return { markY: markTop(side, height, markHeight), markHeight }
+}
+
 // The one place a mark's geometry is decided, so the array the canvas paints and
 // the scan the pointer runs cannot describe different rectangles.
+//
+// IT ALLOCATES, and the hit test throws away what it allocates once per
+// alignment. Writing into a scratch instead is the obvious fix and it is a net
+// loss: it halved the strip hover (0.039ms -> 0.019ms on the demo fixture) and
+// cost the REPAINT 25%, which is the every-pan path rather than the
+// pointer-is-on-the-marks one. See `agent-docs/reference/REJECTED_IDEAS.md`.
 function offscreenMateRectAt(
   { bpPerPx, offsetPx, width, minAlignmentLength }: OffscreenMateLayout,
   data: OffscreenMateData,
   i: number,
-  markHeight: number,
-  markY: number,
+  { markY, markHeight }: StripGeometry,
 ): OffscreenMateRect | undefined {
   // the block's own length, NOT `ends - starts`: those are clamped to the
   // displayed region, and the ribbons' own cull reads the unclamped extent
@@ -454,21 +482,17 @@ export function offscreenMateAt(
   x: number,
   y: number,
 ) {
-  const { width, height, datasets } = layout
-  if (width <= 0 || height <= 0) {
+  const strip = stripGeometry(layout)
+  if (!strip || y < strip.markY || y > strip.markY + strip.markHeight) {
     return undefined
   }
-  const markHeight = offscreenMateMarkHeight(height)
-  const markY = markZone(layout.side, height, markHeight).from
-  if (y < markY || y > markY + markHeight) {
-    return undefined
-  }
+  const { datasets } = layout
   for (let d = datasets.length - 1; d >= 0; d--) {
     const data = datasets[d]!
     for (let i = data.starts.length - 1; i >= 0; i--) {
-      const rect = offscreenMateRectAt(layout, data, i, markHeight, markY)
+      const rect = offscreenMateRectAt(layout, data, i, strip)
       if (rect && x >= rect.x && x <= rect.x + rect.width) {
-        return offscreenMateRefName(rect)
+        return offscreenMateRefName(data, i)
       }
     }
   }
