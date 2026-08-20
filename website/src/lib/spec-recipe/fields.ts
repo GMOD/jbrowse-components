@@ -1730,11 +1730,11 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  // An action rather than a checkbox, so only a `true` has a click-path: it
-  // re-fits every row to one shared bp/px, and there is no un-checking it —
-  // you'd re-navigate instead. A top-level row in the header menu, next to the
-  // sibling that fits each row to the width instead — the two zoom-outs carry
-  // the name they share in the label, so a reader picks between them in place.
+  // Only a `true` has a click-path: the rows start each fit to their own width,
+  // so a reader following the recipe does nothing for a `false` — the sibling
+  // row beside it, 'Show all regions - each row fit to width', is the way back
+  // off. Both are top-level rows in the header menu carrying the name they
+  // share in the label, so a reader picks between them in place.
   sameScale: value =>
     value === true
       ? {

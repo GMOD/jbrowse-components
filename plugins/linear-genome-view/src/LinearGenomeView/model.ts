@@ -583,6 +583,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * temporary vertical guides that can be set by displays (e.g., LD display hover)
          */
         volatileGuides: [] as VolatileGuide[],
+        /**
+         * #volatile
+         * A zoom-out limit imposed from outside, for a view that is one row of a
+         * set drawn on one shared scale — see `LinearComparativeView.sameScale`.
+         * Zero, the default, means this view answers to its own fit alone.
+         *
+         * Derived state a container pushes down rather than a prop: the number
+         * is a function of the whole set's fits and every one of them moves on
+         * a resize, so a stored copy is stale by the next layout.
+         */
+        sharedFitBpPerPx: 0,
       }
     })
     .views(self => ({
@@ -1103,7 +1114,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get maxBpPerPx() {
+      get fitBpPerPx() {
         if (this.totalBp === 0 || self.width === 0) {
           return 1
         }
@@ -1115,6 +1126,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
           MIN_BP_PER_PX,
           this.totalBp / (self.width * SHOW_ALL_REGIONS_FILL),
         )
+      },
+
+      /**
+       * #getter
+       * The zoom-out limit. This view's own fit, except while a container holds
+       * it on a shared scale coarser than that — a small genome next to a large
+       * one, drawn short so the two compare by length.
+       *
+       * Raising the LIMIT is what makes such a scale survive: written past the
+       * limit instead, it is undone by the first thing that clamps — a wheel
+       * tick, a rubberband, a `setDisplayedRegions` — which is how the dotplot's
+       * locked aspect ratio once turned "zoom out" into a zoom in
+       * (`axisMaxBpPerPx`). Here every route to a zoom clamps against the same
+       * ceiling, so full zoom-out LANDS on the shared scale.
+       */
+      get maxBpPerPx() {
+        return Math.max(this.fitBpPerPx, self.sharedFitBpPerPx)
       },
 
       /**
@@ -2534,22 +2562,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * showAllRegions at a scale the caller supplies rather than this view's
-       * own fit-to-width one, so several views can share one bp/px and their
-       * genomes compare by drawn length. Deliberately assigns past maxBpPerPx
-       * instead of going through zoomTo: a scale that fits the LARGEST genome
-       * in a set necessarily exceeds every smaller genome's fit-to-width limit,
-       * and clamping each row back to its own limit is exactly the equal-width
-       * stretch this exists to avoid. Only a caller that owns the layout of a
-       * whole set of views has a reason to reach for it — anything zooming a
-       * single view wants zoomTo, whose clamp keeps the genome on screen.
+       * Raise this view's zoom-out limit to a scale a container computed for a
+       * whole set of views, so their genomes compare by drawn length. Zero
+       * hands the view back to its own fit.
+       *
+       * The limit, not the zoom: with it raised, `showAllRegions` reaches the
+       * shared scale on its own and so does a wheel held at the stop, and
+       * neither can be clamped back off it. Only a caller that owns the layout
+       * of a whole set has a reason to write here — anything zooming a single
+       * view wants zoomTo.
        */
-      showAllRegionsAtScale(bpPerPx: number) {
-        self.windowWidthBp = Math.max(bpPerPx, self.minBpPerPx) * self.width
-        self.scrollTo(
-          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
-        )
-        self.settleCoarseBlocks()
+      setSharedFitBpPerPx(bpPerPx: number) {
+        self.sharedFitBpPerPx = bpPerPx
       },
 
       /**

@@ -3123,12 +3123,6 @@ describe('a jump settles the coarse blocks', () => {
         model.fitAllRegions()
       },
     ],
-    [
-      'showAllRegionsAtScale',
-      model => {
-        model.showAllRegionsAtScale(200)
-      },
-    ],
     // The region list again, and reversed with it: index 0 named ctgA forward
     // and names ctgB reversed afterwards, off a direct write to
     // `displayedRegions` rather than through setDisplayedRegions

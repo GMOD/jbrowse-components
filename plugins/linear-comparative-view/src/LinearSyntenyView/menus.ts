@@ -43,12 +43,18 @@ interface NavigationModel {
   squareView: () => void
   showAllRegions: () => void
   showAllRegionsSameScale: () => void
+  sameScale: boolean
   linkViews: boolean
   followSynteny: boolean
   followAnchorIndex: number
   setRowSyncMode: (mode: 'independent' | 'link' | 'follow') => void
   setFollowAnchorIndex: (idx: number) => void
 }
+
+const SHOW_ALL_REGIONS_MODES = [
+  { value: 'fit', label: 'Show all regions - each row fit to width' },
+  { value: 'same', label: 'Show all regions - same bp per pixel' },
+] as const
 
 const ROW_SYNC_MODES = [
   ['independent', 'Independent'],
@@ -70,6 +76,14 @@ const ROW_SYNC_MODES = [
  * both keep a dash clause — a bare "Square view" in the two places would name
  * two different operations.
  *
+ * The two show-all-regions rows act on one click and ALSO carry a mark, which
+ * is not the contradiction it looks like: what the mark names is which fit rule
+ * the rows are under — `sameScale` raises their shared zoom-out limit, the
+ * other hands each row back its own — and that stays true after someone zooms
+ * back in. It is not a claim about where the rows are pointed now. Square view
+ * is the one-shot beside them and carries no mark: averaging the rows' current
+ * scales leaves nothing behind to be under.
+ *
  * The sync modes are MUTUALLY EXCLUSIVE in substance, not just presentation: a
  * pixel lock and a synteny follow disagree about where a row belongs the moment
  * an indel separates them, and with both on the row is placed twice per pan.
@@ -82,7 +96,7 @@ const ROW_SYNC_MODES = [
  * and nothing about the pan reveals it.
  */
 export function navigationMenuItems(model: NavigationModel): MenuItem[] {
-  const { linkViews, followSynteny, followAnchorIndex } = model
+  const { sameScale, linkViews, followSynteny, followAnchorIndex } = model
   return [
     {
       label: 'Square view - average bp per pixel',
@@ -91,20 +105,15 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
         model.squareView()
       },
     },
-    {
-      // no icon on either: the same one on both would say nothing about which
-      // to pick, and the dash clause is all that separates them
-      label: 'Show all regions - each row fit to width',
-      onClick: () => {
-        model.showAllRegions()
-      },
-    },
-    {
-      label: 'Show all regions - same bp per pixel',
-      onClick: () => {
+    // no icon on either: the same one on both would say nothing about which to
+    // pick, and the dash clause is all that separates them
+    ...radioItems(SHOW_ALL_REGIONS_MODES, sameScale ? 'same' : 'fit', m => {
+      if (m === 'same') {
         model.showAllRegionsSameScale()
-      },
-    },
+      } else {
+        model.showAllRegions()
+      }
+    }),
     makeRadioSubMenu({
       label: 'Link views',
       icon: LinkIcon,

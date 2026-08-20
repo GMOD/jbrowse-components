@@ -2,12 +2,18 @@ import { displayCanShowCigar, navigationMenuItems } from './menus.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
+const SHOW_ALL_REGIONS_LABELS = [
+  'Show all regions - each row fit to width',
+  'Show all regions - same bp per pixel',
+]
+
 // The sync modes are mutually exclusive in substance, not just in presentation
 // — a pixel lock and a synteny follow place the same row twice per pan — so they
 // are a radio group and the model has one setter for all three.
 describe('navigationMenuItems', () => {
   function build(
     state: Partial<{
+      sameScale: boolean
       linkViews: boolean
       followSynteny: boolean
       followAnchorIndex: number
@@ -16,6 +22,7 @@ describe('navigationMenuItems', () => {
     const calls: unknown[] = []
     const items = navigationMenuItems({
       views: [{ assemblyNames: ['hg002mat'] }, { assemblyNames: ['hg002pat'] }],
+      sameScale: false,
       linkViews: false,
       followSynteny: false,
       followAnchorIndex: 0,
@@ -39,6 +46,7 @@ describe('navigationMenuItems', () => {
       i => 'label' in i && i.label === label && i.type !== 'subHeader',
     ) as
       | {
+          type?: string
           checked?: boolean
           subLabel?: string
           onClick?: () => void
@@ -89,14 +97,28 @@ describe('navigationMenuItems', () => {
     ).toHaveLength(2)
   })
 
-  test('the zoom commands are one-shot, not state', () => {
+  test('squaring is one-shot, where the fit rule is state', () => {
+    // squareView leaves nothing behind to mark: it averages the rows' current
+    // scales and that is the end of it. The other two set which zoom-out limit
+    // the rows are under, which outlives the click and so carries a mark.
     const { items } = build()
-    for (const label of [
-      'Square view - average bp per pixel',
-      'Show all regions - each row fit to width',
-      'Show all regions - same bp per pixel',
-    ]) {
-      expect(labelled(items, label)).not.toHaveProperty('type')
+    expect(
+      labelled(items, 'Square view - average bp per pixel'),
+    ).not.toHaveProperty('type')
+    for (const label of SHOW_ALL_REGIONS_LABELS) {
+      expect(labelled(items, label)?.type).toBe('radio')
+    }
+  })
+
+  test('the mark follows the fit rule in force', () => {
+    for (const [state, expected] of [
+      [{}, 'Show all regions - each row fit to width'],
+      [{ sameScale: true }, 'Show all regions - same bp per pixel'],
+    ] as const) {
+      const { items } = build(state)
+      expect(
+        SHOW_ALL_REGIONS_LABELS.filter(l => labelled(items, l)?.checked),
+      ).toEqual([expected])
     }
   })
 

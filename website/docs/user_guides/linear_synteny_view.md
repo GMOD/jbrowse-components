@@ -242,7 +242,10 @@ inside **Rows**:
   assembly, giving each its own scale so it fills its own pane
 - **Show all regions - same bp per pixel** zooms every row out too, but puts
   them all on one scale, so a smaller genome draws proportionally shorter
-  instead of being stretched to the same on-screen length as a larger one
+  instead of being stretched to the same on-screen length as a larger one. The
+  two show-all-regions rows are a pair of settings rather than one-off buttons:
+  whichever is marked stays in force, so after zooming into a locus, zooming
+  back out returns to the same shared scale
 - **Link views** decides whether panning one row pans the others, and by what —
   pixels, or the alignment. Following also picks which row is the anchor
 - **Rows** - **Add assembly row** to compare three or more assemblies stacked

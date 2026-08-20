@@ -267,10 +267,11 @@ async function applyInit(
   if (init.autoDiagonalize) {
     await runAutoDiagonalize(self)
   }
-  // last, and not in applyInitSettings with the rest: the shared scale sits
-  // past the smaller rows' own maxBpPerPx, and setDisplayedRegions re-clamps
-  // bpPerPx into that range — so diagonalizing after this would undo it on
-  // every row it reorders.
+  // after the diagonalize, which rewrites a reordered row's displayedRegions
+  // and re-centers it — this leaves every row centered on the shared scale,
+  // where the reverse order would leave the reordered ones re-fitted. The
+  // shared scale itself now survives either order: it is a raised zoom-out
+  // limit (`sameScale`), not a value written past one.
   if (init.sameScale) {
     self.showAllRegionsSameScale()
   }

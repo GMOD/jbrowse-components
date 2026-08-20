@@ -1,3 +1,4 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -63,7 +64,7 @@ test('rows fit individually are drawn the same width whatever their size', async
 test('showAllRegionsSameScale puts every row on the largest row scale', async () => {
   const view = await launch({ views })
   const [small, large] = view.views
-  const coarsest = large!.maxBpPerPx
+  const coarsest = large!.fitBpPerPx
 
   view.showAllRegionsSameScale()
 
@@ -78,31 +79,75 @@ test('showAllRegionsSameScale puts every row on the largest row scale', async ()
   )
 })
 
-// The shared scale is past the small row's own maxBpPerPx, which is the whole
-// point and also why it can't go through zoomTo: that clamp is what pulls a
-// small genome back out to full pane width.
-test('the shared scale is one zoomTo would refuse', async () => {
+// The shared scale is past the small row's own FIT, which is the whole point.
+// It survives a zoom because it moves the row's LIMIT: written past the limit
+// instead, the first thing to clamp would pull the small genome back out to
+// full pane width.
+test('the shared scale raises the small row zoom-out limit', async () => {
   const view = await launch({ views })
   const [small] = view.views
-  const coarsest = Math.max(...view.views.map(v => v.maxBpPerPx))
+  const coarsest = Math.max(...view.views.map(v => v.fitBpPerPx))
 
-  expect(coarsest).toBeGreaterThan(small!.maxBpPerPx)
+  expect(coarsest).toBeGreaterThan(small!.fitBpPerPx)
+  view.showAllRegionsSameScale()
+
+  expect(small!.maxBpPerPx).toBeCloseTo(coarsest)
   small!.zoomTo(coarsest)
-  expect(small!.bpPerPx).toBeCloseTo(small!.maxBpPerPx)
+  expect(small!.bpPerPx).toBeCloseTo(coarsest)
 })
 
-// setDisplayedRegions re-clamps bpPerPx into the row's own range, so anything
-// that rewrites a row's regions — autoDiagonalize is the one that does, on
-// every row it reorders — undoes the shared scale. That is why applyInit runs
-// sameScale last rather than folding it in with the other init settings.
-test('rewriting a row regions drops it back off the shared scale', async () => {
+// Every route to a zoom clamps against the same raised ceiling, so zooming the
+// small row all the way out LANDS on the shared scale rather than on its own
+// fit — which is what makes the state reachable again after a zoom in.
+test('zooming the small row out lands back on the shared scale', async () => {
   const view = await launch({ views })
   const [small] = view.views
 
   view.showAllRegionsSameScale()
+  const shared = small!.bpPerPx
+  small!.zoomTo(shared / 8)
+  small!.zoomTo(Number.MAX_SAFE_INTEGER)
+
+  expect(small!.bpPerPx).toBeCloseTo(shared)
+})
+
+// setDisplayedRegions re-clamps bpPerPx into the row's range, and autoDiagonalize
+// rewrites the regions of every row it reorders. With the ceiling raised that
+// clamp is a no-op, where it used to drop the row back to fit-to-width.
+test('rewriting a row regions keeps it on the shared scale', async () => {
+  const view = await launch({ views })
+  const [small] = view.views
+
+  view.showAllRegionsSameScale()
+  const shared = small!.bpPerPx
   small!.setDisplayedRegions([...small!.displayedRegions])
 
-  expect(small!.bpPerPx).toBeCloseTo(small!.maxBpPerPx)
+  expect(small!.bpPerPx).toBeCloseTo(shared)
+})
+
+// The mode is a property so a saved session keeps it; the ceiling it implies is
+// volatile on each row, re-derived from the rows' own fits by the autorun.
+test('the mode is saved, the ceiling it implies is not', async () => {
+  const view = await launch({ views })
+  view.showAllRegionsSameScale()
+
+  const snap = getSnapshot(view)
+  expect(snap.sameScale).toBe(true)
+  expect(snap.views[0]).not.toHaveProperty('sharedFitBpPerPx')
+})
+
+// Back to each row filling its own pane, which is the way off the mode.
+test('show all regions hands each row back its own fit', async () => {
+  const view = await launch({ views, sameScale: true })
+  const [small, large] = view.views
+
+  view.showAllRegions()
+
+  expect(view.sameScale).toBe(false)
+  expect(small!.maxBpPerPx).toBeCloseTo(small!.fitBpPerPx)
+  expect(small!.displayedRegionsTotalPx).toBeCloseTo(
+    large!.displayedRegionsTotalPx,
+  )
 })
 
 test('init.sameScale applies the shared scale on load', async () => {

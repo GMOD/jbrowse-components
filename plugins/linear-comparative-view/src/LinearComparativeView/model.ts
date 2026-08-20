@@ -94,6 +94,15 @@ function stateModelFactory(pluginManager: PluginManager) {
         followSynteny: types.stripDefault(types.boolean, false),
         /**
          * #property
+         * Hold every genome row on one bp/px — the coarsest row's fit — so the
+         * rows compare by drawn length instead of all filling their pane. A
+         * mode rather than a one-shot zoom because it is the rows' zoom-out
+         * LIMIT it moves (`sharedFitBpPerPx`), and a limit has to still be
+         * there on the next wheel tick.
+         */
+        sameScale: types.stripDefault(types.boolean, false),
+        /**
+         * #property
          * Which genome row drives the others while `followSynteny` is on. Every
          * other row is placed by mapping this one's window outward one level at
          * a time. Clamped to the views array by reconcileLevels.
@@ -189,6 +198,23 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get assemblyNames() {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
+      },
+
+      /**
+       * #getter
+       * The zoom-out limit every row shares while `sameScale` is on: one bp/px
+       * has to fit the LARGEST genome, so it is the coarsest of the rows' own
+       * fits. Zero — each row answers to its own fit — while the mode is off.
+       *
+       * Derived here and pushed onto the rows by an autorun rather than
+       * assigned once, because every row's fit moves on a resize and on any
+       * change to what it displays. The dotplot's `lockAspectRatio` reads the
+       * same quantity by the same name.
+       */
+      get sharedFitBpPerPx() {
+        return self.sameScale && self.views.length
+          ? Math.max(...self.views.map(v => v.fitBpPerPx))
+          : 0
       },
 
       /**
@@ -399,6 +425,22 @@ function stateModelFactory(pluginManager: PluginManager) {
             { name: 'ComparativeViewWidth' },
           ),
         )
+        // Keeps the shared ceiling on the rows true as the rows themselves
+        // move: a resize, a row navigating, a row added. Reads the getter
+        // itself so the whole dependency set — the flag, the views array, every
+        // row's fit — is tracked here rather than at the write.
+        addDisposer(
+          self,
+          autorun(
+            function comparativeViewSameScaleAutorun() {
+              const bpPerPx = self.sharedFitBpPerPx
+              for (const view of self.views) {
+                view.setSharedFitBpPerPx(bpPerPx)
+              }
+            },
+            { name: 'ComparativeViewSameScale' },
+          ),
+        )
       },
 
       // automatically removes session assemblies associated with this view
@@ -581,11 +623,22 @@ function stateModelFactory(pluginManager: PluginManager) {
        * ribbon between them by the ratio. Distinct from squareView, which
        * averages the rows' current scales (the average fits nobody, and each
        * row's own zoom clamp pulls the small ones back to fit-to-width anyway).
+       *
+       * One click, and it latches `sameScale`: the shared scale is coarser than
+       * a small row's own fit, so without the raised ceiling the first wheel
+       * tick or `setDisplayedRegions` clamps that row straight back to
+       * fit-to-width and the comparison is gone. `showAllRegions` on the synteny
+       * view is the way back off.
        */
       showAllRegionsSameScale() {
-        const bpPerPx = Math.max(...self.views.map(v => v.maxBpPerPx))
+        self.sameScale = true
+        // pushed here as well as by the autorun, which cannot have run yet:
+        // `showAllRegions` below targets each row's `maxBpPerPx`, and that is
+        // the row's own fit until the ceiling reaches it
+        const bpPerPx = self.sharedFitBpPerPx
         for (const view of self.views) {
-          view.showAllRegionsAtScale(bpPerPx)
+          view.setSharedFitBpPerPx(bpPerPx)
+          view.showAllRegions()
         }
       },
       /**

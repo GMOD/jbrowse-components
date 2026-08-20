@@ -10,8 +10,8 @@
 // missed one is positively wrong rather than absent.
 //
 // Source-level because the rule is about the set of placers, and two passes of
-// adding the call by hand missed four of them: `fitAllRegions`,
-// `showAllRegionsAtScale`, `horizontallyFlip` and `centerAt`. index.test.ts
+// adding the call by hand missed three of them: `fitAllRegions`,
+// `horizontallyFlip` and `centerAt`. index.test.ts
 // §"a jump settles the coarse blocks" exercises the ones someone remembered to
 // list; this is what makes the next one fail.
 //
@@ -111,7 +111,6 @@ test('the scan finds the placers it is about', () => {
     'setDisplayedRegions',
     'showAllRegions',
     'fitAllRegions',
-    'showAllRegionsAtScale',
     'horizontallyFlip',
     'clearView',
     'centerAt',

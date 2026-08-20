@@ -28,7 +28,10 @@ export function normalizeTrackLevels(
 // there is no fourth:
 //
 //   - no property behind it, it means "do something": `views`,
-//     `autoDiagonalize`, `sameScale`, `collapseEmptyRows`
+//     `autoDiagonalize`, `collapseEmptyRows`
+//   - there is a property behind it and setting it is not the whole job:
+//     `sameScale` latches the mode AND zooms every row onto the shared scale,
+//     which the flag alone does not do
 //   - the name collides with a property meaning something else: a spec's
 //     `tracks` is trackIds per level, the model's is not that shape
 //   - it is ordered against another step: `levelHeights` has to win over the

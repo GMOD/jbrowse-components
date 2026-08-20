@@ -704,9 +704,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Every row back to its own whole assembly, fit to its own width — and
+       * so also the way off `sameScale`, whose raised ceiling would otherwise
+       * make "show all regions" mean the shared scale on every row.
        */
       showAllRegions() {
+        self.sameScale = false
         for (const view of self.views) {
+          // lowered here as well as by the autorun, which cannot have run yet:
+          // `showAllRegionsInAssembly` below targets the row's `maxBpPerPx`,
+          // which is still the shared ceiling until this line
+          view.setSharedFitBpPerPx(0)
           view.showAllRegionsInAssembly()
         }
       },
