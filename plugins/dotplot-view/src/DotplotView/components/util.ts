@@ -94,8 +94,15 @@ export const AXIS_LABEL_FONT = 10
 // Cap the *displayed* refName so one long scaffold name can't blow up the axis
 // margin. Only refNames are capped (tick coordinates stay exact); the full name
 // is still shown on hover. Middle-elided to keep both a numbered scaffold's
-// prefix and its distinguishing suffix (scaffold_1234 -> scaf…1234).
-const LABEL_SIDE_CHARS = 4
+// prefix and its distinguishing suffix (scaffold_123456 -> scaffo…123456).
+//
+// 6 rather than 4: at 4, names as ordinary as `scaffold_1234` and
+// `chr1_MATERNAL` were elided down to 9 chars, which is shorter than the
+// tick coordinates printed beside them ("1,234,567" is 44px, `scaf…1234`
+// 46px) — so the elide bought almost no margin and cost the name. At 6 those
+// print in full for ~16px more border, and the elide only fires on names
+// longer than a tick label.
+const LABEL_SIDE_CHARS = 6
 export function truncateRefName(refName: string) {
   return refName.length > LABEL_SIDE_CHARS * 2 + 1
     ? `${refName.slice(0, LABEL_SIDE_CHARS)}…${refName.slice(-LABEL_SIDE_CHARS)}`
@@ -103,22 +110,21 @@ export function truncateRefName(refName: string) {
 }
 
 // The middle elide above is only worth anything while it stays INJECTIVE over
-// the names sharing an axis, and on a haplotype-resolved assembly it is not:
-// `chr1_MATERNAL` and `chr10_MATERNAL`..`chr19_MATERNAL` all come out as
-// `chr1…RNAL`, because both ends it preserves are the shared boilerplate and the
-// part that names the chromosome is what it cuts. A whole-genome T2T-HG002
-// self-dotplot therefore labelled eleven of its 23 rows identically — an axis
-// that cannot say which contig a row is, which is most of what an axis is for.
+// the names sharing an axis, and on names with long shared boilerplate it is
+// not: `chromosome1_MATERNAL` and `chromosome10..19_MATERNAL` all come out as
+// `chromo…TERNAL`, because both ends it preserves are the boilerplate and the
+// part that names the chromosome is what it cuts. Such an axis labels eleven of
+// its 23 rows identically — it cannot say which contig a row is, which is most
+// of what an axis is for.
 //
 // So the decision is made for the axis as a SET, not per name: elide only while
 // no two names collide, and otherwise keep every name in full. Whole-axis rather
 // than per-name because a mix of elided and full labels reads as arbitrary, and
 // the margin is sized off the widest label either way.
 //
-// It costs axis margin exactly when it buys distinguishability — hg002v1.2 goes
-// from a 55px border of `chr1…RNAL` to ~90px of `chr10_MATERNAL` — and nothing
-// at all on the scaffold sets the elide was written for, where `scaf…1234` stays
-// unique and stays short.
+// It costs axis margin exactly when it buys distinguishability, and nothing at
+// all on the scaffold sets the elide was written for, where `scaffo…123456`
+// stays unique and stays short.
 export function truncateRefNames(refNames: string[]) {
   const unique = [...new Set(refNames)]
   const elided = unique.map(truncateRefName)

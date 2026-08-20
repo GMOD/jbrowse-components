@@ -79,28 +79,42 @@ describe('truncateRefName', () => {
     expect(truncateRefName('scaffold9')).toBe('scaffold9')
   })
 
+  // a name no wider than the tick coordinates beside it is not worth eliding
+  test('an ordinary-length name is not elided', () => {
+    expect(truncateRefName('scaffold_1234')).toBe('scaffold_1234')
+    expect(truncateRefName('chr1_MATERNAL')).toBe('chr1_MATERNAL')
+  })
+
   test('long names are middle-elided, keeping prefix and suffix', () => {
-    expect(truncateRefName('scaffold_1234')).toBe('scaf…1234')
+    expect(truncateRefName('scaffold_123456')).toBe('scaffo…123456')
   })
 })
 
 describe('truncateRefNames', () => {
   test('elides while the short forms stay distinct', () => {
-    const labels = truncateRefNames(['scaffold_1234', 'scaffold_5678', 'chr1'])
-    expect(labels.get('scaffold_1234')).toBe('scaf…1234')
-    expect(labels.get('scaffold_5678')).toBe('scaf…5678')
+    const labels = truncateRefNames([
+      'scaffold_123456',
+      'scaffold_567890',
+      'chr1',
+    ])
+    expect(labels.get('scaffold_123456')).toBe('scaffo…123456')
+    expect(labels.get('scaffold_567890')).toBe('scaffo…567890')
     expect(labels.get('chr1')).toBe('chr1')
   })
 
   test('keeps full names when the elide would collide', () => {
-    // The T2T-HG002 case: the elide preserves `chr1` and `RNAL`, which is the
-    // boilerplate, and cuts the chromosome number, which is the name. chr1 and
-    // chr10..chr19 all land on `chr1…RNAL`.
-    const names = ['chr1_MATERNAL', 'chr10_MATERNAL', 'chr2_MATERNAL']
+    // The haplotype-resolved case: the elide preserves `chromo` and `TERNAL`,
+    // which is the boilerplate, and cuts the chromosome number, which is the
+    // name. chromosome1 and chromosome10..19 all land on `chromo…TERNAL`.
+    const names = [
+      'chromosome1_MATERNAL',
+      'chromosome10_MATERNAL',
+      'chromosome2_MATERNAL',
+    ]
     expect(names.map(truncateRefName)).toEqual([
-      'chr1…RNAL',
-      'chr1…RNAL',
-      'chr2…RNAL',
+      'chromo…TERNAL',
+      'chromo…TERNAL',
+      'chromo…TERNAL',
     ])
     const labels = truncateRefNames(names)
     for (const n of names) {
@@ -112,19 +126,19 @@ describe('truncateRefNames', () => {
     // A half-elided axis reads as arbitrary, and the margin is sized to the
     // widest label regardless, so there is nothing to win by mixing.
     const labels = truncateRefNames([
-      'chr1_MATERNAL',
-      'chr10_MATERNAL',
-      'scaffold_1234',
+      'chromosome1_MATERNAL',
+      'chromosome10_MATERNAL',
+      'scaffold_123456',
     ])
-    expect(labels.get('scaffold_1234')).toBe('scaffold_1234')
+    expect(labels.get('scaffold_123456')).toBe('scaffold_123456')
   })
 
   test('a repeated refName is not a collision', () => {
     // gatherOverlaps can put one refName on the axis twice (a read aligned
     // twice to one chromosome); that is the same name, not two names sharing a
     // label, and must not cost the axis its elide.
-    const labels = truncateRefNames(['scaffold_1234', 'scaffold_1234'])
-    expect(labels.get('scaffold_1234')).toBe('scaf…1234')
+    const labels = truncateRefNames(['scaffold_123456', 'scaffold_123456'])
+    expect(labels.get('scaffold_123456')).toBe('scaffo…123456')
   })
 })
 
@@ -147,7 +161,7 @@ describe('fitAxisTitle', () => {
   })
 
   test('an axis with essentially no room still yields a nameable stub', () => {
-    expect(fitAxisTitle('a_long_assembly_name', 1)).toBe('a_lo…name')
+    expect(fitAxisTitle('a_long_assembly_name', 1)).toBe('a_long…y_name')
   })
 })
 
@@ -204,9 +218,9 @@ describe('axisBorderPx', () => {
   })
 
   test('a truncated long name does not grow the border without bound', () => {
-    // both names truncate to the same 9-char display, so the border matches
-    expect(border([region('scaffold_1234', 1_000)], 1)).toBe(
-      border([region('scaffold_9999', 1_000)], 1),
+    // both names truncate to the same 13-char display, so the border matches
+    expect(border([region('scaffold_1234_extra', 1_000)], 1)).toBe(
+      border([region('scaffold_9999_extra', 1_000)], 1),
     )
   })
 
@@ -232,16 +246,16 @@ describe('axisBorderPx', () => {
   })
 
   // the elide is off when it would collide, so the margin has to grow with it:
-  // sized off `chr1…RNAL` while the axis prints `chr10_MATERNAL`, every label on
+  // sized off `chromo…TERNAL` while the axis prints the full name, every label on
   // a haplotype-resolved assembly is clipped
   test('a colliding elide set widens the border to the full names', () => {
     const haplotype = [
-      region('chr1_MATERNAL', 1_000),
-      region('chr10_MATERNAL', 1_000),
+      region('chromosome1_MATERNAL', 1_000),
+      region('chromosome10_MATERNAL', 1_000),
     ]
     const distinct = [
-      region('scaffold_1234', 1_000),
-      region('scaffold_5678', 1_000),
+      region('scaffold_123456', 1_000),
+      region('scaffold_567890', 1_000),
     ]
     expect(border(haplotype, 1)).toBeGreaterThan(border(distinct, 1))
   })
