@@ -335,6 +335,38 @@ describe('JBrowseWebSessionModel', () => {
       )
     })
 
+    // `pushSnackbarMessage` dedupes on the exact text, and
+    // `BulkAddTracksWorkflow` publishes in a loop inside one transaction — so a
+    // track name in that message is a message per track, and an admin adding a
+    // directory of files against a session assembly wore twelve identical
+    // toasts. The assembly is what they have to act on, so that is what it
+    // names, and a batch collapses.
+    it('and a batch of them says it once', () => {
+      const session = createTestSession({
+        adminMode: true,
+        jbrowseConfig: withVolvox,
+      })
+      session.addSessionAssembly({
+        name: 'sampleGenome',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'sampleGenome-ref',
+          adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+        },
+      })
+      for (let i = 0; i < 12; i++) {
+        session.publishTrackConf({
+          ...trackSnap,
+          trackId: `bulk_${i}`,
+          name: `bulk track ${i}`,
+          assemblyNames: ['sampleGenome'],
+        })
+      }
+      expect(session.sessionTracks).toHaveLength(12)
+      expect(session.snackbarMessages).toHaveLength(1)
+      expect(session.snackbarMessages[0]!.message).toContain('sampleGenome')
+    })
+
     // `addTrackConf` outlived its own meaning: it survives only because
     // jbrowse-plugin-protein3d 0.8.0 calls it by name off a bundle that cannot
     // be recompiled, and it now means the session. An admin reaching it through
