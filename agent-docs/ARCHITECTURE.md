@@ -574,7 +574,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `measuresBytesPreFlight` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
 | `measuresBytesInFetch` | the same, for the in-RPC half canvas uses | `canvas/shared` |
 | `densityTooLarge` | byte-only gating, no feature-density axis | `canvas/shared` |
-| `densityGateEnabled` | the density axis stays on — override to false for a display painting into fixed lanes | `canvas/LinearMultiRowFeatureDisplay` |
+| `densityGateEnabled` | no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off | `canvas/LinearMultiRowFeatureDisplay`, `canvas/shared` |
 | `byteGateAdapterConfig` | the estimate measures the display’s own adapter — wrong for a display that reads a different file at different zooms | `maf/LinearMafDisplay` |
 | `scrollableHeight` | `Infinity` — the display does not scroll internally | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
 | `growTargetHeight` | grow mode targets the raw `height` slot | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |

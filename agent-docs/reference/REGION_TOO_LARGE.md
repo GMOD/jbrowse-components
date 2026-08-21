@@ -612,9 +612,25 @@ place to drift.
 
 **Whether the axis is on is `RegionTooLargeMixin`'s too**, beside the
 `densityTooLarge` hook, so "is the density axis on?" has one spelling within
-`densityGateActive`'s reach. Override `densityGateEnabled` to false to drop the
-axis for a display painting into fixed lanes, such as multi-row, leaving
-byte-only gating.
+`densityGateActive`'s reach — but the `true` is **contributed here**, next to
+the measurement, the way `measuresBytesInFetch` is. The axis is on where
+something measures it, and this mixin is the only thing that does.
+
+`densityGateEnabled` defaulted to `true` on the base until 2026-08, which put
+the five byte-only displays permanently in `densityGateActive === true` — inert,
+because their `densityTooLarge` is the base `false`, and a state that reads as
+the opposite of what is true. `maf/derivedRegionTooLarge.test.ts` pins that a
+byte-only display claims no density axis, and multi-row's pins the other end:
+it composes this mixin and turns the axis back off in its own `.views`, after
+the `.compose`, so the override does not depend on mixin order. Neither is
+reachable from `gateTruthTable`, which overrides the hook in order to enumerate
+it and therefore cannot see which way the base points.
+
+Both directions of the wrong compose order are caught, but only one is caught
+*here*: `afterAttach`'s self-check reads `measuresBytesInFetch` back rather than
+`densityGateEnabled`, because it cannot distinguish the base's `false` winning
+from multi-row legitimately turning the axis off. The two are contributed
+together, so the byte one answers for both.
 
 A display opts in by composing the mixin and calling `commitGateMeasurements`
 from its fetch (with the `visibleBp` captured *before* the fetch). It does **not**

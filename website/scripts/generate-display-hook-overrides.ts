@@ -147,7 +147,7 @@ const HOOKS: Hook[] = [
     name: 'densityGateEnabled',
     owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
     ifNotOverridden:
-      'the density axis stays on — override to false for a display painting into fixed lanes',
+      'no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off',
   },
   {
     name: 'byteGateAdapterConfig',
