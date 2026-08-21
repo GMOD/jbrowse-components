@@ -2306,8 +2306,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * view has settled at least once, the live ones before that.
          *
          * The coarse blocks exist so a per-bp scan does not recompute on every
-         * animation frame during a pan or zoom — wiggle's autoscale domain and
-         * the alignments coverage scale are the two — and while they are stale
+         * animation frame during a pan or zoom — wiggle's autoscale domain, the
+         * alignments coverage scale and MAF's coverage band are the three — and
+         * while they are stale
          * the answer is merely a frame or two old, which is what the debounce
          * means. **Empty is different in kind.** A scan over no blocks yields no
          * entries, and no entries is not a stale domain, it is the fallback one:

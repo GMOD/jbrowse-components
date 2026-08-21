@@ -4,7 +4,7 @@
 // The coarse blocks are a 500ms throttle. A jump has nothing to coalesce — the
 // viewport left behind is a different place, not an old approximation of the new
 // one — so a placer that skips `settleCoarseBlocks` leaves the location box, the
-// on-screen feature set and the two per-bp scans behind `settledDynamicBlocks`
+// on-screen feature set and the three per-bp scans behind `settledDynamicBlocks`
 // reading somewhere else for up to half a second. `settledDynamicBlocks` covers
 // only the case where the coarse set is EMPTY; once any placer has settled, a
 // missed one is positively wrong rather than absent.

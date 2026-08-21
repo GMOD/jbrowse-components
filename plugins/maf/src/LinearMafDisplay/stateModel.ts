@@ -1341,7 +1341,7 @@ export default function stateModelFactory(
             return undefined
           }
           return computeVisibleCoverageStats(
-            view.dynamicBlocks.contentBlocks,
+            view.settledDynamicBlocks,
             b => self.rpcDataMap.get(b.displayedRegionIndex!)?.coverage,
           )
         },
