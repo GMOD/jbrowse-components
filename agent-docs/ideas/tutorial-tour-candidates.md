@@ -26,8 +26,16 @@ and what it corrected, because the next tour on those pages starts from them.
 restructured first.
 
 Every candidate below came out of the ten-agent tutorial audit
-(`tutorial-structure-audit.md` is that audit's structural half). Each names what
-the page could delete, because a tour that only adds is the weaker kind.
+(`tutorial-structure-audit.md` is that audit's structural half). Each names the
+prose it makes unnecessary, which is what ranks it.
+
+**A tour does not retire a figure.** Two were retired on 2026-08-21 and put back
+the same day: Colin's call is that the stills and the clips both stay, so
+"deletes a figure" is not a point in a candidate's favour and not a step in
+filming one. What a clip can shorten is PROSE — a paragraph of sequential clicks,
+a section that only introduces the next state. `video-specs.ts` states the reason
+in its own header: a figure is searchable, diffable, annotatable and readable at a
+glance, and none of that survives being filmed.
 
 ## The four that were first, all done
 
@@ -44,12 +52,9 @@ that introduce them.
 
 **Filmed.** `videos/variants.ts`, 620px frame, 38s. What the estimate got wrong:
 
-- **It retires TWO of the four, not three.** `trio-matrix` and
-  `trio-matrix-phased` go, since each was a menu cascade pasted over its own
-  result. `trio-basic` is where a reader opening the VCF stands, and
-  `trio-matrix-phased-clean` is the crop source for both the gallery tile
-  (`src/lib/gallery.ts`) and the tutorial card (`gen-tutorial-thumbs.ts`), so
-  retiring it is a separate editorial call about what the gallery shows.
+- **It retires none of the four.** Two were dropped and restored the same day;
+  see the rule above. All four stills stay, the clip sits under the phased one,
+  and the three sections stay as they were.
 - **It could not open at the figures' locus.** The default display gates at one
   feature per pixel and this VCF carries every 1000 Genomes site, so 2.9 Mb of it
   draws "Too many features" and the first take filmed that banner. The tour opens
@@ -124,12 +129,13 @@ so a reader following it landed on the hairlines — that sentence is now on the
 page, and the `Partition by...` submenu's own list of the file's columns is the
 clip's payoff frame.
 
-Two things the session had to carry: `replaceDisplay` builds the new display from
+One thing the session had to carry: `replaceDisplay` builds the new display from
 its own config rather than carrying the old one's height, so the tour's session
 pins a `displays` array (packed first, multi-row second with a height) — which is
-the shape this page's config section prints anyway. And the tutorial's copy of
-`multirow/display_types_menu` is gone, the composite being a menu cascade over
-its own result; the user guide keeps it, having no tour.
+the shape this page's config section prints anyway.
+
+`multirow/display_types_menu` stays on the page beside the clip, as does the
+comparison figure.
 
 ## The rest, ranked
 

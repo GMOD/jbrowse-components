@@ -50,21 +50,27 @@ gives:
 
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 
-## Enabling the phased matrix
+## Enabling the matrix view
 
 Switch the track to the
-[Multi-sample variant display (matrix)](/docs/user_guides/multivariant_track):
-each sample becomes a row and each variant a column, with black lines tying the
-columns back to their genomic positions. The matrix then has a "phased"
-rendering mode under the track menu's **Rendering mode**, which splits each
-sample into its two haplotypes, so the three trio members become six rows. It
-needs genotypes written with the `0|1` separator rather than `0/1`; getting
-there from unphased calls takes a phasing program like SHAPEIT.
+[Multi-sample variant display (matrix)](/docs/user_guides/multivariant_track).
+Each sample becomes a row and each variant a column, with black lines tying the
+columns back to their genomic positions.
 
-<Video src="/media/variants/trio_phased_matrix.mp4" caption="The trio VCF switched to the multi-sample matrix display, then to the phased rendering mode, which splits each trio member into its two haplotype rows in place. The last move zooms out to the window the rest of the page works in." />
+<Figure caption="Multi-sample variant display (matrix). One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
-The window at the end of that clip is wider than the default display will draw:
-it stops above its
+## Enabling the phased mode
+
+The matrix has a "phased" rendering mode under the track menu's "Rendering
+mode". It splits each sample into its two haplotypes, so the three trio members
+become six rows. It needs genotypes written with the `0|1` separator rather than
+`0/1`. Getting there from unphased calls takes a phasing program like SHAPEIT.
+
+<Figure caption="The phased rendering mode, and the 'Rendering mode' → 'Phased' menu item that turns it on." src="/img/trio-matrix-phased.png"/>
+
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="Both picks in one pass, on the track the figures above are of: the multi-sample matrix display, then the phased rendering mode splitting each trio member into its two haplotype rows in place. The last move zooms out to the window the rest of the page works in." />
+
+That last move is wider than the default display will draw: it stops above its
 [feature-density limit](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity),
 where the matrix keeps going because a column is a variant rather than a
 position.

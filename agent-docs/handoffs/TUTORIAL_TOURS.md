@@ -29,6 +29,10 @@ and then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
   — the harness analysis and the numbered machinery gaps. Its ranking is biased
   toward user guides, which is why the candidates file exists separately.
 
+**A tour does not retire a figure.** Two were retired while filming candidate 1
+and 4 and restored the same day. The stills and the clips both stay; what a clip
+shortens is prose. `website/CLAUDE.md` § Videos carries the rule.
+
 ## Where the rules now live
 
 Not here. `website/CLAUDE.md` § Videos has the corpus-level rules (framing,

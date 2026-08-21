@@ -51,6 +51,11 @@ the tour was filmed in.
 - **A video is for a ROUTE or a RE-LAYOUT**, and everything else is a figure. A
   still is searchable, diffable, annotatable and readable at a glance, and none
   of that survives being filmed.
+- **Filming a route retires nothing.** The clip and the stills both stay, even
+  where the still is a menu cascade over its own result and the clip performs
+  exactly that. Two figures were retired on 2026-08-21 and restored the same
+  day; what a clip can shorten is PROSE, and a candidate that offers to delete a
+  figure is offering nothing.
 - **What goes wrong inside a spec's `steps` is in `scripts/videos/CLAUDE.md`**,
   next to the specs: a menu left standing over the payoff frame, a display type
   switched to at the wrong height, an opening frame that is the density gate's
