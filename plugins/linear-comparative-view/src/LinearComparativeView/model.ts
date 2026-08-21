@@ -540,8 +540,15 @@ function stateModelFactory(pluginManager: PluginManager) {
         // what let the dotplot's two-argument twin pass an
         // `applySyntenyTrackSelections` level off as a track snapshot
         initialSnapshot: object = {},
+        displayInitialSnapshot: Record<string, unknown> = {},
+        inlineConf?: Record<string, unknown>,
       ) {
-        self.levels[level]?.showTrack(trackId, initialSnapshot)
+        self.levels[level]?.showTrack(
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+          inlineConf,
+        )
       },
 
       /**

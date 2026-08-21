@@ -3,7 +3,13 @@ import '@testing-library/jest-dom'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
-import { act, fireEvent, screen, waitFor } from '@testing-library/react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import { measure } from './teardownNoise.ts'
@@ -270,13 +276,6 @@ test('a view-local track config goes out with the view', async () => {
   expect(session.getTrackById('view-local')).toBeUndefined()
   expect(session.sessionTracks).toHaveLength(0)
 
-  // ...so a saved session restores it: the config is inside the view's snapshot,
-  // not a sibling entry that can be dropped independently of the track
-  const snap = getSnapshot(synteny as unknown as IAnyStateTreeNode) as {
-    views: { tracks: { configuration: { trackId: string } }[] }[]
-  }
-  expect(snap.views[1]!.tracks[0]!.configuration.trackId).toBe('view-local')
-
   act(() => {
     session.removeView(synteny as unknown as AbstractViewModel)
   })
@@ -288,5 +287,120 @@ test('a view-local track config goes out with the view', async () => {
 
   expect(session.sessionTracks).toHaveLength(0)
   expect(session.temporaryAssemblies).toHaveLength(0)
+  expect(screen.getByTestId('app-bar')).toBeTruthy()
+}, 60000)
+
+// The other direction, and the one the sweep this replaced was trying to protect:
+// the snapshot a user SAVES and SHARES. A config referenced by id from a sibling
+// list is two things in that snapshot that can be dropped independently; inline it
+// is one, so the round trip is what says the track comes back drawable rather than
+// naming an id nothing resolves. Through the level rather than an LGV panel,
+// because that is where the read-vs-ref launchers put their synthesized band.
+test('an inline view-local config survives a session round trip', async () => {
+  const inlineConf = {
+    type: 'SyntenyTrack',
+    trackId: 'view-local-synteny',
+    name: 'read vs ref',
+    assemblyNames: ['volvox', 'readvsref'],
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
+        {
+          uniqueId: 'a1',
+          refName: 'ctgA',
+          start: 0,
+          end: 50,
+          strand: 1,
+          syntenyId: 0,
+          mate: { refName: 'readvsref', start: 0, end: 50, name: 'readvsref' },
+        },
+      ],
+    },
+  }
+  const viewSnap = {
+    type: 'LinearSyntenyView',
+    views: [
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50 },
+        ],
+      },
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          {
+            assemblyName: 'readvsref',
+            refName: 'readvsref',
+            start: 0,
+            end: 50,
+          },
+        ],
+      },
+    ],
+  }
+
+  const first = await createView(config)
+  first.session.addTemporaryAssembly({
+    name: 'readvsref',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'readvsref-ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'readvsref',
+            uniqueId: 'readvsref-1',
+            start: 0,
+            end: 50,
+            seq: 'A'.repeat(50),
+          },
+        ],
+      },
+    },
+  })
+  const built = first.session.addView(
+    'LinearSyntenyView',
+    viewSnap,
+  ) as unknown as {
+    showTrack: (
+      trackId: string,
+      level?: number,
+      initialSnapshot?: object,
+      displaySnapshot?: object,
+      inlineConf?: Record<string, unknown>,
+    ) => void
+  }
+  act(() => {
+    built.showTrack('view-local-synteny', 0, {}, {}, inlineConf)
+  })
+
+  // what a share link carries: JSON, so anything MST could not serialize is gone
+  const saved = JSON.parse(
+    JSON.stringify(getSnapshot(first.session as unknown as IAnyStateTreeNode)),
+  ) as {
+    views: { levels?: { tracks?: { configuration: unknown }[] }[] }[]
+    sessionTracks?: unknown[]
+  }
+  // the config is IN the track, and no session list holds a copy
+  expect(saved.views[1]!.levels![0]!.tracks![0]!.configuration).toMatchObject({
+    trackId: 'view-local-synteny',
+  })
+  expect(saved.sessionTracks ?? []).toHaveLength(0)
+
+  cleanup()
+
+  // ...and a fresh app served that session draws the same track
+  const second = await createView({ ...config, defaultSession: saved })
+  const restored = second.session.views[1] as unknown as {
+    levels: { tracks: { configuration: AnyConfigurationModel }[] }[]
+  }
+  const conf = restored.levels[0]!.tracks[0]!.configuration
+  expect(readConfObject(conf, 'name')).toBe('read vs ref')
+  expect(readConfObject(conf, 'assemblyNames')).toEqual(['volvox', 'readvsref'])
+  expect(readConfObject(conf, ['adapter', 'features'])).toHaveLength(1)
+  // still nowhere in the session, which is what keeps it out of every selector
+  expect(second.session.getTrackById('view-local-synteny')).toBeUndefined()
   expect(screen.getByTestId('app-bar')).toBeTruthy()
 }, 60000)

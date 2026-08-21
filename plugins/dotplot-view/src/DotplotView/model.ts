@@ -1331,8 +1331,19 @@ export default function stateModelFactory(pm: PluginManager) {
          * passing `model.showTrack` there typechecked and handed the pair index
          * over as the new track's snapshot.
          */
-        showTrack(trackId: string, initialSnapshot: object = {}) {
-          return showTrackGeneric(self, trackId, initialSnapshot)
+        showTrack(
+          trackId: string,
+          initialSnapshot: object = {},
+          displayInitialSnapshot: Record<string, unknown> = {},
+          inlineConf?: Record<string, unknown>,
+        ) {
+          return showTrackGeneric(
+            self,
+            trackId,
+            initialSnapshot,
+            displayInitialSnapshot,
+            inlineConf,
+          )
         },
 
         /**
