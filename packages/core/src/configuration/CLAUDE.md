@@ -106,6 +106,6 @@ config**, and such a view writes the config rather than an id, so it lives on
 the track and goes out with it. `SVInspector.test.tsx` and `ReadVsRef.test.tsx`
 are the canaries; `showTrackGeneric`'s `inlineConf` is the same thing for a
 track opened by an action. **A config parked in a list that outlives the view
-instead needs someone to sweep it, and nobody does** — `viewTrackConfigs` was
-that list, and each of its three call sites grew its own cleanup. Don't add
-`as SCHEMATYPE` to the return value.
+instead needs someone to sweep it, and nobody does** — the session list that
+used to hold these grew a separate cleanup at each of its three call sites
+(ADR-084). Don't add `as SCHEMATYPE` to the return value.
