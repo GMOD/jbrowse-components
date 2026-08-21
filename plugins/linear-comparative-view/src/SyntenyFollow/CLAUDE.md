@@ -108,7 +108,7 @@ against rung 2's 75 on a permuted pair. `MIN_SHARE_OF_WIDEST` drops it, and is
 relative to the WIDEST window rather than to the panel for a reason worth
 keeping: a two-contig assembly is legitimately lopsided — volvox is 89% ctgA —
 so a share-of-panel floor would have called an overview of it a straddle and put
-`LinearSyntenyFollow`'s whole-genome tests back on rung 2.
+`installSyntenyFollow`'s whole-genome tests back on rung 2.
 
 The cliff is inherent, not tuned away: a union of spans jumps whenever a contig
 joins or leaves it, by however far that contig's mate is from the rest. What the

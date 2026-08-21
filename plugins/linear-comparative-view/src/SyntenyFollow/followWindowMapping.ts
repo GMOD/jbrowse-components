@@ -175,7 +175,10 @@ export function followWindowsMapping({
   const targetsPerWindow = windows.map(() => [] as Target[])
   const slotsPerWindow = new Array<Int32Array | undefined>(windows.length)
   for (let i = 0; i < n; i++) {
-    const w = windowOfRefNameId[refNameIds[i]!]!
+    // an id past the dictionary the windows were resolved against is no
+    // window's, the same answer a name no dictionary holds gets — and reading
+    // it as `undefined` would sail through the test below into `windows[w]`
+    const w = windowOfRefNameId[refNameIds[i]!] ?? -1
     if (
       w < 0 ||
       (mateAssemblyId !== undefined &&

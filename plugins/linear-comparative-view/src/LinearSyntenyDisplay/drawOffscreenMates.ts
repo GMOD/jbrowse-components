@@ -580,17 +580,14 @@ export function drawOffscreenMates(
   if (laneRects.every(rects => rects.length === 0)) {
     return
   }
-  // ONE PATH, NOT A FILL EACH. The mark color carries alpha, so overlapping
-  // marks filled separately composite against each other and the strip darkens
-  // with density — at whole-chromosome zoom there are more marks than pixels, so
-  // it saturates to near-black and reads as a solid ideogram rather than as
-  // marks. Filled as one path they take the color once. It is also what the SVG
-  // export wants: one `<path>` instead of a `<rect>` per alignment.
-  // ONE PATH PER COLOR, which is the same rule as one path for one color: marks
-  // sharing a color are the same contig, so filling them together is what stops
-  // the strip darkening with density (see above). Marks of DIFFERENT colors do
-  // composite against each other where they overlap, and that is honest — they
-  // are alignments to different places.
+  // ONE PATH PER COLOR, NOT A FILL EACH. The mark color carries alpha, so marks
+  // of one color filled separately composite against each other and the strip
+  // darkens with density — at whole-chromosome zoom there are more marks than
+  // pixels, so it saturates to near-black and reads as a solid ideogram rather
+  // than as marks. Filled as one path they take the color once. It is also what
+  // the SVG export wants: one `<path>` per contig instead of a `<rect>` per
+  // alignment. Marks of DIFFERENT colors do composite against each other where
+  // they overlap, and that is honest — they are alignments to different places.
   for (const [fillStyle, rects] of markPathsByColor(
     laneRects,
     lanes,
