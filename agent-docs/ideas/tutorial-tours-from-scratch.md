@@ -53,6 +53,13 @@ minutes of fetching under a cut.
 
 ## The proposals
 
+**Tutorials come first, and they are in
+[tutorial-tour-candidates.md](tutorial-tour-candidates.md).** That is Colin's
+standing preference and this file's list does not reflect it: three of its four
+filmed-or-top entries are user guides, which is the wrong end of the corpus to
+have started at. What stays here is the from-scratch analysis, the harness gaps,
+and the user-guide proposals for when the tutorial list is worked down.
+
 Ordered by (value to a reader) / (risk the harness chokes). Each names the prose
 it would let its page delete, since a tour that only adds is the weaker kind.
 
