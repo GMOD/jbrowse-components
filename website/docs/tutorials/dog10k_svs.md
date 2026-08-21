@@ -559,10 +559,16 @@ in the callset rather than only the panel: the tally quoted above, all eight
 non-carrier dogs by name, all five carrier wolves, and the wolves by country.
 
 [`build_dog10k_slc28a3_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_slc28a3_cn.sh)
-builds the copy-number tracks the same way, and prints each panel animal's copy
-number over the duplication. Its first route needs only `bcftools`; the second
-re-measures six of those animals from their SRA runs, which needs an aligner and
-about 35 GB of scratch.
+builds the copy-number tracks the same way:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_slc28a3_cn.sh
+bash build_dog10k_slc28a3_cn.sh   # writes ./dog10k_slc28a3_cn_build/
+```
+
+It prints each panel animal's copy number over the duplication. Its first route
+needs only `bcftools`; the second re-measures six of those animals from their
+SRA runs, which needs an aligner and about 35 GB of scratch.
 
 Two more build the _FGF4_ locus:
 

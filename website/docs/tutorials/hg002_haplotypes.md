@@ -83,6 +83,8 @@ Press **Launch**, then click the palette icon in the view's header and pick
 **Strand**. Without it the plot is one black diagonal; with it the collinear
 blocks are red and the inverted ones blue.
 
+<Video src="/media/synteny/hg002_dotplot_import.mp4" caption="Building the whole-genome dotplot from the import form: switching modes, opening the chromosome boxes, restricting each axis to one haplotype, and coloring the launched plot by strand." />
+
 HG002 is male, so `chrX_MATERNAL` and `chrY_PATERNAL` have nothing on the other
 haplotype to chain to, and their column and row stay empty.
 
@@ -93,9 +95,10 @@ haplotype to chain to, and their column and row stay empty.
 Chromosome 8 carries an inversion polymorphism at 8p23.1 that HG002 is
 heterozygous for (Bosch _et al._ 2009), so the two haplotypes of one person
 differ there at a scale a whole-chromosome view can show. Open **Add → Linear
-synteny view**, then:
+synteny view**. The form opens on **Quick start**, which offers the two rows the
+Q100 chain implies and the chain between them, so **Launch** is the only click
+it needs. Then:
 
-- pick `T2T-HG002 v1.2 (diploid)` in both rows
 - go to `chr8_MATERNAL:5,250,000-14,250,000` in the top panel's search box, and
   the same range on `chr8_PATERNAL` below
 - pick **Strand** from the palette icon

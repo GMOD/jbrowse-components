@@ -11,6 +11,11 @@ export const DENDROGRAM = '[data-testid="tree_sidebar_dendrogram"]'
 // would rather than by reloading a session at the next locus.
 export const LOCATION_BOX = 'input[placeholder="Search for location"]'
 
+// The scalebar strip a rubberband is drawn on. Naming it as a `band` puts the
+// drag's y here while its x still comes from the locus, so the tour says which
+// bases it selects instead of which pixels.
+export const RUBBERBAND = '[data-testid="rubberband_controls"]'
+
 // The track menu button for one track, which is where most routes start.
 export const trackMenu = (trackId: string) =>
   `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`

@@ -1,7 +1,7 @@
 // The tours over the general-usage guides, where the subject IS a route through
 // the app rather than a dataset.
 import { uiVideoFixtures } from '../specs/ui.ts'
-import { LOCATION_BOX } from './shared.ts'
+import { LOCATION_BOX, RUBBERBAND } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -26,11 +26,6 @@ const {
 // reader's own configured flank sizes.
 const SEQUENCE_TYPE = '[aria-label="Sequence type"]'
 const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
-
-// The scalebar strip a rubberband is drawn on. Naming it as a `band` puts the
-// drag's y here while its x still comes from the locus, so the tour says which
-// bases it selects instead of which pixels.
-const RUBBERBAND = '[data-testid="rubberband_controls"]'
 
 // The bookmark row's location cell, which is a link that navigates. The
 // `.MuiDataGrid-cell` prefix is what tells it from its column header, which

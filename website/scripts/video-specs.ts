@@ -21,14 +21,18 @@
 import { liveHref } from '../src/lib/code-base.ts'
 import { HPRC_SEGMENTS_TRACK_JSON } from './specs/graph-hprc.ts'
 import { dog10kVideos } from './videos/dog10k.ts'
+import { epigenomicsVideos } from './videos/epigenomics.ts'
+import { hicVideos } from './videos/hic.ts'
 import { methylationVideos } from './videos/methylation.ts'
 import { pangenomeVideos } from './videos/pangenome.ts'
 import { proteinVideos } from './videos/proteins.ts'
 import { qtlVideos } from './videos/qtl.ts'
+import { repeatVideos } from './videos/repeats.ts'
 import { svVideos } from './videos/sv.ts'
 import { syntenyVideos } from './videos/synteny.ts'
 import { tcgaVideos } from './videos/tcga.ts'
 import { uiVideos } from './videos/ui.ts'
+import { variantVideos } from './videos/variants.ts'
 
 import type { VideoSpec } from './video-spec-types.ts'
 
@@ -44,6 +48,10 @@ export const videoSpecs: VideoSpec[] = [
   ...syntenyVideos,
   ...svVideos,
   ...uiVideos,
+  ...variantVideos,
+  ...repeatVideos,
+  ...hicVideos,
+  ...epigenomicsVideos,
 ]
 
 // The track configs a tour TYPES into the app, paired with the page that prints

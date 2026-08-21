@@ -22,7 +22,7 @@
 set -euo pipefail
 
 if [ $# -lt 2 ]; then
-  echo "usage: bash scripts/build_repeatmasker_classes.sh genome.fa repeats.out [outdir]" >&2
+  echo "usage: bash $(basename "$0") genome.fa repeats.out [outdir]" >&2
   echo "  genome.fa   the FASTA RepeatMasker was run against (plain or bgzipped)" >&2
   echo "  repeats.out RepeatMasker's .out for that FASTA (plain or gzipped)" >&2
   exit 1

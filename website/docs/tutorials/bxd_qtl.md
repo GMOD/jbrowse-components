@@ -40,8 +40,8 @@ This tutorial builds two JBrowse tracks from the same BXD panel, on mm10:
 - a chromosome-painting track (the
   [multi-row feature display](/docs/user_guides/multirow_feature_track)) showing
   each strain's B and D blocks, and
-- a QTL Manhattan track ([plugins/gwas](/docs/config_guides/gwas_track)) from a
-  single-marker scan of a real BXD phenotype.
+- a QTL Manhattan track (the [Manhattan display](/docs/user_guides/gwas_track))
+  from a single-marker scan of a real BXD phenotype.
 
 The GWAS/Manhattan and multi-row feature tracks shown here also render inline
 through the [Python anywidget interface](/docs/jbrowse_anywidget) (or

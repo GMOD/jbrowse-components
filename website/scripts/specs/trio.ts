@@ -182,6 +182,53 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
   ]
 }
 
+// Genes above the matrix for scale (reviewer). The matrix spaces one column per
+// variant, so its own x axis carries no genomic distance. The connector zone
+// under this track is what ties a column back to a position, and the gene lane
+// is what that position then means. Genes only, no descriptions: over 2.9 Mb the
+// second RefSeq text line is a wall of prose, and the point here is landmarks,
+// not annotation detail.
+//
+// Shared with the tour in videos/variants.ts, which films the two menu picks
+// that get from the default display to the phased matrix — a tour whose gene
+// lane differed from the figures' would be a route through a different page.
+const TRIO_GENE_LANE = {
+  trackId: 'ncbi_refseq_109_hg38_latest',
+  type: 'LinearBasicDisplay',
+  displayMode: 'compact',
+  showOnlyGenes: true,
+  // was `showDescriptions: false`, meaning "names suffice here". That has no
+  // home on the unified labels enum, so migrateBasicConfigSnapshot resolves it
+  // to 'auto' — descriptions do come back at low density. Written as what it
+  // actually resolved to; pinning 'name' would honor the original intent but
+  // change the figure, so that is a call for whoever regenerates it.
+  showLabels: 'auto',
+  height: 80,
+}
+
+// The window the matrix figures are taken over: 2.9 Mb is enough variants for
+// the six phased rows to read as blocks rather than as individual columns.
+const TRIO_MATRIX_LOC = 'chr1:62,174,000-65,097,304'
+
+// Where the tour opens instead, at the left edge of that window. The default
+// display gates at one feature per pixel and this VCF carries every 1000
+// Genomes site, so over 2.9 Mb it draws "Too many features" rather than the
+// boxes trio-basic is of; 20 kb is a few hundred variants, which draws.
+const TRIO_DENSE_LOC = 'chr1:62,174,000-62,194,000'
+
+export const trioVideoFixtures = {
+  vcfTrackId: TRIO_VCF_TRACK,
+  matrixLoc: TRIO_MATRIX_LOC,
+  // The tour's opening state: the gene lane the figures carry, with the VCF in
+  // the display it loads with, since the route being filmed is what gets from
+  // that to the phased matrix.
+  defaultDisplay: lgvSession(DEMO_CONFIG, {
+    assembly: 'hg38',
+    loc: TRIO_DENSE_LOC,
+    tracks: [TRIO_GENE_LANE, { trackId: TRIO_VCF_TRACK }],
+  }),
+}
+
 export const trioSpecs: ScreenshotSpec[] = [
   // ────────────────────────────────────────────────────────────────────────
   // Phased trio analysis tutorial screenshots
@@ -210,7 +257,7 @@ export const trioSpecs: ScreenshotSpec[] = [
     name: 'trio-matrix',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr1:62,174,000-65,097,304',
+      loc: TRIO_MATRIX_LOC,
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
@@ -242,7 +289,7 @@ export const trioSpecs: ScreenshotSpec[] = [
     name: 'trio-matrix-phased',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr1:62,174,000-65,097,304',
+      loc: TRIO_MATRIX_LOC,
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
@@ -269,30 +316,11 @@ export const trioSpecs: ScreenshotSpec[] = [
     viewportHeight: 597,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr1:62,174,000-65,097,304',
+      loc: TRIO_MATRIX_LOC,
       tracks: [
-        // genes above the matrix for scale (reviewer). The matrix spaces one
-        // column per variant, so its own x axis carries no genomic distance.
-        // The connector zone under this track is what ties a column back to a
-        // position, and the gene lane is what that position then means. Genes
-        // only, no descriptions: over 2.9 Mb the second RefSeq text line is a
-        // wall of prose, and the point here is landmarks, not annotation detail.
+        TRIO_GENE_LANE,
         {
-          trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
-          displayMode: 'compact',
-          showOnlyGenes: true,
-          // was `showDescriptions: false`, meaning "names suffice here". That
-          // has no home on the unified labels enum, so
-          // migrateBasicConfigSnapshot resolves it to 'auto' — descriptions do
-          // come back at low density. Written as what it actually resolved to;
-          // pinning 'name' would honor the original intent but change the
-          // figure, so that is a call for whoever regenerates it.
-          showLabels: 'auto',
-          height: 80,
-        },
-        {
-          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+          trackId: TRIO_VCF_TRACK,
           type: 'LinearMultiSampleVariantMatrixDisplay',
           renderingMode: 'phased',
         },

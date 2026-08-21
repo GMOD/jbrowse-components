@@ -68,6 +68,13 @@ become six rows. It needs genotypes written with the `0|1` separator rather than
 
 <Figure caption="The phased rendering mode, and the 'Rendering mode' → 'Phased' menu item that turns it on." src="/img/trio-matrix-phased.png"/>
 
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="Both picks in one pass, on the track the figures above are of: the multi-sample matrix display, then the phased rendering mode splitting each trio member into its two haplotype rows in place. The last move zooms out to the window the rest of the page works in." />
+
+That last move is wider than the default display will draw: it stops above its
+[feature-density limit](/docs/config/baselineardisplay/#slot-maxfeaturescreendensity),
+where the matrix keeps going because a column is a variant rather than a
+position.
+
 ## Reading matching haplotypes off the matrix
 
 Every row is now a strip of colored blocks, and matching stretches between rows

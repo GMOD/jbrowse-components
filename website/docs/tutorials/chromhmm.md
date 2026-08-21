@@ -234,6 +234,8 @@ speckled olive where the same bases are bivalent.
 
 <Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA, one row each, ordered by Cluster rows by similarity. One block of epigenomes opens the cluster; the rest hold it repressed. The stripe left of the painting is each row's Roadmap tissue group."/>
 
+<Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
+
 That config has no `rowOrder`: it would be 127 lines whose only job is to keep
 related tissues adjacent, and **Cluster rows by similarity** derives that from
 the data at whatever locus is in view.

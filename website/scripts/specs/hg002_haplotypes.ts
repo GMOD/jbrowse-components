@@ -364,6 +364,13 @@ const CAPTURE = {
   settleMs: 10000,
 } satisfies Partial<ScreenshotSpec>
 
+// One haplotype per axis, in one place. The same two strings are the axes'
+// `displayedRegionNames` below, the values the import-form figure types into the
+// chromosome boxes, and what the tour types into them -- three copies of a glob
+// whose whole job is to match a contig suffix exactly.
+const MATERNAL_GLOB = '*_MATERNAL'
+const PATERNAL_GLOB = '*_PATERNAL'
+
 // THE WHOLE-GENOME FRAME, which is a dotplot rather than a third linear pair:
 // the claim is "nothing moved between chromosomes", and 23 pairs of ribbons is
 // not how anyone reads that. Same one-assembly self-alignment as the two frames
@@ -379,9 +386,21 @@ const CAPTURE = {
 // so those two lanes come out EMPTY. That is correct for a male sample and is
 // the one part of the frame that looks like a bug.
 const WHOLE_GENOME_AXES = [
-  { assembly: 'hg002v1.2', displayedRegionNames: ['*_MATERNAL'] },
-  { assembly: 'hg002v1.2', displayedRegionNames: ['*_PATERNAL'] },
+  { assembly: 'hg002v1.2', displayedRegionNames: [MATERNAL_GLOB] },
+  { assembly: 'hg002v1.2', displayedRegionNames: [PATERNAL_GLOB] },
 ]
+
+// What videos/synteny.ts films.
+//
+// The tour starts BEFORE the import form rather than on it, so `Add -> Dotplot
+// view` is in the clip: `views: []` opens the app on the view launcher, which is
+// the state the page's first instruction is given from. The import-form figure
+// opens the form directly instead, because a still of a menu is a second figure.
+export const hg002VideoFixtures = {
+  noViews: sessionSpec(HG002_CONFIG, { views: [] }),
+  maternalGlob: MATERNAL_GLOB,
+  paternalGlob: PATERNAL_GLOB,
+}
 
 export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
   // HOW THE FRAME BELOW IS REACHED BY CLICKING, which is the half of the story
@@ -436,12 +455,12 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           {
             type: 'type',
             selector: '[data-testid="chromosome-filter-x"]',
-            value: '*_MATERNAL',
+            value: MATERNAL_GLOB,
           },
           {
             type: 'type',
             selector: '[data-testid="chromosome-filter-y"]',
-            value: '*_PATERNAL',
+            value: PATERNAL_GLOB,
           },
           { type: 'delay', ms: 500 },
         ],

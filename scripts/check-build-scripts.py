@@ -213,14 +213,50 @@ for f in helpers:
 # `main`, so it cannot be checked before the push, but the name can: a rename or
 # a typo otherwise reaches the reader as a 404 body written into the file they
 # then run. (`curl -fO` in the docs is what keeps that from executing.)
+#
+# A page fetching several scripts shortens the URL into a `BASE=` variable, so
+# expand those first. Reading the literal host only, this check saw four of the
+# reader's downloads as no citation at all: both of dog10k_selection's and both
+# of dog10k_svs's FGF4 pair, each free to be renamed with nothing failing.
+SCRIPTS_URL = (r"raw\.githubusercontent\.com/GMOD/jbrowse-components/main/"
+               r"scripts")
+base_var = re.compile(rf"(\w+)=https://{SCRIPTS_URL}/?$", re.M)
 cited = 0
 for doc in sorted(glob.glob("website/docs/**/*.md", recursive=True)):
-    for name in re.findall(
-            r"raw\.githubusercontent\.com/GMOD/jbrowse-components/main/"
-            r"scripts/([\w.-]+)", open(doc).read()):
+    src = open(doc).read()
+    for var in base_var.findall(src):
+        src = src.replace(f"${{{var}}}/", "raw.githubusercontent.com/GMOD/"
+                          "jbrowse-components/main/scripts/")
+        src = src.replace(f"${var}/", "raw.githubusercontent.com/GMOD/"
+                          "jbrowse-components/main/scripts/")
+    for name in re.findall(rf"{SCRIPTS_URL}/([\w.-]+)", src):
         cited += 1
         if not os.path.exists(f"scripts/{name}"):
             print(f"FAIL {doc} cites scripts/{name}, which does not exist")
+            failed = True
+
+# The other half of that: a doc may not tell a reader to RUN a script out of
+# `scripts/`. The reader has the tutorial, not the repo, so `bash
+# scripts/build_x.sh` names a path on no machine of theirs and dies as "No such
+# file", which reads as the tutorial being broken rather than as a download they
+# skipped. The curl is what puts the file in the working directory, so the
+# command that follows it names the file there.
+run_local = re.compile(r"(?:bash|sh|python3?|node|npx)\s+\.?/?(?:website/)?scripts/")
+runnable = 0
+for doc in sorted(glob.glob("website/docs/**/*.md", recursive=True)):
+    # `developer_guide*` is written for someone who has cloned, and a CLAUDE.md
+    # is not a page — content.config.ts excludes it from the site.
+    if "developer_guide" in doc or os.path.basename(doc) == "CLAUDE.md":
+        continue
+    runnable += 1
+    for i, line in enumerate(open(doc).read().splitlines(), 1):
+        # A `<!-- from: scripts/… -->` marker names the script a fence was
+        # generalized out of, and renders nowhere.
+        if line.lstrip().startswith("<!--"):
+            continue
+        if run_local.search(line):
+            print(f"FAIL {doc}:{i}: runs a script out of scripts/, which the "
+                  f"reader does not have — curl it first, then run the copy")
             failed = True
 
 # Behavior, not just syntax, for the helpers whose output is a hosted demo
@@ -1867,6 +1903,7 @@ if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
       f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
+      f"{runnable} reader-facing docs run no script out of scripts/, "
       f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}"
       f"{' (real gfatools)' if gfatools_ran else ' (gfa2bed stubbed)'}, "
       f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}")

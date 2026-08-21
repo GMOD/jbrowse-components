@@ -188,6 +188,59 @@ const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
     },
   }) as const
 
+// The chr3 breakpoint window the chain is reconstructed from: every read
+// carrying it clips here, so this is where their SA tags are in view to be
+// grouped.
+//
+// One session, two consumers. cancer_sv/multihop_split_view captures the END
+// STATE of the route this opens, and videos/sv.ts films the route itself, so
+// both read this rather than each writing the panel out. The per-panel track
+// heights are the reason it matters: the split view the route builds carries
+// this view's track list onto every panel, so 130 here is 130 four times there,
+// and a height edited on one copy would move a figure the other one is of.
+const multihopBreakpointPanel = lgvSession(CONFIG, {
+  assembly: 'hg38',
+  loc: 'chr3:25,357,600-25,361,000',
+  tracks: [
+    // Both heights are carried onto EVERY panel of the view the dialog builds,
+    // so they are per-panel budgets rather than this page's layout: four panels
+    // have to fit the frame, and a tall track here is four tall tracks there.
+    { ...GENE_TRACK, height: MULTIHOP_GENE_HEIGHT },
+    {
+      trackId: TUMOUR,
+      ...DEEP_ONT,
+      showSoftClipping: true,
+      // 130 a panel, from the run's own report: at 110 the fourth panel ran
+      // 110px past the fold. The shared height is then the chain's rather than
+      // the pileup's — four panels at 130 need 1190, where the two pileups need
+      // 1095 — so `+append` pads the pileup half by ~95px rather than cropping
+      // a panel off this one.
+      height: 130,
+      ...SUPER_COMPACT,
+    },
+  ],
+})
+
+// The picker row for the four-segment chain, by the shape of the route rather
+// than by its rank: `derivativePathTestId` spells every segment in derivative
+// order with `rev` on the flipped ones, and the reads carry `3`/`10`/`12` where
+// the assembly carries `chr3`/`chr10`/`chr12`.
+const CHAIN_ROUTE_TESTID = 'derivative-path-3-10-12rev-3rev'
+
+// The route as the picker names it, which is the string a reader sees on the row
+// (derivativePathLabel: every segment in order, "(inverted)" spelled out). The
+// tour says this while it clicks the row, so the caption and the row agree.
+const CHAIN_ROUTE_LABEL = '3 → 10 → 12 (inverted) → 3 (inverted)'
+
+// What videos/sv.ts films: the panel the route starts from, the pileup whose
+// track menu opens it, and the row it picks out of the list.
+export const cancerSvVideoFixtures = {
+  breakpointPanel: multihopBreakpointPanel,
+  readsTrackId: TUMOUR,
+  chainRouteTestId: CHAIN_ROUTE_TESTID,
+  chainRouteLabel: CHAIN_ROUTE_LABEL,
+}
+
 // The halves of cancer_sv/realigned_reads: the same junction, the same reads,
 // read against the reference and against the allele `derive` built from them.
 //
@@ -657,31 +710,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     name: 'cancer_sv/multihop_split_view',
     viewportWidth: MULTIHOP_WIDTH,
     viewportHeight: MULTIHOP_CHAIN_HEIGHT,
-    // the chr3 breakpoint window: every read carrying the chain clips here, so
-    // this is where their SA tags are in view to be grouped
-    url: lgvSession(CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr3:25,357,600-25,361,000',
-      tracks: [
-        // Both heights are carried onto EVERY panel of the view the dialog
-        // builds, so they are per-panel budgets rather than this page's layout:
-        // four panels have to fit the frame, and a tall track here is four tall
-        // tracks there.
-        { ...GENE_TRACK, height: MULTIHOP_GENE_HEIGHT },
-        {
-          trackId: TUMOUR,
-          ...DEEP_ONT,
-          showSoftClipping: true,
-          // 130 a panel, from the run's own report: at 110 the fourth panel ran
-          // 110px past the fold. The shared height is then the chain's rather
-          // than the pileup's — four panels at 130 need 1190, where the two
-          // pileups need 1095 — so `+append` pads the pileup half by ~95px
-          // rather than cropping a panel off this one.
-          height: 130,
-          ...SUPER_COMPACT,
-        },
-      ],
-    }),
+    // the panel videos/sv.ts films this route from, so the figure of the end
+    // state and the film of the way there open the same app
+    url: multihopBreakpointPanel,
     actions: [
       trackMenuIcon(TUMOUR),
       ...reconstructDerivativeAllele(180000),
@@ -824,7 +855,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // saying which route it draws costs one line.
           {
             type: 'click',
-            selector: '[data-testid="derivative-path-3-10-12rev-3rev"]',
+            selector: `[data-testid="${CHAIN_ROUTE_TESTID}"]`,
           },
           { type: 'click', text: 'Replace current view' },
           CLOSE_REF_SEQUENCE_TRACK,

@@ -96,7 +96,8 @@ if [ "$(gzip -dc "$PREFIX.segs.bed.gz" | wc -l)" -eq 0 ]; then
   echo "$GFA projected to no segments: gfatools found no SN/SO/SR tags, so this" >&2
   echo "is a plain GFA rather than an rGFA. A plain GFA states the same" >&2
   echo "coordinates in its P/W lines instead. Build the identical pair with" >&2
-  echo "  bash scripts/build_pggb_tabix.sh $GFA $PREFIX" >&2
+  echo "  curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh" >&2
+  echo "  bash build_pggb_tabix.sh $GFA $PREFIX" >&2
   exit 1
 fi
 tabix -f -p bed "$PREFIX.segs.bed.gz"

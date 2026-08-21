@@ -1,4 +1,4 @@
-import { displayPainted } from '@jbrowse/browser-test-utils'
+import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeatureWidget/LaunchBreakendPanel/labels.ts'
 import {
@@ -80,6 +80,68 @@ const BOOKMARK_LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
 // the whole of it.
 const PTEN_WINDOW = 'chr10:89,613,000-89,740,000'
 
+// The window the multi-row figures and the tour in videos/repeats.ts share:
+// 50 kb of 17q21, dense enough that every class in the file's palette has
+// blocks in it.
+const RMSK_WINDOW = 'chr17:45,700,000-45,750,000'
+
+// What videos/repeats.ts films, and what multirow/display_types_pick is
+// captured from: the RepeatMasker track in the display it opens with. The tour
+// starts in that state and takes the two menu picks that get out of it, so a
+// window or a track spelled differently in either would be a film of a page the
+// figures are not of.
+export const repeatVideoFixtures = {
+  rmskTrackId: 'rmsk_hg38_ucsc',
+  packedSession: sessionSpec(DEMO_CONFIG, {
+    sessionTracks: [HG38_RMSK_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: RMSK_WINDOW,
+        tracks: ['rmsk_hg38_ucsc'],
+      },
+    ],
+  }),
+  // The same track carrying both displays, which is the shape
+  // repeatmasker_classes.md prints: the packed one first, so the track still
+  // opens the way it does everywhere else, and the multi-row one behind the
+  // menu with a height on it.
+  //
+  // The height is why the tour needs its own session. `replaceDisplay` builds
+  // the new display from its own config rather than carrying the old one's
+  // height across, so a multi-row display arriving at the default height fits
+  // the classes it discovers into it — eight lanes in the room one packed lane
+  // was using, with the labels overlapping. `partitionField` is deliberately
+  // absent: which column splits the rows is what the route picks.
+  twoDisplaySession: sessionSpec(DEMO_CONFIG, {
+    sessionTracks: [
+      {
+        ...HG38_RMSK_TRACK,
+        displays: [
+          {
+            type: 'LinearBasicDisplay',
+            displayId: 'rmsk_hg38_ucsc-LinearBasicDisplay',
+          },
+          {
+            type: 'LinearMultiRowFeatureDisplay',
+            displayId: 'rmsk_hg38_ucsc-LinearMultiRowFeatureDisplay',
+            height: 260,
+          },
+        ],
+      },
+    ],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: RMSK_WINDOW,
+        tracks: ['rmsk_hg38_ucsc'],
+      },
+    ],
+  }),
+}
+
 // What videos/ui.ts films. The tour ends where these stills already are, so it
 // opens on the session they were captured from rather than one written again.
 export const uiVideoFixtures = {
@@ -156,12 +218,205 @@ export const uiVideoFixtures = {
   },
 }
 
+// The 127-epigenome ChromHMM track, and the 500 kb of HOXA the `chromhmm` figure
+// below is taken over. Named once because the figure and the tour in
+// videos/epigenomics.ts have to be of the same app.
+const CHROMHMM_TRACK_ID = 'roadmap_chromhmm_multirow_hg19'
+const CHROMHMM_HOXA_WINDOW = 'chr7:26,950,000-27,450,000'
+
+// What videos/epigenomics.ts films: the `chromhmm` figure's own session MINUS its
+// `runClustering`, so the row order that figure is the result of is still to
+// happen.
+//
+// `runClustering` is an init flag rather than a saved order — the autorun
+// consumes it as the display first reports ready (`setupRunClusteringAutorun`)
+// and then clears it — so on the figure's session the rows are in similarity
+// order before a camera could be on. Everything else is that spec's session: the
+// same hg19 window, the same gene lane at names-only with the pseudogene filter
+// on it, the same multi-row painting at 520.
+//
+// Unclustered is not unordered here, and that is what the tour opens on. The demo
+// config's own copy of this track pins a 127-line `rowOrder` in Roadmap's GROUP
+// order, and `rowGroups` partitions the rows into contiguous tissue blocks for as
+// long as no cluster tree names them (`sources`, in
+// LinearMultiRowFeatureDisplay/model.ts) — so the stack opens with a clean tissue
+// stripe down its left and a painting with no block in it, and the run trades the
+// first for the second.
+export const chromhmmVideoFixtures = {
+  trackId: CHROMHMM_TRACK_ID,
+  unclusteredHoxa: lgvSession(DEMO_CONFIG, {
+    assembly: 'hg19',
+    loc: CHROMHMM_HOXA_WINDOW,
+    tracks: [
+      {
+        trackId: 'ncbi_gff_hg19',
+        type: 'LinearBasicDisplay',
+        showLabels: 'name',
+        jexlFiltersSetting: ["jexl:feature.type!='pseudogene'"],
+        height: 120,
+      },
+      {
+        trackId: CHROMHMM_TRACK_ID,
+        type: 'LinearMultiRowFeatureDisplay',
+        height: 520,
+      },
+    ],
+  }),
+}
+
 // The 1000 Genomes ensemble SV callset, 3202 samples, read straight from EBI.
 // Declared twice below, once per display: `showTrack` resolves by trackId and
 // hands back the open track, so two displays of one callset means two session
 // tracks pointing at the same file.
 const KGP_ENSEMBLE_SV_VCF =
   'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz'
+
+// THE RHD PANEL, shared by the `multisv_rhd` figure below and by the
+// `sv/multisample_sort` tour in videos/sv.ts. It loads UNSORTED — nothing here
+// writes a row order — because the figure sorts the matrix by CLICKING, in its
+// own `actions`. So the still and the film start from one state, and the film's
+// opening frame is the frame the figure was taken from before its first click.
+//
+// NOT the remote 1000-genomes config any more, because the copy-number lane
+// needs the Zarr plugin and a plugin can only be declared by a config
+// (reviewer: "potentially would be valuable to see our zarr based copy number
+// track here. the nested cnv are hard to see with vcf. it would be a tall
+// screenshot but might help"). test_data/1000g_cnv/config.json is the CNV
+// tutorial's own config: the plugin, the 2504-sample store and a RefSeq lane.
+// The ensemble callset it does not carry comes in as session tracks, one per
+// display, since showTrack resolves by trackId and a second display of one
+// track is not available.
+const rhdPanel = sessionSpec('test_data/1000g_cnv/config.json', {
+  sessionTracks: [
+    {
+      type: 'VariantTrack',
+      trackId: 'kgp_sv_matrix',
+      name: '1KGP ensemble SV calls, 3202 samples',
+      assemblyNames: ['hg38'],
+      adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
+    },
+    {
+      type: 'VariantTrack',
+      trackId: 'kgp_sv_records',
+      name: '1KGP ensemble SV calls',
+      assemblyNames: ['hg38'],
+      adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
+    },
+  ],
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'hg38',
+      loc: '1:25,200,000-25,400,000',
+      tracks: [
+        {
+          trackId: 'kgp_sv_matrix',
+          type: 'LinearMultiSampleVariantDisplay',
+          forceLoad: true,
+          // 400 -> 290 (reviewer: "reduce height of both the
+          // multisamplevariantdisplay, the multiwiggledisplay"). 3202
+          // samples in 290 px is 0.09 px a row, which is already past what
+          // a row can be: what this lane draws is three BANDS, and a band
+          // is legible at any height that leaves it more than a few pixels.
+          height: 290,
+        },
+        // THE DEPTH LANE, which is what the callset cannot draw. A VCF
+        // states a genotype per record, so a locus carrying nested and
+        // overlapping calls is read as a stack of columns whose relation to
+        // each other is not on screen. QuicK-mer2 copy number is one
+        // continuous quantity per 1 kb bin per individual, so the same
+        // panel reads as levels: two copies white, one blue, zero deep
+        // blue, and a partial-length loss is a block that starts and stops
+        // where the sequence does rather than where a caller drew a record.
+        //
+        // Clustered on this window, so the dosage classes separate into
+        // bands. The rows cannot correspond to the matrix above it in any
+        // case -- that one is sorted by genotype at HGSV_1821 and this one
+        // by similarity over the window -- so clustering costs nothing and
+        // is what makes the classes visible.
+        //
+        // The store is hosted at jbrowse.org/demos/1000g, built by
+        // scripts/build_1000g_cnv_zarr.sh over this window as well as the
+        // two the CNV tutorial visits.
+        {
+          trackId: 'cnv_1000g_zarr',
+          type: 'MultiLinearWiggleDisplay',
+          defaultRendering: 'multirowdensity',
+          // pinned rather than autoscaled, and symmetric about the diploid
+          // pivot, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
+          // copy number is an absolute quantity and a diverging ramp only
+          // reads as diverging if both sides are the same width.
+          bicolorPivot: 2,
+          minScore: 0,
+          maxScore: 4,
+          posColor: '#b2182b',
+          negColor: '#2166ac',
+          // 480 -> 330, and directly under the matrix rather than with the
+          // record lane between them (reviewer: "reduce height of both ...
+          // put them stacked"). The two lanes are the same 3202 individuals
+          // measured two ways, so they are the comparison and they belong
+          // adjacent; the record lane is a legend for both of them and now
+          // sits under the pair rather than inside it.
+          height: 330,
+          runClustering: true,
+          showTree: false,
+        },
+        {
+          trackId: 'kgp_sv_records',
+          type: 'LinearVariantDisplay',
+          forceLoad: true,
+          // enough for the four rows the 26 records pack into plus their
+          // name/type labels; at 130 the last row was under the lane's fold
+          height: 170,
+          // ONE COLOUR (reviewer: "dont use all the colors on the vcf, it
+          // is confusing and distracting"). This lane used the `svTypeColor`
+          // jexl the SV-type cell preset is built on, which paints six
+          // classes over 26 overlapping records -- and every record already
+          // carries its class IN its own label (`<DEL> 70.1Kbp`), so the
+          // colour was a second, weaker copy of text that was already
+          // there. The class-coloured version of this idea is multisv_svtype
+          // in the multi-variant guide, on a window whose classes are the
+          // subject. Dropping the jexl also drops the floating key this
+          // spec used to have to hide by selector.
+          color: '#4a5568',
+        },
+        // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
+        // drops the per-transcript subfeatures so RHD/RHCE read as single
+        // labelled glyphs under the matrix
+        {
+          trackId: 'ncbi_refseq_hg38',
+          type: 'LinearBasicDisplay',
+          height: 120,
+          // 'on' + showDescriptions:false is the retired pair;
+          // migrateBasicConfigSnapshot folds exactly that into 'name'
+          showLabels: 'name',
+          showOnlyGenes: true,
+        },
+      ],
+    },
+  ],
+})
+
+// The panel's shared handles: what `multisv_rhd` right-clicks and waits on, and
+// what the tour in videos/sv.ts does. Two spellings of the deletion would be
+// two figures sorting on two variants.
+export const multisvVideoFixtures = {
+  unsorted: rhdPanel,
+  matrixTrackId: 'kgp_sv_matrix',
+  // HGSV_1821's own span. A locus range resolves to its own centre, so naming
+  // the span puts a click at the deletion's midpoint — inside it and clear of
+  // the smaller calls at either end — without writing down which pixel that is.
+  deletionSpan: '1:25,265,081-25,335,163',
+  // The matrix carrying its genotypes, which is what `sortByGenotype` reads: the
+  // action computes the order from `cellData` on the main thread, so a
+  // right-click before the fetch lands opens a menu whose item does nothing.
+  matrixReady: displaySettled('variant-display'),
+  // The copy-number lane's own clustering, which runs as the session opens and
+  // paints a "Clustering samples 62%" overlay across the lane until it lands.
+  // `data-clustered` is the only DOM evidence it ran, since this lane draws no
+  // tree of its own.
+  cnvClustered: `${displayPainted('multi-wiggle-display')}[data-clustered="true"]`,
+}
 
 export const uiSpecs: ScreenshotSpec[] = [
   // The top-level "Add" menu (Circular / Dotplot / Linear genome / Linear
@@ -605,125 +860,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multisv_rhd',
-    // NOT the remote 1000-genomes config any more, because the copy-number
-    // lane needs the Zarr plugin and a plugin can only be declared by a config
-    // (reviewer: "potentially would be valuable to see our zarr based copy
-    // number track here. the nested cnv are hard to see with vcf. it would be a
-    // tall screenshot but might help"). test_data/1000g_cnv/config.json is the
-    // CNV tutorial's own config: the plugin, the 2504-sample store and a RefSeq
-    // lane. The ensemble callset it does not carry comes in as session tracks,
-    // one per display, since showTrack resolves by trackId and a second display
-    // of one track is not available.
-    url: sessionSpec('test_data/1000g_cnv/config.json', {
-      sessionTracks: [
-        {
-          type: 'VariantTrack',
-          trackId: 'kgp_sv_matrix',
-          name: '1KGP ensemble SV calls, 3202 samples',
-          assemblyNames: ['hg38'],
-          adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
-        },
-        {
-          type: 'VariantTrack',
-          trackId: 'kgp_sv_records',
-          name: '1KGP ensemble SV calls',
-          assemblyNames: ['hg38'],
-          adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: '1:25,200,000-25,400,000',
-          tracks: [
-            {
-              trackId: 'kgp_sv_matrix',
-              type: 'LinearMultiSampleVariantDisplay',
-              forceLoad: true,
-              // 400 -> 290 (reviewer: "reduce height of both the
-              // multisamplevariantdisplay, the multiwiggledisplay"). 3202
-              // samples in 290 px is 0.09 px a row, which is already past what
-              // a row can be: what this lane draws is three BANDS, and a band
-              // is legible at any height that leaves it more than a few pixels.
-              height: 290,
-            },
-            // THE DEPTH LANE, which is what the callset cannot draw. A VCF
-            // states a genotype per record, so a locus carrying nested and
-            // overlapping calls is read as a stack of columns whose relation to
-            // each other is not on screen. QuicK-mer2 copy number is one
-            // continuous quantity per 1 kb bin per individual, so the same
-            // panel reads as levels: two copies white, one blue, zero deep
-            // blue, and a partial-length loss is a block that starts and stops
-            // where the sequence does rather than where a caller drew a record.
-            //
-            // Clustered on this window, so the dosage classes separate into
-            // bands. The rows cannot correspond to the matrix above it in any
-            // case -- that one is sorted by genotype at HGSV_1821 and this one
-            // by similarity over the window -- so clustering costs nothing and
-            // is what makes the classes visible.
-            //
-            // The store is hosted at jbrowse.org/demos/1000g, built by
-            // scripts/build_1000g_cnv_zarr.sh over this window as well as the
-            // two the CNV tutorial visits.
-            {
-              trackId: 'cnv_1000g_zarr',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multirowdensity',
-              // pinned rather than autoscaled, and symmetric about the diploid
-              // pivot, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
-              // copy number is an absolute quantity and a diverging ramp only
-              // reads as diverging if both sides are the same width.
-              bicolorPivot: 2,
-              minScore: 0,
-              maxScore: 4,
-              posColor: '#b2182b',
-              negColor: '#2166ac',
-              // 480 -> 330, and directly under the matrix rather than with the
-              // record lane between them (reviewer: "reduce height of both ...
-              // put them stacked"). The two lanes are the same 3202 individuals
-              // measured two ways, so they are the comparison and they belong
-              // adjacent; the record lane is a legend for both of them and now
-              // sits under the pair rather than inside it.
-              height: 330,
-              runClustering: true,
-              showTree: false,
-            },
-            {
-              trackId: 'kgp_sv_records',
-              type: 'LinearVariantDisplay',
-              forceLoad: true,
-              // enough for the four rows the 26 records pack into plus their
-              // name/type labels; at 130 the last row was under the lane's fold
-              height: 170,
-              // ONE COLOUR (reviewer: "dont use all the colors on the vcf, it
-              // is confusing and distracting"). This lane used the `svTypeColor`
-              // jexl the SV-type cell preset is built on, which paints six
-              // classes over 26 overlapping records -- and every record already
-              // carries its class IN its own label (`<DEL> 70.1Kbp`), so the
-              // colour was a second, weaker copy of text that was already
-              // there. The class-coloured version of this idea is multisv_svtype
-              // in the multi-variant guide, on a window whose classes are the
-              // subject. Dropping the jexl also drops the floating key this
-              // spec used to have to hide by selector.
-              color: '#4a5568',
-            },
-            // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
-            // drops the per-transcript subfeatures so RHD/RHCE read as single
-            // labelled glyphs under the matrix
-            {
-              trackId: 'ncbi_refseq_hg38',
-              type: 'LinearBasicDisplay',
-              height: 120,
-              // 'on' + showDescriptions:false is the retired pair;
-              // migrateBasicConfigSnapshot folds exactly that into 'name'
-              showLabels: 'name',
-              showOnlyGenes: true,
-            },
-          ],
-        },
-      ],
-    }),
+    url: multisvVideoFixtures.unsorted,
     readyText: '1KGP',
     // the 2504-row store is clustered on this window as well as fetched, and
     // the callset itself is a remote EBI tabix read
@@ -742,17 +879,19 @@ export const uiSpecs: ScreenshotSpec[] = [
       // evidence it ran with the dendrogram off.
       {
         type: 'waitForSelector',
-        selector: `${displayPainted('multi-wiggle-display')}[data-clustered="true"]`,
+        selector: multisvVideoFixtures.cnvClustered,
         timeout: 240000,
       },
       // the matrix, at the middle of the deletion the sort is keyed on: a locus
       // range resolves to its own centre, so this is HGSV_1821 naming itself
-      // rather than the 0.50-of-1500px the coordinate encoded
+      // rather than the 0.50-of-1500px the coordinate encoded. Named once, above
+      // — the tour right-clicks the same column, and two spellings of it would
+      // be two figures sorting on two variants.
       {
         type: 'rightclick',
         anchor: {
-          track: 'kgp_sv_matrix',
-          locus: '1:25,265,081-25,335,163',
+          track: multisvVideoFixtures.matrixTrackId,
+          locus: multisvVideoFixtures.deletionSpan,
           fracY: 0.5,
         },
       },
@@ -2478,17 +2617,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multirow/display_types_pick',
-    url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [HG38_RMSK_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr17:45,700,000-45,750,000',
-          tracks: ['rmsk_hg38_ucsc'],
-        },
-      ],
-    }),
+    url: repeatVideoFixtures.packedSession,
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
     viewportWidth: 1000,

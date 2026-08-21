@@ -456,11 +456,15 @@ and turn on each genome's gene track with **Show only genes**.
 
 ## Restacking around a locus
 
-The stack is fixed at load time. To reorder it, drag-select a locus in any row's
-scale bar and pick **Launch → Linear synteny view**: the track lists all three
-genomes, so the dialog opens a row per genome with arrows to order them, which
-is how you get the reference-in-the-middle arrangement from
-[Direct vs transitive pairs](#direct-vs-transitive-pairs).
+The stack is fixed at load time. To reorder it, drag-select a locus in the scale
+bar of a view that has the track open and pick **Launch → Linear synteny view**.
+The launch offers the synteny the launching view is drawing, and this track
+declares all three genomes, so the dialog opens a row per genome with arrows to
+order them: moving grape between peach and cacao is the reference-in-the-middle
+arrangement from [Direct vs transitive pairs](#direct-vs-transitive-pairs),
+where both bands are direct.
+
+<Video src="/media/synteny/restack_around_locus.mp4" caption="Restacking around one grape locus, from the lane reading below: a scale-bar selection raises Launch, the dialog lists a panel per genome and names the mates it can draw a lane for but not a panel, and one arrow moves the reference into the middle of the launched stack." />
 
 The same track in a plain linear genome view (as an `LGVSyntenyDisplay`) draws
 every pair at once, and **Group by... → Mate assembly** splits them into a lane

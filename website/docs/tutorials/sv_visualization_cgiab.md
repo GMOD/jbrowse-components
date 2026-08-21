@@ -648,6 +648,8 @@ through it.
 
 <Figure caption="Reconstruct derivative allele over both breakpoint loci of the tumor PacBio HiFi track. The top route, chr13 forward then chr3 inverted, is the junction the benchmark and the tumor assembly both name." src="/img/sv_cgiab/three_ways.png" />
 
+<Video src="/media/sv/derivative_allele_route.mp4" caption="The same route end to end, on the COLO829 melanoma chain: the track menu, the ranked routes, and Draw as Breakpoint split view replacing the window with one panel per segment of the route the reads take." />
+
 **The assembly.** The synteny track loaded earlier says the same thing from no
 reads at all. The C-GIAB assembly resolves both loci onto a single tumor contig,
 and named that contig for the two chromosomes it fuses. Its chr13 arm ends at

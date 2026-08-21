@@ -1157,7 +1157,7 @@ hop follows an allele's interior segments, and those are indexed under the donor
 contig the small pair drops, so the graph comes back as though the setting were
 **None**.
 
-Two figures have a script of their own. The
+Three figures have a script of their own. The
 [repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) come from the
 only script here that touches neither the graph nor HPRC, which bins UCSC's
 RepeatMasker for both assemblies:
@@ -1170,12 +1170,25 @@ bash build_repeat_density.sh out
 It writes the twelve bigWigs (six classes x two assemblies, genome-wide) and
 prints the per-class table the section above quotes, so the numbers come out of
 the same run that builds the lanes. The first run downloads ~500 MB and
-re-running skips what is already built, so an interrupted run resumes. The two
-haplotype rows in the CFHR figure come from
-[`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh),
-which picks a carrier and a non-carrier of the deletion out of the callset,
-slices their alignments out of release 2's own all-vs-GRCh38 PAF, and slices
-each haplotype's CAT annotation to the same window.
+re-running skips what is already built, so an interrupted run resumes.
+
+The other two both read release 2's published all-vs-GRCh38 PAF:
+
+```bash
+BASE=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
+curl -fO $BASE/build_hprc_cfhr_synteny.sh
+curl -fO $BASE/build_hprc_inversion_synteny.sh
+bash build_hprc_cfhr_synteny.sh       # writes ./hprc_cfhr_synteny_build/
+bash build_hprc_inversion_synteny.sh  # writes ./hprc_inversion_synteny_build/
+```
+
+[`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
+picks a carrier and a non-carrier of the deletion out of the callset, slices
+their alignments out of that PAF, and slices each haplotype's CAT annotation to
+the same window.
+[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
+runs the [inversion classification](#inversions) over the same PAF and prints
+the split it finds before slicing out one haplotype of each kind.
 
 ## See also
 
