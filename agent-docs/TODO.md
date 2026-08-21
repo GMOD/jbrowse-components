@@ -34,7 +34,6 @@ before anyone noticed.
 | [Whether the web export pins its deployment](#decide-whether-the-web-export-pins-the-deployment-it-opens) | desktop, export | a deployment decision; the link already records what made it |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
-| [Get the synteny shader source out of the eager set](#get-the-synteny-shader-source-out-of-the-eager-set) | synteny, bundle | 121 KB attributed; the seam is the renderer factory, not the codegen |
 | [Canvas2D fades a curved sub-pixel ribbon by one number](#canvas2d-fades-a-curved-sub-pixel-ribbon-by-one-number) | synteny, canvas2d | most of the measured drift was the fill-vs-stroke branch and is fixed; 0.31pp of fade left, at N strokes in the 500k-instance loop |
 | [Move the four cubic AA ramps onto the linear one](#move-the-four-cubic-aa-ramps-onto-the-linear-one) | shaders, GPU | the measurement is done; convert the dotplot capsule and read the cross-backend gate's drift, which should fall |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
@@ -326,25 +325,6 @@ looked at closely in a way a fallback render is not.
 **First move if it is picked up:** decide it on the SVG export, not the canvas.
 If the export is the reason, N is small (a figure has few visible ribbons after
 culling) and the interactive loop can keep the single stroke.
-
-### Get the synteny shader source out of the eager set
-
-`GpuSyntenyRenderer.ts` is statically imported by `SyntenyRendererFactory`
-(`LinearSyntenyDisplay/SyntenyRenderer.ts`), which `LevelSyntenyCanvas.tsx`
-imports at module scope — so the four synteny shaders' WGSL/GLSL strings are
-eager on any page with a comparative view. Measured with
-`pnpm probe-eager-graph --page synteny --holds`: 121 KB raw across
-`syntenyFillCurve` / `syntenyFillStraight` / `syntenyEdgeCurve` /
-`syntenyEdgeStraight`, four of the six costliest first-party eager modules on
-that page.
-
-**Not a codegen item — the codegen already put the strings in their own
-module** ([EAGER_BUNDLE.md](reference/EAGER_BUNDLE.md) §"A namespace import is
-the unit"). The renderer itself is what is eager, and the factory is the seam: it
-picks a GPU or Canvas2D backend, and only the GPU arm needs the shader source.
-First move is to check whether the Canvas2D arm is eager for a reason before
-making the GPU arm a dynamic import — a `lazy()` here has to answer to the render
-autorun, not to React.
 
 ### Extra large text SVG mode for pub-ready figures
 

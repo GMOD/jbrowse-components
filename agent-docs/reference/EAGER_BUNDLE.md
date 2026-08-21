@@ -499,3 +499,26 @@ change is which number CI *gates* on, and that is a call to make deliberately.
 registration — models, adapters, config schemas for all 18 core plugins — plus
 React and MST. That is the engine, and `createViewState`'s contract is that all
 of it is registered before a session snapshot can be read.
+
+**Not worth chasing: the synteny shader source.** `syntenyFillCurve`,
+`syntenyFillStraight`, `syntenyEdgeCurve` and `syntenyEdgeStraight` are 116 KB
+raw in the synteny page's eager set, four of the six costliest first-party
+modules there, and that reads like the largest win left. Measured 2026-08-21, it
+is not one.
+
+Two things the raw number hides. Shader text compresses about 4.8x — the four
+modules are 23.6 KB gzipped, and the budget here is bytes over the wire. And the
+page they are eager on is the one page that draws a synteny view: `ultraminimal`
+and the other eleven carry none of them, so deferring moves ~24 KB down the same
+waterfall rather than off it.
+
+jbrowse-web defers it already. The source lands in one chunk (145 KB raw, 22.8 KB
+gzipped) and a plain LGV session fetches it in none of its 40 JS requests, while
+opening a synteny view fetches it. The users who never open a comparative view
+pay nothing today.
+
+So making `SyntenyRendererFactory`'s GPU arm a dynamic import buys no initial
+bytes on either product and adds a round trip inside a path that is already
+deferred. The factory is still the seam if a reason to use it ever appears — the
+signature is already `(canvas) => Promise<Backend>`, so it takes an `await
+import()` with no other change.
