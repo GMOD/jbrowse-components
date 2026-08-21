@@ -3079,6 +3079,9 @@ describe('a jump settles the coarse blocks', () => {
 
   // Every placer that jumps. `placersSettleCoarseBlocks.test.ts` is what makes
   // a new one reach the settle; this is where it gets exercised end to end.
+  // Except `clampZoomToCeiling`, which cannot be driven from here: only a
+  // container lowering a shared ceiling puts a view above its own maxBpPerPx.
+  // Its settle is asserted in LinearSyntenyView/sameScale.integration.test.ts.
   const jumps: [string, (model: LGV) => void][] = [
     [
       'setNewView',

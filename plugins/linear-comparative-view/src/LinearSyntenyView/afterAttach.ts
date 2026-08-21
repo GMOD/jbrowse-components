@@ -273,9 +273,9 @@ async function applyInit(
   // shared scale itself now survives either order: it is a raised zoom-out
   // limit (`sameScale`), not a value written past one.
   if (init.sameScale) {
-    // the scale, not the regions: the rows were just placed by `init.views[].loc`
-    // above, and "show all regions" would throw those away
-    self.applySharedScale(true)
+    // the ceiling, not the regions: the rows were just placed by
+    // `init.views[].loc` above, and "show all regions" would throw those away
+    self.applySharedScale()
   }
 }
 

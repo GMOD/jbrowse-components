@@ -16,7 +16,7 @@ import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/
 import { followDirection } from '../SyntenyFollow/followDirection.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
-import { sharedFitBpPerPx } from './sharedFitBpPerPx.ts'
+import { sharedFit } from './sharedFit.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -98,8 +98,8 @@ function stateModelFactory(pluginManager: PluginManager) {
          * Hold every genome row on one bp/px — the coarsest row's fit — so the
          * rows compare by drawn length instead of all filling their pane. A
          * mode rather than a one-shot zoom because it is the rows' zoom-out
-         * LIMIT it moves (`sharedFitBpPerPx`), and a limit has to still be
-         * there on the next wheel tick.
+         * LIMIT it moves (`sharedFit`), and a limit has to still be there on
+         * the next wheel tick.
          */
         sameScale: types.stripDefault(types.boolean, false),
         /**
@@ -203,20 +203,18 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The zoom-out limit every row shares while `sameScale` is on: one bp/px
-       * has to fit the LARGEST genome, so it is the coarsest of the rows' own
-       * fits. Zero — each row answers to its own fit — while the mode is off.
+       * The zoom-out limit every row shares while `sameScale` is on, and
+       * whether it can be answered at all. Each row PULLS this back through its
+       * own `maxBpPerPx` (`sharedScaleContainerOf` finds this view by the
+       * presence of this getter), so nothing here is copied onto the rows and
+       * nothing can go stale between a resize and the next layout. The
+       * dotplot's `lockAspectRatio` derives the same quantity the same way.
        *
-       * Derived here and pushed onto the rows by an autorun rather than
-       * assigned once, because every row's fit moves on a resize and on any
-       * change to what it displays. The dotplot's `lockAspectRatio` reads the
-       * same quantity by the same name.
-       *
-       * The rule, and the three states that have no answer, are in
-       * `sharedFitBpPerPx.ts`.
+       * The rule, and why the unanswered state is not a zero, are in
+       * `sharedFit.ts`.
        */
-      get sharedFitBpPerPx() {
-        return sharedFitBpPerPx(self.views, self.sameScale)
+      get sharedFit() {
+        return sharedFit(self.views, self.sameScale)
       },
 
       /**
@@ -427,19 +425,19 @@ function stateModelFactory(pluginManager: PluginManager) {
             { name: 'ComparativeViewWidth' },
           ),
         )
-        // Keeps the shared ceiling on the rows true as the rows themselves
-        // move: a resize, a row navigating, a row added or removed. Reads the
-        // getter itself so the whole dependency set — the flag, the views
-        // array, every row's fit — is tracked here rather than at the write.
-        // `setSharedFitBpPerPx` re-clamps each row, so a ceiling that drops
-        // takes the rows down with it rather than stranding them above it.
+        // Rows pull the ceiling, but `bpPerPx` is clamped only where it is
+        // written, so a ceiling that DROPS strands them above it until
+        // something writes. Skipped while unanswered — that is a row mid-layout
+        // rather than a release, and `answered` is also the guarantee every row
+        // is initialized, which `clampZoomToCeiling` requires.
         addDisposer(
           self,
           autorun(
             function comparativeViewSameScaleAutorun() {
-              const bpPerPx = self.sharedFitBpPerPx
-              for (const view of self.views) {
-                view.setSharedFitBpPerPx(bpPerPx)
+              if (self.sharedFit.answered) {
+                for (const view of self.views) {
+                  view.clampZoomToCeiling()
+                }
               }
             },
             { name: 'ComparativeViewSameScale' },
@@ -644,42 +642,36 @@ function stateModelFactory(pluginManager: PluginManager) {
        * to fit-to-width and the comparison is gone.
        */
       showAllRegionsAcrossRows(sameScale: boolean) {
+        this.setSameScale(sameScale)
         for (const view of self.views) {
           view.showAllRegionsInAssembly()
         }
-        this.applySharedScale(sameScale)
-      },
-      /**
-       * #action
-       * Latch the mode and put every row on the scale it implies, WITHOUT
-       * touching any row's regions — which is the half of the menu command a
-       * caller that has just built those regions wants. `init` is that caller:
-       * it names a `loc` per row, and resetting each row to its whole assembly
-       * afterwards would discard the locations the same init block asked for.
-       */
-      applySharedScale(sameScale: boolean) {
-        self.sameScale = sameScale
-        // pushed here as well as by the autorun, which cannot have run yet:
-        // `showAllRegions` below targets each row's `maxBpPerPx`, and that is
-        // the row's own fit until the ceiling reaches it. Lowering it re-clamps
-        // the row too, so a caller whose region reset bailed — a row spanning
-        // two assemblies, an assembly with no regions — is left at its own fit
-        // rather than stranded above it.
-        const bpPerPx = self.sharedFitBpPerPx
+        // Second pass: a row's fit moves with its regions, so the ceiling is
+        // only settled once every row above has been reset.
         for (const view of self.views) {
-          view.setSharedFitBpPerPx(bpPerPx)
           view.showAllRegions()
         }
       },
       /**
        * #action
-       * The shared-scale half of `showAllRegionsAcrossRows`, under the name
-       * this action had before the pair was written as one. Kept because it is
-       * public API a script can be calling; nothing in the app calls it, and
-       * new callers want the parameterized one.
        */
-      showAllRegionsSameScale() {
-        this.showAllRegionsAcrossRows(true)
+      setSameScale(sameScale: boolean) {
+        self.sameScale = sameScale
+      },
+      /**
+       * #action
+       * Latch the mode and zoom every row onto the scale it implies, without
+       * touching any row's regions or its centre — `init` names a `loc` per
+       * row, and both a region reset and a re-centre would throw that away.
+       * `zoomTo` anchors at the centre, which is the difference.
+       */
+      applySharedScale() {
+        this.setSameScale(true)
+        for (const view of self.views) {
+          if (view.initialized) {
+            view.zoomTo(view.maxBpPerPx)
+          }
+        }
       },
       /**
        * #action

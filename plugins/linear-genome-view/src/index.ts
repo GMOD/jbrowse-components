@@ -247,6 +247,7 @@ export type { Tick } from './LinearGenomeView/util.ts'
 // looking at, or seed a snapshot for a new one. A caller deriving either itself
 // lands on a viewport property the model no longer reads — see each for how.
 export { showRegionsWithUndo } from './LinearGenomeView/showRegionsWithUndo.ts'
+export type { SharedFit } from './LinearGenomeView/sharedScaleContainer.ts'
 export { fitAllRegionsWindow } from './LinearGenomeView/util.ts'
 export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 // The third form of the same export: not a file, not a markup string, but the

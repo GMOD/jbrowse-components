@@ -69,6 +69,7 @@ import {
   buildRubberBandMenuItems,
   buildRubberbandClickMenuItems,
 } from './menuItems.ts'
+import { sharedScaleContainerOf } from './sharedScaleContainer.ts'
 import {
   calculateVisibleLocStrings,
   cytobandLabelGutterWidth,
@@ -583,17 +584,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * temporary vertical guides that can be set by displays (e.g., LD display hover)
          */
         volatileGuides: [] as VolatileGuide[],
-        /**
-         * #volatile
-         * A zoom-out limit imposed from outside, for a view that is one row of a
-         * set drawn on one shared scale — see `LinearComparativeView.sameScale`.
-         * Zero, the default, means this view answers to its own fit alone.
-         *
-         * Derived state a container pushes down rather than a prop: the number
-         * is a function of the whole set's fits and every one of them moves on
-         * a resize, so a stored copy is stale by the next layout.
-         */
-        sharedFitBpPerPx: 0,
       }
     })
     .views(self => ({
@@ -1142,7 +1132,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * ceiling, so full zoom-out LANDS on the shared scale.
        */
       get maxBpPerPx() {
-        return Math.max(this.fitBpPerPx, self.sharedFitBpPerPx)
+        return Math.max(this.fitBpPerPx, this.sharedFitBpPerPx)
+      },
+
+      /**
+       * #getter
+       * The zoom-out ceiling a containing comparative view holds this row to,
+       * or 0 for a standalone view, a mode that is off, and a stack that cannot
+       * answer yet.
+       *
+       * Pulled rather than pushed down into a volatile: the number is a
+       * function of every row's fit, all of which move on a resize, and a
+       * stored copy would be stale by the next layout.
+       */
+      get sharedFitBpPerPx() {
+        const fit = sharedScaleContainerOf(self)?.sharedFit
+        return fit?.answered ? fit.bpPerPx : 0
       },
 
       /**
@@ -2512,6 +2517,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * Re-assert `maxBpPerPx` over the current zoom, for a container whose
+       * shared ceiling just fell — otherwise the view is stranded above it with
+       * zoom-out disabled and the slider's min past its value. Goes through
+       * `zoomTo` so the clamp keeps one definition, and settles because a
+       * ceiling drop moves the window in one step.
+       *
+       * Requires an `initialized` view; the caller checks, since an MST action
+       * reads untracked and a guard here would never re-run once the row
+       * arrived.
+       */
+      clampZoomToCeiling() {
+        self.zoomTo(self.bpPerPx)
+        self.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
        */
       showAllRegions() {
         self.windowWidthBp = self.maxBpPerPx * self.width
@@ -2558,40 +2580,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
         self.settleCoarseBlocks()
-      },
-
-      /**
-       * #action
-       * Raise this view's zoom-out limit to a scale a container computed for a
-       * whole set of views, so their genomes compare by drawn length. Zero
-       * hands the view back to its own fit.
-       *
-       * The limit, not the zoom: with it raised, `showAllRegions` reaches the
-       * shared scale on its own and so does a wheel held at the stop, and
-       * neither can be clamped back off it. Only a caller that owns the layout
-       * of a whole set has a reason to write here — anything zooming a single
-       * view wants zoomTo.
-       *
-       * A ceiling coming DOWN brings the view down with it, which raising one
-       * has no counterpart for. `bpPerPx` is clamped only where it is WRITTEN,
-       * so moving a bound underneath it strands the view above its own
-       * `maxBpPerPx`: zoom-out is disabled (`ZoomButton` reads the same
-       * ceiling), the zoom slider's min sits past the current value, and the
-       * only way back is to zoom IN first. Reachable from the ordinary — drop
-       * the largest row of a same-scale stack and the survivor is drawn as a
-       * sliver of its own pane.
-       *
-       * Re-written through `zoomTo` rather than compared against the new
-       * ceiling here, for the reason `setDisplayedRegions` does the same: the
-       * clamp has one definition and it is the one inside the writer. Passing
-       * the value the view already holds is a no-op whenever it is still in
-       * range, so raising the ceiling costs nothing.
-       */
-      setSharedFitBpPerPx(bpPerPx: number) {
-        self.sharedFitBpPerPx = bpPerPx
-        if (self.initialized) {
-          self.zoomTo(self.bpPerPx)
-        }
       },
 
       /**

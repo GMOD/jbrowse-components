@@ -61,12 +61,12 @@ test('rows fit individually are drawn the same width whatever their size', async
   )
 })
 
-test('showAllRegionsSameScale puts every row on the largest row scale', async () => {
+test('showAllRegionsAcrossRows puts every row on the largest row scale', async () => {
   const view = await launch({ views })
   const [small, large] = view.views
   const coarsest = large!.fitBpPerPx
 
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
 
   expect(small!.bpPerPx).toBeCloseTo(coarsest)
   expect(large!.bpPerPx).toBeCloseTo(coarsest)
@@ -89,7 +89,7 @@ test('the shared scale raises the small row zoom-out limit', async () => {
   const coarsest = Math.max(...view.views.map(v => v.fitBpPerPx))
 
   expect(coarsest).toBeGreaterThan(small!.fitBpPerPx)
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
 
   expect(small!.maxBpPerPx).toBeCloseTo(coarsest)
   small!.zoomTo(coarsest)
@@ -103,7 +103,7 @@ test('zooming the small row out lands back on the shared scale', async () => {
   const view = await launch({ views })
   const [small] = view.views
 
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
   const shared = small!.bpPerPx
   small!.zoomTo(shared / 8)
   small!.zoomTo(Number.MAX_SAFE_INTEGER)
@@ -118,7 +118,7 @@ test('rewriting a row regions keeps it on the shared scale', async () => {
   const view = await launch({ views })
   const [small] = view.views
 
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
   const shared = small!.bpPerPx
   small!.setDisplayedRegions([...small!.displayedRegions])
 
@@ -126,10 +126,10 @@ test('rewriting a row regions keeps it on the shared scale', async () => {
 })
 
 // The mode is a property so a saved session keeps it; the ceiling it implies is
-// volatile on each row, re-derived from the rows' own fits by the autorun.
+// derived, never stored on a row, so there is nothing about it to persist.
 test('the mode is saved, the ceiling it implies is not', async () => {
   const view = await launch({ views })
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
 
   const snap = getSnapshot(view)
   expect(snap.sameScale).toBe(true)
@@ -192,14 +192,16 @@ test('a restored session with the mode on attaches before any width', async () =
   spy.mockRestore()
 
   expect(errors).toEqual([])
-  expect(view.sharedFitBpPerPx).toBe(0)
+  expect(view.sharedFit).toEqual({ answered: false })
 
   // and once the rows are measured and their assemblies are in, the ceiling
-  // arrives on its own — the autorun re-fires on the same reads that were
-  // unanswerable at attach
+  // arrives on its own — the same reads that were unanswerable at attach
   view.setWidth(800)
   await when(() => view.views.every(v => v.initialized))
-  expect(view.sharedFitBpPerPx).toBeCloseTo(view.views[1]!.fitBpPerPx)
+  expect(view.sharedFit).toEqual({
+    answered: true,
+    bpPerPx: view.views[1]!.fitBpPerPx,
+  })
   expect(view.views[0]!.maxBpPerPx).toBeCloseTo(view.views[1]!.fitBpPerPx)
 })
 
@@ -211,7 +213,7 @@ test('dropping the largest row brings the survivors down with the ceiling', asyn
   const view = await launch({ views: [...views, { assembly: 'small' }] })
   const small = view.views[0]!
 
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
   expect(small.bpPerPx).toBeGreaterThan(small.fitBpPerPx)
 
   // twice: the appended small row first, then the large row whose fit IS the
@@ -222,6 +224,13 @@ test('dropping the largest row brings the survivors down with the ceiling', asyn
   expect(small.bpPerPx).toBeCloseTo(small.fitBpPerPx)
   expect(small.bpPerPx).toBeLessThanOrEqual(small.maxBpPerPx)
   expect(small.displayedRegionsTotalPx).toBeCloseTo(800 * 0.9)
+  // a ceiling drop moves the window in one step, so it settles like every other
+  // jump — `clampZoomToCeiling` is the placer, and only a container can drive it
+  // past its own limit, so this is the one harness that can check it
+  expect(small.coarseBpPerPx).toBe(small.bpPerPx)
+  expect(small.coarseDynamicBlocks.map(b => b.key)).toEqual(
+    small.dynamicBlocks.contentBlocks.map(b => b.key),
+  )
 })
 
 // The two are offered as one choice — "each row fit to width" against "same bp
@@ -240,7 +249,7 @@ test('the two show-all-regions modes differ only in scale', async () => {
   const subsetFit = large!.fitBpPerPx
   expect(subsetFit).toBeLessThan(small!.fitBpPerPx * 2)
 
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
 
   // the shared scale is the LARGE ASSEMBLY's fit, not the subset's
   expect(large!.displayedRegions).toHaveLength(2)
@@ -253,7 +262,7 @@ test('the two show-all-regions modes differ only in scale', async () => {
   view.showAllRegions()
   const ownFit = small!.bpPerPx
   expect(ownFit).not.toBeCloseTo(shared)
-  view.showAllRegionsSameScale()
+  view.showAllRegionsAcrossRows(true)
   expect(small!.bpPerPx).toBeCloseTo(shared)
   view.showAllRegions()
   expect(small!.bpPerPx).toBeCloseTo(ownFit)
@@ -278,4 +287,25 @@ test('init.sameScale keeps the rows where init.views put them', async () => {
   // ...and they are still on one scale
   expect(view.sameScale).toBe(true)
   expect(small!.bpPerPx).toBeCloseTo(large!.bpPerPx)
+})
+
+// A row is not `initialized` until it has been measured and its assembly has
+// landed, so every appended row puts the stack briefly out of reach of an
+// answer. Read as "no shared ceiling" that is destructive and one-way: it
+// clamps the rows down to their own fits, and restoring the ceiling cannot lift
+// them back, since a row already in range is one zoomTo leaves alone. The mode
+// stays on and the radio keeps saying "same bp per pixel" over a stack that is
+// no longer on one.
+test('appending a row that cannot answer yet leaves the stack alone', async () => {
+  const view = await launch({ views })
+  view.showAllRegionsAcrossRows(true)
+  const [small, large] = view.views
+  const shared = small!.bpPerPx
+  expect(shared).toBeCloseTo(large!.bpPerPx)
+
+  view.appendRow({ assembly: 'not-loaded-yet' })
+
+  expect(view.sharedFit).toEqual({ answered: false })
+  expect(small!.bpPerPx).toBeCloseTo(shared)
+  expect(large!.bpPerPx).toBeCloseTo(shared)
 })
