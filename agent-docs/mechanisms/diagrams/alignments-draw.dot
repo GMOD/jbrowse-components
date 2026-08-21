@@ -1,0 +1,44 @@
+digraph alignments_draw {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] toolarge; mode; fit; backend }
+
+  toolarge [label="region-too-large gate\nbytes, or feature density"]
+  toolarge -> banner [label=" over"]
+  toolarge -> rpc    [label=" under"]
+  banner [label="banner, no fetch"]
+
+  rpc  [label="RenderAlignmentData\none payload per region, per group"]
+  lane [label="ordered groups to lanes to sections\nungrouped data is one lane"]
+  rpc -> lane -> mode
+
+  mode [label="linked reads"]
+  mode -> chain [label=" on"]
+  mode -> pile  [label=" off"]
+  chain [label="chain layout: a row is a chain"]
+  pile  [label="pileup layout, one row per group\nwhere groups are collapsed"]
+
+  cap [label="the row cap carries its policy:\nbudget, ceiling, override, collapse"]
+  chain -> cap  pile -> cap
+  cap -> fit
+  fit [label="fit height to display"]
+  fit -> fitauto [label=" yes"]
+  fit -> fitconf [label=" no"]
+  fitauto [label="feature height from the fitted height"]
+  fitconf [label="the configured feature height"]
+  fitauto -> backend  fitconf -> backend
+
+  backend [label="createRenderingBackend"]
+  backend -> gpu [label=" WebGPU, else WebGL2"]
+  backend -> c2d [label=" else Canvas2D"]
+  gpu [label="GpuAlignmentsRenderer\npileup, coverage and arc passes"]
+  c2d [label="Canvas2DAlignmentsRenderer\nalso the SVG export"]
+
+  bands [label="per section, in paint order", shape=oval]
+  gpu -> bands  c2d -> bands
+  bands -> cov -> pileup -> arc -> overlays
+  cov     [label="coverage band: the coverage layers\nthat are enabled this frame"]
+  pileup  [label="pileup band: the pileup layers\nthat are enabled this frame"]
+  arc     [label="arc band: drawn whole or not at all"]
+  overlays[label="React SVG overlays:\nsashimi, bezier, cross-region arcs"]
+}

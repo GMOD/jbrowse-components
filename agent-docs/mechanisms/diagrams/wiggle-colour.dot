@@ -1,0 +1,20 @@
+digraph wiggle_colour {
+  rankdir=LR
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] mode }
+
+  mode [label="rowColorMode\ntwo booleans, three modes"]
+  mode -> overlay  [label=" overlay"]
+  mode -> multirow [label=" multirow"]
+  mode -> density  [label=" density"]
+
+  overlay  [label="colour is identity:\nthe source's whole plot.\nUnset fills from the group\npalette, then the row palette"]
+  multirow [label="colour is identity:\nthe row's positive bars.\nThe negative side keeps negColor"]
+  density  [label="colour is the score ramp:\nwhite at the pivot, saturating\ntoward the source's colour.\nIdentity moves to labelColor"]
+
+  legend [label="the colour key takes the MODE,\nso the channel and its fallback\ncome from one table"]
+  overlay -> legend  multirow -> legend  density -> legend
+
+  ramp [label="a score ramp is drawable only\nwhile no source sets a colour"]
+  density -> ramp
+}

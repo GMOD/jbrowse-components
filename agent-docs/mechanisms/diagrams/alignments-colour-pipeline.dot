@@ -1,0 +1,26 @@
+digraph colour_pipeline {
+  rankdir=LR
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] refetch }
+
+  slot [label="colorBy config slot\ntrack, then session,\nthen the default", shape=oval]
+  norm [label="normalizeColorBy\nretired names upgraded on read"]
+  reg  [label="COLOR_SCHEMES\nshader index, mate-aware,\npaired-only, worker-extracts"]
+  slot -> norm -> reg -> refetch
+
+  refetch [label="the scheme needs data\nthe worker has not sent"]
+  refetch -> fetch [label=" yes"]
+  refetch -> keep  [label=" no"]
+  fetch [label="refetch: per-base arrays,\nmodification marks, tag strings,\nreference sequence"]
+  keep  [label="repaint from what is\nalready in memory"]
+
+  tags [label="tag colours baked on the\nmain thread, one packed colour\nper read"]
+  fetch -> tags  keep -> tags
+  cats [label="one category per read,\nbaked into a byte array"]
+  tags -> cats [label=" tag colours first:\n no-value is read off\n the baked colour"]
+
+  gpu [label="GPU: the category indexes\nthe palette uniform"]
+  c2d [label="Canvas2D and SVG:\nthe same category, same table"]
+  leg [label="legend: scans the\nsame array"]
+  cats -> gpu  cats -> c2d  cats -> leg
+}

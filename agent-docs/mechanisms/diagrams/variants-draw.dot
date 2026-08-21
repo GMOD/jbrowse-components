@@ -1,0 +1,44 @@
+digraph variant_draw {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] mode; fit; backend }
+
+  filters [label="minor allele frequency,\nmissingness, jexl filters"]
+  rpc     [label="MultiSampleVariantGetCellData\nrow SET is a fetch input, sent sorted\nrow ORDER is not"]
+  filters -> rpc -> mode
+
+  mode [label="display"]
+  mode -> cells  [label=" regular"]
+  mode -> mcells [label=" matrix"]
+  cells  [label="computeVariantCells\nreference cells forward from 0,\nalt cells backward from the end"]
+  mcells [label="computeVariantMatrixCells\nvisible region only"]
+
+  order [label="row order: layout, groupBy,\nanchored sort, clustering"]
+  cells -> order  mcells -> order
+
+  remap [label="rowRemap / rowUnmap\na row with nothing to draw goes\nto the hidden-row sentinel"]
+  order -> remap -> bands
+
+  bands [label="top bands: variant lane,\nthen connector zone\nrows begin at rowsTopOffset"]
+  bands -> fit
+  fit [label="rowHeight slot is 0"]
+  fit -> fitauto [label=" yes"]
+  fit -> fitconf [label=" no"]
+  fitauto [label="available height / row count"]
+  fitconf [label="the configured height;\noverflow scrolls"]
+  fitauto -> backend  fitconf -> backend
+
+  backend [label="createRenderingBackend"]
+  backend -> gpu [label=" WebGPU, else WebGL2"]
+  backend -> c2d [label=" else Canvas2D"]
+  gpu [label="GpuVariantRenderer\nGpuVariantMatrixRenderer"]
+  c2d [label="Canvas2DVariantRenderer\nCanvas2DVariantMatrixRenderer\nalso the SVG export"]
+
+  overlays [label="overlays, in paint order", shape=oval]
+  gpu -> overlays  c2d -> overlays
+  overlays -> lane -> glyphs -> conn -> legend
+  lane   [label="variant lane"]
+  glyphs [label="insertion glyphs, where the\nmarker is wider than the cell"]
+  conn   [label="connector lines (matrix)"]
+  legend [label="floating legend, sidebar tree,\nrow labels"]
+}

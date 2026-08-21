@@ -1,0 +1,39 @@
+digraph rendering_pipeline {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] gate; tier; backend }
+
+  view [label="the view moves, or a setting changes", shape=oval]
+  view -> gate
+
+  gate [label="is this region too large\n(bytes, or feature density)"]
+  gate -> banner [label=" yes"]
+  gate -> tier   [label=" no"]
+  banner [label="banner, and no fetch"]
+
+  tier [label="did a FETCH INPUT change\n(the props that key the request)"]
+  tier -> rpc     [label=" yes"]
+  tier -> repaint [label=" no"]
+  repaint [label="repaint from what is\nalready in memory"]
+
+  rpc [label="the worker: read, filter, classify,\npack typed arrays\npositions are absolute genomic uint32"]
+  rpc -> layout
+  repaint -> layout
+
+  layout [label="layout: rows, lanes, bands\nthe row SET is a fetch input,\nthe row ORDER is not"]
+  layout -> fit
+  fit [label="height: fit to the display,\nor a configured height that scrolls"]
+  fit -> backend
+
+  backend [label="createRenderingBackend"]
+  backend -> gpu [label=" WebGPU, else WebGL2"]
+  backend -> c2d [label=" else Canvas2D"]
+  gpu [label="pack instances, upload once,\ndraw the passes this frame enables"]
+  c2d [label="the same layer list, painted;\nthese are the functions\nthe SVG export calls"]
+
+  overlays [label="React SVG overlays on top:\nlabels, arcs, selection, legend"]
+  gpu -> overlays  c2d -> overlays
+
+  hit [label="hit test: the same gates as the draw,\nread back through the same layout"]
+  overlays -> hit
+}

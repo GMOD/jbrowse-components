@@ -1,0 +1,47 @@
+digraph feature_budget {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] mode; isoforms; fits; over }
+
+  mode [label="displayMode"]
+  mode -> sized     [label=" normal, compact,\n super-compact"]
+  mode -> collapsed [label=" collapsed"]
+  sized     [label="height multiplier\nand row padding"]
+  collapsed [label="every feature on one row,\nevery label suppressed"]
+
+  isoforms [label="geneGlyphMode"]
+  sized -> isoforms  collapsed -> isoforms
+  isoforms -> allt [label=" all"]
+  isoforms -> one  [label=" representative"]
+  isoforms -> zoom [label=" auto"]
+  allt [label="every transcript"]
+  one  [label="one per gene: MANE or\nRefSeq Select, else longest coding"]
+  zoom [label="by zoom"]
+
+  budget [label="maxIsoforms\na budget of ROWS, estimated on the\nmain thread and re-spent in the worker\nover the real children"]
+  allt -> budget  one -> budget  zoom -> budget
+
+  pack [label="pack rows,\nreserving label rows"]
+  budget -> pack -> fits
+
+  fits [label="fit to display height"]
+  fits -> plain  [label=" no"]
+  fits -> ladder [label=" yes"]
+  plain [label="one layout; overflow scrolls"]
+
+  ladder [label="the fit ladder\nfirst rung that fits wins,\nthe last rung always returns,\neach rung is laid out lazily", style=bold]
+  ladder -> full -> labels -> decimated -> bodies
+  full      [label="full: names and descriptions"]
+  labels    [label="labels: descriptions dropped"]
+  decimated [label="decimated: a name only where it is\nisolated; the whitespace factor is the\nsmallest that fits, found by bisection"]
+  bodies    [label="bodies: no labels"]
+
+  scale [label="one uniform scale over the kept rung:\ngrow to fill, or squeeze until the\nshortest drawn box hits its floor"]
+  full -> scale  labels -> scale  decimated -> scale  bodies -> scale
+  scale -> over
+  over [label="still taller than the track"]
+  over -> scroll [label=" yes"]
+  over -> done   [label=" no"]
+  scroll [label="scroll"]
+  done   [label="drawn"]
+}

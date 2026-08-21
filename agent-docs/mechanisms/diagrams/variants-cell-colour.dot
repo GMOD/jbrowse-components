@@ -1,0 +1,58 @@
+digraph variant_cell_colour {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  edge [fontname=monospace fontsize=9]
+  { node [shape=diamond] have; mode; ps; phased; allele; allref; override; other; nocall }
+
+  start [label="genotype at (variant, row)", shape=oval]
+  start -> have
+  have [label="genotype present"]
+  have -> nothing [label=" no"]
+  have -> mode    [label=" yes"]
+  nothing [label="draw nothing"]
+
+  mode [label="renderingMode"]
+  mode -> ps     [label=" phased"]
+  mode -> allref [label=" alleleCount"]
+
+  ps [label="colorByPhaseSet\nand FORMAT carries PS"]
+  ps -> pshue  [label=" yes"]
+  ps -> phased [label=" no"]
+  pshue [label="hue from the phase-set id"]
+
+  phased [label="genotype is phased\nor haploid"]
+  phased -> uncalled [label=" no"]
+  phased -> allele   [label=" yes"]
+  uncalled [label="no-call fill, or the\nunphased fill, on every\nhaplotype row"]
+
+  allele [label="this row's allele"]
+  allele -> nothing   [label=" the sample has no\n such haplotype"]
+  allele -> nocallcol [label=" ."]
+  allele -> refcol    [label=" 0"]
+  allele -> primary   [label=" the most frequent alt"]
+  allele -> secondary [label=" any other alt"]
+  nocallcol [label="no-call fill"]
+  refcol    [label="reference fill,\nor nothing"]
+  primary   [label="primary alt fill"]
+  secondary [label="secondary alt fill"]
+
+  allref [label="every allele is reference"]
+  allref -> refcol   [label=" yes"]
+  allref -> override [label=" no"]
+
+  override [label="a featureColor override\nresolved for this record"]
+  override -> ovcol [label=" yes"]
+  override -> other [label=" no"]
+  ovcol [label="the override, flat"]
+
+  other [label="carries a non-primary alt"]
+  other -> othercol [label=" yes"]
+  other -> nocall   [label=" no"]
+  othercol [label="other-alt fill, flat"]
+
+  nocall [label="carries a no-call"]
+  nocall -> mixed  [label=" yes"]
+  nocall -> dosage [label=" no"]
+  mixed  [label="dosage shade mixed toward\nno-call by the uncalled fraction"]
+  dosage [label="dosage shade\n(alt alleles / total)"]
+}

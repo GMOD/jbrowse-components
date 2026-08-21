@@ -18,6 +18,10 @@ repo*, spread across 200 files addressed to agents editing this tree. A
 mechanism scattered through the subsystem doc that happens to use it is not
 findable by anyone who does not already know the subsystem.
 
+[rendering-decisions](rendering-decisions.md) is the entry point for the
+track-type maps: the decision sequence every display runs, and the one table
+saying what a row and a colour mean in each plugin.
+
 ## What belongs here
 
 Three tests, all of them:
@@ -40,6 +44,15 @@ plugin happens to demonstrate at scale.
 
 ## Conventions
 
+- **A decision graph is a `.dot` under `diagrams/`, and its rendered `.svg` is
+  committed beside it** and embedded with a plain image link. A fenced `dot`
+  block is a code block wherever the doc is opened, which is a diagram nobody
+  sees. `pnpm diagrams` renders both this corpus and the website's;
+  `pnpm diagrams:check` (already in CI) fails when a source has been edited
+  without a re-render, or when nothing embeds one. The SVG carries the hash of
+  the source it came from, so there is no lock file to keep in step.
+- **A node label is a name**, not an argument. What the branch is *for* goes in
+  the prose under the picture, where it can be a sentence.
 - **The filename is the `name:` slug**, kebab-case, `.md`. One string, so a
   citation and an index row cannot spell the doc differently.
   `generate-doc-indexes.ts` fails on a mismatch — that rule is checked only for
@@ -63,12 +76,13 @@ write the doc's `description:` instead.
 
 | Doc | The idea it carries |
 | --- | --- |
-| [alignments-decision-tree](alignments-decision-tree.md) | The two ladders behind an alignments track — what gets drawn, and what colour it is — as one map with the DOT source for each, plus the four mechanisms that keep them from being re-derived at a call site. Read to orient in the plugin before touching a colour scheme, a draw layer or a gate, or to lift the pattern into another plugin. |
+| [alignments-decision-tree](alignments-decision-tree.md) | What an alignments track decides — what colour each read takes, how a colour scheme reaches that answer, and the draw sequence from the too-large gate to the overlays — as three rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a colour scheme, a draw layer or a gate. |
 | [draw-pass-registries](draw-pass-registries.md) | The layer-registry technique alignments uses for its draw passes — a shared ordered id list plus an exhaustive Record per consumer — decomposed into the four mechanisms it is really made of, with the precondition that decides whether a display wants one and a scorecard of every display against it. Read before adding a mark to a multi-mark display, before proposing a registry for one, and before declining a registry on the grounds that the backends are "not 1:1". |
-| [feature-track-decision-tree](feature-track-decision-tree.md) | The three ladders behind an annotation track — which glyph a feature gets (structural dispatch, not declared type), how much survives the vertical budget (the four named fit rungs and the uniform scale after them), and what colour a box takes (the config-beats-the-file rule) — with the DOT source for each. Read before adding a glyph, touching the fit ladder or the label modes, or for the pattern of degrading in named rungs instead of ad-hoc clamps. |
+| [feature-track-decision-tree](feature-track-decision-tree.md) | What an annotation track decides — which glyph a feature gets, how much of it survives the vertical budget, and what colour a box takes — as three rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before adding a glyph, touching the fit ladder or the label modes. |
 | [generated-claims](generated-claims.md) | A doc's claims about the code are rendered from the code, and the ones that cannot be are checked instead — the marker-pair mechanic, the one-value-one-home chain behind a published number, self-declaring scope, and the ratchet that lets a convention start with debt. Read before hand-writing a table, a count or a figure into any doc, or when deciding whether a claim wants a generator or a checker. |
 | [green-checks-that-cannot-fail](green-checks-that-cannot-fail.md) | Seven checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, a branch every page rendered that no page could reach, a geometry invariant held against a polygon the shader does not emit, an oracle cited by directory that never asserted its subject, and a parity test sampling the one region where both spellings agree. The catch for each, and why the class is worth naming outside genomics. |
 | [mobx-state-patterns](mobx-state-patterns.md) | Two state-management patterns built and validated here that need nothing from genomics — splitting an autorun into a pure plan and an installer, and answering a lifecycle with one discriminated getter instead of N booleans every caller re-subtracts. Both have a failure story sharp enough to carry the idea, and neither has a name outside this repo. |
-| [variants-decision-tree](variants-decision-tree.md) | The ladders behind a variant track — which of the four displays a VCF lands in, and what colour one genotype cell is — as one map with the DOT source for each, plus what transfers: classifying from the datum rather than from the colour it produced, memoizing at the cardinality of the answer, and one slot for mutually exclusive meanings. Read before touching a colour mode, a cell loop or a band, or to see the same problem alignments solves with a precedence ladder solved the other way. |
-| [wiggle-decision-tree](wiggle-decision-tree.md) | The three independent questions behind a quantitative track — what the score domain is, what shape draws it, and what colour that shape takes — each resolved in exactly one place, with the DOT source for each and the composition rules that keep the axis, the painter, the legend and the tooltip agreeing. Read before touching autoscale, a plot type, or the multi-wiggle colour model, or for the pattern of a derived setting that must not reach the fetch key. |
+| [rendering-decisions](rendering-decisions.md) | The decision sequence every track type runs — the too-large gate, the fetch tier, layout, height, the backend ladder, the layer lists and the overlays — plus the one table saying what a row and a colour mean in each plugin, and which map to read next. Read first when the question is what the program does when it draws a track. |
+| [variants-decision-tree](variants-decision-tree.md) | What a variant track decides and in what order — which of the four displays a VCF lands in, what the "Color by" slot resolves to, what colour one genotype cell takes, and the draw sequence from filters to overlays — as four rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a colour mode, a cell loop or a band. |
+| [wiggle-decision-tree](wiggle-decision-tree.md) | What a quantitative track decides — the score domain, the shape that draws it, and the colour that shape takes — as three rendered decision graphs, each resolved in one place and read by the axis, the painter, the legend and the tooltip alike. Read before touching autoscale, a plot type or the multi-wiggle colour model. |
 <!-- END GENERATED MECHANISMS INDEX -->

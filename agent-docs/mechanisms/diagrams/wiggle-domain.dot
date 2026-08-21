@@ -1,0 +1,32 @@
+digraph wiggle_domain {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] auto; scale }
+
+  vis   [label="visible feature arrays", shape=oval]
+  mode  [label="effectiveSummaryScoreMode\npicks which per-feature array\neach end of the domain reads"]
+  stats [label="computeScoreStats\nmin, max, mean, standard deviation"]
+  vis -> mode -> stats -> auto
+
+  auto [label="autoscale"]
+  auto -> local   [label=" local"]
+  auto -> sd      [label=" localsd"]
+  auto -> pct     [label=" localpercentile"]
+  local [label="the visible min and max"]
+  sd    [label="mean ± n standard deviations,\nlow end pinned to 0 for\nall-positive data"]
+  pct   [label="each sign clipped to its own\npercentile, anchored at 0"]
+
+  rules [label="widen to any score a\nscore rule is drawn at"]
+  local -> rules  sd -> rules  pct -> rules
+
+  bounds [label="nice domain, clamped by\nminScoreBound / maxScoreBound\nan unset bound autoscales that end"]
+  rules -> bounds -> scale
+
+  scale [label="scaleType"]
+  scale -> lin [label=" linear"]
+  scale -> log [label=" log"]
+  scale -> sym [label=" symlog"]
+  lin [label="scoreToY"]
+  log [label="base 2, floored at the\ndomain's own minimum"]
+  sym [label="constant resolved from the domain,\nby both the axis and the renderer"]
+}

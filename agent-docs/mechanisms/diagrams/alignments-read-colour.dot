@@ -1,0 +1,56 @@
+digraph read_colour {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  edge [fontname=monospace fontsize=9]
+  { node [shape=diamond] supp; frame; split; unmapped; interchrom; scheme }
+
+  start [label="read", shape=oval]
+  start -> supp
+
+  supp [label="a supplementary chain,\nand chain colouring is on"]
+  supp -> suppcol [label=" yes"]
+  supp -> frame   [label=" no"]
+  suppcol [label="supplementary"]
+
+  frame [label="an unpaired chain with\nstrand framing on, and a scheme\nthat does not fill from data"]
+  frame -> framecol [label=" yes"]
+  frame -> split    [label=" no"]
+  framecol [label="forward or reverse strand,\nrelative to the chain's frame"]
+
+  split [label="a paired chain under an\norientation-aware scheme"]
+  split -> inv [label=" inversion"]
+  split -> del [label=" deletion"]
+  split -> unmapped [label=" neither"]
+  inv [label="split inversion"]
+  del [label="split deletion"]
+
+  unmapped [label="mate unmapped, under a\nmate-aware scheme or in a chain"]
+  unmapped -> unmappedcol [label=" yes"]
+  unmapped -> interchrom   [label=" no"]
+  unmappedcol [label="unmapped mate"]
+
+  interchrom [label="mate on another chromosome,\nunder a mate-aware scheme"]
+  interchrom -> interchromcol [label=" yes"]
+  interchrom -> scheme        [label=" no"]
+  interchromcol [label="interchromosomal"]
+
+  scheme [label="colour scheme"]
+  scheme -> plain    [label=" normal"]
+  scheme -> strand   [label=" strand"]
+  scheme -> mapq     [label=" mapping quality"]
+  scheme -> insert   [label=" insert size"]
+  scheme -> firstpair[label=" first-of-pair strand"]
+  scheme -> orient   [label=" pair orientation"]
+  scheme -> both     [label=" insert size and orientation"]
+  scheme -> mods     [label=" modifications"]
+  scheme -> tag      [label=" tag"]
+  plain     [label="the plain fill"]
+  strand    [label="forward, reverse, or unstranded"]
+  mapq      [label="a quality shade, or\nquality-unavailable"]
+  insert    [label="long, short, or normal insert"]
+  firstpair [label="the first mate's strand"]
+  orient    [label="one fill per orientation class,\nor non-split"]
+  both      [label="short insert wins, then\norientation, then insert size"]
+  mods      [label="modification colours, by\nthe read's own strand"]
+  tag       [label="the tag's colour, or\nno-value"]
+}

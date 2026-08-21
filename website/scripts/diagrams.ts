@@ -46,8 +46,9 @@
 // the fix for the failure is the fix for the bug.
 import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 
+import { isFile } from './check-utils.ts'
 import { readManifest, repoRoot } from './figure-paths.ts'
 import { figureName, hashBuffer } from './figure-store.ts'
 
@@ -141,14 +142,38 @@ function formatLock(pairs: Pair[]): string {
   return `${HEADER}${lines.join('\n')}\n`
 }
 
+// A source whose hash still matches the lock, whose figure is on disk, is
+// already rendered — so don't. Graphviz does not promise byte-stable output
+// across versions, and re-rendering the whole corpus to pick up an edit to one
+// source rewrites every figure hash in the lock and leaves ten figures for
+// `figures:push` to publish, none of which anyone changed. Skipping is not
+// laundering: an edited source, or a figure missing from this checkout, still
+// renders.
+function isCurrent(source: string, lock: Map<string, Pair>) {
+  const recorded = lock.get(source)
+  return (
+    recorded?.sourceSha ===
+      hashBuffer(readFileSync(join(diagramsDir, source))) &&
+    isFile(join(repoRoot, figureFor(source)))
+  )
+}
+
 function render() {
   const sources = listSources()
   if (!sources.length) {
     console.error(`no diagram sources in ${diagramsDir}`)
     process.exit(1)
   }
+  const lock = readLock()
   const pairs: Pair[] = []
+  let rendered = 0
   for (const source of sources) {
+    const current = lock.get(source)
+    if (current && isCurrent(source, lock)) {
+      pairs.push(current)
+      continue
+    }
+    rendered++
     const figure = figureFor(source)
     renderSource(source, join(repoRoot, figure))
     const sourceSha = hashBuffer(readFileSync(join(diagramsDir, source)))
@@ -158,8 +183,10 @@ function render() {
   }
   writeFileSync(lockPath, formatLock(pairs))
   console.log(
-    `rendered ${pairs.length} diagram(s)\n` +
-      'Now `pnpm figures:push`, then commit diagrams.lock and figures.lock.',
+    rendered
+      ? `rendered ${rendered} of ${pairs.length} website diagram(s)\n` +
+          'Now `pnpm figures:push`, then commit diagrams.lock and figures.lock.'
+      : `every website diagram was already current (${pairs.length})`,
   )
 }
 
@@ -219,8 +246,150 @@ function check() {
   console.log(`${sources.length} diagram(s) match their sources`)
 }
 
+// ## The other corpus: agent-docs
+//
+// `agent-docs/**/diagrams/*.dot` renders to a committed SVG beside its source
+// rather than to a figure in the store, because these docs are read as files —
+// on GitHub, in an editor — and not served by any build. A `dot` fence in the
+// markdown is a code block wherever the doc is opened, which is a diagram
+// nobody sees.
+//
+// Committed output means the drift gate needs no lock file: the SVG carries the
+// hash of the source it came from, so the artifact states its own provenance
+// and `check` is a comparison between two files this commit already has. What
+// that cannot see is a hand-edited SVG that keeps the stamp, which the website
+// corpus's separate lock CAN see — the trade is one file fewer for one failure
+// mode nobody has hit, and the render path is the only thing that writes a
+// stamp.
+const AGENT_DOCS = join(repoRoot, 'agent-docs')
+const STAMP = 'diagram-source-sha256'
+
+// Repo-relative paths of every `*.dot` under an `agent-docs/**/diagrams/` dir.
+function agentSources(dir = AGENT_DOCS): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      return agentSources(path)
+    }
+    return entry.name.endsWith('.dot') && dir.endsWith('/diagrams')
+      ? [relative(repoRoot, path)]
+      : []
+  })
+}
+
+const agentFigureFor = (source: string) => source.replace(/\.dot$/, '.svg')
+
+// The markdown that could embed one. Every doc under agent-docs, so a diagram
+// may be read by a doc in a sibling directory.
+function agentDocFiles(dir = AGENT_DOCS): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      return agentDocFiles(path)
+    }
+    return entry.name.endsWith('.md') ? [path] : []
+  })
+}
+
+// The stamp makes the same skip available here, with no lock to consult: an
+// SVG carrying the current source's hash is already the picture this source
+// renders to.
+function agentIsCurrent(source: string) {
+  try {
+    const svg = readFileSync(join(repoRoot, agentFigureFor(source)), 'utf8')
+    const stamped = new RegExp(`${STAMP} ([0-9a-f]+)`).exec(svg)?.[1]
+    return stamped === hashBuffer(readFileSync(join(repoRoot, source)))
+  } catch {
+    return false
+  }
+}
+
+function renderAgentDiagrams() {
+  const sources = agentSources().filter(s => !agentIsCurrent(s))
+  for (const source of sources) {
+    const svg = execFileSync('dot', ['-Tsvg', join(repoRoot, source)], {
+      encoding: 'utf8',
+    })
+    const sha = hashBuffer(readFileSync(join(repoRoot, source)))
+    writeFileSync(
+      join(repoRoot, agentFigureFor(source)),
+      svg.replace('</svg>', `<!-- ${STAMP} ${sha} -->\n</svg>`),
+    )
+    console.log(`  ${source} -> ${agentFigureFor(source)}`)
+  }
+  return sources.length
+}
+
+function checkAgentDiagrams(): string[] {
+  const problems: string[] = []
+  const docs = agentDocFiles().map(f => readFileSync(f, 'utf8'))
+  for (const source of agentSources()) {
+    const figure = agentFigureFor(source)
+    let svg
+    try {
+      svg = readFileSync(join(repoRoot, figure), 'utf8')
+    } catch {
+      problems.push(`${source}: never rendered — run \`pnpm diagrams\``)
+      continue
+    }
+    const stamped = new RegExp(`${STAMP} ([0-9a-f]+)`).exec(svg)?.[1]
+    const sha = hashBuffer(readFileSync(join(repoRoot, source)))
+    if (stamped !== sha) {
+      problems.push(
+        `${source}: edited since it was last rendered, so the doc still shows ` +
+          `the old picture — run \`pnpm diagrams\``,
+      )
+    }
+    // A diagram no doc embeds is one whose last reader was deleted or renamed;
+    // it renders, it passes, and nobody sees it. Same rule gen-diagram-usage
+    // holds the website corpus to.
+    const name = figure.slice(figure.lastIndexOf('/') + 1)
+    if (!docs.some(text => text.includes(name))) {
+      problems.push(`${source}: no agent-docs page embeds ${name}`)
+    }
+  }
+  return problems
+}
+
+// A committed SVG whose source is gone is a picture nothing can regenerate.
+function checkOrphanedFigures(): string[] {
+  const rendered = new Set(agentSources().map(agentFigureFor))
+  return agentDiagramFigures()
+    .filter(f => !rendered.has(f))
+    .map(f => `${f}: no .dot source — delete it, or restore the source`)
+}
+
+function agentDiagramFigures(dir = AGENT_DOCS): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const path = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      return agentDiagramFigures(path)
+    }
+    return entry.name.endsWith('.svg') && dir.endsWith('/diagrams')
+      ? [relative(repoRoot, path)]
+      : []
+  })
+}
+
 if (process.argv.includes('--check')) {
   check()
+  const problems = [...checkAgentDiagrams(), ...checkOrphanedFigures()]
+  if (problems.length) {
+    console.error(`${problems.length} agent-docs diagram problem(s):`)
+    for (const p of problems) {
+      console.error(`  ${p}`)
+    }
+    process.exit(1)
+  }
+  console.log(
+    `${agentSources().length} agent-docs diagram(s) match their sources`,
+  )
 } else {
   render()
+  const n = renderAgentDiagrams()
+  console.log(
+    n
+      ? `rendered ${n} agent-docs diagram(s); commit the .svg beside each source.`
+      : 'every agent-docs diagram was already current',
+  )
 }

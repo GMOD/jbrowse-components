@@ -1,0 +1,40 @@
+digraph wiggle_shape {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] many; layout; summary; nests }
+
+  many [label="sources"]
+  many -> single [label=" one"]
+  many -> layout [label=" many"]
+  single [label="LinearWiggleDisplay\ninset so end labels are not clipped"]
+
+  layout [label="layout group"]
+  layout -> multirow [label=" multi-row"]
+  layout -> overlay  [label=" overlapping"]
+  multirow [label="one row per source:\nrow height, a scalebar each,\na dendrogram beside it"]
+  overlay  [label="every source on row 0\n(no density: unreadable overlapped)"]
+
+  plot [label="plot type\nxyplot, density, line (step),\nline (interpolated), scatter"]
+  single -> plot  multirow -> plot  overlay -> plot
+
+  summary [label="effectiveSummaryScoreMode"]
+  plot -> summary
+  summary -> bands [label=" whiskers, min, max"]
+  summary -> avg   [label=" avg (density resolves here)"]
+  bands [label="summary bands, each value\ncoloured by its own sign\nagainst the pivot"]
+  avg   [label="the worker's positive/negative\nsplit, one layer each"]
+
+  nests [label="density, or filled bars\nthat nest"]
+  bands -> nests  avg -> nests
+  nests -> split [label=" yes"]
+  nests -> whole [label=" no"]
+  split [label="solid layers, back to front,\nlargest magnitude first"]
+  whole [label="one band, per-instance colours"]
+
+  encoded [label="encoded layers\nthe pass, the buffer, the rendering-type\nuniform and the Canvas2D painter\nare all read from these", style=bold]
+  split -> encoded  whole -> encoded
+
+  gaps  [label="gaps: the step line breaks on bp\nadjacency; the interpolated line breaks\nonly past the gap limit, measured in bp"]
+  width [label="width: a shared minimum-fill floor,\ngrown from the bin's start;\nthe Canvas2D-only fudge is not in the shader"]
+  encoded -> gaps -> width
+}

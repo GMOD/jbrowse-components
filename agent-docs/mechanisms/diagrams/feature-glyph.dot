@@ -1,0 +1,45 @@
+digraph feature_glyph {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] semantic; cds; mature; kids; cleaved; repeat; container; coding }
+
+  f [label="feature", shape=oval]
+  f -> semantic
+  semantic [label="a semantic type with\nits own glyph"]
+  semantic -> typed [label=" guide_rna, motif"]
+  semantic -> cds   [label=" no"]
+  typed [label="CrisprGuide, Motif"]
+
+  cds [label="is a CDS"]
+  cds -> mature [label=" yes"]
+  cds -> kids   [label=" no"]
+  mature [label="has mature-protein children"]
+  mature -> matureglyph [label=" yes"]
+  mature -> box         [label=" no"]
+  matureglyph [label="MatureProteinRegion"]
+
+  kids [label="has subfeatures"]
+  kids -> box     [label=" no"]
+  kids -> cleaved [label=" yes"]
+  box [label="Box"]
+
+  cleaved [label="a CDS child with\nmature-protein children\n(at any depth)"]
+  cleaved -> stack  [label=" yes"]
+  cleaved -> repeat [label=" no"]
+  stack [label="Subfeatures\none row per child"]
+
+  repeat [label="top-level repeat region"]
+  repeat -> repeatglyph [label=" yes"]
+  repeat -> container   [label=" no"]
+  repeatglyph [label="RepeatRegion\nsubparts on one row,\nno parent box"]
+
+  container [label="listed in containerTypes,\nor its children are containers"]
+  container -> stack  [label=" yes"]
+  container -> coding [label=" no"]
+
+  coding [label="has a direct CDS child"]
+  coding -> processed [label=" yes"]
+  coding -> segments  [label=" no"]
+  processed [label="ProcessedTranscript\none row, UTRs implied"]
+  segments  [label="Segments\none row of boxes\njoined by intron lines"]
+}

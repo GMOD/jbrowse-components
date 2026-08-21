@@ -1,0 +1,23 @@
+digraph variant_displays {
+  rankdir=LR
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] genotypes; pattern }
+
+  vcf [label="VCF", shape=oval]
+  vcf -> genotypes
+  genotypes [label="show genotypes"]
+  genotypes -> single  [label=" no"]
+  genotypes -> pattern [label=" yes"]
+
+  single [label="LinearVariantDisplay\nrow = record\ncolour = the `color` jexl slot"]
+
+  pattern [label="lay columns out by\nfeature index"]
+  pattern -> matrix  [label=" yes"]
+  pattern -> regular [label=" no"]
+
+  regular [label="LinearMultiSampleVariantDisplay\nrow = sample or haplotype\ncolumn = the record's genomic span\nvariant lane, insertion glyphs"]
+  matrix  [label="LinearMultiSampleVariantMatrixDisplay\nrow = sample or haplotype\ncolumn = one variant, equal width\nconnector lines to the genome"]
+
+  ld [label="LDDisplay\ncell = a site PAIR\nr² or D' through a 256-entry ramp"]
+  vcf -> ld [label=" pairwise LD"]
+}

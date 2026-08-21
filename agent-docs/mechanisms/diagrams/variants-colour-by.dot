@@ -1,0 +1,28 @@
+digraph variant_colour_by {
+  rankdir=LR
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] resolve }
+
+  slot [label="featureColor slot\none string", shape=oval]
+  slot -> resolve
+  resolve [label="makeFeatureColor\nonce per record"]
+
+  resolve -> none [label=" empty"]
+  resolve -> imp  [label=" consequence impact"]
+  resolve -> sv   [label=" SV type"]
+  resolve -> ps   [label=" phase set"]
+  resolve -> jexl [label=" any jexl or CSS colour"]
+
+  none [label="no override:\ngenotype colouring"]
+  imp  [label="impactColor, a native fn"]
+  sv   [label="palette assigned in the worker\nfrom the types present"]
+  ps   [label="no resolver: a flag the\ncell loops read PS with"]
+  jexl [label="evaluated per record"]
+
+  cells [label="alt-carrying cells take\nthe override"]
+  imp -> cells  sv -> cells  jexl -> cells
+  ps -> cells [style=dashed]
+
+  legend [label="legend reads the same\nfunctions and constants"]
+  cells -> legend  none -> legend
+}

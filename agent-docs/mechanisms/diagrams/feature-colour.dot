@@ -1,0 +1,29 @@
+digraph feature_colour {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] utr; set; frame }
+
+  b [label="one box", shape=oval]
+  b -> utr
+  utr [label="a UTR whose utrColor is set"]
+  utr -> readutr [label=" yes"]
+  utr -> readcol [label=" no"]
+  readutr [label="read utrColor"]
+  readcol [label="read color"]
+
+  readutr -> set  readcol -> set
+  set [label="that slot is set"]
+  set -> expr [label=" yes"]
+  set -> file [label=" no"]
+  expr [label="evaluate as jexl or CSS;\na throwing expression degrades\nto an invalid-colour marker"]
+  file [label="the file's own colour, inherited\nup the parent chain, else the\ntype default for this box"]
+
+  expr -> frame  file -> frame
+  frame [label="colour by CDS frame,\nand this is a CDS with\nstrand and phase"]
+  frame -> framecol [label=" yes"]
+  frame -> keep     [label=" no"]
+  framecol [label="the frame colour replaces the fill"]
+  keep     [label="the fill stands"]
+
+  stroke [label="outline, connector and strand arrow:\nconnectorColor, or the theme's\nsecondary text colour with its alpha"]
+}

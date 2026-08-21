@@ -105,6 +105,10 @@ sat at a pre-ADR-0010 value there while `cram-js` had moved on.
   under it from that file.**
 - Docs and source cite `TODO.md` sections by title, and `ideas/` and
   `mechanisms/` by filename — grep before renaming.
+- **A diagram is a `.dot` in a `diagrams/` directory with its `.svg` committed
+  beside it** — `pnpm diagrams` renders it, `pnpm diagrams:check` fails on a
+  source edited without a re-render or a diagram no doc embeds. A fenced `dot`
+  block renders nowhere and is not a diagram.
 - Why any of this is shaped the way it is, stated for a reader outside this
   repo: [mechanisms/generated-claims.md](mechanisms/generated-claims.md).
 
