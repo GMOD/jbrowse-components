@@ -92,14 +92,16 @@ describe('hue is periodic, in every syntax that takes one', () => {
     expect(toRGBA(parse('hsl(480deg, 100%, 50%)'))).toEqual(green)
   })
 
-  it('folds the other angle units and the other hue syntaxes too', () => {
-    expect(toRGBA(parse('hsl(0.5turn, 100%, 50%)'))).toEqual(
-      toRGBA(parse('hsl(180deg, 100%, 50%)')),
-    )
-    expect(toRGBA(parse('hwb(-360deg 0% 0%)'))).toEqual(red)
-    expect(toRGBA(parse('oklch(0.7 0.15 390)'))).toEqual(
-      toRGBA(parse('oklch(0.7 0.15 30)')),
-    )
+  // Each of these is PAST a full turn in its own unit, which is what the fold
+  // is for. Inside one turn every unit agrees with a browser without it —
+  // `hueToRGB` corrects its argument by at most one turn on its own — so
+  // `0.5turn` against `180deg`, and any oklch pair (whose hue never reaches
+  // `parseAngle` at all), pass with the fold deleted.
+  it('folds the other angle units past a full turn too', () => {
+    expect(toRGBA(parse('hsl(2turn, 100%, 50%)'))).toEqual(red)
+    expect(toRGBA(parse('hsl(-2turn, 100%, 50%)'))).toEqual(red)
+    expect(toRGBA(parse('hsl(800grad, 100%, 50%)'))).toEqual(red)
+    expect(toRGBA(parse('hwb(2turn 0% 0%)'))).toEqual(red)
   })
 })
 

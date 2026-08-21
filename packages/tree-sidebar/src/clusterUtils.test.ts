@@ -139,10 +139,22 @@ test('applyLayoutOverrides keeps the given order and the layout overrides', () =
   expect(result[0]).toEqual({ name: 'C', color: 'blue' })
 })
 
-test('applyLayoutOverrides drops a layout row that no longer exists', () => {
-  expect(
-    applyLayoutOverrides([{ name: 'A' }], [{ name: 'gone' }, { name: 'A' }]),
-  ).toEqual([{ name: 'A' }])
+// The two directions, on one input, because the distinction is the whole reason
+// both exist and neither assertion says much alone: `applyLayoutOverrides` takes
+// the caller's order and drops what the caller did not name, `reconcileLayout`
+// takes the layout's order and appends what the layout did not name.
+test('the two merges disagree about order and about what is missing', () => {
+  const discovered = [{ name: 'A' }, { name: 'B' }]
+  const layout = [{ name: 'B' }, { name: 'gone' }]
+
+  expect(applyLayoutOverrides(discovered, layout).map(r => r.name)).toEqual([
+    'A',
+    'B',
+  ])
+  expect(reconcileLayout(discovered, layout).map(r => r.name)).toEqual([
+    'B',
+    'A',
+  ])
 })
 
 test('buildClusteredLayout reorders base sources and merges existing fields', () => {

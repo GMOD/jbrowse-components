@@ -361,10 +361,15 @@ export function reconcileLayout<D extends { name: string }>(
  * order, and is what a display's `sources` getter wants. Anything computing a
  * NEW row order wants this one, and every such path has to take it: `layout` is
  * the only home for a palette color, a label or a labelColor, so writing a fresh
- * order straight to `setLayout` silently discards all three. Clustering reaches
- * it through {@link buildClusteredLayout}; the variants displays' "Sort by
- * genotype" did not, and blanked every sidebar swatch on a callset colored by a
- * `samplesTsv` column while the menu still showed the palette ticked.
+ * order straight to `setLayout` silently discards all three.
+ *
+ * **Both sides must be at the same granularity.** The match is on `name` and
+ * nothing else — never a per-plugin alias, for the reason `filterRowsBySubtree`
+ * states — so rows naming the same thing two ways match nothing and every
+ * override is dropped, silently, which reads exactly like a layout that covers
+ * none of the rows. A caller holding rows at one granularity and a layout at
+ * another wants the merge its own layer already does: variants' "Sort by
+ * genotype" sorts `editableSources`, which arrive merged.
  */
 export function applyLayoutOverrides<S extends { name: string }>(
   ordered: S[],

@@ -122,12 +122,18 @@ test('an adapter with no tiers is offered no level of detail', async () => {
   expect(screen.queryByText('Level of detail')).toBeNull()
 }, 20000)
 
-// A custom row draws its own content, so the value it reports is the model's.
+// A custom row draws its own content, so the value it reports is the model's
+// rather than a menu decoration. Asserting the default alone cannot tell the
+// two apart — a row captioning a constant reads the same — so the caption has
+// to follow the model off its default.
 test('a slider row captions the value it is set to', async () => {
   const view = await openMenu()
   fireEvent.click(screen.getByTestId('cascading-submenu-line_width'))
   expect(await screen.findByText('Line width: 2.5px')).toBeTruthy()
-  expect(view.lineWidth).toBe(2.5)
+  act(() => {
+    view.setLineWidth(5)
+  })
+  expect(screen.getByText('Line width: 5px')).toBeTruthy()
 }, 20000)
 
 // A checkbox row is a `menuitem` whose glyph carries the state, so the state is
