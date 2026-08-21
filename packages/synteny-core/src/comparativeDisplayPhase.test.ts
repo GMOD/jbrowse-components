@@ -4,16 +4,19 @@ import {
   comparativeSurfaceSettled,
 } from './comparativeReadiness.ts'
 
+import type { ComparativeSurface } from './comparativeReadiness.ts'
+
 // The two answers this module keeps apart. `comparativeDisplayPhase` is what
 // AppReadyMarker counts — is this display still WORKING — and
 // `comparativeSurfaceSettled` is what `data-display-drawn` publishes — is there
 // FINISHED CONTENT here. They agree everywhere except on an error, and that
 // disagreement is the point of the split.
 
-const painted = {
+const painted: ComparativeSurface = {
   painted: true,
   initPending: false,
   pendingAutoDiagonalize: false,
+  renderError: undefined,
 }
 
 const done = {
@@ -81,7 +84,12 @@ describe('comparativeDisplayPhase', () => {
     expect(
       comparativeDisplayPhase(
         { ...done, error: new Error('nope'), dataCurrent: false },
-        { painted: false, initPending: true, pendingAutoDiagonalize: true },
+        {
+          painted: false,
+          initPending: true,
+          pendingAutoDiagonalize: true,
+          renderError: undefined,
+        },
       ),
     ).toBe('error')
   })
@@ -93,7 +101,12 @@ describe('comparativeDisplayPhase', () => {
     expect(
       comparativeDisplayPhase(
         { ...done, fetchInert: true, dataCurrent: false },
-        { painted: false, initPending: true, pendingAutoDiagonalize: true },
+        {
+          painted: false,
+          initPending: true,
+          pendingAutoDiagonalize: true,
+          renderError: undefined,
+        },
       ),
     ).toBe('ready')
   })
@@ -158,6 +171,32 @@ describe('comparativeSurfacePhase', () => {
     // an error outranks a fetch still running, since it is the thing a reader
     // most needs to see
     expect(comparativeSurfacePhase(painted, [busy, failed])).toBe('error')
+  })
+
+  // A backend that failed to initialize will never paint, so the loading term
+  // (`canvasDrawn: false`) answered `loading` for as long as the tab was open,
+  // and `data-app-phase` never left it. The WebGL2 context ceiling is the way
+  // in: a view evicted when another took the 16th context renders its banner
+  // and nothing else.
+  it('is terminal when the surface backend failed', () => {
+    const lost = { ...painted, painted: false, renderError: new Error('lost') }
+    expect(comparativeDisplayPhase(done, lost)).toBe('error')
+    expect(comparativeSurfacePhase(lost, [done])).toBe('error')
+    // outranks a fetch that is still running, and does not read as loading
+    const busy = { ...done, loading: true, dataCurrent: false }
+    expect(comparativeSurfacePhase(lost, [busy])).toBe('error')
+    // ...and an empty surface answers it too, where there is no display to ask
+    expect(comparativeSurfacePhase(lost, [])).toBe('error')
+    expect(comparativeSurfacePhase({ ...lost, initPending: true }, [])).toBe(
+      'error',
+    )
+  })
+
+  // The same disagreement as above: terminal is not settled. An error banner is
+  // not content, so a capture still fails loudly rather than committing one.
+  it('does not let a failed surface settle', () => {
+    const lost = { ...painted, painted: false, renderError: new Error('lost') }
+    expect(comparativeSurfaceSettled(lost, [done])).toBe(false)
   })
 
   // A level whose tracks init has yet to add is still assembling; one that

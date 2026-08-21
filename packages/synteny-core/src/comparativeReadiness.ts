@@ -55,6 +55,17 @@ export interface ComparativeSurface {
    * one.
    */
   pendingAutoDiagonalize: boolean
+  /**
+   * The backend failed to initialize or was lost, from
+   * `RenderLifecycleMixin.renderError` on the model that owns the canvas.
+   *
+   * Terminal, and the reason this is a term at all: on a WebGL2 context-ceiling
+   * eviction the banner renders but `painted` never becomes true, so a phase
+   * computed from the loading term alone said `loading` forever. Every
+   * `data-app-phase` wait then burned its full timeout on a surface that had
+   * already given up.
+   */
+  renderError: unknown
 }
 
 /** One comparative display's fetch state, as its readiness is computed from. */
@@ -85,13 +96,21 @@ export interface ComparativeDisplayFetchState {
  * on LOD — so the terminal ranking reduces to error over loading over ready.
  *
  * `DisplayStatusPhase`, not `DisplayPhase`: neither display owns a rendering
- * backend of its own (the surface does), so neither can claim `renderError`,
- * whose banner needs a `retry()` no model can supply.
+ * backend of its own (the surface does), so neither can claim `renderError` in
+ * the sense that matters to the banner, whose `retry()` no display can supply.
+ *
+ * It still REPORTS one. A surface that failed to initialize will never paint,
+ * so a display drawing onto it is in a terminal state, not a loading one — the
+ * loading term reads `canvasDrawn: false` and would answer `loading` until the
+ * tab closed. Ranked first, like `computeDisplayPhase` ranks it on the LGV side.
  */
 export function comparativeDisplayPhase(
   display: ComparativeDisplayFetchState,
   surface: ComparativeSurface,
 ): DisplayStatusPhase {
+  if (surface.renderError) {
+    return 'error'
+  }
   return computeDisplayStatusPhase(
     { regionTooLarge: false, error: display.error },
     () =>
@@ -133,7 +152,11 @@ export function comparativeSurfacePhase(
   displays: ComparativeDisplayFetchState[],
 ): DisplayStatusPhase {
   if (displays.length === 0) {
-    return surface.initPending ? 'loading' : 'ready'
+    return surface.renderError
+      ? 'error'
+      : surface.initPending
+        ? 'loading'
+        : 'ready'
   }
   const phases = new Set(displays.map(d => comparativeDisplayPhase(d, surface)))
   return phases.has('error')

@@ -891,6 +891,7 @@ export default function stateModelFactory(pm: PluginManager) {
             painted: self.painted,
             initPending: this.initPending,
             pendingAutoDiagonalize: self.pendingAutoDiagonalize,
+            renderError: self.renderError,
           }
         },
         /**
