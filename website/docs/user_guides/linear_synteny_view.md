@@ -100,17 +100,17 @@ independently:
 
 ### Making the panels move together
 
-**Row sync** in the hamburger menu couples the panels, in one of two ways:
+**Link views** in the hamburger menu couples the panels. **Independent** is the
+default, and the other two answers each couple them a different way:
 
-- **Link scroll and zoom** replays a pan or zoom in one panel onto the others,
-  so they move together by pixels. Useful once the panels are already lined up
-  on the region you want to walk along, and on comparisons close enough that
-  they stay lined up
-- **Follow the matching region** instead keeps the other panels on whatever
-  aligns to one anchor panel, re-resolved through the synteny data as you move.
-  Where the pixel lock drifts apart as indels accumulate between the two
-  genomes, this re-derives the correspondence, so the ribbons stay near-vertical
-  however far you pan
+- **Locked together** replays a pan or zoom in one panel onto the others, so
+  they move together by pixels. Useful once the panels are already lined up on
+  the region you want to walk along, and on comparisons close enough that they
+  stay lined up
+- **Follow** instead keeps the other panels on whatever aligns to one anchor
+  panel, re-resolved through the synteny data as you move. Where the pixel lock
+  drifts apart as indels accumulate between the two genomes, this re-derives the
+  correspondence, so the ribbons stay near-vertical however far you pan
 
 Following is the mode to reach for when comparing two haplotypes or two
 assemblies of the same genome, where the coordinates diverge but the sequence
@@ -150,9 +150,8 @@ once it settles. Turn following off to keep it where you put it.
   inside it, so there is no matching region to resolve; zooming in far enough to
   load the fine tier brings the items back
 - To keep a panel on the matching region as you move rather than sending it
-  there once, use **Follow the matching region** above. It works on CIGAR-less
-  alignments too, interpolating across the block where the click-driven items
-  decline to guess
+  there once, use **Follow** above. It works on CIGAR-less alignments too,
+  interpolating across the block where the click-driven items decline to guess
 
 ## Coloring the ribbons
 

@@ -1698,7 +1698,7 @@ export const viewFields: Record<string, FieldRecipe> = {
   trackLabels: value => {
     const option = typeof value === 'string' ? TRACK_LABELS[value] : undefined
     return option
-      ? { path: `View menu → Show... → Track labels → ${option}` }
+      ? { path: `View menu → Show... → ${option}` }
       : undefined
   },
   colorByCDS: value =>

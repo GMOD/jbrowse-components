@@ -45,7 +45,8 @@ below uses the second:
 The settings menu, the sliders button in the header, holds the rest of what the
 plot looks like: **Opacity** and **Line width** for how each alignment draws,
 **Draw CIGAR insertions/deletions** for whether per-base indels are drawn inside
-one, and **Gridlines**, which carries each axis' ruler ticks across the plot. At
+one, **Level of detail** for how much of a tiered file is loaded, and
+**Gridlines**, which carries each axis' ruler ticks across the plot. At
 whole-genome zoom neither axis has room to number itself, so the gridlines row
 says **none at this zoom** while it stays ticked.
 
@@ -120,8 +121,8 @@ crosshair icon):
   or open a linear synteny view. Hold `Ctrl`/`Cmd` while dragging to pan
   instead.
 
-**Aspect ratio lock:** **Lock aspect ratio (same bp/px)**, in the view's
-hamburger menu, constrains zooming and box-selection to keep both axes at the
+**Aspect ratio lock:** **Lock aspect ratio (same bp/px)**, in the ⋮ menu in the
+dotplot header, constrains zooming and box-selection to keep both axes at the
 same scale.
 
 ## Opening a synteny view from a dotplot view

@@ -7,7 +7,7 @@
  * recipes name these labels in a click path, and the node script that builds
  * them cannot load a module importing React, MUI or a lazy `.tsx`. A leaf module
  * makes the recipe import the label instead of retyping it — which is also why
- * 'off' declares no warning icon here and `cigarModeMenuItems` attaches it, and
+ * 'off' declares no warning icon here and the settings menu attaches it, and
  * why the label carries no ⚠ glyph: `pangenome/hprc_inversion` sets this mode,
  * so the label is printed as a doc click path.
  *

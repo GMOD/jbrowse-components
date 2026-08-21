@@ -11,7 +11,8 @@ import SettingLabel from './SettingLabel.tsx'
 // Drag state is held locally and the value is only committed on release,
 // because the committed value is part of the dialog's useFetch key — a
 // continuous onChange would fire one worker recompute per drag step. Same
-// reason as MinLengthSlider. The number stays visible beside the slider rather
+// reason as `makeSizeSubMenu`'s commitOnRelease. The number stays visible
+// beside the slider rather
 // than living only in the drag tooltip, so a consensus can be reproduced from
 // what the dialog was showing.
 export default function FractionSlider({

@@ -53,6 +53,7 @@ before anyone noticed.
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Shoot the multihop chain as counted arcs](#shoot-the-multihop-chain-as-counted-arcs-in-one-lgv) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
+| [Re-render the settings-menu figures](#re-render-the-five-figures-the-settings-menu-refactor-outran) | figures, synteny | five stale; the lock cannot catch this class |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
 | [Contract checks are stripped in production](#the-display-contract-checks-are-stripped-in-production) | limits, plugins | the in-tree half is gated; decide the out-of-tree channel |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
@@ -559,6 +560,29 @@ drift:
 
 [reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)
 is the method, including why the 40 remaining raw coordinates are deliberate.
+
+### Re-render the five figures the settings-menu refactor outran
+
+`figures.lock` was last written partway through that refactor, and two commits
+after it reshaped the menu those figures photograph — a slider became a chevron
+row and the sections were reordered by arity, so every captured menu is a
+picture of a shape that no longer exists. `genomes_synteny/ribbons_default` also
+boxes **CIGAR indels** and **Curved lines** at rows that have since moved, and
+it contradicts the prose committed alongside it ("checkboxes come first, then
+the choices, then the values").
+
+Stale, all needing the browser pipeline:
+
+- `genomes_synteny/ribbons_default`
+- `genomes_synteny/ribbon_settings` — `mode: 'compose'` over the above
+- `hg002_haplotypes_location_markers` — its `viewportHeight: 500` was sized for
+  the taller pre-refactor menu and wants re-checking, not just re-rendering
+- `bigwig/whole_genome_coverage`
+- `tracklabels` — its viewport grew
+
+The first three are the ones the refactor itself invalidated; the last two were
+already known. Nothing in the lock can catch this class — it hashes the bytes in
+S3, not whether the UI still looks like them.
 
 ### Re-render the ortholog-table figures after the blocks dedupe
 

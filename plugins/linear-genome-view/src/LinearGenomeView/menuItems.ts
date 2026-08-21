@@ -83,8 +83,8 @@ export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
  *
  * The label is the import form's button text verbatim (`ImportForm.tsx`), which
  * is where most people meet the phrase. No icon: the four-arrows glyph it
- * carried reads as "fullscreen", and every row it sits beside in the zoom menu
- * is bare.
+ * carried reads as "fullscreen", and nothing else names the same gesture, so a
+ * substitute would be decoration rather than a distinction.
  */
 export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   return {

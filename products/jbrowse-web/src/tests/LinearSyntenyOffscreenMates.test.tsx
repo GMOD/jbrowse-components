@@ -75,7 +75,7 @@ test('a row narrowed to one contig reports what it can no longer pair', async ()
 
 // ON BY DEFAULT, which is the whole decision: a locus syntenic to a contig the
 // facing row is not showing looked exactly like a locus syntenic to nothing,
-// and a reader who never opened the settings panel never learned otherwise.
+// and a reader who never opened the settings menu never learned otherwise.
 test('and marks them by default', async () => {
   const view = await openSyntenyView()
   const [, target] = view.views

@@ -11,7 +11,7 @@
  *
  * One function over the whole list rather than one row at a time, since
  * uniqueness is a property of the list. Shared by every menu that names the
- * rows — the track selectors, the compact toggles, the follow anchors — so they
+ * rows — the track selectors, the row menus, the follow anchors — so they
  * cannot drift into calling the same row two different things one click apart.
  */
 export function rowLabels(views: { assemblyNames: string[] }[]) {
