@@ -1,3 +1,4 @@
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ComparativeSurface } from '@jbrowse/synteny-core'
 
@@ -6,7 +7,7 @@ import type { ComparativeSurface } from '@jbrowse/synteny-core'
 // the view model composes the level's own state model, so a real import would
 // be circular. One declaration for all three readers, so the next field lands
 // in one place instead of drifting across three partial copies.
-export interface ParentViewDuck {
+export interface ParentViewDuck extends IStateTreeNode {
   width: number
   // measured + every row initialized; the level's `canRender` precondition,
   // because reading `width` before first layout throws

@@ -2,6 +2,7 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Padding around the mate locus, as a fraction of its own width per side. The
@@ -38,8 +39,9 @@ export function navLocString(refName: string, locus?: OffscreenMateLocus) {
   return refName
 }
 
-// The view-wide follow state a mark's navigation borrows.
-interface FollowAnchorHost {
+// The view-wide follow state a mark's navigation borrows. A state tree node
+// because `release` has to know THIS is still alive — it is what gets written.
+interface FollowAnchorHost extends IStateTreeNode {
   followSynteny: boolean
   followAnchorIndex: number
   setFollowAnchorIndex: (idx: number) => void
@@ -57,20 +59,19 @@ interface FollowAnchorHost {
  * to release, and so does that snackbar's Undo.
  *
  * `release` is safe to call on any path and any number of times. It writes only
- * while `alive` and while the anchor is still the one this take set: snackbars
- * stack, and an older one's cleanup must not drag the anchor off a row a later
- * click moved it to.
+ * while the HOST is alive — the node it writes, which is why it is not a
+ * liveness test a caller supplies: handed the navigated row's instead, the one
+ * exit that most needs releasing (the row died mid-flight) is the one where the
+ * test reads false and the anchor is kept. And only while the anchor is still
+ * the one this take set: snackbars stack, and an older one's cleanup must not
+ * drag the anchor off a row a later click moved it to.
  *
  * With the follow off nothing is taken and `release` writes nothing at all —
  * the anchor is a persisted setting this click never touched, and putting a
  * value back that was never moved silently re-points it at whichever row a mark
  * was last clicked on.
  */
-export function takeFollowAnchor(
-  host: FollowAnchorHost,
-  row: number,
-  alive: () => boolean,
-) {
+export function takeFollowAnchor(host: FollowAnchorHost, row: number) {
   const previous = host.followAnchorIndex
   const taken = host.followSynteny && previous !== row
   if (taken) {
@@ -79,7 +80,7 @@ export function takeFollowAnchor(
   return {
     taken,
     release() {
-      if (taken && alive() && host.followAnchorIndex === row) {
+      if (taken && isAlive(host) && host.followAnchorIndex === row) {
         host.setFollowAnchorIndex(previous)
       }
     },
@@ -96,17 +97,21 @@ export function takeFollowAnchor(
  * of what has to be kept, and the captured objects are plain — nothing here
  * holds an MST node that could be destroyed under the snackbar.
  *
- * Regions first: `zoomTo` and `scrollTo` both clamp against the region set, so
- * restoring them into the wrong one lands somewhere else.
+ * A bp WINDOW, not a pixel pair, for the reason `showRegionsWithUndo` states:
+ * a snackbar carrying an action never auto-hides, so a capture and its Undo can
+ * be a window resize apart, and pixels mean nothing without the width they were
+ * measured at.
+ *
+ * Regions first: `setWindow` clamps against the region set, so restoring into
+ * the wrong one lands somewhere else.
  */
 export function captureRowViewport(view: LinearGenomeViewModel) {
   const regions: Region[] = [...view.displayedRegions]
-  const { bpPerPx, offsetPx } = view
+  const { windowWidthBp, windowStartBp } = view
   return () => {
     if (isAlive(view)) {
       view.setDisplayedRegions(regions)
-      view.zoomTo(bpPerPx)
-      view.scrollTo(offsetPx)
+      view.setWindow(windowWidthBp, windowStartBp)
     }
   }
 }

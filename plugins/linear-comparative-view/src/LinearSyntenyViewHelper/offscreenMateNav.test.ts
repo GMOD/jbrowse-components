@@ -1,3 +1,5 @@
+import { destroy, types } from '@jbrowse/mobx-state-tree'
+
 import {
   OFFSCREEN_MATE_NAV_MIN_BP,
   navLocString,
@@ -44,17 +46,23 @@ describe('navLocString', () => {
 })
 
 describe('takeFollowAnchor', () => {
-  const host = (followSynteny: boolean, followAnchorIndex: number) => ({
-    followSynteny,
-    followAnchorIndex,
-    setFollowAnchorIndex(idx: number) {
-      this.followAnchorIndex = idx
-    },
-  })
+  // a real node, because `release` guards on the liveness of what it WRITES
+  const HostModel = types
+    .model({
+      followSynteny: types.boolean,
+      followAnchorIndex: types.number,
+    })
+    .actions(self => ({
+      setFollowAnchorIndex(idx: number) {
+        self.followAnchorIndex = idx
+      },
+    }))
+  const host = (followSynteny: boolean, followAnchorIndex: number) =>
+    HostModel.create({ followSynteny, followAnchorIndex })
 
   it('takes the anchor for a followed row that does not hold it', () => {
     const h = host(true, 0)
-    const anchor = takeFollowAnchor(h, 1, () => true)
+    const anchor = takeFollowAnchor(h, 1)
 
     expect(anchor.taken).toBe(true)
     expect(h.followAnchorIndex).toBe(1)
@@ -64,7 +72,7 @@ describe('takeFollowAnchor', () => {
 
   it('takes nothing on the row that already holds it', () => {
     const h = host(true, 1)
-    expect(takeFollowAnchor(h, 1, () => true).taken).toBe(false)
+    expect(takeFollowAnchor(h, 1).taken).toBe(false)
     expect(h.followAnchorIndex).toBe(1)
   })
 
@@ -72,10 +80,10 @@ describe('takeFollowAnchor', () => {
   // value back would re-point it at whichever row a mark was last clicked on
   it('takes nothing, and releases nothing, with the follow off', () => {
     const h = host(false, 0)
-    const anchor = takeFollowAnchor(h, 1, () => true)
+    const anchor = takeFollowAnchor(h, 1)
     expect(anchor.taken).toBe(false)
 
-    h.followAnchorIndex = 2
+    h.setFollowAnchorIndex(2)
     anchor.release()
     expect(h.followAnchorIndex).toBe(2)
   })
@@ -84,8 +92,8 @@ describe('takeFollowAnchor', () => {
   // a later click moved it to
   it('releases nothing once a later take has moved the anchor on', () => {
     const h = host(true, 0)
-    const first = takeFollowAnchor(h, 1, () => true)
-    const second = takeFollowAnchor(h, 2, () => true)
+    const first = takeFollowAnchor(h, 1)
+    const second = takeFollowAnchor(h, 2)
 
     first.release()
     expect(h.followAnchorIndex).toBe(2)
@@ -93,15 +101,24 @@ describe('takeFollowAnchor', () => {
     expect(h.followAnchorIndex).toBe(1)
   })
 
-  it('is idempotent, and silent once the view is gone', () => {
+  it('is idempotent', () => {
     const h = host(true, 0)
-    const anchor = takeFollowAnchor(h, 1, () => true)
+    const anchor = takeFollowAnchor(h, 1)
     anchor.release()
     anchor.release()
     expect(h.followAnchorIndex).toBe(0)
+  })
 
+  // the guard is on the HOST, the node release writes. Given the navigated
+  // row's liveness instead, the exit that most needs releasing — the row died
+  // mid-flight, while the view holding the anchor did not — read false and kept
+  // the anchor on a row nobody chose.
+  it('does not write once the host itself is gone', () => {
     const dead = host(true, 0)
-    takeFollowAnchor(dead, 1, () => false).release()
-    expect(dead.followAnchorIndex).toBe(1)
+    const anchor = takeFollowAnchor(dead, 1)
+    destroy(dead)
+    expect(() => {
+      anchor.release()
+    }).not.toThrow()
   })
 })

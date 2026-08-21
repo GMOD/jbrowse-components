@@ -417,7 +417,7 @@ export function linearSyntenyViewHelperModelFactory(
         const { parentView } = self
         const view = parentView.views[row]
         if (view) {
-          const anchor = takeFollowAnchor(parentView, row, () => isAlive(view))
+          const anchor = takeFollowAnchor(parentView, row)
           const restoreViewport = captureRowViewport(view)
           const loc = navLocString(refName, locus)
           view
