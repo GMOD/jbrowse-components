@@ -80,8 +80,9 @@ export function TrackColorsMixin() {
        * #volatile
        * The widest span each numeric channel has been seen to cover, over every
        * fetch this view has taken — what keeps an `attribute:<column>` ramp from
-       * re-scaling under a pan. Widened by `observeAttributeRanges`, read
-       * through `attributeRanges`, which is where the reasoning is.
+       * re-scaling under a pan. Widened by `observeAttributeRanges`, dropped by
+       * `resetAttributeRanges`, read through `attributeRanges`, which is where
+       * the reasoning is.
        */
       seenAttributeRanges: {} as Record<string, AttributeRange>,
     }))
@@ -148,6 +149,11 @@ export function TrackColorsMixin() {
        * domain that only ever widens still says what the reader is looking at —
        * the legend prints the actual numbers — and settles instead of
        * oscillating.
+       *
+       * Monotonic UNTIL A MODE IS PICKED, which is the way back: one window
+       * holding an outlier would otherwise compress the ramp for the rest of the
+       * session, and the union above is over the LOADED spans, so
+       * `resetAttributeRanges` rescales to what is on screen there and then.
        *
        * View-wide rather than per display because the floating legend is one box
        * for the whole view: two displays scaling the same ramp from different
@@ -238,63 +244,94 @@ export function TrackColorsMixin() {
         )
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * Fold one fetch's observed attribute spans into the domain this view
-       * paints and labels its ramps with. Called by each display as its fetch
-       * lands, because the accumulation has to outlive the payload it came from:
-       * the previous window's span is gone from `loadedAttributeRanges` the
-       * moment the next one commits.
-       */
-      observeAttributeRanges(ranges: Record<string, AttributeRange>) {
-        self.seenAttributeRanges = widenRanges(self.seenAttributeRanges, ranges)
-      },
-      /**
-       * #action
-       * Set the view-wide mode. Clears every per-track override, so picking a
-       * mode from the top level of the palette menu really does mean "all
-       * tracks".
-       */
-      setColorBy(value: SyntenyColorBy) {
-        self.colorBy = value
-        self.trackColorBy.clear()
-      },
-      /**
-       * #action
-       * Point one track at its own mode, or back at the view-wide one.
-       */
-      setTrackColorBy(trackId: string, value: SyntenyColorBy | undefined) {
-        if (value === undefined) {
-          self.trackColorBy.delete(trackId)
-        } else {
-          self.trackColorBy.set(trackId, value)
+    .actions(self => {
+      // Identity-preserving, like `widenRanges`: a recolor reads the domain
+      // through a computed, and a fresh empty object per mode pick would re-run
+      // every color pass behind a reset that reset nothing.
+      function forgetSeenRanges() {
+        if (Object.keys(self.seenAttributeRanges).length > 0) {
+          self.seenAttributeRanges = {}
         }
-      },
-      /**
-       * #action
-       * Pin one track's color under `colorBy: 'track'`, or release it back to an
-       * automatic palette slot.
-       */
-      setTrackColor(trackId: string, value: string | undefined) {
-        if (value === undefined) {
-          self.trackColors.delete(trackId)
-        } else {
-          self.trackColors.set(trackId, value)
-        }
-      },
-      /**
-       * #action
-       */
-      clearTrackColorSettings() {
-        self.trackColorBy.clear()
-        self.trackColors.clear()
-      },
-      /**
-       * #action
-       */
-      setShowColorLegend(value: boolean) {
-        self.showColorLegend = value
-      },
-    }))
+      }
+      return {
+        /**
+         * #action
+         * Fold one fetch's observed attribute spans into the domain this view
+         * paints and labels its ramps with. Called by each display as its fetch
+         * lands, because the accumulation has to outlive the payload it came
+         * from: the previous window's span is gone from `loadedAttributeRanges`
+         * the moment the next one commits.
+         */
+        observeAttributeRanges(ranges: Record<string, AttributeRange>) {
+          self.seenAttributeRanges = widenRanges(
+            self.seenAttributeRanges,
+            ranges,
+          )
+        },
+        /**
+         * #action
+         * Forget the accumulated domain, leaving `attributeRanges` reporting
+         * what the LOADED fetches cover and nothing else.
+         *
+         * The way back from a monotonic domain, and the only one: a single
+         * window holding an outlier widens the ramp for the rest of the
+         * session, and `attributeRanges` unions the loaded spans over this, so
+         * a reset rescales to what is on screen without waiting for a refetch.
+         * Picking a mode is what calls it — the gesture a reader makes when the
+         * ramp is telling them nothing is to choose it again.
+         */
+        resetAttributeRanges() {
+          forgetSeenRanges()
+        },
+        /**
+         * #action
+         * Set the view-wide mode. Clears every per-track override, so picking a
+         * mode from the top level of the palette menu really does mean "all
+         * tracks" — and rescales the ramp, which is the only way back from a
+         * domain one outlying window widened.
+         */
+        setColorBy(value: SyntenyColorBy) {
+          self.colorBy = value
+          self.trackColorBy.clear()
+          forgetSeenRanges()
+        },
+        /**
+         * #action
+         * Point one track at its own mode, or back at the view-wide one.
+         */
+        setTrackColorBy(trackId: string, value: SyntenyColorBy | undefined) {
+          if (value === undefined) {
+            self.trackColorBy.delete(trackId)
+          } else {
+            self.trackColorBy.set(trackId, value)
+          }
+          forgetSeenRanges()
+        },
+        /**
+         * #action
+         * Pin one track's color under `colorBy: 'track'`, or release it back to
+         * an automatic palette slot.
+         */
+        setTrackColor(trackId: string, value: string | undefined) {
+          if (value === undefined) {
+            self.trackColors.delete(trackId)
+          } else {
+            self.trackColors.set(trackId, value)
+          }
+        },
+        /**
+         * #action
+         */
+        clearTrackColorSettings() {
+          self.trackColorBy.clear()
+          self.trackColors.clear()
+        },
+        /**
+         * #action
+         */
+        setShowColorLegend(value: boolean) {
+          self.showColorLegend = value
+        },
+      }
+    })
 }

@@ -52,3 +52,44 @@ describe('attributeRanges', () => {
     ).toEqual({ dn: { min: 1, max: 2 } })
   })
 })
+
+// A fetch reports the span of the window it holds, so painting off that alone
+// re-maps every ribbon onto the ramp each time a pan rolls the window over.
+describe('the domain accumulated across fetches', () => {
+  it('holds the span a pan has left behind', () => {
+    const loaded = [{ dn: { min: 0, max: 2 } }]
+    const view = viewWith(loaded)
+    view.observeAttributeRanges(loaded[0]!)
+    loaded[0] = { dn: { min: 8, max: 9 } }
+    view.observeAttributeRanges(loaded[0])
+    expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 9 } })
+  })
+
+  // The identity, not just the value: this is read through a computed on every
+  // recolor, and a fresh object per fetch that said nothing new would re-run
+  // every color pass and re-upload every instance buffer behind it.
+  it('is the SAME OBJECT after a fetch that says nothing new', () => {
+    const view = viewWith([])
+    view.observeAttributeRanges({ dn: { min: 0, max: 2 } })
+    const first = view.seenAttributeRanges
+    view.observeAttributeRanges({ dn: { min: 0.5, max: 1 } })
+    expect(view.seenAttributeRanges).toBe(first)
+  })
+
+  it('and reading it past a loaded span already inside it allocates nothing', () => {
+    const view = viewWith([{ dn: { min: 0.5, max: 1 } }])
+    view.observeAttributeRanges({ dn: { min: 0, max: 2 } })
+    expect(view.attributeRanges).toBe(view.seenAttributeRanges)
+  })
+
+  // The way back. One window holding an outlier would otherwise compress the
+  // ramp for the rest of the session, and the union is over the LOADED spans —
+  // so the rescale lands without waiting for a refetch.
+  it('is dropped by picking a mode, rescaling to what is loaded', () => {
+    const view = viewWith([{ dn: { min: 0, max: 1 } }])
+    view.observeAttributeRanges({ dn: { min: 0, max: 900 } })
+    expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 900 } })
+    view.setColorBy('attribute:dn')
+    expect(view.attributeRanges).toEqual({ dn: { min: 0, max: 1 } })
+  })
+})
