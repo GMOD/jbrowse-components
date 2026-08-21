@@ -20,6 +20,7 @@ import { levelHeightForCount } from './levelHeightBudget.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackContainer } from '@jbrowse/core/util'
+import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
 import type {
   IAnyModelType,
   Instance,
@@ -540,7 +541,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         // what let the dotplot's two-argument twin pass an
         // `applySyntenyTrackSelections` level off as a track snapshot
         initialSnapshot: object = {},
-        displayInitialSnapshot: Record<string, unknown> = {},
+        displayInitialSnapshot: DisplayInitialSnapshot = {},
         inlineConf?: Record<string, unknown>,
       ) {
         self.levels[level]?.showTrack(

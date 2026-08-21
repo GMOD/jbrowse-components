@@ -25,6 +25,7 @@ import type {
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { ParentViewDuck } from './parentViewDuck.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ComparativeSurface } from '@jbrowse/synteny-core'
@@ -100,7 +101,7 @@ export function linearSyntenyViewHelperModelFactory(
       showTrack(
         trackId: string,
         initialSnapshot: object = {},
-        displayInitialSnapshot: Record<string, unknown> = {},
+        displayInitialSnapshot: DisplayInitialSnapshot = {},
         inlineConf?: Record<string, unknown>,
       ) {
         return showTrackGeneric(

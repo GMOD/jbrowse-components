@@ -68,6 +68,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
+import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type {
@@ -1335,7 +1336,7 @@ export default function stateModelFactory(pm: PluginManager) {
         showTrack(
           trackId: string,
           initialSnapshot: object = {},
-          displayInitialSnapshot: Record<string, unknown> = {},
+          displayInitialSnapshot: DisplayInitialSnapshot = {},
           inlineConf?: Record<string, unknown>,
         ) {
           return showTrackGeneric(

@@ -679,7 +679,15 @@ interface GenericView {
   tracks: MSTArray<MinimalTrack>
 }
 
-interface DisplayInitialSnapshot {
+/**
+ * The display-snapshot argument of `showTrackGeneric`, exported so a view's own
+ * `showTrack` can annotate its parameter with it rather than approximate it.
+ * `Record<string, unknown>` is the approximation that reads as equivalent and is
+ * not: it rejects the precise snapshot interfaces callers legitimately pass,
+ * which have no index signature — the same hazard the `initialSnapshot`
+ * parameter's `object` annotation exists to avoid.
+ */
+export interface DisplayInitialSnapshot {
   type?: string
   [key: string]: unknown
 }
