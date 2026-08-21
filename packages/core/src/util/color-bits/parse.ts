@@ -339,7 +339,12 @@ function parseAngle(angle: string) {
       factor = 360
     }
   }
-  return Number.parseFloat(angle) / factor
+  const turns = Number.parseFloat(angle) / factor
+  // Hue is periodic, and every caller of this is a hue. `hueToRGB` corrects its
+  // argument by at most one turn, so it reads `hsl(-720deg)` as a hue two turns
+  // below the wheel rather than as red — folding here is what makes the three
+  // hue syntaxes agree with a browser past ±1 turn.
+  return turns - Math.floor(turns)
 }
 
 /**

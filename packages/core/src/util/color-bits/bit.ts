@@ -23,5 +23,15 @@ export function get(n: number, offset: number) {
 }
 
 export function set(n: number, offset: number, byte: number) {
-  return n ^ ((n ^ (byte << offset)) & (0xff << offset))
+  return n ^ ((n ^ (clampByte(byte) << offset)) & (0xff << offset))
+}
+
+// CSS clamps an out-of-range channel and this composition cannot: `<<` wraps,
+// and `newColor`'s `+` then carries the overflow into the neighbouring channel.
+// Unclamped, `rgb(0 0 0 / -20%)` composes to white at 80% rather than to
+// transparent black, and `alpha(red, 1.4)` masks 357 down to 101, painting a
+// feature at 40% opacity for a caller that asked for more than full. Both
+// channel parsers already document a 0..255 result; this is what makes it true.
+export function clampByte(n: number) {
+  return n < 0 ? 0 : n > 255 ? 255 : n
 }

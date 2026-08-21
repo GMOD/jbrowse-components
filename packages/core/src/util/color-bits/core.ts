@@ -1,4 +1,4 @@
-import { cast, get, set } from './bit.ts'
+import { cast, clampByte, get, set } from './bit.ts'
 
 export type Color = number
 
@@ -12,7 +12,12 @@ export const OFFSET_A = 0
  * Every component should be in the [0, 255] range.
  */
 export function newColor(r: number, g: number, b: number, a: number) {
-  return (r << OFFSET_R) + (g << OFFSET_G) + (b << OFFSET_B) + (a << OFFSET_A)
+  return (
+    (clampByte(r) << OFFSET_R) +
+    (clampByte(g) << OFFSET_G) +
+    (clampByte(b) << OFFSET_B) +
+    (clampByte(a) << OFFSET_A)
+  )
 }
 
 /**
