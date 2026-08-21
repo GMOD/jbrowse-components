@@ -7,15 +7,19 @@ description: Live state of the tutorial video-tour thread — which candidates a
 
 ## State
 
-**Candidates 1 to 4 are filmed and landed** (2026-08-21):
-`variants/trio_phased_matrix`, `synteny/hg002_dotplot_import`,
-`sv/derivative_allele_route` (two pages) and `repeats/painting_display_switch`.
-Coverage is **13 tutorials of 43**. Work down from candidate 5.
+**Seven candidates are filmed and landed** (2026-08-21): 1 to 4
+(`variants/trio_phased_matrix`, `synteny/hg002_dotplot_import`,
+`sv/derivative_allele_route` over two pages, `repeats/painting_display_switch`)
+and then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
+`synteny/dotplot_reorder`). Coverage is **16 tutorials of 43**. What is left is
+5, 6, 8, 10, 12, 13 and 14.
 
 - **[ideas/tutorial-tour-candidates.md](../ideas/tutorial-tour-candidates.md)**
-  — the ranked list, and the one to work from. Each of the four filmed entries
-  now records what its estimate got wrong, because the next tour on that page
-  starts there.
+  — the ranked list, and the one to work from. Each filmed entry now records
+  what its estimate got wrong, because the next tour on that page starts there.
+  Four of the seven found a defect in the page they film, which is the strongest
+  argument for the thread: a route nobody walks is a route the prose can be
+  wrong about.
 - **[ideas/tutorial-structure-audit.md](../ideas/tutorial-structure-audit.md)**
   — eight pages that fail the reorderability test, three that want splitting.
   Still editorial calls nobody has made, minus `ld_mosquitoes`, whose restated

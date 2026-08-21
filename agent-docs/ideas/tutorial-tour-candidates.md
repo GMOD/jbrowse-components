@@ -1,6 +1,6 @@
 ---
 name: tutorial-tour-candidates
-description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. The top four are filmed and their entries record what the estimate got wrong; work down from five. Read before writing a video spec for a tutorial.
+description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. Seven are filmed and their entries record what each estimate got wrong; what is left is 5, 6, 8, 10, 12, 13 and 14. Read before writing a video spec for a tutorial.
 audience: internal
 ---
 
@@ -12,22 +12,24 @@ the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
 holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
-Coverage: **13 of 43 tutorials carry a tour** — `analyze_trio`, `bxd_qtl`,
+Coverage: **16 of 43 tutorials carry a tour** — `analyze_trio`, `bxd_qtl`,
 `cancer_sv`, `dog10k_selection`, `genomes_proteins` (3), `hg002_haplotypes`,
-`methylation`, `pangenome_ecoli` (3), `pangenome_hprc` (2),
-`repeatmasker_classes`, `sv_visualization_cgiab`, `synteny_visualization`,
-`tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 30 do not.
+`hic_structural_variants`, `mcscan_synteny_grape_peach`, `methylation`,
+`multiway_synteny_grape_peach_cacao`, `pangenome_ecoli` (3), `pangenome_hprc`
+(2), `repeatmasker_classes`, `sv_visualization_cgiab`, `synteny_visualization`,
+`tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 27 do not.
 
-**Candidates 1 to 4 are filmed and landed** on 2026-08-21, one clip serving two
-pages for 3. Their entries stay below with what each actually cost and what it
-corrected, because the next tour on those pages starts from them. Work down from
-5.
+**Candidates 1 to 4, 7, 9 and 11 are filmed and landed** on 2026-08-21, one clip
+serving two pages for 3. Their entries stay below with what each actually cost
+and what it corrected, because the next tour on those pages starts from them.
+**What is left is 5, 6, 8, 10, 12, 13 and 14**, and 14 wants its page
+restructured first.
 
 Every candidate below came out of the ten-agent tutorial audit
 (`tutorial-structure-audit.md` is that audit's structural half). Each names what
 the page could delete, because a tour that only adds is the weaker kind.
 
-## The four that are done
+## The four that were first, all done
 
 **1. `variants/trio_phased_matrix` — `tutorials/analyze_trio.md`**
 
@@ -143,28 +145,42 @@ its own result; the user guide keeps it, having no tour.
    bands, then `Clustering → Cluster rows by genotype...`. Pure re-layout whose
    before and after are two pictures with no visual link. Risk: the callset
    streams from EBI FTP.
-7. **`hic/two_regions`** (`hic_structural_variants.md`) — type
-   `chr9:130,600,000-131,000,000 chr22:23,100,000-23,400,000` into the location
-   box and watch the wedge between the two triangles fill. One text entry, and
-   it is the page's central claim. Do not film the scan; that is terminal
-   output.
+7. **`hic/two_regions`** (`hic_structural_variants.md`) — **FILMED**, 1124px
+   frame, 21s. Types the FIGURE's own two-region locstring rather than the one
+   this entry proposed, which appears nowhere in the tree: the tour ends on the
+   state `hic/bcr_abl1_translocation` is of, and opens on that string's first
+   region. Two things a wide frame did to it: the Enter keypress alone filmed
+   11.3s of frozen app while it re-laid out and kicked both fetches off (`cut`
+   goes on the PRESS here, not on the wait after it), and the bottom matrix ran
+   12px past the figure's 1100. The scan two sections down is still not filmed;
+   it prints a ranking, and a page can print text.
 8. **`synteny/allvsall_launch_from_selection`** (`allvsall_synteny.md`) — a
    rubberband on the scalebar → `Launch → Linear synteny view` → a dialog
    listing every assembly it found **with reorder arrows** → a one-row view
    becomes a five-row stack. The page flattens it into a three-link composite
    whose middle panel is a dialog no still can show being reordered.
 9. **`synteny/restack_around_locus`** (`multiway_synteny_grape_peach_cacao.md`)
-   — the only section on that page with **no figure at all**, and it describes
-   exactly what a still cannot hold: a drag-select, a dialog whose rows the
-   reader reorders with arrows, and a relaunch that re-lays out the whole stack.
+   — **FILMED**, 640px frame (sized to the dialog), 28s. The section said to
+   drag "any row's scale bar", which is false in the state its own figure shows:
+   a `LinearSyntenyView` keeps the synteny track on the level between two rows,
+   so `launchableTracks` finds nothing on a row and no Launch submenu appears at
+   all. The tour opens on the plain LGV the section's second paragraph
+   describes, and the prose now says where the offer lives. The dialog's own
+   "also align here … no panel" line for the four undeclared assemblies is in
+   frame, which is the lane-versus-panel distinction the page makes in prose.
 10. **`synteny/liftover_launch`** (`genomes_synteny.md`) — right-click a chain
     block → the launch dialog's CIGAR checkbox → `Replace current view`. The
     page carries a four-panel composite that is a route flattened into stills
     **on the wrong dataset**, and filming this lets it delete the panTro6/_FTO_
     detour that breaks its spine.
 11. **`synteny/dotplot_reorder`** (`mcscan_synteny_grape_peach.md`) —
-    **Re-order chromosomes** physically re-sorts the vertical axis using the
-    alignments, and the figure shows only the after. Five seconds.
+    **FILMED**, 768px frame, 28s rather than the five seconds this entry
+    estimated: it is a menu item that opens a dialog and does nothing until a
+    second click, and the dialog counts what it moved and what it reversed.
+    Needed one source change — the dotplot header's ⋮ button had neither a
+    label nor a testid, so it has `dotplot_view_menu` now. The figure's session
+    could not be reused: it carries `autoDiagonalize`, which runs as the view
+    opens, before a camera would be on.
 12. **`epigenomics/chromhmm_cluster`** (`chromhmm.md`) — cluster the
     127-epigenome track. The page's only figure is already a *result* of that
     run, so the reader takes the tidy order on faith.
