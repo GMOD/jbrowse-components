@@ -161,3 +161,24 @@ test('the navigation offers an undo that restores what the row was showing', asy
   expect(refNames(view, 1)).toEqual(['ctgA'])
   expect(view.views[1]!.bpPerPx).toBe(before)
 }, 20000)
+
+// The anchor is a persisted view-wide setting, and with the follow OFF this
+// click does not touch it — so neither may the undo. Writing it back
+// unconditionally re-pointed the anchor at whichever row a mark was last
+// clicked on, invisibly, until someone turned the mode on and found the stack
+// following the wrong row.
+test('with the follow off, the undo leaves the anchor row alone', async () => {
+  const { session, view, level } = await setup()
+  expect(view.followAnchorIndex).toBe(0)
+
+  // row 1, which is not the anchor — so an undo that wrote the anchor back
+  // unconditionally would have to write something, and the only thing it had
+  // was the row it just navigated
+  level.showOffscreenMateContig('ctgB', 1, { start: 200_000, end: 201_000 })
+  await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
+
+  const [action] = session.snackbarMessages[0]!.actions!
+  action!.onClick()
+
+  expect(view.followAnchorIndex).toBe(0)
+}, 20000)

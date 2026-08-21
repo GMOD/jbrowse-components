@@ -439,44 +439,60 @@ export function linearSyntenyViewHelperModelFactory(
         const { parentView } = self
         const view = parentView.views[row]
         if (view) {
-          const anchored = parentView.followSynteny
-            ? parentView.followAnchorIndex
-            : row
+          // A row the follow does not move needs no anchoring, and neither does
+          // a view not following at all. `tookAnchor` rather than comparing the
+          // anchor index later: with the follow OFF the index is a setting
+          // nothing here touched, so an undo that wrote it back would silently
+          // re-point an anchor the click never moved — at the row a mark
+          // happened to be clicked on, waiting for the next time the mode is
+          // turned on.
+          const tookAnchor =
+            parentView.followSynteny && parentView.followAnchorIndex !== row
           const restore = {
             // `displayedRegions` is a frozen Region[], so a copy of the array
             // is the whole of what has to be kept
             regions: [...view.displayedRegions],
             bpPerPx: view.bpPerPx,
             offsetPx: view.offsetPx,
-            anchor: anchored,
+            anchor: parentView.followAnchorIndex,
           }
-          if (anchored !== row) {
+          if (tookAnchor) {
             parentView.setFollowAnchorIndex(row)
           }
           const loc = navLocString(refName, locus)
           view
             .navToLocString(loc, undefined, locus ? OFFSCREEN_MATE_NAV_GROW : 0)
             .then(() => {
-              getSession(self).notify(
-                anchored === row
-                  ? `Showing ${loc}`
-                  : `Showing ${loc}, and following this row`,
-                'info',
-                {
-                  name: 'Undo',
-                  onClick: () => {
-                    if (isAlive(view)) {
-                      parentView.setFollowAnchorIndex(restore.anchor)
-                      view.setDisplayedRegions(restore.regions)
-                      view.zoomTo(restore.bpPerPx)
-                      view.scrollTo(restore.offsetPx)
-                    }
+              // The level can be detached while the navigation is in flight —
+              // the track holding it removed, the view closed — and `getSession`
+              // throws on a dead node, inside a `then` whose `catch` would then
+              // call it a second time.
+              if (isAlive(self)) {
+                getSession(self).notify(
+                  tookAnchor
+                    ? `Showing ${loc}, and following this row`
+                    : `Showing ${loc}`,
+                  'info',
+                  {
+                    name: 'Undo',
+                    onClick: () => {
+                      if (isAlive(view)) {
+                        if (tookAnchor) {
+                          parentView.setFollowAnchorIndex(restore.anchor)
+                        }
+                        view.setDisplayedRegions(restore.regions)
+                        view.zoomTo(restore.bpPerPx)
+                        view.scrollTo(restore.offsetPx)
+                      }
+                    },
                   },
-                },
-              )
+                )
+              }
             })
             .catch((e: unknown) => {
-              getSession(self).notifyError(`${e}`, e)
+              if (isAlive(self)) {
+                getSession(self).notifyError(`${e}`, e)
+              }
             })
         }
       },
