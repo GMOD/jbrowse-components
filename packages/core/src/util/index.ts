@@ -243,6 +243,7 @@ export {
   type AddTrackWidgetSelf,
   type AddTrackWorkflowModel,
 } from './addTrackFromWidget.ts'
+export { namesTemporaryAssembly } from './temporaryAssembly.ts'
 export { makeTrackId } from './makeTrackId.ts'
 export { matchTrackId } from './matchTrackId.ts'
 

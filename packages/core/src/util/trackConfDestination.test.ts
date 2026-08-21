@@ -83,3 +83,38 @@ test('addTrackFromWidget publishes, and does not touch the session store', () =>
   expect(calls).toEqual(['publish:t1'])
   expect(shown).toEqual(['t1'])
 })
+
+// ...except onto an assembly the view synthesized, where neither destination is
+// one the track survives: the assembly goes back when the view closes and the
+// entry is left naming nothing, one per file. The widget takes its assembly from
+// the containing view, so a user opening a BAM in a read-vs-ref panel arrives
+// here having chosen nothing — hence the third destination, the track itself.
+test('addTrackFromWidget puts a synthesized-assembly track on the track, not in a list', () => {
+  const { calls, session } = fakeSession()
+  const shown: [string, unknown][] = []
+  const conf = { trackId: 't2', type: 'FeatureTrack', assemblyNames: ['tmp'] }
+
+  const added = addTrackFromWidget({
+    model: {
+      trackContainer: {
+        assemblyNames: ['tmp'],
+        showTrack: (
+          trackId: string,
+          _s: unknown,
+          _d: unknown,
+          inline: unknown,
+        ) => shown.push([trackId, inline]),
+      },
+      clearData: () => {},
+    } as never,
+    session: {
+      ...session,
+      temporaryAssemblies: [{ name: 'tmp' }],
+    } as never,
+    conf,
+  })
+
+  expect(calls).toEqual([])
+  expect(shown).toEqual([['t2', conf]])
+  expect(added).toBe(conf)
+})

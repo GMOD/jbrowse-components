@@ -1,3 +1,4 @@
+import { namesTemporaryAssembly } from './temporaryAssembly.ts'
 import {
   isSessionModelWithWidgets,
   isSessionWithPublishTrackConf,
@@ -76,6 +77,17 @@ export function finishAddTrack(
  * - It dismisses the widget even when `publishTrackConf` rejected the config,
  *   wiping the form behind the error snackbar.
  *
+ * **A track on an assembly the view synthesized takes neither destination.** The
+ * widget reads its assembly off the containing view and offers no choice of one
+ * outside it (`setAssembly` lists `session.assemblyNames`, which excludes the
+ * temporary ones), so a user opening a file in a read-vs-ref panel arrives here
+ * naming an assembly that goes back when that view closes — and a session list
+ * would keep the config, once per file, in the snapshot they save and share.
+ * That is ADR-084's leak reached through the widget rather than through a
+ * launcher, so it takes ADR-084's answer: the config rides on the track as
+ * `showTrack`'s `inlineConf`, works for the life of the view, and goes out with
+ * it. The container is the one this assembly came from, so it displays it.
+ *
  * Returns the added config, or undefined when `publishTrackConf` rejected it — it
  * has already surfaced its own error, and a second, vaguer snackbar on top of
  * that helps nobody.
@@ -96,11 +108,23 @@ export function addTrackFromWidget({
   if (!isSessionWithPublishTrackConf(session)) {
     throw new Error("Can't add tracks to this session")
   }
+  const { trackContainer } = model
+  if (namesTemporaryAssembly(session, conf)) {
+    if (!trackContainer) {
+      session.notify(
+        `Could not add "${conf.name ?? conf.trackId}": the view it was being added to has closed, and it uses an assembly that only that view had.`,
+        'warning',
+      )
+      return undefined
+    }
+    trackContainer.showTrack(conf.trackId, {}, {}, conf)
+    finishAddTrack(model, session)
+    return conf
+  }
   const added = session.publishTrackConf(conf)
   if (!added) {
     return undefined
   }
-  const { trackContainer } = model
   if (containerDisplaysAssembly(trackContainer, conf.assemblyNames)) {
     trackContainer?.showTrack(conf.trackId)
   } else {

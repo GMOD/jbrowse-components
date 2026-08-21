@@ -2,14 +2,13 @@ import { lazy } from 'react'
 
 import { InfoIcon } from '@jbrowse/core/ui/Icons'
 import { buildExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
+import { namesTemporaryAssembly } from '@jbrowse/core/util'
 import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
-
-import { namesTemporaryAssembly } from './temporaryAssemblyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

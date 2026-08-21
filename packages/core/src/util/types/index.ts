@@ -624,7 +624,20 @@ export interface TrackContainer {
     displays: ResolvableDisplay[]
   }[]
   assemblyNames?: string[]
-  showTrack: (trackId: string) => unknown
+  /**
+   * The trailing three are `showTrackGeneric`'s, and only the last has a caller
+   * here: `addTrackFromWidget` passes a config the session must not keep. A
+   * container that implements the one-argument form still satisfies this, and
+   * drops the config — `showTrackGeneric` then finds no track by that id and
+   * throws "Could not resolve identifier", which is a snackbar rather than a
+   * silence.
+   */
+  showTrack: (
+    trackId: string,
+    initialSnapshot?: object,
+    displayInitialSnapshot?: Record<string, unknown>,
+    inlineConf?: Record<string, unknown>,
+  ) => unknown
   hideTrack: (trackId: string) => unknown
   toggleTrack: (trackId: string) => unknown
 }

@@ -847,8 +847,9 @@ generalization. It
 is dropped, which would hide the very violation being reported.
 
 **A test run fails on any of them** (2026-08). `config/jest/console.js` buffers
-every message carrying the `[jbrowse display contract]` prefix and
-`config/jest/contractGate.js` — in every jest project's
+every message carrying a `[jbrowse <family> contract]` prefix — `display` and
+`session` exist today, and a new family reaches the gate without touching it —
+and `config/jest/contractGate.js` — in every jest project's
 `setupFilesAfterEnv` — fails the test that collected one, quoting it verbatim.
 What changed is who *listens*; the reporting channel is unchanged and stays
 that way, for the reason above. Before it, a violation printed into a run that
@@ -933,6 +934,20 @@ only on a real violation):
   guard and a copy, each a bug taken the other way. It found a live one on its
   first run: "Copy track" offered a copy of a read-vs-ref band, which
   `publishTrackConf` wrote into the config.json every visitor is served.
+
+  **A check on a write catches the user's writes too, and those are not a
+  developer's mistake to report.** Two flows reached it holding nothing a message
+  about `inlineConf` could help with: Copy track, and the Add-track widget, which
+  takes its assembly from the containing view — so opening a BAM in a read-vs-ref
+  panel arrived at `sessionTracks` with a synthesized assembly the user never
+  chose. Each needed an answer of its own before the check sees it, and the two
+  answers differ because the flows do: a copy of such a track is dead whatever
+  you do with it, so the menu greys it and says why, while the file the user
+  opened is worth having for the life of the view, so `addTrackFromWidget` routes
+  it to `showTrack`'s `inlineConf` and no list at all. **The general move: a check
+  on a write needs the user-driven callers answered first, or its report is a
+  scolding for something nobody did** — and the tell is a message whose remedy
+  the reported caller cannot reach.
 
 **Still silent:**
 

@@ -87,6 +87,20 @@ The capability given up: two track instances can no longer share one view-local
 config, which `resolveIdentifier` allowed. No launcher did it, and none of these
 tracks appears in a selector that could open a second copy.
 
+**A launcher is not the only thing that reaches one of these views.** A user does
+too, and the two ways they can put a track on a synthesized assembly were still
+writing into a session list after this — found by
+`assertTrackConfOutlivesItsAssemblies`, the check that enforces this decision
+(ARCHITECTURAL_LIMITS.md §"Ordering is the contract"). "Copy track" is answered
+by refusing: a copy of such a track is dead at either destination, so the menu
+greys the row and `disabledHelpText` says why. The Add-track widget is answered
+by taking this decision — it reads its assembly off the containing view, so a
+file opened in the read panel arrives naming the synthetic one, and
+`addTrackFromWidget` now hands that config to `showTrack` as `inlineConf`
+instead of publishing it. The track works for the life of the view and goes out
+with it, which is what this ADR wanted for the launchers and is no less right
+when the user is the one who asked.
+
 `products/jbrowse-web/src/tests/viewTeardown.test.tsx` pins the invariant — the
 config resolves off the track, appears in no session list, survives a snapshot,
 and is gone after `removeView`. `ReadVsRef.test.tsx` and `SVInspector.test.tsx`

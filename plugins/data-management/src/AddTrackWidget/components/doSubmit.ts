@@ -3,6 +3,7 @@ import {
   getSession,
   isElectron,
   isSupportedIndexingAdapter,
+  namesTemporaryAssembly,
 } from '@jbrowse/core/util'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 
@@ -60,10 +61,15 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
   // read before the add, which clears the form on success
   const assembly = model.assembly
   const attr = model.textIndexingConf ?? defaultIndexingConf
+  // Never for a track on an assembly the view synthesized: `addTrackFromWidget`
+  // opens that one inline on the track rather than adding it to any list, so an
+  // indexing job would name a trackId the config does not hold, and the index
+  // would outlive the track it was built for by the width of the session.
   const wantsIndex =
     isElectron &&
     textIndexTrack &&
-    isSupportedIndexingAdapter(trackAdapter.type)
+    isSupportedIndexingAdapter(trackAdapter.type) &&
+    !namesTemporaryAssembly(session, trackConfig)
 
   // Coerced even though `DraftTrackConfig` types this `string`: `mixinData` is
   // a plugin extension point and deepmerge lets it write any key, so the
