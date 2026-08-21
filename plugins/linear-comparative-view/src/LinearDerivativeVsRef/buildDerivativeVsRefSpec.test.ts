@@ -271,11 +271,12 @@ describe('selectedCandidateIndex', () => {
   })
 })
 
-// A shape is not unique, and `derivativePathTestId`'s own docstring says so:
-// two routes of the same shape at nearby loci are what a fold-back produces.
-// Emitted per row regardless, both rows carried the same `data-testid` and every
-// `getByTestId` for it threw "found multiple elements" — on the very allele the
-// fold-back tutorial is about.
+// A shape is not unique, and `derivativePathTestId`'s own docstring says so: a
+// candidate is grouped by clustered junction coordinates, so two alleles
+// crossing the same chromosomes in the same orientations at different loci are
+// two rows spelling one id. Emitted per row, both would carry the same
+// `data-testid` and every `getByTestId` for it would throw "found multiple
+// elements".
 describe('derivativePathTestIds', () => {
   const foldback = (start: number): DerivativeCandidate => ({
     segments: [
@@ -319,6 +320,36 @@ describe('derivativePathTestIds', () => {
     expect(derivativePathTestIds([CANDIDATE])).toEqual([
       'derivative-path-chr3-chr10-chr12rev-chr3rev',
     ])
+  })
+
+  // The suffix is spelled out of the same alphabet the shape is, so on an
+  // Ensembl-named assembly — which is what the tutorial's own specs select
+  // against, `derivative-path-9-9rev` — a blind `-2` collides with the bare
+  // shape of the route that visits chromosome 2 next.
+  it('does not suffix onto an id another row already holds', () => {
+    const seg = (refName: string, strand = 1) => ({
+      refName,
+      start: 0,
+      end: 1000,
+      strand,
+    })
+    const route = (segments: ReturnType<typeof seg>[], id: string) =>
+      ({
+        segments,
+        readCount: 4,
+        pathId: id,
+        locString: '',
+        refNames: [...new Set(segments.map(s => s.refName))],
+        extendsOffScreen: false,
+      }) as DerivativeCandidate
+    const ids = derivativePathTestIds([
+      route([seg('9'), seg('9', -1)], 'a'),
+      route([seg('9'), seg('9', -1)], 'b'),
+      route([seg('9'), seg('9', -1), seg('2')], 'c'),
+    ])
+    expect(new Set(ids).size).toBe(3)
+    expect(ids[0]).toBe('derivative-path-9-9rev')
+    expect(ids[2]).toBe('derivative-path-9-9rev-2')
   })
 })
 

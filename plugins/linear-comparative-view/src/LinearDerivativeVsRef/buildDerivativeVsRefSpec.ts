@@ -129,25 +129,44 @@ export function derivativePathTestId(candidate: DerivativeCandidate) {
  * The same locators, made unique across one rendered list: the second and later
  * rows of a repeated shape take a `-2`, `-3` suffix.
  *
- * `derivativePathTestId` is a shape, and a shape is not unique — two routes of
- * the same shape at nearby loci are what a fold-back produces, and its own
- * docstring says so. Emitted per row regardless, both rows carried
- * `derivative-path-chr9-chr9rev` and every `getByTestId` for it threw "found
- * multiple elements" — on precisely the allele the fold-back tutorial is about,
- * and in the id whose stated job is to keep a spec off row numbers.
+ * `derivativePathTestId` is a shape, and a shape is not unique: a candidate is
+ * grouped by `pathId`, which is the clustered junction coordinates, so two
+ * alleles crossing the same chromosomes in the same orientations at different
+ * loci are two rows spelling one id. Repeated breakage-fusion-bridge cycles
+ * re-breaking near one point are how that arises — `realReads.foldback` holds
+ * two such alleles 28 bp apart, and they escape only because one picked up a
+ * third segment. Emitted per row, the pair would give every `getByTestId` for
+ * that shape "found multiple elements", in the id whose stated job is to keep a
+ * spec off row numbers.
  *
  * Suffixed rather than respelled, so a spec naming a shape that turns out
  * unique still selects it, and the ambiguous case is at least reachable instead
  * of unusable. It names a ROW of one render either way: a spec wanting an
  * identity across renders holds `pathId`.
+ *
+ * The suffix skips past an id some other row already holds, because a shape
+ * ending in a numeric refName can spell one: the tutorial's own assemblies name
+ * chromosomes `9` and `2`, so a repeated `9 → 9 (inverted)` wants
+ * `derivative-path-9-9rev-2`, which is already the bare shape of
+ * `9 → 9 (inverted) → 2`. Suffixing blind reintroduces the duplicate it is here
+ * to remove.
  */
 export function derivativePathTestIds(candidates: DerivativeCandidate[]) {
+  const shapes = candidates.map(derivativePathTestId)
+  const taken = new Set(shapes)
   const seen = new Map<string, number>()
-  return candidates.map(candidate => {
-    const shape = derivativePathTestId(candidate)
+  return shapes.map(shape => {
     const nth = (seen.get(shape) ?? 0) + 1
     seen.set(shape, nth)
-    return nth === 1 ? shape : `${shape}-${nth}`
+    if (nth === 1) {
+      return shape
+    }
+    let n = nth
+    while (taken.has(`${shape}-${n}`)) {
+      n++
+    }
+    taken.add(`${shape}-${n}`)
+    return `${shape}-${n}`
   })
 }
 
