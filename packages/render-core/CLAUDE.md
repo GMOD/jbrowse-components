@@ -78,6 +78,12 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   were reading anyway while passing `encode: data => data` beside it.
 - **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
   before it looks at the count, so an empty pack IS the release.
+- **A per-region entry is a non-null object, and both ends check it** —
+  `regionDataMap` at the `set`, `installPerRegionLifecycle` over whatever `data`
+  hands it, which is what covers a map derived off a computed (canvas's
+  `renderDataMap`, variants' `perRegionCellMap`). Dev-only, reports rather than
+  throws, and `Data extends object` says the same thing where a type can. No
+  rule to remember: the two checks are the check.
 
 ## Drawing
 

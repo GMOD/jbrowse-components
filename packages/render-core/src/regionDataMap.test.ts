@@ -14,7 +14,13 @@
  * failed region — hiding the violation. That makes the channel part of the
  * contract, so these assert on it through the jest gate's opt-in.
  */
-import { regionDataMap } from './installPerRegionLifecycle.ts'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
+import {
+  installPerRegionLifecycle,
+  regionDataMap,
+} from './installPerRegionLifecycle.ts'
 
 function captureReports(fn: () => void) {
   fn()
@@ -64,6 +70,62 @@ test('the value is stored anyway', () => {
 
   expect(map.has(0)).toBe(true)
   expect(map.get(0)).toBeUndefined()
+})
+
+// The same invariant at the other enforcement point. `regionDataMap` is only
+// the most common implementation of `data: () => ReadonlyMap<number, Data>` —
+// two displays derive theirs off a computed instead, and a map built that way
+// reaches the encode, the upload and every renderer having been checked by
+// nothing.
+describe('the map handed to installPerRegionLifecycle', () => {
+  const TestModel = types
+    .compose('TestModel', RenderLifecycleMixin(), types.model({}))
+    .volatile(() => ({}))
+
+  const backend = {
+    uploadRegion: () => {},
+    pruneRegions: () => {},
+  }
+
+  function installOver(data: ReadonlyMap<number, object>) {
+    installPerRegionLifecycle(TestModel.create(), backend, {
+      data: () => data,
+      render: () => true,
+    })
+  }
+
+  test('a derived map is checked too, and names the display', () => {
+    const derived = new Map<number, object>([
+      [0, { features: [] }],
+      [4, undefined as unknown as object],
+    ])
+
+    const reports = captureReports(() => {
+      installOver(derived)
+    })
+
+    expect(reports).toHaveLength(1)
+    expect(reports[0]).toContain('TestModel')
+    expect(reports[0]).toContain('region 4')
+    expect(reports[0]).toContain('undefined')
+  })
+
+  // The two points partition the maps rather than both reporting the same
+  // entry: a `regionDataMap` has already named the field it is stored on, which
+  // is the better blame, and the upload autorun re-runs on every recompute.
+  test('a regionDataMap is left to its own check', () => {
+    const stored = regionDataMap<object>('rpcDataMap')
+
+    const atTheStore = captureReports(() => {
+      stored.set(2, undefined as unknown as object)
+    })
+    const atTheUpload = captureReports(() => {
+      installOver(stored)
+    })
+
+    expect(atTheStore).toHaveLength(1)
+    expect(atTheUpload).toEqual([])
+  })
 })
 
 // Typecheck-only, and the half the runtime check cannot state for itself. The
