@@ -114,29 +114,36 @@ function pick(row: string, option: string) {
 }
 
 // The division this menu exists to state: everything about how the ribbons
-// look, in one place, whether it is a slider row, a checkbox or a submenu of
-// radios.
+// look, in one place, whatever the setting's arity.
 test('one menu holds every render setting', async () => {
   await openMenu()
   for (const label of [
     'Identity fade',
-    'Thin fade',
     'Curved lines',
     'Location markers',
+    'Thin fade',
+    'Opacity',
     'CIGAR indels',
     'Off-screen mates',
+    'Min length',
+    'Overdraw',
   ]) {
     expect(screen.getByText(label)).toBeTruthy()
   }
-  // the three continuous ones draw a slider each, behind the lazy chunk every
-  // inline menu slider row loads through
-  for (const testid of [
-    'opacity-slider',
-    'min-length-slider',
-    'overdraw-slider',
-  ]) {
-    expect(await screen.findByTestId(testid)).toBeTruthy()
+})
+
+// One row shape at the top level whatever the arity, so a continuous setting is
+// a submenu row like the choices rather than a two-line block drawing a widget
+// no other row has. The slider is a hover in, behind the lazy chunk every
+// inline menu slider row loads through.
+test('a continuous setting keeps its slider one hop in', async () => {
+  await openMenu()
+  for (const slug of ['opacity', 'min_length', 'overdraw']) {
+    expect(screen.getByTestId(`cascading-submenu-${slug}`)).toBeTruthy()
   }
+  expect(screen.queryByTestId('opacity-slider')).toBeNull()
+  fireEvent.click(screen.getByTestId('cascading-submenu-opacity'))
+  expect(await screen.findByTestId('opacity-slider')).toBeTruthy()
 })
 
 // Gated on the data rather than shown inert: PAFAdapter has one tier, so there
@@ -217,6 +224,7 @@ test('a checkbox row writes its boolean and leaves the menu up', async () => {
 // rather than a menu decoration — the caption is where a reader reads it back.
 test('a slider row captions the value it is set to', async () => {
   const view = await openMenu()
+  fireEvent.click(screen.getByTestId('cascading-submenu-opacity'))
   expect(await screen.findByText('Opacity: 0.200')).toBeTruthy()
   act(() => {
     view.setAlpha(0.5)

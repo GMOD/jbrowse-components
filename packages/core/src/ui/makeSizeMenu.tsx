@@ -90,6 +90,31 @@ export function makeSizeMenu(
   return sizeMenu(opts, opts.isDefault)
 }
 
+// The same control one hop down: a plain submenu row whose only child is the
+// size row above.
+//
+// For a menu where a slider drawn inline is the odd one out. Every other row
+// there is `label + [?] + (checkbox | chevron)` and a size row is a two-line
+// block with a widget of its own, so a menu holding several reads as a form to
+// fill in rather than a list to pick from — and the comparative views' settings
+// menus hold three each. Behind a chevron the row shape is uniform top to
+// bottom, and the value moves inside next to the slider that sets it, which is
+// where the radio submenus already keep their state.
+//
+// The "?" moves UP to the submenu row: a custom row draws its own help because
+// it never reaches the menu's shared trailing column, but the row a reader sees
+// here is the submenu row, and help on the inner one would be a second "?" for
+// the same setting a hover away.
+export function makeSizeSubMenu(
+  opts: SizeMenuOptions & { isDefault: boolean },
+): MenuItem {
+  return {
+    label: opts.title,
+    helpText: opts.help,
+    subMenu: [makeSizeMenu({ ...opts, help: undefined })],
+  }
+}
+
 // The same row over a **promotable** slot, which derives both halves the plain
 // form takes by hand — the reset button's enablement (`isSlotCustomized`) and
 // the "default for all tracks of this type" pin — from the one slot name. A

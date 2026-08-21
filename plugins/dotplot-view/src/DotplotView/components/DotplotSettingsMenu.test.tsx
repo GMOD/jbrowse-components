@@ -94,30 +94,34 @@ async function openMenu(adapter: Record<string, unknown> = PAF) {
 
 // The three sliders and, when the file has tiers, the row that used to be in
 // the ⋮ menu instead — split off from the sliders it belongs beside by widget
-// type rather than by subject.
+// type rather than by subject. Every one is the same row shape, the synteny
+// menu's: the slider is a hover in rather than drawn in the row.
 test('one menu holds every setting that decides what the plot looks like', async () => {
   await openMenu(PIF)
-  for (const testid of [
-    'opacity-slider',
-    'line-width-slider',
-    'min-length-slider',
+  for (const label of [
+    'Level of detail',
+    'Opacity',
+    'Line width',
+    'Min length',
   ]) {
-    expect(await screen.findByTestId(testid)).toBeTruthy()
+    expect(screen.getByText(label)).toBeTruthy()
   }
-  expect(screen.getByText('Level of detail')).toBeTruthy()
+  fireEvent.click(screen.getByTestId('cascading-submenu-opacity'))
+  expect(await screen.findByTestId('opacity-slider')).toBeTruthy()
 }, 20000)
 
 // Gated on the data rather than shown inert: PAFAdapter has one tier, so there
 // is nothing for this row to switch between.
 test('an adapter with no tiers is offered no level of detail', async () => {
   await openMenu()
-  expect(await screen.findByTestId('opacity-slider')).toBeTruthy()
+  expect(screen.getByText('Opacity')).toBeTruthy()
   expect(screen.queryByText('Level of detail')).toBeNull()
 }, 20000)
 
 // A custom row draws its own content, so the value it reports is the model's.
 test('a slider row captions the value it is set to', async () => {
   const view = await openMenu()
+  fireEvent.click(screen.getByTestId('cascading-submenu-line_width'))
   expect(await screen.findByText('Line width: 2.5px')).toBeTruthy()
   expect(view.lineWidth).toBe(2.5)
 }, 20000)

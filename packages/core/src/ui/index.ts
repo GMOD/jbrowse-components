@@ -69,7 +69,11 @@ export { default as MonospaceTextField } from './MonospaceTextField.tsx'
 export { default as ShareLinkField } from './ShareLinkField.tsx'
 export { default as SingleSlider } from './SingleSlider.tsx'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
-export { makePromotableSizeMenu, makeSizeMenu } from './makeSizeMenu.tsx'
+export {
+  makePromotableSizeMenu,
+  makeSizeMenu,
+  makeSizeSubMenu,
+} from './makeSizeMenu.tsx'
 export {
   INLINE_MENU_ROW_WIDTH,
   ResetToDefaultButton,

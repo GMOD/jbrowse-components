@@ -1,4 +1,4 @@
-import { makeSizeMenu } from '@jbrowse/core/ui'
+import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { toLocale } from '@jbrowse/core/util'
 import {
@@ -31,7 +31,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
  *
  * FLAT, with no section headings. The synteny view's menu earns its three
  * because it has ten rows to group; four do not, and a heading over a single
- * gated row is more rule than list.
+ * gated row is more rule than list. What it does keep is that menu's row shape
+ * — `label + [?] + chevron`, the sliders behind `makeSizeSubMenu` — and its
+ * order, the choice before the values.
  */
 const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
   model,
@@ -43,7 +45,8 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
       tooltip="Dotplot display settings"
       menuItems={() =>
         [
-          makeSizeMenu({
+          ...lodMenuItems(model),
+          makeSizeSubMenu({
             label: 'opacity',
             title: 'Opacity',
             help: 'Overall opacity of every plotted point. Lower values let dense overlapping alignments show through each other.',
@@ -63,7 +66,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
               model.setAlpha(DEFAULT_ALPHA)
             },
           }),
-          makeSizeMenu({
+          makeSizeSubMenu({
             label: 'line width',
             title: 'Line width',
             help: 'Screen-space thickness of each alignment, in pixels. Sub-pixel alignments render as dots, so a wider line makes a sparse whole-genome plot legible; a narrower one keeps a dense one from filling in.',
@@ -79,7 +82,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
               model.setLineWidth(DEFAULT_LINE_WIDTH)
             },
           }),
-          makeSizeMenu({
+          makeSizeSubMenu({
             label: 'min length',
             title: 'Min length',
             help: MIN_LENGTH_HELP,
@@ -101,7 +104,6 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
               model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
             },
           }),
-          ...lodMenuItems(model),
         ] satisfies MenuItem[]
       }
     >

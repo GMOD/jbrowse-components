@@ -1,4 +1,4 @@
-import { makeSizeMenu } from '@jbrowse/core/ui'
+import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
@@ -48,11 +48,14 @@ const THIN_FADE_HELP =
  * A MENU, not a panel of laid-out rows. The panel put nine controls of four
  * different widget kinds — sliders, segmented toggles, dropdowns — in one grid,
  * and a grid whose control column holds a different shape on every line reads
- * as a form to fill in rather than a list to pick from. A menu gives every
- * setting the same row shape whatever its arity: a boolean is a checkbox, a
- * choice is a submenu of radios, and only a continuous value draws a widget of
- * its own (`makeSizeMenu`, the inline slider row every track menu already
- * uses).
+ * as a form to fill in rather than a list to pick from.
+ *
+ * ONE ROW SHAPE, `label + [?] + (checkbox | chevron)`, whatever the setting's
+ * arity: a boolean is a checkbox, a choice is a submenu of radios, and a
+ * continuous value is a submenu holding its slider (`makeSizeSubMenu`). The
+ * slider used to be drawn in the row itself, which is right where a track menu
+ * has one of them and wrong here, where there are three: three two-line blocks
+ * carrying a widget no other row has put the form back in the list.
  *
  * THREE SECTIONS, each a question rather than a kind of widget: RIBBONS is how
  * one alignment looks, DETAIL is how much of one is loaded and painted, and
@@ -61,6 +64,12 @@ const THIN_FADE_HELP =
  * window. Min length and Overdraw read as unrelated until they are next to each
  * other under that heading, where they are the same question asked of feature
  * size and of screen extent.
+ *
+ * WITHIN a section, arity orders the rows: the checkboxes, then the choices,
+ * then the values. Sections group by subject and nothing about a subject says
+ * where its widget changes, so left alone the shape flickers down the menu — a
+ * lone submenu sat between two checkboxes and read as a mis-set row rather than
+ * as the next question. Ordered, the shape changes once per section.
  *
  * The wordy choices are what the panel's grid had to be widened for ("Alignment
  * blocks only" does not fit a segmented toggle's segment); as radio rows in
@@ -79,26 +88,6 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
       menuItems={() =>
         [
           { type: 'subHeader', label: 'Ribbons' },
-          makeSizeMenu({
-            label: 'opacity',
-            title: 'Opacity',
-            help: 'Overall opacity of all synteny ribbons. Lower values let dense overlapping alignments show through each other.',
-            min: 0,
-            max: 1,
-            step: 0.01,
-            // cubic gives fine control near 0, where a small opacity change is
-            // perceptually large
-            scale: 'cubic',
-            format: n => n.toFixed(3),
-            getValue: () => model.alpha,
-            isDefault: model.alpha === DEFAULT_ALPHA,
-            onChange: v => {
-              model.setAlpha(v)
-            },
-            onReset: () => {
-              model.setAlpha(DEFAULT_ALPHA)
-            },
-          }),
           toggleItem(
             'Identity fade',
             model.opacityByIdentity,
@@ -110,17 +99,6 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
                 'Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel.',
             },
           ),
-          {
-            label: 'Thin fade',
-            helpText: THIN_FADE_HELP,
-            subMenu: radioItems(
-              FADE_MODES,
-              model.fadeThinAlignmentsMode,
-              mode => {
-                model.setFadeThinAlignmentsMode(mode)
-              },
-            ),
-          },
           toggleItem(
             'Curved lines',
             model.drawCurves,
@@ -143,6 +121,37 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
                 "Continues the query row's scalebar grid down through the ribbons: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with.",
             },
           ),
+          {
+            label: 'Thin fade',
+            helpText: THIN_FADE_HELP,
+            subMenu: radioItems(
+              FADE_MODES,
+              model.fadeThinAlignmentsMode,
+              mode => {
+                model.setFadeThinAlignmentsMode(mode)
+              },
+            ),
+          },
+          makeSizeSubMenu({
+            label: 'opacity',
+            title: 'Opacity',
+            help: 'Overall opacity of all synteny ribbons. Lower values let dense overlapping alignments show through each other.',
+            min: 0,
+            max: 1,
+            step: 0.01,
+            // cubic gives fine control near 0, where a small opacity change is
+            // perceptually large
+            scale: 'cubic',
+            format: n => n.toFixed(3),
+            getValue: () => model.alpha,
+            isDefault: model.alpha === DEFAULT_ALPHA,
+            onChange: v => {
+              model.setAlpha(v)
+            },
+            onReset: () => {
+              model.setAlpha(DEFAULT_ALPHA)
+            },
+          }),
 
           /*
             Gated on the data, not on config: a CIGAR-less PAF has no ops to
@@ -183,7 +192,24 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
             : []),
           ...lodMenuItems(model),
           { type: 'subHeader', label: 'Scope' },
-          makeSizeMenu({
+          /*
+            NOT GATED ON THERE BEING SOME. A count of zero is not the same as
+            nothing to offer: the last step is the one that would go and find
+            out, and gating the control on the number it exists to change is a
+            door that only opens once you are already through it.
+          */
+          {
+            label: 'Off-screen mates',
+            helpText: OFFSCREEN_MATE_HELP,
+            subMenu: radioItems(
+              OFFSCREEN_MATE_MODE_OPTIONS,
+              model.offscreenMateMode,
+              mode => {
+                model.setOffscreenMateMode(mode)
+              },
+            ),
+          },
+          makeSizeSubMenu({
             label: 'min length',
             title: 'Min length',
             help: MIN_LENGTH_HELP,
@@ -205,24 +231,7 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
               model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
             },
           }),
-          /*
-            NOT GATED ON THERE BEING SOME. A count of zero is not the same as
-            nothing to offer: the last step is the one that would go and find
-            out, and gating the control on the number it exists to change is a
-            door that only opens once you are already through it.
-          */
-          {
-            label: 'Off-screen mates',
-            helpText: OFFSCREEN_MATE_HELP,
-            subMenu: radioItems(
-              OFFSCREEN_MATE_MODE_OPTIONS,
-              model.offscreenMateMode,
-              mode => {
-                model.setOffscreenMateMode(mode)
-              },
-            ),
-          },
-          makeSizeMenu({
+          makeSizeSubMenu({
             label: 'overdraw',
             title: 'Overdraw',
             help: 'Extra pixels drawn beyond the visible area. Higher values keep off-screen synteny lines visible when scrolling, but may reduce performance.',

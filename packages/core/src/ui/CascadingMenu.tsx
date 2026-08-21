@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import ChevronRight from '@mui/icons-material/ChevronRight'
 import {
   Divider,
   ListItemIcon,
@@ -15,6 +14,7 @@ import { observer } from 'mobx-react'
 import { makeStyles } from '../util/tss-react/index.ts'
 import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
 import HoverMenu from './HoverMenu.tsx'
+import { MenuItemChevron } from './MenuItemChevron.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { staysOpenOnClick } from './MenuTypes.ts'
 import {
@@ -267,7 +267,7 @@ function CascadingSubmenu({
             <CascadingMenuHelpIconButton helpText={helpText} label={title} />
           ) : null}
           {endAdornment}
-          <ChevronRight />
+          <MenuItemChevron />
         </MenuItem>
       </DisabledTooltip>
       <HoverMenu

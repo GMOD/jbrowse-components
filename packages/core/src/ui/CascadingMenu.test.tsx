@@ -30,6 +30,61 @@ function renderMenu(menuItems: MenuItem[]) {
   return { ...utils, onMenuItemClick, onClose }
 }
 
+// The reservation that lines a clickable row's "?" up with a submenu row's is
+// the chevron ITSELF, drawn invisible — a spelled width cannot be right, because
+// `pxToRem` scales every icon by the theme's base font size and this theme's is
+// 12, not MUI's 14. The column was a literal 24 and the icon draws at ~20.6, so
+// every checkbox row's help sat ~3.4px inboard of the submenu rows'.
+describe('CascadingMenu help column', () => {
+  const helpRows: MenuItem[] = [
+    {
+      type: 'checkbox',
+      label: 'Alpha',
+      checked: false,
+      helpText: 'what alpha does',
+      onClick: () => {},
+    },
+    {
+      label: 'Beta',
+      helpText: 'what beta is',
+      subMenu: [
+        { type: 'radio', label: 'One', checked: true, onClick: () => {} },
+      ],
+    },
+  ]
+
+  it('reserves the chevron a chevron wide, not a number wide', () => {
+    const { getByTestId } = renderMenu(helpRows)
+    const trailingIcon = (testid: string) => {
+      const icons = getByTestId(testid).querySelectorAll('svg')
+      return icons[icons.length - 1]!
+    }
+    const chevron = trailingIcon('cascading-submenu-beta')
+    const spacer = trailingIcon('cascading-menuitem-alpha')
+    expect(getComputedStyle(spacer).visibility).toBe('hidden')
+    expect(getComputedStyle(spacer).fontSize).toBe(
+      getComputedStyle(chevron).fontSize,
+    )
+    expect(getComputedStyle(spacer).width).toBe(getComputedStyle(chevron).width)
+  })
+
+  // Reserved only when a submenu row actually draws help: with nothing to line
+  // up with, the spacer would only unalign the checkbox glyph from the chevron
+  // it already sits level with.
+  it('reserves nothing when no submenu row carries help', () => {
+    const { getByTestId } = renderMenu([
+      helpRows[0]!,
+      { label: 'Beta', subMenu: [{ label: 'One', onClick: () => {} }] },
+    ])
+    const row = getByTestId('cascading-menuitem-alpha')
+    expect(
+      [...row.querySelectorAll('svg')].some(
+        el => getComputedStyle(el).visibility === 'hidden',
+      ),
+    ).toBe(false)
+  })
+})
+
 // Whether a click dismisses the menu is decided by the row TYPE, so a
 // hand-written literal behaves like one built by `checkboxItem` — most of the
 // repo's checkbox/radio literals never set the old opt-in flag, and each one

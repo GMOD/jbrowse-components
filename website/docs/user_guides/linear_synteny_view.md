@@ -197,18 +197,20 @@ out without spending the color channel.
 
 The sliders button in the header opens a menu of every setting that decides what
 the ribbons look like, in three groups — how one alignment is drawn, how much of
-it is loaded, and which alignments are drawn at all. Booleans are checkboxes,
-choices open a submenu of their options, and the three continuous settings draw
-a slider in the row itself. The hamburger menu next to it is the other half of
-that division: it answers what the view _is_ — which genomes it stacks, where
-they point, what leaves it — and holds no render settings at all.
+it is loaded, and which alignments are drawn at all. Every row is the same
+shape: a boolean is a checkbox, and a choice or a continuous value opens a
+submenu holding its options or its slider. Within a group the checkboxes come
+first, then the choices, then the values. The hamburger menu next to it is the
+other half of that division: it answers what the view _is_ — which genomes it
+stacks, where they point, what leaves it — and holds no render settings at all.
 
-**Ribbons** — **Opacity** for how much dense overlapping alignments show through
-each other; **Identity fade** and **Thin fade** described above and below;
+**Ribbons** — **Identity fade** and **Thin fade** are described above and below;
 **Curved lines** draws ribbons as bezier curves instead of straight connectors,
 which reads far better at whole-genome scale where straight crossings stack into
 noise; **Location markers** continues the top panel's scalebar grid down through
-the ribbons, so each tick shows where a round coordinate up there lands below.
+the ribbons, so each tick shows where a round coordinate up there lands below;
+and **Opacity** is how much dense overlapping alignments show through each
+other.
 
 **Detail** — how much of each alignment is loaded and painted. **CIGAR indels**
 is how per-base insertions and deletions inside one are shown: **Colored
@@ -223,10 +225,10 @@ Both rows are gated on the data rather than shown inert: a CIGAR-less PAF has no
 indels to draw, and an adapter with one stored tier has nothing to switch
 between. A file that is both takes the whole section with it.
 
-**Scope** — which alignments make it into the picture at all. **Min length**
-hides ones shorter than it, which is what clears the hairball of short spurious
-chains at whole-genome zoom; **Off-screen mates** decides how hard to look for
-the ones this view cannot draw (below); and **Overdraw** is how many pixels
+**Scope** — which alignments make it into the picture at all. **Off-screen
+mates** decides how hard to look for the ones this view cannot draw (below);
+**Min length** hides ones shorter than it, which is what clears the hairball of
+short spurious chains at whole-genome zoom; and **Overdraw** is how many pixels
 beyond the visible area are still drawn, which is what keeps a ribbon reaching a
 long way off screen visible while you scroll.
 
