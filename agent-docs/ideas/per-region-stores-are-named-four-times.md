@@ -42,7 +42,7 @@ derive that.
   brands, so a display declares nothing at all. This is the version that would
   actually pay, and it is the version that fails silently: a scan that finds
   nothing is a check that cannot fail, which is a class this repo already has a
-  file about (`ideas/green-checks-that-cannot-fail.md`).
+  file about (`mechanisms/green-checks-that-cannot-fail.md`).
 
 ## What to answer first
 

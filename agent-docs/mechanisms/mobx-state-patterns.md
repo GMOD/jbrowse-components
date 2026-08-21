@@ -1,5 +1,5 @@
 ---
-name: mobx-state-patterns-to-publish
+name: mobx-state-patterns
 description: Two state-management patterns built and validated here that need nothing from genomics — splitting an autorun into a pure plan and an installer, and answering a lifecycle with one discriminated getter instead of N booleans every caller re-subtracts. Both have a failure story sharp enough to carry the idea, and neither has a name outside this repo.
 ---
 
@@ -8,7 +8,7 @@ description: Two state-management patterns built and validated here that need no
 Two shapes this repo arrived at the hard way. Both are framework-level rather
 than genomic, both are already load-bearing in the tree, and neither is written
 anywhere a MobX user would find it. Audience and framing:
-[upstreamable-ideas](upstreamable-ideas.md).
+[upstreamable-ideas](../ideas/upstreamable-ideas.md).
 
 ## 1. An autorun's decision and its dependency set fail in opposite ways
 

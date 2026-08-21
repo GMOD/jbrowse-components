@@ -5,6 +5,10 @@ is filed:
 
 - `reference/` — settled: how a subsystem works, how to operate it, a
   measurement, the datasets behind the figures.
+- `mechanisms/` — a technique stated so it travels: the idea is the subject
+  and this repo's code is the evidence. Built and load-bearing, never proposed;
+  the filename is the `name:` slug, and
+  [mechanisms/README.md](mechanisms/README.md) carries the admission test.
 - `ideas/` — a proposal parked, one per file.
 - `architecture-decision-records/` — *why*, one per file.
 - `handoffs/` — live state of an unfinished thread, usually a review whose
@@ -18,7 +22,10 @@ That last one applies to `CLAUDE.md` files too and is the rule they break most.
 "State as of \<date\>" outside `handoffs/` means split it into the homes above.
 
 `TODO.md` vs `ideas/` is commitment, not size. Read a parked proposal before
-re-proposing it.
+re-proposing it. `mechanisms/` vs `reference/` is which one is the subject: a
+doc that cannot name its idea without naming the plugin is a subsystem writeup,
+and a mechanism doc points at that writeup for the depth rather than restating
+it.
 
 **A handoff is the one file here whose subject is still moving, so it goes stale
 faster than anything else** — its state snapshots drift, and the reference doc it
@@ -89,14 +96,15 @@ sat at a pre-ADR-0010 value there while `cram-js` had moved on.
 - **Every doc outside `architecture-decision-records/` carries `name:` /
   `description:` frontmatter** — `pnpm autogen --check` fails without it. Find
   docs through [reference/README.md](reference/README.md),
+  [mechanisms/README.md](mechanisms/README.md),
   [ideas/README.md](ideas/README.md) and
   [handoffs/README.md](handoffs/README.md), not `ls`.
 - Those indexes and every `<!-- NAME START/END -->` block are generated; don't
   hand-edit between the markers.
 - **If a sentence tells the reader to go look at a file, generate the table
   under it from that file.**
-- Docs and source cite `TODO.md` sections by title and `ideas/` by filename —
-  grep before renaming.
+- Docs and source cite `TODO.md` sections by title, and `ideas/` and
+  `mechanisms/` by filename — grep before renaming.
 
 ## Third parties: say what we chose, not how they rank
 

@@ -1,5 +1,6 @@
 // Generates the index of each agent-docs directory that is a flat pile of docs
-// — `reference/`, `ideas/` and `handoffs/` — from the docs' own frontmatter, so
+// — `reference/`, `ideas/`, `mechanisms/` and `handoffs/` — from the docs' own
+// frontmatter, so
 // a directory can be scanned in one read instead of fifty. The list is INDEXES
 // below; add a directory there and give it a README with the marker pair.
 //
@@ -56,6 +57,20 @@ const INDEXES = [
     heading: 'What it covers',
   },
   {
+    // The distilled technique statements. Newest of the four directories and
+    // the only one whose filenames are checked against the frontmatter slug:
+    // `reference/` spells a doc two ways (SCREAMING_SNAKE file, kebab `name:`)
+    // and every citation has to know which context it is in. Here they are one
+    // string.
+    dir: 'mechanisms',
+    marker: 'MECHANISMS INDEX',
+    label: 'Mechanisms index',
+    // Not "Read when": a mechanism is looked up by the idea it carries, by
+    // someone who may not know which subsystem demonstrates it.
+    heading: 'The idea it carries',
+    slugFilenames: true,
+  },
+  {
     // `handoffs/` was the one directory here you had to `ls`, which is the
     // state agent-docs/CLAUDE.md tells everyone else not to be in. It is also
     // the directory that most needs the discipline: a handoff's subject is
@@ -74,10 +89,10 @@ interface Doc {
   description: string
 }
 
-function collectDocs(dir: string): Doc[] {
+function collectDocs(dir: string, slugFilenames = false): Doc[] {
   const docsDir = join(repoRoot, 'agent-docs', dir)
   const docs: Doc[] = []
-  const missing: string[] = []
+  const unindexable: string[] = []
   for (const file of readdirSync(docsDir)) {
     if (!file.endsWith('.md') || file === SELF) {
       continue
@@ -93,14 +108,18 @@ function collectDocs(dir: string): Doc[] {
     const name = fm.name?.trim()
     const description = fm.description?.trim().replaceAll(/\s+/g, ' ')
     if (!name || !description) {
-      missing.push(`${file} (needs ${!name ? 'name' : 'description'})`)
+      unindexable.push(`${file} (needs ${!name ? 'name' : 'description'})`)
+    } else if (slugFilenames && file !== `${name}.md`) {
+      unindexable.push(
+        `${file} (\`name: ${name}\` wants the filename ${name}.md)`,
+      )
     } else {
       docs.push({ file, name, description })
     }
   }
-  if (missing.length) {
+  if (unindexable.length) {
     throw new Error(
-      `${missing.length} doc(s) in agent-docs/${dir}/ missing frontmatter, so they would be absent from the index and invisible to a directory scan:\n${missing
+      `${unindexable.length} doc(s) in agent-docs/${dir}/ cannot be indexed, so they would be invisible to a directory scan:\n${unindexable
         .map(m => `  ${m}`)
         .join('\n')}`,
     )
@@ -108,7 +127,7 @@ function collectDocs(dir: string): Doc[] {
   return docs.sort((a, b) => a.file.localeCompare(b.file))
 }
 
-for (const { dir, marker, label, heading } of INDEXES) {
+for (const { dir, marker, label, heading, slugFilenames } of INDEXES) {
   const indexPath = join(repoRoot, 'agent-docs', dir, SELF)
   checkOrWrite({
     path: indexPath,
@@ -117,7 +136,7 @@ for (const { dir, marker, label, heading } of INDEXES) {
       marker,
       body: markdownTableLines(
         ['Doc', heading],
-        collectDocs(dir).map(
+        collectDocs(dir, slugFilenames).map(
           d => `| [${d.name}](${d.file}) | ${d.description} |`,
         ),
       ),

@@ -98,7 +98,7 @@ consumer**, whatever the draw mechanism. Not about GPU passes.
 
 ## Where it stops
 
-[REJECTED_IDEAS.md](REJECTED_IDEAS.md) rejects a
+[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) rejects a
 `Record<GlyphType, {layout, emit}>` registry for the canvas plugin's glyphs, and
 those grounds hold. They are a
 different argument, worth keeping distinct: that one is about **co-locating two

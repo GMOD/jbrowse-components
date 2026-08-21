@@ -43,12 +43,13 @@ to travel on its own, to wherever that audience already is — a React Compiler
 issue, a MobX discussion, a post that never needs the word "genome." Three
 groups of these are worth writing:
 
-- [mobx-state-patterns-to-publish](mobx-state-patterns-to-publish.md) — the
-  autorun plan/installer split and the discriminated lifecycle getter.
+- [mobx-state-patterns](../mechanisms/mobx-state-patterns.md) — the autorun
+  plan/installer split and the discriminated lifecycle getter.
 - [barrels-block-extraction](barrels-block-extraction.md) — a controlled
   comparison inside one repo between a package with a barrel and one without.
-- [green-checks-that-cannot-fail](green-checks-that-cannot-fail.md) — four
-  checks here that passed for structural reasons, and how each was caught.
+- [green-checks-that-cannot-fail](../mechanisms/green-checks-that-cannot-fail.md)
+  — seven checks here that passed for structural reasons, and how each was
+  caught.
 
 ## What makes an extraction finished
 
@@ -62,3 +63,10 @@ is internal refactoring that *enables* propagation without being it.
 So the test for an extraction proposal is: **name the transferable idea it
 carries and the audience it reaches.** An extraction that cannot answer that is
 tidying, which is fine, but it should not be counted against this goal.
+
+An idea that has passed that test lives in
+[mechanisms/](../mechanisms/README.md), stated so a reader with no genomics can
+adopt it — two of the three groups above are already there, and
+`barrels-block-extraction` is not, because the comparison it proposes has not
+been run. This file stays the plan: which audience each one is for, and what
+still has to be written or packaged to reach them.

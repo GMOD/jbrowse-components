@@ -115,8 +115,8 @@ digraph colour_pipeline {
   resolve per read (`mapq` hsl, `tag` packed u32, `modFwd/Rev`, `plain`) and every
   other goes through `swatchPaletteKeys` → the themed `ColorPalette`. That table
   is also what the arc and linked-read overlays derive their slot colours from —
-  see [alignments-color-parity](ALIGNMENTS_COLOR_PARITY.md), which is the doc for
-  everything about the three vocabularies agreeing.
+  see [alignments-color-parity](../reference/ALIGNMENTS_COLOR_PARITY.md), which
+  is the doc for everything about the three vocabularies agreeing.
 
 Per-base marks are a separate, much shorter tree: `effectiveBaseColors` is the
 one place `showModifications` mutes A/C/G/T/N to `colorMutedSnpBase`, and both
@@ -184,8 +184,8 @@ Three properties of that shape are worth stating as rules:
   `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md` §"Hit-testing".
 
 Whether a display should have a list like this at all is
-[draw-pass-registries](DRAW_PASS_REGISTRIES.md); the arc band's own rules are
-[arc-band](ARC_BAND.md).
+[draw-pass-registries](draw-pass-registries.md); the arc band's own rules are
+[arc-band](../reference/ARC_BAND.md).
 
 ### The last gate: per-mark alpha
 
@@ -233,6 +233,6 @@ in is a product decision with a measurable cost — that is the whole content of
 "bake tag colours on the main thread".
 
 The recurring bug class all four exist against is in
-[green-checks-that-cannot-fail](../ideas/green-checks-that-cannot-fail.md): a
+[green-checks-that-cannot-fail](green-checks-that-cannot-fail.md): a
 check that passes for structural reasons rather than real ones, and a rule that
 agrees with its copy in exactly the configuration everybody looks at.

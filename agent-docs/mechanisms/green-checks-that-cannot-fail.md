@@ -8,7 +8,8 @@ description: Seven checks in this repo passed for structural reasons rather than
 A check that cannot fail is indistinguishable, from the outside, from a check
 that passes. This repo has now hit seven of them from seven different
 directions, which is enough to name the class rather than treat each as its own
-bug. Audience and framing: [upstreamable-ideas](upstreamable-ideas.md).
+bug. Audience and framing:
+[upstreamable-ideas](../ideas/upstreamable-ideas.md).
 
 The common shape: **something between the assertion and the code silently
 supplied the property being asserted.** The catch, every time, was to sabotage
@@ -182,7 +183,5 @@ first two stand alone; items 3 and 4 are one post about examples-as-tests, and
 item 5 stands alone for a graphics audience. Items 6 and 7 are one post about
 oracles — the first is a check nobody read and the second a check read
 carefully, which is what makes them stronger together than apart. Item 4
-also appears in
-[mobx-state-patterns-to-publish](mobx-state-patterns-to-publish.md) as the
-argument for naming a lifecycle state — tell it once, from whichever goes out
-first.
+also appears in [mobx-state-patterns](mobx-state-patterns.md) as the argument
+for naming a lifecycle state — tell it once, from whichever goes out first.

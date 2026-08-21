@@ -1774,7 +1774,7 @@ reference doc, and is the right place to look when nothing below matches:
 - [reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) — the
   CI gate behind "don't diverge the two backends": what is in its scope, the
   measured drift behind its threshold, and how to read a failure.
-- [reference/DRAW_PASS_REGISTRIES.md](reference/DRAW_PASS_REGISTRIES.md) — the
+- [mechanisms/draw-pass-registries.md](mechanisms/draw-pass-registries.md) — the
   ordered-id-list-plus-exhaustive-`Record` technique the multi-layer gating rule
   above names, decomposed into the mechanisms it is really made of.
 - [reference/DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md) —
