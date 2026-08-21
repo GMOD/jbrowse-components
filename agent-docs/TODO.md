@@ -92,7 +92,6 @@ before anyone noticed.
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
 | [Time a two-tier PIF to settled](#time-a-two-tier-pif-to-settled-in-a-browser) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
-| [Sort by genotype discards the colour-by palette](#sort-by-genotype-throws-away-the-colour-by-palette) | variants | merge the sorted rows over `layout` by name — `buildClusteredLayout` already is that |
 | ["Phased" is unreachable on a haploid callset](#phased-is-unreachable-on-a-callset-that-is-entirely-haploid) | variants, pangenome | decide whether the gate widens to match the painter, or goes per-row |
 | [The clustering matrices trust feature 0's header](#the-clustering-matrices-trust-the-first-features-header) | variants, RPC | route both builders through `buildHeaderRemap`; the two-header fixture is the work |
 | [A mismatched samplesTsv blanks the track silently](#a-samplestsv-that-names-no-vcf-sample-blanks-the-track-in-silence) | variants, config | decide: config error to `notifyError`, or fall back to the VCF header |
@@ -1479,33 +1478,6 @@ for the distribution to compare against — max 0.62%, median 0.00% over 66 pair
 — and note the wiggle line plots that sit at the top of it are already on the
 linear ramp, so they are the control rather than the target.
 
-### Sort by genotype throws away the colour-by palette
-
-`sortByGenotype`
-(`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts:1326`) feeds
-`sortSourcesAroundVariant` from `sourcesWithoutLayout` — adapter order, with no
-layout merge — and writes the result straight to `setLayout`. Every other writer
-of `layout` merges first. `applyClusterOrder` goes through `buildClusteredLayout`
-(`packages/tree-sidebar/src/clusterUtils.ts:357`), whose entire body is
-`{ ...source, ...existing }` keyed on name, and `applyArrangement` re-arranges
-rather than re-derives — its own comment records that re-deriving once made
-"Color by… → Population" silently discard a clustering run. This path does
-neither.
-
-So on a callset with a `samplesTsv` `population` column: **Color by… →
-Population**, then right-click a variant → **Sort by genotype**. The rows
-reorder correctly and every sidebar swatch goes blank, while the menu still
-shows Population ticked and `getConf(self, 'colorBy')` still reads `population`.
-Any `label`/`labelColor` the arrangement dialog set goes with them. Nothing
-re-seeds the palette afterwards: `setSources` fires once per adapter and
-short-circuits on `deepEqual`, and `applyArrangement` is reachable only from
-`setColorBy`/`setGroupBy`/`clearLayout`/`setPhasedMode`.
-
-**First move: merge the sorted rows back over `self.layout` by name.** That is
-`buildClusteredLayout` exactly, so the only question is whether to import it
-across the `tree-sidebar` boundary or inline its two lines. `rowArrangement.test.ts`
-covers clustering↔colorBy and never the sort, which is why nothing caught this.
-
 ### "Phased" is unreachable on a callset that is entirely haploid
 
 The rendering-mode row is `disabled: !self.hasPhased`
@@ -1664,30 +1636,21 @@ removal went.
 ### Release-validation leftovers
 
 Seven small things the v5.0.0 sampling turned up, none of them worth an entry
-alone. The first four are reachable, the last three are not.
+alone. **The four reachable ones are fixed**; the three below are not reachable
+and stay here.
 
-- **`blend()` discards both operands' alpha**
-  (`packages/core/src/util/color-bits/functions.ts:73` hardcodes 255), so
-  `colord(a).mix(b)` returns opaque where real colord preserves alpha. The one
-  in-tree caller, `plugins/variants/src/shared/drawAlleleCount.ts:110`, folds
-  opacity into the mix ratio and does not misrender — but `mix` is on the public
-  `@jbrowse/core/util/colord` surface with a colord-shaped signature.
-- **`parse`'s `PATTERN` is unanchored**
-  (`packages/core/src/util/color-bits/parse.ts:16`), so
-  `parseCssColor('foo rgb(1,2,3) bar')` returns `[1,2,3]` instead of the magenta
-  sentinel, which undermines the "a broken config reads as magenta, never as a
-  plausible wrong colour" contract `colorBits.test.ts:133` asserts elsewhere.
-- **`focusedViewId` is never cleared on teardown.** `takeOut`
-  (`packages/product-core/src/Session/MultipleViews.ts:173`) empties every widget
-  reference into the view, detaches and destroys it, and leaves the persisted
-  string naming it. `replaceView` moves the focus deliberately and is tested;
-  `removeView` and `takeOutViewsMissingFrom` do not, and
-  `setFocusedViewId(viewId: string)` has no way to spell "none". The dead id
-  ships in a shared session.
-- **`trackConfigDeltas` is the one new persisted prop without `stripDefault`**
-  (`Session/SessionTracks.ts:132`), so `"trackConfigDeltas":{}` is written into
-  every snapshot and every share link, including sessions that never had an
-  override.
+Fixed, for the record, since each was a wrong answer that looked like a right
+one: `blend()` hardcoded alpha to 255, so `colord(a).mix(b)` came back opaque on
+a public colord-shaped surface — it interpolates alpha linearly now, `gamma`
+being for the colour channels only. `parse`'s `PATTERN` was unanchored, so
+`parseCssColor('foo rgb(1,2,3) bar')` answered `[1,2,3]` and the magenta
+invalid-colour sentinel was unreachable for anything with a colour buried in it
+— anchored, with surrounding whitespace still tolerated. `focusedViewId` is
+cleared in `takeOut`, so every way a view leaves drops the focus rather than
+only `replaceView`, and `setFocusedViewId` takes `string | undefined` so "none"
+is sayable. `trackConfigDeltas` is `stripDefault` now, and two session snapshots
+lost their `"trackConfigDeltas":{}` line.
+
 - **`fetchAllRegions` has no test anywhere**
   (`plugins/linear-genome-view/src/BaseLinearDisplay/models/fetchEachRegion.ts:152`),
   including the `isRegionRefused` skip its per-region twin has three tests for.
@@ -1731,18 +1694,20 @@ An RPC method is invoked by string through `rpcManager.call(sessionId, name,
 args)`, so a plugin naming one has nothing that resolves.
 
 It is **not** a fourth quiet-failure surface, which is worth stating because the
-other three on that page are: `BaseRpcDriver.ts:38` reads
-`pluginManager.getRpcMethodType(functionName)` and the next use is
-`rpcMethod.serializeArguments(args)`, so an unknown method throws
-`Cannot read properties of undefined (reading 'serializeArguments')`. Loud, and
-useless — the message never names the method that was not found, so the author
-gets a stack in core rather than "no RPC method X".
+other three on that page are. It is not a *bad-message* surface either, and the
+claim that it was is withdrawn: this entry said `BaseRpcDriver` reads
+`getRpcMethodType(functionName)` and then `rpcMethod.serializeArguments(args)`,
+so an unknown method throws `Cannot read properties of undefined` without ever
+naming it. That was read off the call site alone. `getRpcMethodType` bottoms out
+in `TypeRecord.get`, which **throws already**, naming the method and listing what
+is registered — the "which plugin is missing" answer. A guard added on the
+strength of the claim was dead code and `no-unnecessary-condition` said so;
+`BaseRpcDriver.test.ts` now pins the real message against a real
+`PluginManager`, so nobody re-derives this from the call site a second time.
 
-**First move: the two halves are independent, and the second is the cheap one.**
-Add the six to the upgrade guide's removal list, next to the renderer-registry
-paragraph they nearly belong to. Separately, have `BaseRpcDriver` throw a real
-error when `getRpcMethodType` returns nothing — one guard, and it turns every
-future removal on this surface into a message that says what is missing.
+**First move: what is left is the documentation half.** Add the six to the
+upgrade guide's removal list, next to the renderer-registry paragraph they
+nearly belong to.
 
 
 ## Blocked on a visual call
