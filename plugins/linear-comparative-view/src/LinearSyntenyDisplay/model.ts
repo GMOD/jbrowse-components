@@ -27,7 +27,6 @@ import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
-import { FADE_AUTO_MIN_FEATURES } from './fadeThin.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
@@ -377,8 +376,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Summed genomic length (axis 0) of every loaded alignment block. Zoom-
-       * independent, so it recomputes only when featureData changes;
-       * alignmentCoverageFraction derives the on-screen density from it.
+       * independent, so it recomputes only when featureData changes, which is
+       * what makes `meanAlignmentPx` O(1) per zoom.
        */
       get totalAlignmentBp() {
         const { featureData } = self
@@ -398,8 +397,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * 0 until a fetch lands and both views connect. The fade only affects
        * sub-pixel ribbons (perpW < 1), so a mean well under 1 means the view is
        * dominated by thin ribbons — exactly what width-proportional fade
-       * declutters. Zoom-dependent (recomputes as bpPerPx changes), but each term
-       * is O(1) given the memoized `totalAlignmentBp`.
+       * declutters, and `LinearSyntenyView.fadeThinAlignments` decides 'auto' off
+       * the narrowest of these. Zoom-dependent (recomputes as bpPerPx changes),
+       * but each term is O(1) given the memoized `totalAlignmentBp`.
        */
       get meanAlignmentPx() {
         const connected = this.connectedViews
@@ -407,28 +407,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         return connected && width > 0 && this.numFeats > 0
           ? this.totalAlignmentBp / this.numFeats / connected.v0.bpPerPx
           : 0
-      },
-      /**
-       * #method
-       * 'auto' fade-thin signal for this display: on when the ribbons are
-       * predominantly sub-pixel (`meanAlignmentPx` below `thresholdPx`) and
-       * there are enough of them to form a hairball. Many sub-pixel ribbons
-       * stacked at full alpha read as false-dark fans; fading them
-       * width-proportionally declutters into clean blocks (the historical
-       * default-on look). A sparse handful stays unfaded so a lone thin ribbon
-       * keeps full alpha, and the whole thing relaxes automatically on zoom-in
-       * as ribbons widen.
-       *
-       * The threshold is the caller's because the view asks this twice, at
-       * `FADE_AUTO_ENGAGE_PX` and `FADE_AUTO_RELEASE_PX` — see
-       * `LinearSyntenyView.fadeThinAlignments` for what the deadband is for.
-       */
-      wantsThinFade(thresholdPx: number) {
-        return (
-          this.numFeats >= FADE_AUTO_MIN_FEATURES &&
-          this.meanAlignmentPx > 0 &&
-          this.meanAlignmentPx < thresholdPx
-        )
       },
       /**
        * #getter
