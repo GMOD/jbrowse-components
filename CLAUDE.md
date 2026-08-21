@@ -65,7 +65,12 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - **Worker side: don't** — `renameRegionsIfNeeded` already renamed `regions[]`.
   Alignments layout looks worker-side and is not (ADR-053).
 - An assembly name off a track config must be canonical
-  (`canonicalAssemblyNames`) **and** present (`assemblyManager.has`).
+  (`canonicalAssemblyNames`) **and** present (`assemblyManager.has`). Comparing
+  two names is `isSameAssemblyName` — a view, a track config and a synteny mate
+  spell one assembly three ways, and `===` says no.
+- **Resolve an assembly name before the RPC, not after.** A worker has no
+  assembly manager, so a name crossing that boundary has to already be in the
+  namespace the far side compares against.
 - `reference/REFNAME_NAMESPACES.md`, `reference/VIEW_INIT.md`.
 
 ## Tooling
