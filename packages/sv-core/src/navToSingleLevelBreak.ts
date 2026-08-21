@@ -244,7 +244,10 @@ export async function navToSingleLevelBreak({
     const r0 = lgv.bpToPx({ coord: endPos, refName: mateRefName })
     if (l0 && r0) {
       const midPx = (l0.offsetPx + r0.offsetPx) / 2
-      lgv.scrollTo(Math.round(midPx - lgv.width / 2))
+      // setNewView rather than scrollTo: the zoom above had to land before
+      // bpToPx could answer, and a bare scroll is one of the continuous paths
+      // that deliberately leaves the coarse blocks where they were
+      lgv.setNewView(lgv.bpPerPx, Math.round(midPx - lgv.width / 2))
     } else {
       getSession(lgv).notify('Unable to navigate to breakpoint')
     }

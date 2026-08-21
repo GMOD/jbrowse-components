@@ -46,8 +46,7 @@ export function showRegionsWithUndo({
     windowWidthBp: view.windowWidthBp,
     windowStartBp: view.windowStartBp,
   }
-  view.setDisplayedRegions(regions)
-  view.fitAllRegions()
+  view.showRegions(regions)
   getSession(view).notify(message, 'info', {
     name: 'Undo',
     onClick: () => {

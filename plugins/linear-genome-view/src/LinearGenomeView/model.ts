@@ -1422,18 +1422,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      horizontallyFlip() {
-        self.displayedRegions = cast(
-          [...self.displayedRegions]
-            .reverse()
-            .map(region => ({ ...region, reversed: !region.reversed })),
-        )
-        this.scrollTo(self.displayedRegionsTotalPx - self.offsetPx - self.width)
-      },
-
-      /**
-       * #action
-       */
       showTrack(
         trackId: string,
         initialSnapshot = {},
@@ -1616,63 +1604,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // newOffsetPx is the actual offset after the scroll is clamped
         const newOffsetPx = self.scrollTo(self.offsetPx + distance)
         return newOffsetPx - oldOffsetPx
-      },
-
-      /**
-       * #action
-       * Fit the displayed regions to the width exactly, edge to edge.
-       *
-       * Not the same as `showAllRegions`, which goes to `maxBpPerPx` — the
-       * zoom-out LIMIT, where `SHOW_ALL_REGIONS_FILL` deliberately keeps a 10%
-       * margin so the whole genome doesn't sit flush against both edges. That
-       * margin is right for "show me everything" and wrong for a caller that
-       * named the regions it wants: it draws them at 1/0.9 of fit-to-width,
-       * centered, which is a silent 11% scale difference from the
-       * single-region path (`moveTo`, span/width) reached through the same
-       * location box.
-       *
-       * The scale comes from `fitAllRegionsWindow`, which is where the rule is
-       * written — a snapshot builder that cannot call an action needs the same
-       * answer, and the two agreeing matters more than either being local. Where
-       * it clamps up to `minBpPerPx` the content is narrower than the view, and
-       * the centering is what frames it.
-       */
-      fitAllRegions() {
-        // The window IS the displayed regions, which is what fitting them means.
-        // Nothing is fitted into a width of zero, where the pixel form was
-        // equally meaningless.
-        if (self.width) {
-          self.windowWidthBp = fitAllRegionsWindow(
-            self.totalBp,
-            self.width,
-            self.minBpPerPx,
-          ).windowWidthBp
-        }
-        // Deliberately not the helper's `windowStartBp`: this is the same
-        // centering, but going through scrollTo gets the scroll clamp with it,
-        // and getCenteredOffsetPx is already the one definition of it in pixels.
-        self.scrollTo(
-          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
-        )
-      },
-
-      /**
-       * #action
-       * showAllRegions at a scale the caller supplies rather than this view's
-       * own fit-to-width one, so several views can share one bp/px and their
-       * genomes compare by drawn length. Deliberately assigns past maxBpPerPx
-       * instead of going through zoomTo: a scale that fits the LARGEST genome
-       * in a set necessarily exceeds every smaller genome's fit-to-width limit,
-       * and clamping each row back to its own limit is exactly the equal-width
-       * stretch this exists to avoid. Only a caller that owns the layout of a
-       * whole set of views has a reason to reach for it — anything zooming a
-       * single view wants zoomTo, whose clamp keeps the genome on screen.
-       */
-      showAllRegionsAtScale(bpPerPx: number) {
-        self.windowWidthBp = Math.max(bpPerPx, self.minBpPerPx) * self.width
-        self.scrollTo(
-          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
-        )
       },
 
       /**
@@ -2450,19 +2381,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * offset is the base-pair-offset in the displayed region, index is the
-       * index of the displayed region in the linear genome view
-       *
-       * @param start - object as `{start, end, offset, index}`
-       * @param end - object as `{start, end, offset, index}`
-       */
-      moveTo(start?: BpOffset, end?: BpOffset) {
-        moveTo(self, start, end)
-        this.settleCoarseBlocks()
-      },
-
-      /**
-       * #action
        * Bring the coarse blocks to the viewport as it stands now, for a
        * placement that JUMPED rather than travelled.
        *
@@ -2485,15 +2403,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * (`setCoarseDynamicBlocks` compares block keys), so the debounced
        * autorun's own follow-up run costs nothing.
        *
-       * Nothing makes a new discrete placer call it. `index.test.ts` §"a jump
-       * settles the coarse blocks" is the list, on both sides — and it is why
-       * every placer sits in this block rather than beside `zoomTo`: settling
-       * reads `dynamicBlocks`, which is declared after that one.
+       * Every placer calls it, and `placersSettleCoarseBlocks.test.ts` is what
+       * makes that true of the next one — it scans this file for the writes and
+       * fails on a placer that reaches neither the settle nor its named list of
+       * continuous paths. Two passes by hand missed four.
        */
       settleCoarseBlocks() {
         if (self.initialized) {
           self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
         }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * offset is the base-pair-offset in the displayed region, index is the
+       * index of the displayed region in the linear genome view
+       *
+       * @param start - object as `{start, end, offset, index}`
+       * @param end - object as `{start, end, offset, index}`
+       */
+      moveTo(start?: BpOffset, end?: BpOffset) {
+        moveTo(self, start, end)
+        self.settleCoarseBlocks()
       },
 
       /**
@@ -2503,15 +2435,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * measured at, so a round trip through here is only exact while the width
        * holds still. Kept for callers that genuinely have pixels — a wheel
        * gesture, a rubberband — and for reading old snapshots.
-       *
-       * Down here beside `moveTo` rather than with `zoomTo`/`scrollTo`, because
-       * it is a jump and so has to settle the coarse blocks, which reads
-       * `dynamicBlocks` — declared after that block.
        */
       setNewView(bpPerPx: number, offsetPx: number) {
         self.zoomTo(bpPerPx)
         self.scrollTo(offsetPx)
-        this.settleCoarseBlocks()
+        self.settleCoarseBlocks()
       },
 
       /**
@@ -2531,14 +2459,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // the bp width in is the bp width out at whatever width is current
         self.zoomTo(windowWidthBp / self.width)
         self.scrollToBp(windowStartBp)
-        this.settleCoarseBlocks()
+        self.settleCoarseBlocks()
       },
 
       /**
        * #action
-       * The region list itself, which is a jump by definition — the blocks are
-       * keyed by `displayedRegionIndex`, and that index names a different contig
-       * afterwards.
+       * The worst jump of them to leave unsettled: the coarse blocks are keyed
+       * by `displayedRegionIndex`, so a set that outlives the region list has a
+       * consumer reading one contig's data against another's blocks.
        */
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
@@ -2550,7 +2478,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // strand the view scrolled past the end, on blank space.
         self.zoomTo(self.bpPerPx)
         self.scrollTo(self.offsetPx)
-        this.settleCoarseBlocks()
+        self.settleCoarseBlocks()
       },
 
       /**
@@ -2561,9 +2489,82 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.scrollTo(
           getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
         )
-        this.settleCoarseBlocks()
+        self.settleCoarseBlocks()
       },
 
+      /**
+       * #action
+       * Fit the displayed regions to the width exactly, edge to edge.
+       *
+       * Not the same as `showAllRegions`, which goes to `maxBpPerPx` — the
+       * zoom-out LIMIT, where `SHOW_ALL_REGIONS_FILL` deliberately keeps a 10%
+       * margin so the whole genome doesn't sit flush against both edges. That
+       * margin is right for "show me everything" and wrong for a caller that
+       * named the regions it wants: it draws them at 1/0.9 of fit-to-width,
+       * centered, which is a silent 11% scale difference from the
+       * single-region path (`moveTo`, span/width) reached through the same
+       * location box.
+       *
+       * The scale comes from `fitAllRegionsWindow`, which is where the rule is
+       * written — a snapshot builder that cannot call an action needs the same
+       * answer, and the two agreeing matters more than either being local. Where
+       * it clamps up to `minBpPerPx` the content is narrower than the view, and
+       * the centering is what frames it.
+       */
+      fitAllRegions() {
+        // The window IS the displayed regions, which is what fitting them means.
+        // Nothing is fitted into a width of zero, where the pixel form was
+        // equally meaningless.
+        if (self.width) {
+          self.windowWidthBp = fitAllRegionsWindow(
+            self.totalBp,
+            self.width,
+            self.minBpPerPx,
+          ).windowWidthBp
+        }
+        // Deliberately not the helper's `windowStartBp`: this is the same
+        // centering, but going through scrollTo gets the scroll clamp with it,
+        // and getCenteredOffsetPx is already the one definition of it in pixels.
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
+        self.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       * showAllRegions at a scale the caller supplies rather than this view's
+       * own fit-to-width one, so several views can share one bp/px and their
+       * genomes compare by drawn length. Deliberately assigns past maxBpPerPx
+       * instead of going through zoomTo: a scale that fits the LARGEST genome
+       * in a set necessarily exceeds every smaller genome's fit-to-width limit,
+       * and clamping each row back to its own limit is exactly the equal-width
+       * stretch this exists to avoid. Only a caller that owns the layout of a
+       * whole set of views has a reason to reach for it — anything zooming a
+       * single view wants zoomTo, whose clamp keeps the genome on screen.
+       */
+      showAllRegionsAtScale(bpPerPx: number) {
+        self.windowWidthBp = Math.max(bpPerPx, self.minBpPerPx) * self.width
+        self.scrollTo(
+          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
+        )
+        self.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       */
+      horizontallyFlip() {
+        self.displayedRegions = cast(
+          [...self.displayedRegions]
+            .reverse()
+            .map(region => ({ ...region, reversed: !region.reversed })),
+        )
+        self.scrollTo(self.displayedRegionsTotalPx - self.offsetPx - self.width)
+        self.settleCoarseBlocks()
+      },
+    }))
+    .actions(self => ({
       /**
        * #action
        */
@@ -2581,8 +2582,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ? assemblyManager.get(resolvedName)?.regions
             : undefined
           if (regions) {
-            this.setDisplayedRegions(regions)
-            this.showAllRegions()
+            self.setDisplayedRegions(regions)
+            self.showAllRegions()
           }
         }
       },
@@ -2592,15 +2593,115 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
-        this.setDisplayedRegions([])
+        self.setDisplayedRegions([])
         self.tracks.clear()
         // it is necessary to run these after setting displayed regions empty
         // or else model.offsetPx gets set to Infinity and breaks
         // @jbrowse/mobx-state-tree snapshot
         self.scrollTo(0)
         self.zoomTo(10)
+        // after them, not through setDisplayedRegions, whose own settle ran at
+        // the intermediate viewport these two lines exist to leave
+        self.settleCoarseBlocks()
       },
 
+      /**
+       * #action
+       * Navigate to a location based on its refName and optionally start, end,
+       * and assemblyName. Will not try to change displayed regions, use
+       * `navToLocations` instead. Only navigates to a location if it is
+       * entirely within a displayedRegion. Navigates to the first matching
+       * location encountered.
+       *
+       * Throws an error if navigation was unsuccessful
+       *
+       * @param query - a proposed location to navigate to
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
+       */
+      navTo(query: NavLocation, grow?: number) {
+        this.navToMultiple([query], grow)
+      },
+
+      /**
+       * #action
+       * Navigate to a location based on its refName and optionally start, end,
+       * and assemblyName. Will not try to change displayed regions, use
+       * navToLocations instead. Only navigates to a location if it is entirely
+       * within a displayedRegion. Navigates to the first matching location
+       * encountered.
+       *
+       * Throws an error if navigation was unsuccessful
+       *
+       * @param locations - proposed location to navigate to
+       * @param grow - optional multiplier to expand the region by (e.g., 0.2
+       * adds 20% padding on each side)
+       */
+      navToMultiple(locations: NavLocation[], grow?: number) {
+        if (
+          locations.some(
+            l =>
+              l.start !== undefined && l.end !== undefined && l.start > l.end,
+          )
+        ) {
+          throw new Error('found start greater than end')
+        }
+
+        const firstLocation = locations.at(0)
+        const lastLocation = locations.at(-1)
+        if (!firstLocation || !lastLocation) {
+          return
+        }
+
+        const defaultAssemblyName = self.assemblyNames[0]!
+        const { assemblyManager } = getSession(self)
+        const { displayedRegions } = self
+        // The range spans from the first location's left edge to the last
+        // location's right edge (any locations in between are ignored).
+        const common = {
+          assemblyManager,
+          defaultAssemblyName,
+          displayedRegions,
+          grow,
+        }
+        self.moveTo(
+          resolveNavEndpoint({
+            ...common,
+            location: firstLocation,
+            side: 'left',
+          }),
+          resolveNavEndpoint({
+            ...common,
+            location: lastLocation,
+            side: 'right',
+          }),
+        )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Replace the region list and place the viewport in one step. The pair is
+       * the unit a coarse-block consumer can act on: called separately they
+       * publish the viewport in between, and post-await in `navToLocations`
+       * they are two transactions, so a per-bp scan runs over a window that was
+       * never on screen.
+       *
+       * With no location named it fits the regions rather than going through
+       * `showAllRegions`: the caller named the regions it wants, so it gets the
+       * width, where showAllRegions goes to the zoom-out LIMIT and its 10%
+       * margin is dead frame for a named subset.
+       */
+      showRegions(regions: Region[], location?: NavLocation) {
+        self.setDisplayedRegions(regions)
+        if (location) {
+          self.navTo(location)
+        } else {
+          self.fitAllRegions()
+        }
+      },
+    }))
+    .actions(self => ({
       /**
        * #action
        * Navigate to the given locstring, will change displayed regions if
@@ -2681,20 +2782,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const location = locations[0]!
           const { reversed, parentRegion, start, end } = location
 
-          // Set the displayed region based on the parent region
-          this.setDisplayedRegions([
-            {
-              ...parentRegion,
-              reversed,
-            },
-          ])
-
-          // Navigate to the specific coordinates within the region, clamping
-          // into the parentRegion bounds. The lower bound is parentRegion.start
-          // (not 0): the region we just displayed is parentRegion, so a start
-          // below parentRegion.start would fail navTo's containment check when
-          // the parentRegion doesn't begin at 0.
-          this.navTo({
+          // Clamped into the parentRegion bounds, whose lower bound is
+          // parentRegion.start and not 0: the region being displayed IS
+          // parentRegion, so a start below it fails navTo's containment check
+          // wherever the parentRegion doesn't begin at 0.
+          self.showRegions([{ ...parentRegion, reversed }], {
             ...location,
             start: clamp(
               start ?? parentRegion.start,
@@ -2715,7 +2807,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // displayedRegions, and stays clamped to the chromosome bounds that
         // `grow` may have pushed it past.
         else {
-          this.setDisplayedRegions(
+          self.showRegions(
             locations.map(({ start, end, reversed, parentRegion }) =>
               start === undefined || end === undefined
                 ? { ...parentRegion, reversed }
@@ -2727,85 +2819,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   },
             ),
           )
-          // Fit, not showAllRegions: the caller named these regions, the same
-          // way the single-location branch above named its one, and that branch
-          // fits exactly through moveTo. See fitAllRegions for what the
-          // difference costs a stacked view.
-          self.fitAllRegions()
         }
-      },
-
-      /**
-       * #action
-       * Navigate to a location based on its refName and optionally start, end,
-       * and assemblyName. Will not try to change displayed regions, use
-       * `navToLocations` instead. Only navigates to a location if it is
-       * entirely within a displayedRegion. Navigates to the first matching
-       * location encountered.
-       *
-       * Throws an error if navigation was unsuccessful
-       *
-       * @param query - a proposed location to navigate to
-       * @param grow - optional multiplier to expand the region by (e.g., 0.2
-       * adds 20% padding on each side)
-       */
-      navTo(query: NavLocation, grow?: number) {
-        this.navToMultiple([query], grow)
-      },
-
-      /**
-       * #action
-       * Navigate to a location based on its refName and optionally start, end,
-       * and assemblyName. Will not try to change displayed regions, use
-       * navToLocations instead. Only navigates to a location if it is entirely
-       * within a displayedRegion. Navigates to the first matching location
-       * encountered.
-       *
-       * Throws an error if navigation was unsuccessful
-       *
-       * @param locations - proposed location to navigate to
-       * @param grow - optional multiplier to expand the region by (e.g., 0.2
-       * adds 20% padding on each side)
-       */
-      navToMultiple(locations: NavLocation[], grow?: number) {
-        if (
-          locations.some(
-            l =>
-              l.start !== undefined && l.end !== undefined && l.start > l.end,
-          )
-        ) {
-          throw new Error('found start greater than end')
-        }
-
-        const firstLocation = locations.at(0)
-        const lastLocation = locations.at(-1)
-        if (!firstLocation || !lastLocation) {
-          return
-        }
-
-        const defaultAssemblyName = self.assemblyNames[0]!
-        const { assemblyManager } = getSession(self)
-        const { displayedRegions } = self
-        // The range spans from the first location's left edge to the last
-        // location's right edge (any locations in between are ignored).
-        const common = {
-          assemblyManager,
-          defaultAssemblyName,
-          displayedRegions,
-          grow,
-        }
-        this.moveTo(
-          resolveNavEndpoint({
-            ...common,
-            location: firstLocation,
-            side: 'left',
-          }),
-          resolveNavEndpoint({
-            ...common,
-            location: lastLocation,
-            side: 'right',
-          }),
-        )
       },
     }))
     .actions(self => ({
@@ -2910,6 +2924,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
         if (centerPx !== undefined) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
+          self.settleCoarseBlocks()
         }
       },
 

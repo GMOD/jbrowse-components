@@ -32,6 +32,10 @@ function makeView(width = 800) {
     setDisplayedRegions(regions: Region[]) {
       view.displayedRegions = regions
     },
+    showRegions(regions: Region[]) {
+      view.setDisplayedRegions(regions)
+      view.fitAllRegions()
+    },
     fitAllRegions() {
       view.fits++
       view.windowWidthBp = view.displayedRegions.reduce(

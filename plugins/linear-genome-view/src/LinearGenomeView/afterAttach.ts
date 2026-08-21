@@ -119,12 +119,9 @@ function showNamedRegions(
       },
     })
     if (regions) {
-      self.setDisplayedRegions(regions)
-      // fitAllRegions, not showAllRegions: `displayedRegionNames` is the spec
-      // naming what it wants shown, so it gets the width. showAllRegions goes
-      // to the zoom-out LIMIT, whose 10% margin is a framing choice for "show
-      // me everything" and dead frame for a named subset.
-      self.fitAllRegions()
+      // showRegions, not showAllRegionsInAssembly: `displayedRegionNames` is
+      // the spec naming what it wants shown, so it gets the width
+      self.showRegions(regions)
     } else if (!self.hasDisplayedRegions) {
       // The fallback IS "show me everything", so it keeps the margin.
       self.showAllRegionsInAssembly(assemblyName)

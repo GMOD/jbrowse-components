@@ -23,6 +23,9 @@ function makeView() {
       displayed.push(regions)
       view.displayedRegions = regions
     },
+    showRegions(regions: Region[]) {
+      view.setDisplayedRegions(regions)
+    },
     fitAllRegions() {},
     setWindow() {},
     session: {

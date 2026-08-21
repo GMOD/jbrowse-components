@@ -3057,20 +3057,28 @@ describe('coarse dynamic blocks', () => {
 // viewport, so every discrete placer settles them, and the continuous paths
 // must not or the 500ms throttle stops throttling.
 describe('a jump settles the coarse blocks', () => {
+  // Regions in the SNAPSHOT — a restored session, the one arrangement that
+  // places nothing — and the coarse set seeded directly. Neither depends on a
+  // placer, so deleting the settle from the placer under test cannot also empty
+  // the state the assertions measure against, which is how an empty coarse set
+  // passes both of them by falling through to the live blocks.
   function makeView() {
     const { Session, LinearGenomeModel } = initialize()
     const model = Session.create({ configuration: {} }).setView(
-      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: volvoxDisplayedRegions,
+      }),
     )
     model.setWidth(800)
-    model.setDisplayedRegions(volvoxDisplayedRegions)
+    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
     return model
   }
 
   const keys = (blocks: { key: string }[]) => blocks.map(b => b.key)
 
-  // Every placer that jumps. A new one belongs in this list AND in
-  // `settleCoarseBlocks`'s callers — nothing but this test connects the two.
+  // Every placer that jumps. `placersSettleCoarseBlocks.test.ts` is what makes
+  // a new one reach the settle; this is where it gets exercised end to end.
   const jumps: [string, (model: LGV) => void][] = [
     [
       'setNewView',
@@ -3109,12 +3117,43 @@ describe('a jump settles the coarse blocks', () => {
         model.showAllRegions()
       },
     ],
+    [
+      'fitAllRegions',
+      model => {
+        model.fitAllRegions()
+      },
+    ],
+    [
+      'showAllRegionsAtScale',
+      model => {
+        model.showAllRegionsAtScale(200)
+      },
+    ],
+    // The region list again, and reversed with it: index 0 named ctgA forward
+    // and names ctgB reversed afterwards, off a direct write to
+    // `displayedRegions` rather than through setDisplayedRegions
+    [
+      'horizontallyFlip',
+      model => {
+        model.horizontallyFlip()
+      },
+    ],
+    [
+      'centerAt',
+      model => {
+        model.centerAt(40_000, 'ctgA')
+      },
+    ],
+    [
+      'showRegions',
+      model => {
+        model.showRegions([volvoxDisplayedRegions[1]!])
+      },
+    ],
   ]
 
   test.each(jumps)('%s brings them to the new viewport', (_name, jump) => {
     const model = makeView()
-    // settled where the view starts, so a jump that failed to settle would leave
-    // a non-empty set describing the wrong place rather than an empty one
     const before = keys(model.coarseDynamicBlocks)
     expect(before.length).toBeGreaterThan(0)
 
@@ -3134,9 +3173,8 @@ describe('a jump settles the coarse blocks', () => {
   // leading edge.
   test.each(jumps)('%s leaves no per-bp scan on the old window', (_n, jump) => {
     const model = makeView()
-    // non-empty at the start, so `settledDynamicBlocks` cannot pass this by
-    // falling through on emptiness
     const before = keys(model.settledDynamicBlocks)
+    expect(before.length).toBeGreaterThan(0)
 
     jump(model)
 
@@ -3144,6 +3182,36 @@ describe('a jump settles the coarse blocks', () => {
       keys(model.dynamicBlocks.contentBlocks),
     )
     expect(keys(model.settledDynamicBlocks)).not.toEqual(before)
+  })
+
+  // The multi-locus branch places through `fitAllRegions` rather than `moveTo`,
+  // and reached it as a second root action, so the settle inside the region
+  // write landed on the window between the two and stayed there.
+  test('a multi-region navigation lands on them too', async () => {
+    const model = makeView()
+    await model.navToLocString('ctgA:1000-2000 ctgB:1000-2000')
+    expect(model.coarseVisibleLocStrings).toBe(model.visibleLocStrings)
+  })
+
+  // Consumers diff the coarse blocks by reference, so an intermediate viewport
+  // is a round of per-bp scanning and fetching over a window nobody saw. The
+  // region write and the placement have to be one action for that to hold —
+  // post-await they are not inside `navToLocations`'s own action any more.
+  test('a navigation publishes one coarse viewport, not two', async () => {
+    const model = makeView()
+    model.setWindow(2000, 30_000)
+    const published: string[] = []
+    const dispose = autorun(() => {
+      published.push(keys(model.coarseDynamicBlocks).join('|'))
+    })
+    await model.navToLocString('ctgB:1000-2000')
+    dispose()
+
+    // the autorun's own first run, then the navigation's single update
+    expect(published).toHaveLength(2)
+    expect(published.at(-1)).toBe(
+      keys(model.dynamicBlocks.contentBlocks).join('|'),
+    )
   })
 
   // The other half, and the reason this is not simply "settle on every write":
@@ -3167,7 +3235,6 @@ describe('a jump settles the coarse blocks', () => {
 
   test.each(gestures)('%s leaves them alone', (_name, gesture) => {
     const model = makeView()
-    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
     const settled = model.coarseDynamicBlocks
 
     gesture(model)
