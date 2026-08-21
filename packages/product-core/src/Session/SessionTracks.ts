@@ -442,6 +442,13 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * destination where that track works, so the click keeps working and
          * the dangling entry is never written; a snackbar says which assembly
          * moved it.
+         *
+         * **The snackbar names the assembly and not the track**, which is what
+         * lets a batch collapse to one message: `pushSnackbarMessage` dedupes on
+         * the exact text, and `BulkAddTracksWorkflow` publishes in a loop, so
+         * interpolating the track name stacked one identical-but-for-a-name
+         * toast per file over an admin adding thirty. The assembly is the whole
+         * of what an admin has to act on anyway.
          */
         publishTrackConf(trackConf: AnyConfiguration) {
           if (!self.adminMode) {
@@ -452,7 +459,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             return superPublishTrackConf(trackConf)
           }
           self.notify(
-            `Added "${(trackConf as { name?: string; trackId: string }).name ?? (trackConf as { trackId: string }).trackId}" to this session rather than to the site configuration, because assembly "${missing.join('", "')}" is not in the config.json. A published track naming it would be served to every visitor and drawn by none of them.`,
+            `A track naming assembly "${missing.join('", "')}" goes to this session rather than to the site configuration: the config.json does not carry that assembly, so a published track naming it would be served to every visitor and drawn by none of them.`,
             'info',
           )
           return addToSession(trackConf)
