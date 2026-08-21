@@ -1,0 +1,19 @@
+digraph synteny_surfaces {
+  rankdir=LR
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] compare; axes }
+
+  track [label="SyntenyTrack\n(PAF, PIF, chain, delta,\nMCScan blocks)", shape=oval]
+  track -> compare
+  compare [label="comparing two assemblies\nside by side"]
+  compare -> lgv  [label=" no: one genome view"]
+  compare -> axes [label=" yes"]
+
+  lgv [label="LGVSyntenyDisplay\nthe alignments display's own component:\nrows of synteny features in one LGV,\nlinking out to a comparative view"]
+
+  axes [label="how the two genomes are laid out"]
+  axes -> synteny [label=" two rows,\n one axis each"]
+  axes -> dotplot [label=" two perpendicular axes"]
+  synteny [label="LinearSyntenyView + LinearSyntenyDisplay\na ribbon per alignment between the rows,\nCIGAR detail inside it when wide enough"]
+  dotplot [label="DotplotView + DotplotDisplay\na point or line per alignment\nin the plane of the two genomes"]
+}

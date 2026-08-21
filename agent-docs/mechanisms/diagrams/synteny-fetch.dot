@@ -1,0 +1,29 @@
+digraph synteny_fetch {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] lod; tiered }
+
+  move [label="the view moves, or a setting changes", shape=oval]
+  move -> window
+
+  window [label="fetch window: the visible blocks,\nwidened by the pan buffer and snapped\noutward to a buffer-sized grid"]
+  window -> bucket
+  bucket [label="zoom term: floor(log2(bpPerPx))\nso the key fires once per doubling,\nnot once per wheel notch"]
+  bucket -> lod
+
+  lod [label="level of detail"]
+  lod -> fine   [label=" fine"]
+  lod -> coarse [label=" coarse"]
+  lod -> auto   [label=" auto"]
+  auto [label="resolveLodTier, on the MAIN THREAD,\nin a getter that feeds the fetch key"]
+  auto -> tiered
+  tiered [label="the adapter has a coarse tier,\nand the zoom is past its threshold"]
+  tiered -> coarse [label=" yes"]
+  tiered -> fine   [label=" no"]
+
+  fine   [label="fine tier: per-row CIGAR,\nevery tag the file carried"]
+  coarse [label="coarse tier: no CIGAR, rows split\nat large indels so each bounding\nbox stays tight"]
+
+  key [label="the fetch key: window, zoom bucket,\ntier, region signature\ncolorBy is NOT in it"]
+  fine -> key  coarse -> key
+}

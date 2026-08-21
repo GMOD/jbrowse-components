@@ -60,6 +60,7 @@ gates, read back through the same layout.
 | variants | a record, a sample, or a haplotype | the genotype at that cell, or one override that replaces it | the worker, into packed colours | [variants-decision-tree](variants-decision-tree.md) |
 | quantitative | a source | identity, or a score ramp — depending on the mode | the main thread, per layer | [wiggle-decision-tree](wiggle-decision-tree.md) |
 | annotations | a packed layout row | the feature's own colour, or the file's | the worker, per box | [feature-track-decision-tree](feature-track-decision-tree.md) |
+| comparative | an alignment between two genomes | a mode over the pair: strand, chromosome, or a measured channel | the main thread, from worker geometry | [synteny-decision-tree](synteny-decision-tree.md) |
 
 Two things that read as coincidences and are not. **Every plugin resolves colour
 in exactly one place and has its legend read the same answer** — a legend built
@@ -89,8 +90,14 @@ member fails the build until every consumer — GPU pass, Canvas2D painter, hit
 test, legend, menu — has answered for it. See
 [draw-pass-registries](draw-pass-registries.md).
 
+The comparative row is the one that bends the sequence: its displays own their
+fetch rather than composing the shared mixin, and their canvas belongs to the
+container that lays out both genomes rather than to a display
+([shared-canvas-views](../reference/SHARED_CANVAS_VIEWS.md)). The decisions are
+still the ones above, in the same order.
+
 ## Not yet mapped
 
-Synteny and dotplot, MAF, Hi-C, arc and paired-arc, and the reference sequence
-display. GC content and Manhattan plots run the quantitative decisions above;
-linkage disequilibrium is covered inside the variants map.
+MAF, Hi-C, arc and paired-arc, and the reference sequence display. GC content
+and Manhattan plots run the quantitative decisions above; linkage disequilibrium
+is covered inside the variants map.

@@ -1,0 +1,35 @@
+digraph synteny_colour {
+  rankdir=LR
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] mode; present }
+
+  colorby [label="colorBy", shape=oval]
+  colorby -> mode
+  mode [label="which kind of mode"]
+
+  mode -> flat     [label=" default"]
+  mode -> strand   [label=" strand"]
+  mode -> chrom    [label=" query, target,\n reference"]
+  mode -> preset   [label=" identity, mean identity,\n mapping quality, dN/dS"]
+  mode -> attr     [label=" attribute:<name>"]
+  mode -> track    [label=" track"]
+
+  flat   [label="the match colour;\nthe dotplot's flat point colour"]
+  strand [label="forward or reverse"]
+  chrom  [label="the assembly's palette,\nhanded out BY POSITION\nin the chromosome order"]
+  preset [label="a named ramp carrying domain knowledge:\nidentity is a fraction, MAPQ tops at 60,\ndN/dS is read against 1"]
+  attr   [label="one generic ramp over the range\nthe fetched features actually cover"]
+  track  [label="the track's own colour"]
+
+  present [label="the feature has a value\non this channel"]
+  preset -> present  attr -> present
+  present -> ramp    [label=" yes"]
+  present -> missing [label=" no"]
+  ramp    [label="the ramp"]
+  missing [label="the missing-data colour,\nnever the ramp's bottom"]
+
+  cigar [label="CIGAR sub-instances keep their own\noperation colours: insertion, deletion,\nskip, mismatch"]
+
+  out [label="one packed colour per instance,\nrecomputed on the MAIN THREAD,\nso a colour change re-uploads\nwithout a refetch", style=bold]
+  flat -> out  strand -> out  chrom -> out  ramp -> out  missing -> out  track -> out  cigar -> out
+}

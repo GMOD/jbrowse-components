@@ -1,0 +1,37 @@
+digraph synteny_draw {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] wide; cigarmode; backend }
+
+  payload [label="the worker's features and positions", shape=oval]
+  payload -> wide
+  wide [label="the alignment is a couple of pixels wide,\nand the fine tier is loaded"]
+  wide -> cigarmode [label=" yes"]
+  wide -> plain     [label=" no"]
+  plain [label="one full-span ribbon:\nfour corners in bp, relative to each\naxis' fetch-time origin"]
+
+  cigarmode [label="CIGAR display mode"]
+  cigarmode -> coloured    [label=" coloured indels"]
+  cigarmode -> transparent [label=" transparent indels"]
+  cigarmode -> plain       [label=" off"]
+  coloured    [label="the full-span ribbon carries the matches,\nand each indel is painted over it\nin its operation's colour"]
+  transparent [label="no full-span ribbon: one tile per match\nsegment, indels left see-through.\nA tile fades by its own width"]
+
+  marks [label="location markers, and a mark per\nalignment whose mate is off this level\n— clicking one takes the row to that locus"]
+  plain -> marks  coloured -> marks  transparent -> marks
+
+  colours [label="colours packed on the main thread\nand uploaded beside the geometry"]
+  marks -> colours
+
+  params [label="frame parameters, never baked into the\ncolours: opacity, thin-alignment fade,\nminimum length, curved or straight,\nthe hovered and clicked feature"]
+  colours -> params -> backend
+
+  backend [label="one shared canvas per level,\nkeyed per track"]
+  backend -> gpu [label=" WebGPU, else WebGL2"]
+  backend -> c2d [label=" else Canvas2D"]
+  gpu [label="the ribbon silhouette in a shader"]
+  c2d [label="the same silhouette traced by hand,\nfunction for function; the SVG export\ndraws through this path"]
+
+  pick [label="picking: a 1D index of per-instance\nx-hulls, stabbed then tested exactly"]
+  gpu -> pick  c2d -> pick
+}
