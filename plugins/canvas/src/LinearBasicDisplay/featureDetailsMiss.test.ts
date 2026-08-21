@@ -38,10 +38,23 @@ function misses(session: { notifications: { message: string }[] }) {
   )
 }
 
+// Answer only the details method: a blanket `mockResolvedValue` answers the
+// per-region FETCH too, and the display stores that reply as region data, where
+// the getters reading it throw inside an autorun. Unstubbed methods keep the
+// harness default, which never settles.
+function onlyDetails(mock: jest.Mock, reply: () => unknown) {
+  mock.mockImplementation((_sessionId: string, method: string) => {
+    if (method === 'GetCanvasFeatureDetails') {
+      return reply()
+    }
+    return new Promise(() => {})
+  })
+}
+
 describe('a details lookup that finds nothing says so', () => {
   it('selectFeatureById notifies when the feature is not found', async () => {
     const { display, session, mockRpcCall } = setup()
-    mockRpcCall.mockResolvedValue({ feature: undefined })
+    onlyDetails(mockRpcCall, () => ({ feature: undefined }))
 
     display.selectFeatureById('EDEN', undefined, 0)
 
@@ -55,9 +68,9 @@ describe('a details lookup that finds nothing says so', () => {
 
   it('says nothing when the feature is found', async () => {
     const { display, session, mockRpcCall } = setup()
-    mockRpcCall.mockResolvedValue({
+    onlyDetails(mockRpcCall, () => ({
       feature: { uniqueId: 'EDEN', refName: 'ctgA', start: 1050, end: 9000 },
-    })
+    }))
 
     display.selectFeatureById('EDEN', undefined, 0)
 
@@ -74,7 +87,9 @@ describe('a details lookup that finds nothing says so', () => {
   // time less usefully than the first.
   it('does not double-report a failed lookup', async () => {
     const { display, session, mockRpcCall } = setup()
-    mockRpcCall.mockRejectedValue(new Error('worker exploded'))
+    onlyDetails(mockRpcCall, () => {
+      throw new Error('worker exploded')
+    })
 
     display.selectFeatureById('EDEN', undefined, 0)
 

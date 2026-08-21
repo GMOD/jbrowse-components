@@ -193,11 +193,20 @@ stopped the throw and left the pass re-clamping restored sessions, which showed
 up only as a moved snapshot in a file nobody would have connected to it.
 
 Turning the gate on then answered a question nobody had asked: six OTHER
-reactions throw across the suite, twelve hundred times a run, every one of them a
-`TypeError: Cannot read properties of undefined` from a read that happens before
-the thing it reads exists. None of them had ever been seen. The gate ships with
-those six named as debt, so the class is closed against new arrivals while they
-are worked through one at a time.
+reactions were throwing across the suite, twelve hundred times a run, none of
+them ever seen. They looked like six bugs and were one — the shared display
+harness's RPC mock resolved `undefined` for any un-stubbed method, every display
+stored that as region data, and the getters reading it threw. A fetch RPC
+answers a payload or a refusal, never nothing, so no display is written for the
+shape. The mock returns a promise that never settles now, which is the honest
+spelling of "no answer here", and all six went quiet at once.
+
+Two wrong turns on the way, both caught by measuring rather than reasoning: a
+guard at the one storing site cleared the one file that reproduced and left 1170
+of them, because there are several storing sites; and making the mock reject
+poisons the display before the stub arrives, since most suites stub after the
+display is built. Counts also moved every run — the errors need the async fetch
+to land before teardown — so the first honest number was the third one.
 
 **Why it travels:** ask of any runtime what it does with an exception it catches
 on your behalf. A framework that swallows and logs has moved the failure from a
@@ -206,7 +215,9 @@ is now green by construction. The fix is one line of plumbing — the existing
 contract gate already fails a run on a buffered `console.error`, so this was a
 prefix added to the list it buffers — and it retroactively covers every reaction
 in the tree rather than the one that was found. Expect the switch-on to find a
-backlog: a channel nothing reads accumulates, and the count is the interest.
+backlog: a channel nothing reads accumulates. Expect the backlog to be smaller
+than it looks, too — nothing had been deduplicating those reports, so one cause
+presented as six.
 
 ## Publishing this
 

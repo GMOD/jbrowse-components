@@ -11,6 +11,7 @@ import type { LinearMafDisplayModel } from './stateModel.ts'
 const snapshotOf = (display: LinearMafDisplayModel) =>
   getSnapshot(display) as unknown as Record<string, unknown>
 
+import { emptyMafWireRegionData } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 beforeEach(() => {
@@ -29,7 +30,7 @@ const EMPTY_ALIGNMENT_DATA = {
   samples: [],
   treeNewick: undefined,
   samplesCanonical: false,
-  regionData: undefined,
+  regionData: emptyMafWireRegionData(),
 }
 
 // The declarative half of "Cluster rows by identity": a session or a figure spec

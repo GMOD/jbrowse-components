@@ -203,10 +203,23 @@ export function createDisplayTestEnvironment<T>({
   pluginManager.configure()
 
   // typed as a bare mock, never narrowed to `rpcCall`'s signature: callers
-  // `mockImplementation` it with the arg shapes their own display expects
+  // `mockImplementation` it with the arg shapes their own display expects.
+  //
+  // Never settles when nothing stubs it, rather than resolving `undefined`. A
+  // fetch RPC answers a payload or a refusal, never nothing, so `undefined` is a
+  // shape no display is written for — and every one of them stored it as region
+  // data, where the getters reading it threw inside an autorun MobX swallows.
+  //
+  // Pending rather than rejected because the stub arrives AFTER `createDisplay`
+  // in most suites, and the fetch that runs in between must not decide
+  // anything: an unanswered call leaves the display exactly as it was, which is
+  // what those tests already assume. Nothing awaits this fetch — a suite that
+  // wants one stubs the method.
   const mockRpcCall: jest.Mock = jest.fn()
   if (rpcCall) {
     mockRpcCall.mockImplementation(rpcCall)
+  } else {
+    mockRpcCall.mockImplementation(() => new Promise(() => {}))
   }
   const ViewModel = viewModel(pluginManager)
   const trackConfig = pluginManager.pluggableConfigSchemaType('track').create(
