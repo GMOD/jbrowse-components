@@ -262,6 +262,19 @@ npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 
 It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
+The wheat half of the [two-hexaploid figure](#reading-the-plot) is a second
+script, taking the Compara route rather than calling its own anchors:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_wheat_homoeologs.sh
+bash build_wheat_homoeologs.sh   # writes ./wheat_homoeologs_build/
+```
+
+[`build_wheat_homoeologs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_wheat_homoeologs.sh)
+reads Ensembl Compara's homoeolog tables through
+[`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py),
+which it downloads itself, and needs no aligner: the pairs are already called.
+
 ## See also
 
 - [](/docs/tutorials/mcscan_synteny_grape_peach)

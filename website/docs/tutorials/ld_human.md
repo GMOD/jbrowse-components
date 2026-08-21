@@ -234,10 +234,8 @@ rather than the axis the rows were sorted on.
 
 Over the whole release each haplotype row falls well below a pixel in a lane
 this tall and averages into its neighbours, leaving a flat wash whatever the
-ordering. This figure reads a subsample of six populations instead. Its
-[build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
-prints that arithmetic against the lane, and the per-population frequencies the
-populations were chosen for.
+ordering. This figure reads a subsample of six populations instead, built by the
+third script under [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## Coloring a GWAS by LD to the lead SNP
 
@@ -287,6 +285,18 @@ bash build_lct_fst_scan.sh            # builds ./lct_fst_scan_build
 Same panels, same estimator and the same tool, over forty megabases instead of
 three. It prints where rs4988235 ranks across the whole span, and the
 million-site slice it needs to get there takes a few minutes to come down.
+
+The [subsampled haplotype matrix](#rows-have-to-be-worth-a-pixel) is a third
+file, since the whole release draws a flat wash at that lane height:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_haploblock.sh
+bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
+```
+
+[`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
+prints the rows-per-pixel arithmetic against the lane, and the per-population
+frequencies the six populations were chosen for.
 
 ## See also
 
