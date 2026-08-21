@@ -1049,7 +1049,7 @@ test('a navigation that does not move the row is not asked for twice', async () 
     if (navs > 20) {
       view.setRowSyncMode('independent')
     }
-    return
+    return true
   })
 
   await query!.navToLocString('ctgA:30000..31000', QUERY_ASM)
@@ -1083,6 +1083,7 @@ test('the frame pass places a two-contig row in its concatenated space', async (
   })
   jest.spyOn(target!, 'navToLocString').mockImplementation(async () => {
     navs++
+    return true
   })
 
   // the settle whose answer the frame pass then steers by — the pick is written

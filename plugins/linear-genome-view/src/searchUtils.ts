@@ -142,6 +142,12 @@ export function notifySearchFailure(session: AbstractSessionModel, e: unknown) {
 // if input is a known ref or locstring, navigate directly;
 // otherwise search and: pop a dialog for multiple results, navigate for one,
 // or fall back to treating input as a locstring
+//
+// Returns whether the view actually moved. Three branches deliberately do not
+// navigate — a glob too wide to open, a multi-hit search that raises the picker
+// instead, and a view detached while the search RPC ran — and each of them
+// resolves, so a caller awaiting this cannot otherwise tell "showing it" from
+// "asked you which one".
 export async function handleSelectedRegion({
   input,
   model,
@@ -183,6 +189,7 @@ export async function handleSelectedRegion({
       .every(entry => checkRef(entry, isRef))
   ) {
     await navToLocstrings()
+    return true
   } else if (input.includes('*') && !!assembly) {
     // Enter does what the dropdown's "Show all N regions matching …" row does,
     // for the same text. It is NOT a blind resolution: that row, and the matches
@@ -205,6 +212,7 @@ export async function handleSelectedRegion({
         `"${input}" matches more than ${MAX_GLOB_REGIONS} regions — narrow the pattern`,
         'warning',
       )
+      return false
     } else if (names.length) {
       await model.navToLocations(
         parseLocStrings(names.join(' '), assemblyName, (ref, asm) =>
@@ -212,6 +220,7 @@ export async function handleSelectedRegion({
         ),
         assemblyName,
       )
+      return true
     } else {
       // matched nothing: a pattern is not a feature name, so there is no index
       // to fall through to, and the miss is the whole answer
@@ -243,10 +252,11 @@ export async function handleSelectedRegion({
 
     // the view may have been closed/detached while the text-search RPC ran
     if (!isAlive(model)) {
-      return
+      return false
     }
     if (results.length > 1) {
       model.setSearchResults(results, input, assemblyName)
+      return false
     } else if (results.length === 1) {
       // `grow` reached the locstring branch above but not this one, so a
       // caller's padding — a session spec's `grow`, sv-core's navToLoc — was
@@ -258,6 +268,7 @@ export async function handleSelectedRegion({
         assemblyName,
         grow,
       })
+      return true
     } else {
       // no search hits: still try to resolve the input as a locstring (bare
       // refname, "ref start end" triplet, etc). if that also can't find a
@@ -266,6 +277,7 @@ export async function handleSelectedRegion({
       // specific ref error for coordinate/multi-part queries
       try {
         await navToLocstrings()
+        return true
       } catch (e) {
         const isPlainName = !input.includes(':') && !input.includes(' ')
         if (e instanceof UnknownRefNameError && isPlainName) {

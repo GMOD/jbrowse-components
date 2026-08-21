@@ -2743,12 +2743,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * navigating to the locstring
        * @param grow - optional multiplier to expand the region by (e.g., 0.2
        * adds 20% padding on each side)
+       * @returns whether the view moved. A multi-hit search raises the picker
+       * instead of navigating, and both resolve — see `handleSelectedRegion`.
        */
+      // annotated, not inferred: the same type cycle `showTrack` names. Left to
+      // infer, the `boolean` reaches this model's type through `self` and 180
+      // unrelated files lose their parameter types to it.
       async navToLocString(
         input: string,
         optAssemblyName?: string,
         grow?: number,
-      ) {
+      ): Promise<boolean> {
         const { assemblyNames } = self
         const session = getSession(self)
         const { assemblyManager } = session
@@ -2757,9 +2762,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           await assemblyManager.waitForAssembly(assemblyName)
         }
         if (!isAlive(self)) {
-          return
+          return false
         }
-        await handleSelectedRegion({
+        return handleSelectedRegion({
           input,
           assemblyName,
           grow,

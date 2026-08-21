@@ -100,6 +100,22 @@ test('a contig the row cannot resolve is reported, not thrown', async () => {
   expect(refNames(view, 1)).toEqual(['ctgA'])
 }, 20000)
 
+// A mate name that is not a refName here but PREFIX-matches several goes to the
+// text search, which raises a picker over the hits and navigates nothing — and
+// resolves, so awaiting it says nothing. Ordinary for a PAF naming contigs
+// `1`,`2` against an assembly spelling them `chr1`,`chr2`. Reported as a move it
+// posted "Showing ctg, and following this row" with a live Undo over a stack
+// nothing had touched; the picker is the feedback, so the click says nothing.
+test('a mate name that opens a picker is not reported as a move', async () => {
+  const { session, view, level } = await setup()
+
+  level.showOffscreenMateContig('ctg', level.level + 1)
+  await when(() => session.queueOfDialogs.length > 0, { timeout: 5000 })
+
+  expect(refNames(view, 1)).toEqual(['ctgA'])
+  expect(session.snackbarMessages).toEqual([])
+}, 20000)
+
 // The mark's own coordinates, which is the whole reason the payload carries
 // them: a bare refName is a whole chromosome, so a click meant to answer "what
 // is over there" used to answer it by zooming out past everything else. `grow`

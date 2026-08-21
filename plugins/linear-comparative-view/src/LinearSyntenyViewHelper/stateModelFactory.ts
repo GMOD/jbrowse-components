@@ -423,15 +423,20 @@ export function linearSyntenyViewHelperModelFactory(
           const loc = navLocString(refName, locus)
           view
             .navToLocString(loc)
-            .then(() => {
+            .then(landed => {
               // The level can be detached while the navigation is in flight —
               // the track holding it removed, the view closed — and
               // `getSession` throws on a dead node, inside a `then` whose
-              // `catch` would then call it a second time. `navToLocString` also
-              // RESOLVES without navigating when its own view died waiting on
-              // the assembly, so a live level is not on its own proof anything
-              // moved.
-              if (isAlive(self) && isAlive(view)) {
+              // `catch` would then call it a second time.
+              //
+              // `landed` is the other half: `navToLocString` resolves without
+              // navigating when the contig is not a refName here and the text
+              // search raises a picker over the hits instead — ordinary for a
+              // PAF naming contigs `1`,`2` against an assembly spelling them
+              // `chr1`,`chr2`. Reported as a move, that posted "Showing 2, and
+              // following this row" with a live Undo over a stack nothing had
+              // touched, and kept the anchor.
+              if (isAlive(self) && isAlive(view) && landed) {
                 getSession(self).notify(
                   anchor.taken
                     ? `Showing ${loc}, and following this row`
