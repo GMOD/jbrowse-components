@@ -355,3 +355,17 @@ view-wide slot let a level that resolves fine clear it every pass while the
 broken one reported itself again behind it. `notifyError` always attaches a
 `report` action, which is exactly what makes it bypass the snackbar model's own
 message dedup, so nothing downstream absorbs the repeats.
+
+## Navigating a followed row from elsewhere in the view takes the anchor
+
+The exact pass re-asserts the follow over a row the user dragged, and it cannot
+tell that drag from a navigation some other feature made on the user's behalf —
+so anything that navigates a row the follow MOVES has to take the anchor as
+well, or it changes nothing and says it did. `showOffscreenMateContig` is the
+case that found this: the click ran, posted its snackbar, and the row came
+straight back to the anchor's mapping. Its undo puts the anchor back with the
+regions, because the anchor is a persisted view-wide setting rather than an
+implementation detail of the navigation.
+`LinearSyntenyOffscreenMateFollow.test.tsx` holds it, on a PAF and both clocks —
+a model-level test cannot see it, since with no alignments there is nothing to
+re-assert.

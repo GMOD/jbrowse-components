@@ -22,6 +22,12 @@ export interface ParentViewDuck {
   // the same floor the ribbons are culled by, applied to the marks so filtering
   // a hairball down does not leave a fringe of marks for what it hid
   minAlignmentLength: number
+  // Read by the off-screen mate click, which navigates a row: a row the follow
+  // MOVES is re-asserted onto the anchor's mapping the moment it settles, so a
+  // click on one of its marks would post its snackbar and change nothing.
+  followSynteny: boolean
+  followAnchorIndex: number
+  setFollowAnchorIndex: (idx: number) => void
 }
 
 // One level of the stack, as seen from a synteny display nested inside it. Same

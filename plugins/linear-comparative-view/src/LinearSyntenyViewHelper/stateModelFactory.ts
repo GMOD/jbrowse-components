@@ -421,35 +421,59 @@ export function linearSyntenyViewHelperModelFactory(
        * reconstruct what the row was showing: what it replaced is a region list
        * they may have spent several navigations building, and "Show all regions"
        * — the only thing that was on offer — is not it.
+       *
+       * IT ALSO TAKES THE ANCHOR, when the follow is on and this is not already
+       * the anchor row. A row the follow MOVES is re-asserted onto the anchor's
+       * mapping every time the anchor settles — that is what the exact pass is
+       * for, "re-asserting the follow over a row the user dragged" — so the
+       * click ran, posted its snackbar, and the row came straight back
+       * (`LinearSyntenyOffscreenMateFollow.test.tsx` is the proof). Anchoring
+       * the row is what the click MEANS: this row should show that contig, and
+       * the others should come to it. The undo puts the anchor back too.
        */
       showOffscreenMateContig(
         refName: string,
         row: number,
         locus?: OffscreenMateLocus,
       ) {
-        const view = self.parentView.views[row]
+        const { parentView } = self
+        const view = parentView.views[row]
         if (view) {
+          const anchored = parentView.followSynteny
+            ? parentView.followAnchorIndex
+            : row
           const restore = {
             // `displayedRegions` is a frozen Region[], so a copy of the array
             // is the whole of what has to be kept
             regions: [...view.displayedRegions],
             bpPerPx: view.bpPerPx,
             offsetPx: view.offsetPx,
+            anchor: anchored,
+          }
+          if (anchored !== row) {
+            parentView.setFollowAnchorIndex(row)
           }
           const loc = navLocString(refName, locus)
           view
             .navToLocString(loc, undefined, locus ? OFFSCREEN_MATE_NAV_GROW : 0)
             .then(() => {
-              getSession(self).notify(`Showing ${loc}`, 'info', {
-                name: 'Undo',
-                onClick: () => {
-                  if (isAlive(view)) {
-                    view.setDisplayedRegions(restore.regions)
-                    view.zoomTo(restore.bpPerPx)
-                    view.scrollTo(restore.offsetPx)
-                  }
+              getSession(self).notify(
+                anchored === row
+                  ? `Showing ${loc}`
+                  : `Showing ${loc}, and following this row`,
+                'info',
+                {
+                  name: 'Undo',
+                  onClick: () => {
+                    if (isAlive(view)) {
+                      parentView.setFollowAnchorIndex(restore.anchor)
+                      view.setDisplayedRegions(restore.regions)
+                      view.zoomTo(restore.bpPerPx)
+                      view.scrollTo(restore.offsetPx)
+                    }
+                  },
                 },
-              })
+              )
             })
             .catch((e: unknown) => {
               getSession(self).notifyError(`${e}`, e)

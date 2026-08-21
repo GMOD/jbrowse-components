@@ -203,6 +203,14 @@ reports nothing.
   several navigations. The navigation now raises a snackbar carrying an **Undo**
   that restores the row's regions, zoom and scroll — an actionable info toast,
   which `SnackbarModel` deliberately does not auto-hide.
+
+  WITH THE FOLLOW ON, THE CLICK TAKES THE ANCHOR. A row the follow MOVES is
+  re-asserted onto the anchor's mapping every time the anchor settles, so
+  clicking a mark on such a row ran, posted its snackbar, and left the row
+  exactly where the follow wanted it. Anchoring the row is what the click means —
+  this row should show that contig, and the others should come to it — and the
+  undo restores the anchor with the regions.
+  `LinearSyntenyOffscreenMateFollow.test.tsx` holds it.
 - **Where the hit test lives.** In the level's pointer handlers, before the
   ribbon pick, answering only within the mark strip. The overlay stays
   `pointerEvents: none`: two hit paths over one band is how a click comes to
