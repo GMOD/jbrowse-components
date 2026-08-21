@@ -86,11 +86,15 @@ Row-arrangement actions persist through `setLayout` (never `self.layout =`), and
 `applyArrangement` re-arranges the rows already on screen rather than
 re-deriving from adapter order, which made "Color by…" discard a clustering run.
 
-**An action computing a NEW order merges it back with `applyLayoutOverrides`**
-(`@jbrowse/tree-sidebar`), because `layout` is the only home a palette color, a
-label and a labelColor have. Clustering gets it through `buildClusteredLayout`;
-`sortByGenotype` did not, and blanked every sidebar swatch on a callset colored
-by a `samplesTsv` column while the menu still showed the palette ticked.
+**An action computing a NEW order keeps the palette color, label and labelColor
+that only `layout` holds** — by sorting rows that already carry them
+(`editableSources`, as `sortByGenotype` does) or by merging a fresh order back
+with `applyLayoutOverrides` (`@jbrowse/tree-sidebar`, as clustering does through
+`buildClusteredLayout`). Doing neither blanked every sidebar swatch on a callset
+colored by a `samplesTsv` column while the menu still showed the palette ticked.
+`applyLayoutOverrides` matches on `name`, so it cannot merge across
+granularities: in phased mode a fresh order is haplotypes and `layout` is
+sample-level, and nothing matches.
 
 ## Which display: the matrix is for genotype PATTERN, not spans
 

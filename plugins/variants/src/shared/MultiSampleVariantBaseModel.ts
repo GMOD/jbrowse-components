@@ -28,7 +28,6 @@ import {
   RowHeightMixin,
   TreeSidebarMixin,
   applyColorPalette,
-  applyLayoutOverrides,
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
@@ -1322,26 +1321,26 @@ export default function MultiSampleVariantBaseModelF(
          * rows sharing the anchor allele sit together, and their shared block
          * frays outward at the recombination breakpoints that end it.
          *
-         * The sorted order goes back through `applyLayoutOverrides`, because
-         * `sourcesWithoutLayout` is adapter metadata and `layout` is where a
-         * palette color, a label and a labelColor live. Writing the sort
-         * straight to `setLayout` discarded all three: on a callset with a
-         * `samplesTsv` column, **Color by… → Population** then **Sort by
-         * genotype** reordered the rows correctly and blanked every sidebar
-         * swatch, while the menu still showed Population ticked and
-         * `getConf(self, 'colorBy')` still read `population`. Nothing re-seeds
-         * the palette afterwards — `setSources` short-circuits on `deepEqual`,
-         * and `applyArrangement` is reachable only from `setColorBy` /
-         * `setGroupBy` / `clearLayout` / `setPhasedMode`.
-         *
-         * Every other writer of `layout` already merges: clustering through
-         * `buildClusteredLayout`, and `applyArrangement` by re-arranging rather
-         * than re-deriving, whose own comment records that re-deriving once
-         * silently discarded a clustering run.
+         * Sorts the rows that are already on screen, so the palette color,
+         * label and labelColor ride along and nothing has to be merged back.
+         * Sorting adapter metadata instead discarded all three: **Color by… →
+         * Population** then **Sort by genotype** reordered correctly and
+         * blanked every sidebar swatch, with the menu still showing Population
+         * ticked. Nothing re-seeds the palette afterwards — `setSources`
+         * short-circuits on `deepEqual`, and `applyArrangement` is reachable
+         * only from `setColorBy` / `setGroupBy` / `clearLayout` /
+         * `setPhasedMode`.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self
-          const sources = self.sourcesWithoutLayout
+          // `editableSources`, so the rows arrive already carrying the layout's
+          // colors and labels and already at the rendering mode's granularity.
+          // Merging a fresh order back against `layout` by name cannot work in
+          // phased mode — the sorted rows are haplotypes ("S0 HP0") and the
+          // layout is sample-level, so nothing matched and every swatch went
+          // blank. Not subtree-filtered, so a hidden row keeps its overrides
+          // instead of being dropped from `layout` for good.
+          const sources = self.editableSources
           if (cellData && sources) {
             const { featureIds, genotypeCodesByFeatureId } =
               getOrderedGenotypeCodes(cellData)
@@ -1355,7 +1354,7 @@ export default function MultiSampleVariantBaseModelF(
               phased: self.renderingMode === 'phased',
             })
             if (sorted) {
-              self.setLayout(applyLayoutOverrides(sorted, self.layout))
+              self.setLayout(sorted)
             }
           }
         },

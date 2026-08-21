@@ -203,6 +203,35 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     }
   })
 
+  // In phased mode the sorted rows are haplotypes and `layout` is sample-level,
+  // so a merge by name matched nothing and dropped every colour — the same
+  // failure as above, in the mode neither test above runs in.
+  it('keeps the colorBy palette through a sort in phased mode', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setPhasedMode('phased')
+    display.setSources(SOURCES)
+    display.setCellData({
+      ...ONE_VARIANT,
+      sampleInfo: {
+        S0: { maxPloidy: 2 },
+        S1: { maxPloidy: 2 },
+        S2: { maxPloidy: 2 },
+      },
+    } as unknown as Parameters<typeof display.setCellData>[0])
+    display.setColorBy('population')
+    const before = new Map(display.sources.map(s => [s.name, s.color]))
+    expect(display.sources).toHaveLength(6)
+    expect([...before.values()].every(Boolean)).toBe(true)
+
+    display.sortByGenotype('v1')
+
+    expect(display.sources).toHaveLength(6)
+    expect(display.sources.every(s => s.color)).toBe(true)
+    for (const s of display.sources) {
+      expect(s.color).toBe(before.get(s.name))
+    }
+  })
+
   // Same rule, for the overrides the arrangement dialog writes rather than a
   // palette. These have no other home than `layout` either.
   it('keeps a hand-set label and labelColor through a sort', () => {
