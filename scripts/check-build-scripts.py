@@ -223,6 +223,30 @@ for doc in sorted(glob.glob("website/docs/**/*.md", recursive=True)):
             print(f"FAIL {doc} cites scripts/{name}, which does not exist")
             failed = True
 
+# The other half of that: a doc may not tell a reader to RUN a script out of
+# `scripts/`. The reader has the tutorial, not the repo, so `bash
+# scripts/build_x.sh` names a path on no machine of theirs and dies as "No such
+# file", which reads as the tutorial being broken rather than as a download they
+# skipped. The curl is what puts the file in the working directory, so the
+# command that follows it names the file there.
+run_local = re.compile(r"(?:bash|sh|python3?|node|npx)\s+\.?/?(?:website/)?scripts/")
+runnable = 0
+for doc in sorted(glob.glob("website/docs/**/*.md", recursive=True)):
+    # `developer_guide*` is written for someone who has cloned, and a CLAUDE.md
+    # is not a page — content.config.ts excludes it from the site.
+    if "developer_guide" in doc or os.path.basename(doc) == "CLAUDE.md":
+        continue
+    runnable += 1
+    for i, line in enumerate(open(doc).read().splitlines(), 1):
+        # A `<!-- from: scripts/… -->` marker names the script a fence was
+        # generalized out of, and renders nowhere.
+        if line.lstrip().startswith("<!--"):
+            continue
+        if run_local.search(line):
+            print(f"FAIL {doc}:{i}: runs a script out of scripts/, which the "
+                  f"reader does not have — curl it first, then run the copy")
+            failed = True
+
 # Behavior, not just syntax, for the helpers whose output is a hosted demo
 # artifact nobody re-derives by hand. Each has had a bug that a syntax check
 # cannot see and that only shows up as a wrong figure weeks later.
@@ -1867,6 +1891,7 @@ if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
       f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
+      f"{runnable} reader-facing docs run no script out of scripts/, "
       f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}"
       f"{' (real gfatools)' if gfatools_ran else ' (gfa2bed stubbed)'}, "
       f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}")

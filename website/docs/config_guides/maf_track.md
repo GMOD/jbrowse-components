@@ -120,8 +120,10 @@ not navigable:
 }
 ```
 
-`test_data/volvox/config_maf_navigation.json` is the runnable version of it,
-reachable from the no-config screen.
+The hosted
+[`config_maf_navigation.json`](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_maf_navigation.json)
+is the runnable version of that config, also reachable from the no-config
+screen.
 
 ## Producing the tabix BED from a MAF
 

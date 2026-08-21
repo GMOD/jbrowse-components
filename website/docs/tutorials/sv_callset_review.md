@@ -194,8 +194,9 @@ Everything on this page is the commands above against hosted files. The figure
 is three `jb2export` invocations: two `breakpoint` renders with one `--loc` per
 panel, one per sample, and a plain render of the derivative assembly, which are
 the `sv_review_tumor`, `sv_review_normal` and `sv_review_derivative` specs in
-`website/scripts/screenshot-spec-helpers.ts`. Putting them side by side, and
-labelling which is which, is the figure pipeline's job, not jb2export's.
+[`website/scripts/specs/jbrowse-img.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/specs/jbrowse-img.ts).
+Putting them side by side, and labelling which is which, is the figure
+pipeline's job, not jb2export's.
 
 ## See also
 

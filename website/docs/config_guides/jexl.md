@@ -94,8 +94,10 @@ here does nothing, so the missing braces are the mistake to watch for:
 See
 [customizing feature details](/docs/config_guides/customizing_feature_details).
 
-The "Jexl callback examples" track in `test_data/config_demo.json` is a live
-example combining a lookup-table color with a template-string mouseover.
+The
+["Jexl callback examples" track](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19&tracks=jexl_callbacks_demo_hg19)
+on the hosted demo config combines a lookup-table color with a template-string
+mouseover.
 
 Other functions available in jexl include the categories below. The `getTag`
 function smooths over slight differences in BAM and CRAM features to access
@@ -198,9 +200,10 @@ jexl: alleleLength(feature) >= 50 // longest allele in bp, so an insertion is no
 <!-- JEXL_CATALOG END -->
 
 The catalog above is generated from the registrations themselves — core's in
-`packages/core/src/util/jexl.ts`, and each plugin's alongside the display it
-serves — so it never drifts from the available functions. A plugin you install
-can add more; those are documented by the plugin.
+[`packages/core/src/util/jexl.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/jexl.ts),
+and each plugin's alongside the display it serves — so it never drifts from the
+available functions. A plugin you install can add more; those are documented by
+the plugin.
 
 The last two groups come from plugins that ship with JBrowse. The variant ones
 are the same functions the variant track's filter and color menus write for you,

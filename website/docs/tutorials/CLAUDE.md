@@ -58,6 +58,12 @@ prose**, in a form a reader runs on their own equivalent data. Everything around
 it stays in `scripts/build_*.sh` under `## Reproduce it end to end`. Link to
 `quickstart_web.md` for bgzip/tabix/`text-index` prep.
 
+**The reader has not cloned the repo.** `## Reproduce it end to end` curls the
+script and then runs the copy in the working directory;
+`scripts/check-build-scripts.py` fails a `bash scripts/…`. The `.py` helpers a
+build script invokes are the script's own problem — each fetches what it is
+missing, and the same check pins that list against what the script calls.
+
 **Mark the fence `<!-- from: scripts/build_<topic>.sh -->`** and
 `check-script-commands` asserts every tool and flag in it still runs in that
 script — tools and flags rather than text, since the page carries the general
