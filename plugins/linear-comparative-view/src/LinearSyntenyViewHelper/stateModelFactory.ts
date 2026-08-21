@@ -14,6 +14,12 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
+import {
+  OFFSCREEN_MATE_NAV_GROW,
+  captureRowViewport,
+  navLocString,
+  takeFollowAnchor,
+} from './offscreenMateNav.ts'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -30,34 +36,6 @@ import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ComparativeSurface } from '@jbrowse/synteny-core'
-
-// Padding around the mate locus, as a fraction of its own width per side. The
-// span is where the hidden alignments land and nothing more, so shown exactly
-// it puts their ribbons hard against both edges of the row with nothing around
-// them to read against.
-const OFFSCREEN_MATE_NAV_GROW = 0.2
-
-// The narrowest window a mark may navigate to. A single small anchor is a
-// perfectly ordinary thing to click, and its own span can be a few hundred bp —
-// framed exactly, the row lands at sequence-level zoom showing that one
-// alignment and nothing to place it against, which is the opposite failure from
-// the whole-chromosome one this fixes. Widened around the locus midpoint, so
-// what was clicked stays centred.
-const OFFSCREEN_MATE_NAV_MIN_BP = 20_000
-
-function navLocString(refName: string, locus?: OffscreenMateLocus) {
-  if (!locus) {
-    return refName
-  }
-  const pad = Math.max(
-    0,
-    (OFFSCREEN_MATE_NAV_MIN_BP - (locus.end - locus.start)) / 2,
-  )
-  // +1 because the payload is interbase and a locstring is 1-based
-  const start = Math.max(0, Math.round(locus.start - pad)) + 1
-  const end = Math.round(locus.end + pad)
-  return `${refName}:${start}-${end}`
-}
 
 /**
  * #stateModel LinearSyntenyViewHelper
@@ -439,57 +417,41 @@ export function linearSyntenyViewHelperModelFactory(
         const { parentView } = self
         const view = parentView.views[row]
         if (view) {
-          // A row the follow does not move needs no anchoring, and neither does
-          // a view not following at all. `tookAnchor` rather than comparing the
-          // anchor index later: with the follow OFF the index is a setting
-          // nothing here touched, so an undo that wrote it back would silently
-          // re-point an anchor the click never moved — at the row a mark
-          // happened to be clicked on, waiting for the next time the mode is
-          // turned on.
-          const tookAnchor =
-            parentView.followSynteny && parentView.followAnchorIndex !== row
-          const restore = {
-            // `displayedRegions` is a frozen Region[], so a copy of the array
-            // is the whole of what has to be kept
-            regions: [...view.displayedRegions],
-            bpPerPx: view.bpPerPx,
-            offsetPx: view.offsetPx,
-            anchor: parentView.followAnchorIndex,
-          }
-          if (tookAnchor) {
-            parentView.setFollowAnchorIndex(row)
-          }
+          const anchor = takeFollowAnchor(parentView, row, () => isAlive(view))
+          const restoreViewport = captureRowViewport(view)
           const loc = navLocString(refName, locus)
           view
             .navToLocString(loc, undefined, locus ? OFFSCREEN_MATE_NAV_GROW : 0)
             .then(() => {
               // The level can be detached while the navigation is in flight —
-              // the track holding it removed, the view closed — and `getSession`
-              // throws on a dead node, inside a `then` whose `catch` would then
-              // call it a second time.
-              if (isAlive(self)) {
+              // the track holding it removed, the view closed — and
+              // `getSession` throws on a dead node, inside a `then` whose
+              // `catch` would then call it a second time. `navToLocString` also
+              // RESOLVES without navigating when its own view died waiting on
+              // the assembly, so a live level is not on its own proof anything
+              // moved.
+              if (isAlive(self) && isAlive(view)) {
                 getSession(self).notify(
-                  tookAnchor
+                  anchor.taken
                     ? `Showing ${loc}, and following this row`
                     : `Showing ${loc}`,
                   'info',
                   {
                     name: 'Undo',
                     onClick: () => {
-                      if (isAlive(view)) {
-                        if (tookAnchor) {
-                          parentView.setFollowAnchorIndex(restore.anchor)
-                        }
-                        view.setDisplayedRegions(restore.regions)
-                        view.zoomTo(restore.bpPerPx)
-                        view.scrollTo(restore.offsetPx)
-                      }
+                      anchor.release()
+                      restoreViewport()
                     },
                   },
                 )
+              } else {
+                anchor.release()
               }
             })
             .catch((e: unknown) => {
+              // an unresolvable contig is ordinary — mate names come out of the
+              // alignment file, and the facing assembly need not have them
+              anchor.release()
               if (isAlive(self)) {
                 getSession(self).notifyError(`${e}`, e)
               }

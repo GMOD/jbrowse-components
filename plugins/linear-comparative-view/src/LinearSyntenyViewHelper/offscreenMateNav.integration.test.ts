@@ -167,6 +167,11 @@ test('the navigation offers an undo that restores what the row was showing', asy
 // unconditionally re-pointed the anchor at whichever row a mark was last
 // clicked on, invisibly, until someone turned the mode on and found the stack
 // following the wrong row.
+//
+// The anchor is MOVED between the click and the undo, which is the only shape
+// that can tell "put back what this click took" apart from "put back whatever
+// was there": with it left alone, restoring unconditionally writes the value it
+// already holds and the two are indistinguishable.
 test('with the follow off, the undo leaves the anchor row alone', async () => {
   const { session, view, level } = await setup()
   expect(view.followAnchorIndex).toBe(0)
@@ -177,8 +182,59 @@ test('with the follow off, the undo leaves the anchor row alone', async () => {
   level.showOffscreenMateContig('ctgB', 1, { start: 200_000, end: 201_000 })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 
+  view.setFollowAnchorIndex(1)
   const [action] = session.snackbarMessages[0]!.actions!
   action!.onClick()
 
+  expect(view.followAnchorIndex).toBe(1)
+}, 20000)
+
+// The other half of the same rule. With the follow ON a mark clicked on a row
+// that is not the anchor TAKES the anchor — the follow propagates away from it,
+// so a row navigated while another holds it is a row the next pass pulls back —
+// and the undo is what gives that back.
+test('with the follow on, the undo gives back the anchor the click took', async () => {
+  const { session, view, level } = await setup()
+  view.setRowSyncMode('follow')
+  view.setFollowAnchorIndex(1)
+
+  level.showOffscreenMateContig('ctgB', 0, { start: 200_000, end: 201_000 })
+  await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
   expect(view.followAnchorIndex).toBe(0)
+
+  const [action] = session.snackbarMessages[0]!.actions!
+  action!.onClick()
+
+  expect(view.followAnchorIndex).toBe(1)
+}, 20000)
+
+// The take happens BEFORE the navigation, and a navigation is a thing that
+// fails: an unresolvable contig is ordinary here. Only a landed one raises the
+// snackbar carrying the undo, so a failed one that kept the anchor moved it
+// permanently and silently — onto whichever row a mark was clicked on, dragging
+// every other row onto it.
+test('a navigation that fails does not keep the anchor it took', async () => {
+  const { session, view, level } = await setup()
+  view.setRowSyncMode('follow')
+  expect(view.followAnchorIndex).toBe(0)
+
+  level.showOffscreenMateContig('nope', 1, { start: 200_000, end: 201_000 })
+  await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
+
+  expect(session.snackbarMessages[0]!.level).toBe('error')
+  expect(view.followAnchorIndex).toBe(0)
+}, 20000)
+
+// The floor is a WIDTH, and a locus near the origin has nowhere to put half of
+// it. Padded symmetrically and then clipped at zero, a mate a few hundred bp
+// into its contig framed half the minimum window — at the one place that states
+// the minimum.
+test('a locus at the start of its contig still gets the whole floor', async () => {
+  const { view, level } = await setup()
+
+  level.showOffscreenMateContig('ctgB', 1, { start: 100, end: 600 })
+  await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
+
+  const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
+  expect(visible!.end - visible!.start).toBeGreaterThan(20_000)
 }, 20000)

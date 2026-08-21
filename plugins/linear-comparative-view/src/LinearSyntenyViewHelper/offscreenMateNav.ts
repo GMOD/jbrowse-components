@@ -1,0 +1,112 @@
+import { isAlive } from '@jbrowse/mobx-state-tree'
+
+import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+import type { Region } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// Padding around the mate locus, as a fraction of its own width per side. The
+// span is where the hidden alignments land and nothing more, so shown exactly
+// it puts their ribbons hard against both edges of the row with nothing around
+// them to read against.
+export const OFFSCREEN_MATE_NAV_GROW = 0.2
+
+// The narrowest window a mark may navigate to. A single small anchor is a
+// perfectly ordinary thing to click, and its own span can be a few hundred bp —
+// framed exactly, the row lands at sequence-level zoom showing that one
+// alignment and nothing to place it against, which is the opposite failure from
+// the whole-chromosome one this fixes.
+export const OFFSCREEN_MATE_NAV_MIN_BP = 20_000
+
+/**
+ * Where a clicked mark sends its row: the mate's own locus, widened to the
+ * floor above and centred on what was clicked.
+ *
+ * The floor is a WIDTH, not a pad. Padding each side by half the shortfall and
+ * then clipping the left one at zero spends half the minimum window on
+ * coordinates that do not exist — a mate 100bp into its contig framed 10.4kb of
+ * a documented 20kb, at the one place that states the minimum. Deriving `start`
+ * from the span instead slides a near-origin window right rather than trimming
+ * it.
+ */
+export function navLocString(refName: string, locus?: OffscreenMateLocus) {
+  if (locus) {
+    const span = Math.max(OFFSCREEN_MATE_NAV_MIN_BP, locus.end - locus.start)
+    const start = Math.max(0, Math.round((locus.start + locus.end - span) / 2))
+    // +1 because the payload is interbase and a locstring is 1-based
+    return `${refName}:${start + 1}-${start + span}`
+  }
+  return refName
+}
+
+// The view-wide follow state a mark's navigation borrows.
+interface FollowAnchorHost {
+  followSynteny: boolean
+  followAnchorIndex: number
+  setFollowAnchorIndex: (idx: number) => void
+}
+
+/**
+ * Point the follow at `row` for a navigation, and hand back the undo for it.
+ *
+ * TAKEN BEFORE the navigation, because the follow propagates AWAY from the
+ * anchor: a row navigated while some other row holds it is a row the next
+ * follow pass pulls straight back, so the click would post its snackbar and
+ * change nothing. Which is what makes giving it back this module's problem —
+ * the take is a state change the navigation has not earned yet, and only a
+ * LANDED navigation raises the snackbar that can undo it. Every other exit has
+ * to release, and so does that snackbar's Undo.
+ *
+ * `release` is safe to call on any path and any number of times. It writes only
+ * while `alive` and while the anchor is still the one this take set: snackbars
+ * stack, and an older one's cleanup must not drag the anchor off a row a later
+ * click moved it to.
+ *
+ * With the follow off nothing is taken and `release` writes nothing at all —
+ * the anchor is a persisted setting this click never touched, and putting a
+ * value back that was never moved silently re-points it at whichever row a mark
+ * was last clicked on.
+ */
+export function takeFollowAnchor(
+  host: FollowAnchorHost,
+  row: number,
+  alive: () => boolean,
+) {
+  const previous = host.followAnchorIndex
+  const taken = host.followSynteny && previous !== row
+  if (taken) {
+    host.setFollowAnchorIndex(row)
+  }
+  return {
+    taken,
+    release() {
+      if (taken && alive() && host.followAnchorIndex === row) {
+        host.setFollowAnchorIndex(previous)
+      }
+    },
+  }
+}
+
+/**
+ * What a row was showing before a mark's click replaced it, as the function
+ * that puts it back. `navToLocString` REPLACES `displayedRegions`, so what the
+ * click discards may be a region list built over several navigations — "show
+ * all regions" is a different destination, not an undo.
+ *
+ * `displayedRegions` is a frozen `Region[]`, so a copy of the array is the whole
+ * of what has to be kept, and the captured objects are plain — nothing here
+ * holds an MST node that could be destroyed under the snackbar.
+ *
+ * Regions first: `zoomTo` and `scrollTo` both clamp against the region set, so
+ * restoring them into the wrong one lands somewhere else.
+ */
+export function captureRowViewport(view: LinearGenomeViewModel) {
+  const regions: Region[] = [...view.displayedRegions]
+  const { bpPerPx, offsetPx } = view
+  return () => {
+    if (isAlive(view)) {
+      view.setDisplayedRegions(regions)
+      view.zoomTo(bpPerPx)
+      view.scrollTo(offsetPx)
+    }
+  }
+}
