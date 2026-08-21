@@ -92,6 +92,15 @@ before anyone noticed.
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
 | [Time a two-tier PIF to settled](#time-a-two-tier-pif-to-settled-in-a-browser) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
+| [Sort by genotype discards the colour-by palette](#sort-by-genotype-throws-away-the-colour-by-palette) | variants | merge the sorted rows over `layout` by name — `buildClusteredLayout` already is that |
+| ["Phased" is unreachable on a haploid callset](#phased-is-unreachable-on-a-callset-that-is-entirely-haploid) | variants, pangenome | decide whether the gate widens to match the painter, or goes per-row |
+| [The clustering matrices trust feature 0's header](#the-clustering-matrices-trust-the-first-features-header) | variants, RPC | route both builders through `buildHeaderRemap`; the two-header fixture is the work |
+| [A mismatched samplesTsv blanks the track silently](#a-samplestsv-that-names-no-vcf-sample-blanks-the-track-in-silence) | variants, config | decide: config error to `notifyError`, or fall back to the VCF header |
+| [An edited track config survives its own undo](#an-edited-track-config-survives-the-undo-that-removed-it) | session, config | decide what invalidates the working-copy cache; it cannot simply be dropped per write |
+| [Six session and plugin removals are recorded nowhere](#six-session-and-plugin-removals-are-recorded-nowhere) | plugins, ABI | write the six into `knownRemovals.ts` and the v5 notes, then decide on a baseline |
+| [v4.3.0's per-view highlight setting is dropped on load](#v430s-per-view-highlight-setting-is-dropped-on-load) | session, compat | decide migration vs upgrade-guide note; MST ignores the key either way |
+| [Release-validation leftovers](#release-validation-leftovers) | colour, session, LGV | seven independent small items, four reachable |
+| [Six RPC method names left unrecorded](#six-rpc-method-names-left-with-nothing-recording-them) | RPC, plugins, ABI | name them in the upgrade guide; separately make an unknown method throw a real error |
 
 ## Ready to build: small and self-contained
 
@@ -1469,6 +1478,272 @@ should move those pairs DOWN the drift distribution. Read CROSS_BACKEND_GATE.md
 for the distribution to compare against — max 0.62%, median 0.00% over 66 pairs
 — and note the wiggle line plots that sit at the top of it are already on the
 linear ramp, so they are the control rather than the target.
+
+### Sort by genotype throws away the colour-by palette
+
+`sortByGenotype`
+(`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts:1326`) feeds
+`sortSourcesAroundVariant` from `sourcesWithoutLayout` — adapter order, with no
+layout merge — and writes the result straight to `setLayout`. Every other writer
+of `layout` merges first. `applyClusterOrder` goes through `buildClusteredLayout`
+(`packages/tree-sidebar/src/clusterUtils.ts:357`), whose entire body is
+`{ ...source, ...existing }` keyed on name, and `applyArrangement` re-arranges
+rather than re-derives — its own comment records that re-deriving once made
+"Color by… → Population" silently discard a clustering run. This path does
+neither.
+
+So on a callset with a `samplesTsv` `population` column: **Color by… →
+Population**, then right-click a variant → **Sort by genotype**. The rows
+reorder correctly and every sidebar swatch goes blank, while the menu still
+shows Population ticked and `getConf(self, 'colorBy')` still reads `population`.
+Any `label`/`labelColor` the arrangement dialog set goes with them. Nothing
+re-seeds the palette afterwards: `setSources` fires once per adapter and
+short-circuits on `deepEqual`, and `applyArrangement` is reachable only from
+`setColorBy`/`setGroupBy`/`clearLayout`/`setPhasedMode`.
+
+**First move: merge the sorted rows back over `self.layout` by name.** That is
+`buildClusteredLayout` exactly, so the only question is whether to import it
+across the `tree-sidebar` boundary or inline its two lines. `rowArrangement.test.ts`
+covers clustering↔colorBy and never the sort, which is why nothing caught this.
+
+### "Phased" is unreachable on a callset that is entirely haploid
+
+The rendering-mode row is `disabled: !self.hasPhased`
+(`plugins/variants/src/shared/multiSampleVariantMenuItems.ts:97`) and `hasPhased`
+is set only on a literal `|` (`VariantRPC/computeSampleInfo.ts:360`). The
+painter's rule is wider, deliberately: `getPhasedColor.ts:63` carries a comment
+explaining that gating on `includes('|')` was a bug, because pangenome callsets
+are haploid per assembly path and `vg deconstruct` writes bare `0`/`1`/`23`.
+`isPhasedOrHaploid` was widened for that case; the menu gate was not widened
+with it.
+
+On a `vg deconstruct` VCF where no `|` appears anywhere, the menu offers
+**Phased** greyed out as "no phased variants found" — while `renderingMode:
+'phased'` in the track config renders it correctly, one `HP0` row per sample
+coloured by allele identity rather than dosage. `setPhasedMode` has no other
+caller, so a config slot is the only door into a rendering the UI says does not
+apply.
+
+**First move: decide whether the gate becomes `hasPhasedOrHaploid`.** Widening
+it to match the painter is one field on `computeSampleInfo`'s result, but it
+also means a diploid-unphased callset with one haploid contig starts offering
+the mode, so the alternative is to gate on the same predicate the painter uses
+per row and accept that the answer is per-region.
+
+### The clustering matrices trust the first feature's header
+
+`getPhasedGenotypeMatrix.ts:110` and `getGenotypeMatrix.ts:127` take the
+canonical sample order from `filteredVariants[0]` alone and never call
+`buildHeaderRemap`. Both are entered from this plugin's shared layer —
+`shared/runGenotypeClustering.ts:47` and
+`shared/components/MultiSampleVariantClusterDialog.tsx:58` — and
+`plugins/variants/src/CLAUDE.md` names this exact trap. The cell path and
+`phaseSetReader` were both fixed for it; these two were not.
+
+With a `SplitVcfTabixAdapter` whose `chrY.vcf.gz` header lists only the male
+subset while `chr1.vcf.gz` lists everyone, a view spanning both and then
+**Cluster rows by genotype** files every chrY site's genotype vector against a
+neighbouring sample: `sampleIdx` counts against each feature's own header while
+`sampleIdxByKey`/`used`/`rowSampleIdx` all come from feature 0's. `used[sampleIdx]`
+and the `rowSampleIdx === -1` guard keep every write in bounds, so nothing
+errors — the dendrogram simply groups samples by someone else's calls, and the
+row order it writes outlives the run.
+
+**First move: route both builders through `buildHeaderRemap`**, the way the cell
+path does. No fixture anywhere exercises a two-header adapter through the
+clustering path, so the fixture is most of the work.
+
+### A samplesTsv that names no VCF sample blanks the track in silence
+
+`parseSamplesTsv.ts:34` ends at `return metadataLines.filter(f =>
+vcfSampleSet.has(f.name))`, with no fallback to `parser.samples`. Point
+`samplesTsvLocation` at a metadata file whose first column reads
+`1000GP_HG00096` against a VCF header naming `HG00096` and the filter empties:
+`getVcfSources` returns `[]`, so `sourcesVolatile` is `[]`, so `sourcesBase` is
+`[]` — which is truthy, so `awaitingPrerequisite` is false and no loading state
+shows — so `sampleFilter` is `[]`, which `buildCanonicalRows` correctly reads as
+"no samples". The worker computes nothing and the display draws an empty band
+with no banner. Both mismatch warnings do fire, to the console.
+
+**First move: decide which of the two failures this is** — a config error that
+should reach `notifyError`, or a partial match that should fall back to the VCF
+header and warn. They want different code, and a file that matches *some* names
+is the case that decides it. Related but not the same as
+[ideas/refname-mismatch-warning-visibility.md](ideas/refname-mismatch-warning-visibility.md),
+which is about a warning nobody sees rather than one nobody emits.
+
+### An edited track config survives the undo that removed it
+
+`getEditableTrackConfig` (`packages/product-core/src/Session/SessionTracks.ts:227`)
+caches a non-admin's working-copy config node per trackId in a volatile `Map`
+and returns `existing` unconditionally. Nothing invalidates it on snapshot
+application: `revertEditableTrackConfig` (`:294`) and `syncEditableTrackConfig`
+(`:334`) are reached only from `writeDelta`/`updateTrackConfiguration`, and none
+of the five `editableTrackConfigs` reads is a reaction.
+
+So a non-admin changes "Color by" on an alignments track;
+`BaseTrackModel`'s persist reaction writes a delta (`:452`); the patch lands in
+undo history, which `HistoryManagement/index.ts:38` points at the session. Ctrl+Z
+applies the prior snapshot, `trackConfigDeltas` loses the entry — and
+`TrackConfigurationReference.get`
+(`packages/core/src/configuration/configurationSchema.ts:566`) still routes
+through `getEditableTrackConfig` and gets the stale node back. The track stays
+coloured, a share link taken now says "default", and the next edit to any slot
+on that track re-diffs the working copy and silently reinstates the change that
+was undone. Admin mode is unaffected — `getEditableTrackConfig` returns
+`undefined` at `:232`.
+
+**First move: decide what invalidates the cache.** Keying it on the delta's
+identity is smaller than adding a snapshot listener and does not need a
+lifecycle hook; the reason it is a decision and not a patch is that the working
+copy is what makes a partially-typed edit survive a re-render, so it cannot
+simply be dropped on every write.
+
+### Six session and plugin removals are recorded nowhere
+
+`PLUGIN_ABI_STABILITY.md` names three surfaces where a removal fails quietly and
+says the session is the quietest. Six left in v5 with no entry in
+`ReExports/knownRemovals.ts` and none in
+`products/jbrowse-web/src/tests/pluginFacingSessionApi.test.ts`, whose pinned
+list is 15 members long:
+
+- `getReferring` changed signature, `(object: IAnyStateTreeNode)` →
+  `(trackId: string)` (`Session/ReferenceManagement.ts:43`). A v4 plugin passing
+  a config object reaches `getReferringMultiple`, which tests a `Set` of objects
+  against `node[key]?.trackId`, a string. It returns `[]`, nothing throws, and
+  the caller concludes no view refers to the track it is about to remove.
+- `removeReferring` deleted (v4.3.0 `ReferenceManagement.ts:75`) — a plain
+  `undefined is not a function`.
+- `prepareToBreakConnection` deleted (v4.3.0 `Connections.ts:64`), the
+  "N tracks will close" pre-flight.
+- `hasWidget` deleted (v4.3.0 `DrawerWidgets.ts:144`).
+- `DialogQueue.ts` deleted outright, taking `DialogQueueSessionMixin`,
+  `isSessionWithDialogs` and `SessionWithDialogs(Type)` off
+  `@jbrowse/product-core`; `Session/index.ts` also went from `export *` over
+  nine modules to a named allowlist.
+- `LinearGenomeViewPlugin`'s `exports` object dropped `BaseLinearDisplay` and
+  `BaseLinearDisplayComponent` (`plugins/linear-genome-view/src/index.ts:26`).
+  A v4 plugin composing `getPlugin(…).exports.BaseLinearDisplay()` throws at
+  install, so its track type never registers and the user sees a session that
+  opens with the track absent.
+
+All six are deliberate major-version removals. The defect is that nothing
+records or checks them: `abi.test.ts`/`abiBaseline.json` pin only
+`@jbrowse/core/*` module names, and `scripts/check-published-plugins.ts:152`
+filters on `name.startsWith('@jbrowse/core/')`, so a plugin's `exports` object
+is observed by nothing at all.
+
+**First move: write the six into `knownRemovals.ts` and the v5 release notes'
+removal list**, which is generated only from the core `REMOVAL_GROUPS` today.
+Then decide separately whether the session and the plugin `exports` objects earn
+a baseline of their own — that is the half that stops the next six.
+
+### v4.3.0's per-view highlight setting is dropped on load
+
+`highlightsVisible` was lifted from a per-view LGV prop (v4.3.0
+`plugins/linear-genome-view/src/LinearGenomeView/model.ts:215`,
+`types.optional(types.boolean, true)`, persisted as `false` by that model's
+`postProcessSnapshot`) and from the GridBookmark widget into one session-wide
+`types.stripDefault(types.boolean, true)` at
+`packages/product-core/src/Session/BaseSession.ts:118`. There is no entry for it
+in `packages/product-core/src/sessionMigrations/index.ts`.
+
+MST ignores a snapshot key it no longer declares — `ModelType.isValidSnapshot`
+iterates only `propertyNames` — so a v4.3.0 session saved with `views: [{ …,
+highlightsVisible: false }]` loads without complaint and the band the user
+dismissed comes back, on every view at once. Not a load failure, and the new
+default is the safe direction, which is why this sits below the ABI entry; it is
+still a saved session that reopens showing something the user turned off.
+
+**First move: decide whether it earns a migration.** One `sessionMigrations`
+entry folding any per-view `false` into the session-level flag is a few lines;
+the alternative is to say a highlight band is cheap to re-dismiss and write the
+change into the upgrade guide instead, which is where the recombination-lane
+removal went.
+
+### Release-validation leftovers
+
+Seven small things the v5.0.0 sampling turned up, none of them worth an entry
+alone. The first four are reachable, the last three are not.
+
+- **`blend()` discards both operands' alpha**
+  (`packages/core/src/util/color-bits/functions.ts:73` hardcodes 255), so
+  `colord(a).mix(b)` returns opaque where real colord preserves alpha. The one
+  in-tree caller, `plugins/variants/src/shared/drawAlleleCount.ts:110`, folds
+  opacity into the mix ratio and does not misrender — but `mix` is on the public
+  `@jbrowse/core/util/colord` surface with a colord-shaped signature.
+- **`parse`'s `PATTERN` is unanchored**
+  (`packages/core/src/util/color-bits/parse.ts:16`), so
+  `parseCssColor('foo rgb(1,2,3) bar')` returns `[1,2,3]` instead of the magenta
+  sentinel, which undermines the "a broken config reads as magenta, never as a
+  plausible wrong colour" contract `colorBits.test.ts:133` asserts elsewhere.
+- **`focusedViewId` is never cleared on teardown.** `takeOut`
+  (`packages/product-core/src/Session/MultipleViews.ts:173`) empties every widget
+  reference into the view, detaches and destroys it, and leaves the persisted
+  string naming it. `replaceView` moves the focus deliberately and is tested;
+  `removeView` and `takeOutViewsMissingFrom` do not, and
+  `setFocusedViewId(viewId: string)` has no way to spell "none". The dead id
+  ships in a shared session.
+- **`trackConfigDeltas` is the one new persisted prop without `stripDefault`**
+  (`Session/SessionTracks.ts:132`), so `"trackConfigDeltas":{}` is written into
+  every snapshot and every share link, including sessions that never had an
+  override.
+- **`fetchAllRegions` has no test anywhere**
+  (`plugins/linear-genome-view/src/BaseLinearDisplay/models/fetchEachRegion.ts:152`),
+  including the `isRegionRefused` skip its per-region twin has three tests for.
+  Its two callers are both wiggle, and `RenderWiggleData` has no refusal path,
+  so the branch is unreachable today — but a future edit hoisting the commit out
+  of that guard would mark a region loaded against a payload nobody received,
+  and since the ordinary fetch *is* the gate's re-measure, nothing would
+  re-measure either. That is the frozen-until-reload failure `regionCommit.ts:31`
+  was written about, with nothing going red.
+- **`Layout` and `LayoutRecord` are dead**
+  (`plugins/linear-genome-view/src/BaseLinearDisplay/types.ts:19,27`).
+  `LayoutRecord` is exported from both the barrel and the plugin entry with zero
+  consumers — breakpoint-split-view declares its own identical copy at
+  `BreakpointSplitView/types.ts:23` — and its shape narrowed in v5 when the
+  5-tuple `LayoutFeatureMetadata` variant went with the floating-label code.
+- **`from()`'s JSDoc contradicts its body**
+  (`packages/core/src/util/color-bits/core.ts:19`). It says "from the given
+  number value, e.g. `0x599eff`"; the body reads `0xRRGGBBAA`, so `from(0x599eff)`
+  returns that colour rotated one byte with blue silently becoming the alpha. It
+  has no callers, and `./util/color-bits` is not a `packages/core` export path,
+  so it is unreachable outside the package — as are `toNumber`, `setRed`/
+  `setGreen`/`setBlue`, `format`, `formatRGBA` and `OFFSET_*`, all dead vendored
+  surface.
+
+### Six RPC method names left with nothing recording them
+
+The v5.0.0 deletion walk — every name a deleted source file exported at v4.3.0,
+intersected against every identifier present at HEAD — ends with 70 vanished
+names that were on a public entry file. The upgrade guide covers almost all of
+them **by class**, which is the right call: "The renderer registry is gone"
+accounts for around forty, "The `lollipop` plugin was removed" for four, and the
+generated ABI-removals block for the `@jbrowse/core/*` names.
+
+Six are left over, and they are all RPC methods:
+`WiggleGetGlobalQuantitativeStats`, `WiggleGetMultiRegionQuantitativeStats`,
+`MultiWiggleGetSources`, `MultiVariantGetSources`,
+`MultiVariantGetGenotypeMatrix`, `MultiVariantGetFeatureDetails`. Each appears in
+no source file, no doc and no JSON anywhere at HEAD, and the guide's only two
+mentions of RPC are `CoreRender` and the renderer era's retry/progress helpers.
+An RPC method is invoked by string through `rpcManager.call(sessionId, name,
+args)`, so a plugin naming one has nothing that resolves.
+
+It is **not** a fourth quiet-failure surface, which is worth stating because the
+other three on that page are: `BaseRpcDriver.ts:38` reads
+`pluginManager.getRpcMethodType(functionName)` and the next use is
+`rpcMethod.serializeArguments(args)`, so an unknown method throws
+`Cannot read properties of undefined (reading 'serializeArguments')`. Loud, and
+useless — the message never names the method that was not found, so the author
+gets a stack in core rather than "no RPC method X".
+
+**First move: the two halves are independent, and the second is the cheap one.**
+Add the six to the upgrade guide's removal list, next to the renderer-registry
+paragraph they nearly belong to. Separately, have `BaseRpcDriver` throw a real
+error when `getRpcMethodType` returns nothing — one guard, and it turns every
+future removal on this surface into a message that says what is missing.
+
 
 ## Blocked on a visual call
 

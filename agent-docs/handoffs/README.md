@@ -48,4 +48,5 @@ doc that carries none. Don't edit between the markers; write the doc's
 | Doc | What it is waiting on |
 | --- | --- |
 | [month-audit-remainder](MONTH_AUDIT_REMAINDER.md) | What is left of the six-agent audit of the month's highest-churn subsystems, with each remaining finding's verification status. Read before picking one up — three of the original handoff's framings did not survive checking. |
+| [release-validation-by-sampling](release-validation-by-sampling.md) | 12,714 commits and 426k lines of source churn since v4.3.0 is past the size where reviewing the change is a plan at all, so confidence has to come from sampling units and extrapolating. The pilot and four units are done, the tooling has a home, and every unit so far came back thin — what is left is seven more random draws and a one-page spec for the top three concepts — the deleted-file walk is done and came back nearly clean. |
 <!-- END GENERATED HANDOFFS INDEX -->
