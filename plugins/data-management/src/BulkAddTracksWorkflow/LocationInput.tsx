@@ -100,6 +100,7 @@ const LocationInput = observer(function LocationInput({
           maxRows={16}
           fullWidth
           variant="outlined"
+          slotProps={{ htmlInput: { 'data-testid': 'bulk_track_urls' } }}
           value={text}
           onChange={event => {
             setText(event.target.value)

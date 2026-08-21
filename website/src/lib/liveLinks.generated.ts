@@ -494,7 +494,10 @@ export const videoLiveRefs: Record<string, string> = {
   "sv/inspector_route": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "ui/bookmark_region": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/open_track_url": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
-  "ui/feature_sequence_types": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A17200-23200%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22gff3tabix_genes%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot"
+  "ui/feature_sequence_types": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A17200-23200%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22gff3tabix_genes%22%2C%22height%22%3A300%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "ui/sequence_search_motifs": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%7D%5D%7D&sessionName=Screenshot",
+  "ui/bulk_add_tracks": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "ui/add_genome": "?config=test_data/empty.json&sessionName=Screenshot"
 }
 
 // Each tour's pixel size, which is its capture viewport: the encode preserves
@@ -577,6 +580,18 @@ export const videoFrames: Record<
   "ui/feature_sequence_types": {
     "width": 1920,
     "height": 900
+  },
+  "ui/sequence_search_motifs": {
+    "width": 1920,
+    "height": 700
+  },
+  "ui/bulk_add_tracks": {
+    "width": 1920,
+    "height": 900
+  },
+  "ui/add_genome": {
+    "width": 1920,
+    "height": 640
   }
 }
 
@@ -600,7 +615,10 @@ export const videoCaptioned: string[] = [
   "synteny/three_strain_import",
   "tcga/cohort_cnv_clustering",
   "tcga/mutations_collapse_introns",
+  "ui/add_genome",
   "ui/bookmark_region",
+  "ui/bulk_add_tracks",
   "ui/feature_sequence_types",
-  "ui/open_track_url"
+  "ui/open_track_url",
+  "ui/sequence_search_motifs"
 ]

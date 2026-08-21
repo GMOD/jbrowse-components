@@ -10,7 +10,12 @@ const {
   addTrackUrl,
   bookmarkSession,
   bookmarkSpan,
+  bulkAddUrls,
   elsewhere,
+  emptyConfig,
+  hg38GenomeUrls,
+  motifSearchList,
+  motifSearchSession,
   sequencePanelGene,
   sequencePanelSession,
 } = uiVideoFixtures
@@ -261,5 +266,219 @@ export const uiVideos: VideoSpec[] = [
       },
     ],
     tailMs: 3500,
+  },
+
+  // A ROUTE THROUGH A DIALOG NOTHING PICTURES. sequence_search.md is 106 lines
+  // with no figure at all and three modes it only names, and the mode toggle is
+  // the half a sentence cannot carry: `Sequence pattern` and `Motif list` are
+  // the same dialog answering two different questions, and a reader who has only
+  // read the list has no idea they are one control.
+  //
+  // It opens on a view with NO TRACKS, which is the other half. Every lane the
+  // tour ends with is scanned out of the reference the assembly already has, so
+  // the clip is also the answer to "what can I do here with no data loaded".
+  //
+  // The prefill is filmed before it is typed over: the panel arrives carrying
+  // sixteen restriction enzymes, which is the page's own claim, and three is
+  // what leaves a frame a reader can read the lanes in.
+  {
+    name: 'ui/sequence_search_motifs',
+    description:
+      "Three restriction enzymes scanned out of the reference: the view menu's Sequence search, the Motif list mode and the enzymes it comes prefilled with, then Launch one track per motif and a lane each",
+    url: motifSearchSession,
+    // The dialog is the tallest state and the app never reaches it: the run
+    // reports 223px of app at the first frame and 584px at the last, where the
+    // dialog wants about 690. Sized to the dialog, the same trade
+    // `ui/open_track_url` takes for its drawer, so the blank under the three
+    // lanes at the end is the dialog's headroom rather than slack.
+    viewportHeight: 700,
+    readySelector: '::-p-text(ctgA)',
+    readyTimeout: 60000,
+    settleMs: 4000,
+    steps: [
+      { type: 'delay', ms: 1600 },
+      {
+        type: 'click',
+        selector: '[data-testid="view_menu_icon"]',
+        say: 'View menu',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Sequence search' },
+      {
+        type: 'click',
+        text: 'Sequence search',
+        say: 'Sequence search',
+        hold: 1800,
+      },
+      // The dialog opens on Sequence pattern, so the toggle is a real move
+      // rather than a formality.
+      { type: 'waitForText', text: 'Motif list' },
+      { type: 'click', text: 'Motif list', say: 'Motif list', hold: 2600 },
+      // Long enough to read that the panel came with the enzymes already in it.
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'type',
+        selector: 'textarea[rows="12"]',
+        value: motifSearchList,
+        clear: true,
+        say: 'Edit the list',
+        hold: 2000,
+      },
+      // The two Launch buttons share a prefix, so this matches the whole string
+      // or the click lands on the other one.
+      {
+        type: 'click',
+        text: 'Launch one track per motif',
+        say: 'Launch one track per motif',
+      },
+      { type: 'waitForAppSettled', timeout: 60000, cut: true },
+      { type: 'delay', ms: 2500 },
+    ],
+    tailMs: 3500,
+  },
+
+  // THE FORM DOING THE SORTING, which is the whole of what basic_usage.md claims
+  // for this workflow in ten lines with no figure: extension to track type,
+  // index to data file, whatever order they arrive in. A still of the finished
+  // preview table shows the result and cannot show that the reader supplied
+  // nothing but four lines; a still of the empty box shows nothing at all.
+  //
+  // The list is deliberately scrambled, with the `.tbi` sitting between two
+  // unrelated data files. That is the frame the tour exists for.
+  //
+  // Opens on the same volvox session `ui/open_track_url` uses, so the two clips
+  // on that page open in the same app, and on a config that carries none of the
+  // four files — a track being added has to arrive.
+  {
+    name: 'ui/bulk_add_tracks',
+    description:
+      'Four volvox file URLs pasted in one box, scrambled and with an index between two data files, and the preview table typing each row and pairing the index with its own data file',
+    url: addTrackSession,
+    // The drawer holds the paste box, the assembly selector and a row per file,
+    // and grows as the rows land. Sized to the drawer rather than the views.
+    viewportHeight: 900,
+    readySelector: '::-p-text(ctgA)',
+    readyTimeout: 60000,
+    settleMs: 4000,
+    steps: [
+      { type: 'delay', ms: 1500 },
+      { type: 'click', text: 'File', say: 'File', hold: 900 },
+      { type: 'waitForText', text: 'Open track...' },
+      { type: 'click', text: 'Open track...', say: 'Open track...' },
+      { type: 'waitForText', text: 'Add multiple tracks at once' },
+      { type: 'delay', ms: 1200 },
+      {
+        type: 'click',
+        text: 'Add multiple tracks at once',
+        say: 'Add multiple tracks at once',
+        hold: 1600,
+      },
+      {
+        type: 'type',
+        selector: '[data-testid="bulk_track_urls"]',
+        value: bulkAddUrls,
+        say: 'Paste the URLs',
+        // `type` sends the five URLs a keystroke at a time, which the run
+        // reported as 9.4s of nothing happening. Cut leaves the box empty and
+        // then full, which is what a paste looks like.
+        cut: true,
+        // the preview table builds from the extensions alone, with nothing
+        // fetched, so the interesting frame is not gated on the network
+        hold: 3600,
+      },
+      // The assembly comes from the view the form was opened over, so there is
+      // nothing to pick: the button counts what it kept and the index is not in
+      // the count.
+      {
+        type: 'click',
+        text: 'Add 3 tracks',
+        say: 'The index is paired, not counted',
+      },
+      { type: 'waitForAppSettled', timeout: 120000, cut: true },
+      { type: 'delay', ms: 2500 },
+    ],
+    tailMs: 3500,
+  },
+
+  // THE ONE TOUR THAT OPENS ON AN APP WITH NO GENOME. Every other clip in the
+  // corpus starts from a config that already has one, so the route a reader
+  // takes first is the one nothing shows.
+  //
+  // It also replaces prose that is wrong. quickstart_adminserver.md walks a form
+  // that no longer exists: it names a "Create New Assembly" button (no such
+  // string in the tree), and a `type:` field the reader is told to set to
+  // BgzipFastaAdapter. There is no adapter picker on this path — three URLs into
+  // one box and the form answers with the adapter it recognised and a genome
+  // name it filled in itself, which is exactly what a still of a table before
+  // and a table after cannot say.
+  {
+    name: 'ui/add_genome',
+    description:
+      'A JBrowse with no genome gets one: Tools, Assembly manager, Add new assembly, three URLs into one box, and the adapter and the name the form works out for itself',
+    url: emptyConfig,
+    // The dialog is the tallest state and is centered over an app that is almost
+    // nothing: the run reports 222px of app at its tallest, where the dialog
+    // reaches about 600. Sized to the dialog.
+    viewportHeight: 640,
+    readySelector: '::-p-text(Tools)',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    steps: [
+      { type: 'delay', ms: 1800 },
+      { type: 'click', text: 'Tools', say: 'Tools', hold: 900 },
+      { type: 'waitForText', text: 'Assembly manager' },
+      {
+        type: 'click',
+        text: 'Assembly manager',
+        say: 'Assembly manager',
+        hold: 1600,
+      },
+      { type: 'waitForText', text: 'Add new assembly' },
+      {
+        type: 'click',
+        text: 'Add new assembly',
+        say: 'Add new assembly',
+        hold: 1400,
+      },
+      // The pane opens on its drop zone; the URL box is behind this link.
+      { type: 'waitForText', text: 'Open from a URL' },
+      {
+        type: 'click',
+        text: 'Open from a URL',
+        say: 'Open from a URL',
+        hold: 1200,
+      },
+      {
+        type: 'type',
+        selector: '[data-testid="genome-urls"]',
+        value: hg38GenomeUrls,
+        say: 'The FASTA and its two indexes',
+        hold: 1500,
+      },
+      // The form classifies what was pasted and fills the name in from it. That
+      // is the frame the whole tour is for, so it is waited on by the field
+      // appearing rather than by a sleep.
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="assembly-name"]',
+        timeout: 60000,
+      },
+      { type: 'delay', ms: 3000, say: 'It names the genome itself' },
+      // It names it after the file, `hg38.prefix`. The field is editable, and
+      // the rest of the quickstart calls the assembly `hg38`, so the tour
+      // renames it rather than leaving the page and the film disagreeing.
+      {
+        type: 'type',
+        selector: '[data-testid="assembly-name"]',
+        value: 'hg38',
+        clear: true,
+        say: 'Rename it hg38',
+        hold: 1600,
+      },
+      { type: 'click', text: 'Submit', say: 'Submit' },
+      { type: 'waitForAppSettled', timeout: 120000, cut: true },
+      { type: 'delay', ms: 3000 },
+    ],
+    tailMs: 4000,
   },
 ]

@@ -110,14 +110,14 @@ manually for local files or non-standard names.
 
 ### Adding many tracks at once
 
-To load a batch of tracks in one step, click **Add multiple tracks** in the "Add
-a track" form (or **Add a single track instead** to switch back). Paste a list
-of file URLs (one per line) or drop a set of local files. JBrowse auto-detects
-each track's type from its extension and pairs index files (`.bai`, `.csi`,
-`.tbi`, `.crai`) with their data file, so data and index URLs can be pasted
-together in any order. A preview table shows the detected type and guessed name
-for every row, which you can rename or remove before submitting. Pick one
-assembly for the whole batch, then add them together.
+**Add multiple tracks at once** in the "Add a track" form takes a list of file
+URLs, one per line, or a set of local files dropped on it. It types each row
+from its extension and pairs an index (`.bai`, `.csi`, `.tbi`, `.crai`) with its
+own data file, so the order they are pasted in does not matter. The preview
+table under the box is where a row is renamed or removed; one assembly serves
+the whole batch.
+
+<Video src="/media/ui/bulk_add_tracks.mp4" caption="Four volvox URLs pasted in one box, scrambled, with an index sitting between two unrelated data files. The preview table types each row and pairs the index with its own data file, and the submit button counts what it kept." />
 
 ## File format support
 

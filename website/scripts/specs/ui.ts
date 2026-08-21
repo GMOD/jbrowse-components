@@ -114,6 +114,38 @@ export const uiVideoFixtures = {
     loc: 'ctgA:17200-23200',
     tracks: [{ trackId: 'gff3tabix_genes', height: 300 }],
   }),
+  // An LGV with NO tracks at all, for the sequence-search tour: every lane that
+  // tour ends with is minted from the reference itself, so a config with one
+  // already open would be filming the wrong claim.
+  motifSearchSession: lgvSession(VOLVOX, {
+    assembly: 'volvox',
+    loc: 'ctgA:1-20,000',
+  }),
+  // Three of the sixteen enzymes the Motif list panel prefills, typed over the
+  // prefill: `Launch one track per motif` means one lane per line, and sixteen
+  // lanes is a frame nothing can be read in.
+  motifSearchList: 'EcoRI\tG^AATTC\nBamHI\tG^GATCC\nHindIII\tA^AGCTT',
+  // Four volvox files for the bulk-add tour, deliberately out of order and with
+  // an index between two data files: the claim the page makes is that the form
+  // pairs `.tbi` with its own data file and types each row whatever order they
+  // arrive in, and only a scrambled list shows that.
+  bulkAddUrls: [
+    'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-bed12.bed.gz',
+    'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-sorted.bam.bai',
+    'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.bw',
+    'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-bed12.bed.gz.tbi',
+    'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox-sorted.bam',
+  ].join('\n'),
+  // A config with NO assemblies, whose defaultSession is one bare LGV. The one
+  // starting point in the corpus that opens on an app with no genome in it.
+  emptyConfig: '?config=test_data/empty.json&sessionName=Screenshot',
+  // The three URLs quickstart_adminserver.md prints, so the film and the page
+  // name the same files.
+  hg38GenomeUrls: [
+    'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+    'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
+    'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
+  ].join('\n'),
   // Where that figure clicks to select the mRNA, resolved against the track's
   // own band rather than off the page.
   sequencePanelGene: {

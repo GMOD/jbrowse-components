@@ -84,12 +84,11 @@ stranded.
 Because the list is just text, the same mode works for primers, adapters,
 polylinker sites, or any other named motif set, not only enzymes.
 
-With more than one motif in the list, two buttons are available:
+With more than one motif in the list, **Launch as one track** puts every motif's
+matches in one track, distinguishable only by name, and **Launch one track per
+motif** gives each its own lane.
 
-- **Launch as one track** - all matches for every motif go into a single track,
-  distinguishable from each other only by name (label or hover tooltip).
-- **Launch one track per motif** - each motif gets its own track, so enzymes are
-  visually separable without relying on labels.
+<Video src="/media/ui/sequence_search_motifs.mp4" caption="The route on a view with no tracks open: the view menu's Sequence search, the Motif list mode and the enzymes it arrives prefilled with, three of them kept, and a lane per enzyme scanned out of the reference." />
 
 ## Ship one in config.json
 

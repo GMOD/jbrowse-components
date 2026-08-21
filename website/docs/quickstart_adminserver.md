@@ -77,18 +77,25 @@ This opens a table to create, edit, and delete assemblies in your application:
 As an example, let's add the hg38 human reference genome to our JBrowse 2
 application.
 
-Press the "Add New Assembly" button, and enter the necessary information in the
-form:
+Press **Add new assembly**, then **Open from a URL**, and paste the FASTA and
+its two indexes into the box, one per line:
 
-- name: `hg38`
-- type: `BgzipFastaAdapter`
-- fasta: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz`
-- fasta index: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai`
-- gzi: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi`
+```
+https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
+https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai
+https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi
+```
+
+There is no adapter to pick: the form recognizes the three files, pairs the
+indexes with the FASTA, and fills in a genome name from the filename. That name
+is editable, and the rest of this page calls the assembly `hg38`, so set it to
+that.
 
 <Figure caption="Assembly manager page for adding a new assembly." src="/img/hg38_assembly_table.png"/>
 
-Click on "Create New Assembly". The hg38 assembly now appears in the list:
+<Video src="/media/ui/add_genome.mp4" caption="A JBrowse with no genome in it getting one: Tools, Assembly manager, Add new assembly, and three URLs pasted into a single box, which the form answers with the adapter it recognized and a name it filled in." />
+
+**Submit** puts hg38 in the list:
 
 <Figure caption="The assembly manager dialog box with human assemblies available" src="/img/add_hg38_assembly.png"/>
 

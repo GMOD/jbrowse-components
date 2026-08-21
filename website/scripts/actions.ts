@@ -348,10 +348,26 @@ export async function runAction(page: Page, action: ScreenshotAction) {
   } else if (action.type === 'type') {
     const el = await resolveTarget(page, action)
     if (action.clear) {
-      // triple-click selects the field's current text, then Backspace deletes it
-      // so an empty value genuinely clears the field (typing '' alone leaves the
-      // selection in place)
-      await el?.click({ count: 3 })
+      // `select()` rather than a triple-click, which selects one LINE: on a
+      // multiline field that left every other line in place and typed the new
+      // value into the middle of them. The sequence-search tour is where that
+      // showed up — 16 prefilled enzymes, 3 typed over line 8, and a list that
+      // no longer parsed, so both submit buttons went disabled and the tour
+      // clicked one of them and filmed nothing happening.
+      //
+      // Click first so the field is focused and React is listening, then
+      // Backspace over a real selection, which raises the input events a
+      // controlled component needs. Typing '' alone leaves the selection in
+      // place.
+      await el?.click()
+      await el?.evaluate(node => {
+        if (
+          node instanceof HTMLTextAreaElement ||
+          node instanceof HTMLInputElement
+        ) {
+          node.select()
+        }
+      })
       await page.keyboard.press('Backspace')
     } else {
       await el?.click()
