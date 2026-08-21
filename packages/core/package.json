@@ -192,6 +192,7 @@
     "./util/progress": "./src/util/progress.ts",
     "./util/range": "./src/util/range.ts",
     "./util/resolveRowHeight": "./src/util/resolveRowHeight.ts",
+    "./util/rowStackGeometry": "./src/util/rowStackGeometry.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
     "./util/sameStrings": "./src/util/sameStrings.ts",
     "./util/setStackTraceLimit": "./src/util/setStackTraceLimit.ts",
@@ -959,6 +960,10 @@
         "types": "./esm/util/resolveRowHeight.d.ts",
         "import": "./esm/util/resolveRowHeight.js"
       },
+      "./util/rowStackGeometry": {
+        "types": "./esm/util/rowStackGeometry.d.ts",
+        "import": "./esm/util/rowStackGeometry.js"
+      },
       "./util/rxjs": {
         "types": "./esm/util/rxjs.d.ts",
         "import": "./esm/util/rxjs.js"
@@ -1585,6 +1590,9 @@
         ],
         "util/resolveRowHeight": [
           "esm/util/resolveRowHeight.d.ts"
+        ],
+        "util/rowStackGeometry": [
+          "esm/util/rowStackGeometry.d.ts"
         ],
         "util/rxjs": [
           "esm/util/rxjs.d.ts"

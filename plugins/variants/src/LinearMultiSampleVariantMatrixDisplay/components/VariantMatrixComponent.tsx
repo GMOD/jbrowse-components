@@ -9,6 +9,7 @@ import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { matrixCellAt } from './matrixHitTest.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -62,20 +63,28 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     ) {
       return undefined
     }
-    // same column pitch the canvas and the connector lines lay out on. `rect` is
-    // the canvas, which already sits at columnGeometry.left, so mouseX is
-    // canvas-relative and the origin must not be subtracted again here.
-    const { columnWidth } = model.columnGeometry
-    const mouseX = clientX - rect.left
-    const mouseY = clientY - rect.top
-    // screen column and data index are the same number (orderByScreenPosition)
-    const featureIdx = Math.floor(mouseX / columnWidth)
-    const rowIdx = Math.floor(
-      (mouseY + model.scrollTop) / model.effectiveRowHeight,
+    // `rect` is the canvas, which already sits at columnGeometry.left, so the
+    // mouse is canvas-relative and the origin must not be subtracted again.
+    const { featureIdx, nearest, lowest } = matrixCellAt(
+      {
+        columnWidth: model.columnGeometry.columnWidth,
+        effectiveRowHeight: model.effectiveRowHeight,
+        scrollTop: model.scrollTop,
+      },
+      clientX - rect.left,
+      clientY - rect.top,
     )
-    const source = sources[rowIdx]
     const feature = cellData.featureData[featureIdx]
-    if (source && feature) {
+    if (!feature) {
+      return undefined
+    }
+    // nearest first: it is the row the cursor is in and the last one painted
+    // there, so it is what the reader sees on top
+    for (let rowIdx = nearest; rowIdx >= lowest; rowIdx--) {
+      const source = sources[rowIdx]
+      if (!source) {
+        continue
+      }
       const sampleName = source.sampleName
       const genotype = decodeGenotype(
         cellData.genotypeDict,

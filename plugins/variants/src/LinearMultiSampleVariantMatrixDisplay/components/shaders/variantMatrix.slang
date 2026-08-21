@@ -11,6 +11,7 @@
 // picks an RGBA value per cell based on genotype/quality.
 //! targets: wgsl, glsl
 //! blend: premultiplied
+//! js-export: drawnCellHeightPx
 
 import colorPack;
 import hpmath;
@@ -20,6 +21,18 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // Minimum drawn column width in physical px, so sub-pixel columns (more variants
 // than screen pixels) still cover a pixel center and paint.
 static const float MIN_COL_PX = 1.0;
+
+// The painted cell height. The floor avoids GPU-culled zero-height geometry at
+// sub-pixel rows, where it also makes several rows share one drawn pixel.
+//
+// `//! js-export`ed for the same reason variant.slang exports its twin: the
+// Canvas2D draw and the hit test have to land on the band the GPU drew. The
+// Canvas2D path had no floor at all and the hit test picked a single row, so a
+// sub-pixel matrix exported fainter than it looked and named a row it had not
+// drawn on top.
+float drawnCellHeightPx(float rowHeight) {
+  return max(rowHeight, 1.0);
+}
 
 struct CellInstance {
   float featureIndex : ATTR0;
@@ -79,11 +92,9 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float clipX = pxToClipX(lerp(ex1, ex2, lx), widthPx);
 
   // Fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
-  // during resize); max(...,1) is the minimum quad height to avoid
-  // GPU-culled zero-height geometry while preserving draw order for variant
-  // priority.
+  // during resize); the floor is drawnCellHeightPx, above.
   float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
-  float yBot = yTop + max(u.rowHeight, 1.0);
+  float yBot = yTop + drawnCellHeightPx(u.rowHeight);
   float clipY = lerp(yPxToClipY(yBot, u.canvasHeight),
                      yPxToClipY(yTop, u.canvasHeight), ly);
 

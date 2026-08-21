@@ -1,6 +1,7 @@
+import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
-import { contentSampleY, rowsUnderCursor } from './variantCellLookup.ts'
+import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { MAX_INSERTION_MARKER_WIDTH_PX } from './variantCellSpan.ts'
 
 // Minimal region shape the hit-test geometry needs — a subset of the view's
@@ -58,9 +59,10 @@ export function computeVariantHitQuery(
     (region.end - region.start) / (region.screenEndPx - region.screenStartPx)
   const genomicPos = bpAtPxExact(mouseX, region)
 
-  const { nearest, lowest } = rowsUnderCursor(
-    contentSampleY(mouseY, scrollTop),
-    effectiveRowHeight,
+  const { nearest, lowest } = rowsUnderPointer(
+    mouseY,
+    { rowHeight: effectiveRowHeight, scrollTop },
+    drawnCellHeightPx(effectiveRowHeight),
   )
 
   return {

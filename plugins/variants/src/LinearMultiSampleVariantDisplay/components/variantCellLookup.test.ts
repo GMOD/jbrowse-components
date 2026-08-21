@@ -1,8 +1,4 @@
-import {
-  contentSampleY,
-  findCellIndex,
-  rowsUnderCursor,
-} from './variantCellLookup.ts'
+import { findCellIndex } from './variantCellLookup.ts'
 
 import type { CellLookupData } from './variantCellLookup.ts'
 
@@ -75,46 +71,5 @@ describe('findCellIndex', () => {
 
   test('handles no cells at all', () => {
     expect(findCellIndex(cells([], []), 0, 0)).toBe(-1)
-  })
-})
-
-// the argument is a pixel CENTRE, so these read `Y + 0.5` throughout
-describe('rowsUnderCursor', () => {
-  test('a normal row height resolves to exactly one row', () => {
-    expect(rowsUnderCursor(25.5, 10)).toEqual({ nearest: 2, lowest: 2 })
-    expect(rowsUnderCursor(0.5, 10)).toEqual({ nearest: 0, lowest: 0 })
-    // Y 30 is the first pixel of row 3, not the last of row 2.
-    expect(rowsUnderCursor(30.5, 10)).toEqual({ nearest: 3, lowest: 3 })
-  })
-
-  test('a row exactly 2px tall still resolves to one row', () => {
-    expect(rowsUnderCursor(5.5, 2)).toEqual({ nearest: 2, lowest: 2 })
-  })
-
-  test('sub-pixel rows stack a band under one drawn pixel', () => {
-    // rowHeight 0.5 draws at the 2px floor, so a row r covers [0.5r, 0.5r + 2).
-    // Pixel 25 was filled from its centre, 25.5, which rows 48..51 cover —
-    // answering at 25.0 named 47..50 and picked the row below the drawn one.
-    expect(rowsUnderCursor(25.5, 0.5)).toEqual({ nearest: 51, lowest: 48 })
-  })
-
-  test('the band never runs off the top of the content', () => {
-    expect(rowsUnderCursor(1.5, 0.5)).toEqual({ nearest: 3, lowest: 0 })
-    expect(rowsUnderCursor(0.5, 0.5)).toEqual({ nearest: 1, lowest: 0 })
-  })
-})
-
-describe('contentSampleY', () => {
-  test('is the centre of the pixel the cursor is in', () => {
-    expect(contentSampleY(25, 0)).toBe(25.5)
-    expect(contentSampleY(25.9, 0)).toBe(25.5)
-  })
-
-  // the canvas draws at `row*rowHeight - scrollTop` with scrollTop unrounded —
-  // applyRowResizeWheel sets it to `rowUnderMouse * newRowHeight - mouseY` — so
-  // flooring the SUM snaps to a pixel grid the content is not on
-  test('adds a fractional scrollTop after the floor, not before', () => {
-    expect(contentSampleY(25, 3.4)).toBe(28.9)
-    expect(Math.floor(25 + 3.4) + 0.5).toBe(28.5)
   })
 })

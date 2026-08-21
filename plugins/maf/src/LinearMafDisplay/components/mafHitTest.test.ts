@@ -126,23 +126,29 @@ describe('resolveMafRowHover', () => {
   })
 })
 
+// The span runs between the rows the two ends are *over*, the same question
+// mafPointerAt answers for the bp — sampleNavigationItems asks both, and they
+// used to answer on different conventions.
 describe('rowSpanAtY', () => {
-  test('covers every row the drag rectangle touches', () => {
-    // y 45..75 spans rows 0,1,2 — the end ceils so a partly covered row counts
-    expect(rowSpanAtY(makeModel(), 45, 75)).toEqual({ startRow: 0, endRow: 3 })
+  test('covers the row under each end of the drag', () => {
+    // rows are 10px from y=45, so y=74 is over row 2
+    expect(rowSpanAtY(makeModel(), 45, 74)).toEqual({ startRow: 0, endRow: 3 })
   })
 
   test('is orientation-independent (drag upward)', () => {
-    expect(rowSpanAtY(makeModel(), 75, 45)).toEqual({ startRow: 0, endRow: 3 })
+    expect(rowSpanAtY(makeModel(), 74, 45)).toEqual({ startRow: 0, endRow: 3 })
   })
 
   test('a drag starting in the band area clamps to row 0', () => {
     expect(rowSpanAtY(makeModel(), 0, 58)).toEqual({ startRow: 0, endRow: 2 })
   })
 
-  test('a drag ending exactly on a row boundary excludes the next row', () => {
-    // y=55 is the row 0 / row 1 seam, so the half-open span stops at 1
-    expect(rowSpanAtY(makeModel(), 45, 55)).toEqual({ startRow: 0, endRow: 1 })
+  test('includes the row the cursor released on at an exact boundary', () => {
+    // y=55 is the row 0 / row 1 seam: pixel 55 is drawn in row 1 and that is
+    // what the reader is pointing at. Ceiling the same coordinate instead
+    // collapsed a horizontal drag here to an empty span.
+    expect(rowSpanAtY(makeModel(), 45, 55)).toEqual({ startRow: 0, endRow: 2 })
+    expect(rowSpanAtY(makeModel(), 55, 55)).toEqual({ startRow: 1, endRow: 2 })
   })
 
   test('a zero-height drag still selects the row it lands on', () => {

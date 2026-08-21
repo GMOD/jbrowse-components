@@ -1,3 +1,4 @@
+import { rowIndexAt } from '@jbrowse/core/util/rowStackGeometry'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
 import {
@@ -53,13 +54,9 @@ export function findOverlayHit(
 // NaN/Infinity, so it's rejected up front rather than leaning on an
 // out-of-bounds index coming back undefined.
 //
-// The row is resolved at the CENTRE of the pixel the cursor is in, because that
-// is the scanline rasterization filled it from — so the source named is the one
-// whose plot the reader can see there. `getRowHeight` is `canvasHeight /
-// numRows` with no floor, so a cohort-sized track really does go sub-pixel (400
-// px over 1000 sources is 0.4 px a row) and measuring from the pixel's top edge
-// is a whole row out. There is no scroll offset to order this against: these
-// rows are sized to fit the display.
+// `getRowHeight` is `canvasHeight / numRows` with no floor, so a cohort-sized
+// track really does go sub-pixel (400 px over 1000 sources is 0.4 px a row).
+// These rows are sized to fit the display, so there is no scroll offset.
 export function findRowHit(
   data: WiggleDataResult,
   visibleSources: VisibleSource[],
@@ -72,7 +69,7 @@ export function findRowHit(
   if (rowHeight <= 0) {
     return undefined
   }
-  const rowIndex = Math.floor((Math.floor(offsetY) + 0.5) / rowHeight)
+  const rowIndex = rowIndexAt(offsetY, { rowHeight })
   const src = visibleSources[rowIndex]
   const ds = src ? data.sources.find(s => s.name === src.name) : undefined
   return src && ds

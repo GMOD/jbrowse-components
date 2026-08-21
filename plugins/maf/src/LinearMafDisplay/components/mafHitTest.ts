@@ -1,4 +1,5 @@
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+import { rowIndexAt, rowSpanAt } from '@jbrowse/core/util/rowStackGeometry'
 
 import type { MafHover } from '../util.ts'
 import type { HoverBp } from './findRowHover.ts'
@@ -56,12 +57,7 @@ export function mafPointerAt(
     // The base *painted* at this pixel, which on a reversed region is not the
     // floor of `gposFrac` — see `HoverBp`.
     baseBp: basePaintedAt(pos, pos.offset),
-    // At the centre of the pixel the cursor is in, for the same reason baseBp
-    // is the base *painted* there: rasterization fills a pixel from its centre,
-    // so that is where the row the reader is pointing at was decided. Asking at
-    // the pixel's top edge misses by `0.5 / effectiveRowHeight` rows, which is
-    // nothing at a 10px row and several once the rows go sub-pixel.
-    rowIndex: Math.floor(rowAtY(model, Math.floor(mouseY) + 0.5)),
+    rowIndex: rowIndexAt(mouseY, rowStackOf(model)),
     inBands: mouseY < model.rowsTopOffset,
   }
 }
@@ -71,11 +67,12 @@ type RowGeometry = Pick<
   'scrollTop' | 'rowsTopOffset' | 'effectiveRowHeight'
 >
 
-// Continuous row coordinate at display-relative `y`. The one place the
-// rows-area offset and scroll are applied; callers round to suit (a point hit
-// floors, a span ceils its end).
-function rowAtY(model: RowGeometry, y: number) {
-  return (y + model.scrollTop - model.rowsTopOffset) / model.effectiveRowHeight
+function rowStackOf(model: RowGeometry) {
+  return {
+    rowHeight: model.effectiveRowHeight,
+    scrollTop: model.scrollTop,
+    topOffset: model.rowsTopOffset,
+  }
 }
 
 /**
@@ -83,12 +80,7 @@ function rowAtY(model: RowGeometry, y: number) {
  * drag-selection rectangle's rows, ready to `slice` the sample list with.
  */
 export function rowSpanAtY(model: RowGeometry, y0: number, y1: number) {
-  const top = Math.min(y0, y1)
-  const bottom = Math.max(y0, y1)
-  return {
-    startRow: Math.max(0, Math.floor(rowAtY(model, top))),
-    endRow: Math.max(0, Math.ceil(rowAtY(model, bottom))),
-  }
+  return rowSpanAt(y0, y1, rowStackOf(model))
 }
 
 /** A projected cursor with its row hover already resolved. */

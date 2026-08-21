@@ -1,5 +1,6 @@
 import {
   contentYAt,
+  rowCoordAt,
   rowIndexAt,
   rowSpanAt,
   rowsUnderPointer,
@@ -53,6 +54,16 @@ describe('rowSpanAt', () => {
   it('is direction-agnostic', () => {
     const stack = { rowHeight: 12, topOffset: 45 }
     expect(rowSpanAt(80, 57, stack)).toEqual(rowSpanAt(57, 80, stack))
+  })
+
+  // ceil(rowCoord) and floor(rowCoord)+1 agree everywhere except where the
+  // coordinate lands exactly on an integer, which a fractional scrollTop is
+  // what makes reachable. That is the case the ceil collapsed to nothing, so
+  // it is the one a test has to sample.
+  it('includes the row when the coordinate lands exactly on a boundary', () => {
+    const stack = { rowHeight: 10, scrollTop: 0.5, topOffset: 45 }
+    expect(rowCoordAt(54, stack)).toBe(1)
+    expect(rowSpanAt(54, 54, stack)).toEqual({ startRow: 1, endRow: 2 })
   })
 
   it('clamps a drag that starts above the rows area', () => {
