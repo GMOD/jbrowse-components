@@ -356,6 +356,7 @@ function memoizeChildLayouts(args: LayoutArgs) {
         feature: child,
         config,
         glyphType: layout.glyphType,
+        jexl: args.jexl,
       })
       cache.set(child, layout)
     }

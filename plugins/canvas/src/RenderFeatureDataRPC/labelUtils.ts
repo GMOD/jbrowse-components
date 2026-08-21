@@ -124,11 +124,41 @@ export function reservesBelowLabelRow(args: {
   feature: Feature
   config: DisplayConfig
   glyphType: GlyphType
+  jexl: JexlInstance | undefined
 }) {
-  const { feature, config, glyphType } = args
+  const { feature, config, glyphType, jexl } = args
   return (
     SELF_LABELING_GLYPHS[glyphType] &&
     config.subfeatureLabels === 'below' &&
-    hasVisibleText(truncateLabel(getFeatureName(feature) ?? ''))
+    hasVisibleText(
+      truncateLabel(subfeatureLabelText(feature, config, jexl) ?? ''),
+    )
+  )
+}
+
+/**
+ * The text a subfeature's own label draws, which is what decides whether it
+ * needs a row.
+ *
+ * The `labels.name` slot first, because that is the override's whole purpose —
+ * a `product` surfaces for mature peptides and repeat subparts that carry no
+ * `name` — then the plain name/id.
+ *
+ * **Both the reservation and the emit go through this.** They used to ask
+ * different questions: the reservation read the raw name, on the stated grounds
+ * that the layout pass stayed jexl-free, which it does not — `featureHeightPx`
+ * resolves a per-feature expression in the same pass. The two agreed on the
+ * default slot and diverged on exactly the config the slot exists for, so a
+ * track labelling its children by `product` reserved nothing and every
+ * transcript's label painted across the row below it.
+ */
+export function subfeatureLabelText(
+  feature: Feature,
+  config: DisplayConfig,
+  jexl: JexlInstance | undefined,
+) {
+  return (
+    (jexl ? readFeatureName(config, feature, jexl) : undefined) ??
+    getFeatureName(feature)
   )
 }

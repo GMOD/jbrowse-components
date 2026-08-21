@@ -7,9 +7,9 @@ import {
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
-  getFeatureName,
   readFeatureLabels,
   readFeatureName,
+  subfeatureLabelText,
 } from '../labelUtils.ts'
 import { featureType, getSubfeatures } from '../util.ts'
 import {
@@ -44,14 +44,10 @@ import type {
 } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-// Subfeature display label: the config-jexl `labels.name` slot (so a `product`
-// override surfaces for mature peptides / repeat subparts that carry no `name`),
-// falling back to the plain name/id. Shared by the mature-protein, repeat-region
-// and stacked-box paths so their labels can't drift.
+// Shared by the mature-protein, repeat-region and stacked-box paths, and by
+// the row reservation in the layout pass — see `subfeatureLabelText`.
 function resolveSubfeatureLabel(feature: Feature, ctx: RenderContext) {
-  return (
-    readFeatureName(ctx.config, feature, ctx.jexl) ?? getFeatureName(feature)
-  )
+  return subfeatureLabelText(feature, ctx.config, ctx.jexl)
 }
 
 function emitExonRects(

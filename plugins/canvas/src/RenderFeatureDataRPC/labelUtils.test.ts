@@ -4,10 +4,12 @@ import {
   getFeatureName,
   readFeatureLabels,
   reservesBelowLabelRow,
+  subfeatureLabelText,
 } from './labelUtils.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 import type { GlyphType } from './types.ts'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 function createMockFeature(name: string, id = 'feat-1') {
   return {
@@ -104,12 +106,65 @@ describe('reservesBelowLabelRow', () => {
     feature: unknown,
     subfeatureLabels: string,
     glyphType: GlyphType = 'ProcessedTranscript',
+    config?: Record<string, unknown>,
+    jexl?: JexlInstance,
   ) =>
     reservesBelowLabelRow({
       feature: feature as any,
-      config: mockDisplayConfig({ subfeatureLabels } as any),
+      config: mockDisplayConfig({ subfeatureLabels, ...config } as any),
       glyphType,
+      jexl,
     })
+
+  // A child that carries `product` and nothing the raw reader can see: no name,
+  // no id. Both halves matter — getFeatureName falls back to the id, so an
+  // id-bearing fixture would reserve either way and hide the divergence.
+  const productOnly = (product?: string) =>
+    ({
+      get: (key: string) => (key === 'product' ? product : undefined),
+      id: () => '',
+    }) as any
+
+  const NAME_FROM_PRODUCT = {
+    labels: { name: "jexl:get(feature,'product')" },
+  }
+
+  // THE DIVERGENCE. The label that draws comes from the `labels.name` slot, so
+  // the reservation has to ask the same thing. Reading the raw name instead
+  // agreed on the default slot and disagreed on exactly the config the slot
+  // exists for: children carrying `product` and no name reserved nothing, and
+  // every transcript's label painted across the row beneath it.
+  it('reserves off the labels.name slot, not the raw name', () => {
+    const jexl = createJexlInstance()
+    const feature = productOnly('nsp5')
+    expect(
+      ask(feature, 'below', 'ProcessedTranscript', NAME_FROM_PRODUCT, jexl),
+    ).toBe(true)
+    // the emitted label is that same string, which is what makes the reserved
+    // row the right size
+    expect(
+      subfeatureLabelText(
+        feature,
+        mockDisplayConfig(NAME_FROM_PRODUCT as any),
+        jexl,
+      ),
+    ).toBe('nsp5')
+  })
+
+  // The converse, so the widened read cannot pass by reserving for everything:
+  // a child the slot resolves to nothing for draws no label and costs no row.
+  it('does not reserve when the slot resolves to nothing either', () => {
+    const jexl = createJexlInstance()
+    expect(
+      ask(
+        productOnly(undefined),
+        'below',
+        'ProcessedTranscript',
+        NAME_FROM_PRODUCT,
+        jexl,
+      ),
+    ).toBe(false)
+  })
 
   it('reserves for a named transcript child in "below" mode', () => {
     expect(ask(createMockFeature('NM_001234'), 'below')).toBe(true)
