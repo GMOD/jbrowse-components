@@ -4,6 +4,7 @@ import { of } from 'rxjs'
 import {
   densityTooLargeResult,
   featuresPerPx,
+  overDensityBudget,
   samplePreFetchDensity,
 } from './densityGate.ts'
 
@@ -35,6 +36,24 @@ describe('featuresPerPx', () => {
     expect(featuresPerPx(5000, { start: 100, end: 100 }, 10)).toBe(0)
     expect(featuresPerPx(0, { start: 100, end: 100 }, 10)).toBe(0)
     expect(featuresPerPx(5000, { start: 200, end: 100 }, 10)).toBe(0)
+  })
+})
+
+// The comparison the whole axis is made of, in one place because its three
+// callers — the pre-fetch sample, the post-fetch exact count, and the
+// main-thread banner — must not answer differently at the boundary. The byte
+// axis pins the same rule on `overByteBudget`; this one went unpinned until a
+// mutation sweep swapped the `>` for `>=` and every gate test stayed green.
+describe('overDensityBudget', () => {
+  it('is over only when strictly above the budget', () => {
+    expect(overDensityBudget(1.0001, 1)).toBe(true)
+    expect(overDensityBudget(1, 1)).toBe(false)
+    expect(overDensityBudget(0.9999, 1)).toBe(false)
+  })
+
+  it('reads an undefined budget as the axis not gating, not as zero', () => {
+    expect(overDensityBudget(1_000_000, undefined)).toBe(false)
+    expect(overDensityBudget(0, undefined)).toBe(false)
   })
 })
 

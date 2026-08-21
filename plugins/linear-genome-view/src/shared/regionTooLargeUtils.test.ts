@@ -152,6 +152,33 @@ describe('nextByteEstimate', () => {
     ).toBe(false)
   })
 
+  // Both ratios at their exact boundary. Neither was pinned: a mutation sweep
+  // swapped the byte ratio's `>` for `>=` and nothing went red, which matters
+  // because these two numbers are the whole of "will zooming help" and a wrong
+  // answer either tells someone to keep zooming forever or withholds the one
+  // way out that works.
+  it('takes exactly half the span as evidence, and exactly 0.9 as a fall', () => {
+    const first = nextByteEstimate(undefined, {
+      bytes: 1_000_000,
+      viewport: vp(100_000),
+    })
+    // exactly ZOOM_EVIDENCE_SPAN_RATIO: a halving is material
+    expect(
+      nextByteEstimate(first, { bytes: 900_001, viewport: vp(50_000) })
+        .zoomIneffective,
+    ).toBe(true)
+    // ...and exactly ZOOM_EVIDENCE_BYTE_RATIO of the bytes is a fall, not a flat
+    expect(
+      nextByteEstimate(first, { bytes: 900_000, viewport: vp(50_000) })
+        .zoomIneffective,
+    ).toBe(false)
+    // a hair short of a halving is not evidence, so the flag stays where it was
+    expect(
+      nextByteEstimate(first, { bytes: 1_000_000, viewport: vp(50_001) })
+        .zoomIneffective,
+    ).toBe(false)
+  })
+
   // A pan re-measures at about the same span. Two such measurements say nothing
   // about zoom either way, so neither set the flag nor clear one already earned.
   it('treats a same-span or zoomed-out measurement as no evidence', () => {

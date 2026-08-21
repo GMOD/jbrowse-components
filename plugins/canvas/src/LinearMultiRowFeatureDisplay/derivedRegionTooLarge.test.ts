@@ -288,6 +288,33 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     expect(display.gateMeasurementStale).toBe(true)
   })
 
+  // Both halves of the batch guard, one at a time. A sweep found no test with
+  // one term true and the other false, and each direction fails differently:
+  // an empty batch would stamp a viewport nothing measured, and a batch with no
+  // viewport to label it has nothing to stamp at all.
+  it('commits nothing when either half of a batch is missing', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+
+    display.commitGateMeasurements([], display.gateFetchState())
+    expect(display.gateMeasurementStale).toBe(true)
+    expect(display.byteEstimate).toBeUndefined()
+
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000 },
+          result: { bytes: 8_000_000, featureCount: 12 },
+        },
+      ],
+      { viewport: undefined, gated: true },
+    )
+    expect(display.gateMeasurementStale).toBe(true)
+    expect(display.byteEstimate).toBeUndefined()
+    expect(display.densityStatsPerRegion.size).toBe(0)
+  })
+
   // decided by the gate at ISSUE, not at commit: force-load can move between
   it('stamps a gated fetch even if force-load lands before the results do', () => {
     const { display, view } = createTestEnvironment().createDisplay()
