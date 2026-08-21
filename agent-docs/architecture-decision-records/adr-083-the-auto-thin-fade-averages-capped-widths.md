@@ -94,7 +94,15 @@ blocks, where there is no hairball to repaint.
   ranged 0.30 to 0.82 across rollovers. Every candidate needs the deadband.
 - **Hysteresis on the ten-block floor too** (engage at 10, hold at 5). Fixes one
   row and breaks another, and every flip it addresses is between windows holding
-  fewer than 50 blocks.
+  fewer than 50 blocks. Re-measured by magnitude rather than by flip count, which
+  is the axis that settles it: the count bar is where 1,105 of the chain file's
+  1,323 flips happen, and holding at 5 does halve the ones that change on-screen
+  ink by 2x or more. But every one of the 11,247 sampled pan positions where the
+  hold disagrees with a plain bar is `full` → `faded`, and the median one has
+  **two visible ribbons**. The deadband does not steady a hairball; it keeps the
+  fade on across a near-empty stretch of the pan, leaving one to four hairlines at
+  `WIDTH_FADE_FLOOR` — the thing the ten-block floor is there to prevent.
+  `ideas/synteny-thin-fade-snap.md` has the sweep.
 
 ## Consequences
 
