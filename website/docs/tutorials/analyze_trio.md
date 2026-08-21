@@ -59,6 +59,8 @@ columns back to their genomic positions.
 
 <Figure caption="Multi-sample variant display (matrix). One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="The trio VCF switched to the multi-sample matrix display, then to the phased rendering mode, which splits each trio member into its two haplotype rows in place." />
+
 ## Enabling the phased mode
 
 The matrix has a "phased" rendering mode under the track menu's "Rendering

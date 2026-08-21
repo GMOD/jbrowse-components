@@ -80,6 +80,68 @@ const BOOKMARK_LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
 // the whole of it.
 const PTEN_WINDOW = 'chr10:89,613,000-89,740,000'
 
+// The window the multi-row figures and the tour in videos/repeats.ts share:
+// 50 kb of 17q21, dense enough that every class in the file's palette has
+// blocks in it.
+const RMSK_WINDOW = 'chr17:45,700,000-45,750,000'
+
+// What videos/repeats.ts films, and what multirow/display_types_pick is
+// captured from: the RepeatMasker track in the display it opens with. The tour
+// starts in that state and takes the two menu picks that get out of it, so a
+// window or a track spelled differently in either would be a film of a page the
+// figures are not of.
+export const repeatVideoFixtures = {
+  rmskTrackId: 'rmsk_hg38_ucsc',
+  packedSession: sessionSpec(DEMO_CONFIG, {
+    sessionTracks: [HG38_RMSK_TRACK],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: RMSK_WINDOW,
+        tracks: ['rmsk_hg38_ucsc'],
+      },
+    ],
+  }),
+  // The same track carrying both displays, which is the shape
+  // repeatmasker_classes.md prints: the packed one first, so the track still
+  // opens the way it does everywhere else, and the multi-row one behind the
+  // menu with a height on it.
+  //
+  // The height is why the tour needs its own session. `replaceDisplay` builds
+  // the new display from its own config rather than carrying the old one's
+  // height across, so a multi-row display arriving at the default height fits
+  // the classes it discovers into it — eight lanes in the room one packed lane
+  // was using, with the labels overlapping. `partitionField` is deliberately
+  // absent: which column splits the rows is what the route picks.
+  twoDisplaySession: sessionSpec(DEMO_CONFIG, {
+    sessionTracks: [
+      {
+        ...HG38_RMSK_TRACK,
+        displays: [
+          {
+            type: 'LinearBasicDisplay',
+            displayId: 'rmsk_hg38_ucsc-LinearBasicDisplay',
+          },
+          {
+            type: 'LinearMultiRowFeatureDisplay',
+            displayId: 'rmsk_hg38_ucsc-LinearMultiRowFeatureDisplay',
+            height: 260,
+          },
+        ],
+      },
+    ],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: RMSK_WINDOW,
+        tracks: ['rmsk_hg38_ucsc'],
+      },
+    ],
+  }),
+}
+
 // What videos/ui.ts films. The tour ends where these stills already are, so it
 // opens on the session they were captured from rather than one written again.
 export const uiVideoFixtures = {
@@ -2478,17 +2540,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multirow/display_types_pick',
-    url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [HG38_RMSK_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr17:45,700,000-45,750,000',
-          tracks: ['rmsk_hg38_ucsc'],
-        },
-      ],
-    }),
+    url: repeatVideoFixtures.packedSession,
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
     viewportWidth: 1000,
