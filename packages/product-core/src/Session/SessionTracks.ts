@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   diffTrackConfig,
   flattenTrackConfigDelta,
@@ -53,6 +54,26 @@ function deltaHasChanges(
   delta: PlainTrackConfig,
 ): boolean {
   return flattenTrackConfigDelta(base, delta).length > 0
+}
+
+// The assemblies a track config names that the config.json does not carry.
+// `self.jbrowse.assemblies` is the catalog alone — the session's own
+// `assemblies` getter adds sessionAssemblies to it, which is the opposite of
+// what this asks.
+function assembliesNotInTheCatalog(
+  self: { jbrowse: { assemblies: unknown[] } },
+  trackConf: AnyConfiguration,
+) {
+  const catalog = new Set(
+    self.jbrowse.assemblies.map(a =>
+      readConfObject(a as AnyConfigurationModel, 'name'),
+    ),
+  )
+  const names = readConfObject(
+    trackConf as AnyConfigurationModel,
+    'assemblyNames',
+  ) as string[] | undefined
+  return names?.filter(name => !catalog.has(name)) ?? []
 }
 
 function withoutDelta(
@@ -410,11 +431,31 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * admin click on this publishes it to every visitor, again on the next
          * click, with a per-launch trackId that defeats the dedupe.
          * `addSessionTrackConf` above is the destination for those.
+         *
+         * An admin's track still goes to the session when it names an assembly
+         * the config.json does not carry — a session spec's, a MAF sample's own
+         * genome, a comparative view's synthesized pair. The Add-track widget
+         * takes its assembly from the containing view, so an admin adding a
+         * track while looking at one of those arrives here with a name no
+         * visitor can resolve, and publishing it writes an entry the server
+         * hands everyone and nobody can draw. The session is the one
+         * destination where that track works, so the click keeps working and
+         * the dangling entry is never written; a snackbar says which assembly
+         * moved it.
          */
         publishTrackConf(trackConf: AnyConfiguration) {
-          return self.adminMode
-            ? superPublishTrackConf(trackConf)
-            : addToSession(trackConf)
+          if (!self.adminMode) {
+            return addToSession(trackConf)
+          }
+          const missing = assembliesNotInTheCatalog(self, trackConf)
+          if (!missing.length) {
+            return superPublishTrackConf(trackConf)
+          }
+          self.notify(
+            `Added "${(trackConf as { name?: string; trackId: string }).name ?? (trackConf as { trackId: string }).trackId}" to this session rather than to the site configuration, because assembly "${missing.join('", "')}" is not in the config.json. A published track naming it would be served to every visitor and drawn by none of them.`,
+            'info',
+          )
+          return addToSession(trackConf)
         },
 
         /**

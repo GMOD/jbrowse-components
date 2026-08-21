@@ -236,6 +236,22 @@ describe('JBrowseWebSessionModel', () => {
       adapter: { type: 'FromConfigAdapter', features: [] },
     }
 
+    // publishTrackConf reaches the catalog only for a track the catalog can
+    // resolve, so an admin fixture has to carry the assembly trackSnap names —
+    // createTestSession's jbrowse config has none of its own.
+    const withVolvox = {
+      assemblies: [
+        {
+          name: 'volvox',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'volvox-ref',
+            adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+          },
+        },
+      ],
+    }
+
     it.each([false, true])(
       'addSessionTrackConf keeps the config in the session (adminMode=%s)',
       adminMode => {
@@ -249,7 +265,10 @@ describe('JBrowseWebSessionModel', () => {
     )
 
     it('an admin publishTrackConf writes the config, not the session', () => {
-      const session = createTestSession({ adminMode: true })
+      const session = createTestSession({
+        adminMode: true,
+        jbrowseConfig: withVolvox,
+      })
       session.publishTrackConf(trackSnap)
       expect(session.sessionTracks).toHaveLength(0)
       expect(
@@ -271,7 +290,10 @@ describe('JBrowseWebSessionModel', () => {
     // `<name>-<stamp>` into the config.json every visitor is served, one more
     // per click.
     it('an admin gets the session for addSessionTrackConf and the config for publishTrackConf', () => {
-      const session = createTestSession({ adminMode: true })
+      const session = createTestSession({
+        adminMode: true,
+        jbrowseConfig: withVolvox,
+      })
       session.addSessionTrackConf({ ...trackSnap, trackId: 'feature_track' })
       session.publishTrackConf({ ...trackSnap, trackId: 'catalog_track' })
       expect(session.sessionTracks.map(t => t.trackId)).toEqual([
@@ -280,6 +302,37 @@ describe('JBrowseWebSessionModel', () => {
       expect(
         session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
       ).toEqual(['catalog_track'])
+    })
+
+    // The catalog may only hold configs a fresh visitor can resolve. An admin
+    // following a MAF row into that sample's own genome is looking at a SESSION
+    // assembly, and the Add-track widget takes its assembly from the containing
+    // view — so publish arrives with a name config.json has never heard of, and
+    // writing it serves every visitor a track none of them can draw. The pair
+    // with the volvox case above is the point: the catalog assembly still
+    // publishes.
+    it('an admin publishing onto a session assembly gets the session instead', () => {
+      const session = createTestSession({
+        adminMode: true,
+        jbrowseConfig: withVolvox,
+      })
+      session.addSessionAssembly({
+        name: 'sampleGenome',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'sampleGenome-ref',
+          adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+        },
+      })
+      session.publishTrackConf({
+        ...trackSnap,
+        assemblyNames: ['sampleGenome'],
+      })
+      expect(session.sessionTracks.map(t => t.trackId)).toEqual(['spec_track'])
+      expect(session.jbrowse.tracks).toHaveLength(0)
+      expect(session.snackbarMessages.map(m => m.message).join(' ')).toContain(
+        'sampleGenome',
+      )
     })
 
     // `addTrackConf` outlived its own meaning: it survives only because
