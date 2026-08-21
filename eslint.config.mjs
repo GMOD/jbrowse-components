@@ -57,6 +57,66 @@ const noReadableFromWeb = {
   message:
     "Do not use Readable.fromWeb on a fetch body. In renderer/worker code the global fetch returns Chromium's DOM ReadableStream, a different realm than node:stream/web, and fromWeb's instanceof check throws the misleading 'must be an instance of ReadableStream. Received an instance of ReadableStream'. Drive body.getReader() into a node Readable instead (see packages/text-indexing-core webStreamToNodeReadable).",
 }
+// The one local rule in the tree, and it is here because no selector can
+// express it. `regionDataMap(name)` prints `name` when a display stores a
+// non-payload, and at all thirteen call sites `name` is the volatile field the
+// map is assigned to — a restatement of a fact one line away. Making the
+// parameter required (it used to default) closed the anonymous message and
+// opened a worse one: a copy-pasted name is a violation report that
+// confidently sends the reader to a different map. Checking it is a comparison
+// between two nodes, and esquery has no back-reference, so
+// `no-restricted-syntax` cannot see it — nor can oxlint, which has no
+// custom-rule surface at all.
+//
+// Only fires where the call is a property value, which is every real one. A
+// local `const` in a test names itself and is left alone.
+const localRules = {
+  rules: {
+    'region-data-map-names-its-field': {
+      meta: {
+        type: 'problem',
+        fixable: 'code',
+        schema: [],
+        messages: {
+          mismatch:
+            'regionDataMap names the field it is stored on, which is `{{key}}`, not `{{name}}`. That name is what a contract violation prints, so a stale one reports the wrong map.',
+          notLiteral:
+            "regionDataMap takes the literal name of the field it is stored on — '{{key}}' — so a contract violation can print it.",
+        },
+      },
+      create(context) {
+        return {
+          CallExpression(node) {
+            const { parent } = node
+            const key =
+              node.callee.type === 'Identifier' &&
+              node.callee.name === 'regionDataMap' &&
+              parent?.type === 'Property' &&
+              parent.value === node &&
+              !parent.computed &&
+              parent.key.type === 'Identifier'
+                ? parent.key.name
+                : undefined
+            if (key !== undefined) {
+              const [name] = node.arguments
+              if (name?.type !== 'Literal' || typeof name.value !== 'string') {
+                context.report({ node, messageId: 'notLiteral', data: { key } })
+              } else if (name.value !== key) {
+                context.report({
+                  node: name,
+                  messageId: 'mismatch',
+                  data: { key, name: name.value },
+                  fix: fixer => fixer.replaceText(name, `'${key}'`),
+                })
+              }
+            }
+          },
+        }
+      },
+    },
+  },
+}
+
 const noExportStar = {
   selector: 'ExportAllDeclaration',
   message:
@@ -305,9 +365,11 @@ export default defineConfig(
       // this keeps the backstop green until the comments are migrated to
       // `oxlint-disable`.
       '@typescript-eslint': tseslint.plugin,
+      local: localRules,
     },
     rules: {
       'react-compiler/react-compiler': 'error',
+      'local/region-data-map-names-its-field': 'error',
     },
   },
   eslintReact.configs['recommended-typescript'],
