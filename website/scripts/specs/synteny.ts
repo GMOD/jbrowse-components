@@ -441,6 +441,39 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
   ]
 }
 
+// The state that flow starts in, shared with `syntenyVideoFixtures.allVsAllLanes`
+// below so the tour of the route and the stills of it open the same app.
+//
+// A PLAIN LGV, which is the launch's own rule rather than a convenience:
+// `launchableTracks` reads the LAUNCHING VIEW's open tracks, and a
+// LinearSyntenyView keeps its synteny track on the level between two genome rows
+// rather than on either row, so a rubberband on a row of this page's stacked
+// figure raises no Launch submenu at all. This view has ecoli_ava open, so it has
+// the offer -- and the lanes it draws are the reading the section that carries
+// the figure is about.
+const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
+  encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
+  {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'K12',
+        loc: 'chr:795,000-815,000',
+        tracks: [
+          {
+            trackId: 'ecoli_ava',
+            type: 'LGVSyntenyDisplay',
+            groupBy: { type: 'mateAssembly' },
+            hideSelfAlignments: true,
+            featureHeight: 14,
+            height: 135,
+          },
+        ],
+      },
+    ],
+  },
+)
+
 // The three frames of the "launch a synteny view from a selection" flow, all
 // starting from the same one-vs-all lane session and the same rubberband drag
 // over ~chr:800,000-808,000 of its 20 kb window. Each frame carries the actions
@@ -448,28 +481,7 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
 // redo the chain) and stops at its own state, with only the height that state
 // needs.
 function launchFromSelectionParts(): ScreenshotSpec[] {
-  const url = sessionSpec(
-    encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
-    {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:795,000-815,000',
-          tracks: [
-            {
-              trackId: 'ecoli_ava',
-              type: 'LGVSyntenyDisplay',
-              groupBy: { type: 'mateAssembly' },
-              hideSelfAlignments: true,
-              featureHeight: 14,
-              height: 135,
-            },
-          ],
-        },
-      ],
-    },
-  )
+  const url = ECOLI_ONE_VS_ALL_LANES
   // the drag is on the scalebar strip above the tracks; the menu it raises
   // collects the launch under "Launch", which the selection frame shows opened
   // so the figure names the entry rather than just the group. This config
@@ -4170,6 +4182,29 @@ export const syntenyVideoFixtures = {
   // what puts it at the top of the dialog's list (the anchor is row 0, then the
   // mates in the track's declared `assemblyNames` order).
   restackAnchor: 'grape',
+  // Where the all-vs-all launch tour starts, which is the state
+  // `multiway_synteny/ecoli_launch_selection` captures: K-12 with the all-vs-all
+  // PAF drawn as an LGVSyntenyDisplay, one lane per other strain. The same const
+  // the three composite frames load, so the film and the stills cannot drift.
+  allVsAllLanes: ECOLI_ONE_VS_ALL_LANES,
+  // The span the tour rubberbands, which is the span the composite's own drag
+  // covers (`launchFromSelectionParts` measures it in pixels; this names it).
+  //
+  // It has to reach every strain, or the dialog opens on fewer rows than the
+  // page's five and the reorder has less to move. It does: all four mates carry
+  // K-12-side blocks across chr:800,000-808,000 in all_vs_all.paf, and it is a
+  // shared-backbone window rather than the paa operon `ecoli_one_vs_all` uses --
+  // that locus is the one place three of the four strains align to nothing, so a
+  // selection inside it discovers one mate and degenerates to the pairwise case.
+  allVsAllSpan: { start: 'chr:800,000', end: 'chr:808,000' },
+  // The row the tour moves, and the order it moves it out of. The dialog lists
+  // the anchor first and then the mates in the TRACK's declared `assemblyNames`
+  // order (pickMatesForRegion), which for ecoli_ava is
+  // K12 / Sakai / CFT073 / NCTC86 / IAI39 -- so IAI39 opens last and reaches the
+  // row under K-12 in three arrow clicks. Each click renames the button it was
+  // made on, since PanelList's MoveButton carries the panel's position in its
+  // own aria-label.
+  allVsAllMoved: 'IAI39',
   // Where the dotplot reorder tour starts: `mcscan_synteny/dotplot` above
   // MINUS its `autoDiagonalize`, so the axes open in each assembly's own index
   // order and the move the page's figure is the result of is still to happen.

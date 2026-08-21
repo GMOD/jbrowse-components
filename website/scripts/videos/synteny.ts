@@ -1,7 +1,8 @@
 // The tours through the two comparative import forms -- the three-strain
 // H. pylori stack and the T2T-HG002 self-alignment dotplot -- the reorder that
-// re-sorts a dotplot axis once the plot is already up, and the restack that
-// rebuilds a whole stack around one locus.
+// re-sorts a dotplot axis once the plot is already up, and the two launches that
+// rebuild a whole stack around one locus -- a reference-anchored .blocks table
+// and an all-vs-all PAF.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
@@ -11,6 +12,9 @@ import { RUBBERBAND } from './shared.ts'
 import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
+  allVsAllLanes,
+  allVsAllMoved,
+  allVsAllSpan,
   emptySyntenyForm,
   restackAnchor,
   restackLanes,
@@ -462,6 +466,134 @@ export const syntenyVideos: VideoSpec[] = [
       },
       { type: 'waitForAppSettled', timeout: 180000 },
       { type: 'delay', ms: 3000 },
+    ],
+    tailMs: 4500,
+  },
+
+  // THE SAME ROUTE ON A COMPLETE GRAPH, where what the arrows change is the
+  // whole point. allvsall_synteny.md flattens this into a three-panel composite
+  // -- `multiway_synteny/ecoli_launch_from_selection`, the selection, the dialog
+  // and the launched stack -- whose middle panel is a dialog with five
+  // reorderable rows and no way to show one being moved. The section's own
+  // sentence is the claim the stills leave hanging: "Ribbons are drawn between
+  // neighbouring rows only, so the order determines which comparisons the view
+  // can show. That is why IAI39 sits directly below K-12."
+  //
+  // Five rows rather than the restack's three, and none of them dropped. The
+  // dialog lists the anchor plus one mate per assembly the TRACK declares that
+  // aligns to the selection (pickMatesForRegion), and ecoli_ava declares the
+  // same five samples all_vs_all.paf was built from -- so nothing lands in the
+  // `unconfigured` line the grape/peach/cacao dialog carries, and rows.length of
+  // 5 is over PanelList's BULK_SELECT_THRESHOLD, which grows the Select
+  // all/none row under the list. Both are why this dialog is the frame's
+  // constraint.
+  //
+  // The reorder is THREE clicks, and they are three different buttons: IAI39
+  // opens last, in the track's declared order, and MoveButton carries the
+  // panel's position in its own aria-label, so every click renames the control
+  // it was made on. That is the half of this dialog a still cannot carry at all.
+  //
+  // It ends on "Replace current view", as the composite's own third frame does:
+  // five genome rows and four bands do not share a window with the lane view
+  // they were launched from, and the alternative is a `scrollTo` down to a
+  // result that would then be the only thing in frame anyway.
+  {
+    name: 'synteny/allvsall_launch_from_selection',
+    description:
+      "From one strain's lanes to the five-strain stack for one locus: drag the scale bar, Launch, Linear synteny view, move IAI39 up to sit under K-12 with the dialog's arrows, and replace the lane view with the stack",
+    url: allVsAllLanes,
+    // Sized to the DIALOG, which is the tallest of the three states and the
+    // subject. MUI caps a dialog's paper at the viewport minus 64px, and
+    // `multiway_synteny/ecoli_launch_dialog` -- the same five rows, the same
+    // Select all/none row, the same one-line dataset field -- fits in 622 of
+    // viewport with almost nothing spare. The dialog's paper is capped at MUI's
+    // `sm` (600px) whichever way the frame widens, so that measurement carries
+    // from the stills' 1500 to the corpus width unchanged. 640 leaves it 576.
+    //
+    // The launched stack is the other tall state and comes in under that:
+    // `multiway_synteny/ecoli_launch_result` measures five collapsed rows and
+    // four bands at 620, and the bands are a budget rather than a constant
+    // (levelHeightForCount splits 320px over four levels), so a wider frame does
+    // not grow it. So the last frame leaves ~20px of page background under the
+    // app, deliberately: the run reports that direction and the other one
+    // truncates the dialog. The blank under the lanes early on is the dialog's
+    // room.
+    viewportHeight: 640,
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    steps: [
+      // The lanes, held: one per strain, which is the reading this section is
+      // going FROM.
+      { type: 'delay', ms: 2500 },
+      // Loci rather than pixels on both ends. The composite's own drag is a
+      // measured pair (`launchFromSelectionParts`), which is correct only at the
+      // width it was measured at; `allVsAllSpan` names the same span in bases,
+      // and `band` takes the y off the scalebar strip while the x stays on the
+      // locus.
+      {
+        type: 'drag',
+        fromAnchor: { locus: allVsAllSpan.start, band: RUBBERBAND },
+        toAnchor: { locus: allVsAllSpan.end, band: RUBBERBAND },
+        say: 'Drag across the scale bar',
+        hold: 900,
+      },
+      { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
+      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1200 },
+      { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
+      { type: 'delay', ms: 700 },
+      {
+        type: 'click',
+        selector: LAUNCH_SYNTENY_VIEW,
+        say: 'Linear synteny view',
+      },
+      { type: 'waitForText', text: 'Panels, top to bottom' },
+      // The dialog opens on a spinner and the rows arrive from the worker, which
+      // reads the whole PAF -- the lane display above has already pulled it, so
+      // it is a cache hit in the same worker. Waiting on the LAST panel's arrow
+      // is also the assertion that all four mates came back: a discovery that
+      // found fewer would leave IAI39 somewhere other than panel 5 and fail here
+      // rather than filming a short dialog.
+      {
+        type: 'waitForSelector',
+        selector: panelArrow(allVsAllMoved, 5, 'up'),
+        timeout: 180000,
+      },
+      // Long enough to read the order the dialog opens in, and the line above
+      // the list saying what the order decides.
+      { type: 'delay', ms: 3000, say: 'One panel per strain that aligns' },
+      {
+        type: 'click',
+        selector: panelArrow(allVsAllMoved, 5, 'up'),
+        say: `Move ${allVsAllMoved} up`,
+        hold: 1400,
+      },
+      {
+        type: 'click',
+        selector: panelArrow(allVsAllMoved, 4, 'up'),
+        hold: 1400,
+      },
+      {
+        type: 'click',
+        selector: panelArrow(allVsAllMoved, 3, 'up'),
+        hold: 3000,
+      },
+      {
+        type: 'click',
+        text: 'Replace current view',
+        say: 'Replace current view',
+      },
+      // Camera stays on: the stack arriving IS the payoff, and all four bands
+      // read the file the lanes and the mate discovery have already pulled into
+      // the worker.
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 180000,
+      },
+      { type: 'waitForAppSettled', timeout: 180000 },
+      // The stack, with the row the arrows moved sitting under the anchor.
+      { type: 'delay', ms: 3500 },
     ],
     tailMs: 4500,
   },
