@@ -38,6 +38,8 @@ the same on any pair of assemblies you have.
 
 ## Aligning the assemblies
 
+<!-- from: scripts/build_hpylori_synteny.sh -->
+
 ```bash
 minimap2 -c -x asm20 --eqx hpylori_j99.fa hpylori_26695.fa > 26695_vs_j99.paf
 ```
@@ -66,6 +68,8 @@ fine: JBrowse loads `.delta` and `.chain` directly, and
 
 Both genomes have to be assemblies before the alignment can reference them:
 
+<!-- from: scripts/build_hpylori_synteny.sh -->
+
 ```bash
 jbrowse add-assembly hpylori_26695.fa --load copy
 jbrowse add-assembly hpylori_j99.fa --load copy
@@ -92,7 +96,17 @@ right-click inside the box and choose **Linear synteny view**.
 
 ## Stacking the three strains
 
-The linear synteny view is not limited to two genomes:
+A band is drawn between adjacent rows only, so a 26695 / CHC155 / J99 stack
+needs the two adjacent alignments rather than the one the dotplot opened:
+
+<!-- from: scripts/build_hpylori_synteny.sh -->
+
+```bash
+minimap2 -c -x asm20 --eqx hpylori_chc155.fa hpylori_26695.fa > 26695_vs_chc155.paf
+minimap2 -c -x asm20 --eqx hpylori_j99.fa hpylori_chc155.fa > chc155_vs_j99.paf
+```
+
+Add the third assembly and both alignments the same way as above, then:
 
 1. **Add → Linear synteny view**, then switch to **Manual**.
 2. Pick an assembly per row, with **Add row** for the third.
@@ -118,15 +132,14 @@ building one from a session-spec URL.
 The ribbons connect aligned sequence rather than annotated genes. The gene
 tracks color independently, and in bacteria the gene symbol is effectively the
 ortholog id, since NCBI reuses standardized symbols across strains. On each gene
-track, open the track menu, then **Color by...** then **Attribute...**, and
-enter `gene`. The dialog prints the expression it is about to write, and every
+track, open the track menu and pick **Color by... → Attribute...**, then enter
+`gene`. The dialog prints the expression it is about to write, and every
 distinct value of that attribute gets its own deterministic color, so an
-ortholog carries one color down all three panels and a gene's synteny becomes
-legible by color alone.
+ortholog carries one color down all three panels.
 
 Features with no value for that attribute are painted a neutral grey rather than
-given a color of their own, which matters here: two thirds of the genes in this
-window carry only a locus tag.
+given a color of their own, which matters here: most of the genes in this window
+carry only a locus tag.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 

@@ -58,6 +58,8 @@ annotation for any oat assembly.
 jcvi turns the GFF3 into the BED the adapter also reads, one primary transcript
 per gene:
 
+<!-- from: scripts/build_oat_homoeologs.sh -->
+
 ```bash
 python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
   --primary_only oat.gff3.gz -o oat.all.bed
@@ -82,6 +84,8 @@ as sequence is over 11 GB; as names and lengths it is a few hundred bytes. See
 
 Naming one prefix twice is a self-comparison, which jcvi handles: it drops the
 gene-against-itself diagonal, then chains what is left into syntenic blocks.
+
+<!-- from: scripts/build_oat_homoeologs.sh -->
 
 ```bash
 diamond makedb --in oat.pep -d oat.pep
@@ -132,6 +136,8 @@ invisible in a count and fatal in a figure whose colour _is_ divergence.
 Nothing publishes these. Ensembl declares `dn` and `ds` in every homology export
 and fills neither, in any division, so they are computed:
 
+<!-- from: scripts/build_oat_homoeologs.sh -->
+
 ```bash
 python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz \
   --key record --min-syn-subs 3 -o oat.kaks.tsv
@@ -180,9 +186,9 @@ reads. A self-comparison names one assembly twice, in `blockAssemblies`, in
 
 `attributeColumns` names the columns after the two gene columns. Each becomes a
 feature attribute, so it shows in the detail panel when a link is clicked, and
-`dn` with `ds` together drive **Color by... → dN/dS**. `syn_subs` and `fisher_p`
-are the evidence behind a colour: how many synonymous differences the ratio
-divided by, and a Fisher exact test against neutrality.
+`dn` with `ds` together drive the palette button's **dN/dS**. `syn_subs` and
+`fisher_p` are the evidence behind a colour: how many synonymous differences the
+ratio divided by, and a Fisher exact test against neutrality.
 
 That ramp is read against 1 rather than against its own maximum: below it a gene
 is under purifying selection, above it under positive selection, and which side

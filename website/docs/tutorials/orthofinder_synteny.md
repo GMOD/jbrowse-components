@@ -90,9 +90,9 @@ diploid donors are drawn short and the hexaploid fills the frame.
 
 The track lists every genome in the set, so any pair of them opens as a two-row
 view with no second file. This one puts Aegilops tauschii's seven chromosomes
-over bread wheat 4A alone, with **Color by... → Query** painting each link by
-the tauschii chromosome it leaves rather than by the single chromosome they all
-arrive at.
+over bread wheat 4A alone, with the palette button's **Query** painting each
+link by the tauschii chromosome it leaves rather than by the single chromosome
+they all arrive at.
 
 <Figure caption="Aegilops tauschii's seven D-genome chromosomes over bread wheat chromosome 4A, from the same wheat_orthogroups track. Color by → Query gives each chromosome its own color, and 4A resolves into three blocks in order along it: 4D, then 5D, then 7D." src="/img/orthofinder_synteny/wheat_4a.png" />
 
@@ -287,6 +287,8 @@ A gene-level synteny view never reads a base, so these assemblies are
 from the `##sequence-region` header of each GFF3. The wheat lineage as sequence
 is tens of gigabytes to host; as names and lengths it is a few kilobytes, and
 the view is the same.
+
+<!-- from: scripts/build_orthofinder_synteny.sh -->
 
 ```bash
 jbrowse add-assembly wheat.chrom.sizes --name wheat --load copy

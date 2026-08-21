@@ -51,9 +51,9 @@ file names none of its columns, so `blockAssemblies` does, by position. With
 placeholder ids, a grape, peach and cacao table reads:
 
 ```
-grape01   peach01   cacao01
-grape02   peach02   cacao02
-grape03   .         .
+grape01	peach01	cacao01
+grape02	peach02	cacao02
+grape03	.	.
 ```
 
 A real cell holds whatever that genome's annotation calls the gene, which for
@@ -100,9 +100,9 @@ anchors support, which is why the run below pins it to the highest-scoring one.
 At `--iter=2`:
 
 ```
-grape01   peach01   peach01b
-grape02   peach02   .
-grape03   .         .
+grape01	peach01	peach01b
+grape02	peach02	.
+grape03	.	.
 ```
 
 Name that column in `blockAssemblies` like any other, `peach` twice with
@@ -113,10 +113,10 @@ lists the genomes the track can render rather than the file's columns.
 The other convention is a copy per row, repeating the grape id:
 
 ```
-grape01   peach01    cacao01
-grape02   peach02a   cacao02
-grape02   peach02b   cacao02
-grape03   .          .
+grape01	peach01	cacao01
+grape02	peach02a	cacao02
+grape02	peach02b	cacao02
+grape03	.	.
 ```
 
 Both rows resolve, so the grape-peach band draws a ribbon from `grape02` to each
@@ -242,7 +242,8 @@ that the table format has nowhere to keep:
 ```
 
 Each named column becomes a feature attribute, so it shows in the detail panel
-and gets its own entry in **Color by...**, scaled to the values in view.
+and gets its own entry in the palette button's menu, scaled to the values in
+view.
 
 The script's refName and strand handling is described in the
 [pairwise MCScan tutorial](/docs/tutorials/mcscan_synteny_grape_peach#coming-from-mcscanx).
@@ -282,9 +283,10 @@ python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
 
 Each row carries what the inference measured, so `attributeColumns` can name
 `identity`, `homology_identity` and `goc_score` the same way the scored MCScanX
-table above names `score`. Naming a partner species the export does not have
-exits with the list of the ones it does. [](/docs/tutorials/homoeolog_synteny)
-uses this route for one panel of its figure.
+table above names `score`. A partner species the export does not have writes no
+table and says nothing, so check each `--species` name against the file's own
+`homology_species` column. [](/docs/tutorials/homoeolog_synteny) uses this route
+for one panel of its figure.
 
 ### From reciprocal best BLAST hits
 
@@ -400,7 +402,6 @@ peach-cacao-grape:
       {
         "type": "LinearSyntenyView",
         "displayName": "Peach - Cacao - Grape (MCScan blocks)",
-        "showColorLegend": false,
         "init": {
           "views": [
             { "assembly": "peach" },
@@ -421,9 +422,9 @@ peach-cacao-grape:
 ```
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0-1 (peach-cacao),
-`tracks[1]` rows 1-2 (cacao-grape), both served by the same track. One-time load
-settings go under `init`; `displayName` and `showColorLegend` are ordinary view
-properties beside `type`.
+`tracks[1]` rows 1-2 (cacao-grape), both served by the same track. `init` takes
+any declared view property as well as the launch commands, so `displayName` sits
+beside `type` here only because it is plain state either way.
 
 `autoDiagonalize` reorders and flips each row's chromosomes on load so the
 ribbons run along the diagonal. `colorBy: "reference"` anchors every band on the
@@ -466,7 +467,7 @@ every pair at once, and **Group by... → Mate assembly** splits them into a lan
 per genome. That reading scales: adding a genome adds a lane, not a panel, so
 the question becomes which of these kept it.
 
-<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: the four rosids keep most of the block, tomato one gene of it, arabidopsis a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, so the lanes read as presence and absence down a column: peach, cacao, poplar and citrus keep most of the block, arabidopsis a scattered few, and tomato, the one asterid, a single gene." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Reproduce it end to end
 

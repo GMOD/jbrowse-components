@@ -66,6 +66,8 @@ only inside the PAF, so make a separate concatenated copy for minimap2 rather
 than renaming the originals. The haplotype is always `1` here, since these are
 haploid bacterial assemblies:
 
+<!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
+
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
   # '>chr' -> '>K12#1#chr'
@@ -77,18 +79,20 @@ minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 
 `-c` emits the base-level CIGAR the linear synteny view needs.
 
-`-X` is required. Without it each sequence's best hit is its own perfect
-diagonal, which demotes every cross-strain alignment to a secondary and leaves a
-five-line PAF and an empty synteny view. `-X` skips those diagonals and the
-reciprocal copy of each pair, leaving every cross-strain pair once. Paralogy is
-untouched, which the [one-vs-all](#one-strain-against-all-the-others) mode below
-reads as a strain's own repeats (rRNA operons, IS elements).
+`-X` is required. Without it each sequence's best hit is its own diagonal and
+the cross-strain alignments come back as secondaries, so the synteny view opens
+empty. `-X` skips those diagonals and the reciprocal copy of each pair, leaving
+every cross-strain pair once. Paralogy is untouched, which the
+[one-vs-all](#one-strain-against-all-the-others) mode below reads as a strain's
+own repeats (rRNA operons, IS elements).
 
 ## Setting up the five assemblies
 
 The stacked view has one row per strain, so each strain FASTA must be a JBrowse
 assembly whose name matches an entry in the track's `assemblyNames`. Compress
 and index each one, then load it:
+
+<!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
@@ -244,7 +248,6 @@ means four bands, so `tracks` has four entries, all served by the same track:
             ["ecoli_ava"],
             ["ecoli_ava"]
           ],
-          "drawCurves": false,
           "minAlignmentLength": 10000,
           "collapseEmptyRows": true
         }
@@ -292,6 +295,8 @@ its seqid becomes `chr` to match the assembly, and its plasmid features are
 dropped rather than renamed, since the assembly kept only the chromosome.
 Skipping that second filter lands Sakai's two plasmids on `chr` at coordinates
 that mean nothing.
+
+<!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
 ```bash
 for strain in K12 Sakai CFT073 NCTC86 IAI39; do
@@ -403,7 +408,7 @@ each insertion and deletion is drawn where it falls; the palette button's **Show
 color legend** names the colors, and **CIGAR display mode** in the view menu
 switches between colored indels, transparent ones, and none.
 
-<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+<Figure caption="Rubberband-select a window of the shared backbone, then Launch → Linear synteny view." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
 ## Checking a gap against the PAF
 
