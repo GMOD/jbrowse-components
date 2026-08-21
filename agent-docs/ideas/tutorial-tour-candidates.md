@@ -12,17 +12,19 @@ the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
 holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
-Coverage: **16 of 43 tutorials carry a tour** — `analyze_trio`, `bxd_qtl`,
-`cancer_sv`, `dog10k_selection`, `genomes_proteins` (3), `hg002_haplotypes`,
-`hic_structural_variants`, `mcscan_synteny_grape_peach`, `methylation`,
+Coverage: **19 of 43 tutorials carry a tour** — `allvsall_synteny`,
+`analyze_trio`, `bxd_qtl`, `cancer_sv`, `chromhmm`, `dog10k_selection`,
+`genomes_proteins` (3), `hg002_haplotypes`, `hic_structural_variants`,
+`mcscan_synteny_grape_peach`, `methylation`,
 `multiway_synteny_grape_peach_cacao`, `pangenome_ecoli` (3), `pangenome_hprc`
-(2), `repeatmasker_classes`, `sv_visualization_cgiab`, `synteny_visualization`,
-`tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 27 do not.
+(2), `repeatmasker_classes`, `sv_multisamples`, `sv_visualization_cgiab`,
+`synteny_visualization`, `tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 24
+do not.
 
-**Candidates 1 to 4, 7, 9 and 11 are filmed and landed** on 2026-08-21, one clip
-serving two pages for 3. Their entries stay below with what each actually cost
-and what it corrected, because the next tour on those pages starts from them.
-**What is left is 5, 6, 8, 10, 12, 13 and 14**, and 14 wants its page
+**Ten candidates are filmed and landed** on 2026-08-21 — 1 to 4, then 6, 7, 8, 9,
+11 and 12, one clip serving two pages for 3. Their entries stay below with what
+each actually cost and what it corrected, because the next tour on those pages
+starts from them. **What is left is 5, 10, 13 and 14**, and 14 wants its page
 restructured first.
 
 Every candidate below came out of the ten-agent tutorial audit
@@ -146,11 +148,14 @@ comparison figure.
    to make a comparison one track can make by itself. Risk: it is a pileup, and
    `website/CLAUDE.md` warns those block the main thread under swiftshader — try
    `--headed` first.
-6. **`sv/multisample_sort`** (`sv_multisamples.md`) — right-click →
-   `Sort by genotype`, 3,202 unordered rows re-laying into three contiguous
-   bands, then `Clustering → Cluster rows by genotype...`. Pure re-layout whose
-   before and after are two pictures with no visual link. Risk: the callset
-   streams from EBI FTP.
+6. **`sv/multisample_sort`** (`sv_multisamples.md`) — **FILMED**, 1236px frame,
+   34s. The page's only figure of that track is ALREADY sorted, by clicking, in
+   its own `actions` — so the order a reader lands in appears nowhere, and
+   neither does the dendrogram. The right-click is anchored by locus, since
+   `sortByGenotype` takes the id of the variant under the pointer and a
+   right-click between records offers a menu with no sort item in it. The sort
+   stays on camera (synchronous over loaded cell data); only the clustering RPC
+   is cut.
 7. **`hic/two_regions`** (`hic_structural_variants.md`) — **FILMED**, 1124px
    frame, 21s. Types the FIGURE's own two-region locstring rather than the one
    this entry proposed, which appears nowhere in the tree: the tour ends on the
@@ -160,11 +165,15 @@ comparison figure.
    goes on the PRESS here, not on the wait after it), and the bottom matrix ran
    12px past the figure's 1100. The scan two sections down is still not filmed;
    it prints a ranking, and a page can print text.
-8. **`synteny/allvsall_launch_from_selection`** (`allvsall_synteny.md`) — a
-   rubberband on the scalebar → `Launch → Linear synteny view` → a dialog
-   listing every assembly it found **with reorder arrows** → a one-row view
-   becomes a five-row stack. The page flattens it into a three-link composite
-   whose middle panel is a dialog no still can show being reordered.
+8. **`synteny/allvsall_launch_from_selection`** (`allvsall_synteny.md`) —
+   **FILMED**, 640px frame (sized to the dialog), 33s, reusing every helper
+   candidate 9 added. The reorder is THREE clicks on three different buttons:
+   `MoveButton` carries the panel's position in its own aria-label, so each click
+   renames the control the next one is made on — which is why a still cannot show
+   this dialog being used. Five rows put it over `BULK_SELECT_THRESHOLD`, so it
+   also grows a Select all/none row. The clip's last frame is a different row
+   order from the composite's third still, deliberately: that is what makes the
+   page's "IAI39 sits directly below K-12" checkable.
 9. **`synteny/restack_around_locus`** (`multiway_synteny_grape_peach_cacao.md`)
    — **FILMED**, 640px frame (sized to the dialog), 28s. The section said to
    drag "any row's scale bar", which is false in the state its own figure shows:
@@ -187,9 +196,15 @@ comparison figure.
     label nor a testid, so it has `dotplot_view_menu` now. The figure's session
     could not be reused: it carries `autoDiagonalize`, which runs as the view
     opens, before a camera would be on.
-12. **`epigenomics/chromhmm_cluster`** (`chromhmm.md`) — cluster the
-    127-epigenome track. The page's only figure is already a *result* of that
-    run, so the reader takes the tidy order on faith.
+12. **`epigenomics/chromhmm_cluster`** (`chromhmm.md`) — **FILMED**, 890px
+    frame, 21s. The figure's session sets `runClustering: true`, an init flag the
+    autorun fires as the display first reports ready, so it could not be the
+    tour's session — same shape as the dotplot's `autoDiagonalize`. Unclustered
+    is not unordered here: `config_demo.json` pins a 127-line `rowOrder` in
+    Roadmap tissue order, so the opening frame is a clean tissue stripe over a
+    painting with no block in it and the run trades one for the other. On camera
+    throughout: the run names its own phases over a determinate bar, which is
+    the page's evidence rather than a spinner.
 13. **`pangenome/tier_to_fine`** (`pangenome_ecoli.md`) — the coarse-to-fine
     ladder: find the arrowed IS5 bubble on the tier lane, then open the same span
     through the fine index. The page states it as prose it cannot show and spends

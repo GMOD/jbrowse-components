@@ -7,12 +7,17 @@ description: Live state of the tutorial video-tour thread — which candidates a
 
 ## State
 
-**Seven candidates are filmed and landed** (2026-08-21): 1 to 4
+**Ten candidates are filmed and landed** (2026-08-21): 1 to 4
 (`variants/trio_phased_matrix`, `synteny/hg002_dotplot_import`,
-`sv/derivative_allele_route` over two pages, `repeats/painting_display_switch`)
-and then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
-`synteny/dotplot_reorder`). Coverage is **16 tutorials of 43**. What is left is
-5, 6, 8, 10, 12, 13 and 14.
+`sv/derivative_allele_route` over two pages, `repeats/painting_display_switch`),
+then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
+`synteny/dotplot_reorder`), then 6, 8 and 12 (`sv/multisample_sort`,
+`synteny/allvsall_launch_from_selection`, `epigenomics/chromhmm_cluster`).
+Coverage is **19 tutorials of 43**. What is left is 5, 10, 13 and 14.
+
+**5 and 13 are the two whose risk nobody has retired**: both are pileups or
+graph fetches, and `website/CLAUDE.md` warns those block the main thread under
+swiftshader. Try `--headed` first rather than assuming a spec is wrong.
 
 - **[ideas/tutorial-tour-candidates.md](../ideas/tutorial-tour-candidates.md)**
   — the ranked list, and the one to work from. Each filmed entry now records
