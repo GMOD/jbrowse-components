@@ -21,7 +21,11 @@ const region: Region = {
   end: 200,
 }
 
-function setup() {
+// `volvox` also answers to `vvx`, the shape an `aliases` entry gives a session.
+function setup({
+  assemblyNames = ['volvox', 'volvox_ins'],
+  anchorRegion = region,
+}: { assemblyNames?: string[]; anchorRegion?: Region } = {}) {
   const calls: {
     sessionId: string
     method: string
@@ -38,13 +42,20 @@ function setup() {
         return Promise.resolve({ mates: [], unconfigured: [] })
       },
     },
+    assemblyManager: {
+      getCanonicalAssemblyName: (name: string) =>
+        ({ vvx: 'volvox', volvox: 'volvox' })[name],
+    },
   } as unknown as AbstractSessionModel
   const track = schema.create({
     trackId: 't1',
-    assemblyNames: ['volvox', 'volvox_ins'],
+    assemblyNames,
     adapter: { type: 'PAFAdapter', uri: 'x.paf' },
   })
-  return { discover: makeMateDiscovery({ session, track, region }), calls }
+  return {
+    discover: makeMateDiscovery({ session, track, region: anchorRegion }),
+    calls,
+  }
 }
 
 // The wiring the dialog's cancel and its progress label depend on: the handles
@@ -69,4 +80,46 @@ test('everything the worker-side reduction needs reaches the RPC', async () => {
   // they are read from lives on this side of the boundary
   expect(args.trackAssemblyNames).toEqual(['volvox', 'volvox_ins'])
   expect(args.anchorAssembly).toBe('volvox')
+})
+
+// The worker has no assembly manager, and the two comparisons it runs — "is
+// this mate the anchor's own lane" and "is every declared name the anchor, i.e.
+// a self-alignment" — are plain string equality against `trackAssemblyNames`.
+// So the anchor has to arrive spelled the way the TRACK spells it, not the way
+// the view happens to be open.
+//
+// A view reaches here on an alias routinely: `getSyntenyTracks` resolves
+// aliases to decide the track is launchable at all, so the launch is offered
+// for a track whose declared name the region does not share.
+test("the anchor crosses to the worker in the track's spelling", async () => {
+  const { discover, calls } = setup({
+    anchorRegion: { ...region, assemblyName: 'vvx' },
+  })
+  await discover(createStopToken(), jest.fn())
+  expect(calls[0]!.args.anchorAssembly).toBe('volvox')
+})
+
+// A self-alignment track — every declared name the anchor's, a genome against
+// its own paralogy. Left as `vvx` this reported no self-alignment, which drops
+// the one lane that IS the comparison and leaves the dialog saying nothing
+// aligned.
+test('a self-alignment track resolves the anchor to its declared name', async () => {
+  const { discover, calls } = setup({
+    assemblyNames: ['volvox', 'volvox'],
+    anchorRegion: { ...region, assemblyName: 'vvx' },
+  })
+  await discover(createStopToken(), jest.fn())
+  expect(calls[0]!.args.anchorAssembly).toBe('volvox')
+})
+
+// A track declaring nothing the region resolves to keeps the region's own name,
+// which is the only answer available and what the comparisons degraded to
+// before. An all-vs-all file's undeclared PanSN samples land here.
+test('an anchor no declared name matches stays as the region spells it', async () => {
+  const { discover, calls } = setup({
+    assemblyNames: ['grape', 'peach'],
+    anchorRegion: { ...region, assemblyName: 'vvx' },
+  })
+  await discover(createStopToken(), jest.fn())
+  expect(calls[0]!.args.anchorAssembly).toBe('vvx')
 })

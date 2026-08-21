@@ -7,6 +7,14 @@ import {
 } from './matePanelNavigation.ts'
 import { createPanelStack } from './testEnv.ts'
 
+// The one method `matePanelIndexes` needs of an assembly manager. `hg38` here
+// answers to `GRCh38` as well, which is what a session with an `aliases` entry
+// gives a view opened on either spelling.
+const assemblyManager = {
+  getCanonicalAssemblyName: (name: string) =>
+    ({ GRCh38: 'hg38', hg38: 'hg38' })[name],
+}
+
 // A published haplotype-to-haplotype chain: one 10 Mb block, matching 1:1
 // except for a 1000 bp deletion in the mate a tenth of the way in.
 function chainFeature() {
@@ -32,6 +40,7 @@ test('a two-panel stack moves the panel opposite the one clicked', () => {
       panelAssemblies: ['hg002v1.2', 'hg002v1.2'],
       anchorIndex: 0,
       mateAssemblyName: 'hg002v1.2',
+      assemblyManager,
     }),
   ).toEqual([1])
   expect(
@@ -39,6 +48,7 @@ test('a two-panel stack moves the panel opposite the one clicked', () => {
       panelAssemblies: ['hg002v1.2', 'hg002v1.2'],
       anchorIndex: 1,
       mateAssemblyName: 'hg002v1.2',
+      assemblyManager,
     }),
   ).toEqual([0])
 })
@@ -52,6 +62,7 @@ test('a middle panel moves both its neighbours and no further', () => {
       panelAssemblies: ['hg38', 'hg38', 'hg38', 'hg38'],
       anchorIndex: 1,
       mateAssemblyName: 'hg38',
+      assemblyManager,
     }),
   ).toEqual([0, 2])
 })
@@ -64,6 +75,7 @@ test('a neighbour on another assembly is left alone', () => {
       panelAssemblies: ['hg38', 'mm10', 'galGal6'],
       anchorIndex: 1,
       mateAssemblyName: 'galGal6',
+      assemblyManager,
     }),
   ).toEqual([2])
 })
@@ -76,8 +88,60 @@ test('a mate with no assembly moves nothing', () => {
       panelAssemblies: ['hg38', 'hg38'],
       anchorIndex: 0,
       mateAssemblyName: undefined,
+      assemblyManager,
     }),
   ).toEqual([])
+})
+
+// A panel holds the name the session opened it on and a mate holds the one the
+// adapter resolved out of the track's `assemblyNames`, so one assembly reaches
+// this comparison under two spellings. Raw `===` left the menu item absent on
+// exactly the stack it is for.
+test('a panel opened on an alias of the mate assembly still moves', () => {
+  expect(
+    matePanelIndexes({
+      panelAssemblies: ['GRCh38', 'GRCh38'],
+      anchorIndex: 0,
+      mateAssemblyName: 'hg38',
+      assemblyManager,
+    }),
+  ).toEqual([1])
+})
+
+// Degrading to the raw name is what keeps an all-vs-all file's undeclared PanSN
+// samples working: the assembly manager knows none of them, and they still have
+// to compare equal to themselves.
+test('a name the assembly manager does not know compares as written', () => {
+  expect(
+    matePanelIndexes({
+      panelAssemblies: ['grape#1', 'grape#1'],
+      anchorIndex: 0,
+      mateAssemblyName: 'grape#1',
+      assemblyManager,
+    }),
+  ).toEqual([1])
+  expect(
+    matePanelIndexes({
+      panelAssemblies: ['grape#1', 'grape#2'],
+      anchorIndex: 0,
+      mateAssemblyName: 'grape#3',
+      assemblyManager,
+    }),
+  ).toEqual([])
+})
+
+// `panelAssemblies` is indexed by panel position, so a view that has not
+// initialized leaves a hole rather than shortening the list. Resolving names in
+// place is what keeps the index of every panel after it correct.
+test('an uninitialized panel holds its index open', () => {
+  expect(
+    matePanelIndexes({
+      panelAssemblies: [undefined, 'GRCh38', 'hg38'],
+      anchorIndex: 2,
+      mateAssemblyName: 'hg38',
+      assemblyManager,
+    }),
+  ).toEqual([1])
 })
 
 // The whole reason this is not "Center on feature": the visible window, walked

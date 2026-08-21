@@ -106,7 +106,12 @@ export function createDisplay({
         // Answers for any name: the two panels sit on different assemblies, and
         // the readiness reactions a displayed region wakes only need something
         // to ask.
-        assemblyManager: { get: () => testAssembly() },
+        assemblyManager: {
+          get: () => testAssembly(),
+          // knows no aliases, so every assembly comparison degrades to the raw
+          // name — which is what these fixtures spell on both sides
+          getCanonicalAssemblyName: () => undefined,
+        },
         getTrackById: (id: string) =>
           id === 'test_track' ? trackConfig : undefined,
       }),
@@ -195,7 +200,10 @@ export function createPanelStack() {
     .volatile(() => ({
       rpcManager: {},
       theme: createJBrowseTheme(),
-      assemblyManager: { get: () => undefined },
+      assemblyManager: {
+        get: () => undefined,
+        getCanonicalAssemblyName: () => undefined,
+      },
     }))
 
   const session = Session.create(

@@ -105,6 +105,40 @@ export function canonicalAssemblyNames(
     .map(name => assemblyManager.getCanonicalAssemblyName(name) ?? name)
 }
 
+/**
+ * Whether two names name the same assembly, resolving aliases on both sides.
+ *
+ * The pairwise counterpart to {@link canonicalAssemblyNames}, for the two
+ * places a list cannot be mapped: an index-aligned array, which that function's
+ * empty-name filter would desync, and a comparison where one side must come
+ * back in the caller's own spelling rather than the canonical one.
+ *
+ * **Both sides, or it buys nothing.** The names meeting at these comparisons
+ * come from different places — a view holds what the session opened it on, a
+ * track config holds what its author wrote, and a synteny mate holds whatever
+ * the adapter resolved a PanSN prefix to. Any two of those can be aliases of
+ * one assembly, and `===` says no.
+ *
+ * A name the assembly manager doesn't know compares as written, the same
+ * degradation {@link canonicalAssemblyNames} makes and for the same reason: an
+ * all-vs-all file carries sample names no config declares, and those still have
+ * to compare equal to themselves.
+ */
+export function isSameAssemblyName(
+  a: string | undefined,
+  b: string | undefined,
+  assemblyManager: AssemblyNameResolver,
+) {
+  if (!a || !b) {
+    return false
+  }
+  return (
+    a === b ||
+    (assemblyManager.getCanonicalAssemblyName(a) ?? a) ===
+      (assemblyManager.getCanonicalAssemblyName(b) ?? b)
+  )
+}
+
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
     | string[]

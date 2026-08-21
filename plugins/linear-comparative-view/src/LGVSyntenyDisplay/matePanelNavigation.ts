@@ -1,4 +1,5 @@
 import { assembleLocStringRaw } from '@jbrowse/core/util'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { isViewModel } from '@jbrowse/core/util/types'
 import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 
@@ -7,6 +8,7 @@ import { getCigar } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -63,15 +65,26 @@ export function containingPanelStack(
  * A self-alignment (both panels on one assembly, a genome against its own
  * haplotype or paralogy) passes that filter in both directions, which is the
  * case this exists for.
+ *
+ * The assembly test is alias-aware, and has to be: a panel holds the name the
+ * session opened it on while a mate holds the one the adapter resolved out of
+ * the track's `assemblyNames`, so the two spell one assembly differently often
+ * enough. `panelAssemblies` stays index-aligned with `stack.views` — it is
+ * indexed by panel position and carries `undefined` for a view that has not
+ * initialized — which is why this resolves each name in place rather than
+ * mapping the list through `canonicalAssemblyNames`, whose empty-name filter
+ * would shift every index after the first gap.
  */
 export function matePanelIndexes({
   panelAssemblies,
   anchorIndex,
   mateAssemblyName,
+  assemblyManager,
 }: {
   panelAssemblies: (string | undefined)[]
   anchorIndex: number
   mateAssemblyName: string | undefined
+  assemblyManager: AssemblyNameResolver
 }): number[] {
   if (mateAssemblyName === undefined) {
     return []
@@ -80,7 +93,7 @@ export function matePanelIndexes({
     i =>
       i >= 0 &&
       i < panelAssemblies.length &&
-      panelAssemblies[i] === mateAssemblyName,
+      isSameAssemblyName(panelAssemblies[i], mateAssemblyName, assemblyManager),
   )
 }
 

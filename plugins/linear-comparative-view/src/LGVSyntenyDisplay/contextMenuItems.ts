@@ -190,6 +190,7 @@ function movePanelItem(
     panelAssemblies: stack.views.map(v => v.assemblyNames[0]),
     anchorIndex: stack.views.indexOf(view),
     mateAssemblyName: getMate(feature)?.assemblyName,
+    assemblyManager: getSession(self).assemblyManager,
   })
   return indexes.length
     ? [

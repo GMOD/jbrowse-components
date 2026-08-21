@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -51,14 +52,33 @@ export function makeMateDiscovery({
   return async (stopToken, statusCallback) => {
     const { rpcManager } = session
     const trackId = readConfObject(track, 'trackId') as string
+    const trackAssemblyNames = readConfObject(
+      track,
+      'assemblyNames',
+    ) as string[]
     return rpcManager.call(trackId, 'SyntenyDiscoverMates', {
       adapterConfig: readConfObject(track, 'adapter') as Record<
         string,
         unknown
       >,
       regions: [region],
-      trackAssemblyNames: readConfObject(track, 'assemblyNames') as string[],
-      anchorAssembly: region.assemblyName,
+      trackAssemblyNames,
+      // Spelled as the TRACK spells it, because that is the namespace the two
+      // comparisons on the far side run in: the worker has no assembly manager,
+      // and a mate's `assemblyName` is whatever the adapter resolved out of its
+      // own `assemblyNames`. The view supplies an alias of the same assembly
+      // often enough — `getSyntenyTracks` resolves aliases to decide this track
+      // is launchable at all, so a track reaches here on a name the region does
+      // not share — and then `===` said the anchor's own lane was a mate and no
+      // self-alignment was one.
+      anchorAssembly:
+        trackAssemblyNames.find(name =>
+          isSameAssemblyName(
+            name,
+            region.assemblyName,
+            session.assemblyManager,
+          ),
+        ) ?? region.assemblyName,
       stopToken,
       statusCallback,
     })
