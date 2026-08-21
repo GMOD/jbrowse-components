@@ -213,11 +213,23 @@ for f in helpers:
 # `main`, so it cannot be checked before the push, but the name can: a rename or
 # a typo otherwise reaches the reader as a 404 body written into the file they
 # then run. (`curl -fO` in the docs is what keeps that from executing.)
+#
+# A page fetching several scripts shortens the URL into a `BASE=` variable, so
+# expand those first. Reading the literal host only, this check saw four of the
+# reader's downloads as no citation at all: both of dog10k_selection's and both
+# of dog10k_svs's FGF4 pair, each free to be renamed with nothing failing.
+SCRIPTS_URL = (r"raw\.githubusercontent\.com/GMOD/jbrowse-components/main/"
+               r"scripts")
+base_var = re.compile(rf"(\w+)=https://{SCRIPTS_URL}/?$", re.M)
 cited = 0
 for doc in sorted(glob.glob("website/docs/**/*.md", recursive=True)):
-    for name in re.findall(
-            r"raw\.githubusercontent\.com/GMOD/jbrowse-components/main/"
-            r"scripts/([\w.-]+)", open(doc).read()):
+    src = open(doc).read()
+    for var in base_var.findall(src):
+        src = src.replace(f"${{{var}}}/", "raw.githubusercontent.com/GMOD/"
+                          "jbrowse-components/main/scripts/")
+        src = src.replace(f"${var}/", "raw.githubusercontent.com/GMOD/"
+                          "jbrowse-components/main/scripts/")
+    for name in re.findall(rf"{SCRIPTS_URL}/([\w.-]+)", src):
         cited += 1
         if not os.path.exists(f"scripts/{name}"):
             print(f"FAIL {doc} cites scripts/{name}, which does not exist")
