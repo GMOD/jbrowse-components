@@ -1,6 +1,6 @@
 ---
 name: tutorial-tour-candidates
-description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it, with the fixture and the menu path already located for the top four. Read before writing a video spec for a tutorial.
+description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. The top four are filmed and their entries record what the estimate got wrong; work down from five. Read before writing a video spec for a tutorial.
 audience: internal
 ---
 
@@ -12,16 +12,22 @@ the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
 holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
-Coverage today: **9 of 43 tutorials carry a tour** — `bxd_qtl`,
-`dog10k_selection`, `genomes_proteins` (3), `methylation`, `pangenome_ecoli`
-(3), `pangenome_hprc` (2), `synteny_visualization`, `tcga_cohort_cnv`,
-`tcga_cohort_mutations`. The other 34 do not.
+Coverage: **13 of 43 tutorials carry a tour** — `analyze_trio`, `bxd_qtl`,
+`cancer_sv`, `dog10k_selection`, `genomes_proteins` (3), `hg002_haplotypes`,
+`methylation`, `pangenome_ecoli` (3), `pangenome_hprc` (2),
+`repeatmasker_classes`, `sv_visualization_cgiab`, `synteny_visualization`,
+`tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 30 do not.
+
+**Candidates 1 to 4 are filmed and landed** on 2026-08-21, one clip serving two
+pages for 3. Their entries stay below with what each actually cost and what it
+corrected, because the next tour on those pages starts from them. Work down from
+5.
 
 Every candidate below came out of the ten-agent tutorial audit
 (`tutorial-structure-audit.md` is that audit's structural half). Each names what
 the page could delete, because a tour that only adds is the weaker kind.
 
-## The four to do first
+## The four that are done
 
 **1. `variants/trio_phased_matrix` — `tutorials/analyze_trio.md`**
 
@@ -34,15 +40,20 @@ sections and four figures** on one two-click route — `trio-basic`,
 staged as its own cause. One clip retires three of the four and the two sections
 that introduce them.
 
-- Fixture is already written: `website/scripts/specs/trio.ts:193-267` carries
-  all four states as figure specs, so the session URL and the locus are known.
-- **No existing spec drives `Rendering mode → Phased`.** Checked against every
-  `name:` in `website/scripts/videos/`.
-- Needs a session **without** the display already selected, which `trio-basic`
-  (`:193`) is.
-- Light: a variant matrix, not a pileup.
-- Moving figures off the page means moving their crop source in
-  `gen-tutorial-thumbs.ts` too; nothing warns you.
+**Filmed.** `videos/variants.ts`, 620px frame, 38s. What the estimate got wrong:
+
+- **It retires TWO of the four, not three.** `trio-matrix` and
+  `trio-matrix-phased` go, since each was a menu cascade pasted over its own
+  result. `trio-basic` is where a reader opening the VCF stands, and
+  `trio-matrix-phased-clean` is the crop source for both the gallery tile
+  (`src/lib/gallery.ts`) and the tutorial card (`gen-tutorial-thumbs.ts`), so
+  retiring it is a separate editorial call about what the gallery shows.
+- **It could not open at the figures' locus.** The default display gates at one
+  feature per pixel and this VCF carries every 1000 Genomes site, so 2.9 Mb of it
+  draws "Too many features" and the first take filmed that banner. The tour opens
+  at 20 kb and types the wide window at the END, which also puts the reason the
+  matrix display exists into the clip.
+- The two sections that introduced the retired figures are now one.
 
 **2. `synteny/hg002_dotplot_import` — `tutorials/hg002_haplotypes.md`**
 
@@ -58,7 +69,19 @@ the **Manual** panel and then tells the reader to switch to Manual — but the
 form opens on **Quick start**, because the session holds a launchable
 self-alignment track (`useQuickStartState.ts:65`, and `syntenyTrackRows.ts:14-18`
 on why a self-alignment qualifies). Filming it makes that impossible to
-reintroduce. The same defect is at `:96-98` for the synteny import form.
+reintroduce.
+
+**Filmed.** `videos/synteny.ts`, 768px frame (sized to the launched plot, not the
+form), 46s. Quick start confirmed at the source: `quickStartSyntenyTracks` keeps
+the Q100 chain because `syntenyTrackRows` gives it two present rows, so `Manual`
+is a real click — and Quick start's own launch passes an empty filter to both
+axes, which is every contig of both haplotypes interleaved.
+
+**The `:96-98` defect went the other way** and is fixed in prose rather than by
+filming: the linear synteny form also opens on Quick start, where
+`applyQuickStartSelections` has already put the chain's two rows in, so the
+page's "pick the assembly in both rows" was describing a panel the reader never
+lands on. `Launch` is the only click there.
 
 **3. `sv/derivative_allele_route` — two pages at once**
 
@@ -70,10 +93,17 @@ A route **and** a re-layout. It serves `tutorials/cancer_sv.md:133-146` and
 `tutorials/sv_visualization_cgiab.md:640-649`, and `sv/inspector_route` stops at
 the SV inspector's table filter, so nothing overlaps.
 
-The strongest argument for it is what the page did instead: `specs/cancer_sv.ts:163-175`
-records a reviewer asking for **big numbered badges** on composed frames so the
-flow could be followed. A numbered composite is a video wearing a figure's
-clothes, and filming this retires the `FLOW_NUMBER` machinery with it.
+**Filmed.** `videos/sv.ts`, 1340px frame, 34s, on COLO829's four-segment chain —
+the only route that makes the page's point, since it leaves chr3 and returns to
+it inverted and so draws two chr3 panels where a hand-filled form gets one. The
+figure of the end state (`cancer_sv/multihop_split_view`) now reads the same
+session as the tour, so their per-panel track heights cannot drift.
+
+**The `FLOW_NUMBER` claim in the original entry is wrong.** Its three call sites
+are all inside `cancer_sv/split_view_from_breakend`, which is the sibling
+right-click route on a BND record (`cancer_sv.md:148-164`), not this one. Filming
+this retires nothing of that machinery; retiring it needs a tour of THAT route or
+a decision to drop that composite.
 
 **4. `repeats/painting_display_switch` — `tutorials/repeatmasker_classes.md`**
 
@@ -83,6 +113,21 @@ The cheapest clip of the four and the archetypal re-layout. The page states it
 with two stacked stills and a caption asserting "the same track and the same
 fetch", which is exactly the claim two pictures cannot make. Hosted BED, one
 menu path, no pileup.
+
+**Filmed.** `videos/repeats.ts`, 520px frame, 35s, and it is TWO menu picks
+rather than one: `Display types` leaves `partitionField` at `name`, which on
+RepeatMasker is one row per repeat, so the class lanes are
+`Partition by... → repClass` after it. The page never mentioned the second pick,
+so a reader following it landed on the hairlines — that sentence is now on the
+page, and the `Partition by...` submenu's own list of the file's columns is the
+clip's payoff frame.
+
+Two things the session had to carry: `replaceDisplay` builds the new display from
+its own config rather than carrying the old one's height, so the tour's session
+pins a `displays` array (packed first, multi-row second with a height) — which is
+the shape this page's config section prints anyway. And the tutorial's copy of
+`multirow/display_types_menu` is gone, the composite being a menu cascade over
+its own result; the user guide keeps it, having no tour.
 
 ## The rest, ranked
 
