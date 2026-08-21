@@ -6,8 +6,9 @@ audience: internal
 
 # Tours that start near scratch
 
-Eighteen tours exist across 43 tutorials and 30 user guides. **One opens on an
-app with nothing in it** (`sv/inspector_route`, `sessionSpec(DEMO_CONFIG, {
+Twenty-one tours exist across 43 tutorials and 30 user guides. Before the three
+this doc's first three proposals became, **one opened on an app with nothing in
+it** (`sv/inspector_route`, `sessionSpec(DEMO_CONFIG, {
 views: [] })`). Two more are adjacent: `synteny/three_strain_import` opens on an
 empty import form, `proteins/gene_explorer` opens outside JBrowse entirely. Two
 open with an assembly and one light track and no subject data, so the tour can
@@ -55,17 +56,20 @@ minutes of fetching under a cut.
 Ordered by (value to a reader) / (risk the harness chokes). Each names the prose
 it would let its page delete, since a tour that only adds is the weaker kind.
 
-1. **`ui/sequence_search_motifs`** — `user_guides/sequence_search.md`, 106 lines
+**The first three are filmed** (`9649aa585a`), which took one harness fix and
+one new testid; see the gaps below. Seven remain.
+
+1. ~~**`ui/sequence_search_motifs`**~~ **filmed** — `user_guides/sequence_search.md`, 106 lines
    and **zero figures**, three dialog modes never pictured. Opens on an LGV with
    **no tracks at all** and ends with one lane per restriction enzyme, produced
    from the reference itself. Deletes the `Launch as one track` /
    `Launch one track per motif` bullets. Nothing fetches, so this is the cheapest
    clip in the corpus and the pilot.
-2. **`ui/bulk_add_tracks`** — `user_guides/basic_usage.md`. Four URLs pasted in
-   scrambled order with the index between two data files, and the preview table
-   sorts them. Deletes ten lines that have no figure. The order is the point and
+2. ~~**`ui/bulk_add_tracks`**~~ **filmed** — `user_guides/basic_usage.md`. Five URLs pasted
+   scrambled, each index away from its data file, and the preview table sorts
+   them. Deletes ten lines that have no figure. The order is the point and
    only a clip can scramble it.
-3. **`ui/add_genome`** — `quickstart_adminserver.md`, opening on
+3. ~~**`ui/add_genome`**~~ **filmed** — `quickstart_adminserver.md`, opening on
    `test_data/empty.json`, **no assemblies**. Tools → Assembly manager → Add new
    assembly → Open from a URL → three URLs → the form names the genome itself.
    The prose it replaces is *wrong*: the button is `Add new assembly`, there is
@@ -116,16 +120,26 @@ it would let its page delete, since a tour that only adds is the weaker kind.
    — a bare `<div>` with emotion classes. A track-height drag is therefore
    measured pixels, which is the one thing this corpus refuses, so proposal 10
    drops its drag. Two-line fix on the component.
-5. **The LGV import form's Open button has no testid**
+5. **A multiline field could not be cleared** — FIXED. `clear: true` triple-
+   clicked, which selects one LINE, so on a textarea it left every other line in
+   place and typed the new value into the middle of them. It cost a whole take
+   of `sequence_search_motifs`: the enzyme list stopped parsing, both submit
+   buttons went disabled, and the tour clicked one and filmed nothing happening.
+   `actions.ts` calls `select()` now.
+6. **The bulk-add paste box had no testid** — FIXED (`bulk_track_urls`). Worth
+   noting what the gap looked like from outside: `Open` is a prefix of `Open
+   from a URL`, `Open track...` and `Open file from URL or local computer`, so
+   there was no text to match on either.
+7. **The LGV import form's Open button has no testid**
    (`ImportForm.tsx:196-203`), and `Open` is a prefix of `Open from a URL`,
    `Open track...` and `Open file from URL or local computer`. `videos/sv.ts:200-209`
    records what that cost once already. Three of the ten proposals click it.
-6. **Nothing pairs a typed URL with the page that prints it.**
+8. **Nothing pairs a typed URL with the page that prints it.**
    `validateVideoSpecs` demands a `pastedTrackConfigs` entry only for a `type`
    step whose value starts with `{`, and `check-paste-configs` compares against
    `json*` fences only. The exposure is already live: `sv/inspector_route` types
    a VCF URL against the one at `sv_inspector_view.md:44`, and a rehost moves one
-   and not the other. **Six of the ten proposals type a URL.** Extending the pair
+   and not the other. **Six of the ten proposals type a URL, and two of the three filmed ones do.** Extending the pair
    to `{ video, doc, text }` needs no new mechanism.
 
 No fixture is missing: `empty.json`, `hg38_only.json`, `volvoxhub/hub1/hub.txt`
