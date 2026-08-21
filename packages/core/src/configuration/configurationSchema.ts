@@ -1,10 +1,8 @@
 import {
   getEnv,
-  getRoot,
   isArrayType,
   isMapType,
   isStateTreeNode,
-  resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
 
@@ -520,20 +518,12 @@ function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
  *
- * Two load-bearing complications, both for views that hold ephemeral track
- * configs without registering them in `session.tracks`:
- *
- * 1. **`get` falls back from `getTrackById` to MST `resolveIdentifier`.**
- *    Required by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef);
- *    `ReadVsRef.test.tsx` is the canary.
- *
- * 2. **`types.union(trackRef, schemaType)` accepts string id OR full snapshot.**
- *    Required by `CircularView.addTrackConf` / `SvInspectorView`, which push
- *    synthesized configs as full MST instances. `SVInspector.test.tsx` is the
- *    canary.
- *
- * Simplifying either requires first migrating view-local configs into the
- * session.
+ * One load-bearing complication: **`types.union(trackRef, schemaType)` accepts a
+ * string id OR a full config.** A view that synthesizes a track nobody else can
+ * draw — a read-vs-ref synteny band, an SV inspector row, a circular view's
+ * added track — writes the config here rather than registering it in
+ * `session.tracks`, and it then lives and dies with the track that holds it.
+ * `ReadVsRef.test.tsx` and `SVInspector.test.tsx` are the canaries.
  *
  * NOTE: don't add `as SCHEMATYPE` to the return value. It narrows SnapshotIn
  * to just the object branch, forcing callers to wrap string ids in
@@ -543,15 +533,10 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
       const session = getSession(parent)
-      let ret: unknown =
-        // Per-id lookup: subscribes only to this trackId's derivation, so
-        // resolving one track's config doesn't re-render the others. Derived on
-        // read, so it's fresh during hydration and add-and-show — no dual path.
-        session.getTrackById(String(id)) ??
-        // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
-        // generic can't narrow. Tree-wide MST identifier lookup; see the
-        // function-level JSDoc for why this fallback is required.
-        (resolveIdentifier(schemaType, getRoot(parent), id) as unknown)
+      // Per-id lookup: subscribes only to this trackId's derivation, so
+      // resolving one track's config doesn't re-render the others. Derived on
+      // read, so it's fresh during hydration and add-and-show — no dual path.
+      let ret: unknown = session.getTrackById(String(id))
       if (!ret) {
         throw new Error(`Could not resolve trackId "${id}"`)
       }

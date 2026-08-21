@@ -449,8 +449,7 @@
               }
             ]
           }
-        ],
-        "viewTrackConfigs": []
+        ]
       },
       {
         "id": "1Brqh2UJa",
@@ -741,8 +740,7 @@
             "trackLabels": "overlapping",
             "showCenterLine": false
           }
-        ],
-        "viewTrackConfigs": []
+        ]
       }
     ],
     "widgets": {

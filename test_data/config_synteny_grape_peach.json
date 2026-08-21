@@ -125,7 +125,6 @@
             "showCytobands": true
           }
         ],
-        "viewTrackConfigs": [],
         "drawCurves": false
       },
       {
@@ -1752,7 +1751,6 @@
             "showCytobands": true
           }
         ],
-        "viewTrackConfigs": [],
         "drawCurves": false
       }
     ],

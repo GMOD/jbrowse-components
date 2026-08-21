@@ -65,7 +65,6 @@ export interface DerivativeVsRefSpec {
     type: 'LinearSyntenyView'
     displayName: string
     views: unknown[]
-    viewTrackConfigs: unknown[]
     tracks: unknown[]
   }
 }
@@ -379,24 +378,21 @@ export function buildDerivativeVsRefSpec(
           tracks: [],
         },
       ],
-      viewTrackConfigs: [
-        {
-          type: 'SyntenyTrack',
-          assemblyNames: [trackAssembly, derivativeAssembly],
-          adapter: {
-            type: 'FromConfigAdapter',
-            // both sides of every alignment, so the lower panel can be drawn
-            // against the upper one
-            features: [...features, ...features.map(f => f.mate)],
-          },
-          trackId: syntenyTrackId,
-          name: `${refName} vs ${trackAssembly}`,
-        },
-      ],
       tracks: [
         {
-          configuration: syntenyTrackId,
           type: 'SyntenyTrack',
+          configuration: {
+            type: 'SyntenyTrack',
+            assemblyNames: [trackAssembly, derivativeAssembly],
+            adapter: {
+              type: 'FromConfigAdapter',
+              // both sides of every alignment, so the lower panel can be drawn
+              // against the upper one
+              features: [...features, ...features.map(f => f.mate)],
+            },
+            trackId: syntenyTrackId,
+            name: `${refName} vs ${trackAssembly}`,
+          },
           displays: [
             {
               type: 'LinearSyntenyDisplay',

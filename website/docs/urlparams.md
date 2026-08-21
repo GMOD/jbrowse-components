@@ -972,7 +972,6 @@ restores natively:
 | [`trackColorBy`](/docs/models/trackcolorsmixin#property-trackcolorby) | trackId -> color-by mode for that track alone. Absent means the track follows the view-wide `colorBy`. |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
-| [`viewTrackConfigs`](/docs/models/dotplotview#property-viewtrackconfigs) | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere |
 | [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |
 
 <!-- SPEC_KEYS DotplotView END -->
@@ -1120,15 +1119,13 @@ restores natively:
 | [`trackColorBy`](/docs/models/trackcolorsmixin#property-trackcolorby) | trackId -> color-by mode for that track alone. Absent means the track follows the view-wide `colorBy`. |
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `colorBy: 'track'`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/linearcomparativeview#property-trackselectortype) | vestigial: the hierarchical selector is the only one that exists, so this value is ignored. Retained because saved sessions and configs persist it. |
-| [`viewTrackConfigs`](/docs/models/linearcomparativeview#property-viewtrackconfigs) | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere |
 
 <!-- SPEC_KEYS LinearSyntenyView END -->
 
-Two of those are accepted because the view declares them and are almost never
-what an author wants to write: filling `levels` is what `tracks` does — one
-entry per level — and sizing them is `levelHeights`, so reach for `levels` only
-to author a band's full state; and `viewTrackConfigs` exists for the
-read-vs-reference dotplot, whose track would mean nothing anywhere else.
+One of those is accepted because the view declares it and is almost never what
+an author wants to write: filling `levels` is what `tracks` does — one entry per
+level — and sizing them is `levelHeights`, so reach for `levels` only to author
+a band's full state.
 
 Each entry in `views` is a linear genome view, so besides `loc`, `assembly` and
 `tracks` it takes that view's own launch props (`trackLabels`, `colorByCDS`,

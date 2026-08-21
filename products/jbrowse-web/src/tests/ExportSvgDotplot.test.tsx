@@ -91,7 +91,6 @@ test('export svg of dotplot', async () => {
               ],
             },
           ],
-          viewTrackConfigs: [],
         },
       ],
     },

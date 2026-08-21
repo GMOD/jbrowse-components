@@ -1438,12 +1438,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackId: string,
         initialSnapshot = {},
         displayInitialSnapshot = {},
+        inlineConf?: Record<string, unknown>,
       ) {
         return showTrackGeneric(
           self,
           trackId,
           initialSnapshot,
           displayInitialSnapshot,
+          inlineConf,
         )
       },
       /**

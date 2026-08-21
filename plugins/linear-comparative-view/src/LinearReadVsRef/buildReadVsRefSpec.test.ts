@@ -2,6 +2,12 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
+// The synthesized config rides on the track that draws it rather than in any
+// session or view-level list, so it goes out with the view.
+function syntenyConf(viewSpec: { tracks: unknown[] }) {
+  return (viewSpec.tracks[0] as { configuration: unknown }).configuration
+}
+
 function makeFeature(
   data: Record<string, unknown> & {
     start: number
@@ -58,7 +64,7 @@ describe('buildReadVsRefSpec', () => {
     expect(spec.viewSpec.views).toHaveLength(2)
     // No SA → only the primary in the synteny feature store. The store also
     // contains its mate, so total = 1 feat + 1 mate = 2
-    const cfg = spec.viewSpec.viewTrackConfigs[0] as {
+    const cfg = syntenyConf(spec.viewSpec) as {
       adapter: { features: { uniqueId: string }[] }
     }
     expect(cfg.adapter.features).toHaveLength(2)
@@ -89,7 +95,7 @@ describe('buildReadVsRefSpec', () => {
       rand: seqRand,
     })
 
-    const cfg = spec.viewSpec.viewTrackConfigs[0] as {
+    const cfg = syntenyConf(spec.viewSpec) as {
       adapter: {
         features: { syntenyId: number; mate: { syntenyId: number } }[]
       }
@@ -123,7 +129,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const cfg = spec.viewSpec.viewTrackConfigs[0] as {
+    const cfg = syntenyConf(spec.viewSpec) as {
       adapter: { features: { refName: string }[] }
     }
     // The primary feature's refName got canonicalized
@@ -209,7 +215,7 @@ describe('buildReadVsRefSpec', () => {
       now: constNow,
       rand: seqRand,
     })
-    const cfg = spec.viewSpec.viewTrackConfigs[0] as {
+    const cfg = syntenyConf(spec.viewSpec) as {
       adapter: { features: { mate: { refName?: string } }[] }
     }
     expect(cfg.adapter.features[0]!.mate.refName).toBe('myRead')

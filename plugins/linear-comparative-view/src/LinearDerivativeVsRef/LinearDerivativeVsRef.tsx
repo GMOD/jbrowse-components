@@ -8,7 +8,6 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { isSessionWithAddSessionTrack } from '@jbrowse/core/util/types'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   FormControl,
@@ -111,6 +110,7 @@ interface SyntenyPanel {
     trackId: string,
     initialSnapshot?: Record<string, unknown>,
     displayInitialSnapshot?: Record<string, unknown>,
+    inlineConf?: Record<string, unknown>,
   ) => void
 }
 
@@ -374,24 +374,20 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         }
       })
     }
-    // `addSessionTrackConf`, NOT `addTrackConf`, which is two destinations
-    // behind one name: an admin's track goes into `jbrowse.tracks`, which the
-    // admin server writes back into the config.json every visitor is served.
-    // This track is a per-launch `FromConfigAdapter` naming a temporary
-    // assembly, so an admin's click published a dead `derivative-segments-…`
-    // into everyone's config.json, naming an assembly that never existed
-    // outside the one session — one more per click, since the stamp in its id
-    // defeats the dedupe. The session is the only destination this track has
-    // ever belonged in, and `releaseTemporaryAssemblies` takes it back out with
-    // the axis at the view's own detach.
-    //
-    // A session that refuses track configs (embedded, `disableAddTracks`) gets
-    // the reconstruction without its segment labels rather than a panel naming a
-    // track nothing can resolve.
-    if (isSessionWithAddSessionTrack(session) && derivativePanel) {
-      session.addSessionTrackConf(segmentsTrack)
+    // The config travels on the track rather than into any session list. It is
+    // a per-launch `FromConfigAdapter` over the synthetic derivative axis, so
+    // nothing outside this view can draw it and nothing outside this view should
+    // outlive it — closing the panel's track takes the config with it, and no
+    // session list has to be swept afterwards. Same footing as the synteny band
+    // above, whose config the view spec carries the same way.
+    if (derivativePanel) {
       showWhenMeasured(derivativePanel, () => {
-        derivativePanel.showTrack?.(segmentsTrack.trackId, {}, segmentsDisplay)
+        derivativePanel.showTrack?.(
+          segmentsTrack.trackId,
+          {},
+          segmentsDisplay,
+          segmentsTrack,
+        )
       })
     }
     handleClose()

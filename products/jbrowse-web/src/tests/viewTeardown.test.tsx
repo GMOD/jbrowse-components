@@ -1,7 +1,8 @@
 import '@testing-library/jest-dom'
 
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
@@ -14,6 +15,10 @@ import {
   setup,
   volvoxConfigWithTracks,
 } from './util.tsx'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AbstractViewModel } from '@jbrowse/core/util'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 setup()
 
@@ -173,4 +178,115 @@ test('a comparative view gives its temporary assembly back when removed', async 
   expect(session.temporaryAssemblies.map(a => a.name)).not.toContain(
     'readvsref',
   )
+}, 60000)
+
+// The other half of what a comparative view brings in, and the reason nothing
+// here sweeps a session list for it. A view that synthesizes a track only it can
+// draw — a read-vs-ref synteny band, the segment labels of a derivative allele —
+// hands the config to `showTrack` rather than to any session list, so the config
+// lives on the track that draws it. A list outside the view would need somebody
+// to come back and sweep it, and each list that tried grew its own cleanup: the
+// dotplot's `clearView` cleared one by hand, `LinearComparativeView.clearView`
+// forgot to, and a per-launch segments track sat in `sessionTracks` after its
+// assembly was gone.
+test('a view-local track config goes out with the view', async () => {
+  const { session } = await createView(config)
+
+  session.addTemporaryAssembly({
+    name: 'readvsref',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'readvsref-ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'readvsref',
+            uniqueId: 'readvsref-1',
+            start: 0,
+            end: 10,
+            seq: 'ACGTACGTAC',
+          },
+        ],
+      },
+    },
+  })
+
+  const synteny = session.addView('LinearSyntenyView', {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+        ],
+      },
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          {
+            assemblyName: 'readvsref',
+            refName: 'readvsref',
+            start: 0,
+            end: 10,
+          },
+        ],
+      },
+    ],
+  }) as unknown as {
+    views: {
+      showTrack: (
+        id: string,
+        initialSnapshot?: object,
+        displaySnapshot?: object,
+        inlineConf?: Record<string, unknown>,
+      ) => unknown
+      tracks: { configuration: AnyConfigurationModel }[]
+    }[]
+  }
+
+  act(() => {
+    synteny.views[1]!.showTrack(
+      'view-local',
+      {},
+      {},
+      {
+        type: 'FeatureTrack',
+        trackId: 'view-local',
+        name: 'segments',
+        assemblyNames: ['readvsref'],
+        adapter: {
+          type: 'FromConfigAdapter',
+          features: [
+            { refName: 'readvsref', uniqueId: 's1', start: 0, end: 5 },
+          ],
+        },
+      },
+    )
+  })
+
+  // resolved, and from the track rather than from anything the session holds
+  const { configuration } = synteny.views[1]!.tracks[0]!
+  expect(readConfObject(configuration, 'name')).toBe('segments')
+  expect(session.getTrackById('view-local')).toBeUndefined()
+  expect(session.sessionTracks).toHaveLength(0)
+
+  // ...so a saved session restores it: the config is inside the view's snapshot,
+  // not a sibling entry that can be dropped independently of the track
+  const snap = getSnapshot(synteny as unknown as IAnyStateTreeNode) as {
+    views: { tracks: { configuration: { trackId: string } }[] }[]
+  }
+  expect(snap.views[1]!.tracks[0]!.configuration.trackId).toBe('view-local')
+
+  act(() => {
+    session.removeView(synteny as unknown as AbstractViewModel)
+  })
+  await act(async () => {
+    await new Promise(resolve => {
+      setTimeout(resolve, 0)
+    })
+  })
+
+  expect(session.sessionTracks).toHaveLength(0)
+  expect(session.temporaryAssemblies).toHaveLength(0)
+  expect(screen.getByTestId('app-bar')).toBeTruthy()
 }, 60000)

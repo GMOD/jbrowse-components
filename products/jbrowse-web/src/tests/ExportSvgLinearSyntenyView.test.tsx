@@ -144,7 +144,6 @@ const syntenySession = {
           ],
         },
       ],
-      viewTrackConfigs: [],
       drawCIGAR: true,
       drawCurves: true,
     },

@@ -839,6 +839,10 @@ export function showTrackGeneric(
   // callers legitimately pass (jbrowse-img's `DisplaySnapshot` is one).
   initialSnapshot: object = {},
   displayInitialSnapshot: DisplayInitialSnapshot = {},
+  // The config itself, for a track no session list holds: a view that
+  // synthesizes a track only it can draw passes the config here and it lives on
+  // the track node, so closing the track takes the config with it. Without it
+  // such a config has to be parked in a session list that outlives the view.
   inlineConf?: Record<string, unknown>,
 ) {
   const { pluginManager } = getEnv(self)

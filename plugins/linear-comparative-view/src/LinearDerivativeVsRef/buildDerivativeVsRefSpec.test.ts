@@ -7,6 +7,12 @@ import {
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
+// The synthesized config rides on the track that draws it rather than in any
+// session or view-level list, so it goes out with the view.
+function syntenyConf(viewSpec: { tracks: unknown[] }) {
+  return (viewSpec.tracks[0] as { configuration: unknown }).configuration
+}
+
 // The COLO829 der(3) path: two chr3 arms in opposite orientations with short
 // pieces of chr10 and chr12 spliced in at the turn.
 const CANDIDATE: DerivativeCandidate = {
@@ -37,7 +43,7 @@ function build(candidate = CANDIDATE) {
 describe('buildDerivativeVsRefSpec', () => {
   it('lays the segments end to end in derivative coordinates', () => {
     const { viewSpec } = build()
-    const track = viewSpec.viewTrackConfigs[0] as {
+    const track = syntenyConf(viewSpec) as {
       adapter: { features: { mate?: { start: number; end: number } }[] }
     }
     // the first half of the feature store is the reference side, each carrying
@@ -55,7 +61,7 @@ describe('buildDerivativeVsRefSpec', () => {
 
   it('carries each segment’s orientation onto its ribbon', () => {
     const { viewSpec } = build()
-    const track = viewSpec.viewTrackConfigs[0] as {
+    const track = syntenyConf(viewSpec) as {
       adapter: { features: { strand?: number }[] }
     }
     expect(track.adapter.features.slice(0, 4).map(f => f.strand)).toEqual([
@@ -99,7 +105,7 @@ describe('buildDerivativeVsRefSpec', () => {
 
   it('registers a temporary assembly the synteny track names on both sides', () => {
     const { viewSpec, temporaryAssembly } = build()
-    const track = viewSpec.viewTrackConfigs[0] as { assemblyNames: string[] }
+    const track = syntenyConf(viewSpec) as { assemblyNames: string[] }
     expect(track.assemblyNames).toEqual(['hg38', temporaryAssembly.name])
     expect(temporaryAssembly.sequence.assemblyNames).toEqual([
       temporaryAssembly.name,
@@ -178,7 +184,7 @@ describe('buildDerivativeVsRefSpec', () => {
     // name, so a label that kept its reference start would land in a different
     // part of the allele (or off it).
     const { viewSpec, segmentsTrack } = build()
-    const synteny = viewSpec.viewTrackConfigs[0] as {
+    const synteny = syntenyConf(viewSpec) as {
       adapter: { features: { mate?: { start: number; end: number } }[] }
     }
     const mates = synteny.adapter.features

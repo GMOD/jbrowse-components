@@ -862,9 +862,6 @@ describe('ConfigurationReference', () => {
         rpcManager: types.frozen({}),
         configuration: types.frozen({}),
         _tracks: types.array(TrackConfig),
-        // tree-resident configs deliberately NOT surfaced via getTrackById, to
-        // exercise the resolveIdentifier fallback (the viewTrackConfigs case)
-        _viewTrackConfigs: types.array(TrackConfig),
         holder: Holder,
       })
       .views(self => ({
@@ -924,26 +921,12 @@ describe('ConfigurationReference', () => {
       expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
     })
 
-    // Fast unit canary for the tree-wide resolveIdentifier fallback documented
-    // in configuration/CLAUDE.md — otherwise only covered by the slow
-    // ReadVsRef.test.tsx integration test (LinearSyntenyView.viewTrackConfigs).
-    test('falls back to tree-wide resolveIdentifier when the id is absent from getTrackById', () => {
-      const { Session } = buildTrackEnv()
-      const session = Session.create(
-        {
-          _viewTrackConfigs: [{ trackId: 'view-local', name: 'ephemeral' }],
-          holder: { ref: 'view-local' },
-        },
-        { pluginManager },
-      )
-      expect(session.getTrackById('view-local')).toBeUndefined()
-      expect(readConfObject(session.holder.ref, 'name')).toBe('ephemeral')
-    })
-
-    // Fast unit canary for the inline-snapshot union branch documented in
+    // Fast unit canary for the inline-config union branch documented in
     // configuration/CLAUDE.md — otherwise only covered by the slow
-    // SVInspector.test.tsx integration test (CircularView.addTrackConf /
-    // SvInspectorView push a full config object, not an id string).
+    // SVInspector.test.tsx and ReadVsRef.test.tsx integration tests. It is the
+    // one way a view holds a track config nothing else can draw, and an id
+    // string that no session list holds resolves nowhere: the test above this
+    // one is what says so.
     test('accepts a full inline config snapshot held as an owned instance, not a ref', () => {
       const { Session } = buildTrackEnv()
       const session = Session.create(

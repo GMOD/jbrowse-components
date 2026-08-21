@@ -146,12 +146,16 @@ describe('the split drawing above the panel cap', () => {
   })
 })
 
-// `addTrackConf` is two destinations behind one name: an admin's track goes into
-// `jbrowse.tracks`, which the admin server writes back into the config.json every
-// visitor is served. The segments track is a per-launch `FromConfigAdapter` over a
-// temporary assembly, so that published one dead `derivative-segments-<stamp>` per
-// click, naming an assembly that never existed outside one session.
-test('the segments track goes to the session, not the shared config', async () => {
+// The segments track is a per-launch `FromConfigAdapter` over a temporary
+// assembly, so no list outside this view has any use for its config and any list
+// that holds one needs somebody to come back and sweep it. Both destinations this
+// could have used are wrong for that reason: `addTrackConf` publishes an admin's
+// into the config.json every visitor is served, and `addSessionTrackConf` leaves a
+// dead `derivative-segments-<stamp>` in the snapshot the user saves and shares —
+// one more per click, since the stamp defeats the dedupe. So the assertion is that
+// NEITHER is reached and the config arrives on the track itself.
+test('the segments config rides on the track, reaching no session list', async () => {
+  const shownConfs: (Record<string, unknown> | undefined)[] = []
   const Panel = types
     .model('Panel', { id: types.identifier })
     .volatile(() => ({ shown: [] as string[] }))
@@ -161,8 +165,14 @@ test('the segments track goes to the session, not the shared config', async () =
       },
     }))
     .actions(self => ({
-      showTrack(trackId: string) {
+      showTrack(
+        trackId: string,
+        _initialSnapshot?: object,
+        _displaySnapshot?: object,
+        inlineConf?: Record<string, unknown>,
+      ) {
         self.shown.push(trackId)
+        shownConfs.push(inlineConf)
       },
     }))
   const calls: string[] = []
@@ -226,10 +236,20 @@ test('the segments track goes to the session, not the shared config', async () =
     fireEvent.click(screen.getByText('Open in new view'))
   })
 
-  // one destination reached, and the session's
-  expect(calls).toHaveLength(1)
-  expect(calls[0]).toMatch(/^session:derivative-segments-/)
+  // no session list touched
+  expect(calls).toEqual([])
   // the second panel is the derivative axis, and the labels go onto it
-  expect(Session.panels[1]!.shown).toEqual([calls[0]!.split(':')[1]])
   expect(Session.panels[0]!.shown).toEqual([])
+  expect(Session.panels[1]!.shown).toEqual([
+    expect.stringMatching(/^derivative-segments-/),
+  ])
+  // ...carrying their own config, over the synthetic axis and nothing else
+  expect(shownConfs).toHaveLength(1)
+  expect(shownConfs[0]).toMatchObject({
+    trackId: Session.panels[1]!.shown[0],
+    adapter: { type: 'FromConfigAdapter' },
+  })
+  expect(
+    (shownConfs[0] as { assemblyNames: string[] }).assemblyNames,
+  ).not.toContain('hg38')
 })

@@ -341,16 +341,6 @@ export default function stateModelFactory(pm: PluginManager) {
 
           /**
            * #property
-           * this represents tracks specific to this view specifically used
-           * for read vs ref dotplots where this track would not really apply
-           * elsewhere
-           */
-          viewTrackConfigs: types.stripDefault(
-            types.array(pm.pluggableConfigSchemaType('track')),
-            [],
-          ),
-          /**
-           * #property
            * used for initializing the view from a session snapshot
            */
           init: types.frozen<DotplotViewCommands | undefined>(),
@@ -1227,10 +1217,6 @@ export default function stateModelFactory(pm: PluginManager) {
           // next whenever it reuses one of these assemblies — and the chips
           // offer to dismiss a region the plot no longer shows.
           self.setHighlight([])
-          // View-local track configs exist only for the read-vs-ref plot that
-          // synthesized them; nothing can resolve them once its tracks are
-          // gone, and they persist into the session snapshot.
-          self.viewTrackConfigs.clear()
           // The banner over the form describes the submit that failed, and this
           // is the one route to the form that isn't a submit — so it was the one
           // that left an error standing over a form with nothing wrong with it,

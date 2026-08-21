@@ -16,7 +16,6 @@ export interface DotplotReadVsRefSpec {
     assemblyNames: string[]
     hview: unknown
     vview: unknown
-    viewTrackConfigs: unknown[]
     tracks: unknown[]
   }
 }
@@ -114,22 +113,19 @@ export function buildDotplotReadVsRefSpec({
           },
         ],
       },
-      viewTrackConfigs: [
-        {
-          type: 'SyntenyTrack',
-          assemblyNames,
-          adapter: {
-            type: 'FromConfigAdapter',
-            features,
-          },
-          trackId: syntenyTrackId,
-          name: syntenyTrackName,
-        },
-      ],
       tracks: [
         {
-          configuration: syntenyTrackId,
           type: 'SyntenyTrack',
+          configuration: {
+            type: 'SyntenyTrack',
+            assemblyNames,
+            adapter: {
+              type: 'FromConfigAdapter',
+              features,
+            },
+            trackId: syntenyTrackId,
+            name: syntenyTrackName,
+          },
           displays: [
             {
               type: 'DotplotDisplay',

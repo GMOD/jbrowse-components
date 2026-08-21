@@ -2,6 +2,12 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildDotplotReadVsRefSpec } from './buildDotplotReadVsRefSpec.ts'
 
+// The synthesized config rides on the track that draws it rather than in any
+// session or view-level list, so it goes out with the view.
+function syntenyConf(viewSpec: { tracks: unknown[] }) {
+  return (viewSpec.tracks[0] as { configuration: unknown }).configuration
+}
+
 function makeFeature(
   data: Record<string, unknown> & {
     start: number
@@ -104,7 +110,7 @@ describe('buildDotplotReadVsRefSpec', () => {
       '1',
       '2',
     ])
-    const cfg = spec.viewSpec.viewTrackConfigs[0] as {
+    const cfg = syntenyConf(spec.viewSpec) as {
       adapter: { features: { refName: string }[] }
     }
     expect(cfg.adapter.features.map(f => f.refName)).toEqual(['2', '1'])

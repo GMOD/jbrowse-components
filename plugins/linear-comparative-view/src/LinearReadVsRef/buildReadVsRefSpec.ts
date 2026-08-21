@@ -17,7 +17,6 @@ export interface ReadVsRefSpec {
     displayName: string
     showColorLegend: boolean
     views: unknown[]
-    viewTrackConfigs: unknown[]
     tracks: unknown[]
   }
 }
@@ -125,22 +124,19 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
           tracks: [buildSequenceTrack(rand, undefined, seqTrackId)],
         },
       ],
-      viewTrackConfigs: [
-        {
-          type: 'SyntenyTrack',
-          assemblyNames: [trackAssembly, readAssembly],
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: configFeatureStore,
-          },
-          trackId: syntenyTrackId,
-          name: syntenyTrackName,
-        },
-      ],
       tracks: [
         {
-          configuration: syntenyTrackId,
           type: 'SyntenyTrack',
+          configuration: {
+            type: 'SyntenyTrack',
+            assemblyNames: [trackAssembly, readAssembly],
+            adapter: {
+              type: 'FromConfigAdapter',
+              features: configFeatureStore,
+            },
+            trackId: syntenyTrackId,
+            name: syntenyTrackName,
+          },
           displays: [
             {
               type: 'LinearSyntenyDisplay',
