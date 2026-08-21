@@ -99,7 +99,7 @@ export const SYNTENY_INSTANCE_CACHE: InstanceCacheOpts<SyntenyInstanceData> = {
 // (48 verts/instance), for one outline, for as long as the selection is live.
 // A base feature is one instance per region, so this makes the pass ~1 — in
 // COLORED-indels mode. Transparent-indels mode tiles a CIGAR feature's matches
-// as `KIND_BASE` quads (see `cigarSegmentKind`), so the selected feature
+// as `KIND_BASE_TILE` quads (see `cigarSegmentKind`), so the selected feature
 // contributes one per match segment and the pass is tens or hundreds. That is
 // correct, not a leak: `isClickedSilhouette` selects the same set, so the two
 // backends agree, and the saving over drawing the whole region stands either

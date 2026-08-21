@@ -362,9 +362,10 @@ export function buildSyntenyGeometry({
     (viewOff0 + 2 * viewWidth + 2 * emitBufferPx) * bpPerPx0
 
   const alignmentLengths = new Float32Array(featureCount)
-  // Per-feature: did we decide to draw CIGAR detail? The base ribbon is always
-  // KIND_BASE. When true, the emit loop runs the visitor over the feature's
-  // CIGAR and emits its indel quads on top of that base.
+  // Per-feature: did we decide to draw CIGAR detail? When true, the emit loop
+  // runs the visitor over the feature's CIGAR — laying its indel quads over a
+  // full-span KIND_BASE ribbon in colored mode, or replacing that ribbon with
+  // KIND_BASE_TILE match tiles in transparent mode (`isTiled`).
   const willDrawCigarArr = new Uint8Array(featureCount)
   // Per-feature: is this feature wide enough to carry a marker ladder? Decided
   // once here from the whole feature's width so the budget below and the two
