@@ -50,7 +50,7 @@ LD data must be in PLINK `--r2` output format. Generate it from a PLINK binary
 fileset (`.bed`/`.bim`/`.fam`) or a VCF:
 
 ```bash
-# From a PLINK binary fileset. The "dprime" flag adds the D' column (DP)
+# From a PLINK binary fileset. "dprime" adds the D' column (DP)
 plink --bfile study --r2 dprime with-freqs \
   --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0 \
   --out study
@@ -66,6 +66,11 @@ This writes `study.ld` with columns `CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2` (plus
 `--ld-window-r2 0` keeps every pair (PLINK otherwise drops pairs below r²=0.2),
 and the `--ld-window*` flags raise the default limits on how far apart paired
 SNPs may be. Tune them to the span you want rendered.
+
+`dprime` does more than add its column: the modifier also switches r² itself to
+the haplotype-frequency estimate, so the R2 column of a run with it and a run
+without it are two different statistics. This is PLINK 1.9; plink2 removed
+`--r2` and splits it into `--r2-phased` and `--r2-unphased`.
 
 For regional analyses the plain `study.ld` file works as-is with
 [`PlinkLDAdapter`](/docs/config/plinkldadapter). For chromosome-scale or
