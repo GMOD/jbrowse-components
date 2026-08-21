@@ -433,6 +433,23 @@ test('removing the focused view clears the focus', () => {
   expect(session.focusedViewId).toBeUndefined()
 })
 
+// `LinearGenomeViewContainer` focuses the SUBVIEW it renders — "necessary for
+// subviews to be focused properly" — and comparative views render their rows
+// through it. Matched on `view.id` alone, the clear missed every one of them and
+// the dead row's id went on into the saved session.
+test('removing a container view clears a focus on one of its rows', () => {
+  const session = sessionWithThreeViews()
+  const container = session.addView('FakeContainerView', {
+    views: [{ type: 'FakeLinearView' }, { type: 'FakeLinearView' }],
+  })
+  const row = container.views[1]!.id
+  session.setFocusedViewId(row)
+
+  session.removeView(container)
+
+  expect(session.focusedViewId).toBeUndefined()
+})
+
 test('removing another view leaves the focus alone', () => {
   const session = sessionWithThreeViews()
   const focused = session.views[0]!.id

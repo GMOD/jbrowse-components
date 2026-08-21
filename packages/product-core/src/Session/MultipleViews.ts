@@ -49,6 +49,18 @@ function isWithin(node: unknown, view: IBaseViewModel) {
   return true
 }
 
+// Every view id under `view`, itself included. A view can CONTAIN views, and
+// `LinearGenomeViewContainer` focuses the SUBVIEW it renders, so a comparative
+// view's focus is a row's id and `view.id` alone never matches it.
+interface NestingView {
+  id: string
+  views?: NestingView[]
+}
+
+function viewIdsWithin(view: NestingView): string[] {
+  return [view.id, ...(view.views ?? []).flatMap(v => viewIdsWithin(v))]
+}
+
 // Empty every reference `holder` has into `view`, and say whether it had any.
 //
 // MST invalidates a reference when its TARGET node is detached or destroyed, so
@@ -187,7 +199,11 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         // captures `wasFocused` above this and re-points the focus at the
         // replacement afterwards, which is the one case where the focus moves
         // rather than ending.
-        if (self.focusedViewId === view.id) {
+        const { focusedViewId } = self
+        if (
+          focusedViewId !== undefined &&
+          viewIdsWithin(view).includes(focusedViewId)
+        ) {
           self.setFocusedViewId(undefined)
         }
         // Every widget, not the active ones: a widget the user closed keeps
@@ -296,7 +312,11 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
           // `idx` first, so a view already gone from the session short-circuits
           // before `view.id` is read: that node is detached and, a task later,
           // destroyed — and MST warns on any read through a destroyed one
-          const wasFocused = idx !== -1 && self.focusedViewId === view.id
+          const { focusedViewId } = self
+          const wasFocused =
+            idx !== -1 &&
+            focusedViewId !== undefined &&
+            viewIdsWithin(view).includes(focusedViewId)
           takeOut(view)
           // a view already gone from the session appends, rather than throwing
           // or silently dropping the launch
