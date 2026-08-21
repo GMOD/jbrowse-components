@@ -116,6 +116,25 @@ export default function CanvasFeatureGateMixin() {
         return true
       },
       /**
+       * #getter
+       * The density axis is on where something measures it, and this mixin is
+       * the only thing that does — `densityTooLarge` below is the measurement,
+       * this is the switch, and they belong together. `RegionTooLargeMixin`
+       * defaults it false so the byte-only displays don't claim an axis they
+       * have no number for.
+       *
+       * Contributed the same way as `measuresBytesInFetch` above, and it fails
+       * the same way in the wrong compose order — the base's `false` wins and
+       * the density axis is silently off. The self-check in `afterAttach` reads
+       * `measuresBytesInFetch` rather than this, because it cannot tell that
+       * failure from `LinearMultiRowFeatureDisplay` legitimately turning this
+       * one back off; the two are contributed together, so catching either
+       * catches the order.
+       */
+      get densityGateEnabled() {
+        return true
+      },
+      /**
        * #method
        * Highest features-per-pixel across the visible regions at `bpPerPx`, from
        * the cached per-region counts.
@@ -251,12 +270,16 @@ export default function CanvasFeatureGateMixin() {
       // opt-in: a new canvas feature display can't forget it and silently gate a
       // reused displayedRegionIndex against a prior chromosome's stats.
       afterAttach() {
-        // Compose-order self-check. Both this mixin and `RegionTooLargeMixin`
-        // (via MultiRegionDisplayMixin) declare `measuresBytesInFetch`, and
+        // Compose-order self-check, for both opt-ins this mixin contributes.
+        // Both it and `RegionTooLargeMixin` (via MultiRegionDisplayMixin)
+        // declare `measuresBytesInFetch` and `densityGateEnabled`, and
         // `types.compose` resolves the collision to the later argument — so
         // composing this one FIRST silently switches the entire size gate off
         // with no error anywhere. Reading our own opt-in back is the whole test:
-        // if it isn't true, the base's `false` won.
+        // if it isn't true, the base's `false` won. It reads the byte one and
+        // not the density one because multi-row legitimately turns the density
+        // axis back off in its own `.views`; the two are contributed together,
+        // so the byte one answers for both.
         if (
           process.env.NODE_ENV !== 'production' &&
           !self.measuresBytesInFetch

@@ -292,10 +292,21 @@ export default function RegionTooLargeMixin() {
       /**
        * #getter
        * Whether the **density** (features-per-pixel) axis applies to this
-       * display at all. True here because the default is "both axes are on and
-       * the display supplies the numbers"; `densityTooLarge` below is what
-       * actually costs nothing until a display fills it, so a byte-only display
-       * leaves both alone.
+       * display at all. **False here, and `CanvasFeatureGateMixin` is what
+       * turns it on** — the axis is on exactly where something measures it, and
+       * that mixin is the only thing in the tree that does. It contributes this
+       * beside `measuresBytesInFetch` for the same reason and by the same
+       * route.
+       *
+       * It defaulted to *true* until 2026-08, on the reading that "both axes
+       * are on and the display supplies the numbers". The reading was harmless
+       * and wrong: the five byte-only displays (alignments, arc, maf, LD,
+       * multi-sample-variant) then sat permanently in `densityGateActive ===
+       * true`, the mixin asserting an axis is live for displays that cannot
+       * measure one. Nothing broke, because their `densityTooLarge` is the
+       * `false` below — but a state that says the opposite of what is true is
+       * one a reader has to be told to disbelieve, and the fix is the default,
+       * not the telling.
        *
        * It lives on this mixin rather than on `CanvasFeatureGateMixin` — where
        * it used to — because it is the second half of a contract whose first
@@ -305,12 +316,14 @@ export default function RegionTooLargeMixin() {
        * of which had to be asked at the one consumer:
        * `!densityGateEnabled || !densityGateActive`.
        *
-       * `LinearMultiRowFeatureDisplay` is the one display that turns it off: it
-       * paints into fixed lanes, so a high total feature count is not a
-       * per-glyph render cost and only the download budget should gate it.
+       * `LinearMultiRowFeatureDisplay` composes that mixin and turns this back
+       * off: it paints into fixed lanes, so a high total feature count is not a
+       * per-glyph render cost and only the download budget should gate it. That
+       * override is in its own `.views` block, after the `.compose`, so it wins
+       * over the contributed `true` regardless of mixin order.
        */
       get densityGateEnabled(): boolean {
-        return true
+        return false
       },
       /**
        * #getter
@@ -707,6 +720,17 @@ export default function RegionTooLargeMixin() {
         return evaluateRegionTooLarge({
           estimatedFetchBytes: self.estimatedFetchBytes,
           byteLimit: self.resolvedByteLimit(),
+          // `densityGateActive` here is a **contract check with no reachable
+          // path**, and is kept deliberately. The only override of
+          // `densityTooLarge` in the tree reads the flag already — through
+          // `maxFeatureDensity`, which has to go undefined when the axis is off
+          // because it is also the worker's budget — so removing this term
+          // leaves every display in the tree behaving identically, which is
+          // measured and not assumed (the whole canvas/maf/variants/alignments/
+          // arc suite passes without it). What it holds is the rule for the
+          // next display that fills the hook: an axis that may not act does not
+          // gate, and that stays this mixin's answer rather than something each
+          // overrider has to remember.
           densityTooLarge: self.densityGateActive && self.densityTooLarge,
         })
       },

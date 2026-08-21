@@ -563,4 +563,21 @@ describe('multi-row derived regionTooLarge (density axis)', () => {
     expect(display.densityTooLarge).toBe(false)
     expect(display.regionTooLarge).toBe(false)
   })
+
+  // The axis is on where something measures it. `RegionTooLargeMixin` defaults
+  // it off, `CanvasFeatureGateMixin` contributes the `true`, and this display
+  // takes it back off in its own `.views` — which is what makes the override
+  // independent of mixin order. Nothing else pins the per-display default:
+  // `gateTruthTable` overrides the hook to enumerate it, so it cannot see which
+  // way the base points.
+  it('turns the contributed density axis back off, in compose order', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    settle(view)
+    expect(display.gateActive).toBe(true)
+    expect(display.aboveForceLoadFloor).toBe(true)
+    // ...so the only term left holding the axis off is this display's own
+    expect(display.densityGateEnabled).toBe(false)
+    expect(display.densityGateActive).toBe(false)
+  })
 })

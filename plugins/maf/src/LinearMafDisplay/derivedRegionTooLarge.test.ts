@@ -45,6 +45,22 @@ describe('MAF summary swap vs the force-load floor', () => {
     expect(display.measuresBytesPreFlight).toBe(true)
   })
 
+  // A byte-only display has no features-per-pixel number, so it must not claim
+  // the density axis. It used to: `densityGateEnabled` defaulted true, which put
+  // maf, alignments, arc, LD and multi-sample-variant permanently in
+  // `densityGateActive === true` — inert, since their `densityTooLarge` is the
+  // base false, and a state that reads as the opposite of the truth.
+  it('claims no density axis, having no density to measure', () => {
+    const { display, view } = createMafTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    // every other term for the axis is satisfied here
+    expect(display.gateActive).toBe(true)
+    expect(display.aboveForceLoadFloor).toBe(true)
+    expect(display.densityGateEnabled).toBe(false)
+    expect(display.densityGateActive).toBe(false)
+    expect(display.densityTooLarge).toBe(false)
+  })
+
   it('summarizes above the floor and swaps back to the gated detail path below it', () => {
     const { display, view } = createMafTestEnvironment({
       summaryAdapter: { type: 'BigBedAdapter' },
