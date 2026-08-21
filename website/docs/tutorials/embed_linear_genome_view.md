@@ -244,8 +244,8 @@ Notes:
 ## See also
 
 - [](/docs/embedded_components)
-- [Configuring assemblies](/docs/config_guides/assemblies)
-- [Configuring tracks](/docs/config_guides/tracks)
+- [](/docs/config_guides/assemblies)
+- [](/docs/config_guides/tracks)
 - [LGV storybook](https://jbrowse.org/storybook/lgv/)
 - [](/docs/jbrowse_anywidget)
 - [](/docs/jbrowser)

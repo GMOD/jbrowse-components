@@ -341,8 +341,8 @@ their edges, and the short blocks in ordinary breeds do not.
 ## See also
 
 - [](/docs/tutorials/dog10k_svs)
-- [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof)
-- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/dog10k_lof)
+- [](/docs/tutorials/dog10k_selection)
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/user_guides/multirow_feature_track)

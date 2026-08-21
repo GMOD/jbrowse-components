@@ -58,7 +58,7 @@ All three of those lanes are one experiment read three ways: ENCODE's Arrowhead
 and HiCCUPS call sets for GM12878 are derived from the in situ matrix drawn
 underneath them, so the arcs cannot agree with the matrix by coincidence and
 cannot be checked against it either. That is the reason the page reads GM12878
-here rather than any other line — a domain-and-loop figure needs a matrix whose
+here rather than any other line: a domain-and-loop figure needs a matrix whose
 own published calls are available, and it needs them deep enough that a 600 kb
 block has visible edges.
 

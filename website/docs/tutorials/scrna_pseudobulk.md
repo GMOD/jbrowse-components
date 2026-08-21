@@ -263,8 +263,8 @@ produces.
 
 - [](/docs/tutorials/scatac_pseudobulk)
 - [](/docs/tutorials/rnaseq)
-- [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
-- [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
+- [](/docs/config_guides/multiquantitative_track)
+- [](/docs/config/multiwiggleadapter)
 - [](/docs/user_guides/clustering)
 
 ## References

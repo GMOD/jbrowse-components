@@ -112,11 +112,12 @@ stacking:
   rather than stored as zero, so the lane goes blank rather than to the floor.
   Most of the genome scores near the top of its range, so a blank stretch is
   unusual. How it summarizes decides whether it survives a wide window: the
-  default **avg** draws a wall near the ceiling where a zoom bin is mostly
-  absent, while **min** takes the worst position in the bin and sits on the
-  floor across the block, stepping up at the same coordinate as the MAPQ 0 to
-  MAPQ 60 transition and the gnomAD coverage step. Past about a kilobase per
-  pixel even **min** saturates low, so this lane belongs in the narrower frame.
+  default **Score → Summary score mode → Whiskers** draws each pixel's min and
+  max, so a bin touching one unique position paints full height, while
+  **Minimum** takes the worst position in the bin and sits on the floor across
+  the block, stepping up at the same coordinate as the MAPQ 0 to MAPQ 60
+  transition and the gnomAD coverage step. Past about a kilobase per pixel even
+  **Minimum** saturates low, so this lane belongs in the narrower frame.
 - **gnomAD v3 mean genome coverage** is the outcome of that annotation on real
   data, averaged over tens of thousands of sequenced genomes. gnomAD drops
   non-uniquely-placed reads before computing it, so wherever the lane above is

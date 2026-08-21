@@ -110,6 +110,17 @@ export function pluginCheckout(name: string) {
   return join(primaryRepoRoot, '..', 'jb2plugins', `jbrowse-plugin-${name}`)
 }
 
+// The React library a plugin wraps, checked out beside this repo rather than
+// under `jb2plugins`. A plugin's own `src/` is the launcher and the dialog; the
+// view the launcher opens is the library's, so every label under that view's own
+// menus lives here and nowhere the plugin checkout can reach. `msaview`'s File
+// menu is the worked example: the docs walk a reader to
+// **File → Annotations → Query InterProScan...**, and all three of those
+// segments are react-msaview's.
+export function libraryCheckout(name: string) {
+  return join(primaryRepoRoot, '..', name)
+}
+
 // A doc's path relative to website/docs ("tutorials/foo.md") — the form every
 // validator reports a problem against and prefix-matches the generated
 // directories on.

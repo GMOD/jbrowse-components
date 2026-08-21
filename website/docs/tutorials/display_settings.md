@@ -5,7 +5,6 @@ description:
   in a link, a session file, or config.json
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
-data: hosted
 ---
 
 **TL;DR:** every setting in a track menu has a name, and JBrowse will tell you

@@ -1148,12 +1148,12 @@ one run of segments, which is the collapse the depth curve reads as a spike and
 
 ### Drawing the haplotype paths
 
-A P line is a walk: the ordered list of segments one strain takes through the
-graph. **View menu → Settings → Draw paths** draws them. Every node and every
-connector is split lengthwise into one lane per path, in the order of the color
-key beside the drawing, and a strain that does not walk a node leaves its lane
-empty there. Set **Color** to **Grey** first, so the only colors in the drawing
-are the paths.
+A P line is a path: the ordered list of segments one strain takes through the
+graph, and a W line is the same thing in GFA 1.1's walk syntax. **View menu →
+Settings → Draw paths** draws them. Every node and every connector is split
+lengthwise into one lane per path, in the order of the color key beside the
+drawing, and a strain that does not walk a node leaves its lane empty there. Set
+**Color** to **Grey** first, so the only colors in the drawing are the paths.
 
 One lane per path makes carriage legible on a node as short as a single base: an
 absence lands at the same height on every node, so a missing strain is a gap in

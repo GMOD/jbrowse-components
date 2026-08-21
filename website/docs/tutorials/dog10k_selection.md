@@ -278,8 +278,8 @@ read from the figure.
 
 ## See also
 
-- [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof)
-- [SVs (Dog10K)](/docs/tutorials/dog10k_svs)
+- [](/docs/tutorials/dog10k_lof)
+- [](/docs/tutorials/dog10k_svs)
 - [](/docs/tutorials/local_ancestry)
 - [](/docs/tutorials/population_genomics)
 - [](/docs/tutorials/bxd_qtl)

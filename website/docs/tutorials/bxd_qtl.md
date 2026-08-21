@@ -8,10 +8,10 @@ tutorial_category: Population genomics
 data: download
 ---
 
-**TL;DR:** build two mm10 tracks from one BXD genotype matrix, a strain
-chromosome-painting `LinearMultiRowFeatureDisplay` and a QTL Manhattan
-`GWASTrack`, then stack them so a trait peak sits directly over the B/D
-haplotype blocks that drive it.
+**TL;DR:** build a strain chromosome-painting `LinearMultiRowFeatureDisplay`
+from the BXD genotype matrix and a `GWASTrack` from GeneNetwork's own GEMMA
+scan, then stack them so a trait peak sits directly over the B/D haplotype
+blocks that drive it.
 
 ## Prerequisites
 
@@ -237,11 +237,11 @@ blocks away from the locus.
 
 ### Ordering the rows by the whole chromosome instead
 
-Sorting keys every row on one column. The track menu's **Clustering** →
-**Cluster rows by similarity** keys them on the whole visible region instead and
-draws the tree down the left-hand side; a session can trigger it declaratively
-with `runClustering: true`, the same way `sortRowsBy` bakes in a sort. See
-[](/docs/user_guides/multivariant_track).
+Sorting keys every row on one column. The track menu's **Clustering → Cluster
+rows by similarity** keys them on the whole visible region instead and draws the
+tree down the left-hand side; a session can trigger it declaratively with
+`runClustering: true`, the same way `sortRowsBy` bakes in a sort. See
+[](/docs/user_guides/clustering).
 
 Clustering is computed over the region in view, so this is chr4 similarity
 rather than a genome-wide relatedness. For this scan the sorted order above is
@@ -276,9 +276,9 @@ sharp enough to be worth sorting the painting underneath.
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/population_genomics)
-- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/dog10k_selection)
 - [](/docs/tutorials/local_ancestry)
 - [](/docs/user_guides/gwas_track)
-- [GWAS track configuration](/docs/config_guides/gwas_track)
-- [jexl](/docs/config_guides/jexl)
+- [](/docs/config_guides/gwas_track)
+- [](/docs/config_guides/jexl)
 - [](/docs/user_guides/clustering)

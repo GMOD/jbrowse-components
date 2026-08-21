@@ -489,10 +489,10 @@ It needs everything under [Prerequisites](#prerequisites) on your `PATH`.
 
 ## See also
 
-- [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/homoeolog_synteny)
-- [Synteny visualization](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/user_guides/linear_synteny_view)
-- [Synteny track config guide](/docs/config_guides/synteny_track)
-- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter)
+- [](/docs/config_guides/synteny_track)
+- [](/docs/config/mcscanblocksadapter)

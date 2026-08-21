@@ -152,8 +152,10 @@ The display derives the key from the state colors: one entry per distinct color,
 labeled with the first state name seen in it, so it cannot disagree with what is
 painted. States that share a color collapse into one entry, which in the Broad
 15-state model pairs `4_Strong_Enhancer` with `5_`, `6_Weak_Enhancer` with `7_`,
-and the two transcription states with each other. Turn the key off with
-**Show... → Show legend** in the track menu, or spell it out with the
+and `9_Txn_Transition` with `10_Txn_Elongation`. `13_Heterochrom/lo` and both
+`Repetitive/CNV` states share one grey, so unchecking that entry hides all
+three. Turn the key off with **Show... → Show legend** in the track menu, or
+spell it out with the
 [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) slot.
 
 Most of any segmentation is quiescent or heterochromatic, which is what the pale
@@ -248,8 +250,8 @@ by reading the list.
 
 **ENCODE2012 is a group in that list and is not a tissue**, which is worth
 knowing before reading the stripe. Roadmap folded the ENCODE 2012 reference
-epigenomes into the compendium under a group of their own — GM12878, K562,
-HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest — so it is the one entry naming
+epigenomes into the compendium under a group of their own (GM12878, K562,
+HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest), so it is the one entry naming
 where the data came from rather than what it is. It is also the largest group,
 and its members span ten anatomies, from blood to skin to lung, which is why the
 stripe reads as mixed where that colour appears. Roadmap's own vocabulary is
@@ -297,4 +299,4 @@ carry no color at all.
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/scatac_pseudobulk)
 - [](/docs/user_guides/clustering)
-- [Configuring tracks](/docs/config_guides/tracks)
+- [](/docs/config_guides/tracks)

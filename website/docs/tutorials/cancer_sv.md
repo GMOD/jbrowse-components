@@ -89,11 +89,11 @@ endpoint of one lands close enough to an endpoint of the other that a single
 read could carry both:
 
 ```bash
-python3 sv_multihop.py chains COLO829.wf-somatic-sv.vcf.gz --min-hops 3
+python3 sv_multihop.py chains COLO829.somatic-sv.vcf.gz --min-hops 3
 ```
 
 ```
-100 distinct junctions in COLO829.wf-somatic-sv.vcf.gz
+100 distinct junctions in COLO829.somatic-sv.vcf.gz
 4 chain(s) of >=3 junctions linked by reference segments <=20000 bp
 
 chain 1: 3 junctions across 3 chromosome(s)

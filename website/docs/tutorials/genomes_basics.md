@@ -51,7 +51,7 @@ starts. Type `TP53` into the location box and press Enter. The hosted config
 ships a name index, so gene symbols resolve with no setup, and coordinates like
 `chr17:7,668,400-7,687,550` work anywhere a symbol does.
 
-<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens — as many transcripts as the track's height holds, the gene labelled TP53 +20 more for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
+<Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens, as many transcripts as the track's height holds, the gene labelled TP53 +20 more for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
 
 RefSeq All draws each transcript of a gene on its own row and writes the gene
 name under the stack, and TP53 has far more transcripts than a track opens tall
@@ -86,7 +86,7 @@ carry the codons this gene is most often mutated at in cancer, and phyloP is
 high across all four of them, so a variant landing there has 100 vertebrates
 saying the base matters.
 
-The introns drop to the pivot, and so does the other shaded block — the 3' UTR,
+The introns drop to the pivot, and so does the other shaded block: the 3' UTR,
 an exon as wide as any coding one and present in every transcript. The track
 follows the protein, and the 3' UTR is where the protein and the transcript come
 apart. A variant there gets no support from this track either way.
@@ -100,9 +100,9 @@ in human cancer: Arg248 reaches into the DNA itself, and the other two hold the
 loop that carries it.
 
 One more click makes it readable: tick **Reference sequence**, which is off by
-default. The isoform control is the same one the search figure used — its (×)
+default. The isoform control is the same one the search figure used, and its (×)
 shrinks the chip to the icon circled below, which stays in that corner and opens
-the same options — and at this zoom it matters more, since the default draws the
+the same options. At this zoom it matters more, since the default draws the
 codon row once per transcript.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />

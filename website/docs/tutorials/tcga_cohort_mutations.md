@@ -131,9 +131,10 @@ Three choices there:
   and color rows by. Nothing groups until you ask for it, below.
 
 [`height`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-height) sets
-how much of the page a cohort this size gets. Rows auto-fit by dividing it and,
-unlike the multi-row feature display, are allowed to go below a pixel, so a
-band's mutation density reads as how dark it is.
+how much of the page a cohort this size gets. Rows auto-fit by dividing it. The
+multi-row feature display paints each row at a one-pixel floor so neighbours
+overlap; the matrix has no such floor, so a band's mutation density reads as how
+dark it is.
 
 ## Group the rows by clinical annotation
 
@@ -291,8 +292,9 @@ The two rows above go opposite ways across the same four columns: _TP53_ climbs
 toward the triple-negative group where _PIK3CA_ falls.
 
 `--impact` sets what counts as a hit, defaulting to the HIGH and MODERATE tiers,
-which are the ones the matrix draws in a color rather than in grey. So a gene's
-rate and the cells beside it are counting the same calls.
+since LOW and MODIFIER are the synonymous, UTR and intronic calls a recurrence
+figure should not count. So a gene's rate and the cells beside it are counting
+the same calls.
 
 The rate carries no background model and no significance test, and gene length
 enters the count directly: _TTN_ is 100 kb of coding sequence, so it ranks near
@@ -406,12 +408,12 @@ Four of its steps decide whether the resulting track is correct:
 
 ## See also
 
-- [Multi-sample variant tracks](/docs/user_guides/multivariant_track)
-- [Variant tracks](/docs/config_guides/variant_track)
+- [](/docs/user_guides/multivariant_track)
+- [](/docs/config_guides/variant_track)
 - [](/docs/user_guides/clustering)
 - [](/docs/tutorials/tcga_cohort_cnv)
 - [](/docs/tutorials/dog10k_selection)
-- [jexl](/docs/config_guides/jexl)
+- [](/docs/config_guides/jexl)
 
 ## References
 

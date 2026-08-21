@@ -194,9 +194,9 @@ across every row, so a missing block on the left only means something because
 the blocks around it agree.
 
 The calls ride along on NCBI's own protein records, so they arrive with the
-sequences and cost no extra step. For a protein NCBI has no calls for, the view
-menu offers **Open domains...** to read them from a file and **Query
-InterProScan for domains...** to compute them.
+sequences and cost no extra step. For a protein NCBI has no calls for, **File →
+Annotations → Open InterProScan results...** reads them from a file and **File →
+Annotations → Query InterProScan...** computes them.
 
 ### Checking it against the raw alignment
 

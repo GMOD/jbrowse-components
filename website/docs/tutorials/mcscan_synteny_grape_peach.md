@@ -324,9 +324,9 @@ whatever the GFF3 carried.
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/user_guides/linear_synteny_view)
-- [Synteny track config guide](/docs/config_guides/synteny_track)
-- [MCScanAnchorsAdapter config](/docs/config/mcscananchorsadapter)
-- [MCScanSimpleAnchorsAdapter config](/docs/config/mcscansimpleanchorsadapter)
+- [](/docs/config_guides/synteny_track)
+- [](/docs/config/mcscananchorsadapter)
+- [](/docs/config/mcscansimpleanchorsadapter)
 
 ## References
 

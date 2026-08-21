@@ -99,7 +99,7 @@ script's `--max-ds` doubles as the filter that removes it.
 
 The other end matters more, and it is a matter of counting rather than of rate.
 Sorting the table by dN/dS and reading off the top returns the pairs with almost
-nothing to divide by: HBA1, about as strongly conserved as a gene gets, comes
+nothing to divide by: _HBA1_, about as strongly conserved as a gene gets, comes
 out over 2 off a single synonymous difference, and so do the others near the
 top. `--min-syn-subs` is the floor, on the count itself. A rate cannot do this
 job, because dS is per site and the same rate is much weaker evidence in a short
@@ -144,7 +144,8 @@ That ramp's middle is 1 and its top is 2, fixed rather than scaled to the data:
 which side of 1 a pair falls on is the question being asked, and an auto-scaled
 mode would put the pivot wherever the maximum happened to land.
 
-Two settings matter for a view this sparse. `alpha` defaults to 0.2, which is
+Two settings matter for a view this sparse, and both are properties of the
+`LinearSyntenyView` rather than of the track. `alpha` defaults to 0.2, which is
 tuned for whole-genome views where thousands of ribbons overlap and would wash a
 dozen out to nothing; at 0.95 the colour is the colour. `drawCurves` renders the
 links as beziers, which separates neighbours that would otherwise stack.
@@ -173,13 +174,13 @@ _below_ 1 and almost none significantly above.
 
 ## Checking it against the raw data
 
-The figure carries its own control. YEATS4 begins just past where LYZ ends, so
-the two share a locus, a divergence time and a neighbourhood, and they land at
-opposite ends of the ramp. Anything that moved both genes together, an alignment
-artefact or a mis-set divergence, would not produce that. YEATS4 is also the
-case a floor on dS would have thrown away: it is conserved and compact, so its
-dS is low while its synonymous count is perfectly adequate, which is why the
-floor counts substitutions instead.
+The figure carries its own control. _YEATS4_ begins just past where _LYZ_ ends,
+so the two share a locus, a divergence time and a neighbourhood, and they land
+at opposite ends of the ramp. Anything that moved both genes together, an
+alignment artefact or a mis-set divergence, would not produce that. _YEATS4_ is
+also the case a floor on dS would have thrown away: it is conserved and compact,
+so its dS is low while its synonymous count is perfectly adequate, which is why
+the floor counts substitutions instead.
 
 The [script](#reproduce-it-end-to-end) prints the neighbourhood beside the
 genome-wide distribution, and reports it as two counts rather than one: how many

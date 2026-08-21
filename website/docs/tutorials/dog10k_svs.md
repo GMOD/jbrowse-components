@@ -11,7 +11,7 @@ data: pipeline
 
 **TL;DR:** slice a locus out of the Dog10K structural-variant callsets over
 HTTP, load it as a `VariantTrack` in the multi-sample variant display with breed
-labels, and read the genotypes against the gene model above it. Five loci, one
+labels, and read the genotypes against the gene model above it. Four loci, one
 recipe, a different class of variant each time.
 
 ## Prerequisites
@@ -586,8 +586,8 @@ on an annotated _FGF4_ intron and each deposited CDS is a single interval.
 
 ## See also
 
-- [Loss-of-function allele (Dog10K)](/docs/tutorials/dog10k_lof)
-- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/dog10k_lof)
+- [](/docs/tutorials/dog10k_selection)
 - [](/docs/tutorials/local_ancestry)
 - [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_cnv)

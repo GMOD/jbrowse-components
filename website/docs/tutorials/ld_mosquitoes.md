@@ -9,9 +9,9 @@ data: hosted
 ---
 
 **TL;DR:** a 22 Mb inversion reads as one block, from `plink --r2` output
-through an [`LDTrack`](/docs/config/plinkldtabixadapter). What decides whether a
-locus shows anything is the panel, the allele frequency floor and the metric.
-The same inversion also loads as a structural variant genotyped per mosquito.
+through an [`LDTrack`](/docs/config/ldtrack). What decides whether a locus shows
+anything is the panel, the allele frequency floor and the metric. The same
+inversion also loads as a structural variant genotyped per mosquito.
 
 ## Prerequisites
 
@@ -238,7 +238,7 @@ karyotyping tag SNPs from the Ag3 method.
 - [](/docs/tutorials/population_genomics)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/variant_track)
-- [Variant track configuration](/docs/config_guides/variant_track)
+- [](/docs/config_guides/variant_track)
 - [Gallery: variants and populations](/gallery/#variants)
 
 ## References

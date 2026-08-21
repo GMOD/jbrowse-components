@@ -125,8 +125,7 @@ block, and the gene track still shows which exon it sits in.
 The build script genotypes the same site over every canid in the callset. Dozens
 of breeds carry the allele and it reaches homozygosity in several: among the
 dogs sampled here, no German Hound and no Shetland Sheepdog is homozygous
-reference. It is absent from every wolf and every coyote in the collection,
-which is the answer to the second question. The allele arose in dogs.
+reference. It is absent from every wolf and every coyote in the collection.
 
 Three neighbours sit inside the same 101 bp, and the display filters them out:
 
@@ -263,7 +262,7 @@ be checked against the numbers that produced them.
 ## See also
 
 - [](/docs/tutorials/dog10k_svs)
-- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/dog10k_selection)
 - [](/docs/tutorials/local_ancestry)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/config_guides/variant_track)

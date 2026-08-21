@@ -52,7 +52,7 @@ and the two signals it draws are Fst across the `In(2L)t` inversion, which
 suppresses recombination between the two arrangements in a heterozygote
 ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)),
 and the π landscape, which dips at loci under selection such as the
-insecticide-resistance gene `Cyp6g1`
+insecticide-resistance gene _Cyp6g1_
 ([Daborn et al. 2002](https://doi.org/10.1126/science.1074170)).
 
 ## Building the scans
@@ -142,7 +142,7 @@ bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
 ```
 
 Window size trades resolution for smoothness. 2 kb is dense enough in this panel
-that a single-gene sweep like `Cyp6g1` resolves sharply. Widen toward 5-10 kb
+that a single-gene sweep like _Cyp6g1_ resolves sharply. Widen toward 5-10 kb
 for smoother genome-wide overviews, or narrow further only where SNP density
 stays high.
 
@@ -239,13 +239,14 @@ out.
 
 The three scans are read against each other rather than one at a time. Search
 `Cyp6g1` (on `2R`) in the location box and add the Tajima's D track alongside π.
-Both dip together over the swept window, where either statistic alone would be
-ambiguous. Add the called-variant count under them, which is column 4 of the
-table π comes from, so it counts the same windows over the same calls. A
-duplication of `Cyp6g1` segregates alongside the resistance allele
-([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
-number costs a window called sites, so how far the count falls beside π is worth
-seeing rather than assuming.
+Both dip together over the swept window. D carries π inside it, so the pair says
+the frequency spectrum is skewed further toward rare alleles than the drop in
+diversity on its own accounts for. Add the called-variant count under them,
+which is column 4 of the table π comes from, so it counts the same windows over
+the same calls. A duplication of `Cyp6g1` segregates alongside the resistance
+allele ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)),
+and copy number costs a window called sites, so how far the count falls beside π
+is worth seeing rather than assuming.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip over the highlighted window against their background either side, the joint trough being the hard-sweep signature. The count under them falls too, but nothing like as far."/>
 
@@ -258,7 +259,7 @@ Each pair of values reads differently, which is what the stack is for:
 | Low  | High                   | Shared variation / gene flow                     |
 
 Other selection loci in this panel read the same way against their own genes,
-including `Ace` and `CHKov1` on `3R`. `In(3R)Payne`, a cosmopolitan inversion
+including _Ace_ and _CHKov1_ on `3R`. `In(3R)Payne`, a cosmopolitan inversion
 under clinal selection, is typed in the same DGRPool table set, so repeating the
 grouping step with its phenotype scans `3R` exactly as the steps above scan
 `2L`.
@@ -357,12 +358,12 @@ in JBrowse Desktop.
 
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/multiquantitative_track)
-- [Multi-sample variant track](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/gwas_track)
-- [Configuring assemblies](/docs/config_guides/assemblies)
+- [](/docs/config_guides/assemblies)
 - [](/docs/tutorials/ld_human)
 - [](/docs/tutorials/ld_mosquitoes)
-- [Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)
+- [](/docs/tutorials/dog10k_selection)
 - [](/docs/jbrowse_anywidget)
 
 ## References

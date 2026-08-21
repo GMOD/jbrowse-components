@@ -357,14 +357,14 @@ serves both tracks.
 
 ## See also
 
-- [Multi-row feature tracks](/docs/user_guides/multirow_feature_track)
-- [Quantitative tracks](/docs/user_guides/quantitative_track)
+- [](/docs/user_guides/multirow_feature_track)
+- [](/docs/user_guides/quantitative_track)
 - [](/docs/tutorials/tcga_cohort_mutations)
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/population_cnv)
 - [](/docs/tutorials/sv_visualization_cgiab)
-- [jexl](/docs/config_guides/jexl)
+- [](/docs/config_guides/jexl)
 
 ## References
 

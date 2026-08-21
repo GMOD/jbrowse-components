@@ -360,8 +360,8 @@ timopheevii's chromosomes from its
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/user_guides/linear_synteny_view)
-- [Synteny track config guide](/docs/config_guides/synteny_track)
-- [MCScanBlocksAdapter config](/docs/config/mcscanblocksadapter)
+- [](/docs/config_guides/synteny_track)
+- [](/docs/config/mcscanblocksadapter)
 
 ## References
 

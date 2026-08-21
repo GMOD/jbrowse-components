@@ -28,7 +28,7 @@ which samples went in.
 
 Red means two variants are almost always inherited together, white means they
 are independent, so the triangle shows where a stretch of chromosome travels as
-a unit. The [`LDDisplay`](/docs/config/sharedlddisplay/) is per-population by
+a unit. The [`LDDisplay`](/docs/config/lddisplay/) is per-population by
 construction: r² is a correlation across whatever samples you hand it.
 
 An `LDDisplay` on an ordinary `VariantTrack` is the whole setup, with no

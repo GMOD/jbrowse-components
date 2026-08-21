@@ -221,12 +221,12 @@ and the bigWigs straight from local disk with no web server.
 
 ## Color the reads
 
-In the alignments track menu, pick **Color by...** then **Bisulfite / EM-seq**,
-then a cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**.
-Methylated cytosines paint red, and **Show unmethylated (blue)** adds the
-converted sites in blue, which is what separates an unmethylated cytosine from
-no cytosine at all: with it off, both are blank. The mode is reference-based, so
-it only means anything on a bisulfite or EM-seq library.
+In the alignments track menu, pick **Color by... → Bisulfite / EM-seq**, then a
+cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**. Methylated
+cytosines paint red, and **Show unmethylated (blue)** adds the converted sites
+in blue, which is what separates an unmethylated cytosine from no cytosine at
+all: with it off, both are blank. The mode is reference-based, so it only means
+anything on a bisulfite or EM-seq library.
 
 The figure below leaves **Show unmethylated** off, so methylation reads as
 presence of red and the three contexts contrast without a red/blue mix on every
@@ -291,6 +291,6 @@ alignment step downloads a full WGBS run, so allow time and disk for it.
 
 ## See also
 
-- [Long-read methylation](/docs/tutorials/methylation)
+- [](/docs/tutorials/methylation)
 - [](/docs/user_guides/multiquantitative_track)
 - [](/docs/user_guides/alignments_track)

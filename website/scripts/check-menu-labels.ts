@@ -28,7 +28,13 @@ import { join } from 'node:path'
 
 import { docFiles, reportProblems } from './check-utils.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
-import { docRelative, docsDir, pluginCheckout, repoRoot } from './paths.ts'
+import {
+  docRelative,
+  docsDir,
+  libraryCheckout,
+  pluginCheckout,
+  repoRoot,
+} from './paths.ts'
 
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
@@ -52,6 +58,8 @@ const SUPPRESS = '<!-- menu-path-ok -->'
 // unchecked forever. Same reason spec-recipe-unmapped.txt is a checked-in list
 // of names rather than a count.
 const PLUGIN_SRC = (name: string) => join(pluginCheckout(name), 'src')
+const LIBRARY_SRC = (name: string, ...rest: string[]) =>
+  join(libraryCheckout(name), ...rest)
 
 // A page can name labels from more than one plugin — the proteins page walks
 // one right-click menu that protein3d and msaview each contribute a launcher
@@ -64,7 +72,11 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
   ['tutorials/pangenome_cactus.md', [PLUGIN_SRC('graphgenomeview')]],
   [
     'tutorials/genomes_proteins.md',
-    [PLUGIN_SRC('protein3d'), PLUGIN_SRC('msaview')],
+    [
+      PLUGIN_SRC('protein3d'),
+      PLUGIN_SRC('msaview'),
+      LIBRARY_SRC('react-msaview', 'packages', 'lib', 'src'),
+    ],
   ],
 ])
 

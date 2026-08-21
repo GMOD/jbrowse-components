@@ -66,8 +66,8 @@ jbrowse add-track sample.bam --load copy --out myproject --name "My reads"
 jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variants"
 ```
 
-`--name hg38` is the assembly name you'll type into the location box. `--name`
-on a track is its label in the track list.
+`--name hg38` is the assembly name the session and the assembly selector use.
+`--name` on a track is its label in the track list.
 
 `--load` says how the CLI places a local file relative to the config (omit it
 for a remote URL, which is referenced in place):
@@ -139,7 +139,7 @@ jbrowse set-default-session --session session.json --out myproject
 ## Open it in JBrowse Desktop
 
 In JBrowse Desktop, choose **File → Session → Open config.json or .jbrowse
-file…** (or the **Open .jbrowse or config.json or link** button on the start
+file...** (or the **Open .jbrowse or config.json or link** button on the start
 screen) and pick `myproject/config.json`. Desktop resolves each relative path
 against the config's own folder, loading the copied files straight from local
 disk, with no web server and no re-adding tracks through the UI.
@@ -193,7 +193,7 @@ jbrowse text-index --out myproject
 
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
-- [CLI command reference](/docs/cli)
-- [Desktop quickstart](/docs/quickstart_desktop)
-- [Web quickstart](/docs/quickstart_web)
-- [Configuring assemblies](/docs/config_guides/assemblies)
+- [](/docs/cli)
+- [](/docs/quickstart_desktop)
+- [](/docs/quickstart_web)
+- [](/docs/config_guides/assemblies)

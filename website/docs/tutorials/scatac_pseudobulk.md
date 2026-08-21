@@ -318,9 +318,9 @@ cell count rather than its accessibility.
 ## See also
 
 - [](/docs/tutorials/scrna_pseudobulk)
-- [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
-- [MultiWiggleAdapter config](/docs/config/multiwiggleadapter)
-- [MultiLinearWiggleDisplay model](/docs/models/multilinearwiggledisplay)
+- [](/docs/config_guides/multiquantitative_track)
+- [](/docs/config/multiwiggleadapter)
+- [](/docs/models/multilinearwiggledisplay)
 - [](/docs/user_guides/clustering)
 - [](/docs/tutorials/chromhmm)
 

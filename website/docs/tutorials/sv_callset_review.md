@@ -6,7 +6,6 @@ description:
   the directory, and check the calls against the matched normal
 guide_category: Tutorials
 tutorial_category: Cancer genomics
-data: download
 ---
 
 **TL;DR:** a somatic caller hands you hundreds of junctions and clicking through

@@ -459,11 +459,13 @@ synteny view. See the
 
 ## The one donor worth loading
 
-On this graph exactly one contributor can be loaded as an assembly: CHM13. The
-464 haplotypes name their contigs by GenBank accession (`CM102524.1`); CHM13
-spells its contigs `chr17` and is a published reference, T2T-CHM13v2.0, which
-UCSC serves as `hs1`. Its coordinates are that assembly's: CHM13 segments on
-chr17 run past the end of GRCh38's chr17 and inside hs1's.
+Two contributors spell their contigs `chr17`-style and can be loaded as
+assemblies: CHM13 and HG002, whose two haplotypes count separately. The other
+460 haplotypes name their contigs by GenBank accession (`CM102524.1`). CHM13 is
+the one with a published reference behind it, T2T-CHM13v2.0, which UCSC serves
+as `hs1`; [](/docs/tutorials/hg002_haplotypes) loads the other. Its coordinates
+are that assembly's: CHM13 segments on chr17 run past the end of GRCh38's chr17
+and inside hs1's.
 
 Load it under its own name, with the graph's spelling as an alias. The view
 resolves a donor through `assemblyManager`, which is keyed by name and aliases
@@ -856,7 +858,7 @@ does not mean the earlier haplotypes lacked the sequence. Carriage is
 
 The `wave.vcf.gz` needs nothing: its index ships beside it, so JBrowse reads
 only the slice you are viewing out of the 2.3 GB file. Paste the S3 URL into a
-`VariantTrack` and pick the matrix display:
+`VariantTrack` and pick the multi-sample display:
 
 ```json
 {
@@ -1047,7 +1049,7 @@ where each segment starts and stops.
 Both matrices are clustered, and over different measurements: the callset by
 genotype, the alignment by how much of each bin a haplotype aligns and matches
 at, where a bin it does not reach scores zero. So the two dendrograms are not
-each other's, and neither is the graph's attribution — that credits a segment to
+each other's, and neither is the graph's attribution, which credits a segment to
 whichever assembly first contributed it, where a genotype names every haplotype
 that carries the allele. What lines up across all of them is the span, which is
 what the band is for.

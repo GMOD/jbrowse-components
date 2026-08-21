@@ -33,12 +33,11 @@ at each position, and the reference gene annotation (an NCBI GFF) sits above it.
 
 ## Read coverage and read height
 
-The histogram counts the reads in the pileup below it at each position. This is
-raw depth, not an expression estimate: comparing genes or libraries needs the
-transcript-length and library-size normalization a counts pipeline applies and
-the browser does not.
+The histogram counts the reads in the pileup below it at each position.
+Comparing genes or libraries needs the transcript-length and library-size
+normalization a counts pipeline applies and the browser does not.
 
-Pick **Read height** → **Compact** in the track menu to pack the full read stack
+Pick **Read height → Compact** in the track menu to pack the full read stack
 into view:
 
 <Figure caption="ACTB under compact read height: the whole read stack fits the track, under the per-position coverage histogram and the hg19 NCBI RefSeq gene model." src="/img/rnaseq/compact_stacked.png" />
@@ -63,11 +62,13 @@ intron, and 33 bp (`M`) aligned to the next. Every `N` in a read's CIGAR is one
 skipped intron.
 
 JBrowse draws an arc for every read whose CIGAR contains a skip, on the fly. The
-arc takes its color from the transcript strand the aligner recorded in the
-read's `XS`, `TS` or `ts` tag: red for forward, blue for reverse. A read
-carrying none of those tags gets the no-strand color, so a BAM aligned by STAR
-without `--outSAMstrandField intronMotif` gives arcs of one neutral color. The
-track in the figure above is named `(BAM,XS)` for that reason.
+arc takes its color from the transcript strand: `XS` and `TS` record it
+directly, while minimap2's `ts` records the orientation relative to the read,
+which JBrowse combines with the read's own strand. Red for forward, blue for
+reverse. A read carrying none of those tags gets the no-strand color, so a BAM
+aligned by STAR without `--outSAMstrandField intronMotif` gives arcs of one
+neutral color. The track in the figure above is named `(BAM,XS)` for that
+reason.
 
 At Normal read height each spliced read stands on its own: two grey exon-aligned
 ends joined by a thin teal line across the skipped intron. That connector is
@@ -148,6 +149,6 @@ strand-specific BigWig from the aligner, loads separately as a
 - [](/docs/tutorials/methylation)
 - [](/docs/user_guides/alignments_track)
 - [](/docs/user_guides/quantitative_track)
-- [Gene tracks](/docs/user_guides/gene_track)
+- [](/docs/user_guides/gene_track)
 - [](/docs/jbrowse_anywidget)
 - [Gallery: alignments and long reads](/gallery/#alignments)

@@ -269,11 +269,11 @@ anything.
 
 - [](/docs/tutorials/local_ancestry)
 - [](/docs/tutorials/bxd_qtl)
-- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples)
+- [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/ld_human)
 - [](/docs/user_guides/multirow_feature_track)
 - [](/docs/user_guides/multivariant_track)
-- [Variant track config](/docs/config_guides/variant_track)
+- [](/docs/config_guides/variant_track)
 
 ## References
 

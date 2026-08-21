@@ -45,9 +45,8 @@ pile.
 
 ## Load it
 
-The whole panel goes in as one track rather than one per individual, which is
-what keeps a cohort this size to a handful of requests. Add hg38 first, then the
-track:
+The whole panel goes in as one track, so the display, the clustering and the
+color settings are declared once. Add hg38 first, then the track:
 
 ```json
 {
@@ -96,8 +95,8 @@ display settings turn that into a copy-number heatmap:
   the same shade as one extra copy. 0 to 4 lets both extremes saturate, and
   gains past 4 clamp, which the legend shows.
 
-Then run **Clustering → Cluster rows by score** in the track menu. Rows are in
-file order until you do, and copy-number classes only read as blocks once
+Then run **Clustering → Cluster rows by score...** in the track menu. Rows are
+in file order until you do, and copy-number classes only read as blocks once
 similar samples sit together.
 
 ## Read it
@@ -129,7 +128,7 @@ complements.
 
 Where the variation does fit the representation, they agree:
 
-<Figure caption="UGT2B17 on chr4, a biallelic deletion: depth is flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion at 47% allele frequency. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
+<Figure caption="UGT2B17 on chr4, a biallelic deletion: depth is flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
 ## Scaling past one population
 
@@ -222,7 +221,7 @@ store sitting beside `config.json` needs no absolute URL.
 That figure is the whole panel, and the panel is not what it cost. Two of the
 requests are metadata and happen once per store; the rest are chunks, and a
 chunk carries every sample across a range of bins. So what a view costs follows
-the width of the window rather than the size of the cohort — this frame is wider
+the width of the window rather than the size of the cohort. This frame is wider
 than the one measured above and spans a few more chunks, where 2504 BigWigs
 would still have been six reads each.
 
@@ -326,12 +325,12 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
 
 ## See also
 
-- [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track)
+- [](/docs/user_guides/multiquantitative_track)
 - [](/docs/tutorials/tcga_cohort_cnv)
 - [](/docs/tutorials/scrna_pseudobulk)
-- [Structural variants across samples](/docs/tutorials/sv_multisamples)
+- [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/dog10k_svs)
-- [Clustering](/docs/user_guides/clustering)
+- [](/docs/user_guides/clustering)
 
 ## References
 

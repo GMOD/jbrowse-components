@@ -11,8 +11,7 @@ data: hosted
 
 **TL;DR:** take one whole-gene deletion out of the 1000 Genomes ensemble SV
 callset, sort the cohort's genotypes at it, then open three of those samples'
-reads and watch the coverage go to zero, halve, and stay flat. Everything runs
-on a hosted demo, so no data download is needed.
+reads and watch the coverage go to zero, halve, and stay flat.
 
 ## Prerequisites
 
@@ -119,9 +118,9 @@ homozygous reference. Two settings make them comparable:
 - Turn the pileup off from the track menu's **Show...** submenu, since at this
   width the individual reads are a solid mass and it is the coverage curve that
   carries the comparison.
-- Set an explicit **min/max score** on each rather than leaving the default
-  autoscale, which fits each row to its own maximum and draws three different
-  depths at the same height.
+- Set an explicit **Set min/max score...** on each rather than leaving the
+  default autoscale, which fits each row to its own maximum and draws three
+  different depths at the same height.
 
 <Figure caption="The RHD deletion across three genotypes, coverage pinned to one shared axis, the banded span RHD itself. Top, HG00113 with no copy; middle, HG00096 with one; bottom, HG00097 with two." src="/img/multisv_rhd_dosage.png" />
 
@@ -139,34 +138,23 @@ the read's mapping quality.
 That makes the residue separable from real coverage with a display setting
 rather than a reprocessing step. Open HG00113's pileup inside the deleted span
 and set **Color by... → Mapping quality**: the ramp runs red at MAPQ 0 through
-to green at MAPQ 60, and reads the aligner could not confidently place come out
-red rather than sitting in the grey a thin real signal would.
+orange to yellow at MAPQ 60, and reads the aligner could not confidently place
+come out red rather than sitting in the grey a thin real signal would.
 
 Residual coverage inside a called deletion turns up wherever the deleted
 sequence has a close paralog, so this is a useful lane to reach for beyond this
 locus. Raising the track's mapping quality filter empties the span the same way,
 and suits the question of what the depth actually is.
 
-## Breakpoint split view
-
-Click the deletion bar in the variant track to open feature details. In the
-**BREAKENDS** section, click the split view link. This opens both breakpoints
-side-by-side in synchronized panels, with splines connecting supporting reads
-across both panels and the variant call drawn as a colored line with directional
-feet, so both junctions are on screen at once rather than one at a time.
-
-For more on navigating it, see
-[Breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view).
-
 ## See also
 
 - [](/docs/tutorials/mappability_qc)
 - [](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/sv_visualization)
-- [Multi-sample variant displays](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/multivariant_track)
 - [](/docs/user_guides/clustering)
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/dog10k_svs)
 - [](/docs/tutorials/population_cnv)
-- [Cancer SVs (C-GIAB)](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/jbrowse_anywidget)

@@ -110,7 +110,7 @@ Each long read is a single DNA molecule, so reads that carry an `HP` haplotype
 tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
 allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
 dialog scans the reads in view and reports the values it found, and it offers to
-color reads by the same tag — a box that arrives **checked**, because any scheme
+color reads by the same tag. The box arrives **checked**, because any scheme
 that is not already a tag counts as replaceable. Uncheck it, or the haplotypes
 come back as two flat colors and the methylation the section is about is gone.
 The pileup then stacks into one band per haplotype, computed in the browser with
@@ -167,8 +167,8 @@ without a large download:
 
 - [](/docs/user_guides/alignments_track#modifications-and-methylation)
 - [](/docs/user_guides/alignments_track#grouping-reads)
-- [Bisulfite and EM-seq](/docs/tutorials/bisulfite)
-- [Phased trio](/docs/tutorials/analyze_trio)
+- [](/docs/tutorials/bisulfite)
+- [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/rnaseq)
 - [](/docs/user_guides/multiquantitative_track)
