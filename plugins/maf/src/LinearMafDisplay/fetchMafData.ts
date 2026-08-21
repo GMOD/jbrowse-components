@@ -24,9 +24,9 @@ interface MafFetchSelf extends IStateTreeNode {
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
   // read rather than restated, so the frames pre-flight below is bounded by the
-  // same number as everything else on this display
-  gateByteLimit: number
-  gateActive: boolean
+  // same number as everything else on this display — and by the same one the
+  // worker enforces, since undefined is how `gateActive` reaches here
+  resolvedByteLimit: () => number | undefined
   fetchRegions: (
     needed: Needed,
     work: (ctx: RegionFetchContext) => Promise<void>,
@@ -174,12 +174,13 @@ async function framesReadOverBudget(
   adapterConfig: Record<string, unknown>,
   ctx: FetchContext,
 ) {
-  // force-load exempts the track on every axis, so one click covers this read
-  // too rather than leaving the overlay mysteriously off
-  if (!self.gateActive) {
+  // undefined is the gate declining to act at all — force-load exempts the
+  // track on every axis, so one click covers this read too rather than leaving
+  // the overlay mysteriously off
+  const limit = self.resolvedByteLimit()
+  if (limit === undefined) {
     return false
   }
-  const limit = self.gateByteLimit
   const bytes = await getSession(self).rpcManager.call(
     getRpcSessionId(self),
     'CoreGetRegionByteEstimate',

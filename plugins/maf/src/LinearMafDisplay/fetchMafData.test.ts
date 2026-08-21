@@ -100,8 +100,7 @@ function makeSelf() {
       adapterConfig: {},
       annotationDataActive: false,
       annotationAdapterConfig: undefined as Record<string, unknown> | undefined,
-      gateByteLimit: 1_000_000,
-      gateActive: true,
+      resolvedByteLimit: () => 1_000_000 as number | undefined,
       fetchRegions: (
         _needed: unknown,
         work: (ctx: RegionFetchContext) => unknown,
@@ -271,10 +270,13 @@ describe('the CDS-frame read is measured against its own file', () => {
 
   // Force-load exempts the track outright, on every axis — one informed click
   // covers this read too, rather than leaving the overlay mysteriously off
-  // after the banner is gone. It reaches here as `gateActive`, which is the
-  // whole "may anything gate right now" question rather than force-load alone.
+  // after the banner is gone. It reaches here as an undefined
+  // `resolvedByteLimit()`, which is the whole "may anything gate right now"
+  // question rather than force-load alone.
   test('force-load lifts it, and skips the measurement entirely', async () => {
-    const { self, framesFetched } = framesSelf({ gateActive: false })
+    const { self, framesFetched } = framesSelf({
+      resolvedByteLimit: () => undefined,
+    })
     respondWith(50_000_000)
     await fetchMafAlignmentData(self as any, NEEDED)
     expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)

@@ -555,9 +555,10 @@ export default function RegionTooLargeMixin() {
        * `maxFeatureDensity` already shipped once. "Neither worker budget may be
        * an RPC cache key", in REGION_TOO_LARGE.md § How the verdict is built.
        *
-       * `aboveForceLoadFloor` is also false on an unmeasured view, so read this
-       * under `gateActive`, as all three consumers do — `resolvedByteLimit()`,
-       * `tooLargeStatus`, and MAF's `framesReadOverBudget`.
+       * `aboveForceLoadFloor` is also false on an unmeasured view, so this must
+       * be read under `gateActive` — which is why nothing reads it directly.
+       * `resolvedByteLimit()` is the one consumer, and it is what the verdict,
+       * the worker and MAF's `framesReadOverBudget` all take.
        */
       get gateByteLimit() {
         return resolveByteLimit({
@@ -649,13 +650,21 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #method
-       * The byte budget a fetch RPC enforces worker-side, short-circuiting an
-       * over-budget region before it downloads any features. Undefined
-       * (unlimited) when the gate is off; otherwise the very number the banner
-       * compares against, so the worker can't reject a region the banner then
-       * calls fine. Lives here, not on the canvas gate that consumes it, because
-       * both its terms are this mixin's — canvas owns only how the density
-       * number is measured.
+       * The gated byte budget: `gateByteLimit` under `gateActive`, and the only
+       * spelling of that pair. Undefined (unlimited) when the gate may not act.
+       *
+       * **Three things take it, which is why it exists rather than each of them
+       * writing the ternary**: the fetch RPCs enforce it worker-side,
+       * short-circuiting an over-budget region before it downloads any features;
+       * `tooLargeStatus` compares the estimate against it for the banner; and
+       * MAF's `framesReadOverBudget` bounds a third file with it. A worker
+       * rejecting a region the banner then calls fine is a blank display that
+       * never refetches, and it is reachable only by two of these resolving
+       * differently.
+       *
+       * Lives here, not on the canvas gate that consumes it, because both its
+       * terms are this mixin's — canvas owns only how the density number is
+       * measured.
        */
       resolvedByteLimit(): number | undefined {
         return self.gateActive ? self.gateByteLimit : undefined
@@ -675,24 +684,29 @@ export default function RegionTooLargeMixin() {
        * The verdict the whole mixin exists to produce, with the banner text: true
        * when the measured download for what is on screen exceeds the resolved
        * byte budget, or when the display's own density axis trips (bytes take
-       * precedence for the text). Each axis is passed as `undefined` / `false`
-       * when its own `…GateActive` is off, which is what keeps every "may this
-       * axis gate" term — the opt-ins, force-load, the density floor — stated in
-       * those two getters and nowhere else.
+       * precedence for the text). One expression per axis, each already carrying
+       * every "may this axis gate" term — the opt-ins, force-load, the density
+       * floor — so none of them is restated here.
+       *
+       * **The byte term is `resolvedByteLimit()`, the very budget the worker
+       * enforces**, rather than a second `gateActive ? gateByteLimit :
+       * undefined` beside it. The two were written out separately and had to be
+       * kept equal by hand, which is the drift this subsystem is least able to
+       * afford: a worker rejecting a region the banner then calls fine is a
+       * blank display that never refetches. It also carries the `gateActive`
+       * guard that keeps `gateByteLimit`'s containing-track read out of an
+       * ungated display — "nothing below the opt-in is evaluated", which the
+       * ungated composers (wiggle, Manhattan, sequence) and the simplified test
+       * models rely on. The estimate needs no such guard: it is a volatile read
+       * that reaches nothing, and an undefined budget refuses nothing.
        *
        * The fetch autoruns re-measure rather than fetch while `regionTooLarge` is
        * true, and `DisplayChrome` renders the banner from `regionTooLargeReason`.
        */
       get tooLargeStatus() {
-        // Both byte terms hang off the one flag, and the budget must too: a
-        // display that never gates has no containing track to read
-        // `adapterFetchSizeLimit` off in the first place. "Nothing below the
-        // opt-in is evaluated" is a property the ungated composers (wiggle,
-        // Manhattan, sequence) and the simplified test models rely on.
-        const active = self.gateActive
         return evaluateRegionTooLarge({
-          estimatedFetchBytes: active ? self.estimatedFetchBytes : undefined,
-          byteLimit: active ? self.gateByteLimit : undefined,
+          estimatedFetchBytes: self.estimatedFetchBytes,
+          byteLimit: self.resolvedByteLimit(),
           densityTooLarge: self.densityGateActive && self.densityTooLarge,
         })
       },

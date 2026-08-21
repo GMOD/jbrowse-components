@@ -21,6 +21,18 @@ export function featuresPerPx(
   return widthBp > 0 ? featureCount / (widthBp / bpPerPx) : 0
 }
 
+// The density axis's over-budget comparison, in one place for the reason
+// `overByteBudget` is: three callers make it — the pre-fetch sample, the
+// post-fetch exact count, and the main-thread banner — and reaching it
+// separately makes a `>` drifting to `>=` invisible to every test in the tree.
+// An undefined budget is the axis not gating, never a budget of zero.
+export function overDensityBudget(
+  density: number,
+  maxFeatureDensity: number | undefined,
+) {
+  return maxFeatureDensity !== undefined && density > maxFeatureDensity
+}
+
 // The shared "too many features" result. Carrying featureCount (estimated
 // pre-fetch, exact post-fetch) lets the model's derived density banner and
 // force-load behave identically regardless of which gate rejected the region.
@@ -55,7 +67,10 @@ export function densityTooLargeResult(
     featureDensityPerBp * (region.end - region.start),
   )
   return Number.isFinite(featureCount) &&
-    featuresPerPx(featureCount, region, bpPerPx) > maxFeatureDensity
+    overDensityBudget(
+      featuresPerPx(featureCount, region, bpPerPx),
+      maxFeatureDensity,
+    )
     ? tooManyFeaturesResult(featureCount, bytes)
     : undefined
 }
@@ -77,8 +92,10 @@ export function exactDensityTooLargeResult(
   maxFeatureDensity: number | undefined,
   bytes: number | undefined,
 ): RegionTooLargeResult | undefined {
-  return maxFeatureDensity !== undefined &&
-    featuresPerPx(featureCount, region, bpPerPx) > maxFeatureDensity
+  return overDensityBudget(
+    featuresPerPx(featureCount, region, bpPerPx),
+    maxFeatureDensity,
+  )
     ? tooManyFeaturesResult(featureCount, bytes)
     : undefined
 }

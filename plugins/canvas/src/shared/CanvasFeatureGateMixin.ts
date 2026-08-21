@@ -5,6 +5,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { onDisplayedRegionsChange } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 
+import { overDensityBudget } from '../RenderFeatureDataRPC/densityGate.ts'
 import { screenDensity } from './regionDensity.ts'
 
 import type { RegionDensityStats } from './regionDensity.ts'
@@ -172,10 +173,17 @@ export default function CanvasFeatureGateMixin() {
        * #getter
        * The density axis of `RegionTooLargeMixin`'s verdict (false in the base
        * mixin, so byte-only displays never gate on it).
+       *
+       * The comparison is `overDensityBudget`, the same one the worker's two
+       * short-circuits make — the number was already shared (`featuresPerPx`)
+       * and the comparison was not, which left the banner free to disagree with
+       * the decision that produced it at exactly the boundary.
        */
       get densityTooLarge() {
-        const max = self.maxFeatureDensity
-        return max === undefined ? false : self.visibleFeatureDensityPerPx > max
+        return overDensityBudget(
+          self.visibleFeatureDensityPerPx,
+          self.maxFeatureDensity,
+        )
       },
     }))
     .actions(self => ({
