@@ -428,15 +428,25 @@ function stateModelFactory(pluginManager: PluginManager) {
         // Rows pull the ceiling, but `bpPerPx` is clamped only where it is
         // written, so a ceiling that DROPS strands them above it until
         // something writes. Skipped while unanswered — that is a row mid-layout
-        // rather than a release, and `answered` is also the guarantee every row
-        // is initialized, which `clampZoomToCeiling` requires.
+        // rather than a release.
+        //
+        // `answered` is NOT a guarantee that the rows are initialized: mode off
+        // answers 0 without reading them at all, so with the default
+        // `sameScale: false` this runs on the first pass of every restored
+        // stack, before any row has been measured. `clampZoomToCeiling` reaches
+        // `zoomTo`, whose default `offset` is `width / 2`, and `width` throws
+        // until `volatileWidth` is set. The check belongs here rather than
+        // inside the action, where it would be an untracked read that never
+        // retries once the row IS measured.
         addDisposer(
           self,
           autorun(
             function comparativeViewSameScaleAutorun() {
               if (self.sharedFit.answered) {
                 for (const view of self.views) {
-                  view.clampZoomToCeiling()
+                  if (view.initialized) {
+                    view.clampZoomToCeiling()
+                  }
                 }
               }
             },
