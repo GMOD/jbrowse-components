@@ -1,4 +1,7 @@
-import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
+import {
+  MAX_SPLIT_PANELS,
+  buildSplitViewFromPath,
+} from './buildSplitViewFromPath.ts'
 
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
@@ -220,4 +223,36 @@ test('a lone segment centres on itself', () => {
     windowSize: 1000,
   })
   expect(locStrings).toEqual(['chr3:1501-2500'])
+})
+
+// The picker disables the option above the cap, so nothing in tree reaches this.
+// A plugin calling the `#api` builder has no picker, and a real ngmlr-aligned ONT
+// record in COLO829 carries 943 SA entries — 943 panels, each with the launching
+// view's whole track list, is a hang rather than a drawing. The pair is the
+// point: exactly MAX_SPLIT_PANELS is what the picker still offers.
+function pathOf(count: number) {
+  return candidate(
+    Array.from({ length: count }, (_, i) => ({
+      refName: 'chr3',
+      start: i * 100_000,
+      end: i * 100_000 + 40_000,
+    })),
+  )
+}
+
+test('a path past the panel cap is refused rather than drawn', () => {
+  expect(() =>
+    buildSplitViewFromPath({
+      candidate: pathOf(MAX_SPLIT_PANELS + 1),
+      tracks: [],
+    }),
+  ).toThrow(new RegExp(`${MAX_SPLIT_PANELS + 1} segments`))
+})
+
+test('a path at the panel cap still draws', () => {
+  const { locStrings } = buildSplitViewFromPath({
+    candidate: pathOf(MAX_SPLIT_PANELS),
+    tracks: [],
+  })
+  expect(locStrings).toHaveLength(MAX_SPLIT_PANELS)
 })

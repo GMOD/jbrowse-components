@@ -22,7 +22,8 @@ import type {
  * The picker disables "Breakpoint split view" above this rather than truncating,
  * because a prefix of a path drawn under the path's own name is the failure the
  * strip's own gap squeeze exists to avoid — the synteny drawing has no such
- * limit and remains offered.
+ * limit and remains offered. `buildSplitViewFromPath` refuses above it too, so
+ * a caller that never had a picker cannot walk into the 943-panel case.
  */
 export const MAX_SPLIT_PANELS = 12
 
@@ -113,10 +114,12 @@ export interface SplitViewFromPathSpec {
  * whole content of this view type.
  *
  * One panel per segment is also one fetch per segment, and nothing bounds a
- * path's segment count — so a caller offers this drawing only up to
- * {@link MAX_SPLIT_PANELS} segments. Truncating here instead would draw a prefix
- * of a path under the whole path's name, which is the failure the strip's own
- * gap squeeze exists to avoid.
+ * path's segment count, so **this throws above {@link MAX_SPLIT_PANELS}
+ * segments**. Truncating instead would draw a prefix of a path under the whole
+ * path's name, which is the failure the strip's own gap squeeze exists to
+ * avoid, and returning a snapshot the caller has to measure is a rule to
+ * remember rather than one the code holds. The in-tree picker never reaches the
+ * throw — it disables the option and offers synteny, which has no such limit.
  */
 export function buildSplitViewFromPath({
   candidate,
@@ -143,6 +146,11 @@ export function buildSplitViewFromPath({
 }): SplitViewFromPathSpec {
   const stripped = stripTrackIds(tracks)
   const { segments } = candidate
+  if (segments.length > MAX_SPLIT_PANELS) {
+    throw new Error(
+      `This path visits ${segments.length} segments and a breakpoint split view draws one panel per segment, each carrying the launching view's whole track list — past ${MAX_SPLIT_PANELS} that is more fetches than the drawing can say anything with. Draw the path as synteny instead, which has no such limit.`,
+    )
+  }
   return {
     viewSnapshot: {
       type: 'BreakpointSplitView',
