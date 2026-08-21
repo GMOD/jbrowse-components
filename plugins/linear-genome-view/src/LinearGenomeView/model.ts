@@ -2571,9 +2571,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * neither can be clamped back off it. Only a caller that owns the layout
        * of a whole set has a reason to write here — anything zooming a single
        * view wants zoomTo.
+       *
+       * A ceiling coming DOWN brings the view down with it, which raising one
+       * has no counterpart for. `bpPerPx` is clamped only where it is WRITTEN,
+       * so moving a bound underneath it strands the view above its own
+       * `maxBpPerPx`: zoom-out is disabled (`ZoomButton` reads the same
+       * ceiling), the zoom slider's min sits past the current value, and the
+       * only way back is to zoom IN first. Reachable from the ordinary — drop
+       * the largest row of a same-scale stack and the survivor is drawn as a
+       * sliver of its own pane.
+       *
+       * Re-written through `zoomTo` rather than compared against the new
+       * ceiling here, for the reason `setDisplayedRegions` does the same: the
+       * clamp has one definition and it is the one inside the writer. Passing
+       * the value the view already holds is a no-op whenever it is still in
+       * range, so raising the ceiling costs nothing.
        */
       setSharedFitBpPerPx(bpPerPx: number) {
         self.sharedFitBpPerPx = bpPerPx
+        if (self.initialized) {
+          self.zoomTo(self.bpPerPx)
+        }
       },
 
       /**

@@ -28,8 +28,9 @@ describe('navigationMenuItems', () => {
       followAnchorIndex: 0,
       ...state,
       squareView: () => calls.push('square'),
-      showAllRegions: () => calls.push('fit'),
-      showAllRegionsSameScale: () => calls.push('sameScale'),
+      showAllRegionsAcrossRows: (sameScale: boolean) => {
+        calls.push(sameScale ? 'sameScale' : 'fit')
+      },
       setRowSyncMode: mode => calls.push(mode),
       setFollowAnchorIndex: idx => calls.push(idx),
     })

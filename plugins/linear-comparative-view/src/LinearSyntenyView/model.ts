@@ -706,17 +706,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #action
        * Every row back to its own whole assembly, fit to its own width — and
        * so also the way off `sameScale`, whose raised ceiling would otherwise
-       * make "show all regions" mean the shared scale on every row.
+       * make "show all regions" mean the shared scale on every row. The
+       * fit-to-width half of `showAllRegionsAcrossRows`, under the name the
+       * rest of the app reaches it by.
        */
       showAllRegions() {
-        self.sameScale = false
-        for (const view of self.views) {
-          // lowered here as well as by the autorun, which cannot have run yet:
-          // `showAllRegionsInAssembly` below targets the row's `maxBpPerPx`,
-          // which is still the shared ceiling until this line
-          view.setSharedFitBpPerPx(0)
-          view.showAllRegionsInAssembly()
-        }
+        self.showAllRegionsAcrossRows(false)
       },
       /**
        * #action
@@ -776,11 +771,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * two share only Export SVG. This one is the synteny surface; the app
          * menubar's is the generic view one.
          *
-         * SIX ROWS WHATEVER THE STACK HOLDS. The menu answers what the view IS
-         * — where the rows point, which genomes it stacks, what leaves it — and
-         * nothing about how the ribbons are drawn: every render setting is in
-         * the header's settings menu, and `SyntenySettingsMenu` states that
-         * division from the other side.
+         * SIX ROWS WHATEVER THE STACK HOLDS — seven on screen, where
+         * `ViewOptionsMenuButton` appends the "Show..." row carrying the search
+         * box prefs, whose state is React's rather than the model's. The menu
+         * answers what the view IS — where the rows point, which genomes it
+         * stacks, what leaves it — and nothing about how the ribbons are drawn:
+         * every render setting is in the header's settings menu, and
+         * `SyntenySettingsMenu` states that division from the other side.
          *
          * A group in THIS menu names a CHOICE ("Link views") or what varies
          * with row count ("Rows"), never a topic: the "Navigation" group that

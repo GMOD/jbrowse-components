@@ -16,6 +16,7 @@ import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/
 import { followDirection } from '../SyntenyFollow/followDirection.ts'
 import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
+import { sharedFitBpPerPx } from './sharedFitBpPerPx.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -210,11 +211,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * assigned once, because every row's fit moves on a resize and on any
        * change to what it displays. The dotplot's `lockAspectRatio` reads the
        * same quantity by the same name.
+       *
+       * The rule, and the three states that have no answer, are in
+       * `sharedFitBpPerPx.ts`.
        */
       get sharedFitBpPerPx() {
-        return self.sameScale && self.views.length
-          ? Math.max(...self.views.map(v => v.fitBpPerPx))
-          : 0
+        return sharedFitBpPerPx(self.views, self.sameScale)
       },
 
       /**
@@ -426,9 +428,11 @@ function stateModelFactory(pluginManager: PluginManager) {
           ),
         )
         // Keeps the shared ceiling on the rows true as the rows themselves
-        // move: a resize, a row navigating, a row added. Reads the getter
-        // itself so the whole dependency set — the flag, the views array, every
-        // row's fit — is tracked here rather than at the write.
+        // move: a resize, a row navigating, a row added or removed. Reads the
+        // getter itself so the whole dependency set — the flag, the views
+        // array, every row's fit — is tracked here rather than at the write.
+        // `setSharedFitBpPerPx` re-clamps each row, so a ceiling that drops
+        // takes the rows down with it rather than stranding them above it.
         addDisposer(
           self,
           autorun(
@@ -615,31 +619,67 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Show every row's whole region set on ONE bp/px, the coarsest row's, so
-       * the largest genome still fills its pane and every other row is drawn
-       * shorter in proportion to its size. That difference is the point: rows
-       * fit individually to width all end up the same length, which silently
+       * Every row onto its whole assembly, and the one choice about it: leave
+       * them all on ONE bp/px — the coarsest row's fit, so the largest genome
+       * fills its pane and every other row is drawn shorter in proportion to
+       * its size — or hand each row its own fit, so each fills its own pane.
+       *
+       * That difference is the point of offering the choice: rows fit
+       * individually to width all end up the same length, which silently
        * stretches a small genome to look like a large one and misaligns every
        * ribbon between them by the ratio. Distinct from squareView, which
        * averages the rows' current scales (the average fits nobody, and each
        * row's own zoom clamp pulls the small ones back to fit-to-width anyway).
        *
-       * One click, and it latches `sameScale`: the shared scale is coarser than
-       * a small row's own fit, so without the raised ceiling the first wheel
-       * tick or `setDisplayedRegions` clamps that row straight back to
-       * fit-to-width and the comparison is gone. `showAllRegions` on the synteny
-       * view is the way back off.
+       * ONE ACTION FOR BOTH, because the menu offers them as one radio and a
+       * reader reads them as one sentence with one word changed. Written as two
+       * bodies they drifted: the same-scale half took its scale off whatever
+       * region subset a row happened to be displaying while the other half
+       * reset the rows first, so the pair was not a pair — switching between
+       * them did not land back where it started.
+       *
+       * `sameScale` LATCHES rather than firing once, because the shared scale
+       * is coarser than a small row's own fit: without the raised ceiling the
+       * first wheel tick or `setDisplayedRegions` clamps that row straight back
+       * to fit-to-width and the comparison is gone.
        */
-      showAllRegionsSameScale() {
-        self.sameScale = true
+      showAllRegionsAcrossRows(sameScale: boolean) {
+        for (const view of self.views) {
+          view.showAllRegionsInAssembly()
+        }
+        this.applySharedScale(sameScale)
+      },
+      /**
+       * #action
+       * Latch the mode and put every row on the scale it implies, WITHOUT
+       * touching any row's regions — which is the half of the menu command a
+       * caller that has just built those regions wants. `init` is that caller:
+       * it names a `loc` per row, and resetting each row to its whole assembly
+       * afterwards would discard the locations the same init block asked for.
+       */
+      applySharedScale(sameScale: boolean) {
+        self.sameScale = sameScale
         // pushed here as well as by the autorun, which cannot have run yet:
         // `showAllRegions` below targets each row's `maxBpPerPx`, and that is
-        // the row's own fit until the ceiling reaches it
+        // the row's own fit until the ceiling reaches it. Lowering it re-clamps
+        // the row too, so a caller whose region reset bailed — a row spanning
+        // two assemblies, an assembly with no regions — is left at its own fit
+        // rather than stranded above it.
         const bpPerPx = self.sharedFitBpPerPx
         for (const view of self.views) {
           view.setSharedFitBpPerPx(bpPerPx)
           view.showAllRegions()
         }
+      },
+      /**
+       * #action
+       * The shared-scale half of `showAllRegionsAcrossRows`, under the name
+       * this action had before the pair was written as one. Kept because it is
+       * public API a script can be calling; nothing in the app calls it, and
+       * new callers want the parameterized one.
+       */
+      showAllRegionsSameScale() {
+        this.showAllRegionsAcrossRows(true)
       },
       /**
        * #action

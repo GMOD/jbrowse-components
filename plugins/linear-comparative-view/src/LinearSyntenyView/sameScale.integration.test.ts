@@ -12,6 +12,8 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 const SMALL_BP = 16000
 const LARGE_BP = 160000
 
+// two contigs each, so a `loc` naming one of them is a narrowing a reset would
+// visibly throw away
 const assembly = (name: string, length: number) => ({
   name,
   sequence: {
@@ -19,15 +21,13 @@ const assembly = (name: string, length: number) => ({
     trackId: `${name}_refseq`,
     adapter: {
       type: 'FromConfigSequenceAdapter',
-      features: [
-        {
-          refName: 'ctgA',
-          uniqueId: `${name}-ctgA`,
-          start: 0,
-          end: length,
-          seq: 'a'.repeat(length),
-        },
-      ],
+      features: ['ctgA', 'ctgB'].map(refName => ({
+        refName,
+        uniqueId: `${name}-${refName}`,
+        start: 0,
+        end: length,
+        seq: 'a'.repeat(length),
+      })),
     },
   },
 })
@@ -158,4 +158,124 @@ test('init.sameScale applies the shared scale on load', async () => {
   expect(small!.displayedRegionsTotalPx).toBeCloseTo(
     (800 * 0.9 * SMALL_BP) / LARGE_BP,
   )
+})
+
+// The mode is a property, so it is restored from the snapshot at attach — where
+// the width autorun has nothing to push yet and a row's `fitBpPerPx` throws
+// rather than answering. Reaching the getter there took an uncaught MobX
+// reaction error with it, on every reload of a saved same-scale session.
+test('a restored session with the mode on attaches before any width', async () => {
+  const session = setup()
+  const errors: unknown[] = []
+  const spy = jest
+    .spyOn(console, 'error')
+    .mockImplementation((...args: unknown[]) => {
+      errors.push(args[0])
+    })
+  const view = session.addView('LinearSyntenyView', {
+    sameScale: true,
+    views: [
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: SMALL_BP, assemblyName: 'small' },
+        ],
+      },
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: LARGE_BP, assemblyName: 'large' },
+        ],
+      },
+    ],
+  }) as LinearSyntenyViewModel
+  spy.mockRestore()
+
+  expect(errors).toEqual([])
+  expect(view.sharedFitBpPerPx).toBe(0)
+
+  // and once the rows are measured and their assemblies are in, the ceiling
+  // arrives on its own — the autorun re-fires on the same reads that were
+  // unanswerable at attach
+  view.setWidth(800)
+  await when(() => view.views.every(v => v.initialized))
+  expect(view.sharedFitBpPerPx).toBeCloseTo(view.views[1]!.fitBpPerPx)
+  expect(view.views[0]!.maxBpPerPx).toBeCloseTo(view.views[1]!.fitBpPerPx)
+})
+
+// The ceiling tracks the rows, so removing the largest row LOWERS it — and
+// nothing else re-clamps a row's zoom. Left alone, the survivor sits ten times
+// past its own limit, drawn as a sliver of its pane with zoom-out disabled and
+// the slider's min above its value: recoverable only by zooming in first.
+test('dropping the largest row brings the survivors down with the ceiling', async () => {
+  const view = await launch({ views: [...views, { assembly: 'small' }] })
+  const small = view.views[0]!
+
+  view.showAllRegionsSameScale()
+  expect(small.bpPerPx).toBeGreaterThan(small.fitBpPerPx)
+
+  // twice: the appended small row first, then the large row whose fit IS the
+  // shared scale
+  view.removeLastRow()
+  view.removeLastRow()
+
+  expect(small.bpPerPx).toBeCloseTo(small.fitBpPerPx)
+  expect(small.bpPerPx).toBeLessThanOrEqual(small.maxBpPerPx)
+  expect(small.displayedRegionsTotalPx).toBeCloseTo(800 * 0.9)
+})
+
+// The two are offered as one choice — "each row fit to width" against "same bp
+// per pixel" — so they have to differ in nothing but the scale. Taken off
+// whatever a row happened to be displaying, the shared scale came off a region
+// SUBSET: narrow the largest row and "same bp per pixel" put the stack on a
+// scale that fits nobody's genome, and the choice stopped being reversible.
+test('the two show-all-regions modes differ only in scale', async () => {
+  const view = await launch({ views })
+  const [small, large] = view.views
+  // the large row cut down to the small one's size, which is the ordinary
+  // state after navigating a row anywhere
+  large!.setDisplayedRegions([
+    { refName: 'ctgA', start: 0, end: SMALL_BP, assemblyName: 'large' },
+  ])
+  const subsetFit = large!.fitBpPerPx
+  expect(subsetFit).toBeLessThan(small!.fitBpPerPx * 2)
+
+  view.showAllRegionsSameScale()
+
+  // the shared scale is the LARGE ASSEMBLY's fit, not the subset's
+  expect(large!.displayedRegions).toHaveLength(2)
+  expect(small!.bpPerPx).toBeCloseTo(large!.fitBpPerPx)
+  expect(small!.bpPerPx).toBeGreaterThan(subsetFit)
+
+  // ...so the choice is reversible: back and forth lands on the same two
+  // scales it left
+  const shared = small!.bpPerPx
+  view.showAllRegions()
+  const ownFit = small!.bpPerPx
+  expect(ownFit).not.toBeCloseTo(shared)
+  view.showAllRegionsSameScale()
+  expect(small!.bpPerPx).toBeCloseTo(shared)
+  view.showAllRegions()
+  expect(small!.bpPerPx).toBeCloseTo(ownFit)
+})
+
+// `init.sameScale` sits beside `init.views[].loc` in the same block, and the
+// locs are applied first. Running the menu command there — which resets every
+// row to its whole assembly, correctly, because its label says "show all
+// regions" — discarded the locations the same init block had just asked for.
+test('init.sameScale keeps the rows where init.views put them', async () => {
+  const view = await launch({
+    views: [
+      { assembly: 'small', loc: 'ctgB' },
+      { assembly: 'large', loc: 'ctgB' },
+    ],
+    sameScale: true,
+  })
+  const [small, large] = view.views
+
+  expect(small!.displayedRegions.map(r => r.refName)).toEqual(['ctgB'])
+  expect(large!.displayedRegions.map(r => r.refName)).toEqual(['ctgB'])
+  // ...and they are still on one scale
+  expect(view.sameScale).toBe(true)
+  expect(small!.bpPerPx).toBeCloseTo(large!.bpPerPx)
 })

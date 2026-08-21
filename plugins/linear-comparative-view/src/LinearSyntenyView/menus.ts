@@ -41,8 +41,7 @@ export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
 interface NavigationModel {
   views: { assemblyNames: string[] }[]
   squareView: () => void
-  showAllRegions: () => void
-  showAllRegionsSameScale: () => void
+  showAllRegionsAcrossRows: (sameScale: boolean) => void
   sameScale: boolean
   linkViews: boolean
   followSynteny: boolean
@@ -105,14 +104,13 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
         model.squareView()
       },
     },
-    // no icon on either: the same one on both would say nothing about which to
-    // pick, and the dash clause is all that separates them
+    // No icon on either: the same one on both would say nothing about which to
+    // pick, and the dash clause is all that separates them. One setter for one
+    // radio, the shape `setRowSyncMode` has next to it — the two rows are one
+    // choice, and a caller picking between two differently named actions is
+    // where the two bodies drifted apart.
     ...radioItems(SHOW_ALL_REGIONS_MODES, sameScale ? 'same' : 'fit', m => {
-      if (m === 'same') {
-        model.showAllRegionsSameScale()
-      } else {
-        model.showAllRegions()
-      }
+      model.showAllRegionsAcrossRows(m === 'same')
     }),
     makeRadioSubMenu({
       label: 'Link views',
