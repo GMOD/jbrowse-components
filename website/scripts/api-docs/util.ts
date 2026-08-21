@@ -153,6 +153,7 @@ export function extractWithComment(
   const checker = program.getTypeChecker()
   const blindSpots: BlindSpot[] = []
   const slotGaps: ConfigSlotGap[] = []
+  const behindATag: DocsBehindTagGap[] = []
   // Which members a model reaches through a delegated block, and the blocks
   // that name something unresolvable. Collected up front because a helper file
   // can be walked before or after the model that delegates to it, and both
@@ -183,6 +184,7 @@ export function extractWithComment(
     }
   }
   assertNoUntaggedSlots(slotGaps)
+  assertNoDocsBehindATag(behindATag)
   return {
     // `<file> <name>` per gap, for the committed coverage list
     blindSpots: blindSpots.map(s => `${repoRelative(s.filename)} ${s.name}`),
@@ -267,6 +269,7 @@ export function extractWithComment(
           ? definesStateModel(node)
           : undefined,
       }
+      collectDocsBehindATag(node, comment, name, behindATag)
       for (const type of tags) {
         cb({ type, ...base })
       }
@@ -279,6 +282,51 @@ export function extractWithComment(
     ts.forEachChild(node, n => {
       visit(n, isStateModel, isConfig)
     })
+  }
+}
+
+// A documented member whose only prose sits after a JSDoc `@tag`, where the
+// generator cannot see it.
+interface DocsBehindTagGap {
+  filename: string
+  name: string
+}
+
+// Whether a docs-tagged block carries prose of its own: any line that is neither
+// blank nor one of the `#tag` lines the generator reads as structure.
+function hasOwnProse(comment: string) {
+  return comment
+    .split('\n')
+    .some(line => line.trim() && !/^#\w+/.test(line.trim()))
+}
+
+function collectDocsBehindATag(
+  node: ts.Node,
+  comment: string,
+  name: string,
+  gaps: DocsBehindTagGap[],
+) {
+  if (!hasOwnProse(comment) && getOwnJSDocTagText(node).trim()) {
+    gaps.push({ filename: node.getSourceFile().fileName, name })
+  }
+}
+
+// Fatal, on the argument assertNoBlankSlotDescriptions makes: the count is zero
+// and the fix is moving one sentence within the docstring the error names.
+//
+// A member with no prose at all renders a blank cell too, and 2,887 of those
+// exist — a backlog, not a bug. This one is narrower and worse: the author DID
+// write the sentence, and the page shows nothing. Three members reached the site
+// that way (both mixins' `addTrackConf` and `getTracksById`), each of them the
+// row telling a plugin author that a deprecated name still resolves and what to
+// call instead.
+function assertNoDocsBehindATag(gaps: DocsBehindTagGap[]) {
+  if (gaps.length) {
+    throw new Error(
+      `${gaps.length} documented member(s) put every word of their prose after a JSDoc @tag, so TypeScript files it under \`tags\` and the generator publishes a blank Description cell. Lead with the prose and leave the bare tag under it (\`@deprecated\` on its own line):\n${gaps
+        .map(g => `  ${repoRelative(g.filename)} ${g.name}`)
+        .join('\n')}`,
+    )
   }
 }
 
@@ -1356,6 +1404,24 @@ export function jsDocText(node: ts.Node): string {
     .join('\n')
 }
 
+// The tag half of a node's JSDoc, flattened. TypeScript splits a JSDoc block at
+// its first `@tag`: `jd.comment` is the prose before it, `jd.tags` everything
+// after. So a docstring whose body opens with `@deprecated` has an empty comment
+// and every word after the tag is invisible to the generator — the member
+// publishes with a blank Description cell. Reading this side is how
+// `assertNoDocsBehindATag` tells that apart from a member nobody documented.
+function jsDocTagText(node: ts.Node): string {
+  const jsDoc = (node as { jsDoc?: ts.JSDoc[] }).jsDoc
+  return (jsDoc ?? [])
+    .flatMap(jd => jd.tags ?? [])
+    .map(tag =>
+      typeof tag.comment === 'string'
+        ? tag.comment
+        : (tag.comment?.map(part => jsDocPartText(part)).join('') ?? ''),
+    )
+    .join('\n')
+}
+
 // JSDoc body text directly attached to this node (not inherited from
 // ancestors). Uses the internal `jsDoc` parser property — unlike
 // `getJSDocCommentsAndTags`, this does not walk up, so reference nodes like
@@ -1366,6 +1432,12 @@ export function jsDocText(node: ts.Node): string {
 // parent VariableStatement, so we look there instead.
 function getOwnJSDocText(node: ts.Node): string {
   return jsDocText(ts.isVariableDeclaration(node) ? node.parent.parent : node)
+}
+
+function getOwnJSDocTagText(node: ts.Node): string {
+  return jsDocTagText(
+    ts.isVariableDeclaration(node) ? node.parent.parent : node,
+  )
 }
 
 export interface Example {
