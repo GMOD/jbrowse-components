@@ -83,6 +83,8 @@ Press **Launch**, then click the palette icon in the view's header and pick
 **Strand**. Without it the plot is one black diagonal; with it the collinear
 blocks are red and the inverted ones blue.
 
+<Video src="/media/synteny/hg002_dotplot_import.mp4" caption="Building the whole-genome dotplot from the import form: switching modes, opening the chromosome boxes, restricting each axis to one haplotype, and coloring the launched plot by strand." />
+
 HG002 is male, so `chrX_MATERNAL` and `chrY_PATERNAL` have nothing on the other
 haplotype to chain to, and their column and row stay empty.
 
