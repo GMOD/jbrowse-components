@@ -392,8 +392,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       '@gmod/shared-read-cache':
-        specifier: ^1.6.0
-        version: 1.6.0
+        specifier: ^1.7.0
+        version: 1.7.0
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../add-track-core
@@ -4434,6 +4434,9 @@ packages:
 
   '@gmod/shared-read-cache@1.6.0':
     resolution: {integrity: sha512-RrkbPdTFcKgtapYTCt8nwP4B/wzFlSLpPC4f5OfNAciC9o/Hxa1oW5qBVLk/4BEV61gp5x3sLjYHIXvMwklHDQ==}
+
+  '@gmod/shared-read-cache@1.7.0':
+    resolution: {integrity: sha512-TAhDVn5T3QEGJ5EKUQBvffNpdmNxj08X3kah8DCoZLUkon9rRp54R7LkR8oR43ZkNeLpWi6SBX8OBwEaivsrjQ==}
 
   '@gmod/tabix@3.8.1':
     resolution: {integrity: sha512-ZAA7we8dMwezKZX03h4kx4eKxBSQqJn9kxWE6rnmc8pHUNxDyynGd91GfUkj57z+ZNgA7yA/4yAMskHpLTiJdg==}
@@ -12259,6 +12262,8 @@ snapshots:
       generic-filehandle2: 2.3.1
 
   '@gmod/shared-read-cache@1.6.0': {}
+
+  '@gmod/shared-read-cache@1.7.0': {}
 
   '@gmod/tabix@3.8.1':
     dependencies:
