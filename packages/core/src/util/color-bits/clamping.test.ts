@@ -38,6 +38,13 @@ describe('an out-of-range channel clamps, and never bleeds into its neighbour', 
     expect(toRGBA(alpha(parse(RED), -0.2)).a).toBe(0)
   })
 
+  // NaN fails every comparison, so a `< 0`/`> 255` pair returned it unchanged
+  // and the shift turned it into 0 — one channel, silently
+  it('a NaN channel clamps like any other out-of-range one', () => {
+    expect(toRGBA(alpha(parse(RED), Number.NaN)).a).toBe(0)
+    expect(toRGBA(alpha(parse(RED), Number.NaN)).r).toBe(255)
+  })
+
   it('a coefficient past 1 saturates instead of turning red into teal', () => {
     expect(toRGBA(lighten(parse(RED), 1.5))).toEqual({
       r: 255,

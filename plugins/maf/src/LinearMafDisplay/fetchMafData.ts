@@ -1,3 +1,4 @@
+import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
 import { createStatusFanOut, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { callEachRegion } from '@jbrowse/plugin-linear-genome-view'
@@ -199,7 +200,7 @@ async function framesReadOverBudget(
       // overlay and would be narrating over the alignment's own progress
     },
   )
-  return !ctx.isStale() && bytes !== undefined && bytes > limit
+  return !ctx.isStale() && overByteBudget(bytes, limit)
 }
 
 /**

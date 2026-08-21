@@ -84,6 +84,11 @@ def enumerate_mutants(targets):
     for path in targets:
         for lineno, line in code_lines(path):
             for old, new in SWAPS:
+                # one occurrence only, so the mutant names an unambiguous site.
+                # A line carrying two of the same operator forms no mutant at
+                # all, which is why the gate's multi-`&&` predicates were never
+                # swept: "every survivor was an equality boundary" describes the
+                # mutants this could build, not the code.
                 if old in line and line.count(old) == 1:
                     mutants.append({
                         'path': path,

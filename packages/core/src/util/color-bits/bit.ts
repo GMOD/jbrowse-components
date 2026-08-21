@@ -33,5 +33,10 @@ export function set(n: number, offset: number, byte: number) {
 // feature at 40% opacity for a caller that asked for more than full. Both
 // channel parsers already document a 0..255 result; this is what makes it true.
 export function clampByte(n: number) {
-  return n < 0 ? 0 : n > 255 ? 255 : n
+  // `> 0` rather than `< 0`, so NaN takes the zero branch: every comparison
+  // against NaN is false, and an unclamped NaN shifts to 0 anyway — silently,
+  // one channel at a time. `jexl:alpha(color, get(feature,'opacity'))` on a
+  // non-numeric attribute is the reachable one, and it drew the feature at
+  // alpha 0 instead of reaching the invalid-colour sentinel.
+  return n > 0 ? (n > 255 ? 255 : n) : 0
 }

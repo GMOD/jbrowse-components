@@ -302,10 +302,14 @@ describe('the gate truth table', () => {
       '',
     ]
     const golden = join(__dirname, 'gateTruthTable.golden.txt')
+    // Read BEFORE the write, or the assertion is against what this run just
+    // produced and the check certifies itself: with the var exported, an
+    // operator flip in the gate rewrites the golden and stays green.
+    const recorded = readFileSync(golden, 'utf8')
     if (process.env.UPDATE_GATE_GOLDEN) {
       writeFileSync(golden, lines.join('\n'))
     }
-    expect(lines.join('\n')).toBe(readFileSync(golden, 'utf8'))
+    expect(lines.join('\n')).toBe(recorded)
   })
 })
 
