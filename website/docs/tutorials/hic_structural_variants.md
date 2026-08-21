@@ -95,6 +95,8 @@ triangles. Nothing needs configuring for this; it falls out of navigating to two
 locations at once, which you can do by typing both into the location box
 separated by a space.
 
+<Video src="/media/hic/two_regions.mp4" caption="A chr22 window typed into the location box beside a chr9 one, GM12878 above and K562 below: the wedge between the two triangles arrives with the second region." />
+
 That makes a genome browser a translocation detector. Contact frequency decays
 with distance along whatever molecule two loci actually sit on, so two regions
 on separate chromosomes only touch at the nucleus' low background rate. If they

@@ -80,6 +80,47 @@ function matrix(trackId: string, height: number) {
   }
 }
 
+// The translocation figure's own view, hoisted so the tour in videos/hic.ts can
+// open the same tracks, bands and window with one region taken out of the
+// `loc`. Spread-then-override keeps `loc` in the position it is declared in
+// here, so the figure's url is unchanged by the hoist.
+const junctionView = {
+  assembly: 'hg38',
+  loc: JUNCTION_LOC,
+  trackLabels: 'offset',
+  // bands mark the two fusion partners and cross every track, so the
+  // reader can see the K562 wedge terminating exactly where they intersect
+  highlight: [
+    { ...ABL1, label: 'ABL1', color: 'rgba(30,110,190,0.16)' },
+    { ...BCR, label: 'BCR', color: 'rgba(30,110,190,0.16)' },
+  ],
+  tracks: [
+    // MANE Select: one transcript per gene and no pseudogenes, so ABL1 and
+    // BCR are legible. The RefSeq GFF at these two loci is a wall of
+    // LOC*/RN7SL* entries that buries both of them.
+    {
+      trackId: 'mane_hg38',
+      type: 'LinearBasicDisplay',
+      showLabels: 'name',
+      height: 68,
+    },
+    matrix('hic_gm12878_insitu', 380),
+    matrix('hic_k562_insitu', 380),
+  ],
+}
+
+// What the tour types, and what it opens on. The typed string is the figure's
+// own `loc` rather than a second copy of it, and the opening window is that
+// string's first region — derived rather than written out, so the two cannot
+// disagree about where chr9 starts.
+export const hicVideoFixtures = {
+  junctionLoc: JUNCTION_LOC,
+  chr9Only: lgvSession(DEMO_CONFIG, {
+    ...junctionView,
+    loc: JUNCTION_LOC.split(' ')[0]!,
+  }),
+}
+
 export const hicSpecs: ScreenshotSpec[] = [
   // THE FIGURE: one linear view holding a chr9 window and a chr22 window, so
   // JBrowse fetches the chr9 x chr22 block for both cell lines at once. In
@@ -102,30 +143,7 @@ export const hicSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'hic/bcr_abl1_translocation',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: JUNCTION_LOC,
-      trackLabels: 'offset',
-      // bands mark the two fusion partners and cross every track, so the
-      // reader can see the K562 wedge terminating exactly where they intersect
-      highlight: [
-        { ...ABL1, label: 'ABL1', color: 'rgba(30,110,190,0.16)' },
-        { ...BCR, label: 'BCR', color: 'rgba(30,110,190,0.16)' },
-      ],
-      tracks: [
-        // MANE Select: one transcript per gene and no pseudogenes, so ABL1 and
-        // BCR are legible. The RefSeq GFF at these two loci is a wall of
-        // LOC*/RN7SL* entries that buries both of them.
-        {
-          trackId: 'mane_hg38',
-          type: 'LinearBasicDisplay',
-          showLabels: 'name',
-          height: 68,
-        },
-        matrix('hic_gm12878_insitu', 380),
-        matrix('hic_k562_insitu', 380),
-      ],
-    }),
+    url: lgvSession(DEMO_CONFIG, junctionView),
     viewportHeight: 1100,
     readySelector: displayPainted('hic-display'),
     // Two 2Mb windows means three region pairs per track (chr9xchr9, chr22xchr22,
