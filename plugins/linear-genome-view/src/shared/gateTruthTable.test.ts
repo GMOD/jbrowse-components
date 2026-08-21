@@ -236,6 +236,25 @@ function outKey(out: Out) {
   ].join(' ')
 }
 
+// What a *consumer* of the gate can tell apart. The golden key above names
+// every intermediate getter as well, which is what makes it a tripwire — but it
+// is also why the count reads as a subsystem with 73 states, and that is not
+// what anyone downstream sees. `DisplayChrome` and the fetch autoruns read four
+// things between them, and they take **7** distinct combinations over all 67,200
+// rows; the worker budget's five values are what take that to 32.
+function bannerKey(out: Out) {
+  return [
+    `tooLarge=${out.tooLarge}`,
+    `axis=${out.axis}`,
+    `zoomCanRelease=${out.zoomCanRelease}`,
+    `skips=${out.skipsMeasured}`,
+  ].join(' ')
+}
+
+function observableKey(out: Out) {
+  return [`byteLimit=${out.byteLimit}`, bannerKey(out)].join(' ')
+}
+
 function rowKey(row: Row) {
   return [
     `preFlight=${row.preFlight}`,
@@ -264,9 +283,15 @@ describe('the gate truth table', () => {
         groups.set(key, { count: 1, first: row })
       }
     }
+    const banner = [...new Set(table.map(t => bannerKey(t.out)))].sort()
+    const observable = new Set(table.map(t => observableKey(t.out)))
     const lines = [
       `rows: ${rows.length}`,
       `distinct behaviors: ${groups.size}`,
+      `distinct observable behaviors: ${observable.size}`,
+      `distinct banner-facing states: ${banner.length}`,
+      '',
+      ...banner.map(b => `  ${b}`),
       '',
       ...[...groups.entries()]
         .sort(([a], [b]) => (a < b ? -1 : 1))

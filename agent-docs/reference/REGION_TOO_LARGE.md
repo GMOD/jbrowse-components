@@ -38,6 +38,22 @@ survives regardless of mixin composition order" pin in
 `plugins/canvas/src/LinearBasicDisplay/fetchAutorun.test.ts` and
 `plugins/canvas/src/LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
+**How many states this actually has**, since the member list above reads as a
+lot of them: `gateTruthTable.test.ts` crosses every leaf against boundary values
+for span, adapter limit and bytes — 67,200 rows — and its golden file records
+what they collapse to.
+
+    67,200 rows  →  73 internal  →  32 observable  →  7 banner-facing
+
+The 73 is the count with every intermediate getter named, which is what makes
+the golden a tripwire. What a *consumer* can tell apart is 32, and 25 of those
+are the worker budget's five values riding along. **The gate has 7 outward
+states**: not gated; gated on bytes, times whether zoom can release it, times
+whether a re-measure is still owed; and gated on density, times that last one —
+density always releases on zoom, by construction. Read that list at the top of
+the golden file before concluding that a new term is needed; most questions
+about the gate are questions about which of the 7 a display is in.
+
 Everything here is plugin-internal but two types: the mixin, the floor and the
 verdict helpers are not exported from `@jbrowse/plugin-linear-genome-view`, and
 [ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)
@@ -538,6 +554,15 @@ on the number, and a zero-width region is the shared function's problem, not
 whichever caller remembers it — unguarded, the worker reads `count / 0` as
 `Infinity` and refuses to fetch a region that contains nothing.
 
+**`overDensityBudget` beside it is the comparison**, the density axis's
+counterpart to `overByteBudget`, with the same three callers the byte axis has:
+the pre-fetch sample, the post-fetch exact count, and the main thread's
+`densityTooLarge`. The *number* was shared and the *comparison* was not, which
+left them free to disagree at exactly the boundary — a mutation sweep swapped
+the main thread's `>` for `>=` and no test in the tree went red. An undefined
+budget reads there as the axis not gating, never as a budget of zero.
+`featureDensity.test.ts` pins both rules.
+
 **A fetch that measured no bytes at all writes nothing** — not
 `bytes: undefined`. Two ways that happens, meaning the same thing: the adapter
 offers no index estimate, or the fetch carried no `byteLimit` because
@@ -708,17 +733,23 @@ paths can't drift apart.
   `BaseTrackModel.exportByteLimit` shares that rule through `adapterByteLimit`
   (see the note at the top of this file).
 
-  Its single caller is `gateByteLimit` on `RegionTooLargeMixin` — what the verdict
-  compares against, and what `resolvedByteLimit()` hands the worker, so the two
-  cannot gate against different numbers. Read the getter; don't re-assemble the
-  call: a second spelling of "the adapter's budget" is how a worker rejection with
-  no banner happens, which is a blank display that never refetches. Three things
-  read it, and all three do so under `gateActive`, because below
-  `AUTO_FORCE_LOAD_BP` it resolves the raised sub-floor tier and an *unmeasured*
-  view reads as below the floor: `resolvedByteLimit()`, `tooLargeStatus`, and
-  MAF's `framesReadOverBudget`, which bounds the `mafFrames` overlay — a third
-  file, fetched alongside whichever tier the gate is watching, that the banner
-  never quotes.
+  Its single caller is `gateByteLimit` on `RegionTooLargeMixin`, and
+  `gateByteLimit`'s single caller is `resolvedByteLimit()`. **That is the one
+  spelling of the gated budget, and everything takes it from there**: the
+  worker's short-circuit, `tooLargeStatus` for the banner, and MAF's
+  `framesReadOverBudget`, which bounds the `mafFrames` overlay — a third file,
+  fetched alongside whichever tier the gate is watching, that the banner never
+  quotes. Read the getter; don't re-assemble the call. A second spelling of "the
+  adapter's budget" is how a worker rejection with no banner happens, which is a
+  blank display that never refetches, and the chain is one getter deep precisely
+  so that no caller can reach a different answer.
+
+  Two of the three used to write `gateActive ? gateByteLimit : undefined`
+  out themselves and were kept equal by hand. `gateActive` is not decoration on
+  that read: below `AUTO_FORCE_LOAD_BP` `gateByteLimit` resolves the raised
+  sub-floor tier, and an *unmeasured* view reads as below the floor — so an
+  unguarded read answers with the doubled budget for a view that has no span
+  yet.
 
   The adapter tier is `adapterFetchSizeLimit`, a **main-thread read of the
   adapter's own `fetchSizeLimit` slot**, and the boundary carries bytes only —

@@ -1,5 +1,15 @@
 rows: 67200
 distinct behaviors: 73
+distinct observable behaviors: 32
+distinct banner-facing states: 7
+
+  tooLarge=false axis=- zoomCanRelease=true skips=false
+  tooLarge=true axis=bytes zoomCanRelease=false skips=false
+  tooLarge=true axis=bytes zoomCanRelease=false skips=true
+  tooLarge=true axis=bytes zoomCanRelease=true skips=false
+  tooLarge=true axis=bytes zoomCanRelease=true skips=true
+  tooLarge=true axis=density zoomCanRelease=true skips=false
+  tooLarge=true axis=density zoomCanRelease=true skips=true
 
 gateEnabled=false gateExempt=false aboveFloor=false gateActive=false densityGateActive=false byteLimit=undefined tooLarge=false axis=- zoomCanRelease=true stale=false skips=false   x840
   e.g. preFlight=false inFetch=false densityEnabled=false densityTooLarge=false cfgForceLoad=false forceLoadTrack=false span=1000 adapterLimit=undefined bytes=undefined zoomIneffective=false stale=false

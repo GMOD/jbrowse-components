@@ -34,6 +34,16 @@ against boundary values for span, adapter limit and bytes:
 
     67,200 rows  →  73 distinct behaviors  →  a 149-line golden file
 
+**73 is the count with every intermediate getter named**, and naming them is
+what makes the golden a tripwire — but it is also what makes the subsystem read
+as having 73 states, which it does not. Collapse the key to what a consumer can
+tell apart and it is **32**, of which 25 are the worker budget's five values
+riding along; collapse it to what `DisplayChrome` and the fetch autoruns
+actually read and it is **7**. Both numbers are now in the golden's header,
+above the detail, with the 7 listed. That is the answer to "is the shape right?"
+for this concept, and it is a better one than the 73: the gate is a four-value
+verdict with a re-measure flag, and the rest is how it is arrived at.
+
 Eleven invariants hold across all 67,200: gated ⟺ non-empty reason ⟺ defined
 axis; force-load exempts both axes; an unmeasured view never gates; a worker
 budget exists exactly when `gateActive`; a non-positive adapter limit is
@@ -99,6 +109,17 @@ absence of it cost a run:
   notices otherwise. The script now restores from a `finally`, an `atexit` hook
   and a SIGTERM handler, and refuses to start on a dirty target.
 
+  **Those three do not cover every death, and one got through.** The session
+  that wrote them ended leaving `gateExempt`'s `configForceLoad || forceLoadTrack`
+  as `&&` in this worktree — force-load only lifting the gate when *both* the
+  config slot and the button said so, which is a plausible-looking line, is
+  what the ADR-074 boolean exists to prevent, and would have shipped as a real
+  edit. A later session found it by reading `git status` in the worktree before
+  doing anything else. So: **a worktree that has run a sweep is dirty until
+  proven otherwise** — read the diff before trusting it, and prefer the mutant
+  check the sweep already does (was the mutation still applied when jest
+  finished) over trusting the restore path.
+
 **Two sweeps must never run in one worktree.** The pilot's `scratch-sweep.py`
 was still running when this session started — 1h56m in, writing into
 `byteBudget.ts` from a shell nobody was reading — and its writes landed under a
@@ -120,11 +141,16 @@ method — the guards above are the method.
 
 | site | mutation | note |
 | --- | --- | --- |
-| `CanvasFeatureGateMixin.ts:178` | `density > max` → `>=` | **the real one.** The byte axis pins exactly-at-the-limit (`byteBudget.test.ts` "is over only when strictly above the budget"); the density axis does not. Two axes, one question, one of them untested |
+| `CanvasFeatureGateMixin.ts:178` | `density > max` → `>=` | **the real one**, and **fixed**. The byte axis pins exactly-at-the-limit (`byteBudget.test.ts` "is over only when strictly above the budget"); the density axis had the comparison written out three times and pinned in one. It is now `overDensityBudget` beside `featuresPerPx`, the counterpart to `overByteBudget`, with all three callers on it |
 | `RegionTooLargeMixin.ts:489` | `spanBp >= AUTO_FORCE_LOAD_BP` → `>` | a span of exactly 20,000 stops counting as above the floor: density axis off, budget doubled. Caught **only** by the truth table → already pinned |
-| `regionTooLargeUtils.ts:134` | `bytes / previous.bytes > ZOOM_EVIDENCE_BYTE_RATIO` → `>=` | exactly 0.9 unpinned |
-| `CanvasFeatureGateMixin.ts:215` | `measurements.length === 0 \|\| !viewport` → `&&` | no test has one term true and the other false |
+| `regionTooLargeUtils.ts:134` | `bytes / previous.bytes > ZOOM_EVIDENCE_BYTE_RATIO` → `>=` | exactly 0.9 unpinned → **pinned**, along with the span ratio at exactly ½, in `regionTooLargeUtils.test.ts` |
+| `CanvasFeatureGateMixin.ts:215` | `measurements.length === 0 \|\| !viewport` → `&&` | no test had one term true and the other false → **pinned**, both directions, in the multi-row `derivedRegionTooLarge.test.ts` |
 | `CanvasFeatureGateMixin.ts:253` | `NODE_ENV !== 'production'` → `===` | equivalent-under-test, not a defect. Recorded so nobody re-derives it |
+
+All four live rows were re-run under the mutation after the fix and are now
+CAUGHT. The density one is caught three times over, because consolidating the
+comparison means one mutation site now reaches every caller — which is the
+argument for consolidating it rather than adding a third test.
 
 ## The sample so far
 
@@ -294,13 +320,18 @@ it is a survey, not a sample, and the extra cost is earned.
    method it could not find. Filed to [TODO.md](../TODO.md).
 
 3. **The one-page spec per concept**, which is the only part of this plan that
-   asks whether the shape is right rather than whether the tests pin it.
+   asks whether the shape is right rather than whether the tests pin it. The
+   gate's is written — `reference/REGION_TOO_LARGE.md` § the collapse above the
+   test list — and the method transfers: enumerate the leaves, group by what a
+   consumer can tell apart, and report both counts. Two concepts left.
 
 ## What this deliberately does not cover
 
 - **Design.** Mutation testing proves the tests pin the code. It says nothing
   about whether four gate axes plus a staleness dimension is the right shape.
-  Only the one-page spec per concept asks that.
+  Only the one-page spec per concept asks that — and for the gate it has now
+  been asked and answered: seven outward states, and the axes are how they are
+  reached rather than states of their own.
 - **Emergence.** Unit-level mutation says nothing about subsystems interacting.
   Daily use covers some of it; the RC covers the rest, on other people's data.
 - **API surface diffing against v4.3.0**, considered and dropped: the release is
