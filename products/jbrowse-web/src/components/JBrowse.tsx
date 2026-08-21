@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 import { clearCrashedSession } from '../crashedSession.ts'
 import FileHandleRestoreBanner from './FileHandleRestoreBanner.tsx'
 import ShareButton from './ShareButton.tsx'
+import { adminServerErrorMessage } from './adminServerError.ts'
 
 import type { WebSessionModel } from '../sessionModel/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -60,8 +61,13 @@ const JBrowse = observer(function JBrowse({
               }),
             })
             if (!response.ok) {
-              const message = await response.text()
-              throw new Error(`HTTP ${response.status} (${message})`)
+              throw new Error(
+                adminServerErrorMessage(
+                  response.status,
+                  response.statusText,
+                  await response.text(),
+                ),
+              )
             }
           } catch (e) {
             session.notify(`Admin server error: ${e}`)
