@@ -320,12 +320,18 @@ describe('gate invariants', () => {
     return table.filter(t => !predicate(t)).map(t => rowKey(t.row))
   }
 
+  // Several invariants below are "these two facts are present together or not at
+  // all", which is an `===` between two booleans — and written inline, one of
+  // them a comparison, that reads to `unicorn/no-chained-comparison` as `a === b
+  // !== c`. Named, it also says what it is checking.
+  const together = (a: boolean, b: boolean) => a === b
+
   it('a gated display always says why, and an ungated one never does', () => {
     expect(
       violations(
         ({ out }) =>
-          out.tooLarge === (out.reason !== '') &&
-          out.tooLarge === (out.axis !== '-'),
+          together(out.tooLarge, out.reason !== '') &&
+          together(out.tooLarge, out.axis !== '-'),
       ),
     ).toEqual([])
   })
@@ -355,7 +361,9 @@ describe('gate invariants', () => {
 
   it('a worker budget exists exactly when the gate may act', () => {
     expect(
-      violations(({ out }) => (out.byteLimit !== undefined) === out.gateActive),
+      violations(({ out }) =>
+        together(out.byteLimit !== undefined, out.gateActive),
+      ),
     ).toEqual([])
   })
 
