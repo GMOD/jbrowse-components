@@ -42,6 +42,13 @@ below uses the second:
   value. Divergent genomes align in many short fragments, and hiding them is
   usually what makes the syntenic blocks visible at all.
 
+The settings menu, the sliders button in the header, holds the rest of what the
+plot looks like: **Opacity** and **Line width** for how each alignment draws,
+**Draw CIGAR insertions/deletions** for whether per-base indels are drawn inside
+one, and **Gridlines**, which carries each axis' ruler ticks across the plot. At
+whole-genome zoom neither axis has room to number itself, so the gridlines row
+says **none at this zoom** while it stays ticked.
+
 <Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
 
 When a plot still reads as specks after Min length, the pair is too divergent
@@ -113,8 +120,9 @@ crosshair icon):
   or open a linear synteny view. Hold `Ctrl`/`Cmd` while dragging to pan
   instead.
 
-**Aspect ratio lock:** the lock button in the toolbar constrains zooming and
-box-selection to keep both axes at the same scale.
+**Aspect ratio lock:** **Lock aspect ratio (same bp/px)**, in the view's
+hamburger menu, constrains zooming and box-selection to keep both axes at the
+same scale.
 
 ## Opening a synteny view from a dotplot view
 

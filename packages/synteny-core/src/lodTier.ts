@@ -105,42 +105,41 @@ export function trackHasLodTiers(track: {
 }
 
 /**
- * The wording of the setting, shared by the surfaces that offer it in a menu
- * (`lodMenuItems`) and the ones that offer it as a settings-panel row, so a
- * reader moving between a synteny view, a dotplot and an LGV synteny track
- * cannot be shown three names for one thing.
+ * The wording of the setting. Module-private, and read only by `lodMenuItems`
+ * below: a menu row is the one surface that offers this now, so the wording is
+ * shared by sharing that builder rather than by every caller spelling its own
+ * rows from a table.
  */
-export const LOD_MODES: { label: string; value: LodMode; helpText: string }[] =
-  [
-    {
-      label: 'Automatic (by zoom)',
-      value: 'auto',
-      helpText:
-        'Show base-level detail when zoomed in, blocks-only when zoomed out.',
-    },
-    {
-      label: 'Indels + mismatches',
-      value: 'fine',
-      helpText:
-        'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
-    },
-    {
-      label: 'Alignment blocks only',
-      value: 'coarse',
-      // The fallback is named here because the menu cannot avoid offering this:
-      // `trackHasLodTiers` tests for the THRESHOLD SLOT, which both indexed PIF
-      // adapters declare whether or not the file they open carries the tier —
-      // whether it does is `PifFile.hasCoarseTier`, an async question on the
-      // adapter side of the RPC. So a file built with `--no-coarse` gets the full
-      // submenu and `resolveCoarseTier` quietly serves fine, which is the right
-      // behaviour (the alternative is no data) and the wrong thing to say nothing
-      // about.
-      helpText:
-        'Skip base-level detail for speed — no indel or mismatch coloring. A ' +
-        'file built without the coarse tier (make-pif --no-coarse) has nothing ' +
-        'to switch to and keeps serving full detail.',
-    },
-  ]
+const LOD_MODES: { label: string; value: LodMode; helpText: string }[] = [
+  {
+    label: 'Automatic (by zoom)',
+    value: 'auto',
+    helpText:
+      'Show base-level detail when zoomed in, blocks-only when zoomed out.',
+  },
+  {
+    label: 'Indels + mismatches',
+    value: 'fine',
+    helpText:
+      'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
+  },
+  {
+    label: 'Alignment blocks only',
+    value: 'coarse',
+    // The fallback is named here because the menu cannot avoid offering this:
+    // `trackHasLodTiers` tests for the THRESHOLD SLOT, which both indexed PIF
+    // adapters declare whether or not the file they open carries the tier —
+    // whether it does is `PifFile.hasCoarseTier`, an async question on the
+    // adapter side of the RPC. So a file built with `--no-coarse` gets the full
+    // submenu and `resolveCoarseTier` quietly serves fine, which is the right
+    // behaviour (the alternative is no data) and the wrong thing to say nothing
+    // about.
+    helpText:
+      'Skip base-level detail for speed — no indel or mismatch coloring. A ' +
+      'file built without the coarse tier (make-pif --no-coarse) has nothing ' +
+      'to switch to and keeps serving full detail.',
+  },
+]
 
 /**
  * The "Level of detail" radio submenu, shared by every surface that draws a

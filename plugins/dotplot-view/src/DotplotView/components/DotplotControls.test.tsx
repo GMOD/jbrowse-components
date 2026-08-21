@@ -3,7 +3,7 @@ import '@testing-library/jest-dom'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import DotplotControls from './DotplotControls.tsx'
 
@@ -71,4 +71,38 @@ test('the settings menu appears only once a track is loaded', () => {
   expect(
     screen.queryByLabelText('Dotplot display settings'),
   ).not.toBeInTheDocument()
+})
+
+// The ⋮ button carries no label of its own, so its icon is the handle.
+function openViewMenu() {
+  fireEvent.click(screen.getByTestId('MoreVertIcon').closest('button')!)
+}
+
+// Both rows draw the plot, so they are settings now. What is left of the
+// submenu that held them is one row about framing, promoted rather than kept
+// behind a hop of its own.
+test('the ⋮ menu keeps what the view is, not what it looks like', () => {
+  setup()
+  openViewMenu()
+  expect(screen.getByText('Lock aspect ratio (same bp/px)')).toBeInTheDocument()
+  expect(screen.queryByText('Show...')).not.toBeInTheDocument()
+  expect(
+    screen.queryByText('Draw CIGAR insertions/deletions'),
+  ).not.toBeInTheDocument()
+  expect(screen.queryByText(/^Gridlines/)).not.toBeInTheDocument()
+})
+
+test('the aspect lock row reports the model and writes it back', () => {
+  const { model } = setup()
+  openViewMenu()
+  const name = 'Lock aspect ratio (same bp/px)'
+  // the row's glyph is where its state is, not an aria attribute
+  expect(
+    screen
+      .getByRole('menuitem', { name })
+      .querySelector('[data-testid="CheckBoxOutlineBlankIcon"]'),
+  ).toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('menuitem', { name }))
+  expect(model.lockAspectRatio).toBe(true)
 })

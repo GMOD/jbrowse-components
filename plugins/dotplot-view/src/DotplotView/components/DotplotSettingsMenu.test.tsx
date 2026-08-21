@@ -1,7 +1,9 @@
+import '@testing-library/jest-dom'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { when } from 'mobx'
 
 import DotplotSettingsMenu from './DotplotSettingsMenu.tsx'
@@ -99,6 +101,8 @@ async function openMenu(adapter: Record<string, unknown> = PAF) {
 test('one menu holds every setting that decides what the plot looks like', async () => {
   await openMenu(PIF)
   for (const label of [
+    'Draw CIGAR insertions/deletions',
+    /^Gridlines/,
     'Level of detail',
     'Opacity',
     'Line width',
@@ -125,3 +129,41 @@ test('a slider row captions the value it is set to', async () => {
   expect(await screen.findByText('Line width: 2.5px')).toBeTruthy()
   expect(view.lineWidth).toBe(2.5)
 }, 20000)
+
+// A checkbox row is a `menuitem` whose glyph carries the state, so the state is
+// read off the glyph rather than an aria attribute the row does not set.
+function checkboxRow(name: string | RegExp) {
+  return screen.getByRole('menuitem', { name })
+}
+
+function isTicked(name: string | RegExp) {
+  return Boolean(
+    checkboxRow(name).querySelector('[data-testid="CheckBoxIcon"]'),
+  )
+}
+
+// Both checkboxes came out of the ⋮ menu's "Show..." submenu, which filed them
+// by widget kind while their synteny twins were already settings. Asserted in
+// both polarities, since a row rendering its glyph from a constant passes
+// either one alone.
+test.each([
+  ['Draw CIGAR insertions/deletions', 'setDrawCigar', 'drawCigar'],
+  // matched loosely because the label carries `withHint`, which appends an
+  // aside at a zoom with no ruler to cast
+  [/^Gridlines/, 'setShowGridlines', 'showGridlines'],
+] as const)(
+  'a row moved out of the ⋮ menu reports the model and writes it back',
+  async (name, setter, prop) => {
+    const view = await openMenu()
+    expect(isTicked(name)).toBe(true)
+
+    act(() => {
+      view[setter](false)
+    })
+    expect(isTicked(name)).toBe(false)
+
+    fireEvent.click(checkboxRow(name))
+    expect(view[prop]).toBe(true)
+  },
+  20000,
+)

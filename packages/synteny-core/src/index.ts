@@ -30,7 +30,6 @@ export { regionSignature } from './regionSignature.ts'
 export { bucketBpPerPx } from './bpPerPxBucket.ts'
 export {
   getCoarseBpPerPxThreshold,
-  LOD_MODES,
   lodMenuItems,
   resolveLodTier,
   trackHasLodTiers,

@@ -1,5 +1,6 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 import {
   MAX_MIN_LENGTH_BP,
@@ -29,11 +30,19 @@ import type { MenuItem } from '@jbrowse/core/ui'
  * group in one surface while the sliders it belongs beside were in another, and
  * nothing about the setting predicted which one held it.
  *
+ * CIGAR AND GRIDLINES ARE HERE for the same reason: both were in the ⋮ menu's
+ * "Show..." submenu, which filed them by widget type — a checkbox is a checkbox
+ * — while the synteny view had already moved their twins into its settings
+ * menu. Lock aspect ratio stayed behind, because it frames the plot rather than
+ * draws it, and its twin (`sameScale`) is likewise in the synteny hamburger.
+ *
  * FLAT, with no section headings. The synteny view's menu earns its three
- * because it has ten rows to group; four do not, and a heading over a single
+ * because it has ten rows to group; six do not, and a heading over a single
  * gated row is more rule than list. What it does keep is that menu's row shape
- * — `label + [?] + chevron`, the sliders behind `makeSizeSubMenu` — and its
- * order, the choice before the values.
+ * — `label + [?] + (checkbox | chevron)`, the sliders behind `makeSizeSubMenu` —
+ * and the order arity gives the rows inside one of its sections: the checkboxes,
+ * then the choice, then the values, so the row shape changes once down the menu
+ * rather than flickering.
  */
 const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
   model,
@@ -45,6 +54,33 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
       tooltip="Dotplot display settings"
       menuItems={() =>
         [
+          toggleItem(
+            'Draw CIGAR insertions/deletions',
+            model.drawCigar,
+            flag => {
+              model.setDrawCigar(flag)
+            },
+            {
+              helpText:
+                'Toggle detailed CIGAR string visualization showing matches, insertions, and deletions in alignments. Disable for a cleaner view that shows only broad syntenic blocks.',
+            },
+          ),
+          toggleItem(
+            // a plot with no room for a ruler on either axis has no gridlines to
+            // draw, and the box stays ticked through it
+            withHint(
+              'Gridlines',
+              model.gridlinesEmpty ? 'none at this zoom' : undefined,
+            ),
+            model.showGridlines,
+            flag => {
+              model.setShowGridlines(flag)
+            },
+            {
+              helpText:
+                "Carries each axis' ruler ticks across the plot as faint lines, in two weights, so a point can be read back to a coordinate without tracing to the axis. An axis with no room to number itself draws none at all, which at whole-genome zoom is both of them, and a tick already marked by a chromosome boundary is left to the boundary.",
+            },
+          ),
           ...lodMenuItems(model),
           makeSizeSubMenu({
             label: 'opacity',
