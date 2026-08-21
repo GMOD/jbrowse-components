@@ -59,22 +59,35 @@ import type { ObservableMap } from 'mobx'
  * store is one place while the readers are hundreds, and because a payload
  * caught at the `set` names the region and the display instead of surfacing as
  * a TypeError in whichever getter happened to read it first.
+ *
+ * **`T extends object` is the same statement as the check, in the one place a
+ * type can make it.** The runtime predicate is "a non-null object", and
+ * `object` is that predicate spelled as a constraint — so a map cannot be
+ * *declared* as holding something the check would then report, which is the
+ * only way the two could come apart. It costs nothing: every payload in tree is
+ * an interface, an array, an intersection or a class.
  */
-export function regionDataMap<T>(
+export function regionDataMap<T extends object>(
   // the field this map is stored on, so a violation names the map rather than
-  // the eighteen that share this constructor
-  name = 'region data',
+  // the eighteen that share this constructor. No default — an omitted name is
+  // the anonymous message this parameter exists to remove, and it would be
+  // reached by forgetting rather than by deciding.
+  name: string,
 ): ObservableMap<number, T> {
   const map = observable.map<number, T>(undefined, { deep: false })
   if (process.env.NODE_ENV !== 'production') {
     const set = map.set.bind(map)
     map.set = (key: number, value: T) => {
-      if (typeof value !== 'object' || value === null) {
+      // as `unknown`, because the claim that this is a `T` is the thing in
+      // doubt — checking it against its own declared type narrows to `never`
+      // and checks nothing
+      const stored: unknown = value
+      if (typeof stored !== 'object' || stored === null) {
         // `console.error`, never `throw`: this runs inside the fetch's own
         // result handler, where a throw is caught and reported as a failed
         // region — which would hide the violation being reported.
         console.error(
-          `[jbrowse display contract] ${name}: region ${key} stored \`${value === null ? 'null' : typeof value}\`, ` +
+          `[jbrowse display contract] ${name}: region ${key} stored \`${stored === null ? 'null' : typeof stored}\`, ` +
             'not a payload. A fetch RPC answers a payload or a regionTooLarge ' +
             'refusal; storing anything else leaves every reader of this map ' +
             'reading through it.',

@@ -65,3 +65,24 @@ test('the value is stored anyway', () => {
   expect(map.has(0)).toBe(true)
   expect(map.get(0)).toBeUndefined()
 })
+
+// Typecheck-only, and the half the runtime check cannot state for itself. The
+// check reports a value that is not a non-null object; `T extends object` is
+// that same predicate as a constraint, so a map cannot be DECLARED as holding
+// what every store of it would then be reported for. The required `name` is the
+// other half — an omitted one reports anonymously, which is what the parameter
+// exists to prevent. An unused `@ts-expect-error` fails `pnpm typecheck`, so
+// both assert without running.
+function theDeclarationCannotSayWhatTheCheckReports() {
+  // @ts-expect-error a nullable payload is the violation, not a declaration
+  const nullable = regionDataMap<{ features: number[] } | undefined>('rpcData')
+  // @ts-expect-error every map names the field it is stored on
+  const unnamed = regionDataMap<{ features: number[] }>()
+  return [nullable.size, unnamed.size]
+}
+
+test('a map cannot be declared as holding what the check reports', () => {
+  // the assertion is the two directives above; running the accepted half pins
+  // them against a call that really exists
+  expect(theDeclarationCannotSayWhatTheCheckReports()).toEqual([0, 0])
+})
