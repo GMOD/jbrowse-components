@@ -598,19 +598,6 @@
     "note": "",
     "reviewedAt": "2026-06-14T14:28:43.994Z"
   },
-  "trio-matrix": {
-    "name": "trio-matrix",
-    "status": "good",
-    "note": "fixed: red box on the Multi-sample variant display (matrix) menu item",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
-  },
-  "trio-matrix-phased": {
-    "name": "trio-matrix-phased",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-10T23:13:27.697Z",
-    "hash": "d1d74dc7a9317b460a5b3ca1a3ca7c374b8c2b48"
-  },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "good",

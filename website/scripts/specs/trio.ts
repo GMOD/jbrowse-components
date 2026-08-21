@@ -1,8 +1,4 @@
-import {
-  DEMO_CONFIG,
-  lgvSession,
-  menuCascade,
-} from '../screenshot-spec-helpers.ts'
+import { DEMO_CONFIG, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type {
   Annotation,
@@ -248,64 +244,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 12000,
-  },
-
-  // Multi-sample variant display (matrix view), with the track menu open on the
-  // Display types submenu showing the "(matrix)" option highlighted.
-  {
-    mode: 'url',
-    name: 'trio-matrix',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: TRIO_MATRIX_LOC,
-      tracks: [
-        {
-          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    readyTimeout: 60000,
-    settleMs: 12000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade([
-        'Display types',
-        'Multi-sample variant display (matrix)',
-      ]),
-    ],
-    annotations: [
-      {
-        type: 'box',
-        anchor: { text: 'Multi-sample variant display (matrix)' },
-      },
-    ],
-  },
-
-  // Phased matrix with the "Rendering mode" menu visible.
-  {
-    mode: 'url',
-    name: 'trio-matrix-phased',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: TRIO_MATRIX_LOC,
-      tracks: [
-        {
-          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
-          renderingMode: 'phased',
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    readyTimeout: 60000,
-    settleMs: 12000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Rendering mode', 'Phased']),
-    ],
-    annotations: [{ type: 'box', anchor: { text: 'Phased' } }],
   },
 
   // Phased matrix clean (no menu overlay).
