@@ -1,3 +1,4 @@
+import PluginManagerCtor from '../PluginManager.ts'
 import { createStopToken, stopStopToken } from '../util/stopToken.ts'
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
@@ -81,6 +82,21 @@ describe('BaseRpcDriver.call envelope', () => {
     await expect(
       driver.call(pluginManager, '', 'SomeMethod', {}),
     ).rejects.toThrow('sessionId is required')
+  })
+
+  // An RPC method is addressed by string, so a removed or renamed one fails
+  // here and nowhere earlier — and the message has to identify it, since the
+  // caller is a bare string in some plugin. `TypeRecord.get` is what answers,
+  // and this is the assertion that it still reaches the RPC path.
+  test('names the method, and the build, when nothing registers it', async () => {
+    const driver = new CapturingDriver()
+    const real = new PluginManagerCtor([])
+    real.createPluggableElements()
+    await expect(
+      driver.call(real, 'sid', 'MultiVariantGetGenotypeMatrix', {}),
+    ).rejects.toThrow(
+      /RpcMethodType 'MultiVariantGetGenotypeMatrix' is not registered/,
+    )
   })
 
   test('refuses to dispatch a call whose stop token is already stopped', async () => {

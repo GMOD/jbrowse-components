@@ -35,6 +35,11 @@ export default abstract class BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
 
+    // An RPC method is addressed by string, so a removed or renamed one is not
+    // a type error anywhere — it fails here. It fails WELL: `TypeRecord.get`
+    // throws naming the method and listing what is registered, which is the
+    // "which plugin is missing" answer. No `undefined` check belongs here; one
+    // was added and lint called it dead, correctly.
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
 
     // statusCallback is an out-of-band progress handle, not data: each transport
