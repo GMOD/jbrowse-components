@@ -16,7 +16,6 @@ import { runInAction } from 'mobx'
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
 import {
-  OFFSCREEN_MATE_NAV_GROW,
   captureStackViewports,
   navLocString,
   takeFollowAnchor,
@@ -423,7 +422,7 @@ export function linearSyntenyViewHelperModelFactory(
           const anchor = takeFollowAnchor(parentView, row)
           const loc = navLocString(refName, locus)
           view
-            .navToLocString(loc, undefined, locus ? OFFSCREEN_MATE_NAV_GROW : 0)
+            .navToLocString(loc)
             .then(() => {
               // The level can be detached while the navigation is in flight —
               // the track holding it removed, the view closed — and

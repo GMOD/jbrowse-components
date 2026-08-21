@@ -102,6 +102,7 @@ export interface RadioOption<T extends string> {
   value: T
   label: string
   helpText?: string
+  keepMenuOpen?: boolean
 }
 
 /** #menuBuilder radioItems | a radio group, one row per option */

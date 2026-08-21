@@ -50,9 +50,21 @@ interface NavigationModel {
   setFollowAnchorIndex: (idx: number) => void
 }
 
+// `keepMenuOpen: false` because the click is a zoom, not a setting to sit and
+// flip: it re-frames every row, and the menu would stay open over the result.
+// The third of the same three commands, "Square view", is a plain row and
+// dismisses already.
 const SHOW_ALL_REGIONS_MODES = [
-  { value: 'fit', label: 'Show all regions - each row fit to width' },
-  { value: 'same', label: 'Show all regions - same bp per pixel' },
+  {
+    value: 'fit',
+    label: 'Show all regions - each row fit to width',
+    keepMenuOpen: false,
+  },
+  {
+    value: 'same',
+    label: 'Show all regions - same bp per pixel',
+    keepMenuOpen: false,
+  },
 ] as const
 
 const ROW_SYNC_MODES = [

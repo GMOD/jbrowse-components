@@ -8,7 +8,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // Padding around the mate locus, as a fraction of its own width per side. The
 // span is where the hidden alignments land and nothing more, so shown exactly
 // it puts their ribbons hard against both edges of the row with nothing around
-// them to read against.
+// them to read against. Applied HERE rather than handed to `navToLocString`, so
+// the floor below is the width the row actually lands at.
 export const OFFSCREEN_MATE_NAV_GROW = 0.2
 
 // The narrowest window a mark may navigate to. A single small anchor is a
@@ -19,19 +20,20 @@ export const OFFSCREEN_MATE_NAV_GROW = 0.2
 export const OFFSCREEN_MATE_NAV_MIN_BP = 20_000
 
 /**
- * Where a clicked mark sends its row: the mate's own locus, widened to the
- * floor above and centred on what was clicked.
+ * Where a clicked mark sends its row: the mate's own locus, padded, and widened
+ * to the floor if that is still narrower.
  *
- * The floor is a WIDTH, not a pad. Padding each side by half the shortfall and
- * then clipping the left one at zero spends half the minimum window on
- * coordinates that do not exist — a mate 100bp into its contig framed 10.4kb of
- * a documented 20kb, at the one place that states the minimum. Deriving `start`
- * from the span instead slides a near-origin window right rather than trimming
- * it.
+ * The floor is a WIDTH, and the padding is inside it, so the number here is the
+ * number the row lands at. Padding afterwards instead made a documented 20kb
+ * minimum a 28kb one — and 24kb at the origin, where only the left side clips,
+ * which is the asymmetry deriving `start` from the span already removed once.
  */
 export function navLocString(refName: string, locus?: OffscreenMateLocus) {
   if (locus) {
-    const span = Math.max(OFFSCREEN_MATE_NAV_MIN_BP, locus.end - locus.start)
+    const padded = Math.round(
+      (locus.end - locus.start) * (1 + 2 * OFFSCREEN_MATE_NAV_GROW),
+    )
+    const span = Math.max(OFFSCREEN_MATE_NAV_MIN_BP, padded)
     const start = Math.max(0, Math.round((locus.start + locus.end - span) / 2))
     // +1 because the payload is interbase and a locstring is 1-based
     return `${refName}:${start + 1}-${start + span}`

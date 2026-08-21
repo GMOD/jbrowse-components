@@ -135,7 +135,7 @@ test('a locus narrower than the floor is widened around itself', async () => {
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
-  expect(visible!.end - visible!.start).toBeGreaterThan(20_000)
+  expect(visible!.end - visible!.start).toBeGreaterThanOrEqual(20_000)
   // and still centred on what was clicked
   expect((visible!.start + visible!.end) / 2).toBeGreaterThan(190_000)
   expect((visible!.start + visible!.end) / 2).toBeLessThan(210_000)
@@ -228,7 +228,8 @@ test('a navigation that fails does not keep the anchor it took', async () => {
 // The floor is a WIDTH, and a locus near the origin has nowhere to put half of
 // it. Padded symmetrically and then clipped at zero, a mate a few hundred bp
 // into its contig framed half the minimum window — at the one place that states
-// the minimum.
+// the minimum. The window slides right instead, so the origin gets the same
+// width as anywhere else.
 test('a locus at the start of its contig still gets the whole floor', async () => {
   const { view, level } = await setup()
 
@@ -236,5 +237,5 @@ test('a locus at the start of its contig still gets the whole floor', async () =
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
-  expect(visible!.end - visible!.start).toBeGreaterThan(20_000)
+  expect(visible!.end - visible!.start).toBeGreaterThanOrEqual(20_000)
 }, 20000)

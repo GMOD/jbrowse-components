@@ -17,12 +17,14 @@ describe('navLocString', () => {
     expect(navLocString('ctgB')).toBe('ctgB')
   })
 
-  it('keeps a locus wider than the floor at its own span', () => {
+  it('pads a locus already wider than the floor', () => {
     const loc = navLocString('ctgB', { start: 200_000, end: 260_000 })
-    expect(width(loc)).toBe(60_000)
+    expect(width(loc)).toBe(84_000)
   })
 
-  it('widens a narrow locus to the floor, centred on it', () => {
+  // the padding lives inside the floor, so this is the width the row lands at
+  // rather than 1.4x it
+  it('widens a narrow locus to the floor, centred on it, and does not then pad it', () => {
     const loc = navLocString('ctgB', { start: 200_000, end: 200_500 })
     expect(width(loc)).toBe(OFFSCREEN_MATE_NAV_MIN_BP)
     expect(loc).toBe('ctgB:190251-210250')
