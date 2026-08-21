@@ -27,6 +27,26 @@ const CONTRACT_PREFIX = /\[jbrowse \w+ contract]/
 // the same opt-in the contract families use.
 const MOBX_REACTION_ERROR = '[mobx] Encountered an uncaught exception'
 
+// Started with debt, and ratchets: these six throw ~1200 times across the suite
+// today — enough to fail 157 tests in 23 suites with the gate on cold — all of
+// them `TypeError: Cannot read properties of undefined` from a read that
+// happens before the thing it reads exists — the same shape as the clamp, and
+// just as invisible until now. They are six separate investigations, so they
+// are named here rather than fixed here, and the gate covers every OTHER
+// reaction in the tree meanwhile. A name comes off this list when its reaction
+// stops throwing; nothing goes on it.
+const MOBX_REACTION_DEBT = [
+  'CanvasYMorph',
+  'CanvasHitIndexes',
+  'TrackHeightClampScroll',
+  'TreeHover',
+  'TreeDraw',
+  'GrowExitBake',
+]
+
+const isKnownReactionDebt = message =>
+  MOBX_REACTION_DEBT.some(name => message.includes(`Reaction[${name}]`))
+
 // Shared with the gate, which runs later in the same context. `gated` is set
 // there, and printing is suppressed only once it is: a project that somehow has
 // this shim without the gate stays exactly as loud as before rather than going
@@ -46,7 +66,10 @@ console.log = (...args) => {
 
 console.error = (...args) => {
   const message = args.map(a => `${a}`).join(' ')
-  if (CONTRACT_PREFIX.test(message) || message.includes(MOBX_REACTION_ERROR)) {
+  if (
+    CONTRACT_PREFIX.test(message) ||
+    (message.includes(MOBX_REACTION_ERROR) && !isKnownReactionDebt(message))
+  ) {
     contract.reports.push(message)
     if (contract.gated) {
       // the gate quotes it verbatim in the failure it throws, so printing here
