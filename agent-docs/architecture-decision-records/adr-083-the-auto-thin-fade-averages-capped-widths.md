@@ -102,7 +102,7 @@ blocks, where there is no hairball to repaint.
   **two visible ribbons**. The deadband does not steady a hairball; it keeps the
   fade on across a near-empty stretch of the pan, leaving one to four hairlines at
   `WIDTH_FADE_FLOOR` — the thing the ten-block floor is there to prevent.
-  `ideas/synteny-thin-fade-snap.md` has the sweep.
+  [ADR-085](adr-085-the-thin-fade-decision-snaps.md) has the sweep.
 
 ## Consequences
 
@@ -122,6 +122,8 @@ blocks, where there is no hairball to repaint.
 
 ## Related
 
+- ADR-085 (what the decision changing looks like, and the three transition
+  designs declined with this one)
 - ADR-033 (the fade itself, and why indels are not faded)
 - `f48af92b65` (the deadband and the latch), `4f1c8ebd97` (the mean criterion,
   which replaced a coverage fraction that under-fired on the same kind of data)
