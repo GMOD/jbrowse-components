@@ -102,10 +102,17 @@ export interface DisplayTestEnvironmentOptions {
   /** Extra view setup, after the width and displayed regions are set. */
   onViewReady?: (view: any) => void
   /**
-   * The body `mockRpcCall` is a `jest.fn()` over. Bare by default, which
-   * resolves `undefined` for every method; a display gated on a byte estimate
-   * needs one that answers `CoreGetRegionByteEstimate`, or its fetch never
-   * commits and the suite reads as a broken display rather than a stub gap.
+   * The body `mockRpcCall` is a `jest.fn()` over. Bare by default, which never
+   * SETTLES for any method (see `mockRpcCall` below) — so a display gated on a
+   * byte estimate needs one that answers `CoreGetRegionByteEstimate`, or its
+   * fetch never commits and the suite reads as a broken display rather than a
+   * stub gap.
+   *
+   * It used to resolve `undefined` instead, which is worse than not answering
+   * and is the origin of the payload check in `regionDataMap`: an un-stubbed
+   * method looked like a fetch that succeeded and returned nothing, so six
+   * reactions across four packages threw `Cannot read properties of undefined`
+   * on every run, inside autoruns MobX catches and logs.
    */
   rpcCall?: (sessionId: string, method: string, args: unknown) => unknown
 }

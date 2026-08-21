@@ -1,3 +1,4 @@
+import { getType } from '@jbrowse/mobx-state-tree'
 import { computed, observable } from 'mobx'
 
 // This ESM package builds without @types/node, but consuming bundlers
@@ -9,6 +10,42 @@ import { createRegionUploadSync } from './regionUploadSync.ts'
 
 import type { LifecycleHost } from './RenderLifecycleMixin.ts'
 import type { ObservableMap } from 'mobx'
+
+/**
+ * What a per-region entry has to be, as one expression both enforcement points
+ * below read. Written once because the two are the same statement made at two
+ * moments, and a second spelling is how they would come apart.
+ */
+function isPayload(value: unknown) {
+  return typeof value === 'object' && value !== null
+}
+
+/** `typeof` names `null` an object, which is the one case worth spelling. */
+function typeName(value: unknown) {
+  return value === null ? 'null' : typeof value
+}
+
+function report(message: string) {
+  // `console.error`, never `throw`: the store runs inside the fetch's own
+  // result handler, where a throw is caught and reported as a failed region —
+  // which would hide the violation being reported. The upload runs inside an
+  // autorun, where MobX catches and logs it to the same effect.
+  console.error(`[jbrowse display contract] ${message}`)
+}
+
+// Maps built by `regionDataMap`, which check themselves at the `set`. The
+// upload seam skips them, so the two points partition the maps rather than
+// both reporting the same entry: the constructor's message names the field,
+// which is the better blame when there is one.
+//
+// Module state, and duplication-safe in the only way that matters here: two
+// live copies of this package would each hold their own set, so a map built by
+// one and installed through the other is checked twice rather than missed.
+const checkedAtTheStore = new WeakSet<ReadonlyMap<number, unknown>>()
+
+// Named once per display per region. A bad entry survives every recompute, and
+// the upload autorun re-runs on each one.
+const alreadyNamed = new WeakMap<LifecycleHost, Set<number>>()
 
 /**
  * The volatile a display keys its per-region worker payloads by
@@ -59,23 +96,34 @@ import type { ObservableMap } from 'mobx'
  * store is one place while the readers are hundreds, and because a payload
  * caught at the `set` names the region and the display instead of surfacing as
  * a TypeError in whichever getter happened to read it first.
+ *
+ * **`T extends object` is the same statement as the check, in the one place a
+ * type can make it.** The runtime predicate is "a non-null object", and
+ * `object` is that predicate spelled as a constraint — so a map cannot be
+ * *declared* as holding something the check would then report, which is the
+ * only way the two could come apart. It costs nothing: every payload in tree is
+ * an interface, an array, an intersection or a class.
  */
-export function regionDataMap<T>(
+export function regionDataMap<T extends object>(
   // the field this map is stored on, so a violation names the map rather than
-  // the eighteen that share this constructor
-  name = 'region data',
+  // the thirteen that share this constructor. No default — an omitted name is
+  // the anonymous message this parameter exists to remove, and it would be
+  // reached by forgetting rather than by deciding.
+  name: string,
 ): ObservableMap<number, T> {
   const map = observable.map<number, T>(undefined, { deep: false })
   if (process.env.NODE_ENV !== 'production') {
+    checkedAtTheStore.add(map)
     const set = map.set.bind(map)
     map.set = (key: number, value: T) => {
-      if (typeof value !== 'object' || value === null) {
-        // `console.error`, never `throw`: this runs inside the fetch's own
-        // result handler, where a throw is caught and reported as a failed
-        // region — which would hide the violation being reported.
-        console.error(
-          `[jbrowse display contract] ${name}: region ${key} stored \`${value === null ? 'null' : typeof value}\`, ` +
-            'not a payload. A fetch RPC answers a payload or a regionTooLarge ' +
+      // as `unknown`, because the claim that this is a `T` is the thing in
+      // doubt — checking it against its own declared type narrows to `never`
+      // and checks nothing
+      const stored: unknown = value
+      if (!isPayload(stored)) {
+        report(
+          `${name}: region ${key} stored \`${typeName(stored)}\`, not a ` +
+            'payload. A fetch RPC answers a payload or a regionTooLarge ' +
             'refusal; storing anything else leaves every reader of this map ' +
             'reading through it.',
         )
@@ -84,6 +132,51 @@ export function regionDataMap<T>(
     }
   }
   return map
+}
+
+/**
+ * The same invariant, at the seam rather than at one implementation of it.
+ *
+ * `data: () => ReadonlyMap<number, Data>` is what every per-region display
+ * hands over, and `regionDataMap` is only its most common implementation: two
+ * displays in tree derive theirs instead — canvas's `renderDataMap` and the
+ * variant display's `perRegionCellMap`, both plain `Map`s off a MobX computed —
+ * and a map built that way opted out of the store-time check by construction,
+ * with nothing anywhere saying so. That is the shape the RPC registry's own
+ * comments argue against: an opt-in you leave by writing ordinary code reads as
+ * checked and is not.
+ *
+ * So the check belongs to the contract. Neither derived map can hold a
+ * non-payload today — both build their entries from object literals — which is
+ * the point: this is what keeps the third one from being where it is noticed.
+ */
+function checkRegionPayloads(
+  self: LifecycleHost,
+  regions: ReadonlyMap<number, unknown>,
+) {
+  if (checkedAtTheStore.has(regions)) {
+    return
+  }
+  for (const [key, value] of regions) {
+    if (!isPayload(value)) {
+      let named = alreadyNamed.get(self)
+      if (!named) {
+        named = new Set()
+        alreadyNamed.set(self, named)
+      }
+      if (!named.has(key)) {
+        named.add(key)
+        report(
+          `${getType(self).name}: region ${key} of the map handed to ` +
+            `installPerRegionLifecycle is \`${typeName(value)}\`, not a ` +
+            'payload. This map is derived rather than built by ' +
+            '`regionDataMap`, so nothing checked it as it was filled — and ' +
+            'the encode, the upload and every renderer reading it are all ' +
+            'written for the payload.',
+        )
+      }
+    }
+  }
 }
 
 interface UploadableRenderingBackend<Encoded> {
@@ -185,7 +278,7 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
 // display's own payload is what the backend uploads. Without it `Encoded` would
 // be inferred as `unknown` and every `render` would take an unusable map.
 export function installPerRegionLifecycle<
-  Data,
+  Data extends object,
   B extends UploadableRenderingBackend<Data>,
 >(
   self: LifecycleHost,
@@ -200,7 +293,7 @@ export function installPerRegionLifecycle<
   },
 ): void
 export function installPerRegionLifecycle<
-  Data,
+  Data extends object,
   Props,
   Encoded,
   B extends UploadableRenderingBackend<Encoded>,
@@ -210,7 +303,7 @@ export function installPerRegionLifecycle<
   opts: PerRegionUpload<Data, Props, Encoded, B>,
 ): void
 export function installPerRegionLifecycle<
-  Data,
+  Data extends object,
   Props,
   Encoded,
   B extends UploadableRenderingBackend<Encoded>,
@@ -226,7 +319,11 @@ export function installPerRegionLifecycle<
       const syncIdentity = createRegionUploadSync<Encoded, B>()
       return {
         upload: b => {
-          syncIdentity(b, data() as unknown as ReadonlyMap<number, Encoded>)
+          const regions = data()
+          if (process.env.NODE_ENV !== 'production') {
+            checkRegionPayloads(self, regions)
+          }
+          syncIdentity(b, regions as unknown as ReadonlyMap<number, Encoded>)
         },
         render: b =>
           render(b, data() as unknown as ReadonlyMap<number, Encoded>),
@@ -245,6 +342,9 @@ export function installPerRegionLifecycle<
     return {
       upload: b => {
         const regions = data()
+        if (process.env.NODE_ENV !== 'production') {
+          checkRegionPayloads(self, regions)
+        }
         const p = props ? props.get() : (undefined as Props)
         if (p !== lastProps) {
           lastProps = p
