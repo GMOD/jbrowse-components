@@ -4,6 +4,7 @@ import { computed } from 'mobx'
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { isSessionWithConnections } from './Connections.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
+import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -135,6 +136,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * session-scoped store.
        */
       addSessionTrackConf(trackConf: AnyConfiguration) {
+        assertTrackConfOutlivesItsAssemblies(self, trackConf, 'jbrowse.tracks')
         return self.jbrowse.addTrackConf(trackConf)
       },
 
@@ -153,6 +155,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * every visitor is served, once per click.
        */
       publishTrackConf(trackConf: AnyConfiguration) {
+        assertTrackConfOutlivesItsAssemblies(self, trackConf, 'jbrowse.tracks')
         return self.jbrowse.addTrackConf(trackConf)
       },
 
@@ -176,6 +179,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
        * type is inferred from a sibling's makes the pair circular.
        */
       addTrackConf(trackConf: AnyConfiguration) {
+        assertTrackConfOutlivesItsAssemblies(self, trackConf, 'jbrowse.tracks')
         return self.jbrowse.addTrackConf(trackConf)
       },
 

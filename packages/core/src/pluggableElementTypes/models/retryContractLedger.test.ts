@@ -69,7 +69,7 @@ function drive(host: HostModel) {
   const check = makeRetryContractCheck(host)
   return function run(outcome: FetchAutorunOutcome) {
     check(outcome)
-    const taken = takeDisplayContractReports()
+    const taken = takeContractReports()
     if (taken.length > 1) {
       throw new Error(`one run produced ${taken.length} reports`)
     }
@@ -278,7 +278,7 @@ describe('a fetch answers the retry wherever it started', () => {
     drive(host)
     noteFetchStarted(host)
     noteFetchStarted(host)
-    expect(takeDisplayContractReports()).toEqual([])
+    expect(takeContractReports()).toEqual([])
   })
 
   // A fetch is the thing the retry asked for, so it beats the deferral: there is

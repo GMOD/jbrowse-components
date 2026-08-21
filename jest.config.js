@@ -115,7 +115,7 @@ const baseConfig = {
   // display exists, and a project added later inherits it instead of quietly
   // opting out. A project that overrides this key has to spread it back in —
   // see the default project below.
-  setupFilesAfterEnv: ['<rootDir>/config/jest/displayContractGate.js'],
+  setupFilesAfterEnv: ['<rootDir>/config/jest/contractGate.js'],
   testEnvironmentOptions: { url: 'http://localhost' },
 }
 

@@ -242,7 +242,7 @@ async function settle() {
 //
 // Taken after `settle()`, never before: these land inside a debounced autorun
 // rather than synchronously.
-const reports = () => takeDisplayContractReports()
+const reports = () => takeContractReports()
 
 describe('installGlobalFetchAutorun', () => {
   it('fetches immediately on install, without waiting out the debounce', async () => {

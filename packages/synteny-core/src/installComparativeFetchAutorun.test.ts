@@ -411,7 +411,7 @@ test('a reload the gate does not clear is reported as a dead button', async () =
   })
   await settle()
   expect(prepared).toHaveLength(1)
-  expect(takeDisplayContractReports()).toEqual([])
+  expect(takeContractReports()).toEqual([])
 
   display.setGeometry(1)
   await settle()
@@ -419,7 +419,5 @@ test('a reload the gate does not clear is reported as a dead button', async () =
   await settle()
 
   expect(prepared).toHaveLength(1)
-  expect(takeDisplayContractReports().join('\n')).toMatch(
-    /Retry is a dead button/,
-  )
+  expect(takeContractReports().join('\n')).toMatch(/Retry is a dead button/)
 })

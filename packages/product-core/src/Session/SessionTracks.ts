@@ -12,6 +12,7 @@ import {
 import { compareStructural } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
+import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -352,6 +353,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         if (!type) {
           throw new Error(`track type not specified for "${trackId}"`)
         }
+        assertTrackConfOutlivesItsAssemblies(self, trackConf, 'sessionTracks')
         // Dedupe against everything the session can already resolve — config
         // catalog (jbrowse.tracks), assembly sequences, connection tracks and
         // prior sessionTracks — not just sessionTracks. Re-adding a config

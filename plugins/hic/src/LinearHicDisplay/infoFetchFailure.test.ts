@@ -71,5 +71,5 @@ test('retry re-reads the header instead of dropping back onto the scrim', async 
   // it defers the verdict rather than waiving it — the run above, which does
   // reach `availableResolutions`, is the one that answers the retry. So this is
   // a silent check over a working retry, not a check that stopped looking.
-  expect(takeDisplayContractReports()).toEqual([])
+  expect(takeContractReports()).toEqual([])
 })

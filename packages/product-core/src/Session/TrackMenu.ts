@@ -9,6 +9,8 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
 
+import { namesTemporaryAssembly } from './temporaryAssemblyTracks.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
@@ -86,6 +88,16 @@ export function trackActionItems<C extends { trackId: string }>({
   makeCopy: () => C
 }): MenuItem[] {
   const isRefSeq = config.type === 'ReferenceSequenceTrack'
+  // A copy of a track drawn on an assembly this view synthesized is dead on
+  // arrival: the assembly goes back when the view closes, and the copy is left
+  // naming one that never existed anywhere else. Both destinations were wrong
+  // for it — `publishTrackConf` writes an admin's into the config.json every
+  // visitor is served, one per click since the copy's stamped trackId defeats
+  // the dedupe, and a non-admin's lands as the dead `sessionTracks` entry
+  // ADR-084 removed the sweep for. Neither is worth offering, so the item says
+  // so instead of producing garbage; the dev-only contract check on the adders
+  // is what found this.
+  const isTemporary = namesTemporaryAssembly(session, config)
   // the display active in this view expands in the config editor, so the
   // track's other (incompatible/inactive) displays start collapsed
   const expandedDisplayId = view?.getActiveDisplayId?.(config.trackId)
@@ -102,7 +114,7 @@ export function trackActionItems<C extends { trackId: string }>({
     {
       label: 'Copy track',
       icon: CopyIcon,
-      disabled: isRefSeq,
+      disabled: isRefSeq || isTemporary,
       onClick: () => {
         session.publishTrackConf(makeCopy())
       },
@@ -110,7 +122,7 @@ export function trackActionItems<C extends { trackId: string }>({
     {
       label: 'Copy and open track',
       icon: OpenInNewIcon,
-      disabled: isRefSeq || !view,
+      disabled: isRefSeq || isTemporary || !view,
       onClick: () => {
         const snap = makeCopy()
         if (session.publishTrackConf(snap)) {

@@ -17,14 +17,14 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { assertDisplayContract } from './assertDisplayContract.ts'
 
-// Through the jest gate (`config/jest/displayContractGate.js`) rather than a
+// Through the jest gate (`config/jest/contractGate.js`) rather than a
 // local `console.error` swap, which is what this did before: swapping it out
 // hides the reports from the gate instead of excusing them, so the file that
 // provokes violations on purpose was also the file the gate could never see.
 // Taking them is the opt-in.
 function captureReports(fn: () => void) {
   fn()
-  return takeDisplayContractReports()
+  return takeContractReports()
 }
 
 // rpcProps and isCacheValid are the two hooks MobX would run untracked if they

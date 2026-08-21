@@ -23,6 +23,7 @@ import {
 } from './util.tsx'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -33,6 +34,15 @@ const config = volvoxConfigWithTracks(['volvox_test_vcf'])
 beforeEach(() => {
   doBeforeEach()
 })
+
+// "Copy track" and friends live in a "Track actions" submenu, so a flat find
+// misses them — which is how the bug below survived a hand check of the menu.
+function flatten(items: MenuItem[]): { label?: string; disabled?: boolean }[] {
+  return items.flatMap(i => [
+    i as { label?: string; disabled?: boolean },
+    ...('subMenu' in i ? flatten(i.subMenu) : []),
+  ])
+}
 
 const delay = { timeout: 30000 }
 const opts = [{}, delay] as const
@@ -275,6 +285,27 @@ test('a view-local track config goes out with the view', async () => {
   expect(readConfObject(configuration, 'name')).toBe('segments')
   expect(session.getTrackById('view-local')).toBeUndefined()
   expect(session.sessionTracks).toHaveLength(0)
+
+  // ...and the menu offers no way to put it in one. "Copy track" stamps a fresh
+  // trackId and hands the snapshot to `addTrackConf`, which for an admin — which
+  // this harness is — writes into the config.json every visitor is served, so a
+  // copy of a track on a synthetic assembly published one dead entry per click.
+  // The unit half is `temporaryAssemblyTracks.test.ts`; this is the wiring, which
+  // is what says a real view-local track reaches that predicate at all.
+  const menu = flatten(
+    session.getTrackActionMenuItems({
+      config: configuration,
+      view: synteny.views[1],
+    }),
+  )
+  expect(menu.find(i => i.label === 'Copy track')).toHaveProperty(
+    'disabled',
+    true,
+  )
+  expect(menu.find(i => i.label === 'Copy and open track')).toHaveProperty(
+    'disabled',
+    true,
+  )
 
   act(() => {
     session.removeView(synteny as unknown as AbstractViewModel)

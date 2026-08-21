@@ -24,7 +24,7 @@ function displayDeclaring(views: Record<string, () => unknown>) {
   return M.create()
 }
 
-// Read through the jest gate (`config/jest/displayContractGate.js`), which
+// Read through the jest gate (`config/jest/contractGate.js`), which
 // buffers what the check reports and fails any test that leaves a report
 // unclaimed. Taking them is how this file says its violations are on purpose —
 // a `console.error` spy, which this used before, hid them from the gate instead.
@@ -35,7 +35,7 @@ test('reports an override left on a renamed hook, naming the new name', () => {
     }),
   )
 
-  const errors = takeDisplayContractReports()
+  const errors = takeContractReports()
   expect(errors).toHaveLength(1)
   expect(errors[0]).toContain('byteGateEnabled')
   expect(errors[0]).toContain('measuresBytesPreFlight')
@@ -49,7 +49,7 @@ test('reports every renamed name the display still declares', () => {
     }),
   )
 
-  const errors = takeDisplayContractReports()
+  const errors = takeContractReports()
   expect(errors).toHaveLength(2)
   expect(errors.join('\n')).toContain('measuresBytesInFetch')
   expect(errors.join('\n')).toContain('gateActive')
@@ -62,7 +62,7 @@ test('says nothing about a display using the current names', () => {
     }),
   )
 
-  expect(takeDisplayContractReports()).toEqual([])
+  expect(takeContractReports()).toEqual([])
 })
 
 // The map is only useful while both halves are true: the old name is gone, and

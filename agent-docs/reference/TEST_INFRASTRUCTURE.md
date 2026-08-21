@@ -168,7 +168,7 @@ The half not yet delivered: the shim is still not annotated as
 of ten, which is the point of the move.
 
 Silence `console.warn` if a harness must, never `console.error` — that is the
-channel the contract checks report through, and `config/jest/displayContractGate.js`
+channel the contract checks report through, and `config/jest/contractGate.js`
 fails the test that collected one.
 
 ## Wait signals

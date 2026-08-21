@@ -31,7 +31,7 @@ the SVG export read the same hook (ADR-082). A two-stage `reload()` says
 header lands; variants, until `sourcesBase` does), which **defers** the verdict
 to the run after the prerequisite arrives rather than waiving it. Reports reach
 the jest gate through `console.error`, so a harness replacing it opts itself
-out; a test provoking a violation calls `takeDisplayContractReports()`.
+out; a test provoking a violation calls `takeContractReports()`.
 
 Both flags are getters on `FetchMixin` — and `fetchInert` on
 `SyntenyFetchStateMixin` too, for the family that composes no mixin in common

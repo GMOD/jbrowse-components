@@ -153,7 +153,7 @@ async function quiesce(
 // that look like the check misbehaving, which is what it did before this line.
 jest.setTimeout(60_000)
 
-const reports = () => takeDisplayContractReports()
+const reports = () => takeContractReports()
 
 test('a healthy reload refetches, and the check says nothing', async () => {
   const { createDisplay, mockRpcCall } = setup()

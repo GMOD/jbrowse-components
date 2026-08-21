@@ -164,21 +164,21 @@ function mount(...mixins: any[]) {
   return display
 }
 
-// Read through the jest gate (`config/jest/displayContractGate.js`) rather than
+// Read through the jest gate (`config/jest/contractGate.js`) rather than
 // a `console.error` spy: a spy with a mock implementation hides the report from
 // the gate, so the wrong-order test would have been excused by accident rather
 // than on purpose. Taking the reports is the opt-in.
 test('the correct order leaves HeightModeMixin owning the height', () => {
   const display = mount(TrackHeightMixin(), HeightModeMixin())
   expect(display.supportsHeightModes).toBe(true)
-  expect(takeDisplayContractReports()).toEqual([])
+  expect(takeContractReports()).toEqual([])
 })
 
 test('the wrong order reports itself at attach', () => {
   const display = mount(HeightModeMixin(), TrackHeightMixin())
   // the base's `false` won, and with it the base's `height`/`resizeHeight`
   expect(display.supportsHeightModes).toBe(false)
-  expect(takeDisplayContractReports().join('\n')).toContain(
+  expect(takeContractReports().join('\n')).toContain(
     'must be composed AFTER TrackHeightMixin()',
   )
 })

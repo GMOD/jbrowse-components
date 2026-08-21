@@ -848,13 +848,13 @@ is dropped, which would hide the very violation being reported.
 
 **A test run fails on any of them** (2026-08). `config/jest/console.js` buffers
 every message carrying the `[jbrowse display contract]` prefix and
-`config/jest/displayContractGate.js` — in every jest project's
+`config/jest/contractGate.js` — in every jest project's
 `setupFilesAfterEnv` — fails the test that collected one, quoting it verbatim.
 What changed is who *listens*; the reporting channel is unchanged and stays
 that way, for the reason above. Before it, a violation printed into a run that
 prints thousands of lines and nothing failed, which is one notch above silent.
 A test that provokes a violation on purpose takes the messages with
-`takeDisplayContractReports()`, which is both the opt-in and how it reads them;
+`takeContractReports()`, which is both the opt-in and how it reads them;
 a test that replaces or mocks `console.error` takes itself out of the gate
 entirely, which is why the display harnesses silence `console.warn` only.
 Attribution is honest in one direction only, and the failure says so: a check
@@ -918,6 +918,21 @@ only on a real violation):
   something watching the producers**, which here is
   `reloadReachesCounter.test.ts`, reading every `reload()` in the tree. Details in
   [DISPLAYCHROME.md](DISPLAYCHROME.md) §"The retry contract".
+
+- **A track config written into a session or config list must outlive its
+  assemblies.** `assertTrackConfOutlivesItsAssemblies`
+  (`product-core/Session/temporaryAssemblyTracks.ts`), on all three adders and on
+  `SessionTracks.addToSession`: a config naming an assembly the session holds as
+  **temporary** is dead the moment the comparative view that synthesized it
+  closes, and no list outside that view has anyone to sweep it (ADR-084). This is
+  the one entry in a family other than `display` — the gate matches
+  `[jbrowse <family> contract]`, so a new one needs no change to it. **The general
+  move: where a cleanup was deleted because the storage was wrong, the check goes
+  on the write, not on the cleanup** — asked at the write it is `some` over the
+  names and nothing else, where the sweep it replaced needed `every`, a length
+  guard and a copy, each a bug taken the other way. It found a live one on its
+  first run: "Copy track" offered a copy of a read-vs-ref band, which
+  `publishTrackConf` wrote into the config.json every visitor is served.
 
 **Still silent:**
 
