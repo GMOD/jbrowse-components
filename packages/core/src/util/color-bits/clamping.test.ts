@@ -1,4 +1,4 @@
-import { alpha, darken, lighten, parse, toRGBA } from './index.ts'
+import { alpha, blend, darken, lighten, parse, toRGBA } from './index.ts'
 
 // The vendored composition is `(r << 24) + (g << 16) + (b << 8) + a`, which
 // wraps each channel and then carries the overflow into its neighbour, and
@@ -93,5 +93,41 @@ describe('hue is periodic, in every syntax that takes one', () => {
     expect(toRGBA(parse('oklch(0.7 0.15 390)'))).toEqual(
       toRGBA(parse('oklch(0.7 0.15 30)')),
     )
+  })
+})
+
+// Same class again: a wrong answer that looks like a right one. The whole string
+// has to be the colour, or the invalid-colour sentinel `colorBits.test.ts`
+// asserts ("a broken config reads as magenta, never as a plausible wrong
+// colour") is unreachable for anything with a colour buried in it.
+describe('a colour is the whole string, not something found inside one', () => {
+  it('refuses a colour with anything around it', () => {
+    expect(() => parse('foo rgb(1,2,3) bar')).toThrow(/invalid CSS color/)
+    expect(() => parse('rgb(1,2,3) rgb(4,5,6)')).toThrow(/invalid CSS color/)
+    expect(() => parse('url(rgb(1,2,3))')).toThrow(/invalid CSS color/)
+  })
+
+  it('still tolerates surrounding whitespace, which is a formatting slip', () => {
+    expect(toRGBA(parse('  rgb(255, 0, 0)  '))).toEqual(toRGBA(parse(RED)))
+  })
+})
+
+// `blend` is what `colord().mix()` is, and mix is on the public colord-shaped
+// surface, so it has to carry alpha the way the real one does.
+describe('mixing carries the operands alpha', () => {
+  it('interpolates alpha rather than forcing opaque', () => {
+    const transparent = parse('rgba(255,0,0,0)')
+    expect(toRGBA(blend(transparent, parse(RED), 0.5)).a).toBe(128)
+    expect(toRGBA(blend(transparent, parse(RED), 1)).a).toBe(255)
+    expect(toRGBA(blend(transparent, parse(RED), 0)).a).toBe(0)
+  })
+
+  it('leaves two opaque operands opaque, which is every in-tree caller', () => {
+    expect(toRGBA(blend(parse(RED), parse('#0000ff'), 0.5))).toEqual({
+      r: 128,
+      g: 0,
+      b: 128,
+      a: 255,
+    })
   })
 })

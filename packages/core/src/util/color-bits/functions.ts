@@ -70,7 +70,16 @@ export function blend(
   const r = blendChannel(getRed(background), getRed(overlay))
   const g = blendChannel(getGreen(background), getGreen(overlay))
   const b = blendChannel(getBlue(background), getBlue(overlay))
-  return newColor(r, g, b, 255)
+  // Alpha is interpolated too, and linearly — it is a coverage fraction, not a
+  // gamma-encoded channel, so `gamma` has no business in it. Hardcoding 255
+  // made `colord(a).mix(b)` return opaque where real colord carries the
+  // operands' alpha through, on a `mix` that is public API with a colord-shaped
+  // signature. Both operands opaque is byte-identical, which is every in-tree
+  // caller today.
+  const a = Math.round(
+    getAlpha(background) * (1 - opacity) + getAlpha(overlay) * opacity,
+  )
+  return newColor(r, g, b, a)
 }
 
 /**

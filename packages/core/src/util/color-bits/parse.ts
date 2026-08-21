@@ -12,6 +12,16 @@ const E = 'e'.charCodeAt(0)
 
 /**
  * Approximative CSS colorspace string pattern, e.g. rgb(), color()
+ *
+ * **Anchored**, because the whole string has to be a colour for this to be one.
+ * Unanchored it matched a colour sitting anywhere inside anything, so
+ * `parseCssColor('foo rgb(1,2,3) bar')` answered `[1,2,3]` — and a config slot
+ * holding prose, a jexl expression that did not evaluate, or two colours by
+ * mistake read as a plausible colour instead of reaching the invalid-colour
+ * sentinel. That sentinel is a contract (`colorBits.test.ts`: a broken config
+ * reads as magenta, never as a plausible wrong colour), and it was unreachable
+ * for every such string. Surrounding whitespace is still tolerated: a slot with
+ * a trailing space is a formatting slip, not a different colour.
  */
 const PATTERN = (() => {
   const NAME = String.raw`(\w+)`
@@ -19,7 +29,8 @@ const PATTERN = (() => {
   const VALUE = String.raw`([^\s,\/]+)`
   const SEPARATOR_THEN_VALUE = `(?:${SEPARATOR}+${VALUE})`
   return new RegExp(
-    String.raw`${NAME}\(
+    String.raw`^\s*
+      ${NAME}\(
       ${SEPARATOR}*
       ${VALUE}
       ${SEPARATOR_THEN_VALUE}
@@ -27,7 +38,7 @@ const PATTERN = (() => {
       ${SEPARATOR_THEN_VALUE}?
       ${SEPARATOR_THEN_VALUE}?
       ${SEPARATOR}*
-    \)`.replaceAll(/\s/g, ''),
+    \)\s*$`.replaceAll(/\s/g, ''),
   )
 })()
 
