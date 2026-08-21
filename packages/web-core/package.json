@@ -36,7 +36,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.3.0",
     "@jbrowse/product-core": "workspace:^",
-    "mobx": "^7.0.0"
+    "mobx": "^7.0.3"
   },
   "peerDependencies": {
     "react": ">=19.0.0",

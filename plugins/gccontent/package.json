@@ -34,7 +34,7 @@
     "@jbrowse/mobx-state-tree": "^6.3.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
-    "mobx": "^7.0.0",
+    "mobx": "^7.0.3",
     "rxjs": "^7.8.2"
   },
   "peerDependencies": {
