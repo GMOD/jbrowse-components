@@ -92,6 +92,29 @@ whole-genome anchor has as many contigs as the assembly does.
 `followAnchorWindows` drops sub-pixel contigs and caps the list, so a
 scaffold-level assembly cannot turn one pass into thousands.
 
+It is still a **whole scan per frame**, where rung 2's frame pass is one cached
+block and an affine step — and the zoom this rung runs at is the one with the
+most blocks in hand (5ms per bare pass at 500k, per display, per level). Nothing
+cheaper is available without indexing the blocks by contig, since the window
+edges move every frame and the answer moves with them. First thing to measure if
+dragging an overview on a whole-genome PAF reads as slow.
+
+**A sliver beside a full panel is not a contig the panel is showing.** The COUNT
+of windows selects the rung, so on the sub-pixel floor alone a 2px tail of the
+contig being scrolled off counted the same as the 798px one filling the panel —
+and since rung 3's answer spans everything its windows map to, that tail's mate
+a genome away doubled the moving row's `bpPerPx` mid-drag. Measured at 151 bp/px
+against rung 2's 75 on a permuted pair. `MIN_SHARE_OF_WIDEST` drops it, and is
+relative to the WIDEST window rather than to the panel for a reason worth
+keeping: a two-contig assembly is legitimately lopsided — volvox is 89% ctgA —
+so a share-of-panel floor would have called an overview of it a straddle and put
+`LinearSyntenyFollow`'s whole-genome tests back on rung 2.
+
+The cliff is inherent, not tuned away: a union of spans jumps whenever a contig
+joins or leaves it, by however far that contig's mate is from the rest. What the
+floor buys is that the jump happens when the contig is a twentieth of the widest
+one on screen — something the reader can see — rather than at one pixel.
+
 **The answer is an interval of the MOVING row's layout, so it is not a
 `ResolvedSpan`.** `positionViewOnSpans` takes the min and max of the mapped
 spans in that row's offset space, which is why rung 3 places with `moveTo` and

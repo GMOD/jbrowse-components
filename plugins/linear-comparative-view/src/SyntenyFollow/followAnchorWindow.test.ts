@@ -110,3 +110,53 @@ test('the count of windows is capped, keeping the widest', () => {
   expect(windows[0]).toMatchObject({ refName: 'ctg199' })
   expect(windows.at(-1)).toMatchObject({ refName: 'ctg136' })
 })
+
+// The COUNT of these decides the multi-contig rung, whose answer is an interval
+// spanning everything the windows map to. A panel that is one contig plus the
+// tail of the one being scrolled off is not a place that interval describes:
+// where the two assemblies order their contigs differently, that tail's mate
+// sits a genome away, and the moving row zoomed out to span both — mid-drag,
+// over a sliver the reader had stopped looking at.
+describe('a sliver beside a full panel', () => {
+  test('is not one of the windows, so the panel reads as one contig', () => {
+    expect(
+      followAnchorWindows([
+        block({ refName: 'chrA', start: 59_000, end: 60_000, widthPx: 2 }),
+        block({ refName: 'chrB', start: 0, end: 60_000, widthPx: 798 }),
+      ]),
+    ).toEqual([{ refName: 'chrB', start: 0, end: 60_000 }])
+  })
+
+  // RELATIVE TO THE WIDEST, not to the panel: a two-contig assembly is
+  // legitimately lopsided — volvox is 89% ctgA — and a panel showing all of both
+  // is an overview, which is the case the rung above exists for.
+  test('but a whole small contig beside a whole large one is', () => {
+    expect(
+      followAnchorWindows([
+        block({ refName: 'ctgA', start: 0, end: 50_001, widthPx: 713 }),
+        block({ refName: 'ctgB', start: 0, end: 6_079, widthPx: 87 }),
+      ]).map(w => w.refName),
+    ).toEqual(['ctgA', 'ctgB'])
+  })
+
+  test('and so is a contig taking a decent share of the panel', () => {
+    expect(
+      followAnchorWindows([
+        block({ refName: 'chrA', start: 40_000, end: 60_000, widthPx: 240 }),
+        block({ refName: 'chrB', start: 0, end: 45_000, widthPx: 560 }),
+      ]).map(w => w.refName),
+    ).toEqual(['chrB', 'chrA'])
+  })
+
+  test('a scaffold-level overview keeps every contig of a comparable size', () => {
+    expect(
+      followAnchorWindows([
+        block({ refName: 'chr1', start: 0, end: 60_000, widthPx: 300 }),
+        block({ refName: 'chr2', start: 0, end: 40_000, widthPx: 200 }),
+        ...Array.from({ length: 600 }, (_, i) =>
+          block({ refName: `scaffold_${i}`, start: 0, end: 100, widthPx: 0.5 }),
+        ),
+      ]).map(w => w.refName),
+    ).toEqual(['chr1', 'chr2'])
+  })
+})

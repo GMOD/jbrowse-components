@@ -10,21 +10,20 @@ export interface FollowWindow {
 // at, and a whole-genome view of a fragmented assembly has thousands of them.
 const MIN_VISIBLE_PX = 1
 
+// ...and one with less than this share of the WIDEST contig's pixels is the tail
+// of a neighbour being scrolled off rather than half of a comparison — see
+// `followAnchorWindows` for what turns on it. Relative to the widest rather than
+// to the panel, because a two-contig assembly is legitimately lopsided: volvox
+// is 89% ctgA, and a panel showing all of both is an overview, not a straddle.
+const MIN_SHARE_OF_WIDEST = 0.05
+
 // Enough for any chromosome-scale assembly, and a bound on what a scaffold-level
 // one can cost: the widest few dozen contigs are most of the screen, and the
 // answer is an INTERVAL spanning them, so a contig dropped here almost always
 // falls between two that were kept.
 const MAX_WINDOWS = 64
 
-/**
- * The windows a follow reads off the anchor panel: its visible span on each
- * refName it is showing, widest by SCREEN px first.
- *
- * Per refName because an alignment lives on one contig pair, and the union of
- * that refName's blocks so a contig split by a padding block still yields the
- * whole visible stretch.
- */
-export function followAnchorWindows(blocks: ContentBlock[]): FollowWindow[] {
+function measure(blocks: ContentBlock[]) {
   const byRefName = new Map<string, FollowWindow & { widthPx: number }>()
   for (const b of blocks) {
     const prev = byRefName.get(b.refName)
@@ -41,14 +40,40 @@ export function followAnchorWindows(blocks: ContentBlock[]): FollowWindow[] {
       })
     }
   }
-  return (
-    [...byRefName.values()]
-      .filter(w => w.widthPx >= MIN_VISIBLE_PX)
-      .sort((a, b) => b.widthPx - a.widthPx)
-      .slice(0, MAX_WINDOWS)
-      // rebuilt so `widthPx` does not ride along undeclared
-      .map(({ refName, start, end }) => ({ refName, start, end }))
-  )
+  return [...byRefName.values()]
+}
+
+/**
+ * The windows a follow reads off the anchor panel: its visible span on each
+ * refName it is showing, widest by SCREEN px first.
+ *
+ * Per refName because an alignment lives on one contig pair, and the union of
+ * that refName's blocks so a contig split by a padding block still yields the
+ * whole visible stretch.
+ *
+ * A SLIVER BESIDE A FULL PANEL IS NOT ONE OF THEM, which is what keeps a
+ * boundary straddle out of the multi-contig rung. The COUNT of these decides
+ * that rung, and its answer is an interval spanning everything the windows map
+ * to — so on the sub-pixel floor alone, a 2px tail of the contig being scrolled
+ * off counted the same as the 798px one filling the panel, and where the two
+ * assemblies order their contigs differently that tail's mate sits a genome
+ * away: the moving row zoomed out to span both, mid-drag, over a sliver the
+ * reader had stopped looking at. Above the relative floor the panel really is
+ * showing several contigs and the union is the honest answer; below it the
+ * widest contig alone is, exactly as it was before the rung existed.
+ */
+export function followAnchorWindows(blocks: ContentBlock[]): FollowWindow[] {
+  const sorted = measure(blocks)
+    .filter(w => w.widthPx >= MIN_VISIBLE_PX)
+    .sort((a, b) => b.widthPx - a.widthPx)
+  const widest = sorted[0]
+  return widest
+    ? sorted
+        .filter(w => w.widthPx >= widest.widthPx * MIN_SHARE_OF_WIDEST)
+        .slice(0, MAX_WINDOWS)
+        // rebuilt so `widthPx` does not ride along undeclared
+        .map(({ refName, start, end }) => ({ refName, start, end }))
+    : []
 }
 
 /**
