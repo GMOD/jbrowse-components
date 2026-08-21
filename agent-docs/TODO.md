@@ -628,7 +628,7 @@ a per-band bias and putting ink back per band would restore it.
 ### The display-contract checks are stripped in production
 
 In-tree they are gated now: `config/jest/console.js` buffers the
-`[jbrowse display contract]` prefix and `config/jest/contractGate.js`
+`[jbrowse <family> contract]` prefix and `config/jest/contractGate.js`
 fails the test that collected one (ARCHITECTURAL_LIMITS.md §"Ordering is the
 contract"). Out of tree, nothing catches anything —
 `process.env.NODE_ENV === 'production'` no-ops all five, so a plugin author
