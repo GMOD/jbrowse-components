@@ -68,6 +68,39 @@ describe('CascadingMenu help column', () => {
     expect(getComputedStyle(spacer).width).toBe(getComputedStyle(chevron).width)
   })
 
+  // Everything drawn to the right of a row's "?", as tag + reserved width: two
+  // rows whose help sits in one column have identical footprints after it.
+  const afterHelpButton = (row: HTMLElement) => {
+    const help = row.querySelector('[aria-label^="Help for"]')!
+    const out: string[] = []
+    for (let el = help.nextElementSibling; el; el = el.nextElementSibling) {
+      out.push(`${el.tagName}:${getComputedStyle(el).width}`)
+    }
+    return out
+  }
+
+  // The chevron reservation alone is not enough once the menu ALSO has an
+  // adornment column: a clickable row put its pin in a fixed-width slot the
+  // submenu row's adornment never got, so its "?" sat a whole column further in
+  // — the live shape of alignments' Color by > Modifications, whose radios carry
+  // help AND a pin while its submenu rows carry help.
+  it('lines both row kinds up when the menu also has an adornment column', () => {
+    const { getByTestId } = renderMenu([
+      {
+        type: 'checkbox',
+        label: 'Alpha',
+        checked: false,
+        helpText: 'what alpha does',
+        endAdornment: <span data-testid="adorn">pin</span>,
+        onClick: () => {},
+      },
+      helpRows[1]!,
+    ])
+    expect(afterHelpButton(getByTestId('cascading-menuitem-alpha'))).toEqual(
+      afterHelpButton(getByTestId('cascading-submenu-beta')),
+    )
+  })
+
   // Reserved only when a submenu row actually draws help: with nothing to line
   // up with, the spacer would only unalign the checkbox glyph from the chevron
   // it already sits level with.

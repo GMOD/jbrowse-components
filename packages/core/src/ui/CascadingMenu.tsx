@@ -12,16 +12,12 @@ import {
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
-import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
 import HoverMenu from './HoverMenu.tsx'
-import { MenuItemChevron } from './MenuItemChevron.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 import { staysOpenOnClick } from './MenuTypes.ts'
-import {
-  hasMenuItemAdornment,
-  menuItemAdornment,
-} from './menuItemAdornment.tsx'
+import { hasMenuItemAdornment } from './menuItemAdornment.tsx'
 
+import type { MenuColumnFlags } from './MenuItemTrailing.tsx'
 import type {
   BaseMenuItem,
   ClickableMenuItem,
@@ -29,6 +25,7 @@ import type {
   MenuItem as JBMenuItem,
   MenuItemClickHandler,
   MenuItemsGetter,
+  SubMenuItem,
 } from './MenuTypes.ts'
 import type { PopoverOrigin } from '@mui/material'
 
@@ -102,9 +99,12 @@ function MenuItemLeadingIcon({
   ) : null
 }
 
-// Which trailing/leading decoration columns the menu needs, computed menu-wide
-// (true if ANY row needs it) so every row reserves matching slots and the
-// decorations stack into aligned columns down the menu.
+// Which decoration columns the menu needs, computed menu-wide (true if ANY row
+// needs it) so every row reserves matching slots and the decorations stack into
+// aligned columns down the menu. Per list, so a submenu's own rows answer it for
+// themselves. `hasIcon` is the leading column; `columns` is the trailing stack
+// `MenuItemTrailing` draws for both row kinds, and every predicate below counts
+// submenu rows and clickable rows alike because both draw that stack.
 function getMenuColumnFlags(menuItems: JBMenuItem[]) {
   // a disabled row surfaces its help as a hover tooltip instead of the "?"
   // button (see DisabledTooltip), so it must not claim the column either — or a
@@ -128,24 +128,27 @@ function getMenuColumnFlags(menuItems: JBMenuItem[]) {
   )
   return {
     hasIcon: menuItems.some(m => 'icon' in m && m.icon),
-    hasCheckboxOrRadioWithHelp,
-    hasEndAdornment,
-    // Gated on a submenu row that actually draws help, not on there being a
-    // submenu at all: the reservation exists to pull the clickable rows' "?"
-    // into the column a chevron pushes a submenu row's "?" out of. In a menu
-    // where no submenu row has help there is nothing to line up with, and
-    // reserving it there would only unalign a checkbox glyph from the chevron
-    // it currently sits level with.
-    hasSubmenuWithHelp: menuItems.some(
-      m => 'subMenu' in m && m.helpText && !m.disabled,
-    ),
-    // when help and adornment never collide on one row, they collapse into one
-    // shared trailing column instead of each claiming its own, so a menu mixing
-    // help-only and pin-only rows doesn't reserve a wasted third column
-    sharedActionColumn:
-      hasCheckboxOrRadioWithHelp &&
-      hasEndAdornment &&
-      !hasRowWithHelpAndAdornment,
+    columns: {
+      hasCheckboxOrRadioWithHelp,
+      hasEndAdornment,
+      // Gated on a submenu row that actually draws help, not on there being a
+      // submenu at all: the reservation exists to pull the clickable rows' "?"
+      // into the column a chevron pushes a submenu row's "?" out of. In a menu
+      // where no submenu row has help there is nothing to line up with, and
+      // reserving it there would only unalign a checkbox glyph from the chevron
+      // it currently sits level with.
+      hasSubmenuWithHelp: menuItems.some(
+        m => 'subMenu' in m && m.helpText && !m.disabled,
+      ),
+      // when help and adornment never collide on one row, they collapse into
+      // one shared trailing column instead of each claiming its own, so a menu
+      // mixing help-only and pin-only rows doesn't reserve a wasted third
+      // column
+      sharedActionColumn:
+        hasCheckboxOrRadioWithHelp &&
+        hasEndAdornment &&
+        !hasRowWithHelpAndAdornment,
+    },
   }
 }
 
@@ -198,15 +201,19 @@ function DisabledTooltip({
   )
 }
 
+// One submenu row: label (with optional leading icon), the same trailing
+// decorations a clickable row draws, and the panel it opens.
+//
+// A submenu row carries its own `helpText` — for the question the rows inside it
+// are answers to, which an option table of individually-helped entries still
+// leaves nowhere to state — and its own trailing adornment (a color swatch, a
+// toggle), whose content stops its own click so using it doesn't also open the
+// submenu. Both go through `MenuItemTrailing`, so they land in the columns the
+// clickable rows reserve rather than in a hand-assembled copy of them.
 function CascadingSubmenu({
-  title,
-  Icon,
+  item,
   inset,
-  disabled,
-  disabledHelpText,
-  helpText,
-  endAdornment,
-  menuItems,
+  columns,
   onMenuItemClick,
   closeAfterItemClick,
   onCloseRoot,
@@ -216,34 +223,22 @@ function CascadingSubmenu({
   onOpen,
   onClose,
 }: {
-  title: React.ReactNode
-  Icon: React.ElementType | undefined
+  item: SubMenuItem
   inset: boolean
-  disabled?: boolean
-  disabledHelpText?: string
-  // A submenu row's own help, for the question the rows inside it are answers
-  // to — an option table whose entries each carry a `helpText` still leaves
-  // nowhere to say what the setting IS. Same "?" button a clickable row gets,
-  // sitting before the chevron.
-  helpText?: string
-  // `endAdornment` is declared on BaseMenuItem, which SubMenuItem extends, so a
-  // submenu row can carry a control (a color swatch, a toggle) the same way a
-  // clickable row can. It sits before the chevron; the content stops its own
-  // click so interacting with it doesn't also open the submenu.
-  endAdornment?: React.ReactNode
+  columns: MenuColumnFlags
   isOpen: boolean
   onOpen: () => void
   onClose: () => void
-} & CascadingMenuListProps) {
+} & Omit<CascadingMenuListProps, 'menuItems'>) {
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
 
   return (
     <>
-      <DisabledTooltip item={{ disabled, disabledHelpText }}>
+      <DisabledTooltip item={item}>
         <MenuItem
           ref={setAnchorEl}
-          data-testid={makeTestId('submenu', title)}
-          disabled={disabled}
+          data-testid={makeTestId('submenu', item.label)}
+          disabled={item.disabled}
           aria-haspopup="menu"
           aria-expanded={isOpen}
           onMouseOver={() => {
@@ -261,13 +256,9 @@ function CascadingSubmenu({
             }
           }}
         >
-          <MenuItemLeadingIcon Icon={Icon} />
-          <ListItemText primary={title} inset={inset} />
-          {helpText && !disabled ? (
-            <CascadingMenuHelpIconButton helpText={helpText} label={title} />
-          ) : null}
-          {endAdornment}
-          <MenuItemChevron />
+          <MenuItemLeadingIcon Icon={item.icon} />
+          <ListItemText primary={item.label} inset={inset} />
+          <MenuItemTrailing item={item} columns={columns} />
         </MenuItem>
       </DisabledTooltip>
       <HoverMenu
@@ -281,7 +272,7 @@ function CascadingSubmenu({
         <CascadingMenuList
           closeAfterItemClick={closeAfterItemClick}
           onMenuItemClick={onMenuItemClick}
-          menuItems={menuItems}
+          menuItems={item.subMenu}
           onCloseRoot={onCloseRoot}
           zIndex={zIndex}
           onNavigateBack={() => {
@@ -295,15 +286,12 @@ function CascadingSubmenu({
 }
 
 // One clickable menu row: label (with optional leading icon) plus its trailing
-// value/help/adornment decorations. The menu-wide `has*` flags let every row
+// value/help/adornment decorations. The menu-wide `columns` flags let every row
 // reserve matching decoration slots so the columns line up down the menu.
 function CascadingMenuItem({
   item,
   hasIcon,
-  hasCheckboxOrRadioWithHelp,
-  hasEndAdornment,
-  hasSubmenuWithHelp,
-  sharedActionColumn,
+  columns,
   closeAfterItemClick,
   onMenuItemClick,
   onCloseRoot,
@@ -312,10 +300,7 @@ function CascadingMenuItem({
 }: {
   item: ClickableMenuItem
   hasIcon: boolean
-  hasCheckboxOrRadioWithHelp: boolean
-  hasEndAdornment: boolean
-  hasSubmenuWithHelp: boolean
-  sharedActionColumn: boolean
+  columns: MenuColumnFlags
   closeAfterItemClick: boolean
   onMenuItemClick: (callback: MenuItemClickHandler) => void
   onCloseRoot: () => void
@@ -355,13 +340,7 @@ function CascadingMenuItem({
           secondary={item.subLabel}
           inset={hasIcon && !item.icon}
         />
-        <MenuItemTrailing
-          item={item}
-          hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
-          hasEndAdornment={hasEndAdornment}
-          hasSubmenuWithHelp={hasSubmenuWithHelp}
-          sharedActionColumn={sharedActionColumn}
-        />
+        <MenuItemTrailing item={item} columns={columns} />
       </MenuItem>
     </DisabledTooltip>
   )
@@ -381,13 +360,7 @@ function CascadingMenuList({
     setOpenSubmenu(undefined)
   }
 
-  const {
-    hasIcon,
-    hasCheckboxOrRadioWithHelp,
-    hasEndAdornment,
-    hasSubmenuWithHelp,
-    sharedActionColumn,
-  } = getMenuColumnFlags(menuItems)
+  const { hasIcon, columns } = getMenuColumnFlags(menuItems)
 
   const sortedItems = menuItems.toSorted(
     (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
@@ -401,15 +374,10 @@ function CascadingMenuList({
           return (
             <CascadingSubmenu
               key={key}
-              title={item.label}
-              Icon={item.icon}
+              item={item}
               inset={hasIcon && !item.icon}
-              disabled={item.disabled}
-              disabledHelpText={item.disabledHelpText}
-              helpText={item.helpText}
-              endAdornment={menuItemAdornment(item)}
+              columns={columns}
               onMenuItemClick={onMenuItemClick}
-              menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}
               onCloseRoot={onCloseRoot}
               onNavigateBack={onNavigateBack}
@@ -458,10 +426,7 @@ function CascadingMenuList({
             key={`menuitem-${item.label}`}
             item={item}
             hasIcon={hasIcon}
-            hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
-            hasEndAdornment={hasEndAdornment}
-            hasSubmenuWithHelp={hasSubmenuWithHelp}
-            sharedActionColumn={sharedActionColumn}
+            columns={columns}
             closeAfterItemClick={closeAfterItemClick}
             onMenuItemClick={onMenuItemClick}
             onCloseRoot={onCloseRoot}

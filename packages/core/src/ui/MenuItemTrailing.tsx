@@ -1,11 +1,11 @@
 import CascadingMenuHelpIconButton, {
   CascadingMenuHelpIconSpacer,
 } from './CascadingMenuHelpIconButton.tsx'
-import { MenuItemChevronSpacer } from './MenuItemChevron.tsx'
+import { MenuItemChevron, MenuItemChevronSpacer } from './MenuItemChevron.tsx'
 import { MenuItemEndDecoration } from './MenuItemEndDecoration.tsx'
 import { menuItemAdornment } from './menuItemAdornment.tsx'
 
-import type { ClickableMenuItem } from './MenuTypes.ts'
+import type { ClickableMenuItem, SubMenuItem } from './MenuTypes.ts'
 
 // gap that sets the value glyph (row state) apart from the trailing help/pin
 // action column, so a busy row reads as "value | actions" not one dense cluster
@@ -13,6 +13,22 @@ const valueActionGap = 8
 
 // fixed footprint reserved for the endAdornment column so pins right-align
 const endAdornmentColumnWidth = 28
+
+// The two row kinds that draw a trailing column stack. They differ only in what
+// the stack ENDS in — a submenu row's chevron, or the invisible copy of it a
+// clickable row reserves — which is why one component draws both: a column added
+// to one and forgotten on the other is a silently misaligned menu.
+export type DecoratedMenuItem = ClickableMenuItem | SubMenuItem
+
+// Which trailing columns the menu reserves, computed menu-wide (true if ANY row
+// needs it) so every row reserves matching slots and the decorations stack into
+// aligned columns down the menu. See `getMenuColumnFlags`.
+export interface MenuColumnFlags {
+  hasCheckboxOrRadioWithHelp: boolean
+  hasEndAdornment: boolean
+  hasSubmenuWithHelp: boolean
+  sharedActionColumn: boolean
+}
 
 // The checkbox/radio glyph reflecting a row's value. Held slightly apart from
 // the action column when the menu has one, so state and actions don't blur.
@@ -32,8 +48,8 @@ function MenuItemValueGlyph({
   )
 }
 
-// Rightmost fixed-width column holding an item's endAdornment (e.g. the "default
-// for all" pin). Reserved on every row of a menu that has any adornment so they
+// Fixed-width column holding an item's endAdornment (e.g. the "default for all"
+// pin). Reserved on every row of a menu that has any adornment so they
 // right-align into their own column.
 function MenuItemEndAdornmentSlot({ children }: { children: React.ReactNode }) {
   return (
@@ -50,26 +66,25 @@ function MenuItemEndAdornmentSlot({ children }: { children: React.ReactNode }) {
   )
 }
 
-// Everything trailing a menu row's label: a flex spacer that right-aligns the
-// decorations, then the value glyph, help affordance, and endAdornment column.
-// The flags are menu-wide (true if ANY row needs the column) so every row
-// reserves matching slots and the decorations stack into aligned columns. When
-// `sharedActionColumn` is set, no row combines help with an adornment, so the two
-// share one trailing column (whichever this row has) rather than each claiming
-// its own.
+// Everything trailing a menu row's label, for a clickable row and a submenu row
+// alike: a flex spacer that right-aligns the decorations, then the value glyph,
+// help affordance, endAdornment column, and the chevron column. When
+// `sharedActionColumn` is set, no row in the menu combines help with an
+// adornment, so the two share one trailing column (whichever this row has)
+// rather than each claiming its own.
 export function MenuItemTrailing({
   item,
-  hasCheckboxOrRadioWithHelp,
-  hasEndAdornment,
-  hasSubmenuWithHelp,
-  sharedActionColumn,
+  columns: {
+    hasCheckboxOrRadioWithHelp,
+    hasEndAdornment,
+    hasSubmenuWithHelp,
+    sharedActionColumn,
+  },
 }: {
-  item: ClickableMenuItem
-  hasCheckboxOrRadioWithHelp: boolean
-  hasEndAdornment: boolean
-  hasSubmenuWithHelp: boolean
-  sharedActionColumn: boolean
+  item: DecoratedMenuItem
+  columns: MenuColumnFlags
 }) {
+  const isSubmenu = 'subMenu' in item
   const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
   const hasActionColumn = hasCheckboxOrRadioWithHelp || hasEndAdornment
   // a disabled row can't open the help popover (pointer-events:none), so its
@@ -111,13 +126,17 @@ export function MenuItemTrailing({
           ) : null}
         </>
       )}
-      {/* A submenu row ends in a chevron, so its help "?" sits a chevron's
-          width in from the edge while a clickable row's sits at the edge.
-          Reserved on the clickable rows of a menu whose submenus draw help, so
-          the two land in one column instead of a chevron apart — visible the
-          moment a settings menu carries help on both kinds, which the
-          comparative views' settings menus do on nearly every row. */}
-      {hasSubmenuWithHelp ? <MenuItemChevronSpacer /> : null}
+      {/* A submenu row ends in a chevron, so everything before it sits a
+          chevron's width in from the edge. The invisible copy is reserved on the
+          clickable rows of a menu whose submenus draw help, so the two kinds'
+          "?" land in one column instead of a chevron apart — visible the moment
+          a settings menu carries help on both kinds, which the comparative
+          views' settings menus do on nearly every row. */}
+      {isSubmenu ? (
+        <MenuItemChevron />
+      ) : hasSubmenuWithHelp ? (
+        <MenuItemChevronSpacer />
+      ) : null}
     </>
   )
 }
