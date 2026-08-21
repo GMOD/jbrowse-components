@@ -671,6 +671,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 const tracks = self.matchedTracks.filter(
                   track => !track.displays[0]!.regionTooLarge,
                 )
+                // THE READ THAT MAKES A PAN REFETCH, and it belongs in the
+                // autorun body rather than in `getBlockFeatures` where it used
+                // to sit. Reached from there it tracked only because the
+                // `tracks.map` below runs its async bodies as far as their first
+                // await synchronously, so the read landed inside the tracked
+                // window from two files away — and one hoisted await anywhere
+                // along that chain would have stopped every refetch on pan with
+                // nothing failing.
+                //
+                // Guarded on `tracks.length` to keep the dependency exactly as
+                // narrow as it was: with every matched track over its limit
+                // there is nothing to fetch, and a pan should not spin the
+                // rotation to fetch it.
+                const regionsPerView = tracks.length
+                  ? self.views.map(view => view.staticBlocks.contentBlocks)
+                  : []
                 const slot = createStatusFanOut(statusCallback)
                 const fetched = Object.fromEntries(
                   await Promise.all(
@@ -678,7 +694,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       async track =>
                         [
                           track.configuration.trackId,
-                          await getBlockFeatures(self, track, {
+                          await getBlockFeatures(self, track, regionsPerView, {
                             stopToken,
                             statusCallback: slot(),
                           }),

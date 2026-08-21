@@ -4,7 +4,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LayoutRecord } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, StatusCallback } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -160,23 +160,36 @@ export function layoutUnknown(track: OverlayTrack) {
   return d.searchFeatureByID !== undefined && !d.layoutReady
 }
 
+/**
+ * One track's features across both rows.
+ *
+ * `regionsPerView` is passed rather than read off the views here, and that is
+ * the point: the caller is an autorun, and this read is what makes a pan
+ * refetch. It used to happen on this line, which tracked only by luck of the
+ * call ordering — the caller's `tracks.map` runs its async bodies synchronously
+ * as far as their first await, so the read landed inside the autorun's tracked
+ * window with three frames and two files between it and the `autorun(` that
+ * depended on it. Hoisting a single read past an await anywhere along that
+ * chain would have stopped every refetch on pan, silently and with nothing
+ * failing.
+ */
 export async function getBlockFeatures(
   model: { views: LinearGenomeViewModel[] },
   track: OverlayTrack,
+  regionsPerView: Region[][],
   // one fetch, both views: they run concurrently and share the caller's slot,
   // so a second fan-out here would aggregate a pair that is already one
   // operation from the chip's point of view
   opts: { stopToken: StopToken; statusCallback: StatusCallback },
 ) {
-  const { views } = model
   const { rpcManager } = getSession(model)
   const sessionId = getRpcSessionId(track)
 
   return Promise.all(
-    views.map(async view =>
+    regionsPerView.map(async regions =>
       rpcManager.call(sessionId, 'BreakpointGetFeatures', {
         adapterConfig: getConf(track, ['adapter']),
-        regions: view.staticBlocks.contentBlocks,
+        regions,
         ...opts,
       }),
     ),
