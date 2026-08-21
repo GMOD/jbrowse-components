@@ -349,18 +349,47 @@ export function reconcileLayout<D extends { name: string }>(
   return [...laidOut, ...appended]
 }
 
+/**
+ * Overlay a persisted `layout`'s per-row overrides onto rows already in the
+ * order they are to be drawn in, matched by `name`. The overrides win; a row the
+ * layout does not name keeps what the data gave it, and a layout row naming no
+ * current row is dropped, which is {@link reconcileLayout}'s rule for a row that
+ * no longer exists.
+ *
+ * **The order is the caller's and the colors are the layout's**, which is the
+ * whole distinction from {@link reconcileLayout} — that one keeps the *layout's*
+ * order, and is what a display's `sources` getter wants. Anything computing a
+ * NEW row order wants this one, and every such path has to take it: `layout` is
+ * the only home for a palette color, a label or a labelColor, so writing a fresh
+ * order straight to `setLayout` silently discards all three. Clustering reaches
+ * it through {@link buildClusteredLayout}; the variants displays' "Sort by
+ * genotype" did not, and blanked every sidebar swatch on a callset colored by a
+ * `samplesTsv` column while the menu still showed the palette ticked.
+ */
+export function applyLayoutOverrides<S extends { name: string }>(
+  ordered: S[],
+  existingLayout: S[],
+): S[] {
+  const existingByName = new Map(existingLayout.map(s => [s.name, s]))
+  return ordered.map(source => {
+    const existing = existingByName.get(source.name)
+    return existing ? { ...source, ...existing } : source
+  })
+}
+
 export function buildClusteredLayout<S extends { name: string }>(
   baseSources: S[],
   existingLayout: S[],
   order: number[],
 ): S[] {
-  const existingByName = new Map(existingLayout.map(s => [s.name, s]))
-  return order.map(idx => {
-    const source = baseSources[idx]
-    if (!source) {
-      throw new Error(`cluster order index ${idx} out of bounds`)
-    }
-    const existing = existingByName.get(source.name)
-    return existing ? { ...source, ...existing } : source
-  })
+  return applyLayoutOverrides(
+    order.map(idx => {
+      const source = baseSources[idx]
+      if (!source) {
+        throw new Error(`cluster order index ${idx} out of bounds`)
+      }
+      return source
+    }),
+    existingLayout,
+  )
 }

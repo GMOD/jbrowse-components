@@ -157,3 +157,68 @@ describe('a rendering-mode switch renames the rows', () => {
     expect(rowNames(display)).toEqual(['S0', 'S2'])
   })
 })
+
+// The interned payload one variant's worth of genotypes reaches the model as:
+// codes are 1-based indices into `genotypeDict`, aligned to `sampleNames`.
+// Matrix mode rather than regular because its shape is the flat one — the sort
+// reads both through `getOrderedGenotypeCodes`.
+const ONE_VARIANT = {
+  mode: 'matrix',
+  simplifiedFeatures: [{ id: 'v1' }],
+  featureData: [
+    { featureId: 'v1', genotypeCodes: Uint32Array.from([1, 2, 3]) },
+  ],
+  sampleNames: ['S0', 'S1', 'S2'],
+  genotypeDict: ['0/0', '0/1', '1/1'],
+}
+
+describe('sorting by genotype keeps what the arrangement put on the rows', () => {
+  function sortableDisplay() {
+    const { display } = createTestEnvironment().createDisplay()
+    display.setSources(SOURCES)
+    display.setCellData(
+      ONE_VARIANT as unknown as Parameters<typeof display.setCellData>[0],
+    )
+    return display
+  }
+
+  // The sort is the only writer of `layout` that computed a fresh order without
+  // merging it back, so the palette "Color by…" had just written went with it:
+  // the rows reordered correctly and every sidebar swatch went blank, while the
+  // menu still showed Population ticked. Nothing re-seeds it afterwards.
+  it('keeps the colorBy palette through a sort', () => {
+    const display = sortableDisplay()
+    display.setColorBy('population')
+    const before = new Map(display.sources.map(s => [s.name, s.color]))
+    expect([...before.values()].every(Boolean)).toBe(true)
+
+    display.sortByGenotype('v1')
+
+    // hom-alt leads, no-call last — so the order really did change
+    expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
+    expect(display.sources.every(s => s.color)).toBe(true)
+    // ...and each row kept ITS colour, not merely some colour
+    for (const s of display.sources) {
+      expect(s.color).toBe(before.get(s.name))
+    }
+  })
+
+  // Same rule, for the overrides the arrangement dialog writes rather than a
+  // palette. These have no other home than `layout` either.
+  it('keeps a hand-set label and labelColor through a sort', () => {
+    const display = sortableDisplay()
+    display.setLayout([
+      { name: 'S0', label: 'first', labelColor: 'red' },
+      { name: 'S1' },
+      { name: 'S2' },
+    ])
+
+    display.sortByGenotype('v1')
+
+    expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
+    expect(display.sources.find(s => s.name === 'S0')).toMatchObject({
+      label: 'first',
+      labelColor: 'red',
+    })
+  })
+})

@@ -49,6 +49,7 @@ export {
 } from './rowSortColumn.ts'
 export type { LoadedRegionSpan } from './rowSortColumn.ts'
 export {
+  applyLayoutOverrides,
   applySubtreeFilter,
   buildClusteredLayout,
   buildTree,

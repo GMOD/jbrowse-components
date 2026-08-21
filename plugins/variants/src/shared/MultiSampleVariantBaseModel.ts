@@ -28,6 +28,7 @@ import {
   RowHeightMixin,
   TreeSidebarMixin,
   applyColorPalette,
+  applyLayoutOverrides,
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
@@ -1320,6 +1321,23 @@ export default function MultiSampleVariantBaseModelF(
          * flanking tiebreak is what makes the local haplotype structure legible:
          * rows sharing the anchor allele sit together, and their shared block
          * frays outward at the recombination breakpoints that end it.
+         *
+         * The sorted order goes back through `applyLayoutOverrides`, because
+         * `sourcesWithoutLayout` is adapter metadata and `layout` is where a
+         * palette color, a label and a labelColor live. Writing the sort
+         * straight to `setLayout` discarded all three: on a callset with a
+         * `samplesTsv` column, **Color by… → Population** then **Sort by
+         * genotype** reordered the rows correctly and blanked every sidebar
+         * swatch, while the menu still showed Population ticked and
+         * `getConf(self, 'colorBy')` still read `population`. Nothing re-seeds
+         * the palette afterwards — `setSources` short-circuits on `deepEqual`,
+         * and `applyArrangement` is reachable only from `setColorBy` /
+         * `setGroupBy` / `clearLayout` / `setPhasedMode`.
+         *
+         * Every other writer of `layout` already merges: clustering through
+         * `buildClusteredLayout`, and `applyArrangement` by re-arranging rather
+         * than re-deriving, whose own comment records that re-deriving once
+         * silently discarded a clustering run.
          */
         sortByGenotype(featureId: string) {
           const { cellData } = self
@@ -1337,7 +1355,7 @@ export default function MultiSampleVariantBaseModelF(
               phased: self.renderingMode === 'phased',
             })
             if (sorted) {
-              self.setLayout(sorted)
+              self.setLayout(applyLayoutOverrides(sorted, self.layout))
             }
           }
         },

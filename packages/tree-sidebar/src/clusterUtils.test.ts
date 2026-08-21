@@ -1,4 +1,5 @@
 import {
+  applyLayoutOverrides,
   applySubtreeFilter,
   buildClusteredLayout,
   computeClusterHierarchy,
@@ -114,6 +115,34 @@ test('parseClusterTree returns whole tree for filter matching root leaves', () =
       .map(l => l.data.name)
       .sort(),
   ).toEqual(['A', 'B', 'C', 'D'])
+})
+
+// The rule under every writer of `layout` that computes a NEW order: the order
+// is the caller's, the overrides are the layout's. `reconcileLayout` is the
+// other direction and keeps the layout's order.
+test('applyLayoutOverrides keeps the given order and the layout overrides', () => {
+  interface Source {
+    name: string
+    color?: string
+    label?: string
+  }
+  const ordered: Source[] = [
+    { name: 'C', color: 'blue' },
+    { name: 'A', color: 'red' },
+    { name: 'B', color: 'green' },
+  ]
+  const layout: Source[] = [{ name: 'B', color: 'yellow', label: 'kept' }]
+  const result = applyLayoutOverrides(ordered, layout)
+  expect(result.map(r => r.name)).toEqual(['C', 'A', 'B'])
+  expect(result[2]).toEqual({ name: 'B', color: 'yellow', label: 'kept' })
+  // a row the layout does not name keeps what the data gave it
+  expect(result[0]).toEqual({ name: 'C', color: 'blue' })
+})
+
+test('applyLayoutOverrides drops a layout row that no longer exists', () => {
+  expect(
+    applyLayoutOverrides([{ name: 'A' }], [{ name: 'gone' }, { name: 'A' }]),
+  ).toEqual([{ name: 'A' }])
 })
 
 test('buildClusteredLayout reorders base sources and merges existing fields', () => {
