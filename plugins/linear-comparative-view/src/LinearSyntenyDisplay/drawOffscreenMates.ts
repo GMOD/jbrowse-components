@@ -512,6 +512,65 @@ export function offscreenMateAt(
   return undefined
 }
 
+// Where on the contig it names the alignments under one point actually land.
+export interface OffscreenMateSpan {
+  refName: string
+  // the contig's own bp, half-open like everything else on this side
+  start: number
+  end: number
+}
+
+/**
+ * The locus a click on a mark should show: the mate span of every alignment
+ * under that point that names the same contig, unioned.
+ *
+ * NOT THE ONE ALIGNMENT THE HIT TEST ANSWERED WITH. At any zoom where a contig
+ * has more anchors than the strip has pixels, one rect stands for a run of them
+ * — `MIN_OFFSCREEN_MATE_WIDTH_PX` makes even a sub-pixel alignment a mark, so
+ * they pile up in a column — and the hit test's answer among those is whichever
+ * the backwards walk reached first. Navigating to that one is arbitrary in a way
+ * a reader would see: the same visible mark, clicked at two window widths, goes
+ * to two different places. The union is what the mark actually stands for, and
+ * it collapses to the single alignment exactly when the mark is one.
+ *
+ * ONE LANE, because the caller hands us one: the two strips hold contigs of
+ * DIFFERENT assemblies, so a name matched across them would union coordinates
+ * from two genomes.
+ *
+ * A FULL SCAN of the lane, unlike the hit test's early exit — a click is not a
+ * hover, and there is exactly one per navigation.
+ */
+export function offscreenMateSpanAt(
+  layout: OffscreenMateLayout,
+  x: number,
+  y: number,
+): OffscreenMateSpan | undefined {
+  const strip = stripGeometry(layout)
+  if (!strip || y < strip.markY || y > strip.markY + strip.markHeight) {
+    return undefined
+  }
+  const refName = offscreenMateAt(layout, x, y)
+  if (!refName) {
+    return undefined
+  }
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  for (const data of layout.datasets) {
+    for (let i = 0; i < data.starts.length; i++) {
+      if (offscreenMateRefName(data, i) === refName) {
+        const rect = offscreenMateRectAt(layout, data, i, strip)
+        if (rect && x >= rect.x && x <= rect.x + rect.width) {
+          start = Math.min(start, data.mateStarts[i]!)
+          end = Math.max(end, data.mateEnds[i]!)
+        }
+      }
+    }
+  }
+  // Every mark under the point failed to carry a mate coordinate, which is a
+  // lane from a fetch that predates them. The contig name still navigates.
+  return end > start ? { refName, start, end } : undefined
+}
+
 /**
  * Mark, on the edges of one band, the alignments its level fetched and cannot
  * draw.

@@ -96,3 +96,45 @@ test('a contig the row cannot resolve is reported, not thrown', async () => {
   expect(session.snackbarMessages[0]!.level).toBe('error')
   expect(refNames(view, 1)).toEqual(['ctgA'])
 }, 20000)
+
+// The mark's own coordinates, which is the whole reason the payload carries
+// them: a bare refName is a whole chromosome, so a click meant to answer "what
+// is over there" used to answer it by zooming out past everything else. `grow`
+// puts context around the locus rather than framing it exactly.
+test('a mark with a mate locus shows that locus, not the whole contig', async () => {
+  const { view, level } = await setup()
+
+  level.showOffscreenMateContig('ctgB', level.level + 1, {
+    start: 8000,
+    end: 9000,
+  })
+  await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
+
+  // the row still DISPLAYS the whole contig — `navToLocString` sets the region
+  // set and then frames the locus in it — so what has to be checked is the
+  // window, which is what a reader sees
+  const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
+  expect(visible!.start).toBeGreaterThan(7000)
+  expect(visible!.end).toBeLessThan(10000)
+}, 20000)
+
+// `navToLocString` REPLACES the row's regions, so what the click discards may be
+// a region list built over several navigations. "Show all regions" is a
+// different destination, not an undo.
+test('the navigation offers an undo that restores what the row was showing', async () => {
+  const { session, view, level } = await setup()
+  const before = view.views[1]!.bpPerPx
+
+  level.showOffscreenMateContig('ctgB', level.level + 1, {
+    start: 8000,
+    end: 9000,
+  })
+  await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
+
+  const [action] = session.snackbarMessages[0]!.actions!
+  expect(action!.name).toBe('Undo')
+  action!.onClick()
+
+  expect(refNames(view, 1)).toEqual(['ctgA'])
+  expect(view.views[1]!.bpPerPx).toBe(before)
+}, 20000)

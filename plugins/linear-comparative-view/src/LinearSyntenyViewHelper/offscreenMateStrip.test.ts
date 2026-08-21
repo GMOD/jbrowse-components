@@ -1,6 +1,7 @@
 import {
   offscreenMateCount,
   offscreenMateHit,
+  offscreenMateNavHit,
   offscreenMateStrips,
 } from './offscreenMateStrip.ts'
 
@@ -14,6 +15,8 @@ function mates(n: number): OffscreenMateData {
     ends: Float64Array.from({ length: n }, (_, i) => i * 100 + 50),
     mateRefNameIds: new Uint32Array(n),
     lengths: Float32Array.from({ length: n }, () => 50),
+    mateStarts: Float64Array.from({ length: n }, (_, i) => i * 1000),
+    mateEnds: Float64Array.from({ length: n }, (_, i) => i * 1000 + 500),
   }
 }
 
@@ -270,4 +273,18 @@ test('a display that has not fetched counts nothing rather than throwing', () =>
   expect(
     offscreenMateCount(source({ linearSyntenyDisplays: [{}] }), 'other', 'top'),
   ).toBe(0)
+})
+
+// The click's own resolver, which differs from the hover's only in carrying the
+// coordinates — the strip it answers from, and the row that strip navigates,
+// have to be the same ones or a click lands on a different axis from the mark
+// the pointer was over.
+test('a click resolves the same strip and row, plus the mate locus', () => {
+  expect(offscreenMateNavHit(withBand(bothSides()), 1, 99)).toEqual({
+    refName: 'fromTarget',
+    navRow: 0,
+    side: 'bottom',
+    start: 0,
+    end: 500,
+  })
 })

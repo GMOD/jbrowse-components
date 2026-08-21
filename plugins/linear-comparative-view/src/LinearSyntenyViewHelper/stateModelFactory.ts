@@ -5,7 +5,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { installKeyedLifecycle } from '@jbrowse/render-core/installKeyedLifecycle'
 import {
@@ -14,6 +14,12 @@ import {
 } from '@jbrowse/synteny-core'
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
+
+// Padding around the mate locus, as a fraction of its own width per side. The
+// span is where the hidden alignments land and nothing more, so shown exactly
+// it puts their ribbons hard against both edges of the row with nothing around
+// them to read against.
+const OFFSCREEN_MATE_NAV_GROW = 0.2
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
@@ -376,18 +382,57 @@ export function linearSyntenyViewHelperModelFactory(
        * and one on the target axis names a contig the row ABOVE is not. The
        * caller resolved which strip it hit, and the hit carries the answer.
        *
+       * THE LOCUS, NOT THE CONTIG, when the hit carries one. A bare refName is
+       * a whole chromosome, so every click used to answer a question about one
+       * locus by zooming out past every other one — and the mate coordinates
+       * that make it answerable were being collected and dropped
+       * (`collectOffscreenMates`). `grow` rather than an exact span so the
+       * ribbons that now have both ends have visible context around them.
+       *
        * `navToLocString` REPLACES that row's displayed regions, which is exactly
        * the narrowing the synteny follow must never do to itself. Here it is the
        * whole request: the mark says "these go to ctgB", and the only thing that
-       * turns it into a ribbon is that row showing ctgB. The row keeps its own
-       * header, so undoing it is "Show all regions".
+       * turns it into a ribbon is that row showing ctgB. That replacement is
+       * also why this offers an UNDO rather than leaving the reader to
+       * reconstruct what the row was showing: what it replaced is a region list
+       * they may have spent several navigations building, and "Show all regions"
+       * — the only thing that was on offer — is not it.
        */
-      showOffscreenMateContig(refName: string, row: number) {
-        self.parentView.views[row]
-          ?.navToLocString(refName)
-          .catch((e: unknown) => {
-            getSession(self).notifyError(`${e}`, e)
-          })
+      showOffscreenMateContig(
+        refName: string,
+        row: number,
+        span?: { start: number; end: number },
+      ) {
+        const view = self.parentView.views[row]
+        if (view) {
+          const restore = {
+            // `displayedRegions` is a frozen Region[], so a copy of the array
+            // is the whole of what has to be kept
+            regions: [...view.displayedRegions],
+            bpPerPx: view.bpPerPx,
+            offsetPx: view.offsetPx,
+          }
+          const loc = span
+            ? `${refName}:${span.start + 1}-${span.end}`
+            : refName
+          view
+            .navToLocString(loc, undefined, span ? OFFSCREEN_MATE_NAV_GROW : 0)
+            .then(() => {
+              getSession(self).notify(`Showing ${loc}`, 'info', {
+                name: 'Undo',
+                onClick: () => {
+                  if (isAlive(view)) {
+                    view.setDisplayedRegions(restore.regions)
+                    view.zoomTo(restore.bpPerPx)
+                    view.scrollTo(restore.offsetPx)
+                  }
+                },
+              })
+            })
+            .catch((e: unknown) => {
+              getSession(self).notifyError(`${e}`, e)
+            })
+        }
       },
       /**
        * #action

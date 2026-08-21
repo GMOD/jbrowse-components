@@ -5,6 +5,7 @@ import {
   OFFSCREEN_MATE_HEIGHT_PX,
   drawOffscreenMates,
   offscreenMateAt,
+  offscreenMateSpanAt,
 } from './drawOffscreenMates.ts'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
@@ -78,6 +79,7 @@ function fakeCtx() {
 function data(
   spans: [number, number][],
   names: string[] = spans.map(() => 'other'),
+  mates: [number, number][] = spans,
 ): OffscreenMateData {
   const dict = [...new Set(names)]
   return {
@@ -89,6 +91,10 @@ function data(
     // unclamped here, since these spans are already inside their region — what
     // the two measure differently is `collectOffscreenMates`'s own test
     lengths: Float32Array.from(spans.map(s => s[1] - s[0])),
+    // the mate's own coordinates, which these tests only need to be parallel
+    // and ordered — where a click lands is `offscreenMateSpanAt`'s own test
+    mateStarts: Float64Array.from(mates.map(s => s[0])),
+    mateEnds: Float64Array.from(mates.map(s => s[1])),
   }
 }
 
@@ -836,4 +842,84 @@ describe('marks colored by the contig they name', () => {
     ])
     expect(fills.map(f => f.style)).toEqual(['color:chr7', 'red'])
   })
+})
+
+// What a CLICK resolves to. The hit test's contig name is a whole chromosome to
+// navigate to; these are where on it the hidden alignments actually land.
+test('a click answers the mate locus, not just the contig', () => {
+  const layout = {
+    ...params,
+    datasets: [data([[100, 400]], ['ctgB'], [[4000, 4400]])],
+  }
+  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
+    refName: 'ctgB',
+    start: 4000,
+    end: 4400,
+  })
+})
+
+// THE CASE THE PER-ALIGNMENT ANSWER GETS WRONG. Marks have a minimum width, so
+// at any zoom where a contig has more anchors than the strip has pixels they
+// pile into one column — and answering with whichever the backwards scan reached
+// first makes the same visible mark go somewhere else at a different window
+// width. The union is what the reader clicked.
+test('...unioned over every alignment stacked under the pointer', () => {
+  const layout = {
+    ...params,
+    datasets: [
+      data(
+        [
+          [100, 110],
+          [100, 110],
+        ],
+        ['ctgB', 'ctgB'],
+        [
+          [9000, 9100],
+          [4000, 4100],
+        ],
+      ),
+    ],
+  }
+  expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
+    refName: 'ctgB',
+    start: 4000,
+    end: 9100,
+  })
+})
+
+// ...and only over that contig's. Two contigs' marks overlap in x constantly —
+// that is what a segment with several counterparts looks like — and a union
+// across them would name one contig and navigate to a span covering a locus on
+// the other.
+test('...but never across the contigs sharing that column', () => {
+  const layout = {
+    ...params,
+    datasets: [
+      data(
+        [
+          [100, 110],
+          [100, 110],
+        ],
+        ['ctgB', 'ctgC'],
+        [
+          [9000, 9100],
+          [4000, 4100],
+        ],
+      ),
+    ],
+  }
+  // ctgC is drawn last, so it is what the reader sees on top and what the hit
+  // test answers with
+  expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
+    refName: 'ctgC',
+    start: 4000,
+    end: 4100,
+  })
+})
+
+test('below the strip a click resolves nothing, like the hover', () => {
+  const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
+  expect(
+    offscreenMateSpanAt(layout, 20, OFFSCREEN_MATE_HEIGHT_PX + 1),
+  ).toBeUndefined()
 })

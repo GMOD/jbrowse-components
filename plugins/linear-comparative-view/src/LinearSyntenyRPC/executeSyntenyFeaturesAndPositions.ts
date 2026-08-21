@@ -251,6 +251,8 @@ export async function executeSyntenyFeaturesAndPositions({
           f.get('start'),
           f.get('end'),
           mate.refName,
+          lo,
+          hi,
         )
       } else if (!findRegionEntry(v1FetchedIndex, mate.refName, lo, hi)) {
         const flipped = flipSyntenyFeature(f)
@@ -282,7 +284,14 @@ export async function executeSyntenyFeaturesAndPositions({
       // before the draw-order tier below, which is about how a ribbon stacks
       // against the others — this one gets no ribbon
       if (!v2RefNames.has(mate.refName)) {
-        offscreenMates.add(refName, start, end, mate.refName)
+        offscreenMates.add(
+          refName,
+          start,
+          end,
+          mate.refName,
+          mate.start,
+          mate.end,
+        )
         continue
       }
       const px = Math.max(

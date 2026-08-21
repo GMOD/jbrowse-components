@@ -89,6 +89,8 @@ function fixture(n: number, contigs: number): OffscreenMateData {
     ends,
     mateRefNameIds: ids,
     lengths: Float32Array.from({ length: n }, () => GENOME_BP / n),
+    mateStarts: Float64Array.from(starts),
+    mateEnds: Float64Array.from(ends),
   }
 }
 

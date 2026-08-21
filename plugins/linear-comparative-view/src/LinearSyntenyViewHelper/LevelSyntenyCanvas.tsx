@@ -13,7 +13,7 @@ import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.
 import { syntenyWidgetFeature } from '../LinearSyntenyDisplay/syntenyWidgetFeature.ts'
 import OffscreenMateOverlay from './OffscreenMateOverlay.tsx'
 import OffscreenMateTooltip from './OffscreenMateTooltip.tsx'
-import { offscreenMateHit } from './offscreenMateStrip.ts'
+import { offscreenMateHit, offscreenMateNavHit } from './offscreenMateStrip.ts'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
@@ -313,9 +313,12 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     // a feature — it stands for alignments this level cannot draw at all — so it
     // answers with a navigation rather than a selection, and must not fall
     // through to clear the clicked feature on its way.
-    const mate = offscreenMateHit(model, coords.x, coords.y)
+    const mate = offscreenMateNavHit(model, coords.x, coords.y)
     if (mate) {
-      model.showOffscreenMateContig(mate.refName, mate.navRow)
+      model.showOffscreenMateContig(mate.refName, mate.navRow, {
+        start: mate.start,
+        end: mate.end,
+      })
       return
     }
     // A release outside the band answers no hit (the pick engine rejects a y

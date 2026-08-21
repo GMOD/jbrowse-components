@@ -16,9 +16,9 @@ const index = buildBpRegionIndex({
 
 test('counts per off-screen contig and places each on the query axis', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 100, 200, 'grapeA')
-  c.add('chr1', 300, 400, 'grapeA')
-  c.add('chr1', 500, 600, 'grapeB')
+  c.add('chr1', 100, 200, 'grapeA', 0, 100)
+  c.add('chr1', 300, 400, 'grapeA', 0, 100)
+  c.add('chr1', 500, 600, 'grapeB', 0, 100)
   const out = c.finish()
   expect(out.mateRefNameDict).toEqual(['grapeA', 'grapeB'])
   expect([...out.counts]).toEqual([2, 1])
@@ -27,17 +27,40 @@ test('counts per off-screen contig and places each on the query axis', () => {
   expect([...out.mateRefNameIds]).toEqual([0, 0, 1])
 })
 
+// What a click on a mark navigates to. The mate's own contig has no ruler on
+// this side — the facing row is not displaying it, which is what an off-screen
+// mate IS — so these are the contig's own bp rather than a cumBp, and they are
+// the only coordinates in the payload that are.
+test('keeps the mate coordinates, in the mate contig own bp', () => {
+  const c = createOffscreenMateCollector(index)
+  c.add('chr1', 100, 200, 'grapeA', 4000, 4100)
+  const out = c.finish()
+  expect([...out.mateStarts]).toEqual([4000])
+  expect([...out.mateEnds]).toEqual([4100])
+})
+
+// Same reason `starts`/`ends` are ordered: a PAF row for a reverse-strand
+// alignment spells its mate end-first, and a locstring built from that is
+// backwards.
+test('...ordered, whichever way the alignment is spelled', () => {
+  const c = createOffscreenMateCollector(index)
+  c.add('chr1', 100, 200, 'grapeA', 4100, 4000)
+  const out = c.finish()
+  expect([...out.mateStarts]).toEqual([4000])
+  expect([...out.mateEnds]).toEqual([4100])
+})
+
 // cumBp is whole-view cumulative, so the second region's coordinates sit past
 // the first region's length — the same axis the ribbons are drawn on.
 test('a later region is placed past the regions before it', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr2', 100, 200, 'elsewhere')
+  c.add('chr2', 100, 200, 'elsewhere', 0, 100)
   expect([...c.finish().starts]).toEqual([1100])
 })
 
 test('a block straddling a region edge is clamped, not dropped', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 900, 1200, 'elsewhere')
+  c.add('chr1', 900, 1200, 'elsewhere', 0, 100)
   const out = c.finish()
   expect([...out.starts]).toEqual([900])
   expect([...out.ends]).toEqual([1000])
@@ -50,7 +73,7 @@ test('a block straddling a region edge is clamped, not dropped', () => {
 // alignment whose ribbon the same setting kept.
 test('...and reports the block length, not the clamped one', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 900, 1200, 'elsewhere')
+  c.add('chr1', 900, 1200, 'elsewhere', 0, 100)
   expect([...c.finish().lengths]).toEqual([300])
 })
 
@@ -59,7 +82,7 @@ test('...and reports the block length, not the clamped one', () => {
 // to whatever happened to be drawable, which is the omission all over again.
 test('an unplaceable block is still counted', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr3', 100, 200, 'elsewhere')
+  c.add('chr3', 100, 200, 'elsewhere', 0, 100)
   const out = c.finish()
   expect([...out.counts]).toEqual([1])
   expect(out.starts).toHaveLength(0)
@@ -67,7 +90,7 @@ test('an unplaceable block is still counted', () => {
 
 test('a reversed span comes out ascending', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 400, 100, 'elsewhere')
+  c.add('chr1', 400, 100, 'elsewhere', 0, 100)
   const out = c.finish()
   expect([...out.starts]).toEqual([100])
   expect([...out.ends]).toEqual([400])
@@ -86,7 +109,7 @@ const aliases = (map: Record<string, string>) => (name: string) =>
 
 test('the mate contigs are renamed into the assembly namespace', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 100, 200, '1')
+  c.add('chr1', 100, 200, '1', 0, 100)
   const out = renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
   expect(out.mateRefNameDict).toEqual(['grape1'])
   expect([...out.mateRefNameIds]).toEqual([0])
@@ -99,9 +122,9 @@ test('the mate contigs are renamed into the assembly namespace', () => {
 // reindexed.
 test('two spellings of one contig collapse, and their counts add', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 100, 200, 'grape1')
-  c.add('chr1', 300, 400, '1')
-  c.add('chr1', 500, 600, 'grape2')
+  c.add('chr1', 100, 200, 'grape1', 0, 100)
+  c.add('chr1', 300, 400, '1', 0, 100)
+  c.add('chr1', 500, 600, 'grape2', 0, 100)
   const out = renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
   expect(out.mateRefNameDict).toEqual(['grape1', 'grape2'])
   expect([...out.counts]).toEqual([2, 1])
@@ -116,8 +139,8 @@ test('two spellings of one contig collapse, and their counts add', () => {
 // geometry is what the strip draws.
 test('the placements survive the rename', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 100, 200, 'grape1')
-  c.add('chr1', 300, 400, '1')
+  c.add('chr1', 100, 200, 'grape1', 0, 100)
+  c.add('chr1', 300, 400, '1', 0, 100)
   const out = renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
   expect([...out.starts]).toEqual([100, 300])
   expect([...out.lengths]).toEqual([100, 100])
@@ -125,7 +148,7 @@ test('the placements survive the rename', () => {
 
 test('a name the assembly does not know is left alone', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 100, 200, 'grapeX')
+  c.add('chr1', 100, 200, 'grapeX', 0, 100)
   expect(
     renameOffscreenMates(c.finish(), aliases({ '1': 'grape1' }))
       .mateRefNameDict,
@@ -134,11 +157,11 @@ test('a name the assembly does not know is left alone', () => {
 
 test('the tally is largest first, ties by name', () => {
   const c = createOffscreenMateCollector(index)
-  c.add('chr1', 0, 1, 'small')
-  c.add('chr1', 0, 1, 'zeta')
-  c.add('chr1', 0, 1, 'alpha')
-  c.add('chr1', 0, 1, 'alpha')
-  c.add('chr1', 0, 1, 'alpha')
+  c.add('chr1', 0, 1, 'small', 0, 100)
+  c.add('chr1', 0, 1, 'zeta', 0, 100)
+  c.add('chr1', 0, 1, 'alpha', 0, 100)
+  c.add('chr1', 0, 1, 'alpha', 0, 100)
+  c.add('chr1', 0, 1, 'alpha', 0, 100)
   expect(offscreenMateTally(c.finish())).toEqual([
     { refName: 'alpha', count: 3 },
     { refName: 'small', count: 1 },

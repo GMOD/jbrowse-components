@@ -1,8 +1,12 @@
-import { offscreenMateAt } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
+import {
+  offscreenMateAt,
+  offscreenMateSpanAt,
+} from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 
 import type {
   OffscreenMateLane,
+  OffscreenMateLayout,
   OffscreenMateSide,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
@@ -128,6 +132,14 @@ export interface OffscreenMateHit {
   side: OffscreenMateSide
 }
 
+// What a CLICK on a mark resolves to: the same hit, plus where on that contig
+// the alignments under the pointer land, in its own bp — which is what lets the
+// navigation land on the locus rather than on the whole chromosome.
+export interface OffscreenMateNavHit extends OffscreenMateHit {
+  start: number
+  end: number
+}
+
 /**
  * The mark a pointer in either strip is over, or undefined.
  *
@@ -149,15 +161,47 @@ export function offscreenMateHit(
   x: number,
   y: number,
 ): OffscreenMateHit | undefined {
+  return stripHit(model, x, y, (layout, px, py) => {
+    const refName = offscreenMateAt(layout, px, py)
+    return refName ? { refName } : undefined
+  })
+}
+
+/**
+ * The same mark, resolved for a CLICK: which contig, and where on it.
+ *
+ * SEPARATE FROM THE HOVER's, because the span is a full scan of the lane while
+ * `offscreenMateAt` exits at the first mark it finds. The hover runs on a
+ * rAF per pointer move over a band that may hold tens of thousands of marks;
+ * the click runs once, and is the only one of the two that needs coordinates.
+ */
+export function offscreenMateNavHit(
+  model: OffscreenMateSource & {
+    height: number
+    parentView: { width: number }
+  },
+  x: number,
+  y: number,
+): OffscreenMateNavHit | undefined {
+  return stripHit(model, x, y, offscreenMateSpanAt)
+}
+
+// The half both hit tests share: which strip answers, and the row a click on it
+// navigates. Only what is asked of the strip differs.
+function stripHit<T>(
+  model: OffscreenMateSource & {
+    height: number
+    parentView: { width: number }
+  },
+  x: number,
+  y: number,
+  ask: (layout: OffscreenMateLayout, x: number, y: number) => T | undefined,
+) {
   const width = model.parentView.width
   for (const strip of offscreenMateStrips(model)) {
-    const refName = offscreenMateAt(
-      { ...strip, width, height: model.height },
-      x,
-      y,
-    )
-    if (refName) {
-      return { refName, navRow: strip.navRow, side: strip.side }
+    const found = ask({ ...strip, width, height: model.height }, x, y)
+    if (found) {
+      return { ...found, navRow: strip.navRow, side: strip.side }
     }
   }
   return undefined

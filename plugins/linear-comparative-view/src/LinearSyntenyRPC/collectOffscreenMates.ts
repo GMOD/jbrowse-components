@@ -41,6 +41,13 @@ export interface OffscreenMateData {
   // the part in view, and culling on the clamped span hides a mark whose ribbon
   // the same setting keeps.
   lengths: Float32Array
+  // per PLACED alignment: where it lands on the contig it names, in that
+  // contig's OWN bp. Not a cumBp: the facing row is not displaying that contig,
+  // so there is no ruler on this side to make one against — which is the whole
+  // reason a click on a mark used to navigate to a bare refName and land on a
+  // whole chromosome.
+  mateStarts: Float64Array
+  mateEnds: Float64Array
 }
 
 /**
@@ -61,9 +68,18 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
   const ends: number[] = []
   const mateRefNameIds: number[] = []
   const lengths: number[] = []
+  const mateStarts: number[] = []
+  const mateEnds: number[] = []
 
   return {
-    add(refName: string, start: number, end: number, mateRefName: string) {
+    add(
+      refName: string,
+      start: number,
+      end: number,
+      mateRefName: string,
+      mateStart: number,
+      mateEnd: number,
+    ) {
       const id = mateRefNameDict.idFor(mateRefName)
       counts[id] = (counts[id] ?? 0) + 1
       const lo = Math.min(start, end)
@@ -80,6 +96,8 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
       ends.push(Math.max(a, b))
       mateRefNameIds.push(id)
       lengths.push(hi - lo)
+      mateStarts.push(Math.min(mateStart, mateEnd))
+      mateEnds.push(Math.max(mateStart, mateEnd))
     },
     finish(): OffscreenMateData {
       return {
@@ -89,6 +107,8 @@ export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
         ends: Float64Array.from(ends),
         mateRefNameIds: Uint32Array.from(mateRefNameIds),
         lengths: Float32Array.from(lengths),
+        mateStarts: Float64Array.from(mateStarts),
+        mateEnds: Float64Array.from(mateEnds),
       }
     },
   }
