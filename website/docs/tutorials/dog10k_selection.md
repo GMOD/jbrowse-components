@@ -95,12 +95,13 @@ not eighty-odd dogs against as many.
 
 The lower half is the same panel and the same estimator rebinned to 20 kb over
 two megabases, where the peak turns out to have a shape. Rerunning the build
-script over one region is all that takes:
+script from [Reproduce it end to end](#reproduce-it-end-to-end) over one region
+is all that takes:
 
 ```bash
 WINDOW=20000 REGIONS=chr15:40600000-42600000 \
   OUTBED=dog10k_size_fst_igf1_20kb.bed \
-  bash scripts/build_dog10k_size_fst.sh
+  bash build_dog10k_size_fst.sh
 ```
 
 ## The locus

@@ -187,7 +187,8 @@ run against the same files the figures draw. It needs kent tools (`bigWigInfo`,
 downloads the four small annotation files it reads twice, and streams the rest.
 
 ```bash
-bash scripts/scan_mappability_qc.sh
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/scan_mappability_qc.sh
+bash scan_mappability_qc.sh
 ```
 
 It prints the mappability, coverage, region-annotation, MAPQ and callset

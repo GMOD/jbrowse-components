@@ -22,13 +22,8 @@ from ENCODE quantifications and gives the track configuration that reads it.
 
 ## Building the GFF3
 
-`scripts/build_dtu_demo.sh` runs the whole sequence:
-
-```bash
-bash scripts/build_dtu_demo.sh dtu_build
-```
-
-It does four things.
+Four steps take the ENCODE quantifications to a GFF3 the gene glyph can paint.
+One [script](#reproduce-it-end-to-end) runs all four.
 
 **Fetch the quantifications.** Eight RSEM per-transcript tables from ENCODE's
 ENTEx panel, skeletal muscle and liver, four donors each, quantified against
@@ -131,6 +126,26 @@ lanes are an independent check on the color, since satuRn used no genomic
 coordinates.
 
 <Figure caption="ATP5F1C on hg38. ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon, where the muscle lane is flat and the liver lane peaks." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
+
+## Reproduce it end to end
+
+Every step above is wrapped in one script,
+[`build_dtu_demo.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dtu_demo.sh):
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dtu_demo.sh
+bash build_dtu_demo.sh dtu_build   # writes ./dtu_build/
+```
+
+It fetches the eight RSEM tables and the four coverage bigWigs from ENCODE,
+downloads the GENCODE v29 GFF3 those quantifications were made against, runs the
+satuRn fit, and writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi` index: the
+local build of the file the track configuration above loads from jbrowse.org.
+Point the adapter's `uri` at the local copy to open your own run instead. It
+needs [Prerequisites](#prerequisites) on your `PATH`.
+
+Along the way it prints the transcript and gene counts at each filtering step,
+and the minimum empirical FDR beside the regular-FDR count.
 
 ## See also
 
