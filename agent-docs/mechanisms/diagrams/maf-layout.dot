@@ -3,39 +3,39 @@ digraph maf_layout {
   node [shape=box fontname=monospace fontsize=10]
   { node [shape=diamond] drawn; dragged; fits }
 
-  wire [label="the wire names rows by SPECIES —\nthe worker knows no display order"]
-  place [label="placeMafRegionData maps species -> row\nthrough rowIndexBySrc, the same projection\nthe labels, overlays and hit test use"]
+  wire [label="the wire names rows by species"]
+  place [label="rowIndexBySrc:\nspecies -> screen row"]
   wire -> place
   drawn [label="the display lists this species"]
   place -> drawn
   drawn -> dropped [label=" no"]
   drawn -> row     [label=" yes"]
-  dropped [label="dropped, not placed at a sentinel —\neverything downstream keys on rowIndex\nand would collide on a shared one"]
-  row [label="a placed row, its sequence an\narena.subarray — no bases copied,\nhere or on any later reorder"]
+  dropped [label="dropped, not placed\nat a sentinel"]
+  row [label="a placed row, its sequence\na view into the arena"]
 
-  reorder [label="a reorder re-places the cached payload.\nRow SET is a fetch key; row ORDER is not", style=bold]
+  reorder [label="a reorder re-places the cached payload", style=bold]
   row -> reorder
 
-  bands [label="rowsTopOffset = coverage + conservation,\neach zeroed when its band has no data\nto put in it rather than when it is off"]
+  bands [label="rowsTopOffset:\neach band zeroed by its DATA,\nnot by its setting"]
   reorder -> bands
 
   dragged [label="the user has dragged a height"]
   bands -> dragged
   dragged -> fixedH [label=" yes"]
   dragged -> autoH  [label=" no"]
-  fixedH [label="the height config slot wins"]
-  autoH [label="nrow * 15px + the bands,\ncapped at maxAutoFitHeight (600)"]
+  fixedH [label="the height slot wins"]
+  autoH [label="fit the species,\nup to a ceiling"]
 
-  viewport [label="rowsHeight = that, minus the bands,\ncapped at the backing-store ceiling.\nThis is the VIEWPORT, not the content", style=bold]
+  viewport [label="rowsHeight: the VIEWPORT,\nnot the content", style=bold]
   fixedH -> viewport  autoH -> viewport
 
-  fits [label="rowHeight slot is 0 (fit)"]
+  fits [label="rowHeight is 0 (fit)"]
   viewport -> fits
   fits -> split [label=" yes"]
   fits -> stack [label=" no"]
-  split [label="autoRowHeight = viewport / nrow,\nNOT floored at 1px — a sub-pixel row is the\nright answer for more species than pixels"]
-  stack [label="the configured px height, however many\nspecies there are"]
+  split [label="viewport / nrow,\nnot floored at 1px"]
+  stack [label="the configured px height"]
 
-  scroll [label="rowsContentHeight - rowsHeight.\nZero in fit mode, which is what makes\nthat mode never scroll"]
+  scroll [label="the overflow scrolls;\nfit mode never does"]
   split -> scroll  stack -> scroll
 }

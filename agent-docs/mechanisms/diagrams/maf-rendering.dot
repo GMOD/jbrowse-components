@@ -3,43 +3,43 @@ digraph maf_rendering {
   node [shape=box fontname=monospace fontsize=10]
   { node [shape=diamond] slots; summaryTier; kind; base }
 
-  slots [label="showTranslation, colorByChromosome,\nrowIdentityMode — three slots, one radio"]
-  slots -> codon  [label=" translation + frames"]
-  slots -> chrom  [label=" colorByChromosome"]
-  slots -> ident  [label=" identity mode"]
-  slots -> bases  [label=" none of them"]
+  slots [label="three config slots"]
+  slots -> codon [label=" showTranslation"]
+  slots -> chrom [label=" colorByChromosome"]
+  slots -> ident [label=" rowIdentityMode"]
+  slots -> bases [label=" none set"]
   codon [label="codon"]
   chrom [label="sourceChrom"]
   ident [label="heatmap / xyplot"]
   bases [label="bases"]
 
-  selected [label="selectedRowRendering\nprecedence decided ONCE, and\nzoom-independent so the menu tick\nstays where the user put it", style=bold]
+  selected [label="selectedRowRendering\nthe setting, zoom-independent", style=bold]
   codon -> selected  chrom -> selected  ident -> selected  bases -> selected
 
   summaryTier [label="showSummary"]
   selected -> summaryTier
   summaryTier -> fallback [label=" yes"]
   summaryTier -> kind     [label=" no"]
-  fallback [label="fall back to bases — the summary rows\ncarry neither per-row sequence nor\nper-row source chromosomes"]
+  fallback [label="bases"]
 
   kind [label="which selection won"]
   kind -> codonZoom [label=" codon"]
   kind -> identZoom [label=" identity"]
   kind -> chrom2    [label=" sourceChrom"]
-  codonZoom [label="zoomedToBaseLevel ? codon : bases\ncodons only exist at base level"]
-  identZoom [label="rowIdentityAutoZoom && zoomedToBaseLevel\n? bases : the plot\nthe letters say more than a mean of them"]
+  codonZoom [label="codon at base level,\nelse bases"]
+  identZoom [label="bases at base level,\nelse the plot"]
   chrom2 [label="sourceChrom, at every zoom"]
 
-  active [label="activeRowRendering\nthe one getter every surface branches on", style=bold]
+  active [label="activeRowRendering\nwhat is painting", style=bold]
   fallback -> active  codonZoom -> active  identZoom -> active  chrom2 -> active
 
-  base [label="basesRenderingActive\n= active is bases AND not the summary tier"]
+  base [label="basesRenderingActive\ncan the GPU canvas draw it"]
   active -> base
   base -> gpu   [label=" yes"]
   base -> other [label=" no"]
-  gpu [label="the GPU canvas owns the rows:\nper-base cells encoded, letters drawn,\ninsertion markers live and clickable"]
-  other [label="a sibling surface owns them —\nrowsCanvas2dMode for the identity plot\nand source chromosome, its own overlay\nfor codons, the summary bars past the floor"]
+  gpu [label="the GPU canvas owns the rows"]
+  other [label="a sibling surface owns them"]
 
-  clear [label="the GPU canvas still renders an EMPTY\nblock list so it clears to transparent\nand still counts as a paint", style=bold]
+  clear [label="the GPU canvas clears,\nand still counts as a paint", style=bold]
   other -> clear
 }

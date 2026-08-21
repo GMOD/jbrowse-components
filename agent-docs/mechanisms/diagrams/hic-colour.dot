@@ -3,34 +3,33 @@ digraph hic_colour {
   node [shape=box fontname=monospace fontsize=10]
   { node [shape=diamond] pct; ls; visible }
 
-  data [label="rpcData: maxScore, percentile95\n(both finite by construction)"]
+  data [label="maxScore, percentile95"]
   pct [label="useColorPercentile"]
   data -> pct
   pct -> p95 [label=" on"]
   pct -> ls  [label=" off"]
-  p95 [label="percentile95"]
+  p95 [label="the 95th percentile"]
   ls [label="useLogScale"]
-  ls -> max    [label=" on"]
+  ls -> max       [label=" on"]
   ls -> twentieth [label=" off"]
-  max [label="maxScore"]
-  twentieth [label="maxScore / 20 — contact counts are\nskewed, so the true max leaves\neverything off-diagonal at the bottom"]
+  max [label="the max"]
+  twentieth [label="a twentieth of the max"]
 
-  sat [label="colorMaxScore\n0 is the no-data sentinel,\ninterpreted only by hasLegendData", style=bold]
+  sat [label="colorMaxScore", style=bold]
   p95 -> sat  max -> sat  twentieth -> sat
 
-  map [label="mapHicCount(count, colorMaxScore, useLogScale)\nauthored in hic.slang, lifted to JS by //! js-export.\nBoth floors are load-bearing: log2(1) is 0,\nand a zero max makes the linear branch 0/0"]
+  map [label="mapHicCount\nauthored in hic.slang"]
   sat -> map
-
-  ramp [label="sample the 256x1 ramp built from\nthe scheme's stops — one table for the GPU\ntexture, the Canvas2D LUT, the CSS legend\nand the SVG legend"]
+  ramp [label="one 256-entry ramp"]
   map -> ramp
 
   visible [label="alpha >= MIN_VISIBLE_ALPHA"]
   ramp -> visible
   visible -> paint [label=" yes"]
   visible -> skip  [label=" no"]
-  paint [label="fragment returns premultiplied rgb;\nCanvas2D fills the rect"]
-  skip [label="the fragment discards and the LUT\nreturns undefined — the same bins are\nabsent from the picture and the export", style=bold]
+  paint [label="painted"]
+  skip [label="absent from the figure\nAND from the export", style=bold]
 
-  legend [label="the legend reads the same stops,\nflattened over white for CSS and split\ninto stop-opacity for SVG"]
+  legend [label="the legend reads the same stops"]
   ramp -> legend
 }

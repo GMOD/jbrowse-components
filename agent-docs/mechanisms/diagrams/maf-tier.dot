@@ -1,37 +1,35 @@
 digraph maf_tier {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] hasSummary; overBudget; framesOn; framesBudget }
+  { node [shape=diamond] zoom; hasSummary; overBudget; framesOn; framesBudget }
 
-  zoom [label="aboveForceLoadFloor\nthe gate's own comparison, read\nrather than restated"]
-  hasSummary [label="a summaryAdapter is configured"]
+  zoom [label="aboveForceLoadFloor"]
+  hasSummary [label="a summaryAdapter\nis configured"]
   zoom -> hasSummary [label=" zoomed out"]
   zoom -> detail     [label=" zoomed in"]
   hasSummary -> summary [label=" yes"]
   hasSummary -> detail  [label=" no"]
+  summary [label="per-species summary rows"]
+  detail  [label="the alignment"]
 
-  summary [label="showSummary: cheap per-species\nbigMafSummary rows"]
-  detail  [label="the full alignment fetch"]
-
-  gate [label="byteGateAdapterConfig —\nmeasure the file this tier will\nactually read, not the other one"]
+  gate [label="byteGateAdapterConfig:\nthe file THIS tier reads", style=bold]
   summary -> gate  detail -> gate
-  overBudget [label="estimate > fetchSizeLimit"]
+  overBudget [label="over fetchSizeLimit"]
   gate -> overBudget
   overBudget -> banner [label=" yes"]
   overBudget -> fetch  [label=" no"]
-  banner [label="pre-flight refusal: the banner quotes\nthis tier's own number, and nothing\ncommits a region"]
+  banner [label="too-large banner,\nquoting this tier's number"]
+  fetch [label="one RPC per buffered region"]
 
-  fetch [label="one RPC per buffered region,\nkeyed on subtreeFilter (a SET)\nand annotationDataActive", style=bold]
-
-  framesOn [label="an annotationAdapter, and the CDS strip\nor the codon view is on"]
+  framesOn [label="CDS frames wanted"]
   fetch -> framesOn
+  framesBudget [label="the frames file's\nOWN estimate"]
   framesOn -> framesBudget [label=" yes"]
-  framesBudget [label="the frames file's own byte estimate"]
   framesBudget -> framesFetch [label=" under"]
   framesBudget -> framesOff   [label=" over"]
-  framesFetch [label="concurrent with the alignment,\nunder the same stop token"]
-  framesOff [label="the overlay alone goes missing,\nno banner — but framesGateBlocked\nrecords why, so the menu can say"]
+  framesFetch [label="concurrent, same stop token"]
+  framesOff [label="the overlay alone goes missing,\nand says so"]
 
-  swap [label="the two tiers cache side by side.\nclearAlignmentData runs one way only,\nso zooming back out reuses the summary", style=bold]
+  swap [label="both tiers cached side by side,\ncleared one way only", style=bold]
   fetch -> swap
 }

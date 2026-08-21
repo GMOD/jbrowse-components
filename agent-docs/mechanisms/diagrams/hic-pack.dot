@@ -3,38 +3,36 @@ digraph hic_pack {
   node [shape=box fontname=monospace fontsize=10]
   { node [shape=diamond] hasData; rev }
 
-  pairs [label="every (i, j) with i <= j\nover the content blocks"]
-  fetch [label="six pairs in flight,\none chain of range reads each\n(bounded by the block cache's working set)"]
+  pairs [label="every region pair (i, j), i <= j"]
+  fetch [label="bounded concurrent reads"]
   pairs -> fetch
   hasData [label="the file has this pair\nat this binsize"]
   fetch -> hasData
   hasData -> drop [label=" no"]
   hasData -> keep [label=" yes"]
-  drop [label="contribute nothing — an inter-chromosomal\npair commonly carries only coarse binsizes"]
-  keep [label="un-swap the parser's transpose,\nso bin1 always maps to region1"]
+  drop [label="contributes nothing"]
+  keep [label="un-swap the parser's transpose"]
 
-  concat [label="concatenate in (i, j) order,\nrecord one RegionPairRun per pair"]
+  concat [label="concatenate, one run per pair"]
   keep -> concat
-
-  layout [label="per region: combinedOffset, dataXStart,\ndataXEnd, reversed — resolved once,\nhoisted out of the contact loop"]
+  layout [label="per-region offset, span, orientation"]
   concat -> layout
 
   rev [label="the region is reversed"]
   layout -> rev
   rev -> mirror  [label=" yes"]
   rev -> forward [label=" no"]
-  mirror  [label="reflect each endpoint within its OWN span\n(mirrorU), then re-canonicalize u1 <= u2"]
+  mirror  [label="reflect within the region's own span"]
   forward [label="u = (bin + combinedOffset) * binWidth"]
 
-  pack [label="one Float32Array in the shader's own\nHicInstance layout, written through the\ngenerated setters", style=bold]
+  pack [label="the shader's own instance layout", style=bold]
   mirror -> pack  forward -> pack
 
-  stats [label="computeCountStats: max and 95th percentile\nover the FINITE counts, by quickselect"]
+  stats [label="max and 95th percentile,\nfinite counts only"]
   pack -> stats
-
-  wire [label="transferred zero-copy, uploaded zero-copy.\nNo per-contact bin or region columns ride along"]
+  wire [label="transferred and uploaded zero-copy"]
   stats -> wire
 
-  hover [label="hover inverts it: bucket into a region,\nun-mirror, recover the bin, probe an\nopen-addressed table, confirm against\nthe cell's own rectangle"]
+  hover [label="the same map, inverted"]
   wire -> hover [label=" first mousemove"]
 }
