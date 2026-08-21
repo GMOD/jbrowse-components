@@ -73,6 +73,7 @@ before anyone noticed.
 | [Collapse trivial bubbles in a file-loaded graph](#coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles) | pangenome | designed; path lanes are the open question |
 | [PanSN prefixes in the add-track form](#offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form) | comparative | the error half shipped; this is the discovery half |
 | [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
+| [Sub-pixel matrix rows draw 1px on the GPU and thinner on Canvas2D](#a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d) | variants, backends | a visual call; the 41% is measured and neither side is obviously wrong |
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
@@ -1674,6 +1675,33 @@ thread already spends it (`FeatureLayout.labelRowsAbove`) — but it stops overl
 being free, which is the only reason to pick it over `below`. The alternative is
 to say overlay is a normal-mode affordance and document it. Not the
 implementer's call, hence here rather than in the small-items section.
+
+### A sub-pixel matrix row draws 1px on the GPU and thinner on Canvas2D
+
+`variantMatrix.slang`'s `drawnCellHeightPx` floors a cell at 1px;
+`Canvas2DVariantMatrixRenderer` draws `rowHeight + f2` with no floor. On a
+2,504-sample matrix at the default height rows are 0.09px, so the GPU paints
+each cell 11x taller than Canvas2D does and the SVG export comes out visibly
+fainter than the screen it was exported from.
+
+Measured 2026-08-21: giving the Canvas2D path the same floor moves **41.4%** of
+the pixels in `VcfMatrix.test.tsx` and 35.4% in `VcfCluster.test.tsx`.
+
+**Neither side is obviously the bug**, which is why this is here. The GPU's
+floor is a hardware workaround — zero-height geometry gets culled — and
+Canvas2D has no such constraint, so drawing a 0.09px rect and letting
+antialiasing carry it is arguably the more faithful answer. But the two
+backends then disagree by 41%, and the export disagrees with the screen.
+
+The Canvas2D comment already says **"Do NOT pixel-snap or force a 1px minimum
+here (that decimates sub-pixel columns)"** — written about columns, and it is
+what makes this a call rather than an edit. Whoever takes it should read
+`compare-backends.ts --gate-only` first — the committed webgl goldens are
+themselves stale repo-wide, so they are not a tiebreak.
+
+The hit test is already settled and is not waiting on this: `matrixHitTest.ts`
+walks the GPU's 1px band, which is a superset of the Canvas2D extent, and
+`nearest` is the same row either way.
 
 ## Measure first: the premise or the cost attribution is unconfirmed
 
