@@ -299,8 +299,8 @@ half triangle.
 ### Track label positioning
 
 Track labels can be positioned on their own row, overlapping the data to save
-vertical space, or hidden entirely, from **Show...** in the view's hamburger
-menu.
+vertical space, or hidden entirely, from the three choices under the **Track
+labels** heading in **Show...** in the view's hamburger menu.
 
 <Figure caption="The overlap and offset track label positioning options." src="/img/tracklabels.png" />
 

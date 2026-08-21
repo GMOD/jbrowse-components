@@ -1480,16 +1480,18 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track label positioning submenu in the view menu, over volvox tracks. Uses
-  // the light local volvox BAM; local data settles quickly so the
-  // MUI cascade stays open through capture. The view menu (hamburger) icon is
-  // ringed so the reader can see where the menu was opened from; the expanded
-  // submenu is boxed.
+  // Track label positioning over volvox tracks: the three radios sit inline
+  // under a "Track labels" subHeader inside the view menu's "Show..." submenu.
+  // Uses the light local volvox BAM; local data settles quickly so the MUI
+  // cascade stays open through capture. The view menu (hamburger) icon is
+  // ringed so the reader can see where the menu was opened from.
   {
     mode: 'url',
     name: 'tracklabels',
-    // sized to the content: the rest of the viewport was page background
-    viewportHeight: 518,
+    // sized to the content: the rest of the viewport was page background. The
+    // "Show..." submenu is a dozen rows tall, so it needs more room than the
+    // three-row submenu the track labels used to live in.
+    viewportHeight: 680,
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:1-20000',
@@ -1499,15 +1501,17 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      ...menuCascade(['Track labels', 'Overlapping']),
+      ...menuCascade(['Show...', 'Overlapping']),
     ],
     annotations: [
       {
         type: 'circle',
         anchor: { selector: '[data-testid="view_menu_icon"]' },
       },
-      // box the Track labels parent item (its submenu expands to the right)
-      { type: 'box', anchor: { text: 'Track labels' } },
+      // box the "Show..." parent and the radio it reveals: the "Track labels"
+      // subHeader between them is not a hoverable row, so the path a reader
+      // follows runs parent → radio
+      ...cascadeBoxes(['Show...', 'Overlapping']),
     ],
   },
 

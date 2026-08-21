@@ -7,11 +7,12 @@ description: Showing alignments whose mate lands on a contig the facing view is 
 
 **Class A shipped on 2026-08-19, all three stages.**
 `collectOffscreenMates` tallies the drops per contig and places them on the
-query axis; `offscreenMateMenuItems` reports the count and the contigs;
-`showOffscreenMates` turns `OffscreenMateOverlay` on, which draws each as a mark
-at the top of the band, labelled with the contig it points at; hovering one names
-that contig whether or not the run is wide enough to be labelled, and clicking
-one shows the locus its alignments land on, on the facing row, undoably. An SVG export carries the same marks. The
+query axis; the settings menu's fixed-label "Off-screen mates" radios turn
+`OffscreenMateOverlay` on, which draws each as a mark at the top of the band,
+labelled with the contig it points at; hovering one names that contig whether or
+not the run is wide enough to be labelled and reports how many alignments on
+this band go there, and clicking one shows the locus its alignments land on, on
+the facing row, undoably. An SVG export carries the same marks. The
 rest of this file is the case for it and the reasoning the implementation
 followed — kept because it is the reasoning class B was then built on, the same
 day and to the terms set out at the bottom of this file.
@@ -227,8 +228,11 @@ reports nothing.
   displayed regions: the destructive step was the only way to see what it would
   do. `OffscreenMateTooltip` renders through `ComparativeTooltip`, the same
   tooltip a ribbon hover uses, because a mark and a ribbon are two things in one
-  band. Its count comes off the tally the hamburger item reports from, scoped to
-  this band rather than the view.
+  band. Its count comes off the same tally the overlay draws from, scoped to
+  this band rather than the view, and the tooltip is now the only place that
+  count is shown: the hamburger item that used to carry it in its label is gone,
+  and the control is a fixed-label radio submenu, so nothing states a live
+  number twice.
 - **Whether the figure carries them.** Settled: yes. `showOffscreenMates` is a
   menu setting, so the same rule the color-by legend follows applies — an export
   taken with it on has to have it, or the figure of a view reporting what it

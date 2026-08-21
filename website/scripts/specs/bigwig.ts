@@ -3,6 +3,7 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 import {
   DEMO_CONFIG,
   VOLVOX,
+  cascadeBoxes,
   hpyloriUrl,
   lgvSession,
   menuCascade,
@@ -290,7 +291,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'bigwig/whole_genome_coverage',
     // start at a single chromosome so the figure can walk through the setup
-    // (show how to build this view). Stage 1 opens the View → Show...
+    // (show how to build this view). Stage 1 opens the View → Navigation
     // menu with "Show all regions in assembly" boxed; stage 2 is the result.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
@@ -317,19 +318,20 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     readyText: 'COLO829',
     readyTimeout: 60000,
     settleMs: 15000,
-    // tall enough for the whole open View → Show... submenu in stage 1, which a
-    // 560px frame cut off two items short. Per-frame heights rather than one
-    // `crop`: the menu needs twice the height the resulting view does, and a
-    // shared crop left the bottom third of stage 2 as page background.
+    // tall enough for the whole open view menu plus the Navigation submenu
+    // beside it in stage 1, which a 560px frame cut off short. Per-frame heights
+    // rather than one `crop`: the menu needs twice the height the resulting view
+    // does, and a shared crop left the bottom third of stage 2 as page
+    // background.
     viewportHeight: 680,
     stages: [
       {
-        // top frame: single chromosome, View → Show... submenu open with
+        // top frame: single chromosome, View → Navigation submenu open with
         // "Show all regions in assembly" boxed — the one click that zooms the
         // view out to the whole genome
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Show...', 'Show all regions in assembly']),
+          ...menuCascade(['Navigation', 'Show all regions in assembly']),
           // The menu's popover layers land on top of an already-painted view,
           // and a previous run captured this frame with the whole view body
           // white behind them. The DOM was all there (assertViewsRendered
@@ -343,10 +345,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          // box the "Show..." parent item plus the sub-item it reveals so the
-          // whole menu path reads at a glance
-          { type: 'box', anchor: { text: 'Show...' } },
-          { type: 'box', anchor: { text: 'Show all regions in assembly' } },
+          // box the "Navigation" parent item plus the sub-item it reveals so
+          // the whole menu path reads at a glance
+          ...cascadeBoxes(['Navigation', 'Show all regions in assembly']),
         ],
       },
       {

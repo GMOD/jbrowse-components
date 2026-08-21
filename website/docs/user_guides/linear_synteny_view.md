@@ -204,9 +204,14 @@ first, then the choices, then the values. The hamburger menu next to it is the
 other half of that division: it answers what the view _is_ — which genomes it
 stacks, where they point, what leaves it — and holds no render settings at all.
 
-**Ribbons** — **Identity fade** and **Thin fade** are described above and below;
-**Curved lines** draws ribbons as bezier curves instead of straight connectors,
-which reads far better at whole-genome scale where straight crossings stack into
+**Ribbons** — **Identity fade** is described above. **Thin fade** is a separate
+one: it fades ribbons thinner than a pixel by their on-screen width, so an
+unfiltered whole-genome view does not read as a hard full-opacity hairball. Its
+default, **Auto**, turns the fade on only where the view is dense enough to
+tangle, leaving a genuinely sparse comparison — distant species, every alignment
+sub-pixel — unfaded rather than washed out; **On** and **Off** pin it. **Curved
+lines** draws ribbons as bezier curves instead of straight connectors, which
+reads far better at whole-genome scale where straight crossings stack into
 noise; **Location markers** continues the top panel's scalebar grid down through
 the ribbons, so each tick shows where a round coordinate up there lands below;
 and **Opacity** is how much dense overlapping alignments show through each
@@ -234,7 +239,7 @@ long way off screen visible while you scroll.
 
 ## View options
 
-The view's hamburger menu keeps six rows however many genomes are stacked. The
+The view's hamburger menu keeps seven rows however many genomes are stacked. The
 three that zoom every row at once are at the top; what varies with the stack is
 inside **Rows**:
 
@@ -276,9 +281,21 @@ A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and
 how many alignments on this band go there.
 
-Clicking a mark navigates the facing panel to that contig, which is what turns
-those marks into ribbons — so the hover is also how to see what a click will do
-before making it.
+Clicking a mark navigates the facing panel to the mate's own locus rather than
+to the whole contig: what the click has to show is the alignments the mark
+stands for, and a chromosome-wide jump buries them. The window is widened around
+that locus — to at least 20kb, and a little past its ends — so that a single
+small anchor does not land the panel at sequence-level zoom with nothing around
+it to place the alignment against. That is what turns those marks into ribbons,
+so the hover is also how to see what a click will do before making it.
+
+Navigating that way replaces what that row was displaying, which may be a region
+list built over several navigations, so the click raises a notification carrying
+an **Undo** that puts back the row's regions, its zoom and its scroll position.
+If the rows are following each other and the one clicked was not the anchor, the
+click also makes it the anchor — otherwise the follow re-asserts the anchor's
+mapping and pulls the row straight back off the contig it was just sent to — and
+the notification says so. That undo restores the previous anchor too.
 
 <Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
 

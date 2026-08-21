@@ -29,8 +29,9 @@ export interface OffscreenMateHover {
  * regions. That made the one destructive step in the feature the only way to
  * see what it would do.
  *
- * The count is the tally's, the same number the hamburger item reports for this
- * contig, so the two readouts of one fact cannot drift.
+ * The count is the tally's, and this tooltip is the only place it is shown: the
+ * hamburger item that used to report a per-contig count is gone, and the
+ * settings menu's "Off-screen mates" radios carry a fixed label.
  *
  * `ComparativeTooltip` rather than a `BaseTooltip` of its own: a mark and a
  * ribbon are two things in one band, and a second tooltip shape over the same
@@ -56,9 +57,9 @@ const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
         // Naming the wrong panel describes a click that then rewrites the
         // other one's regions, and `navToLocString` REPLACES them.
         // THE LOCUS, not the contig, and deliberately no coordinates: resolving
-        // which locus is a full scan of the lane (`offscreenMateSpanAt`, 6ms on
-        // a 250k-mark level) where this runs on a rAF per pointer move. The
-        // snackbar the click raises names the locus exactly.
+        // which locus is a full scan of the lane (`offscreenMateSpanAt`,
+        // 4.11ms on a 250k-mark level) where this runs on a rAF per pointer
+        // move. The snackbar the click raises names the locus exactly.
         hover.side === 'top'
           ? 'Click to show that locus on the panel below'
           : 'Click to show that locus on the panel above',

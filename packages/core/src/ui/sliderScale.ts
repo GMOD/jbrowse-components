@@ -7,7 +7,8 @@ export type SliderScale = 'linear' | 'log' | 'cubic'
 // control near 0 where small changes read as large (opacity). `sliderStep` is
 // the step in slider space (undefined for linear — the caller supplies a
 // real-unit step). Single source for these transforms across the inline
-// track-menu sliders (makeSizeMenu) and the dotplot's settings popover.
+// track-menu sliders (makeSizeMenu) and the slider submenus behind
+// makeSizeSubMenu (the dotplot's and synteny's settings menus).
 export function sliderScale(scale: SliderScale) {
   if (scale === 'log') {
     return {
