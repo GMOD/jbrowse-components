@@ -205,11 +205,8 @@ test('a restored session with the mode on attaches before any width', async () =
   expect(view.views[0]!.maxBpPerPx).toBeCloseTo(view.views[1]!.fitBpPerPx)
 })
 
-// The mode-OFF twin of the test above, and the case that reaches more sessions:
-// `sameScale` defaults to false, and mode off is `answered` — with `bpPerPx: 0`,
-// decided without reading a single row. So `answered` never meant "the rows are
-// measured", and the clamp loop it guards ran on every restored stack before any
-// row had a width, which is where `zoomTo`'s `offset = width / 2` throws.
+// mode off is `answered` without reading a row, so the clamp loop it guards ran
+// on every restored stack before any row had a width
 test('a restored session with the mode OFF attaches before any width', async () => {
   const session = setup()
   const errors: unknown[] = []
@@ -239,15 +236,13 @@ test('a restored session with the mode OFF attaches before any width', async () 
   expect(view.sameScale).toBe(false)
   expect(view.sharedFit).toEqual({ answered: true, bpPerPx: 0 })
 
-  // the width arrives under the same spy: the autorun re-runs on every row that
-  // initializes, and a guard that only deferred the throw would land here
+  // still under the spy: a guard that only deferred the throw would land here
   view.setWidth(800)
   await when(() => view.views.every(v => v.initialized))
   spy.mockRestore()
 
   expect(errors).toEqual([])
-  // each row keeps its OWN limit — mode off raises no ceiling over the small
-  // row, which is the whole difference from the test above
+  // mode off raises no ceiling, so each row keeps its own limit
   const [small, large] = view.views
   expect(small!.maxBpPerPx).toBeCloseTo(small!.fitBpPerPx)
   expect(small!.fitBpPerPx).toBeLessThan(large!.fitBpPerPx)
