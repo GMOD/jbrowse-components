@@ -222,14 +222,14 @@ export default function stateModelFactory(
          * position. `rpcDataMap` is this placed against the current row order,
          * and this is what a reorder re-places from instead of refetching.
          */
-        wireDataMap: regionDataMap<MafWireRegionData>(),
+        wireDataMap: regionDataMap<MafWireRegionData>('wireDataMap'),
         /**
          * #volatile
          * `wireDataMap` with every row assigned its on-screen `rowIndex` (see
          * `placeMafRegionData`). Everything that draws, hit-tests or measures
          * rows reads this one.
          */
-        rpcDataMap: regionDataMap<MafRegionData>(),
+        rpcDataMap: regionDataMap<MafRegionData>('rpcDataMap'),
         /**
          * #volatile
          * Per-region `bigMafSummary` rows for the zoom-out path, populated by
@@ -237,7 +237,7 @@ export default function stateModelFactory(
          * from `rpcDataMap` so the GPU sequence canvas and the summary overlay
          * never read each other's data.
          */
-        summaryDataMap: regionDataMap<MafSummaryRecord[]>(),
+        summaryDataMap: regionDataMap<MafSummaryRecord[]>('summaryDataMap'),
         /**
          * #volatile
          * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay,
@@ -245,7 +245,7 @@ export default function stateModelFactory(
          * separate from the alignment/summary maps so the overlay survives the
          * summary↔detail data swap.
          */
-        framesDataMap: regionDataMap<MafFrameRecord[]>(),
+        framesDataMap: regionDataMap<MafFrameRecord[]>('framesDataMap'),
         /**
          * #volatile
          * The last frames fetch declined to read the `annotationAdapter` because

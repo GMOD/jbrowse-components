@@ -103,7 +103,9 @@ export default function CanvasFeatureGateMixin() {
        * never a stale fetch-time snapshot. Survives viewport-change clears; dropped
        * on chromosome nav by `clearGateMeasurements`.
        */
-      densityStatsPerRegion: regionDataMap<RegionDensityStats>(),
+      densityStatsPerRegion: regionDataMap<RegionDensityStats>(
+        'densityStatsPerRegion',
+      ),
     }))
     .views(self => ({
       /**

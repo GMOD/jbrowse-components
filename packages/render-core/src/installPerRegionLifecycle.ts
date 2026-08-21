@@ -1,5 +1,10 @@
 import { computed, observable } from 'mobx'
 
+// This ESM package builds without @types/node, but consuming bundlers
+// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
+// reference and give it a minimal module-scoped type for tsc.
+declare const process: { env: { NODE_ENV?: string } }
+
 import { createRegionUploadSync } from './regionUploadSync.ts'
 
 import type { LifecycleHost } from './RenderLifecycleMixin.ts'
@@ -38,9 +43,47 @@ import type { ObservableMap } from 'mobx'
  * Not for maps of primitives (`groupMaxHeightOverrides`,
  * `detectedModifications`), where the enhancer is a no-op, nor for UI state
  * whose values are mutated in place.
+ *
+ * **Dev-only, every entry is checked on the way in.** A fetch RPC answers a
+ * payload or a `regionTooLarge` refusal, and every reader of this map is
+ * written for the payload — so a value that is not one is a fetch that did not
+ * happen, stored as though it had. There is no type to catch it: `onResult`
+ * receives whatever the RPC resolved, typed as the payload it was supposed to
+ * be, and the mock in the display harness resolved `undefined` for every
+ * un-stubbed method for as long as the harness existed. Six reactions across
+ * four packages then threw `Cannot read properties of undefined` on every run,
+ * inside autoruns MobX catches and logs — invisible until the reaction gate
+ * went in.
+ *
+ * Checked HERE because this is the one constructor all of them share, so the
+ * store is one place while the readers are hundreds, and because a payload
+ * caught at the `set` names the region and the display instead of surfacing as
+ * a TypeError in whichever getter happened to read it first.
  */
-export function regionDataMap<T>(): ObservableMap<number, T> {
-  return observable.map<number, T>(undefined, { deep: false })
+export function regionDataMap<T>(
+  // the field this map is stored on, so a violation names the map rather than
+  // the eighteen that share this constructor
+  name = 'region data',
+): ObservableMap<number, T> {
+  const map = observable.map<number, T>(undefined, { deep: false })
+  if (process.env.NODE_ENV !== 'production') {
+    const set = map.set.bind(map)
+    map.set = (key: number, value: T) => {
+      if (typeof value !== 'object' || value === null) {
+        // `console.error`, never `throw`: this runs inside the fetch's own
+        // result handler, where a throw is caught and reported as a failed
+        // region — which would hide the violation being reported.
+        console.error(
+          `[jbrowse display contract] ${name}: region ${key} stored \`${value === null ? 'null' : typeof value}\`, ` +
+            'not a payload. A fetch RPC answers a payload or a regionTooLarge ' +
+            'refusal; storing anything else leaves every reader of this map ' +
+            'reading through it.',
+        )
+      }
+      return set(key, value)
+    }
+  }
+  return map
 }
 
 interface UploadableRenderingBackend<Encoded> {

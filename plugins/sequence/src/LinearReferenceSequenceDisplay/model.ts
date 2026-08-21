@@ -112,7 +112,7 @@ export function modelFactory(
       }),
     )
     .volatile(() => ({
-      sequenceData: regionDataMap<SequenceRegionData>(),
+      sequenceData: regionDataMap<SequenceRegionData>('sequenceData'),
     }))
     .views(self => ({
       /**

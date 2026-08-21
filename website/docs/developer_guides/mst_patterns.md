@@ -366,7 +366,7 @@ should reset. The multi-row display's block, in full:
 <!-- include: plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts#volatile -->
 
 ```ts
-rpcDataMap: regionDataMap<MultiRowRegionData>(),
+rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
 prefersOffset: true,
 /**
  * #volatile

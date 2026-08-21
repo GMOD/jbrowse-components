@@ -1,0 +1,67 @@
+/**
+ * The dev-only check on what may be stored as a region's payload.
+ *
+ * Every per-region display keys its worker results by `displayedRegionIndex` in
+ * a map built here, and every reader of one is written for the payload shape. No
+ * type catches a value that is not one: `onResult` is handed whatever the RPC
+ * resolved, typed as the payload it was supposed to be. When the display test
+ * harness resolved `undefined` for un-stubbed methods, six reactions across four
+ * packages threw `Cannot read properties of undefined` on every run, inside
+ * autoruns MobX catches and logs.
+ *
+ * Reports through `console.error` rather than throwing, because this runs inside
+ * the fetch's own result handler where a throw is caught and reported as a
+ * failed region — hiding the violation. That makes the channel part of the
+ * contract, so these assert on it through the jest gate's opt-in.
+ */
+import { regionDataMap } from './installPerRegionLifecycle.ts'
+
+function captureReports(fn: () => void) {
+  fn()
+  return takeContractReports()
+}
+
+test('a payload is stored without complaint', () => {
+  const reports = captureReports(() => {
+    const map = regionDataMap<{ features: number[] }>('rpcDataMap')
+    map.set(0, { features: [1, 2] })
+  })
+
+  expect(reports).toEqual([])
+})
+
+test('an absent payload is reported, and names the map and the region', () => {
+  const reports = captureReports(() => {
+    const map = regionDataMap<{ features: number[] }>('rpcDataMap')
+    // the shape the harness's un-stubbed RPC resolved for as long as it existed
+    map.set(3, undefined as unknown as { features: number[] })
+  })
+
+  expect(reports).toHaveLength(1)
+  expect(reports[0]).toContain('rpcDataMap')
+  expect(reports[0]).toContain('region 3')
+  expect(reports[0]).toContain('undefined')
+})
+
+test('null is reported as itself rather than as an object', () => {
+  const reports = captureReports(() => {
+    const map = regionDataMap<object>('summaryDataMap')
+    map.set(1, null as unknown as object)
+  })
+
+  expect(reports).toHaveLength(1)
+  expect(reports[0]).toContain('null')
+})
+
+// The store still happens: this is a report, not a guard. A display that
+// somehow reaches here keeps whatever behaviour it had, so turning the check on
+// could not itself change what anything draws.
+test('the value is stored anyway', () => {
+  const map = regionDataMap<object>('rpcDataMap')
+  captureReports(() => {
+    map.set(0, undefined as unknown as object)
+  })
+
+  expect(map.has(0)).toBe(true)
+  expect(map.get(0)).toBeUndefined()
+})

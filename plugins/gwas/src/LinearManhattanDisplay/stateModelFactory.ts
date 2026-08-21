@@ -110,11 +110,11 @@ export function stateModelFactory(
       )
       .volatile(() => ({
         // 1:1 points keyed by displayedRegionIndex.
-        rpcDataMap: regionDataMap<ManhattanRpcResult>(),
+        rpcDataMap: regionDataMap<ManhattanRpcResult>('rpcDataMap'),
         // Wrapped Flatbush per region. Kept in lockstep with rpcDataMap so
         // a single-region fetch only re-wraps that region (whole-genome views
         // land 20+ regions serially; a derived view would re-wrap them all).
-        flatbushes: regionDataMap<Flatbush>(),
+        flatbushes: regionDataMap<Flatbush>('flatbushes'),
         // Currently hovered point — drives the hover circle + tooltip. Named
         // apart from the `hoveredFeature` getter below it fills, because
         // `BaseDisplay` declares that hook as a computed and MST refuses to

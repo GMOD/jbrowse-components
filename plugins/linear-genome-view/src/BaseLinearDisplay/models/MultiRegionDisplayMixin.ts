@@ -65,7 +65,7 @@ export default function MultiRegionDisplayMixin() {
          * displayedRegionIndex; populated only after the fetch work callback
          * returns
          */
-        loadedRegions: regionDataMap<LoadedRegion>(),
+        loadedRegions: regionDataMap<LoadedRegion>('loadedRegions'),
         /**
          * #volatile
          * Bumped by `reload()` and read unconditionally by the fetch autorun,

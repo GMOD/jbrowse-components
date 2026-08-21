@@ -166,7 +166,7 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       // #region volatile
-      rpcDataMap: regionDataMap<MultiRowRegionData>(),
+      rpcDataMap: regionDataMap<MultiRowRegionData>('rpcDataMap'),
       prefersOffset: true,
       /**
        * #volatile

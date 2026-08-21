@@ -121,7 +121,7 @@ export function WiggleCommonMixin() {
       /**
        * #volatile
        */
-      rpcDataMap: regionDataMap<WiggleDataResult>(),
+      rpcDataMap: regionDataMap<WiggleDataResult>('rpcDataMap'),
       /**
        * #volatile
        * The stored hit. Named apart from the `hoveredFeature` getter below it

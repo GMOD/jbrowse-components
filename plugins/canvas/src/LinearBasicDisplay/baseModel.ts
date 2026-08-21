@@ -357,7 +357,7 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        rpcDataMap: regionDataMap<LoadedFeatureData>(),
+        rpcDataMap: regionDataMap<LoadedFeatureData>('rpcDataMap'),
         /**
          * #volatile
          * Session-only acknowledgement of the color key's "×". Owned here

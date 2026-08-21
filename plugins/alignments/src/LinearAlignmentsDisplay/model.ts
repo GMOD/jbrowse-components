@@ -386,7 +386,7 @@ export default function stateModelFactory(
           // observability would recursively wrap every nested object/array on
           // insert and tax every property access (`getObservablePropValue_`) in
           // the layout/draw hot loops for zero benefit.
-          rpcDataMap: regionDataMap<GroupedAlignmentsResult>(),
+          rpcDataMap: regionDataMap<GroupedAlignmentsResult>('rpcDataMap'),
           /**
            * #volatile
            * pileup vertical scroll offset in px. Also read by the

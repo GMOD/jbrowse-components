@@ -36,7 +36,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;WiggleDataResult&gt;()</code> |  |
+| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;WiggleDataResult&gt;('rpcDataMap')</code> |  |
 | <span id="volatile-hoveredwigglefeature">**hoveredWiggleFeature**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hoveredWiggleFeature: undefined as WiggleHoveredFeature &#124; undefined</code></pre></dialog></span> | The stored hit. Named apart from the `hoveredFeature` getter below it fills, because `BaseDisplay` declares that hook as a computed and MST refuses to instantiate a volatile over one — a display filling it stores under its own name and exposes a getter, which is what canvas, alignments and the variant displays already did. |
 
 ## Getters
