@@ -150,8 +150,17 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        * flows through (see trackConfigDelta.ts). Frozen (not a typed track array)
        * on purpose: a typed create() would fill defaults, erasing the "unset vs
        * default" distinction the delta merge relies on.
+       *
+       * `stripDefault` for the reason every other persisted prop beside it has
+       * it: without it the empty map is written into every snapshot and every
+       * share link, so a session that never overrode a track still ships
+       * `"trackConfigDeltas":{}`. It was the one prop added since that convention
+       * without it.
        */
-      trackConfigDeltas: types.frozen<Record<string, PlainTrackConfig>>({}),
+      trackConfigDeltas: types.stripDefault(
+        types.frozen<Record<string, PlainTrackConfig>>(),
+        {},
+      ),
     })
     .volatile(() => ({
       /**

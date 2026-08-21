@@ -179,6 +179,17 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         if (!self.views.includes(view)) {
           return
         }
+        // The focus is a persisted id, not a reference, so nothing drops it
+        // when the view it names goes. Every consumer compares
+        // `focusedViewId === view.id`, so a stale one matches nothing — the
+        // focus ring vanishes and the drawer stops naming a view, with nothing
+        // to say why — and it ships in a saved or shared session. `replaceView`
+        // captures `wasFocused` above this and re-points the focus at the
+        // replacement afterwards, which is the one case where the focus moves
+        // rather than ending.
+        if (self.focusedViewId === view.id) {
+          self.setFocusedViewId(undefined)
+        }
         // Every widget, not the active ones: a widget the user closed keeps
         // its references and its autoruns. One that pointed into the view is
         // now empty, so hide it rather than leave the panel showing what it no

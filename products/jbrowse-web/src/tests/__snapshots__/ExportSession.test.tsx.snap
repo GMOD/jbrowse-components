@@ -19,7 +19,6 @@ exports[`export session with alignments and gff tracks 1`] = `
       ],
     },
     "sessionPlugins": [],
-    "trackConfigDeltas": {},
     "views": [
       {
         "displayedRegions": [

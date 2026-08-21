@@ -420,6 +420,45 @@ test('replaceView leaves another view’s focus alone', () => {
   expect(session.focusedViewId).toBe(focused)
 })
 
+// `replaceView` moves the focus because there is somewhere to move it to. Every
+// other way a view leaves has nowhere, and left the id behind: matching nothing,
+// showing no ring, and persisting into a saved or shared session.
+test('removing the focused view clears the focus', () => {
+  const session = sessionWithThreeViews()
+  const removed = session.views[1]!
+  session.setFocusedViewId(removed.id)
+
+  session.removeView(removed)
+
+  expect(session.focusedViewId).toBeUndefined()
+})
+
+test('removing another view leaves the focus alone', () => {
+  const session = sessionWithThreeViews()
+  const focused = session.views[0]!.id
+  session.setFocusedViewId(focused)
+
+  session.removeView(session.views[1])
+
+  expect(session.focusedViewId).toBe(focused)
+})
+
+// The session-restore path takes views out one at a time through the same
+// helper, so it gets the clear without knowing about the focus at all.
+test('takeOutViewsMissingFrom clears the focus of a view it drops', () => {
+  const session = sessionWithThreeViews()
+  const kept = session.views[0]!
+  session.setFocusedViewId(session.views[2]!.id)
+
+  // matched on id AND type, which is what the restore path compares
+  session.takeOutViewsMissingFrom({
+    views: [{ id: kept.id, type: kept.type }],
+  })
+
+  expect(session.views.map(v => v.id)).toEqual([kept.id])
+  expect(session.focusedViewId).toBeUndefined()
+})
+
 // **`beforeDetach` runs while the view can still reach the session**, which is
 // the whole reason the hook exists. Removing a view detaches it rather than
 // destroying it in place (ADR-069), and a detached view is a root: `getSession`

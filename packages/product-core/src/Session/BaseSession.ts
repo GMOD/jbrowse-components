@@ -548,8 +548,15 @@ export function BaseSessionModel<
       },
       /**
        * #action
+       * `undefined` is "no view is focused", which the property has always been
+       * able to hold (`types.maybe`) and this had no way to spell. Nothing
+       * cleared it on teardown as a result: a view that was focused when it left
+       * the session left its id behind, and since every consumer compares
+       * `focusedViewId === view.id`, the id matched nothing, the focus ring
+       * vanished with nothing to say why, and the dead id persisted into a saved
+       * or shared session. `takeOut` clears it now.
        */
-      setFocusedViewId(viewId: string) {
+      setFocusedViewId(viewId: string | undefined) {
         self.focusedViewId = viewId
       },
       /**

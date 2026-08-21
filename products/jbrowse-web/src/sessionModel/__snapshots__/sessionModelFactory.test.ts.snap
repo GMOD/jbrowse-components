@@ -18,7 +18,6 @@ exports[`JBrowseWebSessionModel creates with no parent and just a name 1`] = `
   },
   "name": "testSession",
   "sessionPlugins": [],
-  "trackConfigDeltas": {},
   "views": [],
 }
 `;
