@@ -15,7 +15,10 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // the half with a consequence: `navToLocString` REPLACES the row's displayed
 // regions, so getting the row wrong silently rewrites the wrong axis.
 
-const BP = 16000
+// Big enough that a locus is a small part of it — the whole point of the
+// coordinates is that they narrow the row, and a contig the size of the minimum
+// window could not show the difference.
+const BP = 400_000
 
 function assembly(name: string, refNames: string[]) {
   return {
@@ -105,8 +108,8 @@ test('a mark with a mate locus shows that locus, not the whole contig', async ()
   const { view, level } = await setup()
 
   level.showOffscreenMateContig('ctgB', level.level + 1, {
-    start: 8000,
-    end: 9000,
+    start: 200_000,
+    end: 201_000,
   })
   await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
 
@@ -114,8 +117,28 @@ test('a mark with a mate locus shows that locus, not the whole contig', async ()
   // set and then frames the locus in it — so what has to be checked is the
   // window, which is what a reader sees
   const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
-  expect(visible!.start).toBeGreaterThan(7000)
-  expect(visible!.end).toBeLessThan(10000)
+  expect(visible!.start).toBeGreaterThan(150_000)
+  expect(visible!.end).toBeLessThan(250_000)
+}, 20000)
+
+// ...and not framed exactly. A single small anchor is an ordinary thing to
+// click, and its own span can be a few hundred bp: shown as itself the row lands
+// at sequence zoom with nothing around the alignment to read it against, which
+// is the same failure as the whole chromosome from the other end.
+test('a locus narrower than the floor is widened around itself', async () => {
+  const { view, level } = await setup()
+
+  level.showOffscreenMateContig('ctgB', level.level + 1, {
+    start: 200_000,
+    end: 200_500,
+  })
+  await when(() => refNames(view, 1).join(',') === 'ctgB', { timeout: 5000 })
+
+  const [visible] = view.views[1]!.dynamicBlocks.contentBlocks
+  expect(visible!.end - visible!.start).toBeGreaterThan(20_000)
+  // and still centred on what was clicked
+  expect((visible!.start + visible!.end) / 2).toBeGreaterThan(190_000)
+  expect((visible!.start + visible!.end) / 2).toBeLessThan(210_000)
 }, 20000)
 
 // `navToLocString` REPLACES the row's regions, so what the click discards may be
@@ -126,8 +149,8 @@ test('the navigation offers an undo that restores what the row was showing', asy
   const before = view.views[1]!.bpPerPx
 
   level.showOffscreenMateContig('ctgB', level.level + 1, {
-    start: 8000,
-    end: 9000,
+    start: 200_000,
+    end: 201_000,
   })
   await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
 

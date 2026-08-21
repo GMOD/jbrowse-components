@@ -4,8 +4,8 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 — min of rounds, min of four samples, control 0.96-1.00. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",
-    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao — 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the mark count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every mark before testing the pointer's y. The repaint column is LAYOUT and path building; the fake context's fill is a no-op, so rasterization is not in it. The SVG export layer column is what a figure carries: the strip serializes as one path element, a fifth of what a rect per alignment cost.\n\nRE-MEASURED 2026-08-20 on a LOADED machine, and the whole table moved with it: `hover, before` is code this change did not touch and it reads 12% (demo) to 26% (250k) above the 2026-08-19 run. Read the repaint column against that column, not against the old absolute numbers. The 250k repaint is the row to distrust: it spread 23.2-38.9ms across samples where every other cell held within a few percent. An A/B on that row (three samples each way, one fixture per process so the others' heap is not in it) could not separate reading a third typed array per mark from not reading it - 23.2 against 25.3 on the mins, in either order - so nothing in this table is fine-grained enough to justify a branch. Re-measure it on a quiet machine before believing any change to it."
+    "repro": "node plugins/linear-comparative-view/benches/offscreenMateOverlay.bench.ts --rounds=25 - min of rounds, control 0.96-1.11. Node rather than jest: this is a Float64Array read in a loop, the shape BENCHMARKING.md measures jest inflating 6-30x (it read the 250k repaint as 84ms).",
+    "notes": "1500px band, 100px tall. demo-2767 is peach chr1 over grape chr1 in demos/grape_peach_cacao \u2014 2767 dropped anchors across 9 grape contigs. The stress rows are the query-whole-genome/target-one-contig state, which is what makes the mark count unbounded: nothing caps the fetch, and minAlignmentLength is applied at draw time. `hover, before` is the pre-2026-08-19 hit test, which laid out every mark before testing the pointer's y. The repaint column is LAYOUT and path building; the fake context's fill is a no-op, so rasterization is not in it. The SVG export layer column is what a figure carries: the strip serializes as one path element, a fifth of what a rect per alignment cost.\n\nRE-MEASURED 2026-08-20 on a LOADED machine, and the whole table moved with it: `hover, before` is code this change did not touch and it reads 12% (demo) to 26% (250k) above the 2026-08-19 run. Read the repaint column against that column, not against the old absolute numbers. The 250k repaint is the row to distrust: it spread 23.2-38.9ms across samples where every other cell held within a few percent. An A/B on that row (three samples each way, one fixture per process so the others' heap is not in it) could not separate reading a third typed array per mark from not reading it - 23.2 against 25.3 on the mins, in either order - so nothing in this table is fine-grained enough to justify a branch. Re-measure it on a quiet machine before believing any change to it.\n\nRE-MEASURED AGAIN 2026-08-20 for the `click in the strip` column, and every row is that one run so the columns stay comparable within a row - the absolute numbers moved again against the run above (`hover, before` is untouched code and reads 8.27ms on the 250k row against 7.54ms), which is the machine, not the code. The click column is what a CLICK on a mark resolves: `offscreenMateSpanAt`, which unions the mate spans of every alignment stacked under the pointer and so cannot take the hover's early exit. It runs once per navigation, not per pointer move, which is why the tooltip names the locus without coordinates rather than resolving one on hover. Two independent runs put it within 3% of each other on all three rows."
   },
   "columns": [
     {
@@ -32,6 +32,12 @@
       "align": "right"
     },
     {
+      "key": "clickStrip",
+      "label": "click in the strip",
+      "format": "ms",
+      "align": "right"
+    },
+    {
       "key": "repaint",
       "label": "one repaint",
       "format": "ms",
@@ -50,30 +56,33 @@
       "values": {
         "marks": 2767,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 0.038,
-        "hoverStrip": 0.037,
-        "repaint": 0.25,
-        "svgKb": 90
+        "hoverBefore": 0.039,
+        "hoverStrip": 0.038,
+        "repaint": 0.351,
+        "svgKb": 90,
+        "clickStrip": 0.046
       }
     },
     {
       "values": {
         "marks": 50000,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 1.3,
+        "hoverBefore": 1.33,
         "hoverStrip": 0.64,
-        "repaint": 4.78,
-        "svgKb": 1303
+        "repaint": 5.86,
+        "svgKb": 1303,
+        "clickStrip": 0.75
       }
     },
     {
       "values": {
         "marks": 250000,
         "hoverRibbons": "<0.001ms",
-        "hoverBefore": 7.54,
-        "hoverStrip": 3.52,
-        "repaint": 26.8,
-        "svgKb": 6624
+        "hoverBefore": 8.27,
+        "hoverStrip": 3.37,
+        "repaint": 35.1,
+        "svgKb": 6624,
+        "clickStrip": 4.11
       },
       "emphasize": [
         "repaint"

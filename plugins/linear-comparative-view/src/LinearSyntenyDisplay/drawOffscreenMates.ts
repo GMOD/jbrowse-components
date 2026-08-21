@@ -513,32 +513,42 @@ export function offscreenMateAt(
 }
 
 // Where on the contig it names the alignments under one point actually land.
-export interface OffscreenMateSpan {
-  refName: string
+export interface OffscreenMateLocus {
   // the contig's own bp, half-open like everything else on this side
   start: number
   end: number
 }
 
+// What a CLICK on a mark resolves to. The locus is optional because the mark is
+// not: a lane with no mate coordinates still names a contig worth navigating to,
+// and answering `undefined` there would turn its clicks into no-ops.
+export interface OffscreenMateSpan {
+  refName: string
+  locus?: OffscreenMateLocus
+}
+
 /**
- * The locus a click on a mark should show: the mate span of every alignment
- * under that point that names the same contig, unioned.
+ * The contig a click on a mark should show, and where on it.
  *
  * NOT THE ONE ALIGNMENT THE HIT TEST ANSWERED WITH. At any zoom where a contig
  * has more anchors than the strip has pixels, one rect stands for a run of them
  * — `MIN_OFFSCREEN_MATE_WIDTH_PX` makes even a sub-pixel alignment a mark, so
- * they pile up in a column — and the hit test's answer among those is whichever
- * the backwards walk reached first. Navigating to that one is arbitrary in a way
- * a reader would see: the same visible mark, clicked at two window widths, goes
- * to two different places. The union is what the mark actually stands for, and
- * it collapses to the single alignment exactly when the mark is one.
+ * they pile up in a column — and picking one among those is arbitrary in a way
+ * a reader sees: the same visible mark, clicked at two window widths, would go
+ * to two different places. The union is what the mark stands for, and it
+ * collapses to the single alignment exactly when the mark is one.
  *
  * ONE LANE, because the caller hands us one: the two strips hold contigs of
  * DIFFERENT assemblies, so a name matched across them would union coordinates
  * from two genomes.
  *
- * A FULL SCAN of the lane, unlike the hit test's early exit — a click is not a
- * hover, and there is exactly one per navigation.
+ * ONE FORWARD PASS, unlike the hover's backwards early exit — the contig on top
+ * is the one painted last, which the same walk that accumulates the spans knows
+ * by the time it ends. Asking the hit test for the name and then scanning again
+ * for its coordinates cost a click 6.0ms on the 250k-mark level against 4.0ms
+ * folded, and 0.077ms against 0.045ms on the demo fixture
+ * (`benches/offscreenMateOverlay.bench.ts`). A click is not a hover, but it is
+ * still a frame the user is waiting in.
  */
 export function offscreenMateSpanAt(
   layout: OffscreenMateLayout,
@@ -549,26 +559,34 @@ export function offscreenMateSpanAt(
   if (!strip || y < strip.markY || y > strip.markY + strip.markHeight) {
     return undefined
   }
-  const refName = offscreenMateAt(layout, x, y)
-  if (!refName) {
-    return undefined
-  }
-  let start = Number.POSITIVE_INFINITY
-  let end = Number.NEGATIVE_INFINITY
+  const spans = new Map<string, OffscreenMateLocus>()
+  let top: string | undefined
   for (const data of layout.datasets) {
     for (let i = 0; i < data.starts.length; i++) {
-      if (offscreenMateRefName(data, i) === refName) {
-        const rect = offscreenMateRectAt(layout, data, i, strip)
-        if (rect && x >= rect.x && x <= rect.x + rect.width) {
-          start = Math.min(start, data.mateStarts[i]!)
-          end = Math.max(end, data.mateEnds[i]!)
+      const rect = offscreenMateRectAt(layout, data, i, strip)
+      if (rect && x >= rect.x && x <= rect.x + rect.width) {
+        const refName = offscreenMateRefName(data, i)
+        top = refName
+        const span = spans.get(refName)
+        const start = data.mateStarts[i]!
+        const end = data.mateEnds[i]!
+        if (span) {
+          span.start = Math.min(span.start, start)
+          span.end = Math.max(span.end, end)
+        } else {
+          spans.set(refName, { start, end })
         }
       }
     }
   }
-  // Every mark under the point failed to carry a mate coordinate, which is a
-  // lane from a fetch that predates them. The contig name still navigates.
-  return end > start ? { refName, start, end } : undefined
+  if (!top) {
+    return undefined
+  }
+  const locus = spans.get(top)!
+  // A lane from a fetch that predates the mate coordinates, or a degenerate
+  // zero-length one. The contig still navigates — as a whole contig, which is
+  // what every click did before there were coordinates to do better with.
+  return { refName: top, locus: locus.end > locus.start ? locus : undefined }
 }
 
 /**

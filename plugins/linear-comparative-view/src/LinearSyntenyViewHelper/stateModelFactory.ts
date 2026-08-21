@@ -15,12 +15,7 @@ import {
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
 
-// Padding around the mate locus, as a fraction of its own width per side. The
-// span is where the hidden alignments land and nothing more, so shown exactly
-// it puts their ribbons hard against both edges of the row with nothing around
-// them to read against.
-const OFFSCREEN_MATE_NAV_GROW = 0.2
-
+import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
   SyntenyPickResult,
@@ -35,6 +30,34 @@ import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ComparativeSurface } from '@jbrowse/synteny-core'
+
+// Padding around the mate locus, as a fraction of its own width per side. The
+// span is where the hidden alignments land and nothing more, so shown exactly
+// it puts their ribbons hard against both edges of the row with nothing around
+// them to read against.
+const OFFSCREEN_MATE_NAV_GROW = 0.2
+
+// The narrowest window a mark may navigate to. A single small anchor is a
+// perfectly ordinary thing to click, and its own span can be a few hundred bp —
+// framed exactly, the row lands at sequence-level zoom showing that one
+// alignment and nothing to place it against, which is the opposite failure from
+// the whole-chromosome one this fixes. Widened around the locus midpoint, so
+// what was clicked stays centred.
+const OFFSCREEN_MATE_NAV_MIN_BP = 20_000
+
+function navLocString(refName: string, locus?: OffscreenMateLocus) {
+  if (!locus) {
+    return refName
+  }
+  const pad = Math.max(
+    0,
+    (OFFSCREEN_MATE_NAV_MIN_BP - (locus.end - locus.start)) / 2,
+  )
+  // +1 because the payload is interbase and a locstring is 1-based
+  const start = Math.max(0, Math.round(locus.start - pad)) + 1
+  const end = Math.round(locus.end + pad)
+  return `${refName}:${start}-${end}`
+}
 
 /**
  * #stateModel LinearSyntenyViewHelper
@@ -386,8 +409,9 @@ export function linearSyntenyViewHelperModelFactory(
        * a whole chromosome, so every click used to answer a question about one
        * locus by zooming out past every other one — and the mate coordinates
        * that make it answerable were being collected and dropped
-       * (`collectOffscreenMates`). `grow` rather than an exact span so the
-       * ribbons that now have both ends have visible context around them.
+       * (`collectOffscreenMates`). `grow` and a floor rather than an exact span,
+       * so the ribbons that now have both ends have something around them to be
+       * read against at either end of the size range.
        *
        * `navToLocString` REPLACES that row's displayed regions, which is exactly
        * the narrowing the synteny follow must never do to itself. Here it is the
@@ -401,7 +425,7 @@ export function linearSyntenyViewHelperModelFactory(
       showOffscreenMateContig(
         refName: string,
         row: number,
-        span?: { start: number; end: number },
+        locus?: OffscreenMateLocus,
       ) {
         const view = self.parentView.views[row]
         if (view) {
@@ -412,11 +436,9 @@ export function linearSyntenyViewHelperModelFactory(
             bpPerPx: view.bpPerPx,
             offsetPx: view.offsetPx,
           }
-          const loc = span
-            ? `${refName}:${span.start + 1}-${span.end}`
-            : refName
+          const loc = navLocString(refName, locus)
           view
-            .navToLocString(loc, undefined, span ? OFFSCREEN_MATE_NAV_GROW : 0)
+            .navToLocString(loc, undefined, locus ? OFFSCREEN_MATE_NAV_GROW : 0)
             .then(() => {
               getSession(self).notify(`Showing ${loc}`, 'info', {
                 name: 'Undo',

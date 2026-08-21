@@ -55,9 +55,13 @@ const OffscreenMateTooltip = observer(function OffscreenMateTooltip({
           : hover.refName,
         // Naming the wrong panel describes a click that then rewrites the
         // other one's regions, and `navToLocString` REPLACES them.
+        // THE LOCUS, not the contig, and deliberately no coordinates: resolving
+        // which locus is a full scan of the lane (`offscreenMateSpanAt`, 6ms on
+        // a 250k-mark level) where this runs on a rAF per pointer move. The
+        // snackbar the click raises names the locus exactly.
         hover.side === 'top'
-          ? 'Click to show it on the panel below'
-          : 'Click to show it on the panel above',
+          ? 'Click to show that locus on the panel below'
+          : 'Click to show that locus on the panel above',
       ]}
     />
   )

@@ -1,6 +1,6 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show that contig, and carried into an SVG export. Class B shipped the same day behind `bidirectionalFetch` (two-axis-synteny-fetch.md), on the terms this file settled: its marks hang off the target axis and its click navigates the row above.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show the mate LOCUS (with an Undo, since the navigation replaces the row's regions), and carried into an SVG export. Class B shipped the same day behind `bidirectionalFetch` (two-axis-synteny-fetch.md), on the terms this file settled: its marks hang off the target axis and its click navigates the row above.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
@@ -11,7 +11,7 @@ query axis; `offscreenMateMenuItems` reports the count and the contigs;
 `showOffscreenMates` turns `OffscreenMateOverlay` on, which draws each as a mark
 at the top of the band, labelled with the contig it points at; hovering one names
 that contig whether or not the run is wide enough to be labelled, and clicking
-one shows it on the facing row. An SVG export carries the same marks. The
+one shows the locus its alignments land on, on the facing row, undoably. An SVG export carries the same marks. The
 rest of this file is the case for it and the reasoning the implementation
 followed — kept because it is the reasoning class B was then built on, the same
 day and to the terms set out at the bottom of this file.
@@ -180,9 +180,29 @@ reports nothing.
   make the contig visible, only to land on the right locus within it. Worth
   revisiting if landing whole-contig turns out too coarse.
 
+  IT WAS TOO COARSE, revisited 2026-08-20: a bare refName is a whole chromosome,
+  so a click meant to answer "what is over there" answered it by zooming out past
+  everything else. Not through the resolve RPC, though — the collector already
+  had the mate coordinates in hand and was dropping them, so `mateStarts`/
+  `mateEnds` ride along per placed alignment and the click costs no round trip.
+  It also answers for the MARK rather than for a feature, which the resolve could
+  not: `MIN_OFFSCREEN_MATE_WIDTH_PX` piles a run of anchors into one column
+  wherever a contig has more of them than the strip has pixels, so the click
+  unions the mate spans under the pointer (`offscreenMateSpanAt`). Picking one of
+  them instead is arbitrary in a way a reader sees — the same visible mark,
+  clicked at two window widths, goes to two different places. Floored to
+  `OFFSCREEN_MATE_NAV_MIN_BP` so a lone small anchor does not land the row at
+  sequence zoom with nothing around it, which is the same failure from the other
+  end.
+
   The click is `navToLocString`, which REPLACES the facing row's displayed
   regions — the exact narrowing the follow must never do to itself. Here it is
-  the request, not a side effect, and the row's own header undoes it.
+  the request, not a side effect. "The row's own header undoes it" was the answer
+  for a year and it is not one: "Show all regions" is a different destination,
+  not an undo, and what the click discarded may be a region list built over
+  several navigations. The navigation now raises a snackbar carrying an **Undo**
+  that restores the row's regions, zoom and scroll — an actionable info toast,
+  which `SnackbarModel` deliberately does not auto-hide.
 - **Where the hit test lives.** In the level's pointer handlers, before the
   ribbon pick, answering only within the mark strip. The overlay stays
   `pointerEvents: none`: two hit paths over one band is how a click comes to
@@ -216,11 +236,11 @@ reports nothing.
 
 <!-- BEGIN GENERATED MEASUREMENT offscreen-mate-overlay -->
 
-|   marks | hover over ribbons | hover, before | hover in the strip | one repaint | SVG export layer |
-| ------: | -----------------: | ------------: | -----------------: | ----------: | ---------------: |
-|   2,767 |           <0.001ms |       0.038ms |            0.037ms |      0.25ms |            90 KB |
-|  50,000 |           <0.001ms |         1.3ms |             0.64ms |      4.78ms |         1.303 MB |
-| 250,000 |           <0.001ms |        7.54ms |             3.52ms |  **26.8ms** |         6.624 MB |
+|   marks | hover over ribbons | hover, before | hover in the strip | click in the strip | one repaint | SVG export layer |
+| ------: | -----------------: | ------------: | -----------------: | -----------------: | ----------: | ---------------: |
+|   2,767 |           <0.001ms |       0.039ms |            0.038ms |            0.046ms |     0.351ms |            90 KB |
+|  50,000 |           <0.001ms |        1.33ms |             0.64ms |             0.75ms |      5.86ms |         1.303 MB |
+| 250,000 |           <0.001ms |        8.27ms |             3.37ms |             4.11ms |  **35.1ms** |         6.624 MB |
 
 <!-- END GENERATED MEASUREMENT offscreen-mate-overlay -->
 
@@ -236,7 +256,18 @@ few pixels of a band ~100 tall, so nearly every pointer position `offscreenMateH
 is asked about is not in it — and it runs ahead of the ribbon pick on every
 mousemove. Testing the strip height before any alignment is what collapses that
 column; laying the level out first to answer "no" is what the `hover, before`
-column is, and at 250k marks it was 7.5ms of every frame the pointer moved.
+column is, and at 250k marks it is 8.3ms of every frame the pointer moved.
+
+**The click is the one path that cannot early-exit,** and it is a separate
+function for exactly that reason (`offscreenMateSpanAt` beside
+`offscreenMateAt`). Where a mark stands for a run of anchors — anywhere a contig
+has more of them than the strip has pixels — the locus it navigates to is the
+union of their mate spans, which is every alignment under the pointer rather than
+the first one found. That is a full pass of the lane: 0.046ms on the demo
+fixture, 4.1ms at 250k marks. Once per navigation, so it is paid where a user has
+just clicked and is waiting; put on the hover it would be paid per pointer move,
+which is why `OffscreenMateTooltip` says "that locus" and leaves the coordinates
+to the snackbar the click raises.
 
 **The strip is one path, not a fill per mark.** The mark color carries alpha, so
 filling each separately composites them against each other and the strip darkens

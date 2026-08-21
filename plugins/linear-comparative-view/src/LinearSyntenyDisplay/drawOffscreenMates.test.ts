@@ -853,8 +853,7 @@ test('a click answers the mate locus, not just the contig', () => {
   }
   expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
     refName: 'ctgB',
-    start: 4000,
-    end: 4400,
+    locus: { start: 4000, end: 4400 },
   })
 })
 
@@ -882,8 +881,7 @@ test('...unioned over every alignment stacked under the pointer', () => {
   }
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgB',
-    start: 4000,
-    end: 9100,
+    locus: { start: 4000, end: 9100 },
   })
 })
 
@@ -912,8 +910,7 @@ test('...but never across the contigs sharing that column', () => {
   // test answers with
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgC',
-    start: 4000,
-    end: 4100,
+    locus: { start: 4000, end: 4100 },
   })
 })
 
@@ -922,4 +919,16 @@ test('below the strip a click resolves nothing, like the hover', () => {
   expect(
     offscreenMateSpanAt(layout, 20, OFFSCREEN_MATE_HEIGHT_PX + 1),
   ).toBeUndefined()
+})
+
+// A lane with no usable mate coordinates still names a contig, and that contig
+// is still worth navigating to — which is what every click did before the
+// coordinates existed. Answering `undefined` here would instead make the click
+// fall through to the ribbon pick and clear the selection.
+test('a mark with no mate coordinates still resolves its contig', () => {
+  const layout = {
+    ...params,
+    datasets: [data([[100, 400]], ['ctgB'], [[0, 0]])],
+  }
+  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({ refName: 'ctgB' })
 })

@@ -284,7 +284,6 @@ test('a click resolves the same strip and row, plus the mate locus', () => {
     refName: 'fromTarget',
     navRow: 0,
     side: 'bottom',
-    start: 0,
-    end: 500,
+    locus: { start: 0, end: 500 },
   })
 })

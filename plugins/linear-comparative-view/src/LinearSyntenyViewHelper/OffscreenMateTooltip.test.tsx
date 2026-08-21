@@ -65,7 +65,7 @@ test('and how many alignments go to it', () => {
 // the click will do before it is the only way to find out.
 test('and says what clicking it does', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB')).toContain(
-    'Click to show it on the panel below',
+    'Click to show that locus on the panel below',
   )
 })
 
@@ -75,7 +75,7 @@ test('and says what clicking it does', () => {
 // then rewrites the other panel's regions.
 test('a mark on the target axis names the panel above instead', () => {
   expect(draw(source({ ctgB: 1 }), 'ctgB', 'bottom')).toContain(
-    'Click to show it on the panel above',
+    'Click to show that locus on the panel above',
   )
 })
 

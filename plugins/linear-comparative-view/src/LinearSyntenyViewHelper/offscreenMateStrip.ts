@@ -7,6 +7,7 @@ import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 import type {
   OffscreenMateLane,
   OffscreenMateLayout,
+  OffscreenMateLocus,
   OffscreenMateSide,
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
@@ -134,10 +135,10 @@ export interface OffscreenMateHit {
 
 // What a CLICK on a mark resolves to: the same hit, plus where on that contig
 // the alignments under the pointer land, in its own bp — which is what lets the
-// navigation land on the locus rather than on the whole chromosome.
+// navigation land on the locus rather than on the whole chromosome. Absent when
+// the lane carries no mate coordinates, and then the contig alone navigates.
 export interface OffscreenMateNavHit extends OffscreenMateHit {
-  start: number
-  end: number
+  locus?: OffscreenMateLocus
 }
 
 /**
