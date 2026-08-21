@@ -33,7 +33,9 @@ function twoDisplayTrackConf(trackId: string) {
 
 test('showTrack with an explicit display type attaches that display’s config', () => {
   const { session, view } = getTestSession()
-  const added = session.addTrackConf(twoDisplayTrackConf('two_displays')) as {
+  const added = session.publishTrackConf(
+    twoDisplayTrackConf('two_displays'),
+  ) as {
     trackId: string
   }
   view.showTrack(
@@ -55,7 +57,9 @@ test('showTrack with an explicit display type attaches that display’s config',
 
 test('showTrack with no display type takes the track’s first declared display', () => {
   const { session, view } = getTestSession()
-  const added = session.addTrackConf(twoDisplayTrackConf('two_displays2')) as {
+  const added = session.publishTrackConf(
+    twoDisplayTrackConf('two_displays2'),
+  ) as {
     trackId: string
   }
   view.showTrack(added.trackId)

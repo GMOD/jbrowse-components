@@ -6,7 +6,7 @@ import {
 
 import { getFilename } from '../util.ts'
 
-import type { SessionWithAddTracks } from '@jbrowse/core/util'
+import type { SessionWithAddSessionTrack } from '@jbrowse/core/util'
 
 export type TrackItem = string | Record<string, unknown>
 
@@ -148,7 +148,7 @@ export function addMultiWiggleTrack({
   view,
   ...rest
 }: {
-  session: SessionWithAddTracks
+  session: SessionWithAddSessionTrack
   view?: { showTrack: (trackId: string) => void }
   name: string
   assemblyNames: string[]

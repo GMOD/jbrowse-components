@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import {
   getEnv,
   isSessionModelWithWidgets,
-  isSessionWithAddTracks,
+  isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
 
 import { assemblyToUcscDb } from './ucscDbMap.ts'
@@ -140,7 +140,7 @@ export async function addResultTrack({
   // what the results panel calls one of these; hgPcr's are products, not hits
   resultNoun?: 'hit' | 'product'
 }) {
-  if (!isSessionWithAddTracks(session)) {
+  if (!isSessionWithAddSessionTrack(session)) {
     throw new Error("Can't add tracks to this session")
   }
   const trackId = `${trackIdPrefix}-${Date.now()}`
@@ -148,7 +148,7 @@ export async function addResultTrack({
     type: 'FeatureTrack',
     adapter: { type: 'FromConfigAdapter', features },
   }
-  session.addTrackConf({
+  session.addSessionTrackConf({
     ...resultTrack,
     trackId,
     name: trackName,

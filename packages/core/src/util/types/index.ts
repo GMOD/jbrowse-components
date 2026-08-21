@@ -375,18 +375,29 @@ export function addOrReplaceView({
     : session.addView(typeName, initialState)
 }
 
-/** abstract interface for a session allows adding tracks */
-export interface SessionWithAddTracks extends AbstractSessionModel {
+/**
+ * abstract interface for a session that can publish a track config to the
+ * shared catalog on behalf of whoever is looking.
+ *
+ * The capability the "Add track" workflows need, and nothing else: an admin's
+ * track goes into the config.json every visitor is served. A feature standing a
+ * track up on the user's behalf wants `SessionWithAddSessionTrack` below —
+ * every session has that one, so reaching for this is a statement about the
+ * workflow rather than a fallback when the other is missing.
+ */
+export interface SessionWithPublishTrackConf extends AbstractSessionModel {
   // returns the added config, or undefined if it was invalid (surfaced as a
-  // snackbar) — see SessionTracks.addTrackConf
-  addTrackConf(
+  // snackbar) — see SessionTracks.publishTrackConf
+  publishTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
   ): AnyConfigurationModel | undefined
 }
-export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
+export function isSessionWithPublishTrackConf(
+  t: unknown,
+): t is SessionWithPublishTrackConf {
   return (
     isSessionModel(t) &&
-    'addTrackConf' in t &&
+    'publishTrackConf' in t &&
     !('disableAddTracks' in t && t.disableAddTracks)
   )
 }
@@ -411,12 +422,12 @@ export function isSessionWithSessionTracks(
  * abstract interface for a session that can be given a track belonging to the
  * session itself.
  *
- * Distinct from `SessionWithAddTracks` on purpose: `addTrackConf` sends an
- * admin's track into the shared config.json, which is right for the "Add track"
- * workflow and wrong for a track a feature stands up on the user's behalf — an
- * admin opening a VCF in the SV inspector does not thereby mean to publish it
- * to every visitor. Carries the same `disableAddTracks` opt-out, so an embed
- * that has turned tracks off does not get one added behind its back.
+ * The default, and what a feature standing a track up on the user's behalf
+ * wants: an admin opening a VCF in the SV inspector does not thereby mean to
+ * publish it to every visitor. Every session mixin defines
+ * `addSessionTrackConf`, so a false here means the host turned tracks off
+ * (`disableAddTracks`) rather than that this product lacks a session scope —
+ * the guard is about permission, not about capability.
  */
 export interface SessionWithAddSessionTrack extends AbstractSessionModel {
   addSessionTrackConf(
@@ -432,6 +443,24 @@ export function isSessionWithAddSessionTrack(
     !('disableAddTracks' in t && t.disableAddTracks)
   )
 }
+
+/**
+ * @deprecated ask `isSessionWithAddSessionTrack` for a track a feature stands
+ * up on the user's behalf, or `isSessionWithPublishTrackConf` in an Add-track
+ * workflow.
+ *
+ * Kept because a prebuilt plugin bundle links it by name off
+ * `JBrowseExports['@jbrowse/core/util']` and cannot be recompiled:
+ * jbrowse-plugin-protein3d 0.8.0 gates its structure-track launch on it
+ * (`(0,ll.isSessionWithAddTracks)(e)?e:void 0`), so dropping the export makes
+ * the call `undefined is not a function` inside the menu builder rather than
+ * failing a build. It answers the session-scoped question now, which is the one
+ * that caller wanted — its launch goes on to `session.addTrackConf`, the
+ * session-scoped alias. `graphgenomeviewer` does not reference either name.
+ *
+ * Nothing in tree may call it; `no-restricted-syntax` says so.
+ */
+export const isSessionWithAddTracks = isSessionWithAddSessionTrack
 
 /** abstract interface for a session that allows adding session assemblies */
 export interface SessionWithAddAssembly extends AbstractSessionModel {

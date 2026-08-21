@@ -3,7 +3,7 @@ import { useState } from 'react'
 import {
   getSession,
   isSessionModelWithConnections,
-  isSessionWithAddTracks,
+  isSessionWithPublishTrackConf,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
@@ -34,7 +34,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
   const session = getSession(model)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
   const hasConnections = isSessionModelWithConnections(session)
-  const hasAddTrack = isSessionWithAddTracks(session)
+  const hasAddTrack = isSessionWithPublishTrackConf(session)
   return hasAddTrack || hasConnections ? (
     <>
       <Fab

@@ -317,8 +317,9 @@ describe('loadHubSpec with sessionTracks', () => {
   })
 
   // the reason addSessionTracks is shared with loadSessionSpec rather than
-  // reimplemented here: `addTrackConf` follows the user, so in admin mode it
-  // writes jbrowse.tracks — the config.json served to every visitor
+  // reimplemented here: a hub's tracks belong to the session whoever is
+  // looking, and `publishTrackConf` next door would write an admin's into
+  // jbrowse.tracks — the config.json served to every visitor
   it('keeps them out of jbrowse.tracks for an admin', () => {
     const { pluginManager, rootModel } = setup({ adminMode: true })
     pendingFetch()

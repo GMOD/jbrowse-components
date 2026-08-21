@@ -35,7 +35,7 @@ interface ControllerView {
 export interface ControllerSession extends IStateTreeNode {
   view: ControllerView
   getTrackById: (trackId: string) => unknown
-  addTrackConf: (conf: TrackConf) => unknown
+  addSessionTrackConf: (conf: TrackConf) => unknown
 }
 
 export function isLooseTrack(
@@ -75,7 +75,7 @@ export function resolveTracks(
       ? guessTrackConf(track, pluginManager, assemblyName)
       : // full configs are stamped here too, not just in the build() catalog
         // seed: a config that first appears through addTrack never passes
-        // through that seed, and would otherwise reach addTrackConf with no
+        // through that seed, and would otherwise reach addSessionTrackConf with no
         // assemblyNames and silently fail to display
         withAssemblyName(track, assemblyName)
     // after the guess, so the adapter has already derived its index sibling
@@ -86,17 +86,19 @@ export function resolveTracks(
 
 /**
  * Register each track config only if the session cannot already resolve it, then
- * show it. The guard matters: `addTrackConf` only dedupes against
- * `sessionTracks`, so re-adding a config already seeded into the config catalog
- * would push a duplicate into `sessionTracks` that then shadows the catalog
- * entry. `getTrackById` resolves catalog + connection + session tracks, so this
- * is idempotent.
+ * show it. `getTrackById` resolves catalog + connection + session tracks, so a
+ * config already seeded into the catalog is left alone rather than shadowed by a
+ * duplicate in `sessionTracks` — which is also what `addSessionTrackConf`
+ * dedupes on, so this states the intent rather than supplying it.
+ *
+ * Session-scoped: these are the host's declared tracks for one embed, not a
+ * catalog an admin curates.
  */
 export function openTracks(session: ControllerSession, tracks: TrackConf[]) {
   for (const conf of tracks) {
     const trackId = conf.trackId as string
     if (!session.getTrackById(trackId)) {
-      session.addTrackConf(conf)
+      session.addSessionTrackConf(conf)
     }
     session.view.showTrack(trackId)
   }

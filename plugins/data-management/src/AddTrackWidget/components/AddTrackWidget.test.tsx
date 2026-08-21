@@ -28,7 +28,7 @@ function getSession() {
       },
     },
   })
-  session.addTrackConf({
+  session.addSessionTrackConf({
     trackId: 'i3jUPmrgMOS',
     type: 'FeatureTrack',
     name: 'Filter Test',

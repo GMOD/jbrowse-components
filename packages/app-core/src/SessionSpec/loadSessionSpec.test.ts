@@ -422,9 +422,13 @@ test('a spec view nesting its settings under init is told where they go', async 
   )
 })
 
-// `sessionTracks` names the session, but `addTrackConf` follows the user (an
-// admin's lands in the config every visitor loads), so the spec has to ask for
-// the session-scoped adder where one exists — same rule as sessionConnections
+// `sessionTracks` names the session whoever is looking, so the spec asks for the
+// session-scoped adder and nothing else. There is no fallback left to test: the
+// base tracks mixin defines `addSessionTrackConf` too, so every product has one
+// — desktop's is its own config file, which is the same place its session is
+// saved. `publishTrackConf` is present here and must stay untouched, because an
+// admin loading a spec link must not thereby rewrite the config.json every
+// visitor is served.
 describe('sessionTracks', () => {
   const TRACK = { trackId: 't1', type: 'FeatureTrack' }
 
@@ -432,12 +436,12 @@ describe('sessionTracks', () => {
     const addedVia: string[] = []
     const { session, pluginManager } = setup({})
     Object.assign(session, {
-      // isSessionWithAddTracks goes through isSessionModel, which keys on these
-      // two rather than on MST node-ness
+      // isSessionWithAddSessionTrack goes through isSessionModel, which keys on
+      // these two rather than on MST node-ness
       rpcManager: {},
       configuration: {},
-      addTrackConf: (conf: Record<string, unknown>) => {
-        addedVia.push('addTrackConf')
+      publishTrackConf: (conf: Record<string, unknown>) => {
+        addedVia.push('publishTrackConf')
         return conf
       },
       ...(sessionScoped
@@ -449,7 +453,7 @@ describe('sessionTracks', () => {
           }
         : undefined),
     })
-    return { pluginManager, addedVia }
+    return { session, pluginManager, addedVia }
   }
 
   it('adds to the session, not to wherever the user edits land', async () => {
@@ -460,16 +464,19 @@ describe('sessionTracks', () => {
     expect(addedVia).toEqual(['addSessionTrackConf'])
   })
 
-  // Desktop and the embedded circular view have no sessionTracks array; their
-  // one destination is the config, which is saved with the session there anyway
-  it('falls back to addTrackConf where there is no session-scoped adder', async () => {
-    const { pluginManager, addedVia } = setupWithTracks({
+  // A session with no session-scoped adder at all is now only reachable by
+  // hand-building one, and it says so rather than quietly publishing.
+  it('declines, rather than publishing, without a session-scoped adder', async () => {
+    const { session, pluginManager, addedVia } = setupWithTracks({
       sessionScoped: false,
     })
 
     await loadSessionSpec({ sessionTracks: [TRACK], views: [] }, pluginManager)
 
-    expect(addedVia).toEqual(['addTrackConf'])
+    expect(addedVia).toEqual([])
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining('cannot add tracks to a session'),
+    )
   })
 })
 

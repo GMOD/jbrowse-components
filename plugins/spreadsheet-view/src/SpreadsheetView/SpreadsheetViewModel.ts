@@ -1,6 +1,5 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession } from '@jbrowse/core/util'
-import { isSessionWithAddSessionTrack } from '@jbrowse/core/util/types'
+import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { reaction } from 'mobx'

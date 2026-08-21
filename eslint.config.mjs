@@ -201,8 +201,22 @@ const noHandRolledAttach = {
     'Call installPerRegionLifecycle / installKeyedLifecycle / installGlobalLifecycle rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installers own that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079 and packages/render-core/CLAUDE.md.',
 }
 
+// `session.addTrackConf` survives only so that prebuilt plugin bundles keep
+// working (protein3d calls it), and it now means `addSessionTrackConf`. Nothing
+// in tree may reach for it: the name reads like the general capability and used
+// to publish an admin's track into the config.json every visitor is served,
+// which is how the blat hits, the consensus VCF, the motif scans and the
+// derivative-allele labels each shipped one dead entry per click.
+const noSessionAddTrackConf = {
+  selector:
+    "MemberExpression[object.name=/^(session|sess)$/][property.name='addTrackConf'], Identifier[name='isSessionWithAddTracks']",
+  message:
+    'Call `session.addSessionTrackConf` for a track a feature stands up on the user’s behalf, or `session.publishTrackConf` in an Add-track workflow where an admin means to add it for the whole site — and gate on the matching `isSessionWithAddSessionTrack` / `isSessionWithPublishTrackConf`. `addTrackConf` and `isSessionWithAddTracks` survive only for prebuilt plugin bundles. See the tracks section of CLAUDE.md.',
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
+  noSessionAddTrackConf,
   noSetSlot,
   noTrackWidthPx,
   noSamFlagReverse,
@@ -666,6 +680,22 @@ export default defineConfig(
       'no-restricted-syntax': [
         'error',
         ...sourceRestrictedSyntax.filter(s => s !== noHandRolledAttach),
+      ],
+    },
+  },
+  // The deprecated `isSessionWithAddTracks` alias, plus the two barrels that
+  // have to keep re-exporting it for the prebuilt bundles that link it.
+  {
+    files: [
+      'packages/core/src/util/types/index.ts',
+      'packages/core/src/util/index.ts',
+      'packages/core/src/ReExports/publicUtil.ts',
+    ],
+    ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...sourceRestrictedSyntax.filter(s => s !== noSessionAddTrackConf),
       ],
     },
   },

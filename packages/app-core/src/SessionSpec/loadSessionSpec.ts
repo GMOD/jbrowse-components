@@ -1,6 +1,6 @@
 import {
   isSessionWithAddAssembly,
-  isSessionWithAddTracks,
+  isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
@@ -70,32 +70,10 @@ function isSessionWithSpecConnections(
   )
 }
 
-// Same split as the connections above, one layer down: `addTrackConf` follows
-// the user, so in jbrowse-web's admin mode it writes `jbrowse.tracks` — the
-// config.json served to everyone. A spec key named `sessionTracks` means the
-// session whoever is looking, so prefer the session-scoped adder where the
-// application has one (jbrowse-web, the embedded LGV). Desktop and the embedded
-// circular view have only `addTrackConf`, and its one destination is the right
-// one there.
-interface SessionWithAddSessionTracks {
-  addSessionTrackConf: (
-    conf: Record<string, unknown>,
-  ) => AnyConfigurationModel | undefined
-}
-function isSessionWithAddSessionTracks(
-  session: AbstractSessionModel,
-): session is AbstractSessionModel & SessionWithAddSessionTracks {
-  return 'addSessionTrackConf' in session
-}
-
 /**
  * Register `&sessionTracks=` / a spec's `sessionTracks` into a session.
  *
- * Exported because the hub launch needs it too and must not reimplement it: the
- * admin-mode hazard above is invisible from a call site (`addTrackConf`
- * succeeds, and only an admin's config.json is quietly rewritten for every
- * visitor), so a second copy that forgot the session-scoped adder would look
- * correct and test correct everywhere except the one deployment it matters in.
+ * Exported because the hub launch needs it too and must not reimplement it.
  *
  * A track that fails to register does not cost the caller the rest of them —
  * same reasoning as the per-connection and per-view try/catch around it, one
@@ -108,7 +86,7 @@ export function addSessionTracks(
   if (!tracks.length) {
     return
   }
-  if (!isSessionWithAddTracks(session)) {
+  if (!isSessionWithAddSessionTrack(session)) {
     session?.notifyError(
       'This link has "sessionTracks", but this application cannot add tracks to a session',
     )
@@ -117,11 +95,7 @@ export function addSessionTracks(
   for (const track of tracks) {
     const label = typeof track.trackId === 'string' ? track.trackId : '?'
     try {
-      if (isSessionWithAddSessionTracks(session)) {
-        session.addSessionTrackConf(track)
-      } else {
-        session.addTrackConf(track)
-      }
+      session.addSessionTrackConf(track)
     } catch (e) {
       console.error(e)
       session.notifyError(

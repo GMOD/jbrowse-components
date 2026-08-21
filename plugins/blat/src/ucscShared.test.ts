@@ -51,7 +51,7 @@ function fakeSession() {
         },
       },
     ],
-    addTrackConf: (conf: Record<string, unknown>) => {
+    addSessionTrackConf: (conf: Record<string, unknown>) => {
       calls.addedTracks.push(conf)
       return conf
     },

@@ -56,7 +56,7 @@ async function openStack(rowCount: number) {
     session.addAssemblyConf(assembly(name))
   }
   for (let i = 0; i < rowCount - 1; i++) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       type: 'SyntenyTrack',
       trackId: `synteny${i}`,
       name: `synteny${i}`,
@@ -110,7 +110,7 @@ test('an appended level matches a hand-resized stack', async () => {
 // track on it.
 test('a track added in the same tick shows on the level it was added for', async () => {
   const { session, view } = await openStack(2)
-  session.addTrackConf({
+  session.addSessionTrackConf({
     type: 'SyntenyTrack',
     trackId: 'uploaded',
     name: 'uploaded',

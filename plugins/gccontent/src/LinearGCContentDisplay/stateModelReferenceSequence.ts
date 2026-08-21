@@ -3,7 +3,7 @@ import {
   addAndShowTrack,
   getContainingView,
   getSession,
-  isSessionWithAddTracks,
+  isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -67,7 +67,7 @@ export default function stateModelF(
        */
       addGCContentTrack() {
         const session = getSession(self)
-        if (isSessionWithAddTracks(session)) {
+        if (isSessionWithAddSessionTrack(session)) {
           const conf = makeGCContentTrackConf({
             assemblyNames: getTrackAssemblyNames(self.parentTrack),
             sequenceAdapter: getConf(self.parentTrack, 'adapter'),

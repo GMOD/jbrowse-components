@@ -77,7 +77,7 @@ test('adds every config in a pasted array', () => {
 // pasting a config that reuses an id would otherwise be a confusing no-op
 test('rejects a config reusing an existing trackId, adding nothing', () => {
   const { session, widget } = setup()
-  session.addTrackConf(trackConf('taken'))
+  session.addSessionTrackConf(trackConf('taken'))
   expect(() => {
     doPasteConfigSubmit({
       model: widget,

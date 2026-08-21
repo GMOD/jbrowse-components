@@ -86,7 +86,7 @@ function trackIds(model: HierarchicalTrackSelectorModel) {
 test('a view on an assembly the session lacks offers no tracks', async () => {
   const session = createTestSession({ adminMode: true })
   session.addAssemblyConf(assemblyConf('volMyt1'))
-  session.addTrackConf(trackConf('vt', ['volMyt1']))
+  session.addSessionTrackConf(trackConf('vt', ['volMyt1']))
 
   expect(trackIds(await selectorFor(session, 'ghost'))).toEqual([])
   expect(trackIds(await selectorFor(session, 'volMyt1'))).toEqual([
@@ -98,7 +98,7 @@ test('a view on an assembly the session lacks offers no tracks', async () => {
 test('a track configured against an assembly alias still matches', async () => {
   const session = createTestSession({ adminMode: true })
   session.addAssemblyConf(assemblyConf('GRCh38', ['hg38']))
-  session.addTrackConf(trackConf('aliased', ['hg38']))
+  session.addSessionTrackConf(trackConf('aliased', ['hg38']))
 
   expect(trackIds(await selectorFor(session, 'GRCh38'))).toEqual([
     'GRCh38-seq',

@@ -33,7 +33,7 @@ function addBlobTrack(page: Page) {
         blob: new File([bytes], 'volvox_microarray.bw'),
       })
       const session = w.JBrowseSession
-      session.addTrackConf({
+      session.addSessionTrackConf({
         trackId,
         type: 'QuantitativeTrack',
         name: 'local file via blob',

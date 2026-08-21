@@ -37,7 +37,7 @@ function openTrackSelector() {
       },
     },
   })
-  session.addTrackConf({
+  session.addSessionTrackConf({
     trackId: 'genes',
     name: 'Genes',
     assemblyNames: ['volMyt1'],

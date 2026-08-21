@@ -46,7 +46,7 @@ async function setup() {
       },
     },
   })
-  session.addTrackConf({
+  session.addSessionTrackConf({
     trackId: 'genes',
     name: 'Volvox genes',
     assemblyNames: ['volvox'],

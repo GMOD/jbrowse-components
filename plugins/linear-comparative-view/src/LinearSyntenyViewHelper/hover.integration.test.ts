@@ -50,7 +50,7 @@ async function setup() {
   view.setWidth(800)
   await when(() => view.init === undefined)
 
-  session.addTrackConf({
+  session.addSessionTrackConf({
     trackId: 'pafTrack',
     name: 'pafTrack',
     type: 'SyntenyTrack',

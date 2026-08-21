@@ -33,8 +33,8 @@ Losing `sessionTracks` in silence is the finding. It is frequently the whole
 point of a shared session — the tracks the sender added — and the views that
 reference those track ids survive, so the result is a session whose views name
 tracks that no longer exist. Desktop has no `sessionTracks`: its session puts
-tracks in the config (`addTrackConf`), which `loadSessionSpec` already notes is
-the one right destination there.
+tracks in the config, which is where its `addSessionTrackConf` lands them — a
+desktop config.json is the one user's own file, so the two scopes coincide.
 
 So this is the inverse of `planWebExport`, not a decode, and it needs three
 translations before the snapshot is applied:

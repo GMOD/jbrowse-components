@@ -17,7 +17,7 @@ import {
   createStatusFanOut,
   getRpcSessionId,
   getSession,
-  isSessionWithAddTracks,
+  isSessionWithAddSessionTrack,
   locStringsToRegions,
   saveAs,
   statusProgressLabel,
@@ -258,7 +258,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           <Button
             variant="contained"
             onClick={() => {
-              if (!isSessionWithAddTracks(session)) {
+              if (!isSessionWithAddSessionTrack(session)) {
                 session.notify('This session cannot add tracks', 'warning')
                 return
               }

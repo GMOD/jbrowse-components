@@ -6,7 +6,7 @@ import {
   getSession,
   isSessionModelWithConnectionEditing,
   isSessionModelWithConnections,
-  isSessionWithAddTracks,
+  isSessionWithPublishTrackConf,
 } from '@jbrowse/core/util'
 import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
@@ -60,7 +60,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
               setFacetedOpen(true)
             },
           },
-          ...(isSessionWithAddTracks(session)
+          ...(isSessionWithPublishTrackConf(session)
             ? [
                 {
                   label: 'Add track...',

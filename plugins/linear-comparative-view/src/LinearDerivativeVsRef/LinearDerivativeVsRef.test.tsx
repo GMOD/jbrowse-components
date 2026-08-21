@@ -149,7 +149,7 @@ describe('the split drawing above the panel cap', () => {
 // The segments track is a per-launch `FromConfigAdapter` over a temporary
 // assembly, so no list outside this view has any use for its config and any list
 // that holds one needs somebody to come back and sweep it. Both destinations this
-// could have used are wrong for that reason: `addTrackConf` publishes an admin's
+// could have used are wrong for that reason: `publishTrackConf` puts an admin's
 // into the config.json every visitor is served, and `addSessionTrackConf` leaves a
 // dead `derivative-segments-<stamp>` in the snapshot the user saves and shares —
 // one more per click, since the stamp defeats the dedupe. So the assertion is that
@@ -206,7 +206,7 @@ test('the segments config rides on the track, reaching no session list', async (
     }))
     .actions(() => ({
       addTemporaryAssembly() {},
-      addTrackConf(conf: { trackId: string }) {
+      publishTrackConf(conf: { trackId: string }) {
         calls.push(`shared:${conf.trackId}`)
       },
       addSessionTrackConf(conf: { trackId: string }) {

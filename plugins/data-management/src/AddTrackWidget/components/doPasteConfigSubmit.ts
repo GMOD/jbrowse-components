@@ -2,7 +2,7 @@ import {
   containerDisplaysAssembly,
   finishAddTrack,
   getSession,
-  isSessionWithAddTracks,
+  isSessionWithPublishTrackConf,
 } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
@@ -20,10 +20,10 @@ export function doPasteConfigSubmit({
   const session = getSession(model)
   const confs = parseTrackConfigs(jsonText)
 
-  if (!isSessionWithAddTracks(session)) {
+  if (!isSessionWithPublishTrackConf(session)) {
     throw new Error("Can't add tracks to this session")
   } else {
-    // addTrackConf silently returns the existing track on a trackId collision,
+    // publishTrackConf silently returns the existing track on a trackId collision,
     // so a pasted config reusing an id would be a confusing no-op; reject it up
     // front instead.
     const existing = confs.find(conf => session.getTrackById(conf.trackId))
@@ -36,10 +36,10 @@ export function doPasteConfigSubmit({
     const notShown: string[] = []
     transaction(() => {
       for (const conf of confs) {
-        // addTrackConf returns undefined for an invalid config, which it
+        // publishTrackConf returns undefined for an invalid config, which it
         // already surfaced as an error snackbar; don't show or warn about a
         // track that wasn't added.
-        if (session.addTrackConf(conf)) {
+        if (session.publishTrackConf(conf)) {
           if (containerDisplaysAssembly(trackContainer, conf.assemblyNames)) {
             trackContainer?.showTrack(conf.trackId)
           } else {

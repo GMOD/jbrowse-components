@@ -53,7 +53,10 @@ function setup({
       : undefined,
     notify: (msg: string) => calls.notified.push(msg),
     ...(canAddTracks
-      ? { addTrackConf: (conf: { trackId: string }) => calls.added.push(conf) }
+      ? {
+          addSessionTrackConf: (conf: { trackId: string }) =>
+            calls.added.push(conf),
+        }
       : {}),
   }
   const model = {

@@ -106,7 +106,7 @@ test('overlay highlights render inside the view clip group', async () => {
 test('an errored track fails the export, naming every track that failed', async () => {
   const { session, view } = await setup()
   for (const trackId of ['synteny1', 'synteny2']) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       trackId,
       name: trackId,
       type: 'SyntenyTrack',
@@ -177,7 +177,7 @@ test('the color legend is exported outside the clip, at the top right', async ()
 // the same getter through three more call sites of their own.
 test('an exported attribute ramp is labelled with the loaded span, not 0', async () => {
   const { session, view } = await setup()
-  session.addTrackConf({
+  session.addSessionTrackConf({
     trackId: 'ortho',
     name: 'ortho',
     type: 'SyntenyTrack',

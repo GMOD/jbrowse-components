@@ -92,7 +92,7 @@ async function setup() {
   await when(() => view.initialized)
 
   for (const trackId of ['trackA', 'trackB']) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       trackId,
       name: trackId,
       type: 'SyntenyTrack',

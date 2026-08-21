@@ -1,11 +1,11 @@
 import {
   isSessionModelWithWidgets,
-  isSessionWithAddTracks,
+  isSessionWithPublishTrackConf,
 } from './types/index.ts'
 
 import type {
   AbstractSessionModel,
-  SessionWithAddTracks,
+  SessionWithPublishTrackConf,
   TrackContainer,
 } from './types/index.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -73,10 +73,10 @@ export function finishAddTrack(
  *   target.
  * - It shows a track whose assembly the container doesn't display, which is
  *   silently nothing on screen. Say so instead.
- * - It dismisses the widget even when `addTrackConf` rejected the config,
+ * - It dismisses the widget even when `publishTrackConf` rejected the config,
  *   wiping the form behind the error snackbar.
  *
- * Returns the added config, or undefined when `addTrackConf` rejected it — it
+ * Returns the added config, or undefined when `publishTrackConf` rejected it — it
  * has already surfaced its own error, and a second, vaguer snackbar on top of
  * that helps nobody.
  */
@@ -87,16 +87,16 @@ export function addTrackFromWidget({
 }: {
   model: AddTrackWidgetSelf
   session: AbstractSessionModel
-  conf: Parameters<SessionWithAddTracks['addTrackConf']>[0] & {
+  conf: Parameters<SessionWithPublishTrackConf['publishTrackConf']>[0] & {
     trackId: string
     name?: string
     assemblyNames?: (string | undefined)[]
   }
 }) {
-  if (!isSessionWithAddTracks(session)) {
+  if (!isSessionWithPublishTrackConf(session)) {
     throw new Error("Can't add tracks to this session")
   }
-  const added = session.addTrackConf(conf)
+  const added = session.publishTrackConf(conf)
   if (!added) {
     return undefined
   }

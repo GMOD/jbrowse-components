@@ -43,7 +43,7 @@ test('copied track gets unique displayIds derived from the new trackId', () => {
     d.displayId = `${snap.trackId}-${d.type}`
   }
 
-  const added = session.addTrackConf(snap) as { trackId: string }
+  const added = session.publishTrackConf(snap) as { trackId: string }
   const copy = showAndSnapshot(view, added.trackId)
 
   const origIds = new Set(orig.displays!.map(d => d.displayId))

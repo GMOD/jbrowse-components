@@ -58,7 +58,7 @@ interface TrackActionSession<C> {
     config: AnyConfigurationModel | { trackId: string },
     opts?: { expandedDisplayId?: string },
   ) => void
-  addTrackConf: (conf: C) => unknown
+  publishTrackConf: (conf: C) => unknown
   deleteTrackConf: (conf: AnyConfigurationModel) => void
   resetTrackConfiguration?: (trackId: string) => void
 }
@@ -104,7 +104,7 @@ export function trackActionItems<C extends { trackId: string }>({
       icon: CopyIcon,
       disabled: isRefSeq,
       onClick: () => {
-        session.addTrackConf(makeCopy())
+        session.publishTrackConf(makeCopy())
       },
     },
     {
@@ -113,7 +113,7 @@ export function trackActionItems<C extends { trackId: string }>({
       disabled: isRefSeq || !view,
       onClick: () => {
         const snap = makeCopy()
-        if (session.addTrackConf(snap)) {
+        if (session.publishTrackConf(snap)) {
           view!.showTrack(snap.trackId)
         }
       },

@@ -32,7 +32,7 @@ function setup(trackCount: number) {
     },
   })
   for (let i = 0; i < trackCount; i++) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       trackId: `track${i}`,
       // only one track matches a "zzz" filter, so filtering shrinks the tree
       // below the viewport height

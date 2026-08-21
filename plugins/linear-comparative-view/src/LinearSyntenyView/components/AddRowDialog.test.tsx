@@ -42,7 +42,7 @@ async function openDialog(datasets: string[][], openTracks: string[] = []) {
   session.addAssemblyConf(assembly('volvox2'))
   session.addAssemblyConf(assembly('volvox3'))
   for (const [i, assemblyNames] of datasets.entries()) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       type: 'SyntenyTrack',
       trackId: `dataset${i}`,
       name: `dataset ${i}`,

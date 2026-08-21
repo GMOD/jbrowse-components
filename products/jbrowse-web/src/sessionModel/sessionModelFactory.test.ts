@@ -248,17 +248,46 @@ describe('JBrowseWebSessionModel', () => {
       },
     )
 
-    it('an admin addTrackConf writes the config, not the session', () => {
+    it('an admin publishTrackConf writes the config, not the session', () => {
       const session = createTestSession({ adminMode: true })
-      session.addTrackConf(trackSnap)
+      session.publishTrackConf(trackSnap)
       expect(session.sessionTracks).toHaveLength(0)
       expect(
         session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
       ).toEqual(['spec_track'])
     })
 
-    it('a non-admin addTrackConf writes the session, not the config', () => {
+    it('a non-admin publishTrackConf writes the session, not the config', () => {
       const session = createTestSession({})
+      session.publishTrackConf(trackSnap)
+      expect(session.sessionTracks.map(t => t.trackId)).toEqual(['spec_track'])
+      expect(session.jbrowse.tracks).toHaveLength(0)
+    })
+
+    // The whole point of the split: the destination an admin's click reaches is
+    // decided by WHICH action the feature called, not by the config it built.
+    // One name doing both is how the blat hits, the consensus VCF, the motif
+    // scans and the derivative-allele labels each shipped a dead
+    // `<name>-<stamp>` into the config.json every visitor is served, one more
+    // per click.
+    it('an admin gets the session for addSessionTrackConf and the config for publishTrackConf', () => {
+      const session = createTestSession({ adminMode: true })
+      session.addSessionTrackConf({ ...trackSnap, trackId: 'feature_track' })
+      session.publishTrackConf({ ...trackSnap, trackId: 'catalog_track' })
+      expect(session.sessionTracks.map(t => t.trackId)).toEqual([
+        'feature_track',
+      ])
+      expect(
+        session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
+      ).toEqual(['catalog_track'])
+    })
+
+    // `addTrackConf` outlived its own meaning: it survives only because
+    // jbrowse-plugin-protein3d 0.8.0 calls it by name off a bundle that cannot
+    // be recompiled, and it now means the session. An admin reaching it through
+    // that bundle no longer publishes.
+    it('the deprecated addTrackConf alias writes the session even for an admin', () => {
+      const session = createTestSession({ adminMode: true })
       session.addTrackConf(trackSnap)
       expect(session.sessionTracks.map(t => t.trackId)).toEqual(['spec_track'])
       expect(session.jbrowse.tracks).toHaveLength(0)

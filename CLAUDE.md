@@ -45,6 +45,18 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - Write observers inline — `observer(function(){})`. The `observer(F)` form gets
   compiled by React Compiler and can stale a MobX read.
 
+## Tracks
+
+- **`addSessionTrackConf` is the default destination.** A track a feature stands
+  up on the user's behalf — a search result, a computed consensus, a
+  reconstruction's labels — is not a catalog entry. `publishTrackConf` is the
+  Add-track workflows only, where an admin means to add it for the whole site.
+  Gate on the matching `isSessionWithAddSessionTrack` /
+  `isSessionWithPublishTrackConf`.
+- `session.addTrackConf` and `isSessionWithAddTracks` survive only for prebuilt
+  plugin bundles and mean the session now — `no-restricted-syntax` fails a call
+  and says why.
+
 ## Names
 
 - **Main thread**: user-supplied refName text goes through

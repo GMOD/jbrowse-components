@@ -29,7 +29,7 @@ function setup() {
   })
   // names chosen so insertion order (charlie, alpha, bravo) differs from sorted
   for (const name of ['charlie', 'alpha', 'bravo']) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       trackId: name,
       name,
       assemblyNames: ['volMyt1'],
@@ -170,7 +170,7 @@ describe('live track source', () => {
     const dispose = autorun(() => faceted.rows.length)
     const before = faceted.rows.length
 
-    session.addTrackConf({
+    session.addSessionTrackConf({
       trackId: 'delta',
       name: 'delta',
       assemblyNames: ['volMyt1'],

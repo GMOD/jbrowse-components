@@ -340,7 +340,7 @@ test('localstorage preference - sorting track names', async () => {
   const session = createTestSession()
 
   for (const track of shuffle(conf.tracks)) {
-    session.addTrackConf(track)
+    session.publishTrackConf(track)
   }
 
   const firstView = session.addView('LinearGenomeView', {
@@ -1870,7 +1870,7 @@ function addTestDataWithMetadata(
   })
 
   for (let i = 0; i < 10; i++) {
-    session.addTrackConf({
+    session.publishTrackConf({
       trackId: `metaTrack${i}`,
       name: `Meta Track ${i}`,
       assemblyNames: ['volMyt1'],
@@ -1912,14 +1912,14 @@ function addTestAssembly(session: ReturnType<typeof createTestSession>) {
 
 function addTestData(session: ReturnType<typeof createTestSession>) {
   addTestAssembly(session)
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'fooC',
     name: 'fooC',
     assemblyNames: ['volMyt1'],
     type: 'FeatureTrack',
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'barC',
     name: 'barC',
     assemblyNames: ['volMyt1'],
@@ -1946,7 +1946,7 @@ function addCategorizedTestData(session: ReturnType<typeof createTestSession>) {
       },
     },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'fooC',
     name: 'fooC',
     assemblyNames: ['volMyt1'],
@@ -1954,7 +1954,7 @@ function addCategorizedTestData(session: ReturnType<typeof createTestSession>) {
     category: ['Foo Category'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'barC',
     name: 'barC',
     assemblyNames: ['volMyt1'],
@@ -1988,7 +1988,7 @@ function addTestDataWithCategories(
     },
   })
 
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'geneTrack1',
     name: 'Gene Track 1',
     assemblyNames: ['volMyt1'],
@@ -1996,7 +1996,7 @@ function addTestDataWithCategories(
     category: ['Genes'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'geneTrack2',
     name: 'Gene Track 2',
     assemblyNames: ['volMyt1'],
@@ -2004,7 +2004,7 @@ function addTestDataWithCategories(
     category: ['Genes'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'alignmentTrack1',
     name: 'Alignment Track 1',
     assemblyNames: ['volMyt1'],
@@ -2012,7 +2012,7 @@ function addTestDataWithCategories(
     category: ['Alignments'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'variantTrack1',
     name: 'Variant Track 1',
     assemblyNames: ['volMyt1'],
@@ -2046,7 +2046,7 @@ function addTestDataWithDeepCategories(
     },
   })
 
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'h3k4me3',
     name: 'H3K4me3',
     assemblyNames: ['volMyt1'],
@@ -2054,7 +2054,7 @@ function addTestDataWithDeepCategories(
     category: ['Epigenomics', 'Histone Marks'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'h3k27ac',
     name: 'H3K27ac',
     assemblyNames: ['volMyt1'],
@@ -2062,7 +2062,7 @@ function addTestDataWithDeepCategories(
     category: ['Epigenomics', 'Histone Marks'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
-  session.addTrackConf({
+  session.publishTrackConf({
     trackId: 'regularTrack',
     name: 'Regular Track',
     assemblyNames: ['volMyt1'],

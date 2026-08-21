@@ -49,11 +49,13 @@ async function setup() {
   for (const name of ['hg38', 'hg19', 'mm10', 'rn7']) {
     session.addAssemblyConf(assemblyConf(name))
   }
-  session.addTrackConf(syntenyConf('hg19_vs_hg38', ['hg19', 'hg38']))
-  session.addTrackConf(syntenyConf('hg38_vs_mm10', ['hg38', 'mm10']))
-  session.addTrackConf(syntenyConf('mm10_vs_rn7', ['mm10', 'rn7']))
-  session.addTrackConf(syntenyConf('allVsAll', ['hg38', 'hg19', 'mm10', 'rn7']))
-  session.addTrackConf(syntenyConf('selfHg38', ['hg38', 'hg38']))
+  session.addSessionTrackConf(syntenyConf('hg19_vs_hg38', ['hg19', 'hg38']))
+  session.addSessionTrackConf(syntenyConf('hg38_vs_mm10', ['hg38', 'mm10']))
+  session.addSessionTrackConf(syntenyConf('mm10_vs_rn7', ['mm10', 'rn7']))
+  session.addSessionTrackConf(
+    syntenyConf('allVsAll', ['hg38', 'hg19', 'mm10', 'rn7']),
+  )
+  session.addSessionTrackConf(syntenyConf('selfHg38', ['hg38', 'hg38']))
   const { assemblyManager } = session
   await when(
     () =>

@@ -8,7 +8,7 @@ import {
   addAndShowTrack,
   getContainingTrack,
   getSession,
-  isSessionWithAddTracks,
+  isSessionWithAddSessionTrack,
   makeTrackId,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
@@ -338,7 +338,7 @@ export function modelFactory(
       addGCContentTrack() {
         const session = getSession(self)
         const track = getContainingTrack(self)
-        if (isSessionWithAddTracks(session)) {
+        if (isSessionWithAddSessionTrack(session)) {
           const name = 'GC content'
           addAndShowTrack(
             session,

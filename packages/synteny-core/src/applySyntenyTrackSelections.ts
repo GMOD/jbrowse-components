@@ -1,4 +1,4 @@
-import { isSessionWithAddTracks } from '@jbrowse/core/util'
+import { isSessionWithAddSessionTrack } from '@jbrowse/core/util'
 import { allSessionTracks } from '@jbrowse/core/util/tracks'
 import { toJS } from 'mobx'
 
@@ -33,7 +33,7 @@ export function applySyntenyTrackSelections({
   /** `level` is the pair index: the band between rows `level` and `level + 1` */
   showTrack: (trackId: string, level: number) => void
 }) {
-  if (!isSessionWithAddTracks(session)) {
+  if (!isSessionWithAddSessionTrack(session)) {
     // the pre-configured case would work, but an upload cannot be added, and
     // silently opening the view without the track the user chose is worse than
     // saying so
@@ -48,7 +48,7 @@ export function applySyntenyTrackSelections({
   })
   for (const [level, action] of actions.entries()) {
     if (action?.kind === 'open') {
-      session.addTrackConf(toJS(action.conf))
+      session.addSessionTrackConf(toJS(action.conf))
       showTrack(action.conf.trackId, level)
     } else if (action?.kind === 'show') {
       showTrack(action.trackId, level)

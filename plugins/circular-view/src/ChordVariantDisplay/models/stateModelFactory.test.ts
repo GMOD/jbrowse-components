@@ -32,7 +32,7 @@ function addConf(session: ReturnType<typeof createTestSession>) {
       },
     },
   })
-  session.addTrackConf({
+  session.addSessionTrackConf({
     trackId: 'sv',
     type: 'VariantTrack',
     name: 'my svs',

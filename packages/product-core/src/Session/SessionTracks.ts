@@ -275,7 +275,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     }))
     .actions(self => {
       const {
-        addTrackConf: superAddTrackConf,
+        publishTrackConf: superPublishTrackConf,
         deleteTrackConf: superDeleteTrackConf,
         updateTrackConfiguration: superUpdateTrackConfiguration,
       } = self
@@ -383,12 +383,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * travels with the session when it is saved or shared, and never
          * reaches the config.json the server hands every visitor.
          *
-         * This is the one to call when the track belongs to the session being
-         * built — a session spec's `sessionTracks`, a URL's `&sessionTracks=` —
-         * no matter who is looking. `addTrackConf` below is the one whose
-         * destination depends on that. Mirrors
-         * `addSessionConnectionConf`/`addConnectionConf` in the connections
-         * mixins.
+         * **The default destination.** Everything that is not an Add-track
+         * workflow wants this one, whoever is looking — a session spec's
+         * `sessionTracks`, a URL's `&sessionTracks=`, and every track a feature
+         * stands up on the user's behalf. Mirrors `addSessionConnectionConf` in
+         * the connections mixins.
          */
         addSessionTrackConf(trackConf: AnyConfiguration) {
           return addToSession(trackConf)
@@ -396,19 +395,37 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Add a track config wherever *this user's* edits belong: an admin's
-         * into the shared config (`jbrowse.tracks`, which the admin server
-         * writes back into config.json for every visitor), everyone else's into
-         * the session. Two destinations behind one name, so call it only where
-         * that really is the intent — the "Add track" workflows, where an admin
-         * adding a track means to add it for the whole site. Anything that
-         * means one destination should say which: `addSessionTrackConf` above
-         * for the session, `jbrowse.addTrackConf` for the config.
+         * Publish a track config to the shared catalog if this user can, and
+         * fall back to their session if they cannot: an admin's goes to
+         * `jbrowse.tracks`, which the admin server writes back into the
+         * config.json every visitor is served; everyone else's goes to
+         * `sessionTracks`.
+         *
+         * **Only the "Add track" workflows.** Those are where an admin adding a
+         * track means to add it for the whole site. A track a feature stands up
+         * on the user's behalf — a search result, a computed consensus, a
+         * reconstruction's segment labels — is not a catalog entry, and one
+         * admin click on this publishes it to every visitor, again on the next
+         * click, with a per-launch trackId that defeats the dedupe.
+         * `addSessionTrackConf` above is the destination for those.
+         */
+        publishTrackConf(trackConf: AnyConfiguration) {
+          return self.adminMode
+            ? superPublishTrackConf(trackConf)
+            : addToSession(trackConf)
+        },
+
+        /**
+         * #action
+         * @deprecated call `addSessionTrackConf` or `publishTrackConf`.
+         *
+         * The session-scoped add under its old name, for the prebuilt plugin
+         * bundles that reach it by name at runtime. See the base mixin's copy
+         * for why it survives and why it now means the session; nothing in tree
+         * may call it.
          */
         addTrackConf(trackConf: AnyConfiguration) {
-          return self.adminMode
-            ? superAddTrackConf(trackConf)
-            : addToSession(trackConf)
+          return addToSession(trackConf)
         },
 
         /**

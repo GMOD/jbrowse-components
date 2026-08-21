@@ -59,7 +59,7 @@ async function openSyntenyView() {
 // that placed it on one contig alone would look like a follow that did nothing.
 async function openTwoContigView() {
   const { session } = getTestSession()
-  const added = session.addTrackConf({
+  const added = session.publishTrackConf({
     type: 'SyntenyTrack',
     trackId: 'volvox_contig_swap',
     name: 'volvox_contig_swap',

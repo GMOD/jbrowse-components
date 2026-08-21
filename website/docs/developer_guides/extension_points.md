@@ -221,7 +221,10 @@ menu:
 ```typescript
 import { readConfObject } from '@jbrowse/core/configuration'
 import { addExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
-import { addAndShowTrack, isSessionWithAddTracks } from '@jbrowse/core/util'
+import {
+  addAndShowTrack,
+  isSessionWithAddSessionTrack,
+} from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import { makeGCContentTrackConf } from './makeGCContentTrackConf.ts'
@@ -239,7 +242,7 @@ export default function GCContentExtraTrackMenuItemsF(
 ) {
   addExtraTrackMenuItems(pluginManager, ({ session, config, view }) =>
     readConfObject(config, 'type') === 'ReferenceSequenceTrack' &&
-    isSessionWithAddTracks(session)
+    isSessionWithAddSessionTrack(session)
       ? {
           label: 'Add GC content track',
           onClick: () => {
@@ -1115,7 +1118,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   addMultiTrackMenuItems(pm, ({ session }) =>
     // contributing nothing is `undefined`, not an empty array to spread into
     // someone else's — the accumulated items are not this callback's to see
-    isSessionWithAddTracks(session)
+    isSessionWithAddSessionTrack(session)
       ? {
           label: 'Create multi-wiggle track...',
           onClick: (model: TrackSelectorSelf) => {

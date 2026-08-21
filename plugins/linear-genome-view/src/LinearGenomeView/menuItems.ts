@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/ui/scrollZoomLabels'
 import {
   getSession,
-  isSessionWithAddTracks,
+  isSessionWithAddSessionTrack,
   toLocale,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
@@ -117,7 +117,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
       icon: FolderOpenIcon,
     },
-    ...(isSessionWithAddTracks(session)
+    ...(isSessionWithAddSessionTrack(session)
       ? [
           {
             label: 'Sequence search',

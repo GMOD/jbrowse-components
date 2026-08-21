@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { addMultiTrackMenuItems } from '@jbrowse/core/ui/multiTrackMenuItems'
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
 
 import { addMultiWiggleTrack } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
@@ -34,7 +34,7 @@ function makeTrack({
 }) {
   const { name, tracks } = arg
   const session = getSession(model)
-  if (isSessionWithAddTracks(session)) {
+  if (isSessionWithAddSessionTrack(session)) {
     addMultiWiggleTrack({
       session,
       view: model.view,
@@ -61,7 +61,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   addMultiTrackMenuItems(pm, ({ session }) =>
     // contributing nothing is `undefined`, not an empty array to spread into
     // someone else's — the accumulated items are not this callback's to see
-    isSessionWithAddTracks(session)
+    isSessionWithAddSessionTrack(session)
       ? {
           label: 'Create multi-wiggle track...',
           onClick: (model: TrackSelectorSelf) => {

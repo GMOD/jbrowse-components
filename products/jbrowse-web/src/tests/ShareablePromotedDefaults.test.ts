@@ -202,7 +202,7 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
   // that config rather than a trackConfigDeltas entry
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession & {
-    addTrackConf: (c: unknown) => { trackId: string } | undefined
+    publishTrackConf: (c: unknown) => { trackId: string } | undefined
   }
   const view = session.views[0]!
 
@@ -215,7 +215,7 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
   for (const d of clone.displays) {
     d.displayId = `${clone.trackId}-${d.type}`
   }
-  const added = session.addTrackConf(clone)!
+  const added = session.publishTrackConf(clone)!
   view.showTrack(added.trackId)
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)

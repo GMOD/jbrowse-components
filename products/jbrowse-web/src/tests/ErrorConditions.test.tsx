@@ -1,4 +1,4 @@
-import { isSessionWithAddTracks } from '@jbrowse/core/util'
+import { isSessionWithPublishTrackConf } from '@jbrowse/core/util'
 
 import chromeSizesConfig from '../../test_data/404_chrom_sizes/config.json' with { type: 'json' }
 import brokenTrackConfig from '../../test_data/volvox/config_broken.json' with { type: 'json' }
@@ -58,10 +58,10 @@ test('adding an invalid sessionTrack config surfaces a snackbar, not a crash', a
       brokenTrackConfig,
       false,
     )
-    if (!isSessionWithAddTracks(session)) {
+    if (!isSessionWithPublishTrackConf(session)) {
       throw new Error('session cannot add tracks')
     }
-    const added = session.addTrackConf({
+    const added = session.publishTrackConf({
       type: 'FeatureTrack',
       trackId: 'broken_copy',
       name: 'Broken copy',

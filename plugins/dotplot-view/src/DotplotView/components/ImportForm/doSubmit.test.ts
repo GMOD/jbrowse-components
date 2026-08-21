@@ -48,7 +48,7 @@ function setup(
     tracks,
     // no aliases in these fixtures: every name is already canonical
     assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
-    addTrackConf: (conf: { trackId: string }) => calls.added.push(conf),
+    addSessionTrackConf: (conf: { trackId: string }) => calls.added.push(conf),
   } as unknown as AbstractSessionModel
 
   return { calls, model, session }
@@ -85,7 +85,7 @@ describe('doSubmit', () => {
     const { calls, model, session } = setup({ type: 'userOpened', value: conf })
     doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'mm10' })
     expect(calls.added).toEqual([conf])
-    // showTrack, not toggleTrack: addTrackConf dedupes, so a re-submit would
+    // showTrack, not toggleTrack: addSessionTrackConf dedupes, so a re-submit would
     // otherwise hide the track it just added
     expect(calls.shown).toEqual(['opened'])
     expect(calls.toggled).toEqual([])

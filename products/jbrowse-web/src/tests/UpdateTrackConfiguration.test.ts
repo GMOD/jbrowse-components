@@ -28,7 +28,7 @@ interface TestSession {
   resetTrackConfiguration: (trackId: string) => void
   isTrackOverride: (trackId: string) => boolean
   getTrackActions: (config: AnyConfigurationModel) => { label?: string }[]
-  addTrackConf: (conf: PlainConfig) => AnyConfigurationModel | undefined
+  addSessionTrackConf: (conf: PlainConfig) => AnyConfigurationModel | undefined
   getTrackById: (id: string) => AnyConfigurationModel | undefined
 }
 
@@ -181,14 +181,14 @@ test("an admin's edit clears a shared session's delta for that track", () => {
 
 // Re-adding a config already in the catalog (jbrowse.tracks) must not push a
 // full shadow into sessionTracks -- that silently demotes a catalog track to a
-// session track and drops its delta-override semantics. addTrackConf dedupes
+// session track and drops its delta-override semantics. addSessionTrackConf dedupes
 // against everything getTrackById resolves, not just sessionTracks.
-test('addTrackConf does not shadow an existing catalog track into sessionTracks', () => {
+test('addSessionTrackConf does not shadow an existing catalog track into sessionTracks', () => {
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
 
-  const returned = session.addTrackConf({ ...base, name: 'Re-added' })
+  const returned = session.addSessionTrackConf({ ...base, name: 'Re-added' })
 
   // nothing pushed into sessionTracks; the catalog stays the source of truth
   expect(session.sessionTracks.some(t => t.trackId === TRACK_ID)).toBe(false)

@@ -2,7 +2,11 @@ import { useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AssemblySelector, ErrorBanner, SubmitDialog } from '@jbrowse/core/ui'
-import { getEnv, getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import {
+  getEnv,
+  getSession,
+  isSessionWithAddSessionTrack,
+} from '@jbrowse/core/util'
 import {
   ImportSyntenyOpenCustomTrack,
   defaultSyntenyFileFormats,
@@ -114,8 +118,8 @@ const AddRowDialog = observer(function AddRowDialog({
             })
             handleClose()
           } else if (mode === 'custom' && customTrack && newAssembly) {
-            if (isSessionWithAddTracks(session)) {
-              session.addTrackConf(toJS(customTrack))
+            if (isSessionWithAddSessionTrack(session)) {
+              session.addSessionTrackConf(toJS(customTrack))
               model.appendRow({
                 assembly: newAssembly,
                 syntenyTrackId: customTrack.trackId,

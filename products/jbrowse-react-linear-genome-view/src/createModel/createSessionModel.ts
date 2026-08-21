@@ -5,7 +5,8 @@ import { SessionTracksManagerSessionMixin } from '@jbrowse/product-core'
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
-  SessionWithAddTracks,
+  SessionWithAddSessionTrack,
+  SessionWithPublishTrackConf,
   SessionWithConfigEditing,
   SessionWithConnections,
   SessionWithDrawerWidgets,
@@ -98,9 +99,13 @@ export type _AssertConnections = AssertExtends<
   Instance<SessionStateModel>,
   SessionWithConnections
 >
-export type _AssertAddTracks = AssertExtends<
+export type _AssertAddSessionTrack = AssertExtends<
   Instance<SessionStateModel>,
-  SessionWithAddTracks
+  SessionWithAddSessionTrack
+>
+export type _AssertPublishTrackConf = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithPublishTrackConf
 >
 export type _AssertConfigEditing = AssertExtends<
   Instance<SessionStateModel>,

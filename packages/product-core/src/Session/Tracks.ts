@@ -120,6 +120,56 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * Add a track config to *this session*.
+       *
+       * This mixin's session has no separate session-track store, so the
+       * destination is the jbrowse config — which in the products that compose
+       * it (desktop) is the single user's own file rather than something a
+       * server hands other visitors, so the two scopes are the same place.
+       * Defined here anyway so that every session has it: a feature standing a
+       * track up on the user's behalf can then call one action everywhere
+       * instead of asking which mixin it landed on.
+       * `SessionTracksManagerSessionMixin` overrides it with the real
+       * session-scoped store.
+       */
+      addSessionTrackConf(trackConf: AnyConfiguration) {
+        return self.jbrowse.addTrackConf(trackConf)
+      },
+
+      /**
+       * #action
+       * Add a track config wherever *this user's* catalog edits belong — the
+       * "Add track" workflows, where an admin adding a track means to add it
+       * for the whole site. `SessionTracksManagerSessionMixin` overrides it to
+       * send a non-admin's to the session instead; here there is only the one
+       * destination.
+       *
+       * Anything that is not an Add-track workflow wants
+       * `addSessionTrackConf`: a track a feature stands up on the user's behalf
+       * — a search result, a computed consensus, a reconstruction's labels — is
+       * not a catalog entry, and publishing one writes it into the config.json
+       * every visitor is served, once per click.
+       */
+      publishTrackConf(trackConf: AnyConfiguration) {
+        return self.jbrowse.addTrackConf(trackConf)
+      },
+
+      /**
+       * #action
+       * @deprecated call `addSessionTrackConf` or `publishTrackConf`, which say
+       * which destination they mean.
+       *
+       * Kept because a prebuilt plugin bundle reaches this by name at runtime
+       * and cannot be recompiled — `jbrowse-plugin-protein3d` calls it, and a
+       * member lookup that stops resolving throws nothing at all
+       * (`pluginFacingSessionApi.test.ts` is the guard). It now means the
+       * session, which is the destination every such caller wanted: a track a
+       * plugin stands up for one user is not a catalog entry. Nothing in tree
+       * may call it — `no-restricted-syntax` says so.
+       *
+       * Spelled out rather than delegating through `this`, for the reason
+       * `SessionTracks.addToSession` is a plain closure: an action whose return
+       * type is inferred from a sibling's makes the pair circular.
        */
       addTrackConf(trackConf: AnyConfiguration) {
         return self.jbrowse.addTrackConf(trackConf)

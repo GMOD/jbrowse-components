@@ -2,7 +2,7 @@ import {
   containerDisplaysAssembly,
   finishAddTrack,
   getSession,
-  isSessionWithAddTracks,
+  isSessionWithPublishTrackConf,
   isUriLocation,
   makeTrackId,
   pluralize,
@@ -171,7 +171,7 @@ export function submitBulkTracks({
   assembly: string
 }) {
   const session = getSession(model)
-  if (!isSessionWithAddTracks(session)) {
+  if (!isSessionWithPublishTrackConf(session)) {
     // the other two submit paths (doSubmit, doPasteConfigSubmit) throw the same
     // way; the button catches it and shows an error rather than no-oping
     throw new Error("Can't add tracks to this session")
@@ -182,7 +182,7 @@ export function submitBulkTracks({
   // rebuilt on every keystroke, but a timestamp held in component state is
   // pinned for the life of the mounted widget, so a second submit (after one
   // that failed partway, say) would re-mint the ids of the tracks already
-  // added and addTrackConf would silently hand back those instead.
+  // added and publishTrackConf would silently hand back those instead.
   const timestamp = Date.now()
   let added = 0
   // adding a batch one track at a time otherwise re-renders the track
@@ -194,11 +194,11 @@ export function submitBulkTracks({
         name,
         trackId: makeTrackId({ name, timestamp, index }),
       }
-      // addTrackConf returns undefined for an invalid config, having already
+      // publishTrackConf returns undefined for an invalid config, having already
       // surfaced its own error; showing it would only add a second, vaguer
       // "could not resolve identifier" snackbar on top (see
       // doPasteConfigSubmit, which makes the same check)
-      if (session.addTrackConf(conf)) {
+      if (session.publishTrackConf(conf)) {
         added++
         if (showInView) {
           trackContainer?.showTrack(conf.trackId)

@@ -1,4 +1,4 @@
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
 
 export interface SequenceSearchModel {
   assemblyNames: string[]
@@ -22,8 +22,8 @@ export function addReferenceScanTrack(
 ) {
   const session = getSession(model)
   const assemblyName = model.assemblyNames[0]!
-  if (isSessionWithAddTracks(session)) {
-    session.addTrackConf({
+  if (isSessionWithAddSessionTrack(session)) {
+    session.addSessionTrackConf({
       trackId: args.trackId,
       name: args.name,
       assemblyNames: [assemblyName],

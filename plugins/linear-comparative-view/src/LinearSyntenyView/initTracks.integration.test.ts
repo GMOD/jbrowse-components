@@ -31,7 +31,7 @@ function setup() {
   const session = createTestSession()
   session.addAssemblyConf(assembly('volvox'))
   session.addAssemblyConf(assembly('volvox2'))
-  session.addTrackConf({
+  session.addSessionTrackConf({
     type: 'SyntenyTrack',
     trackId: 'vol_synteny',
     name: 'vol synteny',

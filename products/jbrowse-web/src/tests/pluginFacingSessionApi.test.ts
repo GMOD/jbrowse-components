@@ -1,3 +1,4 @@
+import { isSessionWithAddTracks } from '@jbrowse/core/util'
 import { createTestSession } from '@jbrowse/web/testUtils'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -40,6 +41,9 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // drop one deliberately, delete it in the same commit as the change and say
 // which published plugins you checked.
 const PLUGIN_FACING = {
+  // a deprecated alias since the destination split; the call test below is what
+  // actually holds it, because a name that survives while its meaning moves is
+  // the failure this file exists for
   addTrackConf: 'protein3d',
   // optional-chained at the call site (`session.addTemporaryAssembly?.({...})`),
   // so losing it degrades as silently as setPendingMove did
@@ -103,6 +107,36 @@ test("protein3d's side-by-side launch still splits, called as the plugin calls i
   expect(session.tabContainingView(genome.id).panel.id).not.toBe(
     session.tabContainingView(protein.id).panel.id,
   )
+})
+
+// **A member can also keep its name while its DESTINATION moves**, which the
+// presence list cannot see either. `addTrackConf` used to publish an admin's
+// track into the config.json every visitor is served; it now means the session,
+// because that is what its callers wanted and the two meanings behind one name
+// were shipping dead per-click entries into everyone's config. protein3d reaches
+// it through the guard it also links by name, so both halves are performed here
+// as the published bundle spells them (jbrowse-plugin-protein3d 0.8.0, minified:
+// `(0,ll.isSessionWithAddTracks)(e)?e:void 0` off
+// `JBrowseExports['@jbrowse/core/util']`, then `addTrackConf` on the result).
+//
+// An admin session on purpose: a non-admin lands in the session either way, so
+// only an admin can tell the two destinations apart.
+test("protein3d's structure track still lands, and lands in the session", () => {
+  const session = createTestSession({ adminMode: true }) as any
+  expect(isSessionWithAddTracks(session)).toBe(true)
+
+  const added = session.addTrackConf({
+    trackId: 'protein3d-structure',
+    type: 'FeatureTrack',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+
+  expect(added).toBeDefined()
+  expect(session.sessionTracks.map((t: any) => t.trackId)).toEqual([
+    'protein3d-structure',
+  ])
+  expect(session.jbrowse.tracks).toHaveLength(0)
 })
 
 // The same doctrine one level out, for the surface an automation SCRIPT reads

@@ -32,7 +32,7 @@ function setup() {
     { trackId: 'markup', name: '<i>italic</i> track', description: '' },
     { trackId: 'categorized', name: 'categorized', category: ['assays'] },
   ]) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       ...conf,
       assemblyNames: ['volMyt1'],
       type: 'FeatureTrack',

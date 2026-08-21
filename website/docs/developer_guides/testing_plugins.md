@@ -153,8 +153,8 @@ test('adding a track for an assembly not open in the view notifies the user', ()
 
 `createTestSession` accepts `sessionSnapshot`, `jbrowseConfig`, `adminMode`, and
 preloaded `runtimePlugins`, and returns the session model, so `addView`,
-`addWidget`, `showWidget`, and `addTrackConf` are all available. To test a
-custom plugin's pluggable elements, pass it via `runtimePlugins`.
+`addWidget`, `showWidget`, and `addSessionTrackConf` are all available. To test
+a custom plugin's pluggable elements, pass it via `runtimePlugins`.
 
 **A view you add afterwards has no width, and `view.width` throws.** There is no
 layout in jsdom, so nothing sizes a view on its own: `createTestSession` sets

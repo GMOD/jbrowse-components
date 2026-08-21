@@ -41,7 +41,7 @@ function setup() {
     },
   })
   for (const trackId of ['fooC', 'barC']) {
-    session.addTrackConf({
+    session.addSessionTrackConf({
       trackId,
       name: trackId,
       assemblyNames: ['volMyt1'],
