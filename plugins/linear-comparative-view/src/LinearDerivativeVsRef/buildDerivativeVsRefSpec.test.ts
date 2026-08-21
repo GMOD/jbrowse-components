@@ -1,6 +1,7 @@
 import {
   buildDerivativeVsRefSpec,
   derivativeName,
+  derivativePathTestIds,
   selectedCandidateIndex,
 } from './buildDerivativeVsRefSpec.ts'
 
@@ -268,4 +269,71 @@ describe('selectedCandidateIndex', () => {
       }),
     ).toBe(0)
   })
+})
+
+// A shape is not unique, and `derivativePathTestId`'s own docstring says so:
+// two routes of the same shape at nearby loci are what a fold-back produces.
+// Emitted per row regardless, both rows carried the same `data-testid` and every
+// `getByTestId` for it threw "found multiple elements" — on the very allele the
+// fold-back tutorial is about.
+describe('derivativePathTestIds', () => {
+  const foldback = (start: number): DerivativeCandidate => ({
+    segments: [
+      { refName: 'chr9', start, end: start + 1837, strand: 1 },
+      {
+        refName: 'chr9',
+        start: start + 29_142,
+        end: start + 31_000,
+        strand: -1,
+      },
+    ],
+    readCount: 4,
+    pathId: `foldback-${start}`,
+    locString: '',
+    refNames: ['chr9'],
+    extendsOffScreen: false,
+  })
+
+  it('suffixes the later rows of a repeated shape', () => {
+    expect(
+      derivativePathTestIds([foldback(28_030_000), foldback(28_400_000)]),
+    ).toEqual([
+      'derivative-path-chr9-chr9rev',
+      'derivative-path-chr9-chr9rev-2',
+    ])
+  })
+
+  it('names every row exactly once', () => {
+    const ids = derivativePathTestIds([
+      foldback(1),
+      CANDIDATE,
+      foldback(2),
+      foldback(3),
+    ])
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  // A spec naming a shape that turns out unique still selects it, so making the
+  // ambiguous case reachable did not respell the common one.
+  it('leaves an unrepeated shape as the bare locator', () => {
+    expect(derivativePathTestIds([CANDIDATE])).toEqual([
+      'derivative-path-chr3-chr10-chr12rev-chr3rev',
+    ])
+  })
+})
+
+// `now()` is millisecond-resolution, so two candidates over the same chromosomes
+// launched inside one millisecond named ONE temporary assembly:
+// `addTemporaryAssembly` warns and hands back the first, and the second view
+// draws its ribbons against an axis the wrong `totalLength` long.
+it('two launches in the same millisecond do not name one assembly', () => {
+  const at = (rand: () => number) =>
+    buildDerivativeVsRefSpec({
+      candidate: CANDIDATE,
+      trackAssembly: 'hg38',
+      sequenceTrackConf: { trackId: 'hg38-ReferenceSequenceTrack' },
+      now: () => 1234,
+      rand,
+    }).temporaryAssembly.name
+  expect(at(() => 0.25)).not.toBe(at(() => 0.75))
 })

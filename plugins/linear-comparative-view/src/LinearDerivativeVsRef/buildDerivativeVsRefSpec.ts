@@ -115,12 +115,40 @@ export function derivativePathLabel(candidate: DerivativeCandidate) {
  *
  * Not `pathId`, which is opaque and carries coordinates: this one is read by a
  * person writing a spec. It is a locator, not an identity — for "which row did
- * the user pick", hold `pathId`.
+ * the user pick", hold `pathId`. A shape can name more than one row, which is
+ * why `selectedCandidateIndex` refuses to guess between them and why the DOM
+ * gets these through {@link derivativePathTestIds} rather than one per row.
  */
 export function derivativePathTestId(candidate: DerivativeCandidate) {
   return `derivative-path-${candidate.segments
     .map(seg => `${seg.refName}${seg.strand === -1 ? 'rev' : ''}`)
     .join('-')}`
+}
+
+/**
+ * The same locators, made unique across one rendered list: the second and later
+ * rows of a repeated shape take a `-2`, `-3` suffix.
+ *
+ * `derivativePathTestId` is a shape, and a shape is not unique — two routes of
+ * the same shape at nearby loci are what a fold-back produces, and its own
+ * docstring says so. Emitted per row regardless, both rows carried
+ * `derivative-path-chr9-chr9rev` and every `getByTestId` for it threw "found
+ * multiple elements" — on precisely the allele the fold-back tutorial is about,
+ * and in the id whose stated job is to keep a spec off row numbers.
+ *
+ * Suffixed rather than respelled, so a spec naming a shape that turns out
+ * unique still selects it, and the ambiguous case is at least reachable instead
+ * of unusable. It names a ROW of one render either way: a spec wanting an
+ * identity across renders holds `pathId`.
+ */
+export function derivativePathTestIds(candidates: DerivativeCandidate[]) {
+  const seen = new Map<string, number>()
+  return candidates.map(candidate => {
+    const shape = derivativePathTestId(candidate)
+    const nth = (seen.get(shape) ?? 0) + 1
+    seen.set(shape, nth)
+    return nth === 1 ? shape : `${shape}-${nth}`
+  })
 }
 
 /**
@@ -170,10 +198,15 @@ export function buildDerivativeVsRefSpec(
     rand,
   } = args
 
-  const stamp = now()
+  // Per-launch unique, so relaunching does not collide with the temporary
+  // assembly a still-open view owns. `now()` alone is not that: it is
+  // millisecond-resolution, and two candidates over the same chromosomes launched
+  // inside one millisecond named one assembly — `addTemporaryAssembly` then warns
+  // and hands back the FIRST, so the second view draws its own ribbons against an
+  // axis the wrong `totalLength` long. The clock still leads, because a person
+  // reading a session snapshot wants these in launch order.
+  const stamp = `${now()}-${Math.floor(rand() * 1e6)}`
   const refName = derivativeName(candidate)
-  // per-launch unique, so relaunching does not collide with the temporary
-  // assembly a still-open view owns
   const derivativeAssembly = `${refName}_${stamp}`
   const seqTrackId = `${refName}_seq_${stamp}`
   const syntenyTrackId = `derivative-${stamp}`

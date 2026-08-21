@@ -157,3 +157,67 @@ test('a locstring never runs off the start of a contig', () => {
   })
   expect(locStrings[0]).toBe('chr3:1-60000')
 })
+
+// The midpoint's justification is the SHORT interior segment (the test above
+// centres a 199 bp one), and it inverts once the segment outgrows the window
+// every panel shares: the centre of a 30 kb interior segment is 15 kb from
+// either junction, so a 10 kb panel there carries no junction, no reads, and
+// nothing for the curves on either side to attach to. Nothing bounds an
+// interior segment's length — only its edges are pinned by junctions.
+test('a long interior segment falls back to the junction it is reached by', () => {
+  const { locStrings } = buildSplitViewFromPath({
+    candidate: candidate([
+      { refName: 'chr3', start: 25326821, end: 25359568 },
+      { refName: 'chr10', start: 58700000, end: 58730000 },
+      { refName: 'chr12', start: 72273112, end: 72290000 },
+    ]),
+    tracks: [],
+    windowSize: 10000,
+  })
+  // reached at its start, so the panel holds the junction the previous one hands
+  // off to; the midpoint (58,715,000) holds neither
+  expect(locStrings[1]).toBe('chr10:58695001-58705000')
+})
+
+test('a long INVERTED interior segment is reached at its end', () => {
+  const { locStrings } = buildSplitViewFromPath({
+    candidate: candidate([
+      { refName: 'chr3', start: 25326821, end: 25359568 },
+      { refName: 'chr10', start: 58700000, end: 58730000, strand: -1 },
+      { refName: 'chr12', start: 72273112, end: 72290000 },
+    ]),
+    tracks: [],
+    windowSize: 10000,
+  })
+  expect(locStrings[1]).toBe('chr10:58725001-58735000')
+})
+
+// A segment exactly the window's length still has both junctions in frame, so
+// the centre holds right up to there and the fallback starts one base past it.
+test('an interior segment the window fits keeps its centre', () => {
+  const at = (length: number) =>
+    buildSplitViewFromPath({
+      candidate: candidate([
+        { refName: 'chr3', start: 0, end: 40000 },
+        { refName: 'chr10', start: 1_000_000, end: 1_000_000 + length },
+        { refName: 'chr12', start: 2_000_000, end: 2_040_000 },
+      ]),
+      tracks: [],
+      windowSize: 10000,
+    }).locStrings[1]
+  // centred on 1,005,000
+  expect(at(10000)).toBe('chr10:1000001-1010000')
+  // one base longer, so it cannot show both and takes the entry junction
+  expect(at(10001)).toBe('chr10:995001-1005000')
+})
+
+// No junction to be about, so neither end is the answer. `computeDerivativePaths`
+// filters chains of one, but this builder is `#api`.
+test('a lone segment centres on itself', () => {
+  const { locStrings } = buildSplitViewFromPath({
+    candidate: candidate([{ refName: 'chr3', start: 1000, end: 3000 }]),
+    tracks: [],
+    windowSize: 1000,
+  })
+  expect(locStrings).toEqual(['chr3:1501-2500'])
+})

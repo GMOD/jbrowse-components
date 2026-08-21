@@ -6,13 +6,14 @@ import {
   addOrReplaceView,
   getContainingView,
   getSession,
-  isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isSessionWithAddSessionTrack } from '@jbrowse/core/util/types'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   FormControl,
   FormControlLabel,
+  FormHelperText,
   FormLabel,
   Radio,
   RadioGroup,
@@ -25,10 +26,13 @@ import DerivativePathStrip from './DerivativePathStrip.tsx'
 import {
   buildDerivativeVsRefSpec,
   derivativePathLabel,
-  derivativePathTestId,
+  derivativePathTestIds,
   selectedCandidateIndex,
 } from './buildDerivativeVsRefSpec.ts'
-import { buildSplitViewFromPath } from './buildSplitViewFromPath.ts'
+import {
+  MAX_SPLIT_PANELS,
+  buildSplitViewFromPath,
+} from './buildSplitViewFromPath.ts'
 import { segmentSizeSummary } from './pathStripBlocks.ts'
 
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
@@ -188,13 +192,6 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const ranked = model.derivativePathCandidates
-  // A window that produces dozens of paths has said something about all of them,
-  // so the overflow is reported rather than dropped: it is the difference
-  // between "here is the event" and "these reads map everywhere".
-  const candidates = ranked.slice(0, MAX_SHOWN)
-  // decided once, for the list, because that is what it is a property of
-  const showOffScreen = showsOffScreenFlag(candidates)
   // The chosen ROUTE, not a row number. `derivativePathCandidates` is computed
   // from the reads in view, so it re-ranks whenever more of them land -- and
   // this dialog is opened over a pileup that is often still streaming, which is
@@ -213,7 +210,6 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // does not quite finish the job: it is the junctions, but the junctions carry
   // clustered coordinates a later read can still relabel.
   const [picked, setPicked] = useState<DerivativeCandidate>()
-  const selected = selectedCandidateIndex(candidates, picked)
   const [error, setError] = useState<unknown>()
   // WHAT to draw, kept here beside WHICH route because both are properties of
   // the reconstruction; the buttons then answer only where it goes, in the same
@@ -221,6 +217,43 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // questions could not be labelled (review: "'replace with split view' and
   // 'replace current view' are unclear what they would do").
   const [drawAs, setDrawAs] = useState<'synteny' | 'split'>('synteny')
+
+  // Above every read of the two props, which is the whole of the backstop:
+  // "Replace current view" detaches the launching view and destroys it a task
+  // later (`scheduleDetachedDestroy`), and both `track` and `model` live in it.
+  // The reads then split two ways. `getSession`/`getContainingView` below WALK,
+  // and a walk from a destroyed node throws, out of `DialogQueue`, which sits
+  // above every per-view ErrorBoundary — the whole page became jbrowse-web's
+  // fatal-error dialog. `model.derivativePathCandidates` is the quieter half: a
+  // dead node's computed warns from `assertAlive` and hands back whatever it
+  // last cached, so it renders a stale list rather than throwing.
+  //
+  // It used to sit below the derivations, where the quiet half ran first and
+  // the guard could not cover it. Hooks are all above; nothing else may go
+  // between. MST's `isAlive` is observable, so the render that sees it flip is
+  // the one the destroy schedules.
+  if (!isAlive(track)) {
+    return null
+  }
+
+  const ranked = model.derivativePathCandidates
+  // A window that produces dozens of paths has said something about all of them,
+  // so the overflow is reported rather than dropped: it is the difference
+  // between "here is the event" and "these reads map everywhere".
+  const candidates = ranked.slice(0, MAX_SHOWN)
+  // decided once, for the list, because that is what it is a property of
+  const showOffScreen = showsOffScreenFlag(candidates)
+  const testIds = derivativePathTestIds(candidates)
+  const selected = selectedCandidateIndex(candidates, picked)
+  // Whether the split drawing is offered for the route now selected, so the two
+  // radio groups stay independent: a reader who picked "Breakpoint split view"
+  // over a three-segment route and then moves to a 900-segment one would
+  // otherwise carry that choice onto a route it cannot draw. Derived rather than
+  // synced, so `drawAs` keeps the reader's answer and comes back when they move
+  // to a route it fits.
+  const splitPanels = candidates[selected]?.segments.length ?? 0
+  const splitTooLong = splitPanels > MAX_SPLIT_PANELS
+  const effectiveDrawAs = splitTooLong ? 'synteny' : drawAs
 
   // The same candidate, drawn the other way the tutorial contrasts: stacked
   // reference panels rather than the derivative's own axis. It exists because
@@ -341,11 +374,22 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         }
       })
     }
+    // `addSessionTrackConf`, NOT `addTrackConf`, which is two destinations
+    // behind one name: an admin's track goes into `jbrowse.tracks`, which the
+    // admin server writes back into the config.json every visitor is served.
+    // This track is a per-launch `FromConfigAdapter` naming a temporary
+    // assembly, so an admin's click published a dead `derivative-segments-…`
+    // into everyone's config.json, naming an assembly that never existed
+    // outside the one session — one more per click, since the stamp in its id
+    // defeats the dedupe. The session is the only destination this track has
+    // ever belonged in, and `releaseTemporaryAssemblies` takes it back out with
+    // the axis at the view's own detach.
+    //
     // A session that refuses track configs (embedded, `disableAddTracks`) gets
-    // the reconstruction without its segment labels rather than a panel
-    // naming a track nothing can resolve.
-    if (isSessionWithAddTracks(session) && derivativePanel) {
-      session.addTrackConf(segmentsTrack)
+    // the reconstruction without its segment labels rather than a panel naming a
+    // track nothing can resolve.
+    if (isSessionWithAddSessionTrack(session) && derivativePanel) {
+      session.addSessionTrackConf(segmentsTrack)
       showWhenMeasured(derivativePanel, () => {
         derivativePanel.showTrack?.(segmentsTrack.trackId, {}, segmentsDisplay)
       })
@@ -360,23 +404,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
       return
     }
     const drawn =
-      drawAs === 'split'
+      effectiveDrawAs === 'split'
         ? drawSplitView(candidate, replace)
         : drawSynteny(candidate, replace)
     drawn.catch((e: unknown) => {
       console.error(e)
       setError(e)
     })
-  }
-
-  // The backstop under the ordering `drawSplitView` now keeps. Every read below
-  // starts at `track`, and a destroyed `track` turns the two walks in the
-  // dialog's own props into throws rather than into `undefined`, so a route to
-  // here that closes late — a plugin's, or one added next — takes the page
-  // instead of the dialog. MST's `isAlive` is observable, so the render that
-  // sees it flip is the one the destroy schedules.
-  if (!isAlive(track)) {
-    return null
   }
 
   return (
@@ -479,7 +513,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 {candidates.map((candidate, idx) => (
                   <FormControlLabel
                     key={candidate.pathId}
-                    data-testid={derivativePathTestId(candidate)}
+                    data-testid={testIds[idx]}
                     value={idx}
                     control={<Radio />}
                     label={
@@ -509,7 +543,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                   rows of the first. */}
               <RadioGroup
                 row
-                value={drawAs}
+                value={effectiveDrawAs}
                 onChange={event => {
                   setDrawAs(
                     event.target.value === 'split' ? 'split' : 'synteny',
@@ -526,9 +560,22 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                   data-testid="derivative-draw-as-split"
                   value="split"
                   control={<Radio />}
+                  disabled={splitTooLong}
                   label="Breakpoint split view"
                 />
               </RadioGroup>
+              {/* Greyed out with the count said, because the reason is a fact
+                  about the ROUTE and not about the control: this drawing is one
+                  panel per segment, so the reader is being told how many panels
+                  they asked for. The synteny drawing takes the same route on one
+                  axis and stays offered, so the sentence names it. */}
+              {splitTooLong ? (
+                <FormHelperText>
+                  {splitPanels} segments is one panel per segment past what this
+                  view can show; the synteny drawing takes the whole route on
+                  one axis.
+                </FormHelperText>
+              ) : null}
             </FormControl>
           </>
         )}
