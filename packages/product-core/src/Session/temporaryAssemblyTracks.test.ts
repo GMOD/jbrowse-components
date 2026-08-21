@@ -74,6 +74,26 @@ describe('the copy actions on a temporary-assembly track', () => {
     )
   })
 
+  // Greying a row tells nobody anything, and a synteny band looks like any other
+  // track — so the refusal has to be readable, not merely enforced.
+  test('say why, in a tooltip a disabled row can show', () => {
+    for (const label of ['Copy track', 'Copy and open track']) {
+      expect(labelled(SEGMENTS, label)).toHaveProperty(
+        'disabledHelpText',
+        expect.stringContaining('synthesized'),
+      )
+    }
+  })
+
+  test('carry no tooltip when they are offered', () => {
+    for (const label of ['Copy track', 'Copy and open track']) {
+      expect(labelled(HG38, label)).toHaveProperty(
+        'disabledHelpText',
+        undefined,
+      )
+    }
+  })
+
   test('leave Settings and Delete alone', () => {
     expect(labelled(SEGMENTS, 'Settings')).toBeTruthy()
     expect(labelled(SEGMENTS, 'Delete track')).toHaveProperty('disabled', false)

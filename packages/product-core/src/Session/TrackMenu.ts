@@ -62,6 +62,21 @@ interface TrackActionSession<C> {
   publishTrackConf: (conf: C) => unknown
   deleteTrackConf: (conf: AnyConfigurationModel) => void
   resetTrackConfiguration?: (trackId: string) => void
+  /**
+   * Declared here, though only the copy guard below reads it, so a session that
+   * loses the list loses the guard *loudly*. `namesTemporaryAssembly` takes an
+   * `unknown` session and answers false for one that holds no such list, which
+   * is right for a caller that genuinely has none and wrong for one that let it
+   * drop — and that second case is a copy action silently offered again.
+   *
+   * `unknown[]`, the spelling `AbstractSessionModel` already uses, and not the
+   * `{ name?: string }[]` the guard narrows to: that one is a weak type, so a
+   * real MST array of assembly configs — whose element type is an index
+   * signature that declares no `name` — shares no property with it and TS
+   * rejects the assignment. The shape belongs in the guard, which is the only
+   * thing that reads it.
+   */
+  temporaryAssemblies?: unknown[]
 }
 
 /**
@@ -96,7 +111,16 @@ export function trackActionItems<C extends { trackId: string }>({
   // ADR-084 removed the sweep for. Neither is worth offering, so the item says
   // so instead of producing garbage; the dev-only contract check on the adders
   // is what found this.
+  //
+  // Greying a row tells nobody anything, and this reason is one nobody guesses:
+  // a refseq track explains its own greyed Copy, a synteny band that looks like
+  // every other track does not. `disabledHelpText` is what says it.
   const isTemporary = namesTemporaryAssembly(session, config)
+  const copyRefusal = isRefSeq
+    ? 'A reference sequence track cannot be copied.'
+    : isTemporary
+      ? 'This track is drawn on an assembly this view synthesized, which goes away with the view — a copy of it would name an assembly nothing can resolve.'
+      : undefined
   // the display active in this view expands in the config editor, so the
   // track's other (incompatible/inactive) displays start collapsed
   const expandedDisplayId = view?.getActiveDisplayId?.(config.trackId)
@@ -114,6 +138,7 @@ export function trackActionItems<C extends { trackId: string }>({
       label: 'Copy track',
       icon: CopyIcon,
       disabled: isRefSeq || isTemporary,
+      disabledHelpText: copyRefusal,
       onClick: () => {
         session.publishTrackConf(makeCopy())
       },
@@ -122,6 +147,8 @@ export function trackActionItems<C extends { trackId: string }>({
       label: 'Copy and open track',
       icon: OpenInNewIcon,
       disabled: isRefSeq || isTemporary || !view,
+      disabledHelpText:
+        copyRefusal ?? (view ? undefined : 'No view to open the copy in.'),
       onClick: () => {
         const snap = makeCopy()
         if (session.publishTrackConf(snap)) {
