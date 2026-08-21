@@ -25,6 +25,7 @@ import {
 import { offscreenMateTally } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { cappedMeanWidthPx } from '../LinearSyntenyView/fadeThin.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
 
@@ -375,37 +376,27 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Summed genomic length (axis 0) of every loaded alignment block. Zoom-
-       * independent, so it recomputes only when featureData changes, which is
-       * what makes `meanAlignmentPx` O(1) per zoom.
-       */
-      get totalAlignmentBp() {
-        const { featureData } = self
-        if (!featureData) {
-          return 0
-        }
-        const { starts, ends } = featureData
-        let total = 0
-        for (let i = 0; i < starts.length; i++) {
-          total += Math.abs(ends[i]! - starts[i]!)
-        }
-        return total
-      },
-      /**
-       * #getter
-       * Mean on-screen width (px, axis 0) of this display's alignment blocks, or
-       * 0 until a fetch lands and both views connect. The fade only affects
-       * sub-pixel ribbons (perpW < 1), so a mean well under 1 means the view is
+       * Mean on-screen width (px, axis 0) of this display's alignment blocks with
+       * every already-wide block counted as `FADE_WIDE_BLOCK_PX`, or 0 until a
+       * fetch lands and both views connect. The fade only affects sub-pixel
+       * ribbons (perpW < 1), so a capped mean well under 1 means the view is
        * dominated by thin ribbons — exactly what width-proportional fade
        * declutters, and `LinearSyntenyView.fadeThinAlignments` decides 'auto' off
-       * the narrowest of these. Zoom-dependent (recomputes as bpPerPx changes),
-       * but each term is O(1) given the memoized `totalAlignmentBp`.
+       * the narrowest of these.
+       *
+       * O(numFeats) per zoom rather than per fetch, because the cap is a px
+       * width: 4.2 ms over a million-block whole-genome PAF, where the answer is
+       * nowhere near the threshold anyway, and 0.4 ms at a hundred thousand.
        */
-      get meanAlignmentPx() {
+      get cappedMeanAlignmentPx() {
+        const { featureData } = self
         const connected = this.connectedViews
-        const width = connected?.v0.width ?? 0
-        return connected && width > 0 && this.numFeats > 0
-          ? this.totalAlignmentBp / this.numFeats / connected.v0.bpPerPx
+        return featureData && connected && connected.v0.width > 0
+          ? cappedMeanWidthPx(
+              featureData.starts,
+              featureData.ends,
+              connected.v0.bpPerPx,
+            )
           : 0
       },
       /**

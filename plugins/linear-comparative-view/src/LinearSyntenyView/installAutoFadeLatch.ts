@@ -18,9 +18,9 @@ export function installAutoFadeLatch(self: LinearSyntenyViewModel) {
     self,
     autorun(
       () => {
-        const meanPx = self.thinnestMeanAlignmentPx
+        const widthPx = self.autoFadeWidthPx
         const previous = untracked(() => self.fadeThinLatch)
-        const next = fadesThinAt(meanPx, previous)
+        const next = fadesThinAt(widthPx, previous)
         if (next !== previous) {
           self.setFadeThinLatch(next)
         }

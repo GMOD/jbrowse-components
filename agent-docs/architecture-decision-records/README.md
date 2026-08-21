@@ -92,4 +92,5 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [080](adr-080-a-phase-ends-when-it-stops-reporting.md) | Accepted | A fan-out slot retires a phase on any status that is not that phase moving forward, credits it once, and never blanks the shared label |
 | [081](adr-081-a-status-field-is-one-fan-out.md) | Accepted | A status field aggregates across the concurrent OPERATIONS that share it, not just the regions of one fetch; a stream ends by retiring its slot, and blanks the field only when it was the last |
 | [082](adr-082-one-hook-for-a-display-that-will-not-fetch.md) | Accepted | `loadingSuppressed`, `svgReadyExtraTerminal` and the comparative `fetchInert` were one state under three names; the readers a display forgets are the ones outside it, so it publishes one name |
+| [083](adr-083-the-auto-thin-fade-averages-capped-widths.md) | Accepted | 'auto' asks whether ribbons are predominantly sub-pixel and answered with a plain mean, which follows the widest blocks; a liftOver chain's whole-arm blocks held the fade off over a view 96% sub-pixel, so each block now votes at no more than 2 px |
 <!-- END GENERATED ADR INDEX -->

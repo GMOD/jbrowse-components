@@ -201,7 +201,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
          * whole-genome view doesn't read as a hard full-opacity hairball.
          * 'auto' enables the fade once a display is dominated by sub-pixel
-         * ribbons (see `thinnestMeanAlignmentPx`); a genuinely sparse comparison
+         * ribbons (see `autoFadeWidthPx`); a genuinely sparse comparison
          * (only a handful of ribbons) keeps full alpha so the fade doesn't wash
          * it out. 'on'/'off' pin it. Resolved view-wide by the
          * `fadeThinAlignments` getter, so all levels fade together.
@@ -396,26 +396,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get fadeThinAlignments(): boolean {
         const { fadeThinAlignmentsMode, fadeThinLatch } = self
         return fadeThinAlignmentsMode === 'auto'
-          ? fadesThinAt(this.thinnestMeanAlignmentPx, fadeThinLatch)
+          ? fadesThinAt(this.autoFadeWidthPx, fadeThinLatch)
           : fadeThinAlignmentsMode === 'on'
       },
       /**
        * #getter
-       * The narrowest mean on-screen block width any loaded display reports, or
-       * `Infinity` when none of them has enough blocks to judge by — the one
-       * number 'auto' decides off. Each display measures its own ribbons
-       * (`meanAlignmentPx`) and this takes the thinnest, so the densest level in
-       * a stack carries the view-wide decision.
+       * The width 'auto' compares against its thresholds: the narrowest capped
+       * mean block width any loaded display reports, or `Infinity` when none of
+       * them has enough blocks to judge by. Each display measures its own ribbons
+       * (`cappedMeanAlignmentPx`) and this takes the thinnest, so the densest
+       * level in a stack carries the view-wide decision.
        *
        * Skips a display holding fewer than `FADE_AUTO_MIN_FEATURES` blocks, and
        * one still at 0 (no fetch landed yet), so neither can fade the view on its
        * own.
        */
-      get thinnestMeanAlignmentPx(): number {
+      get autoFadeWidthPx(): number {
         return Math.min(
           ...self.allSyntenyDisplays
             .filter(d => d.numFeats >= FADE_AUTO_MIN_FEATURES)
-            .map(d => d.meanAlignmentPx)
+            .map(d => d.cappedMeanAlignmentPx)
             .filter(px => px > 0),
         )
       },
