@@ -21,6 +21,11 @@ The launching view's tracks are carried onto every panel, alignments tracks
 included, because the reads leaving one panel and arriving in the next are the
 whole content of this view type.
 
+One panel per segment is also one fetch per segment, and nothing bounds a path's
+segment count — so a caller offers this drawing only up to MAX_SPLIT_PANELS
+segments. Truncating here instead would draw a prefix of a path under the whole
+path's name, which is the failure the strip's own gap squeeze exists to avoid.
+
 ```js
 // type signature
 ({ candidate, tracks, windowSize, }: { candidate: DerivativeCandidate; tracks: TrackSnapshot[]; windowSize?: number | undefined; }) => SplitViewFromPathSpec
