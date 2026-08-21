@@ -1,7 +1,7 @@
 import CascadingMenuHelpIconButton, {
   CascadingMenuHelpIconSpacer,
 } from './CascadingMenuHelpIconButton.tsx'
-import { MenuItemChevron, MenuItemChevronSpacer } from './MenuItemChevron.tsx'
+import { MenuItemChevron } from './MenuItemChevron.tsx'
 import { MenuItemEndDecoration } from './MenuItemEndDecoration.tsx'
 import { menuItemAdornment } from './menuItemAdornment.tsx'
 
@@ -135,7 +135,7 @@ export function MenuItemTrailing({
       {isSubmenu ? (
         <MenuItemChevron />
       ) : hasSubmenuWithHelp ? (
-        <MenuItemChevronSpacer />
+        <MenuItemChevron hidden />
       ) : null}
     </>
   )

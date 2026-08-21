@@ -188,6 +188,29 @@ test('a section whose every row is gated out takes its heading with it', async (
   expect(screen.getByText('Scope')).toBeTruthy()
 })
 
+// The mirror, and the reason the heading is derived from its rows rather than by
+// re-testing what gated them: one row gone is not the section gone. A tiered
+// file with no CIGAR ops keeps Detail, carrying Level of detail alone.
+test('a section keeps its heading while any one row survives', async () => {
+  const view = await openMenu(PIF)
+  expect(screen.getByText('CIGAR indels')).toBeTruthy()
+
+  act(() => {
+    for (const d of view.allSyntenyDisplays) {
+      d.setRpcData(
+        packSyntenyFeatureData([], { hasCigar: false }),
+        undefined,
+        'k',
+      )
+    }
+  })
+
+  expect(view.hasCigarData).toBe(false)
+  expect(screen.queryByText('CIGAR indels')).toBeNull()
+  expect(screen.getByText('Detail')).toBeTruthy()
+  expect(screen.getByText('Level of detail')).toBeTruthy()
+})
+
 // Three steps of one question rather than two checkboxes of two: the first is a
 // repaint of what the worker already counted and the last costs a query, so what
 // a reader picks is how hard to look.

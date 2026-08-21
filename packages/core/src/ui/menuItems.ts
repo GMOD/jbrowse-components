@@ -23,6 +23,7 @@ export {
   radioItem,
   radioItems,
   toggleItem,
+  withSubHeader,
 } from './toggleMenuItems.ts'
 export { withHint } from './menuLabels.ts'
 export { makeRadioSubMenu } from './radioSubMenu.ts'

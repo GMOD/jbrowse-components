@@ -195,6 +195,7 @@ installs the plugin.
 | `showLegendCheckboxItem` | the shared "Show legend" checkbox |
 | `toggleItem` | a checkbox row whose setter takes the new value |
 | `withHint` | a row label carrying an aside that is only sometimes there |
+| `withSubHeader` | a section heading, present only if the section is |
 
 <!-- MENU_ITEM_BUILDERS END -->
 

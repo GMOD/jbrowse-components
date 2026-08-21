@@ -1,4 +1,4 @@
-import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
+import type { CheckboxMenuItem, MenuItem, RadioMenuItem } from './MenuTypes.ts'
 
 // Neither helper sets `keepMenuOpen`: `CascadingMenu` keeps a checkbox/radio row
 // open by its type (`staysOpenOnClick`), so a settings row states nothing and a
@@ -120,4 +120,15 @@ export function radioItems<T extends string>(
       opts,
     ),
   )
+}
+
+/**
+ * #menuBuilder withSubHeader | a section heading, present only if the section is
+ *
+ * Derived from the rows rather than from whatever gated them, so a heading
+ * cannot outlive its section — the rows are usually gated on data, and an empty
+ * section renders its heading directly above the next one's.
+ */
+export function withSubHeader(label: string, rows: MenuItem[]): MenuItem[] {
+  return rows.length > 0 ? [{ type: 'subHeader', label }, ...rows] : []
 }

@@ -1,6 +1,10 @@
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
+import {
+  radioItems,
+  toggleItem,
+  withSubHeader,
+} from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
 import {
   MAX_MIN_LENGTH_BP,
@@ -81,7 +85,7 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { cigarMode, hasCigarData, hasLodCapableAdapter } = model
+  const { cigarMode, hasCigarData } = model
   return (
     <CascadingMenuButton
       tooltip="Synteny display settings"
@@ -159,38 +163,40 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
             between. Both rows are absent rather than disabled — a control over
             a choice that does not exist is a choice.
 
-            THE HEADING GOES WITH THEM. These are the only two rows in the
-            section, so a CIGAR-less untiered PAF would otherwise render
-            "DETAIL" with the next section's heading directly under it.
+            THE HEADING GOES WITH THEM, derived from the rows rather than by
+            re-testing what gated them: a CIGAR-less untiered PAF would
+            otherwise render "DETAIL" with the next section's heading directly
+            under it, and `lodMenuItems` is shared with two other surfaces, so
+            a new reason for it to return nothing must not leave a heading
+            stranded here.
           */
-          ...(hasCigarData || hasLodCapableAdapter
-            ? [{ type: 'subHeader' as const, label: 'Detail' }]
-            : []),
-          ...(hasCigarData
-            ? [
-                {
-                  label: 'CIGAR indels',
-                  helpText:
-                    'How per-base insertions and deletions inside each alignment are shown.',
-                  // Built here rather than with `radioItems` because one row
-                  // differs: 'off' is the mode that can mislead, and the icon
-                  // says so on the row instead of only in its help.
-                  subMenu: CIGAR_MODE_OPTIONS.map(
-                    ({ value, label, ...rest }) => ({
-                      label,
-                      ...rest,
-                      icon: value === 'off' ? WarningIcon : undefined,
-                      type: 'radio' as const,
-                      checked: cigarMode === value,
-                      onClick: () => {
-                        model.setCigarMode(value)
-                      },
-                    }),
-                  ),
-                },
-              ]
-            : []),
-          ...lodMenuItems(model),
+          ...withSubHeader('Detail', [
+            ...(hasCigarData
+              ? [
+                  {
+                    label: 'CIGAR indels',
+                    helpText:
+                      'How per-base insertions and deletions inside each alignment are shown.',
+                    // Built here rather than with `radioItems` because one row
+                    // differs: 'off' is the mode that can mislead, and the icon
+                    // says so on the row instead of only in its help.
+                    subMenu: CIGAR_MODE_OPTIONS.map(
+                      ({ value, label, ...rest }) => ({
+                        label,
+                        ...rest,
+                        icon: value === 'off' ? WarningIcon : undefined,
+                        type: 'radio' as const,
+                        checked: cigarMode === value,
+                        onClick: () => {
+                          model.setCigarMode(value)
+                        },
+                      }),
+                    ),
+                  },
+                ]
+              : []),
+            ...lodMenuItems(model),
+          ]),
           { type: 'subHeader', label: 'Scope' },
           /*
             NOT GATED ON THERE BEING SOME. A count of zero is not the same as

@@ -490,13 +490,24 @@ function offscreenMateRectAt(
  * those with one comparison rather than by laying out every mark first is what
  * keeps a hover over the ribbons costing nothing, whatever the level fetched.
  */
+// The strip's hit test, so the hover and the click cannot disagree about what
+// "under the pointer" means. Both spelled these comparisons out, and one of the
+// two widened is a click that navigates where no tooltip ever appeared.
+function pointerOnStrip(strip: StripGeometry, y: number) {
+  return y >= strip.markY && y <= strip.markY + strip.markHeight
+}
+
+function pointerOnMark(rect: { x: number; width: number }, x: number) {
+  return x >= rect.x && x <= rect.x + rect.width
+}
+
 export function offscreenMateAt(
   layout: OffscreenMateLayout,
   x: number,
   y: number,
 ) {
   const strip = stripGeometry(layout)
-  if (!strip || y < strip.markY || y > strip.markY + strip.markHeight) {
+  if (!strip || !pointerOnStrip(strip, y)) {
     return undefined
   }
   const { datasets } = layout
@@ -504,7 +515,7 @@ export function offscreenMateAt(
     const data = datasets[d]!
     for (let i = data.starts.length - 1; i >= 0; i--) {
       const rect = offscreenMateRectAt(layout, data, i, strip)
-      if (rect && x >= rect.x && x <= rect.x + rect.width) {
+      if (rect && pointerOnMark(rect, x)) {
         return offscreenMateRefName(data, i)
       }
     }
@@ -544,11 +555,13 @@ export interface OffscreenMateSpan {
  *
  * ONE FORWARD PASS, unlike the hover's backwards early exit — the contig on top
  * is the one painted last, which the same walk that accumulates the spans knows
- * by the time it ends. Asking the hit test for the name and then scanning again
- * for its coordinates cost a click 6.0ms on the 250k-mark level against 4.0ms
- * folded, and 0.077ms against 0.045ms on the demo fixture
- * (`benches/offscreenMateOverlay.bench.ts`). A click is not a hover, but it is
- * still a frame the user is waiting in.
+ * by the time it ends. For the SHAPE, not for speed: asking the hit test for
+ * the name and then scanning again for its coordinates is two traversals that
+ * have to agree on which contig won, and the sentinels the second one needed
+ * went with it. The measured difference is 0.014ms on the demo fixture, which
+ * is nothing on a once-per-click path — the cost that matters is the scan
+ * itself (`agent-docs/.../offscreen-mate-overlay.json`), and it is why the
+ * hover does NOT do this.
  */
 export function offscreenMateSpanAt(
   layout: OffscreenMateLayout,
@@ -556,7 +569,7 @@ export function offscreenMateSpanAt(
   y: number,
 ): OffscreenMateSpan | undefined {
   const strip = stripGeometry(layout)
-  if (!strip || y < strip.markY || y > strip.markY + strip.markHeight) {
+  if (!strip || !pointerOnStrip(strip, y)) {
     return undefined
   }
   const spans = new Map<string, OffscreenMateLocus>()
@@ -564,7 +577,7 @@ export function offscreenMateSpanAt(
   for (const data of layout.datasets) {
     for (let i = 0; i < data.starts.length; i++) {
       const rect = offscreenMateRectAt(layout, data, i, strip)
-      if (rect && x >= rect.x && x <= rect.x + rect.width) {
+      if (rect && pointerOnMark(rect, x)) {
         const refName = offscreenMateRefName(data, i)
         top = refName
         const span = spans.get(refName)
@@ -583,8 +596,7 @@ export function offscreenMateSpanAt(
     return undefined
   }
   const locus = spans.get(top)!
-  // A lane from a fetch that predates the mate coordinates, or a degenerate
-  // zero-length one. The contig still navigates — as a whole contig, which is
+  // A degenerate zero-length span still navigates, as a whole contig — which is
   // what every click did before there were coordinates to do better with.
   return { refName: top, locus: locus.end > locus.start ? locus : undefined }
 }
