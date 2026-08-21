@@ -105,6 +105,8 @@ sat at a pre-ADR-0010 value there while `cram-js` had moved on.
   under it from that file.**
 - Docs and source cite `TODO.md` sections by title, and `ideas/` and
   `mechanisms/` by filename — grep before renaming.
+- Why any of this is shaped the way it is, stated for a reader outside this
+  repo: [mechanisms/generated-claims.md](mechanisms/generated-claims.md).
 
 ## Third parties: say what we chose, not how they rank
 
