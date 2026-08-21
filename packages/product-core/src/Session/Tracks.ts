@@ -106,11 +106,13 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         },
         /**
          * #method
-         * @deprecated prefer the per-id reactive `getTrackById(id)`. Reading this
-         * whole map subscribes the caller to *every* track, so an edit to any one
-         * track wakes it — the reason internal display config resolution moved off
-         * it. Kept for backwards compatibility with plugins that look up ids in a
-         * non-reactive context.
+         * Every track config the session can resolve, keyed by trackId. Prefer
+         * the per-id reactive `getTrackById(id)`: reading this whole map
+         * subscribes the caller to *every* track, so an edit to any one of them
+         * wakes it — the reason internal display config resolution moved off
+         * it. Kept for plugins that look up ids in a non-reactive context.
+         *
+         * @deprecated
          */
         getTracksById(): Record<string, AnyConfigurationModel> {
           return tracksByIdRecord.get()
