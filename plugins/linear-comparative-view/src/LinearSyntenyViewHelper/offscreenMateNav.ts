@@ -44,6 +44,8 @@ export function navLocString(refName: string, locus?: OffscreenMateLocus) {
 interface FollowAnchorHost extends IStateTreeNode {
   followSynteny: boolean
   followAnchorIndex: number
+  // identity only, so `unknown` is all `release` needs from a row
+  views: readonly unknown[]
   setFollowAnchorIndex: (idx: number) => void
 }
 
@@ -73,6 +75,7 @@ interface FollowAnchorHost extends IStateTreeNode {
  */
 export function takeFollowAnchor(host: FollowAnchorHost, row: number) {
   const previous = host.followAnchorIndex
+  const anchored = host.views[row]
   const taken = host.followSynteny && previous !== row
   if (taken) {
     host.setFollowAnchorIndex(row)
@@ -80,8 +83,14 @@ export function takeFollowAnchor(host: FollowAnchorHost, row: number) {
   return {
     taken,
     release() {
-      if (taken && isAlive(host) && host.followAnchorIndex === row) {
-        host.setFollowAnchorIndex(previous)
+      // By node, not by index: a removal renumbers the rows, and
+      // `reconcileLevels` clamps the anchor, so the original `row` stops naming
+      // the row this take pointed at. Liveness first — the read is what throws.
+      if (taken && isAlive(host)) {
+        const holder = host.views.indexOf(anchored)
+        if (holder !== -1 && host.followAnchorIndex === holder) {
+          host.setFollowAnchorIndex(previous)
+        }
       }
     },
   }
@@ -112,6 +121,22 @@ export function captureRowViewport(view: LinearGenomeViewModel) {
     if (isAlive(view)) {
       view.setDisplayedRegions(regions)
       view.setWindow(windowWidthBp, windowStartBp)
+    }
+  }
+}
+
+/**
+ * Every row's viewport, as one function that puts them all back.
+ *
+ * The follow re-places every other row when this one takes the anchor, so the
+ * click moves the whole stack and restoring one row leaves it mirrored: the
+ * click's arrangement under the pre-click anchor.
+ */
+export function captureStackViewports(views: LinearGenomeViewModel[]) {
+  const restores = views.map(view => captureRowViewport(view))
+  return () => {
+    for (const restore of restores) {
+      restore()
     }
   }
 }

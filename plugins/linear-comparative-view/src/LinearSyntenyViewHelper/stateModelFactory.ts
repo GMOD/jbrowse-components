@@ -12,11 +12,12 @@ import {
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
 } from '@jbrowse/synteny-core'
+import { runInAction } from 'mobx'
 
 import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
 import {
   OFFSCREEN_MATE_NAV_GROW,
-  captureRowViewport,
+  captureStackViewports,
   navLocString,
   takeFollowAnchor,
 } from './offscreenMateNav.ts'
@@ -417,8 +418,9 @@ export function linearSyntenyViewHelperModelFactory(
         const { parentView } = self
         const view = parentView.views[row]
         if (view) {
+          // before the take, which already re-places the other rows
+          const restoreStack = captureStackViewports([...parentView.views])
           const anchor = takeFollowAnchor(parentView, row)
-          const restoreViewport = captureRowViewport(view)
           const loc = navLocString(refName, locus)
           view
             .navToLocString(loc, undefined, locus ? OFFSCREEN_MATE_NAV_GROW : 0)
@@ -439,8 +441,12 @@ export function linearSyntenyViewHelperModelFactory(
                   {
                     name: 'Undo',
                     onClick: () => {
-                      anchor.release()
-                      restoreViewport()
+                      // one transaction, so the follow sees the settled
+                      // pre-click state rather than a half-restored one
+                      runInAction(() => {
+                        restoreStack()
+                        anchor.release()
+                      })
                     },
                   },
                 )
