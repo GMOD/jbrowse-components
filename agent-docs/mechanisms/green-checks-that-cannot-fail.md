@@ -1,20 +1,21 @@
 ---
 name: green-checks-that-cannot-fail
-description: Seven checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, a branch every page rendered that no page could reach, a geometry invariant held against a polygon the shader does not emit, an oracle cited by directory that never asserted its subject, and a parity test sampling the one region where both spellings agree. The catch for each, and why the class is worth naming outside genomics.
+description: Eight checks in this repo passed for structural reasons rather than real ones — a compiler standing in for the memo a sabotage deleted, a census that sampled only while the page was quiet, a drift check silent because all fourteen copies were wrong identically, a branch every page rendered that no page could reach, a geometry invariant held against a polygon the shader does not emit, an oracle cited by directory that never asserted its subject, a parity test sampling the one region where both spellings agree, and a whole test run that could not report the exception its framework caught on every pass. The catch for each, and why the class is worth naming outside genomics.
 ---
 
 # Green checks that could not have failed
 
 A check that cannot fail is indistinguishable, from the outside, from a check
-that passes. This repo has now hit seven of them from seven different
+that passes. This repo has now hit eight of them from eight different
 directions, which is enough to name the class rather than treat each as its own
 bug. Audience and framing:
 [upstreamable-ideas](../ideas/upstreamable-ideas.md).
 
 The common shape: **something between the assertion and the code silently
-supplied the property being asserted.** The catch, every time, was to sabotage
-the code the check names and confirm the check goes red — not to read the check
-and agree with it.
+supplied the property being asserted** — or, in the last one, silently absorbed
+the failure it should have carried. The catch, every time, was to sabotage the
+code the check names and confirm the check goes red — not to read the check and
+agree with it.
 
 ## 1. A compiler stood in for the memoization
 
@@ -175,6 +176,30 @@ implementations differ only on a measure-zero subset of it. The general rule is
 to sample the discontinuity the two disagree about and then check that both can
 reach it — breadth over the domain is what hides this, not what finds it.
 
+## 8. A runtime that catches the exception and tells nobody
+
+`sharedFit` answers mode-off without reading a row, so a clamp guarded on
+`answered` ran on every restored comparative stack before any row had a width,
+and `width` throws until it does. It threw four times in one 4-test file, on
+every run, for as long as it was in the tree — and the file was green, because
+MobX catches what a reaction body throws and reports it through `console.error`
+rather than rethrowing. Nothing in a monorepo that prints thousands of lines was
+listening.
+
+The check that could not fail here is not a test. It is the run: every suite
+touching the view exercised the bug, and none of them could report it. Nor was
+the fix the end of it, because the first version — guard on `initialized` —
+stopped the throw and left the pass re-clamping restored sessions, which showed
+up only as a moved snapshot in a file nobody would have connected to it.
+
+**Why it travels:** ask of any runtime what it does with an exception it catches
+on your behalf. A framework that swallows and logs has moved the failure from a
+channel that fails builds to one that does not, and every check downstream of it
+is now green by construction. The fix is one line of plumbing — the existing
+contract gate already fails a run on a buffered `console.error`, so this was a
+prefix added to the list it buffers — and it retroactively covers every reaction
+in the tree rather than the one that was found.
+
 ## Publishing this
 
 This is the most distinctive of the three general-audience groups and the
@@ -182,6 +207,8 @@ hardest to write, because each item needs its failure narrated to land. The
 first two stand alone; items 3 and 4 are one post about examples-as-tests, and
 item 5 stands alone for a graphics audience. Items 6 and 7 are one post about
 oracles — the first is a check nobody read and the second a check read
-carefully, which is what makes them stronger together than apart. Item 4
-also appears in [mobx-state-patterns](mobx-state-patterns.md) as the argument
-for naming a lifecycle state — tell it once, from whichever goes out first.
+carefully, which is what makes them stronger together than apart. Item 8 stands
+alone and is the widest of them, since it is about a framework rather than about
+any test anyone wrote. Item 4 also appears in
+[mobx-state-patterns](mobx-state-patterns.md) as the argument for naming a
+lifecycle state — tell it once, from whichever goes out first.

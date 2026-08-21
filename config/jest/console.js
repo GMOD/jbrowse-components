@@ -17,6 +17,16 @@ const originalWarn = console.warn
 // itself to reach the gate.
 const CONTRACT_PREFIX = /\[jbrowse \w+ contract]/
 
+// An exception thrown out of an `autorun`/`reaction` body is caught by MobX and
+// reported here, never rethrown, so a reaction that throws on every pass leaves
+// a suite green. That is not a family of ours, but it is the same failure: a
+// report nothing listens to. The synteny shared-scale clamp threw four times in
+// one file for as long as it was in the tree.
+//
+// A test that provokes one on purpose takes it with `takeContractReports()`,
+// the same opt-in the contract families use.
+const MOBX_REACTION_ERROR = '[mobx] Encountered an uncaught exception'
+
 // Shared with the gate, which runs later in the same context. `gated` is set
 // there, and printing is suppressed only once it is: a project that somehow has
 // this shim without the gate stays exactly as loud as before rather than going
@@ -36,7 +46,7 @@ console.log = (...args) => {
 
 console.error = (...args) => {
   const message = args.map(a => `${a}`).join(' ')
-  if (CONTRACT_PREFIX.test(message)) {
+  if (CONTRACT_PREFIX.test(message) || message.includes(MOBX_REACTION_ERROR)) {
     contract.reports.push(message)
     if (contract.gated) {
       // the gate quotes it verbatim in the failure it throws, so printing here
