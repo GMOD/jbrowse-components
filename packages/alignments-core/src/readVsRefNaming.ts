@@ -9,15 +9,27 @@ import { truncateMiddle } from '@jbrowse/core/util'
 export function buildReadVsRefNames({
   readName,
   trackAssembly,
-  stamp,
+  now,
+  rand,
 }: {
   readName: string
   trackAssembly: string
-  // Date.now() at launch. A uniquifier for the ids only: nothing built here
-  // puts it in front of a reader, which is what readAssemblyDisplayName is for.
-  stamp: number
+  // Injected for testability; production passes Date.now and Math.random.
+  now: () => number
+  rand: () => number
 }) {
   const shortName = truncateMiddle(readName)
+  // A uniquifier for the ids only: nothing built here puts it in front of a
+  // reader, which is what readAssemblyDisplayName is for.
+  //
+  // Minted here rather than taken as an argument, because `now()` alone is not
+  // unique and both launchers passed exactly that. It is millisecond
+  // resolution, so the same read launched twice inside one millisecond named
+  // one temporary assembly — `addTemporaryAssembly` warns and hands back the
+  // FIRST, and the second view draws its ribbons against an axis of the wrong
+  // totalLength. The clock still leads, so a session snapshot reads in launch
+  // order. `buildDerivativeVsRefSpec` reached the same shape separately.
+  const stamp = `${now()}-${Math.floor(rand() * 1e6)}`
   return {
     shortName,
     // Per-launch unique: relaunching on the same read must not collide with the

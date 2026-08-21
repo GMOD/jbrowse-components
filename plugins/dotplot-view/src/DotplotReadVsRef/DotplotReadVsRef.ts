@@ -43,6 +43,7 @@ export async function launchDotplotReadVsRef({
     plotHeight: Math.max(defaultHeight - MIN_BORDER, MIN_BORDER),
     getCanonicalRefName: assembly.getCanonicalRefName2,
     now: () => Date.now(),
+    rand: () => Math.random(),
   })
 
   session.addTemporaryAssembly?.(temporaryAssembly)

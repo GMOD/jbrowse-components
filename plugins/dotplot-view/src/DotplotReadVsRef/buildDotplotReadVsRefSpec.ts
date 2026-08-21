@@ -31,8 +31,9 @@ export interface BuildDotplotReadVsRefArgs {
   plotWidth: number
   plotHeight: number
   getCanonicalRefName: (refName: string) => string | undefined
-  // Injected for testability. Production passes Date.now.
+  // Injected for testability. Production passes Date.now and Math.random.
   now: () => number
+  rand: () => number
 }
 
 // Pure spec builder for "Dotplot of read vs ref". All session/MST side-effects
@@ -46,6 +47,7 @@ export function buildDotplotReadVsRefSpec({
   plotHeight,
   getCanonicalRefName,
   now,
+  rand,
 }: BuildDotplotReadVsRefArgs): DotplotReadVsRefSpec {
   const { features, totalLength, readName } = buildReadVsRefFeatures(
     feature.toJSON(),
@@ -58,7 +60,7 @@ export function buildDotplotReadVsRefSpec({
     syntenyTrackId,
     syntenyTrackName,
     displayName,
-  } = buildReadVsRefNames({ readName, trackAssembly, stamp: now() })
+  } = buildReadVsRefNames({ readName, trackAssembly, now, rand })
   const assemblyNames = [trackAssembly, readAssembly]
 
   // Size hview's bpPerPx from the regions it actually draws, so overlap

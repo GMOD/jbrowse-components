@@ -340,6 +340,13 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     if (!coords) {
       return
     }
+    // The mark strip first, as in the move and release handlers. The strip is
+    // NOT clear of the ribbons — the pick engine accepts any y inside the
+    // track height — so without this a right-click on a mark opened the menu
+    // for whatever ribbon happened to run beneath it, and outlined it too.
+    if (offscreenMateHit(model, coords.x, coords.y)) {
+      return
+    }
     const hit = pickAt(coords)
     if (!hit) {
       return

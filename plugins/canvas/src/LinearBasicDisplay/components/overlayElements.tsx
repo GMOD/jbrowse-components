@@ -449,6 +449,8 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       plain: labelClass(false, false),
     },
   }
+  // same reason, and it was the one combination left in the loop
+  const moreBadgeClass = cx(classes.floatingLabel, classes.floatingLabelMore)
 
   forEachDisplayLabel(
     visibleRegions,
@@ -473,7 +475,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
               featureId={featureId}
               displayedRegionIndex={displayedRegionIndex}
               labelFontSize={labelFontSize}
-              className={cx(classes.floatingLabel, classes.floatingLabelMore)}
+              className={moreBadgeClass}
             />
           ) : (
             <FloatingLabel

@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import { arcColorLegendCategory } from '../../features/arcs/arcColors.ts'
 import { arcMarkScreenPath } from '../../features/arcs/arcPath.ts'
 import { offsetArcMark } from '../../features/arcs/mark.ts'
+import { readColorCategoryLabel } from '../../shared/legendUtils.ts'
 import CrossRegionArcMarkers from './CrossRegionArcMarkers.tsx'
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
 import { formatArcTooltip } from './tooltipUtils.ts'
@@ -108,7 +109,9 @@ const CrossRegionArcsBand = observer(function CrossRegionArcsBand({
                     spanBp: arc.spanBp,
                   },
                   arc.refName,
-                  arcColorLegendCategory(arc.colorType, model.arcColorByType),
+                  readColorCategoryLabel(
+                    arcColorLegendCategory(arc.colorType, model.arcColorByType),
+                  ),
                   arc.endRefName,
                 ),
                 hoveredArcHighlight: {

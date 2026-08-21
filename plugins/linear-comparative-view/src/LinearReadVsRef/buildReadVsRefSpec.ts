@@ -61,7 +61,7 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
     syntenyTrackId,
     syntenyTrackName,
     displayName,
-  } = buildReadVsRefNames({ readName, trackAssembly, stamp: now() })
+  } = buildReadVsRefNames({ readName, trackAssembly, now, rand })
 
   // The synteny adapter feature store carries both sides of each alignment
   // so the read assembly can be drawn against itself in the lower panel.

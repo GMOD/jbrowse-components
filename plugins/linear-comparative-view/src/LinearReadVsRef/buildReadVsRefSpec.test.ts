@@ -59,7 +59,9 @@ describe('buildReadVsRefSpec', () => {
     })
 
     expect(spec.viewSpec.displayName).toBe('read1 vs hg38')
-    expect(spec.temporaryAssembly.name).toBe('read1_assembly_1700000000000')
+    expect(spec.temporaryAssembly.name).toBe(
+      'read1_assembly_1700000000000-100100',
+    )
     // Two LGVs: top is the ref-assembly side, bottom is the synthetic read
     expect(spec.viewSpec.views).toHaveLength(2)
     // No SA → only the primary in the synteny feature store. The store also

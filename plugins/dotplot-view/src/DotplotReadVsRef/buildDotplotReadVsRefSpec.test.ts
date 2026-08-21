@@ -29,6 +29,7 @@ const baseArgs = {
   plotHeight: 550,
   getCanonicalRefName: (r: string) => r,
   now: constNow,
+  rand: () => 0.5,
 }
 
 describe('buildDotplotReadVsRefSpec', () => {
@@ -75,7 +76,7 @@ describe('buildDotplotReadVsRefSpec', () => {
         tags: {},
       }),
     })
-    const readAssembly = 'read1_assembly_1700000000000'
+    const readAssembly = 'read1_assembly_1700000000000-500000'
     expect(spec.temporaryAssembly.name).toBe(readAssembly)
     expect(spec.viewSpec.assemblyNames).toEqual(['hg38', readAssembly])
     // a dotplot draws no sequence track; the region still spans the read

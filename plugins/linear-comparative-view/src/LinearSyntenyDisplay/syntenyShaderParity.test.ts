@@ -50,6 +50,7 @@ import type { CanvasLike } from './syntenyRibbonPath.ts'
 
 const ALL_KINDS = [
   KIND_BASE,
+  KIND_BASE_TILE,
   KIND_MARKER,
   KIND_CIGAR_MATCH,
   KIND_CIGAR_I,
