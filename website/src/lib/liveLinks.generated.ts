@@ -252,8 +252,6 @@ export const figureLiveRefs: Record<string, string> = {
   "qtl/bxd_tyrp1_locus": "?config=test_data/config_bxd.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22mm10%22%2C%22loc%22%3A%22chr4%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22mm10_ncbi_refseq%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22jexlFiltersSetting%22%3A%5B%22jexl%3Aget(feature%2C'name')%3D%3D'Tyrp1'%22%5D%2C%22forceLoad%22%3Atrue%2C%22showOnlyGenes%22%3Atrue%2C%22height%22%3A50%7D%2C%7B%22trackId%22%3A%22bxd_gwas_coatcolor_mm10%22%2C%22type%22%3A%22LinearManhattanDisplay%22%2C%22height%22%3A200%7D%2C%7B%22trackId%22%3A%22bxd_chromosome_painting_mm10%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A460%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr4%22%2C%22pos%22%3A80975000%7D%2C%22forceLoad%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "qtl/bxd_painting_sorted": "?config=test_data/config_bxd.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22mm10%22%2C%22loc%22%3A%22chr4%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22bxd_gwas_coatcolor_mm10%22%2C%22type%22%3A%22LinearManhattanDisplay%22%2C%22height%22%3A140%7D%2C%7B%22trackId%22%3A%22bxd_chromosome_painting_mm10%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A420%2C%22sortRowsBy%22%3A%7B%22refName%22%3A%22chr4%22%2C%22pos%22%3A80975000%7D%2C%22forceLoad%22%3Atrue%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "trio-basic": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A1%2C000%2C000-1%2C001%2C000%22%2C%22tracks%22%3A%5B%22HG02024_VN049_KHVTrio.chr1.vcf%22%5D%7D%5D%7D&sessionName=Screenshot",
-  "trio-matrix": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A62%2C174%2C000-65%2C097%2C304%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%2C%22type%22%3A%22LinearMultiSampleVariantMatrixDisplay%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "trio-matrix-phased": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A62%2C174%2C000-65%2C097%2C304%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%2C%22type%22%3A%22LinearMultiSampleVariantMatrixDisplay%22%2C%22renderingMode%22%3A%22phased%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "trio-matrix-phased-clean": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A62%2C174%2C000-65%2C097%2C304%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22showOnlyGenes%22%3Atrue%2C%22showLabels%22%3A%22auto%22%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%2C%22type%22%3A%22LinearMultiSampleVariantMatrixDisplay%22%2C%22renderingMode%22%3A%22phased%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "trio-hapibd-painting": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A1-248%2C956%2C422%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.hapibd%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A120%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "trio-crossover-paternal": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A29%2C497%2C418-29%2C897%2C418%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.hapibd%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22subtreeFilter%22%3A%5B%22Father%20hap1%22%2C%22Father%20hap2%22%5D%7D%2C%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%2C%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22renderingMode%22%3A%22phased%22%2C%22height%22%3A260%2C%22layout%22%3A%5B%7B%22name%22%3A%22HG02024%20HP0%22%2C%22sampleName%22%3A%22HG02024%22%2C%22HP%22%3A0%2C%22label%22%3A%22Child%20hap1%22%7D%2C%7B%22name%22%3A%22HG02024%20HP1%22%2C%22sampleName%22%3A%22HG02024%22%2C%22HP%22%3A1%2C%22label%22%3A%22Child%20hap2%22%7D%2C%7B%22name%22%3A%22HG02025%20HP0%22%2C%22sampleName%22%3A%22HG02025%22%2C%22HP%22%3A0%2C%22label%22%3A%22Mother%20hap1%22%7D%2C%7B%22name%22%3A%22HG02025%20HP1%22%2C%22sampleName%22%3A%22HG02025%22%2C%22HP%22%3A1%2C%22label%22%3A%22Mother%20hap2%22%7D%2C%7B%22name%22%3A%22HG02026%20HP0%22%2C%22sampleName%22%3A%22HG02026%22%2C%22HP%22%3A0%2C%22label%22%3A%22Father%20hap1%22%7D%2C%7B%22name%22%3A%22HG02026%20HP1%22%2C%22sampleName%22%3A%22HG02026%22%2C%22HP%22%3A1%2C%22label%22%3A%22Father%20hap2%22%7D%5D%7D%5D%7D%5D%7D&sessionName=Screenshot",
@@ -492,6 +490,8 @@ export const videoLiveRefs: Record<string, string> = {
   "methylation/group_by_hp": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr15%3A24%2C948%2C000-24%2C962%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22cpgisland_ucsc_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22height%22%3A40%7D%2C%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22displayMode%22%3A%22compact%22%2C%22height%22%3A90%7D%2C%7B%22trackId%22%3A%22HG002_snrpn_5mC_reads%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22height%22%3A320%2C%22forceLoad%22%3Atrue%2C%22colorBy%22%3A%7B%22type%22%3A%22modifications%22%2C%22modifications%22%3A%7B%22fillUnmarked%22%3Atrue%7D%7D%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "synteny/three_strain_import": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fhpylori%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearSyntenyView%22%2C%22views%22%3A%5B%7B%7D%2C%7B%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "synteny/hg002_dotplot_import": "?config=https://jbrowse.org/demos/hg002/config.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
+  "synteny/dotplot_reorder": "?config=test_data/config_dotplot.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22DotplotView%22%2C%22views%22%3A%5B%7B%22assembly%22%3A%22peach%22%7D%2C%7B%22assembly%22%3A%22grape%22%7D%5D%2C%22tracks%22%3A%5B%22grape_peach_synteny_mcscan%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "synteny/restack_around_locus": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fgrape_peach_cacao%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22grape%22%2C%22loc%22%3A%2211%3A778%2C000-866%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22grape_genes%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showOnlyGenes%22%3Atrue%2C%22displayMode%22%3A%22compact%22%2C%22showLabels%22%3A%22auto%22%7D%2C%7B%22trackId%22%3A%22grape_peach_cacao_blocks%22%2C%22type%22%3A%22LGVSyntenyDisplay%22%2C%22groupBy%22%3A%7B%22type%22%3A%22mateAssembly%22%7D%2C%22featureHeight%22%3A14%2C%22height%22%3A140%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "sv/inspector_route": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%5D%7D&sessionName=Screenshot",
   "sv/derivative_allele_route": "?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fcancer_sv%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr3%3A25%2C357%2C600-25%2C361%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_hg38%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%2C%22height%22%3A70%7D%2C%7B%22trackId%22%3A%22COLO829_tumor_ont%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22forceLoad%22%3Atrue%2C%22showSoftClipping%22%3Atrue%2C%22height%22%3A130%2C%22featureHeight%22%3A1%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/bookmark_region": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr10%3A89%2C613%2C000-89%2C740%2C000%22%2C%22tracks%22%3A%5B%22ncbi_gff_hg19%22%5D%7D%5D%7D&sessionName=Screenshot",
@@ -501,7 +501,8 @@ export const videoLiveRefs: Record<string, string> = {
   "ui/bulk_add_tracks": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-20%2C000%22%2C%22tracks%22%3A%5B%22gff3tabix_genes%22%5D%7D%5D%7D&sessionName=Screenshot",
   "ui/add_genome": "?config=test_data/empty.json&sessionName=Screenshot",
   "variants/trio_phased_matrix": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr1%3A62%2C174%2C000-62%2C194%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_refseq_109_hg38_latest%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22displayMode%22%3A%22compact%22%2C%22showOnlyGenes%22%3Atrue%2C%22showLabels%22%3A%22auto%22%2C%22height%22%3A80%7D%2C%7B%22trackId%22%3A%22HG02024_VN049_KHVTrio.chr1.vcf%22%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "repeats/painting_display_switch": "?config=test_data/config_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22name%22%3A%22RepeatMasker%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22CSI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearBasicDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearBasicDisplay%22%7D%2C%7B%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearMultiRowFeatureDisplay%22%2C%22height%22%3A260%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C700%2C000-45%2C750%2C000%22%2C%22tracks%22%3A%5B%22rmsk_hg38_ucsc%22%5D%7D%5D%7D&sessionName=Screenshot"
+  "repeats/painting_display_switch": "?config=test_data/config_demo.json&session=spec-%7B%22sessionTracks%22%3A%5B%7B%22type%22%3A%22FeatureTrack%22%2C%22trackId%22%3A%22rmsk_hg38_ucsc%22%2C%22name%22%3A%22RepeatMasker%22%2C%22assemblyNames%22%3A%5B%22hg38%22%5D%2C%22adapter%22%3A%7B%22type%22%3A%22BedTabixAdapter%22%2C%22bedGzLocation%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz%22%2C%22locationType%22%3A%22UriLocation%22%7D%2C%22index%22%3A%7B%22indexType%22%3A%22CSI%22%2C%22location%22%3A%7B%22uri%22%3A%22https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Frmsk.bed.gz.csi%22%2C%22locationType%22%3A%22UriLocation%22%7D%7D%7D%2C%22displays%22%3A%5B%7B%22type%22%3A%22LinearBasicDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearBasicDisplay%22%7D%2C%7B%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22displayId%22%3A%22rmsk_hg38_ucsc-LinearMultiRowFeatureDisplay%22%2C%22height%22%3A260%7D%5D%7D%5D%2C%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A45%2C700%2C000-45%2C750%2C000%22%2C%22tracks%22%3A%5B%22rmsk_hg38_ucsc%22%5D%7D%5D%7D&sessionName=Screenshot",
+  "hic/two_regions": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr9%3A129%2C730%2C000-131%2C730%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr9%22%2C%22start%22%3A130713881%2C%22end%22%3A130887675%2C%22label%22%3A%22ABL1%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%2C%7B%22refName%22%3A%22chr22%22%2C%22start%22%3A23180509%2C%22end%22%3A23318037%2C%22label%22%3A%22BCR%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%5D%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22mane_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A68%7D%2C%7B%22trackId%22%3A%22hic_gm12878_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22useLogScale%22%3Afalse%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%2C%7B%22trackId%22%3A%22hic_k562_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22useLogScale%22%3Afalse%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot"
 }
 
 // Each tour's pixel size, which is its capture viewport: the encode preserves
@@ -573,6 +574,14 @@ export const videoFrames: Record<
     "width": 1920,
     "height": 768
   },
+  "synteny/dotplot_reorder": {
+    "width": 1920,
+    "height": 768
+  },
+  "synteny/restack_around_locus": {
+    "width": 1920,
+    "height": 640
+  },
   "sv/inspector_route": {
     "width": 1920,
     "height": 640
@@ -612,6 +621,10 @@ export const videoFrames: Record<
   "repeats/painting_display_switch": {
     "width": 1920,
     "height": 520
+  },
+  "hic/two_regions": {
+    "width": 1920,
+    "height": 1124
   }
 }
 
@@ -621,6 +634,7 @@ export const videoFrames: Record<
 // element pointing at a file the store has never held.
 export const videoCaptioned: string[] = [
   "dog10k/igf1_cluster_route",
+  "hic/two_regions",
   "methylation/group_by_hp",
   "pangenome/hprc_cluster_callset",
   "pangenome/hprc_end_to_end",
@@ -634,7 +648,9 @@ export const videoCaptioned: string[] = [
   "repeats/painting_display_switch",
   "sv/derivative_allele_route",
   "sv/inspector_route",
+  "synteny/dotplot_reorder",
   "synteny/hg002_dotplot_import",
+  "synteny/restack_around_locus",
   "synteny/three_strain_import",
   "tcga/cohort_cnv_clustering",
   "tcga/mutations_collapse_introns",

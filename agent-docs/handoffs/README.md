@@ -48,5 +48,5 @@ doc that carries none. Don't edit between the markers; write the doc's
 | Doc | What it is waiting on |
 | --- | --- |
 | [month-audit-remainder](MONTH_AUDIT_REMAINDER.md) | What is left of the six-agent audit of the month's highest-churn subsystems, with each remaining finding's verification status. Read before picking one up — three of the original handoff's framings did not survive checking. |
-| [tutorial-tours-handoff](TUTORIAL_TOURS.md) | Live state of the tutorial video-tour thread — three tours filmed on the wrong end of the corpus, fourteen tutorial candidates ranked and unstarted, and the four traps that each cost a take. Read before filming a tour; delete when the tutorial list is worked down. |
+| [tutorial-tours-handoff](TUTORIAL_TOURS.md) | Live state of the tutorial video-tour thread — which candidates are filmed, where the remaining ones are ranked, and the two things about desktop and same-tab navigation that nobody should re-derive. Read before filming a tour; delete when the tutorial list is worked down. |
 <!-- END GENERATED HANDOFFS INDEX -->
