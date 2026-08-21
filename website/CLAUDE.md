@@ -51,6 +51,10 @@ the tour was filmed in.
 - **A video is for a ROUTE or a RE-LAYOUT**, and everything else is a figure. A
   still is searchable, diffable, annotatable and readable at a glance, and none
   of that survives being filmed.
+- **What goes wrong inside a spec's `steps` is in `scripts/videos/CLAUDE.md`**,
+  next to the specs: a menu left standing over the payoff frame, a display type
+  switched to at the wrong height, an opening frame that is the density gate's
+  message.
 - **`check-video-specs` is the gate over the list and the pages together**, and
   the rules are in `video-spec-rules.ts` where `videoSpecRules.test.ts` reaches
   them. It pairs each spec with the embed that plays it in both directions: a
@@ -114,28 +118,6 @@ the tour was filmed in.
   on the click that starts it, or the click is off camera too. It is also how a
   paste is filmed: `type` sends a config a keystroke at a time, and cutting it
   leaves the box empty, then full.
-- **A radio menu item leaves its menu standing over the result it produced**,
-  and nothing in the run reports it — the app is the right height and the frame
-  looks fine until you pull it. A `Display types` pick closes the cascade
-  (`keepMenuOpen: false`, because the items above it belong to the display being
-  replaced); every other radio only writes a setting and stays up. Two Escapes
-  reach it while focus is still in the list, then `waitForText hidden` on a row
-  of each level says it happened. **Then blur**: the menu icon keeps focus, so
-  its "Track settings" tooltip outlives the menu, and hovering elsewhere does
-  not take a focus tooltip down — click `[aria-label="JBrowse"]`, a bare `<g>`
-  with no handler, which parks the cursor clear of the tracks as well.
-- **A display-type switch does not carry the old display's height.**
-  `replaceDisplay` builds the new one from its own config, so a multi-row
-  painting arriving at the default height fits every row it discovers into the
-  space one packed lane was using. A tour that films the switch pins the height
-  in its own session — a `displays` array with the default form first, which is
-  the shape a config guide prints anyway.
-- **Check what the opening frame actually draws at the figures' locus.** A
-  feature display stops above `maxFeatureScreenDensity` and paints "Too many
-  features" instead, so a tour that opens where the page's widest figure is can
-  film that message rather than the state the page describes. Open narrower and
-  let the tour navigate out, which also puts the reason the display exists in
-  the clip.
 - **A tour that films a track being ADDED needs a config without that track.**
   `doPasteConfigSubmit` rejects a `trackId` the session already holds rather
   than merging it, so a tour filmed against the figures' config cannot add the
