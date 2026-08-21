@@ -47,4 +47,5 @@ doc that carries none. Don't edit between the markers; write the doc's
 
 | Doc | What it is waiting on |
 | --- | --- |
+| [month-audit-remainder](MONTH_AUDIT_REMAINDER.md) | What is left of the six-agent audit of the month's highest-churn subsystems, with each remaining finding's verification status. Read before picking one up — three of the original handoff's framings did not survive checking. |
 <!-- END GENERATED HANDOFFS INDEX -->
