@@ -1,0 +1,40 @@
+digraph hic_request {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] listed; qualifies; offered }
+
+  header [label="CoreGetInfo, once per attach:\nthe file's binsize list and\nits normalization list"]
+  listed [label="resolutions?.length"]
+  header -> listed
+  listed -> terminal [label=" empty"]
+  listed -> sorted   [label=" some"]
+  terminal [label="setError — a resting state that\nnever fetches has to be terminal,\nor svgReady never settles"]
+  sorted [label="setAvailableResolutions\nsorts ascending, so a negative bias\nis always finer"]
+
+  qualifies [label="binSize <= 2 * bpPerPx"]
+  sorted -> qualifies
+  qualifies -> auto [label=" some"]
+  qualifies -> finest [label=" none"]
+  auto   [label="autoResolutionIdx:\nthe largest that qualifies"]
+  finest [label="idx 0 — the finest binsize"]
+
+  bias [label="+ resolutionBias, clamped\ninto the list's range"]
+  auto -> bias  finest -> bias
+  bias -> effective
+  effective [label="effectiveResolution\nan explicit per-call arg,\nnot an rpcProps() setting", style=bold]
+
+  selected [label="selectedNormalization\nthe user's persisted pick"]
+  offered [label="availableNormalizations\nincludes it"]
+  selected -> offered
+  offered -> active   [label=" yes"]
+  offered -> nextBest [label=" no"]
+  active   [label="activeNormalization\nwhat the fetch asks for"]
+  nextBest [label="KR, SCALE, VC_SQRT, VC,\nthen whatever is first —\na getter, so it writes no config delta"]
+  nextBest -> active
+
+  applied [label="appliedNormalization\nwhat the matrix came back with.\nVectors are per (type, chr, unit, binsize),\nso a listed scheme can be absent here.\nUI only — it is fetch-derived", style=bold]
+  active -> applied [label=" the fetch answers"]
+
+  call [label="RenderHicData(regions, viewBlocks,\nbpPerPx, resolution, normalization)"]
+  effective -> call  active -> call
+}

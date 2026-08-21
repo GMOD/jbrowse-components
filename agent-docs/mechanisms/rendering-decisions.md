@@ -61,13 +61,21 @@ gates, read back through the same layout.
 | quantitative | a source | identity, or a score ramp — depending on the mode | the main thread, per layer | [wiggle-decision-tree](wiggle-decision-tree.md) |
 | annotations | a packed layout row | the feature's own colour, or the file's | the worker, per box | [feature-track-decision-tree](feature-track-decision-tree.md) |
 | comparative | an alignment between two genomes | a mode over the pair: strand, chromosome, or a measured channel | the main thread, from worker geometry | [synteny-decision-tree](synteny-decision-tree.md) |
+| multiple alignment | a genome aligned against the reference | one of five renderings of that genome's row — the aligned base, an identity mean, a codon change, a source chromosome | the main thread, from one category cascade | [maf-decision-tree](maf-decision-tree.md) |
+| contact matrix | not a row — one cell is a binned pair of loci | a raw count against a saturation point | the fragment shader, and its lifted twin for Canvas2D and SVG | [hic-decision-tree](hic-decision-tree.md) |
 
 Two things that read as coincidences and are not. **Every plugin resolves colour
 in exactly one place and has its legend read the same answer** — a legend built
 from a second copy of the rules lists colours nothing painted. And **every
 plugin's extra decision sits inside one of the steps above**: the alignments
 precedence ladder is part of "classify", the wiggle domain is part of "layout",
-the annotation fit ladder is part of "height".
+the annotation fit ladder is part of "height", the MAF tier swap is part of "did
+a fetch input change".
+
+The contact matrix is the one that bends the **first** step. A `.hic` file
+stores the same region at half a dozen binsizes, so "is the region too large"
+has an answer other than a banner: pick a coarser one. Every other display in
+the table refuses, because its format has nothing else to offer.
 
 ## The four rules that cross all of them
 
@@ -98,6 +106,7 @@ still the ones above, in the same order.
 
 ## Not yet mapped
 
-MAF, Hi-C, arc and paired-arc, and the reference sequence display. GC content
-and Manhattan plots run the quantitative decisions above; linkage disequilibrium
-is covered inside the variants map.
+Arc and paired-arc, and the reference sequence display. GC content and Manhattan
+plots run the quantitative decisions above; linkage disequilibrium is covered
+inside the variants map, and it shares the contact matrix's rotated-triangle
+geometry.

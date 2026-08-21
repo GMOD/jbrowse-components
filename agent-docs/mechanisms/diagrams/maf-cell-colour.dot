@@ -1,0 +1,45 @@
+digraph maf_cell_colour {
+  rankdir=TB
+  node [shape=box fontname=monospace fontsize=10]
+  { node [shape=diamond] refDash; alnGap; match; showAll; mismatchOn }
+
+  cell [label="one (reference byte, aligned byte) pair"]
+  refDash [label="reference is '-'"]
+  cell -> refDash
+  refDash -> skip [label=" yes"]
+  skip [label="Skip — a reference insertion,\ndrawn by the insertion pass instead"]
+
+  alnGap [label="aligned byte is '-' or ' '"]
+  refDash -> alnGap [label=" no"]
+  alnGap -> gap [label=" yes"]
+  gap [label="Gap"]
+
+  match [label="case-folded equal"]
+  alnGap -> match [label=" no"]
+  showAll [label="showAllLetters"]
+  match -> showAll [label=" equal"]
+  showAll -> matchCat [label=" off"]
+  matchCat [label="Match — one neutral filler tone"]
+
+  mismatchOn [label="mismatchRendering"]
+  showAll -> mismatchOn [label=" on"]
+  match -> mismatchOn [label=" differs"]
+  mismatchOn -> baseCat [label=" on"]
+  mismatchOn -> flat    [label=" off"]
+  baseCat [label="Base — look up the aligned base's own colour"]
+  flat [label="ShowAllNoMismatch / MismatchOff —\none flat tone either way"]
+
+  category [label="a CellCategory, not a colour", style=bold]
+  skip -> category  gap -> category  matchCat -> category
+  baseCat -> category  flat -> category
+
+  css [label="resolveCellColor:\nCSS strings for ctx.fillStyle"]
+  packed [label="resolveCellPacked:\npacked ABGR for the instance buffer"]
+  category -> css  category -> packed
+
+  table [label="packedByRefAln, 65536 entries.\nEvery row is the same mismatch row except\nthe two bytes that case-fold to its reference,\nso it is built by memcpy — 0.2ms, not 1.3-2ms", style=bold]
+  packed -> table
+
+  sentinel [label="the skip case stays OUTSIDE the table:\nit is unsigned, and 0xffffffff is a real\npacked white"]
+  table -> sentinel
+}
