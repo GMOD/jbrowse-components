@@ -1,11 +1,23 @@
-// The tours through the two comparative import forms: the three-strain
-// H. pylori stack, and the T2T-HG002 self-alignment dotplot.
+// The tours through the two comparative import forms -- the three-strain
+// H. pylori stack and the T2T-HG002 self-alignment dotplot -- the reorder that
+// re-sorts a dotplot axis once the plot is already up, and the restack that
+// rebuilds a whole stack around one locus.
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
 import { syntenyVideoFixtures } from '../specs/synteny.ts'
+import { RUBBERBAND } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
-const { emptySyntenyForm, strains } = syntenyVideoFixtures
+const {
+  emptySyntenyForm,
+  restackAnchor,
+  restackLanes,
+  restackSpan,
+  strains,
+  unorderedDotplot,
+} = syntenyVideoFixtures
 const { maternalGlob, noViews, paternalGlob } = hg002VideoFixtures
 
 // The form's assembly dropdowns carry no test id, but each is labelled, so the
@@ -30,11 +42,35 @@ const chromosomeBox = (axis: 'x' | 'y') =>
 // testid rides through CascadingMenuButton's `...rest` onto the IconButton.
 const COLOR_BY_MENU = '[data-testid="color_by_menu"]'
 
+// The rubberband menu's Launch submenu, and the entry under it that opens the
+// multi-panel launch dialog. By testid rather than by text: the synteny track's
+// name is also its label in the view behind the menu, and a text match resolves
+// to the first visible one, which is that label. Both slugs are what
+// CascadingMenu's makeTestId builds out of the labels -- 'Launch' from
+// buildRubberBandMenuItems, 'Linear synteny view' from linearViewMenuItems'
+// SELECTION_LABEL.
+const LAUNCH_SUBMENU = '[data-testid="cascading-submenu-launch"]'
+const LAUNCH_SYNTENY_VIEW =
+  '[data-testid="cascading-menuitem-linear_synteny_view"]'
+
+// One of the launch dialog's reorder arrows. Labelled with the assembly AND its
+// position, because a self-alignment track lists the anchor's assembly twice and
+// "Move grape up" would then name two buttons a screen reader cannot tell apart
+// (PanelList's MoveButton). The position in the label is 1-based.
+const panelArrow = (assembly: string, panel: number, dir: 'up' | 'down') =>
+  `button[aria-label="Move ${assembly} (panel ${panel}) ${dir}"]`
+
 // The dotplot's shared canvas once it has painted AND no display is still
 // fetching -- `data-display-drawn` on this view means both (DotplotView model's
 // `settled`), so it is the gate a whole-genome chain read can be waited out on.
 const DOTPLOT_DRAWN =
   '[data-testid="dotplot_webgl_canvas"][data-display-drawn="true"]'
+
+// The dotplot header's overflow menu, which holds the reorder. Its own testid,
+// added for this tour: it was the one control in that header with neither a
+// label nor a handle, and the site's spec-recipe table names it as "the ⋮
+// menu" for exactly that reason.
+const DOTPLOT_VIEW_MENU = '[data-testid="dotplot_view_menu"]'
 
 export const syntenyVideos: VideoSpec[] = [
   // WHERE GETTING THE DATA IN IS THE DIFFICULTY, which is the case that makes
@@ -210,6 +246,222 @@ export const syntenyVideos: VideoSpec[] = [
       // Red collinear, blue inverted, and the two empty lanes chrX and chrY
       // leave.
       { type: 'delay', ms: 4000 },
+    ],
+    tailMs: 4500,
+  },
+
+  // A RE-LAYOUT WITH NO BEFORE ON THE PAGE. mcscan_synteny_grape_peach.md says
+  // the axes start in each assembly's index order, "which scatters the runs",
+  // and then shows one figure: the plot after the reorder. The scattered state
+  // the sentence is about appears nowhere, so the claim that Re-order
+  // chromosomes did the tidying is the reader's to take on trust -- and the
+  // section after it reads the reorder's result as a fact about grape and peach,
+  // which only holds if the reader saw what it started from.
+  //
+  // The clip is the two states with the control between them. The reorder is
+  // also the page's one route that a figure cannot carry at all: it is a menu
+  // item that opens a dialog and does nothing until a second click, so a still
+  // of the plot cannot show it was ever pressed.
+  {
+    name: 'synteny/dotplot_reorder',
+    description:
+      "Grape against peach as a dotplot, with grape's axis re-sorted on demand: the dotplot header's overflow menu, Re-order chromosomes, and the run that reads the .anchors pairs and reports what it moved",
+    url: unorderedDotplot,
+    // 768, which is what the hg002 dotplot tour above is framed at and for the
+    // same arithmetic: a dotplot's height is fixed (defaultHeight 600, and a
+    // session spec cannot set it), so the app frame around it does not grow, and
+    // `hg002_haplotypes_wholegenome` measured that frame at 767 off its own
+    // below-the-fold report. Even, per the encode. Nothing here is taller: both
+    // overlays are overlays -- the ⋮ menu drops five rows below a button near
+    // the top, and the dialog is a centred box of a paragraph, a progress bar
+    // and two buttons.
+    //
+    // No `viewportWidth`, per the corpus rule, and it does cost this plot its
+    // aspect ratio: 600px of fixed height under 1920 of frame is a plot about
+    // three times as wide as it is tall, so peach's 8 chromosomes spread across
+    // the width while grape's 19 stack into the height. The reorder reads as
+    // grape's rows re-stacking rather than as a 45-degree line -- which is the
+    // axis the control moves, so the subject survives the shape. The page's own
+    // figure was framed at 1500 and is nearly as wide.
+    viewportHeight: 768,
+    // The camera opens on the scattered plot rather than on the anchors file
+    // loading: both BEDs and the whole .anchors are read off S3 in one go, since
+    // neither adapter has an indexed variant.
+    readySelector: DOTPLOT_DRAWN,
+    readyTimeout: 180000,
+    settleMs: 6000,
+    steps: [
+      // The scattered state, held. It is the half of the comparison the page
+      // does not have.
+      { type: 'delay', ms: 3500 },
+      {
+        type: 'click',
+        selector: DOTPLOT_VIEW_MENU,
+        say: 'Dotplot header ⋮',
+        hold: 1600,
+      },
+      { type: 'waitForText', text: 'Re-order chromosomes' },
+      {
+        type: 'click',
+        text: 'Re-order chromosomes',
+        say: 'Re-order chromosomes',
+      },
+      // The dialog is lazy, so this waits on the chunk as well as on the open.
+      // Matched on its description rather than on its title, which is the menu
+      // item's string too.
+      { type: 'waitForText', text: 'Reorders the vertical axis' },
+      // Long enough to read that sentence, which is the one place the app says
+      // WHICH axis moves and what it moves it against.
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'The vertical axis, against the fixed horizontal one',
+      },
+      { type: 'click', text: 'Start', say: 'Start' },
+      // ON CAMERA, deliberately, and this is the step where that is a choice.
+      // The reorder is a whole-file RPC, which is the shape of thing the corpus
+      // cuts -- but a cut here would take out the only frames in which the app
+      // says what it is doing. The dialog is explicit-start and reports its own
+      // progress (DiagonalizeDialog's StatusProgressBar over the RPC's status
+      // stream), so what is on screen is the run naming its phases, not a
+      // spinner. It is also the page's evidence for "using the alignments
+      // themselves". The reorder should be quick besides: it reuses the
+      // displays' own rpcSessionId, so it lands on the sticky worker that has
+      // the anchors file already parsed from the load above.
+      //
+      // Matched on the summary rather than on the progress bar going away,
+      // because the two endings read differently: `summarize` writes "Done:
+      // reordered ..." when the RPC came back with regions and "No alignments
+      // to reorder" when it came back with none. So a timeout here is a finding
+      // about the run, not a mis-written wait.
+      { type: 'waitForText', text: 'Done: reordered', timeout: 180000 },
+      // The summary line, which counts the regions it moved and the ones it
+      // flipped -- a number the plot behind the dialog cannot show.
+      { type: 'delay', ms: 3000 },
+      { type: 'click', text: 'Close', say: 'Close' },
+      { type: 'waitForText', text: 'Re-order chromosomes', hidden: true },
+      // The dialog sits centred OVER the plot, so Close leaves the pointer on
+      // the canvas, where DotplotTooltips follows it. The logo is a bare `<g>`
+      // with no handler, so this only parks the cursor.
+      { type: 'click', selector: '[aria-label="JBrowse"]' },
+      // Also on camera. `setDisplayedRegions` on the vertical axis lands before
+      // the dialog says Done, so the refetch it triggers has been running under
+      // the dialog and this is the tail of it: the axis labels arriving in their
+      // new order and the runs landing on the diagonal. Cutting it would splice
+      // the before straight onto the after, which is the two-picture figure this
+      // tour exists to replace.
+      { type: 'waitForSelector', selector: DOTPLOT_DRAWN, timeout: 180000 },
+      // The reordered plot, which is the state the page's figure is of.
+      { type: 'delay', ms: 4000 },
+    ],
+    tailMs: 4500,
+  },
+
+  // A DRAG, A DIALOG WHOSE ROWS THE READER REORDERS, AND A RE-LAYOUT OFF THE
+  // BACK OF IT. "Restacking around a locus" is the one section of
+  // multiway_synteny_grape_peach_cacao.md with no figure at all, and it states
+  // the whole route in a sentence: drag-select a locus, pick Launch -> Linear
+  // synteny view, order the dialog's rows with its arrows. Every noun in that
+  // sentence is a shape on screen the reader has not seen, and the arrows are
+  // the half no still can carry -- what they change is the stack the launch then
+  // builds, so the before and the after are two pictures with nothing linking
+  // them.
+  //
+  // THE REORDER IS ONE CLICK, and that is the section's point rather than a
+  // shortcut. The dialog lists the anchor first and then the mates in the
+  // track's declared `assemblyNames` order (pickMatesForRegion), so it opens
+  // grape / peach / cacao -- the reference on top, where the lower band is peach
+  // against cacao and therefore transitive. Moving grape down once is the
+  // reference-in-the-middle arrangement "Direct vs transitive pairs" asks for,
+  // and `launchOrder` states the same case from the launch's own side.
+  //
+  // Four more genomes align at this locus and get no panel. The track declares
+  // assemblies for grape, peach and cacao only, so arabidopsis, poplar, tomato
+  // and citrus land in the dialog's `unconfigured` line -- the difference
+  // between a lane and a panel that the section's second paragraph makes, said
+  // by the dialog itself.
+  //
+  // It ends on "Replace current view", the dialog's other way out: the stack
+  // takes the lane view's slot, so the last frame is the result rather than
+  // mostly the source, and nothing has to be scrolled to reach a view appended
+  // below one that is still standing.
+  {
+    name: 'synteny/restack_around_locus',
+    description:
+      "Restacking the grape / peach / cacao view around one locus: drag the scale bar, Launch, Linear synteny view, move grape into the middle with the dialog's arrows, and replace the lane view with the three-row stack",
+    url: restackLanes,
+    // Sized to the DIALOG, which is the subject and the tallest of the three
+    // states. `multiway_synteny/blocks_one_vs_all` measures the opening lane
+    // view at 478, and the launched stack is one gene lane on the grape row plus
+    // two collapsed rows around two 100px bands (levelHeightForCount, at two
+    // levels), which lands under that. The dialog is what neither of them
+    // bounds: MUI caps its paper at the viewport minus 64px, and
+    // `multiway_synteny/ecoli_launch_dialog` needed 560 of paper for five panel
+    // rows and a Select all/none row. Three rows and no bulk row is less than
+    // that, and the unconfigured line adds a line or two back, so 640 leaves the
+    // paper 576 and keeps the action row inside the frame. The blank under the
+    // lanes early on is the dialog's room.
+    viewportHeight: 640,
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    steps: [
+      { type: 'delay', ms: 2000 },
+      // Both ends are loci rather than pixels: a measured x is correct only at
+      // the width it was measured at, and this corpus was re-framed once
+      // already. `band` takes the y off the strip the drag is drawn on, while
+      // the x still comes from the locus.
+      {
+        type: 'drag',
+        fromAnchor: { locus: restackSpan.start, band: RUBBERBAND },
+        toAnchor: { locus: restackSpan.end, band: RUBBERBAND },
+        say: 'Drag across the scale bar',
+        hold: 900,
+      },
+      { type: 'waitForSelector', selector: LAUNCH_SUBMENU },
+      { type: 'click', selector: LAUNCH_SUBMENU, say: 'Launch', hold: 1200 },
+      { type: 'waitForSelector', selector: LAUNCH_SYNTENY_VIEW },
+      { type: 'delay', ms: 700 },
+      {
+        type: 'click',
+        selector: LAUNCH_SYNTENY_VIEW,
+        say: 'Linear synteny view',
+      },
+      { type: 'waitForText', text: 'Panels, top to bottom' },
+      // The arrows exist only once the worker has resolved a row per aligning
+      // assembly, so waiting on one is the gate over that fetch rather than a
+      // sleep guessing at it. The whole .blocks table and its per-column BEDs
+      // are read for this, and the lane display above has already read them, so
+      // it is a cache hit in the same worker.
+      {
+        type: 'waitForSelector',
+        selector: panelArrow(restackAnchor, 1, 'down'),
+        timeout: 180000,
+      },
+      // Long enough to read the order the dialog opens in, which is what the
+      // click after it changes.
+      { type: 'delay', ms: 3000, say: 'The reference opens on top' },
+      {
+        type: 'click',
+        selector: panelArrow(restackAnchor, 1, 'down'),
+        say: 'Move grape between peach and cacao',
+        hold: 3000,
+      },
+      {
+        type: 'click',
+        text: 'Replace current view',
+        say: 'Replace current view',
+      },
+      // Camera stays on: the re-layout IS the payoff here, and both bands read
+      // the file the lanes and the mate discovery have already pulled into the
+      // worker.
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 180000,
+      },
+      { type: 'waitForAppSettled', timeout: 180000 },
+      { type: 'delay', ms: 3000 },
     ],
     tailMs: 4500,
   },

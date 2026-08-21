@@ -83,6 +83,13 @@ const DotplotControls = observer(function DotplotControls({
       </IconButton>
 
       <CascadingMenuButton
+        // The one control in this header with neither a label nor a testid, so
+        // the only handle a doc tour had was "the button before the palette
+        // one". Rides through CascadingMenuButton's `...rest` onto the
+        // IconButton, the way ColorBySelector's `color_by_menu` does; a
+        // tooltip would name it too, and would then open under the cursor over
+        // the top of the menu it just opened.
+        data-testid="dotplot_view_menu"
         menuItems={[
           {
             label: 'Square view - same bp per pixel',

@@ -4114,4 +4114,79 @@ export const syntenyVideoFixtures = {
     middle: 'hpylori_chc155',
     bottom: 'hpylori_j99',
   },
+  // Where the restack tour starts, which is the state
+  // `multiway_synteny/blocks_one_vs_all` above captures: grape 11 with its genes
+  // and the one .blocks track drawn as an LGVSyntenyDisplay, a lane per mate.
+  //
+  // A PLAIN LGV RATHER THAN THE PAGE'S STACKED FIGURE, and that is the launch's
+  // own rule rather than a convenience. `launchableTracks` reads the LAUNCHING
+  // VIEW's open tracks, and a LinearSyntenyView keeps its synteny track on the
+  // level between two genome rows rather than on either row
+  // (LinearComparativeView's `levels`), so a rubberband on a row of the stacked
+  // demo session raises Zoom to region / Get sequence / Copy range and no Launch
+  // submenu at all. This view has the track open, so it has the offer -- and it
+  // is the reading the same section's second paragraph describes.
+  restackLanes: sessionSpec(
+    encodeURIComponent(
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+    ),
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'grape',
+          loc: '11:778,000-866,000',
+          tracks: [
+            {
+              trackId: 'grape_genes',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              displayMode: 'compact',
+              showLabels: 'auto',
+            },
+            {
+              trackId: 'grape_peach_cacao_blocks',
+              type: 'LGVSyntenyDisplay',
+              groupBy: { type: 'mateAssembly' },
+              featureHeight: 14,
+              height: 140,
+            },
+          ],
+        },
+      ],
+    },
+  ),
+  // The span the tour rubberbands, inside the window above. It has to carry a
+  // .blocks row whose peach AND cacao cells both resolve, or the dialog opens on
+  // one panel and there is no order to change: the grape locus at 836 kb is that
+  // row -- `multiway_synteny/grape_peach_cacao_gene_orthologs` reads it out of
+  // the two files, three grape copies against one peach transcript
+  // (rna-XM_007203660.2) and one cacao -- and this span is around it rather than
+  // against the window's own edges, where a rubberband end has nothing to land
+  // on.
+  restackSpan: { start: '11:800,000', end: '11:850,000' },
+  // The reference column of this table, and so the row the reorder moves. Named
+  // rather than spelled twice: it is the assembly the drag is made on, which is
+  // what puts it at the top of the dialog's list (the anchor is row 0, then the
+  // mates in the track's declared `assemblyNames` order).
+  restackAnchor: 'grape',
+  // Where the dotplot reorder tour starts: `mcscan_synteny/dotplot` above
+  // MINUS its `autoDiagonalize`, so the axes open in each assembly's own index
+  // order and the move the page's figure is the result of is still to happen.
+  //
+  // The figure has the reorder baked in -- it is an init flag, run once as the
+  // view opens, before the camera would be on -- so it cannot be the tour's
+  // session. Everything else is the same session: the same config, the same
+  // .anchors track, peach on the horizontal axis and grape on the vertical,
+  // which is the axis the reorder moves (ReorderChromosomesDialog: "the
+  // horizontal axis is the fixed reference").
+  unorderedDotplot: sessionSpec(DOTPLOT_CONFIG, {
+    views: [
+      {
+        type: 'DotplotView',
+        views: [{ assembly: 'peach' }, { assembly: 'grape' }],
+        tracks: ['grape_peach_synteny_mcscan'],
+      },
+    ],
+  }),
 }
