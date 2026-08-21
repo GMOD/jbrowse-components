@@ -1,4 +1,4 @@
-import { getMembers } from '@jbrowse/mobx-state-tree'
+import { getType } from '@jbrowse/mobx-state-tree'
 import { computed, observable } from 'mobx'
 
 // This ESM package builds without @types/node, but consuming bundlers
@@ -106,7 +106,7 @@ const alreadyNamed = new WeakMap<LifecycleHost, Set<number>>()
  */
 export function regionDataMap<T extends object>(
   // the field this map is stored on, so a violation names the map rather than
-  // the eighteen that share this constructor. No default — an omitted name is
+  // the thirteen that share this constructor. No default — an omitted name is
   // the anonymous message this parameter exists to remove, and it would be
   // reached by forgetting rather than by deciding.
   name: string,
@@ -167,7 +167,7 @@ function checkRegionPayloads(
       if (!named.has(key)) {
         named.add(key)
         report(
-          `${getMembers(self).name}: region ${key} of the map handed to ` +
+          `${getType(self).name}: region ${key} of the map handed to ` +
             `installPerRegionLifecycle is \`${typeName(value)}\`, not a ` +
             'payload. This map is derived rather than built by ' +
             '`regionDataMap`, so nothing checked it as it was filled — and ' +
