@@ -77,6 +77,31 @@ are captured in light mode with well-formed data, so the corpus could not catch
 any of them. That is the pattern to look for elsewhere in the plugin: a comment
 asserting two things match is a derivation waiting to be written.
 
+## The dark-mode row, looked at
+
+Resolving the arc and linked-read palettes through the themed `ColorPalette` is
+what fixed reads being dimmed in dark mode while the arcs over them were not.
+That fix was held by tests over the tables and by nothing that had seen it.
+Measured 2026-08-21 against a build, `volvox_sv` at
+`ctgA:2,707..48,600` with `readConnections: 'arc'`, counting exact pixel values
+in the pileup display under `default` and then `darkStock`:
+
+| band | light | dark |
+| --- | --- | --- |
+| reads | `#d3d3d3` x 5,355 | `#8a8a8a` x 5,180 |
+| arcs | `#d3d3d3` x 1,631 | `#898989` x 1,163, `#8a8a8a` x 122 |
+
+`pairLR` is the one alignment fill the stock dark palette overrides, which makes
+it the only entry that can catch a themed path that is not actually themed. No
+pixel in either band carries the light `#d3d3d3` after the switch, so the arcs
+and the reads under them do read as the same grey.
+
+The arcs land one unit under the palette value on dark and exactly on it on
+light. That is one mechanism, not two: an alpha near 0.99 composites `#8a8a8a`
+over the `#121212` ground to `#898989`, and the same alpha composites `#d3d3d3`
+over white back to `#d3d3d3`. It is 1/255 and invisible — and the light ground
+rounding it away is, again, why looking in light mode could not have found it.
+
 ## The parity claim that outlived the thing it named
 
 `mateRefName` ("Mate chromosome"; "Query name" on LGVSyntenyDisplay) said in

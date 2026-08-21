@@ -41,7 +41,6 @@ before anyone noticed.
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
 | [The bezier overlay draws a junction it never fetched](#the-bezier-overlay-draws-a-junction-across-segments-it-never-fetched) | alignments | feed it `unpairedReadChain` and dash the spanning arc; copy the split view, not the arc band |
-| [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
 | [Re-film the protein launch tour](#re-film-the-protein-launch-tour-once-protein3d-ships-the-a3m-removal) | figures, protein3d | waits on a protein3d release; the a3m is gone for good |
 | [Should chromosome painting colour a same-chromosome mate](#should-chromosome-painting-colour-a-mate-on-the-same-chromosome) | alignments | a visual call; any gate has to spare LGVSyntenyDisplay's Query name, which must paint every block |
@@ -451,25 +450,6 @@ To see it: the COLO829 tumour ONT track in the `cancer_sv` demo
 (`https://jbrowse.org/demos/cancer_sv/config.json`). Chain 1 is a closed cycle
 chr3 → chr10 (199 bp) → chr12 (183 bp) → chr3 and the two chr3 arms **overlap**,
 so a chr3-only view fetches both and draws the false inversion.
-
-### Verify the overlay palettes in dark mode
-
-`shaders/palettes.ts` now resolves the arc and linked-read palettes through the
-themed `ColorPalette`, which fixed reads being dimmed in dark mode while the
-arcs over them were not (the stock dark palette changes exactly one entry,
-`pairLR`). That fix is verified by tests over the tables and **has never been
-looked at**. Open any figure's locus with `readConnections: 'arc'` in the dark
-theme and check the arcs, the read-cloud squares, the connectors and the reads
-under them read as the same greys. It is the last claim in
-[ALIGNMENTS_COLOR_PARITY.md](reference/ALIGNMENTS_COLOR_PARITY.md) resting on
-reasoning rather than observation.
-
-The `arcColorsMatchReads` half of this entry is done: the rule moved out of the
-model getter into `arcKeyFoldsIntoReadKey` (shared/legendUtils.ts) and
-`shared/arcKeyFold.test.ts` pins both of its halves — the twin-scheme table,
-where `orientation` and `pairOrientation` are the one pair spelled differently,
-and the categories-in-hand check, which is what refuses to fold an SA-split
-pileup's `splitInversion` onto reads that never paint it.
 
 ### Give colorNeutralRead a dark variant, or fold it into colorPairLR
 
