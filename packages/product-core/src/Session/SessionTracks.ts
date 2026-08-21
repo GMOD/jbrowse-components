@@ -417,7 +417,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * @deprecated call `addSessionTrackConf` or `publishTrackConf`.
+         * Deprecated alias of `addSessionTrackConf`. Call that, or
+         * `publishTrackConf`.
+         *
+         * @deprecated
          *
          * The session-scoped add under its old name, for the prebuilt plugin
          * bundles that reach it by name at runtime. See the base mixin's copy

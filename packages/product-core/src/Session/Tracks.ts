@@ -156,8 +156,10 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
 
       /**
        * #action
-       * @deprecated call `addSessionTrackConf` or `publishTrackConf`, which say
-       * which destination they mean.
+       * Deprecated alias of `addSessionTrackConf`. Call that, or
+       * `publishTrackConf`, which say which destination they mean.
+       *
+       * @deprecated
        *
        * Kept because a prebuilt plugin bundle reaches this by name at runtime
        * and cannot be recompiled — `jbrowse-plugin-protein3d` calls it, and a

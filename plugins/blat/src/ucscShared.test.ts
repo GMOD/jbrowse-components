@@ -24,7 +24,7 @@ const features: SimpleFeatureSerialized[] = [
   { uniqueId: 'hit-1', refName: 'chr6', start: 100, end: 200 },
 ]
 
-// The guards addResultTrack goes through (isSessionWithAddTracks,
+// The guards addResultTrack goes through (isSessionWithAddSessionTrack,
 // isSessionModelWithWidgets, isNavigableView) are duck typed, so a plain object
 // with the right keys is a real session as far as they are concerned. One cast
 // stands in for the whole MST model rather than building one for four calls.
