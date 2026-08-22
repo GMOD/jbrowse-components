@@ -83,3 +83,29 @@ export function buildRefNameMaps(
     canonicalToSeqAdapterRefNames,
   }
 }
+
+/**
+ * Inverts an alias map into canonical refName -> every name for that sequence,
+ * the canonical name first and its aliases after it.
+ *
+ * The aliases come back in the alias map's own key order, which is JS object
+ * key order: an integer-like name (Ensembl's `1`, `2`, `10`) sorts ahead of the
+ * rest, ascending, whatever order the adapter emitted it in. The others keep
+ * insertion order, which for a UCSC chromAlias is the file's column order
+ * (ucsc, assembly, genbank, refseq).
+ *
+ * Feed it `refNameAliases`, never `lowerCaseRefNameAliases` — the latter is a
+ * second index of the same names, and grouping it produces a case-variant twin
+ * of every alias.
+ */
+export function groupNamesByCanonicalRefName(refNameAliases: RefNameAliases) {
+  const groups = new Map<string, string[]>()
+  for (const [name, canonical] of Object.entries(refNameAliases)) {
+    const group = groups.get(canonical) ?? [canonical]
+    if (name !== canonical) {
+      group.push(name)
+    }
+    groups.set(canonical, group)
+  }
+  return groups
+}

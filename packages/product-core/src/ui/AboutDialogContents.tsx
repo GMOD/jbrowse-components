@@ -12,6 +12,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
+import AssemblyInfoPanel from './AssemblyInfoPanel.tsx'
 import FileInfoPanel from './FileInfoPanel.tsx'
 import HeaderButtons from './HeaderButtons.tsx'
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
@@ -87,6 +88,16 @@ const AboutDialogContents = observer(function AboutDialogContents({
           <Attributes attributes={shown.metadata} hideUris={hideUris} />
         </BaseCard>
       ) : null}
+      {/* the assembly a reference sequence track belongs to. That track's own
+          config is three slots of adapter, and the interesting half of what a
+          user opens it for — the aliases, the cytobands, the assembly's own
+          name and aliases — lives one node up, which nothing else in the app
+          surfaces */}
+      <AssemblyInfoPanel
+        config={config}
+        session={session}
+        hideUris={hideUris}
+      />
       <PluggableComponents
         pluginManager={pluginManager}
         /** #extensionPoint Core-extraAboutPanel | sync | Add extra panels to a track's About dialog */

@@ -785,8 +785,11 @@ show up on a region the assembly calls `1`.
 
 To check, open the track menu and click "About track" to see the reference names
 the file actually contains. Compare those against your assembly's names, the
-name in the location box, or the sequence names in your FASTA/`.fai`. If they
-don't match, add
+name in the location box, or the sequence names in your FASTA/`.fai`. The other
+side of the comparison is in the same dialog opened on the **reference sequence
+track**: its "Assembly" section lists every name the assembly knows and the
+aliases already mapped onto each one, which is where you see whether an alias
+file applied. If they don't match, add
 [reference name aliasing](/docs/config_guides/assemblies#configuring-reference-name-aliasing)
 to the assembly to map the two naming schemes together. The
 [RefName aliasing guide](/docs/developer_guides/refname_aliasing) has the full

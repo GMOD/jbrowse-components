@@ -155,6 +155,12 @@ empty name. Whichever of the four columns a row does fill become aliases for it.
 
 ## Troubleshooting
 
+Start by looking at what actually loaded: the reference sequence track's "About
+track" dialog has an "Assembly" section whose "Show ref name aliases" button
+lists every refName in the assembly beside the names resolving to it. A row with
+no aliases is an alias file that did not apply to that contig; a missing row is
+a contig the sequence adapter never had.
+
 - **Aliases don't resolve / tracks appear empty.** The primary refName must
   match your FASTA exactly. For `RefNameAliasAdapter`, confirm `refNameColumn`
   points at the column whose values equal your FASTA's sequence names.

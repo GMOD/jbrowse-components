@@ -23,7 +23,11 @@ import {
 import { getGeneticCodesFromFile, lookupGeneticCodeId } from './geneticCodes.ts'
 import { loadRefNameMap } from './loadRefNameMap.ts'
 import { defaultRefNameColors } from './refNameColors.ts'
-import { buildRefNameMaps, checkRefName } from './refNameMaps.ts'
+import {
+  buildRefNameMaps,
+  checkRefName,
+  groupNamesByCanonicalRefName,
+} from './refNameMaps.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
@@ -451,6 +455,18 @@ export default function assemblyFactory(
       },
       /**
        * #getter
+       * canonical refName -> every name this assembly has for that sequence,
+       * canonical first. The inverse of `refNameAliases`, memoized here because
+       * the readers that want it want the whole table (the About dialog's alias
+       * listing) rather than one row. Undefined until the aliases load.
+       */
+      get namesByCanonicalRefName() {
+        return !self.refNameAliases
+          ? undefined
+          : groupNamesByCanonicalRefName(self.refNameAliases)
+      },
+      /**
+       * #getter
        */
       get rpcManager(): RpcManager {
         // parent chain: assembly -> assemblies[] -> assemblyManager
@@ -595,6 +611,22 @@ export default function assemblyFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       * The other names this assembly has for the same sequence as `refName` —
+       * its aliases, whether the name handed in is an alias or the canonical
+       * name. `chr1`, `1` and `NC_000001.11` each answer with the other two.
+       *
+       * Empty for a name this assembly does not have, and also before the
+       * aliases load: this resolves through `getCanonicalRefName2` so it can be
+       * called from a render, and `initialized` is what distinguishes the two.
+       */
+      getAliasesForRefName(refName: string) {
+        const names = self.namesByCanonicalRefName?.get(
+          self.getCanonicalRefName2(refName),
+        )
+        return names ? names.filter(name => name !== refName) : []
+      },
       /**
        * #method
        * get Map of `canonical-name -> adapter-specific-name`, memoized per

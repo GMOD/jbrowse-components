@@ -217,6 +217,14 @@ The track menu provides access to the "About track" dialog.
 
 <Figure caption="The 'About track' dialog for a CRAM file, showing the full CRAM header and the config info." src="/img/about_track.png"/>
 
+Opened on a **reference sequence track** — from the track selector, or from its
+label when it is open — the dialog also has an "Assembly" section: the
+assembly's own config (its name, its aliases, and the alias, cytoband and
+genetic-code files it loads), a "Copy assembly config" button, and "Show ref
+name aliases", which lists every reference name in the assembly next to the
+other names it answers to. That listing has a filter box, so it is also how you
+look up what one contig is called elsewhere.
+
 ## Editing track configs
 
 Edit any track's settings directly from the track menu's **Track actions →

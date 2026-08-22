@@ -41,3 +41,28 @@ test('and resolves the alias once they have', async () => {
   const { getCanonicalRefName2 } = assembly!
   expect(getCanonicalRefName2('A')).toBe('ctgA')
 })
+
+// the aliases the other direction: `getCanonicalRefName2` answers which
+// sequence a name means, this answers what else that sequence is called —
+// the question a user opens the assembly's About panel to ask, and the one
+// nothing in the model could answer before
+test('getAliasesForRefName answers from either side of the alias', async () => {
+  const { session } = getTestSession()
+  const assembly = await session.assemblyManager.waitForAssembly('volvox')
+
+  expect(assembly!.getAliasesForRefName('ctgA')).toEqual(['A', 'contigA'])
+  // asked by an alias, the canonical name is one of the answers
+  expect(assembly!.getAliasesForRefName('A')).toEqual(['ctgA', 'contigA'])
+  expect(assembly!.getAliasesForRefName('scaffold_7')).toEqual([])
+})
+
+// it resolves through the total resolver so a render can call it, which means
+// the empty answer covers "not loaded yet" as well as "not this assembly's" —
+// `initialized` is what separates them
+test('getAliasesForRefName is empty, not a throw, before the aliases load', () => {
+  const { session } = getTestSession()
+  const assembly = session.assemblyManager.get('volvox')!
+
+  expect(assembly.initialized).toBe(false)
+  expect(assembly.getAliasesForRefName('ctgA')).toEqual([])
+})
