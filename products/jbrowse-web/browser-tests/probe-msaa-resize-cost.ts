@@ -322,9 +322,7 @@ async function walkIntoTheCeiling(page: Page, consoleLines: string[]) {
   console.log(
     '\ncssH'.padEnd(9),
     'backingH'.padStart(9),
-    'tracks'.padStart(7),
     'msaaMiB'.padStart(9),
-    'painted'.padStart(8),
     'clamped'.padStart(8),
     'error'.padStart(6),
   )
@@ -340,41 +338,10 @@ async function walkIntoTheCeiling(page: Page, consoleLines: string[]) {
       await nextFrame()
       await nextFrame()
       const canvas = document.querySelector('canvas')
-      // A frame that landed leaves non-transparent pixels. Read one strip
-      // rather than the whole store: the question is "did anything paint", and
-      // a full readback of a 8192-tall canvas is its own stall.
-      let painted = false
-      if (canvas) {
-        const probe = document.createElement('canvas')
-        probe.width = Math.min(canvas.width, 256)
-        probe.height = 1
-        const ctx = probe.getContext('2d')
-        if (ctx) {
-          ctx.drawImage(
-            canvas,
-            0,
-            Math.floor(canvas.height / 2),
-            probe.width,
-            1,
-            0,
-            0,
-            probe.width,
-            1,
-          )
-          const { data } = ctx.getImageData(0, 0, probe.width, 1)
-          for (let i = 3; i < data.length; i += 4) {
-            if (data[i] !== 0) {
-              painted = true
-              break
-            }
-          }
-        }
-      }
       return {
         cssHeight,
         backingHeight: canvas?.height ?? 0,
         backingWidth: canvas?.width ?? 0,
-        painted,
         error: display.error ? String(display.error) : '',
       }
     }, cssHeight)
@@ -384,9 +351,7 @@ async function walkIntoTheCeiling(page: Page, consoleLines: string[]) {
     console.log(
       String(row.cssHeight).padEnd(9),
       String(row.backingHeight).padStart(9),
-      String(1).padStart(7),
       msaaMiB.toFixed(1).padStart(9),
-      String(row.painted).padStart(8),
       String(clamped).padStart(8),
       (row.error || '-').slice(0, 60).padStart(6),
     )
@@ -394,6 +359,12 @@ async function walkIntoTheCeiling(page: Page, consoleLines: string[]) {
       path: `msaa-ceiling-${row.cssHeight}.png`,
     })
   }
+  // **The screenshots are the evidence for what the user sees**, and there is no
+  // `painted` column because there is no honest way to compute one here: a
+  // WebGPU canvas's contents are not readable back through `drawImage` after
+  // present, so a pixel probe reports "blank" for every row including the ones
+  // that plainly paint. Read the PNGs.
+  //
   // Does it come back? A drag past the clamp and back is the gesture a user
   // actually makes, and a track that stays blank after shrinking is a
   // different (worse) bug from one that recovers.
