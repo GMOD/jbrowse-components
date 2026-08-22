@@ -1,6 +1,6 @@
 ---
 name: tutorial-tour-candidates
-description: Nineteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it, plus the fifteen untoured pages that should NOT get one and why. Fourteen are filmed and their entries record what each estimate got wrong; what is left is 16, 17, 14, 18 and 19. Read before writing a video spec for a tutorial.
+description: Nineteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it, plus the fifteen untoured pages that should NOT get one and why. Sixteen are filmed and their entries record what each estimate got wrong; what is left is 14, 18 and 19. Read before writing a video spec for a tutorial.
 audience: internal
 ---
 
@@ -12,23 +12,23 @@ the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
 holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
-Coverage: **24 of 43 tutorials carry a tour** — `allvsall_synteny`,
+Coverage: **26 of 43 tutorials carry a tour** — `allvsall_synteny`,
 `analyze_trio`, `bisulfite`, `bxd_qtl`, `cancer_sv`, `chromhmm`,
-`display_settings`, `dog10k_selection`, `genomes_proteins` (3),
-`genomes_synteny`, `hg002_haplotypes`, `hic_structural_variants`,
-`mcscan_synteny_grape_peach`, `methylation`,
+`display_settings`, `dog10k_selection`, `genomes_basics` (2),
+`genomes_proteins` (3), `genomes_synteny`, `hg002_haplotypes`,
+`hic_structural_variants`, `mcscan_synteny_grape_peach`, `methylation`,
 `multiway_synteny_grape_peach_cacao`, `pangenome_cactus`, `pangenome_ecoli` (4),
-`pangenome_hprc` (2), `repeatmasker_classes`, `sv_multisamples`,
-`sv_visualization_cgiab`, `synteny_visualization`, `tcga_cohort_cnv`,
-`tcga_cohort_mutations`. The other 19 do not.
+`pangenome_hprc` (2), `repeatmasker_classes`, `sv_callset_review`,
+`sv_multisamples`, `sv_visualization_cgiab`, `synteny_visualization`,
+`tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 17 do not.
 
-**Count it, don't carry it forward.** This line has been wrong twice, both times
-by one and both times because `pangenome_cactus` was left off the list while the
-total was copied from the sentence above it. It is
-`grep -L '<Video ' website/docs/tutorials/*.md`.
+**Count it, don't carry it forward.** This line has been wrong three times, and
+the third was the grep itself: `website/docs/tutorials/CLAUDE.md` matches the
+glob and carries no `<Video>`, so it counted as an untoured tutorial. It is
+`grep -L '<Video ' website/docs/tutorials/*.md | grep -v CLAUDE`.
 
-**Fourteen candidates are filmed and landed** on 2026-08-21 — 1 to 13 and 15,
-one clip serving two pages for 3. Their entries stay below with what each
+**Sixteen candidates are filmed and landed** on 2026-08-21 — 1 to 13 and 15 to
+17, one clip serving two pages for 3. Their entries stay below with what each
 actually cost and what it corrected, because the next tour on those pages starts
 from them.
 
@@ -149,8 +149,9 @@ comparison figure.
 **The numbers are IDs, not the ranking.** `TUTORIAL_TOURS.md` and
 `tutorial-tours-from-scratch.md` cite these by number, so a filmed entry keeps
 the number it was filmed under and a new one takes the next free number.
-**Still to film, best first: 16, 17, 14, 18, 19.** Everything else here is
-filmed, and says what its estimate got wrong.
+**Still to film, best first: 14, 18, 19**, and all three are blocked — 14 and 18
+on a respine, 19 on the frame. Everything else here is filmed, and says what its
+estimate got wrong.
 
 5. **`epigenomics/bisulfite_contexts`** (`bisulfite.md`) — **FILMED**, 848px
    frame, 43s, and **headless was never in doubt**: 14 kb of Illumina WGBS over
@@ -317,32 +318,76 @@ filmed, and says what its estimate got wrong.
     APP` is a false positive here — the app is 456px, and the two things the
     frame is actually for, a ten-row `Show...` submenu and the dialog with its
     panel open, reach 808 and 717.
-16. **`genomes_basics/gnomad_filter`** (`genomes_basics.md`) — `Track menu →
-    Filter by...` on gnomAD v4.1 Exomes, the empty **Add track filters** dialog,
-    one jexl line typed into it, the track redrawing in one colour, and then the
-    same menu row reading **Filter by... (1)** and having become a submenu.
-    **The only control in the corpus renamed by the click before it** —
-    `packages/core/src/ui/filterMenuItems.ts` builds the label from the count
-    and switches the row to a `subMenu` past one, so a reader who reopens the
-    menu is on a different click path from the one they were shown. The redraw
-    it ends on is asserted at `genomes_basics.md:176-178` and pictured nowhere,
-    since `genomes_basics/gnomad_filters` was deleted on review. Risk:
-    hgdownload is the slowest host any of these figures touch, so budget the
-    ready gate; and nothing pairs the typed jexl with the page's copy of it,
-    which is gap 8.
-17. **`genomes_basics/find_a_track`** (`genomes_basics.md`) — Open track
-    selector → `phyloP` into **Filter tracks** → tick **Basewise Conservation
-    (phyloP) - 100-way vertebrate alignment** → the lane draws over TP53. Was
-    proposal 4 in `tutorial-tours-from-scratch.md`. **There is no figure and
-    there is not going to be one**: one was made and cut twice, because a filter
-    box with a word typed in it and a ticked checkbox are what the sentence
-    beside them already says, so the frames carried the app's chrome and no
-    result. A film is the form that carries the result, and the page banks on
-    this route twice more without ever showing it ("the others are the same two
-    clicks", "the same two clicks reach the rest of the catalog"). The cheapest
-    thing on the page. Do NOT fold the search route in beside it: pressing Enter
-    on `TP53` opens the name index's own gene track as well, which the page
-    never mentions and a still declared its way past.
+16. **`genomes_basics/gnomad_filter`** (`genomes_basics.md`) — **FILMED**, 640px
+    frame (sized to the dialog), 25s. `Track menu → Filter by...` on gnomAD v4.1
+    Exomes, the empty **Add track filters** dialog, one jexl line typed into it,
+    Submit, and the lane redrawn. What the estimate got wrong:
+
+    - **The renamed row is not the payoff and was cut from the clip.** This
+      entry sold it as "the only control in the corpus renamed by the click
+      before it", and Colin's call is that a live number does not belong in a
+      control's label — so a clip climaxing on a menu row growing a `(1)` argues
+      for something he does not want. It stays in the app (it counts active
+      filters, which is hidden state nothing else on screen reveals, and it
+      gates `Clear all filters`), and what the page was missing is named in
+      prose instead: **Edit filters...** and **Clear all filters** inside the
+      submenu, which the page never mentioned at all.
+    - **Filming the beat anyway broke the clip, and that is the harness
+      finding.** Reopening the menu at the end put the whole cascade in the last
+      quarter of the run; `recorder.stop()` timed out at 15s, ~12s of on-camera
+      time never reached the file, and the poster was a cascade standing over
+      the payoff. The `stop()` timeout line is not one of the four the run
+      reports on. **The clip's last STATE CHANGE has to be the payoff**, not
+      just its last hold.
+    - **The redraw does more than empty the lane: it labels it.** Cutting to the
+      pLoF set drops the window under `maxLabelFeatureDensity`, so the same lane
+      comes back with a name on every record. That is the frame, and it is a
+      better one than the entry predicted.
+    - The frame is the DIALOG's (~490px centred) and the fixture pins a taller
+      lane than the figure's 200 so the closing frame is not a third page
+      background. hgdownload was never the problem: the ready gate is
+      `displayReady` on the track's declared `displayId` and it cleared in ~4s
+      both takes.
+    - Gap 8 is unchanged — nothing pairs the typed jexl with the page's copy of
+      it. Both come off `GNOMAD_PLOF_FILTER` in `specs/genomes_basics.ts`, which
+      the figure beside the clip also reads, so the two texts are one text by
+      construction rather than by a check.
+17. **`genomes_basics/find_a_track`** (`genomes_basics.md`) — **FILMED**, 520px
+    frame, 30s, and it was the cheapest thing on the page as promised: no new
+    helpers, no source change, green on the first take. Open track selector →
+    `phyloP` into **Filter tracks** → tick **Basewise Conservation (phyloP) -
+    100-way vertebrate alignment** → the lane draws over TP53 → close the
+    drawer. What the estimate got wrong:
+
+    - **It is a round TRIP, and the return leg is what lands the payoff frame.**
+      The drawer takes 384px off the view, and an LGV holds its window in BP
+      across a resize, so the drawer is a zoom and closing it draws the same
+      span back at full width — which makes the last frame `phylop_tp53`'s own
+      state and lets the clip end where the next section starts. Two toggles,
+      two titles: the button says `Open track selector` and then `Close track
+      selector`.
+    - **The filter frame is the one worth having, and it is not the checkbox.**
+      `phyloP` leaves one category and seven rows, six of them phyloP tracks
+      whose names differ only after the parenthesis — which is why the page
+      spells the name out in full and could not say so before. That sentence is
+      on the page now.
+    - **The page's own instruction was wrong and is fixed.** "Open the track
+      selector at the top left" describes opening something a reader already
+      has: the hosted config's `defaultSession` activates the
+      `hierarchicalTrackSelector` widget, and the page says so itself two
+      sections up. It now names the drawer, says a genome opens with it showing,
+      and names the button that closes and reopens it.
+    - **A session spec cannot open a drawer** — the spec shape carries `views`,
+      `sessionTracks`, `sessionAssemblies` and `sessionConnections`, and no
+      widgets — so a tour whose subject is a drawer opens it by clicking, which
+      is what a reader does anyway.
+    - The frame is the END state's (445px app) plus the caption chip's strip.
+      The opening app is 306px and the drawer fills the rest from the second
+      step on; the run reports drawer height separately and does not read the
+      difference as slack.
+    - Still true: do NOT fold the search route in beside it. Pressing Enter on
+      `TP53` opens the name index's own gene track as well, which the page never
+      mentions and a still declared its way past.
 18. **`orthofinder_synteny/same_scale`** (`orthofinder_synteny.md`) — the view
     menu's **Show all regions - each row fit to width** → **Show all regions -
     same bp per pixel**, one radio, six rows visibly re-scaling from
@@ -466,6 +511,10 @@ All of them cost a take or a debug cycle on 2026-08-21.
 - **Size a dialog-centred tour to the DIALOG.** The run's content report
   measures app height only, so it will tell you to shrink a frame the dialog
   needs. Pull a mid-clip frame with `ffmpeg -ss` and look.
+- **The clip's last STATE CHANGE has to be the payoff.** A `recorder.stop()`
+  timeout drops whatever ffmpeg had not flushed — twelve seconds of it on
+  `gnomad_filter`'s first take — and the run logs that on a line none of the
+  four report sections covers. Pull the POSTER and look at it, every time.
 - **`cut: true` on a `type` step** is how a paste is filmed. Five URLs typed a
   keystroke at a time read as 9.4s of nothing happening.
 - **A re-frame needs `pnpm autogen`**, or the page reserves a box the wrong

@@ -7,7 +7,7 @@ description: Live state of the tutorial video-tour thread — which candidates a
 
 ## State
 
-**Fourteen candidates are filmed and landed** (2026-08-21): 1 to 4
+**Sixteen candidates are filmed and landed** (2026-08-21): 1 to 4
 (`variants/trio_phased_matrix`, `synteny/hg002_dotplot_import`,
 `sv/derivative_allele_route` over two pages, `repeats/painting_display_switch`),
 then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
@@ -15,18 +15,20 @@ then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
 `synteny/allvsall_launch_from_selection`, `epigenomics/chromhmm_cluster`), then
 10 (`synteny/liftover_launch`), then 5 and 13
 (`epigenomics/bisulfite_contexts`, `pangenome/tier_to_fine`), then 15
-(`config/settings_to_json`, and a new `videos/config.ts`). Coverage is
-**24 tutorials of 43** — count it with
-`grep -L '<Video ' website/docs/tutorials/*.md`, since this line has been wrong
-twice.
+(`config/settings_to_json`, and a new `videos/config.ts`), then 16 and 17
+(`genomes_basics/gnomad_filter`, `genomes_basics/find_a_track`, and a new
+`videos/genomes_basics.ts`). Coverage is **26 tutorials of 43** — count it with
+`grep -L '<Video ' website/docs/tutorials/*.md | grep -v CLAUDE`, since this
+line has been wrong three times and the third was the grep counting
+`tutorials/CLAUDE.md` as a page.
 
-**The 19 untoured pages were re-surveyed on 2026-08-21 and only four of them
-carry a candidate**: `genomes_basics` (two, 16 and 17), `rnaseq` (14, blocked on
-its respine), `orthofinder_synteny` (18, blocked on its respine and on the
-heaviest figure in the corpus) and `local_ancestry` (19, which does not fit the
-frame). **Best first: 16, 17, 14, 18, 19.** The other fifteen should not get one
-and the candidates file says why for each — that half is what stops the next
-session re-deriving it.
+**Every remaining candidate is blocked.** The 19 untoured pages were re-surveyed
+on 2026-08-21 and only four carried one; `genomes_basics` (16 and 17) is filmed,
+and what is left is `rnaseq` (14, blocked on its respine),
+`orthofinder_synteny` (18, blocked on its respine and on the heaviest figure in
+the corpus) and `local_ancestry` (19, which does not fit the frame). The other
+fifteen should not get one and the candidates file says why for each — that half
+is what stops the next session re-deriving it.
 
 **The swiftshader warning was retired at both ends, and it is about VOLUME.**
 `website/CLAUDE.md` says the tours stay off pileups and graph fetches; both of
@@ -39,7 +41,7 @@ rather than cutting a subgraph, so the FMMM engine never runs. Neither needed
 - **[ideas/tutorial-tour-candidates.md](../ideas/tutorial-tour-candidates.md)**
   — the ranked list, and the one to work from. Each filmed entry now records
   what its estimate got wrong, because the next tour on that page starts there.
-  Six of the thirteen found a defect in the page they film, which is the
+  Eight of the sixteen found a defect in the page they film, which is the
   strongest argument for the thread: a route nobody walks is a route the prose
   can be wrong about.
 - **[ideas/tutorial-structure-audit.md](../ideas/tutorial-structure-audit.md)**

@@ -65,13 +65,19 @@ is the bottom panel and what the rest of this page uses.
 
 ## Finding a track
 
-Open the track selector at the top left. The drawer lists the catalog under
-UCSC's own categories, and **Filter tracks** searches all of them at once. Type
-`phyloP` and tick **Basewise Conservation (phyloP) - 100-way vertebrate
-alignment**, which sits under Comparative Genomics.
+The track selector is the drawer down the right, and a genome opens with it
+showing; the button at the top left of the view header closes and reopens it.
+The drawer lists the catalog under UCSC's own categories, and **Filter tracks**
+searches all of them at once. Type `phyloP` and tick **Basewise Conservation
+(phyloP) - 100-way vertebrate alignment**, which sits under Comparative
+Genomics.
+
+<Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation lane arrives under the TP53 transcript." />
 
 The names are UCSC's, so a track known from the UCSC browser is findable under
-the label it has there.
+the label it has there. UCSC publishes several phyloP tracks for hg38 and the
+filter box leaves all of them, so the words after the parenthesis are what picks
+one out.
 
 ## Reading it
 
@@ -176,6 +182,12 @@ loss-of-function set.
 The colours are the file's own, and gnomAD uses them for the same consequence
 class `annot` names, so the loss-of-function filter leaves a track drawn in one
 colour.
+
+<Video src="/media/genomes_basics/gnomad_filter.mp4" caption="gnomAD v4.1 Exomes over TP53 and the Add track filters dialog its track menu opens. One consequence-class expression redraws the lane with the predicted loss-of-function records alone, in the one colour the file gives that class." />
+
+Once a filter is in effect that same menu row opens a submenu: **Edit
+filters...** brings the dialog back with the expression still in it, and **Clear
+all filters** puts every record back.
 
 A BigBed's extra fields arrive as fields, so whatever columns the published file
 carries are what there is to filter and colour on, and the same dialog takes

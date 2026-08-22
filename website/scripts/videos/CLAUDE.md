@@ -174,3 +174,17 @@ refilm and none of which the run reports.
   after the drawer closes: it takes the re-fetch off camera AND fails the run if
   the margin ever goes the other way, where a `waitForAppSettled` carries on and
   ships the payoff as three warnings.
+- **The clip's last STATE CHANGE has to be the payoff, not just its last hold.**
+  `website/CLAUDE.md`'s "the last repaint of a run of them does not reach the
+  file" understates it: `page.screencast` writes through ffmpeg's stdin, and
+  when `recorder.stop()` times out (the run logs
+  `recorder.stop() -> TIMEOUT after 15s`, which is not one of the four things
+  `video-report` names) whatever had not flushed is gone. On the first take of
+  `genomes_basics/gnomad_filter` that was twelve seconds — the on-camera clock
+  said 41s and the mp4 was 29s — and the twelve seconds were the ones that
+  dismissed a menu the tour had reopened for one beat. So the clip ended on an
+  open cascade and the poster was that cascade standing over the payoff, which
+  is the exact frame the first bullet here is about. A tour that reopens a menu
+  after its result has to do it in the MIDDLE, and there is usually no middle
+  left: the affordance goes on the page instead, which is the division the
+  corpus is built on anyway.

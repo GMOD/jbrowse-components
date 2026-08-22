@@ -25,6 +25,7 @@ import { CACTUS_SEGMENTS_TRACK_JSON } from './specs/pangenome_cactus.ts'
 import { configVideos } from './videos/config.ts'
 import { dog10kVideos } from './videos/dog10k.ts'
 import { epigenomicsVideos } from './videos/epigenomics.ts'
+import { genomesBasicsVideos } from './videos/genomes_basics.ts'
 import { hicVideos } from './videos/hic.ts'
 import { methylationVideos } from './videos/methylation.ts'
 import { pangenomeVideos } from './videos/pangenome.ts'
@@ -56,6 +57,7 @@ export const videoSpecs: VideoSpec[] = [
   ...hicVideos,
   ...epigenomicsVideos,
   ...configVideos,
+  ...genomesBasicsVideos,
 ]
 
 // The track configs a tour TYPES into the app, paired with the page that prints

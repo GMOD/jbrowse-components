@@ -189,6 +189,53 @@ const LANDING = `?config=${UCSC_HG38_CONFIG}&sessionName=Screenshot`
 // worth the sweep catching.
 const SITE = 'https://genomes.jbrowse.org'
 
+// What videos/genomes_basics.ts films. Both tours open on a state a figure
+// above already shows -- same config, same window, same track ids -- so the
+// route each one films runs through the app the rest of the page is of.
+export const genomesBasicsVideoFixtures = {
+  gnomadTrackId: GNOMAD_TRACK_ID,
+  plofFilter: GNOMAD_PLOF_FILTER,
+  // The gnomAD lane with nothing narrowing it: gnomad_filter_menu's session,
+  // one track alone in the view at the window that figure is taken at.
+  //
+  // TALLER than the figure's 200, and that height is the frame's rather than
+  // the picture's. The figure ends on the dialog and is cut to it; the tour
+  // ends on the app alone, so a frame that holds the dialog's ~490px leaves a
+  // third of the closing frame as page background at 200. It is also where the
+  // redraw reads: what this filter does is empty a lane rather than move
+  // anything inside it, and an emptied lane says that only while there is lane
+  // to see it in.
+  unfilteredGnomad: sessionSpec(UCSC_HG38_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: TP53_TRANSCRIPT_WINDOW,
+        tracks: [{ trackId: GNOMAD_TRACK_ID, height: 340 }],
+      },
+    ],
+  }),
+  // phylop_tp53's session with its second track taken out, since adding that
+  // track through the selector is the route. Collapsed, like every frame at a
+  // locus on this page, so the transcript the lane is read against is one row.
+  geneTrackOnly: sessionSpec(UCSC_HG38_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: TP53_TRANSCRIPT_WINDOW,
+        tracks: [GENE_TRACK_COLLAPSED],
+      },
+    ],
+  }),
+  // The catalog name, which is the whole of what the tour ticks. UCSC publishes
+  // six phyloP tracks on hg38 and the filter box narrows to all of them at
+  // once, so the words after the parenthesis are what picks one out.
+  phylopTrackName:
+    'Basewise Conservation (phyloP) - 100-way vertebrate alignment',
+  phylopTrackId: PHYLOP_TRACK.trackId,
+}
+
 export const genomesBasicsSpecs: ScreenshotSpec[] = [
   // The front page: the handful of genomes most people want, and the head of the
   // GenArk half underneath. 1100 wide, not the 1500 default, because the site
