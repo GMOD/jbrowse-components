@@ -15,6 +15,7 @@ import { registerGlobalPluginHandlers } from './ipc/globalPluginHandlers.ts'
 import { registerPluginHandlers } from './ipc/pluginHandlers.ts'
 import { registerQuickstartHandlers } from './ipc/quickstartHandlers.ts'
 import { registerSessionHandlers } from './ipc/sessionHandlers.ts'
+import { resolveLaunchMode } from './launchMode.ts'
 import {
   JBROWSE_PROTOCOL,
   findLaunchTarget,
@@ -36,22 +37,6 @@ debug({ showDevTools: false, isEnabled: true })
 
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL
 
-const HELP_TEXT = `JBrowse 2 desktop
-
-Usage: jbrowse-desktop [options] [file | jbrowse://open?url=<JBrowse Web link>]
-
-  file          Path to a session (.jbrowse) or configuration (config.json)
-                file to open on launch
-
-Options:
-  --renderer <mode>  Force a rendering backend: "webgl" or "canvas" instead of
-                     auto-detecting WebGPU. Useful over X11 / remote desktops
-                     where WebGPU is unavailable.
-  -h, --help         Print this help message and exit
-  --version          Print the version number and exit
-
-Documentation: https://jbrowse.org/jb2/docs/`
-
 // Accepts either --renderer=webgl or --renderer webgl. The value is forwarded
 // to the renderer as a ?renderer= query param and consumed by setGpuOverride.
 function findRendererArg(argv: readonly string[]) {
@@ -63,17 +48,6 @@ function findRendererArg(argv: readonly string[]) {
     : flagIndex === -1
       ? undefined
       : args[flagIndex + 1]
-}
-
-// Text to print for an informational flag (--version/--help), or undefined when
-// the app should launch normally.
-function cliInfoOutput(argv: readonly string[]) {
-  const args = argv.slice(1)
-  return args.includes('--version')
-    ? app.getVersion()
-    : args.includes('--help') || args.includes('-h')
-      ? HELP_TEXT
-      : undefined
 }
 
 // Parsed once at launch; forwarded to every window/session load so a session
@@ -341,13 +315,13 @@ function runApp() {
   })
 }
 
-// --version/--help print and exit before acquiring the single-instance lock so
-// they never disturb an already-running window.
-const infoOutput = cliInfoOutput(process.argv)
-if (infoOutput !== undefined) {
-  console.log(infoOutput)
+const launchMode = resolveLaunchMode(process.argv, app.getVersion(), () =>
+  app.requestSingleInstanceLock(),
+)
+if (launchMode.type === 'info') {
+  console.log(launchMode.output)
   app.exit(0)
-} else if (app.requestSingleInstanceLock()) {
+} else if (launchMode.type === 'run') {
   runApp()
 } else {
   app.quit()
