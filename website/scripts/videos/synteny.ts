@@ -1,8 +1,8 @@
 // The tours through the two comparative import forms -- the three-strain
 // H. pylori stack and the T2T-HG002 self-alignment dotplot -- the reorder that
-// re-sorts a dotplot axis once the plot is already up, and the two launches that
+// re-sorts a dotplot axis once the plot is already up, the two launches that
 // rebuild a whole stack around one locus -- a reference-anchored .blocks table
-// and an all-vs-all PAF.
+// and an all-vs-all PAF -- and the pairwise launch off one UCSC chain block.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
@@ -16,6 +16,8 @@ const {
   allVsAllMoved,
   allVsAllSpan,
   emptySyntenyForm,
+  liftoverBlock,
+  liftoverLgv,
   restackAnchor,
   restackLanes,
   restackSpan,
@@ -594,6 +596,143 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'waitForAppSettled', timeout: 180000 },
       // The stack, with the row the arrows moved sitting under the anchor.
       { type: 'delay', ms: 3500 },
+    ],
+    tailMs: 4500,
+  },
+
+  // THE PAIRWISE LAUNCH, which genomes_synteny.md carries as a four-panel
+  // composite -- a route flattened into stills, and taken on a pair the page is
+  // not about. Every noun in its two paragraphs is a shape on screen: a menu on
+  // a canvas-drawn block, a dialog whose fields depend on the block clicked, and
+  // two submit buttons that build the same view into different slots. The
+  // composite's own third and fourth frames are one launch photographed twice.
+  //
+  // ON THE PAGE'S OWN PAIR. hg38 against hs1 at TNNT3 is the comparison the
+  // page opens by naming and ends by reading, and the composite is hg38 against
+  // panTro6 at FTO -- so a reader met the route on a dataset that appears
+  // nowhere else. The clip lands on hg38 chr11 vs hs1 chr11 at this locus, which
+  // is the window `synteny_hg38_hs1_tnnt3` is of, so the section after it has a
+  // ribbon to change settings on and the section after that has the
+  // rearrangement to read. The composite stays, one section further down, where
+  // "the same click-path works for any liftOver track" is the sentence it
+  // illustrates.
+  //
+  // THE CIGAR CHECKBOX IS THE DIALOG'S SUBJECT and this locus is the case that
+  // makes it visible: the block under the cursor is the chromosome-scale hg38 ->
+  // hs1 chain (tchr11:60,000-135,076,382), so untick it and both panels open on
+  // the whole of chromosome 11 rather than on TNNT3. Hovered rather than
+  // toggled -- unticking it films a launch nobody wants, and the page states
+  // what it costs.
+  //
+  // No flip checkbox in frame: `FlipInvertedTargetsCheckbox` is rendered only
+  // for a reverse-strand block, and the top row here is forward. The inverted
+  // 21.7 kb block one row below is the rearrangement itself, and a launch off it
+  // frames that segment alone, without the collinear chain either side that is
+  // what makes it read as moved.
+  {
+    name: 'synteny/liftover_launch',
+    description:
+      "From one UCSC chain block to a two-panel view: right-click the hg38 to hs1 liftOver track at TNNT3, read the launch dialog's framing options, and Replace current view putting the synteny view in the linear view's place",
+    url: liftoverLgv,
+    // Sized to the LAUNCHED VIEW plus the caption chip's own strip. The run
+    // reports the app at 405 on the linear view and 468 once the two panels are
+    // standing, and neither overlay is the constraint: the dialog is two
+    // checkboxes and a number field (the region launch's panel list is what puts
+    // that tour's frame up at 640), and the context menu is three rows opening
+    // below a click near the top of the frame. What the last 72px are for is the
+    // chip, which is fixed 20px off the BOTTOM of the frame rather than under
+    // the app -- at 480 it lands over the empty mate panel, which is the half of
+    // the last state the caption is about. 72 is inside video-report's 120px
+    // slack, so it reports nothing. Even, per the encode.
+    viewportHeight: 540,
+    // LGVSyntenyDisplay is the alignments display underneath, so its canvas
+    // carries the pileup testid.
+    readySelector: displayPainted('pileup-display'),
+    // ~570 tracks of UCSC hub config, three remote plugins, and hs1 resolved
+    // through the hub plugin as the chain track names it.
+    readyTimeout: 180000,
+    settleMs: 10000,
+    steps: [
+      // The camera opens with the pointer parked at the top middle of the frame,
+      // which in this layout is the overview's cytoband strip -- so the first
+      // frame carried the band's own hover tooltip, over the view title. The
+      // logo is a bare `<g>` with no handler, so this only takes the pointer off
+      // it.
+      { type: 'hover', selector: '[aria-label="JBrowse"]' },
+      // The linear reading the page's first section ends on: one feature per
+      // chain block, laid out in rows.
+      { type: 'delay', ms: 2500 },
+      // A locus and a depth rather than a measured pixel: the blocks are
+      // canvas-drawn, so there is no node to target, and the chain-block canvas
+      // fills the display's whole height -- a bare fracY lands under the rows
+      // rather than on them. 8px down from the display's own top edge is the
+      // middle of the top row at featureHeight 14.
+      {
+        type: 'rightclick',
+        anchor: {
+          track: 'hg38_to_hs1_liftOver',
+          locus: liftoverBlock,
+          fracY: 0,
+          dy: 8,
+        },
+        say: 'Right-click a chain block',
+        hold: 1000,
+      },
+      // The launch item is appended a fetch after the menu opens: it needs the
+      // feature's mate assembly, which decides whether a synteny view can open
+      // at all (canLaunchSyntenyForMate). So this waits on the fetch rather than
+      // guessing at it.
+      { type: 'waitForText', text: 'Launch synteny view for this position' },
+      {
+        type: 'hover',
+        text: 'Launch synteny view for this position',
+        hold: 1400,
+      },
+      {
+        type: 'click',
+        text: 'Launch synteny view for this position',
+        say: 'Launch synteny view for this position',
+      },
+      // The dialog is lazy, so this waits on the chunk as well as on the open.
+      // Matched on the checkbox rather than on the title, which is the menu item
+      // just clicked with three words taken off it.
+      {
+        type: 'waitForText',
+        text: 'Use CIGAR to map the current visible region to the target',
+      },
+      { type: 'delay', ms: 1200 },
+      // Hovered, not clicked. Both boxes open ticked and both are what the
+      // launch is about to do; a tour that unticked either would film a launch
+      // the page tells the reader not to make.
+      {
+        type: 'hover',
+        text: 'Use CIGAR to map the current visible region to the target',
+        say: 'Use CIGAR to map the current visible region to the target',
+        hold: 3000,
+      },
+      {
+        type: 'hover',
+        text: "Copy this view's tracks into its panel",
+        say: "Copy this view's tracks into its panel",
+        hold: 2600,
+      },
+      {
+        type: 'click',
+        text: 'Replace current view',
+        say: 'Replace current view',
+      },
+      // Camera stays on: the linear view being replaced by the two-panel one IS
+      // the payoff, and both panels read the chain the display above has already
+      // pulled into the worker. hs1's 2bit is the one new fetch.
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 240000,
+      },
+      { type: 'waitForAppSettled', timeout: 240000 },
+      // The launched view: hg38 over hs1, the gene track carried into the panel
+      // for the assembly the launch came from and the other panel empty.
+      { type: 'delay', ms: 4000 },
     ],
     tailMs: 4500,
   },

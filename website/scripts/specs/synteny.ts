@@ -4203,6 +4203,56 @@ export const syntenyVideoFixtures = {
   // made on, since PanelList's MoveButton carries the panel's position in its
   // own aria-label.
   allVsAllMoved: 'IAI39',
+  // Where the liftOver launch tour starts: genomes.jbrowse.org's own hg38 config
+  // with the hs1 chain track turned on at TNNT3, which is the state the page's
+  // first two sections walk a reader to -- one box in the track selector, one
+  // gene symbol in the location box.
+  //
+  // THE PAGE'S OWN PAIR, not the panTro6/FTO one its composite is taken on. The
+  // launch lands on hg38 chr11 vs hs1 chr11 at this locus, which is the window
+  // `synteny_hg38_hs1_tnnt3` is of, so the clip ends where the page's last two
+  // figures start and the ribbon settings section has something to change.
+  //
+  // Stacked rather than collapsed (`collapseGroupRows`, which this display
+  // defaults to true so an all-vs-all track draws a lane per mate): three chain
+  // blocks cover this window and the collapsed row merges them, so a right-click
+  // would land on whichever fragment is under the cursor. Stacked, the
+  // chromosome-scale chain is its own bar on the top row and the launch can be
+  // aimed at it.
+  liftoverLgv: sessionSpec(UCSC_HG38_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        // the window `synteny_hg38_hs1_tnnt3` frames hg38 at, so the view the
+        // launch builds is the one that figure is of
+        loc: 'chr11:1,881,000-1,955,000',
+        tracks: [
+          {
+            trackId: 'hg38-ncbiRefSeqCurated',
+            geneGlyphMode: 'longestCoding',
+            height: 90,
+          },
+          {
+            trackId: 'hg38_to_hs1_liftOver',
+            type: 'LGVSyntenyDisplay',
+            collapseGroupRows: false,
+            featureHeight: 14,
+            height: 70,
+          },
+        ],
+      },
+    ],
+  }),
+  // The chain block the tour right-clicks, as a locus rather than a pixel. The
+  // top row is one chromosome-scale chain (tchr11:60,000-135,076,382 in
+  // hg38ToHs1.over.pif.gz) so any x in the window is on it, but not every x is on
+  // a plain part of it: over the deletion the chain carries left of TNNT3 the
+  // menu grows an "Open deletion details" row, which is the CIGAR op under the
+  // cursor rather than the block the page says to right-click. Inside TNNT3 the
+  // chain is plain, and it leaves the menu room to open rightward inside the
+  // frame.
+  liftoverBlock: 'chr11:1,925,000',
   // Where the dotplot reorder tour starts: `mcscan_synteny/dotplot` above
   // MINUS its `autoDiagonalize`, so the axes open in each assembly's own index
   // order and the move the page's figure is the result of is still to happen.
