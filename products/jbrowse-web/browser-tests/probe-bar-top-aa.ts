@@ -49,7 +49,13 @@
 //    the same data and the same browser, so anything that moves is the render.
 //    Two builds of the same arm come back byte-identical; check that before
 //    reading a small diff as signal.
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs'
 import { basename, join } from 'node:path'
 
 import { PNG } from 'pngjs'
@@ -234,6 +240,16 @@ function runDiff(dirA: string, dirB: string, outDir?: string) {
     'vert'.padStart(8),
   )
   for (const name of names.sort()) {
+    // Skipped rather than thrown on, because the scene list moves while a set of
+    // captures is being taken and a stale file on one side is not a finding —
+    // but it IS a pair that went uncompared, so it is named rather than passed
+    // over in silence.
+    if (!existsSync(join(dirB, name))) {
+      console.log(
+        `${basename(name, '.png').padEnd(12)} (no counterpart in ${dirB})`,
+      )
+      continue
+    }
     const a = readFileSync(join(dirA, name))
     const b = readFileSync(join(dirB, name))
     const s = compare(a, b)
