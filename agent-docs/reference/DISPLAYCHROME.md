@@ -594,6 +594,15 @@ distinct reasons, not to be conflated:
   radial view. Arc is an *LGV* SVG display and so can reuse them; circular's
   medium is why it can't.
 
+  **It owes the retry too, and pays it in its own medium.** Nothing here is a
+  rendering backend, so there is no `retry()` to wire; what its error circle was
+  missing was a way back at all — after a fetch failure every input of the chord
+  fetch autorun is unchanged, so the display sat on the error for good. The
+  banner carries a `Retry` tspan (`chord_retry`) calling the display's own
+  `reload()`, which bumps the `reloadCounter` the autorun reads above every
+  gate. Same rule as the LGV families' — ARCHITECTURE.md "[the trigger
+  list](../ARCHITECTURE.md#the-global-fetch-trigger-list-must-be-read-unconditionally)".
+
 ## One element per display: testid, id, phase, drawn
 
 Every LGV display emits **one** chrome element, and it carries four attributes:

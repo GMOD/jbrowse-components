@@ -1006,6 +1006,15 @@ createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
 zero), so callers issue draws unconditionally without tracking which regions have
 data.
 
+**An empty upload IS the release.** Every HAL deletes the pass's prior buffer
+*before* looking at the count, so `uploadBuffer(key, pass, data, 0)` is the
+"this pass has nothing this time" instruction, and `uploadPass` passes an empty
+pack through rather than skipping it. What a caller must not do is skip the call
+to save an upload: that leaves the previous frame's bytes on the GPU. A guard
+that *deletes* first and returns is merely the same instruction spelled twice —
+`GpuHicRenderer` carried one until 2026-08-21, harmless and a second place to
+state the release.
+
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery), `WebGL2Hal`
 (`antialias: true`, VAO + UBO, context-loss recovery), `MockHal` (tests).
 

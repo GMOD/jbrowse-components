@@ -241,11 +241,11 @@ their terminals differently and keep their own call.
   because the fetch trigger is a debounced `afterAttach` autorun, so at export
   time `isLoading` can be false with no data yet, and a `displayPhase !==
   'loading'` test would capture an empty render. `dataCurrent` is an overridable
-  getter (default `false`) each display must implement. HiC and LD return
-  `rpcData !== null && self.viewportFresh` — the mixin-owned half comparing the
-  pre-fetch `captureViewport()` snapshot, which `commitDrawnViewport` records
-  alongside `setRpcData`, against the live `offsetPx`/`bpPerPx`; arc compares a
-  region signature. Presence alone
+  getter (default `false`) each display must implement. Since 2026-08-21 all
+  three answer it through the same `isDataCurrent` signature compare — over the
+  static-block set for arc and HiC, over the visible span plus the settings
+  that shape it for LD — with HiC and LD adding their own `rpcData !== null`
+  term because a commit sets both. Presence alone
   (`rpcData !== null`) would leave an in-place-refetch gap: a pan/zoom export
   resolving on the pre-pan matrix during the debounce+RPC window, since neither
   fetch clears `rpcData` at refetch start. A display that forgets to override
@@ -478,6 +478,19 @@ commits it, so a painter that walked clipped blocks and drew nothing still
 serializes as empty. Omitting `opts` pins a layer to vector even when
 `rasterizeLayers` is on — what the canvas feature export does for its label and
 peptide overlays, so exported text stays crisp.
+
+**A scale small enough to round to zero must not go in the ctx matrix.**
+`wrapSvgExport` serializes every `transform` rounded to 2 decimals, which
+`SvgCanvas` is built around — it folds a shape's origin into the translation so
+the rounding only perturbs the shape's own width and height. What that leaves
+exposed is the *linear* part: a `ctx.scale` below 0.005 rounds to `0`, and the
+whole layer exports blank. Hi-C hit it — under absolute coordinates its
+`viewScale` is `1 / bpPerPx`, about 1e-4 at gene scale, and the exported
+triangle collapsed while the on-screen canvas was correct. The fix is the one to
+reach for generally: a *uniform* scale commutes with rotation, so multiply it
+onto the coordinates and leave the ctx stack holding only O(1) terms (Hi-C keeps
+the 45° rotation and the fit-to-height squash there). Anything that shows up
+only in the export and only at high zoom is worth checking against this first.
 
 **Avoid hand-rolled JSX-SVG inside `renderSvg.tsx`.** Anything draw-shaped
 (rects, paths, fills, strokes) should go through `PaintLayer` so both raster and

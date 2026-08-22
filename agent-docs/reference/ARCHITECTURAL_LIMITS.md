@@ -791,7 +791,7 @@ it: `WORKER_READS` is already the list of what the worker actually consumes, so
 the question left is which of those slots are appearance rather than which slots
 are in the payload at all.
 
-### Three staleness mechanisms behind one name
+### Staleness mechanisms behind one name
 
 **Status:** Mostly closed (2026-07); down to two mechanisms 2026-08-21, when
 HiC and LD moved to genomic worker output and the viewport-snapshot compare
@@ -804,12 +804,12 @@ Data freshness is still computed two ways — spatial coverage
 independently shipped a stale-capture bug
 ([SVG_EXPORT.md](SVG_EXPORT.md), HISTORICAL.md §"In-place-refetch staleness").
 
-What changed: all three now answer under the single name **`dataCurrent`**, and
+What changed: both now answer under the single name **`dataCurrent`**, and
 every consumer reads that name. `svgReady` — five hand-written copies of
 `fresh || terminal`, the actual bug surface — collapsed into one
 `computeSvgReady` that each foundation feeds its own `dataCurrent`. So a display
-composes a freshness answer instead of choosing which of three names to expose,
-and forgetting the terminal set is no longer possible.
+composes a freshness answer instead of choosing which name to expose, and
+forgetting the terminal set is no longer possible.
 
 Unifying the *computations* into one signature was considered and dropped:
 spatial coverage over N streaming regions is not naturally a string, and forcing

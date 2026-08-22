@@ -279,6 +279,12 @@ the superseded flow returns true and drops its results, and
 reads it through `untracked(() => self.isLoading)` so guarding on it doesn't
 make it a trigger.
 
+`FetchMixin` also owns `reloadCounter`, the pure "go again" signal `reload()`
+bumps and every fetch autorun reads unconditionally, above its bail-outs — after
+an error each of the other inputs is unchanged, so nothing else would ever wake
+the fetch. It lives here because it is the one mixin both LGV fetch foundations
+compose; a display that overrides `reload()` should still bump it.
+
 ## Composing the mixin
 
 Compose it alongside `BaseDisplay` and `TrackHeightMixin`, then add the

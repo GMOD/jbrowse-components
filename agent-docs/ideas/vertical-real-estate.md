@@ -110,7 +110,7 @@ settle.
    allocation is reactive, settling as data arrives (MobX computed handles it).
    Trap: `naturalHeight` must be the *unconstrained* content height, never
    derived from the current `allocatedHeight`, or fit-scaling displays (the
-   wiggle `renderTransform` path) oscillate. Displays must expose
+   wiggle fit-to-height path) oscillate. Displays must expose
    content-height-at-natural-density independent of what they're allocated.
 3. **One resolved getter** (the `effectiveRowHeight` pattern from CLAUDE.md):
    every consumer - render container, SVG export (`svgcomponents/util.ts`

@@ -1,7 +1,8 @@
 // LD heatmap — GENOMIC mode. One instance per cell; each cell carries its
-// own screen-space position + cellSize (variants are laid out along the
-// genome, not at uniform pitch). Rendered as a 45°-rotated square above the
-// x-axis; fragment shader samples the color ramp by `ldValue`.
+// own position + cellSize, in bp/√2 relative to the payload's origin
+// (variants are laid out along the genome, not at uniform pitch). Rendered as
+// a 45°-rotated square above the x-axis; fragment shader samples the color
+// ramp by `ldValue`.
 //! targets: wgsl, glsl
 //! blend: premultiplied
 

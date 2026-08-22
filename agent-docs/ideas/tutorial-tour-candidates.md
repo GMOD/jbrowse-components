@@ -438,9 +438,11 @@ prose.
   figure's own frame is 1385px, past the 960 default. Sections freely
   reorderable.
 - **`sv_callset_review.md`** — a CLI page that says so at `:96-97` ("no browser
-  is involved"). **The fix is an embed, not a shoot**: its one app section hands
-  off to two routes already filmed on the same COLO829 der(3) junction its
-  figure is of, and `sv/derivative_allele_route` already serves two pages.
+  is involved"). **The fix was an embed, not a shoot**: its one app section
+  hands off to routes already filmed on the same COLO829 der(3) junction its
+  figure is of, so it took `sv/derivative_allele_route`, which now serves three
+  pages. Done; it is no longer an untoured page, and the clip it embeds is the
+  reason it never needs its own.
 
 **The route is real and already filmed somewhere else.** A second clip of one
 cascade teaches a reader nothing new about the app.

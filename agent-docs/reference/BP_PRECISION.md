@@ -38,17 +38,21 @@ genomic features and regions, matching BED/BAM. Adapters that read 1-based
 formats (VCF `POS`, GFF `start`) subtract 1 on ingest; exporters that write
 1-based formats add 1 on output.
 
-## Three coordinate families
+## The coordinate families
 
 | Family | Displays | Vertex attribute | Conversion |
 |---|---|---|---|
 | **LGV bp** | alignments, canvas basic + multi-row, wiggle, variants, MAF, GWAS | absolute genomic `uint` | `bpToClipX(bp, u)` (hi/lo split, below) |
 | **Window-relative cumulative bp** | synteny, dotplot | `float bpRel = cumBp − base` | `bpRel * bpPerPxInv + panPx`, then `screenToClip` |
-| **Screen space** | Hi-C, LD (both passes), variant matrix | CSS px, computed on the CPU | `screenToClip(px, resolution)` |
+| **Origin-relative diagonal bp** | Hi-C, LD (both passes) | `float2` of bp/√2 relative to the payload's own `originBp` | `diagonalCellToClip(pos, canvasSize, viewScale, viewOffsetX, yScalar)` |
+| **Screen space** | variant matrix | CSS px, computed on the CPU | `screenToClip(px, resolution)` |
 
-`hpmath.slang` hosts all three families' helpers plus generic ones
-(`quadLocal`, `extendToMinWidthX`, the pixel-snap functions), so `import hpmath`
-does not by itself mean a shader does hi/lo math.
+`hpmath.slang` hosts the hi/lo helpers plus the generic ones every family lands
+on (`screenToClip`, `quadLocal`, `extendToMinWidthX`, the pixel-snap
+functions), so `import hpmath` does not by itself mean a shader does hi/lo math.
+The diagonal family's rotation lives in `diagonalGrid.slang` — shared by Hi-C
+and both LD variants precisely so the two plugins cannot spell one transform
+differently — and finishes through `screenToClip` from here.
 
 ## LGV family: what you actually write
 
@@ -327,13 +331,37 @@ than of block geometry.
 This is a published surface, not an internal one — `products/jbrowse-build-your-own`
 teaches hosts to draw exactly these overlays.
 
-### Hi-C is not a precision problem
+### Hi-C and LD are not a precision problem, and the origin is why
 
-`diagonalGrid.slang` says its grid units are "genomic bp for Hi-C", which reads
-like the Gbp-scale Float32 hazard synteny and dotplot both had to solve. It is
-not. Positions are built as `u = (contactBin + off) * w` with
-`w = res / (bpPerPx * √2)` (`executeRenderHicData.ts`), so they are
-viewport-pixel-scale. Float32 is fine and no base/pan scheme is wanted.
+`diagonalGrid.slang` says its grid units are "genomic bp for Hi-C", and since
+the 2026-08-21 rewrite that is literally true — `w = res / √2`
+(`executeRenderHicData.ts`), so an instance position is genomic bp on the
+rotated axis, not the viewport-pixel-scale number it used to be. That reads like
+the Gbp-scale Float32 hazard synteny and dotplot both had to solve, and it is
+answered the same way: the worker subtracts an origin first.
+
+`calcAxisBlocks` picks `originBp` — the leading edge of the fetched block set —
+and every position ships relative to it, so a Float32 instance attribute carries
+a span, not a genomic coordinate. The origin is folded back per frame on the CPU
+in double precision, inside `viewOffsetX = originBp / bpPerPx - offsetPx` (the
+`viewTransform` getter on `LinearHicDisplay`, and its twin on `SharedLDModel`;
+the forward and inverse maps it feeds are `hicTransform.ts`), the same
+base-plus-window shape as the cumulative-bp family — one base subtracted in the
+worker, added back in float64, never a large absolute value in a float32
+attribute. LD lays its columns out the same way, in bp/√2 off the first region's
+leading edge, in both index and genomic mode.
+
+What that bought is not precision but freedom from the viewport: `bpPerPx` no
+longer appears in the payload at all, so a pan or zoom is pure live arithmetic
+over `viewScale = 1 / bpPerPx` and a stale matrix draws at its own genomic
+position while a refetch runs. The staleness mechanism that existed to rescale
+fetch-time pixels retired with it (ARCHITECTURAL_LIMITS.md §"Staleness
+mechanisms behind one name").
+
+**A uniform scale that small must stay out of the SVG ctx matrix.** `viewScale`
+is ~1e-4 at gene scale, and the export rounds serialized transforms to 2
+decimals; Hi-C multiplies it onto the coordinates instead and keeps only the
+rotation and the y-squash on the ctx stack. SVG_EXPORT.md carries the rule.
 
 ## The readout direction: a pixel back to a base
 

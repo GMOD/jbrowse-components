@@ -829,22 +829,33 @@ a bare-autorun fetch outside all three families — carries the same
 `reloadCounter` signal for the same reason (after an error every other input is
 unchanged), pinned by its `stateModelFactory.test.ts`.
 
+**`reloadCounter` is one declaration for both LGV families.** It lives on
+`FetchMixin`, the one mixin `MultiRegionDisplayMixin` and `GlobalFetchMixin`
+both compose — the argument that already put `fetchInert` there, applied to two
+identical volatiles that had nothing keeping them identical. The comparative
+family keeps its own on `SyntenyFetchStateMixin` (ADR-054) and chord declares
+its own, because neither composes `FetchMixin` at all.
+
 ### One latest-wins machine, one phase contract
 
-What the three families share is now shared as three named things rather than as
-three copies:
+What the three families share is now shared as named things rather than as three
+copies:
 
 | what | where | who runs on it |
 | --- | --- | --- |
 | latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them — `FetchMixin.runFetch` wraps it and adds the observable bookkeeping (`isLoading`, `error`, `fetchGeneration`, `fetchCanceled`); the comparative installer, the two second-fetch autoruns (variants sources, breakpoint overlay), chord's fetch and `withDiagonalizeProgress` hold one directly |
 | the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the global and comparative families; per-region is deliberately not this shape, see `RegionFetchContext` |
 | the leading-edge scheduler | `leadingEdgeAutorun` | all three installers, plus the dotplot view's region autorun |
+| the non-abort fetch-error rule: an abort is the ordinary end of a superseded fetch and is swallowed, so is any failure of a fetch that is no longer current, and only a current fetch's real failure is logged and published | `handleFetchError` (`@jbrowse/core/util`) | `FetchMixin.runFetch`, the comparative installer, chord's fetch |
 
 `FetchMixin` reimplemented the rotation rather than wrapping it until
 2026-08-20, and the two copies had drifted over whether a completed fetch
 releases its token. `GlobalFetchPhases` and the comparative installer's inline
 `{ prepare, run, commit }` were the same contract declared twice, with the same
-three rules explained twice.
+three rules explained twice. The error rule was spelled three times and had
+drifted on whether the `console.error` was currency-guarded — the comparative
+family's pin ("does not let a superseded fetch raise its error") is the
+semantic `handleFetchError` now holds for all of them.
 
 What is left per family is the part that genuinely differs: the trigger list
 (which reads wake it), the commit shape (one payload versus N streaming

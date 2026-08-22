@@ -26,9 +26,11 @@ line has been wrong three times and the third was the grep counting
 on 2026-08-21 and only four carried one; `genomes_basics` (16 and 17) is filmed,
 and what is left is `rnaseq` (14, blocked on its respine),
 `orthofinder_synteny` (18, blocked on its respine and on the heaviest figure in
-the corpus) and `local_ancestry` (19, which does not fit the frame). The other
-fifteen should not get one and the candidates file says why for each — that half
-is what stops the next session re-deriving it.
+the corpus) and `local_ancestry` (19, which does not fit the frame). The rest
+should not get one and the candidates file says why for each — that half is what
+stops the next session re-deriving it. One of them closed without a shoot:
+`sv_callset_review` took the `sv/derivative_allele_route` embed its entry
+prescribed, which is why the coverage number moved without a tour being filmed.
 
 **The swiftshader warning was retired at both ends, and it is about VOLUME.**
 `website/CLAUDE.md` says the tours stay off pileups and graph fetches; both of
