@@ -53,6 +53,7 @@ if the project publishes one, or view a larger cohort as a multiple alignment
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
+- **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 
 ## Config slots
 

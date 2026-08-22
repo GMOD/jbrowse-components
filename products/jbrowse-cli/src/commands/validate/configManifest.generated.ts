@@ -1635,7 +1635,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -1734,7 +1734,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -1831,7 +1831,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -1873,7 +1873,8 @@ export const configManifest: ConfigManifest = {
       "displayTypes": [
         "DotplotDisplay",
         "LinearSyntenyDisplay",
-        "LGVSyntenyDisplay"
+        "LGVSyntenyDisplay",
+        "MultiWaySyntenyDisplay"
       ]
     },
     "ReferenceSequenceTrack": {
@@ -1892,7 +1893,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "name",
@@ -1984,7 +1985,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2086,7 +2087,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2183,7 +2184,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2280,7 +2281,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2377,7 +2378,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2474,7 +2475,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2571,7 +2572,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2668,7 +2669,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LinearMultiSampleVariantMatrixDisplayConfigurationSchema | LDDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | MultiLinearWiggleDisplayConfigurationSchema | LinearGCContentDisplayConfigurationSchema | LinearGCContentTrackDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearArcDisplayConfigurationSchema | LinearPairedArcDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -3543,6 +3544,55 @@ export const configManifest: ConfigManifest = {
         "type",
         "configuration",
         "lodMode"
+      ]
+    },
+    "MultiWaySyntenyDisplay": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"MultiWaySyntenyDisplay\""
+        },
+        {
+          "name": "displayId",
+          "type": "identifier"
+        },
+        {
+          "name": "maxFeatureScreenDensity",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "height",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "mouseover",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "color",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "ribbonColor",
+          "type": "(JexlString | string)"
+        }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "LinearReferenceSequenceDisplay": {

@@ -36,6 +36,7 @@ used to load UCSC chain alignment files (query and target assembly required)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
+- **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 
 ## Config slots
 

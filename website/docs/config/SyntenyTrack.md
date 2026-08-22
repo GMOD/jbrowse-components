@@ -41,6 +41,8 @@ _See the **Config slots** section below for all available configuration fields._
   ([state model](../../models/lgvsyntenydisplay))
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
   ([state model](../../models/linearsyntenydisplay))
+- **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
+  ([state model](../../models/multiwaysyntenydisplay))
 - **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
 - **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
 - **Adapter:** [BlastTabularAdapter](../blasttabularadapter)

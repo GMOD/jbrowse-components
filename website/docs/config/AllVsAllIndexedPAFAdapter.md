@@ -47,6 +47,7 @@ that.
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)
+- **Display:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 
 ## Config slots
 

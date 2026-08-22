@@ -18,7 +18,8 @@ is drawn).
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
   displays: LinearAlignmentsDisplay
 - [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
-  displays: DotplotDisplay, LinearSyntenyDisplay, LGVSyntenyDisplay
+  displays: DotplotDisplay, LinearSyntenyDisplay, LGVSyntenyDisplay,
+  MultiWaySyntenyDisplay
 - [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md)
   — displays: LinearReferenceSequenceDisplay, LinearGCContentDisplay
 - [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
@@ -49,6 +50,7 @@ is drawn).
 - [DotplotDisplay](https://jbrowse.org/jb2/docs/config/dotplotdisplay.md)
 - [LinearSyntenyDisplay](https://jbrowse.org/jb2/docs/config/linearsyntenydisplay.md)
 - [LGVSyntenyDisplay](https://jbrowse.org/jb2/docs/config/lgvsyntenydisplay.md)
+- MultiWaySyntenyDisplay (no docs page)
 - [LinearReferenceSequenceDisplay](https://jbrowse.org/jb2/docs/config/linearreferencesequencedisplay.md)
 - [LinearVariantDisplay](https://jbrowse.org/jb2/docs/config/linearvariantdisplay.md)
 - [LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay.md)

@@ -1,0 +1,74 @@
+{
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grape-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "peach-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "peach.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "cacao",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "cacao-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "cacao.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "multiway_blocks",
+      "name": "grape/peach/cacao blocks",
+      "assemblyNames": ["grape", "peach", "cacao"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "mcscanBlocksLocation": {
+          "uri": "grape.blocks",
+          "locationType": "UriLocation"
+        },
+        "blockAssemblies": ["grape", "peach", "cacao"],
+        "bedLocations": [
+          { "uri": "grape.bed", "locationType": "UriLocation" },
+          { "uri": "peach.bed", "locationType": "UriLocation" },
+          { "uri": "cacao.bed", "locationType": "UriLocation" }
+        ],
+        "assemblyNames": ["grape", "peach", "cacao"]
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "multiway_blocks-MultiWaySyntenyDisplay"
+        }
+      ]
+    }
+  ]
+}

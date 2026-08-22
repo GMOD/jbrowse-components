@@ -14,6 +14,7 @@ import SyntenyGetCigarMap from './LinearSyntenyRPC/SyntenyGetCigarMap.ts'
 import { SyntenyGetFeaturesAndPositions } from './LinearSyntenyRPC/SyntenyGetFeaturesAndPositions.ts'
 import SyntenyResolveMatchingRegion from './LinearSyntenyRPC/SyntenyResolveMatchingRegion.ts'
 import LinearSyntenyViewF from './LinearSyntenyView/index.ts'
+import MultiWaySyntenyDisplayF from './MultiWaySyntenyDisplay/index.ts'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail/index.ts'
 import SyntenyTrackF from './SyntenyTrack/index.tsx'
 
@@ -23,6 +24,7 @@ import type { AbstractViewContainer } from '@jbrowse/core/util'
 export type { LinearSyntenyImportFormSyntenyOption } from './LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx'
 export { renderToSvg } from './LinearSyntenyView/svgcomponents/SVGLinearSyntenyView.tsx'
 export type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
+export type { MultiWaySyntenyDisplayModel } from './MultiWaySyntenyDisplay/model.ts'
 // The ribbon layer for one band, and the model it takes. A host drawing its own
 // comparative chrome needs this: the two genome rows are ordinary LGVs it
 // already knows how to mount, and the per-display `RenderingComponent` (tooltip,
@@ -56,6 +58,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     LinearSyntenyDisplayF(pluginManager)
     SyntenyFeatureWidgetF(pluginManager)
     LGVSyntenyDisplayF(pluginManager)
+    MultiWaySyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     LinearViewMenuItemsF(pluginManager)
     SyntenyTrackF(pluginManager)

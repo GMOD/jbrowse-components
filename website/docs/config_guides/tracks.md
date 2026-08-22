@@ -153,7 +153,7 @@ tracks can be drawn more than one way, and the `displays` array picks which:
 | [](/docs/config/multiquantitativetrack) | [](/docs/config/multilinearwiggledisplay) |
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearwiggledisplay) |
 | [](/docs/config/referencesequencetrack) | [](/docs/config/lineargccontentdisplay)<br/>[](/docs/config/linearreferencesequencedisplay) |
-| [](/docs/config/syntenytrack) | [](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearsyntenydisplay) |
+| [](/docs/config/syntenytrack) | [](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearsyntenydisplay)<br/>[](/docs/config/multiwaysyntenydisplay) |
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay)<br/>[](/docs/config/lddisplay)<br/>[](/docs/config/linearmultisamplevariantdisplay)<br/>[](/docs/config/linearmultisamplevariantmatrixdisplay)<br/>[](/docs/config/linearpairedarcdisplay)<br/>[](/docs/config/linearvariantdisplay) |
 
 <!-- DISPLAY_TYPES END -->
