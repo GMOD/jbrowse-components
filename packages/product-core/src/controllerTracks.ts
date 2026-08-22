@@ -1,5 +1,6 @@
 import { getEnv } from '@jbrowse/core/util'
 import { guessTrackConf } from '@jbrowse/core/util/tracks'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { resolveLocalFileUris } from './localFiles.ts'
 
@@ -28,7 +29,7 @@ export type TrackInput = string | TrackConf
 // what keeps these reads checked at all.
 interface ControllerView {
   tracks: { configuration: { trackId: string } }[]
-  showTrack: (trackId: string) => unknown
+  launchTrack: (trackId: string) => Promise<unknown>
   hideTrack: (trackId: string) => unknown
 }
 
@@ -94,24 +95,39 @@ export function resolveTracks(
  * Session-scoped: these are the host's declared tracks for one embed, not a
  * catalog an admin curates.
  */
-export function openTracks(session: ControllerSession, tracks: TrackConf[]) {
+export async function openTracks(
+  session: ControllerSession,
+  tracks: TrackConf[],
+) {
+  // sequential, not Promise.all: each display's state model may be a separate
+  // dynamic import, and racing them would land the tracks on the view in
+  // whatever order the chunks happen to resolve rather than the caller's
   for (const conf of tracks) {
+    // the engine can be destroyed while a chunk is in flight (an unmounted
+    // embed); reading the dead tree from this floating promise would throw
+    // uncatchably
+    if (!isAlive(session.view)) {
+      return
+    }
     const trackId = conf.trackId as string
     if (!session.getTrackById(trackId)) {
       session.addSessionTrackConf(conf)
     }
-    session.view.showTrack(trackId)
+    await session.view.launchTrack(trackId)
   }
 }
 
 /** Open every wanted track and close any others the view currently shows. */
-export function reconcileTracks(
+export async function reconcileTracks(
   session: ControllerSession,
   tracks: TrackConf[],
 ) {
   const { view } = session
   const wanted = new Set(tracks.map(t => t.trackId))
-  openTracks(session, tracks)
+  await openTracks(session, tracks)
+  if (!isAlive(view)) {
+    return
+  }
   // materialize the ids first: hideTrack splices view.tracks, so iterating it
   // live would skip entries
   const unwanted = view.tracks

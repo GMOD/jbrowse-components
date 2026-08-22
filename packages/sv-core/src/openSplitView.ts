@@ -34,14 +34,14 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
  * back a track the reader had closed. A trackId the session cannot resolve
  * throws, and one stale id should not cost the reader the whole launch.
  */
-export function openDefaultTracks(
-  views: { showTrack: (trackId: string) => unknown }[],
+export async function openDefaultTracks(
+  views: { launchTrack: (trackId: string) => Promise<unknown> }[],
   trackIds: string[] = [],
 ) {
   for (const view of views) {
     for (const trackId of trackIds) {
       try {
-        view.showTrack(trackId)
+        await view.launchTrack(trackId)
       } catch (e) {
         console.error(e)
       }

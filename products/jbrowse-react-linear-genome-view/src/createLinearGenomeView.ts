@@ -247,7 +247,7 @@ export function createLinearGenomeView(
     // a restored session owns the initial track layout; without one, open the
     // wanted tracks so they actually display
     if (!hasSession) {
-      reconcileTracks(
+      await reconcileTracks(
         viewState.session,
         resolveTracks(tracks, viewState, assemblyName, localFiles),
       )
@@ -282,12 +282,12 @@ export function createLinearGenomeView(
   // caller just stated: re-navigating on a tracks-only update would yank a user
   // who had panned since, and re-reconciling tracks on a location-only update
   // is work with nothing to show for it.
-  function apply(state: LinearGenomeViewState) {
+  async function apply(state: LinearGenomeViewState) {
     if (!current) {
       return
     }
     if (state.tracks) {
-      reconcileTracks(
+      await reconcileTracks(
         current.session,
         resolveTracks(tracks, current, assemblyName, localFiles),
       )
@@ -323,7 +323,7 @@ export function createLinearGenomeView(
         location = state.location
       }
       await ready
-      apply(state)
+      await apply(state)
     },
     destroy() {
       // set first: a build still in flight reads it and destroys the engine it

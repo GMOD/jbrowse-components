@@ -64,7 +64,7 @@ export default function WithExternalPlugin() {
           ],
           location: '1:2,467,681..2,667,681',
         })
-        state.session.view.showTrack('segdups_ucsc_hg19')
+        await state.session.view.launchTrack('segdups_ucsc_hg19')
         mount.engine = state
         setViewState(state)
       } catch (e) {

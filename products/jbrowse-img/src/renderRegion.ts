@@ -383,7 +383,7 @@ const renderLinear: ModeRenderer = async ctx => {
   if (refseq) {
     const seqTrackId = data.assembly.sequence.trackId
     if (typeof seqTrackId === 'string') {
-      view.showTrack(seqTrackId)
+      await view.launchTrack(seqTrackId)
     }
   }
 
@@ -413,7 +413,7 @@ const renderLinear: ModeRenderer = async ctx => {
     ...(data.openTracks ?? []),
   ]
   for (const { trackId, opts } of toOpen) {
-    applyDisplayOpts(
+    await applyDisplayOpts(
       view,
       trackId,
       configTrackCategory(data.tracks, trackId),

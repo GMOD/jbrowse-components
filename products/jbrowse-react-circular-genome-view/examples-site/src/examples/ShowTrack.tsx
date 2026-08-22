@@ -48,15 +48,15 @@ export default function ShowTrack() {
   const state = useCreateViewState({ assembly, tracks })
 
   // open a track imperatively instead of via the init prop
-  // showTrack API: https://jbrowse.org/jb2/docs/models/circularview/#action-showtrack
+  // launchTrack API: https://jbrowse.org/jb2/docs/models/circularview/#action-launchtrack
   //
   // In an effect rather than beside the construction above, which is what the
   // hook costs — and nothing is lost: the assembly is still a network round
-  // trip away, so this lands long before there is anything to draw. `showTrack`
-  // returns the track it already added when it is already shown, so StrictMode
-  // running this twice shows it once.
+  // trip away, so this lands long before there is anything to draw.
+  // `launchTrack` resolves to the track it already added when it is already
+  // shown, so StrictMode running this twice shows it once.
   useEffect(() => {
-    state.session.view.showTrack('volvox_sv_test')
+    void state.session.view.launchTrack('volvox_sv_test')
   }, [state])
 
   return <JBrowseCircularGenomeView viewState={state} />

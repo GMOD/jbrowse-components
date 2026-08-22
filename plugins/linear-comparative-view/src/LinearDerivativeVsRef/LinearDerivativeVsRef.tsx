@@ -106,12 +106,12 @@ const MAX_SHOWN = 10
 
 interface SyntenyPanel {
   initialized?: boolean
-  showTrack?: (
+  launchTrack?: (
     trackId: string,
     initialSnapshot?: Record<string, unknown>,
     displayInitialSnapshot?: Record<string, unknown>,
     inlineConf?: Record<string, unknown>,
-  ) => void
+  ) => Promise<unknown>
 }
 
 // Run `show` once the panel has a width. A view created by an action is not
@@ -369,9 +369,11 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     // derivative panel is a synthetic assembly no configured track names
     if (refPanel && carried.length > 0) {
       showWhenMeasured(refPanel, () => {
-        for (const trackId of carried) {
-          refPanel.showTrack?.(trackId)
-        }
+        void (async () => {
+          for (const trackId of carried) {
+            await refPanel.launchTrack?.(trackId)
+          }
+        })()
       })
     }
     // The config travels on the track rather than into any session list. It is
@@ -382,7 +384,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     // above, whose config the view spec carries the same way.
     if (derivativePanel) {
       showWhenMeasured(derivativePanel, () => {
-        derivativePanel.showTrack?.(
+        void derivativePanel.launchTrack?.(
           segmentsTrack.trackId,
           {},
           segmentsDisplay,

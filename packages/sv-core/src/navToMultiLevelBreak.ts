@@ -113,7 +113,7 @@ export async function navToMultiLevelBreak({
   if (reused) {
     view.setDisplayName(makeTitle(feature))
   } else {
-    openDefaultTracks(view.views, defaultTrackIds)
+    await openDefaultTracks(view.views, defaultTrackIds)
   }
   await Promise.all(
     panels.map((panel, idx) =>

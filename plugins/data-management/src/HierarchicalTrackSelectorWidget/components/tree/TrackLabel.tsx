@@ -85,9 +85,11 @@ const TrackCheckbox = observer(function TrackCheckbox({
       className={className}
       checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
-        if (model.trackContainer?.toggleTrack(trackId)) {
-          model.addToRecentlyUsed(trackId)
-        }
+        void (async () => {
+          if (await model.trackContainer?.launchToggleTrack(trackId)) {
+            model.addToRecentlyUsed(trackId)
+          }
+        })()
       }}
       disabled={disabled}
     />
