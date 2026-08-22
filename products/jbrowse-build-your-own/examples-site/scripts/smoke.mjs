@@ -938,13 +938,16 @@ const failures = await smokeExamplesSite({
   // installed before each page's own scripts, so `muiBudget` can hold the
   // census to what ever rendered rather than to what survived the load
   recordFromLoad: recordMuiFromLoad,
-  // The one console error on this site that is a page working rather than
+  // The two console errors on this site that are a page working rather than
   // failing: `loading-and-errors` points a radio at an assembly whose sequence
-  // file does not exist, and `viewStatusStatesAreDrawn` below clicks it. Named
-  // down to the URL on purpose — a filter matching "404" would waive the
-  // ordinary broken-data-link regression this looks exactly like, on every page.
+  // file does not exist, and `viewStatusStatesAreDrawn` below clicks it, while
+  // `removing-material-ui` carries a "track that fails to load" so its
+  // bring-your-own error overlay has something to draw. Both named down to the
+  // URL on purpose — a filter matching "404" would waive the ordinary
+  // broken-data-link regression they look exactly like, on every page.
   allowedConsoleError: (text, slug) =>
-    slug === 'loading-and-errors' && text.includes('does-not-exist.2bit'),
+    (slug === 'loading-and-errors' && text.includes('does-not-exist.2bit')) ||
+    (slug === 'removing-material-ui' && text.includes('does-not-exist.bw')),
   //
   // The census runs before the click: opening one of those bottom-right menus
   // mounts a Material popover, which would land in the count. It runs twice,
