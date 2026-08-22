@@ -41,16 +41,6 @@ export default function GlobalFetchMixin() {
       FetchMixin(),
       types.model({}),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * Bumped by `reload()` to retrigger a global display's fetch autorun.
-       * Each display reads `void self.reloadCounter` in its `afterAttach` fetch
-       * autorun so a user-initiated reload re-runs the fetch even when no
-       * viewport/setting changed.
-       */
-      reloadCounter: 0,
-    }))
     .views(self => ({
       /**
        * #getter

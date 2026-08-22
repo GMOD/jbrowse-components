@@ -2,7 +2,7 @@ import { noteFetchStarted } from '@jbrowse/core/pluggableElementTypes/models/ass
 import {
   createStatusWindow,
   createStopTokenRotation,
-  isAbortException,
+  handleFetchError,
   localStorageGetBoolean,
   progressLabel,
   statusFraction,
@@ -125,6 +125,19 @@ export default function FetchMixin() {
        * doubles as the staleness epoch inside runFetch
        */
       fetchGeneration: 0,
+
+      /**
+       * #volatile
+       * Bumped by `reload()` and read unconditionally by the fetch autoruns,
+       * so a user retry re-runs the body even where nothing else moved — after
+       * an error every other fetch input is unchanged. It is also the half
+       * that survives a `reload()` override that forgets to invalidate, which
+       * is the dead Retry button `makeRetryContractCheck` reports. Declared
+       * here because this is the one mixin both LGV fetch foundations compose,
+       * the same argument that put `fetchInert` below; the comparative family
+       * carries its own on `SyntenyFetchStateMixin` (ADR-054).
+       */
+      reloadCounter: 0,
 
       /**
        * #volatile
@@ -488,12 +501,9 @@ export default function FetchMixin() {
             statusCallback,
           })
         } catch (e) {
-          if (!isAbortException(e)) {
-            console.error('Fetch failed:', e)
-            if (isCurrent()) {
-              self.error = e
-            }
-          }
+          handleFetchError(e, isCurrent, err => {
+            self.error = err
+          })
         } finally {
           if (isCurrent()) {
             // Release this fetch's stop token now that it has ended, which drops

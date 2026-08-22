@@ -5,7 +5,7 @@ import {
 import {
   createStopTokenRotation,
   getSession,
-  isAbortException,
+  handleFetchError,
 } from '@jbrowse/core/util'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -140,10 +140,9 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
         commit(result, args)
       }
     } catch (e) {
-      if (isCurrent() && !isAbortException(e)) {
-        console.error(e)
-        self.setError(e)
-      }
+      handleFetchError(e, isCurrent, err => {
+        self.setError(err)
+      })
     } finally {
       // the fetching flag under the staleness guard, the status through
       // `end()` — which closes that guard, so it goes last

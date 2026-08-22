@@ -66,17 +66,6 @@ export default function MultiRegionDisplayMixin() {
          * returns
          */
         loadedRegions: regionDataMap<LoadedRegion>('loadedRegions'),
-        /**
-         * #volatile
-         * Bumped by `reload()` and read unconditionally by the fetch autorun,
-         * so a user retry re-runs the body even where nothing else moved. The
-         * base `reload()` also clears `loadedRegions`, which is what normally
-         * re-fires it — the counter is the half that survives a `reload()`
-         * override that forgets to invalidate, which is the dead button
-         * `makeRetryContractCheck` reports. Same name and same role as
-         * `GlobalFetchMixin`'s, so the two families read alike.
-         */
-        reloadCounter: 0,
       }))
       .views(self => ({
         /**

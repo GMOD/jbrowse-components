@@ -9,7 +9,7 @@ import {
   getContainingView,
   getEnv,
   getSession,
-  isAbortException,
+  handleFetchError,
   isFeature,
 } from '@jbrowse/core/util'
 import {
@@ -316,10 +316,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
                     self.setFeatures(feats)
                   }
                 } catch (e) {
-                  if (!isAbortException(e) && isCurrent()) {
-                    console.error(e)
-                    self.setError(e)
-                  }
+                  handleFetchError(e, isCurrent, err => {
+                    self.setError(err)
+                  })
                 } finally {
                   // the clear this fetch never had. Its phases close onto `''`,
                   // which no aggregate rewrites into a blank (ADR-080), so

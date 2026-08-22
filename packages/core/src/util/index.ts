@@ -435,7 +435,11 @@ export {
 } from './createStopTokenRotation.ts'
 export { createSharedSetup } from './createSharedSetup.ts'
 export { isDataCurrent } from './isDataCurrent.ts'
-export { isAbortException, makeAbortError } from './aborting.ts'
+export {
+  handleFetchError,
+  isAbortException,
+  makeAbortError,
+} from './aborting.ts'
 export { linkify } from './linkify.ts'
 export { locStringsToRegions } from './locStringsToRegions.ts'
 export type { RefNameSource } from './locStringsToRegions.ts'
