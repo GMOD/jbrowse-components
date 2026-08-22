@@ -1,6 +1,7 @@
-`height` takes any CSS height and bounds the component itself. Without it the
-view draws at content height and the page grows as tracks are added — right for
-a document, wrong for a panel.
+`height` takes any CSS height and bounds the component itself — all of it, so
+the `File` bar's row comes out of the total and the view takes the rest. Without
+it the view draws at content height and the page grows as tracks are added —
+right for a document, wrong for a panel.
 
 Bounded, the view keeps its chrome in place and scrolls only the tracks: the
 title bar, the navigation bar, the overview scalebar and the coordinate ruler

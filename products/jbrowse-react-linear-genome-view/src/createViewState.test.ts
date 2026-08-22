@@ -311,3 +311,25 @@ test('an open drawer bounds the view, and pins it with the older name', () => {
   expect(state.effectiveHeight).toBeUndefined()
   expect(state.session.stickyViewHeaders).toBe(false)
 })
+
+// The app-shaped File menu, and the two items an embed can honour. Asserted on
+// the model rather than through the bar because the bar renders whatever this
+// returns -- including nothing, which is what `disableAddTracks` is for: every
+// item here is refused by the session guards under it, so a menu would be a row
+// of dead ends.
+test('the File menu carries what an embed can honour, and nothing under disableAddTracks', () => {
+  const state = createViewState({ assembly, tracks })
+  expect(state.menus()).toEqual([
+    {
+      label: 'File',
+      menuItems: [
+        expect.objectContaining({ label: 'Open track...' }),
+        expect.objectContaining({ label: 'Open connection...' }),
+      ],
+    },
+  ])
+
+  expect(
+    createViewState({ assembly, tracks, disableAddTracks: true }).menus(),
+  ).toEqual([])
+})

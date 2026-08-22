@@ -243,14 +243,19 @@ reaches only one of them.
 
 `disableAddTracks` hides the single-view components' own "add track"
 affordances, for a page where the track set is yours to decide rather than the
-reader's.
+reader's. That includes the LGV's `File` menu, whose two items — **Open
+track...** and **Open connection...** — are exactly those affordances: with them
+gone the menu bar has nothing to hold, so it isn't drawn at all rather than
+offering rows the session refuses.
 
 `height` takes any CSS height (`'400px'`, `'80vh'`) and bounds the component's
-own root. Without it an embedded view is content-height and grows with the page,
-which is what you want in a document and not in a panel. The tracks scroll
-inside the bound while the chrome above them stays put — title bar, navigation
-bar, overview scalebar, coordinate ruler — so a height shorter than the track
-set is tall costs you nothing but the scrollbar.
+own root — the whole component, so the menu bar's row comes out of it and the
+view takes what is left (48px of a 400px box, at present). Without it an
+embedded view is content-height and grows with the page, which is what you want
+in a document and not in a panel. The tracks scroll inside the bound while the
+chrome above them stays put — title bar, navigation bar, overview scalebar,
+coordinate ruler — so a height shorter than the track set is tall costs you
+nothing but the scrollbar.
 
 That last part is why this is a prop and not just advice to wrap the component
 in a sized box. A host box does bound the view, and still does, but it scrolls
