@@ -512,7 +512,9 @@ export const videoLiveRefs: Record<string, string> = {
   "hic/two_regions": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr9%3A129%2C730%2C000-131%2C730%2C000%22%2C%22trackLabels%22%3A%22offset%22%2C%22highlight%22%3A%5B%7B%22refName%22%3A%22chr9%22%2C%22start%22%3A130713881%2C%22end%22%3A130887675%2C%22label%22%3A%22ABL1%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%2C%7B%22refName%22%3A%22chr22%22%2C%22start%22%3A23180509%2C%22end%22%3A23318037%2C%22label%22%3A%22BCR%22%2C%22color%22%3A%22rgba(30%2C110%2C190%2C0.16)%22%7D%5D%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22mane_hg38%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22name%22%2C%22height%22%3A68%7D%2C%7B%22trackId%22%3A%22hic_gm12878_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22useLogScale%22%3Afalse%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%2C%7B%22trackId%22%3A%22hic_k562_insitu%22%2C%22type%22%3A%22LinearHicDisplay%22%2C%22height%22%3A380%2C%22useLogScale%22%3Afalse%2C%22useColorPercentile%22%3Atrue%2C%22selectedNormalization%22%3A%22NONE%22%2C%22squashToHeight%22%3Afalse%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "epigenomics/bisulfite_contexts": "?config=test_data/arabidopsis_methylation/config_emseq_bisulfite.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22arabidopsis%22%2C%22loc%22%3A%22NC_003070.9%3A4%2C398%2C000-4%2C412%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22arabidopsis_genes%22%7D%2C%7B%22trackId%22%3A%22arabidopsis_rmsk%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22jexlFiltersSetting%22%3A%5B%22jexl%3Afeature.end-feature.start%3E200%22%5D%2C%22height%22%3A50%7D%2C%7B%22trackId%22%3A%22arabidopsis_methyldackel%22%2C%22type%22%3A%22MultiLinearWiggleDisplay%22%2C%22defaultRendering%22%3A%22multirowxy%22%2C%22minScore%22%3A0%2C%22maxScore%22%3A100%2C%22height%22%3A170%7D%2C%7B%22trackId%22%3A%22arabidopsis_wgbs%22%2C%22type%22%3A%22LinearAlignmentsDisplay%22%2C%22colorBy%22%3A%7B%22type%22%3A%22bisulfite%22%2C%22modifications%22%3A%7B%22cytosineContext%22%3A%22CG%22%7D%7D%2C%22showCoverage%22%3Afalse%2C%22heightMode%22%3A%22fixed%22%2C%22featureHeight%22%3A5%2C%22height%22%3A200%7D%5D%7D%5D%7D&sessionName=Screenshot",
   "epigenomics/chromhmm_cluster": "?config=test_data/config_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr7%3A26%2C950%2C000-27%2C450%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22ncbi_gff_hg19%22%2C%22type%22%3A%22LinearBasicDisplay%22%2C%22showLabels%22%3A%22name%22%2C%22jexlFiltersSetting%22%3A%5B%22jexl%3Afeature.type!%3D'pseudogene'%22%5D%2C%22height%22%3A120%7D%2C%7B%22trackId%22%3A%22roadmap_chromhmm_multirow_hg19%22%2C%22type%22%3A%22LinearMultiRowFeatureDisplay%22%2C%22height%22%3A520%7D%5D%7D%5D%7D&sessionName=Screenshot",
-  "config/settings_to_json": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-10000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22volvox_sv_cram%22%2C%22height%22%3A250%7D%5D%7D%5D%7D&sessionName=Screenshot"
+  "config/settings_to_json": "?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22volvox%22%2C%22loc%22%3A%22ctgA%3A1-10000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22volvox_sv_cram%22%2C%22height%22%3A250%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "genomes_basics/gnomad_filter": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-gnomadExomesVariantsV4_1%22%2C%22height%22%3A340%7D%5D%7D%5D%7D&sessionName=Screenshot",
+  "genomes_basics/find_a_track": "?config=https%3A%2F%2Fjbrowse.org%2Fucsc%2Fhg38%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C668%2C400-7%2C677%2C600%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22hg38-ncbiRefSeq%22%2C%22geneGlyphMode%22%3A%22longestCoding%22%7D%5D%7D%5D%7D&sessionName=Screenshot"
 }
 
 // Each tour's pixel size, which is its capture viewport: the encode preserves
@@ -586,7 +588,7 @@ export const videoFrames: Record<
   },
   "synteny/three_strain_import": {
     "width": 1920,
-    "height": 600
+    "height": 900
   },
   "synteny/hg002_dotplot_import": {
     "width": 1920,
@@ -667,6 +669,14 @@ export const videoFrames: Record<
   "config/settings_to_json": {
     "width": 1920,
     "height": 860
+  },
+  "genomes_basics/gnomad_filter": {
+    "width": 1920,
+    "height": 640
+  },
+  "genomes_basics/find_a_track": {
+    "width": 1920,
+    "height": 520
   }
 }
 
@@ -679,6 +689,8 @@ export const videoCaptioned: string[] = [
   "dog10k/igf1_cluster_route",
   "epigenomics/bisulfite_contexts",
   "epigenomics/chromhmm_cluster",
+  "genomes_basics/find_a_track",
+  "genomes_basics/gnomad_filter",
   "hic/two_regions",
   "methylation/group_by_hp",
   "pangenome/hprc_cluster_callset",
