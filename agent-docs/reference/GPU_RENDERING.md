@@ -1272,7 +1272,7 @@ backend path; standalone overlay components must replicate it.
 ## Antialiasing ramps: how wide, and where the width comes from
 
 **`packages/render-core/src/shaders/antialias.slang` is the rule.** It holds
-both ramp widths, both ramp shapes and `glyphEdgeAlpha`, and its header says
+both ramp widths, the one ramp shape and `glyphEdgeAlpha`, and its header says
 which width a shader gets to use. What follows is why there is a module at all.
 
 Five shaders were fixed for one bug — synteny, dotplot, the point glyphs, hi-C,
@@ -1320,9 +1320,9 @@ genuinely different:
   exact edges after a linear transform, and antialiasing them individually
   produces seams.
 
-The tree runs both ramp SHAPES, and the one to reach for is the linear
-`aaRamp`. That used to read as a preference — linear "is what a box filter, and
-so Canvas2D, produces on a straight edge", cubic "reads softer on a curve" — and
+**There is one ramp SHAPE left, the linear `aaRamp`.** Which one to reach for
+used to read as a preference — linear "is what a box filter, and so Canvas2D,
+produces on a straight edge", cubic "reads softer on a curve" — and
 `scripts/aa_ramp_coverage_study.ts` settles it by scoring both against the exact
 area a straight edge covers of a pixel, at five angles. Linear is closer at
 every one of them:
@@ -1339,23 +1339,47 @@ half-max contour. A thin mark shows it plainly: a band built as
 `ramp(d) - ramp(d - W)` is exactly right at every width with the linear ramp,
 where the cubic paints a half-pixel band at 0.688 coverage instead of 0.500.
 
-**No pixels have moved on that finding.** Four call sites still take the cubic —
-synteny's `perpCoverage` and `vertCoverage`, the dotplot capsule, and
-`glyphEdgeAlpha` with every point glyph behind it — and each is a visual change
-rather than a cleanup. The instrument is the cross-backend gate, not a golden:
-it diffs canvas2d against the GPU render of the same run, canvas2d is the
-reference side, and `Dotplot View`, `Synteny Views` and `GWAS Tracks` are all in
-its CI scope. That turns the conversion into a falsifiable prediction — a ramp
-closer to exact coverage should move those suites DOWN the drift distribution
-`--drift-report` prints, not merely somewhere else. Read
-[CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) for the distribution to compare
-against before reading a number as an improvement.
+**All four cubic call sites are converted** — synteny's `perpCoverage` and
+`vertCoverage`, the dotplot capsule, and `glyphEdgeAlpha` with every point glyph
+behind it — and `aaSmoothRamp` went with them rather than staying deprecated,
+because a shader function nothing calls is dead-code-eliminated out of every
+compiled shader and `pnpm gen:shaders` then fails its own js-skip check for
+naming a function no emitted shader contains. The smoothstep form is written
+down in the study script, which models both shapes in JS.
 
-The one to convert first is the dotplot capsule. Wiggle's capsule is the same
-primitive with the same SDF and already takes the linear ramp, so the two differ
-today for no reason anyone recorded, and marks thinner than a pixel — the ones
-the cubic over-inks — are what dotplot is made of. `agent-docs/TODO.md` carries
-the conversion.
+Each conversion was a one-argument change, and the factor of two is the whole
+risk: `aaSmoothRamp(d, halfPx)` becomes `aaRamp(d, 2.0 * halfPx)`, since the
+linear form takes the FULL ramp width where the smoothstep takes the half. Get
+it wrong and it still compiles, with every ramp in that shader half or double
+the width it asks for.
+
+**The drift these conversions predict is NOT yet measured.** The instrument is
+the cross-backend gate rather than a golden — it diffs canvas2d against the GPU
+render of the same run with canvas2d as the reference side, and `Dotplot View`,
+`Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks` are all in its CI
+scope, so all four sites are watched:
+
+```sh
+pnpm --filter @jbrowse/web build
+cd products/jbrowse-web && node browser-tests/runner.ts \
+  --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate --drift-report
+```
+
+A ramp closer to exact coverage should move those pairs DOWN the distribution
+[CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) records (66 pairs, max 0.62%,
+median 0.00%), not merely somewhere else. Note the wiggle line plots at the top
+of that distribution were already on the linear ramp, so they are the control
+rather than the target.
+
+**Two efforts land on the same pixels, so a drift run has to hold one fixed to
+read the other.** This conversion and the per-display MSAA sample-count question
+are not independent: `glyphEdgeAlpha` sits behind `pointGlyph` and manhattan's
+SDFs, and the primitives
+[ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md)
+records as still depending on the 4x MSAA target are wiggle/coverage bar tops,
+read arrow tips and the tiled Hi-C/LD diamonds. A ramp change and a sample-count
+change on one build produce a number neither effort can attribute, so record the
+commit any drift table was measured at.
 
 **A ramp needs geometry to live in.** Widening one without padding the quad
 clips it: the dotplot capsule quad is now `halfWidth + aaHalfPx` on both axes, with
