@@ -4236,6 +4236,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (number | undefined))"
         },
         {
+          "name": "minBarHeight",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
         },
@@ -4320,6 +4324,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "lineWidth",
           "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "minBarHeight",
+          "type": "(JexlString | number)"
         },
         {
           "name": "maxGapMultiple",
@@ -4456,6 +4464,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (number | undefined))"
         },
         {
+          "name": "minBarHeight",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
         },
@@ -4568,6 +4580,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "lineWidth",
           "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "minBarHeight",
+          "type": "(JexlString | number)"
         },
         {
           "name": "maxGapMultiple",

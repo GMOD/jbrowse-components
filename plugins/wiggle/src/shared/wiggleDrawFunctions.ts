@@ -61,7 +61,8 @@ export function drawXYPlot({
   symlogConstant,
   origin,
   rgb,
-}: RowDraw & { rgb: string }) {
+  minBarHeightPx,
+}: RowDraw & { rgb: string; minBarHeightPx: number }) {
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const originY = scoreToY(origin) + rowTop
   const positions = source.featurePositions
@@ -85,13 +86,12 @@ export function drawXYPlot({
     const x2 = toX(positions[i * 2 + 1]!)
     const scoreY = scoreToY(scores[i]!) + rowTop
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
-    // bar grows from the score baseline (originY) up or down to the score
-    ctx.fillRect(
-      spanLeft(x1, x2, w),
-      Math.min(scoreY, originY),
-      w,
-      Math.abs(originY - scoreY),
-    )
+    // bar grows from the score baseline (originY) up or down to the score, and
+    // is floored away from that baseline so a score sitting on it still paints
+    // — the twin of the same floor in wiggle.slang, off the same number
+    const h = Math.max(minBarHeightPx, Math.abs(originY - scoreY))
+    const top = scoreY <= originY ? originY - h : originY
+    ctx.fillRect(spanLeft(x1, x2, w), top, w, h)
   }
 }
 

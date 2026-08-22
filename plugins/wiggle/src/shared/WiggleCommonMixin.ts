@@ -194,6 +194,15 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
+       * Shortest an xyplot bar may draw, in px. A bin whose score sits exactly
+       * on the origin otherwise has a zero-height bar, which paints nothing and
+       * so reads as a hole (issue #4279).
+       */
+      get minBarHeight(): number {
+        return getConf(confNode(self), 'minBarHeight')
+      },
+      /**
+       * #getter
        */
       get summaryScoreMode(): string {
         return getConf(confNode(self), 'summaryScoreMode')

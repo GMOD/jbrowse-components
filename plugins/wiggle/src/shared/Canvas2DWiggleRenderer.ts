@@ -42,6 +42,7 @@ function drawWiggleBlocks(
     scatterPointSize,
     lineWidth,
     origin,
+    minBarHeightPx,
   } = state
   // getRowHeight, not a bare divide: makeWiggleRenderState floors numRows at 1
   // for the shader's sake, but this function is also reached from the SVG
@@ -103,7 +104,7 @@ function drawWiggleBlocks(
             drawScatter({ ...row, rgb, pointSize: scatterPointSize })
             break
           default:
-            drawXYPlot({ ...row, rgb })
+            drawXYPlot({ ...row, rgb, minBarHeightPx })
         }
       }
     },

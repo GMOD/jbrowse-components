@@ -75,6 +75,13 @@ export const wiggleConfigSchemaFields = {
       'Line thickness in px for line ("line"/"multiline") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 1',
     advanced: true,
   },
+  minBarHeight: {
+    type: 'number',
+    defaultValue: 1,
+    description:
+      'Bar plot ("xyplot"/"multixyplot") only: shortest a bar may draw, in px, measured from the origin the bars pivot around. A bin whose score sits exactly on that origin otherwise draws a zero-height bar, painting nothing, so a covered stretch of zeros looks identical to a hole with no data. 0 restores that. Overlay multi-wiggle ignores it: every source shares one row there, so the floored bars would land on each other and only the last one drawn would show',
+    advanced: true,
+  },
   maxGapMultiple: {
     type: 'number',
     defaultValue: DEFAULT_GAP_BREAK_MULTIPLE,

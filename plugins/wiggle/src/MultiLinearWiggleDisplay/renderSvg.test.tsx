@@ -116,6 +116,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       scatterPointSize: 2,
       lineWidth: 1,
       origin: 0,
+      minBarHeightPx: 0,
     },
     gpuProps: () => ({
       sources: [{ name: 'a' }, { name: 'b' }],

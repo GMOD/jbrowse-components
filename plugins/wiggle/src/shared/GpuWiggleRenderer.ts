@@ -158,6 +158,9 @@ export class GpuWiggleRenderer
       // renderers: past the backing-store clamp the two differ, and the ramp
       // wants the density of the screen the mark is read on.
       devicePixelRatio: getDpr(),
+      // CSS px, like every other geometry number in this block, so the floor is
+      // the same height at every dpr.
+      minBarHeightPx: state.minBarHeightPx,
     })
 
     this.hal.writeUniforms(this.uniformData)

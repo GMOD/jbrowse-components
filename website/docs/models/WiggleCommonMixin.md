@@ -52,6 +52,7 @@ the whole surface.
 | <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | WiggleCommonMixin |
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  | WiggleCommonMixin |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. | WiggleCommonMixin |
+| <span id="getter-minbarheight">**minBarHeight**</span><br><code>number</code> | Shortest an xyplot bar may draw, in px. A bin whose score sits exactly on the origin otherwise has a zero-height bar, which paints nothing and so reads as a hole (issue #4279). | WiggleCommonMixin |
 | <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> |  | WiggleCommonMixin |

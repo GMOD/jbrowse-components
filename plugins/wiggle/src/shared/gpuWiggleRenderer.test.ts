@@ -64,6 +64,7 @@ const DEFAULT_STATE = {
   scatterPointSize: 2,
   lineWidth: 1,
   origin: 0,
+  minBarHeightPx: 0,
 }
 
 describe('GpuWiggleRenderer', () => {
@@ -416,10 +417,32 @@ describe('GpuWiggleRenderer', () => {
     renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       origin: 5,
+      minBarHeightPx: 0,
     })
 
     const f32 = hal.getLastUniformsF32()!
     expect(f32[U.origin]).toBe(5)
+  })
+
+  it('writes the bar height floor into its uniform, in CSS px like the rest', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
+    const originalDpr = globalThis.devicePixelRatio
+
+    try {
+      globalThis.devicePixelRatio = 2
+      renderer.uploadRegion(0, [source])
+      renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+        ...DEFAULT_STATE,
+        minBarHeightPx: 1,
+      })
+
+      const f32 = hal.getLastUniformsF32()!
+      expect(f32[U.minBarHeightPx]).toBe(1)
+    } finally {
+      globalThis.devicePixelRatio = originalDpr
+    }
   })
 
   it('handles log scale type in uniforms', () => {

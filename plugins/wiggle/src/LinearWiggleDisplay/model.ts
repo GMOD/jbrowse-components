@@ -243,6 +243,7 @@ export default function stateModelFactory(
           // `ticks` places itself in, which is why both read it from one helper
           height: axisPlotBox(self.height).plotHeight,
           numRows: 1,
+          minBarHeightPx: self.minBarHeight,
         })
       },
 

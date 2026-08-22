@@ -304,6 +304,11 @@ export default function stateModelFactory(
           // LinearWiggleDisplay's inset — the divergence is intentional.
           height: self.height,
           numRows: self.numRows,
+          // Overlay shares one row between every source, so a floored bar marks
+          // whichever source drew last rather than the one it belongs to — the
+          // failure the 1px-floor branch on issue #4279 showed. Rows that are
+          // each a source's own take the floor.
+          minBarHeightPx: self.isOverlay ? 0 : self.minBarHeight,
         })
       },
 

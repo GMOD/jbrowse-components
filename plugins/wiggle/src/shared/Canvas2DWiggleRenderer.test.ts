@@ -131,6 +131,7 @@ describe('Canvas2DWiggleRenderer', () => {
     scatterPointSize: 2,
     lineWidth: 1,
     origin: 0,
+    minBarHeightPx: 0,
   }
 
   test('renderBlocks draws XY plot rectangles', () => {
@@ -173,6 +174,7 @@ describe('Canvas2DWiggleRenderer', () => {
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
       ...defaultState,
       origin: 5,
+      minBarHeightPx: 0,
     })
 
     expect(fillRectCalls.length).toBe(2)
@@ -180,6 +182,69 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(fillRectCalls[0]![3]).toBeCloseTo(60)
     expect(fillRectCalls[1]![1]).toBeCloseTo(100)
     expect(fillRectCalls[1]![3]).toBeCloseTo(60)
+  })
+
+  test('minBarHeightPx floors a bar sitting on the origin, growing away from it', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    // domain [0,10], height 200 → the origin 0 sits at y=200. A score of 0 has
+    // no height of its own and no side, so it takes the positive one: a 1px bar
+    // whose top is one px above the baseline.
+    const source = makeSource([0, 0], [0, 500], [500, 1000])
+
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      minBarHeightPx: 1,
+    })
+
+    expect(fillRectCalls.length).toBe(2)
+    expect(fillRectCalls[0]![1]).toBeCloseTo(199)
+    expect(fillRectCalls[0]![3]).toBeCloseTo(1)
+  })
+
+  test('minBarHeightPx floors a negative bar downward from the origin', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    // pivot 5 puts the baseline at y=100; 4.99 is below it by a fraction of a
+    // px, so the floor grows the bar DOWN and leaves the baseline edge alone.
+    const source = makeSource([4.99], [0], [500])
+
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      origin: 5,
+      minBarHeightPx: 4,
+    })
+
+    expect(fillRectCalls[0]![1]).toBeCloseTo(100)
+    expect(fillRectCalls[0]![3]).toBeCloseTo(4)
+  })
+
+  test('minBarHeightPx 0 leaves a bar on the origin unpainted', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    const source = makeSource([0], [0], [500])
+
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      minBarHeightPx: 0,
+    })
+
+    expect(fillRectCalls[0]![3]).toBe(0)
   })
 
   test('renderBlocks skips regions with no data', () => {
@@ -462,6 +527,7 @@ const lineState = {
   scatterPointSize: 2,
   lineWidth: 1,
   origin: 0,
+  minBarHeightPx: 0,
 }
 const zeroY = 200
 const score5Y = 100
@@ -722,6 +788,7 @@ describe('a log domain entirely under 1', () => {
     scatterPointSize: 2,
     lineWidth: 1,
     origin: 0,
+    minBarHeightPx: 0,
   }
 
   function barHeights(scores: number[]) {

@@ -76,6 +76,11 @@ public struct Uniforms {
   // without differentiating it (antialias.slang §"Analytic"). The xyplot bar's
   // horizontal cuts and the center line's capsule both read it.
   public float  devicePixelRatio;
+  // Shortest an xyplot bar may draw, in the CSS px the bar geometry is measured
+  // in. Floors the bar away from the origin so a score sitting exactly on it
+  // still paints (issue #4279); 0 is the unfloored bar. The Canvas2D twin
+  // floors the same span from the same number.
+  public float  minBarHeightPx;
 };
 
 public float bpToClipX(uint bp, Uniforms u) {

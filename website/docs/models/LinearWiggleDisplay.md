@@ -152,6 +152,7 @@ the whole surface.
 | <span id="getter-numquantile">**numQuantile**</span><br><code>number</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-numquantile) |
 | <span id="getter-linewidth">**lineWidth**</span><br><code>number</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-linewidth) |
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | <span data-pagefind-ignore>Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line.</span> | [WiggleCommonMixin](../wigglecommonmixin#getter-maxgapmultiple) |
+| <span id="getter-minbarheight">**minBarHeight**</span><br><code>number</code> | <span data-pagefind-ignore>Shortest an xyplot bar may draw, in px. A bin whose score sits exactly on the origin otherwise has a zero-height bar, which paints nothing and so reads as a hole (issue #4279).</span> | [WiggleCommonMixin](../wigglecommonmixin#getter-minbarheight) |
 | <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-summaryscoremode) |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>string</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-renderingtype) |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> |  | [WiggleCommonMixin](../wigglecommonmixin#getter-hasresolution) |

@@ -112,7 +112,13 @@ export function makeWiggleRenderState(
     width,
     height,
     numRows,
-  }: { width: number; height: number; numRows: number },
+    minBarHeightPx,
+  }: {
+    width: number
+    height: number
+    numRows: number
+    minBarHeightPx: number
+  },
 ): WiggleGPURenderState {
   return resolveRenderState(self.domain, domainY => ({
     domainY,
@@ -135,5 +141,9 @@ export function makeWiggleRenderState(
     lineWidth: self.lineWidth,
     // bars pivot around, and density fades from, the bicolor threshold
     origin: self.bicolorPivot,
+    // Per-display, like the box above it: overlay multi-wiggle stacks every
+    // source in one row and passes 0, since floored bars there would overdraw
+    // each other rather than each mark its own source.
+    minBarHeightPx,
   }))
 }

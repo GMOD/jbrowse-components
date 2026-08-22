@@ -139,6 +139,23 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       float originY = scoreToY(u.origin,   u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant);
       topPx = min(scoreY, originY) + rowTop;
       botPx = max(scoreY, originY) + rowTop;
+      // The height floor, grown away from the origin — the vertical twin of
+      // extendToMinWidthX growing a floored bar away from its bin start. The
+      // origin edge is the one the reader measures from, so it stays put and
+      // the score edge moves; a bar on the origin has no side yet and takes the
+      // positive one. Growing away also keeps the floored bar inside the row,
+      // since the origin is itself within the domain the row spans.
+      //
+      // Geometry, not ink: the fragment's ramp reads the cuts this sets, so the
+      // floored bar antialiases like any other and the "sitting exactly on the
+      // origin owes no ink" case in fs_main stays true of an unfloored one.
+      if (botPx - topPx < u.minBarHeightPx) {
+        if (scoreY <= originY) {
+          topPx = botPx - u.minBarHeightPx;
+        } else {
+          botPx = topPx + u.minBarHeightPx;
+        }
+      }
     }
     // The bar grows one device px past each horizontal cut so the fragment's
     // ramp has geometry to land on; the ramp is zero out there, so the extra

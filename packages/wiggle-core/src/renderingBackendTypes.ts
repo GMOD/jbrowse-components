@@ -75,6 +75,11 @@ export interface WiggleGPURenderState {
   // on (= the bicolorPivot config slot). Bars grow up for scores above it and
   // down for scores below; default 0 reproduces the fixed-at-zero baseline.
   origin: number
+  // Shortest an xyplot bar may draw, in px. Floors the bar's height away from
+  // the origin so a bin whose score sits exactly there still marks its span
+  // instead of collapsing to nothing (issue #4279). 0 is the unfloored bar.
+  // Read by both backends; the other renderings ignore it.
+  minBarHeightPx: number
 }
 
 export interface SourceRenderData {
