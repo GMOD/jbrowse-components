@@ -619,12 +619,12 @@ test('persisting an edit keeps the working copy the next keystroke lands on', ()
 
   // two successive persists of the same slot, as a debounced reaction firing
   // twice mid-typing does
-  workingCopy.setSlot('name', 'Edited na')
+  workingCopy.setSlot('name', 'Edited n')
   session.updateTrackConfiguration(
     getSnapshot(workingCopy) as unknown as PlainConfig,
   )
   const firstDelta = session.trackConfigDeltas[TRACK_ID]
-  workingCopy.setSlot('name', 'Edited nam')
+  workingCopy.setSlot('name', 'Edited na')
   session.updateTrackConfiguration(
     getSnapshot(workingCopy) as unknown as PlainConfig,
   )

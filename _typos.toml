@@ -1,4 +1,36 @@
+# Suppressions for crate-ci/typos (see .github/workflows/push.yml).
+#
+# These lived in a root `.ignore` until 2026-08-22. That worked — typos reads
+# ignore files, because it uses the same `ignore` crate ripgrep does — and that
+# was the problem: it also hid 17 tracked SOURCE files from every `rg` in the
+# repo, so "this symbol appears nowhere" came back clean for files that do
+# contain it. One such absence claim had already reached agent-docs. Scoping the
+# suppression to the tool that wanted it also showed that most of the list was
+# stale: of those 17, only five still trip the checker.
+#
+# Prefer, in this order: a regex for a whole class of false positive, a word for
+# a domain term, a file exclude only for generated output, fixture data, vendored
+# code, or a file whose typos are deliberate.
+
+[default]
+extend-ignore-re = [
+  # a backticked git sha is this repo's citation convention, and its hex letters
+  # read as words: `ca6637afe4` reported `afe` -> `safe` four times in one doc
+  "`[0-9a-f]{7,40}`",
+  # UCSC assembly ids: turTru2 (dolphin), oryAfe1 (aardvark), haeCon2. The
+  # capitalized middle is a genus/species abbreviation, never a word
+  "\\b[a-z]{3}[A-Z][a-z]{2}\\d+\\b",
+]
+
 [default.extend-words]
+# domain terms, so the files holding them stay spell-checked and greppable
+NAM = "NAM"           # maize Zm-B73-REFERENCE-NAM-5.0
+WEW = "WEW"           # Wild Emmer Wheat, WEWSeq_v.1.0
+Ser = "Ser"           # serine
+aas = "aas"           # amino acids
+Nevers = "Nevers"     # AssertNevers
+VILL = "VILL"         # villin gene prefix
+# pre-existing allowances
 vview = "vview"
 Wnt = "Wnt"
 ome = "ome"
@@ -15,40 +47,74 @@ hel = "hel"
 Comput = "Comput"
 Mis = "Mis"
 mis = "mis"
-Tro="Tro"
-fpt="fpt"
-Anc="Anc"
-fo="fo"
-fliter="fliter"
-bimap="bimap"
-coyp="coyp"
-cna="cna"
-ND="ND"
-rhe="rhe"
-Ded="Ded"
-tpos="tpos"
-Commun="Commun"
-INVOKABLE="INVOKABLE"
-Tigger="Tigger"
-gam="gam"
-colinear="colinear"
-BLOSUM="BLOSUM"
-abl="abl"
-ABD="ABD"
-ture="ture"
-Locatoin="Locatoin"
-locatoin="locatoin"
-heigth="heigth"
-unambigously="unambigously"
-seeked="seeked"
-unparseable="unparseable"
-Thr="Thr"
-cappable="cappable"
-preferance="preferance"
-limt="limt"
-PLAING="PLAING"
-querys="querys"
-HSA="HSA"
-hsa="hsa"
-alls="alls"
-Hieght="Hieght"
+Tro = "Tro"
+fpt = "fpt"
+Anc = "Anc"
+fo = "fo"
+fliter = "fliter"
+bimap = "bimap"
+coyp = "coyp"
+cna = "cna"
+ND = "ND"
+rhe = "rhe"
+Ded = "Ded"
+tpos = "tpos"
+Commun = "Commun"
+INVOKABLE = "INVOKABLE"
+Tigger = "Tigger"
+gam = "gam"
+colinear = "colinear"
+BLOSUM = "BLOSUM"
+abl = "abl"
+ABD = "ABD"
+ture = "ture"
+Locatoin = "Locatoin"
+locatoin = "locatoin"
+heigth = "heigth"
+unambigously = "unambigously"
+seeked = "seeked"
+unparseable = "unparseable"
+Thr = "Thr"
+cappable = "cappable"
+preferance = "preferance"
+limt = "limt"
+PLAING = "PLAING"
+querys = "querys"
+HSA = "HSA"
+hsa = "hsa"
+alls = "alls"
+Hieght = "Hieght"
+
+[files]
+extend-exclude = [
+  # generated: `pnpm gendocs` writes these from source
+  "website/docs/models/",
+  "website/docs/config/",
+  # fixture and reference data
+  "test_data/",
+  "plugins/legacy-jbrowse/test_data/",
+  "plugins/spreadsheet-view/src/SpreadsheetView/test_data/",
+  "products/aws/lambda-functions/",
+  "*.ix",
+  "*.ixx",
+  "*.nh",
+  "*.fa",
+  "*.svg",
+  "*.tai",
+  "*.gff3.gz",
+  "*.snap",
+  "website/static/pagefind/",  # build output, absent in a fresh checkout
+  "website/diagrams/rpc_lifecycle.dot",
+  # recorded human review comments, kept verbatim
+  "website/scripts/screenshot-review.json",
+  # vendored
+  "packages/core/src/ui/react-colorful.ts",
+  # the typos are the fixtures: this file tests that `--cigarMode ful` is reported
+  "products/jbrowse-img/src/options.ts",
+  "products/jbrowse-img/src/options.test.ts",
+  # long encoded session/color strings, not prose
+  "products/jbrowse-web/src/tests/Loader.test.tsx",
+  "packages/core/src/util/color/randomColor.test.ts",
+  # shell locals din/rin/dout read as words
+  "scripts/build_ag1000g_ld.sh",
+]
