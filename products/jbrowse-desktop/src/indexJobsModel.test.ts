@@ -1,11 +1,17 @@
+import { checkStopToken, isStopped } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import jobsModelFactory from './indexJobsModel.ts'
 
 import type { TextJobsEntry } from './indexJobsModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
 import type { Track } from '@jbrowse/text-indexing-core'
+
+interface RpcArgs {
+  stopToken: StopToken
+}
 
 // invokeIpc reaches the main process for the userData directory, and the model
 // then mkdirs the trix output under it. Both are stubbed so a run touches no
@@ -35,7 +41,7 @@ type JobsListApi = {
       | 'addAbortedJob'
       | 'removeJob'
       | 'removeQueuedJob'
-      | 'updateJobStatusMessage'
+      | 'updateJobStatus'
     >
   ]: (...args: Parameters<JobsListModel[K]>) => void
 }
@@ -43,6 +49,7 @@ type JobsListApi = {
 interface JobCard {
   name: string
   statusMessage?: string
+  progressPct?: number
 }
 
 // Records the cards a user would see, in the four lists the real widget files
@@ -69,10 +76,11 @@ function makeJobsListFake() {
     removeQueuedJob: name => {
       remove(queued, name)
     },
-    updateJobStatusMessage: (name, message) => {
+    updateJobStatus: (name, message, pct) => {
       const job = jobs.find(j => j.name === name)
       if (job) {
         job.statusMessage = message
+        job.progressPct = pct
       }
     },
   }
@@ -155,17 +163,35 @@ test('reportStatus turns the worker’s byte counts into a human status', () => 
   jobsManager.setJobName('job1')
   widget.addJob({ name: 'job1' })
 
-  jobsManager.reportStatus('5000/20000')
-  expect(jobsManager.statusMessage).toBe('Indexed 5.0 kB / 20.0 kB')
-  expect(widget.jobs[0]!.statusMessage).toBe('Indexed 5.0 kB / 20.0 kB')
+  jobsManager.reportStatus({
+    message: 'Indexing files',
+    current: 5000,
+    total: 20000,
+  })
+  expect(jobsManager.statusMessage).toBe('Indexing files: 5.0 kB / 20.0 kB')
+  expect(widget.jobs[0]!.statusMessage).toBe('Indexing files: 5.0 kB / 20.0 kB')
+  expect(widget.jobs[0]!.progressPct).toBe(25)
 
-  // no total yet: report what has been read rather than a bogus denominator
-  jobsManager.reportStatus('5000/0')
-  expect(jobsManager.statusMessage).toBe('Indexed 5.0 kB')
+  // no total yet: report what has been read rather than a bogus denominator,
+  // and leave the bar indeterminate
+  jobsManager.reportStatus({
+    message: 'Indexing files',
+    current: 5000,
+    total: 0,
+  })
+  expect(jobsManager.statusMessage).toBe('Indexing files: 5.0 kB')
+  expect(widget.jobs[0]!.progressPct).toBeUndefined()
 
-  // anything without a slash is already a message, and passes through
-  jobsManager.reportStatus('Generating ixIxx')
-  expect(jobsManager.statusMessage).toBe('Generating ixIxx')
+  // a plain string is already the message, and carries no fraction
+  jobsManager.reportStatus({
+    message: 'Indexing files',
+    current: 20000,
+    total: 20000,
+  })
+  expect(widget.jobs[0]!.progressPct).toBe(100)
+  jobsManager.reportStatus('Sorting and writing index')
+  expect(jobsManager.statusMessage).toBe('Sorting and writing index')
+  expect(widget.jobs[0]!.progressPct).toBeUndefined()
 })
 
 test('queueJob shows the widget and files the job as queued', () => {
@@ -275,13 +301,23 @@ test('the error notification offers a Retry that re-queues the job', async () =>
 })
 
 test('a cancelled job reports as cancelled rather than as an error', async () => {
-  const call = jest.fn().mockRejectedValue(new Error('aborted'))
+  // the real RPC method checks the token before it does anything, so the fake
+  // has to as well or a cancel looks like a success here and nowhere else.
+  // Read inside the call, not after it: clear() stops the token on every path,
+  // so an assertion made afterwards passes whether the cancel landed or not
+  let stoppedAtCall: boolean | undefined
+  const call = jest.fn((_sessionId: string, _method: string, args: RpcArgs) => {
+    stoppedAtCall = isStopped(args.stopToken)
+    checkStopToken(args.stopToken)
+    return Promise.resolve()
+  })
   const { jobsManager, widget, session } = setup({ call })
 
   jobsManager.queueJob(makeEntry())
   jobsManager.abortJob()
   await jobsManager.runJob()
 
+  expect(stoppedAtCall).toBe(true)
   expect(session.notify).toHaveBeenCalledWith(
     'Cancelled indexing job: job1',
     'info',

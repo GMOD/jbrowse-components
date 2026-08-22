@@ -14,7 +14,7 @@
 // `#config <that name>`, which is what drops `TextSearchAdapter` — a real tag
 // naming the slot a text-search adapter is configured under, and not a track.
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..')
@@ -30,6 +30,8 @@ const files = execFileSync(
 )
   .split('\n')
   .filter(f => f.endsWith('.ts') || f.endsWith('.tsx'))
+  // git lists a deletion until it is staged, and autogen runs before the commit
+  .filter(f => existsSync(path.join(REPO_ROOT, f)))
 
 const configNames = new Set<string>()
 const trackTypeOf = new Map<string, string>()

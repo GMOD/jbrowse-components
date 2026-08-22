@@ -19,9 +19,7 @@ const CurrentJobCard = observer(function CurrentJobCard({
   job: JobModel
 }) {
   const [clicked, setClicked] = useState(false)
-  // 0% (not started) and 100% (finishing) show an indeterminate bar with no
-  // percent readout; anything between is a determinate bar plus the number.
-  const determinate = job.progressPct !== 0 && job.progressPct !== 100
+  const { progressPct } = job
   return (
     <Card variant="outlined">
       <CardContent>
@@ -44,14 +42,16 @@ const CurrentJobCard = observer(function CurrentJobCard({
         >
           <Box sx={{ width: '100%' }}>
             <StatusProgressBar
-              fraction={determinate ? job.progressPct / 100 : undefined}
+              fraction={
+                progressPct === undefined ? undefined : progressPct / 100
+              }
             />
           </Box>
-          {determinate ? (
+          {progressPct === undefined ? null : (
             <Box sx={{ m: 1 }}>
-              <Typography>{`${Math.round(job.progressPct)}%`}</Typography>
+              <Typography>{`${Math.round(progressPct)}%`}</Typography>
             </Box>
-          ) : null}
+          )}
         </Box>
       </CardContent>
       <CardActions>

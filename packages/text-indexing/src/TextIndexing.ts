@@ -24,7 +24,7 @@ import type { Track } from '@jbrowse/text-indexing-core'
 
 export async function indexTracks(args: {
   tracks: Track[]
-  outDir?: string
+  outDir: string
   stopToken?: StopToken
   attributesToIndex?: string[]
   assemblyNames?: string[]
@@ -65,33 +65,26 @@ export async function indexTracks(args: {
   checkStopToken(stopToken)
 }
 
-function resolveOutDir(outFlag = '.') {
-  // statSync (follows symlinks) not lstatSync: a symlink pointing at a
-  // directory should be treated as the output directory, not misclassified as
-  // the config file itself
-  const isDir = fs.statSync(outFlag).isDirectory()
-  const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
-  const outDir = path.dirname(confFilePath)
+function ensureTrixDir(outDir: string) {
   fs.mkdirSync(path.join(outDir, 'trix'), { recursive: true })
-  return outDir
 }
 
 async function perTrackIndex({
   tracks,
   statusCallback,
-  outDir: paramOutDir,
+  outDir,
   attributesToIndex = defaultAttributesToIndex,
   featureTypesToExclude = defaultFeatureTypesToExclude,
   stopToken,
 }: {
   tracks: Track[]
   statusCallback: StatusCallback | undefined
-  outDir?: string
+  outDir: string
   attributesToIndex?: string[]
   featureTypesToExclude?: string[]
   stopToken?: StopToken
 }) {
-  const outDir = resolveOutDir(paramOutDir)
+  ensureTrixDir(outDir)
   const supportedTracks = tracks.filter(track =>
     isSupportedIndexingAdapter(track.adapter?.type),
   )
@@ -113,7 +106,7 @@ async function perTrackIndex({
 async function aggregateIndex({
   tracks,
   statusCallback,
-  outDir: paramOutDir,
+  outDir,
   attributesToIndex = defaultAttributesToIndex,
   featureTypesToExclude = defaultFeatureTypesToExclude,
   stopToken,
@@ -121,7 +114,7 @@ async function aggregateIndex({
 }: {
   tracks: Track[]
   statusCallback: StatusCallback | undefined
-  outDir?: string
+  outDir: string
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
@@ -132,7 +125,7 @@ async function aggregateIndex({
       'No assemblies passed. Assemblies required for aggregate indexes',
     )
   }
-  const outDir = resolveOutDir(paramOutDir)
+  ensureTrixDir(outDir)
   for (const asm of assemblyNames) {
     const supportedTracks = tracks
       .filter(track => isSupportedIndexingAdapter(track.adapter?.type))
@@ -207,7 +200,12 @@ async function indexDriver({
       },
     }),
   )
-  statusCallback?.('Indexing files.')
+  // records stream straight into ixIxx, so 'end' is where the byte counts stop
+  // and the sort's own tail begins — otherwise minutes of a bar stuck at 100%
+  readable.on('end', () => {
+    statusCallback?.('Sorting and writing index')
+  })
+  statusCallback?.('Indexing files')
   await runIxIxx(readable, outDir, name)
   checkStopToken(stopToken)
   generateMeta({

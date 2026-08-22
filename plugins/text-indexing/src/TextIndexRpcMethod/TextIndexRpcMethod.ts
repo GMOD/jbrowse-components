@@ -12,7 +12,7 @@ import type { Track } from '@jbrowse/text-indexing-core'
 // fraction, so the indexer could only ever say what it was doing and never how
 // far in it was, on the one operation in the app that runs for minutes.
 interface TextIndexRpcMethodArgs {
-  outLocation?: string
+  outLocation: string
   attributes?: string[]
   exclude?: string[]
   assemblies?: string[]

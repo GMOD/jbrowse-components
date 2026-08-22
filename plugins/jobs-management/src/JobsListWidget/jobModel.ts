@@ -6,6 +6,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #stateModel
  * #internal desktop text-indexing queue internals — kept out of the website docs
  * #category widget
+ *
+ * Created standalone by `JobsListModel` and held in its volatile lists rather
+ * than attached under it — nothing here belongs in a saved session.
  */
 export const Job = types
   .model('Job', {
@@ -15,6 +18,9 @@ export const Job = types
     name: types.string,
   })
   .volatile(() => ({
+    /**
+     * #volatile
+     */
     cancelCallback() {},
     /**
      * #volatile
@@ -22,8 +28,10 @@ export const Job = types
     statusMessage: undefined as string | undefined,
     /**
      * #volatile
+     * undefined when the current phase has no fraction to report, which the
+     * card draws as an indeterminate bar
      */
-    progressPct: 0,
+    progressPct: undefined as number | undefined,
   }))
   .actions(self => ({
     /**
@@ -43,7 +51,7 @@ export const Job = types
     /**
      * #action
      */
-    setProgressPct(pct: number) {
+    setProgressPct(pct?: number) {
       self.progressPct = pct
     },
   }))

@@ -53,7 +53,12 @@ const JobsSection = observer(function JobsSection({
       <AccordionDetails>
         {onClear && jobs.length ? (
           <div className={classes.clearRow}>
-            <Button size="small" onClick={onClear}>
+            <Button
+              size="small"
+              onClick={() => {
+                onClear()
+              }}
+            >
               Clear
             </Button>
           </div>

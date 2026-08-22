@@ -6,9 +6,8 @@ import { indexableAdapters } from './util.ts'
 import type { LocalPathLocation, Track, UriLocation } from './util.ts'
 
 // per-track progress sink. Consumers render this however they like: the CLI
-// draws a cli-progress bar, the desktop worker forwards a status string over
-// RPC. onStart fires once with the total byte count, onUpdate fires repeatedly
-// with bytes processed so far, onDone fires when the track is finished.
+// draws a cli-progress bar, the desktop forwards it over RPC as a determinate
+// status.
 export interface TrackIndexProgress {
   onStart?: (totalBytes: number) => void
   onUpdate?: (processedBytes: number) => void

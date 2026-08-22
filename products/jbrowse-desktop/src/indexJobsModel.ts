@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { statusMessageText } from '@jbrowse/core/util'
+import { statusFraction, statusMessageText } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
@@ -17,7 +17,7 @@ import { invokeIpc } from './ipc.ts'
 import type { DesktopRootModel } from './rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
-import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import type { RpcStatus, SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
@@ -28,7 +28,7 @@ import type { Track } from '@jbrowse/text-indexing-core'
 // model; this is the slice it reaches for. One typed contract in place of the
 // per-getter getParent<{...}> shapes, mirroring the react session models'
 // SessionModelParent.
-interface JobsManagerParent {
+export interface JobsManagerParent {
   jbrowse: {
     rpcManager: RpcManager
     tracks: Track[]
@@ -66,15 +66,11 @@ interface TrackTextIndexing {
   assemblies: string[]
   tracks: string[] // trackIds
   indexType: indexType
-  timestamp?: string
-  name?: string
 }
 
-interface JobsEntry {
+export interface TextJobsEntry {
   name: string
   statusMessage?: string
-}
-export interface TextJobsEntry extends JobsEntry {
   indexingParams: TrackTextIndexing
 }
 
@@ -87,6 +83,20 @@ function formatBytes(bytes: number) {
     i++
   }
   return `${i === 0 ? n : n.toFixed(1)} ${units[i]}`
+}
+
+// the byte counts behind the fraction: a percentage alone doesn't say whether
+// the rest is seconds or minutes
+function statusText(status: RpcStatus) {
+  const message = statusMessageText(status) ?? ''
+  if (typeof status === 'string') {
+    return message
+  }
+  const counts =
+    status.total > 0
+      ? `${formatBytes(status.current)} / ${formatBytes(status.total)}`
+      : formatBytes(status.current)
+  return message ? `${message}: ${counts}` : counts
 }
 
 /**
@@ -131,27 +141,32 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get root() {
+        return getParent<JobsManagerParent>(self)
+      },
+      /**
+       * #getter
+       */
       get rpcManager() {
-        return getParent<JobsManagerParent>(self).jbrowse.rpcManager
+        return this.root.jbrowse.rpcManager
       },
       /**
        * #getter
        */
       get tracks() {
-        return getParent<JobsManagerParent>(self).jbrowse.tracks
+        return this.root.jbrowse.tracks
       },
       /**
        * #getter
        */
       get session() {
-        return getParent<JobsManagerParent>(self).session
+        return this.root.session
       },
       /**
        * #getter
        */
       get aggregateTextSearchAdapters() {
-        return getParent<JobsManagerParent>(self).jbrowse
-          .aggregateTextSearchAdapters
+        return this.root.jbrowse.aggregateTextSearchAdapters
       },
     }))
     .actions(self => ({
@@ -199,33 +214,16 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      reportStatus(arg: string) {
-        // the worker reports byte progress as "received/total"; anything else
-        // is already a human-readable status message. show the raw byte counts
-        // rather than a percentage: the percentage only covers the read phase
-        // and would sit at 100% during the (often long) ixIxx generation
-        const slash = arg.indexOf('/')
-        if (slash === -1) {
-          this.setStatusMessage(arg)
-        } else {
-          const received = +arg.slice(0, slash)
-          const total = +arg.slice(slash + 1)
-          this.setStatusMessage(
-            total > 0
-              ? `Indexed ${formatBytes(received)} / ${formatBytes(total)}`
-              : `Indexed ${formatBytes(received)}`,
-          )
-        }
-        this.setWidgetStatus()
-      },
-
-      /**
-       * #action
-       */
-      setWidgetStatus() {
+      reportStatus(status: RpcStatus) {
+        this.setStatusMessage(statusText(status))
+        const fraction = statusFraction(status)
         self
           .getJobStatusWidget()
-          .updateJobStatusMessage(self.jobName, self.statusMessage)
+          .updateJobStatus(
+            self.jobName,
+            self.statusMessage,
+            fraction === undefined ? undefined : fraction * 100,
+          )
       },
 
       /**
@@ -283,6 +281,12 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         const rpcManager = self.rpcManager
         const stopToken = createStopToken()
         this.setStopToken(stopToken)
+        // `aborted` is only cleared by clear(), so a flag standing here was set
+        // against a queue this entry was already in. Without the stop the entry
+        // ran the full index and was then merely *reported* as cancelled
+        if (self.aborted) {
+          stopStopToken(stopToken)
+        }
         try {
           this.setRunning(true)
           this.setJobName(entry.name)
@@ -309,7 +313,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             outLocation,
             stopToken,
             statusCallback: status => {
-              this.reportStatus(statusMessageText(status) ?? '')
+              this.reportStatus(status)
             },
           })
           if (indexType === 'perTrack') {
@@ -350,8 +354,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
 
           // clear the text search adapter cache so stale adapters pointing
           // at old index files are discarded
-          const rootModel = getParent<JobsManagerParent>(self)
-          rootModel.textSearchManager.clearCache()
+          self.root.textSearchManager.clearCache()
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
           if (current) {

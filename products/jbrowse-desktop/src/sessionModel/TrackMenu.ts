@@ -77,8 +77,6 @@ export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
                         assemblies: assemblyNames,
                         tracks: [trackId],
                         indexType: 'perTrack',
-                        timestamp: new Date().toISOString(),
-                        name: trackId,
                       },
                       // jobs are keyed by name; trackId is unique so two tracks
                       // sharing a display name won't collide

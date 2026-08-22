@@ -11,23 +11,32 @@ import { defaultIndexingConf } from './util.ts'
 
 import type { AddTrackModel, IndexingAttr } from '../model.ts'
 
+// structural, because the desktop root model this reaches is in a product the
+// plugin can't import. Spelled out rather than `unknown`: it typed the
+// assemblies array as `(string | undefined)[]`, which the indexer would have
+// written into a textSearchAdapter conf no search could ever match
 interface RootWithJobsManager {
   jobsManager: {
-    queueJob: (job: unknown) => void
+    queueJob: (job: {
+      name: string
+      indexingParams: IndexingAttr & {
+        assemblies: string[]
+        tracks: string[]
+        indexType: 'perTrack' | 'aggregate'
+      }
+    }) => void
   }
 }
 
 function doTextIndexTrack({
   trackId,
-  timestamp,
   model,
   assembly,
   attr,
 }: {
   trackId: string
-  timestamp: number
   model: AddTrackModel
-  assembly: string | undefined
+  assembly: string
   attr: IndexingAttr
 }) {
   const { jobsManager } = getRoot<RootWithJobsManager>(model)
@@ -37,8 +46,6 @@ function doTextIndexTrack({
       assemblies: [assembly],
       tracks: [trackId],
       indexType: 'perTrack',
-      name: trackId,
-      timestamp: new Date(timestamp).toISOString(),
     },
     // jobs are keyed by name; trackId is unique so two tracks sharing a
     // display name won't collide
@@ -65,9 +72,13 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
   // opens that one inline on the track rather than adding it to any list, so an
   // indexing job would name a trackId the config does not hold, and the index
   // would outlive the track it was built for by the width of the session.
+  // `assembly !== undefined` is already implied by trackConfig existing —
+  // getTrackConfig returns undefined without a resolvable assembly — but stated
+  // here it is what narrows `assembly` for doTextIndexTrack
   const wantsIndex =
     isElectron &&
     textIndexTrack &&
+    assembly !== undefined &&
     isSupportedIndexingAdapter(trackAdapter.type) &&
     !namesTemporaryAssembly(session, trackConfig)
 
@@ -79,6 +90,6 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
   // so this only ever normalizes a third-party one.
   const trackId = String(trackConfig.trackId)
   if (addTrackFromWidget({ model, session, conf: trackConfig }) && wantsIndex) {
-    doTextIndexTrack({ model, trackId, timestamp, assembly, attr })
+    doTextIndexTrack({ model, trackId, assembly, attr })
   }
 }

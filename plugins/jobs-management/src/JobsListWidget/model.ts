@@ -1,18 +1,14 @@
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 
 import { Job } from './jobModel.ts'
 
+import type { JobModel } from './jobModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IObservableArray } from 'mobx'
 
-export type JobSnapshot = SnapshotIn<typeof Job>
-
-/**
- * Input for adding a job. `name` is the persisted property; `statusMessage`,
- * `progressPct`, and `cancelCallback` are volatile runtime state applied via
- * the job's setters after creation.
- */
 export interface JobInput {
   name: string
   statusMessage?: string
@@ -36,32 +32,37 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        * #property
        */
       type: types.literal('JobsListWidget'),
-      /**
-       * #property
-       */
-      jobs: types.array(Job),
-      /**
-       * #property
-       */
-      finished: types.array(Job),
-      /**
-       * #property
-       */
-      queued: types.array(Job),
-      /**
-       * #property
-       */
-      aborted: types.array(Job),
     })
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Volatile like the `jobsQueue` these mirror: persisted, a session saved
+       * mid-index came back with a permanent "Running" card whose Cancel called
+       * the default no-op, and a "Queued" card in no queue.
+       */
+      jobs: observable.array<JobModel>([], { deep: false }),
+      /**
+       * #volatile
+       */
+      finished: observable.array<JobModel>([], { deep: false }),
+      /**
+       * #volatile
+       */
+      queued: observable.array<JobModel>([], { deep: false }),
+      /**
+       * #volatile
+       */
+      aborted: observable.array<JobModel>([], { deep: false }),
+    }))
     .actions(self => {
-      function addJobToArray(arr: typeof self.jobs, job: JobInput) {
+      function addJobToArray(arr: IObservableArray<JobModel>, job: JobInput) {
         // dedupe by name so re-adding doesn't create a duplicate card, but
         // still refresh the fields so a repeated same-named job (common in
         // Apollo's job manager) shows current status rather than stale state
         let target = arr.find(j => j.name === job.name)
         if (!target) {
-          const length = arr.push({ name: job.name })
-          target = arr[length - 1]!
+          target = Job.create({ name: job.name })
+          arr.push(target)
         }
         if (job.cancelCallback) {
           target.setCancelCallback(job.cancelCallback)
@@ -75,7 +76,10 @@ export function stateModelFactory(_pluginManager: PluginManager) {
         return target
       }
 
-      function removeFromArray(arr: typeof self.jobs, jobName: string) {
+      function removeFromArray(
+        arr: IObservableArray<JobModel>,
+        jobName: string,
+      ) {
         const index = arr.findIndex(j => j.name === jobName)
         if (index === -1) {
           return undefined
@@ -134,21 +138,14 @@ export function stateModelFactory(_pluginManager: PluginManager) {
         },
         /**
          * #action
+         * A phase carrying no fraction clears the old one rather than leaving
+         * the bar where the last phase left it.
          */
-        updateJobStatusMessage(jobName: string, message?: string) {
-          // job may be absent if it was cancelled/removed while a status
-          // callback was still in flight, so update only when present
+        updateJobStatus(jobName: string, message?: string, pct?: number) {
+          // absent if cancelled/removed while a status callback was in flight
           const job = self.jobs.find(j => j.name === jobName)
           if (job) {
             job.setStatusMessage(message)
-          }
-        },
-        /**
-         * #action
-         */
-        updateJobProgressPct(jobName: string, pct: number) {
-          const job = self.jobs.find(j => j.name === jobName)
-          if (job) {
             job.setProgressPct(pct)
           }
         },

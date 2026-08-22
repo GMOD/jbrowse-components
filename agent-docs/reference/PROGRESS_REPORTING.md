@@ -427,9 +427,14 @@ clears it on pan/zoom, and `runFetch` start is the single un-cancel point.
 
 ## Not yet wired (deferred, low priority)
 
-Text-indexing reports byte strings to the admin CLI, and worker sort/layout
-loops emit no per-iteration progress. Both could go determinate via
-`createProgressReporter` if a context ever surfaces them.
+Worker sort/layout loops emit no per-iteration progress. They could go
+determinate via `createProgressReporter` if a context ever surfaced them.
+
+Desktop text-indexing is wired: `indexDriver` reports
+`{message, current, total}` across the tracks of one job, `indexJobsModel`
+splits that into the job card's message and bar, and the `'end'` of the record
+stream hands over to a plain `'Sorting and writing index'` — the ixIxx tail is
+unmeasured, so the bar goes indeterminate rather than sitting at 100%.
 
 `PAFAdapter.getFeatures` still linear-scans every record per region query
 (`AllVsAllPAFAdapter` builds a `sidesByContig` index for this); that is a
