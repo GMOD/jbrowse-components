@@ -1,3 +1,5 @@
+import { statusReading } from '@jbrowse/core/util'
+
 import HicAdapter from './HicAdapter.ts'
 import configSchema from './configSchema.ts'
 
@@ -20,10 +22,10 @@ function makeAdapter() {
 }
 
 function determinate(statuses: RpcStatus[], message: string) {
-  return statuses.filter(
-    (s): s is Exclude<RpcStatus, string> =>
-      typeof s === 'object' && s.message === message,
-  )
+  return statuses.flatMap(s => {
+    const reading = statusReading(s)
+    return reading !== undefined && reading.message === message ? [reading] : []
+  })
 }
 
 test('a real single-region fetch reports a real fraction of its one pair', async () => {

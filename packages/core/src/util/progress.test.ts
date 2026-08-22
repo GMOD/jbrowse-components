@@ -8,6 +8,7 @@ import {
   statusFraction,
   statusMessageText,
   statusProgressLabel,
+  statusReading,
   updateStatus,
   withProgress,
 } from './progress.ts'
@@ -23,8 +24,9 @@ describe('createProgressReporter', () => {
       total: 10,
       // capture the emitted current; throttleMs 0 so every gated call emits
       statusCallback: s => {
-        if (typeof s === 'object') {
-          seen.push(s.current)
+        const reading = statusReading(s)
+        if (reading !== undefined) {
+          seen.push(reading.current)
         }
       },
       throttleMs: 0,
@@ -50,8 +52,9 @@ describe('createProgressReporter', () => {
         label: 'Computing variant cells',
         total: 5,
         statusCallback: s => {
-          if (typeof s === 'object') {
-            seen.push(s.current)
+          const reading = statusReading(s)
+          if (reading !== undefined) {
+            seen.push(reading.current)
           }
         },
         throttleMs: 100,
@@ -76,8 +79,9 @@ describe('createProgressReporter', () => {
         label: 'x',
         total: 100,
         statusCallback: s => {
-          if (typeof s === 'object') {
-            seen.push(s.current)
+          const reading = statusReading(s)
+          if (reading !== undefined) {
+            seen.push(reading.current)
           }
         },
         throttleMs: 100,
@@ -97,8 +101,9 @@ describe('createProgressReporter', () => {
       label: 'x',
       total: 100,
       statusCallback: s => {
-        if (typeof s === 'object') {
-          seen.push(s.current)
+        const reading = statusReading(s)
+        if (reading !== undefined) {
+          seen.push(reading.current)
         }
       },
       throttleMs: 0,
@@ -113,8 +118,9 @@ describe('createProgressReporter', () => {
       label: 'x',
       total: 100,
       statusCallback: s => {
-        if (typeof s === 'object') {
-          seen.push(s.current)
+        const reading = statusReading(s)
+        if (reading !== undefined) {
+          seen.push(reading.current)
         }
       },
       throttleMs: 0,
@@ -454,8 +460,10 @@ describe('updateStatus', () => {
     expect(await updateStatus('Working', undefined, () => 7)).toBe(7)
   })
   // without the finally the label stayed on the channel, so the caller's error
-  // surfaced under a stale "Downloading file"
-  it('clears the label when fn throws', async () => {
+  // surfaced under a stale "Downloading file". The retire says which of the two
+  // happened: the label it leaves is the same `''`, and the flag beside it is
+  // what an aggregate charges the phase on (ADR-087).
+  it('clears the label when fn throws, and says the phase did not finish', async () => {
     const seen: RpcStatus[] = []
     await expect(
       updateStatus(
@@ -464,7 +472,10 @@ describe('updateStatus', () => {
         () => Promise.reject(new Error('nope')),
       ),
     ).rejects.toThrow('nope')
-    expect(seen).toEqual(['Working', ''])
+    expect(seen).toEqual(['Working', { message: '', failed: true }])
+    // and a consumer that only knows the falsy-message retire reads it as one
+    expect(statusMessageText(seen.at(-1))).toBeUndefined()
+    expect(statusFraction(seen.at(-1))).toBeUndefined()
   })
 })
 
@@ -505,12 +516,13 @@ describe('phases nest', () => {
       ),
     ).rejects.toThrow('404')
     // the outer phase's own finally then closes it — the point is that the
-    // inner one did not blank it on the way past
+    // inner one did not blank it on the way past. Both retires carry the failed
+    // flag: the throw took the outer phase with it.
     expect(seen).toEqual([
       'Loading track',
       'Downloading index',
-      'Loading track',
-      '',
+      { message: 'Loading track', failed: true },
+      { message: '', failed: true },
     ])
   })
 
@@ -637,7 +649,7 @@ describe('withProgress', () => {
     expect(seen.at(-1)).toBe('')
   })
 
-  it('clears the label when fn throws', async () => {
+  it('clears the label when fn throws, and says the phase did not finish', async () => {
     const seen: RpcStatus[] = []
     await expect(
       withProgress(
@@ -645,7 +657,7 @@ describe('withProgress', () => {
         () => Promise.reject(new Error('nope')),
       ),
     ).rejects.toThrow('nope')
-    expect(seen.at(-1)).toBe('')
+    expect(seen.at(-1)).toEqual({ message: '', failed: true })
   })
 
   // The kickoff `report(0)` checks the stop token before it emits, so a token
@@ -678,7 +690,14 @@ describe('withProgress', () => {
         ),
       ).rejects.toThrow()
     })
-    expect(seen).toEqual(['Downloading features', 'Downloading features', ''])
+    // the cancelled inner phase retires onto the enclosing label AND says it
+    // stopped short; the outer phase caught the rejection, so its own retire is
+    // an ordinary completion
+    expect(seen).toEqual([
+      'Downloading features',
+      { message: 'Downloading features', failed: true },
+      '',
+    ])
   })
 })
 
@@ -853,6 +872,61 @@ describe('createStatusFanOut', () => {
       message: 'Downloading',
       current: 3500,
       total: 4000,
+    })
+  })
+
+  // The two directions of one charge, driven through the real download helper
+  // because the difference is made by its `finally` and nothing else can make
+  // it: both regions report exactly the same readings, and the only difference
+  // is whether the first one's phase returned or threw.
+  //
+  // A phase clear IS a completion on this path — that is the reading the
+  // `FetchMixin` suite pins by name — so it is charged its full total. A phase
+  // that threw is charged what it transferred: the 900 bytes a dead socket will
+  // never carry are not work this batch did, and crediting them read 1500 of
+  // 2000 for a batch that had moved 600 bytes.
+  const twoRegionsWhereOneEnds = async (dies: boolean) => {
+    const seen: RpcStatus[] = []
+    const slot = createStatusFanOut(s => {
+      seen.push(s)
+    })
+    const dying = slot()
+    const living = slot()
+    living({ message: 'Downloading features', current: 500, total: 1000 })
+    const phase = downloadStatus(
+      'Downloading features',
+      dying,
+      async onProgress => {
+        await Promise.resolve()
+        onProgress?.(100, 1000)
+        if (dies) {
+          throw new Error('socket closed')
+        }
+      },
+    )
+    if (dies) {
+      await expect(phase).rejects.toThrow('socket closed')
+    } else {
+      await phase
+    }
+    return seen
+  }
+
+  it('charges a region that died only what it transferred', async () => {
+    const seen = await twoRegionsWhereOneEnds(true)
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading features',
+      current: 600,
+      total: 1100,
+    })
+  })
+
+  it('charges a region that cleared its phase as complete', async () => {
+    const seen = await twoRegionsWhereOneEnds(false)
+    expect(seen.at(-1)).toEqual({
+      message: 'Downloading features',
+      current: 1500,
+      total: 2000,
     })
   })
 
@@ -1285,6 +1359,64 @@ describe('a fan-out behind one window stream', () => {
     }
   })
 
+  // `loadPre`'s failure shape, all the way through the helpers: four files
+  // downloading at once behind one stream, one of them throwing while the other
+  // three are still going, and the `Promise.all` rejecting on it.
+  //
+  // One shared label, which is what makes the charge observable and is the real
+  // configuration of every fan-out over like files — `fetchAndMaybeUnzip`'s
+  // default "Downloading file", the comparative adapters' N PAFs, a
+  // MultiWiggle's subadapters. Given a label per file the dead slot leaves the
+  // winning phase altogether and its charge stops mattering (ADR-072).
+  //
+  // The rejecting file is charged the 100 bytes it read, so what the three
+  // survivors are still driving reads 1100 of 3100. Charged its full 1000 it
+  // read 2000 of 4000 — a bar that jumped forward because a file died.
+  it('charges a file that rejected mid-download only what it read', async () => {
+    jest.useFakeTimers()
+    try {
+      const seen: (RpcStatus | undefined)[] = []
+      const statusWindow = createStatusWindow(s => {
+        seen.push(s)
+      })
+      let loading = true
+      const stream = statusWindow.open({ isCurrent: () => loading })
+      const fanOut = createStatusFanOut(stream.statusCallback)
+      const file = (read: number, { rejects = false } = {}) =>
+        downloadStatus('Downloading file', fanOut(), async onProgress => {
+          await Promise.resolve()
+          onProgress?.(read, 1000)
+          if (rejects) {
+            throw new Error('socket closed')
+          }
+          // still in flight when Promise.all rejects on the one that isn't
+          await new Promise<void>(() => {})
+        })
+      await expect(
+        Promise.all([
+          file(400),
+          file(300),
+          file(300),
+          file(100, { rejects: true }),
+        ]),
+      ).rejects.toThrow('socket closed')
+      // every write of the load landed in one window, the retire included
+      // (ADR-071), so it is the trailing edge that says where the bar ended up
+      jest.advanceTimersByTime(100)
+      expect(seen.at(-1)).toEqual({
+        message: 'Downloading file',
+        current: 1100,
+        total: 3100,
+      })
+      // the shape of loadPre's own finally
+      loading = false
+      stream.clear()
+      expect(seen.at(-1)).toBeUndefined()
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
   // The other way the owner can go away, and the reason the assembly's guard
   // asks `isAlive(self)` as well as its own `loading` flag. A tree destroyed
   // WHILE its loads are in flight never reaches the `finally` that closes
@@ -1349,11 +1481,13 @@ describe('createStatusFanOut: the shape of any stream it can emit', () => {
         for (let i = 1; i <= ticks; i++) {
           yield { message, current: Math.floor((total * i) / ticks), total }
         }
-        // an inner phase closes onto the enclosing label, not onto `''`
-        yield message
+        // an inner phase closes onto the enclosing label, not onto `''` — and
+        // one in five closes on the failed flag instead, the retire of a phase
+        // that threw partway through
+        yield rnd() < 0.2 ? { message, failed: true } : message
       }
     }
-    yield ''
+    yield rnd() < 0.2 ? { message: '', failed: true } : ''
   }
 
   function runBatch(rnd: () => number) {
@@ -1383,14 +1517,19 @@ describe('createStatusFanOut: the shape of any stream it can emit', () => {
     for (let trial = 0; trial < 200; trial++) {
       const seen = runBatch(makeRandom(trial * 7919 + 1))
       for (const status of seen) {
-        // `''` is the batch's owner to write, never ours
+        // `''` is the batch's owner to write, never ours — and neither is the
+        // failed flag, which the aggregate consumes and never forwards
         expect(status).not.toBe('')
-        if (typeof status === 'object') {
+        expect(status).not.toHaveProperty('failed')
+        const reading = statusReading(status)
+        if (reading !== undefined) {
           // a bar that overshoots is the arithmetic having double-counted a
-          // slot's finished work, which is the defect ADR-080 opens on
-          expect(status.current).toBeGreaterThanOrEqual(0)
-          expect(status.current).toBeLessThanOrEqual(status.total)
-          expect(Number.isFinite(status.total)).toBe(true)
+          // slot's finished work, which is the defect ADR-080 opens on — and
+          // what crediting a failed phase its total, then measuring it again
+          // under the same label, would do
+          expect(reading.current).toBeGreaterThanOrEqual(0)
+          expect(reading.current).toBeLessThanOrEqual(reading.total)
+          expect(Number.isFinite(reading.total)).toBe(true)
         }
       }
       // a percentage left standing for work that is over is the write ADR-071

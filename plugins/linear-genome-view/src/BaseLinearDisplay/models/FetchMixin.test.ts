@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
+import { downloadStatus } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
@@ -351,6 +352,31 @@ describe('FetchMixin: progress reporting', () => {
     step()
     b!.statusCallback('')
     expect(m.statusProgress).toBeCloseTo(0.75)
+  })
+
+  // The other direction of the same charge, and the reason the outcome is on the
+  // channel at all: a region whose phase THREW is charged what it transferred.
+  // Driven through the real download helper, because the `finally` around the
+  // work is the only place that knows a retire was not a completion — both cases
+  // reach the aggregate as the same phase-over write.
+  //
+  // 600 of 1100 here. Charged the 1000 the dead socket promised it read 1500 of
+  // 2000, so the shared bar jumped forward the moment a region failed.
+  it("a region's phase that throws is charged what it transferred", async () => {
+    const { m, ctxs } = twoRegions()
+    const [a, b] = ctxs
+    a!.statusCallback({ message: 'Downloading', current: 500, total: 1000 })
+    step()
+    await expect(
+      downloadStatus('Downloading', b!.statusCallback, async onProgress => {
+        step()
+        onProgress?.(100, 1000)
+        step()
+        throw new Error('socket closed')
+      }),
+    ).rejects.toThrow('socket closed')
+    expect(m.statusMessage).toBe('Downloading')
+    expect(m.statusProgress).toBeCloseTo(600 / 1100)
   })
 
   // A region reporting no total is still a region in flight, so it is charged

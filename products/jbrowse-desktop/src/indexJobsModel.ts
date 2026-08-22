@@ -5,6 +5,7 @@ import {
   formatBytes,
   statusFraction,
   statusMessageText,
+  statusReading,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
@@ -139,13 +140,14 @@ function addAggregateTextSearchConf(
 // the rest is seconds or minutes
 function statusText(status: RpcStatus) {
   const message = statusMessageText(status) ?? ''
-  if (typeof status === 'string') {
+  const reading = statusReading(status)
+  if (reading === undefined) {
     return message
   }
   const counts =
-    status.total > 0
-      ? `${formatBytes(status.current)} / ${formatBytes(status.total)}`
-      : formatBytes(status.current)
+    reading.total > 0
+      ? `${formatBytes(reading.current)} / ${formatBytes(reading.total)}`
+      : formatBytes(reading.current)
   return message ? `${message}: ${counts}` : counts
 }
 

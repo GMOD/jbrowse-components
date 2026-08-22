@@ -15,12 +15,13 @@ declare const process: { env: { NODE_ENV?: string } }
 // The out-of-band progress channel, from a worker's phase helpers to the one
 // status field a loading indicator reads. Why it is shaped this way:
 // ADR-071 (every status goes through the window), ADR-072 (only one phase at a
-// time is summable), ADR-080 (a phase ends when its slot stops reporting it).
-// Those hold the defects each rule was written against; this file states the
-// rules.
+// time is summable), ADR-080 (a phase ends when its slot stops reporting it),
+// ADR-087 (a phase's retire says how it ended). Those hold the defects each rule
+// was written against; this file states the rules.
 //
 // `''` is the phase-over sentinel throughout, and nothing may rewrite it into a
-// label — see {@link statusMessageText}.
+// label — see {@link statusMessageText}. A retire that carries the `failed` flag
+// as well is a phase that stopped short — see {@link PhaseFailure}.
 
 // The phases currently open on one status channel, keyed by the callback that
 // *is* that channel. Entries are objects rather than strings so a phase removes
@@ -44,10 +45,14 @@ const openPhases = new WeakMap<StatusCallback, OpenPhase[]>()
  * `''` closing the outermost phase is what every consumer reads as "this phase
  * is over": a {@link StatusWindow} thins it like any other status, and
  * {@link aggregateStatus} reads it as "not in flight".
+ *
+ * The close takes the {@link PhaseOutcome}, because it is the one place that
+ * knows it — a phase that finished and a phase that threw retire the same label,
+ * and only the `finally` around the work can tell them apart.
  */
 function openPhase(cb: StatusCallback | undefined, label: string) {
   if (cb === undefined) {
-    return () => {}
+    return (_outcome: PhaseOutcome) => {}
   }
   let stack = openPhases.get(cb)
   if (stack === undefined) {
@@ -56,12 +61,13 @@ function openPhase(cb: StatusCallback | undefined, label: string) {
   }
   const phase: OpenPhase = { label }
   stack.push(phase)
-  return () => {
+  return (outcome: PhaseOutcome) => {
     const index = stack.lastIndexOf(phase)
     if (index !== -1) {
       stack.splice(index, 1)
     }
-    cb(stack.at(-1)?.label ?? '')
+    const message = stack.at(-1)?.label ?? ''
+    cb(outcome === 'failed' ? { message, failed: true } : message)
   }
 }
 
@@ -84,14 +90,19 @@ export async function updateStatus<U>(
   stopToken?: StopToken,
 ) {
   const endPhase = openPhase(cb, msg)
+  // pessimistic, so anything leaving this scope other than a value — a throw, a
+  // cancel — retires the phase as unfinished
+  let outcome: PhaseOutcome = 'failed'
   // everything after the open is inside the try, the announcing write included,
   // so a throw anywhere cannot leave this phase's label sitting on the channel
   // forever — the error surfaces under a stale "Downloading file"
   try {
     cb?.(msg)
-    return await withStopTokenCheck(stopToken, fn)
+    const result = await withStopTokenCheck(stopToken, fn)
+    outcome = 'completed'
+    return result
   } finally {
-    endPhase()
+    endPhase(outcome)
   }
 }
 
@@ -105,7 +116,42 @@ export interface StatusWithProgress {
   total: number
 }
 
-export type RpcStatus = string | StatusWithProgress
+/**
+ * How a phase ended. Only the `finally` that closes it knows, and
+ * {@link PhaseFailure} is how it says so on the channel.
+ */
+type PhaseOutcome = 'completed' | 'failed'
+
+/**
+ * The last word of a phase that did not finish: the label its retire leaves on
+ * the channel — the enclosing phase's, or `''` when there was none — plus the
+ * one thing no reading can carry, that the work under it stopped short.
+ *
+ * **The aggregate cannot infer this from the readings**, which is why it is on
+ * the wire. A phase clear and a phase that threw arrive as the same `''`, and on
+ * the per-region fetch path a clear *is* a completion — charging it less than
+ * its total is what made the shared bar run backwards as a batch landed
+ * (ADR-072, and `FetchMixin.test.ts` pins it by name). So the outcome travels as
+ * a value the `finally` writes, and the credit follows the value.
+ *
+ * **A value rather than a second callback argument**, because it has to survive
+ * every `status => cb(status)` forwarder in the tree and the worker's
+ * postMessage: `wrapForRpc` posts one status, and an extra argument would be
+ * dropped in silence at each of those seams.
+ *
+ * A consumer that only understands the falsy-message retire keeps working:
+ * `message` is the same string it would have been handed, so
+ * {@link statusMessageText} and {@link statusFraction} answer exactly as they do
+ * for a bare `''`. The marker is read by the first {@link createStatusAggregate}
+ * it reaches, which credits the retiring phase what it transferred and then
+ * stores the plain message — so it never reaches a display's status field.
+ */
+export interface PhaseFailure {
+  message: string
+  failed: true
+}
+
+export type RpcStatus = string | StatusWithProgress | PhaseFailure
 
 /**
  * The single out-of-band status transport carried across the RPC boundary. A
@@ -114,6 +160,22 @@ export type RpcStatus = string | StatusWithProgress
  * this; the loading UI renders the message and (when present) a progress bar.
  */
 export type StatusCallback = (status: RpcStatus) => void
+
+function isPhaseFailure(status: RpcStatus): status is PhaseFailure {
+  return typeof status === 'object' && 'failed' in status
+}
+
+/**
+ * The determinate reading in `status`, or undefined when there is none — a bare
+ * label, or the last word of a phase that threw. The one place the transport's
+ * union is narrowed to a `current`/`total`, so a consumer reading the numbers
+ * cannot mistake a {@link PhaseFailure} for a measurement.
+ */
+export function statusReading(status: RpcStatus | undefined) {
+  return typeof status === 'object' && !isPhaseFailure(status)
+    ? status
+    : undefined
+}
 
 /**
  * The phase a status names, verbatim — its label, whichever shape it arrived in.
@@ -149,8 +211,9 @@ export function statusMessageText(status: RpcStatus | undefined) {
  * (a plain string, or a zero total).
  */
 export function statusFraction(status: RpcStatus | undefined) {
-  return typeof status === 'object' && status.total > 0
-    ? Math.min(1, status.current / status.total)
+  const reading = statusReading(status)
+  return reading !== undefined && reading.total > 0
+    ? Math.min(1, reading.current / reading.total)
     : undefined
 }
 
@@ -274,12 +337,9 @@ function createStatusAggregate({ holdLastReading = false } = {}) {
     if (held?.message !== message) {
       held = undefined
     }
-    if (
-      holdLastReading &&
-      typeof aggregate === 'object' &&
-      !readsComplete(aggregate)
-    ) {
-      held = aggregate
+    const reading = statusReading(aggregate)
+    if (holdLastReading && reading !== undefined && !readsComplete(reading)) {
+      held = reading
     }
     if (message !== undefined) {
       lastMessage = message
@@ -318,12 +378,25 @@ function createStatusAggregate({ holdLastReading = false } = {}) {
     update(slot: StatusSlot, status: RpcStatus) {
       // what this slot just finished, credited at the total it retired at —
       // only its own channel ever saw that number
-      const previous = slot.status
-      if (typeof previous === 'object' && !continuesPhase(previous, status)) {
-        const { message, total } = previous
-        slot.completed.set(message, finished(slot, message) + total)
+      const previous = statusReading(slot.status)
+      if (previous !== undefined && !continuesPhase(previous, status)) {
+        const { message, current, total } = previous
+        // A phase that ENDED is charged its total: its `current` was only ever
+        // its total written twice, and undercharging it is what made the bar run
+        // backwards as a batch landed. A phase that THREW is charged what it
+        // transferred — the 900 bytes a dead socket will never carry are not
+        // work this batch completed, and crediting them walked the bar forward
+        // on a failure. Nothing in the readings separates the two, so
+        // {@link PhaseFailure} carries the difference.
+        slot.completed.set(
+          message,
+          finished(slot, message) + (isPhaseFailure(status) ? current : total),
+        )
       }
-      slot.status = status
+      // the marker is consumed here. From now on the slot is simply reporting
+      // the label the retire left behind, so nothing downstream — a parent
+      // channel, a display's field — has to know the shape exists.
+      slot.status = isPhaseFailure(status) ? status.message : status
       // every label, not only the determinate ones: an indeterminate phase that
       // ties with another has to rank somewhere too, and it is the first slot to
       // say the words that dates the phase either way
@@ -707,9 +780,10 @@ export function aggregateStatus(
       }
       votes.set(message, vote)
     }
-    if (typeof slot.status === 'object') {
+    const reading = statusReading(slot.status)
+    if (reading !== undefined) {
       vote.live++
-      vote.liveTotal += slot.status.total
+      vote.liveTotal += reading.total
     }
   }
   // Whether the phase has anything to measure at all, and then how early the
@@ -737,9 +811,10 @@ export function aggregateStatus(
     current += done
     total += done
     const { status } = slot
-    if (typeof status === 'object' && status.message === message) {
-      current += status.current
-      total += status.total
+    const reading = statusReading(status)
+    if (reading !== undefined && reading.message === message) {
+      current += reading.current
+      total += reading.total
     } else if (done === 0 && status !== undefined && status !== '') {
       // in flight with nothing comparable to measure, so charged the mean — and
       // only here. A slot already credited for this phase is not charged for it
@@ -830,12 +905,14 @@ function readsComplete(status: StatusWithProgress) {
  * - a measurement moving *backwards* under the same label, which is a second
  *   phase of that name starting at zero. Tabix's redispatch does it when a
  *   feature overhangs the query.
+ * - a {@link PhaseFailure}, which retires the phase whatever label it carries.
  */
 function continuesPhase(previous: StatusWithProgress, status: RpcStatus) {
+  const reading = statusReading(status)
   return (
-    typeof status === 'object' &&
-    status.message === previous.message &&
-    status.current >= previous.current
+    reading !== undefined &&
+    reading.message === previous.message &&
+    reading.current >= previous.current
   )
 }
 
@@ -927,6 +1004,9 @@ export async function withProgress<T>(
     stopToken,
   })
   const endPhase = openPhase(statusCallback, label)
+  // pessimistic for the same reason as `updateStatus`: a phase that leaves this
+  // scope any way other than returning did not finish its work
+  let outcome: PhaseOutcome = 'failed'
   try {
     // inside the try, because `report` checks the stop token before it emits and
     // so throws here on a token already stopped. Outside, that threw past the
@@ -934,8 +1014,10 @@ export async function withProgress<T>(
     // label is one `aggregateStatus` counts as in flight for the rest of the
     // batch.
     report(0)
-    return await withStopTokenCheck(stopToken, () => fn(report))
+    const result = await withStopTokenCheck(stopToken, () => fn(report))
+    outcome = 'completed'
+    return result
   } finally {
-    endPhase()
+    endPhase(outcome)
   }
 }

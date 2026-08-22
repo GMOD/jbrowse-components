@@ -147,15 +147,20 @@ describe('runDiagonalize cascade', () => {
       const cb = call.mock.calls[i]![2].statusCallback!
       cb('Fetching features')
       cb({ message: 'Grouping alignments', current: 1, total: 4 })
+      // both spellings of the sentinel: the plain one, and the retire of a phase
+      // that threw. Prefixing either makes a phase that never ends.
       cb('')
+      cb({ message: '', failed: true })
     }
     expect(seen).toEqual([
       'Level 1/2: Fetching features',
       { message: 'Level 1/2: Grouping alignments', current: 1, total: 4 },
       '',
+      { message: '', failed: true },
       'Level 2/2: Fetching features',
       { message: 'Level 2/2: Grouping alignments', current: 1, total: 4 },
       '',
+      { message: '', failed: true },
     ])
   })
 

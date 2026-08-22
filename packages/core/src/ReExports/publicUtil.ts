@@ -257,6 +257,7 @@ export {
   statusFraction,
   statusMessageText,
   statusProgressLabel,
+  statusReading,
   stitch,
   stopStopToken,
   stopTokenSignal,

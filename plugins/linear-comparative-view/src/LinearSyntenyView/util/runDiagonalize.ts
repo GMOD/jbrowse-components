@@ -27,14 +27,15 @@ function levelStatusCallback(
   const prefix = `Level ${level + 1}/${levelCount}: `
   return status => {
     // `''` is the phase-over sentinel, not a label, so it goes through
-    // unprefixed. Prefixed it becomes `"Level 1/3: "` — a status every consumer
+    // unprefixed — a retire that carries the failed flag as well as the sentinel
+    // included. Prefixed it becomes `"Level 1/3: "` — a status every consumer
     // reads as a phase still running, which left the reordering spinner showing
     // a bare level number between one level's last phase and the next level's
     // first.
-    if (status === '') {
+    if (typeof status === 'string') {
+      statusCallback(status === '' ? status : `${prefix}${status}`)
+    } else if (status.message === '') {
       statusCallback(status)
-    } else if (typeof status === 'string') {
-      statusCallback(`${prefix}${status}`)
     } else {
       statusCallback({ ...status, message: `${prefix}${status.message}` })
     }

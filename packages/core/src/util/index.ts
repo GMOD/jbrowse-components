@@ -124,6 +124,7 @@ export {
   resolvePlugin,
 } from './pluginStore.ts'
 export {
+  type PhaseFailure,
   type ProgressReporter,
   type RpcStatus,
   type StatusCallback,
@@ -138,6 +139,7 @@ export {
   statusFraction,
   statusMessageText,
   statusProgressLabel,
+  statusReading,
   updateStatus,
   withProgress,
 } from './progress.ts'

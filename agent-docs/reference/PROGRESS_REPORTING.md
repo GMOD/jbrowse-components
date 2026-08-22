@@ -15,13 +15,26 @@ progress.
 `statusCallback: (status: RpcStatus) => void`, where
 
 ```ts
-RpcStatus = string | { message; current; total }
+RpcStatus = string | { message; current; total } | { message; failed: true }
 ```
 
 (`packages/core/src/util/progress.ts`). A plain string is an indeterminate
-phase label. The object form adds a determinate `current/total` fraction —
+phase label. The second form adds a determinate `current/total` fraction —
 unit-agnostic (bytes, blocks, or records). The UI decides presentation, so
 percentages are never baked into the message string.
+
+The third is a **retire that says the phase did not finish**, written by the
+`finally` of `updateStatus` / `withProgress` / `downloadStatus` and by nothing
+else. Its `message` is the same string the retire carries anyway (`''`, or the
+enclosing phase's label), so `statusMessageText` and `statusFraction` answer for
+it exactly as they do for a bare `''` — a consumer reading the label or the
+fraction needs no branch. What it buys is the credit: `aggregateStatus` charges a
+completed phase its `total` and a failed one only the `current` it reached, and
+the readings cannot tell those apart (ADR-087). The first aggregate it reaches
+consumes it, so nothing downstream sees the shape.
+
+Reading `current`/`total` off a status goes through `statusReading(status)`,
+which is `undefined` for both a bare label and a failed retire.
 
 There is **no** second `onProgress` channel. Emit through `statusCallback`
 only.
