@@ -247,20 +247,23 @@ MST property or a `.volatile()` field.
 
 To make a field a dependency of an autorun without using its value, `void` it —
 for a frozen field that means the autorun fires when the whole value is
-replaced, without enumerating its properties. The Hi-C display does it to a
-counter so its retry button re-reads the file header:
+replaced, without enumerating its properties. The prerequisite-fetch skeleton
+(which Hi-C's file-header read runs on) does it to a counter so the retry button
+re-runs the fetch:
 
-<!-- include: plugins/hic/src/LinearHicDisplay/model.ts#voidTracking -->
+<!-- include: plugins/linear-genome-view/src/BaseLinearDisplay/models/installPrerequisiteFetch.ts#voidTracking -->
 
 ```ts
-autorun(
-  () => {
-    void self.reloadCounter
-    // errors are captured in setError; fire-and-forget is safe
-    void self.fetchHicInfo()
-  },
-  { name: 'LinearHicDisplayInfo' },
-),
+() => {
+  // the pure "go again" signal, read unconditionally above the gates so a
+  // Retry click re-runs the body even when nothing else moved
+  void self.reloadCounter
+  if (self.isMinimized || opts.enabled?.() === false) {
+    return false
+  }
+  void runOne(rotation.begin())
+  return true
+},
 ```
 
 Give every autorun a `name` as that one does — it is what shows up when

@@ -107,7 +107,10 @@ export function installPrerequisiteFetch<T>(
   }
   leadingEdgeAutorun(
     self,
+    // #region voidTracking
     () => {
+      // the pure "go again" signal, read unconditionally above the gates so a
+      // Retry click re-runs the body even when nothing else moved
       void self.reloadCounter
       if (self.isMinimized || opts.enabled?.() === false) {
         return false
@@ -115,6 +118,7 @@ export function installPrerequisiteFetch<T>(
       void runOne(rotation.begin())
       return true
     },
+    // #endregion
     { name: opts.name, delay: opts.delay },
   )
 }

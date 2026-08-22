@@ -52,6 +52,8 @@ before anyone noticed.
 | [Shoot the multihop chain as counted arcs](#shoot-the-multihop-chain-as-counted-arcs-in-one-lgv) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Re-render the settings-menu figures](#re-render-the-five-figures-the-settings-menu-refactor-outran) | figures, synteny | five stale; the lock cannot catch this class |
 | [Rebuild the OrthoFinder demos' chrom.sizes](#rebuild-the-three-orthofinder-demos-chromsizes) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all |
+| [A pure reducer for the byte-gate commit protocol](#pull-the-byte-gate-commit-protocol-into-a-pure-reducer-the-fuzzing-can-reach) | region-too-large, tests | the truth table cannot see action sequences; the tier-key fix is the class a random walk finds |
+| [The tier hook's budget reads the wrong adapter](#the-tier-hooks-byte-budget-still-resolves-off-the-tracks-main-adapter) | region-too-large | inert today; the fix is the hook carrying a config node, not a snapshot read |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](#give-sessionjbrowse-a-real-type) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
@@ -1451,6 +1453,34 @@ above ~4096 CSS px on a retina panel and ~8192 at dpr 1. Arguments both ways:
 
 Not urgent either way now that the failure is graceful. Whoever takes it should
 decide per display type, not in `TrackHeightMixin`.
+
+### Pull the byte-gate commit protocol into a pure reducer the fuzzing can reach
+
+`gateTruthTable.test.ts` enumerates the derived getters exhaustively (67,200
+rows), but by its own comment it cannot see an action *sequence*: the commit
+rules — issued-tier and issued-viewport judging (`commitByteMeasurement`), the
+two `clearByteEstimate` triggers, force-load flipping mid-flight — live in
+example tests scattered per display. The 2026-08 tier-key fix is exactly the
+class a seeded random walk over a `nextGateState(prev, event)` reducer would
+have found first (events: measurement-committed, viewport-moved,
+chromosome-nav, tier-swap, force-load), the way canvas's
+`loadedRegionCoverage.test.ts` already walks zoom/pan.
+`setByteEstimate`/`setGateMeasuredViewport`/`clearByteEstimate` become one-line
+delegations; nothing observable changes.
+
+### The tier hook's byte budget still resolves off the track's main adapter
+
+`adapterFetchSizeLimit` reads `['adapter','fetchSizeLimit']` off the track
+config even when `byteGateAdapterConfig` points the measurement at a
+sub-adapter (MAF's summary tier), so a sub-adapter that declared its own limit
+would be gated against the wrong number. Inert today — the adapters declaring
+the slot are Bam/Cram/VcfTabix/SplitVcfTabix and no in-tree tier swap targets
+one — and **not fixable from the snapshot**: a resolved snapshot omits slots at
+their schema default (the mixin's own `adapterFetchSizeLimit` note), so the fix
+is the tier hook carrying its config *node* or its resolved budget alongside
+the snapshot, not a `.fetchSizeLimit` read off what it already returns. A
+static check cannot close it either — which adapter type sits behind a
+`byteGateAdapterConfig` override is a config-time fact.
 
 ## Blocked on a visual call
 

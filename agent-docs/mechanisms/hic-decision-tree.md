@@ -21,8 +21,10 @@ Three questions:
 
 The GPU lifecycle around all of it is
 [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md); the rotated-triangle
-forward/inverse pair lives in `plugins/hic/src/LinearHicDisplay/hicTransform.ts`
-(the LD heatmap keeps its own spelling of the same pair on its model).
+forward/inverse pair is the shared
+`plugins/linear-genome-view/src/BaseLinearDisplay/models/triangleTransform.ts`
+(the LD heatmap draws and hit-tests through the same pair, plus the connector
+zone its `yOffsetPx` carries).
 
 ## The request
 

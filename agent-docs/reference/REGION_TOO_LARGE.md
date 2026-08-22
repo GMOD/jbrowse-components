@@ -422,8 +422,10 @@ the rename's own diff.
 
 **`configuredFetchSizeLimit`** and **`configForceLoad`** read the
 `fetchSizeLimit` and `forceLoad` slots from `baseLinearDisplayConfigSchema`,
-which every gated display extends. Overridable, but nothing overrides them
-today.
+which every gated display extends. Plain slot reads, not part of the
+overridable hook surface — nothing has ever overridden them, and a display
+whose budget genuinely comes from somewhere else should surface that need
+before this line grows an "overridable" back.
 
 **`densityTooLarge`** supplies a second gating axis, false in the base mixin.
 Canvas overrides it with its feature-density gate; byte-only displays leave it.

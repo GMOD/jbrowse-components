@@ -1130,12 +1130,12 @@ what leaves it false indefinitely — a user toggle inside it (LD's
 view's export with the dialog spinner up and nothing said. Minimized tracks are
 the one case already handled for you — `SVGLinearGenomeView` filters them out.
 
-**Enumerate every way the prerequisite fails, not just the throw.** HiC now
-`setError`s from `fetchHicInfo`'s `catch` — but a `CoreGetInfo` that *resolves*
-carrying no binsize list leaves `effectiveResolution` undefined just as
-thoroughly, with no exception to catch, so the empty list needs its own
-`setError`. A gate on a fetched value has as many resting states as that value
-has empty shapes.
+**Enumerate every way the prerequisite fails, not just the throw.** HiC's
+header read (`installPrerequisiteFetch`) `setError`s on a thrown `CoreGetInfo`
+— but one that *resolves* carrying no binsize list leaves
+`effectiveResolution` undefined just as thoroughly, with no exception to
+catch, so the empty list needs its own `setError` in the commit. A gate on a
+fetched value has as many resting states as that value has empty shapes.
 
 **The on-screen twin: the same states are terminal for the loading overlay.** A
 first-load overlay is `!ready && !error`, and `ready` means "a fetch landed" — so
