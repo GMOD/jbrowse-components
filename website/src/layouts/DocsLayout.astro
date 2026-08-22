@@ -185,6 +185,13 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
      dialog) can override these without out-specifying the compiled
      `.docs-content[data-astro-cid-…] pre`. styles/layers.css has the order. */
   @layer prose {
+    /* Every heading is a jump target — the TOC links the h2s and h3s, and
+       rehype-heading-links hangs a "#" off each one — and the site nav is
+       sticky over the top 60px, so one landed on sits under it. Same 5rem
+       MarkdownLayout and the gallery already use. */
+    .docs-content :global(:is(h2, h3, h4, h5, h6)) {
+      scroll-margin-top: 5rem;
+    }
     .docs-content :global(h2) {
       font-size: 1.6rem;
       font-weight: 700;
