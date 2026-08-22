@@ -166,6 +166,8 @@ the route their split alignments describe. COLO829's der(3), the junction in the
 figures above, is three junctions across three chromosomes, and the
 [multi-hop tutorial](/docs/tutorials/cancer_sv) follows it the rest of the way.
 
+<Video src="/media/sv/derivative_allele_route.mp4" caption="The junction the figures above are of, taken the rest of the way in the browser: the tumor track menu, the routes the reads describe with the count behind each one, and Breakpoint split view replacing the window with one panel per segment of the route." />
+
 ## Other callers
 
 The recipe is the format, not the caller. Anything that writes breakends or

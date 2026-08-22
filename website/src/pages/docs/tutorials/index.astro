@@ -58,9 +58,10 @@ const cardFrom = (entry: (typeof docs)[number], category: string) => ({
   cost: entry.data.data,
   // A page carrying a video tutorial says so in the grid. The videos are the one
   // thing on these pages a reader might come looking for and cannot find by
-  // reading: 14 of them sit inside 9 tutorials, and a still and a clip look the
-  // same in a search result. Read off the page's own `<Video>` rather than
-  // declared in frontmatter, so adding one to a page is the whole of the work.
+  // reading, since a still and a clip look the same in a search result. Read off
+  // the page's own `<Video>` rather than declared in frontmatter, so adding one
+  // to a page is the whole of the work — and so the chip cannot go stale against
+  // a corpus that grows a tour at a time.
   hasVideo: /<Video\s/.test(entry.body ?? ''),
   external: false,
 })
