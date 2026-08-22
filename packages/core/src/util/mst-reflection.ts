@@ -13,7 +13,6 @@ import type {
   IOptionalIType,
   ISimpleType,
   UnionStringArray,
-  ValidOptionalValues,
 } from '@jbrowse/mobx-state-tree'
 
 export interface ILiteralType<T> extends ISimpleType<T> {
@@ -62,9 +61,7 @@ export function getDefaultValue(type: IAnyType) {
   }
   // isOptionalType is a same-type guard, so narrow to the optional interface
   // that publishes getDefaultInstanceOrSnapshot
-  return (
-    type as IOptionalIType<IAnyType, ValidOptionalValues>
-  ).getDefaultInstanceOrSnapshot()
+  return (type as IOptionalIType).getDefaultInstanceOrSnapshot()
 }
 
 export type IEnumerationType<T extends string> = ISimpleType<
