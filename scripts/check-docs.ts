@@ -141,6 +141,14 @@ const VALIDATORS: Validator[] = [
     name: 'prerequisite tools are invoked on their own page',
     argv: web('check-prereq-tools.ts'),
   },
+  {
+    // The case neither of those two sees: a tutorial that shows no command at
+    // all, so its reader never learns which tool made the figure. Ratcheted
+    // rather than forbidden, since a handful of pages genuinely have no tool
+    // to show.
+    name: 'tutorials show a command from their build script',
+    argv: web('check-unshown-tools.ts', '--check'),
+  },
   // The figure recipes' round-trip lives in `pnpm autogen` instead, because the
   // other half of that script WRITES spec-recipe-unmapped.txt. Reporting the
   // list stale here only sent people to run the regeneration by hand.

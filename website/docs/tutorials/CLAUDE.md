@@ -84,6 +84,11 @@ script does not take, and off one whose command the script only approximates:
 `local_ancestry` shows `jbrowse sort-bed` where its script sorts inline to stay
 free of node, so that line stands in a fence of its own.
 
+**A page that shows no command at all is the other failure**, and
+`check-unshown-tools` ratchets it: hand a reader a build script without one
+marked fence and the list grows. `scripts/unshown-tools.txt` names the seven
+still on it and why four of them will never move.
+
 **A `python` or `r` fence takes the same marker**, because a build script's
 analysis step is as often a heredoc as a command. There the callee stands in for
 the tool and the keyword-argument names for the flags, so `satuRn::fitDTU` and

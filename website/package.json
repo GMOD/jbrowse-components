@@ -48,6 +48,7 @@
     "check-prereq-tools": "node scripts/check-prereq-tools.ts",
     "check-session-urls": "node scripts/check-session-urls.ts",
     "check-script-commands": "node scripts/check-script-commands.ts",
+    "check-unshown-tools": "node scripts/check-unshown-tools.ts",
     "check-doc-slots": "node scripts/check-doc-slots.ts",
     "check-doc-surfaces": "node scripts/check-doc-surfaces.ts",
     "gen:gallery-links": "node scripts/gen-gallery-links.ts",

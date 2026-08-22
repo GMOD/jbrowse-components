@@ -106,6 +106,44 @@ awk -v total="$reads" -v OFS='\t' \
 bedGraphToBigWig celltype.cpm.bg hg38.chrom.sizes celltype.bw
 ```
 
+One pass over a chromosome fills a row per cell type. Both decisions above are
+the two `continue`s, and the splice-awareness is `get_blocks`:
+
+<!-- from: scripts/build_scrna_pseudobulk.sh -->
+
+```python
+# of_barcode maps a corrected cell barcode to its cell type's row index
+bam = pysam.AlignmentFile(BAM, "rb", index_filename=bai)
+length = bam.get_reference_length(chrom)
+cov = np.zeros((len(types), length // BIN + 1), dtype=np.uint32)
+
+for read in bam.fetch(chrom):
+    # 0x400 is the duplicate flag, 0x100 secondary and 0x800 supplementary. The
+    # first is the duplicate decision; the other two stop one read landing in
+    # several places at once. MAPQ 255 is what STAR emits for a unique
+    # alignment, which is the only kind CellRanger writes.
+    if read.flag & SKIP_FLAGS or read.mapping_quality < MIN_MAPQ:
+        continue
+    try:
+        t = of_barcode[read.get_tag("CB")]
+    except KeyError:
+        continue  # a cell the labeling dropped, or an uncorrected barcode
+    # get_blocks splits the read at every N in its CIGAR, so an intron the read
+    # spans stays a gap instead of filling in
+    for start, end in read.get_blocks():
+        cov[t][start // BIN : (end - 1) // BIN + 1] += 1
+```
+
+Writing each row out as a bedGraph and converting it is the last step. Scale
+column 4 by `1e6 / <that cell type's counted reads>` first, which is the CPM
+decision above:
+
+<!-- from: scripts/build_scrna_pseudobulk.sh -->
+
+```bash
+bedGraphToBigWig CD8_T.all.bg hg38.chrom.sizes bw/CD8_T.bw
+```
+
 ## Loading the BigWigs
 
 One `MultiQuantitativeTrack` holds the whole set, one `BigWigAdapter` subadapter
