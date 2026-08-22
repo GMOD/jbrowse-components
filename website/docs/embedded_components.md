@@ -247,10 +247,19 @@ reader's.
 
 `height` takes any CSS height (`'400px'`, `'80vh'`) and bounds the component's
 own root. Without it an embedded view is content-height and grows with the page,
-which is what you want in a document and not in a panel; a host box with a
-height of its own bounds it too, and still does. The view scrolls inside the
-bound, so a height shorter than the track set is tall costs you nothing but the
-scrollbar.
+which is what you want in a document and not in a panel. The tracks scroll
+inside the bound while the chrome above them stays put — title bar, navigation
+bar, overview scalebar, coordinate ruler — so a height shorter than the track
+set is tall costs you nothing but the scrollbar.
+
+That last part is why this is a prop and not just advice to wrap the component
+in a sized box. A host box does bound the view, and still does, but it scrolls
+the whole component: the ruler leaves the top with the first track and no CSS
+outside the component can pin it, because the scroll region is outside too. The
+prop puts the scroll region inside the view, which is what the headers pin
+against — the same mechanism, and the same
+[`stickyViewHeaders`](https://github.com/GMOD/jbrowse-components/pull/4237),
+that JBrowse Web uses.
 
 `drawerViewHeight` (default `100vh`) is the older spelling of the same thing,
 applied only while a drawer widget is open. That condition is why it existed: a

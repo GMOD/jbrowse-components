@@ -30,7 +30,7 @@ before anyone noticed.
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
-| [Three spellings of "how tall is the embed"](#three-spellings-of-how-tall-is-the-embed) | embedded, API | the LGV half shipped; decide whether the app's CSS variable becomes the same prop |
+| [Two spellings of "how tall is the embed"](#two-spellings-of-how-tall-is-the-embed) | embedded, API | the LGV ships `height`; decide whether the app's CSS variable becomes the same prop |
 | [An arc's right-click offers nothing](#give-an-arcs-right-click-something-to-offer) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
@@ -205,47 +205,53 @@ gate has to exempt them, which is its own small design question. Nor are the two
 surviving `"showLabels": "auto"` reads in that file drift: that is the current
 slot name under a current value, so nobody should "fix" those either.
 
-### Three spellings of "how tall is the embed"
+### Two spellings of "how tall is the embed"
 
-`@jbrowse/react-linear-genome-view2` now takes `height` — any CSS height,
-applied to the component's own root whether or not a drawer is open — and
-`drawerViewHeight` is deprecated behind it, honored only when `height` is
-absent. That is the LGV settled. What is open is that the three embedded
-products answer the same question three ways, and none of them is wrong on its
-own terms:
+`@jbrowse/react-linear-genome-view2` takes `height` — any CSS height, applied to
+the component's own root — and a bounded view pins its chrome and scrolls only
+its tracks, which is what [#4526](https://github.com/GMOD/jbrowse-components/issues/4526)
+was actually asking for. `drawerViewHeight` is deprecated behind it, honored only
+when `height` is absent. `effectiveHeight` on the root model is the one
+definition of "bounded"; the session's `stickyViewHeaders` reads it, and from
+there the existing web mechanism does the rest.
 
-- **LGV**: `height`, a prop. Content-height without it, because the chain of
-  `height: 100%` stops at the MUI `ScopedCssBaseline` it mounts inside, which
-  has no height.
+What is open is that the embedded products still answer the same question two
+ways:
+
+- **LGV**: `height`, a prop.
 - **react-app2**: `--jbrowse-app-height`, a CSS custom property set on any
   ancestor, feeding `height: var(--jbrowse-app-height, 100vh)` on the App root
   (`app-core/ui/App/App.tsx`). Deliberate and documented — it has its own
   `fit-to-container` examples page — and it propagates height on purpose:
   `ScopedCssBaseline sx={{ height: '100%' }}`, which the LGV's does not.
-- **circular**: nothing. `ScopedCssBaseline` with no height like the LGV, so
-  content-height, but there is no drawer either (`ModalWidget` is its only
-  widget surface), so nothing ever bounds it and nothing clips.
 
-So this is not "copy the prop twice". The question is whether `height` becomes
-the one spelling — on react-app2 it would set the variable rather than a style,
-since the variable is what App reads and hosts already use it — or whether a
-prop for a component and a variable for an app is the right split, in which case
-say so somewhere a host reads.
+So: does `height` become the one spelling, setting the variable on react-app2
+rather than a style, since the variable is what App reads and hosts already use
+it? Or is a prop for a component and a variable for an app the right split, in
+which case say so somewhere a host reads. The circular product needs neither
+until it has something to scroll: no drawer (`ModalWidget` is its only widget
+surface), so nothing bounds it and nothing clips.
 
-Two things settled here so nobody re-derives them. **`drawerViewHeight` stays** —
-published API, and `height` wins when both are given. And **sticky headers in
-the embedded session are not wanted**: the ruler scrolling away with the first
-track is deliberate, `stickyViewHeaders` is a web session preference
-(`MultipleViews.ts`) that `EmbeddedSessionMixin` does not compose, and the LGV
-getter reads its absence as "don't pin" (`LinearGenomeView/model.ts`). PR #4237
-merged and is the web half.
+**`drawerViewHeight` stays** — published API, and `height` wins when both are
+given.
 
-Also unpinned in every product: the unbounded path's real layout. The host box
-works because of that missing height on `ScopedCssBaseline` — 400 / 400 / 692 /
-692 / 692 down the chain from a 400px box — and jsdom computes no layout, so
-pinning it needs a browser test against an examples site rather than a jest one.
-The `height` prop is why this is no longer urgent for the LGV: a host that wants
-a bound now asks for one in a way jsdom can check.
+**A correction worth keeping, because it cost a wrong answer to an issue.** An
+earlier revision of this entry said sticky headers in the embedded session "are
+not wanted", and that was read off the LGV getter's own comment — a session with
+no such notion "should read as don't pin" — which describes what an absent
+property *does*, not what anyone decided. It was wrong, and it nearly closed
+#4526 with the opposite of the requested behavior. The sticky machinery was
+already complete in the LGV component (`LinearGenomeViewContainer.tsx` pins the
+header, `rubberbandTop` offsets the overlays); the embedded session simply never
+opted in.
+
+Unpinned in every product: the *unbounded* path's real layout. The host box works
+because the chain of `height: 100%` stops at the MUI `ScopedCssBaseline` the
+component mounts inside, which has no height — 400 / 400 / 692 / 692 / 692 down
+the chain from a 400px box — and jsdom computes no layout, so pinning that needs
+a browser test against an examples site rather than a jest one. Less urgent than
+it was: a host that wants a bound now asks for one in a way jsdom can check, and
+the unbounded path is the one that cannot pin its headers anyway.
 
 ### Give an arc's right-click something to offer
 

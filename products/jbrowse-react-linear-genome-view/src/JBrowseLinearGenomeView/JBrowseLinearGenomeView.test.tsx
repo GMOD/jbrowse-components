@@ -159,15 +159,18 @@ test('unbounded until a drawer opens, and then the box scrolls', async () => {
   const { findByTestId } = render(<JBrowseLinearGenomeView viewState={state} />)
 
   const box = await findByTestId('embedded-view-box')
+  const title = async () => (await findByTestId('view_menu_icon')).parentElement
   expect(box.parentElement?.style.height).toBe('')
   expect(box.style.overflowY).toBe('')
+  expect((await title())?.style.position).toBe('')
 
   state.session.view.activateTrackSelector()
 
   await waitFor(
-    () => {
+    async () => {
       expect(box.parentElement?.style.height).toBe('100vh')
       expect(box.style.overflowY).toBe('auto')
+      expect((await title())?.style.position).toBe('sticky')
     },
     { timeout },
   )
@@ -190,6 +193,11 @@ test('a height bounds the view with no drawer, and outranks drawerViewHeight', a
   const box = await findByTestId('embedded-view-box')
   expect(box.parentElement?.style.height).toBe('400px')
   expect(box.style.overflowY).toBe('auto')
+  // pinned with no drawer involved: the height alone is what the tracks scroll
+  // under, which is the whole arrangement this prop exists for
+  expect(
+    (await findByTestId('view_menu_icon')).parentElement?.style.position,
+  ).toBe('sticky')
 
   state.session.view.activateTrackSelector()
 

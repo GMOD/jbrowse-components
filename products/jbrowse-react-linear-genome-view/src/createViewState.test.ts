@@ -267,3 +267,47 @@ test('a remote track alongside a local one is untouched', () => {
     uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
   })
 })
+
+// Pinning is what a bounded view is for -- the JBrowse 1 arrangement, header
+// above and tracks scrolling under it -- and it is the reason `height` is a prop
+// rather than only a box the host draws: a host box scrolls the whole component,
+// so there is nothing inside it to pin against, and the ruler leaves with the
+// first track no matter what CSS the host writes. So the condition is the
+// resolved height, not the option, and a drawer supplies one too.
+test('a bounded view pins its headers, an unbounded one does not', () => {
+  const unbounded = createViewState({ assembly, tracks })
+  expect(unbounded.effectiveHeight).toBeUndefined()
+  expect(unbounded.session.stickyViewHeaders).toBe(false)
+  expect(unbounded.session.view.stickyViewHeaders).toBe(false)
+
+  const bounded = createViewState({ assembly, tracks, height: '400px' })
+  expect(bounded.effectiveHeight).toBe('400px')
+  expect(bounded.session.stickyViewHeaders).toBe(true)
+  expect(bounded.session.view.stickyViewHeaders).toBe(true)
+})
+
+test('an open drawer bounds the view, and pins it with the older name', () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    drawerViewHeight: '600px',
+  })
+  expect(state.effectiveHeight).toBeUndefined()
+  expect(state.session.stickyViewHeaders).toBe(false)
+
+  const widget = state.session.addWidget(
+    'HierarchicalTrackSelectorWidget',
+    'hierarchicalTrackSelector',
+    { view: state.session.view },
+  )
+  state.session.showWidget(widget)
+
+  expect(state.effectiveHeight).toBe('600px')
+  expect(state.session.stickyViewHeaders).toBe(true)
+
+  // minimizing gives the drawer back its space, so the height it supplied goes
+  // with it and there is nothing to pin against again
+  state.session.minimizeWidgetDrawer()
+  expect(state.effectiveHeight).toBeUndefined()
+  expect(state.session.stickyViewHeaders).toBe(false)
+})

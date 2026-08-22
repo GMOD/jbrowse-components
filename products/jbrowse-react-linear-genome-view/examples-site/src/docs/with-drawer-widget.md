@@ -5,8 +5,10 @@ minimizes and closes.
 A drawer needs the view beside it to be tall against something, so an otherwise
 content-height view gets bounded while one is open: `height` on
 `createViewState` if you passed one, `drawerViewHeight` (default `'100vh'`)
-otherwise. Both sides of that bound scroll — the drawer, and the view beside it
-when the track set is taller. Prefer `height`: see
+otherwise. Both sides of that bound scroll — the drawer, and the tracks beside
+it, under a header that stays put. With the drawer on the left that is the
+JBrowse 1 arrangement: sidebar, header, scrolling tracks. Prefer `height`, which
+does the same without waiting for a drawer — see
 [fitting the view in a fixed-height box](../default-session/#fixed-height).
 
 `init.tracklist` opens the track selector on load. Prefer it to calling
