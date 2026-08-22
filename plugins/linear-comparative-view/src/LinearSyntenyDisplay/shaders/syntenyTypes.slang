@@ -789,14 +789,19 @@ public float curveParamAtY(float yLocal, Uniforms u) {
 
 // Coverage at the ribbon's top and bottom cuts: one output pixel of AA at each.
 // Both vertex shaders set localPos.y = screenY - u.yTop exactly, so localPos.y
-// is affine in screen y with unit slope — the ramp is aaHalf wide by
+// is affine in screen y with unit slope — the ramp is one output pixel wide by
 // construction, no derivative to take.
+//
+// A band written as the difference of two ramps is exactly the area it covers at
+// every height with the LINEAR ramp, and only there: the cubic this used to call
+// paints a half-pixel-tall ribbon at 0.688 where 0.500 is the coverage, so a
+// ribbon thinner than one output pixel came out over-inked rather than faint.
 //
 // Shared by fillFs and strokeFs rather than spelled in both: the outline
 // has to end exactly where the fill does, and two copies of the same two ramps
 // is precisely the shape that drifts.
 public float vertCoverage(float yLocal, float h, float aaHalf) {
-  return aaSmoothRamp(yLocal, aaHalf) - aaSmoothRamp(yLocal - h, aaHalf);
+  return aaRamp(yLocal, 2.0 * aaHalf) - aaRamp(yLocal - h, 2.0 * aaHalf);
 }
 
 // ---------------------------------------------------------------------------
