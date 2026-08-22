@@ -91,9 +91,9 @@ export async function createPluginManager(
   // cast a snapshot naming them — both the session about to be set and the
   // config's default session, which is initSession's fallback on any failure
   if (model.sessionSource?.type === 'snapshot') {
-    await pluginManager.preloadViewTypes(model.sessionSource.snapshot)
+    await pluginManager.preloadSessionTypes(model.sessionSource.snapshot)
   }
-  await pluginManager.preloadViewTypes(model.configSnapshot?.defaultSession)
+  await pluginManager.preloadSessionTypes(model.configSnapshot?.defaultSession)
   initSession(rootModel, pluginManager, model)
   notifyPluginLoadFailures(rootModel, model)
   return pluginManager

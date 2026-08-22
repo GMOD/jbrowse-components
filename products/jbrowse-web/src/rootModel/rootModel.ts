@@ -383,7 +383,7 @@ export default function RootModel({
               ),
             )
           }
-          await self.pluginManager.preloadViewTypes(ret)
+          await self.pluginManager.preloadSessionTypes(ret)
           self.setSession(ret)
         })
       },
@@ -486,7 +486,7 @@ export default function RootModel({
                       subMenu: preConfiguredSessions.map(r => ({
                         label: r.name,
                         onClick: () => {
-                          self.pluginManager.preloadViewTypes(r).then(
+                          self.pluginManager.preloadSessionTypes(r).then(
                             () => {
                               self.setSession(r)
                             },

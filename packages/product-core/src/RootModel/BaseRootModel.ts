@@ -149,7 +149,7 @@ export function BaseRootModelFactory({
                 .map(n => n.type)
                 .join(
                   ', ',
-                )}. Await pluginManager.preloadViewTypes(snapshot) before setSession`,
+                )}. Await pluginManager.preloadSessionTypes(snapshot) before setSession`,
             )
           }
           migrated = pruned.snapshot

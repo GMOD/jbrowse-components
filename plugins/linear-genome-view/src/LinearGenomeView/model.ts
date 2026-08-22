@@ -32,6 +32,8 @@ import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { tickLabelsWorthDrawing } from '@jbrowse/core/util/tickLabels'
 import {
   hideTrackGeneric,
+  launchToggleTrackGeneric,
+  launchTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
@@ -1479,6 +1481,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * showTrack for a track whose display state model may be lazily
+       * loaded: loads it, then shows
+       */
+      async launchTrack(
+        trackId: string,
+        initialSnapshot = {},
+        displayInitialSnapshot = {},
+        inlineConf?: Record<string, unknown>,
+      ) {
+        return launchTrackGeneric(
+          self,
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+          inlineConf,
+        )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        */
       moveTrackDown(id: string) {
         const section = self.trackSection(id)
@@ -1544,6 +1567,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       toggleTrack(trackId: string) {
         return toggleTrackGeneric(self, trackId)
+      },
+      /**
+       * #action
+       * toggleTrack with launchTrack's loading behavior
+       */
+      async launchToggleTrack(trackId: string) {
+        return launchToggleTrackGeneric(self, trackId)
       },
 
       /**

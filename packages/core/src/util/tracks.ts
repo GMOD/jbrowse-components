@@ -868,6 +868,68 @@ export function normalizeTrackInit(t: TrackInit) {
   }
 }
 
+// Everything showTrackGeneric decides before any state model is touched: the
+// preprocessed config, its track type, and the display choice. Shared with
+// launchTrackGeneric, which must know the choice to load its model first.
+function resolveTrackDisplayChoice(
+  self: GenericView,
+  trackId: string,
+  displayInitialSnapshot: DisplayInitialSnapshot,
+  inlineConf?: Record<string, unknown>,
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  const rawConf = inlineConf ?? session.getTrackById(trackId)
+  if (!rawConf) {
+    throw new Error(`Could not resolve identifier "${trackId}"`)
+  }
+
+  const confSnapshot = structuredClone(
+    isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
+  )
+  const conf = pluginManager.evaluateExtensionPoint(
+    'Core-preProcessTrackConfig',
+    confSnapshot,
+  ) as typeof rawConf
+
+  const trackType = pluginManager.getTrackType(conf.type)
+  // Validate only a conf that is not already in the tree. `configSchema.create`
+  // here builds an entire config node and throws it away purely to surface a
+  // nice error; its preProcessSnapshot also re-runs Core-preProcessTrackConfig
+  // on a snapshot this function just preprocessed. A conf that is a state tree
+  // node was validated when MST created it, so all of that is pure waste on
+  // the common showTrack path.
+  if (!isStateTreeNode(rawConf)) {
+    try {
+      trackType.configSchema.create(conf, getEnv(self))
+    } catch (e) {
+      throw new Error(`Track "${trackId}" has an invalid configuration: ${e}`, {
+        cause: e,
+      })
+    }
+  }
+
+  // A track container that isn't itself a view — a synteny level, which owns
+  // a track list but has no width and no registered view type — takes the
+  // display choice from the view it sits in, which is the same node
+  // getContainingView already resolves to for everything else beneath it.
+  const view = isViewModel(self) ? self : getContainingView(self)
+  const viewType = pluginManager.getViewType(view.type)
+  const picked = pickDisplayForView({
+    declaredDisplays: conf.displays ?? [],
+    requestedType: displayInitialSnapshot.type,
+    trackDisplayTypes: trackType.displayTypes.map(d => d.name),
+    viewDisplayTypes: viewType.displayTypes.map(d => d.name),
+  })
+
+  if (!picked) {
+    throw new Error(
+      `Could not find a compatible display for view type ${view.type}`,
+    )
+  }
+  return { conf, trackType, picked }
+}
+
 export function showTrackGeneric(
   self: GenericView,
   trackId: string,
@@ -899,58 +961,26 @@ export function showTrackGeneric(
   // snackbars. Config is validated before the push so the open set never holds
   // a broken track.
   try {
-    const rawConf = inlineConf ?? session.getTrackById(trackId)
-    if (!rawConf) {
-      throw new Error(`Could not resolve identifier "${trackId}"`)
-    }
-
-    const confSnapshot = structuredClone(
-      isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
+    const { conf, trackType, picked } = resolveTrackDisplayChoice(
+      self,
+      trackId,
+      displayInitialSnapshot,
+      inlineConf,
     )
-    const conf = pluginManager.evaluateExtensionPoint(
-      'Core-preProcessTrackConfig',
-      confSnapshot,
-    ) as typeof rawConf
-
-    const trackType = pluginManager.getTrackType(conf.type)
-    // Validate only a conf that is not already in the tree. `configSchema.create`
-    // here builds an entire config node and throws it away purely to surface a
-    // nice error; its preProcessSnapshot also re-runs Core-preProcessTrackConfig
-    // on a snapshot this function just preprocessed. A conf that is a state tree
-    // node was validated when MST created it, so all of that is pure waste on
-    // the common showTrack path.
-    if (!isStateTreeNode(rawConf)) {
-      try {
-        trackType.configSchema.create(conf, getEnv(self))
-      } catch (e) {
-        throw new Error(
-          `Track "${trackId}" has an invalid configuration: ${e}`,
-          { cause: e },
-        )
-      }
-    }
-
-    // A track container that isn't itself a view — a synteny level, which owns
-    // a track list but has no width and no registered view type — takes the
-    // display choice from the view it sits in, which is the same node
-    // getContainingView already resolves to for everything else beneath it.
-    const view = isViewModel(self) ? self : getContainingView(self)
-    const viewType = pluginManager.getViewType(view.type)
-    const picked = pickDisplayForView({
-      declaredDisplays: conf.displays ?? [],
-      requestedType: displayInitialSnapshot.type,
-      trackDisplayTypes: trackType.displayTypes.map(d => d.name),
-      viewDisplayTypes: viewType.displayTypes.map(d => d.name),
-    })
-
-    if (!picked) {
-      throw new Error(
-        `Could not find a compatible display for view type ${view.type}`,
-      )
-    }
 
     const { type: displayType, conf: displayConf } = picked
     const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+
+    // An unknown display type still fails at the union below with the same
+    // error it always has; this intercepts the case where the failure would
+    // otherwise be a confusing union mismatch for a display that IS
+    // registered, just not loaded. launchTrackGeneric is the loading path.
+    const displayRecord = pluginManager.resolveDisplayTypeRecord(displayType)
+    if (displayRecord && !displayRecord.isStateModelLoaded) {
+      throw new Error(
+        `state model for display type ${displayType} is not loaded yet — use the view's launchTrack(), or await getDisplayType('${displayType}').loadStateModel() first`,
+      )
+    }
 
     const track = trackType.stateModel.create({
       ...initialSnapshot,
@@ -1044,6 +1074,71 @@ export function toggleTrackGeneric(self: GenericView, trackId: string) {
   return hideTrackGeneric(self, trackId)
     ? false
     : !!showTrackGeneric(self, trackId)
+}
+
+// The view whose lazily loaded track a launch can show. `showTrack` must be
+// the view's own MST ACTION, not this module's free function: an async action
+// holds action context only for its synchronous prologue, so the show that
+// runs after the await must re-enter the tree through an action or every
+// mutation hits MST's protection. A view's showTrack with fewer parameters
+// (CircularView takes no inlineConf) is assignable to this signature.
+interface LaunchableView extends GenericView {
+  showTrack: (
+    trackId: string,
+    initialSnapshot?: object,
+    displayInitialSnapshot?: DisplayInitialSnapshot,
+    inlineConf?: Record<string, unknown>,
+  ) => unknown
+}
+
+// showTrackGeneric for a track whose picked display's state model may be
+// lazily loaded: resolves the display choice, loads its model, then shows via
+// the view's own showTrack action. Same error surface as showTrackGeneric —
+// failures notify the session (notifyError is an action, callable from any
+// context) and resolve undefined.
+export async function launchTrackGeneric(
+  self: LaunchableView,
+  trackId: string,
+  initialSnapshot: object = {},
+  displayInitialSnapshot: DisplayInitialSnapshot = {},
+  inlineConf?: Record<string, unknown>,
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  const found = self.tracks.find(t => t.configuration.trackId === trackId)
+  if (found) {
+    return found
+  }
+  try {
+    const { picked } = resolveTrackDisplayChoice(
+      self,
+      trackId,
+      displayInitialSnapshot,
+      inlineConf,
+    )
+    await pluginManager.resolveDisplayTypeRecord(picked.type)?.loadStateModel()
+  } catch (e) {
+    session.notifyError(`${e}`, e)
+    return undefined
+  }
+  return self.showTrack(
+    trackId,
+    initialSnapshot,
+    displayInitialSnapshot,
+    inlineConf,
+  )
+}
+
+// toggleTrackGeneric with launchTrackGeneric's loading behavior. Resolves
+// true if the track is now shown, false if it was hidden or failed to open.
+// The hide runs in the synchronous prologue, so it keeps action context.
+export async function launchToggleTrackGeneric(
+  self: LaunchableView,
+  trackId: string,
+) {
+  return hideTrackGeneric(self, trackId)
+    ? false
+    : !!(await launchTrackGeneric(self, trackId))
 }
 
 /**

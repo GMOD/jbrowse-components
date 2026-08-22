@@ -73,16 +73,20 @@ function registeredNames(pluginManager: PluginManager, group: PrunedGroup) {
 
 // The type names registered with a lazy state-model loader that has not
 // resolved yet — buildable after a preload, so kept rather than pruned.
+// Aliases (legacy type names a DisplayType remaps) count too: the alias lives
+// on the element record, not on the not-yet-loaded model, so a legacy snapshot
+// naming one must preload rather than be pruned as unbuildable.
 function lazyRegisteredNames(pluginManager: PluginManager, group: PrunedGroup) {
   return new Set(
     pluginManager.getElementTypesInGroup(group).flatMap(t => {
-      const { stateModel, stateModelLoader } = t as unknown as {
+      const { stateModel, stateModelLoader, aliases } = t as unknown as {
         stateModel?: unknown
         stateModelLoader?: unknown
+        aliases?: string[]
       }
       return typeof stateModelLoader === 'function' &&
         !(isType(stateModel) && isModelType(stateModel))
-        ? [t.name]
+        ? [t.name, ...(aliases ?? [])]
         : []
     }),
   )
@@ -121,9 +125,6 @@ class Registry {
       this.lazyNames.set(group, lazy)
     }
     if (lazy.has(type)) {
-      // note: a type ALIAS of a lazily registered type is not recognized here
-      // — aliases live on the not-yet-loaded model — so a legacy snapshot
-      // naming one is dropped as unbuildable until its plugin loads eagerly
       if (!this.needsLoad.some(n => n.group === group && n.type === type)) {
         this.needsLoad.push({ group, type })
       }

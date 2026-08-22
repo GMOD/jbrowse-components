@@ -14,6 +14,8 @@ import {
 import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
 import {
   hideTrackGeneric,
+  launchToggleTrackGeneric,
+  launchTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
@@ -1542,6 +1544,34 @@ export default function stateModelFactory(pm: PluginManager) {
 
             void session.launchView('LinearSyntenyView', viewSnapshot)
           }
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * showTrack for a track whose display state model may be lazily
+         * loaded: loads it, then shows
+         */
+        async launchTrack(
+          trackId: string,
+          initialSnapshot: object = {},
+          displayInitialSnapshot: DisplayInitialSnapshot = {},
+          inlineConf?: Record<string, unknown>,
+        ) {
+          return launchTrackGeneric(
+            self,
+            trackId,
+            initialSnapshot,
+            displayInitialSnapshot,
+            inlineConf,
+          )
+        },
+        /**
+         * #action
+         * toggleTrack with launchTrack's loading behavior
+         */
+        async launchToggleTrack(trackId: string) {
+          return launchToggleTrackGeneric(self, trackId)
         },
       }))
       .actions(self => ({

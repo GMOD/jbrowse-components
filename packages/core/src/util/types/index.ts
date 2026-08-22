@@ -124,6 +124,12 @@ export type DialogComponentType =
  */
 export interface TrackActionView {
   showTrack: (id: string) => void
+  /**
+   * `showTrack` for a track whose picked display's state model may not be
+   * loaded yet. Every runtime path a user can drive goes through this one;
+   * `showTrack` remains for callers that already know the model is in memory.
+   */
+  launchTrack: (id: string) => Promise<unknown>
   getActiveDisplayId?: (trackId: string) => string | undefined
 }
 
@@ -644,6 +650,18 @@ export interface TrackContainer {
     displayInitialSnapshot?: Record<string, unknown>,
     inlineConf?: Record<string, unknown>,
   ) => unknown
+  /**
+   * `showTrack`/`toggleTrack` for a display whose state model may still need
+   * loading. Anything a user can drive at runtime uses these; the sync pair
+   * stays for callers that already hold a loaded model.
+   */
+  launchTrack: (
+    trackId: string,
+    initialSnapshot?: object,
+    displayInitialSnapshot?: Record<string, unknown>,
+    inlineConf?: Record<string, unknown>,
+  ) => Promise<unknown>
+  launchToggleTrack: (trackId: string) => Promise<unknown>
   hideTrack: (trackId: string) => unknown
   toggleTrack: (trackId: string) => unknown
 }

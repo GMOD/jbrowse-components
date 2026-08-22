@@ -12,6 +12,8 @@ import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
   hideTrackGeneric,
   normalizeTrackInit,
+  launchToggleTrackGeneric,
+  launchTrackGeneric,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
@@ -898,7 +900,6 @@ function stateModelFactory(pluginManager: PluginManager) {
           displayInitialSnapshot,
         )
       },
-
       /**
        * #action
        */
@@ -946,6 +947,32 @@ function stateModelFactory(pluginManager: PluginManager) {
         const { saveSvgAsImage } =
           await import('@jbrowse/core/svg/saveSvgAsImage')
         await saveSvgAsImage(html, opts)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * showTrack for a track whose display state model may be lazily
+       * loaded: loads it, then shows
+       */
+      async launchTrack(
+        trackId: string,
+        initialSnapshot = {},
+        displayInitialSnapshot = {},
+      ) {
+        return launchTrackGeneric(
+          self,
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+        )
+      },
+      /**
+       * #action
+       * toggleTrack with launchTrack's loading behavior
+       */
+      async launchToggleTrack(trackId: string) {
+        return launchToggleTrackGeneric(self, trackId)
       },
     }))
     .actions(self => ({

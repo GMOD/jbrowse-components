@@ -56,7 +56,7 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
                   'No session found in file. Expected a JBrowse session export (a JSON file with a top-level "session" key).',
                 )
               }
-              await getEnv(model).pluginManager.preloadViewTypes(session)
+              await getEnv(model).pluginManager.preloadSessionTypes(session)
               getSession(model).setSession?.(
                 session as { name: string; [key: string]: unknown },
               )

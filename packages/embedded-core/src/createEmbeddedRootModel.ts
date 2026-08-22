@@ -20,23 +20,54 @@ interface SessionWithSetName {
   setName: (name: string) => void
 }
 
-// A session snapshot naming a view type that is registered with a lazy state
+// A session snapshot naming a view or display type registered with a lazy state
 // model loader cannot be cast synchronously; without this check, MST reports a
 // union mismatch that reads like a corrupt snapshot instead of a missing
-// preload. Walks nested views the same way PluginManager.preloadViewTypes
-// does.
-function assertViewTypesLoaded(
+// preload. Walks nested views, tracks and displays the same way
+// PluginManager.preloadSessionTypes does.
+function assertSessionTypesLoaded(
   pluginManager: PluginManager,
   snapshot: unknown,
 ) {
   const unloaded = new Set<string>()
+  const collectTracks = (tracks: unknown) => {
+    if (Array.isArray(tracks)) {
+      for (const track of tracks) {
+        const { displays } =
+          track && typeof track === 'object'
+            ? (track as { displays?: unknown })
+            : {}
+        if (Array.isArray(displays)) {
+          for (const display of displays) {
+            const type =
+              display && typeof display === 'object'
+                ? (display as { type?: unknown }).type
+                : undefined
+            if (typeof type === 'string') {
+              const record = pluginManager.resolveDisplayTypeRecord(type)
+              if (record && !record.isStateModelLoaded) {
+                unloaded.add(type)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
   const collect = (views: unknown) => {
     if (Array.isArray(views)) {
       for (const view of views) {
         if (view && typeof view === 'object') {
-          const { type, views: children } = view as {
+          const {
+            type,
+            views: children,
+            tracks,
+            levels,
+          } = view as {
             type?: unknown
             views?: unknown
+            tracks?: unknown
+            levels?: unknown
           }
           if (
             typeof type === 'string' &&
@@ -46,6 +77,16 @@ function assertViewTypesLoaded(
             unloaded.add(type)
           }
           collect(children)
+          collectTracks(tracks)
+          if (Array.isArray(levels)) {
+            for (const level of levels) {
+              collectTracks(
+                level && typeof level === 'object'
+                  ? (level as { tracks?: unknown }).tracks
+                  : undefined,
+              )
+            }
+          }
         }
       }
     }
@@ -57,7 +98,7 @@ function assertViewTypesLoaded(
   }
   if (unloaded.size > 0) {
     throw new Error(
-      `session names lazily loaded view types that are not loaded yet: ${[...unloaded].join(', ')}. Await pluginManager.preloadViewTypes(snapshot) before setting the session`,
+      `session names lazily loaded types that are not loaded yet: ${[...unloaded].join(', ')}. Await pluginManager.preloadSessionTypes(snapshot) before setting the session`,
     )
   }
 }
@@ -148,10 +189,10 @@ export function createEmbeddedRootModel<
          * Synchronous, so every view type the snapshot names must have its
          * state model loaded — the guard turns what would otherwise be a
          * confusing union mismatch into an actionable error. An async caller
-         * can `await pluginManager.preloadViewTypes(snapshot)` first.
+         * can `await pluginManager.preloadSessionTypes(snapshot)` first.
          */
         setSession(sessionSnapshot: SnapshotIn<SESSION>) {
-          assertViewTypesLoaded(pluginManager, sessionSnapshot)
+          assertSessionTypesLoaded(pluginManager, sessionSnapshot)
           self.session = cast(sessionSnapshot)
         },
         /**
@@ -168,7 +209,7 @@ export function createEmbeddedRootModel<
          * actually matters for a value this app did not author.
          */
         restoreSession(sessionSnapshot: SessionSnapshot) {
-          assertViewTypesLoaded(pluginManager, sessionSnapshot)
+          assertSessionTypesLoaded(pluginManager, sessionSnapshot)
           self.session = cast(sessionSnapshot as SnapshotIn<SESSION>)
         },
         /**

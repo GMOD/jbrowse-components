@@ -80,9 +80,14 @@ export function extendDisplayType<N extends DisplayTypeName>(
     'Core-extendPluggableElement',
     (element, props) => {
       if (props.group === 'display' && element.name === name) {
-        // widened for the reason in extendViewType
-        const display = element as { stateModel: IAnyModelType }
-        display.stateModel = widen(extend)(display.stateModel)
+        // widened for the reason in extendViewType; routed through
+        // extendStateModel so a lazy registration queues the extension
+        const display = element as {
+          extendStateModel: (
+            extend: (stateModel: IAnyModelType) => IAnyModelType,
+          ) => void
+        }
+        display.extendStateModel(widen(extend))
       }
       return element
     },

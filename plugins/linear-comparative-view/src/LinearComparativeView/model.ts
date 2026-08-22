@@ -605,6 +605,25 @@ function stateModelFactory(pluginManager: PluginManager) {
           inlineConf,
         )
       },
+      /**
+       * #action
+       * showTrack for a track whose display state model may be lazily
+       * loaded: loads it, then shows
+       */
+      async launchTrack(
+        trackId: string,
+        level = 0,
+        initialSnapshot: object = {},
+        displayInitialSnapshot: DisplayInitialSnapshot = {},
+        inlineConf?: Record<string, unknown>,
+      ) {
+        return self.levels[level]?.launchTrack(
+          trackId,
+          initialSnapshot,
+          displayInitialSnapshot,
+          inlineConf,
+        )
+      },
 
       /**
        * #action
