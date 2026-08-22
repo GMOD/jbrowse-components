@@ -123,7 +123,7 @@ export default class VariantsPlugin extends Plugin {
     jexl.addFunction('svType', getVariantSvType)
     /** #jexlFunction Variant functions | nAlt(feature) == 1 | ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT) */
     jexl.addFunction('nAlt', getAltAlleleCount)
-    /** #jexlFunction Variant functions | genotypeCount(feature,'het') > 0 | samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het")) */
+    /** #jexlFunction Variant functions | genotypeCount(feature, 'het') > 0 | samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het")) */
     jexl.addFunction('genotypeCount', getGenotypeClassCount)
   }
 }
