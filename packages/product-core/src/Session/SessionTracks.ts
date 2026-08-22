@@ -33,7 +33,7 @@ export interface PlainTrackConfig {
 
 // One non-admin working copy, plus the trackConfigDeltas value it mirrors. That
 // stamp is the cache key, not trackId — see getEditableTrackConfig.
-interface EditableTrackConfig {
+export interface EditableTrackConfig {
   node: IAnyStateTreeNode
   delta: PlainTrackConfig | undefined
 }
