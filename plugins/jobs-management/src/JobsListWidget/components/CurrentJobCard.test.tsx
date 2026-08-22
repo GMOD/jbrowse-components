@@ -18,18 +18,20 @@ import type { JobFields } from '../jobModel.ts'
 function setup(fields: Partial<JobFields> = {}) {
   const job = Job.create({ name: 'volvox names' })
   job.update({ state: 'running', ...fields })
-  return { job, ...render(<CurrentJobCard job={job} />) }
+  const rendered = render(<CurrentJobCard job={job} />)
+  const bar = () =>
+    rendered.getByTestId('job-progress').querySelector('[role="progressbar"]')!
+  return { job, bar, ...rendered }
 }
 
 test('a reported fraction draws a determinate bar and a percent to match it', () => {
-  const { getByRole, getByText } = setup({
+  const { bar, getByText } = setup({
     statusMessage: 'Indexing volvox_col',
     progressPct: 42,
   })
-  const bar = getByRole('progressbar')
 
-  expect(bar.getAttribute('aria-valuenow')).toBe('42')
-  expect(bar.firstElementChild?.getAttribute('style')).toBe(
+  expect(bar().getAttribute('aria-valuenow')).toBe('42')
+  expect(bar().firstElementChild?.getAttribute('style')).toBe(
     'transform: scaleX(0.42);',
   )
   getByText('42%')
@@ -37,14 +39,13 @@ test('a reported fraction draws a determinate bar and a percent to match it', ()
 })
 
 test('no fraction is an indeterminate bar with no percent beside it', () => {
-  const { getByRole, queryByText } = setup({
+  const { bar, queryByText } = setup({
     statusMessage: 'Sorting and writing index',
   })
-  const bar = getByRole('progressbar')
 
   // undefined, not 0: a bar parked at 0% with "0%" beside it reads as a job
   // that has stalled rather than one whose phase reports no fraction
-  expect(bar.getAttribute('aria-valuenow')).toBeNull()
+  expect(bar().getAttribute('aria-valuenow')).toBeNull()
   expect(queryByText(/%$/)).toBeNull()
 })
 
@@ -53,11 +54,11 @@ test('no fraction is an indeterminate bar with no percent beside it', () => {
 // clears the bar; before that the ixIxx tail inherited whatever fraction the
 // record stream had stopped at and sat there looking stuck.
 test('a phase that reports no fraction clears the bar rather than holding the last one', () => {
-  const { job, getByRole, queryByText } = setup({
+  const { job, bar, queryByText } = setup({
     statusMessage: 'Indexing volvox_col',
     progressPct: 97,
   })
-  expect(getByRole('progressbar').getAttribute('aria-valuenow')).toBe('97')
+  expect(bar().getAttribute('aria-valuenow')).toBe('97')
 
   act(() => {
     job.update({
@@ -66,7 +67,7 @@ test('a phase that reports no fraction clears the bar rather than holding the la
     })
   })
 
-  expect(getByRole('progressbar').getAttribute('aria-valuenow')).toBeNull()
+  expect(bar().getAttribute('aria-valuenow')).toBeNull()
   expect(queryByText(/%$/)).toBeNull()
 })
 

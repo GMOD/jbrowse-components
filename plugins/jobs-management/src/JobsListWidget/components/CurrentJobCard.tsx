@@ -40,7 +40,9 @@ const CurrentJobCard = observer(function CurrentJobCard({
             marginLeft: 1,
           }}
         >
-          <Box sx={{ width: '100%' }}>
+          {/* named, because a test looking for `[role="progressbar"]` on a
+              real page finds a display's loading overlay just as readily */}
+          <Box sx={{ width: '100%' }} data-testid="job-progress">
             <StatusProgressBar
               fraction={
                 progressPct === undefined ? undefined : progressPct / 100

@@ -20,6 +20,8 @@ import {
   startChromedriver,
   startStaticServer,
   waitForBackdropsToDisappear,
+  assertJobBarWentDeterminate,
+  startJobBarRecorder,
   waitForIndexingToFinish,
 } from './harness.ts'
 
@@ -224,6 +226,10 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   )
   await driver.executeScript('arguments[0].scrollIntoView(true);', addButton)
   await delay(500)
+  // Armed before the click for the same reason the wait below is placed here:
+  // the job is queued synchronously on it, and a volvox index is short enough
+  // that anything sampling afterwards can miss the whole determinate stretch.
+  await startJobBarRecorder(driver)
   console.log('    DEBUG: Clicking Add...')
   await driver.executeScript('arguments[0].click();', addButton)
 
@@ -233,6 +239,7 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   // drained already and the wait degrades into a sleep.
   console.log('    DEBUG: Waiting for name indexing to finish...')
   await waitForIndexingToFinish(driver)
+  await assertJobBarWentDeterminate(driver)
 
   console.log('    DEBUG: Waiting after Submit...')
   await delay(5000)

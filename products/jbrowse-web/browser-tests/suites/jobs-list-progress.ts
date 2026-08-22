@@ -55,12 +55,17 @@ async function openJobsList(page: Page, progressPct?: number) {
     JOB_NAME,
     progressPct,
   )
-  await page.waitForSelector('[role="progressbar"]')
+  await page.waitForSelector(
+    '[data-testid="job-progress"] [role="progressbar"]',
+  )
 }
 
 function barState(page: Page) {
   return page.evaluate(() => {
-    const track = document.querySelector('[role="progressbar"]')
+    // scoped to the card: a display's loading overlay is a progressbar too
+    const track = document.querySelector(
+      '[data-testid="job-progress"] [role="progressbar"]',
+    )
     if (!track?.firstElementChild) {
       throw new Error('no progress bar on the page')
     }
@@ -159,7 +164,9 @@ const suite: TestSuite = {
         await page.waitForFunction(
           () =>
             !document
-              .querySelector('[role="progressbar"]')
+              .querySelector(
+                '[data-testid="job-progress"] [role="progressbar"]',
+              )
               ?.hasAttribute('aria-valuenow'),
           { timeout: 5000 },
         )

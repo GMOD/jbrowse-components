@@ -368,6 +368,67 @@ export async function waitForIndexingToFinish(
   console.warn(`    WARN: indexing still running after ${timeout}ms`)
 }
 
+// Records what the running job card actually draws while an index runs, so the
+// determinate branch of `CurrentJobCard` is observed rather than assumed. It had
+// been repaired three times without anyone rendering it — c45b43aa2d most
+// recently, where `indexJobsModel` was discarding the indexer's byte counts and
+// both ends of the fraction were dead code.
+//
+// Two claims, recorded separately because only one of them is the card's fault:
+// whether the indexer ever reported a fraction (the model), and whether the card
+// ever drew one (the DOM). A recorder rather than a poll-and-assert because a
+// volvox index is short — `queueJob` opens the widget itself, so this is armed
+// before the click that queues the job and reads both ends every 50ms.
+//
+// `progressPct` is volatile on a Job, so the sample walks `jobs` rather than
+// reading a snapshot.
+export async function startJobBarRecorder(driver: WebDriver) {
+  await driver.executeScript(`
+    window.__jobBar = { model: [], dom: [] }
+    window.__jobBarTimer = setInterval(() => {
+      const widget = window.JBrowseSession?.widgets?.get('JobsList')
+      const running = widget?.jobs?.find(j => j.state === 'running')
+      if (running) {
+        window.__jobBar.model.push(running.progressPct ?? null)
+      }
+      const track = document.querySelector('[data-testid="job-progress"] [role="progressbar"]')
+      if (track) {
+        window.__jobBar.dom.push(track.getAttribute('aria-valuenow'))
+      }
+    }, 50)
+  `)
+}
+
+// Throws only for the failure that is the card's: the indexer reported a
+// fraction and nothing drew one. An index short enough that no determinate
+// reading lands at all is an indexer-timing fact rather than a bug here, so it
+// logs both sequences and passes — silently skipping would make this test look
+// like coverage it is not.
+export async function assertJobBarWentDeterminate(driver: WebDriver) {
+  const seen = await driver.executeScript<{
+    model: (number | null)[]
+    dom: (string | null)[]
+  }>(`
+    clearInterval(window.__jobBarTimer)
+    return window.__jobBar ?? { model: [], dom: [] }
+  `)
+  const modelFractions = seen.model.filter(v => v !== null)
+  const domFractions = seen.dom.filter(v => v !== null)
+  console.log(
+    `    DEBUG: job bar samples — model ${seen.model.length} (${modelFractions.length} with a fraction), dom ${seen.dom.length} (${domFractions.length} determinate)`,
+  )
+  if (modelFractions.length > 0 && domFractions.length === 0) {
+    throw new Error(
+      `the indexer reported a fraction (${modelFractions.slice(0, 5).join(', ')}) and the card never drew one: every aria-valuenow was absent`,
+    )
+  }
+  if (modelFractions.length === 0) {
+    console.log(
+      `    DEBUG: no determinate reading during this index (${seen.model.length} model samples), so the card had nothing to draw`,
+    )
+  }
+}
+
 // Blocks until the view's span stops moving. A locstring is a function of the
 // view's width, so it keeps changing after the content is "there": opening the
 // results drawer narrows the view, and a track growing tall enough to raise a
