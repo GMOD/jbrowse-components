@@ -123,7 +123,22 @@ Typecheck the touched packages, `pnpm test <path>`, a browser test if UI
 behavior changed, `pnpm lint --fix`. Snapshots only after a visually verified
 change. **Then commit.** Don't push or open a PR unless asked.
 
-**Three CI jobs are gated by none of that**: `pnpm check-format`, `pnpm
-check-docs`, `typos`. A validator that cannot import is not one that passed —
-`check-docs` reports ERR_MODULE_NOT_FOUND as a failure with no detail, so read
-the body, not the tally.
+**Five CI jobs are gated by none of that**: `pnpm check-format`, `pnpm
+check-docs`, `typos`, `pnpm build:esm` and `pnpm lint:eslint`. A validator that
+cannot import is not one that passed — `check-docs` reports ERR_MODULE_NOT_FOUND
+as a failure with no detail, so read the body, not the tally.
+
+The last two were added on 2026-08-22, when both went red on main in the same
+afternoon and neither was noticed by the agent that broke it:
+
+- **`pnpm typecheck` does not see declaration emit.** A named type reaching a
+  `.d.ts` through a volatile or an inferred return is TS4058 — "cannot be named"
+  — and only `build:esm` raises it. `d3cd139c52` left main unbuildable that way
+  for hours; `2d14c17b37` and `a438d86fcd` are two agents fixing it
+  independently. Run `build:esm` after anything that adds a type to an exported
+  surface.
+- **`pnpm lint` is oxlint, and `lint:eslint` is a different rule set.** Six
+  load-bearing `import type {}` statements passed oxlint and failed
+  `unicorn/require-module-specifiers` (`8e56c5c01a`, fixed in `4107506779`).
+  Neither linter covers `products/jbrowse-desktop/test/` at all, so a change
+  there is typechecked or nothing.
