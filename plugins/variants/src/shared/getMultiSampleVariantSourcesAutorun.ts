@@ -48,17 +48,27 @@ export function getMultiSampleVariantSourcesAutorun(
           if (!view.initialized) {
             return
           }
-          const { rpcManager } = getSession(self)
+          const session = getSession(self)
+          const { rpcManager } = session
           const { adapterConfig } = self
           const { stopToken, isCurrent, statusCallback, end } = rotation.begin()
           try {
-            const sources = await rpcManager.call(
+            const { sources, warnings } = await rpcManager.call(
               getRpcSessionId(self),
               'MultiSampleVariantGetSources',
               { adapterConfig, stopToken, statusCallback },
             )
             if (isCurrent()) {
               self.setSources(sources)
+              // A `samplesTsv` that matches only some of the VCF's samples
+              // still draws, but silently dropping the rest is a config
+              // mistake worth surfacing — and this fetch runs in the worker,
+              // whose console nobody is looking at. `notify` dedupes by
+              // message, so a refetch of the same file doesn't stack them.
+              for (const warning of warnings) {
+                console.warn(warning)
+                session.notify(warning, 'warning')
+              }
             }
           } finally {
             // The clear this fetch had never had. Nothing else drops the label:
@@ -72,6 +82,13 @@ export function getMultiSampleVariantSourcesAutorun(
           if (!isAbortException(e) && isAlive(self)) {
             console.error(e)
             self.setError(e)
+            // The sample list is a prerequisite for everything this display
+            // draws, so a failure here is not a partial result — the band is
+            // empty either way. `samplesTsvLocation` naming no VCF sample is
+            // the case that needs it most: it used to leave `sources` as an
+            // empty array, which is truthy, so no loading state and no banner
+            // showed and the display just drew nothing.
+            getSession(self).notifyError(`${e}`, e)
           }
         }
       },

@@ -132,12 +132,20 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     }, opts.stopToken)
   }
 
-  async getSources() {
+  // The sources plus whatever the samples metadata file disagreed with the VCF
+  // header about; `getSources` is the base-class contract and drops the
+  // warnings, `MultiSampleVariantGetSources` takes this one so the display can
+  // report them.
+  async getSourcesAndWarnings() {
     const { parser } = await this.configure()
     return getVcfSources(
       this.getConf('samplesTsvLocation'),
       parser,
       this.pluginManager,
     )
+  }
+
+  async getSources() {
+    return (await this.getSourcesAndWarnings()).sources
   }
 }

@@ -180,7 +180,10 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
   // getRefNames — the multi-sample displays call it once per adapter — so an
   // empty map arrives here first, and `configure(undefined!)` turned that into
   // the same anonymous `undefined.uri` TypeError.
-  async getSources() {
+  //
+  // See VcfTabixAdapter: `getSources` is the base-class contract, this is the
+  // one that keeps the samples-metadata warnings.
+  async getSourcesAndWarnings() {
     const [refName] = Object.keys(this.locationMap())
     if (refName === undefined) {
       throw new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
@@ -191,5 +194,9 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
       parser,
       this.pluginManager,
     )
+  }
+
+  async getSources() {
+    return (await this.getSourcesAndWarnings()).sources
   }
 }

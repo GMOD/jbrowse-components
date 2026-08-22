@@ -91,3 +91,50 @@ test('reads an in-memory VCF from a data: URI (consensus "open as track" path)',
   expect(feats[0]!.get('start')).toBe(99)
   expect(feats[0]!.get('ALT')).toEqual(['G'])
 })
+
+// `samplesTsvLocation` pointing at a metadata file that names none of the VCF's
+// samples used to empty the sample list quietly: `getSources` returned [], so
+// `sourcesBase` was [] — truthy, so no loading state — and the display drew an
+// empty band with no banner while both mismatch warnings went to the worker's
+// console. It reaches the caller as an error now, and the sources fetch's
+// autorun turns that into `notifyError`.
+function adapterWithSamplesTsv(tsv: string) {
+  return new Adapter(
+    configSchema.create({
+      vcfLocation: {
+        localPath: require.resolve('./test_data/volvox.filtered.vcf'),
+        locationType: 'LocalPathLocation',
+      },
+      samplesTsvLocation: {
+        localPath: require.resolve(tsv),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+}
+
+test('a samplesTsv naming no VCF sample fails the sources fetch', async () => {
+  await expect(
+    adapterWithSamplesTsv('./test_data/samples_prefixed.tsv').getSources(),
+  ).rejects.toThrow(/matches the VCF header/)
+})
+
+test('the error names the metadata file and shows the mismatch', async () => {
+  await expect(
+    adapterWithSamplesTsv('./test_data/samples_prefixed.tsv').getSources(),
+  ).rejects.toThrow(/samples_prefixed\.tsv.*"1000GP_sample_data/s)
+})
+
+// The base-class contract is unchanged — the warnings ride on the second method
+// so that anything calling `getSources` still gets a plain array.
+test('a matching samplesTsv still yields the metadata columns', async () => {
+  const adapter = adapterWithSamplesTsv('./test_data/samples.tsv')
+
+  expect(await adapter.getSources()).toEqual([
+    {
+      name: 'sample_data/raw/volvox/volvox-sorted.bam',
+      population: 'GBR',
+    },
+  ])
+  expect((await adapter.getSourcesAndWarnings()).warnings).toEqual([])
+})

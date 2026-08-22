@@ -272,6 +272,12 @@ value gets its own color from the palette:
 If the named attribute isn't in the TSV, JBrowse logs a console warning and
 skips the coloring.
 
+The first column has to match the VCF's sample names exactly. A file that
+matches only some of them draws the samples it matched and notifies you about
+the ones it dropped; a file that matches none of them is a configuration error
+and the track says so, rather than drawing an empty band. The usual cause is a
+prefixed or suffixed ID — `1000GP_HG00096` against a header naming `HG00096`.
+
 ## Linkage disequilibrium (LD) display
 
 JBrowse renders a triangular heatmap of pairwise r² (or D') between variants,

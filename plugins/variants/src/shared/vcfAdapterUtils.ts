@@ -1,10 +1,15 @@
-import { downloadStatus, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
+import {
+  downloadStatus,
+  fetchAndMaybeUnzipText,
+  getFileName,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { parseSamplesTsv } from './parseSamplesTsv.ts'
 
+import type { SamplesTsvResult } from './parseSamplesTsv.ts'
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -21,19 +26,28 @@ const SAMPLES_TSV_DEFAULT_URI = '/path/to/samples.tsv'
 // Sample list for a VCF: the metadata TSV when one is configured, otherwise the
 // bare sample names from the VCF header. Shared by all three VCF adapters so the
 // unset-slot detection can't drift between them.
+//
+// Returns the warnings alongside the sources rather than logging them, because
+// the only console this runs at is the worker's. `MultiSampleVariantGetSources`
+// carries them to the display, which reports them; a metadata file matching no
+// VCF sample at all throws from `parseSamplesTsv` instead.
 export async function getVcfSources(
   samplesTsvLocation: FileLocation,
   parser: VcfParser,
   pluginManager: PluginManager | undefined,
-) {
+): Promise<SamplesTsvResult> {
   const uri = 'uri' in samplesTsvLocation ? samplesTsvLocation.uri : undefined
   if (uri === '' || uri === SAMPLES_TSV_DEFAULT_URI) {
-    return parser.samples.map(name => ({ name }))
+    return { sources: parser.samples.map(name => ({ name })), warnings: [] }
   }
   const txt = await fetchAndMaybeUnzipText(
     openLocation(samplesTsvLocation, pluginManager),
   )
-  return parseSamplesTsv(txt, parser.samples)
+  return parseSamplesTsv(
+    txt,
+    parser.samples,
+    uri === undefined ? getFileName(samplesTsvLocation) : uri,
+  )
 }
 
 // Stream tabix VCF lines for a region as VcfFeatures onto an observer, wrapping
