@@ -306,6 +306,45 @@ The pre-rip situation, and the graceful path we *didn't* take:
 
 ---
 
+## Measured: what v5 cost one out-of-tree plugin
+
+Apollo (`GMOD/Apollo3`, branch `jbrowse_5`) is the only substantial external
+plugin tracking main, so it is the one place the surfaces above can be *measured*
+rather than reasoned about. Its branch pins jbrowse by committed tarball, which
+makes a clean control possible: the same source typechecked against its own pin
+(`6c3280fc0b`, 2026-08-03) and against main 19 days and ~5200 commits later.
+
+- **Against its own pin: 2 errors**, both pre-existing and unrelated.
+- **Against main, deps aligned: 24.** Two of those are the same two.
+- **Against main, deps *not* aligned: ~500**, and none of them name their cause.
+
+That last number is the finding worth keeping. Core's `@jbrowse/mobx-state-tree`
+and `@mui/material` ranges both moved, and both are packages whose types cross
+the plugin boundary, so a second copy is not a duplicate-install nit: MST reports
+`[$type]` missing from every `types.model` argument, and MUI reports
+`startCodon`/`bases` missing from `Palette`, because a module augmentation cannot
+reach a second copy of the module it augments. Neither message mentions
+duplication. An external author who sees them will read them as a broken plugin.
+**A core dependency bump on any of those is an ABI event**, and the release note
+that says so is worth more than the ones about renamed exports.
+
+Of the 22 genuinely new errors, the causes were:
+
+| cause | what it was |
+| --- | --- |
+| `react` peer moved to `>=19.0.0` | 9 errors: a ref callback may no longer return a promise, and `useRef<T>(null)` is `RefObject<T \| null>` |
+| typed extension-point registry | `Core-preProcessTrackConfig` callbacks may not narrow their own parameter, and `TrackConfigSnapshot` was not exported for them to name (fixed, 606e9762df) |
+| notification points | `LinearGenomeView-searchResultSelected` moved to `listenToExtensionPoint`; the type says so and names the replacement |
+| `CascadingMenuProps.slotProps` removed | 3 errors, the component-prop surface above |
+| `SessionWithAddTracks` (the *type*) | the `isSessionWithAddTracks` alias survives for prebuilt bundles; the type it named does not, and Apollo imported the type |
+
+Two things this says about the surfaces. The typed registry **worked**: both
+extension-point errors named the right replacement in the diagnostic, and neither
+needed a doc. And the ledger below did not have to grow — every break was a
+compile error, none was a silent behavior change. What it did not catch is the
+dependency-range class, which no checker sees and which produced twenty times
+more errors than everything else combined.
+
 ## Ledger: behavior changes external plugins inherit
 
 Not every ABI break is a removed export. A change to how core *interprets* what a
