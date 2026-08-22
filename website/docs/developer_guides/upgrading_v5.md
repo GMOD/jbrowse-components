@@ -170,6 +170,19 @@ and calling it throws inside the reaching plugin's own `install`.
   - `BaseLinearDisplayComponent` — the React half of the same pair, and the last
     reader of the `DisplayMessageComponent` getter on `BaseDisplayModel`, which
     went with it. A display model no longer holds a React component at all
+- **`@jbrowse/plugin-linear-genome-view`'s type exports**, which a plugin built
+  against the published package imports rather than looking up at runtime — so
+  these break a build, not a session:
+  - `LayoutRecord` — the 4-tuple `[minX, minY, maxX, maxY]` the block layout
+    handed back, exported from the plugin entry and the `BaseLinearDisplay`
+    barrel with no consumer left in the tree. Its 5-tuple
+    `LayoutFeatureMetadata` variant went with the floating-label code, so what
+    was published in v5 was already the narrowed shape.
+    `@jbrowse/plugin-breakpoint-split-view` declares an identical one of its own
+    and still exports it, which is the import to move to
+  - `Layout` — the named-rectangle interface beside it
+    (`minX`/`minY`/`maxX`/`maxY`/`name`), declared in the same file and never
+    exported past it or read anywhere
 
 Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in
 `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, nothing

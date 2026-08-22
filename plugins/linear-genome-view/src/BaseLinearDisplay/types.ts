@@ -16,16 +16,6 @@ export type LinearDisplayModel = DisplayModel &
     prefersOffset?: boolean
   }
 
-export interface Layout {
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
-  name: string
-}
-
-export type LayoutRecord = [number, number, number, number]
-
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   theme?: ThemeOptions
   legendWidth?: number

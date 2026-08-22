@@ -75,7 +75,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
 export type {
   ExportSvgDisplayOptions,
-  LayoutRecord,
   LegendItem,
   LegendSection,
   TrackControlComponent,
