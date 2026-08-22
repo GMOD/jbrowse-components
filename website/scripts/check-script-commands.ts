@@ -27,6 +27,13 @@
 //   bwameth.py --reference tair10.fa -t 8 R1_val_1.fq.gz R2_val_2.fq.gz
 //   ```
 //
+// `python` and `r` fences are marked the same way and checked the same way,
+// because a build script's analysis step is as often a heredoc as a command —
+// satuRn behind `dtu`, snapatac2 behind `scatac_pseudobulk`. There the callee
+// stands in for the tool and the keyword-argument names stand in for the flags,
+// which leaves the values free exactly as the filenames are on the bash side.
+// `callArguments.ts` parses those; `shellCommands.ts` parses bash.
+//
 // An unmarked fence is ignored completely. That is deliberate and not laziness:
 // several pages show a route their build script does not take (scrna's
 // sinto/deeptools alternative, scatac's four routes), and those have no script
@@ -34,11 +41,80 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
+import { callsAndArgs } from './callArguments.ts'
 import { reportProblems } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 import { toolsAndFlags } from './shellCommands.ts'
 
 const MARKER = /^<!--\s*from:\s*(\S+?)\s*-->$/
+
+// A build script's own analysis step is as often an R or Python heredoc as it
+// is a command, and the page showing that step has the same drift to catch. So
+// a marker takes any of the three. Each language names its two halves, so a
+// failure reads in the vocabulary of the fence it is about.
+//
+// The names and the parts are matched with different boundaries because they
+// sit differently: a flag is its own word in a script, while a keyword argument
+// follows the open paren or a comma as readily as a space.
+const CALLS = {
+  parse: (body: string) =>
+    callsAndArgs(body).map(c => ({ name: c.callee, parts: c.args })),
+  // Either side may spell the namespace or module the other drops, so the name
+  // is compared bare and matched through whatever qualifies it: the page's
+  // `satuRn::fitDTU` has to find the script's, and `snap.ex.export_coverage`
+  // has to find a script that imported the module under another alias.
+  bare: (name: string) => name.split(/::|\./).pop()!,
+  names: (script: string, bare: string) =>
+    new RegExp(`(^|[\\s|(/"'.:])${escape(bare)}\\b`, 'm').test(script),
+  verb: 'calls',
+  part: 'argument',
+  // A keyword argument is a bare word, so grepping the script for one is not
+  // strong enough to be worth having: `sort` renamed to `order` on the page
+  // passed against a script whose python held an unrelated list called `order`.
+  // Running the same parser over the script asks the question the check means,
+  // which is whether THIS call still takes THAT argument.
+  hasPart: (script: string, name: string, part: string) =>
+    !!argsOf(script).get(bareName(name))?.has(part),
+}
+
+const LANGUAGES: Record<string, typeof CALLS> = {
+  bash: {
+    parse: (body: string) =>
+      toolsAndFlags(body).map(t => ({ name: t.tool, parts: t.flags })),
+    bare: (name: string) => name.replace(/\.(py|sh)$/, ''),
+    names: runsTool,
+    verb: 'runs',
+    part: 'flag',
+    // A flag carries its own `-`, so nothing else in a script looks like one
+    // and the script's text answers for it. `(` counts as leading whitespace: a
+    // script collecting its shared flags in an array (`PLINK_ARGS=(--double-id
+    // ...)`) passes the first of them on the same word as the paren.
+    hasPart: (script: string, _name: string, part: string) =>
+      new RegExp(`(^|[\\s(])${escape(part)}(\\b|=)`, 'm').test(script),
+  },
+  python: CALLS,
+  r: CALLS,
+}
+
+const bareName = (name: string) => name.split(/::|\./).pop()!
+
+// Every call the script makes, by bare callee, with the argument names it was
+// given. Cached because a fence asks once per argument.
+const scriptArgs = new Map<string, Map<string, Set<string>>>()
+
+function argsOf(script: string) {
+  let found = scriptArgs.get(script)
+  if (!found) {
+    found = new Map<string, Set<string>>()
+    for (const { callee, args } of callsAndArgs(script)) {
+      const seen = found.get(bareName(callee)) ?? new Set<string>()
+      args.forEach(a => seen.add(a))
+      found.set(bareName(callee), seen)
+    }
+    scriptArgs.set(script, found)
+  }
+  return found
+}
 
 const problems: string[] = []
 
@@ -64,8 +140,13 @@ export function checkPage(mdPath: string) {
     while ((lines[open] ?? '').trim() === '') {
       open++
     }
-    if (!/^```bash$/.test((lines[open] ?? '').trim())) {
-      problems.push(`${page}:${i + 1}: from: marker is not above a bash fence`)
+    const lang = /^```(\w+)$/.exec((lines[open] ?? '').trim())?.[1]
+    const language = lang ? LANGUAGES[lang] : undefined
+    if (!language) {
+      problems.push(
+        `${page}:${i + 1}: from: marker is not above a ` +
+          `${Object.keys(LANGUAGES).join('/')} fence`,
+      )
       return
     }
     const close = lines.indexOf('```', open + 1)
@@ -82,22 +163,19 @@ export function checkPage(mdPath: string) {
       .filter(l => !/^\s*#/.test(l))
       .join('\n')
 
-    for (const { tool, flags } of toolsAndFlags(body)) {
-      const bare = tool.replace(/\.(py|sh)$/, '')
-      if (!runsTool(script, bare)) {
+    for (const { name, parts } of language.parse(body)) {
+      if (!language.names(script, language.bare(name))) {
         problems.push(
-          `${page}:${i + 1}: fence runs \`${tool}\`, which ${spec} does not`,
+          `${page}:${i + 1}: fence ${language.verb} \`${name}\`, ` +
+            `which ${spec} does not`,
         )
         continue
       }
-      for (const flag of flags) {
-        // `(` counts as leading whitespace here: a script collecting its shared
-        // flags in an array (`PLINK_ARGS=(--double-id ...)`) passes the first of
-        // them on the same word as the paren.
-        if (!new RegExp(`(^|[\\s(])${escape(flag)}(\\b|=)`, 'm').test(script)) {
+      for (const part of parts) {
+        if (!language.hasPart(script, name, part)) {
           problems.push(
-            `${page}:${i + 1}: \`${tool} ${flag}\` is not in ${spec} — ` +
-              `the script changed, or the page invented a flag`,
+            `${page}:${i + 1}: \`${name} ${part}\` is not in ${spec} — ` +
+              `the script changed, or the page invented this ${language.part}`,
           )
         }
       }

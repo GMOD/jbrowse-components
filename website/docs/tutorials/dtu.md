@@ -63,6 +63,8 @@ TPM matrix: counts feed the model, TPM feeds the effect size.
 quasi-binomial model to each transcript's share of its gene's reads and tests
 that share between the two tissues, over a counts matrix and a `tissue` column:
 
+<!-- from: scripts/build_dtu_demo.sh -->
+
 ```r
 # after filterByExpr, any gene left with one isoform goes too: usage is a
 # within-gene proportion, so a lone isoform is always 100%
@@ -71,13 +73,32 @@ cnt <- cnt[keep, ]
 multi <- names(which(table(txinfo$gene_id) > 1))
 cnt <- cnt[txinfo$isoform_id[txinfo$gene_id %in% multi], ]
 
-se <- SummarizedExperiment(assays = list(counts = cnt),
-                           colData = coldata, rowData = txinfo)
-se <- satuRn::fitDTU(object = se, formula = ~ 0 + tissue)
-L <- limma::makeContrasts(muscle_vs_liver = muscle - liver,
-                          levels = model.matrix(~ 0 + tissue, data = coldata))
+# rowData has to carry isoform_id and gene_id: satuRn reads each transcript's
+# gene from there to know whose proportion the transcript is a share of
+se <- SummarizedExperiment(
+  assays = list(counts = cnt),
+  colData = coldata,
+  rowData = txinfo
+)
+
+# the formula names the colData column holding the groups. 0 + tissue drops the
+# intercept, so each tissue gets its own coefficient and the contrast below is a
+# plain difference between two of them rather than a difference of differences
+se <- satuRn::fitDTU(object = se, formula = ~ 0 + tissue, parallel = FALSE)
+
+design <- model.matrix(~ 0 + tissue, data = coldata)
+colnames(design) <- levels(factor(coldata$tissue))
+L <- limma::makeContrasts(muscle_vs_liver = muscle - liver, levels = design)
+
+# sort = FALSE leaves the result rows in the order the assay had them, which is
+# what lets the isoform fractions be indexed straight into the result
 se <- satuRn::testDTU(object = se, contrasts = L, sort = FALSE)
+res <- rowData(se)[["fitDTUResult_muscle_vs_liver"]]
 ```
+
+`res` carries the p-value, both FDRs and the model's own estimates per
+transcript. The isoform fractions the color reads come from the TPM matrix
+rather than from this table.
 
 **Write the statistics into GENCODE.** The called genes are subset out of the
 GENCODE v29 GFF3 and each transcript's numbers are appended to its attribute
