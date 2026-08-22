@@ -64,21 +64,27 @@ test('adjacent blocks abut exactly at their shared edge', () => {
   const dpr = 1.5
   const canvasWidth = 2000
   for (let b = 100; b < 140; b++) {
-    const left = clipBlock(block(b - 1, b), canvasWidth, 20, dpr)!
-    const right = clipBlock(block(b, b + 1), canvasWidth, 20, dpr)!
+    const left = clipBlock(block(b - 1, b), canvasWidth, 20, {
+      x: dpr,
+      y: dpr,
+    })!
+    const right = clipBlock(block(b, b + 1), canvasWidth, 20, {
+      x: dpr,
+      y: dpr,
+    })!
     expect(left.pxX + left.pxW).toBe(right.pxX)
   }
 })
 
 test('returns null for a fully off-screen block', () => {
-  expect(clipBlock(block(1200, 1400), 1000, 20, 1)).toBeNull()
+  expect(clipBlock(block(1200, 1400), 1000, 20, { x: 1, y: 1 })).toBeNull()
 })
 
 // bpRangeXTuple + writeBpRangeUniforms are the single chokepoint for the one
 // uniform write every genome-mapped shader shares; the reversed-block pivot
 // (start->end, +len->-len) is the part that's easy to get subtly wrong.
 test('bpRangeXTuple pivots on bpEnd with a negated length for reversed blocks', () => {
-  const clip = clipBlock(block(100, 900), 1000, 20, 1)!
+  const clip = clipBlock(block(100, 900), 1000, 20, { x: 1, y: 1 })!
   expect(bpRangeXTuple(clip, false)).toEqual([
     clip.bpStartHi,
     clip.bpStartLo,
@@ -117,7 +123,7 @@ test.each([false, true])(
       reversed,
     }
     // view.width 1000 minus the 2px track outline: what every display passes
-    const clip = clipBlock(bounds, 998, 20, 1)!
+    const clip = clipBlock(bounds, 998, 20, { x: 1, y: 1 })!
     const toX = makeBpMapper(bounds)
     for (const bp of [1_000_000, 1_000_250, 1_000_500, 1_001_000]) {
       expect(gpuScreenPx(bp, clip, reversed)).toBeCloseTo(toX(bp), 6)
@@ -126,7 +132,7 @@ test.each([false, true])(
 )
 
 test('writeBpRangeUniforms writes the tuple at offsetF32, leaving other slots untouched', () => {
-  const clip = clipBlock(block(100, 900), 1000, 20, 1)!
+  const clip = clipBlock(block(100, 900), 1000, 20, { x: 1, y: 1 })!
   const f32 = new Float32Array(8)
   const offset = 3
   writeBpRangeUniforms(f32, offset, clip, false)
@@ -140,7 +146,7 @@ test('writeBpRangeUniforms writes the tuple at offsetF32, leaving other slots un
 })
 
 test('writeBpRangeUniforms honors the reversed pivot', () => {
-  const clip = clipBlock(block(100, 900), 1000, 20, 1)!
+  const clip = clipBlock(block(100, 900), 1000, 20, { x: 1, y: 1 })!
   const f32 = new Float32Array(3)
   writeBpRangeUniforms(f32, 0, clip, true)
   const expected = Float32Array.from(bpRangeXTuple(clip, true))
@@ -156,7 +162,7 @@ test('clipBlock skips a degenerate block instead of emitting NaN uniforms', () =
       { start: 1000, end: 2000, screenStartPx: 100.5, screenEndPx: 100.5 },
       800,
       100,
-      1,
+      { x: 1, y: 1 },
     ),
   ).toBeNull()
   expect(
@@ -164,7 +170,7 @@ test('clipBlock skips a degenerate block instead of emitting NaN uniforms', () =
       { start: 1000, end: 1000, screenStartPx: 100, screenEndPx: 200 },
       800,
       100,
-      1,
+      { x: 1, y: 1 },
     ),
   ).toBeNull()
 })

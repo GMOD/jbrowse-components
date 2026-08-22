@@ -48,7 +48,10 @@ function phasedRow(flags?: {
     .find(item => 'label' in item && item.label === 'Rendering mode')
   const subMenu: MenuItem[] = mode && 'subMenu' in mode ? mode.subMenu : []
   const row = subMenu.find(
-    item => 'label' in item && item.label.startsWith('Phased'),
+    item =>
+      'label' in item &&
+      typeof item.label === 'string' &&
+      item.label.startsWith('Phased'),
   )
   if (!row) {
     throw new Error('no "Phased" rendering-mode row')
