@@ -1,19 +1,20 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+import { triangleDataToScreen } from '@jbrowse/plugin-linear-genome-view'
 
 import { packTestInstances } from '../../testInstances.ts'
-import { hicDataToScreen } from '../hicTransform.ts'
 import { drawHicBlocks } from './Canvas2DHicRenderer.ts'
 
-// `hicDataToScreen` is hic.slang's vs_main, which the GPU and (via
+// `triangleDataToScreen` is hic.slang's vs_main, which the GPU and (via
 // ctx.rotate/scale) the Canvas2D path both implement: rotate the bin into the
 // triangle first, THEN apply the viewport scale and the fit-to-height squash.
 // It was a private copy in this file until `model.hitTest`'s inverse needed the
 // same map to be checkable against.
 function shaderScreenPos(x: number, y: number, yScalar: number) {
-  const { x: sx, y: sy } = hicDataToScreen(x, y, {
+  const { x: sx, y: sy } = triangleDataToScreen(x, y, {
     viewScale: 1,
     viewOffsetX: 0,
     yScalar,
+    yOffsetPx: 0,
   })
   return { sx, sy }
 }

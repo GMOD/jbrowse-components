@@ -1,10 +1,14 @@
 import {
+  triangleDataToScreen,
+  triangleScreenToData,
+} from '@jbrowse/plugin-linear-genome-view'
+
+import {
   INSTANCE_STRIDE_WORDS,
   setInstanceCount,
   setInstancePosition,
 } from './components/shaders/hic.iface.generated.ts'
 import { findContactAt } from './contactLookup.ts'
-import { hicDataToScreen, hicScreenToData } from './hicTransform.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
@@ -12,10 +16,10 @@ import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
 const W = 4 // binWidth in pre-rotation px
 
 const TRANSFORMS = [
-  { viewScale: 1, viewOffsetX: 0, yScalar: 1 },
-  { viewScale: 1, viewOffsetX: 0, yScalar: 2 },
-  { viewScale: 0.25, viewOffsetX: -137, yScalar: 0.5 },
-  { viewScale: 3.5, viewOffsetX: 512, yScalar: 1.75 },
+  { viewScale: 1, viewOffsetX: 0, yScalar: 1, yOffsetPx: 0 },
+  { viewScale: 1, viewOffsetX: 0, yScalar: 2, yOffsetPx: 0 },
+  { viewScale: 0.25, viewOffsetX: -137, yScalar: 0.5, yOffsetPx: 40 },
+  { viewScale: 3.5, viewOffsetX: 512, yScalar: 1.75, yOffsetPx: 0 },
 ]
 
 describe('the forward and inverse view transforms agree', () => {
@@ -26,8 +30,8 @@ describe('the forward and inverse view transforms agree', () => {
       [12.5, 990],
       [-40, 7],
     ]) {
-      const { x, y } = hicDataToScreen(ux!, uy!, t)
-      const back = hicScreenToData(x, y, t)
+      const { x, y } = triangleDataToScreen(ux!, uy!, t)
+      const back = triangleScreenToData(x, y, t)
       expect(back.ux).toBeCloseTo(ux!, 6)
       expect(back.uy).toBeCloseTo(uy!, 6)
     }
@@ -105,11 +109,16 @@ describe('hitTest inverts what the renderer drew', () => {
     contacts.forEach(({ bin1, bin2 }, i) => {
       // the cell's center in pre-rotation data space, forward-mapped to the
       // pixel the shader/Canvas2D path puts it on
-      const { x, y } = hicDataToScreen(bin1 * W + W / 2, bin2 * W + W / 2, {
-        viewScale,
-        viewOffsetX,
-        yScalar,
-      })
+      const { x, y } = triangleDataToScreen(
+        bin1 * W + W / 2,
+        bin2 * W + W / 2,
+        {
+          viewScale,
+          viewOffsetX,
+          yScalar,
+          yOffsetPx: 0,
+        },
+      )
       expect(display.hitTest(x, y)).toEqual({
         bin1,
         bin2,

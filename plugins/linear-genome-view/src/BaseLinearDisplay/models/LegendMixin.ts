@@ -1,4 +1,5 @@
 import { makePin, resolveConf, setConf } from '@jbrowse/core/configuration'
+import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type {
@@ -90,4 +91,18 @@ export default function LegendMixin() {
         setConf(confNode(self), 'showLegend', arg)
       },
     }))
+}
+
+/**
+ * The `svgLegendWidth()` both gradient-legend displays (HiC, LD) answer with.
+ * Deliberately NOT gated on whether there is legend data: SVGLinearGenomeView
+ * maxes this across tracks *before* awaiting each `renderSvg`, so on a headless
+ * export (jbrowse-img — the fetch is a debounced autorun) the data has not
+ * landed yet and a data-dependent answer reserved nothing, leaving the legend
+ * to float over the matrix. Reserving on the setting alone costs an unused
+ * strip only when the track loads empty or errors. This rationale used to live
+ * on one of the two copies.
+ */
+export function gradientSvgLegendWidth(self: { showLegend: boolean }) {
+  return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
 }

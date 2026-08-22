@@ -4,7 +4,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
@@ -17,6 +16,9 @@ import {
   TrackHeightMixin,
   blockKeySignature,
   computeTriangleYScalar,
+  gradientSvgLegendWidth,
+  triangleDataToScreen,
+  triangleScreenToData,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 
@@ -580,47 +582,47 @@ export default function sharedModelFactory(
           : undefined
       },
       /**
-       * #method
-       * Forward transform of the LD matrix, paired with `hitTest` below (its
-       * exact inverse): pre-rotation cell coordinates to canvas-relative
-       * pixels. The overlays that decorate individual cells — the hover
-       * crosshair, the focal-SNP band — place themselves through this, so
-       * they land on the cells the shader drew and move with the same rescale
-       * during the debounce+RPC window.
+       * #getter
+       * The whole triangle map as the shared `TriangleTransform`: the view
+       * scale/offset, the fit-to-height squash, and the connector zone LD
+       * reserves above the matrix. One value, so `cellToScreen` and
+       * `screenToCell` below cannot disagree about a term — a dropped
+       * `yScalar` in a hand-spelled inverse survived the coarse round-trip
+       * test here once.
        */
-      cellToScreen(x: number, y: number) {
-        const { viewScale, viewOffsetX } = this.viewTransform
+      get triangleTransform() {
         return {
-          x: ((x + y) / Math.SQRT2) * viewScale + viewOffsetX,
-          y:
-            ((y - x) / Math.SQRT2) * viewScale * this.yScalar +
-            this.effectiveLineZoneHeight,
+          ...this.viewTransform,
+          yScalar: this.yScalar,
+          yOffsetPx: this.effectiveLineZoneHeight,
         }
       },
       /**
        * #method
-       * The exact inverse of `cellToScreen`: canvas-relative pixels back to
-       * pre-rotation cell coordinates. Reverses the rendering's
-       * `scale(1, yScalar) · rotate(-π/4)` — yScalar squashes Y, so it divides
-       * out before the un-rotation.
-       *
-       * Split out of `hitTest` so the pair is checkable as an **identity**
-       * rather than only through the cell it lands in. Round-tripping a cell
-       * center through the two and asserting the cell comes back is too coarse
-       * to catch a dropped `yScalar`: the error is a fraction of a cell at
-       * realistic squashes, so the hit stays inside the same cell and the test
-       * passes with the term deleted — verified. `overlayCoords.test.ts` asserts
-       * the coordinates now, which does catch it.
+       * Forward transform of the LD matrix (`triangleDataToScreen`), paired
+       * with `hitTest` below (its exact inverse): pre-rotation cell
+       * coordinates to canvas-relative pixels. The overlays that decorate
+       * individual cells — the hover crosshair, the focal-SNP band — place
+       * themselves through this, so they land on the cells the shader drew and
+       * move with the same rescale during the debounce+RPC window.
+       */
+      cellToScreen(x: number, y: number) {
+        return triangleDataToScreen(x, y, this.triangleTransform)
+      },
+      /**
+       * #method
+       * The exact inverse of `cellToScreen` (`triangleScreenToData`), split
+       * out of `hitTest` so the pair is checkable as an **identity** rather
+       * than only through the cell it lands in — `overlayCoords.test.ts`
+       * asserts coordinates, which is what catches a dropped term.
        */
       screenToCell(mouseX: number, mouseY: number) {
-        const { viewScale, viewOffsetX } = this.viewTransform
-        const dataX = (mouseX - viewOffsetX) / viewScale
-        const dataY =
-          (mouseY - this.effectiveLineZoneHeight) / viewScale / this.yScalar
-        return {
-          x: (dataX - dataY) / Math.SQRT2,
-          y: (dataX + dataY) / Math.SQRT2,
-        }
+        const { ux, uy } = triangleScreenToData(
+          mouseX,
+          mouseY,
+          this.triangleTransform,
+        )
+        return { x: ux, y: uy }
       },
       /**
        * #method
@@ -699,10 +701,12 @@ export default function sharedModelFactory(
         /**
          * #method
          * How much room the SVG export's container reserves to the right of
-         * the plot for this display's legend (it maxes this across tracks).
+         * the plot for this display's legend (it maxes this across tracks),
+         * via the shared helper — see `gradientSvgLegendWidth` for why it
+         * reserves on the setting alone.
          */
         svgLegendWidth(): number {
-          return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
+          return gradientSvgLegendWidth(self)
         },
         /**
          * #method

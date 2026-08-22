@@ -4,7 +4,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
@@ -12,15 +11,16 @@ import {
   TrackHeightMixin,
   blockKeySignature,
   computeTriangleYScalar,
+  gradientSvgLegendWidth,
   installGlobalFetchAutorun,
   installPrerequisiteFetch,
+  triangleScreenToData,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
-import { hicScreenToData } from './hicTransform.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -431,11 +431,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (!data || data.numContacts === 0) {
           return undefined
         }
-        const { viewScale, viewOffsetX } = self.viewTransform
-        const { ux, uy } = hicScreenToData(mouseX, mouseY, {
-          viewScale,
-          viewOffsetX,
+        const { ux, uy } = triangleScreenToData(mouseX, mouseY, {
+          ...self.viewTransform,
           yScalar: self.yScalar,
+          yOffsetPx: 0,
         })
         return findContactAt(data, ux, uy)
       },
@@ -465,18 +464,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
 
       /**
        * #method
-       * Width of the SVG legend (consumed by SVGLinearGenomeView). Returns 0
-       * when the legend is off so the export framework can omit the space.
-       *
-       * Deliberately NOT gated on `hasLegendData` too: SVGLinearGenomeView maxes
-       * this across tracks *before* awaiting each `renderSvg`, so on a headless
-       * export (jbrowse-img — the fetch is a debounced autorun) the data hasn't
-       * landed yet and a data-dependent answer reserved nothing, leaving the
-       * legend to float over the matrix. Reserving on the setting alone costs an
-       * unused strip only when the track loads empty or errors.
+       * Width of the SVG legend (consumed by SVGLinearGenomeView), via the
+       * shared helper — see `gradientSvgLegendWidth` for why it reserves on
+       * the setting alone rather than gating on `hasLegendData`.
        */
       svgLegendWidth(): number {
-        return self.showLegend ? GRADIENT_LEGEND_SVG_AREA_WIDTH : 0
+        return gradientSvgLegendWidth(self)
       },
     }))
     .actions(self => ({

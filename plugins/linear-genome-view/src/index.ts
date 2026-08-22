@@ -118,6 +118,7 @@ export {
   fetchAllRegions,
   fetchEachRegion,
   foundationDisplayStatusPhase,
+  gradientSvgLegendWidth,
   legendMixinSlots,
   squashToHeightCheckboxItem,
   getHeightModeOptions,
@@ -132,6 +133,8 @@ export {
   onDisplayedRegionsChange,
   plainTrackControl,
   runGlobalFetch,
+  triangleDataToScreen,
+  triangleScreenToData,
   useTrackControlMenu,
 } from './BaseLinearDisplay/index.ts'
 export type {
@@ -150,6 +153,7 @@ export type {
   RegionFetchContext,
   StatusChromeModel,
   TooLargeMessageModel,
+  TriangleTransform,
 } from './BaseLinearDisplay/index.ts'
 // plain, toolkit-free overlays. All of this comes from `@jbrowse/display-ui`,
 // which has no UI-toolkit dependency; importing it from here is a convenience

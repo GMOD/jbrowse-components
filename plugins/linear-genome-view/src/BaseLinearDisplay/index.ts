@@ -87,9 +87,17 @@ export {
 // — which is how arc came to be the last foundation still doing so.
 export { foundationDisplayStatusPhase } from './models/foundationDisplayPhase.ts'
 export type { DisplayStatusPhaseFoundation } from './models/foundationDisplayPhase.ts'
-export { default as LegendMixin } from './models/LegendMixin.ts'
+export {
+  default as LegendMixin,
+  gradientSvgLegendWidth,
+} from './models/LegendMixin.ts'
 export { squashToHeightCheckboxItem } from './models/squashToHeightMenuItem.ts'
 export { computeTriangleYScalar } from './models/triangleYScalar.ts'
+export {
+  type TriangleTransform,
+  triangleDataToScreen,
+  triangleScreenToData,
+} from './models/triangleTransform.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 // Lives in `@jbrowse/display-ui` — six plugins render it and it reaches no UI
 // toolkit. Re-exported here because that is the name they all import, and a
