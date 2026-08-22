@@ -484,3 +484,26 @@ function aForgottenEncodeIsATypeError() {
 test('a lifecycle whose encode is forgotten does not compile', () => {
   expect(aForgottenEncodeIsATypeError()).toBe(0)
 })
+
+// Typecheck-only: an unused `@ts-expect-error` fails `pnpm typecheck`.
+function anIdentityBackendTakesWhatTheDisplayHolds() {
+  interface NarrowerBackend {
+    uploadRegion(key: number, payload: FakeEncoded): void
+    pruneRegions(active: Iterable<number>): void
+  }
+  const backend: NarrowerBackend = {
+    uploadRegion() {},
+    pruneRegions() {},
+  }
+  const data = new Map<number, FakeRegionData>()
+  // @ts-expect-error the backend reads `marker` off payloads carrying none
+  installPerRegionLifecycle(TestModel.create(), backend, {
+    data: () => data,
+    render: () => true,
+  })
+  return data.size
+}
+
+test('an identity backend expecting more than the display holds does not compile', () => {
+  expect(anIdentityBackendTakesWhatTheDisplayHolds()).toBe(0)
+})

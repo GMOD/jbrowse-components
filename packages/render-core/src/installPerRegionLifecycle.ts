@@ -179,9 +179,22 @@ function checkRegionPayloads(
   }
 }
 
+// Methods, so the parameter check stays bivariant. `Encoded` is inferred from
+// `encode`'s return, and a contravariant `backend` position wins that inference
+// with `unknown` before an encode with contextually-typed parameters can supply
+// one — measured: no encoding display resolves an overload.
 interface UploadableRenderingBackend<Encoded> {
   uploadRegion(displayedRegionIndex: number, encoded: Encoded): void
   pruneRegions(active: Iterable<number>): void
+}
+
+// Properties, so the parameter check is contravariant: the display's payload
+// must be assignable to what the backend takes. `Data` comes from `data()`, so
+// nothing is inferred here and the strictness costs no inference. Not the same
+// interface as above, and merging them reopens one hole or the other.
+interface IdentityUploadableRenderingBackend<Data> {
+  uploadRegion: (displayedRegionIndex: number, data: Data) => void
+  pruneRegions: (active: Iterable<number>) => void
 }
 
 /**
@@ -274,7 +287,7 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
 // be inferred as `unknown` and every `render` would take an unusable map.
 export function installPerRegionLifecycle<
   Data extends object,
-  B extends UploadableRenderingBackend<Data>,
+  B extends IdentityUploadableRenderingBackend<Data>,
 >(
   self: LifecycleHost,
   backend: B,
