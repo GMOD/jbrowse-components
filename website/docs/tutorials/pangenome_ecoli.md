@@ -804,21 +804,32 @@ uses for an rGFA:
 {
   "type": "FeatureTrack",
   "trackId": "ecoli_pggb_segments",
-  "name": "pggb graph segments",
+  "name": "pggb graph segments (whole graph, by locus)",
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb"
-  }
+  },
+  "displayDefaults": { "showLabels": "none" }
 }
 ```
+
+A segment's name is its GFA id, and pggb cuts one every ~17 bp, so `showLabels`
+is off here for the reason the figures below have it off: at any width the lane
+is legible at, the ids are a row of overlapping integers.
 
 Now the segments draw as an ordinary track on K12, and **Track menu → Launch
 view → Graph genome view (this region)** cuts a subgraph from the index with no
 `odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
 (this selection)** does the same for a window you drag.
 
-<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="The route, on 1.6 kb of K12 around the IS5 element: the segments lane's own menu, and the subgraph it cuts from the window on screen. The nodes that arrive below are the blocks the lane above draws, in the same colors." />
+The clip below takes that from the beginning: a K12 session carrying the plugin
+and its gene track and nothing else, the block above pasted in through **Open
+track...**, and the graph cut from the window that leaves. The link under it
+opens the session it starts in, so pasting the block for your own graph walks
+the same route on it.
+
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed to 1.6 kb around the IS5 element, and the segments lane's own menu cutting the graph below. The nodes that arrive are the blocks the lane above draws." />
 
 #### One node per bubble, when the window is wider than the graph can draw
 

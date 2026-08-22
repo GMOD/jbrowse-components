@@ -19,7 +19,9 @@
 // A tour whose track config had drifted from the figures' would document a route
 // through an app the rest of the page is not showing.
 import { liveHref } from '../src/lib/code-base.ts'
+import { PGGB_SEGMENTS_TRACK_JSON } from './specs/graph-ecoli.ts'
 import { HPRC_SEGMENTS_TRACK_JSON } from './specs/graph-hprc.ts'
+import { CACTUS_SEGMENTS_TRACK_JSON } from './specs/pangenome_cactus.ts'
 import { dog10kVideos } from './videos/dog10k.ts'
 import { epigenomicsVideos } from './videos/epigenomics.ts'
 import { hicVideos } from './videos/hic.ts'
@@ -71,6 +73,16 @@ export const pastedTrackConfigs = [
     video: 'pangenome/hprc_end_to_end',
     doc: 'tutorials/pangenome_hprc.md',
     json: HPRC_SEGMENTS_TRACK_JSON,
+  },
+  {
+    video: 'pangenome/pggb_subgraph_launch',
+    doc: 'tutorials/pangenome_ecoli.md',
+    json: PGGB_SEGMENTS_TRACK_JSON,
+  },
+  {
+    video: 'pangenome_cactus/subgraph_launch',
+    doc: 'tutorials/pangenome_cactus.md',
+    json: CACTUS_SEGMENTS_TRACK_JSON,
   },
 ]
 

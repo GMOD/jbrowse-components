@@ -7,7 +7,12 @@ Backs the `pangenome/graph_rgfa` screenshot spec
 
 Four configs live here, all data-free:
 
-- `config.json` — K12 only, the minimal graph fixture.
+- `config.json` — K12 only, the minimal graph fixture. It is also the start
+  state of both E. coli paste tours (`pangenome/pggb_subgraph_launch` and
+  `pangenome_cactus/subgraph_launch`), which add `ecoli_pggb_segments` and
+  `ecoli_cactus_segments` from their own page's fence, so it carries the same
+  constraint `hprc_tour.json` does below: **give it no `tracks`**. A tour
+  supplies the K12 gene lane as a session track instead.
 - `hprc.json` — hg38 plus the HPRC release 2 graph, bubble, allele and callset
   tracks.
 - `hprc_tour.json` — the same hg38 and the same plugin with **none** of those

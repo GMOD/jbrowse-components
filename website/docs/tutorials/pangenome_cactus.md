@@ -466,7 +466,9 @@ K12 path. The non-reference paths carry a trailing subpath tag
 sample.
 
 The pair loads as one `FeatureTrack` pointed at the shared prefix, beside the
-projection tracks the build script already wrote:
+projection tracks the build script already wrote. The `uri` below is our hosted
+copy of that pair, so the block works before you have built anything; a local
+build swaps in the `ecoli_cactus` prefix the command above wrote.
 
 ```json
 {
@@ -476,7 +478,7 @@ projection tracks the build script already wrote:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_cactus"
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
   },
   "displayDefaults": { "showLabels": false }
 }
@@ -484,7 +486,12 @@ projection tracks the build script already wrote:
 
 The segments then draw as an ordinary track on K12, and **Track menu → Launch
 view → Graph genome view (this region)** cuts a subgraph at whatever is on
-screen.
+screen. The clip below is the whole of that: the block above pasted into a K12
+session carrying the plugin and its gene track and nothing else, then the IS1
+window cut out of it. The link under the clip opens the session it starts in, so
+the same three moves run on any graph indexed this way.
+
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed to the 1.6 kb past flhD, and Launch view → Graph genome view (this region) on the segments lane's own menu." />
 
 A kilobase or two is the width to open one at, and the downstream edge of the
 flagellar operon is a place where the five strains have something to disagree

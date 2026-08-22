@@ -31,3 +31,13 @@ refilm and none of which the run reports.
 - **The session comes from a `*VideoFixtures` bag in `../specs/`**, never
   written again here: a tour whose track config had drifted from the figures'
   would document a route through an app the rest of the page is not showing.
+- **A tour that PASTES its track films the defaults, not the figures' display.**
+  A session spec pins a lane's height, its colour jexl and its labels; a pasted
+  fence carries only what a reader would copy, so the lane arrives at the
+  display's default height — which grew `pggb_subgraph_launch`'s frame by 50px
+  the first time it was filmed this way — and in the default colour. Any claim
+  the caption made about the lane and the graph pane sharing a ramp stops being
+  true with it. The repair is in the FENCE or nowhere: `displayDefaults` reaches
+  a slot a reader would sensibly set (`showLabels` off over a segment index
+  whose names are GFA ids), and a ramp over the tour's own window is not one of
+  those. `REJECTED_IDEAS.md` carries what that cost on the pggb page.

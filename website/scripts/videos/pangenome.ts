@@ -1,12 +1,19 @@
-// The graph tours, on the two pangenome pages. Three of the four shapes the
+// The graph tours, on the three pangenome pages. Three of the four shapes the
 // corpus films start here: the launch ROUTE, the layout RE-LAYOUT, and the WHOLE
 // SESSION that opens pangenome_hprc.
+//
+// Each of the three pages now has one tour that starts from a session holding
+// none of the page's data, because getting a graph into JBrowse IS the
+// difficulty on all three: the adapter reads four files off one prefix, so the
+// file-or-URL workflow has no extension to guess an adapter from and pasting the
+// config is the route. The two E. coli tours and the HPRC one walk the same four
+// moves — paste, navigate, launch, read — on three different graphs.
 import { menuCascade, sessionSpec } from '../screenshot-spec-helpers.ts'
-import { pggbVideoFixtures } from '../specs/graph-ecoli.ts'
 import {
-  TOOLBAR_READY,
-  referencePositionColor,
-} from '../specs/graph-fixtures.ts'
+  PGGB_SEGMENTS_TRACK_JSON,
+  pggbVideoFixtures,
+} from '../specs/graph-ecoli.ts'
+import { TOOLBAR_READY } from '../specs/graph-fixtures.ts'
 import {
   HPRC_SEGMENTS_TRACK_JSON,
   TOUR_MHC_LOCUS,
@@ -14,17 +21,18 @@ import {
   hprcClusterFixtures,
   hprcTourSession,
 } from '../specs/graph-hprc.ts'
+import { cactusVideoFixtures } from '../specs/pangenome_cactus.ts'
 import { LOCATION_BOX, displayReady, trackMenu } from './shared.ts'
 
-import type { VideoSpec } from '../video-spec-types.ts'
+import type { VideoSpec, VideoStep } from '../video-spec-types.ts'
 
 const {
   config: PGGB_CONFIG,
   genesTrack,
   segmentsTrack,
   segmentsTrackId,
-  locus,
   locusWindow,
+  tourWindow: PGGB_TOUR_WINDOW,
   rowsLocus,
   rowsWindow,
   locusSession,
@@ -50,27 +58,42 @@ const pggbGraphOnly = sessionSpec(PGGB_PANGENOME_CONFIG, {
   ],
 })
 
-// A linear view of the pggb graph's own segments over the IS5 element, with no
-// graph pane: the state a reader is in before they cut one, which is what makes
-// the launch route filmable at all.
-const pggbLinearOnly = sessionSpec(PGGB_CONFIG, {
-  sessionTracks: [genesTrack, segmentsTrack],
+// K12 with its genes and nothing of the graph, 20 kb out from the IS5 element:
+// the state a reader of `### Browsing the whole graph by locus` is in before the
+// page's fence has gone anywhere.
+//
+// The segments track is ABSENT rather than hidden, and it has to be:
+// `doPasteConfigSubmit` rejects a `trackId` the session already holds rather
+// than merging it, so a tour filmed against the figures' session could not add
+// the track the figures use. What that buys back is the live link, which then
+// opens the empty session instead of the finished one, so a reader who has
+// watched the route can walk it.
+const pggbTourStart = sessionSpec(PGGB_CONFIG, {
+  sessionTracks: [genesTrack],
   views: [
     {
       type: 'LinearGenomeView',
       assembly: 'K12',
-      loc: locusWindow,
+      loc: PGGB_TOUR_WINDOW,
       tracks: [
         { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-        {
-          trackId: segmentsTrackId,
-          type: 'LinearBasicDisplay',
-          // labels off: at this density they are hundreds of overlapping
-          // integer ids, the same setting the page's own figures use
-          showLabels: 'none',
-          height: 50,
-          color: referencePositionColor(locus),
-        },
+      ],
+    },
+  ],
+})
+
+// The same shape on the Minigraph-Cactus graph, which is the whole of what
+// pangenome_cactus had no tour for: the page's graph section ended on a figure
+// of a subgraph and a sentence naming the menu path that cuts one.
+const cactusTourStart = sessionSpec(cactusVideoFixtures.config, {
+  sessionTracks: [cactusVideoFixtures.genesTrack],
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'K12',
+      loc: cactusVideoFixtures.tourWindow,
+      tracks: [
+        { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
       ],
     },
   ],
@@ -85,47 +108,209 @@ const SEGMENTS_TRACK = 'hprc_minigraph_segments'
 const PASTE_WORKFLOW = 'Add track from pasted JSON'
 const PASTE_BOX = 'textarea[placeholder^="Paste track config"]'
 const HIGHLIGHT_ITEM = 'Highlight in hg38'
+
+// GETTING A GRAPH INTO A SESSION, which is the opening of all three graph tours
+// and one route rather than three: **File → Open track... → Add track from
+// pasted JSON**, the config, **Submit**. Written once so the three pages cannot
+// document three different ways in, which is the failure a reader hits hardest
+// -- following a route on one page and finding the labels renamed on the next.
+//
+// It ends AT Submit rather than after it: `finishAddTrack` dismisses the widget
+// itself, so the drawer closing is the app's answer, and what to wait on for the
+// track landing is the caller's own display id.
+function pasteTrackSteps(json: string): VideoStep[] {
+  return [
+    { type: 'click', text: 'File', say: 'File', hold: 700 },
+    { type: 'waitForText', text: 'Open track...' },
+    { type: 'click', text: 'Open track...', say: 'Open track...' },
+    { type: 'waitForText', text: 'Enter track data' },
+    // The workflow select, by the option it is showing. Only one element
+    // carries that text until the menu opens, and by then the item this clicks
+    // next is the only one carrying its own.
+    {
+      type: 'click',
+      text: 'Add a track from file or URL',
+      say: 'Choose how to add a track',
+      hold: 700,
+    },
+    { type: 'waitForText', text: PASTE_WORKFLOW },
+    { type: 'click', text: PASTE_WORKFLOW, say: PASTE_WORKFLOW },
+    { type: 'waitForSelector', selector: PASTE_BOX },
+    // OFF CAMERA, because what a reader does here is paste. `type` sends the
+    // config a keystroke at a time through a controlled MUI field, which is both
+    // slower than a paste and a different action from the one being documented;
+    // cutting it leaves the box empty, then full, which is what pasting looks
+    // like. The caption from the step above stands through it.
+    { type: 'type', selector: PASTE_BOX, value: json, cut: true },
+    // the filled box, held long enough to be read as the page's own block
+    { type: 'delay', ms: 2600 },
+    { type: 'click', text: 'Submit', say: 'Submit' },
+  ]
+}
+
+// NARROWING BY TYPING, which every paste tour does next and none of them could
+// skip. The drawer took ~400 px off the linear view while it was open and an LGV
+// keeps its bp-per-pixel across a resize, so the window standing once the widget
+// dismisses is wider than the one the session opened at -- and a launch reads
+// `dynamicBlocks`, so without this the cut is whatever the drawer left behind.
+function navigateSteps(window: string): VideoStep[] {
+  return [
+    {
+      type: 'type',
+      selector: LOCATION_BOX,
+      value: window,
+      clear: true,
+      say: window,
+    },
+    { type: 'press', key: 'Enter' },
+    { type: 'delay', ms: 1500 },
+  ]
+}
+
+// THE LAUNCH, off the segments lane's own menu: the cascade whose existence is
+// the point of indexing the graph this way, since the item appears for any track
+// whose adapter can cut a subgraph and needs no graph track in the view.
+function launchGraphSteps(trackId: string): VideoStep[] {
+  return [
+    {
+      type: 'click',
+      selector: trackMenu(trackId),
+      say: 'Track menu',
+      hold: 700,
+    },
+    { type: 'waitForText', text: 'Launch view' },
+    { type: 'click', text: 'Launch view', say: 'Launch view', hold: 700 },
+    { type: 'waitForText', text: 'Graph genome view (this region)' },
+    {
+      type: 'click',
+      text: 'Graph genome view (this region)',
+      say: 'Graph genome view (this region)',
+    },
+  ]
+}
 const GENES_READY = displayReady('hg38_ncbiRefSeq_ucsc-LinearBasicDisplay')
 const SEGMENTS_READY = displayReady(`${SEGMENTS_TRACK}-LinearBasicDisplay`)
+// The two E. coli pages open on K12's genes and nothing else, and each waits on
+// its own pasted lane afterwards. A pasted config with no `displayId` gets
+// `<trackId>-<displayType>` (packages/core/src/util/tracks.ts), which is the one
+// id both a bare config and a `displayDefaults` one land on.
+const K12_GENES_READY = displayReady('K12_genes-LinearBasicDisplay')
+const PGGB_SEGMENTS_READY = displayReady(
+  `${segmentsTrackId}-LinearBasicDisplay`,
+)
+const CACTUS_SEGMENTS_READY = displayReady(
+  `${cactusVideoFixtures.segmentsTrackId}-LinearBasicDisplay`,
+)
 // Sample rows have arrived: the labels, not just the toolbar, since the layout
 // runs after the graph loads and the toolbar is up before there is a row to
 // label.
 const ROWS_DRAWN = `body:has([data-testid="graph-row-label"]) ${LAYOUT_SELECT}`
 
 export const pangenomeVideos: VideoSpec[] = [
-  // THE ROUTE. Every graph pane in pangenome_ecoli.md was cut this way and the
-  // page can only say so in a sentence; this is the sentence happening. It ends
-  // on the graph rather than on the menu, so the last thing in the frame is the
+  // THE ROUTE, FROM NOTHING. Every graph pane in pangenome_ecoli.md was cut this
+  // way and the page can only say so in a sentence; this is the sentence
+  // happening, from a session that does not have the graph yet.
+  //
+  // It used to start with the segments lane already in the view and film the
+  // launch alone, which left the step before it — the one a reader is actually
+  // stuck on, since nothing in the file-or-URL workflow can produce this track —
+  // as a fence on the page and nothing more. The launch is still the payoff and
+  // the clip still ends on the graph, so the last thing in the frame is the
   // thing the route is for.
   {
     name: 'pangenome/pggb_subgraph_launch',
     description:
-      'Cutting a graph out of a locus: the pggb segments track, its launch menu, and the subgraph that comes back',
-    url: pggbLinearOnly,
+      "A pggb graph from a K12 session that has none of it: paste the page's track config, narrow to the IS5 element, and cut the window on screen as a subgraph",
+    url: pggbTourStart,
     // Sized to the state the tour ENDS in, which is the linear view plus the
-    // graph pane the launch adds: the run reports 365px of app at the first
-    // frame and 1053px at the last, and a video has one frame for both. The
-    // page background above that last number is the cost of filming a launch,
+    // graph pane the launch adds: the run reports 276px of app at the first
+    // frame and 1103px at the last, and a video has one frame for both. The
+    // page background over that first number is the cost of filming a launch,
     // and it is the cheaper half of the trade — a frame sized to the opening
     // cuts the graph the tour exists to show.
-    viewportHeight: 1060,
-    readySelector: trackMenu(segmentsTrackId),
+    //
+    // It grew by 50px when the tour started pasting the track rather than
+    // opening with it: a pasted config takes the display's default height where
+    // the old session pinned the lane at 50, and pinning it back would mean a
+    // `displays` array in the fence a reader copies.
+    viewportHeight: 1110,
+    // The gene lane, since it is the only thing in the opening session. The
+    // track menu this tour used to gate on belongs to a track that does not
+    // exist yet.
+    readySelector: K12_GENES_READY,
+    readyTimeout: 120000,
     settleMs: 3000,
     steps: [
+      ...pasteTrackSteps(PGGB_SEGMENTS_TRACK_JSON),
       {
-        type: 'click',
-        selector: trackMenu(segmentsTrackId),
-        say: 'Track menu',
-        hold: 700,
+        type: 'waitForSelector',
+        selector: PGGB_SEGMENTS_READY,
+        timeout: 180000,
+        cut: true,
       },
-      { type: 'waitForText', text: 'Launch view' },
-      { type: 'click', text: 'Launch view', say: 'Launch view', hold: 700 },
-      { type: 'waitForText', text: 'Graph genome view (this region)' },
+      // the lane the fence produced, at the width it was pasted at: a base-level
+      // graph is a node every ~17 bp, so what arrives is a mat, and that is the
+      // reason the next step is a narrowing rather than a launch
+      { type: 'delay', ms: 2600 },
+      ...navigateSteps(locusWindow),
       {
-        type: 'click',
-        text: 'Graph genome view (this region)',
-        say: 'Graph genome view (this region)',
+        type: 'waitForSelector',
+        selector: PGGB_SEGMENTS_READY,
+        timeout: 120000,
       },
+      { type: 'delay', ms: 1800 },
+      ...launchGraphSteps(segmentsTrackId),
+      {
+        type: 'waitForSelector',
+        selector: TOOLBAR_READY,
+        timeout: 120000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2000 },
+    ],
+    tailMs: 2500,
+  },
+  // THE SAME ROUTE ON THE OTHER BUILDER, and the only tour on pangenome_cactus.
+  // That page walks a reader through `cactus-pangenome`, six linear projections
+  // and an offline index, and then hands them a figure of a subgraph with one
+  // sentence naming the menu path that cuts one.
+  //
+  // Filmed on the IS1 element past flhD, which is the locus the page's own graph
+  // figure is taken at, so the clip and the figure are one window: K12 carries
+  // the element and the other four strains take the edge past it. A
+  // Minigraph-Cactus graph caps a segment at 1024 bp, so that private stretch
+  // arrives as ONE node rather than the chain a pggb cut of the same event draws
+  // — which is the difference between the two pages, arriving as a picture.
+  {
+    name: 'pangenome_cactus/subgraph_launch',
+    description:
+      "The Minigraph-Cactus graph into an empty K12 session and back out as a subgraph: paste the page's track config, narrow to the IS1 element past flhD, and launch the graph view",
+    url: cactusTourStart,
+    // Same trade as the pggb tour above, and the same numbers: the run reports
+    // 276px of app at the first frame and 1103px at the last, because the two
+    // tours build the same three things at the same default heights and the
+    // graph pane fills what is left.
+    viewportHeight: 1110,
+    readySelector: K12_GENES_READY,
+    readyTimeout: 120000,
+    settleMs: 3000,
+    steps: [
+      ...pasteTrackSteps(cactusVideoFixtures.segmentsTrackJson),
+      {
+        type: 'waitForSelector',
+        selector: CACTUS_SEGMENTS_READY,
+        timeout: 180000,
+        cut: true,
+      },
+      { type: 'delay', ms: 2600 },
+      ...navigateSteps(cactusVideoFixtures.locusWindow),
+      {
+        type: 'waitForSelector',
+        selector: CACTUS_SEGMENTS_READY,
+        timeout: 120000,
+      },
+      { type: 'delay', ms: 1800 },
+      ...launchGraphSteps(cactusVideoFixtures.segmentsTrackId),
       {
         type: 'waitForSelector',
         selector: TOOLBAR_READY,
@@ -218,36 +403,7 @@ export const pangenomeVideos: VideoSpec[] = [
     readyTimeout: 120000,
     settleMs: 4000,
     steps: [
-      { type: 'click', text: 'File', say: 'File', hold: 700 },
-      { type: 'waitForText', text: 'Open track...' },
-      { type: 'click', text: 'Open track...', say: 'Open track...' },
-      { type: 'waitForText', text: 'Enter track data' },
-      // The workflow select, by the option it is showing. Only one element
-      // carries that text until the menu opens, and by then the item this
-      // clicks next is the only one carrying its own.
-      {
-        type: 'click',
-        text: 'Add a track from file or URL',
-        say: 'Choose how to add a track',
-        hold: 700,
-      },
-      { type: 'waitForText', text: PASTE_WORKFLOW },
-      { type: 'click', text: PASTE_WORKFLOW, say: PASTE_WORKFLOW },
-      { type: 'waitForSelector', selector: PASTE_BOX },
-      // OFF CAMERA, because what a reader does here is paste. `type` sends the
-      // config a keystroke at a time through a controlled MUI field, which is
-      // both slower than a paste and a different action from the one being
-      // documented; cutting it leaves the box empty, then full, which is what
-      // pasting looks like. The caption from the step above stands through it.
-      {
-        type: 'type',
-        selector: PASTE_BOX,
-        value: HPRC_SEGMENTS_TRACK_JSON,
-        cut: true,
-      },
-      // the filled box, held long enough to be read as the page's own block
-      { type: 'delay', ms: 2600 },
-      { type: 'click', text: 'Submit', say: 'Submit' },
+      ...pasteTrackSteps(HPRC_SEGMENTS_TRACK_JSON),
       // Submit dismisses the widget itself (finishAddTrack), so the drawer
       // closing is the app's answer rather than a step.
       {
@@ -257,39 +413,14 @@ export const pangenomeVideos: VideoSpec[] = [
         cut: true,
       },
       { type: 'delay', ms: 2600 },
-      // The locus. Also the step that makes the launch below deterministic —
-      // the drawer took ~400 px off the view while it was open, and an LGV
-      // keeps its bp-per-pixel across a resize, so the window standing now is
-      // wider than the one the session opened at.
-      {
-        type: 'type',
-        selector: LOCATION_BOX,
-        value: TOUR_MHC_LOCUS,
-        clear: true,
-        say: TOUR_MHC_LOCUS,
-      },
-      { type: 'press', key: 'Enter' },
-      { type: 'delay', ms: 1500 },
+      ...navigateSteps(TOUR_MHC_LOCUS),
       {
         type: 'waitForSelector',
         selector: SEGMENTS_READY,
         timeout: 180000,
       },
       { type: 'delay', ms: 1800 },
-      {
-        type: 'click',
-        selector: trackMenu(SEGMENTS_TRACK),
-        say: 'Track menu',
-        hold: 700,
-      },
-      { type: 'waitForText', text: 'Launch view' },
-      { type: 'click', text: 'Launch view', say: 'Launch view', hold: 700 },
-      { type: 'waitForText', text: 'Graph genome view (this region)' },
-      {
-        type: 'click',
-        text: 'Graph genome view (this region)',
-        say: 'Graph genome view (this region)',
-      },
+      ...launchGraphSteps(SEGMENTS_TRACK),
       {
         type: 'waitForSelector',
         selector: TOOLBAR_READY,

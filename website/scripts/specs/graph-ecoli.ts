@@ -1320,6 +1320,36 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
   ]
 }
 
+// WHAT THE SUBGRAPH TOUR TYPES INTO THE PASTE BOX, and it is
+// `pangenome_ecoli.md`'s own "Browsing the whole graph by locus" fence character
+// for character (check-paste-configs). A reader watching the clip is meant to
+// recognise the block above it on the page, so the two are one text: change the
+// fence and change this in the same commit.
+//
+// The url is written out rather than taken from DATA, for the same reason: the
+// page prints one, and an ECOLI_DEMO_BASE run would type a config the page does
+// not carry. It is also why the tour is worth filming at all — this adapter
+// reads four files off one prefix, so `Add a track from file or URL` has no
+// extension to guess from and pasting the config is the route.
+export const PGGB_SEGMENTS_TRACK_JSON = `{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_segments",
+  "name": "pggb graph segments (whole graph, by locus)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb"
+  },
+  "displayDefaults": { "showLabels": "none" }
+}`
+
+// The window the subgraph tour opens on, before it narrows to PGGB_LOCUS_WINDOW.
+// Wide enough that the narrowing is a visible move and the lane arrives as the
+// mat a base-level graph is, narrow enough to stay under maxFeatureScreenDensity
+// while the drawer holds ~400 px of the view: this cuts ~750 K12 segments where
+// the gate is one per pixel.
+const PGGB_TOUR_WINDOW = 'chr:1,290,000-1,310,000'
+
 // What website/scripts/video-specs.ts films. The two pggb tours open the same
 // config, the same session tracks and the same loci these figures do, so they
 // are shared rather than copied: a tour whose track definition had drifted from
@@ -1336,6 +1366,7 @@ export const pggbVideoFixtures = {
   segmentsTrackId: PGGB_SEGMENTS_TRACK,
   locus: PGGB_LOCUS,
   locusWindow: PGGB_LOCUS_WINDOW,
+  tourWindow: PGGB_TOUR_WINDOW,
   rowsLocus: PGGB_ROWS_LOCUS,
   rowsWindow: PGGB_ROWS_WINDOW,
   locusSession: pggbLocusSession,

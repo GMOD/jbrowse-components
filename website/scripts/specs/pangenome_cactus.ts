@@ -591,3 +591,42 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
   // whole-chromosome scale it is two spikes. So the comparative figure keeps the
   // comparison and this one kept only the restatement.
 ]
+
+// WHAT THE SUBGRAPH TOUR TYPES INTO THE PASTE BOX, and it is
+// `pangenome_cactus.md`'s own "Indexing the graph" fence character for character
+// (check-paste-configs). The two are one text: change the fence and change this
+// in the same commit.
+//
+// The url is the hosted pair rather than ECOLI_DEMO_BASE, because the page
+// prints the hosted one -- it used to print the bare `ecoli_cactus` prefix the
+// build writes, which is a config nothing can resolve until the reader has run
+// cactus, and so a config no film could paste.
+export const CACTUS_SEGMENTS_TRACK_JSON = `{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_cactus_segments",
+  "name": "MC graph: segments (whole graph, by locus)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
+  },
+  "displayDefaults": { "showLabels": false }
+}`
+
+// The window the tour opens on, before it narrows to IS1_WINDOW. A Minigraph-
+// Cactus graph is coarser than a pggb one, so the same 12 kb is ~800 K12
+// segments where the density gate is one per pixel, and the lane still arrives
+// dense enough that narrowing to the bubble is the point of the narrowing.
+const CACTUS_TOUR_WINDOW = 'chr:1,972,900-1,984,900'
+
+// What website/scripts/videos/pangenome.ts films. The tour opens the same
+// fixture config and the same gene lane the graph figure above does, and lands
+// on the same IS1 window, so the clip and the figure are one locus.
+export const cactusVideoFixtures = {
+  config: GRAPH_CONFIG,
+  genesTrack: K12_GENES_SESSION_TRACK,
+  segmentsTrackId: MC_SEGMENTS_TRACK,
+  segmentsTrackJson: CACTUS_SEGMENTS_TRACK_JSON,
+  tourWindow: CACTUS_TOUR_WINDOW,
+  locusWindow: IS1_WINDOW,
+}

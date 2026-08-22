@@ -1573,22 +1573,27 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 - **Re-auditing dotplot `autoDiagonalize`** — audited three ways 2026-07,
   correct as shipped; only unbuilt lever is a best-hit render filter. Multiway
   `autoDiagonalize: true` stays on in tutorial configs.
-- **Giving `pangenome_ecoli` the end-to-end tour `pangenome_hprc` got** —
-  proposed and declined 2026-08-16, on reading the page rather than on filming
-  it. Neither half transfers. The page's subject is the linear projections and
-  the graph is the last of its six sections, so a tour at the top would open the
-  page on what it covers last; both its clips already sit in the sections that
-  explain them, which is where the HPRC one was wrong and these are right.
+- **Opening `pangenome_ecoli` with an end-to-end tour, the way
+  `pangenome_hprc` opens** — declined 2026-08-16 and the decline stands. The
+  page's subject is the linear projections and the graph is the last of its six
+  sections, so a tour at the top would open the page on what it covers last; its
+  clips sit in the sections that explain them, which is where the HPRC one was
+  wrong and these are right.
 
-  Extending `pggb_subgraph_launch` to paste its track config first costs that
-  clip its finding. The page's fence for `ecoli_pggb_segments` carries no
-  `displayDefaults`, where HPRC's carries the rank jexl, so a pasted lane draws
-  in the default color and the caption's claim that the nodes below are "the
-  blocks the lane above draws, in the same colors" stops being true. Putting the
-  ramp in the fence is not the fix either: it is two window constants, which
-  `pangenome_hprc` already says belongs on the view rather than in a config a
-  reader pastes. What the ecoli page would gain is the loading half, and
-  `pangenome/hprc_end_to_end` shows that once for both pages.
+  **Pasting the track config inside those clips was declined with it, and that
+  half was reversed on request 2026-08-21.** Both E. coli graph sections now open
+  with a clip that pastes the page's own fence and then launches
+  (`pangenome/pggb_subgraph_launch`, `pangenome_cactus/subgraph_launch`), each
+  still in its section rather than at the top. The cost the 2026-08-16 note
+  predicted was paid rather than dodged, and it is what to weigh before
+  reworking these: a pasted lane draws in the default colour, so the clip no
+  longer shows the lane and the graph sharing a ramp, and its caption no longer
+  says they do. Neither repair works. The ramp is two window constants, which
+  `pangenome_hprc` already says belongs on the view and not in a config a reader
+  pastes; and the rank jexl HPRC's fence carries does not transfer, because only
+  rank 0 has reference coordinates, so a K12 lane under it is one flat colour.
+  The correspondence is carried by the page's stills and by
+  `pangenome/pggb_layout_switch`, whose session still applies the ramp.
 
 ## Data and demos
 
