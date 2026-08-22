@@ -36,13 +36,23 @@ refilm and none of which the run reports.
   the load and every step before it. It is the right place to park the cursor
   and the wrong thing to dismiss a menu with.
 - **The camera opens with the pointer at the top middle of the frame**, which on
-  a full-width LGV is the overview ruler — and the view writes the position
-  under the pointer into its own title bar. So the opening frame carries a
-  coordinate chip from wherever that lands, which is a locus the tour never
-  visits. A first
-  `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` moves the
-  real mouse off it; `moveCursor` drives `page.mouse.move`, so the drawn cursor
-  and the hover states cannot disagree.
+  a full-width LGV is the overview's cytoband strip — and the view writes the
+  position under the pointer into its own title bar. So the opening frame of an
+  LGV tour carries a coordinate chip over the view title from wherever that
+  lands, which is a locus the tour never visits, and nothing in the run says so.
+  A first `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` moves
+  the real mouse off it, and the chip is gone by the time the tour's own first
+  step runs; `moveCursor` drives `page.mouse.move`, so the drawn cursor and the
+  hover states cannot disagree.
+- **A hold is where the pointer is, not where the click was.** The last click
+  before a held end state leaves the pointer on whatever now occupies that spot,
+  and a re-layout moves what that is: `Replace current view` sat where the
+  breakpoint split view then drew a junction arc, so
+  `sv/derivative_allele_route` held its four panels for five seconds under a
+  tooltip naming both ends of that arc by feature uuid. The same
+  `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` before the
+  hold, which `sv/multisample_sort` already takes for the crosshair its matrix
+  draws. It is not only menus that need blurring.
 - **A display-type switch does not carry the old display's height.**
   `replaceDisplay` builds the new one from its own config, so a multi-row
   painting arriving at the default height fits every row it discovers into the
@@ -58,12 +68,23 @@ refilm and none of which the run reports.
 - **The session comes from a `*VideoFixtures` bag in `../specs/`**, never
   written again here: a tour whose track config had drifted from the figures'
   would document a route through an app the rest of the page is not showing.
-- **The camera parks the pointer at the top middle of the frame before it
-  rolls**, and in a linear view that is the overview's cytoband strip -- so the
-  opening frame of an LGV tour carries the band's own hover tooltip, over the
-  view title, and nothing in the run says so. A first `hover` on
-  `[aria-label="JBrowse"]` takes the pointer off it; the tooltip is gone by the
-  time the tour's own first step runs.
+- **A `say` on a step that is `cut` reaches nothing.** The whole step is off
+  camera, its `hold` included, so the chip is never filmed — and the caption cue
+  is dropped too, because `captionTrack` times cues on the ON-CAMERA clock and a
+  cut leaves that clock where it was, which makes the cue zero-length.
+  `ui/bulk_add_tracks` shipped four captions for five `say` lines and no check
+  saw it. Name the beat AFTER the cut instead, on a delay the camera is back
+  for, which is also where the `hold` belongs.
+- **A `say` goes up when its step STARTS.** So a line describing what the step
+  produces is wrong for the whole time it runs — `hic/two_regions` said the
+  wedge was chr9 against chr22 over a box that still held one window. Name the
+  control, the value or the thing being pointed at; what it MEANS is the embed's
+  caption, which the reader reads at their own pace.
+- **Nothing holds a `say` to a string the app draws.** `check-menu-labels` reads
+  the doc pages, not the specs, so a chip can name a control by its TESTID and
+  the run is happy: `ui/add_genome` put `Assembly name` over a field the form
+  labels `Genome name`. Read the label out of the frame, and where the step is a
+  `type`, say the value the way the location-box steps do.
 - **A right-click anchored by locus lands on whatever the display DREW there**,
   which inside an alignment is often a CIGAR op rather than the feature. Over an
   indel wide enough to paint, the menu grows an "Open deletion details (N bp)"

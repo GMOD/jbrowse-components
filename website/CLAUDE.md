@@ -138,6 +138,15 @@ the tour was filmed in.
   string a `text` step matches — read the DOM, and put the caps in the `say`.
 - **`posterAt` is clamped to the clip**, so a stale one no longer throws away a
   finished film; the run says which second it used instead.
+- **The last repaint of a run of them does not reach the file.** Chrome sends
+  screencast frames while the page paints and stops when it goes quiet, and the
+  frames arrive a couple behind — so whatever a clip is doing at the very end is
+  in the mp4 only up to about four fifths of the way through, and the tail then
+  holds THAT frame for its whole length. It is why `parkCursor` hides the drawn
+  cursor in one step rather than gliding it out of the viewport: the glide
+  version froze the arrow near the bottom edge of every clip that ends at its
+  own last frame, which is the frame the poster comes from. Anything that has to
+  be true in the last frame has to be true well before it.
 - **Re-navigate after the drawer closes.** A widget takes ~400 px off the linear
   view while it is open and an LGV keeps its bp-per-pixel across a resize, so
   the window standing afterwards is wider than the one the session opened at.
