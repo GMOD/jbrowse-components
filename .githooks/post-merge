@@ -1,6 +1,26 @@
 #!/bin/sh
-# Answers "did that land leave a generated artifact stale" at the moment work
-# actually enters main here, which is `git merge --ff-only`, not `git push`.
+# Answers "did that land leave main red" at the moment work actually enters main
+# here, which is `git merge --ff-only`, not `git push`.
+#
+# WHICH GATES, and why these three. A generated artifact going stale is the
+# oldest of the failures this catches and it is not the only one that lands
+# unseen. On 2026-08-22 main took four separate breakages in a day and only two
+# were artifacts: the others were a TS4058 in
+# `products/jbrowse-web/src/sessionModel/index.ts` -- production code, invisible
+# to `pnpm test` because jest strips types -- and an eslint error on git's
+# `^{commit}` peel syntax. Neither had ANY local gate. pre-push does not run
+# typecheck at all, and its `build:esm` compiles only what we publish, so it
+# never reaches `products/`.
+#
+#   pnpm autogen --check    ~34s
+#   pnpm typecheck           ~2s warm
+#   pnpm lint:eslint         ~29s
+#
+# Typecheck warm is 2s (scripts/typecheck.ts measures it: 1.8s default, 2.3s at
+# --checkers 1, against 45-60s cold), so the gate that caught the worst of that
+# day costs a rounding error on a run that was already 34s. eslint is the
+# expensive one and earns it by owning the syntactic guards oxlint cannot do,
+# which is the class that reaches main without anyone noticing.
 #
 # WHY THIS EXISTS WHEN pre-push ALREADY CHECKS. It checks on push, and nothing
 # here pushes: agents land with `git -C <primary-checkout> merge --ff-only`, so
@@ -10,15 +30,16 @@
 # these gates only ran on push") and then still only ran on push. This is the
 # missing half.
 #
-# IT COSTS THE LANDER NOTHING. The check is detached and runs after the merge
+# IT COSTS THE LANDER NOTHING. The checks are detached and runs after the merge
 # has already returned, so `git merge` is as fast as it was. Nothing here can
 # fail a merge either -- post-merge runs after the fact and git ignores its exit
 # status -- which is the right shape: a landed commit is not something to
 # refuse, only something to report on.
 #
 # HOW YOU HEAR ABOUT IT. The background run leaves `autogen-stale` in the common
-# git dir, and pre-commit prints it on your next commit for the cost of one
-# stat. That is deliberately not a terminal message from here: by the time the
+# git dir -- named for the check it started as, kept because that path is what
+# pre-commit and autogen.ts both reach for -- and pre-commit prints it on your
+# next commit for the cost of one stat. That is deliberately not a terminal message from here: by the time the
 # check finishes, the shell that ran the merge has moved on, and writing to its
 # tty would land in the middle of whatever is there now.
 #
@@ -32,12 +53,17 @@
 # here on a clean check and in autogen.ts when someone regenerates; leaving the
 # anchor behind would age the next unrelated drift by this one's lifetime.
 #
-# READ-ONLY, because the primary checkout is shared. `--check` reports and
-# writes nothing, so this can never rewrite another agent's uncommitted work --
-# the hazard pre-push's header spends two paragraphs on, and the reason this
-# does not just run the fixer.
+# READ-ONLY, because the primary checkout is shared. `--check`, `--noEmit` and a
+# bare `lint:eslint` all report and write nothing, so this can never rewrite
+# another agent's uncommitted work -- the hazard pre-push's header spends two
+# paragraphs on, and the reason this does not just run the fixers. The one
+# exception is tsc's `tsconfig.tsbuildinfo`, which is what makes the warm
+# typecheck 2s rather than 45s: gitignored build state, not anyone's work, and
+# the lock below keeps two of these from writing it at once. An agent running
+# `pnpm typecheck` by hand IN THE PRIMARY CHECKOUT could still race it; agents
+# work in worktrees, which have their own.
 #
-# WHAT IT CANNOT TELL APART. The check reads the working tree, so uncommitted
+# WHAT IT CANNOT TELL APART. Every gate reads the working tree, so uncommitted
 # source in the shared checkout counts toward the answer. A stale artifact it
 # names may be another agent's in-flight edit rather than the land -- the
 # marker says so rather than pretending otherwise.
@@ -101,9 +127,14 @@ mkdir "$lock" 2>/dev/null || exit 0
     flags=--skip-figure-dependent
   fi
 
-  out=$(pnpm autogen --check $flags 2>&1) && status=0 || status=$?
+  out=$(pnpm autogen --check $flags 2>&1) && agen=0 || agen=$?
+  # 2s warm, and the only gate here that sees a type error in `products/`.
+  tsc=$(pnpm typecheck 2>&1) && tsc_status=0 || tsc_status=$?
+  # No --fix, unlike pre-push's copy: that one runs on your own push, this one
+  # against a checkout other agents have open.
+  esl=$(pnpm lint:eslint 2>&1) && esl_status=0 || esl_status=$?
 
-  if [ "$status" = 0 ]; then
+  if [ "$agen" = 0 ] && [ "$tsc_status" = 0 ] && [ "$esl_status" = 0 ]; then
     rm -f "$marker" "$since"
   else
     head=$(git rev-parse --short HEAD)
@@ -126,50 +157,84 @@ mkdir "$lock" 2>/dev/null || exit 0
       printf '%s\n' "$head" >"$since" 2>/dev/null || true
     fi
 
+    # `if`, not `[ ... ] && x=y`: under `set -e` a false test makes the list
+    # return 1 and would take this subshell with it, losing the marker.
+    failed=
+    if [ "$agen" != 0 ]; then
+      failed="${failed:+$failed, }a stale generated artifact"
+    fi
+    if [ "$tsc_status" != 0 ]; then
+      failed="${failed:+$failed, }typecheck"
+    fi
+    if [ "$esl_status" != 0 ]; then
+      failed="${failed:+$failed, }eslint"
+    fi
+
     {
       if [ "$first" = "$head" ]; then
-        echo "main is missing a regeneration, first seen at $head (this land)."
+        echo "main is red on $failed, first seen at $head (this land)."
       else
         behind=$(git rev-list --count "$first..HEAD" 2>/dev/null || echo '?')
-        echo "main has been missing a regeneration since $first, $behind" \
-          "commit(s) back."
-        echo "$head is where it was last re-checked, NOT what staled it."
+        echo "main has been red since $first, $behind commit(s) back."
+        echo "Now failing: $failed."
+        echo "$head is where it was last re-checked, NOT what broke it."
       fi
-      echo "Fix: pnpm autogen, then commit what it writes."
       echo
-      echo "(Checked against the working tree, so an artifact named below may be"
+      echo "(Every gate reads the working tree, so what one names below may be"
       echo "another checkout's uncommitted edit rather than the commit that landed.)"
       echo
-      # A crashed generator's diagnostic is inline, above the summary that
-      # names it -- so that case takes a window, and only the stale case takes
-      # the filter below, which would drop exactly that diagnostic.
-      #
-      # The filter is anchored on the summary block rather than written as "not
-      # the passing lines": every generator words its own success differently
-      # ("up to date", "match their source", ": up to date"), so excluding them
-      # is a list that grows quietly, while the summary is one line the runner
-      # itself writes and already names every stale artifact. Anything earlier
-      # saying "out of date" comes along, since that is where the path and the
-      # per-checker fix live. This used to be `grep -A20`, which pulled in
-      # twenty lines of other checkers reporting success.
-      if printf '%s\n' "$out" | grep -q 'did not run to completion'; then
-        printf '%s\n' "$out" | tail -40
-      else
-        summary=$(printf '%s\n' "$out" | awk '
-          /generated artifact\(s\) out of date/ { tail = 1 }
-          tail { print; next }
-          /out of date/ { print }')
-        # An output shape neither branch recognizes is still worth showing.
-        if [ -n "$summary" ]; then
-          printf '%s\n' "$summary"
+      if [ "$agen" != 0 ]; then
+        echo "Fix the artifact: pnpm autogen, then commit what it writes."
+        echo
+        # A crashed generator's diagnostic is inline, above the summary that
+        # names it -- so that case takes a window, and only the stale case takes
+        # the filter below, which would drop exactly that diagnostic.
+        #
+        # The filter is anchored on the summary block rather than written as "not
+        # the passing lines": every generator words its own success differently
+        # ("up to date", "match their source", ": up to date"), so excluding them
+        # is a list that grows quietly, while the summary is one line the runner
+        # itself writes and already names every stale artifact. Anything earlier
+        # saying "out of date" comes along, since that is where the path and the
+        # per-checker fix live. This used to be `grep -A20`, which pulled in
+        # twenty lines of other checkers reporting success.
+        if printf '%s\n' "$out" | grep -q 'did not run to completion'; then
+          printf '%s\n' "$out" | tail -40
         else
-          printf '%s\n' "$out" | tail -20
+          summary=$(printf '%s\n' "$out" | awk '
+            /generated artifact\(s\) out of date/ { tail = 1 }
+            tail { print; next }
+            /out of date/ { print }')
+          # An output shape neither branch recognizes is still worth showing.
+          if [ -n "$summary" ]; then
+            printf '%s\n' "$summary"
+          else
+            printf '%s\n' "$out" | tail -20
+          fi
         fi
+        echo
+        echo "To find what staled one: git log -1 -- <its path> is the last"
+        echo "regeneration, and the commits touching its inputs since then are"
+        echo "the suspects."
+        echo
       fi
-      echo
-      echo "To find what staled one: git log -1 -- <its path> is the last"
-      echo "regeneration, and the commits touching its inputs since then are"
-      echo "the suspects."
+
+      # Both of these print their own file:line, so they are quoted rather
+      # than summarized -- there is no per-checker fix line to dig out the
+      # way there is for a stale artifact, and the error IS the instruction.
+      if [ "$tsc_status" != 0 ]; then
+        echo "Typecheck. A green \`pnpm test\` says nothing about this --"
+        echo "jest strips types -- and \`build:esm\` compiles only what we"
+        echo "publish, so it never reaches products/."
+        printf '%s\n' "$tsc" | grep -E 'error TS' | head -20 || true
+        echo
+      fi
+
+      if [ "$esl_status" != 0 ]; then
+        echo "eslint, which owns the guards oxlint cannot do."
+        printf '%s\n' "$esl" | grep -E '^/|error ' | head -20 || true
+        echo
+      fi
     } >"$marker" 2>/dev/null || true
   fi
 ) </dev/null >/dev/null 2>&1 &
