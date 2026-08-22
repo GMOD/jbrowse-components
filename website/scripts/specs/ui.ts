@@ -142,6 +142,49 @@ export const repeatVideoFixtures = {
   }),
 }
 
+// The volvox structural-variant CRAM at the window display_settings.md is
+// entirely about. Named once because videos/config.ts films the clicks that set
+// the page's four keys and display_settings_url_snapshot is the state those
+// clicks leave: the tour's last frame and the figure have to be one app.
+const SV_CRAM_TRACK_ID = 'volvox_sv_cram'
+const SV_CRAM_WINDOW = 'ctgA:1-10000'
+// The one setting of the four the tour cannot take. Track height is a
+// ResizeHandle drag, and that component publishes no selector
+// (packages/core/src/ui/ResizeHandle.tsx), so the drag would be two measured
+// viewport coordinates — correct only at the width they were measured at, which
+// is the one thing this corpus refuses. Pinned in BOTH sessions instead, so the
+// route the tour takes is the three menu picks and the height is the page's
+// prose.
+const SV_CRAM_HEIGHT = 250
+
+export const settingsVideoFixtures = {
+  trackId: SV_CRAM_TRACK_ID,
+  // The track as it opens anywhere else — default gray, one read per row, no
+  // clipped ends — with only the height already in place. Everything the tour
+  // sets is still to be set, which is what makes the pileup change three times
+  // on camera.
+  defaultsSession: lgvSession(VOLVOX, {
+    assembly: 'volvox',
+    loc: SV_CRAM_WINDOW,
+    tracks: [{ trackId: SV_CRAM_TRACK_ID, height: SV_CRAM_HEIGHT }],
+  }),
+  // Where the tour ends, and the figure under it. The key order is the order
+  // the page's own JSON fence prints.
+  settledSession: lgvSession(VOLVOX, {
+    assembly: 'volvox',
+    loc: SV_CRAM_WINDOW,
+    tracks: [
+      {
+        trackId: SV_CRAM_TRACK_ID,
+        height: SV_CRAM_HEIGHT,
+        showSoftClipping: true,
+        linkedReads: 'normal',
+        colorBy: { type: 'insertSizeAndOrientation' },
+      },
+    ],
+  }),
+}
+
 // What videos/ui.ts films. The tour ends where these stills already are, so it
 // opens on the session they were captured from rather than one written again.
 export const uiVideoFixtures = {
@@ -571,23 +614,14 @@ export const uiSpecs: ScreenshotSpec[] = [
   // by insert size and orientation), and the page reads them back out of the
   // session JSON under exactly these keys, so a rename breaks both together.
   // The live link opens that end state, which is why the settings live in the
-  // session spec rather than being clicked through as actions.
+  // session spec rather than being clicked through as actions — and why the
+  // session is now the shared one: config/settings_to_json films the route into
+  // this state, so a key spelled differently in either would put a tour and a
+  // still of the same sentence side by side showing two different apps.
   {
     mode: 'url',
     name: 'display_settings_url_snapshot',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1-10000',
-      tracks: [
-        {
-          trackId: 'volvox_sv_cram',
-          height: 250,
-          showSoftClipping: true,
-          linkedReads: 'normal',
-          colorBy: { type: 'insertSizeAndOrientation' },
-        },
-      ],
-    }),
+    url: settingsVideoFixtures.settledSession,
     readyText: 'volvox-sv (cram)',
     settleMs: 5000,
     viewportHeight: 540,

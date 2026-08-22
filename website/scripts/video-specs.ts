@@ -22,6 +22,7 @@ import { liveHref } from '../src/lib/code-base.ts'
 import { PGGB_SEGMENTS_TRACK_JSON } from './specs/graph-ecoli.ts'
 import { HPRC_SEGMENTS_TRACK_JSON } from './specs/graph-hprc.ts'
 import { CACTUS_SEGMENTS_TRACK_JSON } from './specs/pangenome_cactus.ts'
+import { configVideos } from './videos/config.ts'
 import { dog10kVideos } from './videos/dog10k.ts'
 import { epigenomicsVideos } from './videos/epigenomics.ts'
 import { hicVideos } from './videos/hic.ts'
@@ -54,6 +55,7 @@ export const videoSpecs: VideoSpec[] = [
   ...repeatVideos,
   ...hicVideos,
   ...epigenomicsVideos,
+  ...configVideos,
 ]
 
 // The track configs a tour TYPES into the app, paired with the page that prints

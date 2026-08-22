@@ -106,3 +106,19 @@ refilm and none of which the run reports.
   frame it opened at. That is what makes the coarse-to-fine route cheap to
   frame; launching a second graph pane at the end of it costs ~700px and lands
   on the drawing another clip already ends with.
+- **Don't end a tour by scrolling to text.** A panel of JSON or a table of
+  values is the one thing a page does better than a film — the fence beside the
+  clip is searchable, diffable and holds still — and the harness cannot aim at a
+  line anyway. `scrollTo` scrolls the page, `scroll` scrolls horizontally, and
+  the only lever inside a dialog's own field is a caret: a `PageDown` from where
+  the click landed moved fifteen lines between two takes of
+  `config/settings_to_json`, and a `PageDown` to the end is deterministic and
+  stops one screen past the thing you wanted. That tour dropped the scroll and
+  got shorter and clearer. Film the route; let the page carry what it produced.
+- **An action that writes one setting can write another.** `setLinkedReads`
+  nudges a `colorBy` still at `normal` to `insertSizeAndOrientation` as it
+  enters chain mode, so a tour taking a page's settings in the order the page
+  lists them filmed a menu being opened to pick a radio the app had already
+  filled in — a click that changes nothing, reported as success. The frame that
+  says so is the menu BEFORE the click: a radio already selected is the tell,
+  and the fix is usually the ORDER, on the page as well as in the spec.

@@ -1,6 +1,6 @@
 ---
 name: tutorial-tours-from-scratch
-description: Ten proposed video tours that open on an app with no genome or no track, the four starting points the harness can actually drive, and the five machinery gaps that block the deepest one. Read before proposing a tour for an entry-point page or a zero-figure user guide.
+description: Ten proposed video tours that open on an app with no genome or no track, the four starting points the harness can actually drive, and the ten numbered machinery gaps behind them. Read before proposing a tour for an entry-point page or a zero-figure user guide.
 audience: internal
 ---
 
@@ -64,7 +64,8 @@ Ordered by (value to a reader) / (risk the harness chokes). Each names the prose
 it would let its page delete, since a tour that only adds is the weaker kind.
 
 **The first three are filmed** (`9649aa585a`), which took one harness fix and
-one new testid; see the gaps below. Seven remain.
+one new testid; see the gaps below. Two more have since left this list for the
+tutorial one (4 and 10), so the five that remain here are all user guides.
 
 1. ~~**`ui/sequence_search_motifs`**~~ **filmed** — `user_guides/sequence_search.md`, 106 lines
    and **zero figures**, three dialog modes never pictured. Opens on an LGV with
@@ -82,10 +83,12 @@ one new testid; see the gaps below. Seven remain.
    The prose it replaces is *wrong*: the button is `Add new assembly`, there is
    no "Create New Assembly" anywhere in the tree, and there is no `type:` picker
    on the happy path (`packages/core/src/ui/AddGenomePane.tsx:170-200`).
-4. **`genomes/find_a_track`** — `tutorials/genomes_basics.md`. Typing `phyloP`
-   into **Filter tracks** collapses ~570 categories to two hits. The page's
-   headline claim ("a checkbox away") is three clicks in one paragraph with no
-   figure, and a drawer figure was made and cut twice.
+4. ~~**`genomes/find_a_track`**~~ **moved** — it is a TUTORIAL page, so it is
+   candidate 17 in [tutorial-tour-candidates.md](tutorial-tour-candidates.md)
+   now. Same proposal: typing `phyloP` into **Filter tracks** collapses ~570
+   categories to two hits, the page's headline claim ("a checkbox away") is
+   three clicks in one paragraph with no figure, and a drawer figure was made
+   and cut twice.
 5. **`ui/open_connection_hub`** — `user_guides/connections.md`, 105 lines and
    **zero figures**. Opens on `hg38_only.json` (`"tracks": []`), so everything on
    screen at the end came from the hub. Films the behaviour the page asserts and
@@ -103,10 +106,14 @@ one new testid; see the gaps below. Seven remain.
 9. **`ui/plugin_store_install`** — `user_guides/plugin_store.md`, 40 lines with
    **no menu path anywhere on it**. The tour supplies the missing route and shows
    the consequence: a menu that was not there a second earlier.
-10. **`ui/settings_to_json`** — `tutorials/display_settings.md`. Three menu paths
-    and a drag on the left, four JSON keys on the right, one take. Lowest ranked:
-    it rides a CRAM pileup, and a pileup under swiftshader blocks the main thread
-    per animated frame.
+10. ~~**`ui/settings_to_json`**~~ **filmed**, as `config/settings_to_json` and on
+    the tutorial list, where it is candidate 15. **The pileup objection that
+    ranked it tenth here was wrong**, and it is the whole reason this one was
+    ranked last: `volvox-sv.cram` is 42 KB of local `test_data` over 10 kb,
+    against two tours already filming a 200x ONT CRAM and a remote 5mC pileup.
+    A pileup is a size question, not a kind. What was right is the drag — gap 4 below still
+    stands, so the tour takes the three MENU settings and the fixture pins the
+    height.
 
 ## Machinery gaps
 
@@ -148,6 +155,24 @@ one new testid; see the gaps below. Seven remain.
    a VCF URL against the one at `sv_inspector_view.md:44`, and a rehost moves one
    and not the other. **Six of the ten proposals type a URL, and two of the three filmed ones do.** Extending the pair
    to `{ video, doc, text }` needs no new mechanism.
+9. **There is no embedded mode for a tour.** `VideoSpec` carries a `url` and
+   nothing else, and `generate-video.ts` serves the jbrowse-web build
+   (`dev-harness.ts`, `jbrowseWebRoot`); the screenshot harness has had
+   `mode: 'embedded'` with a `viewState` prop all along
+   (`screenshot-embedded.ts`, which is how `embed_linear_genome_view/final` is
+   captured). So the two pages whose subject IS the embedded component are out
+   of reach and were ruled out on that in the 2026-08-21 re-survey:
+   `tutorials/embed_linear_genome_view.md`, and `scrna_pseudobulk.md`'s
+   UMAP-filters-the-rows link, which lives in the react-LGV examples site.
+   Neither is a tour worth building the mode FOR — recorded so the next survey
+   does not re-derive it.
+10. **A dialog's own scrollable field cannot be scrolled by the harness.** Gap 3
+    covers the drawer and the dialog as containers; this is one level in from
+    that. `config/settings_to_json` ends on a 20-row readable-JSON panel whose
+    keys are most of the way down an 80-line session, and the only lever is to
+    click into the textarea and `press` PageDown, which works because it is a
+    real caret rather than because anything supports it. A `scrollWithin`
+    naming a selector would cover both this and gap 3.
 
 No fixture is missing: `empty.json`, `hg38_only.json`, `volvoxhub/hub1/hub.txt`
 and the volvox bigwig/bed/index set all exist and are served by

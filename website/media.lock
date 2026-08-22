@@ -8,6 +8,9 @@
 # copies static/ into dist/.
 #
 # <path> <width>x<height> <bytes> <sha256>
+website/static/media/config/settings_to_json.jpg 1920x860 133369 d8aa0c9b4df0d65e5fdba91b145b9ba19830e22a6ae77b6c758f9216fe7dc46e
+website/static/media/config/settings_to_json.mp4 - 967888 0d2ad4e4f34003a42f2656b1e4ef15c05277c75d0915e708605d03eb1535a092
+website/static/media/config/settings_to_json.vtt - 551 36f4dd3e95b4e01bfbd6786f977a4254a33ce68defb14e706fd6b10b5673de8d
 website/static/media/dog10k/igf1_cluster_route.jpg 1920x960 375899 8797aa9e418fb84ae02f95a68b272f7aa781ab76f10b295a7eb8bb8640469767
 website/static/media/dog10k/igf1_cluster_route.mp4 - 1286750 f3b9bf1f24430327a378c4509321261d98800a7421db68516754b5db037aba40
 website/static/media/dog10k/igf1_cluster_route.vtt - 235 fe78b77116faaa6acc6dae6693e7dd90a09cb6654b574aa231c4b721cb3763f7

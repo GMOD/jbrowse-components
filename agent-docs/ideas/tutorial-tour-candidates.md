@@ -1,6 +1,6 @@
 ---
 name: tutorial-tour-candidates
-description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. Thirteen are filmed and their entries record what each estimate got wrong; what is left is 14. Read before writing a video spec for a tutorial.
+description: Nineteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it, plus the fifteen untoured pages that should NOT get one and why. Fourteen are filmed and their entries record what each estimate got wrong; what is left is 16, 17, 14, 18 and 19. Read before writing a video spec for a tutorial.
 audience: internal
 ---
 
@@ -12,19 +12,25 @@ the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
 holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
-Coverage: **21 of 43 tutorials carry a tour** — `allvsall_synteny`,
+Coverage: **24 of 43 tutorials carry a tour** — `allvsall_synteny`,
 `analyze_trio`, `bisulfite`, `bxd_qtl`, `cancer_sv`, `chromhmm`,
-`dog10k_selection`, `genomes_proteins` (3), `genomes_synteny`,
-`hg002_haplotypes`, `hic_structural_variants`, `mcscan_synteny_grape_peach`,
-`methylation`, `multiway_synteny_grape_peach_cacao`, `pangenome_ecoli` (4),
+`display_settings`, `dog10k_selection`, `genomes_proteins` (3),
+`genomes_synteny`, `hg002_haplotypes`, `hic_structural_variants`,
+`mcscan_synteny_grape_peach`, `methylation`,
+`multiway_synteny_grape_peach_cacao`, `pangenome_cactus`, `pangenome_ecoli` (4),
 `pangenome_hprc` (2), `repeatmasker_classes`, `sv_multisamples`,
 `sv_visualization_cgiab`, `synteny_visualization`, `tcga_cohort_cnv`,
-`tcga_cohort_mutations`. The other 22 do not.
+`tcga_cohort_mutations`. The other 19 do not.
 
-**Thirteen candidates are filmed and landed** on 2026-08-21 — 1 to 13, one clip
-serving two pages for 3. Their entries stay below with what each actually cost
-and what it corrected, because the next tour on those pages starts from them.
-**What is left is 14**, and it wants its page restructured first.
+**Count it, don't carry it forward.** This line has been wrong twice, both times
+by one and both times because `pangenome_cactus` was left off the list while the
+total was copied from the sentence above it. It is
+`grep -L '<Video ' website/docs/tutorials/*.md`.
+
+**Fourteen candidates are filmed and landed** on 2026-08-21 — 1 to 13 and 15,
+one clip serving two pages for 3. Their entries stay below with what each
+actually cost and what it corrected, because the next tour on those pages starts
+from them.
 
 Every candidate below came out of the ten-agent tutorial audit
 (`tutorial-structure-audit.md` is that audit's structural half). Each names the
@@ -139,6 +145,12 @@ the shape this page's config section prints anyway.
 comparison figure.
 
 ## The rest, ranked
+
+**The numbers are IDs, not the ranking.** `TUTORIAL_TOURS.md` and
+`tutorial-tours-from-scratch.md` cite these by number, so a filmed entry keeps
+the number it was filmed under and a new one takes the next free number.
+**Still to film, best first: 16, 17, 14, 18, 19.** Everything else here is
+filmed, and says what its estimate got wrong.
 
 5. **`epigenomics/bisulfite_contexts`** (`bisulfite.md`) — **FILMED**, 848px
    frame, 43s, and **headless was never in doubt**: 14 kb of Illumina WGBS over
@@ -267,10 +279,182 @@ comparison figure.
     (`tutorial-structure-audit.md`): filming a page whose sections are
     reorderable just films the confusion. Note the audit also found the current
     instruction contradicts the figure it introduces.
+15. **`config/settings_to_json`** (`display_settings.md`) — **FILMED**, 860px
+    frame (sized to the menu and the dialog, not the app), 46s, the longest clip
+    in the corpus. Three settings off ONE open track menu, then `Share` → the
+    dialog's settings icon → `Plaintext JSON` → `Show readable JSON`. The second
+    half is a dialog that CHANGES SHAPE twice: the mode is a radio inside a
+    `CascadingMenuButton` rather than a control on the dialog's face, picking it
+    refires the fetch, and only then does a checkbox exist to tick, and only
+    then a panel to read. The page said "click Share, choose Plaintext JSON, and
+    tick Show readable JSON", which reads as three controls on one face, two of
+    which are not there when it opens.
+
+    **It found three defects in the page, the most any tour has.** `Color by...`
+    has a `Paired end` level the page did not spell, so a reader following it
+    landed on six basic schemes with no such row in them (the first take died on
+    the `waitForText`). The fence under "Ask JBrowse what you just set" printed
+    the settings inside the view's `displays` array, and the app does not put
+    them there — all three are `setConf` writes and land in the session's
+    `trackConfigDeltas`, which is what the dialog prints. And the bullets were in
+    an order that made one of them a no-op: `setLinkedReads` nudges a `colorBy`
+    still at `normal` to `insertSizeAndOrientation` on the way into chain mode,
+    so taking pairs first left the colour pick already made. Colour goes first
+    now, on the page and in the clip.
+
+    **What it does not do is scroll the readable-JSON panel to the keys**, and
+    that was the last thing decided. Twenty rows, an ~80-line session, and the
+    only lever is a caret: PageDown from wherever the click landed moved fifteen
+    lines between two takes, and PageDown to the end is deterministic and stops
+    one screen past them. Reading text off a moving film lost to the fence
+    beside it — the clip carries the route and the page carries the keys, which
+    is the division this corpus is built on.
+
+    Two estimates corrected for whoever is next. The pileup objection that
+    ranked this last of ten in `tutorial-tours-from-scratch.md` was wrong:
+    `volvox-sv.cram` is 42 KB of local `test_data` over 10 kb, and a pileup is a
+    size question rather than a kind. And the run's `PAGE BACKGROUND UNDER THE
+    APP` is a false positive here — the app is 456px, and the two things the
+    frame is actually for, a ten-row `Show...` submenu and the dialog with its
+    panel open, reach 808 and 717.
+16. **`genomes_basics/gnomad_filter`** (`genomes_basics.md`) — `Track menu →
+    Filter by...` on gnomAD v4.1 Exomes, the empty **Add track filters** dialog,
+    one jexl line typed into it, the track redrawing in one colour, and then the
+    same menu row reading **Filter by... (1)** and having become a submenu.
+    **The only control in the corpus renamed by the click before it** —
+    `packages/core/src/ui/filterMenuItems.ts` builds the label from the count
+    and switches the row to a `subMenu` past one, so a reader who reopens the
+    menu is on a different click path from the one they were shown. The redraw
+    it ends on is asserted at `genomes_basics.md:176-178` and pictured nowhere,
+    since `genomes_basics/gnomad_filters` was deleted on review. Risk:
+    hgdownload is the slowest host any of these figures touch, so budget the
+    ready gate; and nothing pairs the typed jexl with the page's copy of it,
+    which is gap 8.
+17. **`genomes_basics/find_a_track`** (`genomes_basics.md`) — Open track
+    selector → `phyloP` into **Filter tracks** → tick **Basewise Conservation
+    (phyloP) - 100-way vertebrate alignment** → the lane draws over TP53. Was
+    proposal 4 in `tutorial-tours-from-scratch.md`. **There is no figure and
+    there is not going to be one**: one was made and cut twice, because a filter
+    box with a word typed in it and a ticked checkbox are what the sentence
+    beside them already says, so the frames carried the app's chrome and no
+    result. A film is the form that carries the result, and the page banks on
+    this route twice more without ever showing it ("the others are the same two
+    clicks", "the same two clicks reach the rest of the catalog"). The cheapest
+    thing on the page. Do NOT fold the search route in beside it: pressing Enter
+    on `TP53` opens the name index's own gene track as well, which the page
+    never mentions and a still declared its way past.
+18. **`orthofinder_synteny/same_scale`** (`orthofinder_synteny.md`) — the view
+    menu's **Show all regions - each row fit to width** → **Show all regions -
+    same bp per pixel**, one radio, six rows visibly re-scaling from
+    equal-length to genome-length, which is what `:82-85` describes and no
+    figure holds. `keepMenuOpen: false` on both rows, so it is the one radio
+    tour that needs no Escape-and-blur. **Blocked twice**: the target is the
+    heaviest figure in `specs/synteny.ts` by its own comment (269,656 gene
+    links, a 300s ready gate, the sole synteny failure on the first CI sweeps),
+    and `tutorial-structure-audit.md:32-37` condemns the page as three datasets
+    with the dependency arrow running backwards through half of it. Re-rank it
+    after the respine and after the re-render `TODO.md` has queued for those
+    figures.
+19. **`local_ancestry/cluster_painting`** (`local_ancestry.md`) — `Clustering →
+    Cluster rows by similarity` on the ancestry painting. The prose at
+    `:304-306` is genuinely orphaned: `dog10k-wolfdog-ancestry-clustered` was
+    deleted, so what that figure knew is a paragraph with no picture. **It does
+    not fit the frame.** The claim is about the 243-animal painting, whose 486
+    rows were a 2,610px capture, against a 1920-wide encode ceiling and a 960
+    default height; filming the 64-row named track instead films rows already in
+    descending wolf-fraction order, where the reorder barely moves and "with no
+    access to the breed names" mostly evaporates. Revisit if a per-clade cut of
+    that BED is ever hosted.
+
+## Pages that should not get a tour
+
+From a re-survey of every untoured page on 2026-08-21. This half is worth as
+much as the ranking: each of these looks like a candidate from the index and
+stops being one on the page.
+
+**No route on the page at all.** A pipeline page whose payoff is a static
+comparison is a still's job by construction, and a tour of it would retire no
+prose.
+
+- **`dtu.md`** — the only sentence containing "click" is an aside about where an
+  isoform's numbers live. Six sections of shell and one JSON fence.
+- **`homoeolog_synteny.md`** — no click, menu, dialog or re-layout anywhere. Its
+  one control (`dN/dS`) is named as the destination of a config value. The
+  dotplot also opens in ~300s.
+- **`selection_pressure.md`** — structurally the best-formed tutorial of the set
+  and therefore the emptiest: one palette radio and one ribbon click, both
+  within ten lines of the page's only figure, which already shows the first
+  one's result. **Prose to fix instead**: `:141` spells `Color by... → dN/dS`,
+  and on a `LinearSyntenyView` that mode is a flat radio on the header's palette
+  button with no `Color by...` parent.
+- **`ld_mosquitoes.md`** — every state it names is a config slot (`groupBy`,
+  `colorBy`, `referenceDrawingMode`, `ldMetric`, `minorAlleleFrequencyFilter`),
+  and the one menu that could carry a tour is never written as a menu path. Its
+  figure's own frame is 1385px, past the 960 default. Sections freely
+  reorderable.
+- **`sv_callset_review.md`** — a CLI page that says so at `:96-97` ("no browser
+  is involved"). **The fix is an embed, not a shoot**: its one app section hands
+  off to two routes already filmed on the same COLO829 der(3) junction its
+  figure is of, and `sv/derivative_allele_route` already serves two pages.
+
+**The route is real and already filmed somewhere else.** A second clip of one
+cascade teaches a reader nothing new about the app.
+
+- **`dog10k_lof.md`** — one clause naming `Clustering → Cluster rows by
+  similarity`, which is `dog10k/igf1_cluster_route` on the sibling page, here
+  over 1,987 rows instead of 167 and behind a 180s RPC.
+- **`ld_human.md`** — same menu, same display type, same dialog as
+  `dog10k/igf1_cluster_route`, at the corpus's slowest open (that page's figures
+  need 600s and 300s ready gates) and a 1238px frame it cannot shed without
+  dropping the LD triangle the page is about.
+- **`population_cnv.md`** — `Clustering → Cluster rows by score...` would be the
+  SIXTH clip of that cascade, after tcga_cohort_cnv, dog10k_selection, chromhmm,
+  pangenome_hprc, sv_multisamples and the clustering user guide. **Do the still
+  instead**: both heatmap figures set `runClustering: true`, so "rows are in
+  file order until you do" is pictured nowhere, and an unclustered twin costs
+  one spec and is diffable.
+- **`scatac_pseudobulk.md`** — the multi-wiggle add-track form is the best
+  MECHANISM the survey found (a grid that does not exist until **Add tracks** is
+  pressed, an editable Name column, a Submit that unlocks on three conditions),
+  and it is on the wrong page: the section is one of three the page declares
+  interchangeable, its home is `user_guides/multiquantitative_track.md`, and
+  `ui/bulk_add_tracks` is its near twin. **It belongs on the user-guide list.**
+
+**The harness cannot reach it.**
+
+- **`cli_desktop.md`** and `quickstart_desktop.md` — desktop cannot be filmed at
+  all; the handoff carries why, so nobody re-derives it.
+- **`embed_linear_genome_view.md`** — no route (four code fences and a
+  `<details>`), and no way to film one if there were: `VideoSpec` carries only a
+  `url` and the generator serves the jbrowse-web build. Gap 9.
+- **`scrna_pseudobulk.md`** — delegates its one UI workflow to
+  `scatac_pseudobulk` in its own words, and the only thing on it that MOVES (the
+  UMAP filtering the rows, a gene selection recolouring the cells) lives in the
+  react-LGV examples site. Also under an open merge question with its sibling.
+
+**The page has to be restructured first.** Filming a page whose sections are
+reorderable just films the confusion.
+
+- **`dog10k_svs.md`** — two single-step interactions on 618 lines, each already
+  in a figure within fifty lines of it, and `tutorial-structure-audit.md:45-50`
+  names the page as the reorderable case in its own TL;DR's words.
+- **`mappability_qc.md`** — it HAS the shape: three numbered steps at `:168-179`
+  with no figure near them, and a `Score → Summary score mode` flip whose losing
+  half is in no picture. Both sit on a 30x remote CRAM that needs `forceLoad` to
+  draw at all and whose still costs a 600s ready gate. Revisit with `--headed`
+  if that pileup is ever cheap enough.
+- **`population_genomics.md`** — the lightest here to film and the least worth
+  it. Its one re-layout names **Show all regions in assembly**, which is not
+  what the figure's session does (`popgen/fst_in2lt_2L` pins six
+  `displayedRegionNames` against a dm6 hub carrying every scaffold), so a tour
+  would film a picture the page does not contain. **Two prose fixes instead**:
+  say what `:267` is actually of, and note that the `groupBy` re-sort at
+  `:322-324` has no UI at all, since `setGroupBy` has no call site outside
+  tests.
 
 ## Traps, in the order they bit
 
-All six cost a take or a debug cycle on 2026-08-21.
+All of them cost a take or a debug cycle on 2026-08-21.
 
 - **Rebuild `@jbrowse/web` before any run.** The generator serves the BUILD's
   assets, so a component edit made after the build is invisible and the failure
@@ -290,11 +474,29 @@ All six cost a take or a debug cycle on 2026-08-21.
 - **`pnpm figures:push --filter <name>`**, never bare, then commit `media.lock`.
   A figure store with nothing on disk is skipped rather than emptied, which is
   what makes a media-only push safe from a worktree that never pulled figures.
+- **Don't film a reader reading.** A tour that ends by scrolling a text panel to
+  the line that matters is filming the one thing a page does better: the fence
+  beside the clip is searchable, diffable and holds still.
+  `config/settings_to_json` spent three takes trying to land a 20-row JSON panel
+  on four keys before dropping the scroll entirely, and the clip got shorter and
+  clearer for it. A clip carries the route; the page carries the text the route
+  produced.
+- **A menu path a page prints is a claim, and a `waitForText` is what checks
+  it.** Two of the four page defects this thread has found were levels missing
+  from a cascade, and both showed up as a step dying by name rather than as
+  anything anyone read. Write the path the page prints, not the path you
+  verified in the source, and let the run disagree.
+- **Check whether the app already did the next step for you.** An action that
+  writes one setting can nudge another (`setLinkedReads` sets `colorBy` on the
+  way into chain mode), so a tour taking a page's bullets in order can film a
+  click that changes nothing and report success. The frame to pull is the menu
+  BEFORE the click: a radio already filled in is the tell.
 
 ## What is still missing from the harness
 
 In `tutorial-tours-from-scratch.md`, which is where the numbered gaps live. The
-two that reach this list: **a typed URL is paired with no page**, so a rehost
-moves the film and the prose apart silently (six proposals type one), and
+three that reach this list: **a typed URL is paired with no page**, so a rehost
+moves the film and the prose apart silently (six proposals type one),
 **`scrollTo` cannot scroll a drawer**, which caps how tall a drawer-subject tour
-can be.
+can be, and **nothing can position a scrollable field inside a dialog** (gap
+10), which is what took the scroll out of `config/settings_to_json`.

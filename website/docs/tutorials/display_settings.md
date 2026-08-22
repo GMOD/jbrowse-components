@@ -40,10 +40,11 @@ default gray.
 
 Open the track's menu from the track label, and set:
 
+- **Color by... → Paired end → Insert size and orientation**, which leaves
+  normally-paired reads gray and colors the rest by how they disagree with the
+  reference.
 - **Read connections → View as pairs / link supplementary alignments**, which
   puts each read on the same row as its mate.
-- **Color by... → Insert size and orientation**, which leaves normally-paired
-  reads gray and colors the rest by how they disagree with the reference.
 - **Show... → Show soft clipping**, which draws the clipped ends the aligner
   trimmed off.
 
@@ -57,24 +58,31 @@ of paired rows fits.
 Three menu clicks and a drag changed four settings, and each one has a name you
 can type into a config. JBrowse will tell you what those names are.
 
-In **JBrowse Web**, click **Share**, choose **Plaintext JSON**, and tick **Show
-readable JSON**. In **JBrowse Desktop**, choose **File → Session → Save session
-as...**, save a `volvox.jbrowse` file, and open it in a text editor.
+In **JBrowse Web**, click **Share**, take **Plaintext JSON** from the settings
+icon in the dialog, and tick the **Show readable JSON** box that arrives with
+it. In **JBrowse Desktop**, choose **File → Session → Save session as...**, save
+a `volvox.jbrowse` file, and open it in a text editor.
 
-Both hold the same JSON. Find the track you were editing and its display carries
-what you clicked:
+<Video src="/media/config/settings_to_json.mp4" caption="Three settings taken from the volvox-sv (cram) track menu, then the share dialog's settings icon, Plaintext JSON, and the readable session panel that arrives with it." />
+
+Both hold the same JSON. Each of the four is a write to the track's own config
+rather than to the view's copy of it, so they arrive together under
+`trackConfigDeltas`, keyed by the track id you edited:
 
 ```json
-"displays": [
-  {
-    "type": "LinearAlignmentsDisplay",
-    "configuration": "volvox_sv_cram-LinearAlignmentsDisplay",
-    "height": 250,
-    "linkedReads": "normal",
-    "colorBy": { "type": "insertSizeAndOrientation" },
-    "showSoftClipping": true
+"trackConfigDeltas": {
+  "volvox_sv_cram": {
+    "displays": [
+      {
+        "displayId": "volvox_sv_cram-LinearAlignmentsDisplay",
+        "height": 250,
+        "linkedReads": "normal",
+        "colorBy": { "type": "insertSizeAndOrientation" },
+        "showSoftClipping": true
+      }
+    ]
   }
-]
+}
 ```
 
 `height`, `linkedReads`, `colorBy` and `showSoftClipping` are the setting names,
