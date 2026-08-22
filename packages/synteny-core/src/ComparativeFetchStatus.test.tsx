@@ -1,5 +1,5 @@
 import { DisplayUIProvider } from '@jbrowse/display-ui'
-import { render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
 
 import ComparativeFetchStatus from './ComparativeFetchStatus.tsx'
 
@@ -17,9 +17,20 @@ import type { ReactNode } from 'react'
 // asserts both: a seam wired one way round reads as a styling bug rather than a
 // missing provider.
 
-const loading: ComparativeStatusModel = {
-  loading: true,
+// The buttons' wiring is on every model this component takes
+// (`SyntenyFetchStateMixin` gives both displays all three members), so it is
+// defaulted here and each test overrides only the one it drives.
+const idle: ComparativeStatusModel = {
+  loading: false,
   refetching: false,
+  fetchCanceled: false,
+  cancelFetchByUser: () => {},
+  reload: () => {},
+}
+
+const loading: ComparativeStatusModel = {
+  ...idle,
+  loading: true,
   statusMessage: 'Downloading',
   statusProgress: 0.5,
 }
@@ -33,8 +44,13 @@ function renderIn(wrap: (children: ReactNode) => ReactNode, display = loading) {
 // `LoadingOverlay` styles itself with `makeStyles`, which emits an *emotion*
 // class carrying no `Mui` in its name, and its only true Material elements are
 // the cancel and retry `IconButton`s — which render only when a caller passes
-// those handlers, and this caller passes neither. So the Material path scores
+// those handlers, and this caller passed neither. So the Material path scored
 // zero on the census that was supposed to be watching it.
+//
+// It passes both handlers now, and the census still cannot see this: the cancel
+// waits out a five-second anti-accident delay and the retry only exists over an
+// already-cancelled load, so neither is on screen when a page settles or during
+// the second a fetch takes.
 //
 // The class attribute is the discriminator instead: the plain set styles inline
 // and leaves it empty, the Material one always has an emotion class. Same test
@@ -69,7 +85,7 @@ test('a refetch draws the background chip rather than the scrim', async () => {
   // reports through the corner rather than covering the canvas.
   const { findByTestId, queryByTestId } = renderIn(
     children => <DisplayUIProvider>{children}</DisplayUIProvider>,
-    { loading: false, refetching: true, statusMessage: 'Refetching' },
+    { ...idle, refetching: true, statusMessage: 'Refetching' },
   )
 
   await findByTestId('progress-chip')
@@ -79,8 +95,76 @@ test('a refetch draws the background chip rather than the scrim', async () => {
 test('an idle display draws neither', () => {
   const { container } = renderIn(
     children => <DisplayUIProvider>{children}</DisplayUIProvider>,
-    { loading: false, refetching: false },
+    idle,
   )
 
   expect(container.innerHTML).toBe('')
+})
+
+// The cancel and the retry, which this binding passed neither of for as long as
+// it existed — so these were the only two displays in the product with no way
+// to stop a slow load, while the component underneath supported both the whole
+// time (ADR-054 §2 recorded it as a feature gap). Both sets get them, because
+// both read the same three members off the same model.
+//
+// Which button each test drives is a matter of which delay it can avoid, not of
+// which set is interesting: the plain set draws its Cancel the moment the
+// overlay is visible, while the Material one holds it back five seconds.
+
+test('a host set gets the cancel, wired to the model', () => {
+  const cancelFetchByUser = jest.fn()
+  const { getByTestId } = renderIn(
+    children => <DisplayUIProvider>{children}</DisplayUIProvider>,
+    { ...loading, cancelFetchByUser },
+  )
+
+  fireEvent.click(getByTestId('loading-overlay-cancel'))
+  expect(cancelFetchByUser).toHaveBeenCalledTimes(1)
+})
+
+test("JBrowse's own set gets the retry, over a cancelled load", () => {
+  // `fetchCanceled` is durable by design — nothing in the comparative family
+  // restarts the fetch on its own, not even a viewport change — so this button
+  // is the whole way back, and `loading` staying true (it is `!ready`) is what
+  // keeps the overlay carrying it on screen.
+  const reload = jest.fn()
+  const { getByTestId, queryByTestId } = renderIn(children => children, {
+    ...loading,
+    fetchCanceled: true,
+    reload,
+  })
+
+  expect(queryByTestId('loading-overlay-cancel')).toBeNull()
+  fireEvent.click(getByTestId('loading-overlay-retry'))
+  expect(reload).toHaveBeenCalledTimes(1)
+})
+
+describe("JBrowse's own set, past the anti-accident delay", () => {
+  // `LoadingOverlay` offers Cancel only after the overlay has been continuously
+  // visible for five seconds, so a fast load cannot be cancelled by a stray
+  // click. That timer is component state, which is why this is the one test
+  // here that needs fake ones.
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    cleanup()
+    jest.runOnlyPendingTimers()
+    jest.useRealTimers()
+  })
+
+  test('the cancel appears and reaches the model', () => {
+    const cancelFetchByUser = jest.fn()
+    const { getByTestId, queryByTestId } = renderIn(children => children, {
+      ...loading,
+      cancelFetchByUser,
+    })
+
+    expect(queryByTestId('loading-overlay-cancel')).toBeNull()
+    act(() => {
+      jest.advanceTimersByTime(5000)
+    })
+    fireEvent.click(getByTestId('loading-overlay-cancel'))
+    expect(cancelFetchByUser).toHaveBeenCalledTimes(1)
+  })
 })

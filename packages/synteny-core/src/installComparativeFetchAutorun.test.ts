@@ -13,11 +13,14 @@
 // (so its reads are the dependency set), `run` owns every await, and `commit`
 // is synchronous and unreachable unless the fetch is still current.
 
+import { isStopped } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { SyntenyFetchStateMixin } from './SyntenyFetchStateMixin.ts'
 import { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 
-import type { RpcStatus } from '@jbrowse/core/util'
+import type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
+import type { RpcStatus, StopToken } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
@@ -32,11 +35,12 @@ function deferred<T>() {
   return { promise, resolve, reject }
 }
 
-const TestDisplay = types
-  .model('TestDisplay', { id: types.optional(types.identifier, 'd1') })
+// Everything the skeleton wants that a real display gets from `BaseDisplay` —
+// the status members, plus this test's stand-ins for the fetch inputs.
+const TestDisplayBase = types
+  .model('TestDisplayBase', { id: types.optional(types.identifier, 'd1') })
   .volatile(() => ({
     error: undefined as unknown,
-    fetching: false,
     statusMessage: undefined as RpcStatus | undefined,
     // the fetch input, standing in for `currentFetchKey`. Observable, so
     // changing it refires the autorun the way a zoom does.
@@ -44,28 +48,10 @@ const TestDisplay = types
     // read inside `untracked` by prepare below, so it must NOT refire anything
     geometry: 0,
     gated: false,
-    // `SyntenyFetchStateMixin`'s retry counter, which the autorun reads
-    // unconditionally
-    reloadCounter: 0,
-  }))
-  .views(self => ({
-    get adapterConfig() {
-      return { type: 'TestAdapter' }
-    },
-    // `SyntenyFetchStateMixin`'s hook, read by the retry check the skeleton
-    // installs. `gated` is a state this display deliberately does not fetch in,
-    // which is exactly what the hook names — so a decline there is not the dead
-    // Retry the check hunts for.
-    get fetchInert() {
-      return self.gated
-    },
   }))
   .actions(self => ({
     setError(error?: unknown) {
       self.error = error
-    },
-    setFetching(fetching: boolean) {
-      self.fetching = fetching
     },
     setStatusMessage(status?: RpcStatus) {
       self.statusMessage = status
@@ -79,8 +65,27 @@ const TestDisplay = types
     setGated(flag: boolean) {
       self.gated = flag
     },
-    reload() {
-      self.reloadCounter += 1
+  }))
+
+// The real `SyntenyFetchStateMixin`, composed in the order both displays
+// compose it — after the model carrying `BaseDisplay`'s status members — rather
+// than hand-rolled volatiles. `fetching`, `reloadCounter`, `fetchCanceled`,
+// `reload()` and `cancelFetchByUser()` are the mixin's, so the retry and cancel
+// tests below drive the same two actions the overlay's buttons do, against the
+// gate the skeleton actually installs. The pair is only meaningful together:
+// the mixin holds the state and the skeleton holds the stop.
+const TestDisplay = types
+  .compose('TestDisplay', TestDisplayBase, SyntenyFetchStateMixin())
+  .views(self => ({
+    get adapterConfig() {
+      return { type: 'TestAdapter' }
+    },
+    // overrides the mixin's default-false hook, which the retry check the
+    // skeleton installs reads. `gated` is a state this display deliberately
+    // does not fetch in, which is exactly what the hook names — so a decline
+    // there is not the dead Retry the check hunts for.
+    get fetchInert() {
+      return self.gated
     },
   }))
 
@@ -119,7 +124,7 @@ async function setup({
   run,
   prepare,
 }: {
-  run: (args: Args) => Promise<string>
+  run: (args: Args, ctx: ComparativeFetchContext) => Promise<string>
   prepare?: (display: TestDisplayModel) => Args | undefined
 }) {
   const root = TestRoot.create({ session: { display: {} } })
@@ -138,7 +143,7 @@ async function setup({
       }
       return args
     },
-    run: args => run(args),
+    run: (args, ctx) => run(args, ctx),
     commit: (result, args) => {
       committed.push({ result, args })
     },
@@ -420,4 +425,111 @@ test('a reload the gate does not clear is reported as a dead button', async () =
 
   expect(prepared).toHaveLength(1)
   expect(takeContractReports().join('\n')).toMatch(/Retry is a dead button/)
+})
+
+// The cancel half, which these two displays were the only ones without. Every
+// assertion here is about one of the three things a cancel has to be: it stops
+// the work, it survives the next input change, and it is not a one-way door.
+describe('the user cancel', () => {
+  it('stops the in-flight RPC and drops its result', async () => {
+    let stopToken: StopToken | undefined
+    const gate = deferred<string>()
+    const { display, committed } = await setup({
+      run: (_args, ctx) => {
+        stopToken = ctx.stopToken
+        return gate.promise
+      },
+    })
+    expect(display.fetching).toBe(true)
+
+    display.cancelFetchByUser()
+
+    // the worker's half: the token the RPC is holding is signalled, which is
+    // the only thing that stops the reads still in flight
+    expect(isStopped(stopToken)).toBe(true)
+    expect(display.fetchCanceled).toBe(true)
+    // the run's `finally` writes `fetching` only while its own guard is open,
+    // and the cancel closed it — so nothing but the cancel itself ever will
+    expect(display.fetching).toBe(false)
+
+    // and the display's half: a fetch the user stopped watching must not
+    // commit when it lands. Without the stop above it still would — nothing
+    // else rotates the token, so `isCurrent()` would stay true and the plot
+    // would appear over a cancelled load.
+    gate.resolve('late')
+    await settle()
+    expect(committed).toEqual([])
+    expect(display.fetching).toBe(false)
+  })
+
+  it('is durable: an input change does not restart the load', async () => {
+    const { display, prepared } = await setup({
+      run: () => Promise.resolve('r1'),
+    })
+    await settle()
+    expect(prepared).toHaveLength(1)
+
+    display.cancelFetchByUser()
+    await settle()
+
+    // the zoom/pan that would refetch on any other run
+    display.setFetchKey('k2')
+    await settle()
+    expect(prepared).toHaveLength(1)
+
+    // …and it does not lapse on its own either, however long the debounce runs
+    await settle()
+    expect(prepared).toHaveLength(1)
+    expect(display.fetchCanceled).toBe(true)
+  })
+
+  it('reload() reopens the gate — the read order that keeps Retry alive', async () => {
+    // The trap: the gate closes, so a body that returned before reading
+    // `reloadCounter` would drop the one observable that can reopen it, and
+    // Cancel would leave a Retry button that does nothing for the rest of the
+    // session. Both reads are above the gate for that reason.
+    const gates = [deferred<string>(), deferred<string>()]
+    let n = 0
+    const { display, prepared, committed } = await setup({
+      run: () => gates[n++]!.promise,
+    })
+    display.cancelFetchByUser()
+    await settle()
+    expect(prepared).toHaveLength(1)
+
+    display.reload()
+    await settle()
+
+    expect(display.fetchCanceled).toBe(false)
+    expect(prepared).toHaveLength(2)
+    gates[1]!.resolve('after retry')
+    await settle()
+    expect(committed.map(c => c.result)).toEqual(['after retry'])
+  })
+
+  // The skip is a foundation gate, not the display's own decline, so it
+  // consumes an outstanding `reloadCounter` bump without reporting one — the
+  // gate the contract check would otherwise call a dead Retry. `gated` is the
+  // outcome that says so; the run-wide gate in config/jest/contractGate.js is
+  // what fails this test if it ever says `declined` instead.
+  it('a run the cancel skipped is not reported as a dead Retry', async () => {
+    const { display, prepared } = await setup({
+      run: () => new Promise(() => {}),
+    })
+    await settle()
+    expect(prepared).toHaveLength(1)
+
+    // Retry and then Cancel again inside one debounce window, which is the one
+    // sequence that puts an outstanding reload bump and a skipped run on the
+    // same autorun pass — a user clicking both, or clicking Retry on a load
+    // they immediately think better of.
+    display.reload()
+    display.cancelFetchByUser()
+    await settle()
+
+    expect(prepared).toHaveLength(1)
+    // redundant with the run-wide gate, which fails this test on any report;
+    // here to say which report is the one being ruled out
+    expect(takeContractReports()).toEqual([])
+  })
 })

@@ -385,7 +385,13 @@ button is present, looks live, and does nothing. Two shapes have failed it:
   families had a version of this hole; the cancel term lives inside
   `computeLoadingTerm` now rather than in either family's getter. Pinned by
   `plugins/arc/src/shared/displayPhase.test.ts` and
-  `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`.
+  `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`. The
+  comparative family reaches the same place by a different route and is worth
+  knowing about before "fixing" it: its `loading` is `!ready && !error`, with no
+  `fetching` term (deliberately — that would blink the overlay off during the
+  pre-refetch debounce gap), so the scrim carrying Retry survives a cancel
+  because no data arrived. Add a `fetching` term there and the affordance goes
+  with it.
 
 The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can leave that state. Cancel is one of them.

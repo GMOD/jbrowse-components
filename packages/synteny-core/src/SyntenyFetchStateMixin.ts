@@ -6,8 +6,9 @@ import { types } from '@jbrowse/mobx-state-tree'
  *
  * The fetch-lifecycle bookkeeping shared by the two comparative displays
  * (LinearSyntenyDisplay, DotplotDisplay): whether an RPC is in flight, the
- * signature of the inputs the held data was fetched for, and the one-shot
- * reversed-assembly flag.
+ * signature of the inputs the held data was fetched for, the one-shot
+ * reversed-assembly flag, and the two members the overlay's buttons are — the
+ * `reloadCounter` behind Retry and the `fetchCanceled` behind Cancel.
  *
  * Composed rather than duplicated so the two displays can't drift on what
  * "loading" versus "refetching" means — the difference decides whether the user
@@ -71,6 +72,41 @@ export function SyntenyFetchStateMixin() {
        * the error banner's Retry would be a button that does nothing.
        */
       reloadCounter: 0,
+      /**
+       * #volatile
+       * True from the moment the user clicks Cancel on the loading overlay
+       * (`cancelFetchByUser`) until `reload()` clears it. Durable and
+       * blocking: `installComparativeFetchAutorun` gates on it, so nothing
+       * restarts the load in the meantime — not a zoom, not a region change,
+       * and no timer.
+       *
+       * That is the deliberate half. These displays sit on single RPCs that can
+       * run for minutes against a remote index, so a cancel any pan quietly
+       * undoes is not a cancel, and a retry that re-arms itself hammers the
+       * server that just failed. The way back is the overlay's Retry button
+       * and nothing else — `LoadingOverlay` draws it off this flag.
+       */
+      fetchCanceled: false,
+      /**
+       * #volatile
+       * Stops the in-flight RPC. `installComparativeFetchAutorun` hands over
+       * its stop-token rotation's `cancel` at install (`setStopActiveFetch`):
+       * the rotation lives in that skeleton's closure, one per install and
+       * beside the fetch that uses it, and this mixin holds no fetch machinery
+       * of its own (ADR-054).
+       *
+       * **A cancel that cannot reach it is not a cancel.** Nothing else
+       * rotates the token, so the run the user stopped watching stays
+       * `isCurrent()` and COMMITS its result when it lands — the plot appears,
+       * the overlay disappears, and the cancel is undone by the fetch it
+       * cancelled. Stopping the token is also the only thing that tells the
+       * worker to drop the reads still in flight, which is half of why a user
+       * clicks it.
+       *
+       * A no-op until the skeleton installs, so a display with no fetch
+       * autorun can still be asked.
+       */
+      stopActiveFetch: () => {},
     }))
     .views(() => ({
       /**
@@ -113,14 +149,62 @@ export function SyntenyFetchStateMixin() {
       },
       /**
        * #action
+       * Install-time wiring, called once by
+       * `installComparativeFetchAutorun` — see `stopActiveFetch` for why the
+       * stop arrives from there rather than being built here.
+       */
+      setStopActiveFetch(stop: () => void) {
+        self.stopActiveFetch = stop
+      },
+      /**
+       * #action
+       * The loading overlay's Cancel. Stops the in-flight RPC and lands in the
+       * durable `fetchCanceled` state, so the fetch autorun's gate holds until
+       * `reload()` reopens it.
+       *
+       * Same name as `FetchMixin`'s, which is what lets one overlay set serve
+       * all three fetch families (`DisplayLoadingOverlayModel` names it). What
+       * has no twin here is the *internal* half of that split, `cancelFetch` —
+       * stop, clear the flag, bump a generation to retrigger — because it
+       * exists there for `clearAllRpcData`, and this family has nothing that
+       * resets a display behind the user's back. `reload()` is the only thing
+       * that reopens the gate, which is exactly the constraint: retry is a
+       * button, never an automatic re-arm.
+       *
+       * Clears `fetching` itself, because nothing else will: the in-flight
+       * run's `finally` writes it only while `isCurrent()`, and the stop above
+       * just closed that guard.
+       */
+      cancelFetchByUser() {
+        self.stopActiveFetch()
+        self.fetching = false
+        self.fetchCanceled = true
+      },
+      /**
+       * #action
        * Re-run the fetch. The display's half of the retry contract
        * (agent-docs/reference/DISPLAYCHROME.md §"The retry contract"): every
        * state that can raise an error banner must be one this
        * actually undoes. Clearing the error is not enough on its own — the
        * autorun re-clears it at the start of each run anyway — so this bumps a
        * counter the autorun tracks, which is what makes the refetch happen.
+       *
+       * It clears `fetchCanceled` as well, and that is the second half rather
+       * than a tidy-up: the cancel is deliberately durable, so this is the only
+       * thing in the family that reopens the autorun's gate. A `reload()` that
+       * bumped the counter alone would wake the autorun into a run the gate
+       * still refuses — the dead Retry `makeRetryContractCheck` reports, and
+       * the one the overlay's own button would be.
        */
       reload() {
+        // The cancel gate, cleared synchronously: the overlay flips off
+        // "Loading canceled" on the click rather than a debounce later, and
+        // the gate is already open when the counter bump wakes the autorun.
+        // Clearing it here and only here is what keeps `fetchCanceled`
+        // durable — `installComparativeFetchAutorun`'s gate is the reader, and
+        // no fetch clears it on the way past (it cannot be true at a fetch
+        // start, since the gate is above the fetch).
+        self.fetchCanceled = false
         self.reloadCounter += 1
       },
     }))

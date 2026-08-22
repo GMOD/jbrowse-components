@@ -46,6 +46,11 @@ interface ComparativeFetchHost extends IStateTreeNode {
   /** `SyntenyFetchStateMixin`'s retry counter — see the read in the autorun */
   reloadCounter: number
   /**
+   * `SyntenyFetchStateMixin`'s durable user-cancel flag — see the gate in the
+   * autorun, and `setStopActiveFetch` below for the other half of the cancel.
+   */
+  fetchCanceled: boolean
+  /**
    * `SyntenyFetchStateMixin`'s: the states where this display's fetch autorun
    * deliberately never runs, so a `prepare` declining in one of them is not the
    * dead Retry the check below hunts for. Same name and same meaning as
@@ -56,6 +61,13 @@ interface ComparativeFetchHost extends IStateTreeNode {
   setError: (error?: unknown) => void
   setFetching: (fetching: boolean) => void
   setStatusMessage: (status?: RpcStatus) => void
+  /**
+   * Takes this installation's stop for `cancelFetchByUser` to call. The
+   * rotation is a closure here rather than a member there, and a `fetchCanceled`
+   * the RPC outlives is not a cancel — `SyntenyFetchStateMixin.stopActiveFetch`
+   * has the whole argument.
+   */
+  setStopActiveFetch: (stop: () => void) => void
 }
 
 /**
@@ -70,6 +82,25 @@ interface ComparativeFetchHost extends IStateTreeNode {
  * The `finally` clears the loading flags under the same staleness guard: an
  * abort raised while still current is the one exit neither commit nor the
  * error path covers, and it otherwise strands `fetching` true forever.
+ *
+ * **What the tracked half may read.** Two fetch-lifecycle observables are read
+ * in the autorun body — `reloadCounter` and `fetchCanceled` — and both are safe
+ * for the same reason: only a user gesture moves either one. Nothing
+ * fetch-DERIVED may join them, `prepare` included, since it runs inside this
+ * derivation. **`error` is the one that will be reached for**: this skeleton
+ * clears it at the start of every fetch and sets it on failure, so a tracked
+ * read of it turns a single failure into an unbounded retry loop — fetch, fail,
+ * error changes, autorun refires — paced only by the debounce, against the
+ * server that just failed. Same law as `installGlobalFetchAutorun`'s
+ * "`rpcProps()` must never return fetch-derived state", and nothing checks
+ * either one.
+ *
+ * That is also why this family has **no** clear-the-cancel-on-viewport-change
+ * autorun, unlike the LGV per-region one: a comparative cancel is durable until
+ * Retry (`SyntenyFetchStateMixin.fetchCanceled`). If one is ever added, note
+ * that the LGV twin reads `fetchCanceled || error` inside `untracked`
+ * deliberately — that autorun is undelayed, so the same loop there is
+ * synchronous.
  */
 export function installComparativeFetchAutorun<TArgs, TResult>(
   self: ComparativeFetchHost,
@@ -96,6 +127,12 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
   const noteFetchAutorunRun = makeRetryContractCheck(self)
 
   const fetch = createStopTokenRotation(self, self)
+  // The user-facing cancel, handed to the model because the rotation is here.
+  // Wrapped rather than passed by reference so `cancel` can never be called
+  // with arguments it does not declare today.
+  self.setStopActiveFetch(() => {
+    fetch.cancel()
+  })
 
   // The awaits live in here, not in the autorun body. An async autorun stops
   // tracking at its first await, so a read moved below one silently leaves the
@@ -164,6 +201,20 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
       // both of them at once. (`void` because the value is never used; the
       // read is the point.)
       void self.reloadCounter
+      // Tracked in the same breath and for the same reason, but this one is the
+      // mirror image: it CLOSES the gate below. Read it under the counter and
+      // above every bail-out — a run that returned before the counter read
+      // would drop the one observable that can reopen the gate out of the
+      // dependency set, and Cancel would be a one-way door with a Retry button
+      // on it. Order, not just position: counter first, then this, then gate.
+      const canceled = self.fetchCanceled
+      if (canceled) {
+        // 'gated', not 'declined': the skeleton skipped this run before the
+        // display's own `prepare` was consulted, and the overlay standing over
+        // it is offering Retry rather than pretending to load.
+        noteFetchAutorunRun('gated')
+        return false
+      }
       // Teardown mutates observables `prepare` reads before the disposers
       // run, and getContainingView on a detached node warns then throws.
       const args = isAlive(self) ? prepare() : undefined

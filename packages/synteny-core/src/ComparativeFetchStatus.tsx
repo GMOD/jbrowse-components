@@ -10,16 +10,25 @@ import { observer } from 'mobx-react'
 import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 
 /**
- * What the shared status reads. The three getters are
- * `SyntenyFetchStateMixin`'s vocabulary (see there for why `loading` and
- * `refetching` are different questions), plus the status channel every display
- * reports progress through.
+ * What the shared status reads. The getters are `SyntenyFetchStateMixin`'s
+ * vocabulary (see there for why `loading` and `refetching` are different
+ * questions), plus the status channel every display reports progress through.
+ *
+ * The last three are the overlay's two buttons, and they are **required** where
+ * `DisplayLoadingOverlayModel` has them optional: that interface is written for
+ * any display anywhere, while both models this one describes compose
+ * `SyntenyFetchStateMixin` and so have all three. Optional here would let a
+ * display lose its Cancel and its Retry by composing the wrong thing, and the
+ * only symptom is a button nobody can find.
  */
 export interface ComparativeStatusModel {
   loading: boolean
   refetching: boolean
   statusMessage?: string
   statusProgress?: number
+  fetchCanceled: boolean
+  cancelFetchByUser: () => void
+  reload: () => void
 }
 
 // JBrowse's own look, and the only reason this module reaches Material UI.
@@ -38,6 +47,21 @@ const muiStatus: Pick<DisplayChromeOverlays, 'Loading' | 'BackgroundProgress'> =
           progress={model.statusProgress}
           isVisible={visible}
           immediate={immediate}
+          // The cancel and the retry. This binding passed neither for as long
+          // as it existed, which is what made these the only two displays with
+          // no way to stop a slow load — the component supported both the whole
+          // time. Guarded because the props here are typed against
+          // `DisplayLoadingOverlayModel`, where they are optional and undefined
+          // means "draw no button"; `ComparativeStatusModel` requires all
+          // three, so both comparative displays always pass them. Same three
+          // lines as the LGV set's `DisplayLoadingOverlay`.
+          canceled={model.fetchCanceled}
+          onCancel={
+            model.cancelFetchByUser
+              ? () => model.cancelFetchByUser?.()
+              : undefined
+          }
+          onRetry={model.reload ? () => model.reload?.() : undefined}
         />
       )
     }),
@@ -90,6 +114,11 @@ const muiStatus: Pick<DisplayChromeOverlays, 'Loading' | 'BackgroundProgress'> =
  * entries, and `ComparativeStatusModel` already satisfies both of their model
  * shapes structurally. The other three are terminal and error states these views
  * own themselves, per the paragraph above.
+ *
+ * The Cancel and Retry buttons ride that seam for free, and this one binding is
+ * the only place either view draws them: `DisplayLoadingOverlayModel` already
+ * declared `fetchCanceled` / `cancelFetchByUser` / `reload`, so a host's own set
+ * reads them off the same model with nothing added on either side.
  */
 const ComparativeFetchStatus = observer(function ComparativeFetchStatus({
   display,

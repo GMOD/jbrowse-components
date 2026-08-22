@@ -131,3 +131,27 @@ carries the reason.
 - Revisit if `FetchMixin`'s single-fetch observable core is ever split from its
   per-region aggregation, or if MST's inference depth stops being the binding
   constraint (ADR-041's own revisit condition).
+
+## Since (2026-08): the feature gap closed, the decision unchanged
+
+Recorded here rather than edited into the text above, which is the decision as
+it was made. **The cancel and the retry both shipped, without `FetchMixin`**,
+and the Consequences bullet predicting what that would take was right about the
+parts it named: `SyntenyFetchStateMixin` grew `reloadCounter` + `reload()`, then
+`fetchCanceled` + `cancelFetchByUser()`, and `ComparativeFetchStatus`'s Material
+binding forwards the three `LoadingOverlay` props — one render site, since it
+is the only place either view draws a loading state. The two trigger reads live
+in `installComparativeFetchAutorun`'s body rather than in either display's
+`prepare`, which is one skeleton instead of two copies.
+
+What the bullet did not foresee is that **the cancel needs the stop, not just
+the flag.** The rotation lives in the skeleton's closure, so it hands `cancel`
+to the mixin at install (`setStopActiveFetch`); with the flag alone nothing
+rotates the token, the cancelled RPC stays `isCurrent()`, and it commits its
+plot over the load the user just stopped. §2's aside that "composing the mixin
+adds the state, not the feature" holds in both directions, then.
+
+Two sentences of §2 read as history now: both overlays have a cancel
+affordance, and `DisplayStatusOverlays.tsx` stopped rendering a bare
+`LoadingProgress` when `ComparativeFetchStatus` landed. Nothing in the decision
+turns on either.

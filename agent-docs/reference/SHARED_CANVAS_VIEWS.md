@@ -32,7 +32,19 @@ carte:
 - `SyntenyFetchStateMixin` holds `fetching` / `loadedFetchKey` /
   `assembliesSwapped` plus the overridable `fetchInert` hook (see
   [SVG_EXPORT.md](SVG_EXPORT.md) and "the on-screen twin" in ARCHITECTURE.md's
-  SVG export section).
+  SVG export section) — and the overlay's two buttons: `reloadCounter` +
+  `reload()` behind Retry, `fetchCanceled` + `cancelFetchByUser()` behind
+  Cancel. Those two are the same names `FetchMixin` publishes, so one overlay
+  set draws all three families; what they are not is `FetchMixin`'s
+  *implementation* of them, and one difference is deliberate. **A comparative
+  cancel is durable until Retry** — no clear-on-viewport-change autorun here,
+  because these displays sit on single RPCs that can run for minutes and a
+  cancel any pan undoes is not one.
+- The stop behind that cancel comes back the other way: the rotation lives in
+  the installer's closure, so it hands `cancel` to the mixin at install
+  (`setStopActiveFetch`). The flag alone would not do — nothing else rotates
+  the token, so the cancelled RPC stays `isCurrent()` and commits its plot over
+  the load the user stopped.
 - `createStopTokenRotation` (core) does latest-wins token rotation plus the
   `isCurrent()` guard every post-await write is gated on.
 - The autorun is `leadingEdgeAutorun`, the same leading-edge scheduler the
@@ -74,6 +86,21 @@ law, and the same one-line fix, as the global family's `reloadCounter`; see
 list](../ARCHITECTURE.md#the-global-fetch-trigger-list-must-be-read-unconditionally).
 `installComparativeFetchAutorun.test.ts` ("reload() refires the fetch with no
 input change") pins it.
+
+The fourth is `fetchCanceled`, read in the same breath and above the same
+bail-outs, gating the run while a cancel stands. It is the mirror image of the
+counter — it CLOSES the gate — so the two belong together: `reload()` is the
+only thing that reopens it, and a `reload()` that bumped the counter without
+clearing the flag would wake the autorun into a run the gate still refuses. That
+is the failure the "reload() reopens the gate" test in the same file catches.
+Both reads are safe in the tracked half for one reason, which is the rule for
+anything added beside them: only a user gesture moves either. **Nothing
+fetch-derived may join them, and `error` is the one that will be reached
+for** — the skeleton clears it at every fetch start and sets it on failure, so
+a tracked read turns one failure into an unbounded retry loop paced by the
+debounce, against the server that just failed. Nothing checks it; the same law
+is `installGlobalFetchAutorun`'s "`rpcProps()` must never return fetch-derived
+state".
 
 Both scope their fetch through the shared `syntenyFetchRegions`
 (`@jbrowse/synteny-core`): the visible blocks widened by a pan buffer and snapped
