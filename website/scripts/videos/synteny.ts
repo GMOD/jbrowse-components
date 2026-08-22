@@ -38,6 +38,12 @@ const option = (assembly: string) => `li[role="option"]::-p-text(${assembly})`
 const connector = (top: number) =>
   `button[aria-label="Configure synteny track between row ${top} and ${top + 1}"]`
 
+// The one annotation track the hpylori config carries per genome, named in the
+// selector by the file it was built from -- so the row's assembly name plus the
+// suffix is the string on the row, and it is unique on the page (the assembly
+// name alone is also the row label and the location box's summary).
+const geneTrack = (assembly: string) => `${assembly}.gff`
+
 // The dotplot form's two chromosome boxes. Both carry the same placeholder and
 // the same label shape, so the testid on the input is the only handle that says
 // which axis is meant (ChromosomeFilter, whose `testId` goes on the html input).
@@ -94,20 +100,22 @@ export const syntenyVideos: VideoSpec[] = [
   {
     name: 'synteny/three_strain_import',
     description:
-      'Building the three-strain H. pylori stack from the import form: Manual, one genome per row, Add row for the third, each connector resolving its own alignment, and Launch',
+      "Building the three-strain H. pylori stack from the import form: Manual, one genome per row, Add row for the third, each connector resolving its own alignment, Launch, and a gene track from each row's own selector",
     url: emptySyntenyForm,
-    // One frame serves both states, and the run reports the app at 301 on the
-    // opening form and 572 once the stack is standing, so this is the taller of
-    // the two with a little margin.
-    viewportHeight: 600,
+    // One frame serves three states and the tallest is the last: the run reports
+    // the app at 301 on the opening form, 572 with the stack standing empty, and
+    // 821 once three gene lanes have replaced the three empty-state blocks. The
+    // rest is the caption chip's strip, which is fixed to the frame's bottom
+    // rather than the app's.
+    viewportHeight: 900,
     readySelector: '::-p-text(Quick start)',
     readyTimeout: 120000,
     settleMs: 4000,
     steps: [
-      { type: 'delay', ms: 2000 },
+      { type: 'delay', ms: 1200 },
       // Quick start is the default because the config ships synteny tracks, and
       // it launches ONE pair. Manual is where a third row is reachable at all.
-      { type: 'click', text: 'Manual', say: 'Manual', hold: 1800 },
+      { type: 'click', text: 'Manual', say: 'Manual', hold: 1500 },
       {
         type: 'waitForText',
         text: 'Select assemblies for linear synteny view',
@@ -118,10 +126,10 @@ export const syntenyVideos: VideoSpec[] = [
       // row 2 goes first: setting row 1 to 26695 while row 2 still holds it
       // would ask the form to pair an assembly with itself.
       { type: 'click', selector: assemblyRow(2), say: 'Row 2', hold: 900 },
-      { type: 'click', selector: option(strains.middle), hold: 1400 },
+      { type: 'click', selector: option(strains.middle), hold: 1200 },
       { type: 'click', selector: assemblyRow(1), say: 'Row 1', hold: 900 },
-      { type: 'click', selector: option(strains.top), hold: 1400 },
-      { type: 'click', text: 'Add row', say: 'Add row', hold: 1600 },
+      { type: 'click', selector: option(strains.top), hold: 1200 },
+      { type: 'click', text: 'Add row', say: 'Add row', hold: 1400 },
       // The new row's dropdown sits directly under the connector arrow Add row
       // put above it, and the cursor reaches it across that arrow, which raises
       // the arrow's tooltip over the dropdown -- so the click lands on the
@@ -129,7 +137,7 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'press', key: 'Escape' },
       { type: 'delay', ms: 600 },
       { type: 'click', selector: assemblyRow(3), say: 'Row 3', hold: 900 },
-      { type: 'click', selector: option(strains.bottom), hold: 1600 },
+      { type: 'click', selector: option(strains.bottom), hold: 1400 },
       // The two connectors, opened rather than set: each pair has exactly one
       // alignment here and the form has already chosen it, so what these clicks
       // show is the choice being right, which is what a reader working through
@@ -138,19 +146,99 @@ export const syntenyVideos: VideoSpec[] = [
         type: 'click',
         selector: connector(1),
         say: '26695 against CHC155',
-        hold: 2600,
+        hold: 2100,
       },
       {
         type: 'click',
         selector: connector(2),
         say: 'CHC155 against J99',
-        hold: 2600,
+        hold: 2100,
       },
       { type: 'click', text: 'Launch', say: 'Launch' },
       // Three genomes and two alignment indexes, off camera: a film of that is a
       // film of an empty view.
       { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      { type: 'delay', ms: 3500 },
+      { type: 'delay', ms: 1500 },
+      // THE STACK ARRIVES WITH NOTHING ON IN ANY ROW, and stopping there made
+      // the payoff frame three copies of that empty state. The button the empty
+      // state is already showing is the route, so the tour takes it: three rows,
+      // three selectors, the drawer swapping to whichever row asked for it.
+      //
+      // `Open track selector` resolves to the first one still on screen, which
+      // is row 1's until its lane replaces it, then row 2's -- so the same text
+      // walks down the stack without any of them needing a handle. The label is
+      // upper-cased by the button's own styling, which is why the chip and the
+      // string being matched differ.
+      //
+      // HELD SHORT, ALL THREE, AND CLOSED ONCE, which is the one thing about
+      // this stretch that is not free. An LGV holds its WINDOW in bp across a
+      // resize (`windowWidthBp` is the state and every later width divides into
+      // it), so the drawer's ~390px is a 25% zoom out for every row in the
+      // frame: ~1600 top-level features over ~1370px is 1.17 per pixel, past the
+      // display's default maxFeatureScreenDensity of 1, and every lane ticked
+      // here paints "Too many features" until the rows get their width back. At
+      // the frame's full width it is 0.94, which is what makes the last state
+      // three gene lanes -- a 6% margin, so a narrower frame or a wider drawer
+      // would put the payoff back on the banner.
+      {
+        type: 'click',
+        text: 'Open track selector',
+        say: 'OPEN TRACK SELECTOR',
+        hold: 700,
+      },
+      {
+        type: 'click',
+        text: geneTrack(strains.top),
+        say: geneTrack(strains.top),
+        hold: 700,
+      },
+      {
+        type: 'click',
+        text: 'Open track selector',
+        say: 'OPEN TRACK SELECTOR',
+        hold: 500,
+      },
+      {
+        type: 'click',
+        text: geneTrack(strains.middle),
+        say: geneTrack(strains.middle),
+        hold: 600,
+      },
+      {
+        type: 'click',
+        text: 'Open track selector',
+        say: 'OPEN TRACK SELECTOR',
+        hold: 500,
+      },
+      {
+        type: 'click',
+        text: geneTrack(strains.bottom),
+        say: geneTrack(strains.bottom),
+        hold: 600,
+      },
+      // The rows get their width back here, which is both what the payoff frame
+      // needs and what lets the three lanes draw at all.
+      {
+        type: 'click',
+        selector: 'button[aria-label="Close drawer"]',
+        say: 'Close the track selector',
+        hold: 300,
+      },
+      // OFF CAMERA, and gated on the banner rather than on a paint: each lane
+      // re-fetches at the width it just got back, which is a few more seconds of
+      // "Too many features" and then a progress bar. It is also the one wait
+      // that fails loudly if the margin above ever goes the other way -- a
+      // display over its density gate still reports `ready`, so a settle would
+      // carry on with the banner up and ship the payoff as three warnings.
+      {
+        type: 'waitForText',
+        text: 'Too many features',
+        hidden: true,
+        timeout: 120000,
+        cut: true,
+      },
+      { type: 'waitForAppSettled', cut: true },
+      { type: 'delay', ms: 1500 },
     ],
     tailMs: 4000,
   },
