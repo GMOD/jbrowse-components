@@ -77,6 +77,7 @@ before anyone noticed.
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
+| [Hi-C's static-block fetch buffers the viewport; measure the vertex cost](#hi-cs-static-block-fetch-buffers-the-viewport-measure-the-vertex-cost) | hic, GPU | frame time at auto binsize on a real file, buffered vs exact-visible span |
 | [Take the MSAA target's size on a retina display](#take-the-msaa-targets-size-on-a-retina-display) | GPU, limits | run the probe at dpr 2; the 640 MiB is arithmetic, not measurement |
 | [Does a sixth track want a sixth RPC worker](#does-a-sixth-alignments-track-want-a-sixth-rpc-worker) | RPC, limits | one `workerCount` line to try; the answer is a memory measurement, not a stopwatch |
 | [Cross-region arc count at 300x](#read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
@@ -1958,6 +1959,22 @@ walks the GPU's 1px band, which is a superset of the Canvas2D extent, and
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
+
+### Hi-C's static-block fetch buffers the viewport; measure the vertex cost
+
+Since the 2026-08-21 absolute-coordinates rewrite, Hi-C fetches
+`staticBlocks.contentBlocks` — up to ~2x the visible span — so a pan inside the
+loaded blocks is a pure redraw. Contacts scale with span squared, so the worst
+case is ~4x the instances per frame against the old exact-visible fetch, on a
+shader the dense-count-texture decline
+([REJECTED_IDEAS.md](reference/REJECTED_IDEAS.md) §"Rendering the hi-C matrix
+as a dense count texture") measured as vertex-bound by its own account. Measure
+a frame at the auto binsize on a real file before assuming either way — the
+per-frame Canvas2D cull already bounds that backend, and the GPU rasterizer
+discards off-screen fragments but not their vertices. If it regresses, the
+lever is a finer fetch quantum (buffered visible spans snapped to a bin grid,
+e.g. expand by a quarter-span and snap to 64 bins), not a return to
+refetch-on-pan.
 
 ### Take the MSAA target's size on a retina display
 
