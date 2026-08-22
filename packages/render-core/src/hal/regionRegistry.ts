@@ -4,15 +4,8 @@
 // near-identical deleteBuffer/deleteRegion/deleteAll/prune/getOrCreate
 // implementations; centralizing avoids drift when one side's lifecycle is
 // tweaked and the other isn't. Contract pinned by regionRegistry.test.ts.
-const passKey = (regionKey: number, passId: string) => `${regionKey}:${passId}`
-
 export class RegionRegistry<Buf> {
   private regions = new Map<number, Map<string, Buf>>()
-
-  // Non-undefined only between beginUpload() and endUpload(). Holds the
-  // `regionKey:passId` of every buffer written during the open transaction so
-  // endUpload() can destroy the ones that weren't.
-  private written: Set<string> | undefined
 
   constructor(private readonly destroy: (buf: Buf) => void) {}
 
@@ -30,61 +23,6 @@ export class RegionRegistry<Buf> {
       this.regions.set(regionKey, region)
     }
     region.set(passId, buf)
-    this.written?.add(passKey(regionKey, passId))
-  }
-
-  // Open a full-rebuild transaction. Every set() until endUpload() records its
-  // (region, pass); endUpload() then destroys every buffer NOT rewritten. This
-  // makes "one sync rebuilds the live buffer set" correct by construction: a
-  // pass the caller stops uploading (its data went empty) is swept, so a buffer
-  // can never outlive the data that produced it — no per-pass `if (n > 0)` skip
-  // can leave a stale buffer on screen. Callers that never call beginUpload()
-  // are unaffected; recording stays off.
-  beginUpload(): void {
-    this.written = new Set()
-  }
-
-  // Exempt a region's existing buffers from the open transaction's sweep. The
-  // caller is asserting "this region's data is unchanged, so I am rewriting
-  // nothing" — without it, skipping a region's uploads inside a
-  // beginUpload/endUpload bracket destroys the buffers it just decided were
-  // still good.
-  //
-  // Region-granular on purpose: a per-pass list of what to retain would have to
-  // enumerate every pass its owner writes, and a pass added without joining that
-  // list silently loses its buffer on the first skipped sync. The whole region is
-  // the unit a caller can assert about without an enumeration — so a caller that
-  // finds any part of a region changed must rebuild ALL of it (which is what
-  // makes the sweep's "a pass whose data went empty leaves no stale buffer"
-  // guarantee survive the skip).
-  //
-  // No-op outside a transaction, and for a region with no buffers.
-  retainRegion(regionKey: number): void {
-    const region = this.regions.get(regionKey)
-    if (region && this.written) {
-      for (const passId of region.keys()) {
-        this.written.add(passKey(regionKey, passId))
-      }
-    }
-  }
-
-  // Close the transaction opened by beginUpload(), destroying every buffer not
-  // written since. No-op (and leaves recording off) if no transaction is open.
-  endUpload(): void {
-    const written = this.written
-    this.written = undefined
-    if (written) {
-      for (const [regionKey, region] of this.regions) {
-        for (const passId of region.keys()) {
-          if (!written.has(passKey(regionKey, passId))) {
-            this.deleteBuffer(regionKey, passId)
-          }
-        }
-        if (region.size === 0) {
-          this.regions.delete(regionKey)
-        }
-      }
-    }
   }
 
   // Destroy and remove one (regionKey, passId) entry. No-op if absent.

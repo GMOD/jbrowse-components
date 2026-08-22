@@ -64,6 +64,6 @@ one, and it decides whether anything here is worth building.
 - `RegionTooLargeMixin` is the largest single surface left in the fetch path —
   984 lines, 282 of them code, about 20 getters of which 6 are overridable hooks.
   Nothing here audited it.
-- [retain-region-is-a-fifth-upload-mechanism](retain-region-is-a-fifth-upload-mechanism.md)
-  is the upload-side leftover, and it is a question about alignments' payload
-  shape rather than about the HAL.
+- The upload-side leftover, `retainRegion`, was retired 2026-08-21 — the
+  renderer's own wipe-plus-sweep replaced the HAL transaction (see
+  GPU_RENDERING.md, "skipping a region without leaving stale buffers").

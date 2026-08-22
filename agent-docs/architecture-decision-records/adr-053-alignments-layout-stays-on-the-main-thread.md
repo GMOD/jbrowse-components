@@ -75,10 +75,11 @@ with the measurement to do first.
 
 Two cheaper wins on the same path have landed and are worth knowing about before
 re-opening this: the renderer now skips regions whose payload is
-reference-identical (`hal.retainRegion`), and the per-read color bake is its own
-computed downstream of layout, so a recolor no longer re-places rows — see
-[GPU_RENDERING.md](../reference/GPU_RENDERING.md), "skipping a region inside the
-rebuild transaction".
+reference-identical (the `uploaded` memo in `GpuAlignmentsRenderer`), and the
+per-read color bake is its own computed downstream of layout, so a recolor no
+longer re-places rows — see
+[GPU_RENDERING.md](../reference/GPU_RENDERING.md), "skipping a region without
+leaving stale buffers".
 
 ## Consequences
 

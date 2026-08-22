@@ -54,9 +54,8 @@ export class MockHal implements GpuHal {
   calls: MockCall[] = []
 
   // The same registry both real HALs use, so buffer lifecycle (delete-on-empty,
-  // prune, the beginUpload/endUpload sweep) is shared code rather than a
-  // hand-rolled twin that can drift out of parity. There is nothing to free, so
-  // the destroy hook is a no-op.
+  // prune) is shared code rather than a hand-rolled twin that can drift out of
+  // parity. There is nothing to free, so the destroy hook is a no-op.
   private regions = new RegionRegistry<MockBuffer>(() => {})
   // Every write of the frame, in order, not just the last. A renderer that
   // rewrites the UBO mid-frame — for a band that reads it differently, or a
@@ -125,8 +124,8 @@ export class MockHal implements GpuHal {
   ) {
     this.record('uploadBuffer', regionKey, passId, data.byteLength, count)
     // Both real HALs delete the prior buffer up front and leave nothing behind
-    // on an empty upload; mirroring that here keeps `getBuffer`/`endUpload`
-    // bookkeeping honest instead of leaving a count-0 entry the GPU never has.
+    // on an empty upload; mirroring that here keeps `getBuffer` bookkeeping
+    // honest instead of leaving a count-0 entry the GPU never has.
     this.regions.deleteBuffer(regionKey, passId)
     if (count > 0) {
       const copy = ArrayBuffer.isView(data)
@@ -154,21 +153,6 @@ export class MockHal implements GpuHal {
     const activeSet = new Set(active)
     this.record('pruneRegions', [...activeSet])
     this.regions.prune(activeSet)
-  }
-
-  beginUpload() {
-    this.record('beginUpload')
-    this.regions.beginUpload()
-  }
-
-  endUpload() {
-    this.record('endUpload')
-    this.regions.endUpload()
-  }
-
-  retainRegion(regionKey: number) {
-    this.record('retainRegion', regionKey)
-    this.regions.retainRegion(regionKey)
   }
 
   uploadTexture(
@@ -325,8 +309,6 @@ export class MockHal implements GpuHal {
 
   reset() {
     this.calls = []
-    // endUpload first so an in-flight transaction doesn't survive the reset.
-    this.regions.endUpload()
     this.regions.deleteAll()
     this.uniformWrites = []
     this.drawLog = []

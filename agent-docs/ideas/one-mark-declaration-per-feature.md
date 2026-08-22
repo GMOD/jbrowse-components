@@ -85,9 +85,9 @@ is the result rather than a side effect.
 
 Last of the render-path simplifications, and incrementally — one alignments
 feature at a time behind the parity suite, because it is the one that touches 46
-files. The upload-model collapse ahead of it is done (ADR-078, ADR-079) bar
-[retain-region-is-a-fifth-upload-mechanism](retain-region-is-a-fifth-upload-mechanism.md);
-take [absolute-coordinates-for-hic-and-ld](absolute-coordinates-for-hic-and-ld.md)
+files. The upload-model collapse ahead of it is done (ADR-078,
+ADR-079; the `retainRegion` transaction retired with it, 2026-08-21); take
+[absolute-coordinates-for-hic-and-ld](absolute-coordinates-for-hic-and-ld.md)
 before this one.
 
 It also upgrades the claim the architecture can make, from "we single-source

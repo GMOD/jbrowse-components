@@ -461,9 +461,9 @@ describe('GPU sync rebuild transaction', () => {
     gpu.sync(oneRegion(withOverlap))
     expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
 
-    // Same region still active, but the overlap data is gone. The overlap
-    // upload's `if (n > 0)` guard skips it, so only the begin/endUpload sweep
-    // can clear the now-stale buffer.
+    // Same region still active, but the overlap data is gone. A fresh layout
+    // run takes the rebuild branch, whose head wipes the region before the
+    // unconditional re-uploads — the empty overlap pack then leaves no buffer.
     gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
     expect(hal.getBufferCount(0, 'overlap')).toBe(0)
   })
@@ -484,8 +484,7 @@ describe('GPU sync rebuild transaction', () => {
 // The upload autorun re-fires on everything `sourceSections` reads, including
 // band geometry that changes no packed byte (a coverage-height drag re-derives
 // `sections` on every pointer move). `sync` skips the pack for a region whose
-// laid-out payload is reference-identical, and `retainRegion` is what keeps the
-// skipped buffers out of endUpload's sweep.
+// laid-out payload is reference-identical, leaving the HAL's buffers untouched.
 describe('GPU sync skips regions whose data is unchanged', () => {
   const uploadsFor = (hal: MockHal) => hal.callsOf('uploadBuffer').length
 
@@ -500,8 +499,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
 
     gpu.sync(oneRegion(data))
     expect(uploadsFor(hal)).toBe(first)
-    expect(hal.callsOf('retainRegion')).toHaveLength(1)
-    // The retained buffers survived the second transaction's sweep.
+    // The skipped region's buffers are still on the HAL.
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
     expect(hal.getBufferCount(0, 'snpCov')).toBeGreaterThan(0)
   })
@@ -568,7 +566,8 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     gpu.sync(oneRegion(data))
     const first = uploadsFor(hal)
 
-    // Scrolled out: endUpload swept its buffers, so the memo must forget it.
+    // Scrolled out: the departed-key sweep deleted its buffers, so the memo
+    // must forget it.
     gpu.sync({ sections: [], readConnectionsLineWidth: 1 })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
 

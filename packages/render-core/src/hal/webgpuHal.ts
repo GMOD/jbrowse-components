@@ -471,18 +471,6 @@ export class WebGPUHal implements GpuHal {
     this.regions.prune(active)
   }
 
-  beginUpload() {
-    this.regions.beginUpload()
-  }
-
-  endUpload() {
-    this.regions.endUpload()
-  }
-
-  retainRegion(regionKey: number) {
-    this.regions.retainRegion(regionKey)
-  }
-
   uploadTexture(
     passId: string,
     data: Uint8Array,

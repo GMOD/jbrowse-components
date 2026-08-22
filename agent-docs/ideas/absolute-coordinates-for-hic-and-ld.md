@@ -65,9 +65,7 @@ also unverified today, so do not scope the work before answering it.
 
 Now the first of two remaining render-path simplifications: two contained
 display rewrites that delete a mixin, a transform module and a staleness axis.
-The upload-model collapse that used to come first is done (ADR-078, ADR-079)
-bar one piece,
-[retain-region-is-a-fifth-upload-mechanism](retain-region-is-a-fifth-upload-mechanism.md),
-which is smaller than this and answerable by reading;
+The upload-model collapse that used to come first is done (ADR-078, ADR-079,
+and the `retainRegion` transaction retired 2026-08-21);
 [one-mark-declaration-per-feature](one-mark-declaration-per-feature.md) last,
 because it touches 46 files.

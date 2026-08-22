@@ -731,16 +731,15 @@ export class GpuAlignmentsRenderer
   }
 
   sync(sources: AlignmentsSources) {
-    // The HAL side is bracketed by beginUpload/endUpload: endUpload destroys any
-    // pass buffer not rewritten (or retained) below, so a pass whose data went
-    // empty — and was skipped by its `if (n > 0)` guard — can't leave a stale
-    // buffer. The renderer-side metadata map is rebuilt unconditionally: cleared
-    // up front and repopulated only for regions present this sync, so it can
-    // never hold a stale entry. No manual prune, no `active` bookkeeping to
-    // drift out of sync with the HAL. Each (section, region) pair is namespaced
-    // via sectionRegionKey; section 0 keys equal the raw region index, so the
-    // ungrouped path is byte-identical to pre-grouping.
-    this.hal.beginUpload()
+    // Stale-buffer hygiene is two deleteRegion calls, not a HAL transaction: a
+    // key absent this sync is swept in the loop below, and a key whose payload
+    // changed is wiped whole at the head of syncRegion's rebuild branch — cost-
+    // neutral, since uploadBuffer destroys-and-recreates each pass's buffer
+    // anyway. The renderer-side metadata map is rebuilt unconditionally:
+    // cleared up front and repopulated only for regions present this sync, so
+    // it can never hold a stale entry. Each (section, region) pair is
+    // namespaced via sectionRegionKey; section 0 keys equal the raw region
+    // index, so the ungrouped path is byte-identical to pre-grouping.
     this.regions.clear()
     const seen = new Set<number>()
     sources.sections.forEach((section, s) => {
@@ -770,12 +769,12 @@ export class GpuAlignmentsRenderer
         }
       }
     })
-    this.hal.endUpload()
-    // Forget keys that went away, so a region that later returns with a
-    // reference-identical payload re-uploads instead of trusting buffers
-    // endUpload has since swept.
+    // Sweep keys that went away — the HAL's buffers, and the memo entry, so a
+    // region that later returns with a reference-identical payload re-uploads
+    // instead of trusting buffers this sweep destroyed.
     for (const key of this.uploaded.keys()) {
       if (!seen.has(key)) {
+        this.hal.deleteRegion(key)
         this.uploaded.delete(key)
       }
     }
@@ -791,11 +790,11 @@ export class GpuAlignmentsRenderer
    * payloads. Repacking ~9 passes per region for those cost more than the draw
    * they were preparing for.
    *
-   * The gate is whole-region on purpose. `retainRegion` is what keeps the
-   * skipped buffers out of endUpload's sweep, and it can only make a
-   * region-granular assertion — so any change to any part of a region rebuilds
+   * The gate is whole-region on purpose, and so is the wipe that opens the
+   * rebuild branch: any change to any part of a region deletes and rebuilds
    * all of it, which is what preserves "a pass whose data went empty leaves no
-   * stale buffer".
+   * stale buffer" — a half that vanished (pileup gone, or arcs toggled off)
+   * uploads nothing, so only the wipe releases its buffers.
    *
    * The recolor path is the one exception, and it is safe for a narrower reason:
    * an unchanged `readYs` means the payload is the *same layout run* with only
@@ -826,7 +825,6 @@ export class GpuAlignmentsRenderer
       prev.arcs === arcs &&
       prev.arcLineWidth === arcLineWidth
     ) {
-      this.hal.retainRegion(idx)
       if (
         data &&
         (prev.tagColors !== data.readTagColors ||
@@ -837,6 +835,7 @@ export class GpuAlignmentsRenderer
       return
     }
 
+    this.hal.deleteRegion(idx)
     if (data) {
       // Every pileup layer and every coverage-band pass, by construction — the
       // registries are exhaustive over their key sets and the pass carries its

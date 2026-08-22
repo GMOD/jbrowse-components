@@ -47,8 +47,7 @@ export interface InstancePass<TData> extends PipelineDescriptor {
  *
  * An empty pack is passed through rather than skipped: every HAL deletes the
  * pass's prior buffer before looking at the count, so `count === 0` IS the
- * "this pass has nothing this time" instruction, and a caller outside a
- * `beginUpload`/`endUpload` bracket needs it to be.
+ * "this pass has nothing this time" instruction.
  */
 export function uploadPass<TData>(
   hal: GpuHal,

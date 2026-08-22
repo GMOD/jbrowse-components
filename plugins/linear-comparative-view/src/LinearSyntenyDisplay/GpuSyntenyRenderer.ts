@@ -184,14 +184,9 @@ export class GpuSyntenyRenderer
   //
   // Uploaded from render() rather than the upload callback because the clicked
   // id is a RENDER parameter — nothing knows which feature to pack until the
-  // frame that draws it. Two consequences worth knowing:
-  //   - it reads the same packed bytes `ensureUploaded` just put on the GPU,
-  //     through the same `interleaveCache` memo, so the outline and the fill are
-  //     copies of one record and cannot describe different geometry;
-  //   - if this renderer ever brackets its uploads in `beginUpload`/
-  //     `endUpload`, this buffer is written outside that transaction and the
-  //     `endUpload` sweep would destroy it while the memo below still claims it
-  //     is live. Drop the memo alongside any such change.
+  // frame that draws it. It reads the same packed bytes `ensureUploaded` just
+  // put on the GPU, through the same `interleaveCache` memo, so the outline and
+  // the fill are copies of one record and cannot describe different geometry.
   private ensureOutlineUploaded(
     key: number,
     passId: string,

@@ -590,25 +590,31 @@ Whole-map synced (alignments, multi-LGV synteny) and monolithic (HiC, LD,
 multi-variant-matrix, dotplot) plugins define their own backend interfaces
 because their upload shapes differ — see "Upload patterns."
 
-#### Whole-map synced: skipping a region inside the rebuild transaction
+#### Whole-map synced: skipping a region without leaving stale buffers
 
-`sync(sources)` is a full rebuild by contract, and `beginUpload`/`endUpload` is
-what makes that safe: the sweep destroys any buffer not rewritten, so a pass
-whose data went empty can't leave stale bytes. The cost is that the upload
-autorun fires on far more than new data — alignments' `sourceSections` is
-derived through `sections`, so every band-resize drag frame and arc-mode flip
-repacked ~9 passes per region to write the same bytes back.
+`sync(sources)` is a full rebuild by contract, and two `deleteRegion` calls are
+what make that safe with no HAL-side transaction: a key absent this sync is
+swept by the departed-key loop, and a key whose payload changed is wiped whole
+at the head of the rebuild branch before its unconditional re-uploads — so a
+pass (or a whole half: pileup gone, arcs toggled off) whose data went empty
+can't leave stale bytes. The wipe is cost-neutral because `uploadBuffer`
+destroys-and-recreates each pass's buffer anyway (no buffer pooling — see "What
+this architecture deliberately does not have"). The skip exists because the
+upload autorun fires on far more than new data — alignments' `sourceSections`
+is derived through `sections`, so every band-resize drag frame and arc-mode
+flip repacked ~9 passes per region to write the same bytes back. Two rules:
 
-`hal.retainRegion(key)` is the exemption: it marks a region's existing buffers as
-written, so a renderer can diff its input by reference and skip the pack without
-the sweep then deleting what it skipped. Two rules come with it:
+- **The wipe, like the skip, is whole-region.** A per-pass decision would need
+  each caller to enumerate the passes it writes; a region with any change
+  rebuilds all of it, which is what preserves the emptied-pass guarantee.
+- **Forget a key when it leaves** — the sweep deletes the HAL buffers and the
+  memo entry together, or a region that returns with a reference-identical
+  payload skips an upload onto buffers the sweep destroyed.
 
-- **The assertion is whole-region.** Retaining only *some* passes would need each
-  caller to enumerate the passes it writes, and a pass added without joining that
-  list loses its buffer on the first skipped sync. So a region with any change
-  rebuilds all of it — which is what preserves the emptied-pass guarantee.
-- **Forget a key when it leaves**, or a region that returns with a
-  reference-identical payload skips an upload whose buffers `endUpload` swept.
+(`beginUpload`/`endUpload`/`retainRegion` — a HAL-side write-recording
+transaction whose sweep destroyed every buffer not rewritten or retained — was
+the previous answer here; the wipe-plus-sweep replaced it 2026-08-21, deleting
+the three methods from `GpuHal` and the recording from `RegionRegistry`.)
 
 The memo lives on the renderer (`GpuAlignmentsRenderer.uploaded`), not in a
 model-side `createRegionUploadSync`: this pattern's upload is one `sync` call
@@ -958,7 +964,6 @@ So, concretely:
 |---|---|
 | `drawPass(passId, regionKey)` | bind PSO `passId`, bind that region's vertex buffer, issue **one instanced draw call**. It does not begin a pass. |
 | `beginFrame` / `endFrame` | open and close **the** render pass, plus the command encoder and submit |
-| `beginUpload` / `endUpload` | neither — a buffer-write transaction with a sweep (see "skipping a region inside the rebuild transaction") |
 | `PipelineDescriptor.blend` | one field of the PSO's fragment target state |
 
 **Why the rename stopped at the type.** A type name is read in isolation, by
@@ -978,17 +983,14 @@ createGpuHal(canvas, passes, uniformByteSize): Promise<GpuHal | null>
 
 **Key methods** (full interface: `packages/render-core/src/hal/types.ts`):
 
-- *Frame lifecycle* — `beginFrame(...)` / `endFrame()` bracket a render pass;
-  `beginUpload()` / `endUpload()` bracket a batch of buffer writes.
+- *Frame lifecycle* — `beginFrame(...)` / `endFrame()` bracket a render pass.
 - *Data* — `uploadBuffer(regionKey, passId, data, count)`,
   `getBufferCount(regionKey, passId)`, `uploadTexture(...)`,
   `writeUniforms(data)`.
 - *Draw* — `drawPass(passId, regionKey, bufferPassId?)`, `setScissor` /
   `clearScissor`, `setViewport` / `clearViewport`.
 - *Lifecycle* — `deleteBuffer(regionKey, passId)`, `deleteRegion(key)`,
-  `pruneRegions(active)`, `retainRegion(key)` (exempt a region from the
-  `beginUpload`/`endUpload` sweep — see "skipping a region inside the rebuild
-  transaction"), `resize(width, height)`, `setErrorHandler(handler)`,
+  `pruneRegions(active)`, `resize(width, height)`, `setErrorHandler(handler)`,
   `dispose()`.
 
 `drawPass` short-circuits when the region has no buffer for that pass (or count is
