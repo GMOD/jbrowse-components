@@ -507,3 +507,27 @@ function anIdentityBackendTakesWhatTheDisplayHolds() {
 test('an identity backend expecting more than the display holds does not compile', () => {
   expect(anIdentityBackendTakesWhatTheDisplayHolds()).toBe(0)
 })
+
+// Typecheck-only: an unused `@ts-expect-error` fails `pnpm typecheck`.
+function anEncodingBackendTakesWhatEncodeReturns() {
+  interface NarrowerBackend {
+    uploadRegion(key: number, payload: FakeEncoded): void
+    pruneRegions(active: Iterable<number>): void
+  }
+  const backend: NarrowerBackend = {
+    uploadRegion() {},
+    pruneRegions() {},
+  }
+  const data = new Map<number, FakeRegionData>()
+  installPerRegionLifecycle(TestModel.create(), backend, {
+    data: () => data,
+    // @ts-expect-error the backend reads `marker` off an encode that omits it
+    encode: ({ value }) => ({ value }),
+    render: () => true,
+  })
+  return data.size
+}
+
+test('an encoding backend expecting more than encode returns does not compile', () => {
+  expect(anEncodingBackendTakesWhatEncodeReturns()).toBe(0)
+})

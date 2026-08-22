@@ -179,23 +179,32 @@ function checkRegionPayloads(
   }
 }
 
-// Methods, so the parameter check stays bivariant. `Encoded` is inferred from
-// `encode`'s return, and a contravariant `backend` position wins that inference
-// with `unknown` before an encode with contextually-typed parameters can supply
-// one — measured: no encoding display resolves an overload.
-interface UploadableRenderingBackend<Encoded> {
-  uploadRegion(displayedRegionIndex: number, encoded: Encoded): void
+// The shape gate only — `unknown` says nothing about the payload, which both
+// overloads check through `EncodedOf` instead. Methods, so that a backend whose
+// `uploadRegion` takes anything at all still passes the gate and reaches the
+// check that can name what it takes.
+interface UploadableRenderingBackend<Payload> {
+  uploadRegion(displayedRegionIndex: number, encoded: Payload): void
   pruneRegions(active: Iterable<number>): void
 }
 
-// Properties, so the parameter check is contravariant: the display's payload
-// must be assignable to what the backend takes. `Data` comes from `data()`, so
-// nothing is inferred here and the strictness costs no inference. Not the same
-// interface as above, and merging them reopens one hole or the other.
-interface IdentityUploadableRenderingBackend<Data> {
-  uploadRegion: (displayedRegionIndex: number, data: Data) => void
-  pruneRegions: (active: Iterable<number>) => void
+// What the backend takes, read off the backend, which is the direction both
+// overloads have to check in: the payload reaching `uploadRegion` must be
+// assignable to the parameter it declares. Read the other way — infer `Encoded`
+// from `encode`'s return, constrain the backend against that — a contravariant
+// `backend` position wins the inference with `unknown` first and no encoding
+// display resolves an overload. Deriving leaves no inference to lose, and the
+// mismatch is reported on the property that has to change.
+//
+// Uploading MORE than the backend reads stays legal, and two identity displays
+// need it: canvas hands over a `FeatureDataResult` whose backend takes a `Pick`
+// of it, and sequence's backend inherits Canvas2D's zero-parameter
+// `uploadRegion()`, which leaves `EncodedOf` at `unknown` and the check vacuous.
+type EncodedOf<B> = B extends {
+  uploadRegion(displayedRegionIndex: number, encoded: infer E): void
 }
+  ? E
+  : never
 
 /**
  * Render callback signature for per-region lifecycles. The second argument
@@ -237,9 +246,8 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
    * — only `data` and `inputs` do.
    *
    * **Required**, so an omitted `encode` can only match the identity overload,
-   * which checks the backend against the display's own payload. Optional here,
-   * `Encoded` has no inference site left and widens to `unknown`, which every
-   * backend satisfies.
+   * which checks the backend against the display's own payload rather than
+   * against a return that isn't there.
    */
   encode: (data: Data, props: Props) => Encoded
   render: PerRegionRender<B, Encoded>
@@ -283,11 +291,13 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
  * autorun per key.
  */
 // The identity overload, so omitting `encode` is a type error unless the
-// display's own payload is what the backend uploads. Without it `Encoded` would
-// be inferred as `unknown` and every `render` would take an unusable map.
+// display's own payload is what the backend uploads — `Data extends
+// EncodedOf<B>` is that check, and `encode`'s absence is why `Data` is what
+// gets checked. Without this signature an omitted `encode` matches nothing,
+// since the one below requires the property.
 export function installPerRegionLifecycle<
-  Data extends object,
-  B extends IdentityUploadableRenderingBackend<Data>,
+  Data extends object & EncodedOf<B>,
+  B extends UploadableRenderingBackend<unknown>,
 >(
   self: LifecycleHost,
   backend: B,
@@ -303,12 +313,11 @@ export function installPerRegionLifecycle<
 export function installPerRegionLifecycle<
   Data extends object,
   Props,
-  Encoded,
-  B extends UploadableRenderingBackend<Encoded>,
+  B extends UploadableRenderingBackend<unknown>,
 >(
   self: LifecycleHost,
   backend: B,
-  opts: PerRegionUpload<Data, Props, Encoded, B>,
+  opts: PerRegionUpload<Data, Props, EncodedOf<B>, B>,
 ): void
 export function installPerRegionLifecycle<
   Data extends object,
