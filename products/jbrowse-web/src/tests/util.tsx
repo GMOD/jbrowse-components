@@ -33,6 +33,23 @@ global.nodeImage = Image
 // @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
+// web's root model names WebWorkerRpcDriver as its host default, and web
+// workers don't run under jest (makeWorkerInstance is mocked to a no-op) — so
+// pin the main thread through the config slot that exists for exactly this,
+// rather than reaching into the RpcManager after it is built
+function onMainThreadRpc(jbrowse: Record<string, unknown>) {
+  const { configuration } = jbrowse
+  return {
+    ...jbrowse,
+    configuration: {
+      ...(configuration && typeof configuration === 'object'
+        ? configuration
+        : {}),
+      rpc: { defaultDriver: 'MainThreadRpcDriver' },
+    },
+  }
+}
+
 export function getPluginManager(
   initialState?: Record<string, unknown>,
   adminMode = true,
@@ -47,14 +64,10 @@ export function getPluginManager(
     adminMode,
   }).create(
     {
-      jbrowse: initialState ?? configSnapshot,
+      jbrowse: onMainThreadRpc(initialState ?? configSnapshot),
     },
     { pluginManager },
   )
-
-  // web defaults to WebWorkerRpcDriver, but web workers don't run under jest
-  // (makeWorkerInstance is mocked to a no-op), so force the main-thread driver
-  rootModel.rpcManager.defaultDriverName = 'MainThreadRpcDriver'
 
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)

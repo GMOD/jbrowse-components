@@ -10,7 +10,7 @@ import type { RpcStatus } from '@jbrowse/core/util'
 
 /**
  * The two drivers are one contract, and they have disagreed about it three
- * times: `WorkerPoolRpcDriver` honored a `statusCallback` in an `opts`
+ * times: `WebWorkerRpcDriver` honored a `statusCallback` in an `opts`
  * parameter that `MainThreadRpcDriver` ignored entirely (see `RpcManager.call`'s
  * docstring); the worker then manufactured a `statusCallback` for a caller who
  * passed none while the main thread passed the `undefined` through; and

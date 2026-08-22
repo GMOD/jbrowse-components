@@ -6,10 +6,6 @@ import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { RpcHandles } from './RpcRegistry.ts'
 
-export interface RpcDriverConstructorArgs {
-  config: AnyConfigurationModel
-}
-
 /**
  * The method that drops a session's cached adapters, named once because
  * {@link BaseRpcDriver.freeSession} is the only thing that dispatches it.
@@ -19,11 +15,15 @@ export const CORE_FREE_RESOURCES = 'CoreFreeResources'
 export default abstract class BaseRpcDriver {
   abstract name: string
 
-  config: AnyConfigurationModel
-
-  constructor(args: RpcDriverConstructorArgs) {
-    this.config = args.config
-  }
+  // Held, not threaded. `call`, `transport` and `freeSession` each took one as
+  // their first parameter and `RpcManager` passed the same object to all of
+  // them on every RPC — a driver is built by the manager that owns it, so it
+  // can just have one. Holding it is also what lets `Core-extendWorker` fire
+  // where a worker boots rather than on the dispatch path. ADR-086.
+  constructor(
+    protected pluginManager: PluginManager,
+    public config: AnyConfigurationModel,
+  ) {}
 
   /**
    * Drop everything this driver holds for a session — the worker-side adapter
@@ -37,8 +37,8 @@ export default abstract class BaseRpcDriver {
    * where `dataAdapterCache` lives. `invoke`, not `execute`, for the reason
    * `MainThreadRpcDriver.transport` uses it.
    */
-  async freeSession(pluginManager: PluginManager, sessionId: string) {
-    await pluginManager
+  async freeSession(sessionId: string) {
+    await this.pluginManager
       .getRpcMethodType(CORE_FREE_RESOURCES)
       .invoke({ sessionId })
   }
@@ -46,7 +46,6 @@ export default abstract class BaseRpcDriver {
   destroy() {}
 
   async call(
-    pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
     args: Record<string, unknown> & RpcHandles,
@@ -60,7 +59,7 @@ export default abstract class BaseRpcDriver {
     // throws naming the method and listing what is registered, which is the
     // "which plugin is missing" answer. No `undefined` check belongs here; one
     // was added and lint called it dead, correctly.
-    const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    const rpcMethod = this.pluginManager.getRpcMethodType(functionName)
 
     // statusCallback is an out-of-band progress handle, not data: each transport
     // wires up its own channel for it, so it must not reach the serialized
@@ -100,7 +99,6 @@ export default abstract class BaseRpcDriver {
       )
 
     const result = await this.transport(
-      pluginManager,
       sessionId,
       rpcMethod,
       serializedArgs,
@@ -114,7 +112,6 @@ export default abstract class BaseRpcDriver {
   // (a pooled worker, or in-band on the main thread). The base class owns the
   // serialize/deserialize envelope around this.
   protected abstract transport(
-    pluginManager: PluginManager,
     sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,

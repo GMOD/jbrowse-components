@@ -2464,7 +2464,7 @@ the measurement says people will move it.
 
 ### Does a sixth alignments track want a sixth RPC worker
 
-`WorkerPoolRpcDriver` sizes its pool `clamp(detectHardwareConcurrency() - 1, 1,
+`WebWorkerRpcDriver` sizes its pool `clamp(detectHardwareConcurrency() - 1, 1,
 5)` and `rpcSessionId` is per-track, so tracks round-robin — which puts two of a
 six-track session's tracks on one worker. Raising the ceiling is one line through
 the `workerCount` config slot, which already overrides the hardware default.

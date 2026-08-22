@@ -36,7 +36,6 @@ class CapturingDriver extends BaseRpcDriver {
   }
 
   protected async transport(
-    _pluginManager: PluginManager,
     _sessionId: string,
     _rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
@@ -53,14 +52,14 @@ function setup() {
   const method = new RecordingMethod(pluginManager)
   ;(pluginManager as { getRpcMethodType: unknown }).getRpcMethodType = () =>
     method
-  const driver = new CapturingDriver({ config: undefined } as never)
+  const driver = new CapturingDriver(pluginManager, undefined as never)
   return { pluginManager, method, driver }
 }
 
 test('serializeArguments can see statusCallback', async () => {
-  const { pluginManager, method, driver } = setup()
+  const { method, driver } = setup()
   const statusCallback = jest.fn()
-  await driver.call(pluginManager, 'sess', 'RecordingMethod', {
+  await driver.call('sess', 'RecordingMethod', {
     adapterConfig: {},
     statusCallback,
   })
@@ -70,9 +69,9 @@ test('serializeArguments can see statusCallback', async () => {
 })
 
 test('statusCallback does not reach the transport payload', async () => {
-  const { pluginManager, driver } = setup()
+  const { driver } = setup()
   const statusCallback = jest.fn()
-  await driver.call(pluginManager, 'sess', 'RecordingMethod', {
+  await driver.call('sess', 'RecordingMethod', {
     adapterConfig: {},
     statusCallback,
   })
@@ -84,8 +83,8 @@ test('statusCallback does not reach the transport payload', async () => {
 })
 
 test('a call with no statusCallback carries no undefined key into the payload', async () => {
-  const { pluginManager, driver } = setup()
-  await driver.call(pluginManager, 'sess', 'RecordingMethod', {
+  const { driver } = setup()
+  await driver.call('sess', 'RecordingMethod', {
     adapterConfig: {},
   })
   expect(driver.transported).not.toHaveProperty('statusCallback')

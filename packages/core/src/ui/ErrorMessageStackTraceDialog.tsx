@@ -1,7 +1,6 @@
 import { effectiveRenderer } from '@jbrowse/render-core/graphicsCapabilities'
 import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabilities'
 
-import { readConfObject } from '../configuration/index.ts'
 import { hasSharedArrayBuffer } from '../util/stopToken.ts'
 import { useFetch } from '../util/useFetch.ts'
 import CopyToClipboardButton from './CopyToClipboardButton.tsx'
@@ -11,13 +10,10 @@ import LoadingEllipses from './LoadingEllipses.tsx'
 import { formatErrorStack } from './formatErrorStack.ts'
 import { mapStackTrace } from './mapStackTrace.ts'
 
-import type { AnyConfigurationModel } from '../configuration/index.ts'
-
 interface SessionGlobal {
   version?: string
   rpcManager: {
-    mainConfiguration: AnyConfigurationModel
-    defaultDriverName: string
+    driverName: string
   }
 }
 
@@ -68,9 +64,7 @@ export default function ErrorMessageStackTraceDialog({
     .JBrowseSession
   const version = session?.version
   const rpcManager = session?.rpcManager
-  const rpcInfo = rpcManager
-    ? `RPC: ${readConfObject(rpcManager.mainConfiguration, 'defaultDriver') || rpcManager.defaultDriverName}`
-    : ''
+  const rpcInfo = rpcManager ? `RPC: ${rpcManager.driverName}` : ''
   const errorBoxText = [
     errorText.length > MAX_ERR_LEN
       ? `${errorText.slice(0, MAX_ERR_LEN)}...`

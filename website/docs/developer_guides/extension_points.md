@@ -490,7 +490,7 @@ plugin before you put there.
 | `Core-customizeAbout` | sync | single | Transform the config shown in a track's About dialog |
 | `Core-extendPluggableElement` | sync | single | Mutate any pluggable element after it is created |
 | `Core-extendSession` | sync | single | Extend the session model with extra state or actions |
-| `Core-extendWorker` | sync | single | Register extra RPC methods on the web worker. Fired once per booted worker, not per call |
+| `Core-extendWorker` | sync | single | Take a booted RPC web worker: subscribe to the events it emits, post to it, or wrap its `call`. Fired once per booted worker, not per call |
 | `Core-extraAboutPanel` | sync |  | Add extra panels to a track's About dialog |
 | `Core-extraFeaturePanel` | sync |  | Add extra panels to the feature details widget |
 | `Core-extraTrackMenuItems` | sync | list | Add items to a single track's menu |

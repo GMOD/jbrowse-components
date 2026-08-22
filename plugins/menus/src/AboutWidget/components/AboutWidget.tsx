@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { ExternalLink } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -44,10 +43,7 @@ const AboutWidget = observer(function AboutWidget({
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager
   const graphicsCapabilities = useGraphicsCapabilities()
-  const { mainConfiguration, defaultDriverName } = session.rpcManager
-  const defaultRpcDriver =
-    (readConfObject(mainConfiguration, 'defaultDriver') as string) ||
-    defaultDriverName
+  const defaultRpcDriver = session.rpcManager.driverName
   const corePlugins = new Set(
     plugins
       .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)

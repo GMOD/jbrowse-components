@@ -4,9 +4,9 @@ import RpcManager from './RpcManager.ts'
 
 // Stub of AppRootModel that satisfies isAppRootModel and records the ephemeral
 // accounts withAuthRetry creates so dedup behavior is observable.
-function withMockRootModel(manager: RpcManager) {
+function withMockRootModel(pluginManager: PluginManager) {
   const internetAccounts: { internetAccountId: string }[] = []
-  ;(manager.pluginManager as { rootModel: unknown }).rootModel = {
+  ;(pluginManager as { rootModel: unknown }).rootModel = {
     findAppropriateInternetAccount: () => undefined,
     internetAccounts,
     createEphemeralInternetAccount(internetAccountId: string) {
@@ -31,14 +31,14 @@ function makeManager(defaultDriver = 'MainThreadRpcDriver') {
     args: Record<string, unknown>
   }[] = []
   const freedSessions: string[] = []
-  driver.call = async (_pm, sessionId, functionName, args) => {
+  driver.call = async (sessionId, functionName, args) => {
     callLog.push({ sessionId, functionName, args })
     return undefined
   }
-  driver.freeSession = async (_pm, sessionId) => {
+  driver.freeSession = async sessionId => {
     freedSessions.push(sessionId)
   }
-  return { manager, driver, callLog, freedSessions }
+  return { manager, driver, callLog, freedSessions, pluginManager }
 }
 
 describe('RpcManager session lifecycle', () => {
@@ -59,8 +59,8 @@ describe('RpcManager auth retry', () => {
   const url = 'https://example.com/data.bam'
 
   test('retries once after creating an ephemeral account on AuthNeededError', async () => {
-    const { manager, driver } = makeManager()
-    const accounts = withMockRootModel(manager)
+    const { manager, driver, pluginManager } = makeManager()
+    const accounts = withMockRootModel(pluginManager)
     let calls = 0
     driver.call = async () => {
       calls++
@@ -79,8 +79,8 @@ describe('RpcManager auth retry', () => {
   })
 
   test('creates one shared account for concurrent same-origin auth failures', async () => {
-    const { manager, driver } = makeManager()
-    const accounts = withMockRootModel(manager)
+    const { manager, driver, pluginManager } = makeManager()
+    const accounts = withMockRootModel(pluginManager)
     // mirrors reality: the call fails auth until an account exists, then the
     // retry's re-serialized args carry pre-auth and succeed
     driver.call = async () => {
@@ -127,6 +127,8 @@ describe('RpcManager driver resolution', () => {
     expect(manager.getDriver()).toBe(manager.getDriver())
   })
 
+  // `driverName` is what the About widget and the error-stack dialog print, and
+  // both used to re-derive it from two public fields this getter replaced
   test('the host default applies when the config names no driver', () => {
     const pluginManager = new PluginManager([]).createPluggableElements()
     const manager = new RpcManager(
@@ -134,7 +136,18 @@ describe('RpcManager driver resolution', () => {
       RpcManager.configSchema.create({}),
       { defaultDriverName: 'MainThreadRpcDriver' },
     )
+    expect(manager.driverName).toBe('MainThreadRpcDriver')
     expect(manager.getDriver().name).toBe('MainThreadRpcDriver')
+  })
+
+  test('the config overrides the host default', () => {
+    const pluginManager = new PluginManager([]).createPluggableElements()
+    const manager = new RpcManager(
+      pluginManager,
+      RpcManager.configSchema.create({ defaultDriver: 'MainThreadRpcDriver' }),
+      { defaultDriverName: 'WebWorkerRpcDriver' },
+    )
+    expect(manager.driverName).toBe('MainThreadRpcDriver')
   })
 })
 
@@ -170,7 +183,7 @@ describe('RpcManager.destroy is terminal', () => {
 
 // The handles ride `args`, for every method, and there is only the one
 // position. They used to be accepted in an `opts` parameter as well and the two
-// disagreed — WorkerPoolRpcDriver spread options over its own arguments and
+// disagreed — WebWorkerRpcDriver spread options over its own arguments and
 // honored a statusCallback there, MainThreadRpcDriver ignored `opts` entirely —
 // so the same call had a working progress bar under a worker and a silent one
 // under the driver every embedded component defaults to.

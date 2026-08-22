@@ -480,7 +480,7 @@ only helps SwiftShader as a figure-pipeline change rather than an app one.
 **Status:** Accepted.
 
 **The pool spreads tracks, not a track's regions.**
-`WorkerPoolRpcDriver.getWorker(sessionId)` assigns one sticky worker per session
+`WebWorkerRpcDriver.getWorker(sessionId)` assigns one sticky worker per session
 id, and a track's session id is `adapterConfigCacheKey(adapter)`
 (`BaseTrackModel.rpcSessionId`) — deliberate, since it is what lets a track's
 calls share one cached adapter instance. Pool size is

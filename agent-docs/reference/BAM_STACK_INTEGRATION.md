@@ -152,7 +152,7 @@ measurably worse than doing nothing (ADR-064).
 
 Three things in the read path are scoped **per JS context**, and adapters are
 sticky per track to one of `clamp(hardwareConcurrency - 1, 1, 5)` RPC workers
-(`WorkerPoolRpcDriver.getWorker`, keyed on `rpcSessionId` =
+(`WebWorkerRpcDriver.getWorker`, keyed on `rpcSessionId` =
 `adapterConfigCacheKey(adapter)`). So each of the three multiplies by however
 many workers a session spreads its tracks over.
 

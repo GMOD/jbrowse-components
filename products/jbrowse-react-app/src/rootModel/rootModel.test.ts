@@ -52,12 +52,12 @@ describe('the default RPC driver follows makeWorkerInstance', () => {
       // no rpc.defaultDriver here: the point is what the *host* default is
       { jbrowse: {} },
     )
-    expect(root.rpcManager.defaultDriverName).toBe('MainThreadRpcDriver')
+    expect(root.rpcManager.driverName).toBe('MainThreadRpcDriver')
   })
 
   test('web worker with one', () => {
     const root = getRootModel(() => ({}) as Worker).create({ jbrowse: {} })
-    expect(root.rpcManager.defaultDriverName).toBe('WebWorkerRpcDriver')
+    expect(root.rpcManager.driverName).toBe('WebWorkerRpcDriver')
   })
 })
 

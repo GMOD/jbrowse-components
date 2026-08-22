@@ -262,7 +262,7 @@ type WireOf<Entry> = Entry extends { wire: infer W }
  * value from, and — for the majority of methods, which do not override it —
  * what the caller gets.
  */
-export type RpcUnwrappedWireReturn<M extends string> = UnwrapRpcResult<
+type RpcUnwrappedWireReturn<M extends string> = UnwrapRpcResult<
   RpcWireReturn<M>
 >
 
@@ -295,7 +295,7 @@ export type RpcCallReturn<M extends string> = M extends RpcMethodName
  * (CoreGetExportData shipped uncancellable), and `sessionId` spread to 22 of 41
  * entries because `RpcCallArgs` had been subtracting it back off.
  */
-export type EntriesDeclaringCallLevelFields = {
+type EntriesDeclaringCallLevelFields = {
   [K in RpcMethodName]: Extract<
     keyof RpcArgs<K>,
     keyof RpcCallContext
@@ -321,7 +321,7 @@ export type _NoCallLevelFieldsInRegistry =
  * part of the return is wrapped" until the latter became `transferables: T`,
  * and a field with two meanings is one nobody can read off a single entry.
  */
-export type EntriesWithRedundantWire = {
+type EntriesWithRedundantWire = {
   [K in RpcMethodName]: RpcRegistry[K] extends { wire: unknown }
     ? RpcUnwrappedWireReturn<K> extends RpcReturn<K>
       ? K

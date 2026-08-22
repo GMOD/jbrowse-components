@@ -22,10 +22,9 @@ export interface RpcManagerOptions {
 export default class RpcManager {
   static configSchema = rpcConfigSchema
 
-  pluginManager: PluginManager
-  mainConfiguration: AnyConfigurationModel
-  defaultDriverName: string
-
+  private pluginManager: PluginManager
+  private mainConfiguration: AnyConfigurationModel
+  private hostDriverName: string
   private makeWorkerInstance?: () => Worker
   private driver?: BaseRpcDriver
   private destroyed = false
@@ -40,17 +39,31 @@ export default class RpcManager {
   ) {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
-    this.defaultDriverName = defaultDriverName
+    this.hostDriverName = defaultDriverName
     this.makeWorkerInstance = makeWorkerInstance
   }
 
   /**
-   * The driver every call in this session runs on: the config's `defaultDriver`
-   * if set, otherwise the host application's default.
+   * Which driver this session runs on: the config's `defaultDriver` if set,
+   * otherwise the host application's default.
    *
-   * Built once and kept. The config read is a tracked MobX read and `call`
-   * reaches it synchronously, so per-call it also made the RPC configuration a
-   * dependency of every autorun that fetches.
+   * A getter rather than the two fields it replaces, because the diagnostic
+   * surfaces that want to print it — the About widget and the error-stack dialog
+   * — were each re-deriving the resolution from `mainConfiguration` and
+   * `defaultDriverName`, so the rule for where a call goes was written three
+   * times and one copy carried a cast.
+   */
+  get driverName(): string {
+    return (
+      readConfObject(this.mainConfiguration, 'defaultDriver') ||
+      this.hostDriverName
+    )
+  }
+
+  /**
+   * The driver itself, built once and kept. The config read above is a tracked
+   * MobX read and `call` reaches it synchronously, so resolving per call also
+   * made the RPC configuration a dependency of every autorun that fetches.
    *
    * There is no per-call, per-track or per-display override. One existed, and
    * one call site in the app ever passed it — a tag-value scan in the alignments
@@ -68,15 +81,12 @@ export default class RpcManager {
     if (this.destroyed) {
       throw new Error('RpcManager was destroyed')
     }
-    return (this.driver ??= this.makeDriver(
-      readConfObject(this.mainConfiguration, 'defaultDriver') ||
-        this.defaultDriverName,
-    ))
+    return (this.driver ??= this.makeDriver(this.driverName))
   }
 
   private makeDriver(backendName: string): BaseRpcDriver {
     if (backendName === 'MainThreadRpcDriver') {
-      return new MainThreadRpcDriver({ config: this.mainConfiguration })
+      return new MainThreadRpcDriver(this.pluginManager, this.mainConfiguration)
     } else if (backendName === 'WebWorkerRpcDriver') {
       const { makeWorkerInstance } = this
       if (!makeWorkerInstance) {
@@ -85,15 +95,17 @@ export default class RpcManager {
         )
       }
       return new WebWorkerRpcDriver(
-        { config: this.mainConfiguration, makeWorkerInstance },
+        this.pluginManager,
+        this.mainConfiguration,
         {
+          makeWorkerInstance,
           plugins: this.pluginManager.runtimePluginDefinitions,
           windowHref: typeof window === 'undefined' ? '' : window.location.href,
           // workers format their own strings (a jexl `mouseover` slot runs
           // against the full feature worker-side), so they need the display
-          // preference too. Read at driver construction — workers boot lazily
-          // and are not rebooted on a preference change, which is why the
-          // preference asks for a reload.
+          // preference too. Read at driver construction — workers boot lazily and
+          // are not rebooted on a preference change, which is why the preference
+          // asks for a reload.
           numberGrouping: getNumberGrouping(),
         },
       )
@@ -110,7 +122,7 @@ export default class RpcManager {
    *
    * There is deliberately no second position for either. The handles were
    * accepted in an `opts` parameter as well, and the two disagreed:
-   * `WorkerPoolRpcDriver` honored a `statusCallback` there and
+   * `WebWorkerRpcDriver` honored a `statusCallback` there and
    * `MainThreadRpcDriver` ignored `opts` entirely, so the same call had a
    * working progress bar under a worker and a silent one under the driver every
    * embedded component defaults to. One position.
@@ -131,10 +143,7 @@ export default class RpcManager {
     }
     const driverForCall = this.getDriver()
     return (await this.withAuthRetry(() =>
-      driverForCall.call(this.pluginManager, sessionId, functionName, {
-        ...args,
-        sessionId,
-      }),
+      driverForCall.call(sessionId, functionName, { ...args, sessionId }),
     )) as RpcCallReturn<M>
   }
 
@@ -152,7 +161,7 @@ export default class RpcManager {
    */
   async freeSession(sessionId: string) {
     if (!this.destroyed) {
-      await this.getDriver().freeSession(this.pluginManager, sessionId)
+      await this.getDriver().freeSession(sessionId)
     }
   }
 

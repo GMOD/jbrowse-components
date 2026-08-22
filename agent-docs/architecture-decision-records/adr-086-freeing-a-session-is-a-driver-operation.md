@@ -57,7 +57,7 @@ adapters actually live:
 
 - the base (and so `MainThreadRpcDriver`) invokes `CoreFreeResources` in this
   realm;
-- `WorkerPoolRpcDriver` looks the session up in its own assignment table, drops
+- `WebWorkerRpcDriver` looks the session up in its own assignment table, drops
   the entry, and calls the worker **only if that slot has one** — never booting
   one, the same rule `notifyStopToken` already followed.
 
@@ -80,6 +80,45 @@ host default) once and holds the one driver, which also takes a `readConfObject`
 off the dispatch path of every call — a read that, reached from an autorun body,
 made the pool's own configuration a dependency of every fetch.
 
+**The driver hierarchy is two deep, not three.** `WorkerPoolRpcDriver` was an
+abstract base over one `makeWorker`, which had one implementation; it is folded
+into `WebWorkerRpcDriver`, where `makeWorker` is a plain overridable method —
+all the tests ever wanted from the seam. `RpcDriverConstructorArgs` and
+`WebWorkerRpcDriverConstructorArgs` go with it: a driver takes its config
+positionally and, if it needs more, one options object rather than two.
+
+**One `driverName` getter replaces `mainConfiguration` and `defaultDriverName`
+on the manager's surface.** Both were public only so the About widget and the
+error-stack dialog could re-derive `readConfObject(config, 'defaultDriver') ||
+hostDefault` — three copies of the rule for where a call goes, one of them
+carrying a cast.
+
+**A driver holds its `PluginManager` instead of being handed one per call.**
+`call`, `transport` and `freeSession` each took one as their first parameter and
+the manager passed the same object to all of them on every RPC. Holding it is
+also what lets `Core-extendWorker` fire from `LazyWorker`, where a worker boots,
+rather than from `transport`, which is the only place that had a plugin manager
+— so the fold is once-per-worker by construction and the WeakMap that memoized
+it per dispatch is gone.
+
+**`Core-extendWorker` stays, and its declared type finally covers what it is
+used for.** `WorkerHandle` gains `on?(eventName, listener)` and
+`postMessage?(message)`. The only consumer is jbrowse-plugin-apollo, whose
+worker-side sequence adapter asks the main thread for sequence across this seam,
+and it was reaching a `private client` and a public `worker` that the interface
+promised nothing about — so the hook worked only because TypeScript erases
+`private`. See "Consequences" for what that costs them.
+
+**The pool drives a worker's life on the handle it booted, not on what the fold
+returns.** `WorkerHandle` makes `onError` and `notifyStopToken` optional, so a
+wrapper that spreads the handle and forwards `call` — the obvious way to write
+one — conforms while carrying neither, and a slot driven through it never
+notices a dead worker and never re-boots. `LazyWorker` keeps the two apart:
+`bootP` for the error hook and the termination, `workerP` for calls. The
+dispatch-time fold got this right by accident, by only ever using the extended
+handle for `call`; moving the fold made it a decision, and a test caught the day
+it stopped being true.
+
 ## Consequences
 
 - Tearing a session down spawns no workers. The outgoing pool is terminated once
@@ -91,6 +130,12 @@ made the pool's own configuration a dependency of every fetch.
 - Plugin-supplied RPC drivers are not a thing that regressed — they were never
   reachable. Restoring them means deciding to export `BaseRpcDriver`, which is
   the decision nobody made. See `reference/PLUGIN_ABI_STABILITY.md`.
+- **jbrowse-plugin-apollo has two lines to change**, on `main` and on its
+  `jbrowse_5` branch: `handle.client.on(…)` becomes `handle.on(…)` (and the
+  guard above it, `'on' in handle.client`, becomes `'on' in handle`), and
+  `handle.worker.postMessage(…)` becomes `handle.postMessage(…)`. Both now name
+  something `WorkerHandle` declares, so the plugin stops depending on a private
+  field surviving into the emitted JS.
 
 ## Rejected alternatives
 

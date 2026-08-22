@@ -373,7 +373,7 @@ author who lands on a behavior change can find the sentence that explains it.
   `args` (that field has since gone too, further down this ledger), and nothing
   in the tree passed it there. Everything else put in it went
   to a position `MainThreadRpcDriver` drops on the floor and
-  `WorkerPoolRpcDriver` spread over its own — which is the same two-positions
+  `WebWorkerRpcDriver` spread over its own — which is the same two-positions
   disagreement that made `CoreGetExportData` silent under a worker and cancelable
   under neither, and one in-tree call site was still shaped by it: the hic
   header read passed a `statusCallback` there, so its "walking the norm-vector

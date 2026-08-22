@@ -90,7 +90,7 @@ An earlier version of this proposal specified a `Map<uid, AbortController>` in
 of routing per call is strictly simpler and handles more: one token is commonly
 in flight on several calls at once, a worker holding nothing under that id
 ignores the frame, and there is no "route the abort to the same worker the call
-landed on" problem to solve. `WorkerPoolRpcDriver` registers a broadcaster and
+landed on" problem to solve. `WebWorkerRpcDriver` registers a broadcaster and
 never boots a worker just to notify it.
 
 ## The coalescing trap, and where it is handled

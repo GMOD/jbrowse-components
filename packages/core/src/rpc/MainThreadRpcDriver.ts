@@ -1,6 +1,5 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 
-import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { StatusCallback } from '../util/progress.ts'
 
@@ -14,7 +13,6 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
   name = 'MainThreadRpcDriver'
 
   protected async transport(
-    _pluginManager: PluginManager,
     _sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,

@@ -114,7 +114,7 @@ in-process by design, which is correct rather than a bug to fix.
 
 **The four is per RPC worker, not per session.** The check above loaded one
 track, which is what made this invisible. `getSharedWorkerPool()` memoizes per JS
-context and `WorkerPoolRpcDriver` gives each track a sticky worker out of
+context and `WebWorkerRpcDriver` gives each track a sticky worker out of
 `clamp(hardwareConcurrency - 1, 1, 5)`, so the pool multiplies by the number of
 contexts: 5 tracks give 20 pool workers, and so do 8.
 

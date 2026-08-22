@@ -74,7 +74,7 @@ and the two drivers answering the question differently, are the real costs.
 The decision was destroyed twice on the way down, so none of those branches were
 reachable in a worker:
 
-- `WebWorkerHandle.call` minted a `message-<nanoid>` channel for every call, and
+- `WebWorkerHandle.call` minted a `message-<n>` channel for every call, and
   `wrapForRpc` builds the worker's `statusCallback` out of whatever channel it is
   handed. Every method in every worker therefore ran with a live status handle,
   and every status it sent crossed a postMessage to reach a main-thread listener

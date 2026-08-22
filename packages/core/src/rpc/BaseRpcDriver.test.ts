@@ -18,14 +18,11 @@ class CapturingDriver extends BaseRpcDriver {
     statusCallback: StatusCallback | undefined
   }[] = []
 
-  constructor() {
-    super({
-      config: rpcConfigSchema.create({}),
-    })
+  constructor(pm: PluginManager = pluginManager) {
+    super(pm, rpcConfigSchema.create({}))
   }
 
   protected async transport(
-    _pluginManager: PluginManager,
     _sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
@@ -52,7 +49,7 @@ describe('BaseRpcDriver.call envelope', () => {
   test('splits statusCallback out of the payload and passes it to transport', async () => {
     const driver = new CapturingDriver()
     const statusCallback = () => {}
-    await driver.call(pluginManager, 'sid', 'SomeMethod', {
+    await driver.call('sid', 'SomeMethod', {
       sessionId: 'sid',
       data: 1,
       statusCallback,
@@ -69,7 +66,7 @@ describe('BaseRpcDriver.call envelope', () => {
 
   test('deserializes the transport result before returning', async () => {
     const driver = new CapturingDriver()
-    const result = await driver.call(pluginManager, 'sid', 'SomeMethod', {
+    const result = await driver.call('sid', 'SomeMethod', {
       sessionId: 'sid',
     })
     expect(result).toEqual({
@@ -79,9 +76,9 @@ describe('BaseRpcDriver.call envelope', () => {
 
   test('throws without a sessionId', async () => {
     const driver = new CapturingDriver()
-    await expect(
-      driver.call(pluginManager, '', 'SomeMethod', {}),
-    ).rejects.toThrow('sessionId is required')
+    await expect(driver.call('', 'SomeMethod', {})).rejects.toThrow(
+      'sessionId is required',
+    )
   })
 
   // An RPC method is addressed by string, so a removed or renamed one fails
@@ -89,11 +86,14 @@ describe('BaseRpcDriver.call envelope', () => {
   // caller is a bare string in some plugin. `TypeRecord.get` is what answers,
   // and this is the assertion that it still reaches the RPC path.
   test('names the method, and the build, when nothing registers it', async () => {
-    const driver = new CapturingDriver()
     const real = new PluginManagerCtor([])
     real.createPluggableElements()
     await expect(
-      driver.call(real, 'sid', 'MultiVariantGetGenotypeMatrix', {}),
+      new CapturingDriver(real).call(
+        'sid',
+        'MultiVariantGetGenotypeMatrix',
+        {},
+      ),
     ).rejects.toThrow(
       /RpcMethodType 'MultiVariantGetGenotypeMatrix' is not registered/,
     )
@@ -104,7 +104,7 @@ describe('BaseRpcDriver.call envelope', () => {
     const stopToken = createStopToken()
     stopStopToken(stopToken)
     await expect(
-      driver.call(pluginManager, 'sid', 'SomeMethod', {
+      driver.call('sid', 'SomeMethod', {
         sessionId: 'sid',
         stopToken,
       }),
@@ -115,7 +115,6 @@ describe('BaseRpcDriver.call envelope', () => {
   })
 
   test('refuses to dispatch when the stop lands during serialization', async () => {
-    const driver = new CapturingDriver()
     const stopToken = createStopToken()
     // serializeArguments is where the refName map is resolved, so it is the one
     // long await in call(); a stop arriving here used to wake a worker anyway
@@ -126,20 +125,18 @@ describe('BaseRpcDriver.call envelope', () => {
         return { ...args, serialized: true }
       },
     }
+    const driver = new CapturingDriver({
+      getRpcMethodType: () => slowMethod,
+    } as unknown as PluginManager)
     await expect(
-      driver.call(
-        { getRpcMethodType: () => slowMethod } as unknown as PluginManager,
-        'sid',
-        'SomeMethod',
-        { sessionId: 'sid', stopToken },
-      ),
+      driver.call('sid', 'SomeMethod', { sessionId: 'sid', stopToken }),
     ).rejects.toThrow('aborted')
     expect(driver.transportCalls).toHaveLength(0)
   })
 
   test('dispatches normally for a live stop token', async () => {
     const driver = new CapturingDriver()
-    await driver.call(pluginManager, 'sid', 'SomeMethod', {
+    await driver.call('sid', 'SomeMethod', {
       sessionId: 'sid',
       stopToken: createStopToken(),
     })
@@ -166,10 +163,9 @@ describe('BaseRpcDriver.call envelope', () => {
         invoked.push(args)
       },
     }
-    await driver.freeSession(
-      { getRpcMethodType: () => freeMethod } as unknown as PluginManager,
-      'sid',
-    )
+    await new CapturingDriver({
+      getRpcMethodType: () => freeMethod,
+    } as unknown as PluginManager).freeSession('sid')
     expect(invoked).toEqual([{ sessionId: 'sid' }])
     expect(driver.transportCalls).toEqual([])
   })

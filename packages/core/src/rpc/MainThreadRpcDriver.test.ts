@@ -5,10 +5,13 @@ import rpcConfigSchema from './configSchema.ts'
 import type PluginManager from '../PluginManager.ts'
 
 function makeDriver(rpcMethod: unknown) {
-  const driver = new MainThreadRpcDriver({ config: rpcConfigSchema.create({}) })
   const pluginManager = {
     getRpcMethodType: () => rpcMethod,
   } as unknown as PluginManager
+  const driver = new MainThreadRpcDriver(
+    pluginManager,
+    rpcConfigSchema.create({}),
+  )
   return { driver, pluginManager }
 }
 
@@ -37,11 +40,9 @@ describe('MainThreadRpcDriver', () => {
         return { deserialized: ret }
       }
     }
-    const { driver, pluginManager } = makeDriver(
-      new SomeMethod({} as PluginManager),
-    )
+    const { driver } = makeDriver(new SomeMethod({} as PluginManager))
 
-    const result = await driver.call(pluginManager, 'sid', 'SomeMethod', {
+    const result = await driver.call('sid', 'SomeMethod', {
       sessionId: 'sid',
       data: 1,
       statusCallback,
@@ -68,11 +69,9 @@ describe('MainThreadRpcDriver', () => {
         return 'raw-result'
       }
     }
-    const { driver, pluginManager } = makeDriver(
-      new SomeMethod({} as PluginManager),
-    )
+    const { driver } = makeDriver(new SomeMethod({} as PluginManager))
 
-    await driver.call(pluginManager, 'sid', 'SomeMethod', { sessionId: 'sid' })
+    await driver.call('sid', 'SomeMethod', { sessionId: 'sid' })
 
     // the worker answers this by minting no status channel, so wrapForRpc adds
     // no key; the two drivers have to hand `execute` the same bag

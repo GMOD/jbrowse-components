@@ -76,7 +76,7 @@ sequential loop.
 
 **Get the mechanism right first**, because the obvious mental model is wrong. All
 of one track's per-region calls land on the **same** worker:
-`WorkerPoolRpcDriver.getWorker(sessionId)` assigns a sticky worker per session id,
+`WebWorkerRpcDriver.getWorker(sessionId)` assigns a sticky worker per session id,
 and a track's session id is `adapterConfigCacheKey(adapter)`
 (`BaseTrackModel.rpcSessionId`). The stickiness is deliberate — it is what lets
 the calls share one cached adapter instance. Pool size is
