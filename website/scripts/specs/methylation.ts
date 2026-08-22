@@ -116,6 +116,74 @@ const SNRPN_MODKIT_MULTI_TRACK = {
   },
 }
 
+// The three lanes the WGBS pileup is read against, shared by the contexts
+// figure and by the tour that films one pileup cycling through the contexts:
+// the gene models, the repeat lane that names the element, and the aggregate
+// MethylDackel fractions. One copy, so the film cannot document a route
+// through an app the figure beside it is not showing.
+const ARABIDOPSIS_CONTEXT_LANES = [
+  { trackId: 'arabidopsis_genes' },
+  // THE TRANSPOSON, DRAWN RATHER THAN ASSERTED. The gene GFF above
+  // carries only a pseudogene over the silenced half, so the label
+  // below was the figure's only evidence for the word "transposon".
+  // This lane is UCSC's GenArk RepeatMasker bigBed for TAIR10
+  // (GCF_000001735.3), which needs no hosting of ours and is already
+  // on this config's refNames — its chroms ARE NC_003070.9 and the
+  // rest, so nothing has to be aliased. Over this window it returns
+  // `META1_LTR#LTR/Copia` at 4,406,005-4,411,120, the same element
+  // and family TAIR10_Transposable_Elements.txt calls AT1TE14315.
+  //
+  // Filtered by length rather than partitioned into rows by repeat
+  // class. The class route USED to be blocked by a display defect and
+  // is not any more; it was then tried here and rejected on the
+  // picture, so don't re-walk either half.
+  //
+  // The defect, for the record, since two rounds went into it:
+  // `LinearMultiRowFeatureDisplay.partitionField` documents
+  // `jexl:split(split(feature.name,'#')[1],'/')[0]` for exactly this
+  // file type, bigRmskBed carrying the class as a suffix on the name
+  // (`META1_LTR#LTR/Copia`) rather than in a column. Two bugs stood in
+  // front of it. `split` threw on an absent value, so a nested one
+  // banner-ed the whole display; making it total turned that into a
+  // silent ''. The cause under both was one level up — the model read
+  // the slot with a resolving reader and no feature, so the expression
+  // was evaluated on the MAIN THREAD against nothing and its answer
+  // shipped to the worker as if it were the attribute name. Fixed in
+  // `readConfObject` ("a callback read with no context is not an
+  // evaluation"), pinned by `partitionFieldTransport.test.ts`.
+  //
+  // Rendered, the class partition is worse HERE, which only a picture
+  // could say: it yields `LTR` / `Low_complexity` / `Simple_repeat`,
+  // costs 40px more, leaves `Low_complexity` empty over this window,
+  // and drops the per-feature label — so the lane stops naming
+  // `META1_LTR#LTR/Copia` and the "LTR/Copia transposon" callout loses
+  // the evidence it points at, keeping only `LTR`. The display is
+  // built for many features per row (haplotype paintings, chromHMM);
+  // this window holds five features, one of which matters. A single
+  // self-labelling bar is the right shape for that, and the row
+  // headers are the wrong tool rather than a broken one.
+  //
+  // The length filter is doing that job: the other four repeats here
+  // are 30-80 bp simple repeats ((AATAA)n, (TTC)n), sub-pixel ticks
+  // that would only add labels; 200 bp is far below the 5.1 kb element
+  // and far above all four.
+  {
+    trackId: 'arabidopsis_rmsk',
+    type: 'LinearBasicDisplay',
+    jexlFiltersSetting: ['jexl:feature.end-feature.start>200'],
+    height: 50,
+  },
+  // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy)
+  {
+    trackId: 'arabidopsis_methyldackel',
+    type: 'MultiLinearWiggleDisplay',
+    defaultRendering: 'multirowxy',
+    minScore: 0,
+    maxScore: 100,
+    height: 170,
+  },
+]
+
 // Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
 // NC_003070.9:4,398,000-4,412,000, a window that pairs two methylation regimes:
 // the expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body
@@ -162,6 +230,40 @@ export const methylationVideoFixtures = {
   readsTrackId: 'HG002_snrpn_5mC_reads',
 }
 
+// What videos/epigenomics.ts films: ONE per-read pileup over the same three
+// lanes the contexts figure draws, opened in the CpG context the page's own
+// `addtrack` fence pins through `displayDefaults`. The figure needs a copy per
+// context to put the three side by side, and three pileups cannot say they are
+// the same molecules; recoloring one track is what says it.
+//
+// The lane is taller and its reads bigger than the figure's copies. A video is
+// filmed at deviceScaleFactor 1 and played at its own size, where the figure is
+// captured at 2 and read at whatever width the column gives it, so a 3px read
+// that is legible in the PNG is three screen pixels in the clip. The figure
+// pays for the lane three times over and this pays for it once.
+export const bisulfiteVideoFixtures = {
+  wgbsTrackId: 'arabidopsis_wgbs',
+  cpgPileup: lgvSession(ARABIDOPSIS_WGBS_CONFIG, {
+    assembly: 'arabidopsis',
+    loc: 'NC_003070.9:4,398,000-4,412,000',
+    tracks: [
+      ...ARABIDOPSIS_CONTEXT_LANES,
+      {
+        trackId: 'arabidopsis_wgbs',
+        type: 'LinearAlignmentsDisplay',
+        colorBy: {
+          type: 'bisulfite',
+          modifications: { cytosineContext: 'CG' },
+        },
+        showCoverage: false,
+        heightMode: 'fixed',
+        featureHeight: 5,
+        height: 200,
+      },
+    ],
+  }),
+}
+
 export const methylationSpecs: ScreenshotSpec[] = [
   // The three plant methylation contexts, shown at both levels so the "3 modes"
   // is unmistakable and consistent: the aggregate MethylDackel track (one 0-100%
@@ -181,66 +283,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
           assembly: 'arabidopsis',
           loc: 'NC_003070.9:4,398,000-4,412,000',
           tracks: [
-            { trackId: 'arabidopsis_genes' },
-            // THE TRANSPOSON, DRAWN RATHER THAN ASSERTED. The gene GFF above
-            // carries only a pseudogene over the silenced half, so the label
-            // below was the figure's only evidence for the word "transposon".
-            // This lane is UCSC's GenArk RepeatMasker bigBed for TAIR10
-            // (GCF_000001735.3), which needs no hosting of ours and is already
-            // on this config's refNames — its chroms ARE NC_003070.9 and the
-            // rest, so nothing has to be aliased. Over this window it returns
-            // `META1_LTR#LTR/Copia` at 4,406,005-4,411,120, the same element
-            // and family TAIR10_Transposable_Elements.txt calls AT1TE14315.
-            //
-            // Filtered by length rather than partitioned into rows by repeat
-            // class. The class route USED to be blocked by a display defect and
-            // is not any more; it was then tried here and rejected on the
-            // picture, so don't re-walk either half.
-            //
-            // The defect, for the record, since two rounds went into it:
-            // `LinearMultiRowFeatureDisplay.partitionField` documents
-            // `jexl:split(split(feature.name,'#')[1],'/')[0]` for exactly this
-            // file type, bigRmskBed carrying the class as a suffix on the name
-            // (`META1_LTR#LTR/Copia`) rather than in a column. Two bugs stood in
-            // front of it. `split` threw on an absent value, so a nested one
-            // banner-ed the whole display; making it total turned that into a
-            // silent ''. The cause under both was one level up — the model read
-            // the slot with a resolving reader and no feature, so the expression
-            // was evaluated on the MAIN THREAD against nothing and its answer
-            // shipped to the worker as if it were the attribute name. Fixed in
-            // `readConfObject` ("a callback read with no context is not an
-            // evaluation"), pinned by `partitionFieldTransport.test.ts`.
-            //
-            // Rendered, the class partition is worse HERE, which only a picture
-            // could say: it yields `LTR` / `Low_complexity` / `Simple_repeat`,
-            // costs 40px more, leaves `Low_complexity` empty over this window,
-            // and drops the per-feature label — so the lane stops naming
-            // `META1_LTR#LTR/Copia` and the "LTR/Copia transposon" callout loses
-            // the evidence it points at, keeping only `LTR`. The display is
-            // built for many features per row (haplotype paintings, chromHMM);
-            // this window holds five features, one of which matters. A single
-            // self-labelling bar is the right shape for that, and the row
-            // headers are the wrong tool rather than a broken one.
-            //
-            // The length filter is doing that job: the other four repeats here
-            // are 30-80 bp simple repeats ((AATAA)n, (TTC)n), sub-pixel ticks
-            // that would only add labels; 200 bp is far below the 5.1 kb element
-            // and far above all four.
-            {
-              trackId: 'arabidopsis_rmsk',
-              type: 'LinearBasicDisplay',
-              jexlFiltersSetting: ['jexl:feature.end-feature.start>200'],
-              height: 50,
-            },
-            // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy)
-            {
-              trackId: 'arabidopsis_methyldackel',
-              type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multirowxy',
-              minScore: 0,
-              maxScore: 100,
-              height: 170,
-            },
+            ...ARABIDOPSIS_CONTEXT_LANES,
             ...WGBS_CONTEXT_COPIES.map(c => c.display),
           ],
         },

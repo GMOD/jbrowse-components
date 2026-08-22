@@ -143,8 +143,12 @@ the tour was filmed in.
   the window standing afterwards is wider than the one the session opened at.
   Anything reading `dynamicBlocks` (a subgraph launch) then cuts a region the
   spec never named, and it fails late, at whatever the next step anchors by id.
-- The tours stay on light tracks. A pileup under swiftshader blocks the main
-  thread per animated frame until the click's own round trip throws.
+- **A tour stays on light tracks, and light is about VOLUME.** A deep human ONT
+  lane under swiftshader blocks the main thread per animated frame until the
+  click's own round trip throws, which is where this rule came from. It is not
+  the display type: `epigenomics/bisulfite_contexts` films a per-read pileup
+  headless with nothing starved, over 14 kb of Illumina WGBS on a plant genome.
+  Measure the tour you have; `--headed` runs on the real GPU when it needs to.
 
 ## Screenshots
 

@@ -223,14 +223,15 @@ and the bigWigs straight from local disk with no web server.
 
 In the alignments track menu, pick **Color by... → Bisulfite / EM-seq**, then a
 cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**. Methylated
-cytosines paint red, and **Show unmethylated (blue)** adds the converted sites
-in blue, which is what separates an unmethylated cytosine from no cytosine at
-all: with it off, both are blank. The mode is reference-based, so it only means
-anything on a bisulfite or EM-seq library.
+cytosines paint red. Once a context is set, that same submenu carries a **Show
+unmethylated (blue)** checkbox below the contexts, which paints the converted
+sites as well. That is what separates an unmethylated cytosine from no cytosine
+at all: with it off, both are blank. The mode is reference-based, so it only
+means anything on a bisulfite or EM-seq library.
 
-The figure below leaves **Show unmethylated** off, so methylation reads as
-presence of red and the three contexts contrast without a red/blue mix on every
-read.
+The figure and clip below leave **Show unmethylated** off, so methylation reads
+as presence of red and the three contexts contrast without a red/blue mix on
+every read.
 
 ## Two methylation regimes
 
@@ -262,6 +263,8 @@ whose sequence names are the RefSeq accessions this assembly already uses, so it
 loads with no aliasing.
 
 <Figure caption="TAIR10 genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
+
+<Video src="/media/epigenomics/bisulfite_contexts.mp4" caption="One WGBS pileup recolored CpG, then CHG, then CHH from the track menu, under the TAIR10 genes, the RepeatMasker lane and the aggregate MethylDackel rows: red holds over the LTR element through all three contexts and drains from the gene body." />
 
 ## Reproduce it end to end
 
