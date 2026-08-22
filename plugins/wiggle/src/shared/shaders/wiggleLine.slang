@@ -189,15 +189,19 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // the max-blend pass union adjacent capsules into a seamless round join at
     // any angle.
     //
-    // Measured, not the analytic `aaHalfPx`, and do NOT "simplify" it to a
-    // constant on the grounds that a proper SDF has unit gradient. It does —
-    // but per CSS px, while ddx/ddy differentiate against the DEVICE-px grid,
-    // so the measurement returns 1/dpr and keeps the ramp one OUTPUT pixel wide
-    // instead of one CSS pixel. Going analytic needs a devicePixelRatio
-    // uniform, which this shader does not have.
+    // Analytic, off `u.devicePixelRatio`, exactly as the dotplot capsule — the
+    // same shape, and the same reason. `dist` is a TRUE Euclidean distance in
+    // CSS px, so |grad dist| = 1 at every angle and one output pixel is
+    // `2 * aaHalfPx(dpr)` with nothing to differentiate. It measured until the
+    // xyplot bar gave this uniform block a devicePixelRatio; the measurement was
+    // one output pixel wide too, but it took ddx/ddy of a quantity that comes
+    // off a `max` clamp, so the 2x2 quads straddling the cap/body junction
+    // differentiated a discontinuity. AA_PAD_PX above already leaves the ramp
+    // room inside the geometry.
     float alongOver = max(abs(fragIn.localPos.x) - fragIn.segHalfLen, 0.0);
     float dist = length(float2(alongOver, fragIn.localPos.y));
-    float alpha = aaRamp(u.lineWidth * 0.5 - dist, aaGradient(dist));
+    float alpha = aaRamp(u.lineWidth * 0.5 - dist,
+                         2.0 * aaHalfPx(u.devicePixelRatio));
     if (alpha <= 0.0) {
       discard;
     }
@@ -205,7 +209,13 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // accumulating.
     return float4(fragIn.color.rgb * alpha, alpha);
   }
-  // The step-line's quads are flat fills; the multisampled target antialiases
-  // their edges.
+  // The step-line's quads stay flat fills, and that is a decision rather than an
+  // omission: a feature draws three square-capped quads that DELIBERATELY
+  // overlap at the joints so corners fill with no gaps, and consecutive features
+  // overlap again. Per-fragment coverage on an edge two quads both cover
+  // double-blends there — Kilgard's conflation, the self-overlap case — so the
+  // step line would gain a lattice of darker joints where it has none today.
+  // The rendering that wants an antialiased stroke is linecenter, above, whose
+  // capsules union under max blend precisely so that overlap is free.
   return fragIn.color;
 }

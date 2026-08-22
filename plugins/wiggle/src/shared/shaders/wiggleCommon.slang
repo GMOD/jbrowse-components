@@ -71,6 +71,11 @@ public struct Uniforms {
   // config means "derive from the domain", and that rule lives there so both
   // backends normalize against the same number). Unread for the other scales.
   public float  symlogConstant;
+  // What one output pixel is worth in the CSS px every geometry number above is
+  // measured in, so a fragment measuring a true distance can size its ramp
+  // without differentiating it (antialias.slang §"Analytic"). The xyplot bar's
+  // horizontal cuts and the center line's capsule both read it.
+  public float  devicePixelRatio;
 };
 
 public float bpToClipX(uint bp, Uniforms u) {

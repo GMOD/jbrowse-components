@@ -12,6 +12,7 @@
 // and tens of MB of a 1000-source multiwiggle's single per-region allocation.
 //! targets: wgsl, glsl
 
+import antialias;
 import hpmath;
 import colorPack;
 import pointGlyph;
@@ -34,6 +35,13 @@ struct VsOut {
   float4 color    : COLOR0;
   // scatter: local quad coord (-1..1) for disc AA.
   float2 localPos : TEXCOORD0;
+  // xyplot: CSS px below the bar's top cut (.x) and below its bottom cut (.y).
+  // Both are affine in screen y with unit slope — the vertex sets them from the
+  // same `vy` it converts to clip — so the fragment's ramp is one OUTPUT pixel
+  // wide by construction and takes no derivative. Same shape as
+  // syntenyTypes.slang's `vertCoverage`, which is where the band-as-a-difference
+  // -of-two-ramps form is written up.
+  float2 barInkPx : TEXCOORD1;
 };
 
 // Which glyph the pass draws follows entirely from uniforms, so both stages
@@ -49,6 +57,29 @@ bool drawsDisc() {
     && u.scatterPointSize > SMALL_POINT_MAX_DIAMETER;
 }
 
+// Whether this pass draws the xyplot bar, whose two HORIZONTAL cuts the shader
+// antialiases itself. Uniform for the same reason drawsDisc() is.
+//
+// Only xyplot. Density's quad spans the whole row, so its horizontal cuts are
+// row boundaries that TILE with the row above and below — the one case where a
+// per-fragment alpha on both sides of a shared edge sums to 0.75 where 1.0 is
+// right and leaves a seam down every boundary (GPU_RENDERING.md §"Antialiasing
+// ramps", "Tiled cells"). It also has no datum on those cuts: density encodes
+// its score in the COLOR, so a soft row boundary would cost the seam and buy
+// nothing.
+bool drawsBar() {
+  return u.renderingType == RENDERING_TYPE_XYPLOT;
+}
+
+// One device pixel, in the CSS px the bar geometry is measured in. It is both
+// the ramp's full width and the geometry pad, and it has to be both: the pad
+// makes every fragment the ramp gives ink to fully covered by the quad, so the
+// rasterizer's own coverage never multiplies into the analytic one and the bar
+// looks the same at 1 sample as at 4.
+float barAaPx() {
+  return 2.0 * aaHalfPx(u.devicePixelRatio);
+}
+
 
 [shader("vertex")]
 VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
@@ -62,6 +93,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   float sx;
   float sy;
   float2 localPos = float2(0.0, 0.0);
+  float2 barInkPx = float2(0.0, 0.0);
 
   if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
@@ -108,7 +140,14 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       topPx = min(scoreY, originY) + rowTop;
       botPx = max(scoreY, originY) + rowTop;
     }
-    sy = lerp(1.0 - botPx * pxToClip, 1.0 - topPx * pxToClip, q.y);
+    // The bar grows one device px past each horizontal cut so the fragment's
+    // ramp has geometry to land on; the ramp is zero out there, so the extra
+    // area costs a discarded fragment and paints nothing. Density takes no pad
+    // and no ramp — see drawsBar().
+    float padPx = drawsBar() ? barAaPx() : 0.0;
+    float vy = lerp(botPx + padPx, topPx - padPx, q.y);
+    sy = 1.0 - vy * pxToClip;
+    barInkPx = float2(vy - topPx, vy - botPx);
   }
 
   float4 instColor = unpackRGBA(inst.color);
@@ -125,6 +164,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   o.position = float4(sx, sy, 0.0, 1.0);
   o.color = outColor;
   o.localPos = localPos;
+  o.barInkPx = barInkPx;
   return o;
 }
 
@@ -137,9 +177,29 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       discard;
     }
     outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
+  } else if (drawsBar()) {
+    // A bar's top cut IS the datum, so it must not quantise to the output grid:
+    // the reader takes the score off that edge, and rounding it to a whole
+    // device pixel rounds the value. The band is the difference of the two
+    // cuts' coverages, which is exactly the area the bar covers of the pixel at
+    // every height — including under one device px, where a single ramp applies
+    // a half-plane formula to a slab and over-inks (a bar sitting exactly on the
+    // origin would paint a half-covered row where it owes none).
+    //
+    // The VERTICAL cuts stay hard on purpose. Bins tile, so two neighbours split
+    // one pixel column, and per-fragment alpha on both sides of that shared edge
+    // composites to less than full ink — the seam GPU_RENDERING.md refuses for
+    // hi-C. The horizontal cuts have no such neighbour: bars are side by side,
+    // never stacked, so a column of pixels belongs to exactly one of them.
+    float aaPx = barAaPx();
+    float alpha = aaRamp(fragIn.barInkPx.x, aaPx) - aaRamp(fragIn.barInkPx.y, aaPx);
+    if (alpha <= 0.0) {
+      discard;
+    }
+    outColor = float4(fragIn.color.rgb, fragIn.color.a * alpha);
   } else {
-    // xyplot, density and the crisp small-point square are flat fills; the
-    // multisampled target antialiases their edges.
+    // Density and the crisp small-point square are flat fills whose edges are
+    // meant to be hard — a tiled row boundary and a pixel-snapped square.
     outColor = fragIn.color;
   }
   return outColor;

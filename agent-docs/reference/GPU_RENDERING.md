@@ -1306,19 +1306,28 @@ building. At one, the grep is cheaper than the machinery to enforce it.
 The right width depends on what the SDF is measured in, and the three cases are
 genuinely different:
 
-- **Distance already in pixels** (synteny `perpCoverage`, the dotplot capsule):
-  `|∇d| = 1`, so the half-width is `aaHalfPx(dpr)` and there is nothing to
-  differentiate. Needs a `devicePixelRatio` uniform.
+- **Distance already in pixels** (synteny `perpCoverage`, the dotplot capsule,
+  wiggle's center-line capsule and the xyplot bar's horizontal cuts): `|∇d| = 1`,
+  so the half-width is `aaHalfPx(dpr)` and there is nothing to differentiate.
+  Needs a `devicePixelRatio` uniform. **A varying set from the same screen y the
+  vertex converts to clip is in this case**, not the next one — it is affine in
+  screen y with unit slope, so the ramp is one output pixel wide by
+  construction; `syntenyTypes.slang`'s `vertCoverage` and `wiggle.slang`'s
+  `barInkPx` both rely on that.
 - **Not a perpendicular distance in known units** — an SDF in quad-local units
   whose scale differs per shape (`pointGlyph`, manhattan: the disc and triangle
   carry unit gradients, the diamond's L1 norm carries √2), or a varying carrying
   a foreshortening the shader cannot state (chevron's vertical `dist`). Must be
-  measured, as `aaGradient`, taken as the **full** width. This is also the only
-  option for a shader with no `devicePixelRatio` uniform, which is why wiggle's
-  capsule and chevron both measure.
+  measured, as `aaGradient`, taken as the **full** width. It is also the only
+  option for a shader with no `devicePixelRatio` uniform, which is why chevron
+  measures — and why wiggle's capsule did, until the xyplot bar gave that
+  uniform block a `devicePixelRatio` and it went analytic like the dotplot's.
 - **Tiled cells** (hi-C bins): no per-quad AA at all, deliberately. Bins share
   exact edges after a linear transform, and antialiasing them individually
-  produces seams.
+  produces seams. The same refusal covers marks that STACK — wiggle's step-line
+  quads overlap at every joint by design, and the alignments coverage band's
+  SNP/modification segments tile the depth bar they are drawn over — so those
+  keep hard edges too. §"What the coverage band cannot antialias" below.
 
 **There is one ramp SHAPE left, the linear `aaRamp`.** Which one to reach for
 used to read as a preference — linear "is what a box filter, and so Canvas2D,
@@ -1465,6 +1474,43 @@ traps in the file header: `browser-tests/hover-probe.ts` (drive
 is indistinguishable from a hover cue that draws nothing; and require a settled
 non-blank frame, because the repaint clears the canvas first) and the pad-cost
 probe above.
+
+### What the coverage band cannot antialias
+
+A bar's top edge is the value the reader takes off the chart, so it is the one
+edge in the tree where aliasing corrupts an *encoding* rather than a silhouette.
+`wiggle.slang`'s xyplot bar computes its own coverage for that reason
+(2026-08-22): `barInkPx` carries CSS px below each horizontal cut, the fragment
+takes the difference of two `aaRamp`s, and the quad grows one device px past each
+cut so the rasterizer's coverage never multiplies into the analytic one. Both
+horizontal cuts, not only the top — the band form is the only one exact below one
+device pixel, and a single top ramp against a hard baseline paints a
+half-covered row under a bar of zero height.
+
+**The same change does not go on the alignments coverage band, and the reason is
+structural.** Every mark there shares a horizontal edge with another mark:
+
+- `snpCoverage` / `modCoverage` segments **stack**. Each accumulates `yOffset`,
+  so segment *i*'s top is segment *i+1*'s bottom exactly. Per-fragment alpha on
+  both sides of that edge composites to less than full ink and leaks the grey
+  depth bar through — Kilgard & Bolz's conflation, the case MSAA sidesteps by
+  keeping coverage exclusive per sample.
+- The topmost segment's top **coincides** with `coverage.slang`'s depth-bar top
+  whenever a position is fully mismatched, which is what a homozygous SNP is. Two
+  primitives drawn one over the other with the same edge and the same fractional
+  alpha `a` composite to `a·segment + a(1−a)·grey`, so ramping either one alone
+  puts a grey fringe above the column and ramping both puts up to 0.25 of one
+  there. Hard edges tile exactly at any sample count; that is why they are hard.
+- `interbaseHistogram` is already `floor(… + 0.5)` on both y edges, deliberately
+  — its own comment records the cross-backend divergence that produced the snap.
+
+`Canvas2DHicRenderer.ts` and §"Tiled cells" above are the two earlier findings
+this is the third of. The shape that would let the coverage band go analytic is
+the same one §5 of
+[ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md)
+offers hi-C: draw a position's whole stack as ONE primitive, deriving the segment
+in the fragment, so the shared edges stop being primitive boundaries. Nothing has
+costed that.
 
 ## `displayedRegionIndex`
 

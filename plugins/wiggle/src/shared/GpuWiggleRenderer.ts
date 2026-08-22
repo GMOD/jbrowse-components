@@ -1,4 +1,5 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import {
@@ -151,6 +152,12 @@ export class GpuWiggleRenderer
       scatterPointSize: state.scatterPointSize,
       lineWidth: state.lineWidth,
       origin: state.origin,
+      // Screen density, so a fragment measuring a true CSS-px distance can size
+      // its ramp to one OUTPUT pixel without differentiating it. `getDpr()` and
+      // not `clip.pxH / canvasHeight`, matching the dotplot and synteny
+      // renderers: past the backing-store clamp the two differ, and the ramp
+      // wants the density of the screen the mark is read on.
+      devicePixelRatio: getDpr(),
     })
 
     this.hal.writeUniforms(this.uniformData)

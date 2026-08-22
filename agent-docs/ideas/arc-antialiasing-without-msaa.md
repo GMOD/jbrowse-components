@@ -1,6 +1,6 @@
 ---
 name: arc-antialiasing-without-msaa
-description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arcs stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the whole arc band by at most one 8-bit level. What still depends on it is wiggle/coverage bar tops, read arrow tips and the tiled Hi-C/LD diamonds, so the lever is a per-display sample count, not a global switch.
+description: The 4x MSAA target exists because read-connection arcs looked pixelated, and the arcs stopped depending on it on 2026-08-01 when the fragment started measuring an analytic conic — captured at dpr 2, MSAA 4 and MSAA 1 differ across the whole arc band by at most one 8-bit level. The wiggle xyplot bar stopped depending on it on 2026-08-22; what still does is the alignments coverage band, read arrow tips and the tiled Hi-C/LD diamonds, and the coverage band's marks all share horizontal edges so no shader change reaches them. The lever is a per-display sample count, not a global switch.
 ---
 
 # Antialiasing arcs without MSAA
@@ -119,7 +119,8 @@ its own coverage:
 `indicator` (alignments); `chevron`, `continuation` (canvas); the dotplot
 capsule; manhattan and every `pointGlyph`; `wiggleLine`'s smooth mode; both
 synteny curve/straight fills and edges (via `syntenyTypes.slang`'s `fillFs` /
-`strokeFs`); `variant.slang`.
+`strokeFs`); `variant.slang`. **`wiggle.slang`'s xyplot bar joined this list on
+2026-08-22** and is why the list below is one entry shorter than it was.
 
 **Pixel-snapped — MSAA has nothing to smooth.** `rect.slang` snaps both x
 (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY + 0.5)`,
@@ -133,9 +134,13 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
 
 **Leaning on the multisampled target, and saying so in the source:**
 
-- `wiggle.slang:142` — *"xyplot, density and the crisp small-point square are
-  flat fills; the multisampled target antialiases their edges."*
-- `wiggleLine.slang:208` — the step-line's quads, same sentence.
+- `wiggle.slang` — density and the crisp small-point square only, since
+  2026-08-22. Density's cuts are row boundaries that tile and its datum is the
+  colour, so it is a refusal rather than a leftover; the small square is
+  pixel-snapped and has nothing to smooth.
+- `wiggleLine.slang` — the step-line's quads. Also now a refusal: a feature draws
+  three square-capped quads that deliberately overlap at the joints, so
+  per-fragment coverage would double-blend a lattice of darker joints.
 - `read.slang`, `coverage.slang`, `snpCoverage.slang`, `mismatch.slang`,
   `gap.slang`, `insertion.slang`, `interbaseHistogram.slang`, `modCoverage.slang`
   — flat fills with **no** pixel snap. Read ends are pointed, so those quads
@@ -511,14 +516,38 @@ The point of this option is to make option 1 (or 2) cost less, and it is three
 small, independent shader changes, each of which has a template already in the
 tree:
 
-- **Bar tops.** `wiggle.slang`'s xyplot/density quads and alignments'
-  `coverage.slang` / `snpCoverage.slang` / `interbaseHistogram.slang` /
-  `modCoverage.slang`. The top edge is a horizontal line at a known y in CSS px,
-  so `|∇d| = 1` and a single `aaRamp(topY - y, aaHalfPx(dpr))` is exact — no
-  `fwidth`, exactly the `strokeCoverage` shape. **Antialias the top edge only.**
-  The vertical edges tile with the neighbouring bin, and that is precisely the
-  case where per-fragment alpha conflates; leaving them hard is what MSAA-off
-  gives anyway and what a bar chart normally looks like.
+- **Bar tops. Done 2026-08-22 for `wiggle.slang`'s xyplot, and the rest of the
+  set this bullet named is refused.** The horizontal cut is at a known y in CSS
+  px, so `|∇d| = 1` and a ramp one device px wide is exact with no `fwidth`; the
+  quad grows one device px past the cut so the rasterizer's own coverage never
+  multiplies into the analytic one, which is what makes the result identical at 1
+  sample and at 4. The vertical edges stay hard — bins tile, and that is
+  precisely where per-fragment alpha conflates.
+
+  What the writing of it changed about this bullet, and both corrections matter
+  to whoever costs option 1:
+
+  - **Both horizontal cuts, not the top only.** A single top ramp against a hard
+    baseline applies a half-plane coverage formula to a slab and over-inks below
+    one device px — a bar of zero height paints a half-covered row where it owes
+    none, which on a wiggle full of zero bins is a dotted line along the origin.
+    The difference of two ramps is exact at every height (§"The literature"
+    above says why), and the baseline is not a conflation case: two neighbouring
+    bars' baselines are collinear but occupy disjoint pixel COLUMNS, so no pixel
+    is ever split between them.
+  - **Density, and the whole alignments coverage family, cannot take it.**
+    Density's quad spans the row, so its cuts are row boundaries that tile, and
+    its datum is the colour rather than the edge. In the coverage band every mark
+    shares a horizontal edge with another: `snpCoverage`/`modCoverage` segments
+    stack (`yOffset` accumulates, so each segment's top IS its neighbour's
+    bottom), the topmost segment's top coincides with `coverage.slang`'s depth
+    bar top at any fully-mismatched position, and `interbaseHistogram` already
+    snaps both y edges to whole pixels on purpose. That is the same refusal §5
+    makes for hi-C, arrived at from a third direction, and it means **turning
+    MSAA off costs the coverage band its edges no matter what a shader does** —
+    the only fix is the one-primitive-per-stack rewrite §5 describes.
+    [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) §"What the
+    coverage band cannot antialias" carries the worked composites.
 - **Read ends.** `read.slang`'s pointed terminus is a triangle; `chevron.slang`
   in the canvas plugin is the same shape with `aaRamp(coreHalfPx - abs(dist),
   aaGradient(dist))` already on it. Requires a varying and the measured
@@ -588,7 +617,10 @@ Concretely:
 - Do the bar-top ramp first (option 4, first bullet). It is the largest visible
   cost of turning MSAA off, it is the one where the aliasing corrupts an
   *encoding* rather than a *silhouette*, it is a handful of lines per shader, and
-  it is worth doing whether or not the sample count ever moves.
+  it is worth doing whether or not the sample count ever moves. **Done for the
+  wiggle xyplot on 2026-08-22**, which is where §Evidence measured the cost;
+  read that bullet before assuming the coverage band can follow, because it
+  cannot.
 - Then land option 1 with Hi-C and LD opting into 4x. Everything else drops its
   target entirely.
 - Leave read arrow tips and the strand arrowhead for a follow-up. They are
