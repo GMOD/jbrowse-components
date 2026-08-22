@@ -120,7 +120,14 @@ test('groups by anchor gene, dedupes repeated mates, sorts by anchor position', 
 })
 
 test('row assemblies come out in first-appearance order', () => {
-  expect(rowAssembliesOf(groupFeatures(features))).toEqual(['peach', 'cacao'])
+  expect(rowAssembliesOf(groupFeatures(features), [])).toEqual([
+    'peach',
+    'cacao',
+  ])
+  expect(rowAssembliesOf(groupFeatures(features), ['cacao'])).toEqual([
+    'cacao',
+    'peach',
+  ])
 })
 
 test('a forward row frame spans its placements unflipped', () => {

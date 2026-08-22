@@ -59,8 +59,9 @@ const MultiWayRows = observer(function MultiWayRows({
       span[0] < width + VISIBLE_PAD_PX
     )
   })
+  const anchorSpanBp = width * view.bpPerPx
   const frames = rowAssemblies.map(assemblyName =>
-    computeRowFrame(visible, assemblyName),
+    computeRowFrame(visible, assemblyName, anchorSpanBp),
   )
 
   const rowCount = rowAssemblies.length + 1

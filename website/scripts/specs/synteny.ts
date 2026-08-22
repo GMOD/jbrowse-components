@@ -1,4 +1,4 @@
-import { displayPainted } from '@jbrowse/browser-test-utils'
+import { displayPainted, displaySettled } from '@jbrowse/browser-test-utils'
 
 import {
   HG38_HS1_CONFIG,
@@ -1115,6 +1115,117 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 12000,
     viewportHeight: 478,
+  },
+
+  // The same seven-genome .blocks track as MultiWaySyntenyDisplay: one lane
+  // per genome inside a plain LGV, each lane laid out in its own local
+  // coordinate frame fitted to the viewport (only the grape anchor lane is at
+  // genomic coordinates), with ribbons connecting each ortholog between
+  // adjacent lanes. Same grape 11 window as blocks_one_vs_all, so the two
+  // figures are the same locus read two ways: anchor-projected lanes there,
+  // row-local lanes with correspondence ribbons here.
+  //
+  // rowOrder pins the lanes by retention (the reading blocks_one_vs_all
+  // established: peach/cacao/poplar/citrus keep the block, arabidopsis a few,
+  // tomato one gene), so the ribbon chains degrade downward instead of
+  // breaking wherever a sparse lane happens to land — a ribbon only connects
+  // ADJACENT lanes, so a near-empty lane in the middle would cut the chains of
+  // every denser lane below it.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/lgv_track_lanes',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'grape',
+            loc: '11:778,000-866,000',
+            tracks: [
+              {
+                trackId: 'grape_genes',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+                showLabels: 'auto',
+              },
+              {
+                trackId: 'grape_peach_cacao_blocks',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: [
+                  'peach',
+                  'cacao',
+                  'poplar',
+                  'citrus',
+                  'arabidopsis',
+                  'tomato',
+                ],
+                height: 340,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    // settled rather than painted: the display paints main-thread SVG whose
+    // first frame is legitimately empty while the .blocks table downloads
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 680,
+  },
+
+  // The gene-level zoom of the same lanes: a ~35 kb cut around the tandem
+  // expansion the gene_orthologs figure reads (three grape copies at 836-863 kb
+  // against one peach and one cacao ortholog), close enough that each ribbon
+  // connects one gene to one gene. The distant lanes thin out to what each
+  // genome kept, which at this width reads per gene rather than per block.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/lgv_track_zoom',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'grape',
+            loc: '11:828,000-866,000',
+            tracks: [
+              {
+                trackId: 'grape_genes',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+                showLabels: 'auto',
+              },
+              {
+                trackId: 'grape_peach_cacao_blocks',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: [
+                  'peach',
+                  'cacao',
+                  'poplar',
+                  'citrus',
+                  'arabidopsis',
+                  'tomato',
+                ],
+                height: 340,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 680,
   },
 
   // A COMPOSITION PART, no longer embedded on its own (review: "looks like dupe

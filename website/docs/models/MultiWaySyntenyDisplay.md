@@ -30,6 +30,7 @@ the whole surface.
 | --- | --- | --- |
 | <span id="property-type">**type**</span><br><code>type: types.literal('MultiWaySyntenyDisplay')</code> |  | MultiWaySyntenyDisplay |
 | <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  | MultiWaySyntenyDisplay |
+| <span id="property-roworder">**rowOrder**</span><br><code>rowOrder: types.array(types.string)</code> | lanes to pin to the top, in order; lanes it does not name follow in first-appearance order. A declared property, so it is authorable from a session spec or a config defaultSession | MultiWaySyntenyDisplay |
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  | [BaseDisplay](../basedisplay#property-id) |
 
 ## Volatiles
@@ -128,6 +129,7 @@ the whole surface.
 | --- | --- | --- |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(f: Feature[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setroworder">**setRowOrder**</span><br><code>(order: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactN…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNode&gt;</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |
 | <span id="action-setstatusmessage">**setStatusMessage**</span><br><code>(status?: RpcStatus &#124; undefined) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-setstatusmessage) |
 | <span id="action-seterror">**setError**</span><br><code>(error?: unknown) =&gt; void</code> |  | [BaseDisplay](../basedisplay#action-seterror) |

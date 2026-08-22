@@ -50,7 +50,7 @@ is drawn).
 - [DotplotDisplay](https://jbrowse.org/jb2/docs/config/dotplotdisplay.md)
 - [LinearSyntenyDisplay](https://jbrowse.org/jb2/docs/config/linearsyntenydisplay.md)
 - [LGVSyntenyDisplay](https://jbrowse.org/jb2/docs/config/lgvsyntenydisplay.md)
-- MultiWaySyntenyDisplay (no docs page)
+- [MultiWaySyntenyDisplay](https://jbrowse.org/jb2/docs/config/multiwaysyntenydisplay.md)
 - [LinearReferenceSequenceDisplay](https://jbrowse.org/jb2/docs/config/linearreferencesequencedisplay.md)
 - [LinearVariantDisplay](https://jbrowse.org/jb2/docs/config/linearvariantdisplay.md)
 - [LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay.md)

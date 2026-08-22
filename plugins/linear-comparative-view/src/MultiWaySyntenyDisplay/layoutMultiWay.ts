@@ -97,17 +97,22 @@ export function groupFeatures(features: Feature[]) {
 }
 
 // Mate assemblies in first-appearance order over the anchor-sorted groups, so
-// the row order is stable under pans that keep the same gene set
-export function rowAssembliesOf(groups: MultiWayGroup[]) {
-  const out: string[] = []
+// the row order is stable under pans that keep the same gene set. A non-empty
+// `preferred` (the display's rowOrder property) pins the lanes it names to the
+// top, in its order; lanes it does not name follow in first-appearance order.
+export function rowAssembliesOf(groups: MultiWayGroup[], preferred: string[]) {
+  const present: string[] = []
   for (const group of groups) {
     for (const assemblyName of group.mates.keys()) {
-      if (!out.includes(assemblyName)) {
-        out.push(assemblyName)
+      if (!present.includes(assemblyName)) {
+        present.push(assemblyName)
       }
     }
   }
-  return out
+  return [
+    ...preferred.filter(assemblyName => present.includes(assemblyName)),
+    ...present.filter(assemblyName => !preferred.includes(assemblyName)),
+  ]
 }
 
 function mid(p: MultiWayPlacement) {
@@ -122,6 +127,7 @@ function mid(p: MultiWayPlacement) {
 export function computeRowFrame(
   groups: MultiWayGroup[],
   assemblyName: string,
+  minSpanBp = 0,
 ): RowFrame | undefined {
   const byRef = new Map<string, MultiWayPlacement[]>()
   for (const group of groups) {
@@ -165,10 +171,19 @@ export function computeRowFrame(
     }
   }
   const pad = Math.max((max - min) * 0.02, 1)
+  let lo = min - pad
+  let hi = max + pad
+  // a sparse lane never zooms in past the anchor's own scale: a lone ortholog
+  // stretched across the full viewport reads as a block, not a gene
+  if (hi - lo < minSpanBp) {
+    const center = (lo + hi) / 2
+    lo = center - minSpanBp / 2
+    hi = center + minSpanBp / 2
+  }
   return {
     refName: dominant,
-    min: min - pad,
-    max: max + pad,
+    min: lo,
+    max: hi,
     flipped: orientation < 0,
   }
 }

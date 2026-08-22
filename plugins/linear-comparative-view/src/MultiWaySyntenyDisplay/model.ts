@@ -48,6 +48,13 @@ export function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * lanes to pin to the top, in order; lanes it does not name follow in
+         * first-appearance order. A declared property, so it is authorable
+         * from a session spec or a config defaultSession
+         */
+        rowOrder: types.array(types.string),
       }),
     )
     .volatile(() => ({
@@ -111,7 +118,7 @@ export function stateModelFactory(
        * anchor lane
        */
       get rowAssemblies() {
-        return rowAssembliesOf(self.groups)
+        return rowAssembliesOf(self.groups, [...self.rowOrder])
       },
       /**
        * #getter
@@ -138,6 +145,12 @@ export function stateModelFactory(
        */
       selectFeature(feature: Feature) {
         openFeatureWidget(self, feature.toJSON())
+      },
+      /**
+       * #action
+       */
+      setRowOrder(order: string[]) {
+        self.rowOrder.replace(order)
       },
     }))
     .actions(self => ({

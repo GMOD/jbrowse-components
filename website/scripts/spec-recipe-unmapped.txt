@@ -23,6 +23,7 @@ maxRegionBp
 orthologParams
 paneHeight
 readConnections
+rowOrder
 sampleColorMap
 showBranchLength
 showLegend
