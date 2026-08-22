@@ -402,50 +402,6 @@ test('render callback receives the cached encoded map', () => {
   expect(lastEncoded?.has(1)).toBe(true)
 })
 
-test('encode returning undefined leaves the cached encoded entry untouched', () => {
-  const model = TestModel.create()
-  const { backend, uploads } = makeFakeRenderingBackend()
-  const data = observable.map<number, FakeRegionData>(undefined, {
-    deep: false,
-  })
-  const ready = observable.box(true)
-  let lastEncoded: ReadonlyMap<number, FakeEncoded> | undefined
-
-  installPerRegionLifecycle(model, backend, {
-    data: () => data,
-    inputs: () => ready.get(),
-    encode: ({ value }, isReady) =>
-      isReady ? { value, marker: 0 } : undefined,
-    render: (_b, encoded) => {
-      lastEncoded = encoded
-      return true
-    },
-  })
-
-  runInAction(() => {
-    data.set(0, { value: 10 })
-  })
-  expect(uploads).toHaveLength(1)
-  expect(lastEncoded?.get(0)).toEqual({ value: 10, marker: 0 })
-
-  // Toggle ready -> false; the upload autorun re-runs but encode returns
-  // undefined. The existing cached value stays, and nothing new uploads.
-  const baseline = uploads.length
-  runInAction(() => {
-    ready.set(false)
-    data.set(0, { value: 99 })
-  })
-  expect(uploads.length).toBe(baseline)
-  expect(lastEncoded?.get(0)).toEqual({ value: 10, marker: 0 })
-
-  // …and the skipped region encodes as soon as the input says it can, which is
-  // what makes returning undefined a deferral rather than a drop.
-  runInAction(() => {
-    ready.set(true)
-  })
-  expect(lastEncoded?.get(0)).toEqual({ value: 99, marker: 0 })
-})
-
 // Omitting `encode` is not the same code with an identity default filled in:
 // the helper keeps no mirror maps, uploads the display's own payloads, and hands
 // `render` the display's own map.

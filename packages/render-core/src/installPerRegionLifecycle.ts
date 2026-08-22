@@ -48,7 +48,7 @@ const checkedAtTheStore = new WeakSet<ReadonlyMap<number, unknown>>()
 const alreadyNamed = new WeakMap<LifecycleHost, Set<number>>()
 
 /**
- * The volatile a display keys its per-region worker payloads by
+ * The volatile a display keys its per-region payloads by
  * (`displayedRegionIndex` → result). Every one of them in tree is built with
  * this, so "how is per-region data represented" has one answer — see
  * ADR-060.
@@ -221,31 +221,15 @@ export interface PerRegionUpload<Data, Props, Encoded, B> {
   /**
    * Build one region's upload payload. Pure in `(data, props)`: reading an
    * observable directly here still works, but it does not invalidate anything
-   * — only `data` and `inputs` do. Return `undefined` to skip this region for
-   * now, keeping any payload it already has; the run re-fires once whatever
-   * `inputs` reads changes.
+   * — only `data` and `inputs` do.
    *
-   * **Required**, so an omitted `encode` can only match
-   * {@link PerRegionIdentityUpload}, which checks the backend against the
-   * display's own payload. Optional here, `Encoded` has no inference site left
-   * and widens to `unknown`, which every backend satisfies.
+   * **Required**, so an omitted `encode` can only match the identity overload,
+   * which checks the backend against the display's own payload. Optional here,
+   * `Encoded` has no inference site left and widens to `unknown`, which every
+   * backend satisfies.
    */
-  encode: (data: Data, props: Props) => Encoded | undefined
+  encode: (data: Data, props: Props) => Encoded
   render: PerRegionRender<B, Encoded>
-}
-
-/**
- * The payload the display holds is the payload the backend takes, so there is
- * no encode step: the helper allocates neither mirror map and hands `render`
- * the display's own map. The `never`s keep a call that does encode falling
- * through to {@link PerRegionUpload} rather than being reported against this
- * signature.
- */
-export interface PerRegionIdentityUpload<Data, B> {
-  data: () => ReadonlyMap<number, Data>
-  render: PerRegionRender<B, Data>
-  encode?: never
-  inputs?: never
 }
 
 /**
@@ -291,7 +275,18 @@ export interface PerRegionIdentityUpload<Data, B> {
 export function installPerRegionLifecycle<
   Data extends object,
   B extends UploadableRenderingBackend<Data>,
->(self: LifecycleHost, backend: B, opts: PerRegionIdentityUpload<Data, B>): void
+>(
+  self: LifecycleHost,
+  backend: B,
+  opts: {
+    data: () => ReadonlyMap<number, Data>
+    render: PerRegionRender<B, Data>
+    // `never`, so a call that DOES encode falls through to the overload below
+    // rather than being matched here and reported against the wrong signature
+    encode?: never
+    inputs?: never
+  },
+): void
 export function installPerRegionLifecycle<
   Data extends object,
   Props,
@@ -359,11 +354,8 @@ export function installPerRegionLifecycle<
         }
         for (const [key, regionData] of regions) {
           if (encodedFrom.get(key) !== regionData) {
-            const payload = encode(regionData, p)
-            if (payload !== undefined) {
-              encoded.set(key, payload)
-              encodedFrom.set(key, regionData)
-            }
+            encoded.set(key, encode(regionData, p))
+            encodedFrom.set(key, regionData)
           }
         }
         for (const key of encoded.keys()) {
