@@ -98,6 +98,28 @@ test('clamps an oversized backing store to the safe max instead of throwing', ()
   warn.mockRestore()
 })
 
+// The clamp above is only half the story: what the caller does with the ratio
+// afterwards is what decides whether a clamped canvas draws at reduced
+// resolution or not at all. `syncCanvasSize` reports the scale each axis
+// ACTUALLY got, and on the clamped axis that is below `getDpr()` — a caller
+// deriving its rects from the true dpr instead asks for a viewport taller than
+// the attachment, which WebGPU rejects, blanking the track with no error
+// anywhere. Measured on a retina panel 2026-08-22.
+test('the reported scale follows the backing store, not the screen', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const canvas = document.createElement('canvas')
+  const cssHeight = MAX_CANVAS_DIM_PX + 5000
+  const { scale } = syncCanvasSize(canvas, 1000, cssHeight)
+  // unclamped axis: exactly the device ratio
+  expect(scale.x).toBe(getDpr())
+  // clamped axis: whatever fits, which is less
+  expect(scale.y).toBe(MAX_CANVAS_DIM_PX / cssHeight)
+  expect(scale.y).toBeLessThan(getDpr())
+  // and the rect a caller builds from it lands inside the store
+  expect(Math.round(cssHeight * scale.y)).toBe(MAX_CANVAS_DIM_PX)
+  warn.mockRestore()
+})
+
 // The Canvas2D twin of the pivot inside the shaders' extendToMinWidthX. When a
 // mark is widened to a floor, both must grow it away from the feature's start,
 // or the fallback painter and the shader disagree by up to that floor on

@@ -374,7 +374,7 @@ export class WebGL2Hal implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    syncCanvasSize(this.canvas, width, height)
+    return syncCanvasSize(this.canvas, width, height).scale
   }
 
   setErrorHandler(handler: (error: Error) => void) {

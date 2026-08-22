@@ -1,5 +1,6 @@
 import { clampBlockScissor, devicePxSpan } from './canvas2dUtils.ts'
 
+import type { CanvasScale } from './canvas2dUtils.ts'
 import type { BpRegionBounds } from './renderBlock.ts'
 
 // hp-math split: factor a bp position into a (hi, lo) pair safe to feed
@@ -77,7 +78,10 @@ export function clipBlock(
   block: BpRegionBounds,
   canvasWidth: number,
   canvasHeight: number,
-  dpr: number,
+  // The scale the backing store actually got, per axis (`hal.resize`), NOT
+  // `getDpr()`: only one axis clamps at a time, so past `MAX_CANVAS_DIM_PX` a
+  // canvas is 2x on one axis and less on the other.
+  scale: CanvasScale,
 ): BlockClipResult | null {
   const clamp = clampBlockScissor(
     block.screenStartPx,
@@ -101,8 +105,8 @@ export function clipBlock(
     return null
   }
 
-  const { start: pxX, width: pxW } = devicePxSpan(scissorX, scissorEnd, dpr)
-  const pxH = Math.round(canvasHeight * dpr)
+  const { start: pxX, width: pxW } = devicePxSpan(scissorX, scissorEnd, scale.x)
+  const pxH = Math.round(canvasHeight * scale.y)
 
   const bpPerPx = regionLengthBp / fullBlockWidth
   // How much the clip cut off each SCREEN edge of the block.

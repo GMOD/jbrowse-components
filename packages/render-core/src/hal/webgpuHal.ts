@@ -339,10 +339,11 @@ export class WebGPUHal implements GpuHal {
   }
 
   resize(width: number, height: number) {
-    const sizeChanged = syncCanvasSize(this.canvas, width, height)
-    if (sizeChanged || !this.msaaTexture) {
+    const { changed, scale } = syncCanvasSize(this.canvas, width, height)
+    if (changed || !this.msaaTexture) {
       this.recreateMsaaTexture(this.canvas.width, this.canvas.height)
     }
+    return scale
   }
 
   private recreateMsaaTexture(width: number, height: number) {

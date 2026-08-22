@@ -1,3 +1,7 @@
+import type { CanvasScale } from '../canvas2dUtils.ts'
+
+export type { CanvasScale }
+
 /**
  * One field of a pass's **vertex input layout** — the map from bytes in the
  * packed instance buffer to an input the shader declares. Both HALs build from
@@ -94,7 +98,14 @@ export interface PipelineDescriptor {
 }
 
 export interface GpuHal {
-  resize(width: number, height: number): void
+  /**
+   * Size the canvas, and report the scale its backing store actually got.
+   * Callers derive every device-px rect from THAT rather than from `getDpr()`:
+   * past `MAX_CANVAS_DIM_PX` the two differ, and a rect built from the true dpr
+   * exceeds the target it draws into (WebGPU rejects the whole pass and the
+   * track goes blank; WebGL2 clamps and paints at the wrong scale).
+   */
+  resize(width: number, height: number): CanvasScale
 
   uploadBuffer(
     regionKey: number,

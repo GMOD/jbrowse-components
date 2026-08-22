@@ -100,15 +100,36 @@ function backingPx(cssSize: number, dpr: number, axis: 'width' | 'height') {
   return value
 }
 
+/**
+ * The ratio a canvas's backing store ACTUALLY has to its CSS box, per axis.
+ *
+ * Equal to `getDpr()` on both axes until `backingPx` clamps, and below it after
+ * — which is the whole point: every device-px rect a renderer hands the GPU has
+ * to be derived from this rather than from the true dpr, or a clamped canvas
+ * gets a viewport taller than the target it draws into and the frame is
+ * rejected outright. See ARCHITECTURAL_LIMITS.md §"A canvas past
+ * MAX_CANVAS_DIM_PX renders wrong, not smaller".
+ */
+export interface CanvasScale {
+  x: number
+  y: number
+}
+
+function effectiveScale(cssPx: number, backing: number) {
+  // A zero-width or zero-height canvas has no ratio to report; the true dpr is
+  // the answer that makes the arithmetic downstream a no-op.
+  return cssPx > 0 ? backing / cssPx : getDpr()
+}
+
 // Apply CSS dimensions + dpr-scaled physical dimensions to `canvas`. Returns
-// whether the backing dimensions actually changed — both HAL impls and any
-// 2D-canvas backend use this so the dpr math and style-vs-attribute logic
-// live in one place.
+// whether the backing dimensions actually changed, and the scale each axis
+// ended up with — both HAL impls and any 2D-canvas backend use this so the dpr
+// math and style-vs-attribute logic live in one place.
 export function syncCanvasSize(
   canvas: HTMLCanvasElement,
   width: number,
   height: number,
-): boolean {
+): { changed: boolean; scale: CanvasScale } {
   const dpr = getDpr()
   const pw = backingPx(width, dpr, 'width')
   const ph = backingPx(height, dpr, 'height')
@@ -130,7 +151,10 @@ export function syncCanvasSize(
   if (canvas.style.height !== cssHeight) {
     canvas.style.height = cssHeight
   }
-  return changed
+  return {
+    changed,
+    scale: { x: effectiveScale(width, pw), y: effectiveScale(height, ph) },
+  }
 }
 
 export function prepareCanvas(
@@ -148,7 +172,18 @@ export function prepareCanvas(
     canvas.height = bufH
   }
 
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  // The scale the backing store actually got, not the one the screen has: past
+  // the clamp these differ, and transforming by the true dpr is what made a
+  // clamped 2D canvas paint its top slice stretched over the whole track
+  // instead of the whole track at reduced resolution.
+  ctx.setTransform(
+    effectiveScale(canvasWidth, bufW),
+    0,
+    0,
+    effectiveScale(canvasHeight, bufH),
+    0,
+    0,
+  )
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 }
 

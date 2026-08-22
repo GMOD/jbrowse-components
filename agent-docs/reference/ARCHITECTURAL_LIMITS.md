@@ -334,8 +334,10 @@ take it the first time a renderer wants two uniform sets alive at once.
 
 ### A canvas past `MAX_CANVAS_DIM_PX` renders wrong, not smaller
 
-**Status:** Open — **reached, on a retina panel, by dragging one track tall**
-(measured 2026-08-22). Root cause is still the unthreaded dpr.
+**Status:** Fixed 2026-08-22, by the retirement condition this entry had been
+carrying: the effective dpr is threaded. Kept because the *shape* of the trap
+recurs — a size the browser silently declines to give you, and rects derived
+from what you asked for rather than what you got.
 
 `backingPx` (`packages/render-core/src/canvas2dUtils.ts`) caps a backing store at
 `MAX_CANVAS_DIM_PX` (8192 physical px per axis) so an oversized canvas can't
@@ -347,22 +349,41 @@ the cap the browser stretches the smaller backing store over the larger element
 WebGPU rejects the rect and blanks the frame. The one-shot `console.warn` reads
 like a cosmetic notice.
 
-**It was filed as unreachable, and it is not.** The argument was that canvases
+**It was filed as unreachable, and it was not.** The argument was that canvases
 are viewport-sized everywhere except MAF's rows canvas, which self-bounds via
 `maxRowsHeight` (`MAX_CANVAS_DIM_PX / getDpr()`) — and **any new display sizing a
 canvas to content still must copy that bound**, because nothing mechanical
 enforces it. What the argument missed is that a per-region display's canvas is as
 tall as the *display*, and the display's height is a number the user drags:
 `TrackHeightMixin`'s `setHeight` / `resizeHeight` clamp at `MIN_DISPLAY_HEIGHT`
-and at no maximum. Walking one alignments track's height up at dpr 2 puts the
+and at no maximum. Walking one alignments track's height up at dpr 2 put the
 edge between 4000 CSS px (paints) and 4200 (blank, no banner, no console error,
-no `display.error`); shrinking it back restores the render, and the same walk at
-dpr 1 paints all the way to 8000. The fix and its two shapes are
-[../TODO.md](../TODO.md) §"A track dragged past the canvas clamp goes blank".
+no `display.error`); shrinking it back restored the render, and the same walk at
+dpr 1 painted all the way to 8000. The GPU said what the UI would not — `In a
+set_viewport command … Viewport size { w: 2532, h: 8400 } greater than device's
+requested maxTextureDimension2D` — which is `cssHeight * getDpr()` against a
+backing store clamped at 8192.
 
-**Retire when** `syncCanvasSize` / `prepareCanvas` report the ratio they actually
-used and that effective dpr is threaded through `clipBlock` instead of the free
-`getDpr()`, so a clamped canvas renders correct content at reduced resolution.
+**The fix is that `syncCanvasSize` now reports the scale each axis actually got,
+and every device-px rect derives from that** rather than from the free
+`getDpr()`: `hal.resize` returns it, `clipBlock` takes it per-axis (only one axis
+clamps at a time), and alignments' `bufH` / `computeBlockGeom` read it the same
+way. `prepareCanvas` transforms by it too, which is the Canvas2D half — that path
+used to stretch its top slice over the whole track. Past the clamp a display now
+draws at reduced resolution, which nobody can see at a track height no screen
+shows at once, instead of not drawing. Verified on the panel that broke it: at
+dpr 2 the walk paints to 8000 CSS px with no validation error at any height.
+`blockClipUtils.test.ts` and `canvas2dUtils.test.ts` pin both halves.
+
+**What still reads the true dpr, correctly, is the uniform.** A stroke width
+wants screen density; only rects want target extent. That divergence is the
+entry's remaining sharp edge: at a clamped canvas a 1px stroke is ~2.5% off, and
+anything new that mixes the two spaces will be wrong in a way no test here
+covers.
+
+**Retired by** `syncCanvasSize` / `prepareCanvas` reporting the ratio they
+actually used, threaded through `clipBlock` and alignments' geometry instead of
+the free `getDpr()` — which is what the paragraph above describes.
 
 **The dpr cap is what makes it this hard to reach.** `getDpr()` returns
 `min(devicePixelRatio, MAX_DPR)` with `MAX_DPR = 2`, so an axis has to reach 4096

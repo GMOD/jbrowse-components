@@ -347,6 +347,18 @@ async function walkIntoTheCeiling(page: Page, consoleLines: string[]) {
     }, cssHeight)
     const fresh = consoleLines.slice(before)
     const clamped = fresh.some(t => t.includes('exceeds the safe limit'))
+    // What the GPU said at this height. The clamp regime's failure is a rect
+    // the backing store cannot hold, and the rejection is the only thing that
+    // names it — `display.error` stays empty and nothing reaches the user.
+    for (const line of fresh) {
+      if (
+        /validation|scissor|viewport|GPUValidationError|out of bounds/i.test(
+          line,
+        )
+      ) {
+        console.log(`      gpu@${cssHeight}: ${line.slice(0, 160)}`)
+      }
+    }
     const msaaMiB = (row.backingWidth * row.backingHeight * 4 * 4) / 1024 / 1024
     console.log(
       String(row.cssHeight).padEnd(9),

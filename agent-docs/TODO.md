@@ -25,7 +25,7 @@ before anyone noticed.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [A track dragged past the canvas clamp goes blank](#a-track-dragged-past-the-canvas-clamp-goes-blank-and-on-retina-that-is-half-as-far-away) | GPU, limits | measured: retina halves the ceiling to ~4096 css px and nothing bounds the drag |
+| [Should a track's height be bounded at all](#decide-whether-a-tracks-height-should-be-bounded-at-all) | GPU, limits | the blank is fixed; what is left is whether the drag should stop, and per display |
 | [Repeat and CRISPR subpart labels draw into an unreserved row](#repeat-and-crispr-subpart-labels-draw-into-an-unreserved-row) | canvas | decide: reserve a row per glyph, or say `below` is a transcript/box affordance |
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
@@ -1662,57 +1662,33 @@ upgrade guide's removal list, next to the renderer-registry paragraph they
 nearly belong to.
 
 
-### A track dragged past the canvas clamp goes blank, and on retina that is half as far away
+### Decide whether a track's height should be bounded at all
 
-**Measured 2026-08-22; this replaces "Take the MSAA target's size on a retina
-display", whose three questions are answered in
-[reference/GPU_PORTABILITY.md](reference/GPU_PORTABILITY.md).** The dpr² term is
-real (a CSS box costs 4x its dpr-1 MSAA allocation, and eight ordinary tracks
-hold 109.7 MiB), and the per-frame rebuild is still free on this driver (60
-rebuilds of a 65 MiB target in 1.0 ms). What the run did not confirm is the
-refusal, and that is the finding:
+**The blank this entry used to describe is fixed** (2026-08-22): past
+`MAX_CANVAS_DIM_PX` a display now draws at reduced resolution instead of asking
+for a viewport its target cannot hold, because `syncCanvasSize` reports the scale
+each axis actually got and every rect derives from that.
+[reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"A canvas
+past `MAX_CANVAS_DIM_PX` renders wrong, not smaller" carries the mechanism and
+the verification.
 
-**`recreateMsaaTexture`'s legible refusal is unreachable, and the track goes
-silently blank instead.** `syncCanvasSize` clamps the backing store at
-`MAX_CANVAS_DIM_PX` = 8192 before anything asks the GPU for a texture, and this
-device's `maxTextureDimension2D` is exactly 8192 — so the "canvas exceeds max
-texture size" branch never runs. Past the clamp the backing store stops tracking
-the CSS size while scissor rects are still derived as `cssPx * dpr`, WebGPU
-rejects them, and the whole track paints blank: no banner, no console error, no
-`display.error`. Walking a track's height at dpr 2 puts the edge between 4000 CSS
-px (paints) and 4200 (blank); shrinking it back restores the render. At dpr 1 the
-same walk paints to 8000. **So retina halves the reachable ceiling to ~4096 CSS
-px of track height, and nothing bounds a drag by it** — `TrackHeightMixin`'s
-`setHeight` / `resizeHeight` clamp at `MIN_DISPLAY_HEIGHT` and at no maximum,
-while `maxCanvasCssPx()` exists and is applied only by displays that size a
-canvas to their *content*.
+What is left is a judgement nobody has made: **should a drag be bounded by
+`maxCanvasCssPx()` anyway?** `TrackHeightMixin`'s `setHeight` / `resizeHeight`
+clamp at `MIN_DISPLAY_HEIGHT` and at no maximum, so a track can still be dragged
+to any height — it just renders correctly now, at a resolution that falls off
+above ~4096 CSS px on a retina panel and ~8192 at dpr 1. Arguments both ways:
 
-Two fixes, and they are not exclusive:
+- **Bound it.** The resolution falloff is invisible in practice but real, and a
+  track taller than two screens is not a thing anyone reads — the handle simply
+  stopping is honest and needs no message.
+- **Leave it.** The cap is per-axis and dpr-dependent, so the same drag stops at
+  different places on different monitors, which is its own confusion. And a flat
+  clamp in the shared mixin is the wrong shape for the displays that already
+  bound themselves differently: MAF scrolls its overflow into a viewport, and the
+  multi-row painting divides the cap across rows.
 
-- **Bound the drag.** Clamp `setHeight` / `resizeHeight` at `maxCanvasCssPx()`,
-  so the handle simply stops. Cheap, and self-evident to the user in a way a
-  banner is not. The cost is that it needs to be the right cap for displays that
-  are not one canvas — MAF scrolls its overflow into a viewport and the multi-row
-  painting divides the cap across rows, so a flat clamp in the shared mixin is
-  the wrong shape for them. Decide where it lands before writing it.
-- **The effective-dpr fix**, which
-  [reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"A
-  canvas past `MAX_CANVAS_DIM_PX` renders wrong, not smaller" already names as
-  the thing that retires the clamp: derive scissor/viewport rects against the
-  *effective* dpr (backing ÷ CSS) rather than the true one, so a clamped canvas
-  renders correctly at lower resolution instead of blanking. Strictly better, and
-  strictly more work.
-
-Re-measure with `node browser-tests/probe-msaa-resize-cost.ts 60 4 --dpr=2
---ceiling` (headed Firefox Nightly; `--tracks=N` totals the live targets, and
-`--dpr` needs a string pref or Firefox exits at startup saying nothing).
-
-**Still owed from that trip, and cheap:** `maxBufferSize` and
-`maxTextureDimension2D` came back 2147483644 and 8192 on this machine's WebGPU
-adapter — one more data point, not a survey. And the WebGL2 context ceiling has
-still only ever been measured on Chrome; "Firefox around 16" is RFC-001 §12b's
-guess, and [reference/GPU_CONTEXT_BUDGET.md](reference/GPU_CONTEXT_BUDGET.md)
-has the harness that would settle it.
+Not urgent either way now that the failure is graceful. Whoever takes it should
+decide per display type, not in `TrackHeightMixin`.
 
 ## Blocked on a visual call
 

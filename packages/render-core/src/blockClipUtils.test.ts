@@ -24,16 +24,37 @@ test('rightmost block scissor never overflows the canvas at fractional dpr', () 
   const backingWidth = Math.round(canvasWidth * dpr)
   // scan every rightmost-block position; each must stay within the backing store
   for (let sx = 900; sx < 1000; sx++) {
-    const clip = clipBlock(block(sx + 0.3, 1200), canvasWidth, 20, dpr)!
+    const clip = clipBlock(block(sx + 0.3, 1200), canvasWidth, 20, {
+      x: dpr,
+      y: dpr,
+    })!
     expect(clip.pxX).toBeGreaterThanOrEqual(0)
     expect(clip.pxX + clip.pxW).toBeLessThanOrEqual(backingWidth)
   }
 })
 
+// The same rule on the other axis, and the reason `clipBlock` takes a per-axis
+// scale rather than a dpr. A display taller than `MAX_CANVAS_DIM_PX / dpr` gets a
+// backing store clamped at 8192 while its CSS height keeps growing, so a viewport
+// derived from the true dpr asks for more rows than the attachment has and WebGPU
+// rejects the whole pass — the track paints blank, with no banner and no error.
+// Measured on a retina panel 2026-08-22: 4200 css px at dpr 2 asked for 8400.
+test('a clamped canvas gets a viewport its backing store can hold', () => {
+  const cssHeight = 4200
+  const backingHeight = 8192
+  const clip = clipBlock(block(0, 1200), 1000, cssHeight, {
+    x: 2,
+    y: backingHeight / cssHeight,
+  })!
+  expect(clip.pxH).toBe(backingHeight)
+  // what the true dpr would have asked for, and what got the frame rejected
+  expect(Math.round(cssHeight * 2)).toBe(8400)
+})
+
 // The exact case that overflowed before edge-rounding: [997,1000] at dpr 1.5 gave
 // pxX=1496 pxW=5 -> right edge 1501, one past the 1500px backing store.
 test('the previously-overflowing rightmost block is now clamped', () => {
-  const clip = clipBlock(block(997, 1200), 1000, 20, 1.5)!
+  const clip = clipBlock(block(997, 1200), 1000, 20, { x: 1.5, y: 1.5 })!
   expect(clip.pxX).toBe(1496)
   expect(clip.pxX + clip.pxW).toBe(1500)
 })

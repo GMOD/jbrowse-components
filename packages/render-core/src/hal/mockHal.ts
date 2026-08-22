@@ -1,3 +1,4 @@
+import { getDpr } from '../canvas2dUtils.ts'
 import { assertUniquePassIds } from './passIds.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
@@ -114,6 +115,11 @@ export class MockHal implements GpuHal {
 
   resize(width: number, height: number) {
     this.record('resize', width, height)
+    // The real HALs report the scale their backing store actually got, and
+    // every device-px rect a renderer builds comes from this — so a mock
+    // returning nothing is a renderer whose rects are all NaN. `getDpr()` is
+    // the unclamped answer, which is what a mock canvas of any size would get.
+    return { x: getDpr(), y: getDpr() }
   }
 
   uploadBuffer(

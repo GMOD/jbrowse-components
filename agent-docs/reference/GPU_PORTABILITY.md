@@ -162,7 +162,8 @@ ranks that residency check first, ahead of every mitigation.
 One thing bounds it: `getDpr()` caps at `MAX_DPR = 2`, so dpr² cannot exceed 4
 however the hardware reports itself.
 
-**What does NOT bound it is the refusal this doc used to promise.** The claim
+**What does NOT bound it is the refusal this doc used to promise** (and what
+happened instead is now fixed — see the end of this section). The claim
 here was that `recreateMsaaTexture`'s `maxTextureDimension2D` check refuses past
 ~4096 CSS px tall at dpr 2, so "the failure at the top of this range is a legible
 refusal, not an OOM". It is neither. `syncCanvasSize` clamps the backing store at
@@ -171,11 +172,20 @@ is exactly 8192 — so the store never exceeds the limit, the refusal never fire
 and what the user gets instead is the clamp regime: the whole track paints blank,
 with no banner, no console error and no `display.error`. Measured by walking a
 track's height up at dpr 2 (`--ceiling`): 4000 CSS px paints, 4200 is blank, and
-it comes back when the track is shrunk. At dpr 1 the same walk paints all the way
-to 8000, which is what makes this a retina bug specifically — the reachable
-ceiling is halved to ~4096 CSS px, and nothing in `TrackHeightMixin` bounds a
-drag by it. Filed as [../TODO.md](../TODO.md) §"A track dragged past the canvas
-clamp goes blank, and on retina that is half as far away".
+it came back when the track was shrunk. At dpr 1 the same walk painted all the
+way to 8000, which is what made it a retina bug specifically — the reachable
+ceiling is halved to ~4096 CSS px.
+
+**Fixed the same day.** `syncCanvasSize` now reports the scale each axis actually
+got, `hal.resize` returns it, and every device-px rect derives from that instead
+of from `getDpr()` — so past the clamp a display draws at reduced resolution
+rather than asking for a viewport its attachment cannot hold. Re-verified on the
+same panel: the walk paints to 8000 CSS px with no validation error at any
+height. [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"A canvas past
+`MAX_CANVAS_DIM_PX` renders wrong, not smaller" has the mechanism; what remains
+is only whether a drag should be *bounded* as well, which is
+[../TODO.md](../TODO.md) §"Decide whether a track's height should be bounded at
+all".
 
 ---
 

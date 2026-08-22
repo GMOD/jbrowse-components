@@ -889,9 +889,14 @@ export class GpuAlignmentsRenderer
 
   renderBlocks(blocks: RenderBlock[], state: RenderState) {
     const { canvasWidth, canvasHeight } = state
-    const dpr = getDpr()
-    const bufH = Math.round(canvasHeight * dpr)
-    this.hal.resize(canvasWidth, canvasHeight)
+    // Every rect below is device px, so it is derived from the scale the canvas
+    // actually got and never from `getDpr()`: the two agree until the backing
+    // store clamps at `MAX_CANVAS_DIM_PX`, and past that a viewport built from
+    // the true dpr is taller than the target — WebGPU rejects the pass and the
+    // whole track goes blank. The `dpr` UNIFORM stays the true one: it scales
+    // stroke widths, which want screen density rather than target extent.
+    const scale = this.hal.resize(canvasWidth, canvasHeight)
+    const bufH = Math.round(canvasHeight * scale.y)
     this.hal.beginFrame(0, 0, 0, 0)
 
     // Once, ahead of the loop. Nothing below rewrites these slots.
@@ -899,13 +904,13 @@ export class GpuAlignmentsRenderer
 
     let hasDrawn = false
     for (const block of blocks) {
-      const geom = computeBlockGeom(block, canvasWidth, dpr)
+      const geom = computeBlockGeom(block, canvasWidth, scale.x)
       if (geom) {
         // Each stacked section sets its own vertical offsets and clip bands.
         // Section 0's region key equals the raw region index, so the ungrouped
         // (single-section) case reproduces the prior draw exactly.
         for (let s = 0; s < state.sections.length; s++) {
-          if (this.drawSection(block, geom, state, s, dpr, bufH)) {
+          if (this.drawSection(block, geom, state, s, scale.y, bufH)) {
             hasDrawn = true
           }
         }
@@ -930,7 +935,10 @@ export class GpuAlignmentsRenderer
     geom: BlockGeom,
     state: RenderState,
     sectionIdx: number,
-    dpr: number,
+    // The canvas's ACTUAL vertical scale, not `getDpr()` — every band offset
+    // below is a device-px rect inside `bufH`, and the two part company once
+    // the backing store clamps.
+    scaleY: number,
     bufH: number,
   ) {
     const sec = state.sections[sectionIdx]!
@@ -953,7 +961,7 @@ export class GpuAlignmentsRenderer
     this.writeUniforms(sectionState, frame)
     this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
 
-    const cov = devBand(sec.covClipTop, sec.covClipHeight, dpr, bufH)
+    const cov = devBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
     const drewCoverage = state.showCoverage && cov.height > 0
     if (drewCoverage) {
       this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
@@ -967,7 +975,12 @@ export class GpuAlignmentsRenderer
     // Pileup passes are skipped when the band collapses to zero height
     // (read-cloud draws no stacked pileup); the arc band below is
     // decoupled and still draws.
-    const pileup = devBand(sec.pileupClipTop, sec.pileupClipHeight, dpr, bufH)
+    const pileup = devBand(
+      sec.pileupClipTop,
+      sec.pileupClipHeight,
+      scaleY,
+      bufH,
+    )
     const drewPileup = pileup.height > 0
     if (drewPileup) {
       this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
@@ -992,7 +1005,7 @@ export class GpuAlignmentsRenderer
         regionKey,
         geom,
         sec.arcBand,
-        dpr,
+        scaleY,
         bufH,
       )
     }

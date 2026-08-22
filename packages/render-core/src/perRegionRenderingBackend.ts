@@ -1,5 +1,5 @@
 import { clipBlock } from './blockClipUtils.ts'
-import { getDpr, prepareCanvas } from './canvas2dUtils.ts'
+import { prepareCanvas } from './canvas2dUtils.ts'
 import { uploadPass } from './instancePass.ts'
 import {
   Canvas2DRenderingBackendBase,
@@ -176,16 +176,19 @@ export abstract class GpuPerRegionRenderingBackend<
     state: RenderState,
   ): boolean {
     const { canvasWidth, canvasHeight } = state
-    const dpr = getDpr()
     let painted = false
-    this.hal.resize(canvasWidth, canvasHeight)
+    // The scale the canvas ACTUALLY got, which is `getDpr()` until the backing
+    // store clamps and below it after. Read from the resize rather than the
+    // window, so a track dragged past the clamp draws at reduced resolution
+    // instead of asking for a viewport its target cannot hold.
+    const scale = this.hal.resize(canvasWidth, canvasHeight)
     // Always pair beginFrame/endFrame so the canvas clears to transparent even
     // when every block is skipped (e.g. all regions pruned by a density gate).
     this.hal.beginFrame(0, 0, 0, 0)
     for (const block of blocks) {
       const region = regions.get(block.displayedRegionIndex)
       if (region !== undefined) {
-        const clip = clipBlock(block, canvasWidth, canvasHeight, dpr)
+        const clip = clipBlock(block, canvasWidth, canvasHeight, scale)
         if (clip) {
           this.hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
           this.hal.setViewport(clip.pxX, 0, clip.pxW, clip.pxH)
