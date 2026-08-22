@@ -21,7 +21,14 @@ export function newColor(r: number, g: number, b: number, a: number) {
 }
 
 /**
- * Creates a new color from the given number value, e.g. 0x599eff.
+ * Creates a new color from a number in the canonical `0xRRGGBBAA` layout —
+ * alpha in the LOW byte, which is what `newColor` composes and what
+ * `getRed`/`getAlpha` read.
+ *
+ * A 24-bit CSS hex is therefore not one of these, and this used to say it was:
+ * `from(0x599eff)` is `0x00599eff`, so it reads R=0x00, G=0x59, B=0x9e and
+ * A=0xff — every intended channel one byte down, with the blue arriving as the
+ * alpha. Spell the alpha (`from(0x599effff)`), or use `newColor(r, g, b, a)`.
  */
 export function from(color: number) {
   return newColor(
