@@ -212,7 +212,7 @@ name rather than re-deriving from what is in view. A session can say that
 instead of performing it, since the display takes `clusterRegion` beside
 `runClustering`, which is what the figure below does.
 
-<Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the 140 kb core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens to the figure below. The size swatch starts as three breed blocks and ends interleaved." />
+<Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens back out. The size swatch starts as three breed blocks and ends interleaved." />
 
 ## Reading it
 

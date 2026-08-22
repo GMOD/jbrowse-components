@@ -117,7 +117,7 @@ own data file, so the order they are pasted in does not matter. The preview
 table under the box is where a row is renamed or removed; one assembly serves
 the whole batch.
 
-<Video src="/media/ui/bulk_add_tracks.mp4" caption="Four volvox URLs pasted in one box, scrambled, with an index sitting between two unrelated data files. The preview table types each row and pairs the index with its own data file, and the submit button counts what it kept." />
+<Video src="/media/ui/bulk_add_tracks.mp4" caption="Four volvox URLs pasted in one box, scrambled, with an index sitting between two unrelated data files. The table that comes back has a row per data file, the index paired onto the one whose name it extends, and a submit button counting what it kept." />
 
 ## File format support
 
