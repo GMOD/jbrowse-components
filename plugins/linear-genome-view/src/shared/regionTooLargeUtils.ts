@@ -93,12 +93,22 @@ export interface GateViewport {
 }
 
 /**
- * The gate as it was when a fetch was issued, since both fields move during the
- * round trip and its results are judged against neither's live value.
+ * The gate as it was when a fetch was issued, since every field moves during
+ * the round trip and its results are judged against none of their live values.
  */
 export interface GateFetchState {
   viewport: GateViewport | undefined
   gated: boolean
+  /**
+   * `byteGateAdapterKey` at issue — which *file* the measurement is about, the
+   * way `viewport` says which region. A fetch in flight across a tier swap
+   * (MAF crossing the summary threshold mid-RPC) otherwise commits the old
+   * tier's bytes right after `ClearByteEstimateOnTierSwap` dropped them, and
+   * the banner quotes megabytes against a summary read. Undefined when the
+   * display never gates, so an ungated display's `byteGateAdapterConfig` is
+   * never evaluated.
+   */
+  tierKey: string | undefined
 }
 
 /**

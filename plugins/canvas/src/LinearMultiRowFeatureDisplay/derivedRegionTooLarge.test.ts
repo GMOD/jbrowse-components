@@ -308,7 +308,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { bytes: 8_000_000, featureCount: 12 },
         },
       ],
-      { viewport: undefined, gated: true },
+      { viewport: undefined, gated: true, tierKey: undefined },
     )
     expect(display.gateMeasurementStale).toBe(true)
     expect(display.byteEstimate).toBeUndefined()

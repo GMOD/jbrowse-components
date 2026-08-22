@@ -33,6 +33,7 @@ export interface GateHost {
   commitByteMeasurement: (measurement: {
     viewport: GateViewport
     gated: boolean
+    tierKey: string | undefined
     bytes?: number
   }) => void
 }
@@ -247,11 +248,12 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-        // the stamp-only-if-gated and skip-undefined-bytes rules live in the
-        // shared commit, beside the pre-flight's copy of the same protocol
+        // the tier, stamp-only-if-gated and skip-undefined-bytes rules live in
+        // the shared commit, beside the pre-flight's copy of the same protocol
         host(self).commitByteMeasurement({
           viewport,
           gated,
+          tierKey: issued.tierKey,
           bytes: largestRegionBytes(measurements.map(m => m.result.bytes)),
         })
       },

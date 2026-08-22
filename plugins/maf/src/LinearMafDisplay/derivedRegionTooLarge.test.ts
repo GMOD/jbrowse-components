@@ -373,6 +373,46 @@ describe('MAF measures the tier it is about to fetch', () => {
     expect(display.byteEstimate).toBeUndefined()
   })
 
+  // A fetch in flight across the swap is the tier-swap clear's blind spot: its
+  // measurement was issued against the detail tier, and committing it after
+  // the swap would re-instate the very number ClearByteEstimateOnTierSwap just
+  // dropped — the fetch autoruns skip while a fetch is in flight, so nothing
+  // rotates the token at the crossing. The commit is judged by the tier
+  // captured at issue (`GateFetchState.tierKey`), the same rule the viewport
+  // capture already applies on the region axis.
+  it('drops an in-flight detail measurement that lands after the swap', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+
+    view.zoomTo(20)
+    expect(display.showSummary).toBe(false)
+    const issued = display.gateFetchState()
+    const bytes = over(display)
+
+    // the zoom lands while the measurement RPC is out
+    view.zoomTo(200)
+    expect(display.showSummary).toBe(true)
+
+    display.commitByteMeasurement({
+      ...issued,
+      viewport: issued.viewport!,
+      bytes,
+    })
+    expect(display.byteEstimate).toBeUndefined()
+    expect(display.regionTooLarge).toBe(false)
+
+    // and the same commit against the live tier still lands — the guard is
+    // about the tier, not about commits
+    const current = display.gateFetchState()
+    display.commitByteMeasurement({
+      ...current,
+      viewport: current.viewport!,
+      bytes: 60_000,
+    })
+    expect(display.byteEstimate?.bytes).toBe(60_000)
+  })
+
   // The clear is keyed on the tier, not on the zoom: a track with no summary
   // adapter reads one file at every zoom, so its estimate has to survive the
   // 20kb crossing or the banner would re-derive itself on every pass.

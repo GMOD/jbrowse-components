@@ -692,7 +692,13 @@ export default function RegionTooLargeMixin() {
        * is the capture, which is why it is a method.
        */
       gateFetchState(): GateFetchState {
-        return { viewport: self.gateViewport, gated: self.gateActive }
+        return {
+          viewport: self.gateViewport,
+          gated: self.gateActive,
+          // guarded so an ungated display never evaluates
+          // `byteGateAdapterConfig` — "nothing below the opt-in is evaluated"
+          tierKey: self.gateEnabled ? self.byteGateAdapterKey : undefined,
+        }
       },
     }))
     .views(self => ({
@@ -896,8 +902,13 @@ export default function RegionTooLargeMixin() {
        * #action
        * The measurement-commit protocol, held once for both gate paths — the
        * pre-flight below and canvas's in-fetch RPC (`commitGateMeasurements`).
-       * Three rules, each of which used to be spelled at both sites:
+       * Four rules, each of which used to be spelled at both sites or nowhere:
        *
+       * - a measurement is judged by the tier it was *issued* against — a fetch
+       *   still in flight when `ClearByteEstimateOnTierSwap` fires would
+       *   otherwise re-instate the old tier's bytes right behind the clear, and
+       *   the banner would quote them against the new tier's file until the
+       *   next fetch corrected it
        * - a fetch the gate sat out stamps nothing (`gated: false`), so
        *   `gateMeasurementStale` keeps asking about the live viewport
        * - unmeasurable is not a measurement — an undefined `bytes` must not
@@ -908,12 +919,17 @@ export default function RegionTooLargeMixin() {
       commitByteMeasurement({
         viewport,
         gated,
+        tierKey,
         bytes,
       }: {
         viewport: GateViewport
         gated: boolean
+        tierKey: string | undefined
         bytes?: number
       }) {
+        if (tierKey !== undefined && tierKey !== self.byteGateAdapterKey) {
+          return
+        }
         if (gated) {
           self.setGateMeasuredViewport(viewport)
         }
@@ -971,10 +987,13 @@ export default function RegionTooLargeMixin() {
         // to `isStale` left both on the floor at every call site.
         ctx: FetchContext,
       ) {
-        const viewport = self.gateViewport
+        // Captured whole, before the await, so the commit below is judged
+        // against the viewport AND the tier this fetch was issued for.
+        const issued = self.gateFetchState()
+        const { viewport } = issued
         // `viewport` is `gateActive`'s own third term, restated only because
         // TypeScript needs the narrowing to hand it to the two commits below.
-        if (!self.measuresBytesPreFlight || !viewport || !self.gateActive) {
+        if (!self.measuresBytesPreFlight || !viewport || !issued.gated) {
           return false
         }
         const bytes = await updateStatus(
@@ -1003,7 +1022,7 @@ export default function RegionTooLargeMixin() {
         }
         // gated: true by construction — the opt-in and `gateActive` were the
         // early return above
-        self.commitByteMeasurement({ viewport, gated: true, bytes })
+        self.commitByteMeasurement({ ...issued, viewport, bytes })
         // Read after the commit: the verdict is a pure function of the estimate,
         // and the estimate was just taken at this viewport.
         return self.regionTooLarge
