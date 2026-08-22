@@ -1371,6 +1371,17 @@ median 0.00%), not merely somewhere else. Note the wiggle line plots at the top
 of that distribution were already on the linear ramp, so they are the control
 rather than the target.
 
+**Check that nothing else is driving the harness before you start.** That file
+already says the machine has to be quiet; the sharper version is that a SECOND
+`runner.ts` in the same worktree does not merely add load — a golden-refresh run
+`rm -rf`s `browser-tests/__snapshots__` and restores its own copy, and it holds
+the browser and the test server. Two attempts at the run above were spent
+learning that: one degraded into `data-display-drawn` timeouts across
+`Miscellaneous Tracks` and `Multi-Way Synteny Views`, the other wedged
+indefinitely on `BigWig Tracks > GC content track` — which was one of the three
+suites the other run was filtered to. `ps -Ao command | grep runner.ts` is the
+check, and it costs nothing next to a build.
+
 **Two efforts land on the same pixels, so a drift run has to hold one fixed to
 read the other.** This conversion and the per-display MSAA sample-count question
 are not independent: `glyphEdgeAlpha` sits behind `pointGlyph` and manhattan's
