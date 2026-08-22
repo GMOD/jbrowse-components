@@ -159,7 +159,11 @@ test('a failure the session survives reaches the screen', async () => {
 // clamp applies to is `overflow: hidden` with no scrollable ancestor: before
 // this, a track set taller than the clamp had nothing below the fold reachable.
 test('unbounded until a drawer opens, and then the box scrolls', async () => {
-  const state = createViewState({ assembly, tracks: [], defaultSession })
+  const state = await createViewStateAsync({
+    assembly,
+    tracks: [],
+    defaultSession,
+  })
   const { findByTestId } = render(<JBrowseLinearGenomeView viewState={state} />)
 
   const box = await findByTestId('embedded-view-box')
@@ -182,7 +186,7 @@ test('unbounded until a drawer opens, and then the box scrolls', async () => {
 // did that arrived with a condition attached. So it applies with no drawer open,
 // and it wins over the older name when a host passes both.
 test('a height bounds the view with no drawer, and outranks drawerViewHeight', async () => {
-  const state = createViewState({
+  const state = await createViewStateAsync({
     assembly,
     tracks: [],
     defaultSession,
