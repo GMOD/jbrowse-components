@@ -13,11 +13,17 @@ proposal did not anticipate; two of its open decisions were answered by a rule
 rather than by a design. What is parked here is the additive half of the
 remainder — the marks nobody draws — plus a deflated refactor.
 
-**The correctness half is not here.** Feeding the overlay the SA-augmented chain
-so it stops drawing a solid junction across segments it never fetched is
-committed work: [TODO.md](../TODO.md), "The bezier overlay draws a junction
-across segments it never fetched". Do that first; it is what makes the chain
-available to everything below.
+**The correctness half is not here, and it shipped.** `68eab1e8c7` stopped the
+overlay drawing a solid junction across segments it never fetched: it walks the
+SA tags of the segments it did fetch, dashes a junction spanning one it did not,
+and names the hidden loci in the hover. It did NOT go through
+`unpairedReadChain`, as this file and the backlog both once proposed — `SegAln`
+carries no route back to the `ReadEntry`, and the overlay needs the entry at
+both ends for its `readYs` row and `displayedRegionIndex`, so it copied
+`markHiddenSegments`' clip window instead. What is left of the correctness half
+is the same-strand case, which `isNormal` routes to the straight-line pass:
+[TODO.md](../TODO.md), "A same-strand junction across unfetched segments is
+still drawn solid".
 
 Read [`reference/SV_MULTIHOP.md`](../reference/SV_MULTIHOP.md) before starting
 any of it — it carries the line this feature area does not cross, and the three
@@ -57,10 +63,16 @@ because its evidence was the same chains the path came from.
 
 A hop whose far end was never fetched — the read leaves the screen and does not
 come back — has no `x` (`bpToScreenX` returns `undefined`) and no `y` (no
-`readYs` row). The overlay draws nothing for it. This is the additive half: it is
-a mark that does not exist rather than a mark that is wrong, so it waits behind
-the TODO entry, which is what puts the chain in the overlay's hands in the first
-place.
+`readYs` row). The overlay draws nothing for it. This is the additive half: a
+mark that does not exist rather than a mark that is wrong.
+
+**It no longer waits on anything.** The correctness fix was expected to put the
+whole chain in the overlay's hands and did not: `68eab1e8c7` parses SA records,
+but keeps only those whose clip lands strictly BETWEEN two on-screen segments,
+which is exactly the test a one-ended hop fails. So the SA parse is now in the
+overlay and this case is still unreachable through it — what is needed is that
+window widened to the ends of the chain, plus the extrapolating projector below,
+and neither is a consequence of the other.
 
 **Both answers already exist one band up**, and they are split by exactly the
 test the overlay already computes in `classifyPair` (`interchromOf` →

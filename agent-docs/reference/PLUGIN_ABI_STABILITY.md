@@ -104,7 +104,8 @@ Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/c
 
 Whether these two surfaces earn a baseline of their own is open, and it is the
 half that would stop the next six — see `TODO.md`
-§ "Six session and plugin removals are recorded nowhere".
+§ "Do the session and plugin `exports` surfaces earn a baseline", which carries
+why the plugin one is cheap and what blocks the session one.
 
 ## The symptom
 

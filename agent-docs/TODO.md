@@ -26,18 +26,18 @@ before anyone noticed.
 | Item | Area | First move |
 | --- | --- | --- |
 | [Should a track's height be bounded at all](#decide-whether-a-tracks-height-should-be-bounded-at-all) | GPU, limits | the blank is fixed; what is left is whether the drag should stop, and per display |
-| [Repeat and CRISPR subpart labels draw into an unreserved row](#repeat-and-crispr-subpart-labels-draw-into-an-unreserved-row) | canvas | decide: reserve a row per glyph, or say `below` is a transcript/box affordance |
+| [A repeat's subpart labels collide in one row](#a-repeats-subpart-labels-collide-inside-the-row-they-now-share) | canvas | the row is reserved now; decide whether the one-row design survives |
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [An arc's right-click offers nothing](#give-an-arcs-right-click-something-to-offer) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
-| [Move the four cubic AA ramps onto the linear one](#move-the-four-cubic-aa-ramps-onto-the-linear-one) | shaders, GPU | the measurement is done; convert the dotplot capsule and read the cross-backend gate's drift, which should fall |
+| [Read the drift the AA ramp conversion predicts](#read-the-cross-backend-drift-the-aa-ramp-conversion-predicts) | shaders, GPU | all four converted; run the gate with the MSAA sample count held fixed |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
 | [Group the methylation path's CIGAR walk](#group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is) | alignments, perf | decide whether the exported callback's order is a contract |
-| [The bezier overlay draws a junction it never fetched](#the-bezier-overlay-draws-a-junction-across-segments-it-never-fetched) | alignments | feed it `unpairedReadChain` and dash the spanning arc; copy the split view, not the arc band |
+| [A same-strand hidden junction is still solid](#a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid) | alignments | decide which renderer owns a marked junction; `isNormal` sends it to the straight pass |
 | [Give colorNeutralRead a dark variant](#give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr) | alignments, palette | decide two neutrals or one before editing either |
 | [Re-film the protein launch tour](#re-film-the-protein-launch-tour-once-protein3d-ships-the-a3m-removal) | figures, protein3d | waits on a protein3d release; the a3m is gone for good |
 | [Should chromosome painting colour a same-chromosome mate](#should-chromosome-painting-colour-a-mate-on-the-same-chromosome) | alignments | a visual call; any gate has to spare LGVSyntenyDisplay's Query name, which must paint every block |
@@ -56,7 +56,6 @@ before anyone noticed.
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](#give-sessionjbrowse-a-real-type) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
 | [The swapped track resolves to a point](#the-swapped-assembly-track-resolves-to-a-point) | synteny | the hang is fixed; what is left is the swap, still not isolated |
-| [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Verify the shared rect buffer headed](#verify-the-shared-rectcontinuation-buffer-on-real-hardware) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
 | [Feet on the interchromosomal ticks](#give-the-interchromosomal-ticks-breakend-feet-too) | alignments | decide what a coalesced tick's direction is, then the shader |
 | [Bound a breakend foot by its region](#bound-a-breakend-foot-by-its-displayed-region) | alignments | bound it by the REGION; the partner bound is wrong and was reverted |
@@ -87,44 +86,38 @@ before anyone noticed.
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 129](#the-config-read-baselines-remaining-129-is-mostly-not-display-debt) | config, types | 75 of them are track/assembly reads; confirm that before estimating any of it |
 | [Time a two-tier PIF to settled](#time-a-two-tier-pif-to-settled-in-a-browser) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
-| ["Phased" is unreachable on a haploid callset](#phased-is-unreachable-on-a-callset-that-is-entirely-haploid) | variants, pangenome | decide whether the gate widens to match the painter, or goes per-row |
-| [The clustering matrices trust feature 0's header](#the-clustering-matrices-trust-the-first-features-header) | variants, RPC | route both builders through `buildHeaderRemap`; the two-header fixture is the work |
-| [A mismatched samplesTsv blanks the track silently](#a-samplestsv-that-names-no-vcf-sample-blanks-the-track-in-silence) | variants, config | decide: config error to `notifyError`, or fall back to the VCF header |
-| [An edited track config survives its own undo](#an-edited-track-config-survives-the-undo-that-removed-it) | session, config | decide what invalidates the working-copy cache; it cannot simply be dropped per write |
-| [Six session and plugin removals are recorded nowhere](#six-session-and-plugin-removals-are-recorded-nowhere) | plugins, ABI | write the six into `knownRemovals.ts` and the v5 notes, then decide on a baseline |
+| [Do the plugin `exports` surfaces earn a baseline](#do-the-session-and-plugin-exports-surfaces-earn-a-baseline) | plugins, ABI | recorded; build the plugin-`exports` baseline, and read the session one's blocker first |
 | [v4.3.0's per-view highlight setting is dropped on load](#v430s-per-view-highlight-setting-is-dropped-on-load) | session, compat | decide migration vs upgrade-guide note; MST ignores the key either way |
-| [Release-validation leftovers](#release-validation-leftovers) | colour, session, LGV | seven independent small items, four reachable |
-| [Six RPC method names left unrecorded](#six-rpc-method-names-left-with-nothing-recording-them) | RPC, plugins, ABI | name them in the upgrade guide; separately make an unknown method throw a real error |
 
 ## Ready to build: small and self-contained
 
-### Repeat and CRISPR subpart labels draw into an unreserved row
+### A repeat's subpart labels collide inside the row they now share
 
-`SELF_LABELING_GLYPHS` (`plugins/canvas/src/RenderFeatureDataRPC/labelUtils.ts`)
-marks `RepeatRegion` and `CrisprGuide` as labelling their children rather than
-themselves, on the stated grounds that those rows are counted by each child
-layout's own `labelRows`. That holds for `MatureProteinRegion`
-(`layoutMatureProteinRegion` sets `ownsLabelRow` per child) and for neither of
-these two: `layoutRepeatRegion` is a bare `layoutContainerGlyph` and
-`layoutCrisprGuide` a bare `layoutChild`, and both emitters register their
-children straight off the feature in `glyphEmitters.ts` — the repeat's subparts
-at `:459`, the PAM at `:568`.
+`layoutRepeatRegion` reserves the shared label row now (`sharedChildLabelRows`,
+2026-08-22), so nothing overflows into the feature below — what is left is
+legibility *inside* that row, and on a real EDTA-style intact retrotransposon it
+is bad. Measured on the fixture in `belowLabelRows.test.ts`: four of the five
+subpart labels sit at exactly y=10, and the internal `*_retrotransposon` body is
+the only one offset, by 1.75px, because `centerShrink(…, 0.65)` ends its box at
+8.25.
 
-So with **Subfeature labels → Below** on either track type, `emitSubfeatureLabel`
-draws text into a row `bodyHeightPx` never reserved. On a CRISPR guide the
-feature's own name lands at `featureBottom + 2` and "PAM" at `featureBottom + 0`,
-two 11px labels 2px apart, and the pair overhangs into the next feature's row.
-On a `repeat_region` every subpart shares one row by design, so all N subpart
-labels sit at the same y — fine where the subparts are side by side (the LTRs and
-TSDs), overlapping where they are not (the internal retrotransposon spans them).
+Each label is pinned to its OWN span's left edge by `computeLabelLeftPx` and no
+decimation runs among siblings sharing a row, so "TSD-left" (x=100, 40px wide)
+runs straight over "LTR-left" (x=105), and "Copia-internal" (x=105, y=8.25) lands
+on top of "LTR-left" (x=105, y=10). Side-by-side subparts are fine by
+construction; the internal span, which *contains* the LTRs, is the one that
+cannot share a row with them.
 
-**First move: decide whether these two glyphs reserve or opt out.** Reserving is
-one line each — set `labelRows: 1` on the layout when `config.subfeatureLabels
-=== 'below'` and the glyph will register a labelled child — and it is what the
-transcript path already does. Opting out means saying `below` is a
-transcript/box affordance and having these two draw `overlay` regardless, which
-is cheaper but silently overrides a setting the user chose. The default is
-`none`, so nothing ships broken today.
+**First move: decide whether the one-row design survives.** The repeat glyph puts
+every subpart on one row deliberately — that is what makes a repeat one row tall
+instead of five. Horizontal collision resolution among one feature's subparts
+keeps that and is mechanical (drop a label whose box overlaps a sibling's, the
+way the display already drops labels that do not fit a block). Stacking
+non-adjacent subparts onto their own rows reads better and gives the design up,
+so it is the call, not the implementation, that is open.
+
+Not an overflow bug and not a regression: all of it stays inside the row the
+reservation buys, and `belowLabelRows.test.ts` pins that boundary.
 
 ### Let a dotplot click open the alignment it is on
 
@@ -321,70 +314,33 @@ labels will overflow the boxes laid out for them.
   a one-base fetch on hover, next to the widget round trip the click already
   makes.
 
-### The bezier overlay draws a junction across segments it never fetched
+### A same-strand junction across unfetched segments is still drawn solid
 
-The bezier connector overlay never reads `readSuppAlignments` — grep it across
-`features/linkedReads/`, `shared/readGroupConnections.ts` and
-`components/pileupBezierArcs.ts` and there are no hits. So it groups the
-*fetched* alignments by QNAME, sorts each read's segments by clip-at-start and
-joins consecutive ones (`splitJunctions`). When the segments between two of them
-were never fetched, it joins across the gap and marks nothing.
+The inverted and cross-region cases are fixed (`68eab1e8c7`): the bezier overlay
+walks the SA tags of the segments it did fetch, dashes a junction that spans one
+it did not, and names the hidden loci in the hover, in the breakpoint split
+view's own wording. **A same-strand junction is not fixed, and the reason is
+ownership rather than plumbing.** `isNormal` is true for it, so
+`isBezierArcPair` hands it to the GPU/Canvas2D straight-line pass and the overlay
+never sees it — it still draws one solid line across segments nothing fetched,
+which is the same lie in a different renderer.
 
-Measured, with a COLO829-chain-1-shaped fixture — one unpaired read, chr3 fwd →
-chr10 → chr12 → chr3 rev, only the two chr3 segments fetched.
-`enumerateBezierPairs` returns one pair and `computePileupBezierArcs` returns one
-arc:
+Routing those to the overlay is the obvious move and is not obviously right: in
+chain mode it would double-draw over `buildChainConnectingData`, and the straight
+pass is the cheap one precisely because it carries no per-read SA parse. The
+alternative is to teach the straight pass a dash, which means a per-instance flag
+in a buffer built for position and width alone.
 
-```
-M 25359568 5 C … 25359111 17     label: "Split alignment (inverted)"
-```
+**First move: decide which renderer owns a marked junction**, because that
+decides whether the SA walk moves or is duplicated. Note the walk itself is
+already paid on the overlay's side and is scroll-invariant
+(`enumerateBezierPairs`), so the cost question is only about the straight pass.
 
-A solid inversion junction on chr3, indistinguishable from a real one, where the
-read actually foldbacks through 382 bp on two other chromosomes.
-
-The other two renderers of the same read already handle it, and neither draws
-this. The arc band suppresses the join by construction — `unpairedChainArcs`
-walks the SA-augmented chain, so the two are not adjacent and no junction is
-emitted between them, under a comment naming exactly this ("suppresses a
-misleading direct join across an off-screen segment"). The breakpoint split view
-draws it dashed: `markHiddenSegments` fills `hiddenSegmentsBetween`,
-`AlignmentConnections` sets `strokeDasharray='4 3'`, and the tooltip reads
-`hidden N segments not in view: <locstrings>`.
-
-**Copy the split view, not the arc band.** The overlay is a per-read mode where
-the user is following one molecule, so deleting the connector loses the thread;
-the arc band is an aggregate, where a wrong junction would be counted. Dash the
-arc and name the hidden loci.
-
-The seam is already there. `resolveReadGroup<E, T>` is generic over the per-mate
-chainer precisely so the two paths can differ here, and says so — *"the bezier
-path chains only the on-screen segments (`splitJunctions`), the arc path
-additionally walks off-screen SA segments."* Feed it `unpairedReadChain` instead,
-which the derivative-allele picker already calls, and the overlay learns which
-junctions span a hidden segment. `arcTooltip` → `setMouseoverExtraInformation` in
-`PileupBezierOverlay` is where the locstrings go.
-
-No new geometry, no anchor decision and no new setting — the one-ended hops
-(where the far end was never fetched at all) are a separate, additive question,
-parked in [ideas/sa-hops-in-the-bezier-overlay.md](ideas/sa-hops-in-the-bezier-overlay.md).
-
-Three things to watch:
-
-- **`unpairedReadChain` needs a `CanonicalRefName`** and the bezier path does not
-  thread one; `computePileupBezierArcsFromModel` has to pass it, the way
-  `derivativePathCandidates` does.
-- **One seam, two outputs.** The live overlay and the SVG export both go through
-  `computePileupBezierArcsFromModel` (`components/pileupBezierArcs.ts`), so the
-  dash lands in both — check `PileupBezierArcsSvg.tsx` renders `strokeDasharray`.
-- **Cost.** This adds an SA parse per read group (`featurizeSA` over
-  `readSuppAlignments`) that the arc path already pays and the overlay does not.
-  `enumerateBezierPairs` is the memoized, scroll-invariant half, so it lands
-  there rather than per frame — but measure it at depth.
-
-To see it: the COLO829 tumour ONT track in the `cancer_sv` demo
-(`https://jbrowse.org/demos/cancer_sv/config.json`). Chain 1 is a closed cycle
-chr3 → chr10 (199 bp) → chr12 (183 bp) → chr3 and the two chr3 arms **overlap**,
-so a chr3-only view fetches both and draws the false inversion.
+Cost of the landed half, for scale: +0ms on a 200k short-read fetch with no SA
+tags, +30-45ms per relayout on 20k ONT at 10% split, and +372ms at 50% split with
+900-op SA CIGARs — down from +619ms by parsing a record's locus only after its
+clip proves it hidden (`getClip` is head-or-tail digits; `lengthOnRef` walks every
+op).
 
 ### Give colorNeutralRead a dark variant, or fold it into colorPairLR
 
@@ -770,68 +726,6 @@ first spelling is not the one to discover at site 20.
 
 Pin the result with `AssertNotAny<IsAny<...>>` when it lands, the way the
 embedded products' `session`/`session.view` already are.
-
-### Give the comparative displays a cancel and a retry
-
-`LinearSyntenyDisplay` and `DotplotDisplay` are the only displays with no way to
-stop a slow load or retry a failed one. Every LGV display has both.
-
-This is what is left of the old "fold the non-LGV fetches onto `FetchMixin`"
-entry, which
-[ADR-054](architecture-decision-records/adr-054-comparative-displays-keep-their-own-fetch.md)
-rejected — read it before re-proposing the fold. The short version: there is only
-one stop-token machine now and both families already run on it
-(`FetchMixin.runFetch` wraps `createStopTokenRotation`, which also has a
-consumer `FetchMixin` structurally cannot host), most of what the fold would add
-is per-region machinery these single-RPC fetches don't use, and the two getters
-worth hoisting read `self.error`, which that mixin cannot see without a third
-declaration of `BaseDisplay`'s five status members — the trap ADR-041 records.
-
-**Retry is a button, never automatic.** A failed comparative fetch stays failed
-until the user asks again — no backoff, no re-arming on error. This is a
-deliberate constraint, not an unfinished half: the displays sit on RPCs that can
-be minutes long against remote indexes, so a display that re-fires on its own
-hammers a failing server and burns the user's bandwidth with nothing on screen
-to say why. Build the manual path only.
-
-The LGV families already encode that split and are the shape to copy:
-`cancelFetch` (internal, bumps `fetchGeneration`, deliberately *does* retrigger)
-versus `cancelFetchByUser` (durable, deliberately does **not**) exist for exactly
-this reason — see the comments on both in `FetchMixin`.
-
-**None of that blocks the feature**, which was the only user-visible thing the
-fold was buying:
-
-**The retry half already landed** — `SyntenyFetchStateMixin` owns
-`reloadCounter` + `reload()`, `installComparativeFetchAutorun` reads it
-unconditionally at the top of the autorun, and both error banners reach it:
-dotplot's per-display one in `DisplayStatusOverlays.tsx`, and synteny's combined
-one in `LevelSyntenyCanvas.tsx`, which reloads every errored display on the
-level. What is left is the cancel:
-
-- `fetchCanceled` volatile + `cancelFetch` action on `SyntenyFetchStateMixin`
-  (`@jbrowse/synteny-core`), alongside the `fetching` / `loadedFetchKey` /
-  `assembliesSwapped` / `reloadCounter` it already owns.
-- `installComparativeFetchAutorun` skips the run while `fetchCanceled` — read it
-  beside `void self.reloadCounter`, under the unconditional-read rule from
-  `installGlobalFetchAutorun`, or reload dies the moment the gate goes false.
-- One render site, not two: both views draw their loading state through
-  `ComparativeFetchStatus` (`@jbrowse/synteny-core`), and the contract is
-  already wide enough — `DisplayLoadingOverlayModel` declares `fetchCanceled`,
-  `cancelFetchByUser` and `reload`, all optional, and `LoadingOverlay` renders
-  the buttons off them. Two edits: widen `ComparativeStatusModel` to declare
-  them, and forward them in the `muiStatus.Loading` binding, which passes only
-  `statusMessage`/`statusProgress` today. A host's own overlay set gets them
-  for free, since it reads the same model.
-
-**The loop to not write.** `prepare` must never read `self.error`. The skeleton
-already `setError(undefined)`s at the start of every fetch and `setError(e)`s on
-failure, so an `error` read in the tracked half turns a single failure into an
-unbounded retry loop — fetch, fail, error changes, autorun refires — paced only
-by the debounce, against the server that just failed. Nothing catches this today
-because `prepare` happens not to read it; the same hazard is why
-`installGlobalFetchAutorun` documents that `rpcProps()` must never return
-fetch-derived state.
 
 ### Verify the shared rect/continuation buffer on real hardware
 
@@ -1404,174 +1298,73 @@ open. **Re-baseline in the same commit as any improvement**; the gate only fails
 when the count grows, so a win nobody ratchets is a win that can be undone
 silently.
 
-### Move the four cubic AA ramps onto the linear one
+### Read the cross-backend drift the AA ramp conversion predicts
 
-`antialias.slang` offers two ramp shapes over one output pixel and the tree runs
-both, which used to be recorded as an open preference. It is now measured:
-`scripts/aa_ramp_coverage_study.ts` scores each against the exact area a
-straight edge covers of a pixel, and the linear `aaRamp` is closer at every
-angle — exact axis-aligned where the cubic is up to 0.096 of full ink out, and
-0.043 against 0.067 at 45°. A band built as a difference of ramps is exact at
-every width with the linear one; the cubic paints a half-pixel band at 0.688
-coverage instead of 0.500. GPU_RENDERING.md's antialiasing section carries the
-table.
+**All four conversions landed** — the dotplot capsule (`856cdbcd86`), synteny's
+`perpCoverage` (`2edb510788`) and `vertCoverage` (`c95c98985c`), and
+`glyphEdgeAlpha` (`71d557895a`), which took `aaSmoothRamp` out of the module with
+it. What is owed is the measurement, and it is owed rather than skipped because
+the change was posed as a falsifiable prediction.
 
-So the four remaining `aaSmoothRamp` callers are a correctness debt rather than
-a style: synteny's `perpCoverage` and `vertCoverage` (`syntenyTypes.slang`), the
-dotplot capsule, and `glyphEdgeAlpha` — which puts it behind `pointGlyph` and
-manhattan's SDFs too. Each call is a one-argument change: `aaSmoothRamp(d,
-halfPx)` becomes `aaRamp(d, 2.0 * halfPx)`, since the linear form takes the full
-width where the cubic takes the half.
+The gate run was started and cut off partway (25 of 136 pairs), so there is no
+number:
 
-**Start with the dotplot capsule.** Wiggle's capsule is the same primitive with
-the same SDF and already takes the linear ramp, so those two differ today for no
-reason anyone recorded, and it is the cleanest place to see what the change
-looks like. Marks thinner than a pixel move the most — they are the ones the
-cubic over-inks.
+```sh
+pnpm --filter @jbrowse/web build
+cd products/jbrowse-web && node browser-tests/runner.ts \
+  --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate --drift-report
+```
 
-The reason this is not four one-line commits is the verification, and the
-cross-backend gate is the instrument for it — `pnpm test:browser:gate` with
-`--drift-report`, not a golden refresh. It diffs canvas2d against the GPU render
-of the same run with canvas2d as the reference side, and `Dotplot View`,
-`Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks` are all in its CI
-scope, so all four call sites are already watched. That makes the change
-falsifiable rather than merely reviewable: a ramp closer to exact coverage
-should move those pairs DOWN the drift distribution. Read CROSS_BACKEND_GATE.md
-for the distribution to compare against — max 0.62%, median 0.00% over 66 pairs
-— and note the wiggle line plots that sit at the top of it are already on the
-linear ramp, so they are the control rather than the target.
+A ramp closer to exact coverage should move those pairs **down** the distribution
+[reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) records — 66
+pairs, max 0.62%, median 0.00% — not merely somewhere else. `Dotplot View`,
+`Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks` are all in CI scope,
+so all four sites are watched. The wiggle line plots at the top of that
+distribution were already linear, so they are the control rather than the target.
 
-### "Phased" is unreachable on a callset that is entirely haploid
+**Hold the MSAA sample count fixed, or the number means nothing.** The
+per-display sample count landed the same day (`bea2ae1546`) on the same
+primitives — `glyphEdgeAlpha` sits behind `pointGlyph` and manhattan's SDFs, and
+the MSAA-dependent set is wiggle/coverage bar tops, read arrow tips and the tiled
+Hi-C/LD diamonds. A run spanning both changes produces a drift table neither
+effort can attribute, so record the commit it was measured at. The antialiasing
+section of [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md) carries the
+coverage table and this same warning.
 
-The rendering-mode row is `disabled: !self.hasPhased`
-(`plugins/variants/src/shared/multiSampleVariantMenuItems.ts:97`) and `hasPhased`
-is set only on a literal `|` (`VariantRPC/computeSampleInfo.ts:360`). The
-painter's rule is wider, deliberately: `getPhasedColor.ts:63` carries a comment
-explaining that gating on `includes('|')` was a bug, because pangenome callsets
-are haploid per assembly path and `vg deconstruct` writes bare `0`/`1`/`23`.
-`isPhasedOrHaploid` was widened for that case; the menu gate was not widened
-with it.
+### Do the session and plugin `exports` surfaces earn a baseline
 
-On a `vg deconstruct` VCF where no `|` appears anywhere, the menu offers
-**Phased** greyed out as "no phased variants found" — while `renderingMode:
-'phased'` in the track config renders it correctly, one `HP0` row per sample
-coloured by allele identity rather than dosage. `setPhasedMode` has no other
-caller, so a config slot is the only door into a rendering the UI says does not
-apply.
+The recording half is done (`8e0893831f`): the six v5 removals are in
+`SESSION_AND_PLUGIN_REMOVALS` in `knownRemovals.ts`, rendered into both
+`PLUGIN_ABI_STABILITY.md` and the v5 upgrade guide by
+`generate-abi-removals.ts`, and `knownRemovals.test.ts` guards the two-array
+split. They could not go in `REMOVAL_GROUPS`: `abiPreviousRelease.test.ts`
+requires every key there to be a `module#name` the previous release served, so a
+session member filed there fails as stale.
 
-**First move: decide whether the gate becomes `hasPhasedOrHaploid`.** Widening
-it to match the painter is one field on `computeSampleInfo`'s result, but it
-also means a diploid-unphased callset with one haploid contig starts offering
-the mode, so the alternative is to gate on the same predicate the painter uses
-per row and accept that the answer is per-region.
+What is left is whether either surface earns a baseline of its own, and the
+answer differs by surface:
 
-### The clustering matrices trust the first feature's header
-
-`getPhasedGenotypeMatrix.ts:110` and `getGenotypeMatrix.ts:127` take the
-canonical sample order from `filteredVariants[0]` alone and never call
-`buildHeaderRemap`. Both are entered from this plugin's shared layer —
-`shared/runGenotypeClustering.ts:47` and
-`shared/components/MultiSampleVariantClusterDialog.tsx:58` — and
-`plugins/variants/src/CLAUDE.md` names this exact trap. The cell path and
-`phaseSetReader` were both fixed for it; these two were not.
-
-With a `SplitVcfTabixAdapter` whose `chrY.vcf.gz` header lists only the male
-subset while `chr1.vcf.gz` lists everyone, a view spanning both and then
-**Cluster rows by genotype** files every chrY site's genotype vector against a
-neighbouring sample: `sampleIdx` counts against each feature's own header while
-`sampleIdxByKey`/`used`/`rowSampleIdx` all come from feature 0's. `used[sampleIdx]`
-and the `rowSampleIdx === -1` guard keep every write in bounds, so nothing
-errors — the dendrogram simply groups samples by someone else's calls, and the
-row order it writes outlives the run.
-
-**First move: route both builders through `buildHeaderRemap`**, the way the cell
-path does. No fixture anywhere exercises a two-header adapter through the
-clustering path, so the fixture is most of the work.
-
-### A samplesTsv that names no VCF sample blanks the track in silence
-
-`parseSamplesTsv.ts:34` ends at `return metadataLines.filter(f =>
-vcfSampleSet.has(f.name))`, with no fallback to `parser.samples`. Point
-`samplesTsvLocation` at a metadata file whose first column reads
-`1000GP_HG00096` against a VCF header naming `HG00096` and the filter empties:
-`getVcfSources` returns `[]`, so `sourcesVolatile` is `[]`, so `sourcesBase` is
-`[]` — which is truthy, so `awaitingPrerequisite` is false and no loading state
-shows — so `sampleFilter` is `[]`, which `buildCanonicalRows` correctly reads as
-"no samples". The worker computes nothing and the display draws an empty band
-with no banner. Both mismatch warnings do fire, to the console.
-
-**First move: decide which of the two failures this is** — a config error that
-should reach `notifyError`, or a partial match that should fall back to the VCF
-header and warn. They want different code, and a file that matches *some* names
-is the case that decides it. Related but not the same as
-[ideas/refname-mismatch-warning-visibility.md](ideas/refname-mismatch-warning-visibility.md),
-which is about a warning nobody sees rather than one nobody emits.
-
-### An edited track config survives the undo that removed it
-
-`getEditableTrackConfig` (`packages/product-core/src/Session/SessionTracks.ts:227`)
-caches a non-admin's working-copy config node per trackId in a volatile `Map`
-and returns `existing` unconditionally. Nothing invalidates it on snapshot
-application: `revertEditableTrackConfig` (`:294`) and `syncEditableTrackConfig`
-(`:334`) are reached only from `writeDelta`/`updateTrackConfiguration`, and none
-of the five `editableTrackConfigs` reads is a reaction.
-
-So a non-admin changes "Color by" on an alignments track;
-`BaseTrackModel`'s persist reaction writes a delta (`:452`); the patch lands in
-undo history, which `HistoryManagement/index.ts:38` points at the session. Ctrl+Z
-applies the prior snapshot, `trackConfigDeltas` loses the entry — and
-`TrackConfigurationReference.get`
-(`packages/core/src/configuration/configurationSchema.ts:566`) still routes
-through `getEditableTrackConfig` and gets the stale node back. The track stays
-coloured, a share link taken now says "default", and the next edit to any slot
-on that track re-diffs the working copy and silently reinstates the change that
-was undone. Admin mode is unaffected — `getEditableTrackConfig` returns
-`undefined` at `:232`.
-
-**First move: decide what invalidates the cache.** Keying it on the delta's
-identity is smaller than adding a snapshot listener and does not need a
-lifecycle hook; the reason it is a decision and not a patch is that the working
-copy is what makes a partially-typed edit survive a re-render, so it cannot
-simply be dropped on every write.
-
-### Six session and plugin removals are recorded nowhere
-
-`PLUGIN_ABI_STABILITY.md` names three surfaces where a removal fails quietly and
-says the session is the quietest. Six left in v5 with no entry in
-`ReExports/knownRemovals.ts` and none in
-`products/jbrowse-web/src/tests/pluginFacingSessionApi.test.ts`, whose pinned
-list is 15 members long:
-
-- `getReferring` changed signature, `(object: IAnyStateTreeNode)` →
-  `(trackId: string)` (`Session/ReferenceManagement.ts:43`). A v4 plugin passing
-  a config object reaches `getReferringMultiple`, which tests a `Set` of objects
-  against `node[key]?.trackId`, a string. It returns `[]`, nothing throws, and
-  the caller concludes no view refers to the track it is about to remove.
-- `removeReferring` deleted (v4.3.0 `ReferenceManagement.ts:75`) — a plain
-  `undefined is not a function`.
-- `prepareToBreakConnection` deleted (v4.3.0 `Connections.ts:64`), the
-  "N tracks will close" pre-flight.
-- `hasWidget` deleted (v4.3.0 `DrawerWidgets.ts:144`).
-- `DialogQueue.ts` deleted outright, taking `DialogQueueSessionMixin`,
-  `isSessionWithDialogs` and `SessionWithDialogs(Type)` off
-  `@jbrowse/product-core`; `Session/index.ts` also went from `export *` over
-  nine modules to a named allowlist.
-- `LinearGenomeViewPlugin`'s `exports` object dropped `BaseLinearDisplay` and
-  `BaseLinearDisplayComponent` (`plugins/linear-genome-view/src/index.ts:26`).
-  A v4 plugin composing `getPlugin(…).exports.BaseLinearDisplay()` throws at
-  install, so its track type never registers and the user sees a session that
-  opens with the track absent.
-
-All six are deliberate major-version removals. The defect is that nothing
-records or checks them: `abi.test.ts`/`abiBaseline.json` pin only
-`@jbrowse/core/*` module names, and `scripts/check-published-plugins.ts:152`
-filters on `name.startsWith('@jbrowse/core/')`, so a plugin's `exports` object
-is observed by nothing at all.
-
-**First move: write the six into `knownRemovals.ts` and the v5 release notes'
-removal list**, which is generated only from the core `REMOVAL_GROUPS` today.
-Then decide separately whether the session and the plugin `exports` objects earn
-a baseline of their own — that is the half that stops the next six.
+- **The plugin `exports` object is the cheap one and the one worth building.**
+  It is shaped exactly like `abiBaseline.json`: from a product that loads every
+  plugin, `pluginManager.plugins.map(p => [p.name, Object.keys(p.exports)])`
+  against a committed JSON. Nothing observes that surface today —
+  `check-published-plugins.ts:152` filters on `name.startsWith('@jbrowse/core/')`
+  — and it is what would have caught `LinearGenomeViewPlugin.exports` dropping
+  `BaseLinearDisplay`.
+- **A session baseline has a concrete blocker.** The record lives in
+  `packages/core` and `./ReExports/knownRemovals` is not in core's `exports` map;
+  `packages/core/scripts/generateExports.mjs` derives that map FROM USAGE, so
+  importing the record from `products/jbrowse-web` would silently add a permanent
+  published subpath for a data module. Accept the subpath, move the record, or
+  duplicate the list and let it drift — pick before writing any of it.
+- **Neither baseline would have caught `getReferring`.** A name snapshot says
+  nothing about a signature, and that removal is a signature change that answers
+  `[]` in silence. Only `pluginFacingSessionApi.test.ts`'s shape — perform the
+  call the way a published bundle spells it — catches that class, and it covers
+  only bundles someone has read.
+- **The type-export surface probably does not earn one.** `LayoutRecord` broke an
+  out-of-tree *rebuild*, which is loud, and the in-tree compiler already covers
+  it. It earned a changelog line, which it now has.
 
 ### v4.3.0's per-view highlight setting is dropped on load
 
@@ -1595,83 +1388,6 @@ entry folding any per-view `false` into the session-level flag is a few lines;
 the alternative is to say a highlight band is cheap to re-dismiss and write the
 change into the upgrade guide instead, which is where the recombination-lane
 removal went.
-
-### Release-validation leftovers
-
-Seven small things the v5.0.0 sampling turned up, none of them worth an entry
-alone. **The four reachable ones are fixed**; the three below are not reachable
-and stay here.
-
-Fixed, for the record, since each was a wrong answer that looked like a right
-one: `blend()` hardcoded alpha to 255, so `colord(a).mix(b)` came back opaque on
-a public colord-shaped surface — it interpolates alpha linearly now, `gamma`
-being for the colour channels only. `parse`'s `PATTERN` was unanchored, so
-`parseCssColor('foo rgb(1,2,3) bar')` answered `[1,2,3]` and the magenta
-invalid-colour sentinel was unreachable for anything with a colour buried in it
-— anchored, with surrounding whitespace still tolerated. `focusedViewId` is
-cleared in `takeOut`, so every way a view leaves drops the focus rather than
-only `replaceView`, and `setFocusedViewId` takes `string | undefined` so "none"
-is sayable. `trackConfigDeltas` is `stripDefault` now, and two session snapshots
-lost their `"trackConfigDeltas":{}` line.
-
-- **`fetchAllRegions` has no test anywhere**
-  (`plugins/linear-genome-view/src/BaseLinearDisplay/models/fetchEachRegion.ts:152`),
-  including the `isRegionRefused` skip its per-region twin has three tests for.
-  Its two callers are both wiggle, and `RenderWiggleData` has no refusal path,
-  so the branch is unreachable today — but a future edit hoisting the commit out
-  of that guard would mark a region loaded against a payload nobody received,
-  and since the ordinary fetch *is* the gate's re-measure, nothing would
-  re-measure either. That is the frozen-until-reload failure `regionCommit.ts:31`
-  was written about, with nothing going red.
-- **`Layout` and `LayoutRecord` are dead**
-  (`plugins/linear-genome-view/src/BaseLinearDisplay/types.ts:19,27`).
-  `LayoutRecord` is exported from both the barrel and the plugin entry with zero
-  consumers — breakpoint-split-view declares its own identical copy at
-  `BreakpointSplitView/types.ts:23` — and its shape narrowed in v5 when the
-  5-tuple `LayoutFeatureMetadata` variant went with the floating-label code.
-- **`from()`'s JSDoc contradicts its body**
-  (`packages/core/src/util/color-bits/core.ts:19`). It says "from the given
-  number value, e.g. `0x599eff`"; the body reads `0xRRGGBBAA`, so `from(0x599eff)`
-  returns that colour rotated one byte with blue silently becoming the alpha. It
-  has no callers, and `./util/color-bits` is not a `packages/core` export path,
-  so it is unreachable outside the package — as are `toNumber`, `setRed`/
-  `setGreen`/`setBlue`, `format`, `formatRGBA` and `OFFSET_*`, all dead vendored
-  surface.
-
-### Six RPC method names left with nothing recording them
-
-The v5.0.0 deletion walk — every name a deleted source file exported at v4.3.0,
-intersected against every identifier present at HEAD — ends with 70 vanished
-names that were on a public entry file. The upgrade guide covers almost all of
-them **by class**, which is the right call: "The renderer registry is gone"
-accounts for around forty, "The `lollipop` plugin was removed" for four, and the
-generated ABI-removals block for the `@jbrowse/core/*` names.
-
-Six are left over, and they are all RPC methods:
-`WiggleGetGlobalQuantitativeStats`, `WiggleGetMultiRegionQuantitativeStats`,
-`MultiWiggleGetSources`, `MultiVariantGetSources`,
-`MultiVariantGetGenotypeMatrix`, `MultiVariantGetFeatureDetails`. Each appears in
-no source file, no doc and no JSON anywhere at HEAD, and the guide's only two
-mentions of RPC are `CoreRender` and the renderer era's retry/progress helpers.
-An RPC method is invoked by string through `rpcManager.call(sessionId, name,
-args)`, so a plugin naming one has nothing that resolves.
-
-It is **not** a fourth quiet-failure surface, which is worth stating because the
-other three on that page are. It is not a *bad-message* surface either, and the
-claim that it was is withdrawn: this entry said `BaseRpcDriver` reads
-`getRpcMethodType(functionName)` and then `rpcMethod.serializeArguments(args)`,
-so an unknown method throws `Cannot read properties of undefined` without ever
-naming it. That was read off the call site alone. `getRpcMethodType` bottoms out
-in `TypeRecord.get`, which **throws already**, naming the method and listing what
-is registered — the "which plugin is missing" answer. A guard added on the
-strength of the claim was dead code and `no-unnecessary-condition` said so;
-`BaseRpcDriver.test.ts` now pins the real message against a real
-`PluginManager`, so nobody re-derives this from the call site a second time.
-
-**First move: what is left is the documentation half.** Add the six to the
-upgrade guide's removal list, next to the renderer-registry paragraph they
-nearly belong to.
-
 
 ### Decide whether a track's height should be bounded at all
 
