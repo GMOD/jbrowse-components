@@ -2182,10 +2182,11 @@ Two consequences, and the second is the reason to care past console noise:
 - Destroying the outgoing session is loud because these still observe it. That
   is the residual this entry is about.
 - Reactions that never dispose keep the old tree **observable and reachable**,
-  which is the likely explanation for the `WeakRef` measurement recorded in the
-  rootModel `detach` comment: a superseded root still resolving after a forced
-  gc, including one that had been `destroy`ed. That was logged as unexplained;
-  this is the candidate.
+  which is the likely explanation for the `WeakRef` measurement in
+  [ADR-069](architecture-decision-records/adr-069-detach-do-not-destroy-what-react-may-hold.md),
+  under "It does not promise prompt collection either": a superseded root still
+  resolving after a forced gc, including one that had been `destroy`ed. That was
+  logged as unexplained; this is the candidate.
 
 **Why the non-StrictMode path skips disposal.** `useObserver` creates the
 reaction during *render*, and has exactly two ways to dispose it:
