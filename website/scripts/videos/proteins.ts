@@ -258,6 +258,7 @@ export const proteinVideos: VideoSpec[] = [
     readySelector: '::-p-text(NCBI RefSeq)',
     readyTimeout: 120000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
         type: 'rightclick',
         anchor: proteinLaunchFixtures.geneAnchor,
@@ -305,10 +306,13 @@ export const proteinVideos: VideoSpec[] = [
         timeout: 120000,
         cut: true,
       },
+      // The view's own empty state is the chip, since the app has already put
+      // the words on screen: the launch registered the protein as an assembly
+      // and added its tracks, and none of them is on.
       {
         type: 'delay',
         ms: 3500,
-        say: 'The launch adds the tracks without turning them on',
+        say: 'No tracks active',
       },
       {
         type: 'click',

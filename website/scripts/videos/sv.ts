@@ -155,6 +155,7 @@ export const svVideos: VideoSpec[] = [
     readyTimeout: 300000,
     settleMs: 12000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The wall of soft clipping at the two chr3 breakpoints, held: it is the
       // input every route in the list is computed from, and the state the left
       // half of cancer_sv/multihop_reads is of.
@@ -221,6 +222,12 @@ export const svVideos: VideoSpec[] = [
       // carries, and each carrying the launching view's whole track list — so
       // this is four pileup fetches. A film of that is a film of four spinners.
       { type: 'waitForAppSettled', timeout: 300000, cut: true },
+      // Off the curves before the hold. `Replace current view` sat where the
+      // middle panel's junction now is, so the pointer was left on a breakpoint
+      // arc for the whole of the end state — and what the arc answers a hover
+      // with is a tooltip naming both of its ends by feature uuid, standing over
+      // the panel the hold is of.
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The end state, held: the curves are drawn BETWEEN panels rather than
       // inside one, so they are the last thing to arrive.
       { type: 'delay', ms: 5000 },
@@ -286,6 +293,7 @@ export const svVideos: VideoSpec[] = [
     readyTimeout: 300000,
     settleMs: 30000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The before, held. It is the frame the whole clip is measured against,
       // and a reader who has scrolled past the banded figure needs a moment to
       // register that these rows are not in that order.

@@ -72,6 +72,7 @@ export const hicVideos: VideoSpec[] = [
     readyTimeout: 240000,
     settleMs: 20000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // One region, held: each lane is a chromosome against itself, and there is
       // nothing beside it. The state the section's claim is made against.
       { type: 'delay', ms: 4000 },
@@ -100,11 +101,14 @@ export const hicVideos: VideoSpec[] = [
       { type: 'waitForAppSettled', timeout: 240000, cut: true },
       // The beat the tour exists for: two triangles per lane, and between them a
       // block that is one cell line's fused chromosome and the other's
-      // background.
+      // background. The chip NAMES that block, which nothing on screen labels;
+      // what it means is the page's caption, and a chip cannot make the claim
+      // anyway — the line goes up when the step starts, which here is before
+      // there is a wedge to make it about.
       {
         type: 'delay',
         ms: 5000,
-        say: 'The wedge between the triangles is chr9 against chr22',
+        say: 'chr9 against chr22',
       },
     ],
     tailMs: 5000,

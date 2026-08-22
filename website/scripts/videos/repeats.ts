@@ -40,6 +40,7 @@ export const repeatVideos: VideoSpec[] = [
     readyTimeout: 60000,
     settleMs: 6000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The packed lane, held: every class in one row, which is the state the
       // page's top panel is of.
       { type: 'delay', ms: 2500 },

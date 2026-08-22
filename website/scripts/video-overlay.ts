@@ -200,8 +200,25 @@ export async function setCaption(page: Page, text: string) {
 // Send the pointer off frame, for the tail of a clip: a cursor parked over a
 // control leaves the last thing on screen looking like a step that did not
 // finish, and it is the frame the poster is taken from.
+//
+// THE DRAWN CURSOR IS HIDDEN RATHER THAN GLIDED OUT. A screencast delivers
+// frames while the page repaints and the last repaint of a run of them does not
+// reach the file, so a park that is only a `moveCursor` ends the clip with the
+// arrow frozen about four fifths of the way through its travel — near the
+// bottom edge, over whatever is drawn there. Every poster taken at the end
+// carried one. Dropping the opacity in one step leaves the arrow gone in the
+// frame after it, which the seconds of tail behind it do reach. The real mouse
+// still leaves the viewport, so the app's own hover comes down with it.
 export async function parkCursor(page: Page, height: number) {
-  await moveCursor(page, 40, height + 60)
+  await page.mouse.move(40, height + 60)
+  await page.evaluate(id => {
+    const c = document.getElementById(id)
+    if (c) {
+      c.style.transition = 'none'
+      c.style.opacity = '0'
+    }
+  }, CURSOR_ID)
+  await delay(GLIDE_MS + 80)
 }
 
 // Scroll the page, filmed. `to` is a y offset, or 'bottom' for as far as the

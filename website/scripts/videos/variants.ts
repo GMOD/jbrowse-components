@@ -44,6 +44,7 @@ export const variantVideos: VideoSpec[] = [
     readyTimeout: 120000,
     settleMs: 12000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The state the page's first figure is of, held: one lane, one box per
       // variant, and nothing in it about who carries what.
       { type: 'delay', ms: 2500 },

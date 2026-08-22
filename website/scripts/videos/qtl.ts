@@ -32,6 +32,7 @@ export const qtlVideos: VideoSpec[] = [
     readyTimeout: 180000,
     settleMs: 14000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The before, held. A reader who has already scrolled past the sorted
       // figure needs a moment to register that these rows are not in that order.
       { type: 'delay', ms: 2500 },

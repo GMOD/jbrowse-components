@@ -35,6 +35,7 @@ export const methylationVideos: VideoSpec[] = [
     readyTimeout: 120000,
     settleMs: 15000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The before, held: an interleaved mix of methylated and unmethylated
       // reads, which is the state the page says "does not show the answer".
       { type: 'delay', ms: 3000 },

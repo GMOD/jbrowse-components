@@ -52,6 +52,7 @@ export const dog10kVideos: VideoSpec[] = [
     readyTimeout: 180000,
     settleMs: 5000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // Two seconds on the opening state before anything is clicked. The whole
       // clip is a before/after and this is the before, which a reader who has
       // already scrolled past the clustered figure needs a moment to register.

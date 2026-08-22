@@ -59,6 +59,7 @@ export const uiVideos: VideoSpec[] = [
     readyTimeout: 120000,
     settleMs: 10000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1800 },
       // Both ends are loci rather than pixels: a measured x is correct only for
       // the width it was measured at, and this corpus was re-framed once
@@ -163,6 +164,7 @@ export const uiVideos: VideoSpec[] = [
     readyTimeout: 60000,
     settleMs: 4000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
       { type: 'click', text: 'File', say: 'File', hold: 900 },
       { type: 'waitForText', text: 'Open track...' },
@@ -224,6 +226,7 @@ export const uiVideos: VideoSpec[] = [
     readyTimeout: 60000,
     settleMs: 4000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
       {
         type: 'click',
@@ -291,6 +294,7 @@ export const uiVideos: VideoSpec[] = [
     readyTimeout: 60000,
     settleMs: 4000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1600 },
       {
         type: 'click',
@@ -356,6 +360,7 @@ export const uiVideos: VideoSpec[] = [
     readyTimeout: 60000,
     settleMs: 4000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'delay', ms: 1500 },
       { type: 'click', text: 'File', say: 'File', hold: 900 },
       { type: 'waitForText', text: 'Open track...' },
@@ -368,26 +373,36 @@ export const uiVideos: VideoSpec[] = [
         say: 'Add multiple tracks at once',
         hold: 1600,
       },
+      // NO `say` HERE, and nothing to hold on. The whole step runs off camera,
+      // its `hold` included, so a line named here reaches neither the frame nor
+      // the caption track: `captionTrack` closes a cue at the on-camera clock,
+      // which a cut leaves where it was, and a cue of zero length is dropped.
+      // The clip shipped one fewer caption than the spec named and nothing said
+      // so.
       {
         type: 'type',
         selector: '[data-testid="bulk_track_urls"]',
         value: bulkAddUrls,
-        say: 'Paste the URLs',
         // `type` sends the five URLs a keystroke at a time, which the run
         // reported as 9.4s of nothing happening. Cut leaves the box empty and
         // then full, which is what a paste looks like.
         cut: true,
-        // the preview table builds from the extensions alone, with nothing
-        // fetched, so the interesting frame is not gated on the network
-        hold: 3600,
       },
+      // The camera comes back on the answered form, which is the frame the tour
+      // exists for: four lines in, a row each, and the index paired off against
+      // the data file whose name it extends. The preview table builds from the
+      // extensions alone with nothing fetched, so this is not gated on the
+      // network.
+      { type: 'delay', ms: 3600 },
       // The assembly comes from the view the form was opened over, so there is
       // nothing to pick: the button counts what it kept and the index is not in
-      // the count.
+      // the count. The `say` is the button's own label rather than a line about
+      // it — four URLs went in and the button reads three, which is the whole
+      // point and is already on screen.
       {
         type: 'click',
         text: 'Add 3 tracks',
-        say: 'The index is paired, not counted',
+        say: 'Add 3 tracks',
       },
       { type: 'waitForAppSettled', timeout: 120000, cut: true },
       { type: 'delay', ms: 2500 },
@@ -458,7 +473,7 @@ export const uiVideos: VideoSpec[] = [
         selector: '[data-testid="assembly-name"]',
         timeout: 60000,
       },
-      { type: 'delay', ms: 3000, say: 'It names the genome itself' },
+      { type: 'delay', ms: 3000, say: 'Assembly name' },
       // It names it after the file, `hg38.prefix`. The field is editable, and
       // the rest of the quickstart calls the assembly `hg38`, so the tour
       // renames it rather than leaving the page and the film disagreeing.

@@ -32,6 +32,7 @@ export const tcgaVideos: VideoSpec[] = [
     readyTimeout: 300000,
     settleMs: 12000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       // The holds are long by the pangenome tours' standard, and deliberately.
       // This clip exists to be FOLLOWED, so each state has to stay up long
       // enough to read: the track menu is a dozen items and the reader has to
@@ -96,6 +97,7 @@ export const tcgaVideos: VideoSpec[] = [
     readyTimeout: 300000,
     settleMs: 10000,
     steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       { type: 'waitForText', text: tcgaMutationVideoFixtures.gene },
       {
         type: 'rightclick',
