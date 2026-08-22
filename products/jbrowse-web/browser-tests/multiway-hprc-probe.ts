@@ -24,6 +24,21 @@ const browser = await launch({
 
 try {
   const page = await browser.newPage()
+  // pre-approve the graph plugin the hosted E. coli config declares, the same
+  // move the screenshot generator's trustCapturePlugins makes
+  await page.evaluateOnNewDocument(() => {
+    try {
+      const KEY = 'jbrowse-trusted-plugins'
+      const raw = localStorage.getItem(KEY)
+      const trusted = new Set<string>(raw ? (JSON.parse(raw) as string[]) : [])
+      trusted.add(
+        'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
+      )
+      localStorage.setItem(KEY, JSON.stringify([...trusted]))
+    } catch (e) {
+      console.error(e)
+    }
+  })
   page.on('pageerror', e => {
     console.log(`PAGE ERROR: ${e instanceof Error ? e.message : String(e)}`)
   })
@@ -33,26 +48,28 @@ try {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1:196,480,000-196,980,000',
+          assembly: 'human',
+          loc: '2:176,090,000-176,290,000',
           tracks: [
             {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
+              trackId: 'human_genes',
               type: 'LinearBasicDisplay',
               showOnlyGenes: true,
               displayMode: 'compact',
             },
             {
-              trackId: 'hprc_cfhr_multiway',
+              trackId: 'vertebrates_orthogroups',
               type: 'MultiWaySyntenyDisplay',
-              rowOrder: ['HG00099.1', 'HG01109.1'],
-              height: 220,
+              rowOrder: ['chicken', 'frog', 'gar', 'zebrafish'],
+              height: 320,
             },
           ],
         },
       ],
     },
-    'test_data/graphgenomeview/hprc.json',
+    encodeURIComponent(
+      'https://jbrowse.org/demos/orthofinder_vertebrates/config.json',
+    ),
   )
   await delay(20000)
   const state = await page.evaluate(() => {

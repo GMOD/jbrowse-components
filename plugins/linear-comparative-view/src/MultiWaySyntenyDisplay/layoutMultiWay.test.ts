@@ -295,3 +295,24 @@ test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => 
   })
   expect(laneGeneFeatures([region, mrna]).map(f => f.id())).toEqual(['m'])
 })
+
+test('a far-flung repeat placement does not stretch the frame', () => {
+  const groups = groupFeatures([
+    ...features,
+    pairFeature({
+      uniqueId: '7',
+      name: 'g5',
+      start: 700,
+      end: 800,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 900000,
+        end: 900050,
+        name: 'repeat-hit',
+      },
+    }),
+  ])
+  const frame = computeRowFrame(groups, 'peach', 1000)!
+  expect(frame.max).toBeLessThan(10000)
+})

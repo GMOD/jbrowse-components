@@ -119,6 +119,29 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
+// how far, in multiples of the anchor's visible span, a placement may sit
+// from the length-weighted median placement and still shape the lane's frame
+const OUTLIER_REACH = 1.5
+
+function keepPlacementsNearMedian(
+  placements: MultiWayPlacement[],
+  reachBp: number,
+) {
+  const sorted = [...placements].sort((a, b) => mid(a) - mid(b))
+  const total = sorted.reduce((sum, p) => sum + (p.end - p.start), 0)
+  let acc = 0
+  let center = mid(sorted[0]!)
+  for (const p of sorted) {
+    acc += p.end - p.start
+    if (acc >= total / 2) {
+      center = mid(p)
+      break
+    }
+  }
+  const kept = sorted.filter(p => Math.abs(mid(p) - center) <= reachBp)
+  return kept.length ? kept : sorted
+}
+
 // The row's own coordinate frame: the dominant refName among the visible
 // groups' placements, the padded bp span those placements cover, and whether
 // the row reads back-to-front relative to the anchor's gene order. This is what
@@ -151,7 +174,16 @@ export function computeRowFrame(
   if (dominant === undefined) {
     return undefined
   }
-  const placements = byRef.get(dominant)!
+  // Alignment-level sources carry repeat noise: a handful of short records
+  // whose mate lands megabases from the block everything else agrees on, and
+  // a min/max frame over them stretches the lane across the whole genome. The
+  // frame therefore centers on the length-weighted median placement and keeps
+  // only the placements within a window-scaled reach of it — a clean gene
+  // table passes through unchanged, since all its placements agree.
+  const placements = keepPlacementsNearMedian(
+    byRef.get(dominant)!,
+    minSpanBp > 0 ? minSpanBp * OUTLIER_REACH : Number.POSITIVE_INFINITY,
+  )
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY
   for (const p of placements) {

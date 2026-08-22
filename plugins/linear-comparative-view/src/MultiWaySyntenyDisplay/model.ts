@@ -45,6 +45,12 @@ export interface LaneGenesFetchSpec {
   regions: LaneRegion[]
 }
 
+export interface LaneLinksFetchSpec {
+  upperAssembly: string
+  lowerAssembly: string
+  region: LaneRegion
+}
+
 // widen a lane frame outward to a stable grid, so a sub-grid pan reuses the
 // last gene fetch the way the anchor's static blocks do
 function quantizeSpan(min: number, max: number) {
@@ -109,6 +115,17 @@ export function stateModelFactory(
        * #volatile
        */
       laneGenesKey: '',
+      /**
+       * #volatile
+       * alignments between ADJACENT mate lanes, fetched per pair from the same
+       * track when the source is an all-vs-all alignment file — the direct
+       * records the file holds for that pair, at the lanes' own coordinates
+       */
+      laneLinks: undefined as Map<string, Feature[]> | undefined,
+      /**
+       * #volatile
+       */
+      laneLinksKey: '',
     }))
     .actions(self => ({
       /**
@@ -123,6 +140,13 @@ export function stateModelFactory(
       setLaneGenes(key: string, genes: Map<string, Feature[]>) {
         self.laneGenesKey = key
         self.laneGenes = genes
+      },
+      /**
+       * #action
+       */
+      setLaneLinks(key: string, links: Map<string, Feature[]>) {
+        self.laneLinksKey = key
+        self.laneLinks = links
       },
     }))
     .views(self => ({
@@ -166,7 +190,11 @@ export function stateModelFactory(
        * anchor lane
        */
       get rowAssemblies() {
-        return rowAssembliesOf(self.groups, [...self.rowOrder])
+        // a paralogy record's mate is the anchor assembly itself; those draw
+        // on the anchor's own axis, not as a lane
+        return rowAssembliesOf(self.groups, [...self.rowOrder]).filter(
+          assemblyName => assemblyName !== self.lgv.assemblyNames[0],
+        )
       },
       /**
        * #getter
@@ -351,6 +379,74 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * a gene-level source names its features and groups chain on the names;
+       * an alignment-level source (all-vs-all PAF) names nothing, which is
+       * what makes the per-pair link fetch below worth issuing
+       */
+      get featuresAreNameless() {
+        return (
+          self.features !== undefined &&
+          self.features.length > 0 &&
+          self.features.every(f => f.get('name') === undefined)
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * one spec per ADJACENT mate-lane pair when the source is an all-vs-all
+       * alignment file: the upper lane's frame queried against the lower
+       * lane's assembly, which an all-vs-all adapter answers with the direct
+       * records it holds for that pair
+       */
+      get laneLinksFetchSpecs() {
+        const specs: LaneLinksFetchSpec[] = []
+        if (self.featuresAreNameless) {
+          const rows = self.rowAssemblies
+          for (let i = 0; i + 1 < rows.length; i++) {
+            const upperAssembly = rows[i]!
+            const lowerAssembly = rows[i + 1]!
+            const upper = self.rowFrames.get(upperAssembly)
+            const lower = self.rowFrames.get(lowerAssembly)
+            if (upper && lower) {
+              specs.push({
+                upperAssembly,
+                lowerAssembly,
+                region: {
+                  assemblyName: upperAssembly,
+                  refName: upper.refName,
+                  ...quantizeSpan(upper.min, upper.max),
+                },
+              })
+            }
+          }
+        }
+        return {
+          key: specs
+            .map(
+              spec =>
+                `${spec.upperAssembly}>${spec.lowerAssembly}:${spec.region.refName}:${spec.region.start}-${spec.region.end}`,
+            )
+            .join(';'),
+          specs,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get laneLinksCurrent() {
+        const { key, specs } = self.laneLinksFetchSpecs
+        return (
+          specs.length === 0 ||
+          (self.laneLinks !== undefined && self.laneLinksKey === key)
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * whether the committed lane genes answer the current lane frames.
        * Published as `data-lanes-current` on the body so a capture can wait on
        * the dependent fetch — `displayPhase` deliberately does not cover it,
@@ -374,7 +470,10 @@ export function stateModelFactory(
        */
       get displayPhase(): DisplayStatusPhase {
         const base = foundationDisplayStatusPhase(self, () => true)
-        return base === 'ready' && !self.laneGenesCurrent ? 'loading' : base
+        return base === 'ready' &&
+          (!self.laneGenesCurrent || !self.laneLinksCurrent)
+          ? 'loading'
+          : base
       },
     }))
     .actions(self => ({

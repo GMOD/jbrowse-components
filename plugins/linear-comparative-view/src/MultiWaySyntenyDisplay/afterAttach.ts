@@ -83,9 +83,9 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
             const sessionId = getRpcSessionId(self)
             const entries = await Promise.all(
               specs.map(async spec => {
-                const assembly = await assemblyManager.waitForAssembly(
-                  spec.assemblyName,
-                )
+                const assembly = await assemblyManager
+                  .waitForAssembly(spec.assemblyName)
+                  .catch(() => undefined)
                 const regions = spec.regions.map(r => ({
                   ...r,
                   refName:
@@ -121,6 +121,77 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
         })()
       },
       { delay: 500, name: 'MultiWayLaneGenes' },
+    ),
+  )
+
+  // the third fetch, for alignment-level sources: the direct records between
+  // each ADJACENT mate-lane pair, out of the same all-vs-all track. Same
+  // skeleton as the lane-genes autorun; the specs exist only when the source
+  // names no genes, so a gene table never issues these.
+  let linksInflightKey = ''
+  let linksStopToken: StopToken | undefined
+  addDisposer(
+    self,
+    autorun(
+      () => {
+        const { key, specs } = self.laneLinksFetchSpecs
+        if (specs.length === 0 || key === linksInflightKey) {
+          return
+        }
+        linksInflightKey = key
+        if (linksStopToken !== undefined) {
+          stopStopToken(linksStopToken)
+        }
+        const fetchStopToken = createStopToken()
+        linksStopToken = fetchStopToken
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const session = getSession(self)
+            const { assemblyManager, rpcManager } = session
+            const sessionId = getRpcSessionId(self)
+            const entries = await Promise.all(
+              specs.map(async spec => {
+                const assembly = await assemblyManager
+                  .waitForAssembly(spec.region.assemblyName)
+                  .catch(() => undefined)
+                const region = {
+                  ...spec.region,
+                  refName:
+                    assembly?.getCanonicalRefName2(spec.region.refName) ??
+                    spec.region.refName,
+                }
+                const features = await rpcManager.call(
+                  sessionId,
+                  'CoreGetFeatures',
+                  {
+                    adapterConfig: self.adapterConfig,
+                    regions: [region],
+                    opts: { targetAssemblyName: spec.lowerAssembly },
+                    stopToken: fetchStopToken,
+                    // a deliberate no-op, same reasoning as the lane-genes
+                    // fetch above
+                    statusCallback: () => {},
+                  },
+                )
+                return [
+                  `${spec.upperAssembly}|${spec.lowerAssembly}`,
+                  features,
+                ] as const
+              }),
+            )
+            if (isAlive(self) && self.laneLinksFetchSpecs.key === key) {
+              self.setLaneLinks(key, new Map(entries))
+            }
+          } catch (e) {
+            console.error('MultiWaySyntenyDisplay lane link fetch failed', e)
+            if (isAlive(self) && self.laneLinksFetchSpecs.key === key) {
+              self.setLaneLinks(key, new Map())
+            }
+          }
+        })()
+      },
+      { delay: 500, name: 'MultiWayLaneLinks' },
     ),
   )
 }

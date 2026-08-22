@@ -1270,6 +1270,89 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 580,
   },
 
+  // The alignment-level case of the same track: the E. coli all-vs-all PAF as
+  // lanes over the paa-operon island, under the pggb graph-depth wiggle. The
+  // depth drop names how many genomes carry the island; the lanes name WHICH
+  // — each strain's lane draws its own gene models at its own coordinates,
+  // and the white wedges in the ribbons are the strains whose sequence skips
+  // it. A nameless source also triggers the per-pair link fetch, so the
+  // mate-to-mate gutters carry the file's own direct records for each
+  // adjacent pair. Same-orientation strains adjacent, so the [rev] crossings
+  // sit at one junction.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_island_lanes',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'K12',
+            loc: 'chr:1,443,000-1,466,000',
+            tracks: [
+              { trackId: 'ecoli_pggb_depth', height: 60 },
+              {
+                trackId: 'ecoli_ava',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: ['NCTC86', 'CFT073', 'Sakai', 'IAI39'],
+                height: 340,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 640,
+  },
+
+  // The deep-time case: the human HOXD cluster over four vertebrate lanes
+  // from the OrthoFinder orthogroups table — the same five-genome track the
+  // stacked orthofinder_synteny/vertebrates figure draws, read as lanes. Each
+  // lane's header names the chromosome the cluster sits on in that genome and
+  // [rev] where it is inverted, and every lane draws its own gene models.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/vertebrate_hox_lanes',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_vertebrates/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'human',
+            loc: '2:176,090,000-176,290,000',
+            tracks: [
+              {
+                trackId: 'human_genes',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+              },
+              {
+                trackId: 'vertebrates_orthogroups',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: ['chicken', 'frog', 'gar', 'zebrafish'],
+                height: 320,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 660,
+  },
+
   // A COMPOSITION PART, no longer embedded on its own (review: "looks like dupe
   // of homoeolog_synteny/wheat_vs_oat" — and it was the same PNG twice, since
   // wheat_vs_oat composes this frame beside the oat one). multiway_synteny.md

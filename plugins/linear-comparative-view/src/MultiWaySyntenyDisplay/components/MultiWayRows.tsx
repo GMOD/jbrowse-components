@@ -21,6 +21,10 @@ type Span = readonly [number, number]
 
 const LABEL_HEIGHT = 12
 
+// ribbons narrower than this on both ends are clutter at alignment-record
+// density; the blocks they connect are still drawn in the lanes
+const MIN_RIBBON_PX = 2
+
 function ribbonPath(s1: Span, y1: number, s2: Span, y2: number) {
   const ym = (y1 + y2) / 2
   return `M ${s1[0]} ${y1} C ${s1[0]} ${ym}, ${s2[0]} ${ym}, ${s2[0]} ${y2} L ${s2[1]} ${y2} C ${s2[1]} ${ym}, ${s1[1]} ${ym}, ${s1[1]} ${y1} Z`
@@ -100,6 +104,7 @@ const MultiWayRows = observer(function MultiWayRows({
     rowFrames,
     visibleGroups,
     laneGenes,
+    laneLinks,
     height,
     ribbonColor,
     selectedFeatureId,
@@ -154,7 +159,7 @@ const MultiWayRows = observer(function MultiWayRows({
     for (const group of visibleGroups) {
       const s1 = spanOnRow(group, rowIndex)
       const s2 = spanOnRow(group, rowIndex + 1)
-      if (s1 && s2) {
+      if (s1 && s2 && Math.max(s1[1] - s1[0], s2[1] - s2[0]) >= MIN_RIBBON_PX) {
         ribbons.push(
           <path
             key={`ribbon-${rowIndex}-${group.key}`}
@@ -167,6 +172,53 @@ const MultiWayRows = observer(function MultiWayRows({
             fill={ribbonColor}
           />,
         )
+      }
+    }
+  }
+
+  // alignment-level sources also carry the direct records between adjacent
+  // mate lanes (the per-pair fetch); each draws at both lanes' own frames
+  if (laneLinks) {
+    for (let i = 0; i + 1 < rowAssemblies.length; i++) {
+      const upperAssembly = rowAssemblies[i]!
+      const lowerAssembly = rowAssemblies[i + 1]!
+      const upper = rowFrames.get(upperAssembly)
+      const lower = rowFrames.get(lowerAssembly)
+      const links = laneLinks.get(`${upperAssembly}|${lowerAssembly}`)
+      if (upper && lower && links) {
+        const y1 = glyphTop(i + 1) + glyphHeight
+        const y2 = glyphTop(i + 2)
+        for (const link of links) {
+          const mate = link.get('mate') as {
+            refName: string
+            start: number
+            end: number
+          }
+          if (
+            link.get('refName') === upper.refName &&
+            mate.refName === lower.refName
+          ) {
+            const a = rowFrameX(upper, link.get('start'), width)
+            const b = rowFrameX(upper, link.get('end'), width)
+            const c = rowFrameX(lower, mate.start, width)
+            const d = rowFrameX(lower, mate.end, width)
+            if (Math.max(Math.abs(b - a), Math.abs(d - c)) < MIN_RIBBON_PX) {
+              continue
+            }
+            ribbons.push(
+              <path
+                key={`link-${i}-${link.id()}`}
+                d={ribbonPath(
+                  a < b ? [a, b] : [b, a],
+                  y1,
+                  c < d ? [c, d] : [d, c],
+                  y2,
+                )}
+                fill={ribbonColor}
+              />,
+            )
+          }
+        }
       }
     }
   }

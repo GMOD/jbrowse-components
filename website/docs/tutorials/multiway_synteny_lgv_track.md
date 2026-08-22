@@ -155,10 +155,70 @@ lane and stop there.
 
 <Figure caption="The complement factor H cluster on chr1: hg38 genes over one multi-way track with a lane per HPRC haplotype, each carrying its own CAT gene models on its own contig. The CFHR3 and CFHR1 chains connect hg38 to the non-carrier haplotype and no further, and every flanking gene's chain runs through both." src="/img/multiway_synteny/hprc_cfhr_lanes.png" />
 
+## An all-vs-all alignment as the source
+
+The display works on any track whose features carry a mate per other genome, so
+an all-vs-all PAF drives it too. An alignment file names no genes, and the
+display reads that as a different kind of source: each record is its own ribbon,
+and the track additionally fetches each **adjacent** lane pair's own records out
+of the same file, so the gutters between strain lanes carry the direct
+alignments the file holds for that pair. A lane's local frame is fitted
+robustly, so the stray short alignments a bacterial genome's repeats produce do
+not stretch it.
+
+Pairing the lanes with a quantitative signal on the same axis is what turns them
+into an explanation. Here the pggb graph-depth wiggle from the
+[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli) sits above the
+lanes: the depth step at the K-12 paa operon says how many genomes carry the
+island, and the lanes below say which ones, with each strain's own gene models
+drawn at its own coordinates.
+
+```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
+{
+  "defaultSession": {
+    "name": "E. coli all-vs-all multi-way track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "K12",
+          "loc": "chr:1,443,000-1,466,000",
+          "tracks": [
+            { "trackId": "ecoli_pggb_depth", "height": 60 },
+            {
+              "trackId": "ecoli_ava",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": ["NCTC86", "CFT073", "Sakai", "IAI39"],
+              "height": 340
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="The paa operon island on K-12, read twice: the pangenome graph-depth wiggle steps down where fewer genomes carry the sequence, and the all-vs-all lanes below name them. K-12 and NCTC86 carry the island, and the white wedges in the ribbon bands are the strains whose alignment skips it." src="/img/multiway_synteny/ecoli_island_lanes.png" />
+
+## Deep-time orthologs
+
+The same lanes hold up across species too divergent for whole-genome alignment.
+The five-vertebrate OrthoFinder table behind
+[Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny)
+draws the human HOXD cluster with a lane per genome: the cluster's block is
+syntenic in all five, each lane's header names the chromosome carrying it and
+`[rev]` where it is inverted, and every lane draws that genome's own gene
+models.
+
+<Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. The cluster's block stays syntenic in every lane, each lane names its own chromosome and orientation, and the ribbon chains thin outside it where the orthogroups scatter." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
+
 ## See also
 
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/pangenome_ecoli)
+- [](/docs/tutorials/orthofinder_synteny)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/user_guides/linear_synteny_view)
 - [](/docs/config/mcscanblocksadapter)
