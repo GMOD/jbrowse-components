@@ -98,6 +98,25 @@ test('a dispatching tool carries its subcommand', () => {
   ])
 })
 
+test('python is transparent, so the helper it runs is the tool', () => {
+  // `python3` is in every build script, so a fence pinning it pinned nothing.
+  // Twenty marked fences ran a `.py` helper this way.
+  expect(toolsAndFlags('python3 hapibd_to_bed.py trio.ibd.gz out.bed')).toEqual(
+    [{ tool: 'hapibd_to_bed.py', flags: [] }],
+  )
+  // `-m` names the module through a flag rather than as a positional, and
+  // stepping over `python` alone would land on `-m` and drop the invocation.
+  expect(
+    toolsAndFlags(
+      'python -m jcvi.formats.gff bed --primary_only in.gff3 -o out.bed',
+    ),
+  ).toEqual([{ tool: 'jcvi.formats.gff', flags: ['--primary_only', '-o'] }])
+  // A heredoc or a `-c` program has no helper to name, and contributes nothing
+  // rather than a tool called `-`.
+  expect(toolsAndFlags("python3 - <<'PY'")).toEqual([])
+  expect(toolsAndFlags('python3 -c "print(1)"')).toEqual([])
+})
+
 test('a brace group contributes no tool of its own', () => {
   // Regression: `}` parsed as a tool no script could contain, which is how the
   // header-commenting idiom two pages use came back unmarkable.

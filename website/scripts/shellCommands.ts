@@ -112,13 +112,22 @@ function commandWord(word: string) {
   return opened.includes('(') ? opened : opened.replace(/\)+$/, '')
 }
 
-// Shell functions the pangenome scripts define to run a tool inside a
-// container, and that their pages show the same way. The wrapper is transparent
-// here: `in_pggb odgi untangle -i g.og` runs odgi, and reading the wrapper as
-// the tool leaves the tool itself unchecked, which is where a swap would hide.
+// A word that runs something else, and is transparent here because the
+// something else is what has to agree with the script.
+//
+//   - `in_pggb`, `in_cactus`, `jb`: shell functions the scripts define to run a
+//     tool inside a container, and that their pages show the same way. Reading
+//     the wrapper as the tool leaves the tool unchecked, which is where a swap
+//     would hide.
+//   - `python3`: `python3 hapibd_to_bed.py trio.ibd.gz …` asserts nothing about
+//     the helper, and `python3` itself is in every build script, so the marker
+//     was decorative on twenty fences. The helper's name is the distinctive
+//     part, and `check-build-scripts.py` already treats it as the unit.
+//
 // `bash -c "…"` is not one of these, since what follows is a quoted string the
-// parser already keeps whole.
-const WRAPPERS = /^(in_[a-z0-9_]+|jb)$/
+// parser already keeps whole, and neither is `python3 -c` or a `python3 - <<PY`
+// heredoc: both leave a leading `-` that is skipped as not a command word.
+const WRAPPERS = /^(in_[a-z0-9_]+|jb|python3?)$/
 
 // Tools that dispatch on a subcommand. Without the subcommand these carry no
 // information at all against a build script, since a script that runs `jbrowse`
@@ -163,6 +172,13 @@ export function toolsAndFlags(body: string) {
     }
     if (words[at] && WRAPPERS.test(words[at]!) && words[at + 1]) {
       at++
+      // `python -m jcvi.formats.gff bed …` names the module through a flag
+      // rather than as a positional, so stepping over `python` alone lands on
+      // `-m` and the invocation is dropped as not a command word. The four
+      // synteny pages run jcvi this way and no other.
+      if (words[at] === '-m' && words[at + 1]) {
+        at++
+      }
     }
     const tool = words[at] === undefined ? undefined : commandWord(words[at]!)
     if (!tool || IGNORED.has(tool) || /^[-$"'({]/.test(tool)) {
