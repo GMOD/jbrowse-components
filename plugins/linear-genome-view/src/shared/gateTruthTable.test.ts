@@ -67,8 +67,9 @@ const TruthTableDisplay = types
     },
   }))
   .actions(self => ({
-    // Written after `create`, so the tier-swap autorun has already run and
-    // cannot wipe the estimate it is handed.
+    // Nothing wipes the estimate this is handed: the fork fires `afterAttach`
+    // on attachment, and a root fixture is never attached, so the tier-swap
+    // autorun that would clear it is not installed here at all.
     setRuntime(state: {
       forceLoadTrack: boolean
       byteEstimate: ByteEstimate | undefined

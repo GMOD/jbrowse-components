@@ -451,6 +451,11 @@ export default function RegionTooLargeMixin() {
        * manhattan, sequence, synteny), which therefore never evaluate the
        * LGV-only getters below.
        *
+       * Overriding this rather than an opt-in switches the gate off in a way
+       * the additive OR cannot see, so a second `get gateEnabled()` anywhere in
+       * source is an eslint error — `no-restricted-syntax`, with
+       * `RegionTooLargeMixin.ts` exempted as the declaration.
+       *
        * It was `derivedRegionTooLargeEnabled`, which named an implementation
        * detail of 2026 ("the verdict is derived now, not an imperative flag")
        * rather than the question, and was long enough that both opt-ins were

@@ -951,6 +951,25 @@ only on a real violation):
   scolding for something nobody did** — and the tell is a message whose remedy
   the reported caller cannot reach.
 
+**Checked without a runtime check:**
+
+- **`gateEnabled` must not be overridden.** It is `measuresBytesPreFlight ||
+  measuresBytesInFetch` by construction, so a second `get gateEnabled()`
+  anywhere in source is an eslint error (`no-restricted-syntax` in
+  `eslint.config.mjs`, which carries the reason; `RegionTooLargeMixin.ts` is
+  exempted as the declaration, and tests are outside the source-only block). The
+  additive OR and the compose-order check above guard the *contributed* opt-ins,
+  and neither guards the OR itself — which is what a literal shadow replaces:
+  false over a live opt-in is the whole size gate off with no banner and no
+  error. **The general move: where the violation is a declaration rather than a
+  state, a selector is the whole check** — it costs nothing at runtime and
+  nothing to maintain, where the dev-time read it was written as first
+  (2026-08-22, dropped in review before it landed) had to be installed per
+  display, fired only for a shadow that disagreed at the moment of attach, and
+  gave the jest gate a fixture to keep.
+  What it does not cover is an out-of-tree display, which runs neither our lint
+  nor our tests; the prose in REGION_TOO_LARGE.md is the whole answer there.
+
 **Still silent:**
 
 - **A fetch installer's triggers must be read above its gate.** MobX rebuilds

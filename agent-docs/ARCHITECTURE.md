@@ -1589,8 +1589,9 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't override `gateEnabled`. It is the OR of the two byte-gate opt-ins,
   additive so a gate mixin can contribute one without racing the base on
   composition order; shadowing it disables the whole gate in silence. Override
-  `measuresBytesPreFlight` / `measuresBytesInFetch` instead. See [the gate
-  summary](#the-region-too-large-gate-summary).
+  `measuresBytesPreFlight` / `measuresBytesInFetch` instead —
+  `no-restricted-syntax` fails a second `get gateEnabled()` in source and says
+  why. See [the gate summary](#the-region-too-large-gate-summary).
 - Don't pass `sessionId` twice. `RpcManager.call` injects the first argument
   into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
   reason. See [the pattern](#rpcprops--gpuprops-pattern).

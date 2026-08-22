@@ -219,6 +219,17 @@ const noSessionAddTrackConf = {
     'Call `session.addSessionTrackConf` for a track a feature stands up on the user’s behalf, or `session.publishTrackConf` in an Add-track workflow where an admin means to add it for the whole site — and gate on the matching `isSessionWithAddSessionTrack` / `isSessionWithPublishTrackConf`. `addTrackConf` and `isSessionWithAddTracks` survive only for prebuilt plugin bundles. See the tracks section of CLAUDE.md.',
 }
 
+// `gateEnabled` is `measuresBytesPreFlight || measuresBytesInFetch` and nothing
+// else, so the only way to declare it a second time is to shadow that OR — the
+// one silent-disable the additive form does not cover, and one neither
+// `types.compose` nor tsc says a word about. `RegionTooLargeMixin.ts` is
+// exempted below as the declaration; tests are outside this list already.
+const noGateEnabledOverride = {
+  selector: "Property[kind='get'][key.name='gateEnabled']",
+  message:
+    'Do not declare `gateEnabled`. RegionTooLargeMixin defines it as `measuresBytesPreFlight || measuresBytesInFetch` and nothing else — additive, so a gate mixin contributes an opt-in without racing the base on compose order. A second declaration shadows the OR itself, which types.compose and the type system both accept in silence: false over a live opt-in switches the whole region-too-large gate off with no banner and no error, and true over neither evaluates the LGV-only getters for a display that measures nothing. Override `measuresBytesPreFlight` / `measuresBytesInFetch` instead. See agent-docs/reference/REGION_TOO_LARGE.md.',
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
   noSessionAddTrackConf,
@@ -230,6 +241,7 @@ const sourceRestrictedSyntax = [
   noUncancellableRpcCall,
   noNoOpStatusCallbackDefault,
   noHandRolledAttach,
+  noGateEnabledOverride,
 ]
 
 export default defineConfig(
@@ -677,6 +689,17 @@ export default defineConfig(
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
     rules: {
       'no-restricted-syntax': ['error', ...sourceRestrictedSyntax],
+    },
+  },
+  // The mixin that declares `gateEnabled`. Every other `get gateEnabled()` in
+  // source is the shadow the rule exists to stop.
+  {
+    files: ['plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...sourceRestrictedSyntax.filter(s => s !== noGateEnabledOverride),
+      ],
     },
   },
   // The three installers, which are what `attachRenderingBackend` exists for.

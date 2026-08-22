@@ -399,6 +399,16 @@ are false (wiggle, Manhattan, sequence, synteny) `regionTooLarge` is a literal
 false, the LGV-only getters below it are never evaluated, and a non-LGV consumer
 of the mixin never reads `view.visibleBp`.
 
+**Overriding it is the one silent-disable the additive OR does not cover** — the
+OR keeps a *contributed* opt-in from racing the base, and does nothing about a
+display redefining the OR itself, which `types.compose` and the type system both
+accept without a word: false over a live opt-in is the whole gate off with no
+banner and no error, true over neither evaluates the LGV-only getters for a
+display that measures nothing. In this tree a second `get gateEnabled()` is an
+eslint error (`no-restricted-syntax`, this mixin exempted as the declaration).
+Out of tree it is not, and nothing at runtime reports it: an out-of-tree display
+contributes an opt-in instead, the way `CanvasFeatureGateMixin` does.
+
 **Renaming a gate hook is itself a hazard**, and `RegionTooLargeMixin`'s
 `afterAttach` carries a dev-time check for it (`RENAMED_HOOKS`). An out-of-tree
 display overriding an old name lands on a getter nothing reads: the gate stays
