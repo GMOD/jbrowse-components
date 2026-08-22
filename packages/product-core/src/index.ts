@@ -145,7 +145,12 @@ export type { AssemblyInput, ResolvedAssemblies } from './resolveAssemblies.ts'
 export { destroyViewState } from './destroyViewState.ts'
 // the two halves of "React owns this engine", both of which have a StrictMode
 // trap in them that the obvious spelling walks straight into
-export { useCreateOnce, useDestroyOnUnmount } from './useEngineLifecycle.ts'
+export {
+  useAsyncEngineLifecycle,
+  useCreateOnce,
+  useCreateOnceAsync,
+  useDestroyOnUnmount,
+} from './useEngineLifecycle.ts'
 // the JS -> host direction of an embedded controller: where each view is
 // looking, what got selected, and the layout as plain JSON
 export { getSessionSnapshot, observeSession } from './observeSession.ts'

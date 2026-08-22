@@ -1,4 +1,4 @@
-import { useCreateOnce, useDestroyOnUnmount } from '@jbrowse/product-core'
+import { useAsyncEngineLifecycle } from '@jbrowse/product-core'
 
 import createViewState from './createViewState.ts'
 
@@ -26,8 +26,10 @@ import type { ViewStateOptions } from './createViewState.ts'
  * `destroyViewState` cleanup by hand: both halves are StrictMode traps, and
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
  */
-export function useCreateViewState(opts: ViewStateOptions): ViewModel {
-  const state = useCreateOnce(() => createViewState(opts))
-  useDestroyOnUnmount(state)
-  return state
+export function useCreateViewState(
+  opts: ViewStateOptions,
+): ViewModel | undefined {
+  // undefined until the engine's lazily loaded state models resolve — render a
+  // fallback (or nothing) for that frame
+  return useAsyncEngineLifecycle(() => createViewState(opts))
 }

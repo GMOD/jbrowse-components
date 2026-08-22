@@ -102,7 +102,15 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
   session?: RestoredSessionSnapshot
 }
 
-export default function createViewState(opts: ViewStateOptions): ViewModel {
+/**
+ * Build the engine. Asynchronous because CircularView's state model is lazily
+ * registered and must be loaded before the session model can embed it — await
+ * this once at startup (or use the `useCreateViewState` hook / the
+ * `<CircularGenomeView>` component, which handle it).
+ */
+export default async function createViewState(
+  opts: ViewStateOptions,
+): Promise<ViewModel> {
   const {
     assembly,
     tracks,
@@ -115,7 +123,10 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
     displayedRegionNames,
     localFiles,
   } = opts
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  const { model, pluginManager } = await createModel(
+    plugins,
+    makeWorkerInstance,
+  )
   // registered once, here, rather than per track: each registration pushes a
   // File into core's process-global blobMap. Adapters are expanded out of their
   // `{ type, uri }` shorthand first, because that is the form the substitution

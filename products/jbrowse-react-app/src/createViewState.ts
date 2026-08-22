@@ -78,7 +78,7 @@ export async function createViewStateAsync(opts: CreateViewStateOptions) {
     runtimePlugins: plugins,
     makeWorkerInstance,
   })
-  await pluginManager.preloadViewTypes(
+  await pluginManager.preloadSessionTypes(
     opts.session ?? opts.config.defaultSession,
   )
   return finishCreateViewState(opts, model, pluginManager)

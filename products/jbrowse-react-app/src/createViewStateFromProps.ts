@@ -1,4 +1,4 @@
-import createViewState from './createViewState.ts'
+import createViewState, { createViewStateAsync } from './createViewState.ts'
 
 import type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
 import type { SessionObservers, SessionSnapshot } from './types.ts'
@@ -65,6 +65,18 @@ export function viewsToSession(
 // that accept them — <JBrowse> and createApp — which otherwise construct this
 // identically and drift apart.
 export function createViewStateFromProps(opts: CreateAppOptions) {
+  return createViewState(viewStateOptionsFromProps(opts))
+}
+
+/**
+ * `createViewStateFromProps` for a config or session that may name lazily
+ * loaded view types — see `createViewStateAsync`.
+ */
+export function createViewStateFromPropsAsync(opts: CreateAppOptions) {
+  return createViewStateAsync(viewStateOptionsFromProps(opts))
+}
+
+function viewStateOptionsFromProps(opts: CreateAppOptions) {
   const {
     assemblies,
     tracks,
@@ -80,7 +92,7 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
     sessionName = 'session',
     localFiles,
   } = opts
-  return createViewState({
+  return {
     config: {
       assemblies,
       tracks,
@@ -102,5 +114,5 @@ export function createViewStateFromProps(opts: CreateAppOptions) {
     // manager (to expand a `{ type, uri }` adapter into the location keys it
     // then rewrites), and that does not exist until createViewState builds it
     localFiles,
-  })
+  }
 }
