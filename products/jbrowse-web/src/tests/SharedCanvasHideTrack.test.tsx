@@ -60,14 +60,16 @@ function fakeBackend<State>() {
   }
 }
 
-function session() {
-  const { rootModel } = getPluginManager(configSnapshot)
+async function session() {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   return rootModel.session!
 }
 
 async function loadedDotplot(tracks: string[]) {
-  const view = session().addView('DotplotView', {
+  const view = await (
+    await session()
+  ).launchView('DotplotView', {
     init: {
       views: [{ assembly: 'peach' }, { assembly: 'grape' }],
       tracks,
@@ -95,7 +97,7 @@ async function loadedDotplot(tracks: string[]) {
 }
 
 async function loadedSynteny(tracks: string[]) {
-  const view = session().addView('LinearSyntenyView', {
+  const view = (await session()).addView('LinearSyntenyView', {
     init: {
       views: [
         { loc: 'Pp01:1..1,000,000', assembly: 'peach' },

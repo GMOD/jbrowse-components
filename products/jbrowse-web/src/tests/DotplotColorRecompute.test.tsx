@@ -19,10 +19,10 @@ jest.mock('../makeWorkerInstance', () => () => {})
 utilizeFetchMockForTest(grapePeachGetFile)
 
 async function loadedDotplotDisplay() {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('DotplotView', {
+  const view = await session.launchView('DotplotView', {
     init: {
       views: [{ assembly: 'peach' }, { assembly: 'grape' }],
       tracks: ['subset'],
@@ -128,9 +128,9 @@ test('a track shown after a settings change inherits them', async () => {
 // palette is assigned by the view so a color pinned on one shifts what the
 // other can automatically take.
 async function twoOverlaidTracks() {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
-  const view = rootModel.session!.addView('DotplotView', {
+  const view = await rootModel.session!.launchView('DotplotView', {
     init: {
       views: [{ assembly: 'peach' }, { assembly: 'grape' }],
       tracks: ['subset', 'peach_grape_small'],

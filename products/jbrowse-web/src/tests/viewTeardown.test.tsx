@@ -184,7 +184,7 @@ test('a comparative view gives its temporary assembly back when removed', async 
   })
   expect(session.temporaryAssemblies.map(a => a.name)).toContain('readvsref')
 
-  const dotplot = session.addView('DotplotView', {
+  const dotplot = await session.launchView('DotplotView', {
     assemblyNames: ['readvsref'],
   })
   act(() => {

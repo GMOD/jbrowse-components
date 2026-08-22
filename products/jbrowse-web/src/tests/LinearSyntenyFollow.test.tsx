@@ -35,7 +35,7 @@ interface SyntenyView {
 }
 
 async function openSyntenyView() {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const view = session.addView('LinearSyntenyView', {
     init: {
       views: [{ assembly: QUERY_ASM }, { assembly: TARGET_ASM }],
@@ -58,7 +58,7 @@ async function openSyntenyView() {
 // self-alignment a followed row is already sitting on its answer, so a follow
 // that placed it on one contig alone would look like a follow that did nothing.
 async function openTwoContigView() {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const added = session.publishTrackConf({
     type: 'SyntenyTrack',
     trackId: 'volvox_contig_swap',
@@ -733,7 +733,7 @@ test('anchoring the bottom row reverses which row moves', async () => {
 // at the first locus below and ~1.3kb wrong at the second, in opposite
 // directions.
 test('following an all-vs-all track walks the CIGAR rather than scaling the block', async () => {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const view = session.addView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox_ins' }, { assembly: 'volvox' }],
@@ -788,7 +788,7 @@ const VOLVOX_LOCUS = 34860
 const INS_LOCUS = 39660
 
 async function openThreeRowView() {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const view = session.addView('LinearSyntenyView', {
     init: {
       views: [
@@ -975,7 +975,7 @@ test('a level that can never resolve reports itself once, not once a settle', as
 // against a 0bp answer with 1bp of slack, said no, and renavigated — which
 // flushed the row's coarse blocks and woke the pass that had just run.
 test('a swapped-assembly track holds the row rather than spinning', async () => {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const view = session.addView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'volvox_del' }],
@@ -1167,8 +1167,8 @@ test('the two row-sync modes are mutually exclusive', async () => {
 // only thing applying it — so a session naming both arrived with neither half
 // applied and nothing downstream resolved it. The header reads `follow` while
 // the pixel lock is still installed underneath, which is the pair fighting.
-test('a session naming both row-sync modes loads with only the follow on', () => {
-  const { session } = getTestSession()
+test('a session naming both row-sync modes loads with only the follow on', async () => {
+  const { session } = await getTestSession()
   const view = session.addView('LinearSyntenyView', {
     linkViews: true,
     followSynteny: true,

@@ -29,7 +29,7 @@ interface SyntenyView {
 }
 
 async function openSyntenyView() {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const view = session.addView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],

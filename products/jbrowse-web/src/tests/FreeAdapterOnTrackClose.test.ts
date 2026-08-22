@@ -28,8 +28,8 @@ function settle() {
   })
 }
 
-function setup() {
-  const { pluginManager, rootModel } = getPluginManager()
+async function setup() {
+  const { pluginManager, rootModel } = await getPluginManager()
   const { session } = rootModel
   const view1 = session!.views[0] as unknown as TestView
   const view2 = session!.addView('LinearGenomeView', {}) as unknown as TestView
@@ -37,7 +37,7 @@ function setup() {
 }
 
 test('a track in two views frees its adapter only when the last view closes it', async () => {
-  const { pluginManager, view1, view2 } = setup()
+  const { pluginManager, view1, view2 } = await setup()
   view1.showTrack(TRACK_ID)
   view2.showTrack(TRACK_ID)
 
@@ -64,7 +64,7 @@ test('a track in two views frees its adapter only when the last view closes it',
 })
 
 test('closing the only view holding a track frees its adapter', async () => {
-  const { pluginManager, view1 } = setup()
+  const { pluginManager, view1 } = await setup()
   view1.showTrack(TRACK_ID)
 
   const track = view1.tracks.find(t => t.configuration.trackId === TRACK_ID)!
@@ -85,7 +85,7 @@ test('closing the only view holding a track frees its adapter', async () => {
 // runs its afterAttach during death finalization — see destroyViewState. The
 // retain added there must not throw in that window.
 test('destroying a session with an unobserved track does not throw', async () => {
-  const { rootModel, view1 } = setup()
+  const { rootModel, view1 } = await setup()
   view1.showTrack(TRACK_ID)
   await settle()
 

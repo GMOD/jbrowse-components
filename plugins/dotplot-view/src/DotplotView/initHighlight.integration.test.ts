@@ -34,7 +34,7 @@ function setup() {
 test('init.highlight is applied after the assembly finishes loading', async () => {
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError')
-  const view = session.addView('DotplotView', {
+  const view = await session.launchView('DotplotView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
       highlight: ['ctgA:5000-15000'],
@@ -58,7 +58,7 @@ test('init.highlight is applied after the assembly finishes loading', async () =
 test('init loc navigation runs once regions exist, and highlight still applies', async () => {
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError')
-  const view = session.addView('DotplotView', {
+  const view = await session.launchView('DotplotView', {
     init: {
       views: [
         { assembly: 'volvox', loc: 'ctgA:5000-15000' },
@@ -89,7 +89,7 @@ test('a bad init.highlight entry keeps its siblings and the loc-nav after it', a
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   const consoleError = jest.spyOn(console, 'error').mockImplementation()
-  const view = session.addView('DotplotView', {
+  const view = await session.launchView('DotplotView', {
     init: {
       views: [
         { assembly: 'volvox', loc: 'ctgA:5000-15000' },
@@ -120,7 +120,7 @@ test('a bad per-axis init loc leaves the other axis navigated', async () => {
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   jest.spyOn(console, 'error').mockImplementation()
-  const view = session.addView('DotplotView', {
+  const view = await session.launchView('DotplotView', {
     init: {
       views: [
         { assembly: 'volvox', loc: 'nonexistent:1-2' },

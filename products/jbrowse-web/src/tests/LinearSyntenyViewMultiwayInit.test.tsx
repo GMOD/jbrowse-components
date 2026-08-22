@@ -16,7 +16,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 utilizeFetchMockForTest(volvoxGetFile)
 
 test('multi-way LinearSyntenyView init routes tracks to per-level slots', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -59,8 +59,8 @@ test('multi-way LinearSyntenyView init routes tracks to per-level slots', async 
   expect(view.init).toBeUndefined()
 }, 40000)
 
-test('a hand-authored multi-way session sizes levels from its views', () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+test('a hand-authored multi-way session sizes levels from its views', async () => {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -82,7 +82,7 @@ test('a hand-authored multi-way session sizes levels from its views', () => {
 })
 
 test('a failed init lands on the import form, not a permanent spinner', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -112,7 +112,7 @@ test('a failed init lands on the import form, not a permanent spinner', async ()
 }, 40000)
 
 test('the track selector targets the level it was opened for', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 

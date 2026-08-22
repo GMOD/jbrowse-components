@@ -20,7 +20,7 @@ async function createSpreadsheetViewWithInit(init: {
   uri: string
   fileType?: string
 }) {
-  const { pluginManager, rootModel } = getPluginManager()
+  const { pluginManager, rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -82,8 +82,8 @@ test('SpreadsheetView initializes with explicit fileType', async () => {
   expect(view.init).toBeUndefined()
 }, 40000)
 
-test('SpreadsheetView without init shows import form', () => {
-  const { rootModel } = getPluginManager()
+test('SpreadsheetView without init shows import form', async () => {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -98,7 +98,7 @@ test('SpreadsheetView without init shows import form', () => {
 // (not just the volatile fileSource) so a snapshot taken before the async load
 // finishes can still reload the file instead of stranding on the import form.
 test('snapshot persists cached file location synchronously', async () => {
-  const { rootModel } = getPluginManager()
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 

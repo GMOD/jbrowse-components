@@ -23,7 +23,7 @@ async function createCircularViewWithInit(init: {
   assembly: string
   tracks?: string[]
 }) {
-  const { pluginManager, rootModel } = getPluginManager()
+  const { pluginManager, rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -91,8 +91,8 @@ test('CircularView showImportForm is false when init is set', async () => {
 // an error state (regions whose assembly the config no longer has), so it grew a
 // circular import form inside its own panel whose Open its region autorun
 // overwrites on the next pass.
-test('disableImportForm suppresses the form on error too, not just on empty', () => {
-  const { rootModel } = getPluginManager()
+test('disableImportForm suppresses the form on error too, not just on empty', async () => {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -110,8 +110,8 @@ test('disableImportForm suppresses the form on error too, not just on empty', ()
 
 // the same error with the form enabled keeps reporting through it, which is
 // where a standalone circular view has always put its banner
-test('an error opens the import form when it is not disabled', () => {
-  const { rootModel } = getPluginManager()
+test('an error opens the import form when it is not disabled', async () => {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -122,8 +122,8 @@ test('an error opens the import form when it is not disabled', () => {
   expect(view.showImportForm).toBe(true)
 })
 
-test('CircularView showImportForm is true when no init', () => {
-  const { rootModel } = getPluginManager()
+test('CircularView showImportForm is true when no init', async () => {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -198,7 +198,7 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
     return handleRequest(() => volvoxGetFile(`${url}`), args)
   })
 
-  const { rootModel } = getPluginManager(config404)
+  const { rootModel } = await getPluginManager(config404)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -224,7 +224,7 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
 // init, so a reload/restore rebuilds instead of stranding on the import form.
 // Once displayedRegions exist, init is redundant and stripped.
 test('snapshot keeps init while not materialized, strips it once regions load', async () => {
-  const { rootModel } = getPluginManager()
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('CircularView', {

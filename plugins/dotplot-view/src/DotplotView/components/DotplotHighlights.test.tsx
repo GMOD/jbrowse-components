@@ -1,6 +1,6 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { createTestSession } from '@jbrowse/web/testUtils'
+import { createTestSessionAsync } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'
 
@@ -10,8 +10,8 @@ import DotplotHighlights from './DotplotHighlights.tsx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-function setup() {
-  const session = createTestSession({
+async function setup() {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [
         {
@@ -35,7 +35,7 @@ function setup() {
         },
       ],
     },
-  }) as any
+  })) as any
   return session.views[0]
 }
 
@@ -47,8 +47,8 @@ function renderSvg(child: React.ReactNode) {
   )
 }
 
-test('self-vs-self region draws both a vertical and horizontal band', () => {
-  const model = setup()
+test('self-vs-self region draws both a vertical and horizontal band', async () => {
+  const model = await setup()
   const { container } = renderSvg(
     <DotplotHighlightBands
       model={model}
@@ -59,8 +59,8 @@ test('self-vs-self region draws both a vertical and horizontal band', () => {
   expect(container.querySelectorAll('rect')).toHaveLength(2)
 })
 
-test('off-axis region draws no bands', () => {
-  const model = setup()
+test('off-axis region draws no bands', async () => {
+  const model = await setup()
   const { container } = renderSvg(
     <DotplotHighlightBands
       model={model}
@@ -71,8 +71,8 @@ test('off-axis region draws no bands', () => {
   expect(container.querySelectorAll('rect')).toHaveLength(0)
 })
 
-test('native highlights render and respect highlightsVisible', () => {
-  const model = setup()
+test('native highlights render and respect highlightsVisible', async () => {
+  const model = await setup()
   model.addToHighlights({
     refName: 'ctgA',
     start: 100,
@@ -99,8 +99,8 @@ test('native highlights render and respect highlightsVisible', () => {
 // lands on the plot rather than the button. jsdom implements neither capture
 // nor that retargeting, so it cannot reproduce the symptom — what is testable
 // is the fix, that the press never reaches the plot to start a drag at all.
-test('a press on a highlight chip never reaches the plot', () => {
-  const model = setup()
+test('a press on a highlight chip never reaches the plot', async () => {
+  const model = await setup()
   model.addToHighlights({
     refName: 'ctgA',
     start: 100,

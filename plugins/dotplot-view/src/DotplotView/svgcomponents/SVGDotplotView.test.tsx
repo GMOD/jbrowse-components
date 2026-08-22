@@ -17,9 +17,9 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 async function setup() {
   const session = createTestSession()
   addVolvoxAssembly(session)
-  const view = session.addView('DotplotView', {
+  const view = (await session.launchView('DotplotView', {
     init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] },
-  }) as DotplotViewModel
+  })) as DotplotViewModel
   view.setWidth(800)
   // Causal, not a wall clock: the only async precondition here is the assembly
   // load, so await that and let `when` resolve on the reaction tick after it.

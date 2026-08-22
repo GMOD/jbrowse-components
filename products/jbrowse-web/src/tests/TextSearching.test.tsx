@@ -219,12 +219,12 @@ test('failed search resets input to visible location', async () => {
 // or sv-core's navToLoc, was honoured or overwritten depending on whether the
 // input happened to parse as a locstring rather than resolve to a feature.
 test('an explicit grow reaches a feature hit, not only a locstring', async () => {
-  const { view } = getTestSession()
+  const { view } = await getTestSession()
   view.setWidth(800)
   await view.navToLocString('eden.1', 'volvox', 0)
   const exact = view.visibleLocStrings
 
-  const { view: padded } = getTestSession()
+  const { view: padded } = await getTestSession()
   padded.setWidth(800)
   await padded.navToLocString('eden.1', 'volvox')
 
@@ -239,7 +239,7 @@ test('an explicit grow reaches a feature hit, not only a locstring', async () =>
 // adapters answer 'exact' by filtering exactly the broad list, so the flag now
 // rides on the hits and one read answers both.
 test('enter reads the index once, exact miss or not', async () => {
-  const { session, view } = getTestSession()
+  const { session, view } = await getTestSession()
   view.setWidth(800)
   const search = jest.spyOn(session.textSearchManager, 'search')
 

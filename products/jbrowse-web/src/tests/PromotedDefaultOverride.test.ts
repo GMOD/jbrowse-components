@@ -45,8 +45,8 @@ function displayIn(view: TestView) {
     .displays[0]!
 }
 
-function openInTwoViews() {
-  const { rootModel } = getPluginManager()
+async function openInTwoViews() {
+  const { rootModel } = await getPluginManager()
   const session = rootModel.session as unknown as TestSession
   const first = session.views[0]!
   first.showTrack(TRACK_ID)
@@ -55,14 +55,14 @@ function openInTwoViews() {
   return { session, first: displayIn(first), second: displayIn(second) }
 }
 
-test('one track shown in two views is two displays over one config', () => {
-  const { first, second } = openInTwoViews()
+test('one track shown in two views is two displays over one config', async () => {
+  const { first, second } = await openInTwoViews()
   expect(first).not.toBe(second)
   expect(first.configuration).toBe(second.configuration)
 })
 
-test('the override count is per track, not per open display', () => {
-  const { session, first } = openInTwoViews()
+test('the override count is per track, not per open display', async () => {
+  const { session, first } = await openInTwoViews()
   // customize the track away from what we are about to promote, which is what
   // puts it in the override set at all
   setConf(first, SLOT, 'normal')
@@ -94,10 +94,10 @@ describe('override on an admin-configured promotable slot', () => {
     jest.useRealTimers()
   })
 
-  test('survives the debounced delta round-trip', () => {
+  test('survives the debounced delta round-trip', async () => {
     // non-admin: an admin's edits rewrite jbrowse.tracks itself and never go
     // near a delta, so the case does not exist there
-    const { rootModel } = getPluginManager(undefined, false)
+    const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
     view.showTrack(ADMIN_TRACK)

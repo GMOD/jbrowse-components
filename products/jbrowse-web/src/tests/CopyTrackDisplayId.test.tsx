@@ -13,7 +13,7 @@ interface TrackSnap {
 }
 
 function showAndSnapshot(
-  view: ReturnType<typeof getTestSession>['view'],
+  view: Awaited<ReturnType<typeof getTestSession>>['view'],
   trackId: string,
 ): TrackSnap {
   view.showTrack(trackId)
@@ -26,8 +26,8 @@ function showAndSnapshot(
 // `${trackId}-${type}` form, so makeSnap can rebuild unique displayIds off the
 // new trackId without colliding with the original (displayId is a
 // types.identifier; a collision would crash MST)
-test('copied track gets unique displayIds derived from the new trackId', () => {
-  const { session, view } = getTestSession()
+test('copied track gets unique displayIds derived from the new trackId', async () => {
+  const { session, view } = await getTestSession()
   const orig = showAndSnapshot(view, 'volvox_filtered_vcf')
 
   // every display snapshot has the canonical id form

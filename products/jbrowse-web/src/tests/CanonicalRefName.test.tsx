@@ -13,8 +13,8 @@ beforeEach(() => {
 // its aliases arrive an RPC later, so a getter or a render that runs on the
 // first frame is IN it. Every hand-rolled `getCanonicalRefName(x) ?? x` this
 // replaced read as total and threw here.
-test('the total resolver answers before the aliases load, where the strict one throws', () => {
-  const { session } = getTestSession()
+test('the total resolver answers before the aliases load, where the strict one throws', async () => {
+  const { session } = await getTestSession()
   const assembly = session.assemblyManager.get('volvox')!
 
   expect(assembly.initialized).toBe(false)
@@ -27,7 +27,7 @@ test('the total resolver answers before the aliases load, where the strict one t
 // The other half, so the fallback above cannot be mistaken for the whole
 // behaviour: once loaded it resolves, and `A` is an alias volvox declares.
 test('and resolves the alias once they have', async () => {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const assembly = await session.assemblyManager.waitForAssembly('volvox')
 
   expect(assembly!.getCanonicalRefName2('A')).toBe('ctgA')

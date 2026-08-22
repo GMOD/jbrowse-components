@@ -38,8 +38,11 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-function setup(adminMode = true) {
-  const { pluginManager, rootModel } = getPluginManager(undefined, adminMode)
+async function setup(adminMode = true) {
+  const { pluginManager, rootModel } = await getPluginManager(
+    undefined,
+    adminMode,
+  )
   const session = rootModel.session as unknown as TestSession
   return { pluginManager, session, view: session.views[0]! }
 }
@@ -67,8 +70,8 @@ function displayEntry(config: Record<string, unknown>) {
   )!
 }
 
-test('a selector entry is frozen and a view entry is live', () => {
-  const { session, view } = setup()
+test('a selector entry is frozen and a view entry is live', async () => {
+  const { session, view } = await setup()
   expect(isStateTreeNode(fromSelector(session))).toBe(false)
   view.showTrack(TRACK_ID)
   const inView = view.tracks.find(
@@ -77,8 +80,8 @@ test('a selector entry is frozen and a view entry is live', () => {
   expect(isStateTreeNode(inView)).toBe(true)
 })
 
-test('copying from the selector resolves promoted defaults too', () => {
-  const { pluginManager, session } = setup()
+test('copying from the selector resolves promoted defaults too', async () => {
+  const { pluginManager, session } = await setup()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const { config, fromDisplayTypeDefaults } = copiedConfig(
@@ -93,8 +96,8 @@ test('copying from the selector resolves promoted defaults too', () => {
   expect(fromDisplayTypeDefaults).toContain(`${DISPLAY_TYPE}.${SLOT}`)
 })
 
-test('both entry points copy the same config', () => {
-  const { pluginManager, session, view } = setup()
+test('both entry points copy the same config', async () => {
+  const { pluginManager, session, view } = await setup()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const selector = copiedConfig(pluginManager, session, fromSelector(session))
@@ -111,8 +114,8 @@ test('both entry points copy the same config', () => {
   )
 })
 
-test('hydration reuses the node the track itself later resolves', () => {
-  const { pluginManager, session, view } = setup()
+test('hydration reuses the node the track itself later resolves', async () => {
+  const { pluginManager, session, view } = await setup()
   const hydrated = hydrateTrackConfig(pluginManager, fromSelector(session))
   view.showTrack(TRACK_ID)
   const inView = view.tracks.find(
@@ -121,8 +124,8 @@ test('hydration reuses the node the track itself later resolves', () => {
   expect(hydrated).toBe(inView)
 })
 
-test('an unbuildable config hydrates to undefined instead of throwing', () => {
-  const { pluginManager } = setup()
+test('an unbuildable config hydrates to undefined instead of throwing', async () => {
+  const { pluginManager } = await setup()
   // it logs the reason it gave up; that is the point, not suite noise
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   expect(
@@ -154,7 +157,7 @@ function displayConfig(trackConfig: AnyConfigurationModel) {
 }
 
 test('a non-admin quick-edit reaches Copy config from both menus', async () => {
-  const { pluginManager, session, view } = setup(false)
+  const { pluginManager, session, view } = await setup(false)
   view.showTrack(TRACK_ID)
   const inViewConf = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
@@ -176,7 +179,7 @@ test('a non-admin quick-edit reaches Copy config from both menus', async () => {
 }, 10000)
 
 test("a non-admin edit isn't reported as inherited from a session default", async () => {
-  const { pluginManager, session, view } = setup(false)
+  const { pluginManager, session, view } = await setup(false)
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
   view.showTrack(TRACK_ID)
   const inViewConf = view.tracks.find(
