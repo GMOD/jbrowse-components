@@ -2869,6 +2869,18 @@ export const configManifest: ConfigManifest = {
       ],
       "aliases": [
         "LinearFeatureDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration",
+        "jexlFiltersSetting",
+        "pinnedFeatureIds",
+        "soloFeatureIds",
+        "soloApplied",
+        "hiddenFeatureIds",
+        "expandedGeneIds",
+        "featureHighlights"
       ]
     },
     "LinearMultiRowFeatureDisplay": {
@@ -2961,6 +2973,20 @@ export const configManifest: ConfigManifest = {
           "name": "showRowLabels",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "runClustering",
+        "clusterRegion",
+        "configuration",
+        "sortRowsBy",
+        "hiddenCategories"
       ]
     },
     "LinearAlignmentsDisplay": {
@@ -3195,6 +3221,11 @@ export const configManifest: ConfigManifest = {
         "LinearSNPCoverageDisplay",
         "LinearReadArcsDisplay",
         "LinearReadCloudDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "ChordVariantDisplay": {
@@ -3226,6 +3257,12 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "renderer"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "bezierRadiusRatio",
+        "configuration"
       ]
     },
     "DotplotDisplay": {
@@ -3238,6 +3275,11 @@ export const configManifest: ConfigManifest = {
           "name": "displayId",
           "type": "identifier"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "LinearSyntenyDisplay": {
@@ -3250,6 +3292,11 @@ export const configManifest: ConfigManifest = {
           "name": "displayId",
           "type": "identifier"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "LGVSyntenyDisplay": {
@@ -3482,6 +3529,12 @@ export const configManifest: ConfigManifest = {
           "name": "hideSelfAlignments",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration",
+        "lodMode"
       ]
     },
     "LinearReferenceSequenceDisplay": {
@@ -3510,6 +3563,11 @@ export const configManifest: ConfigManifest = {
           "name": "showTranslation",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "LinearVariantDisplay": {
@@ -3657,6 +3715,18 @@ export const configManifest: ConfigManifest = {
         "color2",
         "color3",
         "outline"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration",
+        "jexlFiltersSetting",
+        "pinnedFeatureIds",
+        "soloFeatureIds",
+        "soloApplied",
+        "hiddenFeatureIds",
+        "expandedGeneIds",
+        "featureHighlights"
       ]
     },
     "LinearMultiSampleVariantDisplay": {
@@ -3768,6 +3838,19 @@ export const configManifest: ConfigManifest = {
       ],
       "aliases": [
         "MultiLinearVariantDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "runClustering",
+        "clusterRegion",
+        "configuration",
+        "jexlFiltersSetting"
       ]
     },
     "LinearMultiSampleVariantMatrixDisplay": {
@@ -3863,6 +3946,19 @@ export const configManifest: ConfigManifest = {
       ],
       "aliases": [
         "LinearVariantMatrixDisplay"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "runClustering",
+        "clusterRegion",
+        "configuration",
+        "jexlFiltersSetting"
       ]
     },
     "LDDisplay": {
@@ -3955,6 +4051,12 @@ export const configManifest: ConfigManifest = {
           "name": "signedLD",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration",
+        "jexlFiltersSetting"
       ]
     },
     "LDTrackDisplay": {
@@ -4047,6 +4149,12 @@ export const configManifest: ConfigManifest = {
           "name": "signedLD",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration",
+        "jexlFiltersSetting"
       ]
     },
     "LinearWiggleDisplay": {
@@ -4143,6 +4251,12 @@ export const configManifest: ConfigManifest = {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "resolution",
+        "configuration"
       ]
     },
     "MultiLinearWiggleDisplay": {
@@ -4247,6 +4361,20 @@ export const configManifest: ConfigManifest = {
           "name": "showLegend",
           "type": "(JexlString | (boolean | undefined))"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "resolution",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "runClustering",
+        "clusterRegion",
+        "configuration",
+        "sortRowsBy"
       ]
     },
     "LinearGCContentDisplay": {
@@ -4355,6 +4483,12 @@ export const configManifest: ConfigManifest = {
           "name": "gcMode",
           "type": "(JexlString | gcMode)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "resolution",
+        "configuration"
       ]
     },
     "LinearGCContentTrackDisplay": {
@@ -4463,6 +4597,12 @@ export const configManifest: ConfigManifest = {
           "name": "gcMode",
           "type": "(JexlString | gcMode)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "resolution",
+        "configuration"
       ]
     },
     "LinearMafDisplay": {
@@ -4579,6 +4719,18 @@ export const configManifest: ConfigManifest = {
           "name": "showInversions",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "layout",
+        "clusterTree",
+        "clusterProvenance",
+        "treeAreaWidth",
+        "subtreeFilter",
+        "runClustering",
+        "clusterRegion",
+        "configuration"
       ]
     },
     "LinearHicDisplay": {
@@ -4647,6 +4799,11 @@ export const configManifest: ConfigManifest = {
           "name": "squashToHeight",
           "type": "(JexlString | boolean)"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "LinearArcDisplay": {
@@ -4710,6 +4867,11 @@ export const configManifest: ConfigManifest = {
       ],
       "legacyKeys": [
         "renderer"
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "LinearPairedArcDisplay": {
@@ -4754,6 +4916,11 @@ export const configManifest: ConfigManifest = {
           "name": "lineWidth",
           "type": "(JexlString | (number | undefined))"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration"
       ]
     },
     "LinearManhattanDisplay": {
@@ -4838,6 +5005,13 @@ export const configManifest: ConfigManifest = {
           "name": "showLdLegend",
           "type": "(JexlString | (boolean | undefined))"
         }
+      ],
+      "stateModelProps": [
+        "id",
+        "type",
+        "configuration",
+        "indexSnp",
+        "indexSnpPinned"
       ]
     }
   },
