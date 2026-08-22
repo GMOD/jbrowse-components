@@ -56,6 +56,7 @@ export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
 
 export {
   type FetchContext,
+  type LoadedRegion,
   type RegionFetchContext,
   autorunOnReadyView,
   callEachRegion,

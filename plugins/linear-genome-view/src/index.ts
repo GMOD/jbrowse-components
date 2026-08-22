@@ -149,6 +149,7 @@ export type {
   GlobalFetchPhases,
   HeightMode,
   HeightModeMenuModel,
+  LoadedRegion,
   RegionFetchContext,
   StatusChromeModel,
   TooLargeMessageModel,
