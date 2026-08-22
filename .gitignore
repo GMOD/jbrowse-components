@@ -60,6 +60,14 @@ yalc.lock
 # in a shared worktree means it rides along into someone else's commit. Anything
 # a test actually asserts belongs in __snapshots__/ or __image_snapshots__/.
 **/__debug_output__/
+# Throwaway scripts an agent writes at the repo root to drive a browser or poke
+# at something once. Untracked and new, so the pre-push hook counts them as its
+# own fixers' output and commits them, and the whole-tree lint gate fails the
+# push on code nobody meant to keep. The scratchpad is where these belong;
+# ignoring the name keeps a stray one out of both.
+/__*.mjs
+/__*.ts
+/__*.js
 **/dist/
 **/esm/
 **/nextstrain-demos-data/
