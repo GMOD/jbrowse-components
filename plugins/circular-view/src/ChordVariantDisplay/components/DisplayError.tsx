@@ -11,9 +11,11 @@ function truncate(str: string, max: number) {
 const DisplayError = observer(function DisplayError({
   model,
   onClick,
+  onRetry,
 }: {
   model: { error: unknown; radiusPx: number; view: { offsetRadians: number } }
   onClick?: () => void
+  onRetry?: () => void
 }) {
   const theme = useTheme()
   const text = truncate(String(model.error), 80)
@@ -33,7 +35,27 @@ const DisplayError = observer(function DisplayError({
         fill={theme.palette.error.light}
         hatchColor={theme.palette.error.main}
         textRotationDeg={-radToDeg(model.view.offsetRadians)}
-        text={onClick ? `${text} (click for details)` : text}
+        text={
+          <>
+            <tspan x="0">
+              {onClick ? `${text} (click for details)` : text}
+            </tspan>
+            {onRetry ? (
+              <tspan
+                x="0"
+                dy="1.5em"
+                data-testid="chord_retry"
+                style={{ textDecoration: 'underline' }}
+                onClick={event => {
+                  event.stopPropagation()
+                  onRetry()
+                }}
+              >
+                Retry
+              </tspan>
+            ) : null}
+          </>
+        }
       />
     </g>
   )

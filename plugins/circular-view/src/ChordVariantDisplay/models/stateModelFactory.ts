@@ -93,6 +93,14 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * #volatile
        */
       refNameMap: undefined as Record<string, string> | undefined,
+      /**
+       * #volatile
+       * pure "go again" signal for the fetch autorun, the same role
+       * `reloadCounter` plays in the three fetch families: after a fetch error
+       * every other input is unchanged, so without it nothing can rewake the
+       * fetch
+       */
+      reloadCounter: 0,
     }))
     .views(self => ({
       /**
@@ -224,6 +232,13 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         setRefNameMap(refNameMap: Record<string, string> | undefined) {
           self.refNameMap = refNameMap
         },
+
+        /**
+         * #action
+         */
+        reload() {
+          self.reloadCounter += 1
+        },
       }
     })
     .actions(self => {
@@ -255,6 +270,10 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
               // evicts on failure), so asking again alongside every feature
               // fetch costs a resolved promise.
               async function chordVariantFetch() {
+                // read above every gate so `reload()` rewakes the autorun even
+                // when no other input changed (a read under a gate drops out of
+                // the dependency set on the run that declines)
+                void self.reloadCounter
                 const { view } = self
                 if (!view.displayedRegions.length) {
                   return

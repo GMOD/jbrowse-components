@@ -21,4 +21,5 @@ export interface ChordDisplayModel {
   bezierRadius: number
   onChordClick: (feature: Feature) => void
   openErrorDialog: () => void
+  reload: () => void
 }

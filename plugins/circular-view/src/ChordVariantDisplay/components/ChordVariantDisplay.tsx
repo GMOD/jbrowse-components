@@ -21,6 +21,9 @@ const ChordVariantDisplay = observer(function ChordVariantDisplay({
       onClick={() => {
         display.openErrorDialog()
       }}
+      onRetry={() => {
+        display.reload()
+      }}
     />
   ) : display.ready ? (
     <Chords display={display} />

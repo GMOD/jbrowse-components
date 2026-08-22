@@ -94,3 +94,21 @@ test('a region change re-requests the refName map, not just the features', async
   await when(() => display.ready)
   expect(display.refNameMap).toEqual({ ctgA: 'ctgA' })
 }, 20000)
+
+// After a fetch error every other input of the fetch autorun is unchanged, so
+// `reload()`'s pure signal is the only thing that can rewake it. Fails if the
+// `reloadCounter` read is deleted from the autorun body, or moved under a gate.
+test('reload() rewakes the fetch after an error', async () => {
+  const { display } = await setup()
+
+  display.setError(new Error('adapter fell over'))
+  display.reload()
+
+  // synchronous: the rewoken autorun cleared the stale halves (which also
+  // clears the error) on its way to the first await
+  expect(display.error).toBeUndefined()
+  expect(display.features).toBeUndefined()
+
+  await when(() => display.ready)
+  expect(display.features).toHaveLength(1)
+}, 20000)
