@@ -408,7 +408,7 @@ export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 // in while the text keeps the mode's font size.
 export function forEachDisplayLabel(
   regions: RegionWithData[],
-  dataMap: Map<number, FeatureDataResult>,
+  dataMap: ReadonlyMap<number, FeatureDataResult>,
   context: LabelRenderContext,
   emit: (
     featureId: string,

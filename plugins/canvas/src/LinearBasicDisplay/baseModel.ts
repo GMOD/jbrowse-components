@@ -1379,7 +1379,7 @@ export default function baseStateModelFactory(
          * Returned by reference off the untransformed path (scale 1) so the
          * incremental-layout upload diff and Y-morph idle check stay intact.
          */
-        get laidOutDataMap(): Map<number, FeatureDataResult> {
+        get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
           return scale === 1 ? layout : scaleLaidOutData(layout, scale)
         },
@@ -1448,7 +1448,7 @@ export default function baseStateModelFactory(
         // from the previous layout to the new one (see yMorph). Returns the
         // same object reference as `laidOutDataMap` when idle, so consumers
         // don't re-upload/re-render unless an animation is in flight.
-        get renderDataMap(): Map<number, FeatureDataResult> {
+        get renderDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const from = self.morphFromTops
           const t = this.morphEased
           // t === 1 is the settled frame between the clock's final
@@ -2816,7 +2816,7 @@ export default function baseStateModelFactory(
             // making the session loader drop the display as "unhydratable".
             // These prevs are only compared once prevLayout is non-undefined,
             // which can't happen until after the first guarded run has set them.
-            let prevLayout: Map<number, FeatureDataResult> | undefined
+            let prevLayout: ReadonlyMap<number, FeatureDataResult> | undefined
             let prevGeometry: string | undefined
             // autorunOnReadyView gates on view.initialized — laidOutDataMap is
             // empty until then, and rowGeometrySignature reads renderedShow*

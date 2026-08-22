@@ -10,14 +10,13 @@ import type {
   WiggleGPURenderState,
   WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'
-import type { ObservableMap } from 'mobx'
 
 // The model surface installWiggleRenderingBackend needs. LinearWiggleDisplay and
 // MultiLinearWiggleDisplay both satisfy it, so the identical per-region wiring
 // lives here once instead of being copied into each model's
 // startRenderingBackend.
 interface WiggleLifecycleModel extends LifecycleHost {
-  rpcDataMap: ObservableMap<number, WiggleDataResult>
+  rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   gpuProps: () => WiggleGpuProps
   renderState: WiggleGPURenderState
   renderBlocks: RenderBlock[]

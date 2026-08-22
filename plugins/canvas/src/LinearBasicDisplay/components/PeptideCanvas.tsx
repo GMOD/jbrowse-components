@@ -30,7 +30,7 @@ const PeptideCanvas = observer(function PeptideCanvas({
   height,
   bpPerPx,
 }: {
-  renderDataMap: Map<number, FeatureDataResult>
+  renderDataMap: ReadonlyMap<number, FeatureDataResult>
   visibleRegions: VisibleRegion[]
   viewInitialized: boolean
   width: number | undefined

@@ -18,7 +18,7 @@ export interface MultiWiggleDisplayModel
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
-  rpcDataMap: Map<number, WiggleDataResult>
+  rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   sources: { name: string; color?: string; labelColor?: string }[]
   // the color key, collapsed and color-resolved by the model — the one list
   // both the on-screen FloatingLegend and the export draw

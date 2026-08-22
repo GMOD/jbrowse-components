@@ -223,13 +223,11 @@ function geneStackRegionData(opts: {
 
 // Every rect the display would paint, at the scale it would paint it — the
 // quantity MIN_FIT_BOX_PX is a promise about.
-function drawnBoxHeights(display: { laidOutDataMap: Map<number, unknown> }) {
+function drawnBoxHeights(display: {
+  laidOutDataMap: ReadonlyMap<number, { rectHeights: Float32Array }>
+}) {
   const out: number[] = []
-  for (const data of (
-    display as {
-      laidOutDataMap: Map<number, { rectHeights: Float32Array }>
-    }
-  ).laidOutDataMap.values()) {
+  for (const data of display.laidOutDataMap.values()) {
     out.push(...data.rectHeights)
   }
   return out
@@ -662,7 +660,8 @@ describe('canvas display fit escalation ladder', () => {
     // 2×fullH of slack strands as bottom whitespace.
     expect(display.fitScale).toBe(1)
     // Every rendered box keeps its natural top: the stack spans [0, fullH].
-    const layout: Map<number, FeatureDataResult> = display.laidOutDataMap
+    const layout: ReadonlyMap<number, FeatureDataResult> =
+      display.laidOutDataMap
     const tops = [...layout.values()].flatMap(d =>
       d.flatbushItems.map(i => i.topPx),
     )

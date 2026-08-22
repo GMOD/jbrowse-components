@@ -505,3 +505,26 @@ describe('the identity path, with no encode', () => {
     expect(rendered.at(-1)).toBe(data)
   })
 })
+
+// Typecheck-only: an unused `@ts-expect-error` fails `pnpm typecheck`.
+function aForgottenEncodeIsATypeError() {
+  interface InstanceBufferBackend {
+    uploadRegion(key: number, payload: { instanceBuffer: Uint32Array }): void
+    pruneRegions(active: Iterable<number>): void
+  }
+  const backend: InstanceBufferBackend = {
+    uploadRegion() {},
+    pruneRegions() {},
+  }
+  const data = new Map<number, FakeRegionData>()
+  // @ts-expect-error the backend takes an instance buffer, not a region payload
+  installPerRegionLifecycle(TestModel.create(), backend, {
+    data: () => data,
+    render: () => true,
+  })
+  return data.size
+}
+
+test('a lifecycle whose encode is forgotten does not compile', () => {
+  expect(aForgottenEncodeIsATypeError()).toBe(0)
+})

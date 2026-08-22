@@ -31,7 +31,6 @@ import type {
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
-import type { ObservableMap } from 'mobx'
 
 /**
  * The one slot this mixin reads that no shared table can hold: each wiggle
@@ -71,7 +70,7 @@ const confNode = (self: object) => self as WiggleCommonHost
 // that getter.
 function visibleEntries(
   self: IStateTreeNode & {
-    rpcDataMap: ObservableMap<number, WiggleDataResult>
+    rpcDataMap: ReadonlyMap<number, WiggleDataResult>
     autoscaleSourceNames: Set<string> | undefined
   },
 ) {

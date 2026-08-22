@@ -68,7 +68,7 @@ interface FloatingLabelsModel {
   contentHeight: number
   labelScrollBucket: number
   featureItemMap: Map<string, FeatureItemEntry>
-  renderDataMap: Map<number, FeatureDataResult>
+  renderDataMap: ReadonlyMap<number, FeatureDataResult>
   openContextMenu: (info: FeatureContextMenuInfo) => void
   selectFeatureById: (
     featureId: string,

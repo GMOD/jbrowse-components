@@ -42,7 +42,7 @@ export interface RenderSvgModel extends SvgExportable {
   height: number
   scrollTop: number
   regionTooLarge: boolean
-  laidOutDataMap: Map<number, FeatureDataResult>
+  laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   highlightedFeatureIdSet: ReadonlySet<string>
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
