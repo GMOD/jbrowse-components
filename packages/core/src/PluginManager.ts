@@ -22,12 +22,28 @@ import type TrackType from './pluggableElementTypes/TrackType.ts'
 import type ViewType from './pluggableElementTypes/ViewType.ts'
 import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
+// Side-effect type imports, for the augmentations rather than for a name. Every
+// plugin's `install`/`configure` takes a PluginManager, so a declaration this
+// module pulls in is one every plugin's program contains — and a registry
+// declaration only constrains a caller whose program already contains the module
+// it lives in. Without these, `addToExtensionPoint` falls to its untyped
+// overload for a point declared elsewhere in core and infers the parameter from
+// whatever the callback claims, which is how jbrowse-plugin-apollo kept a
+// `Core-extendWorker` callback typed against a handle shape that had not existed
+// for months. Reachability was tracking which modules a plugin happened to
+// import for other reasons, not which points are plugin-facing.
+import type {} from './pluggableElementTypes/models/migrateTrackConfig.ts'
 import type { PluginDefinition } from './pluginDefinitions.ts'
+import type {} from './rpc/WebWorkerRpcDriver.ts'
+import type {} from './ui/buildExtraTrackMenuItems.ts'
+import type {} from './ui/multiTrackMenuItems.ts'
+import type {} from './util/addTrackComponent.ts'
 import type {
   AbstractRootModel,
   AbstractSessionModel,
   SimpleFeatureSerialized,
 } from './util/index.ts'
+import type {} from './util/tracks.ts'
 import type {
   IAnyModelType,
   IStateTreeNode,
