@@ -53,7 +53,6 @@ before anyone noticed.
 | [Re-render the settings-menu figures](#re-render-the-five-figures-the-settings-menu-refactor-outran) | figures, synteny | five stale; the lock cannot catch this class |
 | [Rebuild the OrthoFinder demos' chrom.sizes](#rebuild-the-three-orthofinder-demos-chromsizes) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
-| [A failed phase is credited bytes it never transferred](#a-failed-phase-is-credited-the-bytes-it-never-transferred) | core, progress | give `withProgress` an outcome; a credit rule alone re-breaks the backwards bar |
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](#give-sessionjbrowse-a-real-type) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
 | [The swapped track resolves to a point](#the-swapped-assembly-track-resolves-to-a-point) | synteny | the hang is fixed; what is left is the swap, still not isolated |
@@ -593,31 +592,6 @@ each by landing in one method's `args` and thereby being unpassable to the other
 forty. `EntriesDeclaringCallLevelFields` in `RpcRegistry.ts` now fails
 compilation naming the entry that tries it, so the wrong version of this is a
 build error rather than a third repetition.
-
-### A failed phase is credited the bytes it never transferred
-
-`withProgress`' `finally` calls `endPhase()` whether `fn` returned or threw, and
-the aggregate in `progress.ts` charges the retiring phase its `total` either way.
-A region that transferred 100 of 1000 bytes and then died is charged all 1000, so
-the shared bar walks **forward** on a failure — the one direction ADR-071 exists
-to prevent. Two regions at 100/1000 and 500/1000 read 37%; the first one's socket
-closing reads 67%. `assembly.loadPre` is the same shape: its `Promise.all` rejects
-on the first of four files while the other three are still downloading.
-
-**Do not fix this as a credit rule.** Crediting `min(current, total)` on a retire
-was tried on 2026-08-21, and `FetchMixin.test.ts` §"a region's phase clear charges
-it as complete" fails it by name — that test pins the opposite deliberately and
-calls the undercharging reading one of the two wrong ones. On the per-region fetch
-path a phase clear **is** a completion, and undercharging it is what made the bar
-run backwards as a batch landed. Both cases arrive at the aggregate as the same
-`statusCallback('')`, so no rule over the readings can separate them.
-
-The separation has to come from the `finally`, which is the only place that knows
-which happened: `endPhase` takes an outcome, and the aggregate credits `total` on
-a completion and `current` on a throw. That means a signal on the channel a bare
-`''` does not carry, which is the design half — the wire is
-`statusCallback(RpcStatus)` and every consumer treats a falsy message as a retire.
-Whatever shape it takes has to leave the backwards-bar case above green.
 
 ### The comparative context menu sits behind no bring-your-own seam
 
