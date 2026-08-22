@@ -15,6 +15,12 @@ export interface SvgExportable {
   // the too-large terminal state; `SvgChrome` renders it as a message box so an
   // over-budget region exports a labeled note instead of a silent blank.
   regionTooLarge: boolean
+  // a standing user cancel ("Loading canceled / Retry" on screen). Optional
+  // because a display with no cancel affordance (chord) has no such state;
+  // where it exists, `awaitSvgReady` fails the export on it the way it fails
+  // on `error` — the canceled data is not coming, so waiting would hang and
+  // proceeding would export a blank
+  fetchCanceled?: boolean
 }
 
 /**
@@ -25,11 +31,18 @@ export interface SvgExportable {
  * `extraTerminal` is the display-specific escape hatch — sequence sets it when
  * zoomed past base resolution, where it renders a static "zoom in" message and
  * fetches nothing, so a data-only gate would never resolve.
+ *
+ * `fetchCanceled` is the user's own resting state: a standing cancel holds the
+ * fetch gate shut until Retry or a viewport change, and an export causes
+ * neither, so without this terminal `awaitSvgReady` — which has no time bound —
+ * spins forever with the dialog up and nothing said. A display family with no
+ * cancel affordance answers it `false`.
  */
 export interface SvgReadyTerminals {
   error: unknown
   regionTooLarge: boolean
   extraTerminal: boolean
+  fetchCanceled: boolean
 }
 
 /**
@@ -51,10 +64,12 @@ export interface SvgReadyTerminals {
  * banner is up.
  */
 export function computeSvgReady(
-  { error, regionTooLarge, extraTerminal }: SvgReadyTerminals,
+  { error, regionTooLarge, extraTerminal, fetchCanceled }: SvgReadyTerminals,
   dataCurrent: () => boolean,
 ) {
-  return !!error || regionTooLarge || extraTerminal || dataCurrent()
+  return (
+    !!error || regionTooLarge || extraTerminal || fetchCanceled || dataCurrent()
+  )
 }
 
 /**
@@ -78,12 +93,23 @@ export function computeSvgReady(
  * (dotplot, synteny) — a display never has to know whether it owns the surface
  * it paints, because the thing that made that distinction matter, reporting all
  * the failures rather than one, is `awaitSvgRenders`'s job.
+ *
+ * A standing user cancel fails the export the same way an error does, and for
+ * the same reason the error is folded in rather than left to the caller: the
+ * cancel terminal makes `svgReady` *true* over a display with nothing to draw,
+ * so a caller that awaits and stops there exports that track blank in silence.
+ * On screen the same state shows "Loading canceled / Retry", so the loud
+ * failure matches what the user is looking at.
  */
 export async function awaitSvgReady(
-  model: Pick<SvgExportable, 'svgReady' | 'error'>,
+  model: Pick<SvgExportable, 'svgReady' | 'error' | 'fetchCanceled'>,
 ) {
   await when(() => model.svgReady)
-  throwOnExportErrors([model.error])
+  throwOnExportErrors([
+    model.error == null && model.fetchCanceled
+      ? new Error('data loading was canceled — Retry the track, then export')
+      : model.error,
+  ])
 }
 
 /**

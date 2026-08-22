@@ -12,6 +12,7 @@ const noTerminals = {
   error: undefined,
   regionTooLarge: false,
   extraTerminal: false,
+  fetchCanceled: false,
 }
 
 describe('computeSvgReady', () => {
@@ -30,6 +31,9 @@ describe('computeSvgReady', () => {
     ).toBe(true)
     expect(
       computeSvgReady({ ...noTerminals, extraTerminal: true }, stale),
+    ).toBe(true)
+    expect(
+      computeSvgReady({ ...noTerminals, fetchCanceled: true }, stale),
     ).toBe(true)
   })
 
@@ -55,6 +59,7 @@ describe('computeSvgReady', () => {
             error: undefined,
             regionTooLarge: m.regionTooLarge,
             extraTerminal: false,
+            fetchCanceled: false,
           },
           () => m.loaded,
         ),
@@ -110,6 +115,37 @@ describe('awaitSvgReady', () => {
     await expect(
       awaitSvgReady({ svgReady: true, error: undefined }),
     ).resolves.toBeUndefined()
+  })
+
+  // a standing cancel is durable until Retry, which an export cannot press —
+  // the terminal keeps the wait bounded, and the throw keeps the export from
+  // writing that track blank in silence over an on-screen "Loading canceled"
+  it('fails on a standing user cancel rather than exporting a blank', async () => {
+    const model = observable({
+      svgReady: false,
+      error: undefined,
+      fetchCanceled: false,
+    })
+    const p = awaitSvgReady(model)
+    runInAction(() => {
+      model.fetchCanceled = true
+      model.svgReady = true
+    })
+    await expect(p).rejects.toThrow(
+      'Cannot export: Error: data loading was canceled',
+    )
+  })
+
+  // both standing at once (not producible through the action surface, but the
+  // policy should still name the more informative one)
+  it('prefers the error over the cancel when both stand', async () => {
+    await expect(
+      awaitSvgReady({
+        svgReady: true,
+        error: new Error('HTTP 404'),
+        fetchCanceled: true,
+      }),
+    ).rejects.toThrow('Cannot export: Error: HTTP 404')
   })
 })
 

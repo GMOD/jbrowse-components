@@ -473,12 +473,18 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
           {
             error: self.error,
             regionTooLarge: false,
-            extraTerminal: false,
+            // the mixin default is false today; passing it keeps this gate
+            // structurally identical to synteny's, so a dotplot inert state
+            // added later can't hang the export by being forgotten here
+            extraTerminal: self.fetchInert,
+            fetchCanceled: self.fetchCanceled,
           },
           // instanceData, not geometry: this getter is read outside any
           // reactive context (the export await polls it), where reading the
-          // `geometry` computed would recompute every segment's color per poll
-          () => !!self.instanceData && this.dataCurrent,
+          // `geometry` computed would recompute every segment's color per poll.
+          // `!refetching` covers the in-flight RPC the way synteny's does, so
+          // an export fired during a same-key retry waits for the fresh result
+          () => !!self.instanceData && !this.refetching && this.dataCurrent,
         )
       },
     }))

@@ -9,6 +9,13 @@ export interface SvgReadyFoundation {
   regionTooLarge: boolean
   /** `FetchMixin`'s: this display will never fetch here, so nothing is coming */
   fetchInert: boolean
+  /**
+   * `FetchMixin`'s: a standing user cancel. Blocking for the fetch autoruns
+   * until Retry or a viewport change, and an export causes neither, so it is a
+   * terminal here — `awaitSvgReady` fails the export on it, matching the
+   * "Loading canceled / Retry" the user sees on screen
+   */
+  fetchCanceled: boolean
   /** the foundation's: no content block is on screen — see `viewportEmpty` */
   viewportEmpty: boolean
   /** the family's own freshness answer */
@@ -46,6 +53,7 @@ export function foundationSvgReady(self: SvgReadyFoundation): boolean {
       error: self.error,
       regionTooLarge: self.regionTooLarge,
       extraTerminal: self.fetchInert,
+      fetchCanceled: self.fetchCanceled,
     },
     () => self.viewportEmpty || self.dataCurrent,
   )

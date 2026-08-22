@@ -37,6 +37,11 @@ interface PrerequisiteFetchHost extends IStateTreeNode {
  *   failure is logged and published, so a superseded run's teardown cannot
  *   overwrite the error slot its successor owns (the sources fetch's catch
  *   checked liveness but not currency);
+ * - **the clear-at-start rule**: a run that starts clears the stale error, as
+ *   `FetchMixin.runFetch` and the comparative `runFetch` do, so a banner from
+ *   a failed attempt cannot stand over the result a retriggered run commits —
+ *   this runner re-fires on tracked reads (`adapterConfig`, un-minimize) that
+ *   never pass through `reload()`'s own clear;
  * - **the trigger list**: `reloadCounter` read unconditionally, above every
  *   gate, so Retry always re-runs the body;
  * - **the leading edge**: `leadingEdgeAutorun`, so the first run does not
@@ -82,6 +87,9 @@ export function installPrerequisiteFetch<T>(
     statusCallback,
     end,
   }: ActiveFetch) => {
+    // synchronous, so it lands while this run is by construction the current
+    // one — the clear-at-start rule above
+    self.setError(undefined)
     try {
       const result = await opts.run(
         makeFetchContext(self, {

@@ -21,4 +21,14 @@ describe('LD svgReady terminal states', () => {
     expect(display.rendersCanvas).toBe(false)
     expect(display.svgReady).toBe(true)
   })
+
+  // the other resting state: a user cancel is durable until Retry or a
+  // viewport change, and an export causes neither. Terminal here so the wait
+  // is bounded; `awaitSvgReady` then fails the export loudly on the flag
+  it('resolves on a standing user cancel instead of hanging the export', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    display.cancelFetchByUser()
+    expect(display.fetchCanceled).toBe(true)
+    expect(display.svgReady).toBe(true)
+  })
 })

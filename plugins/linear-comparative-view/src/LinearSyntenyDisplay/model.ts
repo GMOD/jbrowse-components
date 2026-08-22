@@ -563,7 +563,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        *
        * `extraTerminal` is `fetchInert` — the states where the fetch autorun
        * deliberately never runs — so a data-only gate can't hang the export
-       * forever on data that is never coming.
+       * forever on data that is never coming. `fetchCanceled` is terminal for
+       * the same reason: durable until Retry, and an export presses nothing.
        */
       get svgReady() {
         return computeSvgReady(
@@ -571,6 +572,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
             error: self.error,
             regionTooLarge: false,
             extraTerminal: this.fetchInert,
+            fetchCanceled: self.fetchCanceled,
           },
           () => this.ready && !this.refetching && this.dataCurrent,
         )

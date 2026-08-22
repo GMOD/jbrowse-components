@@ -145,6 +145,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             // "fetch not started", and an export awaiting `ready` would hang
             // with the dialog's spinner up and nothing said
             extraTerminal: !this.view.displayedRegions.length,
+            // chord has no cancel affordance, so there is no such resting state
+            fetchCanceled: false,
           },
           () => this.ready,
         )

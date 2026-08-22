@@ -279,6 +279,32 @@ test('a minimized host does not run, and expanding wakes it', async () => {
   expect(host.runs).toHaveLength(1)
 })
 
+// The clear-at-start rule: this runner re-fires on tracked reads that never
+// pass through `reload()`'s own clear (un-minimize, an adapter-config edit), so
+// a successful re-run must not leave the previous failure's banner standing
+// over the result it just committed.
+test('a retriggered run clears the previous failure at its start', async () => {
+  const spy = silenceErrorLog()
+  const host = makeHost()
+  await flush()
+  host.runs[0]!.reject(new Error('boom'))
+  await flush()
+  expect(host.error).toBeDefined()
+
+  host.setMinimized(true)
+  await flush()
+  host.setMinimized(false)
+  await flush()
+  expect(host.runs).toHaveLength(2)
+  expect(host.error).toBeUndefined()
+
+  host.runs[1]!.resolve('header')
+  await flush()
+  expect(host.committed).toEqual(['header'])
+  expect(host.error).toBeUndefined()
+  spy.mockRestore()
+})
+
 // `end()` in the run's `finally`, which the sources fetch had never had:
 // `getSources` scans every feature in every region and reports for as long as
 // that takes, so a failure partway left its last status standing and the
