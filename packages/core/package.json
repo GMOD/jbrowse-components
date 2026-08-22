@@ -69,6 +69,7 @@
     "./pluginDefinitions": "./src/pluginDefinitions.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
+    "./rpc/WebWorkerRpcDriver": "./src/rpc/WebWorkerRpcDriver.ts",
     "./rpc/byteBudget": "./src/rpc/byteBudget.ts",
     "./svg/SvgExport": "./src/svg/SvgExport.tsx",
     "./svg/constants": "./src/svg/constants.ts",
@@ -467,6 +468,10 @@
       "./rpc/RpcRegistry": {
         "types": "./esm/rpc/RpcRegistry.d.ts",
         "import": "./esm/rpc/RpcRegistry.js"
+      },
+      "./rpc/WebWorkerRpcDriver": {
+        "types": "./esm/rpc/WebWorkerRpcDriver.d.ts",
+        "import": "./esm/rpc/WebWorkerRpcDriver.js"
       },
       "./rpc/byteBudget": {
         "types": "./esm/rpc/byteBudget.d.ts",
@@ -1221,6 +1226,9 @@
         ],
         "rpc/RpcRegistry": [
           "esm/rpc/RpcRegistry.d.ts"
+        ],
+        "rpc/WebWorkerRpcDriver": [
+          "esm/rpc/WebWorkerRpcDriver.d.ts"
         ],
         "rpc/byteBudget": [
           "esm/rpc/byteBudget.d.ts"

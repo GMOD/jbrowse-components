@@ -25,6 +25,15 @@ const preservedExports = [
   // through the canvas-sequencer-ts CJS interop boundary re-resolve it as a
   // package subpath, so it needs its own exports entry
   '@jbrowse/core/util/offscreenCanvasPonyfill',
+  // The `Core-extendWorker` extension point exists for jbrowse-plugin-apollo,
+  // whose worker-side sequence adapter asks the main thread for sequence over
+  // the handle. Both the handle type and the point's `ExtensionPointRegistry`
+  // declaration live in this module, and in-repo nothing imports it by subpath
+  // — so without an entry here the plugin it is for can neither name
+  // `WorkerHandle` nor load the augmentation that would check its callback. It
+  // declared its own `{ client, worker }` shape instead, which typechecked
+  // against nothing and broke at runtime when the handle flattened.
+  '@jbrowse/core/rpc/WebWorkerRpcDriver',
   // Exists precisely so callers can reach `unzip` WITHOUT the util barrel,
   // which would put bgzf + pako on the startup path of every page (see
   // src/util/unzip.ts). In-repo use comes and goes — the last two importers
