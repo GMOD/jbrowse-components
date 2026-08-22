@@ -153,14 +153,31 @@ itself in a 1266 CSS px window. Nothing counts any of it, and the session that
 produced the 109.7 is nobody's idea of a heavy one. The table and the repro are
 [GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"the MSAA target".
 
+**What was measured is what the descriptor asks for, not what is resident**, and
+on one class of GPU those differ. `beginFrame` attaches the MSAA view with
+`storeOp: 'discard'` and a `resolveTarget`, which is exactly the shape a tiler is
+allowed to keep in tile memory and never commit — so on Apple Silicon (a large
+share of our users) these figures may be near zero, while on the immediate-mode
+AMD/Intel parts they were taken on they are real. **Profile residency at 4x
+against 1x before spending anything on the size**: it is the first item in
+[../ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md),
+and if the target turns out memoryless the rest of this entry is moot on that
+hardware.
+
 **Where those bytes went is the lever.** The eight targets were 2532x1200
 (46.4 MiB), 2532x500 (19.3), three at 2532x200 and three at 2532x180 — one per
 display, each the size of its canvas and none of it the size of its data. And
 almost all of what those displays draw is **axis-aligned quads** — pileup reads,
 coverage bars, wiggle, matrix cells — which 4x multisampling does approximately
-nothing for. The curves that motivated MSAA in the first place (read-connection
-arcs, the bezier overlay, synteny ribbons, hi-C's rotated bins) are a minority of
-displays and, for alignments, a *setting*. So the sample count wants to be a
+nothing for. The curves that motivated MSAA in the first place are a
+minority of displays — and, measured 2026-08-22 at 4x against 1x, the
+read-connection arcs **do not depend on it at all** any more: `arc.slang` has
+measured an analytic conic distance in the fragment since 2026-08-01, and the two
+sample counts differ across the whole arc band by at most one 8-bit level. What
+still depends on it is wiggle and coverage **bar tops** (where the edge is the
+datum, so this is an encoding rather than a silhouette), read arrow tips, and the
+tiled hi-C/LD diamonds, whose conflation at shared cell edges is the one thing
+per-fragment AA cannot fix. So the sample count wants to be a
 property of the display rather than of the build, with 1x meaning no target at
 all rather than a smaller one. The obstacle is that the multisample state is
 baked into the pipeline and pipelines come from a device-wide cache

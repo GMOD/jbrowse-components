@@ -146,8 +146,18 @@ the only thing moved:
 <!-- END GENERATED MEASUREMENT msaa-target-dpr -->
 
 So the projection above stands: a CSS box costs 4x its dpr-1 allocation, and
-eight ordinary tracks — nobody's idea of a heavy session — hold 109.7 MiB of
+eight ordinary tracks — nobody's idea of a heavy session — ask for 109.7 MiB of
 multisample target that nothing in the session counts.
+
+**Asks for, not necessarily holds.** These are the sizes the texture descriptors
+request, taken on immediate-mode parts (Intel UHD 630 / AMD RDNA-1) where a
+render attachment is an allocation. `beginFrame` attaches the MSAA view with
+`storeOp: 'discard'` and a `resolveTarget`, and that is precisely the shape a
+**tiler** may keep in tile memory and never commit — so on Apple Silicon the same
+descriptors may cost nothing. Nobody has profiled it, and it decides whether the
+size is a problem for a large share of our users or only for some of them:
+[../ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md)
+ranks that residency check first, ahead of every mitigation.
 
 One thing bounds it: `getDpr()` caps at `MAX_DPR = 2`, so dpr² cannot exceed 4
 however the hardware reports itself.
