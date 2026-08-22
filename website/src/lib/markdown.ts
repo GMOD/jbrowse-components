@@ -23,7 +23,7 @@ import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
 import remarkRelatedGuides from './remark-related-guides.ts'
 import remarkSpecExample from './remark-spec-example.ts'
-import remarkVideo from './remark-video.ts'
+import remarkVideo, { type VideoRef } from './remark-video.ts'
 import remarkWikiTitle from './remark-wiki-title.ts'
 
 const processor = unified()
@@ -57,11 +57,12 @@ export async function renderMarkdown(
   body: string,
   id = '',
   { feed = false }: { feed?: boolean } = {},
-): Promise<{ html: string; toc: TocItem[] }> {
+): Promise<{ html: string; toc: TocItem[]; videos: VideoRef[] }> {
   await ensureAutogenIndex()
   const file = await processor.process({ value: body, data: { id, feed } })
   return {
     html: String(file),
     toc: (file.data.toc as TocItem[] | undefined) ?? [],
+    videos: (file.data.videos as VideoRef[] | undefined) ?? [],
   }
 }

@@ -11,12 +11,14 @@ import { entrySlug } from '../lib/docs-sidebar.ts'
 import prose from '../styles/prose.module.css'
 
 import type { TocItem } from '../lib/rehype-collect-toc.ts'
+import type { VideoRef } from '../lib/remark-video.ts'
 
 interface Props {
   title: string
   currentSlug: string
   description?: string
   toc?: TocItem[]
+  videos?: VideoRef[]
   rawMarkdown?: string
 }
 
@@ -25,6 +27,7 @@ const {
   currentSlug,
   description,
   toc = [],
+  videos = [],
   rawMarkdown = '',
 } = Astro.props
 
@@ -54,6 +57,23 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
   >
     <Breadcrumbs currentSlug={currentSlug} />
     <h1>{title}</h1>
+    {
+      videos.length > 0 && (
+        <nav class="video-jump" aria-label="Videos on this page">
+          <span class="video-jump-lead">
+            <span class="video-jump-play" aria-hidden="true">
+              ▶
+            </span>
+            Video
+          </span>
+          {videos.map(video => (
+            <a class="video-jump-link" href={`#${video.id}`}>
+              {video.section ? video.section : 'Walkthrough'}
+            </a>
+          ))}
+        </nav>
+      )
+    }
     <slot />
     {
       isTutorial && (
@@ -102,6 +122,44 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
     min-width: 0;
     line-height: 1.7;
     overflow-wrap: break-word;
+  }
+
+  /* Under the h1, where a reader deciding whether to read the page at all can
+     see there is a clip and get to it. A tutorial runs to hundreds of lines and
+     a <video> is a black rectangle in the scrollbar, so the alternative is
+     scrolling for one. Links are labelled by the section each clip sits in
+     rather than by its caption, which is a sentence. */
+  .video-jump {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.6rem;
+    margin: -0.75rem 0 1.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--card-radius);
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+    font-size: 0.9rem;
+  }
+  .video-jump-lead {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: var(--color-accent-dark);
+  }
+  .video-jump-play {
+    font-size: 0.75em;
+  }
+  .video-jump-link {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .video-jump-link:hover,
+  .video-jump-link:focus-visible {
+    color: var(--color-accent-dark);
   }
 
   .tutorial-feedback {
@@ -202,6 +260,10 @@ const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
       padding: 1rem;
       margin: 1.5rem 0;
       background: var(--color-surface);
+      /* the jump bar lands on a video figure by id, and the site nav is sticky
+         over the top 60px — measured, since a figure landing under it reads as
+         a clip with its own top cut off */
+      scroll-margin-top: 5rem;
     }
     .docs-content :global(figcaption) {
       text-align: center;

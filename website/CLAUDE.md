@@ -79,6 +79,12 @@ the tour was filmed in.
   published posters by `videoFrames.test.ts`. **So a re-frame needs
   `pnpm autogen`**, or the page holds a box the wrong shape and the browser
   letterboxes the clip inside it.
+- **A clip's figure carries an id built from its SPEC NAME**
+  (`video-pangenome-tier_to_fine`), which DocsLayout's jump bar under the h1
+  links to. So renaming a spec silently breaks any inbound link to that anchor,
+  and nothing checks it — `check-links` only sees anchors a doc itself writes.
+  The bar labels each link with the h2/h3 above the clip, one entry per section,
+  which is why a page running four clips under one heading gets one link.
 - **A `<Video>` tag is one line, alone in its block, with a blank line under
   it.** A tag that wraps is not an html block, because its first line is not a
   whole tag: markdown reads it as a paragraph instead and the figure lands
