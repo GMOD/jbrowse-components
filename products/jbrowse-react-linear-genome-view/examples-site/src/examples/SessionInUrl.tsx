@@ -92,15 +92,25 @@ export default function SessionInUrl() {
       unmounted: false,
       engine: undefined as ViewModel | undefined,
     }
+    // the rejection handler is part of `open` rather than left to each caller:
+    // both call sites below discard the promise, and a build that fails with no
+    // handler on it is an unhandled rejection with nothing on screen to explain
+    // it
     const open = (session?: SessionSnapshot) =>
-      build(session).then(engine => {
-        if (mount.unmounted) {
-          destroyViewState(engine)
-        } else {
-          mount.engine = engine
-          setState(engine)
-        }
-      })
+      build(session).then(
+        engine => {
+          if (mount.unmounted) {
+            destroyViewState(engine)
+          } else {
+            mount.engine = engine
+            setState(engine)
+          }
+        },
+        (e: unknown) => {
+          console.error(e)
+          setStatus(`could not open the view: ${e}`)
+        },
+      )
     const param = readSessionParam()
     if (param) {
       decodeSession(param)

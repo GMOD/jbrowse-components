@@ -34,7 +34,10 @@ export default function CreateAppSynteny() {
     <div
       ref={el => {
         if (el) {
-          const controller = createApp(el, {
+          // the catch is attached HERE, not in the cleanup below: a `void
+          // pending.then(...)` there would leave a build failure unhandled on a
+          // page that never unmounts, and a ref callback has nowhere to throw
+          const pending = createApp(el, {
             assemblies,
             tracks,
             views: [
@@ -46,9 +49,18 @@ export default function CreateAppSynteny() {
                 },
               },
             ],
+          }).catch((e: unknown) => {
+            console.error(e)
+            return undefined
           })
           return () => {
-            controller.destroy()
+            // `createApp` resolves the view and display state models its `views`
+            // name before it mounts anything, so the controller can still be on
+            // its way when this fires — disposing on arrival covers both the
+            // ordinary unmount and the one that beat the mount to it
+            void pending.then(controller => {
+              controller?.destroy()
+            })
           }
         }
       }}
