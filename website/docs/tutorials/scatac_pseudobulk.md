@@ -70,6 +70,8 @@ SnapATAC2's `export_coverage` splits cells by a metadata column and writes one
 normalized BigWig per group in a single call, which covers the pseudobulk step
 for this dataset:
 
+<!-- from: scripts/build_scatac_pseudobulk.sh -->
+
 ```python
 import snapatac2 as snap
 
@@ -79,10 +81,12 @@ snap.ex.export_coverage(
     groupby="cell_type",     # column in adata.obs to split on
     bin_size=25,             # bp per bin
     normalization="RPKM",    # comparable across groups
-    blacklist="hg38-blacklist.bed",  # optional ENCODE blacklist
-    out_dir="bw/",
+    out_dir="bw",
     suffix=".bw",
     n_jobs=2,                # each worker holds a genome-wide coverage vector
+    # blacklist= takes an ENCODE blacklist BED and drops those intervals from
+    # every group. The build script does not pass it, so the figures below are
+    # unmasked coverage.
 )
 # writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
