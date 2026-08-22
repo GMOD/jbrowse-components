@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
   getVariantConsequence,
+  getVariantConsequences,
   getVariantImpact,
   getVariantImpactColor,
 } from './variantConsequence.ts'
@@ -61,6 +62,33 @@ describe('variant consequence helpers', () => {
     const f = feat({ AF: [0.5] })
     expect(getVariantConsequence(f)).toBe('')
     expect(getVariantImpact(f)).toBe('')
+  })
+
+  it('lists every term across transcripts, not just the most severe', () => {
+    const f = vep([
+      'A|missense_variant|MODERATE|GENE1|ENST1',
+      'A|stop_gained&NMD_transcript_variant|HIGH|GENE1|ENST2',
+      'A|intron_variant|MODIFIER|GENE1|ENST3',
+    ])
+    expect(getVariantConsequence(f)).toBe('stop_gained')
+    expect(getVariantConsequences(f)).toEqual([
+      'missense_variant',
+      'stop_gained',
+      'NMD_transcript_variant',
+      'intron_variant',
+    ])
+  })
+
+  it('dedupes a term annotated on several transcripts', () => {
+    const f = vep([
+      'A|missense_variant|MODERATE|GENE1|ENST1',
+      'A|missense_variant|MODERATE|GENE1|ENST2',
+    ])
+    expect(getVariantConsequences(f)).toEqual(['missense_variant'])
+  })
+
+  it('has no terms for an unannotated variant', () => {
+    expect(getVariantConsequences(feat({ AF: [0.5] }))).toEqual([])
   })
 
   it('maps impact tiers to distinct colors', () => {

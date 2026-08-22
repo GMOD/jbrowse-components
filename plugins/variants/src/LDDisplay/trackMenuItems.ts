@@ -9,6 +9,7 @@ import ClearAllIcon from '@mui/icons-material/ClearAll'
 // lazy: this builder is reached from a state model, so a dialog named here is
 // in every host's first paint — see ../shared/lazyDialogs.ts
 import { JexlFilterDialog, LDFilterDialog } from '../shared/lazyDialogs.ts'
+import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 
 import type { LDMethod, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDFilterModel } from '../shared/components/LDFilterDialog.tsx'
@@ -205,7 +206,11 @@ function ldFilterMenuItems(self: LDMenuSelf): MenuItem[] {
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 JexlFilterDialog,
-                { model: self, handleClose },
+                {
+                  model: self,
+                  handleClose,
+                  examples: VARIANT_FILTER_EXAMPLES,
+                },
               ])
             },
           },

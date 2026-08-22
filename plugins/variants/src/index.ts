@@ -19,15 +19,23 @@ import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { calculateAlleleCounts } from './shared/alleleCounts.ts'
 import { getAlleleLength } from './shared/alleleLength.ts'
 import {
+  getAltAlleleCount,
+  getGenotypeClassCount,
+} from './shared/genotypeClassCounts.ts'
+import {
   calculateMinorAlleleFrequency,
   calculateMissingnessFrequency,
 } from './shared/minorAlleleFrequencyUtils.ts'
 import {
   getVariantConsequence,
+  getVariantConsequences,
   getVariantImpact,
   getVariantImpactColor,
 } from './shared/variantConsequence.ts'
-import { getVariantSvTypeColor } from './shared/variantSvType.ts'
+import {
+  getVariantSvType,
+  getVariantSvTypeColor,
+} from './shared/variantSvType.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -92,8 +100,10 @@ export default class VariantsPlugin extends Plugin {
     // one-click "Color by consequence impact" menu item.
     /** #jexlFunction Variant functions | impact(feature) | HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ */
     jexl.addFunction('impact', getVariantImpact)
-    /** #jexlFunction Variant functions | consequence(feature) | e.g. missense_variant, from the same annotation */
+    /** #jexlFunction Variant functions | consequence(feature) | e.g. missense_variant, from the same annotation — the MOST SEVERE one alone */
     jexl.addFunction('consequence', getVariantConsequence)
+    /** #jexlFunction Variant functions | 'missense_variant' in consequences(feature) | every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant") */
+    jexl.addFunction('consequences', getVariantConsequences)
     /** #jexlFunction Variant functions | impactColor(feature) | the color the "Color by consequence impact" menu item uses */
     jexl.addFunction('impactColor', getVariantImpactColor)
     // `svTypeColor` powers the one-click "Color by SV type" menu item on the
@@ -105,6 +115,16 @@ export default class VariantsPlugin extends Plugin {
     // insertions, which consume no reference and so have a span of 1.
     /** #jexlFunction Variant functions | alleleLength(feature) >= 50 | longest allele in bp, so an insertion is not measured by its reference span */
     jexl.addFunction('alleleLength', getAlleleLength)
+    // The three below round out the bcftools filtering vocabulary a VCF track
+    // is expected to speak (#939): its INFO/QUAL/FILTER expressions already
+    // transliterate through plain member access, and these are the derived
+    // quantities that have no field to read.
+    /** #jexlFunction Variant functions | svType(feature) == 'DEL' | SV class, read off a symbolic ALT before falling back to INFO/SVTYPE (bcftools INFO/SVTYPE) */
+    jexl.addFunction('svType', getVariantSvType)
+    /** #jexlFunction Variant functions | nAlt(feature) == 1 | ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT) */
+    jexl.addFunction('nAlt', getAltAlleleCount)
+    /** #jexlFunction Variant functions | genotypeCount(feature,'het') > 0 | samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het")) */
+    jexl.addFunction('genotypeCount', getGenotypeClassCount)
   }
 }
 

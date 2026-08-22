@@ -38,6 +38,48 @@ function jexlError(text: string, jexl: JexlInstance) {
   }
 }
 
+export interface JexlFilterExample {
+  code: string
+  description: string
+}
+
+/**
+ * What a display filtering plain annotation features offers as a starting
+ * point. A display whose features are a richer record — a VCF, say — passes its
+ * own list instead: the examples are the only place the dialog says what is
+ * readable off a feature, so a variant track showing `type=='gene'` is teaching
+ * the wrong vocabulary.
+ */
+const FEATURE_FILTER_EXAMPLES: JexlFilterExample[] = [
+  {
+    code: "jexl:get(feature,'name')=='BRCA1'",
+    description: 'show only features where the name attribute is BRCA1',
+  },
+  {
+    code: "jexl:startsWith(get(feature,'name'),'PREFIX')",
+    description:
+      "show only features where the string 'PREFIX' is the prefix of the feature name. endsWith also works",
+  },
+  {
+    code: "jexl:includes(get(feature,'name'),'PREFIX')",
+    description:
+      "show only features where the string 'PREFIX' appears in the feature name",
+  },
+  {
+    code: "jexl:get(feature,'type')=='gene'",
+    description:
+      'show only gene type features in a GFF that has many other feature types',
+  },
+  {
+    code: "jexl:get(feature,'score') > 400",
+    description: 'show only features that have a score greater than 400',
+  },
+  {
+    code: "jexl:get(feature,'end') - get(feature,'start') < 1000000",
+    description: 'show only features with length less than 1Mbp',
+  },
+]
+
 /**
  * Editor for a list of jexl feature filters (one per line), for any display
  * implementing the two-tier {@link JexlFilterModel} contract.
@@ -53,9 +95,11 @@ function jexlError(text: string, jexl: JexlInstance) {
 const JexlFilterDialog = observer(function JexlFilterDialog({
   model,
   handleClose,
+  examples = FEATURE_FILTER_EXAMPLES,
 }: {
   model: JexlFilterModel
   handleClose: () => void
+  examples?: JexlFilterExample[]
 }) {
   const jexl = getEnv<{ pluginManager: { jexl: JexlInstance } }>(model)
     .pluginManager.jexl
@@ -83,33 +127,11 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
         Add filters, in jexl format, one per line, starting with the string
         jexl:. Examples:{' '}
         <ul>
-          <li>
-            <code>jexl:get(feature,'name')=='BRCA1'</code> - show only features
-            where the name attribute is BRCA1
-          </li>
-          <li>
-            <code>jexl:startsWith(get(feature,'name'),'PREFIX')</code> - show
-            only features where the string 'PREFIX' is the prefix of the feature
-            name. endsWith also works
-          </li>
-          <li>
-            <code>jexl:includes(get(feature,'name'),'PREFIX')</code> - show only
-            features where the string 'PREFIX' appears in the feature name
-          </li>
-          <li>
-            <code>jexl:get(feature,'type')=='gene'</code> - show only gene type
-            features in a GFF that has many other feature types
-          </li>
-          <li>
-            <code>jexl:get(feature,'score') &gt; 400</code> - show only features
-            that have a score greater than 400
-          </li>
-          <li>
-            <code>
-              jexl:get(feature,'end') - get(feature,'start') &lt; 1000000
-            </code>{' '}
-            - show only features with length less than 1Mbp
-          </li>
+          {examples.map(({ code, description }) => (
+            <li key={code}>
+              <code>{code}</code> - {description}
+            </li>
+          ))}
         </ul>
         <p>
           Please see the{' '}

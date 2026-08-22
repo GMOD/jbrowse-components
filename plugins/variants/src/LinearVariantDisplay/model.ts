@@ -1,11 +1,14 @@
+import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
+import { JexlFilterDialog } from '../shared/lazyDialogs.ts'
 import {
   CONSEQUENCE_IMPACT_JEXL,
   IMPACT_TIERS,
 } from '../shared/variantConsequence.ts'
+import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import {
   PREDEFINED_SV_TYPES,
   SV_TYPE_COLOR_JEXL,
@@ -211,6 +214,25 @@ export default function stateModelFactory(
             },
           },
         ]
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      // Same dialog as the base display's, seeded with the VCF vocabulary
+      // instead of the GFF one — see VARIANT_FILTER_EXAMPLES. Overridden rather
+      // than parameterized on the base because the two multi-sample displays
+      // and LD want the same list and none of them descends from it.
+      openFilterDialog() {
+        getSession(self).queueDialog(handleClose => [
+          JexlFilterDialog,
+          {
+            model: self,
+            handleClose,
+            examples: VARIANT_FILTER_EXAMPLES,
+          },
+        ])
       },
     }))
 }

@@ -29,6 +29,7 @@ import {
   SetColorDialog,
 } from './lazyDialogs.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
+import { VARIANT_FILTER_EXAMPLES } from './variantFilterExamples.ts'
 import { SV_TYPE_COLOR } from './variantSvType.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
@@ -257,6 +258,7 @@ export function variantTrackMenuItems(
           {
             model: self,
             handleClose,
+            examples: VARIANT_FILTER_EXAMPLES,
           },
         ])
       },

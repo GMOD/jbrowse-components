@@ -78,10 +78,14 @@ expression:
 jexl: maf(feature) // minor allele frequency over the called alleles
 jexl: missingness(feature) // fraction of samples with no call
 jexl: impact(feature) // HIGH, MODERATE, LOW or MODIFIER, from SnpEff ANN / VEP CSQ
-jexl: consequence(feature) // e.g. missense_variant, from the same annotation
+jexl: consequence(feature) // e.g. missense_variant, from the same annotation — the MOST SEVERE one alone
+jexl: 'missense_variant' in consequences(feature) // every consequence term on the record, across all transcripts (bcftools INFO/CSQ ~ "missense_variant")
 jexl: impactColor(feature) // the color the "Color by consequence impact" menu item uses
 jexl: svTypeColor(feature) // the color "Color by SV type" uses
 jexl: alleleLength(feature) >= 50 // longest allele in bp, so an insertion is not measured by its reference span
+jexl: svType(feature) == 'DEL' // SV class, read off a symbolic ALT before falling back to INFO/SVTYPE (bcftools INFO/SVTYPE)
+jexl: nAlt(feature) == 1 // ALT alleles the record declares, i.e. biallelic-only (bcftools N_ALT)
+jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het"))
 ```
 
 <!-- JEXL_CATEGORY variant-functions END -->

@@ -108,6 +108,33 @@ export function getVariantConsequence(feature: Feature) {
 }
 
 /**
+ * Every SO consequence term the variant carries — across all transcripts, and
+ * `&`-expanded — deduped, in file order. Same field-1 caveat as
+ * {@link getVariantConsequence}.
+ *
+ * This is what a "is it missense anywhere" filter has to ask, and neither
+ * spelling that suggests itself answers it. `consequence(feature)` reports the
+ * *most severe* annotation alone, so a variant that is missense on one
+ * transcript and stop_gained on another reads back `stop_gained`; and
+ * `includes(feature.INFO.CSQ, 'missense_variant')` reaches
+ * `Array.prototype.includes`, which compares whole pipe-delimited entries and
+ * so is false for every real record. Both fail by quietly hiding features,
+ * which is the failure a filter cannot show you.
+ */
+export function getVariantConsequences(feature: Feature) {
+  const terms: string[] = []
+  for (const entry of annotationStrings(feature)) {
+    for (const term of entry.split('|')[1]?.split('&') ?? []) {
+      const trimmed = term.trim()
+      if (trimmed && !terms.includes(trimmed)) {
+        terms.push(trimmed)
+      }
+    }
+  }
+  return terms
+}
+
+/**
  * A CSS color for the variant's most severe impact tier, for use as a
  * per-feature `color` jexl.
  */
