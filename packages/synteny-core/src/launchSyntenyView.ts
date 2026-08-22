@@ -1,4 +1,4 @@
-import { addOrReplaceView } from '@jbrowse/core/util'
+import { launchOrReplaceView } from '@jbrowse/core/util'
 
 import type {
   AbstractSessionModel,
@@ -13,7 +13,7 @@ import type {
 // `id` is the spec's optional view-id pin, passed top-level so MST's optional
 // identifier honors it (undefined falls back to an auto-generated id). It must
 // not ride inside `init`, where the view's init autorun would ignore it.
-export function launchSyntenyView<T extends { views: unknown[] }>({
+export async function launchSyntenyView<T extends { views: unknown[] }>({
   session,
   viewType,
   init,
@@ -33,7 +33,7 @@ export function launchSyntenyView<T extends { views: unknown[] }>({
   if (init.views.length < 2) {
     throw new Error(`${viewType} requires at least 2 views to be specified`)
   }
-  return addOrReplaceView({
+  return launchOrReplaceView({
     session,
     typeName: viewType,
     initialState: { id, init },

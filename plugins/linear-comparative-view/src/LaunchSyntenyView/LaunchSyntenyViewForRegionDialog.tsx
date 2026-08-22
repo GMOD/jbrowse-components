@@ -248,7 +248,7 @@ export default function LaunchSyntenyViewForRegionDialog({
       }
       handleClose={handleClose}
       onLaunch={({ windowSize, anchorIndex, mates }, replacing) => {
-        launchSyntenyViewForPanels({
+        void launchSyntenyViewForPanels({
           // the rows themselves: the worker resolved each panel against this
           // region, and reordering or unchecking moves a panel rather than
           // moving where it opens

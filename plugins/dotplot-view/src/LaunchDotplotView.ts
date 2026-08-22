@@ -34,12 +34,12 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchDotplotView(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-DotplotView | async | Programmatically launch a dotplot view */
-  pluginManager.addToExtensionPoint('LaunchView-DotplotView', args => {
+  pluginManager.addToExtensionPoint('LaunchView-DotplotView', async args => {
     // views/tracks and the remaining init fields (colorBy, autoDiagonalize,
     // highlight, ...) forward verbatim; each is guarded on undefined by the
     // init autorun.
     const { session, id, views = [], tracks = [], ...rest } = args
-    launchSyntenyView({
+    await launchSyntenyView({
       session,
       id,
       viewType: 'DotplotView',
