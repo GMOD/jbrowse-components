@@ -208,7 +208,7 @@ PY
 # lanes read their exon structure from the GFF3s sliced above).
 echo
 echo "== ortholog table (gene-name join across the CAT annotations)"
-tabix https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz \
+tabix -f https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz \
   "chr1:$((SLICE_START - GENE_FLANK))-$((SLICE_END + GENE_FLANK))" \
   | awk -F'\t' -v OFS='\t' '$3=="gene" {
       match($9, /ID=[^;]*/)
