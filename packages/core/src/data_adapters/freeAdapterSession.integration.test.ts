@@ -131,3 +131,44 @@ test('a sub-adapter shared by two tracks outlives the first close', async () => 
     (await getAdapter(pluginManager, 'trackB', shared)).dataAdapter,
   ).not.toBe(sub.dataAdapter)
 })
+
+/**
+ * The teardown ordering ADR-069 prescribes, end to end: `detach()` destroys the
+ * RpcManager, and the tree is destroyed a task later — which is what runs every
+ * track's disposer, and therefore what fires every adapter free. So a free after
+ * `destroy()` is the ordinary case in a session switch rather than a misuse, and
+ * neither it nor a call arriving in the same gap may rebuild what the destroy
+ * tore down. ADR-086.
+ */
+test('a free after the manager is destroyed boots nothing', async () => {
+  const { pluginManager } = setup()
+  let workersMade = 0
+  const rpcManager = new RpcManager(
+    pluginManager,
+    RpcManager.configSchema.create({ defaultDriver: 'WebWorkerRpcDriver' }),
+    {
+      makeWorkerInstance: () => {
+        workersMade++
+        throw new Error('the pool must not boot a worker here')
+      },
+    },
+  )
+
+  retainAdapterSession(rpcManager, 'adapterA')
+  rpcManager.destroy()
+
+  // the disposer's own `void releaseAdapterSession(...)`: it must not reject
+  // into the teardown path either
+  await expect(
+    releaseAdapterSession(rpcManager, 'adapterA'),
+  ).resolves.toBeUndefined()
+  expect(workersMade).toBe(0)
+
+  // the other half of the gap: a fetch autorun that has not been disposed yet
+  // fires between `detach()` and the deferred `destroy(tree)`. It has to report,
+  // rather than build the second pool the destroy would never reach.
+  await expect(
+    rpcManager.call('adapterA', 'CoreGetRegions', { adapterConfig: {} }),
+  ).rejects.toThrow(/destroyed/)
+  expect(workersMade).toBe(0)
+})

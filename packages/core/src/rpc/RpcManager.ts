@@ -10,17 +10,12 @@ import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type BaseRpcDriver from './BaseRpcDriver.ts'
 import type { RpcCallArgs, RpcCallReturn } from './RpcRegistry.ts'
 
-export type RpcDriverFactory = (
-  config: AnyConfigurationModel,
-  pluginManager: PluginManager,
-) => BaseRpcDriver
-
 export interface RpcManagerOptions {
   // factory that creates a web worker; required to use the WebWorkerRpcDriver
   makeWorkerInstance?: () => Worker
-  // host-application default driver, used when neither the call nor the config
-  // names one. web/desktop pass 'WebWorkerRpcDriver'; embedded/headless leave
-  // it as the main thread.
+  // host-application default driver, used when the config names none. web and
+  // desktop pass 'WebWorkerRpcDriver'; embedded/headless leave it as the main
+  // thread.
   defaultDriverName?: string
 }
 
@@ -30,8 +25,10 @@ export default class RpcManager {
   pluginManager: PluginManager
   mainConfiguration: AnyConfigurationModel
   defaultDriverName: string
-  driverObjects = new Map<string, BaseRpcDriver>()
-  driverFactories = new Map<string, RpcDriverFactory>()
+
+  private makeWorkerInstance?: () => Worker
+  private driver?: BaseRpcDriver
+  private destroyed = false
 
   constructor(
     pluginManager: PluginManager,
@@ -44,58 +41,16 @@ export default class RpcManager {
     this.pluginManager = pluginManager
     this.mainConfiguration = mainConfiguration
     this.defaultDriverName = defaultDriverName
-
-    // built-in driver factories close over the host's makeWorkerInstance; every
-    // driver reads its config (just workerCount) from the single rpc config
-    this.registerDriverFactory(
-      'MainThreadRpcDriver',
-      config => new MainThreadRpcDriver({ config }),
-    )
-    this.registerDriverFactory('WebWorkerRpcDriver', (config, pm) => {
-      if (!makeWorkerInstance) {
-        throw new Error(
-          'WebWorkerRpcDriver requested but no makeWorkerInstance was provided',
-        )
-      }
-      return new WebWorkerRpcDriver(
-        { config, makeWorkerInstance },
-        {
-          plugins: pm.runtimePluginDefinitions,
-          windowHref: typeof window !== 'undefined' ? window.location.href : '',
-          // workers format their own strings (a jexl `mouseover` slot runs
-          // against the full feature worker-side), so they need the display
-          // preference too. Read at driver construction — workers boot lazily
-          // and are not rebooted on a preference change, which is why the
-          // preference asks for a reload.
-          numberGrouping: getNumberGrouping(),
-        },
-      )
-    })
-  }
-
-  registerDriverFactory(name: string, factory: RpcDriverFactory) {
-    this.driverFactories.set(name, factory)
-  }
-
-  getDriver(backendName: string) {
-    const existingDriver = this.driverObjects.get(backendName)
-    if (existingDriver) {
-      return existingDriver
-    }
-
-    const factory = this.driverFactories.get(backendName)
-    if (!factory) {
-      throw new Error(`RPC driver "${backendName}" is not registered`)
-    }
-
-    const newDriver = factory(this.mainConfiguration, this.pluginManager)
-    this.driverObjects.set(backendName, newDriver)
-    return newDriver
+    this.makeWorkerInstance = makeWorkerInstance
   }
 
   /**
    * The driver every call in this session runs on: the config's `defaultDriver`
    * if set, otherwise the host application's default.
+   *
+   * Built once and kept. The config read is a tracked MobX read and `call`
+   * reaches it synchronously, so per-call it also made the RPC configuration a
+   * dependency of every autorun that fetches.
    *
    * There is no per-call, per-track or per-display override. One existed, and
    * one call site in the app ever passed it — a tag-value scan in the alignments
@@ -104,12 +59,47 @@ export default class RpcManager {
    * call somewhere else is only meaningful with a backend that differs in what it
    * can do, which is the tabled server-side-driver idea; add it back with that,
    * not before.
+   *
+   * There is no registry of driver factories either: naming a driver means
+   * naming `BaseRpcDriver`, which `@jbrowse/core` has no export path for, so
+   * the two built-ins below are the whole set. ADR-086.
    */
-  private getDriverForCall() {
-    return this.getDriver(
+  getDriver() {
+    if (this.destroyed) {
+      throw new Error('RpcManager was destroyed')
+    }
+    return (this.driver ??= this.makeDriver(
       readConfObject(this.mainConfiguration, 'defaultDriver') ||
         this.defaultDriverName,
-    )
+    ))
+  }
+
+  private makeDriver(backendName: string): BaseRpcDriver {
+    if (backendName === 'MainThreadRpcDriver') {
+      return new MainThreadRpcDriver({ config: this.mainConfiguration })
+    } else if (backendName === 'WebWorkerRpcDriver') {
+      const { makeWorkerInstance } = this
+      if (!makeWorkerInstance) {
+        throw new Error(
+          'WebWorkerRpcDriver requested but no makeWorkerInstance was provided',
+        )
+      }
+      return new WebWorkerRpcDriver(
+        { config: this.mainConfiguration, makeWorkerInstance },
+        {
+          plugins: this.pluginManager.runtimePluginDefinitions,
+          windowHref: typeof window === 'undefined' ? '' : window.location.href,
+          // workers format their own strings (a jexl `mouseover` slot runs
+          // against the full feature worker-side), so they need the display
+          // preference too. Read at driver construction — workers boot lazily
+          // and are not rebooted on a preference change, which is why the
+          // preference asks for a reload.
+          numberGrouping: getNumberGrouping(),
+        },
+      )
+    } else {
+      throw new Error(`RPC driver "${backendName}" is not registered`)
+    }
   }
 
   /**
@@ -139,18 +129,30 @@ export default class RpcManager {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
-    const a = { ...args, sessionId } as Record<string, unknown> & {
-      sessionId: string
-    }
-    const driverForCall = this.getDriverForCall()
-    try {
-      return (await this.withAuthRetry(() =>
-        driverForCall.call(this.pluginManager, sessionId, functionName, a),
-      )) as RpcCallReturn<M>
-    } finally {
-      if (functionName === 'CoreFreeResources') {
-        this.freeSessionOnAllDrivers(sessionId)
-      }
+    const driverForCall = this.getDriver()
+    return (await this.withAuthRetry(() =>
+      driverForCall.call(this.pluginManager, sessionId, functionName, {
+        ...args,
+        sessionId,
+      }),
+    )) as RpcCallReturn<M>
+  }
+
+  /**
+   * Drop everything held for a session — the worker-side adapter cache, and the
+   * driver's own bookkeeping for it. Reached from `releaseAdapterSession` when
+   * the last track model holding an `rpcSessionId` goes away.
+   *
+   * A lifecycle operation rather than `call(sessionId, 'CoreFreeResources')`,
+   * so that it neither boots a transport to free a session that never used one
+   * nor outlives {@link destroy}; see {@link BaseRpcDriver.freeSession}.
+   *
+   * Silent on a destroyed manager, because the destroy already freed strictly
+   * more than this would: it terminated the workers the cache lived in.
+   */
+  async freeSession(sessionId: string) {
+    if (!this.destroyed) {
+      await this.getDriver().freeSession(this.pluginManager, sessionId)
     }
   }
 
@@ -206,24 +208,17 @@ export default class RpcManager {
   }
 
   /**
-   * Drop a session's sticky worker assignment on every driver so the
-   * workerAssignments map doesn't grow unboundedly as sessions are freed.
-   */
-  private freeSessionOnAllDrivers(sessionId: string) {
-    for (const driver of this.driverObjects.values()) {
-      driver.freeSession(sessionId)
-    }
-  }
-
-  /**
-   * Terminate every driver's worker threads. Call when discarding the owning
-   * root model (e.g. switching sessions or reloading after a plugin change) so
+   * Terminate the driver's worker threads. Call when discarding the owning root
+   * model (e.g. switching sessions or reloading after a plugin change) so
    * orphaned workers don't accumulate across a desktop run.
+   *
+   * **Terminal.** ADR-069 destroys the tree a task after `detach()`, so calls
+   * still arrive in that gap; a later one throws rather than quietly building a
+   * second driver and a second pool that nothing will ever destroy. ADR-086.
    */
   destroy() {
-    for (const driver of this.driverObjects.values()) {
-      driver.destroy()
-    }
-    this.driverObjects.clear()
+    this.destroyed = true
+    this.driver?.destroy()
+    this.driver = undefined
   }
 }

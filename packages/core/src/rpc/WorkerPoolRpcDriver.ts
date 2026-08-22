@@ -1,7 +1,7 @@
 import { readConfObject } from '../configuration/index.ts'
 import { clamp } from '../util/index.ts'
 import { registerStopTokenBroadcaster } from '../util/stopToken.ts'
-import BaseRpcDriver from './BaseRpcDriver.ts'
+import BaseRpcDriver, { CORE_FREE_RESOURCES } from './BaseRpcDriver.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
@@ -95,6 +95,20 @@ class LazyWorker {
       })
       .catch(() => {})
   }
+
+  /**
+   * Drop a session's cached adapters on this slot's worker — and, like
+   * {@link notifyStopToken}, never boot one to do it. A slot that never booted
+   * has no cache to free, and booting one there costs a whole worker bundle and
+   * every runtime plugin to say so.
+   *
+   * Awaited rather than fire-and-forget, because a caller can be waiting to
+   * know the adapter is gone; a slot still booting frees once it lands.
+   */
+  async freeSession(sessionId: string) {
+    const worker = await this.workerP?.catch(() => undefined)
+    await worker?.call(CORE_FREE_RESOURCES, { sessionId })
+  }
 }
 
 /**
@@ -125,27 +139,38 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
   // token is commonly in flight on several calls at once, and a worker holding
   // nothing under that id ignores the frame.
   //
-  // Registered with the POOL, not in the constructor, because `destroy` drops
-  // the pool and nothing forbids using the driver again — `getWorkerPool` just
-  // builds a fresh one, which is a supported path with a test on it. A
-  // constructor registration is unregistered once and never renewed, so the
-  // second pool ran with no way to hear a stop at all: every cancelled fetch
-  // downloaded and parsed to completion, silently, on the driver every worker
-  // deployment uses. It also keeps a driver that never boots a worker out of the
-  // module-global broadcaster set.
+  // Registered with the POOL, not in the constructor, so that a driver which
+  // never boots a worker stays out of the module-global broadcaster set — and
+  // registered only once the pool exists to receive the broadcast, since a
+  // `createWorkerPool` that threw after registering left an entry no `destroy`
+  // could ever reach.
   private unregisterBroadcaster: () => void = () => {}
+
+  // `destroy` is terminal: `getWorkerPool` refuses rather than letting its `??=`
+  // build a second pool for a driver whose teardown already ran. ADR-086.
+  private destroyed = false
 
   abstract makeWorker(): Promise<WorkerHandle>
 
-  // reached via CoreFreeResources when the last track holding an rpcSessionId
-  // closes, so assignments no longer accumulate for the life of the driver
-  override freeSession(sessionId: string) {
+  /**
+   * Free the session on the worker it was assigned to, and drop the assignment
+   * so it doesn't accumulate for the life of the driver.
+   *
+   * A session with no assignment never dispatched anything, so there is nothing
+   * cached anywhere to free — and no pool to build in order to find that out.
+   */
+  override async freeSession(_pluginManager: PluginManager, sessionId: string) {
+    const workerNumber = this.workerAssignments.get(sessionId)
     this.workerAssignments.delete(sessionId)
+    if (workerNumber !== undefined) {
+      await this.workerPool?.[workerNumber]?.freeSession(sessionId)
+    }
   }
 
   // terminate every pooled worker and reset assignment bookkeeping; call when
   // discarding the driver so its worker threads don't outlive it
   override destroy() {
+    this.destroyed = true
     this.unregisterBroadcaster()
     for (const worker of this.workerPool ?? []) {
       worker.destroy()
@@ -156,21 +181,24 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
   }
 
   private createWorkerPool(): LazyWorker[] {
-    this.unregisterBroadcaster = registerStopTokenBroadcaster(id => {
-      for (const worker of this.workerPool ?? []) {
-        worker.notifyStopToken(id)
-      }
-    })
-
     // workerCount 0 (the config default) means "decide from hardware"
     const workerCount =
       readConfObject(this.config, 'workerCount') ||
       clamp(detectHardwareConcurrency() - 1, 1, 5)
 
-    return Array.from({ length: workerCount }, () => new LazyWorker(this))
+    const pool = Array.from({ length: workerCount }, () => new LazyWorker(this))
+    this.unregisterBroadcaster = registerStopTokenBroadcaster(id => {
+      for (const worker of pool) {
+        worker.notifyStopToken(id)
+      }
+    })
+    return pool
   }
 
   private getWorkerPool() {
+    if (this.destroyed) {
+      throw new Error(`${this.name} was destroyed`)
+    }
     return (this.workerPool ??= this.createWorkerPool())
   }
 

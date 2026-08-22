@@ -4,19 +4,12 @@ import {
 } from './adapterSessionRefcount.ts'
 
 function makeRpcManager() {
-  const calls: { sessionId: string; args: Record<string, unknown> }[] = []
+  const calls: string[] = []
   const rpcManager = {
     calls,
     // eslint-disable-next-line @typescript-eslint/require-await
-    async call(
-      sessionId: string,
-      functionName: string,
-      args: Record<string, unknown>,
-    ) {
-      if (functionName === 'CoreFreeResources') {
-        calls.push({ sessionId, args })
-      }
-      return undefined
+    async freeSession(sessionId: string) {
+      calls.push(sessionId)
     },
   }
   return rpcManager
@@ -26,9 +19,7 @@ test('one track: retained then released frees once', async () => {
   const rpc = makeRpcManager()
   retainAdapterSession(rpc, 'adapterA')
   await releaseAdapterSession(rpc, 'adapterA')
-  expect(rpc.calls).toEqual([
-    { sessionId: 'adapterA', args: { sessionId: 'adapterA' } },
-  ])
+  expect(rpc.calls).toEqual(['adapterA'])
 })
 
 // the same track shown in two linear genome views is two track models sharing
@@ -60,7 +51,7 @@ test('distinct adapters are counted independently', async () => {
   retainAdapterSession(rpc, 'adapterA')
   retainAdapterSession(rpc, 'adapterB')
   await releaseAdapterSession(rpc, 'adapterA')
-  expect(rpc.calls.map(c => c.sessionId)).toEqual(['adapterA'])
+  expect(rpc.calls).toEqual(['adapterA'])
 })
 
 test('an unretained release frees rather than going negative', async () => {
@@ -84,16 +75,9 @@ test('counts do not leak between sessions', async () => {
   expect(one.calls).toEqual([])
 })
 
-test('the free carries only the session it is freeing', async () => {
-  const rpc = makeRpcManager()
-  retainAdapterSession(rpc, 'adapterA')
-  await releaseAdapterSession(rpc, 'adapterA')
-  expect(rpc.calls[0]!.args).toEqual({ sessionId: 'adapterA' })
-})
-
 test('a failing free does not reject into the teardown path', async () => {
   const rpc = {
-    async call() {
+    async freeSession() {
       throw new Error('worker already terminated')
     },
   }

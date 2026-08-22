@@ -9,6 +9,10 @@ function makeConfig(overrides: { workerCount?: number } = {}) {
   return rpcConfigSchema.create(overrides)
 }
 
+// the pool's freeSession answers out of its own assignment table, so it never
+// consults the plugin manager the base class's in-realm free needs
+const fakePluginManager = {} as unknown as PluginManager
+
 class FakeWorker implements WorkerHandle {
   destroyed = false
   calls: { fn: string; args: unknown; opts?: unknown }[] = []
@@ -118,11 +122,52 @@ describe('WorkerPoolRpcDriver worker assignment', () => {
     await driver.getWorker('s1')
     await driver.getWorker('s2')
 
-    driver.freeSession('s1')
+    await driver.freeSession(fakePluginManager, 's1')
     // re-requesting s1 should now get a new round-robin slot, not the original
     const reassigned = await driver.getWorker('s1')
     const next = await driver.getWorker('s3')
     expect(reassigned).not.toBe(next)
+  })
+})
+
+describe('WorkerPoolRpcDriver.freeSession', () => {
+  test('frees on the worker the session was assigned to, and only there', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
+    // round-robin, and driver.workers is in boot order: s1 is slot 0, s2 slot 1
+    await driver.getWorker('s1')
+    await driver.getWorker('s2')
+
+    await driver.freeSession(fakePluginManager, 's1')
+
+    expect(driver.workers[0]!.calls).toEqual([
+      { fn: 'CoreFreeResources', args: { sessionId: 's1' }, opts: undefined },
+    ])
+    expect(driver.workers[1]!.calls).toEqual([])
+  })
+
+  test('boots no worker for a session that never dispatched anything', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 3 }))
+    await driver.freeSession(fakePluginManager, 'never-used')
+    expect(driver.workers).toEqual([])
+  })
+
+  test('a slot still booting frees once it lands', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    const booting = driver.getWorker('s1')
+    await driver.freeSession(fakePluginManager, 's1')
+    await booting
+    expect(driver.workers[0]!.calls.map(c => c.fn)).toEqual([
+      'CoreFreeResources',
+    ])
+  })
+
+  test('a slot whose worker failed to boot frees nothing and does not throw', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    driver.failNextMake = true
+    await expect(driver.getWorker('s1')).rejects.toThrow('boom')
+    await expect(
+      driver.freeSession(fakePluginManager, 's1'),
+    ).resolves.toBeUndefined()
   })
 })
 
@@ -158,22 +203,20 @@ describe('WorkerPoolRpcDriver.destroy', () => {
     }).not.toThrow()
   })
 
-  test('a fresh slot is assigned after destroy resets the pool', async () => {
-    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
-    const before = await driver.getWorker('s')
-    driver.destroy()
-    const after = await driver.getWorker('s')
-    expect(after).not.toBe(before)
-    expect(driver.workers).toHaveLength(2)
-    // the original worker was terminated, the replacement stays live
-    expect(driver.workers[0]!.destroyed).toBe(true)
-    expect(driver.workers[1]!.destroyed).toBe(false)
-  })
-
-  test('the pool built after a destroy still hears a stopped token', async () => {
+  // ADR-069 destroys the tree a task after `detach()` terminates the pool, so
+  // "after destroy" is a real moment in every session switch; `getWorkerPool`'s
+  // `??=` used to answer it with a second pool. ADR-086.
+  test('destroy is terminal: a later call gets an error, not a second pool', async () => {
     const driver = new TestDriver(makeConfig({ workerCount: 1 }))
     await driver.getWorker('s')
     driver.destroy()
+
+    await expect(driver.getWorker('s')).rejects.toThrow(/destroyed/)
+    expect(driver.workers).toHaveLength(1)
+  })
+
+  test('a booted pool hears a stopped token, and stops hearing on destroy', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
     await driver.getWorker('s')
     // the boot promise the notify routes through has to settle first
     await Promise.resolve()
@@ -182,14 +225,16 @@ describe('WorkerPoolRpcDriver.destroy', () => {
     // SAB token cancels through shared memory with no broadcast to make. The
     // string path is the one every deployment without cross-origin isolation
     // takes, which is all of ours.
-    const stopToken = 'stop-1'
-    stopStopToken(stopToken)
+    stopStopToken('stop-1')
     await Promise.resolve()
+    expect(driver.workers[0]!.stopped).toEqual(['stop-1'])
 
-    // registered in the constructor, this was unregistered by destroy and never
-    // renewed, so the second pool could not be cancelled at all — every stopped
-    // fetch ran to completion with nothing failing
-    expect(driver.workers[1]!.stopped).toEqual([stopToken])
+    driver.destroy()
+    stopStopToken('stop-2')
+    await Promise.resolve()
+    // the registration goes with the pool, so a destroyed driver leaves nothing
+    // behind in the module-global broadcaster set
+    expect(driver.workers[0]!.stopped).toEqual(['stop-1'])
   })
 })
 

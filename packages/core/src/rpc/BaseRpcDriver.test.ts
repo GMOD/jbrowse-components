@@ -146,11 +146,31 @@ describe('BaseRpcDriver.call envelope', () => {
     expect(driver.transportCalls).toHaveLength(1)
   })
 
-  test('freeSession and destroy are no-ops by default', () => {
+  test('destroy is a no-op by default', () => {
     const driver = new CapturingDriver()
     expect(() => {
-      driver.freeSession('sid')
       driver.destroy()
     }).not.toThrow()
+  })
+
+  // The default is the main-thread one: run the method here, where the adapter
+  // cache a driver without a worker fills actually lives. It does NOT go
+  // through `call` — a free is a lifecycle operation, and routing it through
+  // the call path is what made the pooled driver boot a worker for it.
+  test('freeSession runs CoreFreeResources in this realm', async () => {
+    const driver = new CapturingDriver()
+    const invoked: unknown[] = []
+    const freeMethod = {
+      name: 'CoreFreeResources',
+      invoke: async (args: unknown) => {
+        invoked.push(args)
+      },
+    }
+    await driver.freeSession(
+      { getRpcMethodType: () => freeMethod } as unknown as PluginManager,
+      'sid',
+    )
+    expect(invoked).toEqual([{ sessionId: 'sid' }])
+    expect(driver.transportCalls).toEqual([])
   })
 })

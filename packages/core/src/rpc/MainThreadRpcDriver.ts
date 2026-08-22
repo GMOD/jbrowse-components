@@ -6,8 +6,9 @@ import type { StatusCallback } from '../util/progress.ts'
 
 /**
  * RPC driver that runs RPC functions in-band on the main thread. It owns no
- * worker pool, so the per-session lifecycle hooks (freeSession/destroy) stay as
- * the BaseRpcDriver no-ops.
+ * worker pool, so `destroy` stays the BaseRpcDriver no-op and `freeSession`
+ * stays that class's in-realm free — the adapter cache this driver fills is the
+ * main thread's own.
  */
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   name = 'MainThreadRpcDriver'

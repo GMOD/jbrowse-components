@@ -1,4 +1,3 @@
-import { nanoid } from '../util/nanoid.ts'
 import RpcClient from './RpcClient.ts'
 import WorkerPoolRpcDriver from './WorkerPoolRpcDriver.ts'
 import { deserializeError } from './serializeError/index.ts'
@@ -17,6 +16,11 @@ interface Options {
 
 class WebWorkerHandle {
   private client: RpcClient
+
+  // a counter, not a nanoid: the listener map a channel keys into is this
+  // handle's own client, so that is the only scope uniqueness is needed in, and
+  // the nanoid was a crypto.getRandomValues per reporting call
+  private channelCount = 0
 
   constructor(public worker: Worker) {
     this.client = new RpcClient(worker)
@@ -64,12 +68,19 @@ class WebWorkerHandle {
    * agent-docs/measurements/download-read-path.json — and an earlier revision of
    * this comment claimed the opposite because four other places in the tree did.
    */
-  async call(funcName: string, args: Record<string, unknown>, opts: Options) {
+  async call(
+    funcName: string,
+    args: Record<string, unknown>,
+    // defaulted, not required: {@link WorkerHandle} declares it optional, and a
+    // `Core-extendWorker` wrapper written against that interface may well call
+    // `worker.call(name, args)` — which destructured `undefined` and threw
+    opts: Options = {},
+  ) {
     const { statusCallback } = opts
     if (!statusCallback) {
       return this.client.call(funcName, args)
     }
-    const channel = `message-${nanoid()}`
+    const channel = `message-${++this.channelCount}`
     // RpcClient is a generic event emitter (it also carries 'error' events), so
     // its listeners see `unknown`. This channel is dedicated to one method's
     // status emits, which the worker only ever posts as RpcStatus (see

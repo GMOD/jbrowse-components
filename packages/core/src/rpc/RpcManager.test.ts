@@ -1,6 +1,5 @@
 import PluginManager from '../PluginManager.ts'
 import { AuthNeededError } from '../util/types/index.ts'
-import BaseRpcDriver from './BaseRpcDriver.ts'
 import RpcManager from './RpcManager.ts'
 
 // Stub of AppRootModel that satisfies isAppRootModel and records the ephemeral
@@ -19,76 +18,40 @@ function withMockRootModel(manager: RpcManager) {
   return internetAccounts
 }
 
-class StubDriver extends BaseRpcDriver {
-  name = 'StubDriver'
-  freedSessions: string[] = []
-  callLog: {
+// The real MainThreadRpcDriver, with only its two outward-facing methods stood
+// in for: there is no driver-factory seam to inject a whole fake through.
+function makeManager(defaultDriver = 'MainThreadRpcDriver') {
+  const pluginManager = new PluginManager([]).createPluggableElements()
+  const mainConfig = RpcManager.configSchema.create({ defaultDriver })
+  const manager = new RpcManager(pluginManager, mainConfig)
+  const driver = manager.getDriver()
+  const callLog: {
     sessionId: string
     functionName: string
-    args?: Record<string, unknown>
+    args: Record<string, unknown>
   }[] = []
-  destroyed = false
-
-  destroy() {
-    this.destroyed = true
-    super.destroy()
-  }
-
-  freeSession(sessionId: string) {
-    this.freedSessions.push(sessionId)
-    super.freeSession(sessionId)
-  }
-
-  // these tests drive RpcManager dispatch, overriding call() directly, so the
-  // transport hook is never reached
-  protected async transport(): Promise<unknown> {
+  const freedSessions: string[] = []
+  driver.call = async (_pm, sessionId, functionName, args) => {
+    callLog.push({ sessionId, functionName, args })
     return undefined
   }
-
-  async call(
-    _pm: PluginManager,
-    sessionId: string,
-    functionName: string,
-    args?: Record<string, unknown>,
-  ): Promise<unknown> {
-    this.callLog.push({ sessionId, functionName, args })
-    return undefined
+  driver.freeSession = async (_pm, sessionId) => {
+    freedSessions.push(sessionId)
   }
-}
-
-function makeManager() {
-  const pluginManager = new PluginManager([]).createPluggableElements()
-  const mainConfig = RpcManager.configSchema.create({
-    defaultDriver: 'StubDriver',
-  })
-  const manager = new RpcManager(pluginManager, mainConfig)
-  const driver = new StubDriver({ config: mainConfig })
-  manager.registerDriverFactory('StubDriver', () => driver)
-  return { manager, driver }
+  return { manager, driver, callLog, freedSessions }
 }
 
 describe('RpcManager session lifecycle', () => {
-  test('calls driver.freeSession after CoreFreeResources', async () => {
-    const { manager, driver } = makeManager()
-    await manager.call('mySession', 'CoreFreeResources', {})
-    expect(driver.freedSessions).toEqual(['mySession'])
+  test('freeSession reaches the driver that ran the session', async () => {
+    const { manager, freedSessions } = makeManager()
+    await manager.freeSession('mySession')
+    expect(freedSessions).toEqual(['mySession'])
   })
 
-  test('does not call driver.freeSession after a non-free call', async () => {
-    const { manager, driver } = makeManager()
+  test('an ordinary call frees nothing', async () => {
+    const { manager, freedSessions } = makeManager()
     await manager.call('mySession', 'CoreGetRegions', { adapterConfig: {} })
-    expect(driver.freedSessions).toEqual([])
-  })
-
-  test('calls freeSession even when the underlying call rejects', async () => {
-    const { manager, driver } = makeManager()
-    driver.call = async () => {
-      throw new Error('rpc failed')
-    }
-    await expect(
-      manager.call('s', 'CoreFreeResources', {} as any),
-    ).rejects.toThrow('rpc failed')
-    expect(driver.freedSessions).toEqual(['s'])
+    expect(freedSessions).toEqual([])
   })
 })
 
@@ -149,55 +112,71 @@ describe('RpcManager auth retry', () => {
   })
 })
 
-describe('RpcManager driver registry', () => {
-  test('throws on unregistered driver', () => {
-    const { manager } = makeManager()
-    expect(() => manager.getDriver('NonExistentDriver')).toThrow(
-      /not registered/,
+describe('RpcManager driver resolution', () => {
+  test('throws on a driver name nothing builds', () => {
+    const pluginManager = new PluginManager([]).createPluggableElements()
+    const manager = new RpcManager(
+      pluginManager,
+      RpcManager.configSchema.create({ defaultDriver: 'NonExistentDriver' }),
     )
+    expect(() => manager.getDriver()).toThrow(/not registered/)
   })
 
-  test('caches driver instances', () => {
+  test('the driver is built once and kept', () => {
     const { manager } = makeManager()
-    const a = manager.getDriver('StubDriver')
-    const b = manager.getDriver('StubDriver')
-    expect(a).toBe(b)
+    expect(manager.getDriver()).toBe(manager.getDriver())
+  })
+
+  test('the host default applies when the config names no driver', () => {
+    const pluginManager = new PluginManager([]).createPluggableElements()
+    const manager = new RpcManager(
+      pluginManager,
+      RpcManager.configSchema.create({}),
+      { defaultDriverName: 'MainThreadRpcDriver' },
+    )
+    expect(manager.getDriver().name).toBe('MainThreadRpcDriver')
   })
 })
 
-describe('RpcManager.destroy', () => {
-  test('destroys every instantiated driver and clears the cache', () => {
-    const { manager } = makeManager()
-    let built = 0
-    manager.registerDriverFactory('StubDriver', () => {
-      built++
-      return new StubDriver({ config: manager.mainConfiguration })
-    })
-
-    const driver = manager.getDriver('StubDriver') as StubDriver
-    expect(built).toBe(1)
-    expect(driver.destroyed).toBe(false)
-
+// `detach()` destroys the manager and ADR-069 destroys the tree a task later,
+// so "after destroy" is a real moment in every session switch rather than a
+// misuse. ADR-086.
+describe('RpcManager.destroy is terminal', () => {
+  test('destroys the driver it built', () => {
+    const { manager, driver } = makeManager()
+    const destroy = jest.spyOn(driver, 'destroy')
     manager.destroy()
-    expect(driver.destroyed).toBe(true)
+    expect(destroy).toHaveBeenCalled()
+  })
 
-    // cache was cleared, so the next getDriver builds a fresh, live instance
-    const rebuilt = manager.getDriver('StubDriver') as StubDriver
-    expect(built).toBe(2)
-    expect(rebuilt).not.toBe(driver)
-    expect(rebuilt.destroyed).toBe(false)
+  test('a later call throws instead of building a second driver', async () => {
+    const { manager } = makeManager()
+    manager.destroy()
+    await expect(
+      manager.call('s', 'CoreGetRegions', { adapterConfig: {} }),
+    ).rejects.toThrow(/destroyed/)
+    expect(() => manager.getDriver()).toThrow(/destroyed/)
+  })
+
+  // The destroy already freed strictly more than a free would: it terminated
+  // the workers the adapter cache lived in.
+  test('a later freeSession is silent, and builds nothing', async () => {
+    const { manager, freedSessions } = makeManager()
+    manager.destroy()
+    await expect(manager.freeSession('s')).resolves.toBeUndefined()
+    expect(freedSessions).toEqual([])
   })
 })
 
-// The handles and the driver name ride `args`, for every method, and there is
-// only the one position. They used to be accepted in an `opts` parameter as
-// well and the two disagreed — WorkerPoolRpcDriver spread options over its own
-// arguments and honored a statusCallback there, MainThreadRpcDriver ignored
-// `opts` entirely — so the same call had a working progress bar under a worker
-// and a silent one under the driver every embedded component defaults to.
+// The handles ride `args`, for every method, and there is only the one
+// position. They used to be accepted in an `opts` parameter as well and the two
+// disagreed — WorkerPoolRpcDriver spread options over its own arguments and
+// honored a statusCallback there, MainThreadRpcDriver ignored `opts` entirely —
+// so the same call had a working progress bar under a worker and a silent one
+// under the driver every embedded component defaults to.
 describe('RpcManager: the handles are args, and every method takes them', () => {
   test('forwards both handles to the driver, for a method whose registry entry declares neither', async () => {
-    const { manager, driver } = makeManager()
+    const { manager, callLog } = makeManager()
     const statusCallback = () => {}
     const stopToken = 'tok'
     // CoreGetRegions declares only `adapterConfig`. Passing the handles anyway
@@ -208,23 +187,9 @@ describe('RpcManager: the handles are args, and every method takes them', () => 
       stopToken,
       statusCallback,
     })
-    const [entry] = driver.callLog
-    expect(entry?.args?.statusCallback).toBe(statusCallback)
-    expect(entry?.args?.stopToken).toBe(stopToken)
-  })
-
-  // The config's driver is the only thing that decides where a call runs. A
-  // per-call `rpcDriverName` used to override it and one call site in the app
-  // ever passed one, so a track pinned elsewhere ran its tag scan there and
-  // every data fetch on the default anyway.
-  test('runs every call on the configured driver, whatever else is registered', async () => {
-    const { manager, driver } = makeManager()
-    const other = new StubDriver({ config: manager.mainConfiguration })
-    manager.registerDriverFactory('OtherDriver', () => other)
-
-    await manager.call('s', 'CoreGetRegions', { adapterConfig: {} })
-
-    expect(driver.callLog).toHaveLength(1)
-    expect(other.callLog).toEqual([])
+    const [entry] = callLog
+    expect(entry?.args.statusCallback).toBe(statusCallback)
+    expect(entry?.args.stopToken).toBe(stopToken)
+    expect(entry?.args.sessionId).toBe('s')
   })
 })

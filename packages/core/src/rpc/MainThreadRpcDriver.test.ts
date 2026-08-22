@@ -80,14 +80,13 @@ describe('MainThreadRpcDriver', () => {
   })
 
   test('never touches a worker pool (no makeWorker)', () => {
-    // MainThreadRpcDriver intentionally has no makeWorker; freeSession/destroy
-    // are inherited no-ops
+    // MainThreadRpcDriver intentionally has no makeWorker; destroy is the
+    // inherited no-op, and freeSession the inherited in-realm free
     const { driver } = makeDriver({})
     expect(
       (driver as unknown as { makeWorker?: unknown }).makeWorker,
     ).toBeUndefined()
     expect(() => {
-      driver.freeSession('sid')
       driver.destroy()
     }).not.toThrow()
   })

@@ -34,6 +34,17 @@ export default class RpcClient {
     this.worker.addEventListener('error', e => {
       this.catch(e)
     })
+    // A frame this realm could not DESERIALIZE, as opposed to `error`, which is
+    // the worker's script throwing. It carries no uid, so the reply it lost
+    // cannot be identified and settling everything is the only move — the same
+    // one `catch` makes, and better than a display spinning on a promise that
+    // can never settle. The worker itself is left alone: it is still healthy,
+    // and a plugin's own non-libRpc traffic on it can be what failed.
+    this.worker.addEventListener('messageerror', () => {
+      this.rejectAllPending(
+        new Error('an RPC worker message could not be deserialized'),
+      )
+    })
   }
 
   on(event: string, listener: Listener) {
@@ -67,7 +78,10 @@ export default class RpcClient {
   emit(event: string, data: unknown) {
     const listeners = this.events.get(event)
     if (listeners) {
-      for (const listener of listeners) {
+      // over a copy: a listener that removes itself splices the live array, and
+      // a `for...of` over that skips whichever listener moved down into the
+      // index it just read
+      for (const listener of [...listeners]) {
         listener(data)
       }
     }

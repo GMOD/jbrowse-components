@@ -488,8 +488,13 @@ author who lands on a behavior change can find the sentence that explains it.
   **Opt-out: none, and per-call routing is not the thing to restore.** Sending
   one call elsewhere only means something with a backend that differs in what it
   *can* do, which is the tabled server-side-driver work.
-  `RpcManager.registerDriverFactory` is still there and still how a plugin adds a
-  driver; point `rpc.defaultDriver` at it and the whole session runs there.
+
+  **A plugin cannot supply a driver either.** `RpcManager` names the two
+  built-ins itself; `registerDriverFactory`, `driverFactories`, `driverObjects`
+  and `RpcDriverFactory` are gone. Nothing outside `@jbrowse/core` could reach
+  them — a factory returns a `BaseRpcDriver`, which has no entry in the package's
+  `exports` map — so there is no opt-out to describe and nothing to migrate.
+  Supporting plugin drivers starts with exporting that class. ADR-086.
 
 ## Follow-ups
 

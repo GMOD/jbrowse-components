@@ -28,15 +28,11 @@
 
 /**
  * The slice of RpcManager this needs. Structural rather than the concrete class
- * so that the partial `{ call }` stubs the model tests build satisfy it, and so
- * that adapter-lifetime bookkeeping does not depend on the RPC transport.
+ * so that the partial stubs the model tests build satisfy it, and so that
+ * adapter-lifetime bookkeeping does not depend on the RPC transport.
  */
 interface RpcCaller {
-  call(
-    sessionId: string,
-    functionName: string,
-    args: Record<string, unknown>,
-  ): Promise<unknown>
+  freeSession(sessionId: string): Promise<void>
 }
 
 const refcounts = new WeakMap<RpcCaller, Map<string, number>>()
@@ -49,7 +45,7 @@ const refcounts = new WeakMap<RpcCaller, Map<string, number>>()
  * a WeakMap key at all.
  */
 function isUsable(rpcManager: RpcCaller | undefined): rpcManager is RpcCaller {
-  return typeof rpcManager?.call === 'function'
+  return typeof rpcManager?.freeSession === 'function'
 }
 
 function countsFor(rpcManager: RpcCaller) {
@@ -80,8 +76,9 @@ export function retainAdapterSession(
  * scope.
  *
  * The free lands on the same driver the track's queries ran on, because every
- * call in the app runs on the one the session resolved — see
- * `RpcManager.getDriver`.
+ * call in the app runs on the one the session resolved — and, under a worker
+ * pool, on the same worker, without booting one for a session that never
+ * dispatched anything. See `BaseRpcDriver.freeSession`.
  *
  * Errors are swallowed on purpose. This runs on teardown, where a worker
  * already terminated by a session switch is the expected case rather than a
@@ -111,11 +108,7 @@ export async function releaseAdapterSession(
   }
   counts.delete(sessionId)
   try {
-    /* eslint-disable-next-line no-restricted-syntax -- nothing to report and
-       nothing to stop: this drops a worker-side cache entry after the last
-       claim on it is gone, with no UI left to show a phase and no caller that
-       could still want the result. */
-    await rpcManager.call(sessionId, 'CoreFreeResources', { sessionId })
+    await rpcManager.freeSession(sessionId)
   } catch {
     // teardown; see above
   }

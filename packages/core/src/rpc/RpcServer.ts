@@ -195,6 +195,12 @@ export default class RpcServer {
     this.self.addEventListener('message', (e: MessageEvent) => {
       this.handler(e)
     })
+    // A call frame this realm could not deserialize. It carries no uid, so
+    // there is nothing to reply to and the caller's promise is already lost —
+    // all this can do is say so, which beats the silence it replaced.
+    this.self.addEventListener('messageerror', () => {
+      console.error('[Worker RPC] a message could not be deserialized')
+    })
   }
 
   handler(e: MessageEvent<RpcMessageData>) {

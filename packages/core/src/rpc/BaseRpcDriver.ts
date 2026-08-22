@@ -10,6 +10,12 @@ export interface RpcDriverConstructorArgs {
   config: AnyConfigurationModel
 }
 
+/**
+ * The method that drops a session's cached adapters, named once because
+ * {@link BaseRpcDriver.freeSession} is the only thing that dispatches it.
+ */
+export const CORE_FREE_RESOURCES = 'CoreFreeResources'
+
 export default abstract class BaseRpcDriver {
   abstract name: string
 
@@ -19,9 +25,23 @@ export default abstract class BaseRpcDriver {
     this.config = args.config
   }
 
-  // overridden by drivers that own per-session resources (e.g. a worker pool);
-  // a driver with no such state (main thread) keeps these as no-ops
-  freeSession(_sessionId: string) {}
+  /**
+   * Drop everything this driver holds for a session — the worker-side adapter
+   * cache, and whatever bookkeeping the transport keeps alongside it.
+   *
+   * A driver operation rather than a `call`, because a free has nothing to do on
+   * a transport that never ran this session and must not outlive `destroy`;
+   * routing it through `call` did both. ADR-086.
+   *
+   * The base behavior is the main-thread one: run the method in this realm,
+   * where `dataAdapterCache` lives. `invoke`, not `execute`, for the reason
+   * `MainThreadRpcDriver.transport` uses it.
+   */
+  async freeSession(pluginManager: PluginManager, sessionId: string) {
+    await pluginManager
+      .getRpcMethodType(CORE_FREE_RESOURCES)
+      .invoke({ sessionId })
+  }
 
   destroy() {}
 
