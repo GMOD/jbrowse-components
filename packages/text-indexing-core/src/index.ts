@@ -26,8 +26,15 @@ export {
   isURL,
   makeLocation,
   parseAttributes,
-  sanitizeForFilename,
 } from './types/common.ts'
+
+export {
+  TRIX_DIR,
+  sanitizeForFilename,
+  trixFileNames,
+  trixFilePaths,
+  trixFileUris,
+} from './trixPaths.ts'
 
 export { indexGff3 } from './types/gff3Adapter.ts'
 export { indexGtf } from './types/gtfAdapter.ts'

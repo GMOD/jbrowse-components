@@ -14,7 +14,6 @@ import {
   guessAdapterFromFileName,
   isURL,
   makeLocation,
-  sanitizeForFilename,
 } from './common.ts'
 
 const testDataDir = path.join(
@@ -28,32 +27,6 @@ const testDataDir = path.join(
   'test',
   'data',
 )
-
-describe('sanitizeForFilename', () => {
-  it('replaces forward slash with underscore', () => {
-    expect(sanitizeForFilename('test_a/b-index')).toBe('test_a_b-index')
-  })
-  it('replaces all Windows-invalid characters', () => {
-    expect(sanitizeForFilename(String.raw`a\b/c:d*e?f"g<h>i|j`)).toBe(
-      'a_b_c_d_e_f_g_h_i_j',
-    )
-  })
-  it('leaves safe characters unchanged', () => {
-    expect(sanitizeForFilename('track-name_1234.index')).toBe(
-      'track-name_1234.index',
-    )
-  })
-  it('escapes Windows reserved device names', () => {
-    expect(sanitizeForFilename('NUL')).toBe('_NUL')
-    expect(sanitizeForFilename('con')).toBe('_con')
-    expect(sanitizeForFilename('COM1')).toBe('_COM1')
-    // reserved word as a substring is fine
-    expect(sanitizeForFilename('NULsomething')).toBe('NULsomething')
-  })
-  it('strips trailing dots and spaces', () => {
-    expect(sanitizeForFilename('assembly. ')).toBe('assembly')
-  })
-})
 
 describe('utils for text indexing', () => {
   const local = './volvox.sort.gff3.gz'

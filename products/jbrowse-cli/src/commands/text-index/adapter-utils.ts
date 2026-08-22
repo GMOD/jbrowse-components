@@ -1,4 +1,4 @@
-import { sanitizeNameForPath } from './config-utils.ts'
+import { sanitizeForFilename, trixFileUris } from '@jbrowse/text-indexing-core'
 
 import type { TrixTextSearchAdapter } from '../../base.ts'
 
@@ -7,20 +7,20 @@ export function createTrixAdapter(
   assemblyNames: string[],
   idSuffix = 'index',
 ): TrixTextSearchAdapter {
-  const safeName = sanitizeNameForPath(name)
+  const uris = trixFileUris(name)
   return {
     type: 'TrixTextSearchAdapter',
-    textSearchAdapterId: `${safeName}-${idSuffix}`,
+    textSearchAdapterId: `${sanitizeForFilename(name)}-${idSuffix}`,
     ixFilePath: {
-      uri: `trix/${safeName}.ix`,
+      uri: uris.ix,
       locationType: 'UriLocation',
     },
     ixxFilePath: {
-      uri: `trix/${safeName}.ixx`,
+      uri: uris.ixx,
       locationType: 'UriLocation',
     },
     metaFilePath: {
-      uri: `trix/${safeName}_meta.json`,
+      uri: uris.meta,
       locationType: 'UriLocation',
     },
     assemblyNames,

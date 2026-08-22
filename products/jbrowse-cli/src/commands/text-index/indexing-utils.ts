@@ -3,9 +3,11 @@ import path from 'node:path'
 import { Readable } from 'node:stream'
 
 import {
+  TRIX_DIR,
   generateMeta,
   guessAdapterFromFileName,
   indexFiles,
+  trixFilePaths,
 } from '@jbrowse/text-indexing-core'
 import { Presets, SingleBar } from 'cli-progress'
 import { ixIxxStream } from 'ixixx'
@@ -18,7 +20,7 @@ import type { Track } from '@jbrowse/text-indexing-core'
 // here rather than by each caller: --dryrun goes nowhere near indexDriver and so
 // no longer leaves an empty trix/ behind
 function ensureTrixDir(outLocation: string) {
-  fs.mkdirSync(path.join(outLocation, 'trix'), { recursive: true })
+  fs.mkdirSync(path.join(outLocation, TRIX_DIR), { recursive: true })
 }
 
 async function runIxIxx({
@@ -43,10 +45,8 @@ async function runIxIxx({
     progressBar.start(1, 0)
   }
 
-  const ixPath = path.join(outLocation, 'trix', `${name}.ix`)
-  const ixxPath = path.join(outLocation, 'trix', `${name}.ixx`)
-
-  await ixIxxStream(readStream, ixPath, ixxPath, prefixSize)
+  const { ix, ixx } = trixFilePaths(outLocation, name)
+  await ixIxxStream(readStream, ix, ixx, prefixSize)
 
   if (!quiet) {
     progressBar.update(1)

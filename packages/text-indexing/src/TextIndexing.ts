@@ -8,12 +8,13 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import {
+  TRIX_DIR,
   defaultAttributesToIndex,
   defaultFeatureTypesToExclude,
   generateMeta,
   indexFiles,
   isSupportedIndexingAdapter,
-  sanitizeForFilename,
+  trixFilePaths,
 } from '@jbrowse/text-indexing-core'
 import { ixIxxStream } from 'ixixx'
 
@@ -66,7 +67,7 @@ export async function indexTracks(args: {
 }
 
 function ensureTrixDir(outDir: string) {
-  fs.mkdirSync(path.join(outDir, 'trix'), { recursive: true })
+  fs.mkdirSync(path.join(outDir, TRIX_DIR), { recursive: true })
 }
 
 async function perTrackIndex({
@@ -220,8 +221,6 @@ async function indexDriver({
 }
 
 function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
-  const safeName = sanitizeForFilename(name)
-  const ixFilename = path.join(idxLocation, 'trix', `${safeName}.ix`)
-  const ixxFilename = path.join(idxLocation, 'trix', `${safeName}.ixx`)
-  return ixIxxStream(readStream, ixFilename, ixxFilename)
+  const { ix, ixx } = trixFilePaths(idxLocation, name)
+  return ixIxxStream(readStream, ix, ixx)
 }

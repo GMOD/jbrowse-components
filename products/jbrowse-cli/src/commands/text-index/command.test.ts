@@ -488,3 +488,68 @@ test('reports the missing config when there is none to index', async () => {
     expect(error?.message).toContain('No JBrowse config found at')
   })
 })
+
+// The .ix write used the raw name while generateMeta and createTrixAdapter both
+// sanitized, so a trackId with a slash aimed the write at a trix/ subdirectory
+// that does not exist. The other Windows-invalid characters were quieter: the
+// file wrote, under a name no search would look for.
+test('a trackId with a slash indexes to the path its adapter names', async () => {
+  await runInTmpDir(async ctx => {
+    const gff3File = dataDir('volvox.sort.gff3.gz')
+    fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+    fs.writeFileSync(
+      path.join(ctx.dir, 'config.json'),
+      JSON.stringify({
+        assemblies: [
+          {
+            name: 'volvox',
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: 'volvox_refseq',
+              adapter: {
+                type: 'TwoBitAdapter',
+                twoBitLocation: {
+                  uri: 'volvox.2bit',
+                  locationType: 'UriLocation',
+                },
+              },
+            },
+          },
+        ],
+        tracks: [
+          {
+            type: 'FeatureTrack',
+            trackId: 'test_a/b-1234',
+            assemblyNames: ['volvox'],
+            name: 'test A/B',
+            adapter: {
+              type: 'Gff3TabixAdapter',
+              gffGzLocation: {
+                uri: 'volvox.sort.gff3.gz',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        ],
+      }),
+    )
+
+    const { error } = await runCommand([
+      'text-index',
+      '--perTrack',
+      '--target=config.json',
+    ])
+    expect(error).toBeUndefined()
+
+    const conf = readJSON(path.join(ctx.dir, 'config.json'))
+    const adapter = conf.tracks[0].textSearching.textSearchAdapter
+    expect(adapter.ixFilePath.uri).toBe('trix/test_a_b-1234.ix')
+    for (const uri of [
+      adapter.ixFilePath.uri,
+      adapter.ixxFilePath.uri,
+      adapter.metaFilePath.uri,
+    ]) {
+      expect(fs.existsSync(path.join(ctx.dir, uri))).toBe(true)
+    }
+  })
+})
