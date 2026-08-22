@@ -19,7 +19,12 @@ import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
 import type { DeviceLayouts } from './deviceGpuCache.ts'
-import type { BlendState, GpuHal, PipelineDescriptor } from './types.ts'
+import type {
+  BlendState,
+  GpuHal,
+  PipelineDescriptor,
+  SampleCount,
+} from './types.ts'
 
 class ShaderCompileError extends Error {
   constructor(passId: string, details: string) {
@@ -53,10 +58,6 @@ const MAX_UNIFORM_SLOTS = 2048
 // the "~50 writes/frame" this file used to claim, and nothing reported the
 // difference between 50 and 1900.
 const UNIFORM_SLOT_WARN_AT = MAX_UNIFORM_SLOTS / 2
-// Set to 1 to disable MSAA (e.g. to debug Firefox compositor stalls).
-// All render-pass, texture, and pipeline setup is conditioned on this value,
-// so changing it will not cause a mismatch.
-const MSAA_SAMPLE_COUNT: 1 | 4 = 4
 
 function gpuBlendState(bs: BlendState): GPUBlendState {
   // Max ignores its factors, but WebGPU still validates them and rejects
@@ -92,6 +93,7 @@ async function buildPipeline(
   device: GPUDevice,
   desc: PipelineDescriptor,
   layouts: DeviceLayouts,
+  sampleCount: SampleCount,
 ) {
   const module = device.createShaderModule({ code: desc.wgslSource })
   const info = await module.getCompilationInfo()
@@ -137,8 +139,7 @@ async function buildPipeline(
       ],
     },
     primitive: { topology: desc.topology ?? 'triangle-list' },
-    multisample:
-      MSAA_SAMPLE_COUNT === 1 ? undefined : { count: MSAA_SAMPLE_COUNT },
+    multisample: sampleCount === 1 ? undefined : { count: sampleCount },
   })
 }
 
@@ -150,11 +151,12 @@ async function buildPipeline(
 async function resolvePipelines(
   device: GPUDevice,
   descriptors: PipelineDescriptor[],
+  sampleCount: SampleCount,
 ) {
   const built = await Promise.all(
     descriptors.map(desc =>
-      getOrBuildPipeline(device, desc, layouts =>
-        buildPipeline(device, desc, layouts),
+      getOrBuildPipeline(device, desc, sampleCount, (layouts, count) =>
+        buildPipeline(device, desc, layouts, count),
       ),
     ),
   )
@@ -213,7 +215,15 @@ export class WebGPUHal implements GpuHal {
   // serves all passes/regions instead of allocating a fresh one per upload.
   private uniformOnlyBindGroup: GPUBindGroup
 
-  // MSAA resolve texture — 4x multisampled render target
+  // Samples per pixel this display renders at, stated by whoever built it (see
+  // `RenderingBackendOptions.sampleCount`). Every render-pass, texture and
+  // pipeline decision below reads it, so the two shapes cannot mismatch — and
+  // at 1 there is no MSAA texture at all rather than a smaller one, which is
+  // the whole point of the knob.
+  private sampleCount: SampleCount
+
+  // The multisampled colour attachment, resolved into the canvas texture at the
+  // end of the frame. Null for the life of the HAL when `sampleCount` is 1.
   private msaaTexture: GPUTexture | null = null
   private msaaView: GPUTextureView | null = null
 
@@ -253,6 +263,7 @@ export class WebGPUHal implements GpuHal {
     context: GPUCanvasContext,
     descriptors: PipelineDescriptor[],
     uniformByteSize: number,
+    sampleCount: SampleCount,
     pipelines: Map<string, GPURenderPipeline>,
     layouts: DeviceLayouts,
   ) {
@@ -262,6 +273,7 @@ export class WebGPUHal implements GpuHal {
     this.descriptors = new Map(descriptors.map(d => [d.id, d]))
     this.pipelines = pipelines
     this.layouts = layouts
+    this.sampleCount = sampleCount
 
     // Align uniform slots to device requirements for dynamic offsets
     const alignment = device.limits.minUniformBufferOffsetAlignment
@@ -306,6 +318,7 @@ export class WebGPUHal implements GpuHal {
     canvas: HTMLCanvasElement,
     descriptors: PipelineDescriptor[],
     uniformByteSize: number,
+    sampleCount: SampleCount,
   ) {
     const device = await getGpuDevice()
     if (!device) {
@@ -317,7 +330,7 @@ export class WebGPUHal implements GpuHal {
     // still claim it — otherwise a partial WebGPU init would drop us all the way
     // to Canvas2D on a WebGL2-capable machine.
     const layouts = getDeviceLayouts(device)
-    const pipelines = await resolvePipelines(device, descriptors)
+    const pipelines = await resolvePipelines(device, descriptors, sampleCount)
     const context = canvas.getContext('webgpu')
     if (!context) {
       // Returning null (rather than throwing) keeps the ladder running, so this
@@ -333,6 +346,7 @@ export class WebGPUHal implements GpuHal {
       context,
       descriptors,
       uniformByteSize,
+      sampleCount,
       pipelines,
       layouts,
     )
@@ -340,7 +354,11 @@ export class WebGPUHal implements GpuHal {
 
   resize(width: number, height: number) {
     const { changed, scale } = syncCanvasSize(this.canvas, width, height)
-    if (changed || !this.msaaTexture) {
+    // `!this.msaaTexture` covers the first frame and a rebuild that bailed. At
+    // sampleCount 1 there is never a texture, so without the count in the
+    // condition that clause would be true on every frame and re-run the
+    // over-limit check for a texture nobody is building.
+    if (changed || (this.sampleCount > 1 && !this.msaaTexture)) {
       this.recreateMsaaTexture(this.canvas.width, this.canvas.height)
     }
     return scale
@@ -357,11 +375,11 @@ export class WebGPUHal implements GpuHal {
       )
       return
     }
-    if (MSAA_SAMPLE_COUNT > 1 && width > 0 && height > 0) {
+    if (this.sampleCount > 1 && width > 0 && height > 0) {
       this.msaaTexture = this.device.createTexture({
         size: [width, height],
         format: navigator.gpu.getPreferredCanvasFormat(),
-        sampleCount: MSAA_SAMPLE_COUNT,
+        sampleCount: this.sampleCount,
         usage: GPUTextureUsage.RENDER_ATTACHMENT,
       })
       this.msaaView = this.msaaTexture.createView()
@@ -598,17 +616,17 @@ export class WebGPUHal implements GpuHal {
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
     // Skip the frame entirely rather than encode one that cannot be valid.
     // Zero-size canvas: nothing to draw. Missing MSAA target while MSAA is
-    // configured: every pipeline was built with `multisample.count = 4`, so the
-    // single-sample fallback attachment below would mismatch and every draw in
-    // the frame would be rejected. That happens after `recreateMsaaTexture`
-    // bails on an over-`maxTextureDimension2D` canvas — it has already reported
-    // through `oom`, so the user has the real message and there is nothing to
-    // gain from also spraying validation errors each frame.
+    // configured: every pipeline was built with `multisample.count =
+    // this.sampleCount`, so the single-sample fallback attachment below would
+    // mismatch and every draw in the frame would be rejected. That happens after
+    // `recreateMsaaTexture` bails on an over-`maxTextureDimension2D` canvas — it
+    // has already reported through `oom`, so the user has the real message and
+    // there is nothing to gain from also spraying validation errors each frame.
     if (
       this.disposed ||
       this.canvas.width === 0 ||
       this.canvas.height === 0 ||
-      (MSAA_SAMPLE_COUNT > 1 && !this.msaaView)
+      (this.sampleCount > 1 && !this.msaaView)
     ) {
       return
     }
@@ -630,10 +648,9 @@ export class WebGPUHal implements GpuHal {
     this.uniformSlot = 0
 
     // With MSAA: render to the multisampled texture, then resolve to the canvas
-    // texture. Without MSAA (MSAA_SAMPLE_COUNT === 1, so `msaaView` is never
-    // built): render directly to the canvas texture. The guard above is what
-    // keeps those the only two cases — a null `msaaView` while MSAA is on never
-    // reaches here.
+    // texture. Without MSAA (`sampleCount === 1`, so `msaaView` is never built):
+    // render directly to the canvas texture. The guard above is what keeps those
+    // the only two cases — a null `msaaView` while MSAA is on never reaches here.
     const clearValue = { r: clearR, g: clearG, b: clearB, a: clearA }
     this.currentPass = this.currentEncoder.beginRenderPass({
       colorAttachments: [

@@ -74,7 +74,7 @@ the floor, not a failed `requestDevice`.
 | --- | --- | --- |
 | `MAX_CANVAS_DIM_PX = 8192` (`canvas2dUtils.ts`) | WebGPU 8192, **WebGL2 2048** | Exactly the WebGPU floor, so safe there by construction. On WebGL2 it rests on "≥ 8192 on essentially all real hardware", which the source comment states honestly and the spec does not guarantee. |
 | `MAX_VERTEX_BUFFER_BYTES = 256 MiB` (`webgl2Hal.ts`) | not queryable in WebGL2 | Deliberate: WebGL2 exposes no equivalent, so the tree pins WebGPU's spec default. See the "No session-level GPU memory budget" entry — the unguarded alternative is a dropped context. |
-| `MSAA_SAMPLE_COUNT = 4` | 4 is required for multisampled textures | Safe. The spec requires support for sample counts 1 and 4. |
+| `SampleCount` is `1 \| 4`, and displays take 4 | 4 is required for multisampled textures | Safe, and the type is the spec rather than a choice: WebGPU permits no other count, so a per-display knob has exactly two positions. |
 | 4x MSAA on the preferred canvas format | `maxColorAttachmentBytesPerSample` 32 | Safe with room: one 4-byte attachment. |
 
 **The `MAX_VERTEX_BUFFER_BYTES` row has a consequence worth stating plainly.**

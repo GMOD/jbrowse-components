@@ -171,10 +171,12 @@ table.)
 
 Captured 2026-08-22, **Firefox Nightly headed on a retina Mac, dpr 2**, WebGPU
 confirmed by the app's own `[GPU] WebGPU device ready` line. Method: build
-`@jbrowse/web` with `MSAA_SAMPLE_COUNT = 4`, screenshot three session specs at
-device resolution, flip the constant to 1, rebuild, screenshot the same three,
-diff per rectangle. The constant was flipped locally and restored; nothing in
-this branch changes it.
+`@jbrowse/web` at 4 samples, screenshot three session specs at device
+resolution, drop the displays to 1, rebuild, screenshot the same three, diff per
+rectangle. Taken while the sample count was still a module constant in
+`webgpuHal.ts`; the flip is now `sampleCount: 1` in the display's
+`createRenderingBackend` options, and the numbers below stand either way. The
+flip was local and reverted; every display in the tree still asks for 4.
 
 Scenes, all on `test_data/volvox/config.json`:
 
@@ -431,54 +433,57 @@ desktop discrete GPUs where it certainly is not.
 
 ## Options, ranked
 
-### 1. Per-display sample count, defaulting to 1
+### 1. Per-display sample count
 
-**What it does.** `MSAA_SAMPLE_COUNT` stops being a module constant and becomes
-a per-HAL value with a default of 1. The displays whose marks have no other
-antialiasing ask for 4.
+**The mechanism is built.** `SampleCount` is a per-display property —
+`RenderingBackendOptions.sampleCount`, threaded through `createGpuHal` into
+`WebGPUHal`, read by `buildPipeline` (`multisample`), `recreateMsaaTexture`,
+`beginFrame`'s missing-target guard and the render pass's attachment shape — and
+`getOrBuildPipeline` keys on it alongside descriptor identity, so a display at 1
+cannot be handed a pipeline built at 4. At 1 there is no target at all rather
+than a smaller one. `hal/webgpuHalSampleCount.test.ts` pins both attachment
+shapes.
 
-**What it takes here.** Four edits, none of them in a shader:
+**Nothing is flipped.** It shipped with the default at 4, which is what every
+display asked for while it was a build constant, and the before/after captures
+of four scenes on a real WebGPU device are byte-identical. So what is left of
+this option is *the decision*, one display at a time — and the decision is the
+part this doc cannot make.
 
-- `RenderingBackendOptions` (`packages/render-core/src/createRenderingBackend.ts`)
-  gains `sampleCount?: 1 | 4`. That interface is already the per-display options
-  object every renderer factory fills in, so this is where a display states a
-  rendering property.
-- It threads through `createGpuHal` (`hal/createHal.ts`) into
-  `WebGPUHal.create`, and the constant becomes a field read by `buildPipeline`
-  (`multisample`), `recreateMsaaTexture` and `beginFrame`. The file already
-  claims *"All render-pass, texture, and pipeline setup is conditioned on this
-  value"*, and reading it is true: the 1x path allocates no texture and attaches
-  the canvas view directly.
-- **The device-wide pipeline cache has to key on it.** `deviceGpuCache.ts` holds
-  `WeakMap<PipelineDescriptor, Promise<GPURenderPipeline>>` and identity of the
-  descriptor object is what makes it correct; the multisample state is baked
-  into the pipeline and is *not* on the descriptor. So the value becomes
-  `WeakMap<PipelineDescriptor, Map<1 | 4, Promise<…>>>`. Small, and the doc
-  comment explaining why identity is the key survives unchanged.
-- Two call sites opt in: `plugins/hic/.../HicRenderer.ts` and
-  `plugins/variants/src/LDDisplay/components/LDRenderer.ts`.
+**What a flip takes now.** One line in the display's renderer factory:
+`sampleCount: 1` beside `passes` and `uniformByteSize`. Nothing else moves. The
+displays that must NOT take it are Hi-C (`plugins/hic/.../HicRenderer.ts`) and
+LD (`plugins/variants/src/LDDisplay/components/LDRenderer.ts`), for the
+conflation reason option 5 records.
 
-**What it costs.** Nothing extra to compile, today. The worry the cache raises —
-a pass type shared between a 1x display and a 4x one compiling twice — does not
-fire: `HIC_PASSES` and `LD_PASSES` are module-level consts unique to their
-displays, and `slangPass` builds a distinct descriptor object per pass
-declaration, so no descriptor is reachable from both sides of the split. That
+**What it costs: measured, and it is nothing.** The worry was a pass type shared
+between a 1x display and a 4x one compiling twice. It does not fire. Moved the
+wiggle family to 1 and left the rest at 4, counting
+`createRenderPipelineAsync`: a four-track scene built **8** pipelines (5 at 4,
+3 unmultisampled) and an eight-track scene **32** (29 and 3) — the same totals
+as the all-4x build of the same scenes. No `PipelineDescriptor` object is
+reachable from two displays' pass lists: every list is built from `slangPass`
+calls in its own module, and the only descriptors exported across module
+boundaries (`RectPass`, `LinePass`, `ArrowPass`, `ContinuationPass` in
+`plugins/canvas/src/LinearBasicDisplay/passes/index.ts`) have one consumer. That
 stays true only as long as it does; a shared shape module (`rowRect.slang` is
 the precedent, MAF and multi-row) would compile two variants the day one side
-went 4x.
+went 4x, and the cost would be one extra compile per shared pass, not per
+display.
 
-**What it buys.** The memory line goes to zero for every display that is not
-Hi-C or LD. On Colin's eight-track dpr-2 measurement that is 109.7 MiB → ~0; the
-single dragged-to-clamp alignments track is 316.5 MiB → 0.
+**What it buys.** The memory line goes to zero for every display that takes it.
+On Colin's eight-track dpr-2 measurement, moving the two wiggle-family tracks
+alone took 109.7 MiB to 95.8; moving everything but Hi-C and LD would take it to
+~0, and the single dragged-to-clamp alignments track from 316.5 MiB to 0.
 
-**What could go wrong.** It regresses exactly what §Evidence measured: wiggle and
-coverage bar tops, read arrow tips, sub-pixel SNP ticks. Whether that is
-acceptable is a look-at-it decision, not an arithmetic one, and the crops above
-are the thing to look at. Option 4 removes most of it.
+**What could go wrong.** A flip regresses exactly what §Evidence measured:
+wiggle and coverage bar tops, read arrow tips, sub-pixel SNP ticks. Whether that
+is acceptable is a look-at-it decision, not an arithmetic one, and the crops
+above are the thing to look at. Option 4 removes most of it.
 
-### 2. Global `MSAA_SAMPLE_COUNT = 1`
+### 2. Every display at 1
 
-**What it does.** One character.
+**What it does.** The one-line flip above, at all twelve renderer factories.
 
 **What it buys.** All of the memory, on every display.
 
@@ -489,8 +494,8 @@ established (twice, in two backends) that per-cell analytic AA on tiled cells
 produces seams rather than smoothness. A Hi-C contact map at 1x is a staircase
 map.
 
-Reasonable as a **diagnostic** — the file's comment already offers it for
-debugging Firefox compositor stalls — and reasonable as a shipped default only
+Reasonable as a **diagnostic** — a whole-tree 1x build says whether a Firefox
+compositor stall is the MSAA target — and reasonable as a shipped default only
 if someone looks at a Hi-C track at 1x and says it is fine.
 
 ### 3. Analytic AA in the arc shader
@@ -596,7 +601,10 @@ captures says the 1x rendering is fine as-is, option 2 is a one-character change
 that takes the whole memory line, and options 1 and 4 are both unnecessary.
 That judgement is the one thing this doc cannot make.
 
-## What to check before starting
+## What to check before flipping a display
+
+The mechanism is built and costs nothing while every display stays at 4 (option
+1). What follows is what a *flip* has to clear.
 
 - Re-run the capture on the machine that will judge it. The numbers above are
   one retina Mac and one browser;
@@ -607,6 +615,6 @@ That judgement is the one thing this doc cannot make.
   sample count moves the WebGPU arm against the canvas2d arm on every tiled
   mark, so the thresholds in that file need reading before the gate is trusted
   on this change.
-- `agent-docs/TODO.md` §"Take the MSAA target's size on a retina display" asked
-  for the dpr-2 measurement. Colin took it on 2026-08-22 and the formula holds;
-  that entry can close against those numbers independently of anything here.
+- Snapshots. A flipped display's browser-test snapshots move by exactly the
+  edges §Evidence measured, so the update belongs in the same commit as the
+  flip and its review is the visual call.

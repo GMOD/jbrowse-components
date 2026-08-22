@@ -17,6 +17,26 @@ export interface VertexAttributeLayout {
   integer: boolean
 }
 
+/**
+ * Samples per pixel a display's WebGPU render target is allocated at.
+ *
+ * **1 and 4 are the whole set the WebGPU spec permits** ("must be either 1 or
+ * 4" — standard sample patterns are defined for no other count), so this is the
+ * API's constraint rather than a policy of ours, and 2 is not an option to add.
+ *
+ * At 4 the HAL allocates a multisampled colour attachment the size of the
+ * canvas and resolves it into the canvas texture; at 1 it allocates **nothing**
+ * and draws straight into the canvas texture. The bytes are canvas area x dpr²
+ * x samples x 4, unrelated to how much data the display holds, which is why
+ * this is worth stating per display — see ARCHITECTURAL_LIMITS.md §"The MSAA
+ * target is the largest per-display allocation".
+ *
+ * WebGL2 has no counterpart: it draws to the default framebuffer with
+ * `antialias: true`, so its multisampling is the browser's choice inside the
+ * browser's budget.
+ */
+export type SampleCount = 1 | 4
+
 export type BlendFactor = 'one' | 'src-alpha' | 'one-minus-src-alpha' | 'zero'
 
 // Blend equation. 'add' (default) = src*srcFactor + dst*dstFactor. 'max' =

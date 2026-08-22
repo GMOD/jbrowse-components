@@ -435,7 +435,7 @@ this table exists at all: **a "pass" identifier means a PSO**, and **our uniform
 | **Compute pipeline / workgroup dispatch** | same words; 2D workgroup grid to clear `maxComputeWorkgroupsPerDimension` | `getLDMatrixGPU.ts` |
 | **Blend state** | `BlendState`, `STANDARD_BLEND_STATE` | `hal/types.ts`, `webgpuUtils.ts` |
 | **Primitive topology** | `PipelineDescriptor.topology` | `hal/types.ts` |
-| **MSAA / resolve target** | `MSAA_SAMPLE_COUNT` (4×), `msaaView` + `resolveTarget` | `webgpuHal.ts` |
+| **MSAA / resolve target** | `SampleCount` — per display, stated by `RenderingBackendOptions.sampleCount` and 4 unless a display says otherwise; `msaaView` + `resolveTarget` | `hal/types.ts`, `webgpuHal.ts` |
 | **Scissor / viewport** | same words | `hal/types.ts` |
 | **Frustum culling** | "cull" — CPU-side, over a 1D bp interval; there is no frustum and no camera | `syntenyRibbonCull.ts`, `syntenyFetchWindow.ts` |
 | **Spatial index / BVH** | Flatbush (packed Hilbert R-tree) — **picking and hit-testing only**, never draw culling | `packages/core/src/util/flatbush/` |

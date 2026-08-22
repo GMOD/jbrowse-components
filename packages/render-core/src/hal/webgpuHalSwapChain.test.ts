@@ -97,7 +97,7 @@ function installGpu(device: GPUDevice) {
 // draws a pass; what these tests are about is the frame's swap-chain acquisition.
 async function makeHal(canvas: HTMLCanvasElement, device: GPUDevice) {
   installGpu(device)
-  const hal = await WebGPUHal.create(canvas, [], 64)
+  const hal = await WebGPUHal.create(canvas, [], 64, 4)
   if (!hal) {
     throw new Error('fake stack failed to build a HAL')
   }

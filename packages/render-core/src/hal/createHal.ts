@@ -3,7 +3,7 @@ import { getGraphicsCapabilities } from '../graphicsCapabilities.ts'
 import { WebGL2Hal } from './webgl2Hal.ts'
 import { WebGPUHal } from './webgpuHal.ts'
 
-import type { GpuHal, PipelineDescriptor } from './types.ts'
+import type { GpuHal, PipelineDescriptor, SampleCount } from './types.ts'
 
 // Per copy of this module rather than on the globalThis cell, deliberately: a
 // second bundled copy warning a second time is a duplicate console line, which
@@ -21,22 +21,33 @@ function warnSoftwareRasterizerOnce(glRenderer: string | undefined) {
   )
 }
 
+export interface GpuHalOptions {
+  passes: PipelineDescriptor[]
+  uniformByteSize: number
+  /**
+   * Reaches the WebGPU rung only. The WebGL2 rung draws to the default
+   * framebuffer with `antialias: true`, so its multisampling is the browser's
+   * own and there is nothing here to thread into it.
+   */
+  sampleCount: SampleCount
+  /**
+   * Out-parameter collecting why each rung declined, in ladder order. Falling
+   * through a rung is normal (no WebGPU on this machine) and stays a
+   * `console.warn` — but when the *last* rung fails too, the reasons the earlier
+   * ones gave are the diagnosis, and they used to exist only in a console the
+   * user reporting the bug never opens. `createRenderingBackend` attaches this
+   * to the error it throws, and the error UI's stack-trace dialog already walks
+   * `AggregateError.errors` (core's `formatErrorStack`), so they arrive with it.
+   */
+  failures?: unknown[]
+}
+
 // Ladder: WebGPU → WebGL2 → Canvas2D (null). The `?renderer=` URL param pins it
 // to a single rung for debugging — `webgpu`, `webgl`, or `canvas2d`/`canvas` —
 // and a pin never falls through to the next rung. See GPU_OVERRIDES.
-//
-// `failures` is an optional out-parameter collecting why each rung declined, in
-// ladder order. Falling through a rung is normal (no WebGPU on this machine) and
-// stays a `console.warn` — but when the *last* rung fails too, the reasons the
-// earlier ones gave are the diagnosis, and they used to exist only in a console
-// the user reporting the bug never opens. `createRenderingBackend` attaches this
-// to the error it throws, and the error UI's stack-trace dialog already walks
-// `AggregateError.errors` (core's `formatErrorStack`), so they arrive with it.
 export async function createGpuHal(
   canvas: HTMLCanvasElement,
-  passes: PipelineDescriptor[],
-  uniformByteSize: number,
-  failures?: unknown[],
+  { passes, uniformByteSize, sampleCount, failures }: GpuHalOptions,
 ): Promise<GpuHal | null> {
   if (isGpuRenderingDisabled()) {
     return null
@@ -44,7 +55,12 @@ export async function createGpuHal(
   const override = getGpuOverride()
   if (override !== 'webgl') {
     try {
-      const webgpu = await WebGPUHal.create(canvas, passes, uniformByteSize)
+      const webgpu = await WebGPUHal.create(
+        canvas,
+        passes,
+        uniformByteSize,
+        sampleCount,
+      )
       if (webgpu) {
         return webgpu
       }

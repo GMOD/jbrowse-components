@@ -4,7 +4,8 @@ import {
   resetDeviceGpuCacheForTests,
 } from './deviceGpuCache.ts'
 
-import type { PipelineDescriptor } from './types.ts'
+import type { DeviceLayouts } from './deviceGpuCache.ts'
+import type { PipelineDescriptor, SampleCount } from './types.ts'
 
 // Enough of a GPUDevice to count layout construction. The real thing needs a
 // browser; what this file pins is the memo, which is plain JS.
@@ -76,9 +77,9 @@ describe('deviceGpuCache', () => {
       // three displays of the same track type, handed the same module-level
       // descriptor object
       const [one, two, three] = await Promise.all([
-        getOrBuildPipeline(device, read, build),
-        getOrBuildPipeline(device, read, build),
-        getOrBuildPipeline(device, read, build),
+        getOrBuildPipeline(device, read, 4, build),
+        getOrBuildPipeline(device, read, 4, build),
+        getOrBuildPipeline(device, read, 4, build),
       ])
 
       expect(builds).toBe(1)
@@ -106,8 +107,8 @@ describe('deviceGpuCache', () => {
     }
     try {
       const asks = [
-        getOrBuildPipeline(device, read, build),
-        getOrBuildPipeline(device, read, build),
+        getOrBuildPipeline(device, read, 4, build),
+        getOrBuildPipeline(device, read, 4, build),
       ]
       expect(builds).toBe(1)
 
@@ -131,9 +132,35 @@ describe('deviceGpuCache', () => {
       return {} as GPURenderPipeline
     }
     try {
-      void getOrBuildPipeline(device, mafRow, build)
-      void getOrBuildPipeline(device, multiRowRow, build)
+      void getOrBuildPipeline(device, mafRow, 4, build)
+      void getOrBuildPipeline(device, multiRowRow, 4, build)
       expect(builds).toBe(2)
+    } finally {
+      resetDeviceGpuCacheForTests(device)
+    }
+  })
+
+  it('keeps one descriptor apart at two sample counts, and tells the builder which', async () => {
+    // Multisample state is baked into the pipeline and is not on the
+    // descriptor, so a display at 1 handed the 4 pipeline would have every draw
+    // in every frame rejected and paint a blank canvas — no exception, no
+    // console line of its own.
+    const { device } = fakeDevice()
+    const read = pass('read')
+    const asked: SampleCount[] = []
+    const build = async (_layouts: DeviceLayouts, sampleCount: SampleCount) => {
+      asked.push(sampleCount)
+      return { sampleCount } as unknown as GPURenderPipeline
+    }
+    try {
+      const four = await getOrBuildPipeline(device, read, 4, build)
+      const one = await getOrBuildPipeline(device, read, 1, build)
+
+      expect(asked).toEqual([4, 1])
+      expect(one).not.toBe(four)
+      expect(await getOrBuildPipeline(device, read, 4, build)).toBe(four)
+      expect(await getOrBuildPipeline(device, read, 1, build)).toBe(one)
+      expect(asked).toEqual([4, 1])
     } finally {
       resetDeviceGpuCacheForTests(device)
     }
@@ -148,12 +175,12 @@ describe('deviceGpuCache', () => {
       return Promise.reject(new Error('WGSL compile error'))
     }
     try {
-      await expect(getOrBuildPipeline(device, broken, build)).rejects.toThrow(
-        'WGSL compile error',
-      )
-      await expect(getOrBuildPipeline(device, broken, build)).rejects.toThrow(
-        'WGSL compile error',
-      )
+      await expect(
+        getOrBuildPipeline(device, broken, 4, build),
+      ).rejects.toThrow('WGSL compile error')
+      await expect(
+        getOrBuildPipeline(device, broken, 4, build),
+      ).rejects.toThrow('WGSL compile error')
       expect(builds).toBe(1)
     } finally {
       resetDeviceGpuCacheForTests(device)

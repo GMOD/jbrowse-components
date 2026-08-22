@@ -182,13 +182,26 @@ sample counts differ across the whole arc band by at most one 8-bit level. What
 still depends on it is wiggle and coverage **bar tops** (where the edge is the
 datum, so this is an encoding rather than a silhouette), read arrow tips, and the
 tiled hi-C/LD diamonds, whose conflation at shared cell edges is the one thing
-per-fragment AA cannot fix. So the sample count wants to be a
-property of the display rather than of the build, with 1x meaning no target at
-all rather than a smaller one. The obstacle is that the multisample state is
-baked into the pipeline and pipelines come from a device-wide cache
-(`getOrBuildPipeline`), so the cache key would have to carry the sample count and
-shared pass types would compile two variants. WebGL2 has no counterpart in our accounting, because
-`antialias: true` puts the multisample backbuffer inside the browser's budget.
+per-fragment AA cannot fix.
+
+**The sample count is now a property of the display**, not of the build:
+`RenderingBackendOptions.sampleCount`, threaded to `WebGPUHal` and read by every
+render-pass, texture and pipeline decision it makes, with 1 meaning no target at
+all rather than a smaller one. The obstacle that used to be stated here — the
+multisample state is baked into the pipeline and pipelines come from a
+device-wide cache — is gone: `getOrBuildPipeline` keys on the sample count as
+well as on descriptor identity. **A split costs no duplicate compiles**, which
+was the worry and is now a measurement: with one display family moved to 1 and
+the rest left at 4, a four-track scene compiled 8 pipelines and an eight-track
+scene 32, the same totals as the all-4x build, because no `PipelineDescriptor`
+object is reachable from two displays' pass lists.
+
+**Every display still asks for 4**, so none of those bytes have gone anywhere
+yet. Which displays should drop to 1 is a look-at-the-pixels decision taken one
+display at a time, and the captures to look at are in
+[../ideas/arc-antialiasing-without-msaa.md](../ideas/arc-antialiasing-without-msaa.md).
+WebGL2 has no counterpart in our accounting, because `antialias: true` puts the
+multisample backbuffer inside the browser's budget.
 
 **Rebuilding it every frame is what turned out not to matter, and the number is
 worth keeping so nobody re-derives the worry.** The mechanism is real and

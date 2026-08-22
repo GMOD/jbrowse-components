@@ -1,6 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import type { PipelineDescriptor } from './types.ts'
+import type { PipelineDescriptor, SampleCount } from './types.ts'
 
 /**
  * The GPU objects that belong to the **device** rather than to one `WebGPUHal`,
@@ -20,7 +20,9 @@ import type { PipelineDescriptor } from './types.ts'
  * Identity therefore means "same shader, same layout, same blend, same
  * topology" without comparing any of them, and two passes that merely share a
  * `.slang` shape module (MAF and multi-row both draw `rowRect`) get separate
- * entries because `slangPass` built them separate objects.
+ * entries because `slangPass` built them separate objects. The **sample count**
+ * is the one pipeline input the descriptor cannot express, so it is the inner
+ * key; see the `pipelines` field.
  *
  * The one field of a pipeline that is not on the descriptor is the uniform
  * size, and it cannot make two HALs disagree here:
@@ -62,8 +64,19 @@ interface DeviceGpuCache {
    * deterministic, so the second display should fail with the first's message
    * rather than re-running a compile that cannot succeed. It has already been
    * awaited by whoever built it, so a stored rejection is not an unhandled one.
+   *
+   * **The inner key is the sample count**, which is the one thing a pipeline
+   * bakes in that the descriptor does not carry: multisample state belongs to
+   * the pipeline, and the count is a property of the *display* rather than of
+   * the pass. Handing a display at 1x a pipeline built at 4x is not an error
+   * the API reports at draw time — the render pass rejects every draw and the
+   * canvas comes out blank — so the count has to be part of the key, not an
+   * assumption about it.
    */
-  pipelines: WeakMap<PipelineDescriptor, Promise<GPURenderPipeline>>
+  pipelines: WeakMap<
+    PipelineDescriptor,
+    Map<SampleCount, Promise<GPURenderPipeline>>
+  >
 }
 
 function createLayouts(device: GPUDevice): DeviceLayouts {
@@ -124,19 +137,31 @@ export function getDeviceLayouts(device: GPUDevice) {
 }
 
 /**
- * The pipeline for `desc` on `device`, building it through `build` on the first
- * ask and handing every later one the same promise.
+ * The pipeline for `desc` at `sampleCount` on `device`, building it through
+ * `build` on the first ask and handing every later one the same promise.
+ *
+ * `build` receives the sample count rather than closing over one, so the key
+ * and the pipeline stored under it cannot disagree.
  */
 export function getOrBuildPipeline(
   device: GPUDevice,
   desc: PipelineDescriptor,
-  build: (layouts: DeviceLayouts) => Promise<GPURenderPipeline>,
+  sampleCount: SampleCount,
+  build: (
+    layouts: DeviceLayouts,
+    sampleCount: SampleCount,
+  ) => Promise<GPURenderPipeline>,
 ) {
   const { layouts, pipelines } = cacheFor(device)
-  let pipeline = pipelines.get(desc)
+  let bySampleCount = pipelines.get(desc)
+  if (!bySampleCount) {
+    bySampleCount = new Map()
+    pipelines.set(desc, bySampleCount)
+  }
+  let pipeline = bySampleCount.get(sampleCount)
   if (!pipeline) {
-    pipeline = build(layouts)
-    pipelines.set(desc, pipeline)
+    pipeline = build(layouts, sampleCount)
+    bySampleCount.set(sampleCount, pipeline)
   }
   return pipeline
 }
