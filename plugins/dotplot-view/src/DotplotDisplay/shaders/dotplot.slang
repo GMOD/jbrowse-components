@@ -143,7 +143,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // would be of a discontinuous quantity. The vertex stage pads the quad by the
   // same half-width, so the ramp reaches zero inside the geometry rather than
   // being cut off half way down.
-  float edgeAlpha = aaSmoothRamp(halfWidth - d, aaHalfPx(u.devicePixelRatio));
+  float edgeAlpha = aaRamp(halfWidth - d, 2.0 * aaHalfPx(u.devicePixelRatio));
   // The packed color's own alpha, the plot-wide slider, and the SDF edge, in
   // that order. Premultiplied output, so the slider scales rgb with it.
   float finalAlpha = fragIn.color.a * u.alpha * edgeAlpha;
