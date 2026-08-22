@@ -33,6 +33,10 @@ export interface PlainTrackConfig {
 
 // One non-admin working copy, plus the trackConfigDeltas value it mirrors. That
 // stamp is the cache key, not trackId — see getEditableTrackConfig.
+//
+// Exported because it reaches an exported signature, so un-exporting it fails
+// TS4058 in three files — and only under `pnpm typecheck`, since jest strips
+// types.
 export interface EditableTrackConfig {
   node: IAnyStateTreeNode
   delta: PlainTrackConfig | undefined

@@ -66,6 +66,7 @@ export type {
   BaseSession,
   BaseSessionType,
   ConnectionTrackConfigEntry,
+  EditableTrackConfig,
   PlainTrackConfig,
   ReferringNode,
   SessionWithConnections,
