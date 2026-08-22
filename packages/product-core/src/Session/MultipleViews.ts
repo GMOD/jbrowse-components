@@ -469,9 +469,19 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        * resolves the state model first, then adds the view. The await means
        * the view is NOT in `session.views` when this returns its promise —
        * callers that need the created view use the resolved value.
+       *
+       * The snapshot is walked too, not just the view type: a launch that
+       * opens with tracks names their displays (the dotplot's "synteny view of
+       * selection" hands over both), and those state models are dynamic
+       * imports as much as the view's is. `getViewType` first so an unknown
+       * type name still fails by that name rather than as a union mismatch —
+       * the walk skips what is not registered.
        */
       async launchView(typeName: string, initialState = {}) {
         await pluginManager.getViewType(typeName).loadStateModel()
+        await pluginManager.preloadSessionTypes({
+          views: [{ type: typeName, ...initialState }],
+        })
         return self.addView(typeName, initialState)
       },
     }))

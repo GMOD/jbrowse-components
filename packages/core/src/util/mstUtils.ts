@@ -231,6 +231,12 @@ export async function launchOrReplaceView(args: {
       args.session,
     )
     await pluginManager?.getViewType(args.typeName).loadStateModel()
+    // the snapshot names more than the view type: a read-vs-ref launch arrives
+    // with its rows and the tracks on them, and those displays' state models
+    // are dynamic imports too
+    await pluginManager?.preloadSessionTypes({
+      views: [{ type: args.typeName, ...args.initialState }],
+    })
   }
   return addOrReplaceView(args)
 }

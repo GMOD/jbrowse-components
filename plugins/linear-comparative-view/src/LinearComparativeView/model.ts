@@ -760,6 +760,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * afterAttach autorun loads the assembly regions and navigates (whole
        * genome, or `loc` when given), so we don't reimplement that imperatively
        * here.
+       *
+       * Returns `launchTrack`'s promise rather than awaiting it: the synteny
+       * display's state model is a dynamic import away, and this action stays
+       * synchronous (an MST action holds action context only for its
+       * synchronous prologue) while a caller that needs the track on screen
+       * still has something to await.
        */
       appendRow({
         assembly,
@@ -776,9 +782,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           hideHeader: true,
           init: { assembly, loc },
         })
-        if (syntenyTrackId) {
-          self.showTrack(syntenyTrackId, level)
-        }
+        return syntenyTrackId
+          ? self.launchTrack(syntenyTrackId, level)
+          : undefined
       },
     }))
     .views(() => ({

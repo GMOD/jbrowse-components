@@ -961,7 +961,8 @@ export default class PluginManager {
 
   /**
    * Loads the lazily registered state models for every view and display type a
-   * session snapshot names — including the child views of composite views
+   * session snapshot names — the single-view products' `view` as well as a
+   * multi-view session's `views`, including the child views of composite views
    * (breakpoint-split, the linear-comparative family), synteny `levels`, and
    * the displays of every track — so the snapshot can be instantiated. Cheap
    * no-op when everything it names is already loaded. Unregistered type names
@@ -1030,7 +1031,16 @@ export default class PluginManager {
       }
     }
     if (sessionSnapshot && typeof sessionSnapshot === 'object') {
-      collectViews((sessionSnapshot as { views?: unknown }).views)
+      const { view, views } = sessionSnapshot as {
+        view?: unknown
+        views?: unknown
+      }
+      collectViews(views)
+      // `view`, singular, is the single-view embedded products' session shape
+      // (react-linear-genome-view, react-circular-genome-view). Their root
+      // model's own guard walks both keys, so a preload that skipped this one
+      // left a snapshot that could never satisfy it.
+      collectViews(view ? [view] : undefined)
     }
     await Promise.all([
       ...[...viewNames]

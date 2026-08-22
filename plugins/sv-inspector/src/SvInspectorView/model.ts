@@ -481,7 +481,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               // circularView.tracks makes this autorun depend on its own writes
               circularView.hideTrack(variantTrackId)
               if (conf) {
-                circularView.addTrackConf(conf)
+                // the loading twin: the chord display's state model is a
+                // dynamic import until something asks for it, and the plain
+                // `addTrackConf` would report that as a failed show. Both reads
+                // above are synchronous, so the autorun still tracks them
+                void circularView.launchTrackConf(conf)
               }
             },
             { name: 'SvInspectorView track configuration binding' },
