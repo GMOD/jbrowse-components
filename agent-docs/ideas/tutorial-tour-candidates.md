@@ -1,6 +1,6 @@
 ---
 name: tutorial-tour-candidates
-description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. Seven are filmed and their entries record what each estimate got wrong; what is left is 5, 6, 8, 10, 12, 13 and 14. Read before writing a video spec for a tutorial.
+description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. Eleven are filmed and their entries record what each estimate got wrong; what is left is 5, 13 and 14. Read before writing a video spec for a tutorial.
 audience: internal
 ---
 
@@ -12,19 +12,19 @@ the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
 holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
-Coverage: **19 of 43 tutorials carry a tour** — `allvsall_synteny`,
+Coverage: **20 of 43 tutorials carry a tour** — `allvsall_synteny`,
 `analyze_trio`, `bxd_qtl`, `cancer_sv`, `chromhmm`, `dog10k_selection`,
-`genomes_proteins` (3), `hg002_haplotypes`, `hic_structural_variants`,
-`mcscan_synteny_grape_peach`, `methylation`,
+`genomes_proteins` (3), `genomes_synteny`, `hg002_haplotypes`,
+`hic_structural_variants`, `mcscan_synteny_grape_peach`, `methylation`,
 `multiway_synteny_grape_peach_cacao`, `pangenome_ecoli` (3), `pangenome_hprc`
 (2), `repeatmasker_classes`, `sv_multisamples`, `sv_visualization_cgiab`,
-`synteny_visualization`, `tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 24
+`synteny_visualization`, `tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 23
 do not.
 
-**Ten candidates are filmed and landed** on 2026-08-21 — 1 to 4, then 6, 7, 8, 9,
-11 and 12, one clip serving two pages for 3. Their entries stay below with what
-each actually cost and what it corrected, because the next tour on those pages
-starts from them. **What is left is 5, 10, 13 and 14**, and 14 wants its page
+**Eleven candidates are filmed and landed** on 2026-08-21 — 1 to 4, then 6, 7,
+8, 9, 10, 11 and 12, one clip serving two pages for 3. Their entries stay below
+with what each actually cost and what it corrected, because the next tour on
+those pages starts from them. **What is left is 5, 13 and 14**, and 14 wants its page
 restructured first.
 
 Every candidate below came out of the ten-agent tutorial audit
@@ -183,11 +183,20 @@ comparison figure.
    describes, and the prose now says where the offer lives. The dialog's own
    "also align here … no panel" line for the four undeclared assemblies is in
    frame, which is the lane-versus-panel distinction the page makes in prose.
-10. **`synteny/liftover_launch`** (`genomes_synteny.md`) — right-click a chain
-    block → the launch dialog's CIGAR checkbox → `Replace current view`. The
-    page carries a four-panel composite that is a route flattened into stills
-    **on the wrong dataset**, and filming this lets it delete the panTro6/_FTO_
-    detour that breaks its spine.
+10. **`synteny/liftover_launch`** (`genomes_synteny.md`) — **FILMED**, 540px
+    frame, 31s, on hg38 vs hs1 at _TNNT3_ rather than on the composite's
+    panTro6/_FTO_ pair. **The detour was not deleted, it was MOVED**: the
+    four-panel composite is now the first figure of "Trying other pairs", which
+    is the section claiming the click-path works on any liftOver track and had
+    no picture, and the L1HS and panTro6-hub paragraphs went with it. The clip
+    lands on the window `synteny_hg38_hs1_tnnt3` is of, so the ribbon-settings
+    section has a ribbon to change and the rearrangement has something to read.
+    Two things the entry did not know: the dialog is NOT the frame's constraint
+    here (two checkboxes and a number field, against the region launch's panel
+    list), and the block under the cursor is the whole-chromosome hg38→hs1
+    chain — so unticking the CIGAR box opens both panels on all of chr11, which
+    is now the sentence after the checkbox is named. Hovered rather than
+    toggled: unticking it films a launch nobody wants.
 11. **`synteny/dotplot_reorder`** (`mcscan_synteny_grape_peach.md`) —
     **FILMED**, 768px frame, 28s rather than the five seconds this entry
     estimated: it is a menu item that opens a dialog and does nothing until a

@@ -31,6 +31,24 @@ refilm and none of which the run reports.
 - **The session comes from a `*VideoFixtures` bag in `../specs/`**, never
   written again here: a tour whose track config had drifted from the figures'
   would document a route through an app the rest of the page is not showing.
+- **The camera parks the pointer at the top middle of the frame before it
+  rolls**, and in a linear view that is the overview's cytoband strip -- so the
+  opening frame of an LGV tour carries the band's own hover tooltip, over the
+  view title, and nothing in the run says so. A first `hover` on
+  `[aria-label="JBrowse"]` takes the pointer off it; the tooltip is gone by the
+  time the tour's own first step runs.
+- **A right-click anchored by locus lands on whatever the display DREW there**,
+  which inside an alignment is often a CIGAR op rather than the feature. Over an
+  indel wide enough to paint, the menu grows an "Open deletion details (N bp)"
+  row above the items the tour is for -- the launch still works, since the menu
+  is built from the feature either way, but the frame then shows a row the page
+  never mentions. Move the locus onto a plain stretch of the block.
+- **The caption chip is fixed 20px off the frame's BOTTOM, not off the app's.**
+  A frame sized exactly to the app therefore puts every caption over the last
+  ~56px of the last state, which is usually the half the caption is about (an
+  empty mate panel, the bottom row of a stack). `video-report` allows 120px of
+  slack before it says anything, so a frame with the chip's strip under the app
+  reports clean.
 - **A tour that PASTES its track films the defaults, not the figures' display.**
   A session spec pins a lane's height, its colour jexl and its labels; a pasted
   fence carries only what a reader would copy, so the lane arrives at the

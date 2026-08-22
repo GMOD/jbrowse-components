@@ -7,13 +7,14 @@ description: Live state of the tutorial video-tour thread — which candidates a
 
 ## State
 
-**Ten candidates are filmed and landed** (2026-08-21): 1 to 4
+**Eleven candidates are filmed and landed** (2026-08-21): 1 to 4
 (`variants/trio_phased_matrix`, `synteny/hg002_dotplot_import`,
 `sv/derivative_allele_route` over two pages, `repeats/painting_display_switch`),
 then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
 `synteny/dotplot_reorder`), then 6, 8 and 12 (`sv/multisample_sort`,
-`synteny/allvsall_launch_from_selection`, `epigenomics/chromhmm_cluster`).
-Coverage is **19 tutorials of 43**. What is left is 5, 10, 13 and 14.
+`synteny/allvsall_launch_from_selection`, `epigenomics/chromhmm_cluster`), then
+10 (`synteny/liftover_launch`). Coverage is **20 tutorials of 43**. What is left
+is 5, 13 and 14.
 
 **5 and 13 are the two whose risk nobody has retired**: both are pileups or
 graph fetches, and `website/CLAUDE.md` warns those block the main thread under
@@ -22,9 +23,9 @@ swiftshader. Try `--headed` first rather than assuming a spec is wrong.
 - **[ideas/tutorial-tour-candidates.md](../ideas/tutorial-tour-candidates.md)**
   — the ranked list, and the one to work from. Each filmed entry now records
   what its estimate got wrong, because the next tour on that page starts there.
-  Four of the seven found a defect in the page they film, which is the strongest
-  argument for the thread: a route nobody walks is a route the prose can be
-  wrong about.
+  Five of the eleven found a defect in the page they film, which is the
+  strongest argument for the thread: a route nobody walks is a route the prose
+  can be wrong about.
 - **[ideas/tutorial-structure-audit.md](../ideas/tutorial-structure-audit.md)**
   — eight pages that fail the reorderability test, three that want splitting.
   Still editorial calls nobody has made, minus `ld_mosquitoes`, whose restated
@@ -42,9 +43,8 @@ shortens is prose. `website/CLAUDE.md` § Videos carries the rule.
 
 Not here. `website/CLAUDE.md` § Videos has the corpus-level rules (framing,
 embedding, the store, the gates), and **`website/scripts/videos/CLAUDE.md`** has
-what goes wrong inside a spec's `steps` — the three that cost a refilm on
-2026-08-21 are written up there rather than in this file, so they survive it
-being deleted.
+what goes wrong inside a spec's `steps` — each one that cost a refilm is written
+up there rather than in this file, so they survive it being deleted.
 
 The order that a run depends on, which no check enforces: rebuild
 `@jbrowse/web`, write the `<Video>` tag (`check-video-specs` fails a spec no page
