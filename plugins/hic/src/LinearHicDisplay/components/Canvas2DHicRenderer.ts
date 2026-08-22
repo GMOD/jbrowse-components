@@ -66,10 +66,18 @@ export function drawHicBlocks(
   const minSum = (-viewOffsetX / viewScale) * Math.SQRT2 - pad
   const maxSum = ((width - viewOffsetX) / viewScale) * Math.SQRT2 + pad
 
+  // The uniform `viewScale` rides on the coordinates, not the ctx transform:
+  // uniform scaling commutes with rotation, so the pixels are identical — and
+  // the ctx entries stay O(1), which the SVG export needs. SvgCanvas rounds
+  // serialized transforms to 2 decimals, and `viewScale` is 1/bpPerPx (~1e-4
+  // at gene scale), so putting it in the matrix rounds the whole triangle to
+  // zero. `yScalar` stays in the matrix: it is a y-only scale, so it must land
+  // AFTER the rotation (see hicTransform.ts), and it is O(1).
   ctx.save()
   ctx.translate(viewOffsetX, 0)
-  ctx.scale(viewScale, viewScale * yScalar)
+  ctx.scale(1, yScalar)
   ctx.rotate(-Math.PI / 4)
+  const drawnBinWidth = binWidth * viewScale
 
   // Strided over the packed instance buffer — one cache line per contact rather
   // than the two streams the parallel positions/counts arrays were. The
@@ -107,7 +115,7 @@ export function drawHicBlocks(
     }
 
     ctx.fillStyle = fill
-    ctx.fillRect(px, py, binWidth, binWidth)
+    ctx.fillRect(px * viewScale, py * viewScale, drawnBinWidth, drawnBinWidth)
   }
 
   ctx.restore()

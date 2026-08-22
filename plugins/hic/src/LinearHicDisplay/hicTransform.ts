@@ -1,12 +1,15 @@
 /**
  * The Hi-C view transform, forward and inverse, in one place.
  *
- * The forward map is `hic.slang`'s `vs_main`, which the Canvas2D path implements
- * as a `ctx.translate/scale/rotate` stack and the SVG export inherits through
- * `SvgCanvas`'s CTM: rotate the bin into the triangle **first**, then apply the
- * viewport scale and the fit-to-height squash. That order is load-bearing — a
- * squashed triangle's bins are parallelograms, not rectangles, because the y-only
- * scale lands after the rotation.
+ * The forward map is `hic.slang`'s `vs_main`, which the Canvas2D path
+ * implements as coordinates pre-multiplied by the uniform `viewScale` (which
+ * commutes with rotation, and must stay out of the ctx matrix — SvgCanvas
+ * rounds serialized transforms to 2 decimals, and 1/bpPerPx rounds to zero)
+ * under a `ctx.translate/scale(1, yScalar)/rotate` stack the SVG export
+ * inherits through `SvgCanvas`'s CTM: rotate the bin into the triangle
+ * **first**, then apply the fit-to-height squash. That order is load-bearing —
+ * a squashed triangle's bins are parallelograms, not rectangles, because the
+ * y-only scale lands after the rotation.
  *
  * The inverse is what turns a mouse position into a contact bin. It was four
  * lines inlined in `model.hitTest` whose only tie to the forward map was a

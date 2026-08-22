@@ -84,20 +84,25 @@ describe('Canvas2DHicRenderer', () => {
     expect(ctx.fillRect).toHaveBeenCalledWith(10, 20, 10, 10)
   })
 
-  test('applies viewport transform via ctx stack', () => {
+  // The uniform viewScale rides on the coordinates, never the ctx matrix:
+  // SvgCanvas serializes ctx transforms rounded to 2 decimals, and viewScale is
+  // 1/bpPerPx, which rounds to zero at gene scale — only the O(1) yScalar (a
+  // y-only squash, so it must land after the rotation) belongs in the stack.
+  test('applies yScalar via the ctx stack and viewScale on the coordinates', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)
     renderer.uploadColorRamp(makeColorRamp())
 
     renderer.render(
-      makeData({ positions: [0, 0] }),
+      makeData({ positions: [10, 20] }),
       makeRenderState({ viewScale: 2, viewOffsetX: 100, yScalar: 0.5 }),
     )
 
     expect(ctx.save).toHaveBeenCalled()
     expect(ctx.translate).toHaveBeenCalledWith(100, 0)
-    expect(ctx.scale).toHaveBeenCalledWith(2, 1)
+    expect(ctx.scale).toHaveBeenCalledWith(1, 0.5)
     expect(ctx.rotate).toHaveBeenCalledWith(-Math.PI / 4)
+    expect(ctx.fillRect).toHaveBeenCalledWith(20, 40, 20, 20)
     expect(ctx.restore).toHaveBeenCalled()
   })
 
