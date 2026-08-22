@@ -23,6 +23,12 @@ export interface JBrowseAppController {
    * which is otherwise unobtainable and is what `removeView` takes.
    */
   addView(view: ManagedView): string
+  /**
+   * `addView` for view types whose state model may be lazily loaded: resolves
+   * the state model first. `addView` requires it loaded already and throws
+   * otherwise.
+   */
+  launchView(view: ManagedView): Promise<string>
   /** close a view opened at launch or by `addView`; unknown ids are ignored */
   removeView(id: string): void
   /**
@@ -67,6 +73,13 @@ export function createApp(
         id: view.id,
         init: view.init,
       }).id
+    },
+    async launchView(view) {
+      const created = await viewState.session.launchView(view.type, {
+        id: view.id,
+        init: view.init,
+      })
+      return created.id
     },
     removeView(id) {
       const view = viewState.session.views.find(v => v.id === id)

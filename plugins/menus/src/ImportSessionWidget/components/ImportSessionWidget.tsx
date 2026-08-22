@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { FileDropZone } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -56,6 +56,7 @@ const ImportSessionWidget = observer(function ImportSessionWidget({
                   'No session found in file. Expected a JBrowse session export (a JSON file with a top-level "session" key).',
                 )
               }
+              await getEnv(model).pluginManager.preloadViewTypes(session)
               getSession(model).setSession?.(
                 session as { name: string; [key: string]: unknown },
               )
