@@ -82,25 +82,6 @@ export default function TrackHeightMixin() {
       get scrollableHeight(): number {
         return Number.POSITIVE_INFINITY
       },
-
-      /**
-       * #getter
-       * Whether this display offers the fixed/grow/fit vocabulary at all, or
-       * only the drag-resizable `height` slot above. False here; `HeightModeMixin`
-       * overrides it to true, and `types.compose` resolves the collision to the
-       * later argument — which is exactly what makes it a usable compose-order
-       * probe, the same way `measuresBytesInFetch` is for the canvas size gate.
-       *
-       * That probe is the point. `HeightModeMixin` also overrides `height` and
-       * `resizeHeight`, and composing it FIRST silently hands both back to this
-       * mixin: grow mode stops working with no error anywhere, and the two
-       * `height` getters agree in fixed mode, so no *value* can tell the orders
-       * apart. A flag that differs by construction can. Read back in
-       * `HeightModeMixin`'s `afterAttach`.
-       */
-      get supportsHeightModes(): boolean {
-        return false
-      },
     }))
     .actions(self => ({
       /**

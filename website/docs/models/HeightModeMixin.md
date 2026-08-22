@@ -38,7 +38,8 @@ included.
 
 Must be composed **after** `TrackHeightMixin`: it overrides that mixin's
 `height` getter and `resizeHeight` action, and `types.compose` resolves a
-collision to the later argument.
+collision to the later argument. `no-restricted-syntax` fails the wrong order
+written in one `types.compose` and says what it costs.
 
 ## Getters
 
@@ -52,7 +53,6 @@ collision to the later argument.
 | <span id="getter-fitheighttodisplay">**fitHeightToDisplay**</span><br><code>boolean</code> | `fit` mode as a boolean, derived from the unified `heightMode` slot. |
 | <span id="getter-growtargetheight">**growTargetHeight**</span><br><code>number</code> | Overridable hook: the height this display's laid-out content wants, in px, before the `growMaxHeight` cap. Canvas answers with its settled feature stack, alignments with its stacked-sections height. The default is the raw slot, so a display that composes this without answering just behaves as if it were fixed.<br><br>**It must not read the reactive `height` getter**, directly or through a layout that does — in grow mode `height` returns `grownHeight`, so that is a MobX computed cycle. Read `fitTargetHeight`/`growMaxHeight` instead; both users do, and say so. |
 | <span id="getter-grownheight">**grownHeight**</span><br><code>number</code> | Target track height for `grow`: what the content wants, capped so a deep stack doesn't grow the track to thousands of px (the remainder scrolls). What `installGrowExitBake` bakes into the slot on exit. |
-| <span id="getter-supportsheightmodes">**supportsHeightModes**</span><br><code>boolean</code> | Overrides `TrackHeightMixin`'s `false`. Composed in the required order this one wins, which is what the `afterAttach` below reads back — see there, and the base getter, for why the order can't be probed any other way. |
 | <span id="getter-height">**height**</span><br><code>number</code> | In grow mode the track height follows the laid-out content reactively — no autorun writes the height config slot, so a settled relayout never churns the persisted session nor bakes a momentary height. Fixed/fit read the slot (fit shrinks content to fill it).<br><br>Guarded on `view.initialized`: `growTargetHeight` transitively reads view-geometry getters that throw before the view is measured, and unlike an autorun (whose MobX error boundary would swallow the pre-init throw) a getter propagates it into render/hydration. Overrides `TrackHeightMixin.height`. |
 
 ## Actions

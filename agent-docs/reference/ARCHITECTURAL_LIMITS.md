@@ -944,16 +944,6 @@ only on a real violation):
   across files that no single one of them spells out. The check is on the state,
   so it holds whatever produced it; a selector on `self.afterAttach` would
   narrow it to the named cause.
-- **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, whose `height`
-  and `resizeHeight` it overrides, so the wrong order silently leaves grow mode
-  inert. This looked uncheckable — both members are legitimately defined on both
-  sides, and the two `height` getters agree in fixed mode, so no *value*
-  distinguishes the orders. What distinguishes them is a flag that differs by
-  construction: `supportsHeightModes` (false on the base, true on the mode
-  mixin), read back in `HeightModeMixin`'s own `afterAttach`, exactly as the gate
-  case reads `measuresBytesInFetch`. **The general move: when a collision has no
-  natural opt-in to probe, add the flag rather than concluding the order can't
-  report itself.** Pinned both ways in `TrackHeightMixin.test.ts`.
 - **`reload()` must reach a fetch, not just clear the error.**
   `makeRetryContractCheck` (`assertDisplayContract.ts`), installed by both fetch
   foundations: a run following a `reloadCounter` bump that declines to fetch *is*
@@ -1020,6 +1010,24 @@ only on a real violation):
   attach-time read could. Nothing in tree composes that way (both canvas
   displays name both mixins in one `types.compose`), and out of tree neither
   form reaches at all.
+
+- **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, whose `height`
+  and `resizeHeight` it overrides, so the wrong order silently leaves grow mode
+  inert. Same selector shape as the canvas gate above, and the same residual.
+  This one is worth reading beside the runtime version it replaced, because that
+  version needed a **flag invented for it**: both members are legitimately
+  defined on both sides and the two `height` getters agree in fixed mode, so no
+  value distinguishes the orders, and supportsHeightModes (false on the base,
+  true on the mode mixin — unbackticked because nothing declares it any more) was
+  added to *both* mixins purely to be read back at attach. **A selector reads the
+  argument order itself, so the probe it needed had nothing left to do** — the
+  flag and its two declarations are gone with the check. What replaced its two
+  tests is the consequence rather than the probe: `TrackHeightMixin.test.ts`
+  drag-resizes a grow-mode fixture both ways round, and the wrong order drags the
+  raw slot from 100 to 130 while never leaving grow, where the right one takes
+  the 300px the track was displaying to 330 and leaves grow first. **The general
+  move: a state a check invented for itself is a cost of that check, and moving
+  the check should take it.**
 
 - **`rpcProps` / `regionHasData` / `isCacheValid` must be `.views()`, not
   `.actions()`.** MobX runs actions untracked, so the reads register no
@@ -1117,8 +1125,10 @@ against restating a list's length applies here too, so read the list: a `deps()`
 callback the global-fetch helper reads unconditionally, a `prepare()` that says
 which of its two bail-outs it took, and a required `rpcProps` (or the explicit
 opt-out above). One condition this used to name — a marker the height mixins can
-compare composition order on — is `supportsHeightModes`, and it has moved up into
-"Now checked".
+compare composition order on — went the other way: supportsHeightModes was added,
+read back at attach, and then deleted along with that check, because the order it
+existed to probe is an argument order and a selector reads it directly. It is
+unbackticked here because no code declares it.
 
 ### A spreadsheet's rows leave the session snapshot silently, and a local import cannot get them back
 

@@ -9,11 +9,6 @@ import type { HeightModeConfigModel } from './heightModeConfigSchemaFields.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { IReactionDisposer } from 'mobx'
 
-// This ESM package builds without @types/node, but consuming bundlers
-// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
-// reference and give it a minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
-
 /**
  * The whole of what `HeightModeMixin` needs a composing display to be. It keeps
  * `ResolvableDisplay` because the promotable `heightMode` read goes through the
@@ -69,7 +64,8 @@ const heightHost = (self: object) =>
  *
  * Must be composed **after** `TrackHeightMixin`: it overrides that mixin's
  * `height` getter and `resizeHeight` action, and `types.compose` resolves a
- * collision to the later argument.
+ * collision to the later argument. `no-restricted-syntax` fails the wrong order
+ * written in one `types.compose` and says what it costs.
  */
 export default function HeightModeMixin() {
   return types
@@ -147,17 +143,6 @@ export default function HeightModeMixin() {
       get grownHeight(): number {
         return Math.min(self.growTargetHeight, self.growMaxHeight)
       },
-
-      /**
-       * #getter
-       * Overrides `TrackHeightMixin`'s `false`. Composed in the required order
-       * this one wins, which is what the `afterAttach` below reads back — see
-       * there, and the base getter, for why the order can't be probed any other
-       * way.
-       */
-      get supportsHeightModes(): boolean {
-        return true
-      },
     }))
     .views(self => ({
       /**
@@ -215,35 +200,6 @@ export default function HeightModeMixin() {
           heightHost(self).setHeightMode('fixed')
         }
         return heightHost(self).setHeight(displayed + distance) - displayed
-      },
-    }))
-    .actions(self => ({
-      // Compose-order self-check, the same shape `CanvasFeatureGateMixin` uses
-      // for its own collision. This mixin overrides `TrackHeightMixin`'s
-      // `height` and `resizeHeight`, and `types.compose` resolves a collision to
-      // the later argument — so composing it FIRST silently drops grow mode:
-      // the reactive height stops following the content, the drag-resize stops
-      // leaving grow, and nothing errors. Reading our own flag back is the whole
-      // test; if it isn't true, the base's `false` won and so did the base's
-      // `height`.
-      //
-      // ARCHITECTURAL_LIMITS.md listed this as the one ordering contract still
-      // unchecked, and prescribed exactly this: make the order report itself at
-      // attach. The fork auto-chains `afterAttach`, so this needs no cooperation
-      // from the composing display.
-      afterAttach() {
-        if (
-          process.env.NODE_ENV !== 'production' &&
-          !self.supportsHeightModes
-        ) {
-          console.error(
-            '[jbrowse display contract] HeightModeMixin() must be composed ' +
-              'AFTER TrackHeightMixin(): the later .compose() argument wins on ' +
-              '`height` and `resizeHeight`, and grow mode is currently inert ' +
-              'for this display. See BaseLinearDisplay/CLAUDE.md, ' +
-              '"Scroll and height are hooks".',
-          )
-        }
       },
     }))
 }

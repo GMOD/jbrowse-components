@@ -126,29 +126,50 @@ test('expandToContentHeight goes through an overriding resizeHeight', () => {
 
 // The compose-order contract. `HeightModeMixin` overrides `height` and
 // `resizeHeight`, and `types.compose` gives a collision to the later argument,
-// so the wrong order silently drops grow mode — and the two `height` getters
-// agree in fixed mode, so nothing about the *value* distinguishes them. The
-// flag is what does, and the mixin reads it back at attach.
+// so the wrong order silently drops grow mode. Writing the two the wrong way
+// round in one `types.compose` is a `no-restricted-syntax` error; what these
+// pin is the consequence the rule exists to prevent, which is the half a lint
+// selector cannot state — and which the `supportsHeightModes` flag they used to
+// read stood in for, because the flag was invented as a compose-order probe and
+// nothing else ever read it.
 //
-// ARCHITECTURAL_LIMITS.md listed this as the last unchecked ordering contract.
+// Grow mode is the state that tells the two orders apart at all: in fixed mode
+// both `height` getters return the same slot, which is why the contract went
+// unchecked for so long. So the fixture pins `heightMode` and `growTargetHeight`
+// in its own trailing `.views()` — a display's two jobs under this mixin — and
+// drag-resizes.
 const heightModeConfig = ConfigurationSchema('TestHeightMode', {
   height: { type: 'number', defaultValue: 100 },
+  growMaxHeight: { type: 'number', defaultValue: 1000 },
   heightMode: {
     type: 'stringEnum',
     model: types.enumeration(['fixed', 'grow', 'fit']),
-    defaultValue: 'fixed',
+    defaultValue: 'grow',
   },
 })
 
 function composeInOrder(...mixins: any[]) {
-  return types.compose(
-    'TestHeightModeOrder',
-    types.compose('TestMixins', mixins[0], mixins[1]),
-    types.model({
-      type: types.literal('test'),
-      configuration: heightModeConfig,
-    }),
-  )
+  return types
+    .compose(
+      'TestHeightModeOrder',
+      types.compose('TestMixins', mixins[0], mixins[1]),
+      types.model({
+        type: types.literal('test'),
+        configuration: heightModeConfig,
+      }),
+    )
+    .views(() => ({
+      // Pinned rather than resolved: `heightMode` is a promotable slot with no
+      // session here to cascade through, and the mixin's default
+      // `growTargetHeight` is the `height` slot itself, which would make grow
+      // indistinguishable from fixed — the very collapse under test.
+      get heightMode() {
+        return 'grow' as const
+      },
+      get growTargetHeight() {
+        return 300
+      },
+    }))
 }
 
 // `afterAttach` fires on attach to a parent, which is how a display is really
@@ -164,23 +185,21 @@ function mount(...mixins: any[]) {
   return display
 }
 
-// Read through the jest gate (`config/jest/contractGate.js`) rather than
-// a `console.error` spy: a spy with a mock implementation hides the report from
-// the gate, so the wrong-order test would have been excused by accident rather
-// than on purpose. Taking the reports is the opt-in.
-test('the correct order leaves HeightModeMixin owning the height', () => {
+test('the correct order leaves HeightModeMixin owning the drag-resize', () => {
   const display = mount(TrackHeightMixin(), HeightModeMixin())
-  expect(display.supportsHeightModes).toBe(true)
-  expect(takeContractReports()).toEqual([])
+  display.resizeHeight(30)
+  // the grown height the user was seeing, plus the drag, and grow left first
+  expect(display.configuration.height).toBe(330)
+  expect(display.configuration.heightMode).toBe('fixed')
 })
 
-test('the wrong order reports itself at attach', () => {
+test('the wrong order silently leaves grow mode inert', () => {
   const display = mount(HeightModeMixin(), TrackHeightMixin())
-  // the base's `false` won, and with it the base's `height`/`resizeHeight`
-  expect(display.supportsHeightModes).toBe(false)
-  expect(takeContractReports().join('\n')).toContain(
-    'must be composed AFTER TrackHeightMixin()',
-  )
+  display.resizeHeight(30)
+  // the base's `resizeHeight` won: it drags the raw slot, never sees the 300px
+  // the track was displaying, and never leaves grow
+  expect(display.configuration.height).toBe(130)
+  expect(display.configuration.heightMode).toBe('grow')
 })
 
 // One line per mixin, and the whole point of it: a host cast widened back to

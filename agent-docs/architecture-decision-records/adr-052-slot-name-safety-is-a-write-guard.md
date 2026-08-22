@@ -126,8 +126,8 @@ Four reasons, in descending order of how much they should stop a revival:
    have two failure modes here. Type erasure is the enumerated, baselined,
    CI-gated one. The other is that `types.compose` resolves a member collision
    by *argument position* — `HeightModeMixin` must compose after
-   `TrackHeightMixin`, nothing checks it, and `assertDisplayContract`
-   structurally cannot (there is no opt-in flag to read back). A generator
+   `TrackHeightMixin`, which `no-restricted-syntax` now fails within one
+   `types.compose` call and nothing catches across two. A generator
    emitting a getter per flagged slot is a collision generator by construction.
    The proposed guard — compare emitted names against the model file's AST —
    catches same-file shadowing but not collision with another mixin in the
