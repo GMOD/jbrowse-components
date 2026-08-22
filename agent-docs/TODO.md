@@ -74,10 +74,10 @@ before anyone noticed.
 | [PanSN prefixes in the add-track form](#offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form) | comparative | the error half shipped; this is the discovery half |
 | [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
 | [Sub-pixel matrix rows draw 1px on the GPU and thinner on Canvas2D](#a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d) | variants, backends | a visual call; the 41% is measured and neither side is obviously wrong |
+| [Fill the hi-C rectangle, not just the triangle](#fill-the-whole-display-rectangle-not-just-the-hi-c-triangle) | hic, GPU | decide what the y axis means once the apex stops bounding it; the cost is measured |
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
-| [Hi-C's static-block fetch buffers the viewport; measure the vertex cost](#hi-cs-static-block-fetch-buffers-the-viewport-measure-the-vertex-cost) | hic, GPU | frame time at auto binsize on a real file, buffered vs exact-visible span |
 | [Take the MSAA target's size on a retina display](#take-the-msaa-targets-size-on-a-retina-display) | GPU, limits | run the probe at dpr 2; the 640 MiB is arithmetic, not measurement |
 | [Does a sixth track want a sixth RPC worker](#does-a-sixth-alignments-track-want-a-sixth-rpc-worker) | RPC, limits | one `workerCount` line to try; the answer is a memory measurement, not a stopwatch |
 | [Cross-region arc count at 300x](#read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
@@ -1954,27 +1954,48 @@ The hit test is already settled and is not waiting on this: `matrixHitTest.ts`
 walks the GPU's 1px band, which is a superset of the Canvas2D extent, and
 `nearest` is the same row either way.
 
+### Fill the whole display rectangle, not just the hi-C triangle
+
+The display draws the rotated triangle — canvas x is a pair's midpoint, y its
+separation — so the two bottom corners are the part of the box its edges never
+reach, and `yScalar` (`squashToHeight`) stretches the triangle to the display
+height rather than filling that box. What a corner wants is contacts whose far end is off screen:
+the point `(x, y)` draws the pair `(x - y, x + y)`, so the deepest corner — left
+edge, apex height — asks for data **half a visible span past the edge**, i.e. a
+fetch window of 2x the visible span against today's static blocks at ~1.5x.
+
+**Half of it is already happening.** Nothing culls on y —
+`Canvas2DHicRenderer`'s cull is the x axis alone ("height is deliberately not
+culled: the triangle apex and `yScalar` already bound it"), and the GPU path
+lets the rasterizer discard — so every fetched contact landing in the rectangle
+is drawn, and the buffered fetch already puts some of the corner population
+there. Those are the same contacts measured as vertex cost in
+[reference/REJECTED_IDEAS.md](reference/REJECTED_IDEAS.md) §"A finer fetch
+quantum for hi-C's buffered static-block fetch": 609,913 against the visible
+span's 318,024 at a 50 Mb span on a deep map, which is vsync on WebGPU and
+27 ms — 60 fps to ~37 while panning — on the WebGL2 rung. That is the closest
+thing to a price tag this idea has, and it makes that entry's parked lever (a
+*smaller* fetch quantum) the opposite direction: emptying the corners is the one
+thing the fill cannot afford, so whichever is built kills the other.
+
+**The call is what y means once the apex stops bounding it.** Fit-to-height ties
+the apex to the visible span, so under a fill whole-chr1 asks for contacts
+125 Mb apart — separations the file barely holds, at a binsize where the corners
+come back empty anyway. The alternative is a max-separation knob, the shape a
+horizontal hi-C track usually has: height means a fixed bp distance, the fetched
+matrix is a diagonal band rather than a square, and the drawn count is bounded
+by width x that distance instead of by span squared. Decide that before any of
+it, because it decides the fetch shape.
+
+Two things move with whichever way it goes: that y cull has to become real, and
+`hicTransform`'s inverse is what keeps the hit test honest at the corners, so
+both directions want a case in `hicTransform.test.ts`.
+
 ## Measure first: the premise or the cost attribution is unconfirmed
 
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
-
-### Hi-C's static-block fetch buffers the viewport; measure the vertex cost
-
-Since the 2026-08-21 absolute-coordinates rewrite, Hi-C fetches
-`staticBlocks.contentBlocks` — up to ~2x the visible span — so a pan inside the
-loaded blocks is a pure redraw. Contacts scale with span squared, so the worst
-case is ~4x the instances per frame against the old exact-visible fetch, on a
-shader the dense-count-texture decline
-([REJECTED_IDEAS.md](reference/REJECTED_IDEAS.md) §"Rendering the hi-C matrix
-as a dense count texture") measured as vertex-bound by its own account. Measure
-a frame at the auto binsize on a real file before assuming either way — the
-per-frame Canvas2D cull already bounds that backend, and the GPU rasterizer
-discards off-screen fragments but not their vertices. If it regresses, the
-lever is a finer fetch quantum (buffered visible spans snapped to a bin grid,
-e.g. expand by a quarter-span and snap to 64 bins), not a return to
-refetch-on-pan.
 
 ### Take the MSAA target's size on a retina display
 
