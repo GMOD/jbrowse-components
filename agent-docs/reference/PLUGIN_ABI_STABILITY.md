@@ -60,6 +60,37 @@ version of this list had lost seventeen names.
 That is 46 names over 53 entries, since 7 of them were served from two modules each. Every one is recorded with its reason in `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against the exports of the previously published package.
 <!-- END GENERATED ABI REMOVALS -->
 
+## What has left the session and the plugin `exports` objects
+
+The other two surfaces above, where there is no baseline to delete a name from
+and so nothing that fails. Same source file, a separate array
+(`SESSION_AND_PLUGIN_REMOVALS`), rendered by the same generator into the same two
+pages — because publishing the list is the half that works without a gate, and
+six removals left in v5 with nothing recording them anywhere.
+
+<!-- BEGIN GENERATED SESSION AND PLUGIN REMOVALS -->
+
+- **the session**, which a plugin reaches by member lookup (`'x' in session`) rather than by import, so nothing fails at build time:
+  - `removeReferring` — deleted, along with the reference-clearing pass it drove; `undefined is not a function` at the call
+  - `prepareToBreakConnection` — deleted with the "N tracks will close" pre-flight it computed; `breakConnection` now closes them without the confirmation step
+  - `hasWidget` — deleted; the same question is `session.widgets.has(id)`, which is what it wrapped
+  - `getReferring` — **still there, with a signature a v4 caller does not satisfy.** It takes a `trackId` string now, not the config object it used to take. A v4 caller passing the object reaches `getReferringMultiple`, which tests its `Set` of objects against `node[key]?.trackId` — a string — so every comparison misses and the answer is `[]`. Nothing throws: the caller concludes no view refers to the track and closes it out from under whatever was showing it
+- **`@jbrowse/product-core`'s `Session` barrel**, which is a named allowlist now rather than `export *` over nine modules — so a name the allowlist omits is gone from the package even where its own module still declares it:
+  - `DialogQueueSessionMixin` — `Session/DialogQueue.ts` was folded into `BaseSessionModel`, which declares `queueDialog`, `removeActiveDialog`, `DialogComponent` and `DialogProps` itself. The members survive on every session; the composable mixin does not, so a product assembling its own session from mixins has to compose `BaseSessionModel` for them
+  - `isSessionWithDialogs` — same file. Every session that composes `BaseSessionModel` has the dialog members, so there is no longer a narrowing to do
+  - `SessionWithDialogs` — same file; the mixin it was an `Instance` of is gone
+  - `SessionWithDialogsType` — same file; it was the `ReturnType` of that mixin
+- **`LinearGenomeViewPlugin.exports`**, reached at runtime as `pluginManager.getPlugin('LinearGenomeViewPlugin').exports.X`:
+  - `BaseLinearDisplay` — the legacy block-render state model, removed with the server-side render path. A v4 plugin composing `exports.BaseLinearDisplay()` throws while its `install` runs, so its track type never registers and the user opens a saved session with the track simply absent
+  - `BaseLinearDisplayComponent` — the React half of the same pair, and the last reader of the `DisplayMessageComponent` getter on `BaseDisplayModel`, which went with it. A display model no longer holds a React component at all
+
+Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, nothing checks these against a published bundle: `abi.test.ts` pins `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters its findings on that same prefix, so a plugin `exports` object is observed by nothing at all and the session only by the members `pluginFacingSessionApi.test.ts` performs. Reading them here is the check.
+<!-- END GENERATED SESSION AND PLUGIN REMOVALS -->
+
+Whether these two surfaces earn a baseline of their own is open, and it is the
+half that would stop the next six — see `TODO.md`
+§ "Six session and plugin removals are recorded nowhere".
+
 ## The symptom
 
 A design decision (e.g. the legacy block-render stack behind `BaseLinearDisplay`)

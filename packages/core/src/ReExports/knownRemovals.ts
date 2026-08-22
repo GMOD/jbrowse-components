@@ -181,3 +181,82 @@ export const REMOVAL_GROUPS: RemovalGroup[] = [
 export const KNOWN_REMOVALS: Record<string, string> = Object.fromEntries(
   REMOVAL_GROUPS.flatMap(g => Object.entries(g.names)),
 )
+
+// The other two surfaces PLUGIN_ABI_STABILITY.md names, and it says the session
+// is the quietest of the three. Neither has a gate: `abiPreviousRelease.test.ts`
+// compares module names against the last published `@jbrowse/core`, and
+// `check-published-plugins.ts` filters its findings on `@jbrowse/core/`, so a
+// plugin's `exports` object is observed by nothing at all and the session only
+// by the fifteen members `pluginFacingSessionApi.test.ts` performs.
+//
+// Recording them is therefore not the same job as recording a core removal, and
+// it is worth doing on its own: `generate-abi-removals.ts` publishes this array
+// into the upgrade guide beside the core groups, so a plugin author who lands on
+// one of these finds the sentence that explains it. Six of them left in v5 with
+// nothing saying so anywhere.
+//
+// These names are NOT `module#name` keys and must not go into `REMOVAL_GROUPS`:
+// its every key has to be a module the previous release served, or
+// `abiPreviousRelease.test.ts` reports it as a stale entry. The reverse mistake
+// is the dangerous one and `knownRemovals.test.ts` fails it -- a `@jbrowse/core`
+// name filed here reads as recorded while skipping the only gate that would have
+// caught it.
+export interface SurfaceRemovalGroup {
+  /** Where a plugin reaches these. Published verbatim. */
+  surface: string
+  /** Absent now, to what a v4 plugin gets instead. Published verbatim. */
+  gone: Record<string, string>
+  /**
+   * Still there, with a signature a v4 caller does not satisfy. Kept apart from
+   * `gone` because the failure is the opposite shape: a deleted member throws at
+   * the call, where a changed signature answers with a plausible wrong value and
+   * logs nothing. "The signature is as public as the name" is the rule on the
+   * reference page; this is where the ones that broke it are written down.
+   */
+  changed: Record<string, string>
+}
+
+export const SESSION_AND_PLUGIN_REMOVALS: SurfaceRemovalGroup[] = [
+  {
+    surface:
+      "**the session**, which a plugin reaches by member lookup (`'x' in session`) rather than by import, so nothing fails at build time",
+    gone: {
+      removeReferring:
+        'deleted, along with the reference-clearing pass it drove; `undefined is not a function` at the call',
+      prepareToBreakConnection:
+        'deleted with the "N tracks will close" pre-flight it computed; `breakConnection` now closes them without the confirmation step',
+      hasWidget:
+        'deleted; the same question is `session.widgets.has(id)`, which is what it wrapped',
+    },
+    changed: {
+      getReferring:
+        'It takes a `trackId` string now, not the config object it used to take. A v4 caller passing the object reaches `getReferringMultiple`, which tests its `Set` of objects against `node[key]?.trackId` — a string — so every comparison misses and the answer is `[]`. Nothing throws: the caller concludes no view refers to the track and closes it out from under whatever was showing it',
+    },
+  },
+  {
+    surface:
+      "**`@jbrowse/product-core`'s `Session` barrel**, which is a named allowlist now rather than `export *` over nine modules — so a name the allowlist omits is gone from the package even where its own module still declares it",
+    gone: {
+      DialogQueueSessionMixin:
+        '`Session/DialogQueue.ts` was folded into `BaseSessionModel`, which declares `queueDialog`, `removeActiveDialog`, `DialogComponent` and `DialogProps` itself. The members survive on every session; the composable mixin does not, so a product assembling its own session from mixins has to compose `BaseSessionModel` for them',
+      isSessionWithDialogs:
+        'same file. Every session that composes `BaseSessionModel` has the dialog members, so there is no longer a narrowing to do',
+      SessionWithDialogs:
+        'same file; the mixin it was an `Instance` of is gone',
+      SessionWithDialogsType:
+        'same file; it was the `ReturnType` of that mixin',
+    },
+    changed: {},
+  },
+  {
+    surface:
+      "**`LinearGenomeViewPlugin.exports`**, reached at runtime as `pluginManager.getPlugin('LinearGenomeViewPlugin').exports.X`",
+    gone: {
+      BaseLinearDisplay:
+        'the legacy block-render state model, removed with the server-side render path. A v4 plugin composing `exports.BaseLinearDisplay()` throws while its `install` runs, so its track type never registers and the user opens a saved session with the track simply absent',
+      BaseLinearDisplayComponent:
+        'the React half of the same pair, and the last reader of the `DisplayMessageComponent` getter on `BaseDisplayModel`, which went with it. A display model no longer holds a React component at all',
+    },
+    changed: {},
+  },
+]

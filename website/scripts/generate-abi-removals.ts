@@ -18,7 +18,10 @@ import { join } from 'node:path'
 // not find out about until a user reports a feature quietly missing.
 //
 // Run `pnpm gen-abi-removals`, or `--check` in CI (`pnpm autogen`).
-import { REMOVAL_GROUPS } from '../../packages/core/src/ReExports/knownRemovals.ts'
+import {
+  REMOVAL_GROUPS,
+  SESSION_AND_PLUGIN_REMOVALS,
+} from '../../packages/core/src/ReExports/knownRemovals.ts'
 import {
   checkOrWriteAll,
   formatMarkdown,
@@ -26,7 +29,10 @@ import {
 } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
+import type { SurfaceRemovalGroup } from '../../packages/core/src/ReExports/knownRemovals.ts'
+
 const MARKER = 'ABI REMOVALS'
+const SURFACE_MARKER = 'SESSION AND PLUGIN REMOVALS'
 
 // Both pages carry the same block: the internal reference, and the published
 // upgrade guide the release announcement sends plugin authors to.
@@ -71,11 +77,43 @@ const body = [
   `That is ${perName.size} names over ${entries.length} entries, since ${doubleServed} of them were served from two modules each. Every one is recorded with its reason in \`REMOVAL_GROUPS\` in \`packages/core/src/ReExports/knownRemovals.ts\`, and checked on every run against the exports of the previously published package.`,
 ]
 
+// The session and plugin-`exports` block. One nested list per surface, because
+// what each name does to a v4 plugin is the whole content here -- a bare name
+// tells a reader who lands on `getReferring` nothing, and `getReferring` is the
+// one that answers rather than throwing.
+//
+// `changed` entries carry their own lead-in: a name that survives with a new
+// signature is not a removal, and printing it in a removal list without saying
+// so is how a reader concludes their call is fine because it still resolves.
+function surfaceLines({ surface, gone, changed }: SurfaceRemovalGroup) {
+  return [
+    `- ${surface}:`,
+    ...Object.entries(gone).map(
+      ([name, reason]) => `  - \`${name}\` — ${reason}`,
+    ),
+    ...Object.entries(changed).map(
+      ([name, reason]) =>
+        `  - \`${name}\` — **still there, with a signature a v4 caller does not satisfy.** ${reason}`,
+    ),
+  ]
+}
+
+const surfaceBody = [
+  ...SESSION_AND_PLUGIN_REMOVALS.flatMap(surfaceLines),
+  '',
+  'Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, nothing checks these against a published bundle: `abi.test.ts` pins `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters its findings on that same prefix, so a plugin `exports` object is observed by nothing at all and the session only by the members `pluginFacingSessionApi.test.ts` performs. Reading them here is the check.',
+]
+
 checkOrWriteAll(
   targets.map(path => ({
     path,
     content: formatMarkdown(
-      spliceGeneratedBlock({ path, marker: MARKER, body }),
+      spliceGeneratedBlock({
+        path,
+        marker: SURFACE_MARKER,
+        body: surfaceBody,
+        text: spliceGeneratedBlock({ path, marker: MARKER, body }),
+      }),
       path,
     ),
     label: `${path.slice(repoRoot.length + 1)} ABI removals`,
