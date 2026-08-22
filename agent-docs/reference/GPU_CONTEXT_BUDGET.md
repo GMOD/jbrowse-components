@@ -185,7 +185,7 @@ puppeteer does not render WebGPU canvases, and Firefox Nightly on this same
 Intel UHD 630 acquires a device and renders:
 
 ```
-[GPU] WebGPU device ready — maxTextureDimension2D=8192 maxBufferSize=1073741824
+[GPU] WebGPU device ready — maxTextureDimension2D=8192 maxBufferSize=2147483644
 ```
 
 So a claim of the form "we have no way to check the WebGPU path here" is wrong,
@@ -196,6 +196,11 @@ comparison, which needs no golden. Note `maxBufferSize` is the **adapter's**
 maximum rather than the 256 MiB spec default, because `gpuDevice.acquire` asks
 for `adapter.limits.maxBufferSize` — so the number a guard trips on is
 machine-specific, and reading one off this table is not reading the spec.
+**It is not fixed for a machine either**: that line read
+`maxBufferSize=1073741824` on 2026-08-16 and `2147483644` on the 2026-08-22
+Firefox Nightly 156.0a1 run recorded in
+`agent-docs/measurements/msaa-target-dpr.json`. The line above is the later
+reading, and it is the one the other docs quote.
 
 ## The probe's own context
 

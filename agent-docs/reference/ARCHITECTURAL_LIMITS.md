@@ -79,9 +79,14 @@ Still exposed: tracks inside a mounted view are not virtualized, so one LGV with
 
 **Retire when** WebGL2 retires (RFC-001 §13a) or track-level mount/release lands.
 The measurement that gated both is done, and it says track-level mount/release is
-worth building. Two unbuilt interim moves: drop a display to Canvas2D after K
-context losses, so the failure is one slow track rather than a wedged page, and
-pick Canvas2D up front when the renderer string says software.
+worth building. One unbuilt interim move is left: drop a display to Canvas2D
+after K context losses, so the failure is one slow track rather than a wedged
+page. The other one — pick Canvas2D up front when the renderer string says
+software — shipped: `createGpuHal` steps over the WebGL2 rung when nothing was
+pinned and `getGraphicsCapabilities` reports a software rasterizer
+(`packages/render-core/src/hal/createHal.ts`), with the measurement behind it
+and the two things that check must not break in
+[GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
 
 ### WebGPU shares one device across every display
 
@@ -114,14 +119,14 @@ single upload.
 
 Both HALs now hold that per-object floor on the vertex-buffer axis, at
 different heights. WebGPU refuses past `device.limits.maxBufferSize` — which
-`gpuDevice.acquire` raises to the adapter's own maximum, 1 GiB on the Firefox
-Nightly / Intel UHD 630 measured here. WebGL2 can query no such limit, so it
-refuses past a fixed `MAX_VERTEX_BUFFER_BYTES` of 256 MiB, WebGPU's spec
-default. **WebGL2 is therefore the stricter of the two**, and a region can
-banner there while rendering on WebGPU. That is the accepted direction: the
-unguarded alternative on WebGL2 is not a failed allocation but a dropped
-context, which on a page at the context ceiling evicts a sibling and starts the
-cascade in [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
+`gpuDevice.acquire` raises to the adapter's own maximum, 2147483644 bytes
+(~2 GiB) on the Firefox Nightly / Intel UHD 630 measured here. WebGL2 can query
+no such limit, so it refuses past a fixed `MAX_VERTEX_BUFFER_BYTES` of 256 MiB,
+WebGPU's spec default. **WebGL2 is therefore the stricter of the two**, and a
+region can banner there while rendering on WebGPU. That is the accepted
+direction: the unguarded alternative on WebGL2 is not a failed allocation but a
+dropped context, which on a page at the context ceiling evicts a sibling and
+starts the cascade in [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
 
 **Retire when** a HAL byte counter with cross-display LRU prune exists, or an OOM
 report arrives that the per-object guards missed. The counter's first customer

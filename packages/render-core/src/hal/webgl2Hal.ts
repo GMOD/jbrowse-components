@@ -154,11 +154,12 @@ let totalDisposed = 0
 //
 // 256 MiB is WebGPU's *spec default* `maxBufferSize`. It is not parity with
 // what the WebGPU backend actually refuses at: `gpuDevice.acquire` raises the
-// limit to `adapter.limits.maxBufferSize`, which is 1 GiB on the Firefox
-// Nightly / Intel UHD 630 this was checked on, so WebGL2 is the stricter of
-// the two and a region can banner here while rendering there. That asymmetry
-// is accepted — a quarter-gigabyte single vertex buffer is not something to
-// hand an API that answers a failed allocation by dropping the context.
+// limit to `adapter.limits.maxBufferSize`, which is 2147483644 bytes (~2 GiB)
+// on the Firefox Nightly / Intel UHD 630 this was checked on, so WebGL2 is the
+// stricter of the two and a region can banner here while rendering there. That
+// asymmetry is accepted — a quarter-gigabyte single vertex buffer is not
+// something to hand an API that answers a failed allocation by dropping the
+// context.
 //
 // Deliberately a ceiling and not a budget: it catches the single upload
 // nothing else bounds, and says nothing about the total, which is

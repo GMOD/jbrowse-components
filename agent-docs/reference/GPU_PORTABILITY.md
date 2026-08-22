@@ -8,8 +8,8 @@ audience: internal
 
 Every GPU number this repo records comes from one of two configurations: Firefox
 Nightly on an Intel UHD 630, and Chrome 151 on the same box. The MSAA sizes, the
-1 GiB `maxBufferSize`, the pipeline-resolve timings, the 16-context ceiling — all
-one machine, an integrated GPU several generations old.
+~2 GiB `maxBufferSize`, the pipeline-resolve timings, the 16-context ceiling —
+all one machine, an integrated GPU several generations old.
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) and
 [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) say so in each entry's provenance
 line, and that is the right thing for a measurement to say. It leaves a
@@ -79,10 +79,10 @@ the floor, not a failed `requestDevice`.
 
 **The `MAX_VERTEX_BUFFER_BYTES` row has a consequence worth stating plainly.**
 ARCHITECTURAL_LIMITS.md says "WebGL2 is therefore the stricter of the two",
-which is true on the measured box because its adapter reports 1 GiB. On a
-machine at the WebGPU floor both backends refuse at 256 MiB and the asymmetry
-disappears. The direction of the claim is machine-dependent; the safety of the
-guard is not.
+which is true on the measured box because its adapter reports 2147483644 bytes
+(~2 GiB). On a machine at the WebGPU floor both backends refuse at 256 MiB and
+the asymmetry disappears. The direction of the claim is machine-dependent; the
+safety of the guard is not.
 
 ---
 
