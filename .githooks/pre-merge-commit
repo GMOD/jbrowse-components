@@ -1,0 +1,33 @@
+#!/bin/sh
+# Refuses a merge commit for a merge that could have been a fast-forward.
+# `merge.ff = only` already turns a plain `git merge` into a fast-forward or an
+# error, but an explicit `git merge --no-ff` overrides config and there is no
+# config that overrides it back -- so landing a rebased worktree branch kept
+# producing "Merge branch 'worktree-...'" commits on main. This is what catches
+# that. `pnpm install` points core.hooksPath here; skip with `--no-verify`.
+#
+# It only rejects when HEAD is already an ancestor of the branch being merged. A
+# merge of genuinely diverged branches is a deliberate one and passes untouched,
+# as does an octopus merge, which has no single fast-forward to prefer.
+#
+# The head being merged comes from the `GITHEAD_<sha>=<name>` variables git sets
+# for the merge strategies, NOT from MERGE_HEAD: in the path that ends in an
+# automatic merge commit -- the only path this hook runs in -- MERGE_HEAD does
+# not exist yet, and a MERGE_HEAD test here silently passes everything.
+
+heads=$(env | sed -n 's/^GITHEAD_\([0-9a-f]\{40\}\)=.*/\1/p')
+
+if [ "$(echo "$heads" | wc -w)" -eq 1 ] && git merge-base --is-ancestor HEAD "$heads"; then
+  cat >&2 <<MSG
+pre-merge-commit: refusing --no-ff, this merge is a fast-forward.
+
+  $(git rev-parse --short HEAD) is already an ancestor of $(git rev-parse --short "$heads").
+  The merge is half-applied to your index; back it out and land it flat:
+
+      git merge --abort
+      git merge --ff-only $heads
+
+  If you really do want the merge commit: git merge --no-verify --no-ff
+MSG
+  exit 1
+fi

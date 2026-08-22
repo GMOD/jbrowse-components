@@ -18,6 +18,9 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - **Never `git stash`** — the stack is repo-global and takes other agents' work.
   Use `git diff main -- <path>`.
 - **Never merge a `*.generated.ts` conflict** — regenerate it.
+- **A branch lands as a fast-forward.** `git rebase main` in the worktree, then
+  `git merge --ff-only`. `merge.ff = only` and `.githooks/pre-merge-commit`
+  refuse the merge commit main did not need, `--no-ff` included.
 - Worktree install, figures, base-ref drift: `reference/TOOLCHAIN.md`.
 
 ## MST
