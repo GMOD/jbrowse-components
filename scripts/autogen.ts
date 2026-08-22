@@ -20,6 +20,8 @@ import { rmSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { figureRootPulled } from '../website/scripts/figure-paths.ts'
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
 const check = args.includes('--check')
@@ -40,6 +42,21 @@ interface Generator {
   // report. Nothing DERIVED from a figure belongs in this list — those left
   // autogen entirely (see the tutorial-card note below).
   figureDependent?: boolean
+  // The figure corpus this generator needs on disk. When the worktree holds
+  // none of what figures.lock lists under it, the generator is SKIPPED with a
+  // warning instead of run — the asset-shaped version of verify.ts's
+  // `optionalBinary`, and safe for the same reason: the input is absent, so
+  // there is nothing here to be out of date against, and CI pulls figures so
+  // the check still happens before merge.
+  //
+  // Narrow on purpose, because the alternative trades a false alarm for a
+  // silent one. Figure bytes are gitignored and arrive via `pnpm figures:pull`,
+  // so a fresh `git worktree add` has an EMPTY corpus and the two generators
+  // below both failed on bytes nobody wrote — one of them by throwing, which
+  // this runner then reported as staleness. A corpus holding even one figure is
+  // an installed corpus: from there a missing file or a stale render fails
+  // exactly as it did before.
+  figureRoot?: string
 }
 
 const web = (script: string) => ['node', `website/scripts/${script}`]
@@ -181,9 +198,12 @@ const GENERATORS: Generator[] = [
     figureDependent: true,
   },
   {
+    // Mirrors the README's example images into website/static/img, so it reads
+    // jbrowse-img's corpus as an input and throws naming the first absent one.
     name: 'jbrowse-img doc',
     argv: web('generate-img-doc.ts'),
     figureDependent: true,
+    figureRoot: 'products/jbrowse-img/img',
   },
   { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
   { name: 'jbrowse-capture doc', argv: web('generate-capture-doc.ts') },
@@ -206,9 +226,14 @@ const GENERATORS: Generator[] = [
     // It is figureDependent all the same: it writes a png into the corpus and
     // checks it against figures.lock, so it is stale exactly when the corpus is
     // ahead of the lock, which is the case the flag exists for.
+    // And that is why it names a `figureRoot` too: its inputs are all tracked,
+    // but the render it compares them against is a figure, so a corpus nobody
+    // pulled leaves it reporting the one word regenerating cannot fix —
+    // missing.
     name: 'social card image',
     argv: web('generate-og-image.ts'),
     figureDependent: true,
+    figureRoot: 'website/static/img',
   },
   { name: 'doc snippets', argv: web('sync-doc-snippets.ts') },
   {
@@ -408,6 +433,7 @@ function restore(paths: string[]) {
 // exactly how one crash got reported onward as "the config manifest generator
 // is broken" when the generator was fine and the tree it reads was mid-edit.
 const stale: string[] = []
+const skipped: string[] = []
 const crashed: { name: string; status: number | null }[] = []
 const eligible = skipFigureDependent
   ? GENERATORS.filter(g => !g.figureDependent)
@@ -433,7 +459,17 @@ if (skipFigureDependent) {
   )
 }
 
-for (const { name, argv, diffPaths } of selected) {
+for (const { name, argv, diffPaths, figureRoot } of selected) {
+  if (figureRoot && !figureRootPulled(figureRoot)) {
+    console.warn(
+      `\n=== ${name}: SKIPPED — this worktree holds none of the figures ` +
+        `figures.lock lists under ${figureRoot}. Figure bytes are gitignored: ` +
+        `run \`pnpm figures:pull\`, or symlink the corpus, to check this one. ` +
+        `CI pulls them, so it still runs before merge.`,
+    )
+    skipped.push(name)
+    continue
+  }
   console.log(`\n=== ${name}`)
   if (diffPaths) {
     // A generator with no --check has to write to be compared, so anything
@@ -508,4 +544,10 @@ if (gitDir.status === 0) {
   rmSync(join(dir, 'autogen-stale-since'), { force: true })
 }
 
-console.log(check ? '\nAll generated artifacts up to date' : '\nRegenerated')
+// Named, not counted, for the reason the --skip-figure-dependent banner above
+// is: a run that says "up to date" while two artifacts were never looked at is
+// the silent failure this whole file exists to prevent.
+console.log(
+  (check ? '\nAll generated artifacts up to date' : '\nRegenerated') +
+    (skipped.length > 0 ? ` (skipped: ${skipped.join(', ')})` : ''),
+)

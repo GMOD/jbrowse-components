@@ -122,9 +122,11 @@ cross-package imports resolve back to its sources.
 
 Figures are one of two things the install does not bring: `pnpm figures:pull`,
 or symlink both gitignored corpora — the website's `static/img` and jbrowse-img's
-own `img`. Miss the second and `pnpm autogen` **dies** on the jbrowse-img
-generator rather than reporting it stale, so every later generator silently
-never runs.
+own `img`. Without them `pnpm autogen` **skips** the two generators that read a
+corpus and names them in its summary, so a fresh worktree's `pnpm verify --full`
+goes green without having checked the jbrowse-img doc or the social card. The
+skip is per corpus and all-or-nothing: one figure present means the corpus is
+installed, and a stale render there fails as it always did.
 
 The other is `.cache/slangc`. `pnpm gen:shaders` re-downloads a 15MB binary into
 each worktree rather than failing, so the cost is silent — point it at the

@@ -100,6 +100,23 @@ export function fileExists(relPath: string): boolean {
   }
 }
 
+// Whether this worktree holds any of the figures figures.lock puts under
+// `root`. False is the state of a fresh clone or a `git worktree add` — the
+// bytes are gitignored and arrive via `pnpm figures:pull` — rather than
+// anything wrong, which is why a tool that reads figures can treat it as
+// "nothing to check here" instead of as a failure.
+//
+// Deliberately all-or-nothing: one figure present means the corpus IS
+// installed, so a single absent file there is a real disagreement with the
+// manifest and stays the caller's problem. A root the manifest lists nothing
+// under is vacuously satisfied.
+export function figureRootPulled(root: string): boolean {
+  const listed = [...readManifest().keys()].filter(p =>
+    p.startsWith(`${root}/`),
+  )
+  return listed.length === 0 || listed.some(fileExists)
+}
+
 // figures.lock as of a git ref — the tracked baseline a branch is reviewed
 // against, now that figure bytes themselves are gitignored and `git diff` over
 // static/img has nothing to say about them.
