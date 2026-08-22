@@ -107,6 +107,7 @@ test('one menu holds every setting that decides what the plot looks like', async
     'Opacity',
     'Line width',
     'Min length',
+    'Min identity',
   ]) {
     expect(screen.getByText(label)).toBeTruthy()
   }
@@ -134,6 +135,18 @@ test('a slider row captions the value it is set to', async () => {
     view.setLineWidth(5)
   })
   expect(screen.getByText('Line width: 5px')).toBeTruthy()
+}, 20000)
+
+// The identity filter is a fraction in the model and a percentage in the row,
+// so the caption is the one place that conversion is visible.
+test('the identity row captions the model fraction as a percentage', async () => {
+  const view = await openMenu()
+  fireEvent.click(screen.getByTestId('cascading-submenu-min_identity'))
+  expect(await screen.findByText('Min identity: 0%')).toBeTruthy()
+  act(() => {
+    view.setMinIdentity(0.9)
+  })
+  expect(screen.getByText('Min identity: 90%')).toBeTruthy()
 }, 20000)
 
 // A checkbox row is a `menuitem` whose glyph carries the state, so the state is

@@ -39,6 +39,7 @@ function commit(
       rpcData,
       false,
       0,
+      0,
       view.hview.bpPerPx,
       view.vview.bpPerPx,
       0,

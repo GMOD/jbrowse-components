@@ -183,7 +183,7 @@ describe('computeDotplotColors', () => {
 
   test("every cigar segment carries its own feature's color", () => {
     const rpcData = twoFeatures()
-    const instanceData = buildLineSegments(rpcData, true, 0, 1, 1, 0, 0)
+    const instanceData = buildLineSegments(rpcData, true, 0, 0, 1, 1, 0, 0)
     const colors = computeDotplotColors({
       instanceData,
       rpcData,
@@ -219,7 +219,7 @@ describe('computeDotplotColors', () => {
       skippedFeatureCount: 0,
     })
     // minAlignmentLength drops feature 0, so the only segment is feature 1's
-    const instanceData = buildLineSegments(rpcData, false, 100, 1, 1, 0, 0)
+    const instanceData = buildLineSegments(rpcData, false, 100, 0, 1, 1, 0, 0)
     expect([...instanceData.instanceFeatureIdx]).toEqual([1])
     const colors = computeDotplotColors({
       instanceData,

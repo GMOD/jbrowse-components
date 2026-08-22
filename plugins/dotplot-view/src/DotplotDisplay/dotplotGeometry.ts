@@ -141,6 +141,7 @@ export function buildLineSegments(
   data: DotplotRpcData,
   drawCigar: boolean,
   minAlignmentLength: number,
+  minIdentity: number,
   bpPerPxH: number,
   bpPerPxV: number,
   baseH: number,
@@ -157,6 +158,17 @@ export function buildLineSegments(
     cigarOffsets,
   } = data
   const count = p11.length
+  // Only resolved when the filter is on, so an unfiltered build does not read
+  // the lane at all. A track whose adapter reports no identity has the channel
+  // filled with the -1 missing sentinel, and those features are kept: the
+  // alternative is a plot that empties as soon as the slider leaves zero, for
+  // data that never claimed an identity to be below the threshold.
+  const identities = minIdentity > 0 ? data.attributes.identity : undefined
+  // Rounded to the lane's own precision before comparing. The channel is
+  // Float32, so an identity written as 0.9 reads back as 0.89999997615, and
+  // against the Float64 0.9 the slider holds it is BELOW threshold — a slider
+  // at 90% hiding the 90% alignments it names.
+  const identityThreshold = Math.fround(minIdentity)
   const bpPerPxHInv = 1 / bpPerPxH
   const bpPerPxVInv = 1 / bpPerPxV
 
@@ -168,6 +180,12 @@ export function buildLineSegments(
   for (let i = 0; i < count; i++) {
     if (minAlignmentLength > 0 && alignmentLengths[i]! < minAlignmentLength) {
       continue
+    }
+    if (identities) {
+      const identity = identities[i]!
+      if (identity >= 0 && identity < identityThreshold) {
+        continue
+      }
     }
     const x1 = p11[i]!
     const x2 = p12[i]!

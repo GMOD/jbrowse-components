@@ -59,7 +59,7 @@ describe('buildLineSegments over flat cigar buffers', () => {
   }
 
   it('walks each feature only over its own slice', () => {
-    const segs = buildLineSegments(makeData(), true, 0, 1, 1, 0, 0)
+    const segs = buildLineSegments(makeData(), true, 0, 0, 1, 1, 0, 0)
     // 3 ops + 1 flat (no cigar) + 2 ops
     expect(segs.instanceCount).toBe(6)
     // feature 0's walk stays inside its own span
@@ -74,21 +74,21 @@ describe('buildLineSegments over flat cigar buffers', () => {
   })
 
   it('emits one flat segment per feature when drawCigar is off', () => {
-    const segs = buildLineSegments(makeData(), false, 0, 1, 1, 0, 0)
+    const segs = buildLineSegments(makeData(), false, 0, 0, 1, 1, 0, 0)
     expect(segs.instanceCount).toBe(3)
   })
 
   // The op per segment is the one thing about a hovered segment its geometry
   // cannot answer — a deletion and a skip both advance the h axis alone.
   it('records the operator each segment was drawn as', () => {
-    const segs = buildLineSegments(makeData(), true, 0, 1, 1, 0, 0)
+    const segs = buildLineSegments(makeData(), true, 0, 0, 1, 1, 0, 0)
     // feature 0 is M, D(20), M; the flat middle feature and feature 1's two Ms
     // are all CIGAR_M
     expect([...segs.segmentOps]).toEqual([0, 2, 0, 0, 0, 0])
   })
 
   it('leaves a flat feature as CIGAR_M, which reports no operator', () => {
-    const segs = buildLineSegments(makeData(), false, 0, 1, 1, 0, 0)
+    const segs = buildLineSegments(makeData(), false, 0, 0, 1, 1, 0, 0)
     expect([...segs.segmentOps]).toEqual([0, 0, 0])
     expect(segmentCigarOp(segs, 0)).toBeUndefined()
   })
@@ -152,7 +152,7 @@ describe('segmentCapacity', () => {
     const cap = segmentCapacity(wide(), true, 1 / bpPerPx, 1 / bpPerPx)
     expect(cap).toBeLessThan(4000)
     // and it is still an upper bound on what the walk actually emits
-    const g = buildLineSegments(wide(), true, 0, bpPerPx, bpPerPx, 0, 0)
+    const g = buildLineSegments(wide(), true, 0, 0, bpPerPx, bpPerPx, 0, 0)
     expect(g.instanceCount).toBeLessThanOrEqual(cap)
   })
 

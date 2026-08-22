@@ -14,10 +14,21 @@ import {
   DEFAULT_ALPHA,
   DEFAULT_LINE_WIDTH,
   DEFAULT_MIN_ALIGNMENT_LENGTH,
+  DEFAULT_MIN_IDENTITY,
 } from '../model.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+// Not in synteny-core beside MIN_LENGTH_HELP: the synteny view enforces its
+// filters as shader uniforms over an instance buffer that carries no identity
+// lane, so it has no twin of this control to diverge from yet.
+const MIN_IDENTITY_HELP =
+  'Hides alignments whose sequence identity is below this percentage, the ' +
+  'same measurement the identity color mode paints. An alignment whose ' +
+  'adapter reported no identity at all is kept at every threshold, so a ' +
+  'track carrying none is left alone by this slider rather than emptied by ' +
+  'it.'
 
 /**
  * Every setting that decides what the plot looks like and how much detail feeds
@@ -37,7 +48,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
  * draws it, and its twin (`sameScale`) is likewise in the synteny hamburger.
  *
  * FLAT, with no section headings. The synteny view's menu earns its three
- * because it has ten rows to group; six do not, and a heading over a single
+ * because it has ten rows to group; seven do not, and a heading over a single
  * gated row is more rule than list. What it does keep is that menu's row shape
  * — `label + [?] + (checkbox | chevron)`, the sliders behind `makeSizeSubMenu` —
  * and the order arity gives the rows inside one of its sections: the checkboxes,
@@ -138,6 +149,26 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
             },
             onReset: () => {
               model.setMinAlignmentLength(DEFAULT_MIN_ALIGNMENT_LENGTH)
+            },
+          }),
+          makeSizeSubMenu({
+            label: 'min identity',
+            title: 'Min identity',
+            help: MIN_IDENTITY_HELP,
+            min: DEFAULT_MIN_IDENTITY,
+            max: 1,
+            step: 0.01,
+            format: n => `${(n * 100).toFixed(0)}%`,
+            // same reason min length commits late: the threshold is enforced in
+            // the geometry build, not in a shader uniform
+            commitOnRelease: true,
+            getValue: () => model.minIdentity,
+            isDefault: model.minIdentity === DEFAULT_MIN_IDENTITY,
+            onChange: fraction => {
+              model.setMinIdentity(fraction)
+            },
+            onReset: () => {
+              model.setMinIdentity(DEFAULT_MIN_IDENTITY)
             },
           }),
         ] satisfies MenuItem[]

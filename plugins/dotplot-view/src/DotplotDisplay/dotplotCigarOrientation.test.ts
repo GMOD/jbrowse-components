@@ -26,7 +26,7 @@ const GAP_T: [number, number] = [100, 5100]
 const GAP_Q = 900
 
 function segments(data: ReturnType<typeof fakeDotplotRpcData>) {
-  const segs = buildLineSegments(data, true, 0, 1, 1, 0, 0)
+  const segs = buildLineSegments(data, true, 0, 0, 1, 1, 0, 0)
   return Array.from({ length: segs.instanceCount }, (_, i) => ({
     op: segs.segmentOps[i]!,
     x: [segs.x1[i]!, segs.x2[i]!] as [number, number],

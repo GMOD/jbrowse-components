@@ -200,6 +200,7 @@ export const defaultHeight = 600
 export const DEFAULT_LINE_WIDTH = 2.5
 export const DEFAULT_ALPHA = 1
 export const DEFAULT_MIN_ALIGNMENT_LENGTH = 0
+export const DEFAULT_MIN_IDENTITY = 0
 
 // Floor for the resize handle. Below this the axis borders (which floor at
 // MIN_BORDER=50 each) would eat the whole box and viewWidth/viewHeight would go
@@ -329,6 +330,15 @@ export default function stateModelFactory(pm: PluginManager) {
             types.number,
             DEFAULT_MIN_ALIGNMENT_LENGTH,
           ),
+          /**
+           * #property
+           * Hide alignments whose sequence identity is below this fraction
+           * (0-1), enforced per feature in buildLineSegments beside
+           * minAlignmentLength. A feature carrying no identity at all is kept
+           * at every threshold — the alternative blanks a plot whose adapter
+           * simply never reported one. View-level, see alpha.
+           */
+          minIdentity: types.stripDefault(types.number, DEFAULT_MIN_IDENTITY),
           /**
            * #property
            * the horizontal axis, as a full 1D view state. A spec writes
@@ -1207,6 +1217,12 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setMinAlignmentLength(value: number) {
           self.minAlignmentLength = value
+        },
+        /**
+         * #action
+         */
+        setMinIdentity(value: number) {
+          self.minIdentity = value
         },
         /**
          * #action
