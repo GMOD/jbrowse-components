@@ -2,14 +2,18 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from '../RenderFeatureDataRPC/collectRenderData.ts'
+import { layoutCrisprGuide } from '../RenderFeatureDataRPC/glyphs/crisprGuide.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { layoutMatureProteinRegion } from '../RenderFeatureDataRPC/glyphs/matureProteinRegion.ts'
+import { layoutRepeatRegion } from '../RenderFeatureDataRPC/glyphs/repeatRegion.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
+import { forEachRenderedLabel } from './components/labelPositioning.ts'
 import { computeLaidOutData } from './layout.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { ResolvedLabel } from './components/labelPositioning.ts'
 import type { LayoutRegionData } from './layout.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -96,6 +100,7 @@ function layoutAt(
   const layout = glyph({
     feature,
     config,
+    jexl,
   })
   const packed = collectRenderData({
     layouts: [layout],
@@ -260,5 +265,167 @@ describe("a container's floating label clears the rows it contains", () => {
       3 * labelFontSize(mode),
       5,
     )
+  })
+})
+
+// EDTA / LTR_retriever-style intact transposon: the subparts share ONE row, so
+// their `below` labels share one row too — the row `layoutRepeatRegion`
+// reserves, since the emitter registers those children straight off the feature
+// and no child layout owns a row.
+function intactRetrotransposon() {
+  return mockFeature({
+    type: 'repeat_region',
+    name: 'TE1',
+    start: 100,
+    end: 1100,
+    subfeatures: [
+      mockFeature({
+        type: 'target_site_duplication',
+        name: 'tsd-left',
+        start: 100,
+        end: 105,
+      }),
+      mockFeature({
+        type: 'long_terminal_repeat',
+        name: 'ltr-left',
+        start: 105,
+        end: 305,
+      }),
+      mockFeature({
+        type: 'Copia_LTR_retrotransposon',
+        name: 'internal',
+        start: 105,
+        end: 1095,
+      }),
+      mockFeature({
+        type: 'long_terminal_repeat',
+        name: 'ltr-right',
+        start: 895,
+        end: 1095,
+      }),
+      mockFeature({
+        type: 'target_site_duplication',
+        name: 'tsd-right',
+        start: 1095,
+        end: 1100,
+      }),
+    ],
+  })
+}
+
+// A CrisprGuideAdapter guide: one PAM subfeature, labeled with the literal
+// 'PAM' rather than a name of its own.
+function crisprGuide() {
+  return mockFeature({
+    type: 'guide_rna',
+    name: 'AAATTTAAATTTAAATTTAA',
+    start: 80,
+    end: 103,
+    subfeatures: [
+      mockFeature({ type: 'PAM', name: 'pam', start: 100, end: 103 }),
+    ],
+  })
+}
+
+// The two glyphs whose registered children all label into ONE row under the
+// body with no child layout owning it. Until the layouts reserved that row,
+// `bodyHeightPx` stopped at the feature's box and every subpart label — and the
+// guide's `PAM` — drew past it into the next feature's row.
+describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
+  const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
+  // both features carry a name of their own, which is the label that has to
+  // clear the shared row rather than land a couple of px from it
+  const named = {
+    labels: { name: "jexl:get(feature,'name')", description: '' },
+  }
+  const region = {
+    start: 0,
+    end: 10_000,
+    screenStartPx: 0,
+    screenEndPx: 10_000,
+  }
+
+  // Every label the display draws, positioned through the production path, so
+  // the top gap each kind gets is not restated here.
+  function drawnLabels(data: FeatureDataResult, mode: DisplayMode) {
+    const out: ResolvedLabel[] = []
+    forEachRenderedLabel(
+      data,
+      region,
+      {
+        showLabels: true,
+        showDescriptions: false,
+        showSubfeatureLabels: true,
+        fontSize: labelFontSize(mode),
+      },
+      (_featureId, labels) => out.push(...labels),
+    )
+    return out
+  }
+
+  function measure(
+    feature: Feature,
+    glyph: typeof layoutRepeatRegion,
+    mode: DisplayMode,
+    subfeatureLabels = 'below',
+  ) {
+    const data = layoutAt(mode, subfeatureLabels, feature, glyph, named)
+    const labels = drawnLabels(data, mode)
+    const bottoms = (kind: ResolvedLabel['kind']) =>
+      labels
+        .filter(l => l.kind === kind)
+        .map(l => l.labelY + labelFontSize(mode))
+    const item = data.flatbushItems.find(i => i.featureId === feature.id())!
+    return {
+      // THE reservation: the worker height scaled by the mode plus the label
+      // rows it counted — `bodyHeightPx`, the one derivation the fit probe and
+      // the committed pack share
+      bodyBottom: item.topPx + item.featureHeightPx,
+      subBottoms: bottoms('sub'),
+      nameTop: Math.min(
+        ...labels.filter(l => l.kind === 'name').map(l => l.labelY),
+      ),
+    }
+  }
+
+  const cases = [
+    ['repeat_region', intactRetrotransposon, layoutRepeatRegion, 5],
+    ['CRISPR guide', crisprGuide, layoutCrisprGuide, 1],
+  ] as const
+
+  describe.each(cases)('%s', (_name, makeFeature, glyph, labelCount) => {
+    it.each(modes)(
+      'keeps every subpart label inside bodyHeightPx (%s)',
+      mode => {
+        const { bodyBottom, subBottoms } = measure(makeFeature(), glyph, mode)
+        expect(subBottoms).toHaveLength(labelCount)
+        for (const bottom of subBottoms) {
+          expect(bottom).toBeLessThanOrEqual(bodyBottom + 1e-9)
+        }
+        // and the reservation is spent, not merely large enough: the lowest label
+        // ends exactly at the row the pack charged for
+        expect(Math.max(...subBottoms)).toBeCloseTo(bodyBottom, 5)
+      },
+    )
+
+    it.each(modes)('costs exactly one label line (%s)', mode => {
+      const withLabels = measure(makeFeature(), glyph, mode)
+      const without = measure(makeFeature(), glyph, mode, 'none')
+      // one row, and spent at the LABEL font size rather than scaled with the
+      // geometry — whatever the number of children labeling into it
+      expect(withLabels.bodyBottom - without.bodyBottom).toBeCloseTo(
+        labelFontSize(mode),
+        5,
+      )
+      expect(without.subBottoms).toHaveLength(0)
+    })
+
+    it.each(modes)("clears the feature's own name label (%s)", mode => {
+      const { subBottoms, nameTop } = measure(makeFeature(), glyph, mode)
+      // The name hangs off the same extent the reservation grew, so it moves
+      // down by the row instead of landing on it. Unreserved, a guide's name sat
+      // 2px under its `PAM` — two 11px lines on top of each other.
+      expect(nameTop).toBeGreaterThanOrEqual(Math.max(...subBottoms))
+    })
   })
 })

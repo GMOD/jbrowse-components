@@ -74,11 +74,11 @@ export function readFeatureLabels(
 //
 // For `MatureProteinRegion` those child rows are counted by the child layout's
 // own `labelRows` (layoutMatureProteinRegion sets `ownsLabelRow` per child).
-// `RepeatRegion` and `CrisprGuide` do NOT: their emitters register children
-// straight off the feature, and neither layout returns a `labelRows` or an
-// `ownsLabelRow`, so in `below` mode those labels draw into a row nothing
-// reserved. See TODO.md §"Repeat and CRISPR subpart labels draw into an
-// unreserved row".
+// `RepeatRegion` and `CrisprGuide` register their children straight off the
+// feature instead, so no child layout owns a row and the containing layout
+// reserves the ONE row they all label into — see `sharedChildLabelRows`. Until
+// it did, `below` mode on either track drew that text into a row `bodyHeightPx`
+// never reserved, and it overhung the feature under it.
 //
 // Keyed off the glyph the child actually resolved to, because the emitter is:
 // it was keyed off `transcriptTypes` instead, a seven-entry type list that does
@@ -134,6 +134,32 @@ export function reservesBelowLabelRow(args: {
       truncateLabel(subfeatureLabelText(feature, config, jexl) ?? ''),
     )
   )
+}
+
+/**
+ * The `labelRows` a glyph reserves for children that all label into ONE shared
+ * row under its body — a `repeat_region`'s subparts, a CRISPR guide's PAM. Those
+ * emitters register children straight off the feature, so no child layout owns a
+ * row (unlike `MatureProteinRegion`, which gives each product its own) and the
+ * containing layout is the only place left to reserve it.
+ *
+ * Takes the label STRINGS the emitter will draw rather than the child features,
+ * because they are not all the child's own name — the guide's PAM draws the
+ * literal `PAM`, whose subfeature carries no name at all — so asking the
+ * features would reserve nothing for exactly the row that always draws.
+ *
+ * One row however many children label into it, which is the glyph's own design:
+ * the subparts share a row, so their labels share one too (side by side for the
+ * LTRs and TSDs, overlapping where the internal element spans them).
+ */
+export function sharedChildLabelRows(
+  config: DisplayConfig,
+  labels: (string | undefined)[],
+) {
+  return config.subfeatureLabels === 'below' &&
+    labels.some(label => hasVisibleText(truncateLabel(label ?? '')))
+    ? 1
+    : 0
 }
 
 /**

@@ -1,3 +1,4 @@
+import { sharedChildLabelRows, subfeatureLabelText } from '../labelUtils.ts'
 import { featureType, getSubfeatures } from '../util.ts'
 import { layoutContainerGlyph } from './glyphUtils.ts'
 
@@ -20,9 +21,22 @@ export function isRepeatRegion(feature: Feature) {
 }
 
 export function layoutRepeatRegion(args: LayoutArgs): FeatureLayout {
-  return layoutContainerGlyph(
+  const { config, jexl } = args
+  const layout = layoutContainerGlyph(
     'RepeatRegion',
     args,
     getSubfeatures(args.feature),
   )
+  return {
+    ...layout,
+    // the subparts share one body row, so their labels share one row under it,
+    // and this layout is what reserves it: the emitter registers them straight
+    // off the feature, so no child layout here owns a row of its own
+    labelRows: sharedChildLabelRows(
+      config,
+      layout.children.map(child =>
+        subfeatureLabelText(child.feature, config, jexl),
+      ),
+    ),
+  }
 }

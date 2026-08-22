@@ -4,6 +4,7 @@ import {
   createFeatureFloatingLabels,
   createMoreIsoformsLabel,
 } from '../floatingLabels.ts'
+import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
 import {
@@ -11,7 +12,7 @@ import {
   readFeatureName,
   subfeatureLabelText,
 } from '../labelUtils.ts'
-import { featureType, getSubfeatures } from '../util.ts'
+import { featureType } from '../util.ts'
 import {
   centerShrink,
   emitCodonRects,
@@ -545,9 +546,7 @@ function processCrisprGuideLayout(
     collector,
   )
 
-  const pam = getSubfeatures(feature).find(
-    f => featureType(f).toLowerCase() === 'pam',
-  )
+  const pam = findPamSubfeature(feature)
   if (pam) {
     collector.rects.push({
       start: pam.get('start'),
@@ -567,7 +566,9 @@ function processCrisprGuideLayout(
         topPx: baseTopPx,
         heightPx: height,
         labelRowsAbove,
-        displayLabel: 'PAM',
+        // a literal, so the row it draws into is reserved off the same PAM
+        // lookup rather than off a name this subfeature never carries
+        displayLabel: PAM_LABEL,
       },
       ctx,
       collector,
