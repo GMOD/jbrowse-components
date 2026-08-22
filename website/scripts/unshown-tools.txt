@@ -10,7 +10,9 @@
 # their own data, and mark that fence `<!-- from: -->` so check-script-commands
 # holds it to the script. website/docs/tutorials/CLAUDE.md has the rules.
 #
-# The one line left will not move. population_cnv fetches a published callset
-# and converts it, so it has no analysis command to show; it is listed because
-# the check cannot tell that apart from a page that owes one.
+# The one line left is here because the check cannot tell it apart from a page
+# that owes something, rather than because it owes anything: population_cnv
+# fetches a published callset and converts it, and its script runs no analysis
+# tool of its own. So a line appearing beside it is a page to fix, not a second
+# exemption to write.
 population_cnv: scripts/build_1000g_cnv_zarr.sh

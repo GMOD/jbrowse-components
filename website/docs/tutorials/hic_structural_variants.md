@@ -151,10 +151,29 @@ The bin at its head is hot in GM12878, present in K562, and not a rearrangement.
 
 ## Run the scan
 
-The figure shows the translocation; finding it is a dump and a sort.
+The figure shows the translocation; finding it is a dump and a sort. The dump is
+one command per file, and it is where the normalization decision above becomes a
+command-line argument:
+
+<!-- from: scripts/scan_hic_translocation.sh -->
+
+```bash
+# `observed NONE` asks for raw counts. NONE rather than a balanced vector for
+# the reason above: balancing divides out per-bin coverage differences, and an
+# amplified fusion is one, so a balanced dump removes what the scan looks for.
+# A balanced vector is stored only at the coarser bin sizes, so asking for one
+# at a fine resolution comes back as an empty file rather than an error.
+# BP asks for base-pair bins rather than restriction fragments, and the number
+# after it is the bin size.
+# -Xmx4g because a whole chromosome pair does not fit in the default heap.
+java -Xmx4g -jar juicer_tools.jar dump observed NONE \
+  sample.hic chr9 chr22 BP 250000 sample.chr9_chr22.txt
+```
+
+Three columns come back: bin1 start, bin2 start, contact count. Run it over the
+control too, then rank the sample's bins and read the control's value for each.
 [`scan_hic_translocation.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/scan_hic_translocation.sh)
-pulls the whole chromosome pair out of both files with `juicer_tools`, ranks the
-bins, and prints the same bin's value in the control beside each one:
+does exactly that:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/scan_hic_translocation.sh
