@@ -1,7 +1,7 @@
 {
   "index": {
     "chunks": 270,
-    "gzipKb": 536
+    "gzipKb": 537
   },
   "controlling-the-view": {
     "chunks": 272,
@@ -36,8 +36,8 @@
     "gzipKb": 546
   },
   "synteny": {
-    "chunks": 367,
-    "gzipKb": 715
+    "chunks": 363,
+    "gzipKb": 691
   },
   "track-settings": {
     "chunks": 269,

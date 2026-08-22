@@ -373,10 +373,15 @@ duplication is the fix, and reads exactly like an oversight.
 
 `breakpoint-split-view`'s `components/overlayGeometry.ts` holds four small
 helpers that also exist in `../util.ts` — a 3, a sentinel, and two four-line
-functions, character for character the same. `model.ts` is eager, `components/`
-is behind a `lazy()`, and a React-free module imported by both gets grouped with
-the lazy chunk, so the eager import drags it in. Duplicating the helpers is what
-keeps the two sides from sharing a module.
+functions, character for character the same. When the incident happened,
+`model.ts` was eager and `components/` behind a `lazy()`; a React-free module
+imported by both got grouped with the lazy chunk, so the eager import dragged it
+in. `model.ts` is now itself lazily loaded (the ViewType registers a stateModel
+loader), which softens the eager/lazy framing but not the boundary: the
+state-model chunk and the components chunk are still distinct, load at different
+times (session hydration vs first render), and a module shared between them
+merges one into the other's load. Duplicating the helpers is what keeps the two
+sides from sharing a module.
 
 A duplication sweep deleted three of the four (`24aba4d012`) and pointed the
 lazy side at `../util.ts`. **Nothing in the ordinary workflow disagreed**: tsc

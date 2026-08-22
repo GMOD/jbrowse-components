@@ -1,4 +1,4 @@
-import { addOrReplaceView } from '@jbrowse/core/util'
+import { launchOrReplaceView } from '@jbrowse/core/util'
 
 import type { BreakpointSplitView, Track } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -22,7 +22,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
  * where a remount would flash. `[]` is the reader asking for no tracks, which
  * is a construction choice like any other and rebuilds.
  *
- * Rebuilding goes through `addOrReplaceView` rather than remove-then-add so the
+ * Rebuilding goes through `launchOrReplaceView` rather than remove-then-add so the
  * view keeps the slot it already had, along with the focus, instead of
  * reappearing at the bottom of the session below whatever the reader was
  * looking at.
@@ -49,7 +49,7 @@ export function openDefaultTracks(
   }
 }
 
-export function openOrReuseSplitView({
+export async function openOrReuseSplitView({
   session,
   stableViewId,
   tracks,
@@ -67,7 +67,7 @@ export function openOrReuseSplitView({
   stillFits?: (view: BreakpointSplitView) => boolean
   /** what to build when reuse is declined; `id` is filled in from here */
   snapshot: Record<string, unknown>
-}): { view: BreakpointSplitView; reused: boolean } {
+}): Promise<{ view: BreakpointSplitView; reused: boolean }> {
   const found = session.views.find(f => f.id === stableViewId)
   const existing = found as BreakpointSplitView | undefined
   if (
@@ -78,12 +78,12 @@ export function openOrReuseSplitView({
     return { view: existing, reused: true }
   }
   return {
-    view: addOrReplaceView({
+    view: (await launchOrReplaceView({
       session,
       typeName: 'BreakpointSplitView',
       initialState: { ...snapshot, id: stableViewId },
       replacing: found,
-    }) as unknown as BreakpointSplitView,
+    })) as unknown as BreakpointSplitView,
     reused: false,
   }
 }

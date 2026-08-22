@@ -211,7 +211,7 @@ export async function navToSingleLevelBreak({
         session,
       }))
   const { refName, pos: startPos, mateRefName, matePos: endPos } = coverage
-  const { view, reused } = openOrReuseSplitView({
+  const { view, reused } = await openOrReuseSplitView({
     session,
     stableViewId,
     tracks,

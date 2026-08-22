@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { ErrorMessage, SubmitDialog, replaceViewAction } from '@jbrowse/core/ui'
 import {
-  addOrReplaceView,
+  launchOrReplaceView,
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
@@ -303,12 +303,12 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     // so leaving that view standing above it is a second copy of the same
     // locus with the same tracks, one scroll apart. (Reviewer, on the figure
     // of exactly that: "too chaotic ... should also use 'replace view'".)
-    const created = addOrReplaceView({
+    const created = (await launchOrReplaceView({
       session,
       typeName: 'BreakpointSplitView',
       initialState: viewSnapshot,
       replacing: replace ? (view as AbstractViewModel) : undefined,
-    }) as unknown as {
+    })) as unknown as {
       views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
     }
     // Before the navigation, not after it, and this is the ordering the bug
@@ -358,12 +358,12 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
         rand: () => Math.random(),
       })
     session.addTemporaryAssembly?.(temporaryAssembly)
-    const created = addOrReplaceView({
+    const created = (await launchOrReplaceView({
       session,
       typeName: 'LinearSyntenyView',
       initialState: viewSpec,
       replacing: replace ? (view as AbstractViewModel) : undefined,
-    }) as { views?: SyntenyPanel[] }
+    })) as { views?: SyntenyPanel[] }
     const [refPanel, derivativePanel] = created.views ?? []
     // the launching view's own tracks go onto the reference panel only: the
     // derivative panel is a synthetic assembly no configured track names

@@ -21,7 +21,7 @@ import {
   DEFAULT_ALPHA,
   DEFAULT_MIN_ALIGNMENT_LENGTH,
   DEFAULT_OVERDRAW_PX,
-} from '../../LinearSyntenyView/model.ts'
+} from '../../LinearSyntenyView/consts.ts'
 import {
   OFFSCREEN_MATE_HELP,
   OFFSCREEN_MATE_MODE_OPTIONS,

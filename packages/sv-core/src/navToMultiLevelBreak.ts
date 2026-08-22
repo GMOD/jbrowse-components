@@ -85,7 +85,7 @@ export async function navToMultiLevelBreak({
   })
 
   const tracks = viewTracks ?? []
-  const { view, reused } = openOrReuseSplitView({
+  const { view, reused } = await openOrReuseSplitView({
     session,
     stableViewId,
     tracks: viewTracks,

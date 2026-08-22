@@ -223,13 +223,14 @@ export async function launchOrReplaceView(args: {
   initialState?: Record<string, unknown>
   replacing?: AbstractViewModel
 }) {
-  // a fake session in a test is not an MST node and carries no environment to
-  // find the plugin manager in; skipping the preload there leaves addView's
+  // a fake session in a test is not an MST node, or is one built without the
+  // pluginManager environment; skipping the preload there leaves addView's
   // own not-loaded guard as the error path
   if (isStateTreeNode(args.session)) {
-    await getEnv(args.session)
-      .pluginManager.getViewType(args.typeName)
-      .loadStateModel()
+    const { pluginManager } = getEnvMST<{ pluginManager?: PluginManager }>(
+      args.session,
+    )
+    await pluginManager?.getViewType(args.typeName).loadStateModel()
   }
   return addOrReplaceView(args)
 }

@@ -1540,7 +1540,7 @@ export default function stateModelFactory(pm: PluginManager) {
               tracks,
             }
 
-            session.addView('LinearSyntenyView', viewSnapshot)
+            void session.launchView('LinearSyntenyView', viewSnapshot)
           }
         },
       }))

@@ -21,8 +21,8 @@ import type {
 // lookalike interface would still typecheck while silently dropping it
 interface SvInspectorViewInit extends SpreadsheetViewInit {}
 
-/** height of the "show only regions with data" bar above the circular view */
-export const circularViewOptionsBarHeight = 52
+export { circularViewOptionsBarHeight } from './consts.ts'
+import { circularViewOptionsBarHeight } from './consts.ts'
 
 /**
  * The trackId a persisted circular-view track names. A track opened from the

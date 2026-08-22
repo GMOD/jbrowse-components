@@ -2,7 +2,7 @@ import { LabeledCheckbox } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { circularViewOptionsBarHeight } from '../model.ts'
+import { circularViewOptionsBarHeight } from '../consts.ts'
 
 import type { SvInspectorViewModel } from '../model.ts'
 
