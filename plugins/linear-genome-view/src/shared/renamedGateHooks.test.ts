@@ -9,10 +9,11 @@ import RegionTooLargeMixin, {
 // `measuresBytesPreFlight`, `byteGateActive` → `gateActive`, …). An out-of-tree
 // display still overriding an old name lands on a getter nothing reads: the gate
 // quietly stays off and the track downloads unguarded, with no banner and no
-// error — the same silent-disable this mixin's additive OR and
-// `CanvasFeatureGateMixin`'s compose-order check exist to prevent. So
-// `afterAttach` calls `reportRenamedHooks`, and a dev check nobody tests is a
-// check that stops firing without anyone noticing.
+// error — the same silent-disable this mixin's additive OR and the compose-order
+// lint rule exist to prevent. A lint rule is no use for this one, because the
+// population it is for never runs our lint. So `afterAttach` calls
+// `reportRenamedHooks`, and a dev check nobody tests is a check that stops
+// firing without anyone noticing.
 //
 // Called directly rather than through `afterAttach`, because MST materializes
 // child nodes lazily and there is no display fixture in this package to attach

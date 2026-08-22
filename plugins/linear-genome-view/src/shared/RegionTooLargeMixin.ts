@@ -33,11 +33,12 @@ declare const process: { env: { NODE_ENV?: string } }
 
 // The gate members renamed in 2026-08, and what they are called now. An
 // out-of-tree display overriding an old name is the exact failure this mixin
-// spends `gateEnabled`'s additive-OR and `CanvasFeatureGateMixin`'s
-// compose-order check guarding against: the override lands on a getter nothing
-// reads, the gate quietly stays off, and the display downloads whatever it is
-// pointed at with no banner and no error. A rename is only safe if it is louder
-// than the thing it renamed, so this says so at attach.
+// spends `gateEnabled`'s additive-OR and the compose-order lint rule guarding
+// against: the override lands on a getter nothing reads, the gate quietly stays
+// off, and the display downloads whatever it is pointed at with no banner and
+// no error. This one stays a runtime check because the population it is for is
+// out of tree, where a lint rule reaches nothing; a rename is only safe if it is
+// louder than the thing it renamed, so this says so at attach.
 export const RENAMED_HOOKS: Record<string, string> = {
   byteGateEnabled: 'measuresBytesPreFlight',
   gateFoldedIntoFetch: 'measuresBytesInFetch',

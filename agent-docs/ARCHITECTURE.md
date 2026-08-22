@@ -875,8 +875,9 @@ plus `byteGateAdapterConfig` / `densityTooLarge` / `configuredFetchSizeLimit` â€
 rather than shadowing the getter. **Never override
 `gateEnabled`**: it is the OR of the two opt-ins, additive
 precisely so a gate mixin can contribute one without racing the base on
-composition order, and `CanvasFeatureGateMixin` carries a dev-time check for
-that failure because it disables the whole gate silently. Canvas folds
+composition order, and `no-restricted-syntax` fails both the shadow and a
+`CanvasFeatureGateMixin()` written before `MultiRegionDisplayMixin()`, because
+either disables the whole gate silently. Canvas folds
 its byte check into the feature-fetch RPC instead of a separate pre-flight
 estimate, and adds the density axis, via `CanvasFeatureGateMixin`
 (`plugins/canvas/src/shared/`), which both canvas feature displays compose; the

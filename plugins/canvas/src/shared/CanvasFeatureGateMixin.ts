@@ -16,11 +16,6 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-// This ESM package builds without @types/node, but consuming bundlers still
-// string-replace `process.env.NODE_ENV`, so keep the reference and give it a
-// minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
-
 /**
  * The members a composing display provides that this gate reads but doesn't own:
  * the config (via `getConf`) and the two `RegionTooLargeMixin` names the density
@@ -127,11 +122,10 @@ export default function CanvasFeatureGateMixin() {
        *
        * Contributed the same way as `measuresBytesInFetch` above, and it fails
        * the same way in the wrong compose order — the base's `false` wins and
-       * the density axis is silently off. The self-check in `afterAttach` reads
-       * `measuresBytesInFetch` rather than this, because it cannot tell that
-       * failure from `LinearMultiRowFeatureDisplay` legitimately turning this
-       * one back off; the two are contributed together, so catching either
-       * catches the order.
+       * the density axis is silently off. `no-restricted-syntax` fails a
+       * `CanvasFeatureGateMixin()` written before `MultiRegionDisplayMixin()` in
+       * one `types.compose` and says why, so neither opt-in needs a getter read
+       * back at attach to notice.
        */
       get densityGateEnabled() {
         return true
@@ -270,28 +264,6 @@ export default function CanvasFeatureGateMixin() {
       // opt-in: a new canvas feature display can't forget it and silently gate a
       // reused displayedRegionIndex against a prior chromosome's stats.
       afterAttach() {
-        // Compose-order self-check, for both opt-ins this mixin contributes.
-        // Both it and `RegionTooLargeMixin` (via MultiRegionDisplayMixin)
-        // declare `measuresBytesInFetch` and `densityGateEnabled`, and
-        // `types.compose` resolves the collision to the later argument — so
-        // composing this one FIRST silently switches the entire size gate off
-        // with no error anywhere. Reading our own opt-in back is the whole test:
-        // if it isn't true, the base's `false` won. It reads the byte one and
-        // not the density one because multi-row legitimately turns the density
-        // axis back off in its own `.views`; the two are contributed together,
-        // so the byte one answers for both.
-        if (
-          process.env.NODE_ENV !== 'production' &&
-          !self.measuresBytesInFetch
-        ) {
-          console.error(
-            '[jbrowse display contract] CanvasFeatureGateMixin() must be ' +
-              'composed AFTER MultiRegionDisplayMixin(): the later .compose() ' +
-              'argument wins on `measuresBytesInFetch`, and the ' +
-              'region-too-large gate is currently disabled for this display. ' +
-              'See agent-docs/reference/REGION_TOO_LARGE.md.',
-          )
-        }
         onDisplayedRegionsChange(
           self,
           () => {

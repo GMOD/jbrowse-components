@@ -925,12 +925,6 @@ file rather than being attributed wrongly.
 **Now checked** (dev-only; every one but the retry contract at the end reports
 only on a real violation):
 
-- **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
-  Both define `measuresBytesInFetch` and the later wins, so swapping them switches
-  the whole size gate off with no error ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)).
-  The gate mixin's own `afterAttach` reads its opt-in back and reports if the
-  base's `false` won — local to the mixin, so no generic checker needs to know
-  what canvas is.
 - **A renamed gate hook must not be left overridden under its old name.**
   `RegionTooLargeMixin`'s `afterAttach` reads `getMembers(self).views` against a
   map of the names renamed in 2026-08 (`byteGateEnabled` → `measuresBytesPreFlight`
@@ -1010,6 +1004,22 @@ only on a real violation):
   the reported caller cannot reach.
 
 **Checked without a runtime check:**
+
+- **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
+  Both define `measuresBytesInFetch` and `densityGateEnabled` and the later
+  argument wins, so swapping them switches the whole size gate off with no error
+  ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)). **An argument order is a
+  declaration**, and esquery's sibling combinator reads it directly: the rule is
+  `CanvasFeatureGateMixin() ~ MultiRegionDisplayMixin()`, which matches the base
+  mixin when the gate mixin already appeared earlier in the same argument list,
+  and neither mixin's own `export default function` is a call, so no file needs
+  a carve-out. It replaced the gate mixin's `afterAttach`, which read its own
+  opt-in back and reported if the base's `false` had won. **What a sibling
+  selector cannot see is an order assembled across two files** — a gate mixin
+  composed ahead of a base *model* that carries the foundation — where the
+  attach-time read could. Nothing in tree composes that way (both canvas
+  displays name both mixins in one `types.compose`), and out of tree neither
+  form reaches at all.
 
 - **`rpcProps` / `regionHasData` / `isCacheValid` must be `.views()`, not
   `.actions()`.** MobX runs actions untracked, so the reads register no

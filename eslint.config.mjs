@@ -249,6 +249,24 @@ const noFetchHookInActions = {
     'Declare `rpcProps`, `regionHasData` and `isCacheValid` in a `.views()` block, never `.actions()`. MST turns whatever an `.actions()` block declares into an action and MobX runs an action inside `untracked`, so the hook still returns the right value when called and simply stops registering the observables it read — every autorun and computed calling it keeps a stale answer until something else it happens to depend on changes. Nothing throws and nothing logs, and the block opener deciding a member’s fate is often hundreds of lines above it: multi-sample-variant shipped a byte gate that evaluated `false` once before init and never re-evaluated, and multi-row shipped an `isCacheValid` inside a 210-line `.actions()` block that only looked harmless because `FetchVisibleRegions` re-fired for its own reasons. Move the declaration into a `.views()` block, or make the hook a getter — MST throws on a getter inside `.actions()`, which is why `regionFetchKey` needs no rule. See agent-docs/architecture-decision-records/adr-044-reactive-display-hooks-are-getters-or-pinned-views.md.',
 }
 
+// `CanvasFeatureGateMixin` and `RegionTooLargeMixin` (which
+// `MultiRegionDisplayMixin` brings in) both declare `measuresBytesInFetch` and
+// `densityGateEnabled`, and `types.compose` resolves a member collision by
+// ARGUMENT POSITION — so which of two arguments in one call comes first is the
+// whole difference between a gated display and one that downloads whatever the
+// viewport covers. esquery's sibling combinator reads exactly that: the base
+// mixin is reported when the gate mixin already appeared earlier in the same
+// argument list. Neither mixin's own declaration is a call, so no file needs a
+// carve-out. What it cannot see is a gate mixin composed ahead of a base MODEL
+// that carries the foundation, which is a different file's compose;
+// REGION_TOO_LARGE.md says so rather than implying coverage.
+const noGateMixinComposedFirst = {
+  selector:
+    "CallExpression[callee.name='CanvasFeatureGateMixin'] ~ CallExpression[callee.name='MultiRegionDisplayMixin']",
+  message:
+    'CanvasFeatureGateMixin() must be composed AFTER MultiRegionDisplayMixin(), and this types.compose has them the other way round. Both declare `measuresBytesInFetch` and `densityGateEnabled` — the gate mixin contributes `true`, RegionTooLargeMixin (which MultiRegionDisplayMixin brings in) defaults them `false` — and types.compose resolves a member collision to the LATER argument, so composing the gate first hands both opt-ins back to those defaults. The entire region-too-large gate is then off for this display: no banner, no error, nothing the type system objects to, and the track downloads whatever the viewport covers. Move CanvasFeatureGateMixin() below MultiRegionDisplayMixin() in the same call. See agent-docs/reference/REGION_TOO_LARGE.md.',
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
   noSessionAddTrackConf,
@@ -262,6 +280,7 @@ const sourceRestrictedSyntax = [
   noHandRolledAttach,
   noGateEnabledOverride,
   noFetchHookInActions,
+  noGateMixinComposedFirst,
 ]
 
 export default defineConfig(

@@ -413,9 +413,12 @@ contributes an opt-in instead, the way `CanvasFeatureGateMixin` does.
 `afterAttach` carries a dev-time check for it (`RENAMED_HOOKS`). An out-of-tree
 display overriding an old name lands on a getter nothing reads: the gate stays
 off and the display downloads whatever it is pointed at with no banner and no
-error — the same silent-disable failure the additive OR and
-`CanvasFeatureGateMixin`'s compose-order check exist to prevent. Add to that map
-before renaming another one.
+error — the same silent-disable failure the additive OR and the compose-order
+lint rule exist to prevent. Add to that map before renaming another one. **This
+one stays a runtime check on purpose**: the population it exists for is
+out-of-tree displays, which never run our lint, and in tree there is nothing for
+a selector to find, since a rename that left an old name behind would have been
+the rename's own diff.
 
 **`configuredFetchSizeLimit`** and **`configForceLoad`** read the
 `fetchSizeLimit` and `forceLoad` slots from `baseLinearDisplayConfigSchema`,
@@ -634,11 +637,14 @@ the `.compose`, so the override does not depend on mixin order. Neither is
 reachable from `gateTruthTable`, which overrides the hook in order to enumerate
 it and therefore cannot see which way the base points.
 
-Both directions of the wrong compose order are caught, but only one is caught
-*here*: `afterAttach`'s self-check reads `measuresBytesInFetch` back rather than
-`densityGateEnabled`, because it cannot distinguish the base's `false` winning
-from multi-row legitimately turning the axis off. The two are contributed
-together, so the byte one answers for both.
+Both directions of the wrong compose order are caught, and neither is caught
+*here*: `CanvasFeatureGateMixin()` written before `MultiRegionDisplayMixin()` in
+one `types.compose` is an eslint error (`no-restricted-syntax`, which carries
+the reason), so no getter has to be read back at attach to distinguish the
+base's `false` winning from multi-row legitimately turning the axis off. What
+the selector does not reach is an order assembled across two files — the gate
+mixin composed ahead of a base *model* that carries the foundation — nor an
+out-of-tree display, which runs neither our lint nor our tests.
 
 A display opts in by composing the mixin and calling `commitGateMeasurements`
 from its fetch (with the `visibleBp` captured *before* the fetch). It does **not**
