@@ -75,7 +75,16 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                   <DrawerWidget session={session} />
                 </Suspense>
               ) : null}
-              <div className={classes.container}>
+              {/* The clamp above can be shorter than the track set, and this
+                  box is `overflow: hidden` with no scrollable ancestor -- the
+                  host was never asked for a height -- so without a scrollbar of
+                  its own everything below the fold is unreachable. Only the
+                  vertical axis: the LGV owns horizontal scrolling. */}
+              <div
+                className={classes.container}
+                style={drawerVisible ? { overflowY: 'auto' } : undefined}
+                data-testid="embedded-view-box"
+              >
                 <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
                   <Suspense fallback={<LoadingEllipses />}>
                     <ReactComponent model={view} session={session} />

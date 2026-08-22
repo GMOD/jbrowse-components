@@ -147,3 +147,25 @@ test('a failure the session survives reaches the screen', async () => {
     ),
   ).toBeTruthy()
 }, 40000)
+
+// `drawerViewHeight` is the only height this component sets for itself, and the
+// box it clamps is `overflow: hidden`. The host was never asked for a height, so
+// there is no scrollable ancestor either: before this, a track set taller than
+// the clamp simply had nothing below the fold reachable.
+test('the box a drawer clamps can scroll', async () => {
+  const state = createViewState({ assembly, tracks: [], defaultSession })
+  const { findByTestId } = render(<JBrowseLinearGenomeView viewState={state} />)
+
+  expect((await findByTestId('embedded-view-box')).style.overflowY).toBe('')
+
+  state.session.view.activateTrackSelector()
+
+  await waitFor(
+    async () => {
+      expect((await findByTestId('embedded-view-box')).style.overflowY).toBe(
+        'auto',
+      )
+    },
+    { timeout },
+  )
+}, 40000)
