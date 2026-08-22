@@ -13,6 +13,12 @@ import type { ByteEstimate } from './regionTooLargeUtils.ts'
 // interactions; this covers the cross-product, so a corner nobody thought to
 // name is still pinned.
 //
+// It is a cross-product of STATES and cannot see an order, which is the other
+// half of the gate: which of two measurements wins, what a clear leaves behind,
+// what an approval outlives. Those rules live in `nextGateState`, and
+// `nextGateState.test.ts` walks event sequences over them — the two tests
+// divide the gate between them exactly there.
+//
 // The leaves every derived getter sits on are the display opt-ins, the two
 // force-load flags, the viewport, the two limits, the stored estimate and the
 // measured-viewport key. All nine are overridden here, so no view, track or

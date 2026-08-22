@@ -10,7 +10,7 @@ import { autorun } from 'mobx'
 import {
   AUTO_FORCE_LOAD_BP,
   evaluateRegionTooLarge,
-  nextByteEstimate,
+  nextGateState,
   resolveByteLimit,
 } from './regionTooLargeUtils.ts'
 
@@ -19,7 +19,9 @@ import type { BaseLinearDisplayConfigModel } from '../BaseLinearDisplay/models/c
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type {
   ByteEstimate,
+  GateEvent,
   GateFetchState,
+  GateState,
   GateViewport,
 } from './regionTooLargeUtils.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -28,6 +30,26 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 // string-replace `process.env.NODE_ENV`, so keep the reference and give it a
 // minimal module-scoped type for tsc.
 declare const process: { env: { NODE_ENV?: string } }
+
+/**
+ * Move the gate's three volatiles through {@link nextGateState}, which is where
+ * the whole commit protocol lives — so the rules about *order* (which of two
+ * measurements wins, what a clear leaves behind, what an approval outlives) are
+ * reachable by a walk over event sequences instead of only by whichever
+ * interleaving someone thought to write an example test for.
+ *
+ * All three are assigned unconditionally, and that is safe rather than sloppy:
+ * the reducer hands back `prev` itself when nothing moved, and a volatile is
+ * `observable.ref`, so writing an identical value notifies nobody. Every caller
+ * is already inside an MST action, which is what makes these writes legal from
+ * a plain function.
+ */
+function applyGateEvent(self: GateState, event: GateEvent) {
+  const next = nextGateState(self, event)
+  self.byteEstimate = next.byteEstimate
+  self.gateMeasuredViewportKey = next.gateMeasuredViewportKey
+  self.forceLoadTrack = next.forceLoadTrack
+}
 
 // The gate members renamed in 2026-08, and what they are called now. An
 // out-of-tree display overriding an old name is the exact failure this mixin
@@ -840,7 +862,19 @@ export default function RegionTooLargeMixin() {
        * empty one.
        */
       setByteEstimate(measurement: { bytes: number; viewport: GateViewport }) {
-        self.byteEstimate = nextByteEstimate(self.byteEstimate, measurement)
+        applyGateEvent(self, {
+          kind: 'measurement',
+          // `gated: false` is what makes this the bytes half alone, and
+          // `tierKey: undefined` waives the tier guard: this is the raw writer,
+          // reached by tests staging a display and by nothing in production
+          issued: {
+            viewport: measurement.viewport,
+            gated: false,
+            tierKey: undefined,
+          },
+          currentTierKey: undefined,
+          bytes: measurement.bytes,
+        })
       },
 
       /**
@@ -855,7 +889,13 @@ export default function RegionTooLargeMixin() {
        * what is on screen now", not "do we have bytes for it".
        */
       setGateMeasuredViewport(viewport: GateViewport) {
-        self.gateMeasuredViewportKey = viewport.key
+        // the mirror of `setByteEstimate` above: gated, so the viewport is
+        // stamped, and no `bytes`, so the stored estimate is left alone
+        applyGateEvent(self, {
+          kind: 'measurement',
+          issued: { viewport, gated: true, tierKey: undefined },
+          currentTierKey: undefined,
+        })
       },
 
       /**
@@ -873,8 +913,7 @@ export default function RegionTooLargeMixin() {
        * button exists to avoid.
        */
       clearByteEstimate() {
-        self.byteEstimate = undefined
-        self.gateMeasuredViewportKey = undefined
+        applyGateEvent(self, { kind: 'invalidated' })
       },
 
       /**
@@ -885,7 +924,7 @@ export default function RegionTooLargeMixin() {
        * fetch, and `forceLoad` doesn't have to inline a volatile write.
        */
       setForceLoadTrack(flag: boolean) {
-        self.forceLoadTrack = flag
+        applyGateEvent(self, { kind: 'forceLoad', approved: flag })
       },
 
       /**
@@ -925,15 +964,12 @@ export default function RegionTooLargeMixin() {
         tierKey: string | undefined
         bytes?: number
       }) {
-        if (tierKey !== undefined && tierKey !== self.byteGateAdapterKey) {
-          return
-        }
-        if (gated) {
-          self.setGateMeasuredViewport(viewport)
-        }
-        if (bytes !== undefined) {
-          self.setByteEstimate({ bytes, viewport })
-        }
+        applyGateEvent(self, {
+          kind: 'measurement',
+          issued: { viewport, gated, tierKey },
+          currentTierKey: self.byteGateAdapterKey,
+          bytes,
+        })
       },
     }))
     .actions(self => ({

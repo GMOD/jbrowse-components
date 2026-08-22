@@ -112,6 +112,109 @@ export interface GateFetchState {
 }
 
 /**
+ * The gate's own stored state: everything a sequence of events moves, and
+ * nothing else. `regionTooLarge` and its neighbours are pure functions of this
+ * plus the display's budgets, so this is the whole of what the protocol below
+ * has to get right.
+ */
+export interface GateState {
+  byteEstimate: ByteEstimate | undefined
+  gateMeasuredViewportKey: string | undefined
+  forceLoadTrack: boolean
+}
+
+/**
+ * Everything that moves a {@link GateState}, as data. `viewportMoved` carries
+ * no payload and changes nothing, and is here precisely for that: the estimate
+ * surviving an ordinary pan is a rule rather than an omission, and a walk over
+ * these events can only assert it if the event exists to walk over.
+ */
+export type GateEvent =
+  /** a fetch's measurement came back — the one event with rules attached */
+  | {
+      kind: 'measurement'
+      /** the gate as it stood when that fetch was issued */
+      issued: GateFetchState
+      /** `byteGateAdapterKey` now, which `issued.tierKey` is judged against */
+      currentTierKey: string | undefined
+      /** absent when the fetch measured no bytes (a density short-circuit) */
+      bytes?: number
+    }
+  /** the stored estimate describes a fetch nobody is going to make any more */
+  | { kind: 'invalidated' }
+  /** the user approved this track track-wide, or that approval was revoked */
+  | { kind: 'forceLoad'; approved: boolean }
+  /** a pan or zoom inside the same chromosome and the same tier */
+  | { kind: 'viewportMoved' }
+
+/**
+ * The byte gate's commit protocol as a pure function, so a seeded walk over
+ * event *sequences* can reach it. `gateTruthTable.test.ts` enumerates the
+ * derived getters exhaustively and says itself that it cannot see an order —
+ * yet every rule here is about one: which of two measurements wins, what a
+ * clear leaves behind, what an approval outlives. The 2026-08 tier-key bug had
+ * exactly that shape, and the example test pinning it could only be written
+ * once somebody had thought of the interleaving.
+ *
+ * Four rules, each of which used to live at a call site or nowhere:
+ *
+ * - **a measurement is judged by the tier it was issued against.** A fetch
+ *   still in flight when `ClearByteEstimateOnTierSwap` fires would otherwise
+ *   re-instate the old tier's bytes right behind the clear, and the banner
+ *   would quote them against the new tier's file until the next fetch corrected
+ *   it. An `issued.tierKey` of `undefined` means the display never gates, so
+ *   there is no tier to disagree about.
+ * - **a fetch the gate sat out stamps nothing** (`gated: false`), so
+ *   `gateMeasurementStale` goes on asking about the live viewport.
+ * - **unmeasurable is not a measurement.** An absent `bytes` leaves the last
+ *   real estimate alone rather than wiping it.
+ * - **an approval outlives an invalidation.** `forceLoadTrack` is track-wide, so
+ *   expiring it on a chromosome change is the per-locus re-approval the button
+ *   exists to avoid.
+ *
+ * Returns `prev` itself when nothing moved, which is what lets a caller assign
+ * the fields back unconditionally: a volatile is `observable.ref`, so writing an
+ * identical value notifies nobody.
+ */
+export function nextGateState(prev: GateState, event: GateEvent): GateState {
+  switch (event.kind) {
+    case 'viewportMoved': {
+      return prev
+    }
+    case 'forceLoad': {
+      return { ...prev, forceLoadTrack: event.approved }
+    }
+    case 'invalidated': {
+      return {
+        ...prev,
+        byteEstimate: undefined,
+        gateMeasuredViewportKey: undefined,
+      }
+    }
+    case 'measurement': {
+      const { issued, currentTierKey, bytes } = event
+      const { viewport, gated, tierKey } = issued
+      if (
+        viewport === undefined ||
+        (tierKey !== undefined && tierKey !== currentTierKey)
+      ) {
+        return prev
+      }
+      return {
+        ...prev,
+        gateMeasuredViewportKey: gated
+          ? viewport.key
+          : prev.gateMeasuredViewportKey,
+        byteEstimate:
+          bytes === undefined
+            ? prev.byteEstimate
+            : nextByteEstimate(prev.byteEstimate, { bytes, viewport }),
+      }
+    }
+  }
+}
+
+/**
  * Fold a fresh measurement into the stored one, carrying across the only thing
  * the stored one knows that the fresh one can't: whether zooming has been shown
  * not to help. See {@link ByteEstimate.zoomIneffective}.

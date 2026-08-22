@@ -128,6 +128,16 @@ Four steps and a note, all on `RegionTooLargeMixin`:
   because a dense region short-circuits on its feature count and an unmeasurable
   byte result must not overwrite a good estimate. Folding them would make a
   density-blocked display refetch forever.
+
+  Both of them, `clearByteEstimate` and `setForceLoadTrack` are now one-line
+  delegations to **`nextGateState(prev, event)`** (`regionTooLargeUtils.ts`),
+  which is where the whole commit protocol lives. The point of it being pure is
+  the tests: `gateTruthTable.test.ts` is a cross-product of *states* and cannot
+  see an order, while every rule in the protocol is about one — which of two
+  measurements wins, what a clear leaves behind, what an approval outlives.
+  `nextGateState.test.ts` walks seeded event sequences against those rules
+  restated, and all five of its seeds independently rediscover the tier-key bug
+  when the guard is removed.
 - `gateActive` answers "may the gate act right now?" — the opt-in, no exemption,
   a measured view — and `densityGateActive` is that plus the density axis's own
   two terms (`densityGateEnabled`, `aboveForceLoadFloor`). The byte axis reads
