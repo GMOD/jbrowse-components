@@ -59,6 +59,17 @@ export interface CreateViewStateBaseOptions {
    */
   plugins?: PluginInput[]
   disableAddTracks?: boolean
+  /**
+   * Draw the app-shaped `File` menu bar above the view, the way
+   * `@jbrowse/react-app` has one. Off by default -- an embedded view is the
+   * chrome a host asked for and nothing more -- and it carries the two items an
+   * embed can honour, **Open track...** and **Open connection...**, so
+   * `disableAddTracks` empties it and the bar then draws nothing.
+   *
+   * It takes a row out of `height` rather than adding to it: a bounded
+   * component is `height` tall with the bar inside it.
+   */
+  menuBar?: boolean
   makeWorkerInstance?: () => Worker
   /**
    * Any CSS height (`'400px'`, `'80vh'`), applied to the component's own root.
@@ -137,6 +148,7 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
     location,
     highlight,
     disableAddTracks = false,
+    menuBar = false,
     makeWorkerInstance,
     defaultSession,
     session,
@@ -179,6 +191,7 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
         aggregateTextSearchAdapters,
       },
       disableAddTracks,
+      menuBar,
       height,
       drawerViewHeight,
       session: defaultSession ?? {

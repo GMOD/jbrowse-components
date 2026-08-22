@@ -317,9 +317,12 @@ test('an open drawer bounds the view, and pins it with the older name', () => {
 // returns -- including nothing, which is what `disableAddTracks` is for: every
 // item here is refused by the session guards under it, so a menu would be a row
 // of dead ends.
-test('the File menu carries what an embed can honour, and nothing under disableAddTracks', () => {
-  const state = createViewState({ assembly, tracks })
-  expect(state.menus()).toEqual([
+test('the File menu is opt-in, and carries what an embed can honour', () => {
+  // no bar unless asked for: this component shipped without one, so a host that
+  // says nothing keeps the chrome it already had
+  expect(createViewState({ assembly, tracks }).menus()).toEqual([])
+
+  expect(createViewState({ assembly, tracks, menuBar: true }).menus()).toEqual([
     {
       label: 'File',
       menuItems: [
@@ -329,7 +332,14 @@ test('the File menu carries what an embed can honour, and nothing under disableA
     },
   ])
 
+  // both items are the affordances disableAddTracks exists to remove, so asking
+  // for the bar and locking the embed down leaves nothing to draw
   expect(
-    createViewState({ assembly, tracks, disableAddTracks: true }).menus(),
+    createViewState({
+      assembly,
+      tracks,
+      menuBar: true,
+      disableAddTracks: true,
+    }).menus(),
   ).toEqual([])
 })

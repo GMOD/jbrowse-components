@@ -243,19 +243,26 @@ reaches only one of them.
 
 `disableAddTracks` hides the single-view components' own "add track"
 affordances, for a page where the track set is yours to decide rather than the
-reader's. That includes the LGV's `File` menu, whose two items — **Open
-track...** and **Open connection...** — are exactly those affordances: with them
-gone the menu bar has nothing to hold, so it isn't drawn at all rather than
-offering rows the session refuses.
+reader's. That includes the LGV's `File` menu, if you asked for one — its two
+items, **Open track...** and **Open connection...**, are exactly those
+affordances, so with them gone the bar has nothing to hold and isn't drawn at
+all rather than offering rows the session refuses.
+
+`menuBar` draws that `File` menu in an app-shaped bar above the view, the way
+`@jbrowse/react-app` has one. **Off by default**: an embedded view is the chrome
+a host asked for and nothing more, and this component shipped without a bar, so
+one appearing unbidden would change every existing embed's layout. It takes a
+row out of `height` rather than adding to it — a bounded component is `height`
+tall with the bar inside.
 
 `height` takes any CSS height (`'400px'`, `'80vh'`) and bounds the component's
-own root — the whole component, so the menu bar's row comes out of it and the
-view takes what is left (48px of a 400px box, at present). Without it an
-embedded view is content-height and grows with the page, which is what you want
-in a document and not in a panel. The tracks scroll inside the bound while the
-chrome above them stays put — title bar, navigation bar, overview scalebar,
-coordinate ruler — so a height shorter than the track set is tall costs you
-nothing but the scrollbar.
+own root — the whole component, so a `menuBar` row comes out of it and the view
+takes what is left (48px of a 400px box, at present). Without it an embedded
+view is content-height and grows with the page, which is what you want in a
+document and not in a panel. The tracks scroll inside the bound while the chrome
+above them stays put — title bar, navigation bar, overview scalebar, coordinate
+ruler — so a height shorter than the track set is tall costs you nothing but the
+scrollbar.
 
 That last part is why this is a prop and not just advice to wrap the component
 in a sized box. A host box does bound the view, and still does, but it scrolls

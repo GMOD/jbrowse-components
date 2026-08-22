@@ -10,6 +10,8 @@ import { drawerGridTemplateColumns } from '@jbrowse/product-core'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import EmbeddedAppBar from './EmbeddedAppBar.tsx'
+
 import type { ViewModel } from '../createModel/createModel.ts'
 
 const DrawerWidget = lazy(() =>
@@ -57,9 +59,16 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   })
 
   const { effectiveHeight: height } = viewState
-  const style = height
-    ? { gridTemplateColumns, height }
-    : { gridTemplateColumns }
+  // The menu bar takes a row of its own, spanning the drawer's column as well
+  // as the view's, and `minmax(0, 1fr)` gives the row below it a definite size
+  // that can shrink -- a bare `1fr` floors at the content and the box it holds
+  // stops being the thing that scrolls. Rows unconditionally, since the bar is
+  // there or it isn't and `auto` costs an unbounded view nothing.
+  const style = {
+    gridTemplateColumns,
+    gridTemplateRows: 'auto minmax(0, 1fr)',
+    ...(height ? { height } : {}),
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -67,6 +76,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
         <div className={classes.avoidParentStyle}>
           <ScopedCssBaseline>
             <div className={classes.root} style={style}>
+              <EmbeddedAppBar viewState={viewState} />
               {drawerPosition === 'left' && drawerVisible ? (
                 <Suspense fallback={null}>
                   <DrawerWidget session={session} />

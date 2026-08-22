@@ -1,7 +1,11 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createEmbeddedRootModel } from '@jbrowse/embedded-core'
 import { types } from '@jbrowse/mobx-state-tree'
-import { toPluginLoadRecord } from '@jbrowse/product-core'
+import {
+  openConnectionMenuItem,
+  openTrackMenuItem,
+  toPluginLoadRecord,
+} from '@jbrowse/product-core'
 
 import corePlugins from '../corePlugins.ts'
 import { version } from '../version.ts'
@@ -44,6 +48,13 @@ export default function createModel(
       disableAddTracks: types.stripDefault(types.boolean, false),
       /**
        * #property
+       * Draw the app-shaped `File` menu bar above the view. Off by default: an
+       * embed is the chrome a host asked for, and this is a component that has
+       * never had an application's bar.
+       */
+      menuBar: types.stripDefault(types.boolean, false),
+      /**
+       * #property
        * Any CSS height, applied to the component's own root whether or not a
        * drawer is open. Absent, the component is content-height and grows with
        * the page, and the host's box is what bounds it.
@@ -69,6 +80,30 @@ export default function createModel(
        * pinning the header means something, so the session's
        * `stickyViewHeaders` reads this too.
        */
+      /**
+       * #method
+       * One `File` menu, and only the two items an embed can honour: it can
+       * open a track or a connection into the session it was handed. The app's
+       * own File menu also starts, imports and exports sessions, which here
+       * would let a reader discard the view its host configured with no route
+       * back -- and `Add`/`Tools` have nothing to hold when there is one view
+       * and no plugin store.
+       *
+       * Empty unless `menuBar` asked for it, and empty under `disableAddTracks`
+       * even then: both items are the add-track affordances that option exists
+       * to remove, so what would be left is a bar of rows the session guards
+       * refuse. The bar draws nothing for an empty menu set.
+       */
+      menus() {
+        return self.menuBar && !self.disableAddTracks
+          ? [
+              {
+                label: 'File',
+                menuItems: [openTrackMenuItem(), openConnectionMenuItem()],
+              },
+            ]
+          : []
+      },
       get effectiveHeight() {
         const { visibleWidget, minimized } = self.session
         return (

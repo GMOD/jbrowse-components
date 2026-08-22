@@ -182,13 +182,15 @@ test('unbounded until a drawer opens, and then the box scrolls', async () => {
 // and it wins over the older name when a host passes both.
 // The bar lives in a grid row of its own inside the bounded root, so a `height`
 // is the whole component's -- menu bar included -- and the view box takes what
-// is left. Locked down, the row collapses and the box takes all of it.
+// is left. Unasked for, or locked down, the row collapses and the box takes all
+// of it.
 test('the menu bar takes a row of the bounded height, and none of it when off', async () => {
   const state = createViewState({
     assembly,
     tracks: [],
     defaultSession,
     height: '400px',
+    menuBar: true,
   })
   const { container, findByTestId } = render(
     <JBrowseLinearGenomeView viewState={state} />,
@@ -199,15 +201,14 @@ test('the menu bar takes a row of the bounded height, and none of it when off', 
   const box = await findByTestId('embedded-view-box')
   expect(box.parentElement?.style.gridTemplateRows).toBe('auto minmax(0, 1fr)')
 
-  const locked = createViewState({
+  const bare = createViewState({
     assembly,
     tracks: [],
     defaultSession,
     height: '400px',
-    disableAddTracks: true,
   })
-  const lockedRender = render(<JBrowseLinearGenomeView viewState={locked} />)
-  expect(lockedRender.container.querySelector('header')).toBeNull()
+  const bareRender = render(<JBrowseLinearGenomeView viewState={bare} />)
+  expect(bareRender.container.querySelector('header')).toBeNull()
 }, 40000)
 
 test('a height bounds the view with no drawer, and outranks drawerViewHeight', async () => {

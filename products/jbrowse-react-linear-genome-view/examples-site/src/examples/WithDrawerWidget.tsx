@@ -26,6 +26,9 @@ export default function WithDrawerWidget() {
     // drawer; with no height at all the view is bounded to '100vh' while a
     // drawer is open and content-height otherwise
     height: '100vh',
+    // the app-shaped File menu, off unless a host asks for it. Its two items
+    // open a track or a connection -- into the drawer, like every other widget
+    menuBar: true,
     init: {
       loc: 'ctgA:1105..1221',
       tracks: ['volvox_gff3'],

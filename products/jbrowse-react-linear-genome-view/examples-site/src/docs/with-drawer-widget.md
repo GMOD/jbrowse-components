@@ -11,6 +11,10 @@ JBrowse 1 arrangement: sidebar, header, scrolling tracks. Prefer `height`, which
 does the same without waiting for a drawer — see
 [fitting the view in a fixed-height box](../default-session/#fixed-height).
 
+`menuBar` is on here, which is the other thing this page shows: the app-shaped
+`File` bar above the view, off by default everywhere else. Its two items open a
+track or a connection, and both land in this same drawer.
+
 `init.tracklist` opens the track selector on load. Prefer it to calling
 [`activateTrackSelector`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-activatetrackselector)
 on the built engine: init opens the drawer and waits for the view to be resized
