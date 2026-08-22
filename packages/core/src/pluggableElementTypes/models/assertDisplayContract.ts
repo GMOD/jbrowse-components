@@ -8,20 +8,10 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 // reference and give it a minimal module-scoped type for tsc.
 declare const process: { env: { NODE_ENV?: string } }
 
-// Nodes whose fetch foundation has already installed its autoruns. A display
-// that (wrongly) chains to super in its own `afterAttach` re-enters the mixin's
-// hook on the same node, which is the only way to land here twice.
+// Nodes whose fetch foundation has already installed its autoruns. Keyed on the
+// node rather than the model type: every display of a type would otherwise
+// report from the second instance onward.
 const attached = new WeakSet<object>()
-
-// Hooks that MUST be `.views()`. MobX runs an action inside `untracked`, so
-// declaring one of these in `.actions()` makes its reads register no dependency
-// and the caller silently keeps a stale answer. It has regressed twice, because
-// each caller independently reads something that moves in lockstep.
-//
-// `regionFetchKey`, the third term the per-region cache rule reads, needs no
-// entry: MST throws on a getter inside `.actions()`, so it cannot regress this
-// way. Only the method-shaped hooks can.
-const MUST_BE_VIEWS = ['isCacheValid', 'regionHasData', 'rpcProps'] as const
 
 function report(message: string) {
   // `console.error`, never `throw`: an error escaping `afterAttach` is read by
@@ -31,28 +21,33 @@ function report(message: string) {
 }
 
 /**
- * Dev-only check of the display contracts that no type expresses and whose
- * violation is silent. No-op in production.
+ * Dev-only check that a display's fetch foundation attached it exactly once —
+ * the one ordering contract here that is a *state* rather than a declaration,
+ * so no selector can reach it. No-op in production.
  *
  * Called once per display from **whichever fetch foundation installed its
  * autoruns** — `MultiRegionDisplayMixin`'s `afterAttach` for the per-region
- * family, `installGlobalFetchAutorun` for the global one. It was per-region
- * only until 2026-08, which left the family with *fewer* safety nets
- * unchecked: HiC and LD both define `rpcProps()`, `installGlobalFetchAutorun`
- * serializes it into the autorun's trigger list, and an `rpcProps` declared in
- * `.actions()` there fails exactly the same way — reads register no
- * dependency, so a settings change stops invalidating — with no
- * `makeSettingsLoopGuard` on that side to catch anything either.
+ * family, `installGlobalFetchAutorun` for the global one,
+ * `installComparativeFetchAutorun` for the comparative one. Landing here twice
+ * for one node means every autorun that foundation installs is installed twice:
+ * double fetches, double clears, and nothing anywhere says so.
  *
- * `installedBy` names the caller so the double-install message can describe the
- * right thing; the WeakSet is shared, which is correct — a display composes one
- * fetch foundation, so reaching here twice is the bug regardless of which.
+ * The named cause is a display that chains to `super` in its own `afterAttach`
+ * — our MST fork auto-chains lifecycle hooks, so the explicit call re-enters the
+ * foundation's hook. **That cause is a declaration and could be a lint selector;
+ * this check is not, because it is not the only cause**: composing two fetch
+ * foundations onto one display, or calling an installer from a display that
+ * already composes the mixin, arrives here the same way, through a composition
+ * assembled across files that no single one of them spells out. So the message
+ * leads with the common cause and then describes the state, not the syntax.
  *
- * ARCHITECTURAL_LIMITS.md §"Ordering is the contract" asks for exactly this —
- * "each order becomes explicit data … `makeSettingsLoopGuard` is this move
- * already applied to the `rpcProps` loop trap. Generalize it." That doc's "Now
- * checked" list is the authoritative account of which contracts report
- * themselves and which are still silent; don't restate the split here, because
+ * `installedBy` names the caller so the message can describe the right thing;
+ * the WeakSet is shared, which is correct — a display composes one fetch
+ * foundation, so reaching here twice is the bug regardless of which.
+ *
+ * ARCHITECTURAL_LIMITS.md §"Ordering is the contract" is the authoritative
+ * account of which contracts report themselves at runtime, which are lint
+ * selectors and which are still silent; don't restate the split here, because
  * this comment said "four places" against a heading that said five and a list
  * that held six.
  *
@@ -64,29 +59,19 @@ export function assertDisplayContract(
   self: IAnyStateTreeNode,
   installedBy = "the per-region fetch foundation's afterAttach",
 ) {
-  if (process.env.NODE_ENV === 'production') {
-    return
-  }
-  if (attached.has(self)) {
-    report(
-      `${getMembers(self).name}: ${installedBy} ran twice on one display, so ` +
-        `its fetch autoruns are installed twice (double fetches, double ` +
-        `clears). Our MST fork auto-chains lifecycle hooks — delete the ` +
-        `superAfterAttach() call from this display's afterAttach. ` +
-        `See agent-docs/ARCHITECTURE.md §"What not to do".`,
-    )
-    return
-  }
-  attached.add(self)
-
-  const { actions, name } = getMembers(self)
-  for (const hook of MUST_BE_VIEWS) {
-    if (actions.includes(hook)) {
+  if (process.env.NODE_ENV !== 'production') {
+    if (attached.has(self)) {
       report(
-        `${name}: \`${hook}\` is declared in .actions(), which must be .views(). ` +
-          `MobX runs actions untracked, so its reads register no dependency and ` +
-          `callers keep a stale answer — silently. Move it to a .views() block.`,
+        `${getMembers(self).name}: ${installedBy} ran twice on one display, ` +
+          `so its fetch autoruns are installed twice (double fetches, double ` +
+          `clears). Our MST fork auto-chains lifecycle hooks, so the usual ` +
+          `cause is a superAfterAttach() call in this display's afterAttach — ` +
+          `delete it. Otherwise this display composes two fetch foundations, ` +
+          `or calls an installer it already gets from a mixin. ` +
+          `See agent-docs/ARCHITECTURE.md §"What not to do".`,
       )
+    } else {
+      attached.add(self)
     }
   }
 }

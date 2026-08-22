@@ -1161,18 +1161,21 @@ MST view methods (not getters), so subclasses extend them via the standard
 `super` capture pattern spelled out below.
 
 **The method-shaped fetch hooks must live in `.views()`, never `.actions()`.**
-MobX runs an action inside `untracked`, so declaring `rpcProps` or
-`regionHasData` as an action makes its reads register no dependency and every
-caller silently keeps a stale answer — no error, no crash, and it has regressed
-twice. That is what `assertDisplayContract` checks: dev-only, and
-`console.error` rather than `throw` (an error escaping `afterAttach` reads as an
-invalid track and the display is dropped, hiding the very violation it reports).
-Its list still carries `isCacheValid`, which nothing in tree overrides now the
-mixin computes it, for an out-of-tree display that shadows it through `compose`.
-`regionFetchKey` needs no entry: MST throws on a getter declared inside
-`.actions()`, so only the method-shaped hooks can regress this way. The check
-also catches a display that wrongly chains to `super` in its own `afterAttach`,
-which re-enters the mixin's hook and installs the fetch autoruns twice.
+MobX runs an action inside `untracked`, so declaring `rpcProps`,
+`regionHasData` or `isCacheValid` as an action makes its reads register no
+dependency and every caller silently keeps a stale answer — no error, no crash,
+and it has regressed twice. **A declaration inside an `.actions()` block is a
+`no-restricted-syntax` error** in source, which carries the reason;
+`regionFetchKey` needs no rule, because MST throws on a getter declared inside
+`.actions()`, so only the method-shaped hooks can regress this way.
+
+**`assertDisplayContract` is what remains a runtime check**: a display that
+wrongly chains to `super` in its own `afterAttach` re-enters the fetch
+foundation's hook and installs every autorun twice, and so does composing two
+fetch foundations or calling an installer a mixin already called — a state, not
+a spelling. Dev-only, and `console.error` rather than `throw` (an error escaping
+`afterAttach` reads as an invalid track and the display is dropped, hiding the
+very violation it reports).
 
 **All three fetch families call it**, once per display, from whichever installed
 that display's autoruns: `installPerRegionFetchAutoruns` for the per-region
@@ -1573,10 +1576,11 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't put fetch-result derivatives (`cellData`, `sampleInfo`, etc.) into
   `rpcProps()`; it is an infinite fetch loop. See
   [the trap](#rpcprops-loop-trap-and-how-to-break-it).
-- Don't declare `rpcProps` or `regionHasData` in `.actions()`. MST runs an
-  action `untracked`, so their reads register no dependency and callers silently
-  keep a stale answer; `assertDisplayContract` `console.error`s on it in dev.
-  See [the pattern](#rpcprops--gpuprops-pattern).
+- Don't declare `rpcProps`, `regionHasData` or `isCacheValid` in `.actions()`.
+  MST runs an action `untracked`, so their reads register no dependency and
+  callers silently keep a stale answer; `no-restricted-syntax` fails the
+  declaration in source and says why. See [the
+  pattern](#rpcprops--gpuprops-pattern).
 - Don't put a pure "go again" signal under a fetch gate. `reloadCounter` and
   friends must be read unconditionally, above the bail-outs — a read inside the
   gate drops out of the dependency set on the run that declines, and nothing

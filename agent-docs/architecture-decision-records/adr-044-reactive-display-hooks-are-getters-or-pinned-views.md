@@ -63,7 +63,7 @@ inside `byteGateBlocksFetch`, the action that consumes it, where being untracked
 is correct.
 
 **Where a hook must take an argument, pin its declaration site.** Every fetching
-display family asserts the hook is not an action, via MST's public reflection:
+display family asserted the hook is not an action, via MST's public reflection:
 
 ```ts
 const { actions } = getMembers(display)
@@ -72,8 +72,10 @@ expect(actions).not.toContain('rpcProps')
 ```
 
 Live in alignments, canvas basic, canvas multi-row, MAF, LD,
-multi-sample-variant matrix, and wiggle. A new fetching display adds the same
-three lines.
+multi-sample-variant matrix, and wiggle, three lines per new fetching display —
+until 2026-08, when the seven copies became one `afterAttach` read and then the
+lint selector under "Rejected alternatives" below. The decision above is
+unchanged; only where the pin lives is.
 
 ## Rejected alternatives
 
@@ -89,6 +91,20 @@ MST chain, not a syntactic one — a member can be added by a mixin, a helper
 factory, or a super-capture override. A lint rule would see the easy cases and
 miss precisely the 210-line-block case that shipped.
 
+**Adopted in 2026-08, and this paragraph was mostly wrong.** The rule is a
+`no-restricted-syntax` selector in `eslint.config.mjs` and it is now the whole
+check; the `afterAttach` read that had replaced the per-family assertions is
+gone. Of the three escapes named above, two are plain syntax and are matched: a
+mixin declaring the hook is a declaration in the mixin's own file, and a
+super-capture override returns its object out of a block body, which the
+selector's second arm covers — as does the 210-line block, which is the *easy*
+case rather than the hard one, since a member written in an `.actions(…)`
+argument is in that block however long the block is. Only the third holds: a
+helper factory whose object is spread into `.actions()` puts the declaration in
+another file, and no display does that. What none of the three forms ever
+covered is an out-of-tree display, which runs neither our lint nor our tests, and
+which the production strip already left with nothing.
+
 **`isAction()` from MobX.** Doesn't work: MST wraps actions with its own
 mechanism, so `isAction(display.isCacheValid)` is `false` for a real MST action.
 `getMembers(instance).actions` is the reflection that reports it, and it
@@ -102,7 +118,7 @@ trap. Per-family is also where the failure would be diagnosed.
 ## Consequences
 
 - New method-shaped hook read from a reactive context? Ask whether it can be a
-  getter first. If not, add it to the per-family assertion list.
+  getter first. If not, add its name to the `no-restricted-syntax` selector.
 - The pin catches the declaration site, not the tracking behavior. Keep the one
   behavioral tracking test (`isCacheValidTracking.test.ts`) — it is what proves
   the *reason* the declaration matters, and it would survive a future MST that

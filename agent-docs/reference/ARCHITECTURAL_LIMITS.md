@@ -890,13 +890,17 @@ comment citing the heading by title still said four. **Don't put the length of a
 growing list anywhere but the list.**
 
 One failure shape recurs: behavior depends on an order no type can see, and
-getting it wrong is silent. The fix shape is equally uniform — make the order
+getting it wrong is silent. Two fix shapes answer it, and **which one applies
+turns on whether the violation is a declaration or a state.** A declaration — a
+name declared, a call written, an argument order — is a `no-restricted-syntax`
+selector, which costs nothing at runtime and nothing to maintain. A state,
+something true only at a particular moment of a run, has to make the order
 report itself at attach, the move `makeSettingsLoopGuard` already applied to the
 `rpcProps` loop trap. `assertDisplayContract` (called from
-`MultiRegionDisplayMixin.afterAttach` and from `installGlobalFetchAutorun`, so
-both fetch families are covered — it was per-region only until 2026-08, which
-left HiC and LD, both of which define `rpcProps()`, checked by nothing) is that
-generalization. It
+`MultiRegionDisplayMixin.afterAttach`, from `installGlobalFetchAutorun` and from
+`installComparativeFetchAutorun`, so all three fetch families are covered — it
+was per-region only until 2026-08, which left HiC and LD, both of which define
+`rpcProps()`, checked by nothing) is that generalization. It
 `console.error`s rather than throws, deliberately: an error escaping
 `afterAttach` is read by the session loader as an invalid track and the display
 is dropped, which would hide the very violation being reported.
@@ -938,13 +942,14 @@ only on a real violation):
 - **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
   lifecycle hooks, so capturing and calling it double-installs all five autoruns
   (`models/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
-  hook has already run on catches the re-entry.
-- **`rpcProps` / `regionHasData` must be `.views()`, not `.actions()`.** MobX
-  runs actions untracked, so the reads register no dependency and callers keep a
-  stale answer. Was a hand-copied `getMembers(display).actions` assertion per
-  display family; now checked once for every display that composes the
-  foundation, including ones not yet written. `regionFetchKey` is spared by
-  being a getter — MST throws on one declared inside `.actions()`.
+  hook has already run on catches the re-entry. **Kept as a runtime check on
+  purpose**: the super-capture is a declaration and would make a fine selector,
+  but it is not the only way a foundation's hook runs twice on one node —
+  composing two fetch foundations, or calling an installer a mixin already
+  called, arrives at the same double-install through a composition assembled
+  across files that no single one of them spells out. The check is on the state,
+  so it holds whatever produced it; a selector on `self.afterAttach` would
+  narrow it to the named cause.
 - **`HeightModeMixin()` must compose after `TrackHeightMixin()`**, whose `height`
   and `resizeHeight` it overrides, so the wrong order silently leaves grow mode
   inert. This looked uncheckable — both members are legitimately defined on both
@@ -1005,6 +1010,30 @@ only on a real violation):
   the reported caller cannot reach.
 
 **Checked without a runtime check:**
+
+- **`rpcProps` / `regionHasData` / `isCacheValid` must be `.views()`, not
+  `.actions()`.** MobX runs actions untracked, so the reads register no
+  dependency and callers keep a stale answer. A declaration of one of those
+  names directly inside an `.actions(…)` block is an eslint error
+  (`no-restricted-syntax`, which carries the reason); `regionFetchKey` is spared
+  by being a getter, because MST throws on one declared inside `.actions()`. It
+  was a hand-copied `getMembers(display).actions` assertion per display family,
+  then one `afterAttach` read for every display composing a fetch foundation,
+  and is now neither. **The general move applies to a hook the same way it
+  applies to a getter: the block a member is written in is syntax, so the
+  selector is the whole check** — and it fires in the editor rather than at the
+  attach of whichever test happens to build that display.
+  [ADR-044](../architecture-decision-records/adr-044-reactive-display-hooks-are-getters-or-pinned-views.md)
+  rejected exactly this rule in 2026-07, on the grounds that a lint pass "would
+  see the easy cases and miss precisely the 210-line-block case that shipped".
+  Two of the three escapes it named are plain syntax and *are* matched — a
+  210-line `.actions()` block, and a super-capture override returning its object
+  out of a block body — so the objection held only for the third, a helper
+  factory spread into the block, which no display does. The ADR records that.
+  What none of the three forms covers is an out-of-tree display, which runs
+  neither our lint nor our tests, and which the production strip already left
+  with nothing (TODO.md §"The display-contract checks are stripped in
+  production").
 
 - **`gateEnabled` must not be overridden.** It is `measuresBytesPreFlight ||
   measuresBytesInFetch` by construction, so a second `get gateEnabled()`

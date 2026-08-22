@@ -648,10 +648,13 @@ In-tree they are gated now: `config/jest/console.js` buffers the
 `[jbrowse <family> contract]` prefix and `config/jest/contractGate.js`
 fails the test that collected one (ARCHITECTURAL_LIMITS.md §"Ordering is the
 contract"). Out of tree, nothing catches anything —
-`process.env.NODE_ENV === 'production'` no-ops all five, so a plugin author
-whose display declares `rpcProps` in `.actions()` gets the silent stale cache
+`process.env.NODE_ENV === 'production'` no-ops every one of them, so a plugin
+author whose display overrides a renamed gate hook gets the unguarded download
 and no message, ever. That is the population least able to diagnose it, and the
-one nobody can write a test for.
+one nobody can write a test for. **The lint conversions do not change this and
+do not shrink it**: a selector reaches an out-of-tree plugin exactly as little as
+a stripped `console.error` does, so each contract that moved to
+`no-restricted-syntax` left this item holding the same gap it held before.
 
 Whether it is worth a session flag is the whole item, and the question is
 *channel*, not cost — the checks are a `getMembers` call per display at attach.

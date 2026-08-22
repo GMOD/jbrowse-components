@@ -20,18 +20,22 @@ What follows is local.
 
 ## Contract checks
 
-`assertDisplayContract` covers the three method-shaped hooks in dev;
-`regionFetchKey` needs no entry, because MST throws on a getter declared inside
-`.actions()`. `makeRetryContractCheck` is the same idea for retry: it reports
-when a `reloadCounter` bump re-runs the autorun and the gate still declines —
-the dead Retry button. All three fetch installers install it. Opt out with
-`fetchInert` if the display deliberately isn't fetching — the loading scrim and
-the SVG export read the same hook (ADR-082). A two-stage `reload()` says
-`awaitingPrerequisite` instead (HiC, whose contacts fetch declines until the
-header lands; variants, until `sourcesBase` does), which **defers** the verdict
-to the run after the prerequisite arrives rather than waiving it. Reports reach
-the jest gate through `console.error`, so a harness replacing it opts itself
-out; a test provoking a violation calls `takeContractReports()`.
+`no-restricted-syntax` covers the three method-shaped hooks — declaring
+`rpcProps`, `regionHasData` or `isCacheValid` inside an `.actions(…)` block is a
+lint error, and `regionFetchKey` needs no rule because MST throws on a getter
+declared inside `.actions()`. `assertDisplayContract` is what stayed a runtime
+check: it reports a fetch foundation whose `afterAttach` ran twice on one
+display, which no spelling in one file predicts. `makeRetryContractCheck` is the
+same idea for retry: it reports when a `reloadCounter` bump re-runs the autorun
+and the gate still declines — the dead Retry button. All three fetch installers
+install it. Opt out with `fetchInert` if the display deliberately isn't fetching
+— the loading scrim and the SVG export read the same hook (ADR-082). A two-stage
+`reload()` says `awaitingPrerequisite` instead (HiC, whose contacts fetch
+declines until the header lands; variants, until `sourcesBase` does), which
+**defers** the verdict to the run after the prerequisite arrives rather than
+waiving it. Reports reach the jest gate through `console.error`, so a harness
+replacing it opts itself out; a test provoking a violation calls
+`takeContractReports()`.
 
 Both flags are getters on `FetchMixin` — and `fetchInert` on
 `SyntenyFetchStateMixin` too, for the family that composes no mixin in common

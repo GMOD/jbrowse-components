@@ -230,6 +230,25 @@ const noGateEnabledOverride = {
     'Do not declare `gateEnabled`. RegionTooLargeMixin defines it as `measuresBytesPreFlight || measuresBytesInFetch` and nothing else — additive, so a gate mixin contributes an opt-in without racing the base on compose order. A second declaration shadows the OR itself, which types.compose and the type system both accept in silence: false over a live opt-in switches the whole region-too-large gate off with no banner and no error, and true over neither evaluates the LGV-only getters for a display that measures nothing. Override `measuresBytesPreFlight` / `measuresBytesInFetch` instead. See agent-docs/reference/REGION_TOO_LARGE.md.',
 }
 
+// `rpcProps`, `regionHasData` and `isCacheValid` are the method-shaped fetch
+// hooks read from reactive contexts, and MST decides what a member IS from the
+// block it is declared in. `.actions()` makes it an action, MobX runs an action
+// inside `untracked`, and the hook then returns the right value while
+// registering none of the observables it read. ADR-044 rejected this rule in
+// 2026-07 on the grounds that a lint pass "would see the easy cases and miss
+// precisely the 210-line-block case that shipped"; two of the three escapes it
+// named — a 210-line `.actions()` block, and a super-capture override that
+// returns its object from a block body — are plain syntax and are matched here.
+// A helper factory spread into the block is the one that is not.
+const noFetchHookInActions = {
+  selector: [
+    "CallExpression[callee.property.name='actions'] > ArrowFunctionExpression > ObjectExpression > Property[key.name=/^(isCacheValid|regionHasData|rpcProps)$/]",
+    "CallExpression[callee.property.name='actions'] > ArrowFunctionExpression > BlockStatement > ReturnStatement > ObjectExpression > Property[key.name=/^(isCacheValid|regionHasData|rpcProps)$/]",
+  ].join(', '),
+  message:
+    'Declare `rpcProps`, `regionHasData` and `isCacheValid` in a `.views()` block, never `.actions()`. MST turns whatever an `.actions()` block declares into an action and MobX runs an action inside `untracked`, so the hook still returns the right value when called and simply stops registering the observables it read — every autorun and computed calling it keeps a stale answer until something else it happens to depend on changes. Nothing throws and nothing logs, and the block opener deciding a member’s fate is often hundreds of lines above it: multi-sample-variant shipped a byte gate that evaluated `false` once before init and never re-evaluated, and multi-row shipped an `isCacheValid` inside a 210-line `.actions()` block that only looked harmless because `FetchVisibleRegions` re-fired for its own reasons. Move the declaration into a `.views()` block, or make the hook a getter — MST throws on a getter inside `.actions()`, which is why `regionFetchKey` needs no rule. See agent-docs/architecture-decision-records/adr-044-reactive-display-hooks-are-getters-or-pinned-views.md.',
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
   noSessionAddTrackConf,
@@ -242,6 +261,7 @@ const sourceRestrictedSyntax = [
   noNoOpStatusCallbackDefault,
   noHandRolledAttach,
   noGateEnabledOverride,
+  noFetchHookInActions,
 ]
 
 export default defineConfig(

@@ -1,12 +1,12 @@
 /**
- * The dev-only display-contract check.
+ * The dev-only double-attach check.
  *
- * `BaseLinearDisplay/CLAUDE.md` leans on this directly — "a new fetching
- * display needs no per-family `getMembers` test" — so if it silently stopped
- * checking, the guidance would be wrong and nothing would say so. Its whole
- * mechanism is a `getMembers(self).actions` lookup against a name list: a
- * change in what our MST fork reports there turns every violation into a pass,
- * which looks exactly like a clean codebase.
+ * A fetch foundation installs a display's autoruns from `afterAttach`, so
+ * reaching that hook twice on one node installs every one of them twice —
+ * double fetches, double clears, and nothing at any layer says so. The state is
+ * the violation, which is why this one stayed a runtime check when the
+ * declaration-shaped contracts around it became `no-restricted-syntax`
+ * selectors (ARCHITECTURAL_LIMITS.md §"Ordering is the contract").
  *
  * It reports through `console.error` on purpose rather than throwing, because
  * an error escaping `afterAttach` is read by the session loader as an invalid
@@ -27,82 +27,58 @@ function captureReports(fn: () => void) {
   return takeContractReports()
 }
 
-// rpcProps and isCacheValid are the two hooks MobX would run untracked if they
-// were actions, so their reads would register no dependency and every caller
-// would keep a stale answer. Nothing about the wrong block fails to compile.
-const Offender = types
-  .model('OffendingDisplay', { id: types.optional(types.string, 'x') })
-  .actions(() => ({
-    rpcProps() {
-      return {}
-    },
-    isCacheValid() {
-      return true
-    },
-  }))
-
-const Correct = types
-  .model('CorrectDisplay', { id: types.optional(types.string, 'x') })
+const Display = types
+  .model('SomeDisplay', { id: types.optional(types.string, 'x') })
   .views(() => ({
     rpcProps() {
       return {}
     },
-    isCacheValid() {
-      return true
-    },
   }))
 
-test('a hook declared in .actions() is reported, naming the hook and the fix', () => {
-  const reports = captureReports(() => {
-    assertDisplayContract(Offender.create())
-  })
-  expect(reports).toHaveLength(2)
-  expect(reports.join('\n')).toMatch(/`rpcProps` is declared in \.actions\(\)/)
-  expect(reports.join('\n')).toMatch(
-    /`isCacheValid` is declared in \.actions\(\)/,
-  )
-  // the message has to say what to do; "violates the contract" costs the hours
-  // this check exists to save
-  expect(reports.join('\n')).toMatch(/Move it to a \.views\(\) block/)
-  expect(reports.join('\n')).toMatch(/OffendingDisplay/)
-})
-
-// The negative control that matters: if getMembers ever stops reporting action
-// names the way this reads them, every display passes and the check is dead
-// weight. The pair only proves anything together.
-test('the same hooks in .views() report nothing', () => {
+test('one call per node reports nothing', () => {
   expect(
     captureReports(() => {
-      assertDisplayContract(Correct.create())
+      assertDisplayContract(Display.create())
     }),
   ).toEqual([])
 })
 
 // Our MST fork auto-chains lifecycle hooks, so a display that also calls
-// superAfterAttach() installs all five fetch autoruns twice — double fetches,
-// double clears. Re-entering on the same node is the only way that happens.
+// superAfterAttach() installs all five fetch autoruns twice. Composing two
+// fetch foundations, or calling an installer a mixin already called, lands the
+// same way — which is why the message names the common cause and then the
+// state, and why a lint selector on the super-capture would not replace this.
 test('a second call on the same node reports the double attach', () => {
-  const node = Correct.create()
-  expect(
-    captureReports(() => {
-      assertDisplayContract(node)
-    }),
-  ).toEqual([])
+  const node = Display.create()
+  assertDisplayContract(node)
   const reports = captureReports(() => {
     assertDisplayContract(node)
   })
   expect(reports).toHaveLength(1)
-  expect(reports[0]).toMatch(/afterAttach ran twice/)
-  expect(reports[0]).toMatch(/delete the superAfterAttach\(\) call/)
+  expect(reports[0]).toMatch(/ran twice on one display/)
+  expect(reports[0]).toMatch(/superAfterAttach\(\) call/)
+  expect(reports[0]).toMatch(/composes two fetch foundations/)
+  expect(reports[0]).toMatch(/SomeDisplay/)
+})
+
+// The message has to name the caller that ran twice, or a display composing the
+// global foundation is told to look at the per-region one.
+test('the report names whichever foundation installed the autoruns', () => {
+  const node = Display.create()
+  assertDisplayContract(node, 'installGlobalFetchAutorun')
+  const reports = captureReports(() => {
+    assertDisplayContract(node, 'installGlobalFetchAutorun')
+  })
+  expect(reports[0]).toMatch(/installGlobalFetchAutorun ran twice/)
 })
 
 // Keyed per node, not per model type — every display of a type would otherwise
 // report from the second one onward.
 test('a different node of the same type is not a double attach', () => {
-  assertDisplayContract(Correct.create())
+  assertDisplayContract(Display.create())
   expect(
     captureReports(() => {
-      assertDisplayContract(Correct.create())
+      assertDisplayContract(Display.create())
     }),
   ).toEqual([])
 })
