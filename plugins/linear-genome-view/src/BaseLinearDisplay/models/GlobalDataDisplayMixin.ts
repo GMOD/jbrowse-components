@@ -67,9 +67,14 @@ export default function GlobalDataDisplayMixin() {
        * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
        * failed fetch has to read as finished to the consumers outside the
        * display. The per-region family declares the identical override.
+       *
+       * `viewportEmpty` is the second such state: a display parked off content
+       * has painted everything it was ever going to, so a consumer waiting on
+       * `painted` (the on-screen capture gate) must not wait on a canvas no
+       * fetch will ever fill.
        */
       get paintInert(): boolean {
-        return !!self.error
+        return !!self.error || self.viewportEmpty
       },
     }))
     .views(self => ({

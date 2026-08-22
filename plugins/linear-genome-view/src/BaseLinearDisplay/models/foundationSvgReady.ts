@@ -9,6 +9,8 @@ export interface SvgReadyFoundation {
   regionTooLarge: boolean
   /** `FetchMixin`'s: this display will never fetch here, so nothing is coming */
   fetchInert: boolean
+  /** the foundation's: no content block is on screen — see `viewportEmpty` */
+  viewportEmpty: boolean
   /** the family's own freshness answer */
   dataCurrent: boolean
 }
@@ -30,6 +32,13 @@ export interface SvgReadyFoundation {
  * short-circuit exactly as `computeSvgReady` documents — freshness reads the
  * containing view, and `awaitSvgReady`'s `when()` must not subscribe to that
  * churn while a banner is up.
+ *
+ * `viewportEmpty` rides in the thunk rather than as a fourth terminal for that
+ * same reason — it is a view read, and the non-LGV `computeSvgReady` callers
+ * have no view to answer it from — and it belongs to freshness anyway: a
+ * viewport holding no content block has nothing it could be stale about, so it
+ * is vacuously current. Without it a display parked off content never resolves,
+ * and `awaitSvgReady` is an unbounded `when`.
  */
 export function foundationSvgReady(self: SvgReadyFoundation): boolean {
   return computeSvgReady(
@@ -38,6 +47,6 @@ export function foundationSvgReady(self: SvgReadyFoundation): boolean {
       regionTooLarge: self.regionTooLarge,
       extraTerminal: self.fetchInert,
     },
-    () => self.dataCurrent,
+    () => self.viewportEmpty || self.dataCurrent,
   )
 }

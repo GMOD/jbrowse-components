@@ -234,26 +234,43 @@ their terminals differently and keep their own call.
   loaded data; `loadedRegions.size` rules out the vacuously-true empty viewport.
   `viewportWithinLoadedData` stays a separate getter — it is the raw coverage
   predicate the fetch autorun and loading overlay use.
+  `viewportEmpty` (below) is what keeps that `loadedRegions.size` term from
+  hanging an export over a viewport that holds no block to load.
   `fetchInert` is the overridable hook the sequence display uses.
 - **`GlobalFetchMixin`** (whole-view single-blob — HiC, LD, and arc): a global
   display has no per-region spatial axis, so it requires the single dataset to
   actually be current — deliberately **not** `displayPhase !== 'loading'`,
   because the fetch trigger is a debounced `afterAttach` autorun, so at export
   time `isLoading` can be false with no data yet, and a `displayPhase !==
-  'loading'` test would capture an empty render. `dataCurrent` is an overridable
-  getter (default `false`) each display must implement. Since 2026-08-21 they
-  all answer it through the same `isDataCurrent` signature compare (the census
-  below is the roster and what each signature is built from), with HiC and LD
-  adding their own `rpcData !== null` term because a commit sets both.
-  Presence alone
-  (`rpcData !== null`) would leave an in-place-refetch gap: a pan/zoom export
-  resolving on the pre-pan matrix during the debounce+RPC window, since neither
-  fetch clears `rpcData` at refetch start. A display that forgets to override
-  `dataCurrent` makes `svgReady` unable to resolve on a successful load, so
-  `awaitSvgReady` never returns and the export hangs. There is no time bound on
-  that wait (`svgReady` is a terminal state, so it resolves once the fetch it
-  observes settles); a missing `dataCurrent` override shows up as an export that
-  never finishes, not as a diagnostic.
+  'loading'` test would capture an empty render. `dataCurrent` is **derived**
+  here, not a hook: the mixin compares the signature `commitFetchResult` stamped
+  against the one the live view calls for, so a display cannot commit without
+  stamping and cannot answer freshness by presence. Presence alone (`rpcData !==
+  null`) would leave an in-place-refetch gap: a pan/zoom export resolving on the
+  pre-pan matrix during the debounce+RPC window, since no global fetch clears
+  its payload at refetch start. What a display supplies is `viewSignature`, and
+  that one **is** a hook whose default (`undefined`) never fetches and never
+  exports: forgetting the override leaves `awaitSvgReady` — an unbounded `when`
+  — never returning, which shows up as an export that never finishes rather
+  than as a diagnostic. Hung is the deliberate choice there; stale ships wrong
+  pixels.
+
+**Both families answer the empty viewport the same way, and neither used to.**
+A view holding no content block — every displayed region under
+`minimumBlockWidth` and elided, which needs `showAllRegions` over ~270+
+similarly-sized regions and so means a scaffold-level assembly — issues no
+fetch, so nothing is ever committed and nothing is ever painted. Scrolling
+cannot reach it: the view clamps `offsetPx` to the region extent. Both freshness
+answers above are false there **permanently**: the per-region one by its
+`loadedRegions.size` term, the global one because `prepare` declines on an empty
+block list. That is a resting state, so it has to be terminal, and
+`viewportEmpty` (`BaseLinearDisplay/models/viewportEmpty.ts`, over the view's own
+`hasVisibleContent`) is the term that makes it one — in `foundationSvgReady`'s
+freshness thunk rather than as a fourth `SvgReadyTerminals` field, because it is
+a view read and the non-LGV callers have no view to answer it from. The same
+term feeds `computeLoadingTerm` and `paintInert`, so the three answers a display
+gives about being finished cannot disagree. Before it, one track parked off
+content hung the whole view's export and sat under a scrim that never lifted.
 
 #### Who answers `dataCurrent` by signature
 

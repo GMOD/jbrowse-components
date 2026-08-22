@@ -63,7 +63,7 @@ export function computeDisplayPhase(
 }
 
 /**
- * The four terms the `loading` condition is built from, minus the one that is a
+ * The five terms the `loading` condition is built from, minus the one that is a
  * thunk. All cheap flags on the display itself, so they are read eagerly the
  * same way `computeDisplayPhase` reads its terminals.
  */
@@ -77,6 +77,16 @@ export interface DisplayLoadingInputs {
    * includes a cancel that is deliberately durable.
    */
   fetchInert: boolean
+  /**
+   * The view holds no content block, so there is nothing to fetch and nothing
+   * to paint: `showAllRegions` over a region set whose every member falls under
+   * `minimumBlockWidth`, which is a scaffold-level assembly and little else (see
+   * `viewportEmpty`). Suppresses every term below for the same reason
+   * `fetchInert` does, and it is the pre-first-paint one that makes it
+   * necessary: no fetch is issued, so `canvasDrawn` is never set and the scrim
+   * would sit there for as long as the viewport stays off content.
+   */
+  viewportEmpty: boolean
   /**
    * A fetch is in flight, or the user canceled one. **Never a bare
    * `isLoading`**: cancel drops the stop token synchronously, so without the
@@ -130,6 +140,7 @@ export interface DisplayLoadingInputs {
 export function computeLoadingTerm(
   {
     fetchInert,
+    viewportEmpty,
     isLoadingOrCanceled,
     rendersCanvas,
     canvasDrawn,
@@ -138,6 +149,7 @@ export function computeLoadingTerm(
 ): boolean {
   return (
     !fetchInert &&
+    !viewportEmpty &&
     (isLoadingOrCanceled ||
       (rendersCanvas && !canvasDrawn) ||
       !viewportCurrent())

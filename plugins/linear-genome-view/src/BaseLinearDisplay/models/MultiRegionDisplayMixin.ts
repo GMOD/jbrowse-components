@@ -12,6 +12,7 @@ import { foundationSvgReady } from './foundationSvgReady.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks } from './regionCommit.ts'
+import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
@@ -157,12 +158,30 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * No content block is on screen, so this display has nothing to fetch
+         * and nothing to paint — see `viewportEmpty.ts` for the one viewport that
+         * reaches it, how narrow that is, and why the state still has to be
+         * terminal rather than a permanent scrim. Both foundations declare it
+         * over that one expression, the same way they each declare `lgv` and
+         * `paintInert`.
+         */
+        get viewportEmpty(): boolean {
+          return viewportEmpty(this.lgv)
+        },
+
+        /**
+         * #getter
          * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
          * failed fetch has to read as finished to the consumers outside the
          * display. The global family declares the identical override.
+         *
+         * `viewportEmpty` is the second such state: a display parked off content
+         * has painted everything it was ever going to, so a consumer waiting on
+         * `painted` (the on-screen capture gate) must not wait on a canvas no
+         * fetch will ever fill.
          */
         get paintInert(): boolean {
-          return !!self.error
+          return !!self.error || this.viewportEmpty
         },
 
         /**
@@ -310,8 +329,10 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * true once an off-screen (SVG) export can safely read this display's
          * data. Policy single-sourced in `computeSvgReady`; this family supplies
-         * only its `dataCurrent` predicate. Off-screen renderers gate on it via
-         * `awaitSvgReady(model)` instead of inlining the condition.
+         * only the freshness half, which `foundationSvgReady` reads as
+         * `dataCurrent` or the vacuous currency of `viewportEmpty`. Off-screen
+         * renderers gate on it via `awaitSvgReady(model)` instead of inlining
+         * the condition.
          */
         get svgReady(): boolean {
           return foundationSvgReady(self)

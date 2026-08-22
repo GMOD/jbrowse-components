@@ -27,7 +27,10 @@ export interface DisplayPhaseFoundation
 export interface DisplayStatusPhaseFoundation
   extends
     DisplayStatusPhaseInputs,
-    Pick<DisplayLoadingInputs, 'fetchInert' | 'isLoadingOrCanceled'> {}
+    Pick<
+      DisplayLoadingInputs,
+      'fetchInert' | 'viewportEmpty' | 'isLoadingOrCanceled'
+    > {}
 
 /**
  * `displayPhase` for a display foundation: the shared precedence
@@ -81,6 +84,7 @@ export function foundationDisplayStatusPhase(
     computeLoadingTerm(
       {
         fetchInert: self.fetchInert,
+        viewportEmpty: self.viewportEmpty,
         isLoadingOrCanceled: self.isLoadingOrCanceled,
         rendersCanvas: false,
         canvasDrawn: false,

@@ -2,13 +2,39 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import GlobalDataDisplayMixin from './GlobalDataDisplayMixin.ts'
 
+import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
+
+// `isViewModel` (core/util/types) duck-types on width + setWidth, which is all
+// `getContainingView` needs to reach this from the display it holds — and the
+// foundation's `lgv` is not optional any more: `viewportEmpty` asks the view
+// whether any content block is on screen, so the phase, the export gate and
+// `painted` all read through it.
+function hostView(Display: IAnyModelType, snapshot: Record<string, unknown>) {
+  return types
+    .model('TestView', { display: Display })
+    .volatile(() => ({
+      width: 800,
+      initialized: true,
+      hasVisibleContent: true,
+    }))
+    .actions(self => ({
+      setWidth(n: number) {
+        self.width = n
+      },
+      setHasVisibleContent(v: boolean) {
+        self.hasVisibleContent = v
+      },
+    }))
+    .create({ display: snapshot })
+}
+
 // A minimal global display that exposes the dataCurrent hook, mirroring how
 // LinearHicDisplay reports "the contact matrix has been fetched". The fetch
 // trigger is a debounced autorun, so at SVG-export time `isLoading` is still
 // false with no data yet — svgReady must gate on dataCurrent, not on
 // "not currently fetching", or the export captures an empty render.
 function testModel() {
-  return types
+  const Display = types
     .compose(
       'TestGlobalDisplay',
       GlobalDataDisplayMixin(),
@@ -25,7 +51,13 @@ function testModel() {
         self.loaded = f
       },
     }))
-    .create({ type: 'TestGlobalDisplay' })
+  // annotated, because `hostView` erases the display type to hold one non-generic
+  // view model — the same reason the shared harness annotates `displays[0]`: an
+  // inferred `any` would make a getter the model does not have compile
+  const model: Instance<typeof Display> = hostView(Display, {
+    type: 'TestGlobalDisplay',
+  }).display
+  return model
 }
 
 test('svgReady is false before the initial fetch commits data', () => {
@@ -79,7 +111,7 @@ test('displayPhase stays loading after a user cancel', () => {
 })
 
 test('displayPhase is not loading pre-paint when rendersCanvas is false', () => {
-  const model = types
+  const Display = types
     .compose(
       'TestNoCanvasDisplay',
       GlobalDataDisplayMixin(),
@@ -90,7 +122,9 @@ test('displayPhase is not loading pre-paint when rendersCanvas is false', () => 
         return false
       },
     }))
-    .create({ type: 'TestNoCanvasDisplay' })
+  const model: Instance<typeof Display> = hostView(Display, {
+    type: 'TestNoCanvasDisplay',
+  }).display
   // A display showing a static non-canvas placeholder never paints a canvas, so
   // the pre-paint scrim must not sit permanently over it.
   expect(model.canvasDrawn).toBe(false)
@@ -119,7 +153,9 @@ test('fetchInert silences the scrim over a placeholder, cancel included', () => 
         return true
       },
     }))
-  const model = Suppressed.create({ type: 'TestSuppressedDisplay' })
+  const model: Instance<typeof Suppressed> = hostView(Suppressed, {
+    type: 'TestSuppressedDisplay',
+  }).display
 
   model.cancelFetchByUser()
   expect(model.fetchCanceled).toBe(true)
@@ -135,4 +171,52 @@ test('painted reports finished once a pre-paint fetch has errored', () => {
   model.setError(new Error('boom'))
   expect(model.canvasDrawn).toBe(false)
   expect(model.painted).toBe(true)
+})
+
+// A viewport holding no content block — every displayed region elided under
+// `showAllRegions` on a scaffold-level assembly. `prepare` declines there, so
+// nothing is fetched,
+// nothing is committed and nothing is painted: without the term this display
+// sat under the scrim and never resolved `svgReady`, which is an unbounded
+// `when` in `awaitSvgReady` and hangs the whole view's SVG export.
+describe('an empty viewport is a resting state, so it is terminal', () => {
+  const Display = types
+    .compose(
+      'TestEmptyViewportDisplay',
+      GlobalDataDisplayMixin(),
+      types.model({ type: types.literal('TestEmptyViewportDisplay') }),
+    )
+    .views(() => ({
+      get dataCurrent() {
+        return false
+      },
+    }))
+
+  function offContent() {
+    const view = hostView(Display, { type: 'TestEmptyViewportDisplay' })
+    view.setHasVisibleContent(false)
+    const model: Instance<typeof Display> = view.display
+    return model
+  }
+
+  test('displayPhase is ready, not a permanent scrim', () => {
+    const model = offContent()
+    expect(model.viewportEmpty).toBe(true)
+    expect(model.canvasDrawn).toBe(false)
+    expect(model.displayPhase).toBe('ready')
+  })
+
+  test('svgReady resolves with no data', () => {
+    expect(offContent().svgReady).toBe(true)
+  })
+
+  test('painted reports finished', () => {
+    expect(offContent().painted).toBe(true)
+  })
+
+  test('an error still outranks it', () => {
+    const model = offContent()
+    model.setError(new Error('boom'))
+    expect(model.displayPhase).toBe('error')
+  })
 })

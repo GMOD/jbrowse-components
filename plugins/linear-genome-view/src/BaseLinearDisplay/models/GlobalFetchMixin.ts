@@ -4,6 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
+import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 
@@ -102,6 +103,18 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
+       * No content block is on screen, so this display has nothing to fetch and
+       * nothing to paint — see `viewportEmpty.ts` for the one viewport that
+       * reaches it, how narrow that is, and why the state still has to be
+       * terminal rather than a permanent scrim. Both foundations declare it over
+       * that one expression, the same way they each declare `lgv` and
+       * `paintInert`.
+       */
+      get viewportEmpty(): boolean {
+        return viewportEmpty(self.lgv)
+      },
+      /**
+       * #getter
        * Signature of the fetch the current view and settings call for — the
        * display's `viewSignature` plus the serialized `rpcProps()` axis. What
        * `runGlobalFetch` gates on, captures at issue, and stamps at commit.
@@ -130,7 +143,9 @@ export default function GlobalFetchMixin() {
       /**
        * #getter
        * Policy single-sourced in `computeSvgReady`; this family supplies only
-       * its `dataCurrent` predicate. Note it requires the dataset to actually be
+       * the freshness half, which `foundationSvgReady` reads as `dataCurrent`
+       * or the vacuous currency of `viewportEmpty`. Note it requires the dataset
+       * to actually be
        * current, NOT merely "not currently fetching": the fetch trigger is a
        * debounced `afterAttach` autorun, so at export time `isLoading` can still
        * be false with no data yet — a `displayPhase !== 'loading'` test would

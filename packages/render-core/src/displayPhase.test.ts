@@ -69,6 +69,7 @@ describe('computeDisplayPhase lazy loading evaluation', () => {
 // the scrim.
 const DRAWN = {
   fetchInert: false,
+  viewportEmpty: false,
   isLoadingOrCanceled: false,
   rendersCanvas: true,
   canvasDrawn: true,
@@ -126,6 +127,26 @@ describe('computeLoadingTerm', () => {
       computeLoadingTerm(
         {
           fetchInert: true,
+          viewportEmpty: false,
+          isLoadingOrCanceled: true,
+          rendersCanvas: true,
+          canvasDrawn: false,
+        },
+        () => false,
+      ),
+    ).toBe(false)
+  })
+
+  // A viewport holding no content block — `showAllRegions` on a region set
+  // whose every member elides. No fetch is issued there, so `canvasDrawn` never
+  // flips and the pre-paint term alone would scrim the display for as long as
+  // the viewport stays off content.
+  test('viewportEmpty outranks every other term', () => {
+    expect(
+      computeLoadingTerm(
+        {
+          fetchInert: false,
+          viewportEmpty: true,
           isLoadingOrCanceled: true,
           rendersCanvas: true,
           canvasDrawn: false,
@@ -141,6 +162,7 @@ describe('computeLoadingTerm', () => {
   // computeDisplayPhase's own `loading` thunk exists to avoid.
   test.each([
     ['suppressed', { ...DRAWN, fetchInert: true }],
+    ['off content', { ...DRAWN, viewportEmpty: true }],
     ['already loading', { ...DRAWN, isLoadingOrCanceled: true }],
     ['pre-first-paint', { ...DRAWN, canvasDrawn: false }],
   ])('does not read the viewport when %s', (_label, inputs) => {
@@ -188,6 +210,7 @@ describe('computeLoadingTerm matches the expressions it replaced', () => {
       computeLoadingTerm(
         {
           fetchInert: c.fetchInert,
+          viewportEmpty: false,
           isLoadingOrCanceled: c.isLoading || c.fetchCanceled,
           canvasDrawn: c.canvasDrawn,
           rendersCanvas: true,
@@ -206,6 +229,7 @@ describe('computeLoadingTerm matches the expressions it replaced', () => {
       computeLoadingTerm(
         {
           fetchInert: false,
+          viewportEmpty: false,
           isLoadingOrCanceled,
           canvasDrawn: c.canvasDrawn,
           rendersCanvas: c.rendersCanvas,

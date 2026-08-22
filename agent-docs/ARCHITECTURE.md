@@ -1127,8 +1127,13 @@ what leaves it false indefinitely — a user toggle inside it (LD's
 `effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
 (sequence). Each such state has to reach `svgReady` through `error`,
 `regionTooLarge`, or `fetchInert`, or one track hangs the whole
-view's export with the dialog spinner up and nothing said. Minimized tracks are
-the one case already handled for you — `SVGLinearGenomeView` filters them out.
+view's export with the dialog spinner up and nothing said. Two cases are already
+handled for you: minimized tracks, which `SVGLinearGenomeView` filters out, and
+the viewport holding no content block at all (`showAllRegions` on a
+scaffold-level assembly, where every region elides — the only way in), which
+both LGV foundations answer through `viewportEmpty`. No display in the view can
+fetch there, so it was every one of them hanging the export at once rather than
+one.
 
 **Enumerate every way the prerequisite fails, not just the throw.** HiC's
 header read (`installPrerequisiteFetch`) `setError`s on a thrown `CoreGetInfo`

@@ -117,6 +117,10 @@ export function comparativeDisplayPhase(
       computeLoadingTerm(
         {
           fetchInert: display.fetchInert,
+          // an LGV term: this family's displays draw onto a shared comparative
+          // surface whose extent is the two views' whole span, not a block set
+          // that can empty out from under them
+          viewportEmpty: false,
           isLoadingOrCanceled: display.loading || display.refetching,
           rendersCanvas: true,
           canvasDrawn: surface.painted,
