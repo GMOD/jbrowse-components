@@ -25,6 +25,7 @@ before anyone noticed.
 
 | Item | Area | First move |
 | --- | --- | --- |
+| [A track dragged past the canvas clamp goes blank](#a-track-dragged-past-the-canvas-clamp-goes-blank-and-on-retina-that-is-half-as-far-away) | GPU, limits | measured: retina halves the ceiling to ~4096 css px and nothing bounds the drag |
 | [Repeat and CRISPR subpart labels draw into an unreserved row](#repeat-and-crispr-subpart-labels-draw-into-an-unreserved-row) | canvas | decide: reserve a row per glyph, or say `below` is a transcript/box affordance |
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
@@ -79,7 +80,6 @@ before anyone noticed.
 | [Observer reactions leak from discarded renders](#destroying-an-mst-tree-that-something-still-observes) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
-| [Take the MSAA target's size on a retina display](#take-the-msaa-targets-size-on-a-retina-display) | GPU, limits | run the probe at dpr 2; the 640 MiB is arithmetic, not measurement |
 | [Does a sixth track want a sixth RPC worker](#does-a-sixth-alignments-track-want-a-sixth-rpc-worker) | RPC, limits | one `workerCount` line to try; the answer is a memory measurement, not a stopwatch |
 | [Cross-region arc count at 300x](#read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
 | [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
@@ -1759,6 +1759,58 @@ upgrade guide's removal list, next to the renderer-registry paragraph they
 nearly belong to.
 
 
+### A track dragged past the canvas clamp goes blank, and on retina that is half as far away
+
+**Measured 2026-08-22; this replaces "Take the MSAA target's size on a retina
+display", whose three questions are answered in
+[reference/GPU_PORTABILITY.md](reference/GPU_PORTABILITY.md).** The dpr² term is
+real (a CSS box costs 4x its dpr-1 MSAA allocation, and eight ordinary tracks
+hold 109.7 MiB), and the per-frame rebuild is still free on this driver (60
+rebuilds of a 65 MiB target in 1.0 ms). What the run did not confirm is the
+refusal, and that is the finding:
+
+**`recreateMsaaTexture`'s legible refusal is unreachable, and the track goes
+silently blank instead.** `syncCanvasSize` clamps the backing store at
+`MAX_CANVAS_DIM_PX` = 8192 before anything asks the GPU for a texture, and this
+device's `maxTextureDimension2D` is exactly 8192 — so the "canvas exceeds max
+texture size" branch never runs. Past the clamp the backing store stops tracking
+the CSS size while scissor rects are still derived as `cssPx * dpr`, WebGPU
+rejects them, and the whole track paints blank: no banner, no console error, no
+`display.error`. Walking a track's height at dpr 2 puts the edge between 4000 CSS
+px (paints) and 4200 (blank); shrinking it back restores the render. At dpr 1 the
+same walk paints to 8000. **So retina halves the reachable ceiling to ~4096 CSS
+px of track height, and nothing bounds a drag by it** — `TrackHeightMixin`'s
+`setHeight` / `resizeHeight` clamp at `MIN_DISPLAY_HEIGHT` and at no maximum,
+while `maxCanvasCssPx()` exists and is applied only by displays that size a
+canvas to their *content*.
+
+Two fixes, and they are not exclusive:
+
+- **Bound the drag.** Clamp `setHeight` / `resizeHeight` at `maxCanvasCssPx()`,
+  so the handle simply stops. Cheap, and self-evident to the user in a way a
+  banner is not. The cost is that it needs to be the right cap for displays that
+  are not one canvas — MAF scrolls its overflow into a viewport and the multi-row
+  painting divides the cap across rows, so a flat clamp in the shared mixin is
+  the wrong shape for them. Decide where it lands before writing it.
+- **The effective-dpr fix**, which
+  [reference/ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"A
+  canvas past `MAX_CANVAS_DIM_PX` renders wrong, not smaller" already names as
+  the thing that retires the clamp: derive scissor/viewport rects against the
+  *effective* dpr (backing ÷ CSS) rather than the true one, so a clamped canvas
+  renders correctly at lower resolution instead of blanking. Strictly better, and
+  strictly more work.
+
+Re-measure with `node browser-tests/probe-msaa-resize-cost.ts 60 4 --dpr=2
+--ceiling` (headed Firefox Nightly; `--tracks=N` totals the live targets, and
+`--dpr` needs a string pref or Firefox exits at startup saying nothing).
+
+**Still owed from that trip, and cheap:** `maxBufferSize` and
+`maxTextureDimension2D` came back 2147483644 and 8192 on this machine's WebGPU
+adapter — one more data point, not a survey. And the WebGL2 context ceiling has
+still only ever been measured on Chrome; "Firefox around 16" is RFC-001 §12b's
+guess, and [reference/GPU_CONTEXT_BUDGET.md](reference/GPU_CONTEXT_BUDGET.md)
+has the harness that would settle it.
+
 ## Blocked on a visual call
 
 ### Should chromosome painting colour a mate on the SAME chromosome
@@ -2020,55 +2072,6 @@ both directions want a case in `hicTransform.test.ts`.
 Every entry here opens with a measurement because the obvious build would be
 guessing. The instrumentation pattern for the render-path ones is
 [reference/PERF_INSTRUMENTATION.md](reference/PERF_INSTRUMENTATION.md).
-
-### Take the MSAA target's size on a retina display
-
-**Every GPU number in this repo came off one machine, and this is the one whose
-extrapolation is alarming.** `WebGPUHal` holds one 4x MSAA colour attachment per
-display, sized to its canvas and not to the data
-([ARCHITECTURAL_LIMITS.md](reference/ARCHITECTURAL_LIMITS.md) §"The MSAA target
-is the largest per-display allocation"). It is measured at **79.2 MiB** for a
-1266x4100 canvas at **dpr 1**, and dpr enters the size squared, so a retina
-panel costs 4x that before the window is any wider. The arithmetic in
-[reference/GPU_PORTABILITY.md](reference/GPU_PORTABILITY.md) puts an ordinary
-27" retina window with its height at the canvas clamp at **640.0 MiB for one
-track**, which nothing in the session counts.
-
-`node browser-tests/probe-msaa-resize-cost.ts [frames] [pxPerFrame]`, from
-`products/jbrowse-web`. **It needs Firefox Nightly, headed** — the probe's own
-TRAPS section says Chrome + puppeteer does not render a WebGPU canvas at all and
-a headless run measures nothing, so the retina machine has to be one that can
-run it. Three things the run should settle, in the order they matter:
-
-- **Does the formula hold at dpr 2?** It reproduces its own dpr-1 anchor exactly
-  (`1266*4100*4*4` = 79.20 MiB), which is what made extending it defensible, but
-  "defensible" is not "measured". If the sizes come back at 4x the dpr-1 run for
-  the same CSS box, the 640 MiB figure is real and the entry above should carry
-  it as a measurement rather than as arithmetic.
-- **Where does the refusal actually land?** `recreateMsaaTexture` checks
-  `maxTextureDimension2D`, so the predicted failure is at ~4096 CSS px tall at
-  dpr 2 — and the prediction is that it *refuses legibly* rather than OOMing.
-  Drag a track past that and read what the user sees. A blank canvas there is a
-  bug; a zoom-in banner is the design working.
-- **Is the per-frame rebuild still free?** The dpr-1 run measured 250 rebuilds
-  at 1.9 ms total, flat in texture size, and concluded the driver does not
-  commit at create time. That conclusion is per-driver and this is a different
-  driver.
-
-**Take `maxBufferSize` and `maxTextureDimension2D` off the same machine while
-you are there** — `logGpuCapabilities` warns them to the console on every
-WebGPU device acquisition, so it is a devtools read on any page that got a
-device, not a probe run. Two
-adapters is not a survey, but it is the difference between one data point and
-knowing whether the Intel UHD 630's 1 GiB is typical or generous.
-
-**Unrelated but the same trip, if the machine has Firefox:** the WebGL2 context
-ceiling has only ever been measured on Chrome. "Firefox around 16" comes from
-RFC-001 §12b, whose own superseded-in-part note says its context-cap figures
-were guesses — the Chrome measurement killed its "Chrome around 8" and left the
-Firefox one standing because nothing contradicted it.
-[reference/GPU_CONTEXT_BUDGET.md](reference/GPU_CONTEXT_BUDGET.md) has the
-harness; it walks `--tracks` up on one LGV.
 
 ### Walk the CIGAR once for a read's whole MM tag, not once per group
 

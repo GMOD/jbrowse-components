@@ -131,17 +131,41 @@ the recorded figure, and the session counts none of it (which is that entry's
 whole point). A handful of tall tracks there is where hardware nobody here owns
 would fail first.
 
-Two things bound it, both already in tree and both worth knowing before anyone
-panics. `getDpr()` caps at `MAX_DPR = 2`, so dpr² cannot exceed 4 however the
-hardware reports itself. And `recreateMsaaTexture` checks
-`maxTextureDimension2D` — spec floor 8192 — so past ~4096 CSS px tall at dpr 2
-the allocation is refused and reported rather than attempted. The failure at the
-top of this range is a legible refusal, not an OOM.
+**Measured 2026-08-22 on a retina panel, and the dpr² term is real.** The same
+window, the same track and the same driver, with `layout.css.devPixelsPerPx`
+the only thing moved:
 
-**This is the highest-value thing to measure on borrowed hardware**, and it is
-the one claim here that does not hold without it — everything else is the spec
-against the tree. Filed as [../TODO.md](../TODO.md) §"Take the MSAA target's
-size on a retina display", which carries what the run has to settle.
+<!-- BEGIN GENERATED MEASUREMENT msaa-target-dpr -->
+
+| scenario                              | dpr 1 (MiB) | dpr 2 (MiB) | retina cost |
+| ------------------------------------- | ----------- | ----------- | ----------- |
+| one alignments track, 1266x840 css    | 16.20       | 64.90       | 4.01x       |
+| eight GPU tracks, default heights     | 27.40       | 109.70      | 4.00x       |
+| one track dragged to the canvas clamp | 154.50      | 316.50      | 2.05x       |
+
+<!-- END GENERATED MEASUREMENT msaa-target-dpr -->
+
+So the projection above stands: a CSS box costs 4x its dpr-1 allocation, and
+eight ordinary tracks — nobody's idea of a heavy session — hold 109.7 MiB of
+multisample target that nothing in the session counts.
+
+One thing bounds it: `getDpr()` caps at `MAX_DPR = 2`, so dpr² cannot exceed 4
+however the hardware reports itself.
+
+**What does NOT bound it is the refusal this doc used to promise.** The claim
+here was that `recreateMsaaTexture`'s `maxTextureDimension2D` check refuses past
+~4096 CSS px tall at dpr 2, so "the failure at the top of this range is a legible
+refusal, not an OOM". It is neither. `syncCanvasSize` clamps the backing store at
+`MAX_CANVAS_DIM_PX` = 8192 **first**, and this device's `maxTextureDimension2D`
+is exactly 8192 — so the store never exceeds the limit, the refusal never fires,
+and what the user gets instead is the clamp regime: the whole track paints blank,
+with no banner, no console error and no `display.error`. Measured by walking a
+track's height up at dpr 2 (`--ceiling`): 4000 CSS px paints, 4200 is blank, and
+it comes back when the track is shrunk. At dpr 1 the same walk paints all the way
+to 8000, which is what makes this a retina bug specifically — the reachable
+ceiling is halved to ~4096 CSS px, and nothing in `TrackHeightMixin` bounds a
+drag by it. Filed as [../TODO.md](../TODO.md) §"A track dragged past the canvas
+clamp goes blank, and on retina that is half as far away".
 
 ---
 

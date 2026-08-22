@@ -1,0 +1,55 @@
+{
+  "id": "msaa-target-dpr",
+  "published": false,
+  "measured": "2026-08-22",
+  "source": {
+    "kind": "hand",
+    "repro": "products/jbrowse-web: FIREFOX_NIGHTLY_PATH=... node browser-tests/probe-msaa-resize-cost.ts 60 4 --dpr=1|2 [--tracks=8] [--ceiling], headed Firefox Nightly 156.0a1 on a MacBook Pro 16\" 2019 (Intel UHD 630 / AMD Radeon Pro 5300M, built-in Retina panel). `--dpr` pins layout.css.devPixelsPerPx, so both arms are the same window, the same track and the same driver, with the backing store the only thing that moved.",
+    "notes": "MiB is width*height*4 bytes*4 samples, the size WebGPUHal asks createTexture for. The clamp row is not 4x because MAX_CANVAS_DIM_PX truncates it: at dpr 2 the backing store reaches 8192 at 4096 CSS px, at dpr 1 it takes 8192 CSS px. maxTextureDimension2D on this device is 8192 and maxBufferSize is 2147483644. Not published publicly: this is GPU bookkeeping a reader cannot act on, where the public page digests results someone tunes against."
+  },
+  "columns": [
+    {
+      "key": "scenario",
+      "label": "scenario"
+    },
+    {
+      "key": "dpr1Mib",
+      "label": "dpr 1 (MiB)",
+      "format": "ratio"
+    },
+    {
+      "key": "dpr2Mib",
+      "label": "dpr 2 (MiB)",
+      "format": "ratio"
+    },
+    {
+      "key": "ratio",
+      "label": "retina cost",
+      "format": "x",
+      "derived": "dpr2Mib / dpr1Mib"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "scenario": "one alignments track, 1266x840 css",
+        "dpr1Mib": 16.2,
+        "dpr2Mib": 64.9
+      }
+    },
+    {
+      "values": {
+        "scenario": "eight GPU tracks, default heights",
+        "dpr1Mib": 27.4,
+        "dpr2Mib": 109.7
+      }
+    },
+    {
+      "values": {
+        "scenario": "one track dragged to the canvas clamp",
+        "dpr1Mib": 154.5,
+        "dpr2Mib": 316.5
+      }
+    }
+  ]
+}

@@ -17,6 +17,29 @@
 // pan arm's. Re-run it before reopening the question; these are the numbers a
 // change has to beat.
 //
+// **Measured again 2026-08-22 on a retina panel (MacBook Pro 16" 2019, Firefox
+// Nightly 156.0a1), and the dpr² term is real.** `--dpr` pins
+// `layout.css.devPixelsPerPx`, so both arms are the same window, the same track
+// and the same driver with only the backing store moved:
+//
+//     scenario                              dpr 1     dpr 2   retina cost
+//     one track, 1266x840 css            16.2 MiB  64.9 MiB          4.0x
+//     eight GPU tracks, default heights  27.4 MiB  109.7 MiB         4.0x
+//     one track at the canvas clamp     154.5 MiB  316.5 MiB         2.0x
+//
+// The last row is short of 4x because the clamp truncates it, which is the
+// finding this trip actually turned up. `MAX_CANVAS_DIM_PX` (8192) holds the
+// backing store below `maxTextureDimension2D` (8192 on this device), so
+// `recreateMsaaTexture`'s legible "too large for this GPU" refusal — which
+// GPU_PORTABILITY.md promised was the failure mode up here — never fires. What
+// happens instead is the clamp regime: past ~4096 CSS px of track height at
+// dpr 2 the whole track paints **blank**, with no banner, no console error and
+// no `display.error`, and comes back when the track is shrunk. `--ceiling`
+// walks a track's height through it; at dpr 1 the same walk paints to 8000.
+//
+// The rebuild is still free at 4x the texture: 60 rebuilds of a 65 MiB target
+// in 1.0 ms total (0.020 ms median), against 0.7 ms at dpr 1.
+//
 // Two arms over the same track, same backend, same frame count:
 //
 //   resize — resizeHeight() per frame, so the canvas grows and the MSAA target
@@ -47,6 +70,10 @@
 //    long as it lands on this thread's frame loop.
 //  - The first frame of either arm builds pipelines and warms caches; both arms
 //    discard it, and both run the same number of frames.
+//  - **`layout.css.devPixelsPerPx` is a STRING pref.** Written as a number,
+//    Firefox rejects the profile and exits 0 before any page loads, which
+//    reaches puppeteer as "Failed to launch the browser process: Code: 0" with
+//    an empty stderr and names nothing. `--dpr` writes `DPR.toFixed(1)`.
 //
 //     node browser-tests/probe-msaa-resize-cost.ts [frames] [pxPerFrame]
 import { launch } from 'puppeteer'
@@ -63,6 +90,39 @@ import type { Page } from 'puppeteer'
 const FRAMES = Number(process.argv[2] ?? 60)
 const PX_PER_FRAME = Number(process.argv[3] ?? 4)
 const FIREFOX = process.env.FIREFOX_NIGHTLY_PATH ?? '/usr/bin/firefox-nightly'
+// `--dpr=N` pins `layout.css.devPixelsPerPx`, which is what makes the two dpr
+// arms one measurement rather than two machines: the same window, the same
+// track, the same driver, and the backing store the only thing that moved. The
+// page's own `devicePixelRatio` is reported back, so a pref that did not take
+// is visible in the output instead of silently halving the answer.
+const DPR_ARG = process.argv.find(a => a.startsWith('--dpr='))
+const DPR = DPR_ARG ? Number(DPR_ARG.slice('--dpr='.length)) : undefined
+// `--ceiling` walks the track height into the clamp instead of measuring a
+// drag. Different question, same trip: MAX_CANVAS_DIM_PX bounds the backing
+// store at 8192, so at dpr 2 a CSS height past ~4096 stops tracking, and what
+// the user sees there is the thing to find out.
+const CEILING = process.argv.includes('--ceiling')
+// `--tracks=N` loads N GPU tracks and totals the MSAA targets standing at once.
+// One target per display is the design (`WebGPUHal` owns one each), so the
+// session-wide number is the one nothing anywhere counts.
+const TRACKS_ARG = process.argv.find(a => a.startsWith('--tracks='))
+const TRACKS = TRACKS_ARG ? Number(TRACKS_ARG.slice('--tracks='.length)) : 0
+// From `workspaces-freeze-stress.ts`, which walks the same list up for the
+// WebGL2 context ceiling — same question, different resource.
+const VOLVOX_TRACKS = [
+  'volvox_bam_pileup',
+  'volvox_microarray',
+  'volvox_filtered_vcf',
+  'volvox_bam_snpcoverage',
+  'volvox_gc',
+  'volvox_sv_test',
+  'volvox_alignments',
+  'volvox_gwas',
+  'volvox_test_vcf',
+  'volvox_microarray_color',
+  'volvox_microarray_line',
+  'volvox_microarray_density',
+]
 
 interface TextureEvent {
   ms: number
@@ -77,6 +137,46 @@ interface ArmResult {
   creates: TextureEvent[]
   destroyMs: number[]
   canvas: { width: number; height: number } | null
+}
+
+// Census of the MSAA targets standing right now, installed before the app runs
+// so a display's FIRST build is counted — `instrument()` below deliberately
+// excludes those, because a drag measurement wants only the rebuilds.
+async function installLiveCensus(page: Page) {
+  await page.evaluateOnNewDocument(() => {
+    const w = window as any
+    w.__msaaLive = new Map()
+    const install = () => {
+      const devProto = w.GPUDevice?.prototype
+      const texProto = w.GPUTexture?.prototype
+      if (!devProto || !texProto) {
+        return false
+      }
+      const origCreate = devProto.createTexture
+      devProto.createTexture = function (desc: any) {
+        const tex = origCreate.call(this, desc)
+        if ((desc?.sampleCount ?? 1) > 1) {
+          const size = desc.size
+          const [width, height] = Array.isArray(size)
+            ? size
+            : [size?.width ?? 0, size?.height ?? 0]
+          w.__msaaLive.set(tex, {
+            width,
+            height,
+            sampleCount: desc.sampleCount,
+          })
+        }
+        return tex
+      }
+      const origDestroy = texProto.destroy
+      texProto.destroy = function () {
+        w.__msaaLive.delete(this)
+        return origDestroy.call(this)
+      }
+      return true
+    }
+    install()
+  })
 }
 
 // Patch GPUDevice.createTexture / GPUTexture.destroy in the page so the shipped
@@ -211,6 +311,106 @@ function report(label: string, r: ArmResult) {
   )
 }
 
+// Grow the track height in steps and report, at each one, the three things that
+// decide what the user sees: the CSS box the display asked for, the backing
+// store it actually got (`syncCanvasSize` clamps at MAX_CANVAS_DIM_PX = 8192),
+// and whether a frame still lands. The MSAA refusal in `recreateMsaaTexture`
+// fires only past `maxTextureDimension2D`, and the clamp holds the backing
+// store at 8192 — so if the limit is also 8192 the refusal is unreachable by
+// this route and the clamp regime is what a user meets instead.
+async function walkIntoTheCeiling(page: Page, consoleLines: string[]) {
+  console.log(
+    '\ncssH'.padEnd(9),
+    'backingH'.padStart(9),
+    'tracks'.padStart(7),
+    'msaaMiB'.padStart(9),
+    'painted'.padStart(8),
+    'clamped'.padStart(8),
+    'error'.padStart(6),
+  )
+  for (const cssHeight of [1000, 2000, 3000, 4000, 4200, 5000, 6000, 8000]) {
+    const before = consoleLines.length
+    const row = await page.evaluate(async cssHeight => {
+      const w = window as any
+      const display = w.JBrowseSession.views[0].tracks[0].displays[0]
+      display.setHeight(cssHeight)
+      const nextFrame = () =>
+        new Promise<number>(resolve => requestAnimationFrame(resolve))
+      // two frames: one to resize the canvas, one to draw into it
+      await nextFrame()
+      await nextFrame()
+      const canvas = document.querySelector('canvas')
+      // A frame that landed leaves non-transparent pixels. Read one strip
+      // rather than the whole store: the question is "did anything paint", and
+      // a full readback of a 8192-tall canvas is its own stall.
+      let painted = false
+      if (canvas) {
+        const probe = document.createElement('canvas')
+        probe.width = Math.min(canvas.width, 256)
+        probe.height = 1
+        const ctx = probe.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(
+            canvas,
+            0,
+            Math.floor(canvas.height / 2),
+            probe.width,
+            1,
+            0,
+            0,
+            probe.width,
+            1,
+          )
+          const { data } = ctx.getImageData(0, 0, probe.width, 1)
+          for (let i = 3; i < data.length; i += 4) {
+            if (data[i] !== 0) {
+              painted = true
+              break
+            }
+          }
+        }
+      }
+      return {
+        cssHeight,
+        backingHeight: canvas?.height ?? 0,
+        backingWidth: canvas?.width ?? 0,
+        painted,
+        error: display.error ? String(display.error) : '',
+      }
+    }, cssHeight)
+    const fresh = consoleLines.slice(before)
+    const clamped = fresh.some(t => t.includes('exceeds the safe limit'))
+    const msaaMiB = (row.backingWidth * row.backingHeight * 4 * 4) / 1024 / 1024
+    console.log(
+      String(row.cssHeight).padEnd(9),
+      String(row.backingHeight).padStart(9),
+      String(1).padStart(7),
+      msaaMiB.toFixed(1).padStart(9),
+      String(row.painted).padStart(8),
+      String(clamped).padStart(8),
+      (row.error || '-').slice(0, 60).padStart(6),
+    )
+    await page.screenshot({
+      path: `msaa-ceiling-${row.cssHeight}.png`,
+    })
+  }
+  // Does it come back? A drag past the clamp and back is the gesture a user
+  // actually makes, and a track that stays blank after shrinking is a
+  // different (worse) bug from one that recovers.
+  const recovered = await page.evaluate(async () => {
+    const w = window as any
+    w.JBrowseSession.views[0].tracks[0].displays[0].setHeight(1000)
+    const nextFrame = () =>
+      new Promise<number>(resolve => requestAnimationFrame(resolve))
+    await nextFrame()
+    await nextFrame()
+    const canvas = document.querySelector('canvas')
+    return canvas ? `${canvas.width}x${canvas.height}` : '-'
+  })
+  console.log(`\nback down to css 1000 → backing ${recovered}`)
+  await page.screenshot({ path: 'msaa-ceiling-recovered.png' })
+}
+
 async function main() {
   const { port, server } = await startServerOnFreePort(3557)
   setPort(port)
@@ -220,6 +420,13 @@ async function main() {
     headless: false,
     timeout: 60000,
     extraPrefsFirefox: {
+      // A STRING pref (default "-1.0", meaning follow the screen). Written as
+      // a number, Firefox rejects the profile and exits 0 at startup, which
+      // reaches puppeteer as "Failed to launch the browser process: Code: 0"
+      // and names nothing.
+      ...(DPR === undefined
+        ? {}
+        : { 'layout.css.devPixelsPerPx': DPR.toFixed(1) }),
       'dom.webgpu.enabled': true,
       'gfx.webrender.all': true,
       'gfx.webgpu.ignore-blocklist': true,
@@ -234,6 +441,7 @@ async function main() {
     defaultViewport: { width: 1280, height: 800 },
   })
   const page = await browser.newPage()
+  await installLiveCensus(page)
   // Collected rather than reduced to a flag as they arrive: a `let seen = false`
   // written only inside this callback is narrowed to `false` by the checker, so
   // the guard below reads as a constant and lints as one.
@@ -248,7 +456,10 @@ async function main() {
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-50,000',
-          tracks: [{ trackId: 'volvox_alignments' }],
+          tracks:
+            TRACKS > 0
+              ? VOLVOX_TRACKS.slice(0, TRACKS).map(trackId => ({ trackId }))
+              : [{ trackId: 'volvox_alignments' }],
         },
       ],
     })
@@ -267,6 +478,58 @@ async function main() {
       return
     }
     console.log('backend: WebGPU (device-ready line seen)')
+    const geometry = await page.evaluate(() => {
+      const canvas = document.querySelector('canvas')
+      const box = canvas?.getBoundingClientRect()
+      return {
+        dpr: window.devicePixelRatio,
+        cssBox: box
+          ? `${Math.round(box.width)}x${Math.round(box.height)}`
+          : '-',
+        backing: canvas ? `${canvas.width}x${canvas.height}` : '-',
+      }
+    })
+    console.log(
+      `devicePixelRatio: ${geometry.dpr}${
+        DPR === undefined ? ' (native)' : ` (asked for ${DPR})`
+      }  canvas css ${geometry.cssBox} → backing ${geometry.backing}`,
+    )
+    // `logGpuCapabilities` warns these on device acquisition, so the run that
+    // measures the target also records the limits it is measured against —
+    // maxTextureDimension2D is what decides where the refusal lands.
+    for (const line of consoleLines.filter(t => t.includes('maxTexture'))) {
+      console.log(line)
+    }
+
+    if (TRACKS > 0) {
+      const census = await page.evaluate(() => {
+        const w = window as any
+        const targets = [...w.__msaaLive.values()] as {
+          width: number
+          height: number
+          sampleCount: number
+        }[]
+        return {
+          count: targets.length,
+          mib: targets.reduce(
+            (a, t) => a + (t.width * t.height * 4 * t.sampleCount) / 1048576,
+            0,
+          ),
+          sizes: targets.map(t => `${t.width}x${t.height}`),
+        }
+      })
+      console.log(
+        `\n${TRACKS} tracks → ${census.count} live MSAA target(s), ` +
+          `${census.mib.toFixed(1)} MiB total`,
+      )
+      console.log(`  ${census.sizes.join('  ')}`)
+      return
+    }
+
+    if (CEILING) {
+      await walkIntoTheCeiling(page, consoleLines)
+      return
+    }
 
     console.log(
       '\narm'.padEnd(9),

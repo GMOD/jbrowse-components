@@ -130,9 +130,10 @@ than every instance buffer under it, and counted nowhere.
 
 ### The MSAA target is the largest per-display allocation, and nothing counts it
 
-**Status:** Open on size. **The per-frame reallocation it used to also claim is
-measured and free** — `products/jbrowse-web/browser-tests/probe-msaa-resize-cost.ts`, Firefox
-Nightly on an Intel UHD 630, 2026-08-16.
+**Status:** Open on size, and the size is now measured on both rungs of dpr —
+`products/jbrowse-web/browser-tests/probe-msaa-resize-cost.ts`, Firefox Nightly,
+2026-08-16 at dpr 1 and 2026-08-22 on a retina panel. **The per-frame
+reallocation it used to also claim is measured and free**, at both.
 
 `WebGPUHal` holds one 4x MSAA color attachment sized to its own canvas
 (`recreateMsaaTexture`). **It is per display, and its size has nothing to do
@@ -141,8 +142,30 @@ costs exactly what a full one does. Measured, not derived: a 1266x600 canvas is
 11.7 MiB, and dragging that track to 4100px takes it to **79.2 MiB for one
 track**. That is an order of magnitude past the instance buffers the OOM guards
 do check, and `recreateMsaaTexture` compares against `maxTextureDimension2D`
-and nothing else, so a ten-track view is hundreds of MB nothing in the session
-has counted. WebGL2 has no counterpart in our accounting, because
+and nothing else.
+
+**The multi-track figure is no longer an extrapolation.** On a retina panel
+(dpr 2, `layout.css.devPixelsPerPx` pinned so the arms differ in nothing else),
+**eight GPU tracks at their default heights hold eight live targets totalling
+109.7 MiB** — against 27.4 MiB for the same session at dpr 1, the dpr² term
+exactly. One alignments track dragged to the canvas clamp holds **316.5 MiB** by
+itself in a 1266 CSS px window. Nothing counts any of it, and the session that
+produced the 109.7 is nobody's idea of a heavy one. The table and the repro are
+[GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"the MSAA target".
+
+**Where those bytes went is the lever.** The eight targets were 2532x1200
+(46.4 MiB), 2532x500 (19.3), three at 2532x200 and three at 2532x180 — one per
+display, each the size of its canvas and none of it the size of its data. And
+almost all of what those displays draw is **axis-aligned quads** — pileup reads,
+coverage bars, wiggle, matrix cells — which 4x multisampling does approximately
+nothing for. The curves that motivated MSAA in the first place (read-connection
+arcs, the bezier overlay, synteny ribbons, hi-C's rotated bins) are a minority of
+displays and, for alignments, a *setting*. So the sample count wants to be a
+property of the display rather than of the build, with 1x meaning no target at
+all rather than a smaller one. The obstacle is that the multisample state is
+baked into the pipeline and pipelines come from a device-wide cache
+(`getOrBuildPipeline`), so the cache key would have to carry the sample count and
+shared pass types would compile two variants. WebGL2 has no counterpart in our accounting, because
 `antialias: true` puts the multisample backbuffer inside the browser's budget.
 
 **Rebuilding it every frame is what turned out not to matter, and the number is
@@ -171,7 +194,10 @@ hysteresis this appears to want — is not a legal shape. Quantizing the *canvas
 is, and now has nothing to buy.
 
 **Retire when** a HAL byte counter sums live GPU bytes across displays and this
-becomes a line in it, since the size is the whole entry now. Don't reopen the
+becomes a line in it, since the size is the whole entry now. The probe's
+`--tracks=N` census is that sum taken from outside, by patching `createTexture`
+and `destroy` in the page — which is worth knowing twice over: it is how the
+109.7 was taken, and it is the shape the in-tree counter would have. Don't reopen the
 reallocation without re-running the probe on a driver that behaves differently;
 the numbers above are what a change has to beat.
 
@@ -291,7 +317,8 @@ take it the first time a renderer wants two uniform sets alive at once.
 
 ### A canvas past `MAX_CANVAS_DIM_PX` renders wrong, not smaller
 
-**Status:** Mitigated (per-display sizing), root cause is the unthreaded dpr.
+**Status:** Open — **reached, on a retina panel, by dragging one track tall**
+(measured 2026-08-22). Root cause is still the unthreaded dpr.
 
 `backingPx` (`packages/render-core/src/canvas2dUtils.ts`) caps a backing store at
 `MAX_CANVAS_DIM_PX` (8192 physical px per axis) so an oversized canvas can't
@@ -303,11 +330,18 @@ the cap the browser stretches the smaller backing store over the larger element
 WebGPU rejects the rect and blanks the frame. The one-shot `console.warn` reads
 like a cosmetic notice.
 
-Mitigated rather than Open because it is unreachable today: canvases are
-viewport-sized everywhere except MAF's rows canvas, which sizes to content and
-self-bounds via `maxRowsHeight` (`MAX_CANVAS_DIM_PX / getDpr()`). **Any new
-display that sizes a canvas to content rather than viewport must copy that
-bound**, because nothing mechanical enforces it.
+**It was filed as unreachable, and it is not.** The argument was that canvases
+are viewport-sized everywhere except MAF's rows canvas, which self-bounds via
+`maxRowsHeight` (`MAX_CANVAS_DIM_PX / getDpr()`) — and **any new display sizing a
+canvas to content still must copy that bound**, because nothing mechanical
+enforces it. What the argument missed is that a per-region display's canvas is as
+tall as the *display*, and the display's height is a number the user drags:
+`TrackHeightMixin`'s `setHeight` / `resizeHeight` clamp at `MIN_DISPLAY_HEIGHT`
+and at no maximum. Walking one alignments track's height up at dpr 2 puts the
+edge between 4000 CSS px (paints) and 4200 (blank, no banner, no console error,
+no `display.error`); shrinking it back restores the render, and the same walk at
+dpr 1 paints all the way to 8000. The fix and its two shapes are
+[../TODO.md](../TODO.md) §"A track dragged past the canvas clamp goes blank".
 
 **Retire when** `syncCanvasSize` / `prepareCanvas` report the ratio they actually
 used and that effective dpr is threaded through `clipBlock` instead of the free
@@ -315,9 +349,11 @@ used and that effective dpr is threaded through `clipBlock` instead of the free
 
 **The dpr cap is what makes it this hard to reach.** `getDpr()` returns
 `min(devicePixelRatio, MAX_DPR)` with `MAX_DPR = 2`, so an axis has to reach 4096
-CSS px to clamp, not 2731 as it would at dpr=3. Retina is unaffected; the cap
-only bites above it, where cost scales with dpr² for a difference essentially
-nobody resolves. Capping *inside* `getDpr` is what keeps it safe — every consumer
+CSS px to clamp, not 2731 as it would at dpr=3. That is a bound on how bad it
+gets, not on whether it happens — this section used to read "retina is
+unaffected; the cap only bites above it", which is the opposite of the sentence
+before it: 4096 CSS px is *exactly* what a retina panel clamps at, and a
+dragged-tall track reaches it. Capping *inside* `getDpr` is what keeps it safe — every consumer
 reads the same capped number, so the backing store, the rects derived from it and
 the variant-matrix shader's `devicePixelRatio` uniform cannot disagree. **A call
 site reading the global `devicePixelRatio` directly re-opens that split.** Two
