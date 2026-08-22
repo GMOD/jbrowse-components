@@ -20,6 +20,7 @@ import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
 // this session reaches for is that shadow plus the one field.
 interface SessionModelParent extends EmbeddedSessionParent {
   disableAddTracks: boolean
+  effectiveHeight: string | undefined
 }
 
 // Compile-time guard binding the shadow to the real root. getParent<T> is an
@@ -66,6 +67,18 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       get views() {
         return [self.view]
+      },
+      /**
+       * #getter
+       * Pin the header, and scroll the tracks under it, whenever the view is
+       * bounded -- which is the only time it means anything, since an unbounded
+       * view scrolls with the host's page and has nothing of its own to pin
+       * against. The LGV model reads this off the session
+       * (`stickyViewHeaders === true`) and so does the embedded view title
+       * above it, the same two readers the web app has.
+       */
+      get stickyViewHeaders() {
+        return Boolean(getParent<SessionModelParent>(self).effectiveHeight)
       },
     }))
     .actions(self => ({

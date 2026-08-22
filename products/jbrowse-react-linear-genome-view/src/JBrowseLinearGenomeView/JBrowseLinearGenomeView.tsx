@@ -56,13 +56,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
     drawerWidth,
   })
 
-  // With no height the view is content-height, so it can be embedded in a page
-  // that grows with it and a host box is what bounds it. `drawerViewHeight` is
-  // the same idea under the condition it never needed -- it exists because
-  // there was no height to be tall against when a drawer opened -- so `height`
-  // wins wherever both are given.
-  const height =
-    viewState.height ?? (drawerVisible ? viewState.drawerViewHeight : undefined)
+  const { effectiveHeight: height } = viewState
   const style = height
     ? { gridTemplateColumns, height }
     : { gridTemplateColumns }

@@ -36,26 +36,47 @@ export default function createModel(
     pluginManager,
     sessionModelType: createSessionModel(pluginManager),
     makeWorkerInstance,
-  }).props({
-    /**
-     * #property
-     */
-    disableAddTracks: types.stripDefault(types.boolean, false),
-    /**
-     * #property
-     * Any CSS height, applied to the component's own root whether or not a
-     * drawer is open. Absent, the component is content-height and grows with
-     * the page, and the host's box is what bounds it.
-     */
-    height: types.maybe(types.string),
-    /**
-     * #property
-     * Superseded by `height`, which does the same thing without the "only
-     * while a drawer is open" condition. Still honored when `height` is
-     * absent.
-     */
-    drawerViewHeight: types.stripDefault(types.string, '100vh'),
   })
+    .props({
+      /**
+       * #property
+       */
+      disableAddTracks: types.stripDefault(types.boolean, false),
+      /**
+       * #property
+       * Any CSS height, applied to the component's own root whether or not a
+       * drawer is open. Absent, the component is content-height and grows with
+       * the page, and the host's box is what bounds it.
+       */
+      height: types.maybe(types.string),
+      /**
+       * #property
+       * Superseded by `height`, which does the same thing without the "only
+       * while a drawer is open" condition. Still honored when `height` is
+       * absent.
+       */
+      drawerViewHeight: types.stripDefault(types.string, '100vh'),
+    })
+    .views(self => ({
+      /**
+       * #getter
+       * The height in force: `height` when a host gave one, `drawerViewHeight`
+       * while a drawer is open, and nothing otherwise -- the view is
+       * content-height and the host's own box is what bounds it.
+       *
+       * One definition with two readers, and the second is why it is here
+       * rather than in the component: a bounded view is exactly the case where
+       * pinning the header means something, so the session's
+       * `stickyViewHeaders` reads this too.
+       */
+      get effectiveHeight() {
+        const { visibleWidget, minimized } = self.session
+        return (
+          self.height ??
+          (visibleWidget && !minimized ? self.drawerViewHeight : undefined)
+        )
+      },
+    }))
   return { model, pluginManager }
 }
 
