@@ -1,7 +1,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { statusFraction, statusMessageText } from '@jbrowse/core/util'
+import {
+  formatBytes,
+  statusFraction,
+  statusMessageText,
+} from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
@@ -72,17 +76,6 @@ export interface TextJobsEntry {
   name: string
   statusMessage?: string
   indexingParams: TrackTextIndexing
-}
-
-function formatBytes(bytes: number) {
-  const units = ['bytes', 'kB', 'MB', 'GB']
-  let n = bytes
-  let i = 0
-  while (n >= 1000 && i < units.length - 1) {
-    n /= 1000
-    i++
-  }
-  return `${i === 0 ? n : n.toFixed(1)} ${units[i]}`
 }
 
 // Both conf writers are plain functions rather than actions on the model: they

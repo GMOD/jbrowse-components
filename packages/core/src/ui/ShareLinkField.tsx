@@ -1,5 +1,6 @@
 import { Alert, TextField, Typography } from '@mui/material'
 
+import { formatBytes } from '../util/formatBytes.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { ReactNode } from 'react'
@@ -23,16 +24,6 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.warning.main,
   },
 }))
-
-function formatBytes(n: number) {
-  if (n < 1024) {
-    return `${n} B`
-  } else if (n < 1024 * 1024) {
-    return `${(n / 1024).toFixed(1)} KB`
-  } else {
-    return `${(n / (1024 * 1024)).toFixed(1)} MB`
-  }
-}
 
 // Read-only single-line field for a shareable URL; clicking selects the whole
 // value so it's easy to copy, and overly long URLs surface a size warning.

@@ -19,6 +19,7 @@ export {
   shorten2,
   truncateMiddle,
 } from './stringUtils.ts'
+export { formatBytes } from './formatBytes.ts'
 export { getFillProps, getStrokeProps, stripAlpha } from './svgColorProps.ts'
 export {
   fetchAndMaybeUnzip,
