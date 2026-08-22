@@ -20,7 +20,32 @@ interface ViewMetadata {
 export default class ViewType extends PluggableElementBase {
   ReactComponent: ViewComponentType
 
-  stateModel: IAnyModelType
+  // Set at construction for an eager registration, and when the loader
+  // resolves for a lazy one.
+  private loadedStateModel?: IAnyModelType
+
+  // Declared non-optional (the getter asserts) because nearly every runtime
+  // reader operates on a view instance that already exists, which implies the
+  // model is loaded; code that can run before any instance exists (session
+  // preloading, pruning, union membership) must check isStateModelLoaded or go
+  // through loadStateModel. At runtime an unloaded type reads as undefined,
+  // which is what lets pluggableMstType's membership thunk filter it out.
+  get stateModel(): IAnyModelType {
+    return this.loadedStateModel!
+  }
+
+  // Present only for lazy registrations, and named `stateModel` + `Loader` so
+  // generic group machinery (pluggableMstType, pruneUnbuildableNodes) can
+  // probe `${fieldName}Loader` without knowing about ViewType specifically.
+  stateModelLoader?: () => Promise<IAnyModelType>
+
+  private stateModelPromise?: Promise<IAnyModelType>
+
+  // Extensions (extendViewType) that arrived before the loader resolved; they
+  // compose onto the loaded model in registration order.
+  private pendingStateModelExtensions: ((
+    stateModel: IAnyModelType,
+  ) => IAnyModelType)[] = []
 
   displayTypes: DisplayType[] = []
 
@@ -38,7 +63,7 @@ export default class ViewType extends PluggableElementBase {
   constructor(stuff: {
     name: string
     displayName?: string
-    stateModel: IAnyModelType
+    stateModel: IAnyModelType | (() => Promise<IAnyModelType>)
     extendedName?: string
     viewMetadata?: ViewMetadata
     ReactComponent: ViewComponentType
@@ -46,8 +71,45 @@ export default class ViewType extends PluggableElementBase {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
     this.viewMetadata = stuff.viewMetadata ?? {}
-    this.stateModel = stuff.stateModel
+    if (typeof stuff.stateModel === 'function') {
+      this.stateModelLoader = stuff.stateModel
+    } else {
+      this.loadedStateModel = stuff.stateModel
+    }
     this.extendedName = stuff.extendedName
+  }
+
+  get isStateModelLoaded() {
+    return this.loadedStateModel !== undefined
+  }
+
+  loadStateModel() {
+    if (this.loadedStateModel !== undefined) {
+      return Promise.resolve(this.loadedStateModel)
+    }
+    if (!this.stateModelLoader) {
+      throw new Error(
+        `view type ${this.name} has neither a state model nor a loader`,
+      )
+    }
+    this.stateModelPromise ??= this.stateModelLoader().then(loaded => {
+      let stateModel = loaded
+      for (const extend of this.pendingStateModelExtensions) {
+        stateModel = extend(stateModel)
+      }
+      this.pendingStateModelExtensions = []
+      this.loadedStateModel = stateModel
+      return stateModel
+    })
+    return this.stateModelPromise
+  }
+
+  extendStateModel(extend: (stateModel: IAnyModelType) => IAnyModelType) {
+    if (this.loadedStateModel !== undefined) {
+      this.loadedStateModel = extend(this.loadedStateModel)
+    } else {
+      this.pendingStateModelExtensions.push(extend)
+    }
   }
 
   addDisplayType(display: DisplayType) {

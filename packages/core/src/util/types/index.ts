@@ -46,6 +46,12 @@ export interface AbstractViewContainer extends IStateTreeNode {
     typeName: string,
     initialState?: Record<string, unknown>,
   ): AbstractViewModel
+  // addView for view types whose state model may be lazily loaded: resolves
+  // the state model, then adds
+  launchView(
+    typeName: string,
+    initialState?: Record<string, unknown>,
+  ): Promise<AbstractViewModel>
 }
 export function isViewContainer(
   thing: unknown,

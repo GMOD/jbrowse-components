@@ -293,6 +293,7 @@ export {
   getContainingTrack,
   getContainingView,
   getEnv,
+  launchOrReplaceView,
   getSession,
   hashCode,
   objectHash,

@@ -826,21 +826,41 @@ export default class PluginManager {
     return this.getElementTypesInGroup('adapter') as AdapterType[]
   }
 
-  /** get a MST type for the union of all specified pluggable MST types */
+  /**
+   * get a MST type for the union of all specified pluggable MST types.
+   *
+   * The union's membership is late-bound (re-read on every operation), so an
+   * element whose state model is registered as a lazy loader
+   * (`${fieldName}Loader`, e.g. ViewType.stateModelLoader) joins the union
+   * when its loader resolves. A snapshot naming such a type cannot be
+   * instantiated until then — session-loading code preloads the loaders for
+   * the types a snapshot names before casting it.
+   */
   pluggableMstType(
     groupName: PluggableElementTypeGroup,
     fieldName: string,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes = this.getElementTypeRecord(groupName)
-      .all()
-      .map(t => (t as unknown as Record<string, unknown>)[fieldName])
-      .filter(t => isType(t) && isModelType(t)) as IAnyType[]
-
-    if (pluggableTypes.length === 0) {
+    const record = this.getElementTypeRecord(groupName)
+    const anyMember = record.all().some(t => {
+      const element = t as unknown as Record<string, unknown>
+      const field = element[fieldName]
+      return (
+        (isType(field) && isModelType(field)) ||
+        typeof element[`${fieldName}Loader`] === 'function'
+      )
+    })
+    if (!anyMember) {
       return fallback
     }
-    return types.union(...pluggableTypes)
+    return types.union({
+      name: `pluggable(${groupName} ${fieldName})`,
+      members: () =>
+        record
+          .all()
+          .map(t => (t as unknown as Record<string, unknown>)[fieldName])
+          .filter(t => isType(t) && isModelType(t)) as IAnyType[],
+    })
   }
 
   /** get a MST type for the union of all specified pluggable config schemas */
@@ -937,6 +957,44 @@ export default class PluginManager {
 
   getViewType(typeName: string) {
     return this.viewTypes.get(typeName)
+  }
+
+  /**
+   * Loads the lazily registered state models for every view type a session
+   * snapshot names, including the child views of composite views
+   * (breakpoint-split, the linear-comparative family), so the snapshot can be
+   * instantiated. Cheap no-op when everything it names is already loaded.
+   * Unregistered type names are skipped — pruning them is setSession's job.
+   *
+   * Every async code path that hands a snapshot to a synchronous session
+   * instantiation (`setSession`, `cast`) must await this first.
+   */
+  async preloadViewTypes(sessionSnapshot: unknown) {
+    const names = new Set<string>()
+    const collect = (views: unknown) => {
+      if (Array.isArray(views)) {
+        for (const view of views) {
+          if (view && typeof view === 'object') {
+            const { type, views: children } = view as {
+              type?: unknown
+              views?: unknown
+            }
+            if (typeof type === 'string') {
+              names.add(type)
+            }
+            collect(children)
+          }
+        }
+      }
+    }
+    if (sessionSnapshot && typeof sessionSnapshot === 'object') {
+      collect((sessionSnapshot as { views?: unknown }).views)
+    }
+    await Promise.all(
+      [...names]
+        .filter(name => this.viewTypes.has(name))
+        .map(name => this.getViewType(name).loadStateModel()),
+    )
   }
 
   getAddTrackWorkflow(typeName: string) {
