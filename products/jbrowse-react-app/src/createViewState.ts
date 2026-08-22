@@ -78,9 +78,11 @@ export async function createViewStateAsync(opts: CreateViewStateOptions) {
     runtimePlugins: plugins,
     makeWorkerInstance,
   })
-  await pluginManager.preloadSessionTypes(
-    opts.session ?? opts.config.defaultSession,
-  )
+  // both, not one or the other: the tree is created with `defaultSession` and a
+  // restored `session` is applied to it afterwards, so each one's types have to
+  // be there
+  await pluginManager.preloadSessionTypes(opts.config.defaultSession)
+  await pluginManager.preloadSessionTypes(opts.session)
   return finishCreateViewState(opts, model, pluginManager)
 }
 

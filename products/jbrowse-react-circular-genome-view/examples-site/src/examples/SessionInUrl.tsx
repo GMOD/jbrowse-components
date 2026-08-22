@@ -1,14 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
-import { useCreateOnce } from '@jbrowse/core/util/hooks'
+import { useCreateOnceAsync } from '@jbrowse/core/util/hooks'
 import {
   JBrowseCircularGenomeView,
   createViewState,
   decodeSession,
   encodeSession,
 } from '@jbrowse/react-circular-genome-view2'
-
-type ViewState = ReturnType<typeof createViewState>
 
 const assembly = {
   name: 'volvox',
@@ -50,58 +48,42 @@ function writeSessionParam(value: string) {
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
+// One factory, run once, because whether there is a session to restore depends
+// on the URL: the decode and the build are the same async step. `createViewState`
+// is itself async — the circular view's state model is loaded on demand — so
+// there is nothing to gain by splitting them.
+async function build() {
+  const param = readSessionParam()
+  let session: Awaited<ReturnType<typeof decodeSession>> | undefined
+  let status = ''
+  if (param) {
+    try {
+      // `session` is the slot for a snapshot whose shape is only known at
+      // runtime; `defaultSession` is for one you author and want checked
+      session = await decodeSession(param)
+      status = `restored "${session.name}" from the URL`
+    } catch (e) {
+      // a truncated or hand-edited link shouldn't strand the user on a
+      // blank view: fall back to the normal starting state and say so
+      console.error(e)
+      status = `could not restore the session in the URL: ${e}`
+    }
+  }
+  return { state: await createViewState({ assembly, tracks, session }), status }
+}
+
 export default function SessionInUrl() {
-  // undefined while the URL is being decoded, so the view isn't built with an
-  // empty session first and then replaced. With no session to decode there is
-  // nothing to wait for, so build the normal starting state right here rather
-  // than rendering nothing and setting it from the effect below.
-  //
-  // `useCreateOnce`, not a `useState` initializer, and this is the one page on
-  // the site where the difference has teeth: React double-invokes an
+  // `useCreateOnceAsync`, not a `useState` initializer, and this is the one
+  // page on the site where the difference has teeth: React double-invokes an
   // initializer under StrictMode and throws the SECOND result away, so an
   // engine built in one is orphaned per mount — alive, fetching, and with
   // nothing left holding it. The sibling examples get this from
   // `useCreateViewState`; this one cannot, because whether there is an engine
   // to build at all depends on the URL.
-  const initial = useCreateOnce(() =>
-    readSessionParam() ? undefined : createViewState({ assembly, tracks }),
-  )
-  const [state, setState] = useState<ViewState | undefined>(initial)
-  const [status, setStatus] = useState('')
-
-  useEffect(() => {
-    const param = readSessionParam()
-    if (!param) {
-      return
-    }
-    // The same trap one level out: StrictMode runs this effect twice, so
-    // without the guard both passes decode and both build an engine, and the
-    // first is orphaned the moment the second `setState` lands.
-    let cancelled = false
-    decodeSession(param)
-      .then(session => {
-        if (cancelled) {
-          return
-        }
-        // `session` is the slot for a snapshot whose shape is only known at
-        // runtime; `defaultSession` is for one you author and want checked
-        setState(createViewState({ assembly, tracks, session }))
-        setStatus(`restored "${session.name}" from the URL`)
-      })
-      .catch((e: unknown) => {
-        if (cancelled) {
-          return
-        }
-        // a truncated or hand-edited link shouldn't strand the user on a
-        // blank view: fall back to the normal starting state and say so
-        console.error(e)
-        setState(createViewState({ assembly, tracks }))
-        setStatus(`could not restore the session in the URL: ${e}`)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const built = useCreateOnceAsync(build)
+  const [saved, setSaved] = useState('')
+  const state = built?.state
+  const status = saved || built?.status
 
   return state ? (
     <div>
@@ -113,7 +95,7 @@ export default function SessionInUrl() {
             ;(async () => {
               const encoded = await encodeSession(state)
               writeSessionParam(encoded)
-              setStatus(
+              setSaved(
                 `saved to the URL (${encoded.length} chars) — copy the address bar, or reload to restore it`,
               )
             })()

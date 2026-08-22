@@ -15,7 +15,7 @@ import {
 import { createRoot } from 'react-dom/client'
 
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView/index.ts'
-import createViewState from './createViewState.ts'
+import { createViewStateAsync } from './createViewState.ts'
 import { destroyViewState } from './destroyViewState.ts'
 
 import type { ViewModel } from './createModel/createModel.ts'
@@ -206,7 +206,10 @@ export function createLinearGenomeView(
         ? resolved.assembly.name
         : undefined
     const hasSession = opts.session !== undefined
-    const viewState = createViewState({
+    // the async twin: a restored session carries whatever displays were open
+    // when it was saved, and their state models may still be a dynamic import
+    // away. This function is already async, so the only cost is the await.
+    const viewState = await createViewStateAsync({
       assembly: resolved.assembly,
       // forwarded so the *assembly* gets the same substitution — its sequence
       // adapter is a location like any other, and only createViewState has the

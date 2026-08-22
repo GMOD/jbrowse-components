@@ -45,6 +45,8 @@ export default function ShowTrack() {
   // double-invokes a state initializer under StrictMode and throws the second
   // result away, which for an engine is a whole orphaned worker pool per mount.
   // It also destroys this one when the component unmounts.
+  // undefined for the frame in which the engine is still being built: the
+  // circular view's own state model is loaded on demand
   const state = useCreateViewState({ assembly, tracks })
 
   // open a track imperatively instead of via the init prop
@@ -56,8 +58,8 @@ export default function ShowTrack() {
   // `launchTrack` resolves to the track it already added when it is already
   // shown, so StrictMode running this twice shows it once.
   useEffect(() => {
-    void state.session.view.launchTrack('volvox_sv_test')
+    void state?.session.view.launchTrack('volvox_sv_test')
   }, [state])
 
-  return <JBrowseCircularGenomeView viewState={state} />
+  return state ? <JBrowseCircularGenomeView viewState={state} /> : null
 }

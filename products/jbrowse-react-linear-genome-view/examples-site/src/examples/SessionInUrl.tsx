@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import {
   JBrowseLinearGenomeView,
-  createViewState,
+  createViewStateAsync,
   decodeSession,
   destroyViewState,
   encodeSession,
@@ -60,8 +60,12 @@ function writeSessionParam(value: string) {
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
+// `createViewStateAsync`, because a session decoded from the URL carries
+// whatever displays were open when it was saved, and a display's state model is
+// a dynamic import until something asks for it. The synchronous
+// `createViewState` says so rather than loading it.
 function build(session?: SessionSnapshot) {
-  return createViewState({
+  return createViewStateAsync({
     assembly,
     tracks,
     // `session` is the slot for a snapshot whose shape is only known at
@@ -72,47 +76,49 @@ function build(session?: SessionSnapshot) {
 }
 
 export default function SessionInUrl() {
-  // undefined while the URL is being decoded, so the view isn't built with an
-  // empty session first and then replaced. With no session to decode there is
-  // nothing to wait for, so build the normal starting state right here rather
-  // than rendering nothing and setting it from the effect below.
-  const [state, setState] = useState<ViewModel | undefined>(() =>
-    readSessionParam() ? undefined : build(),
-  )
+  // undefined until the engine is built, which is now a wait either way:
+  // `createViewStateAsync` resolves the state models the session names before
+  // it builds anything.
+  const [state, setState] = useState<ViewModel | undefined>(undefined)
   const [status, setStatus] = useState('')
 
   useEffect(() => {
-    const param = readSessionParam()
-    if (!param) {
-      return
-    }
     // The engine is not owned by React, so unmounting alone leaves its RPC
-    // worker threads and its autoruns running — and the decode below can land
-    // after this effect was torn down (in StrictMode it usually does), which
-    // would build one that nothing ever destroys. One box rather than two
-    // `let`s, because the compiler's narrowing doesn't see through the cleanup.
+    // worker threads and its autoruns running — and a build can land after this
+    // effect was torn down (in StrictMode it usually does), which would leave
+    // one that nothing ever destroys. One box rather than two `let`s, because
+    // the compiler's narrowing doesn't see through the cleanup.
     const mount = {
       unmounted: false,
       engine: undefined as ViewModel | undefined,
     }
-    const open = (session?: SessionSnapshot) => {
-      if (!mount.unmounted) {
-        mount.engine = build(session)
-        setState(mount.engine)
-      }
+    const open = (session?: SessionSnapshot) =>
+      build(session).then(engine => {
+        if (mount.unmounted) {
+          destroyViewState(engine)
+        } else {
+          mount.engine = engine
+          setState(engine)
+        }
+      })
+    const param = readSessionParam()
+    if (param) {
+      decodeSession(param)
+        .then(session =>
+          open(session).then(() => {
+            setStatus(`restored "${session.name}" from the URL`)
+          }),
+        )
+        .catch((e: unknown) => {
+          // a truncated or hand-edited link shouldn't strand the user on a
+          // blank view: fall back to the normal starting state and say so
+          console.error(e)
+          void open()
+          setStatus(`could not restore the session in the URL: ${e}`)
+        })
+    } else {
+      void open()
     }
-    decodeSession(param)
-      .then(session => {
-        open(session)
-        setStatus(`restored "${session.name}" from the URL`)
-      })
-      .catch((e: unknown) => {
-        // a truncated or hand-edited link shouldn't strand the user on a
-        // blank view: fall back to the normal starting state and say so
-        console.error(e)
-        open()
-        setStatus(`could not restore the session in the URL: ${e}`)
-      })
     return () => {
       mount.unmounted = true
       if (mount.engine) {

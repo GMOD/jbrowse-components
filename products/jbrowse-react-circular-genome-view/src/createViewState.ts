@@ -127,6 +127,11 @@ export default async function createViewState(
     plugins,
     makeWorkerInstance,
   )
+  // A session carries the displays that were open when it was saved, and a
+  // display's state model is a dynamic import until something asks for it —
+  // createModel only resolves the view type its session model embeds.
+  await pluginManager.preloadSessionTypes(opts.defaultSession)
+  await pluginManager.preloadSessionTypes(opts.session)
   // registered once, here, rather than per track: each registration pushes a
   // File into core's process-global blobMap. Adapters are expanded out of their
   // `{ type, uri }` shorthand first, because that is the form the substitution
