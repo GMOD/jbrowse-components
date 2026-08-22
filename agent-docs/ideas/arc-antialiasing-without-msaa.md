@@ -532,9 +532,15 @@ tree:
     one device px — a bar of zero height paints a half-covered row where it owes
     none, which on a wiggle full of zero bins is a dotted line along the origin.
     The difference of two ramps is exact at every height (§"The literature"
-    above says why), and the baseline is not a conflation case: two neighbouring
-    bars' baselines are collinear but occupy disjoint pixel COLUMNS, so no pixel
-    is ever split between them.
+    above says why) — for ONE bar. Neighbours do share pixel columns: the
+    `MIN_FILL_WIDTH_PX` floor grows a sub-1.5px bin off its anchor, and bbi's
+    bins are narrower than that at most zooms, so a column carries two or three
+    bars and a flat-topped run over-inks its fringe row by up to 0.375. MSAA got
+    that case free. It is still the right trade against 0.277 device px of
+    quantisation everywhere, and
+    [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) §"A bar's top
+    edge is the datum" carries the table — but whoever costs a flip needs the
+    real number, not the claim that the case cannot arise.
   - **Density, and the whole alignments coverage family, cannot take it.**
     Density's quad spans the row, so its cuts are row boundaries that tile, and
     its datum is the colour rather than the edge. In the coverage band every mark

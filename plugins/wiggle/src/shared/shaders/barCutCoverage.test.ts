@@ -15,6 +15,10 @@
 //     the score asks for at every sub-pixel offset — including under one device
 //     pixel, where the single-ramp form this replaced over-inks.
 //
+// And one LIMIT, pinned beside them because the shader comment used to deny it:
+// the min-width floor makes neighbouring bars overlap, so a flat-topped run
+// conflates on its fringe row. Bounded, and smaller than what the ramp removes.
+//
 // SYNC: keep in step with vs_main's `padPx` and fs_main's two-ramp band.
 //
 // The dotplot and synteny twins are `shaders/dotplotCapsulePad.test.ts` and
@@ -23,6 +27,8 @@
 //
 // The import is also what makes this file a module — see the dotplot twin for
 // why that matters — and ties the quad modelled here to the one the shader draws.
+import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
+
 import { VERTS_PER_INSTANCE } from './wiggle.iface.generated.ts'
 
 // antialias.slang. `aaPx` is the ramp's FULL width and is also what vs_main pads
@@ -51,6 +57,26 @@ const rowCentrePx = (r: number, dpr: number) => (r + 0.5) / dpr
 interface Bar {
   topPx: number
   botPx: number
+}
+
+// vs_main's `extendToMinWidthX(sx1, sx2, MIN_FILL_WIDTH_PX, ...)`, in CSS px:
+// how many bars a device column falls inside once a sub-floor bin has been
+// grown off its anchor. The floor is the generated constant, so the sweep below
+// tracks it rather than a re-typed 1.5.
+function barsPerColumn(binPx: number, dpr: number) {
+  const widthPx = Math.max(binPx, MIN_FILL_WIDTH_PX)
+  let worst = 0
+  for (let col = 200; col < 200 + 8 * dpr; col++) {
+    const cx = (col + 0.5) / dpr
+    let n = 0
+    for (let i = 0; i < 400; i++) {
+      if (cx >= i * binPx && cx <= i * binPx + widthPx) {
+        n++
+      }
+    }
+    worst = Math.max(worst, n)
+  }
+  return worst
 }
 
 // Every device row the quad could possibly touch, plus a margin.
@@ -173,6 +199,49 @@ describe('xyplot bar cut coverage', () => {
     expect(inked.length).toBeGreaterThan(0)
     for (const [, b] of zeroHeight) {
       expect(totalInk(b, dpr)).toBe(0)
+    }
+  })
+
+  test('neighbouring bars overlap, and their fringe rows conflate there', () => {
+    // The limit on the property above, and the one claim the shader comment
+    // used to make that is not true: `extendToMinWidthX` floors a bin at
+    // MIN_FILL_WIDTH_PX by growing it off its anchor, so a bin narrower than
+    // that OVERLAPS its neighbours and a device column carries two or three
+    // bars. Where their tops agree — a plateau — src-over composites
+    // `1 - (1 - a)^n` where `a` is the coverage, so the fringe row reads as a
+    // top up to 0.375 device px too tall. MSAA had this case free: coincident
+    // flat fills cover the same samples and the union is exact.
+    //
+    // Pinned, not fixed. It is bounded, it only shows on flat runs, and it is
+    // smaller than the 0.277 device px of quantisation the ramp removes from
+    // every column. A fix means one primitive per bar run, which is the
+    // rewrite GPU_RENDERING.md §"What the coverage band cannot antialias"
+    // describes for the other family.
+    const dpr = 2
+    const topPx = 20 + 0.5 / dpr
+    const bar = { topPx, botPx: 60 }
+    const fringeCentre = rowCentrePx(Math.floor(topPx * dpr), dpr)
+    const coverage = bandAlpha(fringeCentre, bar.topPx, bar.botPx, dpr)
+    expect(coverage).toBeCloseTo(0.5, 12)
+
+    const depths = [2, 1.5, 1.25, 1, 0.75, 0.5].map(binPx => [
+      binPx,
+      barsPerColumn(binPx, dpr),
+    ])
+    expect(depths).toEqual([
+      [2, 1],
+      [1.5, 1],
+      [1.25, 2],
+      [1, 2],
+      [0.75, 3],
+      [0.5, 3],
+    ])
+    for (const [binPx, n] of depths) {
+      const painted = 1 - (1 - coverage) ** n!
+      expect([binPx, painted - coverage]).toEqual([
+        binPx,
+        expect.closeTo(n === 1 ? 0 : n === 2 ? 0.25 : 0.375, 10),
+      ])
     }
   })
 

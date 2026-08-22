@@ -1493,9 +1493,36 @@ Both horizontal cuts, not only the top. The band form is the only one exact belo
 one device pixel — a single top ramp against a hard baseline applies a half-plane
 coverage formula to a slab, and paints a half-covered row under a bar of zero
 height, which on a wiggle full of zero bins is a dotted line along the origin.
-The baseline is not a conflation case: two neighbouring bars' baselines are
-collinear but occupy disjoint pixel COLUMNS, so no pixel is ever split between
-them.
+
+**Neighbouring bars do share pixel columns, and the bound is measured rather
+than argued away.** `extendToMinWidthX` floors a bin at `MIN_FILL_WIDTH_PX` by
+growing it off its anchor, and bbi hands the wiggle a bin no wider than
+`2 * bpPerPx` (`basesPerSpan = bpPerPx` at the default `resolutionMultiplier`,
+and `getView` takes the coarsest reduction under twice it), so at most zooms a
+bar is 1.5 CSS px over a bin narrower than that and overlaps its neighbours two
+or three deep. Where their tops agree — a plateau, a flat run — the fringe row
+composites `1 - (1 - a)^n` rather than `a`:
+
+| bin (CSS px) | bars per column | fringe painted | correct | apparent top error |
+| --- | --- | --- | --- | --- |
+| 2.0, 1.5 | 1 | 0.50 | 0.50 | 0 |
+| 1.25, 1.0 | 2 | 0.75 | 0.50 | 0.25 device px |
+| 0.75, 0.5 | 3 | 0.875 | 0.50 | 0.375 device px |
+
+Under MSAA the same overlap was free, because coincident flat fills cover the
+same samples and the union is exact. So the change trades a 0.277 device px
+quantisation error on EVERY column (the table below) for up to 0.375 on the
+fringe row of a flat-topped run at an overlapping zoom, and is a clear win on
+any data whose neighbours differ — which is why it stays. The measurement below
+does not exercise it: `volvox_microarray` features are wide, and 2,208 of 2,532
+device columns there are interior to a single bar.
+
+The baseline is the same story one row down: every bar in a row shares `originY`,
+so the overlap strips over-ink just under the origin too. In multi-row multiwiggle
+there is a third instance with the opposite sign — rows stack edge-to-edge, so a
+bar clipped to `domainYMax` puts its top cut exactly on the row boundary the row
+above baselines on, and two edges that TILE compose to 0.75 where 1.0 is right.
+Separator lines default off, so nothing covers it.
 
 The sub-pixel position of the top, over the 2,208 columns interior to a bar in
 `volvox_microarray` at dpr 2 — the after arms are the reference, and the record

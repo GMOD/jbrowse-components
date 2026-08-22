@@ -402,6 +402,13 @@ describe('GpuWiggleRenderer', () => {
 
       const f32 = hal.getLastUniformsF32()!
       expect(f32[U.viewportWidth]).toBe(800)
+      // The other half of the same decision, and the opposite unit: the AA ramp
+      // for the bar's horizontal cuts and the center-line capsule is sized in
+      // DEVICE px, so this one is the screen density and not the CSS width
+      // above. Pinned because nothing else fails if it is written as
+      // `clip.pxH / canvasHeight` — that agrees with getDpr() until a canvas
+      // taller than MAX_CANVAS_DIM_PX clamps its backing store.
+      expect(f32[U.devicePixelRatio]).toBe(2)
     } finally {
       globalThis.devicePixelRatio = originalDpr
     }

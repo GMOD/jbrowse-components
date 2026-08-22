@@ -189,8 +189,18 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // The VERTICAL cuts stay hard on purpose. Bins tile, so two neighbours split
     // one pixel column, and per-fragment alpha on both sides of that shared edge
     // composites to less than full ink — the seam GPU_RENDERING.md refuses for
-    // hi-C. The horizontal cuts have no such neighbour: bars are side by side,
-    // never stacked, so a column of pixels belongs to exactly one of them.
+    // hi-C.
+    //
+    // The horizontal cuts conflate too, and the bound is worth knowing rather
+    // than claiming away: `extendToMinWidthX` above floors a bin at
+    // MIN_FILL_WIDTH_PX by growing it off its anchor, so at any zoom whose bin
+    // is under 1.5 CSS px a bar OVERLAPS its neighbours and a column carries two
+    // or three of them. Where their tops agree — a flat run, a plateau — the
+    // fringe row composites 1-(1-a)^n instead of a, up to 0.375 too much ink at
+    // n=3. It reads as a top edge a third of a device pixel too tall on flat
+    // stretches, against the 0.277 of MSAA quantisation this replaces
+    // everywhere, so the trade is worth taking and is not worth hiding.
+    // barCutCoverage.test.ts pins it.
     float aaPx = barAaPx();
     float alpha = aaRamp(fragIn.barInkPx.x, aaPx) - aaRamp(fragIn.barInkPx.y, aaPx);
     if (alpha <= 0.0) {
