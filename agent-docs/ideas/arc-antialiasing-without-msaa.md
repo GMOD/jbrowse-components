@@ -593,45 +593,54 @@ option 1 gets most of the same bytes for none of that.
 
 ## Recommendation
 
-**Measure whether the target is resident first. Then option 1, with option 4
-done first for the bar tops.**
+**The mechanism and the wiggle bar top are both built. What is left is one
+look-at-the-pixels decision per display, and one measurement that could make the
+whole thing moot.**
 
-The zeroth step is the memoryless check in §"MSAA's cost". Every byte figure
-here and in ARCHITECTURAL_LIMITS is arithmetic over a texture descriptor, and on
-a tiler the attachment we allocate may never be committed. That is one browser
-memory profile with the constant at 4 and at 1, and it decides whether any of the
-rest is worth doing on the hardware most of this project's developers use. It
-does not change what the pictures show — the arcs are free of MSAA either way —
-only whether freeing the bytes buys anything locally.
+The zeroth step is still the memoryless check in §"MSAA's cost". Every byte
+figure here and in ARCHITECTURAL_LIMITS is arithmetic over a texture descriptor,
+and on a tiler the attachment we allocate may never be committed. That is one
+browser memory profile of the same view with a display at 4 and at 1, and it
+decides whether flipping anything buys something on the hardware most of this
+project's developers use. It does not change what the pictures show — the arcs
+are free of MSAA either way — only whether freeing the bytes buys anything
+locally.
 
 Assuming the bytes are real:
 
 The reasoning in one line: the thing MSAA was bought for stopped needing it on
-2026-08-01 and can be shown not to need it to within one 8-bit level, but two of
-the things that quietly grew to depend on it — a wiggle bar's top edge and a
-Hi-C diamond — depend on it for different reasons, and only one of those two has
-an analytic answer.
+2026-08-01, the largest remaining dependant stopped needing it on 2026-08-22,
+and what is left depends on it for a reason no shader can address.
 
-Concretely:
+Concretely, in the order to take it:
 
-- Do the bar-top ramp first (option 4, first bullet). It is the largest visible
-  cost of turning MSAA off, it is the one where the aliasing corrupts an
-  *encoding* rather than a *silhouette*, it is a handful of lines per shader, and
-  it is worth doing whether or not the sample count ever moves. **Done for the
-  wiggle xyplot on 2026-08-22**, which is where §Evidence measured the cost;
-  read that bullet before assuming the coverage band can follow, because it
-  cannot.
-- Then land option 1 with Hi-C and LD opting into 4x. Everything else drops its
-  target entirely.
-- Leave read arrow tips and the strand arrowhead for a follow-up. They are
+- **The wiggle family is the flip to make first**, because it is the one whose
+  cost has been paid: the xyplot bar's horizontal cuts are analytic and
+  measurably identical at 1 sample and at 4
+  ([reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md) §"A bar's top
+  edge is the datum, and it is measured"). What it still loses at 1 is the
+  soft fringe on the *vertical* edge between two bars of different heights —
+  silhouette, not datum, and the thing to actually look at before flipping.
+  Density and the step line lose their edges outright and share the display, so
+  the flip is a judgement about all three renderings at once.
+- **Hi-C and LD stay at 4**, per option 5, and that is not a decision anyone
+  needs to retake.
+- **The alignments display is the hard one.** Its coverage band cannot be given
+  analytic AA at all — every mark in it shares a horizontal edge with another
+  (option 4's first bullet) — so flipping it trades the band's edges permanently
+  for the biggest single block of memory in the tree. That is the trade to put
+  in front of someone, not to resolve here.
+- Read arrow tips and the strand arrowhead are a follow-up either way. They are
   silhouette-only, they are small, and a look at the 10x pileup crop will say
   whether anyone minds.
-- Do not ship option 2 without looking at a Hi-C track at 1x first.
+- **Option 2 is no longer a change at all** — it is the `sampleCount = 4`
+  default in `createRenderingBackend`, and moving it inverts which displays have
+  to opt in. Don't, until a Hi-C track has been looked at.
 
-**What would change this recommendation.** If a look at the pileup and wiggle
-captures says the 1x rendering is fine as-is, option 2 is a one-character change
-that takes the whole memory line, and options 1 and 4 are both unnecessary.
-That judgement is the one thing this doc cannot make.
+**What would change this recommendation.** If a look at the captures says the
+1-sample rendering is fine as-is for the alignments band too, the default flips
+and Hi-C and LD are the only opt-ins. That judgement is the one thing this doc
+cannot make.
 
 ## What to check before flipping a display
 

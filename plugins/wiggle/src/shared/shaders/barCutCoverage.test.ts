@@ -2,8 +2,8 @@
 // emits a quad grown one device pixel past each horizontal cut, and the fragment
 // clips that quad back with a coverage band built from two `aaRamp`s. Two
 // properties hold the pair together, neither of them unit-testable in the shader
-// and neither reachable by a browser suite that does not flip
-// `MSAA_SAMPLE_COUNT`:
+// and neither reachable by a browser suite that does not change the display's
+// `sampleCount`:
 //
 //   - **Every pixel the fragment inks is FULLY inside the quad.** Not merely
 //     "the ramp is not cropped" — fully covered, so the rasterizer's own

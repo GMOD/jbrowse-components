@@ -14,9 +14,11 @@
 //   after  @ 1   must match `before @ 4` at the tops — the claim
 //   after  @ 4   must not be worse than `after @ 1`
 //
-// `MSAA_SAMPLE_COUNT` is a module constant in
-// `packages/render-core/src/hal/webgpuHal.ts`; flip it, rebuild, capture, and
-// put it back. Nothing in the tree should ever carry a changed value.
+// The sample count is a per-display property (`RenderingBackendOptions.
+// sampleCount`), so the 1-sample arms are `sampleCount: 1` in
+// `plugins/wiggle/src/shared/WiggleRenderer.ts`'s `createRenderingBackend` call.
+// Flip it, rebuild, capture, and put it back — which display drops to 1 is a
+// look-at-the-pixels decision, not something a probe leaves behind.
 //
 //     pnpm --filter @jbrowse/web build
 //     FIREFOX_NIGHTLY_PATH=... node browser-tests/probe-bar-top-aa.ts --out=/tmp/shots/before-4
