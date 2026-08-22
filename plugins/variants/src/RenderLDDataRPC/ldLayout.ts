@@ -9,20 +9,19 @@ const ROTATION = Math.SQRT2
 
 /**
  * The n+1 column boundaries the renderers walk, one per SNP plus a right edge,
- * in pre-rotation units. Uniform mode gives every SNP the same width; genomic
- * mode places the boundary between two SNPs at their bp midpoint, measured from
- * the region's left screen edge so a reversed region stays ascending.
+ * in pre-rotation units (bp / √2, relative to the first region's leading
+ * edge). Uniform mode gives every SNP the same width; genomic mode places the
+ * boundary between two SNPs at their bp midpoint, measured from the region's
+ * left screen edge so a reversed region stays ascending.
  */
 export function computeBoundaries({
   snps,
   region,
-  bpPerPx,
   uniformW,
   genomicMode,
 }: {
   snps: LDSnp[]
   region: Region
-  bpPerPx: number
   uniformW: number
   genomicMode: boolean
 }) {
@@ -32,11 +31,15 @@ export function computeBoundaries({
     let prevOff = 0
     for (let i = 0; i < n; i++) {
       const off = bpOffsetInRegion(region, snps[i]!.start)
-      boundaries[i] = (prevOff + off) / 2 / bpPerPx / ROTATION
+      boundaries[i] = (prevOff + off) / 2 / ROTATION
       prevOff = off
     }
-    // Half a cell past the last SNP, so it gets a visible width of its own.
-    boundaries[n] = (prevOff / bpPerPx + 50) / ROTATION
+    // The last SNP extends past itself by as much as its lead-in, floored at
+    // 1 bp so a single SNP at the region start still gets a cell. A
+    // zoom-invariant span, where this used to add a fixed 50 px — worker
+    // output no longer knows what a pixel is.
+    const lead = Math.max(1, prevOff - boundaries[n - 1]! * ROTATION)
+    boundaries[n] = (prevOff + lead) / ROTATION
   } else {
     for (let i = 0; i <= n; i++) {
       boundaries[i] = i * uniformW

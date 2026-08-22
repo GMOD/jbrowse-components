@@ -51,8 +51,8 @@ export function drawHicBlocks(
   // rasterizer discard these, but Canvas2D pays a full fillRect for every one —
   // and at the auto binsize a full-width triangle is ~300k contacts, several
   // times that once the user steps the resolution finer. Panning keeps the
-  // fetched matrix and redraws it shifted (see renderTransform), so off-surface
-  // contacts are the normal case, not an edge one.
+  // fetched matrix and redraws it under the live view transform, so
+  // off-surface contacts are the normal case, not an edge one.
   //
   // `positions` holds the cell's apex-ward corner, and the opposite corner
   // `(px+w, py+w)` sits `2*binWidth` further along the sum axis — so a cell

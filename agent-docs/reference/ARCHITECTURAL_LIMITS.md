@@ -793,13 +793,15 @@ are in the payload at all.
 
 ### Three staleness mechanisms behind one name
 
-**Status:** Mostly closed (2026-07). The naming and the consumers are unified;
-the three computations remain, deliberately.
+**Status:** Mostly closed (2026-07); down to two mechanisms 2026-08-21, when
+HiC and LD moved to genomic worker output and the viewport-snapshot compare
+(`viewportMatchesLastDrawn`, `StaleViewportRescaleMixin`) retired with the
+fetch-time pixel space it existed for.
 
-Data freshness is still computed three ways — spatial coverage
-(`viewportWithinLoadedData`, per-region mixins), viewport snapshot
-(`viewportMatchesLastDrawn`, HiC/LD), signature compare (`isDataCurrent`, arc /
-dotplot / synteny) — and each has independently shipped a stale-capture bug
+Data freshness is still computed two ways — spatial coverage
+(`viewportWithinLoadedData`, per-region mixins) and signature compare
+(`isDataCurrent`, arc / HiC / LD / dotplot / synteny) — and each has
+independently shipped a stale-capture bug
 ([SVG_EXPORT.md](SVG_EXPORT.md), HISTORICAL.md §"In-place-refetch staleness").
 
 What changed: all three now answer under the single name **`dataCurrent`**, and

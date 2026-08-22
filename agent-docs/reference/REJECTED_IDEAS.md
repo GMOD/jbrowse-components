@@ -1231,8 +1231,9 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   entirely below the band, so there is no read to skip. 9-15% of the contacts,
   none of the network.
   It also costs two things. The fetch would depend on display height, where
-  today a resize only repaints (`computeTriangleYScalar` says so); and
-  `renderTransform` rescales the STALE matrix on zoom-out during the debounce,
+  today a resize only repaints (`computeTriangleYScalar` says so); and a stale
+  matrix keeps drawing during the refetch debounce (at the time via
+  `renderTransform`'s rescale; since 2026-08-21 at its own genomic position),
   so a culled one shows a flat-bottomed triangle for up to a second.
   **What would change the answer:** a deep v9 map at a fine binsize, where
   blocks are small enough that whole depth levels sit below the band. This file

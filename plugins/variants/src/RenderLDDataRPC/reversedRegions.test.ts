@@ -13,7 +13,6 @@ jest.mock('../VariantRPC/getLDMatrix.ts', () => ({
   getLDMatrix: jest.fn(),
 }))
 
-const BP_PER_PX = 1
 const SPAN = 1000
 
 function region(refName: string, reversed: boolean, offset = 0): Region {
@@ -79,7 +78,7 @@ async function run(
           type: 'VcfTabixAdapter',
         },
         regions,
-        bpPerPx: BP_PER_PX,
+        originBp: 0,
         ldMetric: 'r2',
         minorAlleleFrequencyFilter: 0,
         lengthCutoffFilter: 0,

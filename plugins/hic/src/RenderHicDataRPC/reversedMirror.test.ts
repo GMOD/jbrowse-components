@@ -14,7 +14,6 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
   getAdapter: jest.fn(),
 }))
 
-const BP_PER_PX = 1
 const RES = 10
 // region spans are res-aligned so a bin edge lands exactly on the region edge
 const SPAN = 1000
@@ -38,11 +37,11 @@ async function run(regions: Region[], records: TestContact[]) {
       adapterConfig: {},
       regions,
       // every region here is SPAN wide and they tile the axis contiguously
-      viewBlocks: regions.map((r, i) => ({
+      axisBlocks: regions.map((r, i) => ({
         refName: r.refName,
-        offsetPx: (i * SPAN) / BP_PER_PX,
+        offsetBp: i * SPAN,
       })),
-      bpPerPx: BP_PER_PX,
+      originBp: 0,
       resolution: RES,
       normalization: 'KR',
     },
@@ -90,15 +89,15 @@ describe('reversed hic regions', () => {
     const fwd = await run([region('a', false)], RECORDS)
     const rev = await run([region('a', true)], RECORDS)
 
-    // mirror invariant: a cell at rx lands at (blockWidthPx - rx) reversed,
+    // mirror invariant: a cell at rx lands at (blockWidthBp - rx) reversed,
     // at the same contact-distance height. No expected coordinates to
     // hand-compute, so it can't bake in whatever the code currently does.
-    const blockWidthPx = SPAN / BP_PER_PX
+    const blockWidthBp = SPAN
     expect(rev.numContacts).toBe(fwd.numContacts)
     for (let i = 0; i < fwd.numContacts; i++) {
       const f = cellCenter(fwd, i)
       const r = cellCenter(rev, i)
-      expect(r.rx).toBeCloseTo(blockWidthPx - f.rx, PX)
+      expect(r.rx).toBeCloseTo(blockWidthBp - f.rx, PX)
       expect(r.ry).toBeCloseTo(f.ry, PX)
     }
     // and it actually moved — a no-op mirror would pass a symmetric fixture

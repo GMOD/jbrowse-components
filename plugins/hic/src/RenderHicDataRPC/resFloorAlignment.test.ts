@@ -15,12 +15,7 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
 
 const ROT_45 = Math.SQRT1_2
 
-async function run(
-  region: Region,
-  records: TestContact[],
-  bpPerPx: number,
-  res: number,
-) {
+async function run(region: Region, records: TestContact[], res: number) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
@@ -33,8 +28,8 @@ async function run(
       sessionId: 'test',
       adapterConfig: {},
       regions: [region],
-      viewBlocks: [{ refName: region.refName, offsetPx: 0 }],
-      bpPerPx,
+      axisBlocks: [{ refName: region.refName, offsetBp: 0 }],
+      originBp: region.start,
       resolution: res,
       normalization: 'KR',
     },
@@ -42,10 +37,11 @@ async function run(
   return (out as unknown as { value: HicDataResult }).value
 }
 
-// Genomic-px position of a cell's apex-ward (min) corner: rotate (px, py) onto
-// the genomic axis. `renderTransform` places this axis's origin at the block's
-// actual start, so this is where the ruler expects the cell — no dependence on
-// the internal offset math, so it can't bake in what the code currently does.
+// Axis-bp position of a cell's apex-ward (min) corner: rotate (px, py) onto
+// the genomic axis. The view transform places this axis's origin at the
+// payload's `originBp`, so this is where the ruler expects the cell — no
+// dependence on the internal offset math, so it can't bake in what the code
+// currently does.
 function cellLeftGenomicPx(d: HicDataResult, i: number) {
   return (
     (getInstancePosition(d.instances, i, 0) +
@@ -64,7 +60,6 @@ describe('hic matrix aligns to the ruler on a non-res-aligned block start', () =
     'start=%i draws cells at true genomic px',
     async start => {
       const res = 100
-      const bpPerPx = 1
       const bins = [0, 3, 9]
       const records: TestContact[] = bins.map(b => ({
         bin1: b,
@@ -76,14 +71,10 @@ describe('hic matrix aligns to the ruler on a non-res-aligned block start', () =
       const d = await run(
         { refName: 'a', start, end: start + 1000, assemblyName: 'a' },
         records,
-        bpPerPx,
         res,
       )
       bins.forEach((b, i) => {
-        expect(cellLeftGenomicPx(d, i)).toBeCloseTo(
-          (b * res - start) / bpPerPx,
-          3,
-        )
+        expect(cellLeftGenomicPx(d, i)).toBeCloseTo(b * res - start, 3)
       })
     },
   )

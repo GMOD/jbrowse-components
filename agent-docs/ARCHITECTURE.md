@@ -156,7 +156,7 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-19 registered displays declare 174 config slots, 40 MST properties and 53 volatiles between them — counting what each display's own directory declares.
+19 registered displays declare 174 config slots, 40 MST properties and 55 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
@@ -164,9 +164,9 @@ track-menu setting is a slot.
 | `LinearAlignmentsDisplay` | `plugins/alignments` | 47 | 2 | 17 |
 | `LinearBasicDisplay` | `plugins/canvas` | 25 | 8 | 13 |
 | `LinearMafDisplay` | `plugins/maf` | 18 | 2 | 8 |
-| `LDDisplay` | `plugins/variants` | 15 | 1 | 2 |
+| `LDDisplay` | `plugins/variants` | 15 | 1 | 3 |
 | `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 11 | 4 | 2 |
-| `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 3 |
+| `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 4 |
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
 | `LinearArcDisplay` | `plugins/arc` | 6 | 2 | 0 |
 | `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
@@ -518,7 +518,6 @@ column reports what actually composes what.
 | `RowHeightMixin()` | The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiSampleVariantBaseModel` |
 | `HeightModeMixin()` | Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay` |
 | `ScoreScaleMixin()` | Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume | `LinearAlignmentsDisplay`, `WiggleScoreConfigMixin` |
-| `StaleViewportRescaleMixin()` | Stale-pixel rescaling for a display whose worker output is in fetch-time pixel space. Nothing — the display records `lastDrawnOffsetPx`/`lastDrawnBpPerPx` from its render callback. Brings the `renderTransform` that keeps stale pixels aligned during a pan-during-fetch and the `viewportFresh` half of `dataCurrent` | `LinearHicDisplay`, `SharedLDModel` |
 
 <!-- CROSS_CUTTING_MIXINS END -->
 

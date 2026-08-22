@@ -54,7 +54,6 @@ async function mafsFor(
       },
       sessionId: 'test',
       regions,
-      bpPerPx: 1,
       minorAlleleFrequencyFilter: 0,
       lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     },

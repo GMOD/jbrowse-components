@@ -60,11 +60,10 @@ export default function GlobalFetchMixin() {
        * This family's answer to the shared freshness question every display
        * foundation must answer: the held data corresponds to what is on screen
        * right now — fetched, and fetched *for this viewport*. The mixin owns no
-       * data state, so a global display must express it; the two in tree do so
-       * differently (HiC and LD add their own "data arrived" term to
-       * `StaleViewportRescaleMixin`'s `viewportFresh` snapshot compare, arc
-       * compares a region signature via `isDataCurrent`), which is exactly what
-       * the hook is for.
+       * data state, so a global display must express it; the three in tree
+       * all add their own "data arrived" term to an `isDataCurrent` signature
+       * compare — arc and HiC over static blocks, LD over dynamic blocks plus
+       * settings — which is exactly what the hook is for.
        *
        * Default false, so a display that forgets the override never exports —
        * a hung export is diagnosable, a stale one silently ships wrong pixels.

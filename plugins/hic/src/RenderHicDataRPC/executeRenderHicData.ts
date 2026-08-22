@@ -27,8 +27,8 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
     regions,
-    viewBlocks,
-    bpPerPx,
+    axisBlocks,
+    originBp,
     resolution,
     normalization,
     stopToken,
@@ -61,11 +61,11 @@ export async function executeRenderHicData({
   // the O(numContacts) buffer build + sort rather than doing throwaway work
   checkStopToken(stopToken)
 
-  const w = res / (bpPerPx * Math.SQRT2)
+  const w = res / Math.SQRT2
   // The regions arrive split in two — the framework's renamed `regions` and the
-  // view-side `viewBlocks` it can't carry — and are one thing again from here
+  // view-side `axisBlocks` it can't carry — and are one thing again from here
   // on. Everything downstream, on both sides of the worker boundary, reads this.
-  const resultRegions = buildResultRegions(regions, viewBlocks, bpPerPx, res)
+  const resultRegions = buildResultRegions(regions, axisBlocks, res)
 
   // The adapter's `contactBin1`/`contactBin2`/`counts` are worker-local scratch
   // now: this loop is the only reader, and what leaves the worker is the packed
@@ -119,6 +119,7 @@ export async function executeRenderHicData({
     maxScore,
     percentile95,
     binWidth: w,
+    originBp,
     resolution: res,
     appliedNormalization,
     regions: resultRegions,

@@ -36,12 +36,14 @@ function emptyResult(
   { metric, method, hasDprime, filterStats }: LDMatrixResult,
   signedLD: boolean,
   genomicMode: boolean,
+  originBp: number,
 ) {
   return rpcResultWithArrayBuffers<LDDataResult>({
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
     numCells: 0,
     uniformW: 0,
+    originBp,
     genomicMode,
     metric,
     hasDprime,
@@ -63,7 +65,7 @@ export async function executeRenderLDData({
     sessionId,
     adapterConfig,
     regions,
-    bpPerPx,
+    originBp,
     ldMetric,
     minorAlleleFrequencyFilter,
     lengthCutoffFilter,
@@ -100,7 +102,6 @@ export async function executeRenderLDData({
           regions,
           sessionId,
           adapterConfig,
-          bpPerPx,
           ldMetric,
           minorAlleleFrequencyFilter,
           lengthCutoffFilter,
@@ -123,7 +124,7 @@ export async function executeRenderLDData({
 
   const region = regions[0]
   if (ldData.snps.length === 0 || !region) {
-    return emptyResult(ldData, signedResult, genomicMode)
+    return emptyResult(ldData, signedResult, genomicMode, originBp)
   }
 
   // LD values themselves are orientation-free; only the axis is. A reversed
@@ -137,14 +138,12 @@ export async function executeRenderLDData({
   const n = snps.length
 
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
-  const width = totalWidthBp / bpPerPx
-  const uniformW = width / (n * Math.SQRT2)
+  const uniformW = totalWidthBp / (n * Math.SQRT2)
   const numCells = (n * (n - 1)) / 2
 
   const boundaries = computeBoundaries({
     snps,
     region,
-    bpPerPx,
     uniformW,
     genomicMode,
   })
@@ -160,6 +159,7 @@ export async function executeRenderLDData({
     boundaries,
     numCells,
     uniformW,
+    originBp,
     genomicMode,
     metric: ldData.metric,
     hasDprime: ldData.hasDprime,

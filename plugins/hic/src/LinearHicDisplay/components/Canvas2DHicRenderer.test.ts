@@ -156,8 +156,8 @@ describe('Canvas2DHicRenderer', () => {
   })
 
   // Canvas2D pays a full fillRect per contact, and a panned viewport redraws a
-  // matrix that mostly sits off-screen (renderTransform shifts the last fetch
-  // rather than refetching), so the draw loop culls on the rotated x axis.
+  // matrix that partly sits off-screen (pan is a redraw over the buffered
+  // static-block fetch), so the draw loop culls on the rotated x axis.
   // A cull that eats a visible bin is worse than no cull, hence the edge cases.
   describe('off-screen culling', () => {
     // screen x of a cell's apex-ward corner is `((px+py)/√2)*viewScale + off`

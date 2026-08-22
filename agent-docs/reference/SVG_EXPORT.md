@@ -371,23 +371,25 @@ same `computeSvgReady` policy:
 
 Every display foundation answers one question under one name — **`dataCurrent`**:
 does the held data correspond to what is on screen right now? What differs is
-only how it is computed, and there are three ways:
+only how it is computed, and there are two ways (the third — a viewport-snapshot
+compare for the fetch-time-pixel displays — retired 2026-08-21 with the pixel
+space itself, when HiC and LD moved to genomic worker output and a signature):
 
 | Mechanism | Foundation | Implementation |
 | --- | --- | --- |
 | Spatial coverage | `MultiRegionDisplayMixin` | `viewportWithinLoadedData && loadedRegions.size > 0` |
-| Viewport-snapshot compare | `GlobalFetchMixin` (HiC, LD) | `viewportFresh` (`StaleViewportRescaleMixin`) |
-| Signature compare | `GlobalFetchMixin` (arc), synteny, dotplot | `isDataCurrent(loaded, current)` |
+| Signature compare | `GlobalFetchMixin` (arc, HiC, LD), synteny, dotplot | `isDataCurrent(loaded, current)` |
 
 Consumers — `computeSvgReady`, the `settled` capture gates, BreakpointSplitView's
 overlays — read `dataCurrent` and never the mechanism, so a display *composes* a
-freshness answer rather than choosing which of three names to expose.
+freshness answer rather than choosing which of the names to expose.
 
 `isDataCurrent(loadedSignature, currentSignature)` (`@jbrowse/core/util`,
-`loaded !== undefined && loaded === current`) is the shared rule for the third
-row: arc / paired-arc (region-key signature), dotplot + linear-comparative
-synteny (fetch-input signature). The view-specific part (how each builds its
-signature) stays per-display; only the final compare is shared.
+`loaded !== undefined && loaded === current`) is the shared rule for the second
+row: arc / paired-arc and HiC (region-key signatures over static blocks), LD
+(dynamic blocks + settings), dotplot + linear-comparative synteny (fetch-input
+signature). The view-specific part (how each builds its signature) stays
+per-display; only the final compare is shared.
 
 ## On-screen capture gate (`settled` → `*_canvas_done`)
 

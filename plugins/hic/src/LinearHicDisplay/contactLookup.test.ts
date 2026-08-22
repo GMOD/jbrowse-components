@@ -57,6 +57,7 @@ function makeData(
     maxScore: n,
     percentile95: n,
     binWidth: W,
+    originBp: 0,
     resolution: 1000,
     appliedNormalization: 'KR',
     regions: binBase.map((_, r) => ({

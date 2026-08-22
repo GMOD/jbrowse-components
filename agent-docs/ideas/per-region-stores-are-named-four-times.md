@@ -57,10 +57,10 @@ one, and it decides whether anything here is worth building.
 
 ## Nearby, same subsystem
 
-- HiC and LD's `dataCurrent` are byte-identical (`rpcData !== null &&
-  viewportFresh`) and both compose `StaleViewportRescaleMixin`, which owns the
-  second term. Hoisting the conjunction needs a "data arrived" hook, so it is the
-  same trade: one hook to remove two lines.
+- HiC and LD's `dataCurrent` are the same shape (`rpcData !== null` plus an
+  `isDataCurrent` signature compare) but over different signatures — static
+  blocks + binsize + normalization vs dynamic blocks + settings — so there is
+  no longer a byte-identical pair to hoist.
 - `RegionTooLargeMixin` is the largest single surface left in the fetch path —
   984 lines, 282 of them code, about 20 getters of which 6 are overridable hooks.
   Nothing here audited it.

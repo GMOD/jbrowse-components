@@ -11,8 +11,7 @@
  * an `undefined` loaded signature means nothing has been fetched yet, so it is
  * never current. Defined once here so the rule can't drift across the four
  * displays that share it — the signature-based analog of the spatial
- * `viewportWithinLoadedData` (MultiRegionDisplayMixin) and `viewportFresh`
- * (StaleViewportRescaleMixin) freshness checks.
+ * `viewportWithinLoadedData` (MultiRegionDisplayMixin) freshness check.
  */
 export function isDataCurrent(
   loadedSignature: string | undefined,

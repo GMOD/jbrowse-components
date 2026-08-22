@@ -84,18 +84,8 @@ export {
 export { foundationDisplayStatusPhase } from './models/foundationDisplayPhase.ts'
 export type { DisplayStatusPhaseFoundation } from './models/foundationDisplayPhase.ts'
 export { default as LegendMixin } from './models/LegendMixin.ts'
-export { default as StaleViewportRescaleMixin } from './models/StaleViewportRescaleMixin.ts'
-export type { DrawnViewport } from './models/StaleViewportRescaleMixin.ts'
 export { squashToHeightCheckboxItem } from './models/squashToHeightMenuItem.ts'
-export {
-  computeRenderTransform,
-  computeTriangleYScalar,
-  viewportMatchesLastDrawn,
-} from './models/renderTransform.ts'
-export type {
-  RenderTransform,
-  RenderTransformInputs,
-} from './models/renderTransform.ts'
+export { computeTriangleYScalar } from './models/triangleYScalar.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 // Lives in `@jbrowse/display-ui` — six plugins render it and it reaches no UI
 // toolkit. Re-exported here because that is the name they all import, and a

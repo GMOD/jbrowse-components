@@ -1,49 +1,73 @@
-import type { HicResultRegion, HicViewBlock } from './RenderHicDataRPC/types.ts'
+import type { HicAxisBlock, HicResultRegion } from './RenderHicDataRPC/types.ts'
 import type { Region } from '@jbrowse/core/util/types'
 
-/**
- * Capture what the view knows about each content block, for the worker that
- * cannot see it — see {@link HicViewBlock} for why both fields have to travel.
- *
- * `offsetPx` comes from the view's own block layout (`ContentBlock.offsetPx`,
- * minus the apex's genome-pixel position `max(0, view.offsetPx)` — the same
- * origin `renderTransform` maps back to) rather than being re-derived in the
- * worker as a running sum of region widths. A running sum silently assumes the
- * regions tile the axis with no gaps, and they don't: `dynamicBlocks` *elides*
- * any displayed region narrower than `minimumBlockWidth` (3px) and
- * `contentBlocks` drops elided blocks, while the ruler still gives them their
- * width. Summing widths therefore slid every region after an elided one leftward
- * of its true position, which shows up on whole-genome Hi-C over an assembly
- * with small scaffolds. Reading the layout instead is also gap-agnostic for
- * anything added later (inter-region padding, say).
- */
-export function calcViewBlocks(
-  contentBlocks: { refName: string; offsetPx: number }[],
-  viewOffsetPx: number,
-): HicViewBlock[] {
-  const apexGenomePx = Math.max(0, viewOffsetPx)
-  return contentBlocks.map(b => ({
-    refName: b.refName,
-    offsetPx: b.offsetPx - apexGenomePx,
-  }))
+interface AxisSourceBlock {
+  refName: string
+  start: number
+  end: number
+  displayedRegionIndex?: number
 }
 
 /**
- * Zip the framework's (renamed) regions back together with the view-side
+ * Resolve each fetched block's position along the view's genomic axis, in bp —
+ * see {@link HicAxisBlock} for why both fields have to travel to the worker.
+ *
+ * The axis is the concatenation of `displayedRegions` in display order, and a
+ * region's axis start is the cumulative bp span of every region before it —
+ * elided or not, since elision removes a region's *block* while the ruler still
+ * gives it its width. Inter-region boundary padding exists only outside the
+ * region run (before genome start / past genome end), so interior layout is
+ * pure cumulative bp and the axis is invariant under pan and zoom: the whole
+ * reason worker output can be genomic rather than fetch-time pixels.
+ *
+ * A block inside a reversed displayed region leads with its `end` (bp runs
+ * leftward inside that region), so its axis edge is measured from the region's
+ * own right end.
+ *
+ * `offsetBp` is returned relative to `originBp`, the leftmost fetched block's
+ * axis position: instance positions are float32 on the GPU, and the axis of a
+ * whole concatenated genome overflows their integer range, while offsets within
+ * one fetched window never do. The model folds `originBp` back in — in double
+ * precision — when it builds the per-frame view transform.
+ */
+export function calcAxisBlocks(
+  blocks: AxisSourceBlock[],
+  displayedRegions: { start: number; end: number; reversed?: boolean }[],
+) {
+  const regionAxisStart: number[] = []
+  let acc = 0
+  for (const r of displayedRegions) {
+    regionAxisStart.push(acc)
+    acc += r.end - r.start
+  }
+  const absolute = blocks.map(b => {
+    const idx = b.displayedRegionIndex!
+    const d = displayedRegions[idx]!
+    const lead = d.reversed ? d.end - b.end : b.start - d.start
+    return { refName: b.refName, offsetBp: regionAxisStart[idx]! + lead }
+  })
+  // blocks arrive in screen order, so the first is the leftmost on the axis
+  const originBp = absolute[0]?.offsetBp ?? 0
+  return {
+    originBp,
+    axisBlocks: absolute.map(({ refName, offsetBp }) => ({
+      refName,
+      offsetBp: offsetBp - originBp,
+    })) as HicAxisBlock[],
+  }
+}
+
+/**
+ * Zip the framework's (renamed) regions back together with the view-side axis
  * layout, resolving the per-region geometry every consumer of the result reads.
  *
- * `combinedOffset` combines the region's pixel offset along the axis with its
- * start expressed in bins (`start / res`), so contacts read out as a continuous
- * panel along the bin axis regardless of region boundaries.
- *
- * The start term is the exact `start / res`, NOT `Math.floor(start / res)`.
- * Flooring snaps data-x=0 to the bin *containing* the block's left edge, but
- * `renderTransform` draws data-x=0 at the block's actual (fractional) start —
- * so a floor shifts the whole matrix `(start % res) / bpPerPx` px right of the
- * ruler (up to one bin), and the shift jitters as `contentBlocks.start` moves
- * while panning. `bin` is an absolute chromosome bin index, so `bin * res` is
- * true genomic bp; subtracting the exact fractional start lands each cell at
- * its real genomic position.
+ * `combinedOffset` combines the region's axis offset (in bins, `offsetBp / res`)
+ * with its start expressed in bins (`start / res`), so contacts read out as a
+ * continuous panel along the bin axis regardless of region boundaries. `bin` is
+ * an absolute chromosome bin index, so `bin * res` is true genomic bp;
+ * subtracting the exact fractional start lands each cell at its real genomic
+ * position, and the cancellation of the two large terms happens in double
+ * precision before anything is cast to float32.
  *
  * `dataXStart`/`dataXEnd` are divided by √2 because that collapses the 45°
  * rotation applied at render time, so a comparison against `ux`/`uy` lines up
@@ -51,18 +75,16 @@ export function calcViewBlocks(
  */
 export function buildResultRegions(
   regions: Region[],
-  viewBlocks: HicViewBlock[],
-  bpPerPx: number,
+  axisBlocks: HicAxisBlock[],
   res: number,
 ): HicResultRegion[] {
-  const pxToBinFactor = bpPerPx / res
   return regions.map((region, i) => {
-    const { refName, offsetPx } = viewBlocks[i]!
+    const { refName, offsetBp } = axisBlocks[i]!
     return {
       refName,
-      dataXStart: offsetPx / Math.SQRT2,
-      dataXEnd: (offsetPx + (region.end - region.start) / bpPerPx) / Math.SQRT2,
-      combinedOffset: offsetPx * pxToBinFactor - region.start / res,
+      dataXStart: offsetBp / Math.SQRT2,
+      dataXEnd: (offsetBp + (region.end - region.start)) / Math.SQRT2,
+      combinedOffset: (offsetBp - region.start) / res,
       reversed: !!region.reversed,
     }
   })

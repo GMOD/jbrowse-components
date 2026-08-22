@@ -7,10 +7,10 @@ import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 // array the renderers and the hit test walk.
 function ldData(
   n: number,
-  width: number,
+  widthBp: number,
   overrides?: Partial<LDDataResult>,
 ): LDDataResult {
-  const uniformW = width / (n * Math.SQRT2)
+  const uniformW = widthBp / (n * Math.SQRT2)
   const snps = Array.from({ length: n }, (_, i) => ({
     id: `rs${i}`,
     refName: 'ctgA',
@@ -26,6 +26,7 @@ function ldData(
     boundaries: Float32Array.from({ length: n + 1 }, (_, i) => i * uniformW),
     numCells: (n * (n - 1)) / 2,
     uniformW,
+    originBp: 0,
     genomicMode: false,
     metric: 'r2',
     hasDprime: true,
@@ -40,8 +41,13 @@ function loadedDisplay({ scrollTo = 0, data = {} } = {}) {
   view.zoomTo(10)
   view.scrollTo(scrollTo)
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
-  display.setRpcData(ldData(4, width, data))
-  display.commitDrawnViewport(display.captureViewport())
+  display.setRpcData(
+    ldData(4, width * view.bpPerPx, {
+      originBp: view.dynamicBlocks.contentBlocks[0]?.start ?? 0,
+      ...data,
+    }),
+    display.ldFetchSignature,
+  )
   return { display, view, width }
 }
 
@@ -78,7 +84,7 @@ test('locusViewportX is the frame the connector lines land in', () => {
   const { display } = loadedDisplay({ scrollTo: -100 })
   const coords = display.connectorLineCoords
 
-  expect(display.renderTransform.viewOffsetX).toBe(100)
+  expect(display.viewTransform.viewOffsetX).toBe(100)
   for (const [i, snp] of display.snps.entries()) {
     expect(display.locusViewportX(snp.refName, snp.start)).toBe(coords[i]!.gx)
   }

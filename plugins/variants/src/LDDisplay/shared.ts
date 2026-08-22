@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isDataCurrent } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -14,7 +14,6 @@ import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
   LegendMixin,
-  StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeTriangleYScalar,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -73,7 +72,6 @@ export default function sharedModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
-      StaleViewportRescaleMixin(),
       LegendMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
@@ -94,6 +92,16 @@ export default function sharedModelFactory(
       rpcData: null as LDDataResult | null,
       /**
        * #volatile
+       * signature of the dynamic-block set + settings `rpcData` was fetched
+       * for; the `dataCurrent`/`svgReady` freshness axis. LD's SNP set is
+       * viewport-defined (the index-mode triangle spans the visible blocks),
+       * so a pan still refetches — but worker output is genomic, so the stale
+       * triangle draws at its own position under the live transform while the
+       * refetch runs.
+       */
+      loadedSignature: undefined as string | undefined,
+      /**
+       * #volatile
        * Locus (`refName:start`) of the focal SNP whose LD row+column is
        * emphasized, or undefined. Keyed by locus rather than array index so
        * the selection survives a re-fetch that reorders SNPs.
@@ -101,8 +109,9 @@ export default function sharedModelFactory(
       focalSnpLocus: undefined as string | undefined,
     }))
     .actions(self => ({
-      setRpcData(data: LDDataResult | null) {
+      setRpcData(data: LDDataResult | null, signature?: string) {
         self.rpcData = data
+        self.loadedSignature = data ? signature : undefined
       },
       setFocalSnp(snp: LDSnp | undefined) {
         self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
@@ -232,17 +241,35 @@ export default function sharedModelFactory(
       /**
        * #getter
        * The shared freshness hook, read by `GlobalFetchMixin.svgReady`. The
-       * fetch commits `rpcData` even
-       * for an empty viewport, so this flips true once data has loaded AND that
-       * data was fetched for the current viewport. Gating on freshness — not
-       * merely `rpcData !== null` — keeps off-screen `svgReady` from resolving on
-       * data left over from the pre-pan/zoom viewport during the debounced-refetch
-       * window (`commitDrawnViewport` runs right after `setRpcData`). Without the
-       * override the mixin default (`false`) leaves `svgReady` unable to resolve
-       * on a successful load, hanging SVG export.
+       * fetch commits `rpcData` even for an empty viewport, so this flips true
+       * once data has loaded AND it was fetched for the current block set and
+       * settings (`ldFetchSignature`). Gating on the signature — not merely
+       * `rpcData !== null` — keeps off-screen `svgReady` from resolving on a
+       * triangle left over from the pre-pan/zoom viewport, or from before a
+       * settings change, during the debounced-refetch window. Without the
+       * override the mixin default (`false`) leaves `svgReady` unable to
+       * resolve on a successful load, hanging SVG export.
        */
       get dataCurrent(): boolean {
-        return self.rpcData !== null && self.viewportFresh
+        return (
+          self.rpcData !== null &&
+          isDataCurrent(self.loadedSignature, this.ldFetchSignature)
+        )
+      },
+      /**
+       * #getter
+       * Signature of the fetch the current view and settings call for: the
+       * dynamic-block keys plus the serialized `rpcProps()`. The settings term
+       * is what keeps `svgReady` from capturing a matrix computed under the
+       * filters the user just changed.
+       */
+      get ldFetchSignature(): string | undefined {
+        const view = self.lgv
+        return view.initialized
+          ? `${view.dynamicBlocks.contentBlocks
+              .map(b => b.key)
+              .join(',')}|${self.rpcPropsCacheKey}`
+          : undefined
       },
       /**
        * #getter
@@ -479,13 +506,30 @@ export default function sharedModelFactory(
       // fields (signedLD, uniformW) ride with the payload instead — see
       // LDUploadData.
       get renderState(): LDRenderState {
-        const { scale, viewOffsetX } = self.renderTransform
+        const { viewScale, viewOffsetX } = this.viewTransform
         return {
           yScalar: this.yScalar,
           canvasWidth: this.canvasWidth,
           canvasHeight: this.canvasHeight,
-          viewScale: scale,
+          viewScale,
           viewOffsetX,
+        }
+      },
+      /**
+       * #getter
+       * The per-frame map from the payload's pre-rotation data space
+       * (origin-relative bp / √2) to canvas px, shared by the render state, the
+       * hit test, the overlays and the SVG export so none of them can disagree.
+       * Pure live-view arithmetic; the one payload-derived term, `originBp`,
+       * folds the payload's own axis anchor back in — in double precision — so
+       * a stale triangle draws at its genomic position while a refetch runs.
+       */
+      get viewTransform() {
+        const { bpPerPx, offsetPx } = self.lgv
+        const originBp = self.rpcData?.originBp ?? 0
+        return {
+          viewScale: 1 / bpPerPx,
+          viewOffsetX: originBp / bpPerPx - offsetPx,
         }
       },
       /**
@@ -526,15 +570,15 @@ export default function sharedModelFactory(
        * index-mode connector lines anchor through this.
        *
        * It rides the same forward transform the shader does — `cellWidth`
-       * (uniformW) is the fetch-time cell width and `renderTransform` rescales
-       * it to the live viewport, exactly like `hitTest` inverts it. Deriving
-       * the column pitch from the *current* block width instead applies the
-       * zoom twice, sliding everything anchored here off the triangle for the
-       * whole debounce+RPC window after a zoom.
+       * (uniformW) is the payload's cell span in bp and `viewTransform` maps it
+       * to the live viewport, exactly like `hitTest` inverts it. Deriving the
+       * column pitch from the *current* block width instead applies the zoom
+       * twice, sliding everything anchored here off the triangle for the whole
+       * debounce+RPC window after a zoom.
        */
       columnX(column: number) {
-        const { scale, viewOffsetX } = self.renderTransform
-        return column * self.cellWidth * Math.SQRT2 * scale + viewOffsetX
+        const { viewScale, viewOffsetX } = this.viewTransform
+        return column * self.cellWidth * Math.SQRT2 * viewScale + viewOffsetX
       },
       /**
        * #method
@@ -566,11 +610,11 @@ export default function sharedModelFactory(
        * during the debounce+RPC window.
        */
       cellToScreen(x: number, y: number) {
-        const { scale, viewOffsetX } = self.renderTransform
+        const { viewScale, viewOffsetX } = this.viewTransform
         return {
-          x: ((x + y) / Math.SQRT2) * scale + viewOffsetX,
+          x: ((x + y) / Math.SQRT2) * viewScale + viewOffsetX,
           y:
-            ((y - x) / Math.SQRT2) * scale * this.yScalar +
+            ((y - x) / Math.SQRT2) * viewScale * this.yScalar +
             this.effectiveLineZoneHeight,
         }
       },
@@ -590,10 +634,10 @@ export default function sharedModelFactory(
        * the coordinates now, which does catch it.
        */
       screenToCell(mouseX: number, mouseY: number) {
-        const { scale, viewOffsetX } = self.renderTransform
-        const dataX = (mouseX - viewOffsetX) / scale
+        const { viewScale, viewOffsetX } = this.viewTransform
+        const dataX = (mouseX - viewOffsetX) / viewScale
         const dataY =
-          (mouseY - this.effectiveLineZoneHeight) / scale / this.yScalar
+          (mouseY - this.effectiveLineZoneHeight) / viewScale / this.yScalar
         return {
           x: (dataX - dataY) / Math.SQRT2,
           y: (dataX + dataY) / Math.SQRT2,

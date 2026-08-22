@@ -5,12 +5,11 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import { getRpcSessionId, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId, getSession, isDataCurrent } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
   LegendMixin,
-  StaleViewportRescaleMixin,
   TrackHeightMixin,
   computeTriangleYScalar,
   installGlobalFetchAutorun,
@@ -18,7 +17,7 @@ import {
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 import { autorun } from 'mobx'
 
-import { calcViewBlocks } from '../regionOffsets.ts'
+import { calcAxisBlocks } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
 import { hicScreenToData } from './hicTransform.ts'
@@ -73,7 +72,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       BaseDisplay,
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
-      StaleViewportRescaleMixin(),
       LegendMixin(),
       types.model({
         /**
@@ -91,6 +89,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #volatile
        */
       rpcData: null as HicDataResult | null,
+      /**
+       * #volatile
+       * signature of the static-block set + binsize + normalization `rpcData`
+       * was fetched for; the `dataCurrent`/`svgReady` freshness axis, the same
+       * shape as arc's `loadedRegionSignature`. Worker output is genomic, so a
+       * pan inside the loaded blocks is a redraw — only this signature moving
+       * refetches.
+       */
+      loadedSignature: undefined as string | undefined,
       /**
        * #volatile
        */
@@ -198,19 +205,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * The shared freshness hook, HiC's way: the contact matrix is current once
-       * `rpcData` is set (the fetch commits it even for an empty viewport) AND
-       * that data was fetched for the current viewport. Gating on freshness —
-       * not merely `rpcData !== null` — keeps off-screen `svgReady` from
-       * resolving on a matrix left over from the pre-pan/zoom viewport during
-       * the debounced-refetch window (`commitDrawnViewport` runs right after
-       * `setRpcData`, so the two move together).
-       */
-      get dataCurrent(): boolean {
-        return self.rpcData !== null && self.viewportFresh
-      },
       /**
        * #getter
        * The normalization the loaded matrix actually carries, which differs from
@@ -378,6 +372,69 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Signature of the fetch the current view calls for: the static-block set
+       * (their keys encode assembly, refName, span and orientation), the
+       * binsize, and the normalization. `dataCurrent` compares it against
+       * `loadedSignature`, so a pan inside the loaded blocks is a pure redraw
+       * and only a real change — a block entering, a zoom (static blocks
+       * re-snap, and the binsize may step), a normalization flip — refetches.
+       * Undefined until the view is measured and the `.hic` header has landed.
+       *
+       * `activeNormalization` reads the fetched header list, which is safe here
+       * for the reason ARCHITECTURE.md's loop-trap section gives: the contact
+       * fetch this signature keys never writes `availableNormalizations`, so a
+       * mismatch converges in one fetch.
+       */
+      get hicFetchSignature(): string | undefined {
+        const view = self.lgv
+        const resolution = self.effectiveResolution
+        return view.initialized && resolution !== undefined
+          ? `${view.staticBlocks.contentBlocks
+              .map(b => b.key)
+              .join(',')}|res:${resolution}|norm:${self.activeNormalization}`
+          : undefined
+      },
+      /**
+       * #getter
+       * The per-frame map from the payload's pre-rotation data space
+       * (origin-relative axis bp / √2) to canvas px, read by the render state,
+       * the hit test and the SVG export so the three cannot disagree. Worker
+       * output is genomic, so this is pure live-view arithmetic — pan and zoom
+       * move it every frame with no refetch — and the one payload-derived term,
+       * `originBp`, folds the axis origin back in here, in double precision,
+       * which is what keeps float32 instance positions small (see
+       * `calcAxisBlocks`). Stale data during a refetch simply draws at its own
+       * genomic position under the live map.
+       */
+      get viewTransform() {
+        const { bpPerPx, offsetPx } = self.lgv
+        const originBp = self.rpcData?.originBp ?? 0
+        return {
+          viewScale: 1 / bpPerPx,
+          viewOffsetX: originBp / bpPerPx - offsetPx,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The shared freshness hook, HiC's way: the contact matrix is current
+       * once `rpcData` is set (the fetch commits it even for an empty viewport)
+       * AND it was fetched for the current block set, binsize and
+       * normalization. A pan inside the loaded blocks stays current — the
+       * redraw needs no refetch — while off-screen `svgReady` still waits out
+       * any window where the signature has moved and the refetch is pending.
+       */
+      get dataCurrent(): boolean {
+        return (
+          self.rpcData !== null &&
+          isDataCurrent(self.loadedSignature, self.hicFetchSignature)
+        )
+      },
+    }))
+    .views(self => ({
       // User-controlled settings that drive a refetch: spread into the RPC
       // payload via `...self.rpcProps()` and read once by the afterAttach
       // autorun for dependency tracking, so any field added here flows into
@@ -392,9 +449,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .views(self => ({
       /**
        * #method
-       * Inverse of the render transform: takes mouse coords (canvas-relative)
+       * Inverse of the view transform: takes mouse coords (canvas-relative)
        * and returns the contact bin under the cursor, or undefined. The
-       * forward transform lives in `renderTransform`; this is its inverse so
+       * forward transform is `viewTransform`; this is its inverse so
        * hit-testing always matches what was drawn.
        */
       hitTest(mouseX: number, mouseY: number): HicContactItem | undefined {
@@ -402,9 +459,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (!data || data.numContacts === 0) {
           return undefined
         }
-        const { scale, viewOffsetX } = self.renderTransform
+        const { viewScale, viewOffsetX } = self.viewTransform
         const { ux, uy } = hicScreenToData(mouseX, mouseY, {
-          viewScale: scale,
+          viewScale,
           viewOffsetX,
           yScalar: self.yScalar,
         })
@@ -422,14 +479,14 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * the payload instead (see HicUploadData).
        */
       get renderState(): HicRenderState {
-        const { scale, viewOffsetX } = self.renderTransform
+        const { viewScale, viewOffsetX } = self.viewTransform
         return {
           yScalar: self.yScalar,
           canvasWidth: self.canvasWidth,
           canvasHeight: self.height,
           colorMaxScore: self.colorMaxScore,
           useLogScale: self.useLogScale,
-          viewScale: scale,
+          viewScale,
           viewOffsetX,
         }
       },
@@ -454,8 +511,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       /**
        * #action
        */
-      setRpcData(data: HicDataResult) {
+      setRpcData(data: HicDataResult, signature: string) {
         self.rpcData = data
+        self.loadedSignature = signature
       },
       /**
        * #action
@@ -598,6 +656,23 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         this.setResolutionIdx(self.effectiveResolutionIdx + delta)
       },
     }))
+    .actions(self => {
+      const { reload: superReload } = self
+      return {
+        /**
+         * #action
+         * `prepare` gates on `dataCurrent`, which reads `loadedSignature`, so a
+         * reload must invalidate that signal too — bumping `reloadCounter`
+         * alone re-runs the autorun and leaves `prepare` declining (the same
+         * shape as `ArcFetchModel.reload`). `rpcData` is kept, so the stale
+         * matrix stays on screen under the loading overlay instead of blanking.
+         */
+        reload() {
+          superReload()
+          self.loadedSignature = undefined
+        },
+      }
+    })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
@@ -721,50 +796,60 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         )
 
         installGlobalFetchAutorun(self, {
-          // effectiveResolution is undefined until availableResolutions arrives
-          // from CoreGetInfo; reading it gates the fetch and tracks resolution
-          // (bpPerPx + resolutionBias) so a zoom or step refires. The skeleton
-          // tracks rpcProps() (normalization), reloadCounter, the viewport and
-          // isMinimized for us, so the reads below that repeat one of those cost
-          // nothing and the rest are what this display alone knows.
+          // `dataCurrent` is the gate and reads the same signature the commit
+          // stamps, so a pan inside the loaded static blocks declines while a
+          // block entering, a zoom or a normalization flip fetches. The
+          // signature reads `effectiveResolution`, which is undefined until
+          // availableResolutions arrives from CoreGetInfo — that is the
+          // prerequisite gate (`awaitingPrerequisite`), and its arrival rewakes
+          // this run through the same tracked read.
           prepare: () => {
+            const signature = self.hicFetchSignature
             const resolution = self.effectiveResolution
-            if (self.isMinimized || resolution === undefined) {
+            if (
+              self.isMinimized ||
+              resolution === undefined ||
+              signature === undefined ||
+              self.dataCurrent
+            ) {
               return undefined
             }
-            const contentBlocks = self.lgv.dynamicBlocks.contentBlocks
-            if (!contentBlocks.length) {
+            const blocks = self.lgv.staticBlocks.contentBlocks
+            if (!blocks.length) {
               return undefined
             }
-            const drawn = self.captureViewport()
+            // What only the view knows, resolved here because the worker sees
+            // neither the displayed-region axis nor the pre-rename refNames.
+            // See HicAxisBlock.
+            const { originBp, axisBlocks } = calcAxisBlocks(
+              blocks,
+              self.lgv.displayedRegions,
+            )
             return {
-              drawn,
+              signature,
               resolution,
-              regions: [...contentBlocks],
-              // What only the view knows, captured with the viewport and for the
-              // same reason — the worker sees neither the block layout nor the
-              // pre-rename refNames. See HicViewBlock.
-              viewBlocks: calcViewBlocks(contentBlocks, drawn.offsetPx),
+              regions: [...blocks],
+              axisBlocks,
+              originBp,
             }
           },
-          run: async ({ drawn, resolution, regions, viewBlocks }, ctx) =>
+          run: async ({ resolution, regions, axisBlocks, originBp }, ctx) =>
             await getSession(self).rpcManager.call(
               getRpcSessionId(self),
               'RenderHicData',
               {
                 adapterConfig: self.adapterConfig,
                 regions,
-                viewBlocks,
-                bpPerPx: drawn.bpPerPx,
+                axisBlocks,
+                originBp,
                 resolution,
                 ...self.rpcProps(),
                 stopToken: ctx.stopToken,
                 statusCallback: ctx.statusCallback,
               },
             ),
-          commit: (result, { drawn }) => {
-            self.setRpcData(result)
-            self.commitDrawnViewport(drawn)
+          commit: (result, { signature }) => {
+            self.setRpcData(result, signature)
           },
           delay: 1000,
           name: 'LinearHicDisplayRender',

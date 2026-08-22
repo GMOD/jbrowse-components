@@ -175,7 +175,8 @@ real: the fetch can't start until `CoreGetInfo` resolves the file's resolution
 list, so `isLoading` is false with nothing painted for that round-trip, and
 without `!canvasDrawn` the track reads as blank. The global family does NOT fold
 in a staleness axis the way MultiRegion does — it keeps the last frame up during
-a refetch (`StaleViewportRescaleMixin` rescales it), so a pan shows no scrim
+a refetch (worker output is genomic, so it draws correctly under the live view
+transform), so a pan shows no scrim
 beyond the `isLoading` window.
 
 `rendersCanvas` (default true) gates the clause so a display showing a static

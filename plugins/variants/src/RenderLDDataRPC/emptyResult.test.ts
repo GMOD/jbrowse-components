@@ -55,7 +55,7 @@ async function run(regions: Region[], useGenomicPositions: boolean) {
         sessionId: 'test',
         adapterConfig: { type: 'VcfTabixAdapter' },
         regions,
-        bpPerPx: 1,
+        originBp: 0,
         ldMetric: 'r2',
         minorAlleleFrequencyFilter: 0.5,
         lengthCutoffFilter: 0,

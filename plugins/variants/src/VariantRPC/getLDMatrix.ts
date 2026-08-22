@@ -286,7 +286,6 @@ export async function getLDMatrix({
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
-    bpPerPx: number
     minorAlleleFrequencyFilter: number
     lengthCutoffFilter: number
     hweFilterThreshold?: number

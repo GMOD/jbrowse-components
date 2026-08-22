@@ -86,9 +86,9 @@ is the result rather than a side effect.
 Last of the render-path simplifications, and incrementally — one alignments
 feature at a time behind the parity suite, because it is the one that touches 46
 files. The upload-model collapse ahead of it is done (ADR-078,
-ADR-079; the `retainRegion` transaction retired with it, 2026-08-21); take
-[absolute-coordinates-for-hic-and-ld](absolute-coordinates-for-hic-and-ld.md)
-before this one.
+ADR-079; the `retainRegion` transaction retired with it, 2026-08-21), and
+absolute coordinates for HiC and LD shipped the same day — this is the last
+render-path simplification standing.
 
 It also upgrades the claim the architecture can make, from "we single-source
 shaders across two GPU APIs" — a toolchain claim — to "a display declares its

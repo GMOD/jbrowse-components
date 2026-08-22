@@ -21,9 +21,8 @@ Three questions:
 
 The GPU lifecycle around all of it is
 [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md); the rotated-triangle
-transform is shared with the LD heatmap and lives in
-`plugins/linear-genome-view/src/BaseLinearDisplay/models/renderTransform.ts`,
-which is where the depth on both belongs.
+forward/inverse pair lives in `plugins/hic/src/LinearHicDisplay/hicTransform.ts`
+(the LD heatmap keeps its own spelling of the same pair on its model).
 
 ## The request
 
@@ -57,8 +56,9 @@ settles, hanging the whole view's export.
 ![How a contact becomes a cell, and a cursor becomes a contact](diagrams/hic-pack.svg)
 
 The naive version ships contacts as records and lays them out on the main
-thread. What is here instead is a screen-space geometry, already in the
-shader's own struct.
+thread. What is here instead is a genomic geometry — origin-relative axis bp,
+so pan is a redraw and a stale matrix draws at its own position during a
+refetch — already in the shader's own struct.
 
 **Region membership is a property of the query, not of a contact**, so it
 travels as a run table. Every per-region layout term then hoists out of the

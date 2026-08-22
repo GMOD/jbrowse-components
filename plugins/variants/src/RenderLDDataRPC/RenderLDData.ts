@@ -8,7 +8,14 @@ import type { Region } from '@jbrowse/core/util'
 export interface RenderLDDataArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  bpPerPx: number
+  /**
+   * Absolute axis-bp position of the first fetched block's leading edge, which
+   * the payload's pre-rotation coordinates are relative to. Echoed into the
+   * result untouched: the model needs the origin the *payload* was laid out
+   * against — not a live re-derivation — to place a stale triangle correctly
+   * while a refetch is in flight.
+   */
+  originBp: number
   ldMetric: LDMetric
   minorAlleleFrequencyFilter: number
   lengthCutoffFilter: number

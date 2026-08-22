@@ -8,30 +8,40 @@ import type { Region } from '@jbrowse/core/util'
  * It travels beside `regions` rather than on them because the RPC framework
  * owns that array: `RpcMethodTypeWithRenameRegions` rewrites every
  * `regions[].refName` into the adapter's naming scheme during serialization,
- * and it knows nothing of screen layout. Both fields are casualties of that:
+ * and it knows nothing of the view's axis. Both fields are casualties of that:
  *
  * - `refName` — a Juicer `.hic` keyed on `1`/`2`/`X` against an hg38 assembly
  *   keyed on `chr1` is the ordinary case, not a corner one, so echoing the
  *   renamed name back labelled a hover `1:…` under a ruler reading `chr1:…`.
- * - `offsetPx` — `dynamicBlocks` *elides* any displayed region narrower than
- *   `minimumBlockWidth` and `contentBlocks` drops elided blocks, while the ruler
- *   still gives them their width. A running sum of region widths in the worker
- *   therefore slid every region after an elided one leftward of its true
- *   position. See `calcViewBlocks`.
+ * - `offsetBp` — where this block sits along the view's concatenated genomic
+ *   axis, which depends on every displayed region before it (elided ones
+ *   included, since the ruler still gives them their width). See
+ *   `calcAxisBlocks`, including for why it is relative to
+ *   {@link RenderHicDataArgs.originBp}.
  */
-export interface HicViewBlock {
+export interface HicAxisBlock {
   /** the refName the view displays, before adapter renaming */
   refName: string
-  /** screen-axis position in fetch-time pixels from the apex (data-x = 0) */
-  offsetPx: number
+  /**
+   * axis position of the block's leading (leftmost-on-screen) edge in bp,
+   * relative to `originBp`
+   */
+  offsetBp: number
 }
 
 export interface RenderHicDataArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
-  /** parallel to `regions`; see {@link HicViewBlock} */
-  viewBlocks: HicViewBlock[]
-  bpPerPx: number
+  /** parallel to `regions`; see {@link HicAxisBlock} */
+  axisBlocks: HicAxisBlock[]
+  /**
+   * absolute axis-bp position of the leftmost fetched block, which every
+   * `axisBlocks[].offsetBp` is relative to. The worker echoes it into the
+   * result untouched: the model needs the origin the *payload* was packed
+   * against — not a live re-derivation — to place stale contacts correctly
+   * while a refetch is in flight.
+   */
+  originBp: number
   resolution: number
   normalization: string
 }
@@ -57,14 +67,15 @@ export interface HicContactItem {
  * per-contact overhead.
  */
 export interface HicResultRegion {
-  /** the view's refName, forwarded from {@link HicViewBlock} */
+  /** the view's refName, forwarded from {@link HicAxisBlock} */
   refName: string
   /**
-   * Pre-rotation data-x span, in the same coordinate space as `positions[]`.
-   * Hover buckets a cursor into a region against it, and the reversed-region
-   * mirror reflects within it. Spans are not necessarily contiguous — an elided
-   * region leaves a real gap (see {@link HicViewBlock}), which is why both ends
-   * are carried rather than reading the next region's start as this one's end.
+   * Pre-rotation data-x span, in the same coordinate space as `positions[]`
+   * (origin-relative axis bp / √2). Hover buckets a cursor into a region
+   * against it, and the reversed-region mirror reflects within it. Spans are
+   * not necessarily contiguous — an elided region leaves a real gap (see
+   * {@link HicAxisBlock}), which is why both ends are carried rather than
+   * reading the next region's start as this one's end.
    */
   dataXStart: number
   dataXEnd: number
@@ -78,11 +89,8 @@ export interface HicResultRegion {
    * The mirror this describes is already baked into `positions[]` (see
    * `executeRenderHicData`), so renderers draw the array as-is and stay
    * orientation-agnostic; hover needs it to un-mirror a cursor back to a bin
-   * (`contactLookup.ts`).
-   *
-   * Baking it at fetch time — rather than mirroring live off the view — is
-   * deliberate: `renderTransform` rescales *stale* pixels mid-fetch, and a live
-   * read would mirror against a viewport the positions weren't built for.
+   * (`contactLookup.ts`). The reflection is within the region's own axis span,
+   * which is viewport-invariant, so baking it costs nothing under pan or zoom.
    * Mixed orientations are fine; each region mirrors only within its own span.
    */
   reversed: boolean
@@ -124,7 +132,10 @@ export interface HicDataResult {
    */
   maxScore: number
   percentile95: number
+  /** one bin's span in pre-rotation data units: `resolution / √2` */
   binWidth: number
+  /** echoed from {@link RenderHicDataArgs.originBp}; see its note */
+  originBp: number
   /**
    * The binsize this matrix was actually fetched at. `bin1`/`bin2` are
    * chromosome-absolute bin indices, so a contact's genomic start is
@@ -160,7 +171,7 @@ export interface HicDataResult {
    * Float32's ~7 digits cannot round-trip that. True of the bin — but
    * `instances` never stores it: it stores `(bin + combinedOffset) * binWidth`,
    * and `combinedOffset ≈ -start/res` cancels the large term *before* the cast,
-   * so what survives the float32 is the small on-screen coordinate.
+   * so what survives the float32 is the small within-window coordinate.
    * `contactLookup.ts` inverts it against this run table, and the error is
    * ≤1.4e-3 bins across the whole reachable range (fine binsizes, sub-pixel
    * bins, mirrored regions, 4k-wide viewports) — see `binRecovery.test.ts`.

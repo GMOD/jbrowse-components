@@ -46,6 +46,8 @@ export interface LDDataResult {
   boundaries: Float32Array
   numCells: number
   uniformW: number
+  // echoed from RenderLDDataArgs.originBp; see its note
+  originBp: number
   // Whether the cells above were actually laid out at genomic positions. A
   // multi-region viewport has no single bp axis to lay them on, so a
   // `useGenomicPositions` request falls back to uniform cells there — the

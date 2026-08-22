@@ -4,7 +4,7 @@
 // labels all go through this so they can't drift — an earlier bug had the LD
 // connector on raw offsetPx and its labels on a clamped offsetAdj, misaligning
 // them by |offsetPx| when scrolled left of genome start. The gap when
-// offsetPx < 0 belongs to the frame (LD's renderTransform.viewOffsetX, the
+// offsetPx < 0 belongs to the frame (LD's viewTransform.viewOffsetX, the
 // matrix's column origin), never clamped here; clamping would double-count it.
 interface ViewLike {
   offsetPx: number

@@ -13,7 +13,7 @@ const FocalSnpHighlight = observer(function FocalSnpHighlight({
   model: SharedLDModel
   height: number
 }) {
-  const { rpcData, renderTransform, focalSnpIndex: f } = model
+  const { rpcData, viewTransform, focalSnpIndex: f } = model
   const boundaries = rpcData?.boundaries
   if (!boundaries || f < 0 || f + 1 >= boundaries.length) {
     return null
@@ -33,7 +33,10 @@ const FocalSnpHighlight = observer(function FocalSnpHighlight({
       : apex
   const strokeWidth = Math.min(
     40,
-    Math.max(4, (boundaries[f + 1]! - boundaries[f]!) * renderTransform.scale),
+    Math.max(
+      4,
+      (boundaries[f + 1]! - boundaries[f]!) * viewTransform.viewScale,
+    ),
   )
 
   return (
