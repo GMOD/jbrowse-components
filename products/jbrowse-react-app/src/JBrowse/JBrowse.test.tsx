@@ -1,6 +1,6 @@
 import { Suspense, createRef } from 'react'
 
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 
 import JBrowse from './JBrowse.tsx'
 
@@ -28,8 +28,11 @@ const assemblies = [
   },
 ]
 
-test('<JBrowse /> maps the views prop into session.views', () => {
-  const ref = createRef<ViewModel>()
+// the ref arrives a frame after mount, and now a frame after the engine's view
+// and display state models resolve as well — `<JBrowse>` renders nothing until
+// then
+test('<JBrowse /> maps the views prop into session.views', async () => {
+  const ref = createRef<ViewModel | undefined>()
   render(
     <Suspense fallback={<div>Loading...</div>}>
       <JBrowse
@@ -46,6 +49,9 @@ test('<JBrowse /> maps the views prop into session.views', () => {
     </Suspense>,
   )
 
+  await waitFor(() => {
+    expect(ref.current).toBeDefined()
+  })
   const { views } = ref.current!.session
   expect(views).toHaveLength(1)
   expect(views[0]!.type).toBe('LinearGenomeView')
@@ -53,8 +59,8 @@ test('<JBrowse /> maps the views prop into session.views', () => {
   expect(views[0]!.init).toEqual({ assembly: 'volvox', loc: 'ctgA:1-10' })
 })
 
-test('<JBrowse /> honors sessionName without any views', () => {
-  const ref = createRef<ViewModel>()
+test('<JBrowse /> honors sessionName without any views', async () => {
+  const ref = createRef<ViewModel | undefined>()
   render(
     <Suspense fallback={<div>Loading...</div>}>
       <JBrowse
@@ -66,5 +72,8 @@ test('<JBrowse /> honors sessionName without any views', () => {
     </Suspense>,
   )
 
+  await waitFor(() => {
+    expect(ref.current).toBeDefined()
+  })
   expect(ref.current!.session.name).toBe('my session')
 })
