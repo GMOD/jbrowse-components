@@ -14,6 +14,6 @@ not, and the view reads that absence as "don't pin" — so size the box for the
 tracks you mean to show if the ruler has to stay in view.
 
 `drawerViewHeight` is the one height the component sets itself, and it is not
-this one: it applies only while a drawer widget is open, and the element it
-clamps is `overflow: hidden`, so a taller track set is cut off rather than
-scrolled.
+this one: it applies only while a drawer widget is open, clamping the view so
+the drawer has a definite height to scroll within. The view scrolls inside that
+clamp too, so a track set taller than it stays reachable.

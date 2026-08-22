@@ -249,7 +249,8 @@ reader's.
 normally content-height, so it grows with the page, but a view with an open
 drawer widget has to be clamped to something for the drawer's own scrolling to
 have a definite height. This is that clamp, and it applies only while a drawer
-is open.
+is open. The view scrolls inside it, so clamping to less than the track set is
+tall costs you nothing but the scrollbar.
 
 `@jbrowse/react-app2` adds `onPluginsUpdated`. The app cannot rebuild its own
 plugin manager — it never fetches plugins, and it does not own the React tree it

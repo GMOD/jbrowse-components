@@ -30,7 +30,7 @@ before anyone noticed.
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
-| [A drawer over a tall track set clips](#a-drawer-over-a-tall-track-set-clips-what-it-cannot-show) | embedded, LGV | the clip is measured; `overflowY: auto` on the clamped branch, then decide the prop |
+| [A fixed height on the embedded LGV, or a host box](#decide-whether-a-fixed-height-becomes-a-prop-on-the-embedded-lgv) | embedded, LGV | the clip is fixed; what is open is whether `height` becomes a prop |
 | [An arc's right-click offers nothing](#give-an-arcs-right-click-something-to-offer) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
@@ -205,17 +205,16 @@ gate has to exempt them, which is its own small design question. Nor are the two
 surviving `"showLabels": "auto"` reads in that file drift: that is the current
 slot name under a current value, so nobody should "fix" those either.
 
-### A drawer over a tall track set clips what it cannot show
+### Decide whether a fixed height becomes a prop on the embedded LGV
 
-`drawerViewHeight` (default `100vh`) is the only height the embedded LGV sets
-for itself, and it applies only while a drawer widget is open
-(`JBrowseLinearGenomeView.tsx`). The element it clamps is `overflow: hidden`, so
-a track set taller than the clamp is cut off with no scrollbar and no scrollable
-ancestor — 264px of content inside a 200px clamp, nothing below the fold
-reachable. `overflowY: auto` on the clamped branch is the fix, and it is the
-whole fix.
+The clip this entry started as is fixed: the box `drawerViewHeight` clamps
+carries `overflowY: auto` while a drawer is open, and
+`JBrowseLinearGenomeView.test.tsx` pins it. What is left is the naming question
+underneath.
 
-The unclamped path is fine, and it is already the answer to
+`drawerViewHeight` (default `100vh`) is still the only height the embedded LGV
+sets for itself, and it applies only while a drawer widget is open. The
+unclamped path is fine, and it is already the answer to
 [#4526](https://github.com/GMOD/jbrowse-components/issues/4526): a host box with
 a height of its own bounds the view and scrolls it. It works because the chain
 of `height: 100%` stops at the MUI `ScopedCssBaseline` the component mounts
@@ -237,8 +236,7 @@ a route to them. The ruler scrolling away with the first track is deliberate:
 `EmbeddedSessionMixin` does not compose, and the LGV getter reads its absence as
 "don't pin" (`LinearGenomeView/model.ts`). PR #4237 merged and is the web half.
 
-No test anywhere references `drawerViewHeight` — not the clamp, not the
-content-height default.
+Nothing tests the content-height default, only the clamp.
 
 ### Give an arc's right-click something to offer
 

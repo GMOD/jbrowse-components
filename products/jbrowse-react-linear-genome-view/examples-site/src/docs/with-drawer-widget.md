@@ -4,8 +4,10 @@ minimizes and closes.
 
 The view is otherwise content-height, so it can sit in a page that grows with
 it. `drawerViewHeight` on `createViewState` is the height it is clamped to
-_while a drawer is open_, giving the drawer a definite scroll region. It accepts
-any CSS height (`'600px'`, `'80%'`) and defaults to `'100vh'`.
+_while a drawer is open_, giving the drawer a definite scroll region. Both sides
+of that clamp scroll — the drawer, and the view beside it when the track set is
+taller. It accepts any CSS height (`'600px'`, `'80%'`) and defaults to
+`'100vh'`.
 
 `init.tracklist` opens the track selector on load. Prefer it to calling
 [`activateTrackSelector`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-activatetrackselector)
