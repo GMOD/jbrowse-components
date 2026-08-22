@@ -83,11 +83,58 @@ test('enter finds what the dropdown listed, searching: apple', async () => {
   await findByText('Apple3', ...opts)
 }, 70_000)
 
-test('dialog with multiple results with jb1 config, searching: eden.1', async () => {
-  const { input, findByText } = await doSetup(jb1_config)
-  typeAndEnter({ input, value: 'eden.1' })
-  await findByText('Search results', ...opts)
-}, 70_000)
+// The jb1 names index carries EDEN.1 four times, once per track that indexed
+// it, all at ctgA:1049..9000. Four rows whose only varying column is Track is
+// not a question worth asking, and asking it was issue #4302.
+test('hits agreeing on a destination navigate rather than ask', async () => {
+  const { session, view } = getTestSession(jb1_config)
+  view.setWidth(800)
+
+  await view.navToLocString('eden.1', 'volvox')
+
+  expect(view.visibleLocStrings).toBe('ctgA:1..10,590')
+  expect(session.queueOfDialogs).toHaveLength(0)
+}, 40_000)
+
+// Two of the four EDEN.1 entries are indexed under JBrowse 1 track names this
+// config does not claim (ReadingFrame, volvox_gff3_tabix_html), and the first
+// of them leads the list. Travelling through it would navigate and then drop a
+// "could not resolve identifier" snackbar over the result.
+test('an agreeing group skips a track no config claims', async () => {
+  const { view } = getTestSession(jb1_config)
+  view.setWidth(800)
+
+  await view.navToLocString('eden.1', 'volvox')
+
+  expect(view.tracks.map(t => t.configuration.trackId)).toEqual([
+    'gff3tabix_genes',
+  ])
+}, 40_000)
+
+// ...and a track already on screen outranks that, so the search does not stack
+// a second gene track under the one being read.
+test('an agreeing group navigates through a track already open', async () => {
+  const { view } = getTestSession(jb1_config)
+  view.setWidth(800)
+  view.showTrack('bedtabix_genes')
+
+  await view.navToLocString('eden.1', 'volvox')
+
+  expect(view.tracks.map(t => t.configuration.trackId)).toEqual([
+    'bedtabix_genes',
+  ])
+}, 40_000)
+
+// the other half of the same branch: hits that name one feature in genuinely
+// different places are a real question, and still get the picker
+test('hits in different places still raise the picker', async () => {
+  const { session, view } = getTestSession()
+  view.setWidth(800)
+
+  await view.navToLocString('seg02', 'volvox')
+
+  expect(session.queueOfDialogs).toHaveLength(1)
+}, 40_000)
 
 test('test navigation with the search input box, {volvox2}ctgB:1..200', async () => {
   const { view, input } = await doSetup()

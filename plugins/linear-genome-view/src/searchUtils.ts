@@ -2,10 +2,12 @@ import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
 import {
   MAX_GLOB_REGIONS,
   UnknownRefNameError,
+  assembleLocString,
   dedupe,
   getEnv,
   getSession,
   matchRefNames,
+  parseLocString,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -60,13 +62,143 @@ export async function navigateToSelectedOption({
   if (option.hasLocation()) {
     await navToOption({ option, model, assemblyName })
   } else if (option.results?.length) {
-    model.setSearchResults(option.results, option.getLabel(), assemblyName)
+    await showSearchResults({
+      results: option.results,
+      query: option.getLabel(),
+      model,
+      assemblyName,
+    })
   } else {
     await handleSelectedRegion({
       input: option.getLabel(),
       assemblyName,
       model,
     })
+  }
+}
+
+// Whether the view already has the track this hit came from on screen.
+export function isOpenInView(result: BaseResult, model: LinearGenomeViewModel) {
+  const trackId = result.getTrackId()
+  return trackId !== undefined && !!model.getTrack(trackId)
+}
+
+// One spelling of a locstring, so two indexes that answer `chr1:1-100` and
+// `1:1..100` are recognised as one place. An unparseable string is compared
+// raw, which can only ever split a group that would otherwise have merged —
+// the safe direction, since the picker is what an unprovable match falls back
+// to.
+function canonicalLocString(locString: string, assembly: Assembly) {
+  try {
+    const loc = parseLocString(locString, refName =>
+      assembly.isValidRefName(refName),
+    )
+    return assembleLocString({
+      ...loc,
+      refName: assembly.getCanonicalRefName2(loc.refName),
+    })
+  } catch (e) {
+    console.warn('failed to parse location string', locString, e)
+    return locString
+  }
+}
+
+// What a hit means as a destination: the name it shows and the place it goes.
+// A hit with no location has no destination and can never join a group.
+function destination(result: BaseResult, assembly?: Assembly) {
+  const locString = result.getLocation()
+  return locString
+    ? [
+        result.getDisplayString(),
+        assembly?.initialized
+          ? canonicalLocString(locString, assembly)
+          : locString,
+      ].join('\u0000')
+    : undefined
+}
+
+// Which hit of an agreeing group to travel through, best rung first: a track
+// the view already has on screen, then one the session could open if asked,
+// then whatever the ranking put first. The middle rung is not hypothetical —
+// a JBrowse 1 names index stores JBrowse 1 track *names*, and volvox's has
+// four EDEN.1 entries of which two name nothing any JBrowse 2 config claims.
+// Travelling through one of those navigates correctly and then drops a
+// "could not resolve identifier" snackbar on top of it.
+function trackRank(
+  result: BaseResult,
+  model: LinearGenomeViewModel,
+  session: AbstractSessionModel,
+) {
+  const trackId = result.getTrackId()
+  if (trackId === undefined) {
+    return 2
+  } else if (model.getTrack(trackId)) {
+    return 0
+  } else {
+    return session.getTrackById(trackId) ? 1 : 3
+  }
+}
+
+// The picker exists to disambiguate, and hits that name one feature at one
+// place are not ambiguous — they are several indexes having found it. An
+// instance carrying a handful of gene tracks turns every gene search into a
+// table whose only varying column is Track, which is issues #4302 and #5068.
+// When the hits agree there is nothing to ask, so navigate instead.
+export function unanimousResult({
+  results,
+  model,
+  session,
+  assembly,
+}: {
+  results: BaseResult[]
+  model: LinearGenomeViewModel
+  session: AbstractSessionModel
+  assembly?: Assembly
+}) {
+  // computed once per hit rather than once per comparison: a broad query can
+  // carry a hundred results, and each one costs a locstring parse
+  const destinations = results.map(r => destination(r, assembly))
+  const agree =
+    destinations[0] !== undefined &&
+    destinations.every(d => d === destinations[0])
+  // stable, so an agreeing group with nothing to choose between keeps the
+  // order the ranking handed it
+  return agree
+    ? [...results].sort(
+        (a, b) => trackRank(a, model, session) - trackRank(b, model, session),
+      )[0]!
+    : undefined
+}
+
+// Every multi-hit result set reaches the picker through here, so the two
+// search surfaces cannot disagree about when one is worth raising. Returns
+// whether the view moved.
+export async function showSearchResults({
+  results,
+  query,
+  model,
+  assemblyName,
+  grow,
+}: {
+  results: BaseResult[]
+  query: string
+  model: LinearGenomeViewModel
+  assemblyName: string
+  grow?: number
+}) {
+  const session = getSession(model)
+  const unanimous = unanimousResult({
+    results,
+    model,
+    session,
+    assembly: session.assemblyManager.get(assemblyName),
+  })
+  if (unanimous) {
+    await navToOption({ option: unanimous, model, assemblyName, grow })
+    return true
+  } else {
+    model.setSearchResults(results, query, assemblyName)
+    return false
   }
 }
 
@@ -144,10 +276,10 @@ export function notifySearchFailure(session: AbstractSessionModel, e: unknown) {
 // or fall back to treating input as a locstring
 //
 // Returns whether the view actually moved. Three branches deliberately do not
-// navigate — a glob too wide to open, a multi-hit search that raises the picker
-// instead, and a view detached while the search RPC ran — and each of them
-// resolves, so a caller awaiting this cannot otherwise tell "showing it" from
-// "asked you which one".
+// navigate — a glob too wide to open, a multi-hit search whose hits disagree
+// about where to go and so raise the picker, and a view detached while the
+// search RPC ran — and each of them resolves, so a caller awaiting this cannot
+// otherwise tell "showing it" from "asked you which one".
 export async function handleSelectedRegion({
   input,
   model,
@@ -255,8 +387,13 @@ export async function handleSelectedRegion({
       return false
     }
     if (results.length > 1) {
-      model.setSearchResults(results, input, assemblyName)
-      return false
+      return await showSearchResults({
+        results,
+        query: input,
+        model,
+        assemblyName,
+        grow,
+      })
     } else if (results.length === 1) {
       // `grow` reached the locstring branch above but not this one, so a
       // caller's padding — a session spec's `grow`, sv-core's navToLoc — was

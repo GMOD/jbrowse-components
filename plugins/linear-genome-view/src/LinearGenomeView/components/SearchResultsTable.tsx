@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { navToOption } from '../../searchUtils.ts'
+import { isOpenInView, navToOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -65,6 +65,13 @@ const SearchResultsTable = observer(function SearchResultsTable({
     }
   }
 
+  // A hit in a track that is already on screen is usually the one meant, so it
+  // is listed first rather than given a control that says so. sort is stable,
+  // so everything else keeps the ranked order it arrived in.
+  const ordered = [...searchResults].sort(
+    (a, b) => Number(isOpenInView(b, model)) - Number(isOpenInView(a, model)),
+  )
+
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -77,7 +84,7 @@ const SearchResultsTable = observer(function SearchResultsTable({
           </TableRow>
         </TableHead>
         <TableBody>
-          {searchResults.map(result => (
+          {ordered.map(result => (
             <TableRow key={result.getId()}>
               <TableCell component="th" scope="row">
                 {result.getLabel()}

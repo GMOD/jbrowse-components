@@ -1,6 +1,15 @@
-import { checkRef, fetchResults, splitLast } from './searchUtils.ts'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
+import {
+  checkRef,
+  fetchResults,
+  splitLast,
+  unanimousResult,
+} from './searchUtils.ts'
+
+import type { LinearGenomeViewModel } from './index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // mirrors Assembly.getCanonicalRefName: a name resolves regardless of casing
 const volvoxRefs = new Set(['ctgA', 'ctgB'])
@@ -182,5 +191,113 @@ describe('splitLast', () => {
 
   it('splits a simple locstring', () => {
     expect(splitLast('ctgA:1000', ':')).toEqual(['ctgA', '1000'])
+  })
+})
+
+describe('unanimousResult', () => {
+  // only the two members unanimousResult reads
+  const loadedAssembly = {
+    initialized: true,
+    isValidRefName: (refName: string) => isRef(refName),
+    getCanonicalRefName2: (refName: string) =>
+      [...volvoxRefs].find(r => r.toLowerCase() === refName.toLowerCase()) ??
+      refName,
+  } as unknown as Assembly
+
+  // volvox's jb1 names index is the shape here: `missing` is indexed under a
+  // track name no config claims, so it must not win the tie-break
+  const configuredTracks = new Set(['genes', 'other_genes'])
+
+  const viewWith = (openTrackIds: string[]) => ({
+    model: {
+      getTrack: (trackId: string) =>
+        openTrackIds.includes(trackId) ? {} : undefined,
+    } as unknown as LinearGenomeViewModel,
+    session: {
+      getTrackById: (trackId: string) =>
+        configuredTracks.has(trackId) ? {} : undefined,
+    } as unknown as AbstractSessionModel,
+  })
+
+  const hit = (locString: string, trackId?: string) =>
+    new BaseResult({ label: 'EDEN.1', locString, trackId })
+
+  const pick = (results: BaseResult[], openTrackIds: string[] = []) =>
+    unanimousResult({
+      results,
+      assembly: loadedAssembly,
+      ...viewWith(openTrackIds),
+    })
+
+  it('collapses hits that name one feature in one place', () => {
+    const results = [
+      hit('ctgA:1049..9000', 'genes'),
+      hit('ctgA:1049..9000', 'other_genes'),
+    ]
+    expect(pick(results)).toBe(results[0])
+  })
+
+  it('prefers the hit whose track the view already has open', () => {
+    const results = [
+      hit('ctgA:1049..9000', 'genes'),
+      hit('ctgA:1049..9000', 'other_genes'),
+    ]
+    expect(pick(results, ['other_genes'])).toBe(results[1])
+  })
+
+  it('skips a hit indexed under a track no config claims', () => {
+    const results = [
+      hit('ctgA:1049..9000', 'missing'),
+      hit('ctgA:1049..9000', 'genes'),
+    ]
+    expect(pick(results)).toBe(results[1])
+  })
+
+  it('sees through two spellings of one location', () => {
+    expect(
+      pick([hit('ctgA:1049-9000', 'genes'), hit('ctga:1,049..9,000', 'genes')]),
+    ).toBeDefined()
+  })
+
+  it('keeps the picker for hits in different places', () => {
+    expect(
+      pick([
+        hit('ctgA:1049..9000', 'genes'),
+        hit('ctgA:20000..30000', 'genes'),
+      ]),
+    ).toBeUndefined()
+  })
+
+  it('keeps the picker for different features at one place', () => {
+    expect(
+      pick([
+        new BaseResult({ label: 'EDEN.1', locString: 'ctgA:1..100' }),
+        new BaseResult({ label: 'EDEN.2', locString: 'ctgA:1..100' }),
+      ]),
+    ).toBeUndefined()
+  })
+
+  // an unloaded assembly cannot canonicalize, so two spellings stay two
+  // destinations and the picker asks — an unprovable match must not merge
+  it('keeps the picker when the assembly cannot resolve the names', () => {
+    expect(
+      unanimousResult({
+        results: [
+          hit('ctgA:1049-9000', 'genes'),
+          hit('ctga:1,049..9,000', 'other_genes'),
+        ],
+        assembly: undefined,
+        ...viewWith([]),
+      }),
+    ).toBeUndefined()
+  })
+
+  it('keeps the picker for hits carrying no location', () => {
+    expect(
+      pick([
+        new BaseResult({ label: 'EDEN.1' }),
+        new BaseResult({ label: 'EDEN.1' }),
+      ]),
+    ).toBeUndefined()
   })
 })

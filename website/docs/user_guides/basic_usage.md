@@ -84,6 +84,11 @@ follows the feature as you pan and zoom. Search again to move it, or click the
 
 <Figure caption="Selecting a feature from the search results pins it to the top of its track and boxes and tints that specific feature, not just the surrounding region." src="/img/search_feature_highlight.png" />
 
+An instance with several annotation tracks indexed will match the same gene in
+each of them. Those hits describe one place, so JBrowse navigates straight
+there, through a track you already have open where there is one. The picker
+appears when the hits point at different places.
+
 ## Opening tracks
 
 To open a new track or connection, use the menu bar: `File` → `Open track...`
