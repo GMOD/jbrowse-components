@@ -152,7 +152,6 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  FetchContext,
   GateFetchState,
   LegendItem,
   LinearGenomeViewModel,
@@ -2595,7 +2594,12 @@ export default function baseStateModelFactory(
           bpPerPx: number,
           byteLimit: number | undefined,
           maxFeatureDensity: number | undefined,
-          ctx: FetchContext,
+          // `RegionFetchContext`, which is what the caller has, rather than the
+          // `FetchContext` this body actually needs: a file that names
+          // `FetchContext` and also emits an inherited member typed by it gets
+          // that member's `.d.ts` serialized as the declaring source path, which
+          // `check-declaration-leaks` fails on.
+          ctx: RegionFetchContext,
         ): Promise<RegionFetch> {
           const session = getSession(self)
           // Per-region translation table from the assembly's geneticCodes
