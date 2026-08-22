@@ -1,0 +1,66 @@
+{
+  "id": "wiggle-bar-top-backend-drift",
+  "published": false,
+  "measured": "2026-08-22",
+  "source": {
+    "kind": "hand",
+    "repro": "products/jbrowse-web: node browser-tests/runner.ts --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate --drift-report, once with the shader before the analytic band and once after, rebuilding @jbrowse/web between the two. Same machine, same run scope, 86 canvas2d-vs-webgl pairs both times.",
+    "notes": "Canvas2D is the reference side: it rasterises `fillRect` at fractional y and has always antialiased a bar's top cut, so a GPU shader that computes the same coverage should move TOWARD it. Every pair that moved by more than 0.005% is listed and every one of them fell; none rose, and the summed drift over all 86 pairs went 5.09% to 4.75%. This is the WEBGL rung under swiftshader, so it also confirms the change on the backend the WebGPU captures do not cover. gc-skew is the negative-going bar, whose datum is its BOTTOM cut."
+  },
+  "columns": [
+    { "key": "pair", "label": "snapshot pair" },
+    { "key": "before", "label": "before", "format": "percent", "precision": 2 },
+    { "key": "after", "label": "after", "format": "percent", "precision": 2 },
+    {
+      "key": "delta",
+      "label": "change",
+      "format": "percent",
+      "precision": 2,
+      "derived": "after - before"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "pair": "targeted_bigwig-multibigwig-xyplot",
+        "before": 0.15,
+        "after": 0.01
+      }
+    },
+    {
+      "values": {
+        "pair": "targeted_bigwig-multibigwig-multirowxy",
+        "before": 0.11,
+        "after": 0.02
+      }
+    },
+    {
+      "values": {
+        "pair": "fullpage_bigwig-multibigwig-xyplot",
+        "before": 0.04,
+        "after": 0.0
+      }
+    },
+    {
+      "values": {
+        "pair": "fullpage_bigwig-multibigwig-multirowxy",
+        "before": 0.04,
+        "after": 0.01
+      }
+    },
+    {
+      "values": {
+        "pair": "targeted_additional-color-wiggle",
+        "before": 0.39,
+        "after": 0.37
+      }
+    },
+    {
+      "values": {
+        "pair": "targeted_bigwig-gc-skew",
+        "before": 0.02,
+        "after": 0.0
+      }
+    }
+  ]
+}

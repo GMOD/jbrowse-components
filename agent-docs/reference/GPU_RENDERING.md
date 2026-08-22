@@ -1475,17 +1475,69 @@ is indistinguishable from a hover cue that draws nothing; and require a settled
 non-blank frame, because the repaint clears the canvas first) and the pad-cost
 probe above.
 
-### What the coverage band cannot antialias
+### A bar's top edge is the datum, and it is measured
 
-A bar's top edge is the value the reader takes off the chart, so it is the one
-edge in the tree where aliasing corrupts an *encoding* rather than a silhouette.
-`wiggle.slang`'s xyplot bar computes its own coverage for that reason
-(2026-08-22): `barInkPx` carries CSS px below each horizontal cut, the fragment
-takes the difference of two `aaRamp`s, and the quad grows one device px past each
-cut so the rasterizer's coverage never multiplies into the analytic one. Both
-horizontal cuts, not only the top — the band form is the only one exact below one
-device pixel, and a single top ramp against a hard baseline paints a
-half-covered row under a bar of zero height.
+It is the one edge in the tree where aliasing corrupts an *encoding* rather than
+a silhouette: the reader takes the score off that edge, so rounding its position
+rounds the value. `wiggle.slang`'s xyplot bar computes its own coverage for that
+reason (2026-08-22). `barInkPx` carries CSS px below each horizontal cut, the
+fragment takes the difference of two `aaRamp`s, and the quad grows one device px
+past each cut — the ramp's full width, so every fragment the ramp inks is
+*fully* covered by the geometry and the rasterizer's own coverage never
+multiplies into the analytic one. That last part is what makes the bar identical
+at one sample and at four, and it is why `aaHalfPx` (the dotplot capsule's pad,
+half as wide) is not enough here: it stops the ramp being cropped, but leaves the
+fringe pixel partly covered.
+
+Both horizontal cuts, not only the top. The band form is the only one exact below
+one device pixel — a single top ramp against a hard baseline applies a half-plane
+coverage formula to a slab, and paints a half-covered row under a bar of zero
+height, which on a wiggle full of zero bins is a dotted line along the origin.
+The baseline is not a conflation case: two neighbouring bars' baselines are
+collinear but occupy disjoint pixel COLUMNS, so no pixel is ever split between
+them.
+
+The sub-pixel position of the top, over the 2,208 columns interior to a bar in
+`volvox_microarray` at dpr 2 — the after arms are the reference, and the record
+says how they are independently validated:
+
+<!-- BEGIN GENERATED MEASUREMENT wiggle-bar-top-subpixel -->
+
+| arm                          | mean top error (device px) | max   | columns with the top on a whole device px |
+| ---------------------------- | -------------------------- | ----- | ----------------------------------------- |
+| before, 4 samples (shipping) | 0.069                      | 0.102 | 179                                       |
+| before, 1 sample             | **0.277**                  | 0.475 | **2,151**                                 |
+| after, 4 samples             | 0.00                       | 0.00  | 179                                       |
+| after, 1 sample              | 0.00                       | 0.00  | 179                                       |
+
+<!-- END GENERATED MEASUREMENT wiggle-bar-top-subpixel -->
+
+`shaders/barCutCoverage.test.ts` pins both properties against the two spellings
+that fail them.
+
+The cross-backend gate is the independent check, and it is the falsifiable
+prediction §"Which backend disagreement is evidence" asks for: Canvas2D
+rasterises `fillRect` at fractional y and has always antialiased that cut, so a
+shader computing the same coverage has to move TOWARD it rather than merely
+somewhere else. Every pair that moved, fell:
+
+<!-- BEGIN GENERATED MEASUREMENT wiggle-bar-top-backend-drift -->
+
+| snapshot pair                          | before | after | change |
+| -------------------------------------- | ------ | ----- | ------ |
+| targeted_bigwig-multibigwig-xyplot     | 0.15%  | 0.01% | -0.14% |
+| targeted_bigwig-multibigwig-multirowxy | 0.11%  | 0.02% | -0.09% |
+| fullpage_bigwig-multibigwig-xyplot     | 0.04%  | 0.00% | -0.04% |
+| fullpage_bigwig-multibigwig-multirowxy | 0.04%  | 0.01% | -0.03% |
+| targeted_additional-color-wiggle       | 0.39%  | 0.37% | -0.02% |
+| targeted_bigwig-gc-skew                | 0.02%  | 0.00% | -0.02% |
+
+<!-- END GENERATED MEASUREMENT wiggle-bar-top-backend-drift -->
+
+Note the rung: that is **webgl** under swiftshader, where the sub-pixel table
+above is WebGPU on a retina panel. Two backends, two instruments, one verdict.
+
+### What the coverage band cannot antialias
 
 **The same change does not go on the alignments coverage band, and the reason is
 structural.** Every mark there shares a horizontal edge with another mark:

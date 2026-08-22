@@ -1,0 +1,59 @@
+{
+  "id": "wiggle-bar-top-subpixel",
+  "published": false,
+  "measured": "2026-08-22",
+  "source": {
+    "kind": "hand",
+    "repro": "products/jbrowse-web: FIREFOX_NIGHTLY_PATH=... node browser-tests/probe-bar-top-aa.ts --out=<dir>, headed Firefox Nightly 156.0a1 at dpr 2 on a MacBook Pro 16\" 2019 (built-in Retina panel), volvox_microarray as an xyplot at ctgA:1-4,000, canvas 2532x180 device px. Four arms: the shader before and after the analytic band, each built with MSAA_SAMPLE_COUNT 4 and 1 in packages/render-core/src/hal/webgpuHal.ts. The constant is flipped locally and put back; nothing in the tree carries a changed value.",
+    "notes": "The sub-pixel top of a bar is recovered per column as (first fully inked device row) minus (the coverage the partial row above it carries), over the 2,208 columns interior to a bar in every arm. The after arms are the reference because they are independently validated: the y domain is [0, 300] over a 90 CSS px row at dpr 2, so a bar top can only sit at 180 - 0.6*score device px and an integer-scored dataset can only put its fractional part on a fifth. The after arms spread across all five residues (179/445/534/491/559); MSAA 4 pushes 1,025 columns into the 0.4 bucket and leaves 20 in 0.6, because four samples can only represent quarters; MSAA 1 collapses 2,151 of 2,208 onto residue 0. One device px is 1.67 score units on this track, so the 1-sample error is 0.46 score units on average and 0.79 at worst."
+  },
+  "columns": [
+    { "key": "arm", "label": "arm" },
+    {
+      "key": "meanErrPx",
+      "label": "mean top error (device px)",
+      "format": "ratio"
+    },
+    { "key": "maxErrPx", "label": "max", "format": "ratio" },
+    {
+      "key": "snappedCols",
+      "label": "columns with the top on a whole device px",
+      "format": "int"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "arm": "before, 4 samples (shipping)",
+        "meanErrPx": 0.069,
+        "maxErrPx": 0.102,
+        "snappedCols": 179
+      }
+    },
+    {
+      "values": {
+        "arm": "before, 1 sample",
+        "meanErrPx": 0.277,
+        "maxErrPx": 0.475,
+        "snappedCols": 2151
+      },
+      "emphasize": ["meanErrPx", "snappedCols"]
+    },
+    {
+      "values": {
+        "arm": "after, 4 samples",
+        "meanErrPx": 0,
+        "maxErrPx": 0,
+        "snappedCols": 179
+      }
+    },
+    {
+      "values": {
+        "arm": "after, 1 sample",
+        "meanErrPx": 0,
+        "maxErrPx": 0,
+        "snappedCols": 179
+      }
+    }
+  ]
+}
