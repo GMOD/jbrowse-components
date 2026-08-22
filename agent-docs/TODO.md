@@ -103,8 +103,35 @@ before anyone noticed.
 | [v4.3.0's per-view highlight setting is dropped on load](#v430s-per-view-highlight-setting-is-dropped-on-load) | session, compat | decide migration vs upgrade-guide note; MST ignores the key either way |
 | [Release-validation leftovers](#release-validation-leftovers) | colour, session, LGV | seven independent small items, four reachable |
 | [Six RPC method names left unrecorded](#six-rpc-method-names-left-with-nothing-recording-them) | RPC, plugins, ABI | name them in the upgrade guide; separately make an unknown method throw a real error |
+| [65 suites pay ~5s each to import createTestSession](#65-test-suites-pay-5s-each-to-import-createtestsession) | tests, web | measured; decide whether a lighter session fixture is worth two ways to build one |
 
 ## Ready to build: small and self-contained
+
+### 65 test suites pay ~5s each to import createTestSession
+
+Measured on 2026-08-22, warm jest cache, one worker: an empty suite is 2.0s, a
+suite whose only body is `import { createTestSession } from
+'@jbrowse/web/testUtils'` is 6.7s. Cold it is 12.6s. The calls themselves are
+not the cost — `createTestSession()` is ~25ms after the first, so the nine-test
+`PluginStoreWidget` suite spends essentially all of its 10.6s on module load.
+
+`test_util.ts` imports `../corePlugins.ts`, so every suite that wants a session
+evaluates the whole web plugin set, and jest gives each suite a fresh module
+registry so none of it is shared. 65 suites import it
+(`grep -rl "@jbrowse/web/testUtils"`), which is where a meaningful slice of the
+wall clock goes.
+
+**What is open is not the measurement but whether the fix is worth it.** A
+fixture that builds a session from only the plugins a suite names would be
+fast, and would also be a second way to build a session that can drift from the
+real one — which is the thing `createTestSession` exists to prevent. Decide
+that first. If it is worth it, the shape is a `createTestSession({ plugins })`
+overload sharing one code path, not a parallel helper.
+
+Not the flake it looks like: the `findByText` timeouts this used to produce were
+testing-library's own 1s `asyncUtilTimeout`, now 5s in
+`config/jest/testingLibraryTimeout.js`. That stopped the failures; it did not
+make the import cheaper.
 
 ### Repeat and CRISPR subpart labels draw into an unreserved row
 
