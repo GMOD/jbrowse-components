@@ -32,6 +32,13 @@ import type { PluggableElementType } from './pluggableElementTypes/index.ts'
 // `Core-extendWorker` callback typed against a handle shape that had not existed
 // for months. Reachability was tracking which modules a plugin happened to
 // import for other reasons, not which points are plugin-facing.
+//
+// `unicorn/require-module-specifiers` reads a bare `{}` as a specifier list
+// someone forgot to fill in. Here the empty list IS the statement: naming
+// anything would be a name this module does not use, and dropping the import
+// takes the augmentation with it. Disabled over the block rather than per line,
+// and re-enabled after it, so the rule still covers the rest of the file.
+/* eslint-disable unicorn/require-module-specifiers */
 import type {} from './pluggableElementTypes/models/migrateTrackConfig.ts'
 import type { PluginDefinition } from './pluginDefinitions.ts'
 import type {} from './rpc/WebWorkerRpcDriver.ts'
@@ -44,6 +51,7 @@ import type {
   SimpleFeatureSerialized,
 } from './util/index.ts'
 import type {} from './util/tracks.ts'
+/* eslint-enable unicorn/require-module-specifiers */
 import type {
   IAnyModelType,
   IStateTreeNode,
