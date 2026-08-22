@@ -74,22 +74,18 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   // snapshot, so MST always materializes an object there and the guard
   // could never fire
   const { adapterConfig } = self
-  const sessionId = getRpcSessionId(self)
-  const { rpcManager } = getSession(self)
   return fetchEachRegion(self, needed, {
-    // rpcManager.call injects sessionId from its first argument, so it
-    // does not go in the args object
+    // `ctx.callRpc`, never `rpcManager.call`: the context injects this
+    // fetch's stop token and its status callback, and forgetting either
+    // is silent — no cancellation for this display, or no progress. The
+    // callback here is this region's own slot in the fan-out, so the N
+    // parallel calls aggregate into one bar instead of overwriting each
+    // other
     call: (region, ctx) =>
-      rpcManager.call(sessionId, 'GetScoreData', {
+      ctx.callRpc('GetScoreData', {
         adapterConfig,
         region,
         ...self.rpcProps(),
-        stopToken: ctx.stopToken,
-        // the RPC layer replaces this function with a side-channel and
-        // calls it on the main thread as the worker reports progress.
-        // It is this region's slot in the fetch's fan-out, so the N
-        // parallel calls aggregate into one bar
-        statusCallback: ctx.statusCallback,
       }),
     onResult: (idx, result) => {
       self.setRpcData(idx, result)
@@ -98,12 +94,17 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 },
 ```
 
-`call` keeps the literal RPC method name at the call site so its typed args and
-return survive, and the `ctx` it receives is that region's own — its
-`statusCallback` is the region's slot in a fan-out, so every region's progress
-aggregates into one bar. A batched counterpart, `fetchAllRegions`, hands all
-regions to a single RPC call (use it when the adapter serves the whole set in
-one pass more efficiently, e.g. BigWig coalescing adjacent blocks).
+`call` reaches the worker through **`ctx.callRpc`**, not `rpcManager.call`: the
+context injects this fetch's stop token and its status callback, so a fetch
+cannot issue an RPC that the cancel and the progress bar do not know about.
+Hand-threading them was silent when you forgot — no cancellation for that
+display, or no progress — which is the whole reason the envelope exists. It
+keeps the literal method name at the call site so the registry's typed args and
+return survive, and the `ctx` it receives is that region's own, so every
+region's progress aggregates into one bar. A batched counterpart,
+`fetchAllRegions`, hands all regions to a single RPC call (use it when the
+adapter serves the whole set in one pass more efficiently, e.g. BigWig
+coalescing adjacent blocks).
 
 ### The raw `fetchRegions` primitive
 
@@ -259,10 +260,13 @@ worth keeping straight:
 is the full account, including the four bugs the predecessor had from an axis
 name claiming a term it did not have.
 
-A display that fetches outside `fetchRegions` calls the same gate itself in its
-`run` phase, returning `undefined` — nothing to commit — when it blocks (see
-arc's `arcFetchPhases`, which fetches through `GlobalFetchMixin` rather than
-`MultiRegionDisplayMixin`'s `fetchRegions`).
+No display calls the gate by hand. Both fetch runners do it — `fetchRegions` for
+this family and `runGlobalFetch` for the global one — so a display outside the
+per-region chain opts in with the same one getter and nothing else. The commit
+side is shared too: `nextGateState(prev, event)` holds the rules about _order_
+(which of two measurements wins, what a clear leaves behind, what a force-load
+approval outlives), because those are the ones an exhaustive truth table over
+states cannot see.
 
 ## FetchMixin: cancellation and staleness
 
@@ -284,6 +288,38 @@ bumps and every fetch autorun reads unconditionally, above its bail-outs — aft
 an error each of the other inputs is unchanged, so nothing else would ever wake
 the fetch. It lives here because it is the one mixin both LGV fetch foundations
 compose; a display that overrides `reload()` should still bump it.
+
+## Prerequisite fetches
+
+Some displays need one more thing before the viewport fetch can ask for
+anything: the `.hic` file's binsize list, the sample list a multi-sample VCF
+draws rows from. That read is **per adapter, not per viewport**, so it cannot
+ride the autoruns above — watching `fetchGeneration` would re-read the header on
+every pan.
+
+`installPrerequisiteFetch(self, { run, commit, delay, name })` is the shape for
+it, and it exists because the two displays that had hand-rolled the same fetch
+were each missing a different rule:
+
+- **latest-wins.** A reload-overlapped pair of reads must not commit in whatever
+  order they resolve.
+- **the error rule.** Only a _current_ run's real failure is published, so a
+  superseded run's teardown cannot overwrite the error slot its successor owns.
+- **the trigger list.** `reloadCounter` is read unconditionally, above every
+  gate, so Retry re-runs the body even from a state where nothing else moved.
+- **the leading edge.** First paint waits on this fetch, so it must not spend
+  its whole debounce window on a cold open.
+
+`run` owns the RPC through the same `ctx.callRpc` envelope, and its synchronous
+prefix runs inside the autorun body — so what it reads to build the call is
+tracked and re-fires it. `commit` runs only while the run is still current. A
+display whose failure has a second consequence passes `onError`; the sample-list
+scan does, because a list that will not load leaves the band empty rather than
+partial and nothing else on screen would say so.
+
+The viewport fetch then declines until the prerequisite lands, and says so with
+`awaitingPrerequisite` — which **defers** the retry verdict to the run after it
+arrives rather than waiving it.
 
 ## Composing the mixin
 

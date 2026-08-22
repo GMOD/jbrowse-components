@@ -182,8 +182,7 @@ action, and a `startRenderingBackend` action.
 ```ts
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -257,22 +256,18 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         // snapshot, so MST always materializes an object there and the guard
         // could never fire
         const { adapterConfig } = self
-        const sessionId = getRpcSessionId(self)
-        const { rpcManager } = getSession(self)
         return fetchEachRegion(self, needed, {
-          // rpcManager.call injects sessionId from its first argument, so it
-          // does not go in the args object
+          // `ctx.callRpc`, never `rpcManager.call`: the context injects this
+          // fetch's stop token and its status callback, and forgetting either
+          // is silent — no cancellation for this display, or no progress. The
+          // callback here is this region's own slot in the fan-out, so the N
+          // parallel calls aggregate into one bar instead of overwriting each
+          // other
           call: (region, ctx) =>
-            rpcManager.call(sessionId, 'GetScoreData', {
+            ctx.callRpc('GetScoreData', {
               adapterConfig,
               region,
               ...self.rpcProps(),
-              stopToken: ctx.stopToken,
-              // the RPC layer replaces this function with a side-channel and
-              // calls it on the main thread as the worker reports progress.
-              // It is this region's slot in the fetch's fan-out, so the N
-              // parallel calls aggregate into one bar
-              statusCallback: ctx.statusCallback,
             }),
           onResult: (idx, result) => {
             self.setRpcData(idx, result)

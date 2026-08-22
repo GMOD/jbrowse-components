@@ -218,22 +218,18 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   // snapshot, so MST always materializes an object there and the guard
   // could never fire
   const { adapterConfig } = self
-  const sessionId = getRpcSessionId(self)
-  const { rpcManager } = getSession(self)
   return fetchEachRegion(self, needed, {
-    // rpcManager.call injects sessionId from its first argument, so it
-    // does not go in the args object
+    // `ctx.callRpc`, never `rpcManager.call`: the context injects this
+    // fetch's stop token and its status callback, and forgetting either
+    // is silent — no cancellation for this display, or no progress. The
+    // callback here is this region's own slot in the fan-out, so the N
+    // parallel calls aggregate into one bar instead of overwriting each
+    // other
     call: (region, ctx) =>
-      rpcManager.call(sessionId, 'GetScoreData', {
+      ctx.callRpc('GetScoreData', {
         adapterConfig,
         region,
         ...self.rpcProps(),
-        stopToken: ctx.stopToken,
-        // the RPC layer replaces this function with a side-channel and
-        // calls it on the main thread as the worker reports progress.
-        // It is this region's slot in the fetch's fan-out, so the N
-        // parallel calls aggregate into one bar
-        statusCallback: ctx.statusCallback,
       }),
     onResult: (idx, result) => {
       self.setRpcData(idx, result)
@@ -282,10 +278,12 @@ message tracks the download — `GetScoreData` above passes it into
 ## Type-registering your method
 
 The `declare module '@jbrowse/core/rpc/RpcRegistry'` block at the top of
-`GetScoreData` above is what types `rpcManager.call` at every call site. Without
-it both overloads fall back to `any`, so a misspelled arg or a wrong assumption
-about the return type compiles. It goes in the file that defines the method, so
-the two can't drift.
+`GetScoreData` above is what types `rpcManager.call` at every call site — and
+`ctx.callRpc` with it, which forwards the same registry lookup, so a fetch gets
+per-method arg inference and a typed return without naming the session id.
+Without the registration both overloads fall back to `any`, so a misspelled arg
+or a wrong assumption about the return type compiles. It goes in the file that
+defines the method, so the two can't drift.
 
 ## Worker count and configuration
 

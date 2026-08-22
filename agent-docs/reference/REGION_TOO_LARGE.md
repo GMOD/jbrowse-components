@@ -71,11 +71,13 @@ The pre-flight RPC takes a stop token, and it earns it. `getRegionByteSize`
 bottoms out in an index lookup (`bytesForRegions`), which is a set of range reads
 over the network for BAM/CRAM/tabix and runs on the critical path of the fetch it
 precedes — so a superseded viewport must stop measuring a file it will not
-download. `byteGateBlocksFetch` passes `ctx.stopToken` and `ctx.statusCallback`
-both into the args and to the `updateStatus('Estimating size', …)` wrapper, which
-makes the phase a cancellation boundary as well as the label the user sees first
-when a track opens wide. Pass both — `ctx.isStale()` alone leaves them on the
-floor at every call site. Only `headers` is unused RPC-base boilerplate.
+download. `byteGateBlocksFetch` issues it through `ctx.callRpc`, which injects
+this fetch's stop token and status callback, and wraps it in
+`updateStatus('Estimating size', …)` — so the phase is a cancellation boundary
+as well as the label the user sees first when a track opens wide. The envelope
+is what makes that structural: hand-threading the pair was silent when a call
+site forgot, and `ctx.isStale()` alone left both on the floor. Only `headers` is
+unused RPC-base boilerplate.
 
 **One caller of that RPC is not the gate at all**, and it is easy to miss when
 changing either: "Save track data" pre-flights the same index lookup in
@@ -101,10 +103,11 @@ Four steps and a note, all on `RegionTooLargeMixin`:
 - `byteGateBlocksFetch(regions, ctx)` is the whole pre-flight, in one action:
   read `gateViewport`, run `CoreGetRegionByteEstimate`, commit, return
   `regionTooLarge`. Callers do `if (await self.byteGateBlocksFetch(regions, ctx))
-  return` and nothing else — `fetchRegions` makes that call for the whole
-  `MultiRegionDisplayMixin` family, LD and arc make it from their own global
-  fetches. It short-circuits to false when `measuresBytesPreFlight` is off, so
-  the call is unconditional at every site.
+  return` and nothing else — and **no display is a caller**: the two fetch
+  runners make it, `fetchRegions` for the whole `MultiRegionDisplayMixin` family
+  and `runGlobalFetch` for the global one, so a display's whole opt-in is the
+  `measuresBytesPreFlight` getter. It short-circuits to false when that is off,
+  so the call is unconditional at both sites.
 - `gateViewport` is **what a measurement is about**: the span on screen plus a
   key identifying that stretch of genome. It is the mixin's **only** view read
   (`adapterFetchSizeLimit` reaches the containing track, and that is the only
