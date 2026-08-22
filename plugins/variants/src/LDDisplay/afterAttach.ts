@@ -6,27 +6,13 @@ import {
 import { ldFetchPhases } from './ldFetchPhases.ts'
 
 import type { LDFetchSelf } from './ldFetchPhases.ts'
-import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
+import type { GlobalFetchAutorunHost } from '@jbrowse/plugin-linear-genome-view'
 
-// The skeleton's own hosting requirements, on top of what the fetch phases need.
-interface LDModel extends LDFetchSelf {
-  reloadCounter: number
-  // The retry check's two hooks, both `FetchMixin`'s. LD is the reason the
-  // first exists: with the triangle off `prepare` declines forever, so a reload
-  // legitimately reaches no fetch, and LD answers `!showLDTriangle` there off
-  // the same slot. It takes the default `false` for the second — its fetch
-  // waits on no other autorun.
-  fetchInert: boolean
-  awaitingPrerequisite: boolean
-  // `FetchMixin`'s serialization of `rpcProps()`, which is what the skeleton
-  // tracks — the payload's own reads must not enter the dependency set.
-  rpcPropsCacheKey: string
-  runFetch: (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+// The skeleton's own hosting requirements (`GlobalFetchAutorunHost`, the
+// interface the skeleton itself is typed against) on top of what the fetch
+// phases need.
+interface LDModel extends LDFetchSelf, GlobalFetchAutorunHost {
   clearByteEstimate(): void
-  // `RegionTooLargeMixin`'s combined skip, which is what the skeleton reads —
-  // its two terms are deliberately not named here, so no local expression can
-  // re-derive it.
-  gateSkipsMeasuredViewport: boolean
 }
 
 export function doAfterAttach(self: LDModel) {

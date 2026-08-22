@@ -96,7 +96,7 @@ describe('hitTest inverts what the renderer drew', () => {
       { bin1: 7, bin2: 7 },
       { bin1: 0, bin2: 30 },
     ]
-    display.setRpcData(makeData(contacts, 64), 'test-signature')
+    display.setRpcData(makeData(contacts, 64))
 
     const { viewScale, viewOffsetX, yScalar } = display.renderState
     // squash actually engaged, or the second case is a copy of the first

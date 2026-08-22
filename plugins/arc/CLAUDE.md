@@ -24,12 +24,13 @@ display except this one.
 ## Fetch and readiness
 
 - **`reload()` must invalidate `dataCurrent`, not just bump the counter** —
-  arc's `prepare` reads it, so a bump alone refires into a no-op.
-  `ArcFetchModel` also drops `loadedRegionSignature`. `features` deliberately
-  survives, so stale arcs stay under the loading overlay instead of blanking.
+  `runGlobalFetch` gates on it, so a bump alone refires into a no-op.
+  `GlobalFetchMixin.reload()` drops `loadedFetchSignature` for the whole family.
+  `features` deliberately survives, so stale arcs stay under the loading overlay
+  instead of blanking.
 - **Two readiness flags, don't conflate**: `svgReady` is the SVG-export terminal
   gate and goes false on a pan past a block boundary; `data-display-drawn` uses
   the looser `drawn`, which stays true across a refetch so the testid doesn't
   churn on pan.
-- Byte-gated only, called directly (`byteGateBlocksFetch`), since arc fetches
-  through `GlobalFetchMixin` rather than `fetchRegions`.
+- Byte-gated only. `runGlobalFetch` runs the pre-flight (`byteGateBlocksFetch`);
+  arc's opt-in is the `measuresBytesPreFlight` override alone.

@@ -110,8 +110,9 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
   `setRpcData` a region by hand, so it went missing once uncaught.
 - `clearAllRpcData` deliberately leaves the too-large gate and its cached
   estimate alone, so the banner doesn't flicker.
-- Displays on `GlobalFetchMixin` (LD, arc) call `byteGateBlocksFetch`
-  themselves; `fetchRegions` already does.
+- No display calls `byteGateBlocksFetch` by hand: `fetchRegions` runs it for the
+  per-region family and `runGlobalFetch` for the global one, and it is a no-op
+  for a display that has not opted in.
 - The foundation's own tests come in two halves, and a change usually belongs in
   one of them rather than in a plugin's suite. `planRegionFetch.test.ts` is the
   **decision** — given these inputs, fetch this region set — and needs no tree.

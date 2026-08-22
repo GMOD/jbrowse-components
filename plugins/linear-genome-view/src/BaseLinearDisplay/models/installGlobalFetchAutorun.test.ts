@@ -81,6 +81,16 @@ const TestDisplay = types
       void self.consulted
       return { setting: self.setting }
     },
+    // `GlobalFetchMixin`'s freshness pair, stubbed open: the shared
+    // data-current gate is exercised end-to-end by the display suites (HiC's
+    // panRedraw, arc's fetchArcFeatures, LD's staleSignature), while this file
+    // keeps the gate in `prepare` so `gateCalls` counts every body run.
+    get fetchSignature(): string | undefined {
+      return 'sig'
+    },
+    get dataCurrent() {
+      return false
+    },
     // `FetchMixin`'s hook, which this fixture composes by hand — the check reads
     // it off the node in both families rather than taking a predicate.
     get awaitingPrerequisite() {
@@ -107,6 +117,15 @@ const TestDisplay = types
         statusCallback: () => {},
       })
     }),
+    // `GlobalFetchMixin.commitFetchResult`, minus the signature stamp the
+    // display suites cover
+    commitFetchResult(commit: () => void, _signature: string) {
+      commit()
+    },
+    // `RegionTooLargeMixin`'s pre-flight, stubbed to "not gated"
+    async byteGateBlocksFetch() {
+      return false
+    },
   }))
   .actions(self => ({
     setMinimized(flag: boolean) {
@@ -156,7 +175,7 @@ async function setup(shouldFetch: (d: TestDisplayModel) => boolean) {
   installGlobalFetchAutorun(display, {
     prepare: () => {
       gateCalls.count += 1
-      return shouldFetch(display) ? {} : undefined
+      return shouldFetch(display) ? { regions: [] } : undefined
     },
     run: async () => {
       fetched.count += 1
@@ -178,7 +197,7 @@ async function setupPhases({ run }: { run: () => unknown }) {
   const { display } = view
   const committed: { result: unknown; args: unknown }[] = []
   installGlobalFetchAutorun(display, {
-    prepare: () => ({ issuedAt: display.setting }),
+    prepare: () => ({ issuedAt: display.setting, regions: [] }),
     run: async () => run(),
     commit: (result, args) => {
       committed.push({ result, args })
@@ -199,7 +218,7 @@ describe('the phases', () => {
 
     expect(committed[0]).toEqual({
       result: 'data',
-      args: { issuedAt: 'a' },
+      args: { issuedAt: 'a', regions: [] },
     })
   })
 

@@ -39,10 +39,7 @@ function loadedDisplay({ scrollToEnd = false } = {}) {
   view.scrollTo(scrollToEnd ? 1_000_000 - 700 : 0)
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
   const block = view.dynamicBlocks.contentBlocks[0]!
-  display.setRpcData(
-    ldData(4, width * view.bpPerPx, block.start),
-    display.ldFetchSignature,
-  )
+  display.setRpcData(ldData(4, width * view.bpPerPx, block.start))
   return { display, view, width }
 }
 
@@ -112,15 +109,12 @@ test('a SNP off the displayed regions is dropped, not pinned to the left edge', 
     view.dynamicBlocks.totalWidthPxWithoutBorders * view.bpPerPx,
     0,
   )
-  display.setRpcData(
-    {
-      ...data,
-      snps: data.snps.map((snp, i) =>
-        i === 2 ? { ...snp, refName: 'ctgB' } : snp,
-      ),
-    },
-    display.ldFetchSignature,
-  )
+  display.setRpcData({
+    ...data,
+    snps: data.snps.map((snp, i) =>
+      i === 2 ? { ...snp, refName: 'ctgB' } : snp,
+    ),
+  })
 
   expect(display.connectorLineCoords.map(c => c.label)).toEqual([
     'rs0',

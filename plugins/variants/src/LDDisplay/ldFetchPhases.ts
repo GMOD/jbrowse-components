@@ -5,7 +5,6 @@ import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
-  FetchContext,
   GlobalFetchPhases,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -14,22 +13,18 @@ import type {
 // silently turns off checking for every member below. See the note on
 // `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
 export interface LDFetchSelf extends IStateTreeNode {
-  isMinimized: boolean
   showLDTriangle: boolean
   lgv: LinearGenomeViewModel
   adapterConfig: Record<string, unknown>
-  ldFetchSignature: string | undefined
   // Derived from the RPC's own arg type rather than restated, so a field added
   // to the payload cannot arrive here under a different name.
   rpcProps(): Omit<RenderLDDataArgs, 'adapterConfig' | 'regions' | 'originBp'>
-  byteGateBlocksFetch(regions: Region[], ctx: FetchContext): Promise<boolean>
-  setRpcData(data: LDDataResult | null, signature?: string): void
+  setRpcData(data: LDDataResult): void
 }
 
 interface LDFetchArgs {
   regions: Region[]
   originBp: number
-  signature: string
 }
 
 /**
@@ -58,13 +53,11 @@ function axisOriginBp(
 /**
  * The LD matrix fetch, as the three phases `installGlobalFetchAutorun` runs it
  * in. `afterAttach` hands these to the skeleton; a caller wanting one round trip
- * on demand passes them to `runGlobalFetch`.
- *
- * `regionTooLarge` is deliberately not a term in `prepare` — the skeleton owns
- * that skip, which lets a blocked display run this once per settled viewport so
- * the pre-flight below can re-measure and release the banner. Restating it here
- * returned before the gate, so the estimate froze at the viewport it was
- * captured over and zooming in could never clear the banner.
+ * on demand passes them to `runGlobalFetch`. The shared gates — minimized,
+ * data-current, the byte-gate pre-flight, the signature stamp at commit — live
+ * in `runGlobalFetch` (and the region-too-large skip one level up in the
+ * skeleton), so what is left here is LD's own: the triangle toggle, the block
+ * set, and the axis origin.
  */
 export function ldFetchPhases(
   self: LDFetchSelf,
@@ -72,39 +65,28 @@ export function ldFetchPhases(
   return {
     prepare: () => {
       const regions = self.lgv.dynamicBlocks.contentBlocks
-      const signature = self.ldFetchSignature
-      return self.isMinimized ||
-        !self.showLDTriangle ||
-        !regions.length ||
-        signature === undefined
+      return !self.showLDTriangle || !regions.length
         ? undefined
         : {
             regions: [...regions],
-            signature,
             originBp: axisOriginBp(regions[0]!, self.lgv.displayedRegions),
           }
     },
     run: async ({ regions, originBp }, ctx) =>
-      // RegionTooLargeMixin's shared pre-flight gate (a no-op when
-      // `measuresBytesPreFlight` is off), called directly because LD fetches
-      // through GlobalFetchMixin rather than MultiRegionDisplayMixin's
-      // fetchRegions. Blocking it means there is nothing to commit.
-      (await self.byteGateBlocksFetch(regions, ctx))
-        ? undefined
-        : await getSession(self).rpcManager.call(
-            getRpcSessionId(self),
-            'RenderLDData',
-            {
-              adapterConfig: self.adapterConfig,
-              regions,
-              originBp,
-              ...self.rpcProps(),
-              stopToken: ctx.stopToken,
-              statusCallback: ctx.statusCallback,
-            },
-          ),
-    commit: (result, { signature }) => {
-      self.setRpcData(result, signature)
+      await getSession(self).rpcManager.call(
+        getRpcSessionId(self),
+        'RenderLDData',
+        {
+          adapterConfig: self.adapterConfig,
+          regions,
+          originBp,
+          ...self.rpcProps(),
+          stopToken: ctx.stopToken,
+          statusCallback: ctx.statusCallback,
+        },
+      ),
+    commit: result => {
+      self.setRpcData(result)
     },
   }
 }

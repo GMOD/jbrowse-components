@@ -85,15 +85,16 @@ const declarations = reloadDeclarations()
 // true, which is the one way a source-level test fails open.
 test('the scan finds the reload declarations it is about', () => {
   // The files, not the line numbers, which move under every edit. The two fetch
-  // foundations and the two displays that override one of them are what the rule
-  // exists for; canvas is the one it was written against.
+  // foundations and the displays that override one of them are what the rule
+  // exists for; canvas is the one it was written against. (The global family's
+  // displays no longer appear: GlobalFetchMixin.reload owns their signature
+  // invalidation, so none of them declares an override.)
   const files = declarations.map(d => d.where.split(':')[0])
   for (const expected of [
     'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
     'plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts',
     'plugins/canvas/src/LinearBasicDisplay/baseModel.ts',
     'plugins/variants/src/shared/MultiSampleVariantBaseModel.ts',
-    'plugins/arc/src/shared/ArcFetchModel.ts',
     'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
   ]) {
     expect(files).toContain(expected)

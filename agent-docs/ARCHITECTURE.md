@@ -156,7 +156,7 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-19 registered displays declare 174 config slots, 40 MST properties and 55 volatiles between them — counting what each display's own directory declares.
+19 registered displays declare 174 config slots, 40 MST properties and 53 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
@@ -164,9 +164,9 @@ track-menu setting is a slot.
 | `LinearAlignmentsDisplay` | `plugins/alignments` | 47 | 2 | 17 |
 | `LinearBasicDisplay` | `plugins/canvas` | 25 | 8 | 13 |
 | `LinearMafDisplay` | `plugins/maf` | 18 | 2 | 8 |
-| `LDDisplay` | `plugins/variants` | 15 | 1 | 3 |
+| `LDDisplay` | `plugins/variants` | 15 | 1 | 2 |
 | `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 11 | 4 | 2 |
-| `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 4 |
+| `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 3 |
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
 | `LinearArcDisplay` | `plugins/arc` | 6 | 2 | 0 |
 | `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
@@ -565,7 +565,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `regionHasData` | true — nothing checks that a region marked loaded has data behind it, so a display whose commit sites drift from its stores reads the viewport as covered against data nobody holds, and never asks again | `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `maf/LinearMafDisplay` |
 | `rpcProps` | no `SettingsInvalidate` autorun at all, so no user setting ever refetches (correct for `LinearReferenceSequenceDisplay`, indistinguishable from an omission for anyone else) | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gccontent/LinearGCContentDisplay`, `gwas/LinearManhattanDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/LinearMultiSampleVariantDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
 | `fetchNeeded` | nothing is ever fetched | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
-| `dataCurrent` | false forever, so `svgReady` never settles and one track hangs the whole view’s export (fail-hung over fail-stale, deliberately) | `arc/shared`, `dotplot-view/DotplotDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LinearSyntenyDisplay`, `variants/LDDisplay` |
+| `viewSignature` | undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census) | `arc/shared`, `hic/LinearHicDisplay`, `variants/LDDisplay` |
 | `layoutReady` | overlays are dropped rather than pinned to a stale layout | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
 | `fetchInert` | false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled` | `linear-comparative-view/LinearSyntenyDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
 | `rendersCanvas` | `painted` waits on a canvas that is never mounted, so `data-display-drawn` stays false for the display’s whole life and every `waitForDisplaysDone` on the page burns its timeout | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
@@ -785,11 +785,14 @@ un-minimizing re-runs the body and re-reads everything. A pure signal like
 is the dangerous case: nothing else will ever re-run the body on its behalf.
 `installGlobalFetchAutorun.test.ts` pins this.
 
-A global display whose `prepare` gates on its own `dataCurrent` must also
-invalidate that freshness signal in `reload()` — bumping `reloadCounter` alone
-re-runs the autorun but leaves `prepare` declining. `ArcFetchModel.reload()`
-clears `loadedRegionSignature` for exactly this reason (keeping `features`, so
-the stale arcs stay under the loading overlay instead of blanking).
+A gate on a freshness signal must also be invalidated by `reload()` — bumping
+`reloadCounter` alone re-runs the autorun but leaves the gate declining. On the
+global family that pairing is structural now: `runGlobalFetch` gates on the
+mixin-derived `dataCurrent`, and `GlobalFetchMixin.reload()` drops
+`loadedFetchSignature` in the same action (keeping the display's data, so the
+stale frame stays under the loading overlay instead of blanking). Arc and HiC
+each carried their own copy of that override before the mixin owned it, and the
+copies were the reason the rule had to be remembered.
 
 **The per-region twin: a `fetchNeeded` that declines to fetch must be woken by
 something `FetchVisibleRegions` already tracks.** That autorun tests

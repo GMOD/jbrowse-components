@@ -5,12 +5,13 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import { getRpcSessionId, getSession, isDataCurrent } from '@jbrowse/core/util'
+import { getRpcSessionId, getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
   LegendMixin,
   TrackHeightMixin,
+  blockKeySignature,
   computeTriangleYScalar,
   installGlobalFetchAutorun,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -89,15 +90,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #volatile
        */
       rpcData: null as HicDataResult | null,
-      /**
-       * #volatile
-       * signature of the static-block set + binsize + normalization `rpcData`
-       * was fetched for; the `dataCurrent`/`svgReady` freshness axis, the same
-       * shape as arc's `loadedRegionSignature`. Worker output is genomic, so a
-       * pan inside the loaded blocks is a redraw — only this signature moving
-       * refetches.
-       */
-      loadedSignature: undefined as string | undefined,
       /**
        * #volatile
        */
@@ -374,26 +366,24 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .views(self => ({
       /**
        * #getter
-       * Signature of the fetch the current view calls for: the static-block set
-       * (their keys encode assembly, refName, span and orientation), the
-       * binsize, and the normalization. `dataCurrent` compares it against
-       * `loadedSignature`, so a pan inside the loaded blocks is a pure redraw
-       * and only a real change — a block entering, a zoom (static blocks
-       * re-snap, and the binsize may step), a normalization flip — refetches.
-       * Undefined until the view is measured and the `.hic` header has landed.
+       * HiC's half of `GlobalFetchMixin`'s freshness compare: the static-block
+       * set plus the binsize the current zoom calls for, so a pan inside the
+       * loaded blocks is a pure redraw and only a real change — a block
+       * entering, a zoom (static blocks re-snap, and the binsize may step) —
+       * refetches. Undefined until the view is measured and the `.hic` header
+       * has landed, which is the prerequisite gate. The normalization axis
+       * rides in through the `rpcPropsCacheKey` half the mixin appends.
        *
-       * `activeNormalization` reads the fetched header list, which is safe here
-       * for the reason ARCHITECTURE.md's loop-trap section gives: the contact
-       * fetch this signature keys never writes `availableNormalizations`, so a
+       * `activeNormalization` reading the fetched header list is safe for the
+       * reason ARCHITECTURE.md's loop-trap section gives: the contact fetch
+       * this signature keys never writes `availableNormalizations`, so a
        * mismatch converges in one fetch.
        */
-      get hicFetchSignature(): string | undefined {
+      get viewSignature(): string | undefined {
         const view = self.lgv
         const resolution = self.effectiveResolution
         return view.initialized && resolution !== undefined
-          ? `${view.staticBlocks.contentBlocks
-              .map(b => b.key)
-              .join(',')}|res:${resolution}|norm:${self.activeNormalization}`
+          ? `${blockKeySignature(view.staticBlocks.contentBlocks)}|res:${resolution}`
           : undefined
       },
       /**
@@ -415,23 +405,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           viewScale: 1 / bpPerPx,
           viewOffsetX: originBp / bpPerPx - offsetPx,
         }
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The shared freshness hook, HiC's way: the contact matrix is current
-       * once `rpcData` is set (the fetch commits it even for an empty viewport)
-       * AND it was fetched for the current block set, binsize and
-       * normalization. A pan inside the loaded blocks stays current — the
-       * redraw needs no refetch — while off-screen `svgReady` still waits out
-       * any window where the signature has moved and the refetch is pending.
-       */
-      get dataCurrent(): boolean {
-        return (
-          self.rpcData !== null &&
-          isDataCurrent(self.loadedSignature, self.hicFetchSignature)
-        )
       },
     }))
     .views(self => ({
@@ -510,10 +483,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
     .actions(self => ({
       /**
        * #action
+       * `runGlobalFetch` stamps the signature this was fetched for
+       * (`GlobalFetchMixin.commitFetchResult`) in the same transaction.
        */
-      setRpcData(data: HicDataResult, signature: string) {
+      setRpcData(data: HicDataResult) {
         self.rpcData = data
-        self.loadedSignature = signature
       },
       /**
        * #action
@@ -656,23 +630,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         this.setResolutionIdx(self.effectiveResolutionIdx + delta)
       },
     }))
-    .actions(self => {
-      const { reload: superReload } = self
-      return {
-        /**
-         * #action
-         * `prepare` gates on `dataCurrent`, which reads `loadedSignature`, so a
-         * reload must invalidate that signal too — bumping `reloadCounter`
-         * alone re-runs the autorun and leaves `prepare` declining (the same
-         * shape as `ArcFetchModel.reload`). `rpcData` is kept, so the stale
-         * matrix stays on screen under the loading overlay instead of blanking.
-         */
-        reload() {
-          superReload()
-          self.loadedSignature = undefined
-        },
-      }
-    })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
@@ -796,26 +753,16 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         )
 
         installGlobalFetchAutorun(self, {
-          // `dataCurrent` is the gate and reads the same signature the commit
-          // stamps, so a pan inside the loaded static blocks declines while a
-          // block entering, a zoom or a normalization flip fetches. The
-          // signature reads `effectiveResolution`, which is undefined until
-          // availableResolutions arrives from CoreGetInfo — that is the
-          // prerequisite gate (`awaitingPrerequisite`), and its arrival rewakes
-          // this run through the same tracked read.
+          // The shared gates (minimized, data-current, signature pending) live
+          // in `runGlobalFetch`. `viewSignature` reads `effectiveResolution`,
+          // which is undefined until availableResolutions arrives from
+          // CoreGetInfo — that is the prerequisite gate
+          // (`awaitingPrerequisite`), and its arrival rewakes this run through
+          // the same tracked read.
           prepare: () => {
-            const signature = self.hicFetchSignature
             const resolution = self.effectiveResolution
-            if (
-              self.isMinimized ||
-              resolution === undefined ||
-              signature === undefined ||
-              self.dataCurrent
-            ) {
-              return undefined
-            }
             const blocks = self.lgv.staticBlocks.contentBlocks
-            if (!blocks.length) {
+            if (resolution === undefined || !blocks.length) {
               return undefined
             }
             // What only the view knows, resolved here because the worker sees
@@ -826,7 +773,6 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
               self.lgv.displayedRegions,
             )
             return {
-              signature,
               resolution,
               regions: [...blocks],
               axisBlocks,
@@ -848,8 +794,8 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
                 statusCallback: ctx.statusCallback,
               },
             ),
-          commit: (result, { signature }) => {
-            self.setRpcData(result, signature)
+          commit: result => {
+            self.setRpcData(result)
           },
           delay: 1000,
           name: 'LinearHicDisplayRender',

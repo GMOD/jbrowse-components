@@ -28,7 +28,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
   )
 
   const issuedOffsetPx = view.offsetPx
-  const issuedSignature = display.ldFetchSignature
+  const issuedSignature = display.fetchSignature
   const fetching = runGlobalFetch(display, ldFetchPhases(display))
   // the byte-gate pre-flight resolves first, so the matrix RPC is a few
   // microtasks out; nothing here waits long enough to reach the 500ms debounce
@@ -51,7 +51,7 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
   })
   await fetching
 
-  expect(display.loadedSignature).toBe(issuedSignature)
+  expect(display.loadedFetchSignature).toBe(issuedSignature)
   // the pan moved the block set out from under the fetch, so the data is not
   // current and an export waits for the refetch
   expect(display.dataCurrent).toBe(false)

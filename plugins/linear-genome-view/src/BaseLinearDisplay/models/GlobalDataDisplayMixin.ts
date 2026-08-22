@@ -115,17 +115,42 @@ export type GlobalFetchPhases<TArgs, TResult> = FetchPhases<
   FetchContext
 >
 
+// Every global fetch's args carry the region set it is issued for, which is
+// what the shared byte-gate pre-flight below measures. The fields rather than
+// `Region`, so a display may pass its view's content blocks as-is.
+export interface GlobalFetchArgs {
+  regions: {
+    refName: string
+    start: number
+    end: number
+    assemblyName: string
+  }[]
+}
+
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves through
 // `STNValue<any, …>` to `any`, so extending it silently turns off checking for
 // every member below, and a host missing one of them would compile. See the note
 // on `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
-interface GlobalFetchHost extends IStateTreeNode {
+export interface GlobalFetchHost extends IStateTreeNode {
   // `FetchMixin`'s: the cancel-safe lifecycle every phase run goes through.
   runFetch: (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+  isMinimized: boolean
+  // The freshness trio `GlobalFetchMixin` owns: the resolved signature captured
+  // at issue and stamped at commit, and the derived gate that declines a fetch
+  // the held data already answers.
+  fetchSignature: string | undefined
+  dataCurrent: boolean
+  commitFetchResult: (commit: () => void, signature: string) => void
+  // `RegionTooLargeMixin`'s pre-flight, a no-op for a display that has not
+  // opted in — which is what lets the runner call it unconditionally instead of
+  // each display remembering to.
+  byteGateBlocksFetch: (
+    regions: GlobalFetchArgs['regions'],
+    ctx: FetchContext,
+  ) => Promise<boolean>
 }
 
-interface GlobalFetchAutorunHost extends GlobalFetchHost {
-  isMinimized: boolean
+export interface GlobalFetchAutorunHost extends GlobalFetchHost {
   reloadCounter: number
   // Both `FetchMixin`'s, which `GlobalFetchMixin` composes, and both read only
   // by the dev-only retry check below: the "deliberately not fetching"
@@ -144,24 +169,42 @@ interface GlobalFetchAutorunHost extends GlobalFetchHost {
 }
 
 /**
- * One fetch through the phases: prepare, then `run` under `FetchMixin.runFetch`
- * (which owns cancellation, the error and the loading flag), then commit while
- * still current. Returns the fetch's promise, or `undefined` when `prepare`
- * declined — so the autorun below can say which happened, and a caller that
- * wants one round trip on demand can await it.
+ * One fetch through the phases, with the family's shared gates around them:
+ * decline while minimized, while the signature is not yet computable (a
+ * prerequisite pending), or while `dataCurrent` says the held data already
+ * answers; then the byte-gate pre-flight, the display's `run` under
+ * `FetchMixin.runFetch` (which owns cancellation, the error and the loading
+ * flag), and a commit that stamps the signature the fetch was *issued* for —
+ * captured here, before any await, so a mid-flight view change cannot relabel
+ * the data. Each display used to spell some subset of this and each subset was
+ * missing a different piece (LD never declined on current data, HiC's signature
+ * missed the settings axis, a reload had to remember its own invalidation).
+ *
+ * Returns the fetch's promise, or `undefined` when the gates or the display's
+ * `prepare` declined — so the autorun below can say which happened, and a
+ * caller that wants one round trip on demand can await it.
  */
-export function runGlobalFetch<TArgs, TResult>(
+export function runGlobalFetch<TArgs extends GlobalFetchArgs, TResult>(
   self: GlobalFetchHost,
   { prepare, run, commit }: GlobalFetchPhases<TArgs, TResult>,
 ): Promise<void> | undefined {
+  const signature = self.fetchSignature
+  if (self.isMinimized || signature === undefined || self.dataCurrent) {
+    return undefined
+  }
   const args = prepare()
   if (args === undefined) {
     return undefined
   }
   return self.runFetch(async ctx => {
+    if (await self.byteGateBlocksFetch(args.regions, ctx)) {
+      return
+    }
     const result = await run(args, ctx)
     if (result !== undefined && !ctx.isStale()) {
-      commit(result, args)
+      self.commitFetchResult(() => {
+        commit(result, args)
+      }, signature)
     }
   })
 }
@@ -205,7 +248,10 @@ export function runGlobalFetch<TArgs, TResult>(
  * same: `rpcProps()` must return only user-controlled settings, never fetched
  * data (see ARCHITECTURE.md §"rpcProps() loop trap").
  */
-export function installGlobalFetchAutorun<TArgs, TResult>(
+export function installGlobalFetchAutorun<
+  TArgs extends GlobalFetchArgs,
+  TResult,
+>(
   self: GlobalFetchAutorunHost,
   opts: GlobalFetchPhases<TArgs, TResult> & {
     delay: number
@@ -257,9 +303,10 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
         return false
       }
 
-      // The only gate below the skeleton's is the display's own `prepare`, and
-      // it is one function rather than a gate plus a bail-out prefix: the two
-      // used to answer the same question in two places, one tracked and one not.
+      // Below the skeleton's own skip sit only `runGlobalFetch`'s shared gates
+      // (minimized, signature pending, data current) and the display's
+      // `prepare` — all synchronous in this body, so whatever they read to
+      // decline stays tracked and re-wakes the run.
       const started = runGlobalFetch(self, opts) !== undefined
       noteFetchAutorunRun(started ? 'fetched' : 'declined')
       // arms the debounce — the pre-fetch runs (view-init, the resolution list

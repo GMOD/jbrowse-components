@@ -158,13 +158,11 @@ function host(self: object) {
  * Every gated track above the old floor paid for that with a release, an aborted
  * fetch, and a re-banner on each zoom step.
  *
- * A pre-flight display opts in with two lines and nothing else: override
- * `measuresBytesPreFlight` to true, and `await self.byteGateBlocksFetch(regions,
- * ctx)` at the top of its fetch, returning if it says so. Both live here, so the
- * measurement and the verdict can't drift apart and the "capture the viewport
- * before the await" rule is structural rather than a call-site convention.
- * (`MultiRegionDisplayMixin.fetchRegions` already makes that call, so displays
- * in that family write only the first line.) Add
+ * A pre-flight display opts in with one line: override `measuresBytesPreFlight`
+ * to true. The call itself is the fetch runners' — `fetchRegions` per-region,
+ * `runGlobalFetch` global — and the measurement and the verdict both live here,
+ * so they can't drift apart and the "capture the viewport before the await"
+ * rule is structural rather than a call-site convention. Add
  * `densityTooLarge` for a second gating axis (canvas's feature-density
  * gate); the budget hooks default off the display config.
  *
@@ -944,11 +942,12 @@ export default function RegionTooLargeMixin() {
        * caller must abandon the fetch — either superseded mid-measure, or over
        * budget.
        *
-       * Every pre-flight caller (`fetchRegions` for the MultiRegionDisplayMixin
-       * family, LD and arc from their own global fetches) calls this and returns
-       * on true. It short-circuits to false when `measuresBytesPreFlight` is off,
-       * so the call is unconditional at every site — canvas leaves it off and
-       * measures inside its own feature RPC instead.
+       * Both fetch runners call this and return on true — `fetchRegions` for
+       * the MultiRegionDisplayMixin family, `runGlobalFetch` for the global one
+       * — so no display calls it by hand. It short-circuits to false when
+       * `measuresBytesPreFlight` is off, so the call is unconditional at every
+       * site — canvas leaves it off and measures inside its own feature RPC
+       * instead.
        *
        * Sequencing the steps at a call site is what used to go wrong: the
        * viewport is read here, *before* the await, so the estimate is labelled

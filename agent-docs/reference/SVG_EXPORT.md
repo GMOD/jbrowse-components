@@ -260,16 +260,14 @@ their terminals differently and keep their own call.
 <!-- BEGIN GENERATED FRESHNESS_SIGNATURE_CENSUS -->
 
 
-5 models across 5 packages answer `dataCurrent` by comparing the signature their data was loaded for against the one the live view calls for. A display joins by calling `isDataCurrent` and leaves by not calling it.
+3 models across 3 packages answer `dataCurrent` by comparing the signature their data was loaded for against the one the live view calls for. A display joins by calling `isDataCurrent` and leaves by not calling it.
 
 <!-- prettier-ignore -->
 | Model | Loaded signature | Live signature |
 | --- | --- | --- |
-| `plugins/arc/src/shared/ArcFetchModel.ts` | `self.loadedRegionSignature` | `currentRegionSignature(self)` |
 | `plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx` | `self.loadedFetchKey` | `this.currentFetchKey` |
-| `plugins/hic/src/LinearHicDisplay/model.ts` | `self.loadedSignature` | `self.hicFetchSignature` |
 | `plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts` | `self.loadedFetchKey` | `this.currentFetchKey` |
-| `plugins/variants/src/LDDisplay/shared.ts` | `self.loadedSignature` | `this.ldFetchSignature` |
+| `plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts` | `self.loadedFetchSignature` | `self.fetchSignature` |
 <!-- END GENERATED FRESHNESS_SIGNATURE_CENSUS -->
 
 ### The view-level wait: `awaitViewInitialized`
@@ -359,12 +357,11 @@ They don't track `loadedRegions`/`displayPhase` the same way, but they run the
 same `computeSvgReady` policy:
 
 - **Arc / paired-arc** are still LGV track displays and compose
-  `GlobalFetchMixin`, so they get `svgReady` from it and override only
-  `dataCurrent`: `isDataCurrent(loadedRegionSignature,
-  currentRegionSignature(self))`. Drawing all features into a single array
-  (gated by `RegionTooLargeMixin`), the signature freshness compare makes an
-  export fired right after a pan/zoom wait for fresh arcs instead of capturing
-  stale ones.
+  `GlobalFetchMixin`, so they get `svgReady` — and the whole signature compare —
+  from it, overriding only `viewSignature` (the static-block keys). Drawing all
+  features into a single array (gated by `RegionTooLargeMixin`), the freshness
+  compare makes an export fired right after a pan/zoom wait for fresh arcs
+  instead of capturing stale ones.
 - **Multi-LGV synteny** is *non-LGV* (a `LinearSyntenyView` level composing only
   `BaseDisplay` with its own fetch), so it awaits `awaitSvgReady` itself, calling
   `computeSvgReady` directly with `dataCurrent` =
@@ -403,10 +400,12 @@ freshness answer rather than choosing which of the names to expose.
 
 `isDataCurrent(loadedSignature, currentSignature)` (`@jbrowse/core/util`,
 `loaded !== undefined && loaded === current`) is the shared rule for the second
-row: arc / paired-arc and HiC (region-key signatures over static blocks), LD
-(dynamic blocks + settings), dotplot + linear-comparative synteny (fetch-input
-signature). The view-specific part (how each builds its signature) stays
-per-display; only the final compare is shared.
+row. On the LGV global family the whole compare lives on `GlobalFetchMixin`: a
+display supplies only `viewSignature` (arc and HiC over static blocks — HiC
+appending its binsize — LD over dynamic blocks), the mixin appends the
+`rpcPropsCacheKey` settings axis, stamps the issued signature at commit, and
+drops it on `reload()`. Dotplot + linear-comparative synteny keep their own
+fetch-input signatures (ADR-054); only the final compare is shared with them.
 
 ## On-screen capture gate (`settled` → `*_canvas_done`)
 

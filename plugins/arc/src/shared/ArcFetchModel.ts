@@ -1,11 +1,9 @@
-import { isDataCurrent } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalFetchMixin,
+  blockKeySignature,
   foundationDisplayStatusPhase,
 } from '@jbrowse/plugin-linear-genome-view'
-
-import { currentRegionSignature } from './regionSignature.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
@@ -35,20 +33,15 @@ export function ArcFetchModel() {
          * #volatile
          */
         features: undefined as Feature[] | undefined,
-        /**
-         * #volatile
-         * signature of the static-block region set `features` were fetched for;
-         * the `dataCurrent`/`svgReady` freshness axis (see regionSignature.ts)
-         */
-        loadedRegionSignature: undefined as string | undefined,
       }))
       .actions(self => ({
         /**
          * #action
+         * `runGlobalFetch` stamps the signature these were fetched for
+         * (`GlobalFetchMixin.commitFetchResult`) in the same transaction.
          */
-        setFeatures(f: Feature[], signature: string) {
+        setFeatures(f: Feature[]) {
           self.features = f
-          self.loadedRegionSignature = signature
         },
       }))
       // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases on
@@ -82,14 +75,17 @@ export function ArcFetchModel() {
         },
         /**
          * #getter
-         * fresh only when `features` were fetched for the current static-block set;
-         * overrides GlobalFetchMixin's default so `svgReady` can resolve on load
+         * Arc's half of `GlobalFetchMixin`'s freshness compare: the static-block
+         * set is the whole staleness axis (there is no `loadedRegions` spatial
+         * map — every feature is fetched into one array), so panning or zooming
+         * past a block boundary refetches and a scroll inside the loaded blocks
+         * does not.
          */
-        get dataCurrent() {
-          return isDataCurrent(
-            self.loadedRegionSignature,
-            currentRegionSignature(self),
-          )
+        get viewSignature() {
+          const view = self.lgv
+          return view.initialized
+            ? blockKeySignature(view.staticBlocks.contentBlocks)
+            : undefined
         },
         /**
          * #getter
@@ -133,24 +129,6 @@ export function ArcFetchModel() {
           return self.features !== undefined || !!self.error
         },
       }))
-      .actions(self => {
-        const superReload = self.reload
-        return {
-          /**
-           * #action
-           * Arc's fetch trigger gates on `!dataCurrent`, so bumping
-           * `reloadCounter` alone can't refetch: the signature still matches the
-           * current blocks. Drop it so `dataCurrent` goes false and the autorun
-           * fires. `features` deliberately survives — the stale arcs stay on
-           * screen under the loading overlay rather than blanking, and
-           * `setFeatures` replaces them.
-           */
-          reload() {
-            superReload()
-            self.loadedRegionSignature = undefined
-          },
-        }
-      })
   )
 }
 

@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import { getSession, isDataCurrent } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -15,6 +15,7 @@ import {
   GlobalDataDisplayMixin,
   LegendMixin,
   TrackHeightMixin,
+  blockKeySignature,
   computeTriangleYScalar,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
@@ -92,16 +93,6 @@ export default function sharedModelFactory(
       rpcData: null as LDDataResult | null,
       /**
        * #volatile
-       * signature of the dynamic-block set + settings `rpcData` was fetched
-       * for; the `dataCurrent`/`svgReady` freshness axis. LD's SNP set is
-       * viewport-defined (the index-mode triangle spans the visible blocks),
-       * so a pan still refetches — but worker output is genomic, so the stale
-       * triangle draws at its own position under the live transform while the
-       * refetch runs.
-       */
-      loadedSignature: undefined as string | undefined,
-      /**
-       * #volatile
        * Locus (`refName:start`) of the focal SNP whose LD row+column is
        * emphasized, or undefined. Keyed by locus rather than array index so
        * the selection survives a re-fetch that reorders SNPs.
@@ -109,9 +100,13 @@ export default function sharedModelFactory(
       focalSnpLocus: undefined as string | undefined,
     }))
     .actions(self => ({
-      setRpcData(data: LDDataResult | null, signature?: string) {
+      /**
+       * #action
+       * `runGlobalFetch` stamps the signature this was fetched for
+       * (`GlobalFetchMixin.commitFetchResult`) in the same transaction.
+       */
+      setRpcData(data: LDDataResult) {
         self.rpcData = data
-        self.loadedSignature = data ? signature : undefined
       },
       setFocalSnp(snp: LDSnp | undefined) {
         self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
@@ -240,35 +235,19 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * The shared freshness hook, read by `GlobalFetchMixin.svgReady`. The
-       * fetch commits `rpcData` even for an empty viewport, so this flips true
-       * once data has loaded AND it was fetched for the current block set and
-       * settings (`ldFetchSignature`). Gating on the signature — not merely
-       * `rpcData !== null` — keeps off-screen `svgReady` from resolving on a
-       * triangle left over from the pre-pan/zoom viewport, or from before a
-       * settings change, during the debounced-refetch window. Without the
-       * override the mixin default (`false`) leaves `svgReady` unable to
-       * resolve on a successful load, hanging SVG export.
+       * LD's half of `GlobalFetchMixin`'s freshness compare: the dynamic-block
+       * set. LD's SNP set is viewport-defined (the index-mode triangle spans
+       * the visible blocks), so a pan refetches — but worker output is genomic,
+       * so the stale triangle draws at its own position under the live
+       * transform while the refetch runs. The settings axis — what keeps
+       * `svgReady` from capturing a matrix computed under the filters the user
+       * just changed — rides in through the `rpcPropsCacheKey` half the mixin
+       * appends.
        */
-      get dataCurrent(): boolean {
-        return (
-          self.rpcData !== null &&
-          isDataCurrent(self.loadedSignature, this.ldFetchSignature)
-        )
-      },
-      /**
-       * #getter
-       * Signature of the fetch the current view and settings call for: the
-       * dynamic-block keys plus the serialized `rpcProps()`. The settings term
-       * is what keeps `svgReady` from capturing a matrix computed under the
-       * filters the user just changed.
-       */
-      get ldFetchSignature(): string | undefined {
+      get viewSignature(): string | undefined {
         const view = self.lgv
         return view.initialized
-          ? `${view.dynamicBlocks.contentBlocks
-              .map(b => b.key)
-              .join(',')}|${self.rpcPropsCacheKey}`
+          ? blockKeySignature(view.dynamicBlocks.contentBlocks)
           : undefined
       },
       /**

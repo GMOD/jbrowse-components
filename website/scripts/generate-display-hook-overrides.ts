@@ -93,11 +93,11 @@ const HOOKS: Hook[] = [
     ifNotOverridden: 'nothing is ever fetched',
   },
   {
-    name: 'dataCurrent',
+    name: 'viewSignature',
     owner:
       'plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts',
     ifNotOverridden:
-      'false forever, so `svgReady` never settles and one track hangs the whole view’s export (fail-hung over fail-stale, deliberately)',
+      'undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census)',
   },
   {
     name: 'layoutReady',

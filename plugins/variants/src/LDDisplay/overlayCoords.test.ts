@@ -46,7 +46,6 @@ function loadedDisplay({ scrollTo = 0, data = {} } = {}) {
       originBp: view.dynamicBlocks.contentBlocks[0]?.start ?? 0,
       ...data,
     }),
-    display.ldFetchSignature,
   )
   return { display, view, width }
 }

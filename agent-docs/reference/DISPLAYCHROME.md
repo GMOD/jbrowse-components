@@ -357,9 +357,10 @@ A concept shared by convention decays silently, since nothing renders both
 versions side by side. Alignment with the chrome should cost a display a prop,
 not a copy.
 
-Arc's fetch autorun declines while its data is current, so `reload()` drops
-`loadedRegionSignature` as well as clearing `error`. Without that override the
-shared error bar's retry would be dead.
+Arc's fetch autorun declines while its data is current, so `reload()` must drop
+the loaded signature as well as clearing `error` — done for the whole global
+family by `GlobalFetchMixin.reload()`, which owns the signature. Without that
+pairing the shared error bar's retry would be dead.
 
 ## The retry contract
 
@@ -368,9 +369,11 @@ it.** `DisplayErrorBar`'s only action is `model.reload()`, so every state that
 can raise the error bar must be one `reload()` actually undoes — otherwise the
 button is present, looks live, and does nothing. Two shapes have failed it:
 
-- **A gate `reload()` doesn't clear.** Arc, above: its `prepare` declines while
-  `dataCurrent`, so the base `reload()`'s `reloadCounter` bump refires the
-  autorun into a no-op until `loadedRegionSignature` is dropped too.
+- **A gate `reload()` doesn't clear.** Arc, above: the fetch declines while
+  `dataCurrent`, so a bare `reloadCounter` bump refires the autorun into a no-op
+  unless the loaded signature is dropped too — which is why
+  `GlobalFetchMixin.reload()` does both in one action rather than each display
+  overriding it.
 - **Work `reload()` never re-runs.** HiC's normalization/binsize header read was
   a bare `afterAttach` IIFE, so a retry cleared the error and dropped straight
   back onto the permanent scrim — the header was never re-read. It now runs from
