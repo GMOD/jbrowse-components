@@ -58,7 +58,6 @@ import {
 import {
   THEME_DERIVED_COLOR,
   pickDisplayConfig,
-  pickGateSlots,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
@@ -931,24 +930,23 @@ export default function baseStateModelFactory(
           // expensive ones came from `BaseLinearDisplay`'s schema rather than
           // from this plugin.
           //
-          // Both RESOLVED gate budgets — `resolvedByteLimit()` and
-          // `maxFeatureDensity` — are added at the CALL SITE, not here, so
-          // neither is a cache key. Both go undefined the moment their axis
-          // stops gating, and `densityGateActive` folds in `AUTO_FORCE_LOAD_BP`:
-          // as a cache key `maxFeatureDensity` made zooming across the 20 kb
-          // floor a full `clearAllRpcData()` + refetch, blanking the display at
-          // exactly the zoom people settle a gene at, for data identical on both
-          // sides of it. The byte budget no longer moves at that span at all —
-          // `gateActive` has no floor term — but it swings on force-load, so the
-          // same rule holds for the same reason. Losing the floor as a trigger
-          // loses nothing: a region the worker rejected stores no data, so
-          // `isCacheValid` is already false for it, and zooming back OUT re-gates
-          // from the live main-thread verdict (`densityStatsPerRegion` is
+          // The gate budgets — resolved and raw — are NOT cache keys. The
+          // RESOLVED values (`resolvedByteLimit()`, `maxFeatureDensity`) ride
+          // at the CALL SITE because they swing on the viewport: as a cache key
+          // `maxFeatureDensity` made zooming across the 20 kb floor a full
+          // `clearAllRpcData()` + refetch, blanking the display at exactly the
+          // zoom people settle a gene at, for data identical on both sides of
+          // it. And the RAW slots need no invalidation role either, because an
+          // edit reaches the verdict through tracked reads: a region the
+          // worker rejected stores no data and is never marked loaded, the
+          // fetch autorun tracks `regionTooLarge`, so raising a budget releases
+          // the banner and refetches the blocked region with the new budget —
+          // while regions already loaded and in budget keep their data, which
+          // a cache-key invalidation would have thrown away. Lowering a budget
+          // re-banners from the live verdict (`densityStatsPerRegion` is
           // committed on every successful fetch regardless of budget, and the
-          // byte estimate survives) with the worker re-gating whenever a fetch
-          // actually happens — which is the moment a download would occur, and
-          // so the moment the gate is for. `gateSlots` below is what keeps a
-          // user's EDIT to one of those budgets a refetch.
+          // byte estimate survives), with the worker re-gating whenever a
+          // fetch actually happens — the moment a download would occur.
           const snapshot = getConfigSnapshotWithPromotables(self)
           const workerConfig = pickDisplayConfig(snapshot)
           return {
@@ -967,7 +965,6 @@ export default function baseStateModelFactory(
                   : workerConfig.subfeatureLabels,
               jexlFilters: self.activeFilters(),
             },
-            gateSlots: pickGateSlots(snapshot),
             colorByCDS: self.colorByCDS,
             showAminoAcids: self.showAminoAcids,
             // Only isolate once the collection is applied; collecting (ctrl+

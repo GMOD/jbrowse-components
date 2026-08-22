@@ -35,11 +35,11 @@ export interface GateHost {
   configuration: BaseLinearDisplayConfigModel
   gateActive: boolean
   densityGateActive: boolean
-  setByteEstimate: (measurement: {
-    bytes: number
+  commitByteMeasurement: (measurement: {
     viewport: GateViewport
+    gated: boolean
+    bytes?: number
   }) => void
-  setGateMeasuredViewport: (viewport: GateViewport) => void
 }
 
 function host(self: object) {
@@ -244,11 +244,6 @@ export default function CanvasFeatureGateMixin() {
         if (measurements.length === 0 || !viewport) {
           return
         }
-        if (gated) {
-          host(self).setGateMeasuredViewport(viewport)
-        }
-        // outside the `gated` check: committed whatever the budget was, so
-        // zooming back out re-gates from the live main-thread verdict
         for (const { displayedRegionIndex, region, result } of measurements) {
           const { featureCount } = result
           if (featureCount !== undefined) {
@@ -258,10 +253,13 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-        const bytes = largestRegionBytes(measurements.map(m => m.result.bytes))
-        if (bytes !== undefined) {
-          host(self).setByteEstimate({ bytes, viewport })
-        }
+        // the stamp-only-if-gated and skip-undefined-bytes rules live in the
+        // shared commit, beside the pre-flight's copy of the same protocol
+        host(self).commitByteMeasurement({
+          viewport,
+          gated,
+          bytes: largestRegionBytes(measurements.map(m => m.result.bytes)),
+        })
       },
     }))
     .actions(self => ({

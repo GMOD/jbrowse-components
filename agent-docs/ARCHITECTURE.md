@@ -1323,22 +1323,17 @@ Picking inverts all three. A new worker slot means editing the interface and the
 key list together, and forgetting means the feature does not work — which someone
 notices. A new main-thread slot means editing neither.
 
-**A slot that is in the payload only to invalidate it gets its own field.** Once
-the config half is a pick of what the worker reads, anything riding along for the
-cache key alone has nowhere left to hide in it. `LinearBasicDisplay` sends
-`gateSlots` — the raw `fetchSizeLimit` / `forceLoad` / `maxFeatureScreenDensity`
-the region-too-large budgets resolve from — because the *resolved* budgets
-deliberately ride at the call site instead (as cache keys they blanked the display
-on every zoom across `AUTO_FORCE_LOAD_BP`; see [the gate
-summary](#the-region-too-large-gate-summary)).
-
-That is a rule about *naming* such a field, not a ruling that canvas needs one:
-the sibling multi-row display composes the same gate and carries no budget slot at
-all, and which of the two is right is open —
-[REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md) states both sides and says not
-to unify them until someone settles it. What the pick did settle is that the
-question is *askable*, because the slots now sit somewhere a reader can see them
-instead of being residue an exclusion list happened not to mention.
+**A slot that is in the payload only to invalidate it gets its own field** —
+once the config half is a pick of what the worker reads, anything riding along
+for the cache key alone has nowhere left to hide in it. The rule survives its
+one former instance: `LinearBasicDisplay`'s `gateSlots` (the raw gate budget
+slots, sent purely so an edit stayed a refetch) was deleted 2026-08-21 when the
+question [REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md) had left open was
+settled — a budget edit reaches the verdict through tracked reads, so the field
+only ever bought a redundant full refetch of regions already loaded and in
+budget. What the pick had already settled is that the question was *askable*,
+because the slots sat somewhere a reader could see them instead of being
+residue an exclusion list happened not to mention.
 
 ### `gpuProps()` and derived region maps — re-upload without refetch
 

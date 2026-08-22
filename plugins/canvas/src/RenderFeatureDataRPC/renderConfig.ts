@@ -197,27 +197,3 @@ export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   }
   return picked as unknown as DisplayConfig
 }
-
-/**
- * The region-too-large gate's raw config slots, which no worker code reads.
- *
- * They ride in the payload for one reason: to keep editing a budget a cache-key
- * change. The *resolved* budgets (`resolvedByteLimit()`, `maxFeatureDensity`) are
- * deliberately passed at the RPC call site instead, because they swing on the
- * viewport — as cache keys, `maxFeatureDensity` made zooming across
- * `AUTO_FORCE_LOAD_BP` a full `clearAllRpcData()` for data identical on both
- * sides of the floor. The raw slots don't move with the viewport, so they carry
- * the invalidation the resolved values can't.
- *
- * Named as their own field rather than left in the config snapshot, where they
- * were three of the residue the exclusion list happened not to name and read as
- * slots the worker might use. Declared on `BaseLinearDisplay`'s schema, not this
- * plugin's.
- */
-export function pickGateSlots(snapshot: Record<string, unknown>) {
-  return {
-    fetchSizeLimit: snapshot.fetchSizeLimit,
-    forceLoad: snapshot.forceLoad,
-    maxFeatureScreenDensity: snapshot.maxFeatureScreenDensity,
-  }
-}

@@ -13,12 +13,18 @@ describe('resolveByteLimit', () => {
       resolveByteLimit({
         adapterFetchSizeLimit: 20,
         configFetchSizeLimit: 30,
+        belowForceLoadFloor: false,
       }),
     ).toBe(20)
   })
 
   it('falls back to the config default when there is no adapter limit', () => {
-    expect(resolveByteLimit({ configFetchSizeLimit: 30 })).toBe(30)
+    expect(
+      resolveByteLimit({
+        configFetchSizeLimit: 30,
+        belowForceLoadFloor: false,
+      }),
+    ).toBe(30)
   })
 
   // Regression: an adapter reporting fetchSizeLimit: 0 (e.g. htsget/no-index)
@@ -29,6 +35,7 @@ describe('resolveByteLimit', () => {
       resolveByteLimit({
         adapterFetchSizeLimit: 0,
         configFetchSizeLimit: 30,
+        belowForceLoadFloor: false,
       }),
     ).toBe(30)
   })
@@ -41,6 +48,7 @@ describe('resolveByteLimit', () => {
       resolveByteLimit({
         adapterFetchSizeLimit: -1,
         configFetchSizeLimit: 30,
+        belowForceLoadFloor: false,
       }),
     ).toBe(30)
   })
@@ -101,7 +109,7 @@ describe('resolveByteLimit', () => {
     expect(
       evaluateRegionTooLarge({
         estimatedFetchBytes: at20kb,
-        byteLimit: resolveByteLimit(bam),
+        byteLimit: resolveByteLimit({ ...bam, belowForceLoadFloor: false }),
       }).tooLarge,
     ).toBe(true)
   })

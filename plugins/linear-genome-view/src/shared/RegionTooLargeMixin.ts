@@ -827,9 +827,9 @@ export default function RegionTooLargeMixin() {
        *
        * `bytes` is a number, never `undefined`: a fetch that measured nothing
        * calls this not at all, so the stored estimate stays whatever the last
-       * real measurement said. Both callers already skip that write —
-       * `byteGateBlocksFetch` and `commitGateMeasurements` — and the type is
-       * what keeps a third from publishing an empty one.
+       * real measurement said. `commitByteMeasurement` is the one caller and
+       * skips that write; the type is what keeps another from publishing an
+       * empty one.
        */
       setByteEstimate(measurement: { bytes: number; viewport: GateViewport }) {
         self.byteEstimate = nextByteEstimate(self.byteEstimate, measurement)
@@ -838,8 +838,8 @@ export default function RegionTooLargeMixin() {
       /**
        * #action
        * Record that the gate has asked the adapter about this viewport, whatever
-       * it learned. Every gated fetch calls it — the pre-flight below, and
-       * canvas's `commitGateMeasurements` — and it is deliberately **separate**
+       * it learned. Every gated fetch reaches it through `commitByteMeasurement`,
+       * and it is deliberately **separate**
        * from `setByteEstimate`, because a fetch can come back having measured
        * density and no bytes (a dense region short-circuits on the feature count,
        * and an unmeasurable byte result must not overwrite a good estimate). Both
@@ -885,6 +885,37 @@ export default function RegionTooLargeMixin() {
        */
       reload() {
         // no-op, overridden by composing display models
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * The measurement-commit protocol, held once for both gate paths — the
+       * pre-flight below and canvas's in-fetch RPC (`commitGateMeasurements`).
+       * Three rules, each of which used to be spelled at both sites:
+       *
+       * - a fetch the gate sat out stamps nothing (`gated: false`), so
+       *   `gateMeasurementStale` keeps asking about the live viewport
+       * - unmeasurable is not a measurement — an undefined `bytes` must not
+       *   wipe the last real estimate
+       * - the estimate commits whatever the budget was, so lowering a budget
+       *   later re-banners from stored numbers with no RPC
+       */
+      commitByteMeasurement({
+        viewport,
+        gated,
+        bytes,
+      }: {
+        viewport: GateViewport
+        gated: boolean
+        bytes?: number
+      }) {
+        if (gated) {
+          self.setGateMeasuredViewport(viewport)
+        }
+        if (bytes !== undefined) {
+          self.setByteEstimate({ bytes, viewport })
+        }
       },
     }))
     .actions(self => ({
@@ -965,11 +996,9 @@ export default function RegionTooLargeMixin() {
         if (ctx.isStale()) {
           return true
         }
-        self.setGateMeasuredViewport(viewport)
-        // unmeasurable is not a measurement: it must not wipe the last real one
-        if (bytes !== undefined) {
-          self.setByteEstimate({ bytes, viewport })
-        }
+        // gated: true by construction — the opt-in and `gateActive` were the
+        // early return above
+        self.commitByteMeasurement({ viewport, gated: true, bytes })
         // Read after the commit: the verdict is a pure function of the estimate,
         // and the estimate was just taken at this viewport.
         return self.regionTooLarge

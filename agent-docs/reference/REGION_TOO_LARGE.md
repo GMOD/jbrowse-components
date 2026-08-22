@@ -200,25 +200,22 @@ as call-site arguments to `RenderFeatureData` / `MultiRowGetFeatures`, and they
 are deliberately **not** in `rpcProps()`. In the payload, zooming across the
 floor is a full `SettingsInvalidate` → `clearAllRpcData()` → refetch, blanking
 the display at exactly the zoom people settle a gene at, for data identical on
-both sides of it — which `maxFeatureDensity` shipped once. The *slots* the
-budgets resolve from — `fetchSizeLimit`, `forceLoad`, `maxFeatureScreenDensity` —
-travel instead, as `LinearBasicDisplay`'s `gateSlots` field, so a real settings
-change still invalidates. Read the field rather than looking for them in
-`displayConfig`: nothing in the worker reads them, so the pick that builds the
-worker's config leaves them out and they are named separately (see
-ARCHITECTURE.md
-"[Pick the payload out of the snapshot](../ARCHITECTURE.md#pick-the-payload-out-of-the-snapshot-never-subtract-from-it)").
+both sides of it — which `maxFeatureDensity` shipped once.
 
-**The multi-row display carries none of them, and nothing yet says which of the
-two is right.** Its `rpcProps()` returns `partitionField` / `lengthField` /
-`colorConfig` only, so editing a budget there does not move its cache key — which
-by the argument below costs nothing, making the basic display's extra
-invalidation redundant and worse for a region already loaded and fine. Against
-that, the basic display's behavior is deliberate and pinned twice, on the worry
-that a track would otherwise strand at a budget the user just raised. Deciding it
-means deciding whether `FetchVisibleRegions` re-running off the released
-`regionTooLarge` suffices alone; until someone does, don't "unify" these by
-copying either onto the other.
+**The raw slots the budgets resolve from are not cache keys either — settled
+2026-08-21.** `LinearBasicDisplay` used to send them as a `gateSlots` field so a
+budget edit stayed a refetch, while the multi-row display carried none, and
+which was right stayed open on the worry that a track would strand at a budget
+the user just raised. It does not strand: `FetchVisibleRegions` tracks
+`regionTooLarge`, a refused region was never marked loaded, and the budgets
+resolve through tracked `getConf` reads — so raising one releases the verdict
+and refetches the blocked region with the new budget at the call site, while
+lowering one re-banners from the stored measurements with no RPC at all. The
+only behavior `gateSlots` added was a full refetch of regions already loaded
+and in budget — the same redundant-and-worse case as the resolved values —
+so the field is gone and the multi-row arrangement is the rule. Pinned by
+"gate budgets are not RPC cache keys" (both the stable key and the
+release-through-the-verdict) in `LinearBasicDisplay/fetchAutorun.test.ts`.
 
 Losing a budget swing as an invalidation trigger loses no protection. A region
 the worker rejected stores nothing, so nothing marks it loaded and it refetches

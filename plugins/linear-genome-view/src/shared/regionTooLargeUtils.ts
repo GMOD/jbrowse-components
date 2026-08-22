@@ -145,12 +145,6 @@ export function bytesTooLargeReason(bytes: number) {
   return `Requested too much data (${getDisplayStr(bytes)})`
 }
 
-// What the banner says lives with the overlay contract instead — every set that
-// renders the too-large state has to say the same thing, and only one of those
-// sets is in this repo. Re-exported so a display still gets the reason text and
-// the byte math from one import.
-export { tooLargeBannerText } from '@jbrowse/display-ui'
-
 /**
  * Resolve the effective byte budget: the adapter's self-reported limit, else the
  * display's configured default, times {@link SUB_FLOOR_BYTE_BUDGET_FACTOR} when
@@ -170,11 +164,13 @@ export { tooLargeBannerText } from '@jbrowse/display-ui'
 export function resolveByteLimit({
   adapterFetchSizeLimit,
   configFetchSizeLimit,
-  belowForceLoadFloor = false,
+  belowForceLoadFloor,
 }: {
   adapterFetchSizeLimit?: number
   configFetchSizeLimit: number
-  belowForceLoadFloor?: boolean
+  // required: a caller that forgot the floor term would silently skip the
+  // sub-floor budget raise
+  belowForceLoadFloor: boolean
 }) {
   const base = adapterByteLimit(adapterFetchSizeLimit, configFetchSizeLimit)
   return belowForceLoadFloor ? base * SUB_FLOOR_BYTE_BUDGET_FACTOR : base

@@ -758,17 +758,43 @@ describe('gate budgets are not RPC cache keys', () => {
     expect(display.rpcPropsCacheKey).toBe(above)
   })
 
-  it('still invalidates when the slot a budget resolves from changes', () => {
+  it('keeps the cache key stable when a budget slot is edited', () => {
+    // The raw slots used to ride in the payload (`gateSlots`) purely to make a
+    // budget edit a refetch. That invalidation was redundant — an edit reaches
+    // the verdict through tracked reads (see the test below) — and worse: it
+    // threw away regions that were loaded and in budget.
     const { display, view } = createLargeDisplay()
     view.zoomTo(62.5)
     const before = display.rpcPropsCacheKey
 
-    display.configuration.setSlot('maxFeatureScreenDensity', 42)
-    expect(display.rpcPropsCacheKey).not.toBe(before)
+    setConf(display, 'maxFeatureScreenDensity', 42)
+    setConf(display, 'fetchSizeLimit', 12_345)
+    expect(display.rpcPropsCacheKey).toBe(before)
+  })
 
-    const afterDensity = display.rpcPropsCacheKey
-    display.configuration.setSlot('fetchSizeLimit', 12_345)
-    expect(display.rpcPropsCacheKey).not.toBe(afterDensity)
+  it('a raised fetchSizeLimit releases the gate through the verdict', async () => {
+    // The property that makes the budgets safe to keep out of the cache key
+    // entirely: a refused region was never marked loaded, the fetch autorun
+    // tracks `regionTooLarge`, so the edit alone re-fires the fetch with the
+    // new budget at the call site.
+    const { display, mockRpcCall } = createLargeDisplay()
+    // bytesPerBp=200 over the 50kb region → ~10MB, past the 5MB limit
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
+
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    expect(display.loadedRegions.size).toBe(0)
+
+    setConf(display, 'fetchSizeLimit', 100_000_000)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
   })
 })
 
@@ -1449,21 +1475,6 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
   ])
 })
 
-// The gate's raw slots ride in their own field, and the reason they ride at all
-// is invalidation: the resolved budgets go at the call site, so without these an
-// edit to one would not change the cache key. Pinned as an exact set for the same
-// reason as above — a fourth name appearing here is a slot someone made a cache
-// key without deciding to.
-test('gateSlots carries the three raw budget slots and nothing else', () => {
-  const { createDisplay } = createTestEnvironment()
-  const { display } = createDisplay()
-  expect(Object.keys(display.rpcProps().gateSlots).sort()).toEqual([
-    'fetchSizeLimit',
-    'forceLoad',
-    'maxFeatureScreenDensity',
-  ])
-})
-
 // The SettingsInvalidate cache key is what rpcProps() *returns*, not what it
 // reads. rpcProps builds its payload from a whole config snapshot
 // (getConfigSnapshotWithPromotables), which touches every slot on the display
@@ -1670,14 +1681,16 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
   })
 
   // The resolved `maxFeatureDensity` rides at the call site, not in the payload
-  // (it swings on the viewport — see "gate budgets are not RPC cache keys"), so
-  // the raw `maxFeatureScreenDensity` slot is what has to carry the
-  // invalidation. Without it a track would silently strand at a density budget
-  // the user just raised. Both halves are asserted below: the refetch, and that
-  // the new budget actually reaches the worker.
-  it('a density-budget change still refetches while the gate is active', async () => {
+  // (it swings on the viewport — see "gate budgets are not RPC cache keys"),
+  // and the raw slot is not a cache key either. Lowering the budget on a
+  // loaded track re-banners from the density stats every successful fetch
+  // already committed — no refetch, since the main thread holds everything the
+  // verdict needs, and the data stays loaded under the banner.
+  it('a lowered density budget re-banners from stored stats without a refetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeFeatureData())
+    // 100 features / 500kb at bpPerPx 1000 → ~0.2 features/px: under the
+    // default budget of 1, over the lowered one below
+    mockRpcCall.mockResolvedValue(makeFeatureData({ featureCount: 100 }))
     const { display, view } = createDisplay()
     // zoomed out past AUTO_FORCE_LOAD_BP, so the density axis has an opinion at
     // all (below the floor `maxFeatureDensity` is undefined by design)
@@ -1691,16 +1704,16 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
       expect(display.loadedRegions.size).toBe(1)
     })
     expect(display.maxFeatureDensity).not.toBeUndefined()
+    expect(display.regionTooLarge).toBe(false)
     const callsBefore = mockRpcCall.mock.calls.length
 
-    display.configuration.setSlot('maxFeatureScreenDensity', 0.5)
+    setConf(display, 'maxFeatureScreenDensity', 1e-6)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
-    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
-    expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
-      maxFeatureDensity: 0.5,
-    })
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.loadedRegions.size).toBe(1)
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   it('a worker-visible change still refetches', async () => {

@@ -276,7 +276,6 @@ rely on it as a correctness signal.
 | `fullConfSnapshot(config)`              | `packages/core/src/configuration/fullConfSnapshot.ts`     | The walker under it. Not on the barrel — use the resolving form |
 | `readConfigValue(config, key, feature)` | `packages/core/src/configuration/readConfObject.ts`       | Read from plain object, auto-evaluate JEXL                |
 | `pickDisplayConfig(snapshot)`           | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Take the worker's slots out of the snapshot — the pick, never a subtraction |
-| `pickGateSlots(snapshot)`               | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | The same, for the gate's raw budget slots, which ride along to stay cache keys |
 
 Canvas has its own `readConfigValue` beside those, plus a `readConfigValueSafe`;
 they are the worker-side pair, and core's is the one a plugin outside canvas
