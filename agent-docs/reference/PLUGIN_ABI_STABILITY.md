@@ -338,13 +338,39 @@ Of the 22 genuinely new errors, the causes were:
 | notification points | `LinearGenomeView-searchResultSelected` moved to `listenToExtensionPoint`; the type says so and names the replacement |
 | `CascadingMenuProps.slotProps` removed | 3 errors, the component-prop surface above |
 | `SessionWithAddTracks` (the *type*) | the `isSessionWithAddTracks` alias survives for prebuilt bundles; the type it named does not, and Apollo imported the type |
+| `Core-extendWorker`'s handle flattened | **0 errors** — the break was invisible; see below |
 
-Two things this says about the surfaces. The typed registry **worked**: both
-extension-point errors named the right replacement in the diagnostic, and neither
-needed a doc. And the ledger below did not have to grow — every break was a
-compile error, none was a silent behavior change. What it did not catch is the
-dependency-range class, which no checker sees and which produced twenty times
-more errors than everything else combined.
+Where the typed registry **worked**, it worked well: both extension-point errors
+above named the right replacement in the diagnostic, and neither needed a doc.
+
+Where it did not work is the finding. `Core-extendWorker` broke and produced no
+error at all. Apollo declared its own `{ client: { on }, worker: Worker }` for
+the handle and called `handle.client.on(...)`, which has been a runtime
+TypeError since the handle flattened onto `on`/`postMessage` — and it typechecked
+clean, in the 24-error run and in the zero-error run after it. Two causes, one
+fix (`8e56c5c01a`):
+
+- `@jbrowse/core/rpc/WebWorkerRpcDriver` had no `exports` entry, because that map
+  is derived from in-repo *subpath* usage and in-repo the module is only reached
+  relatively. So `WorkerHandle` was unimportable and a hand-written shape was the
+  only option available to the plugin the point exists for.
+- **A registry declaration only constrains a plugin whose program already
+  contains the module the declaration lives in.** Nothing in Apollo imported that
+  module, so the augmentation never loaded, `'Core-extendWorker'` was not a
+  registry key as Apollo saw it, and `addToExtensionPoint` fell to its untyped
+  overload — which infers the parameter from whatever the callback claims. The
+  wrong shape was not merely unchecked; it *defined* the check.
+
+That is a property of all 24 declaration sites, not of this one. `exports`
+decides which of them an external plugin can reach, and reachability is not
+correlated with how plugin-facing the point is. Apollo's
+`Core-preProcessTrackConfig` callback was caught only because it happens to
+import `@jbrowse/core/pluggableElementTypes` for other reasons and the
+declaration rides along.
+
+So: the ledger below did not have to grow, but not because nothing was silent.
+The one silent break was invisible to the ledger too. And the largest class by
+count — the dependency ranges — no checker sees either.
 
 ## Ledger: behavior changes external plugins inherit
 
