@@ -62,7 +62,7 @@ async function createBreakpointView(init: object) {
   const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setSession({ name: 'BreakpointSplitViewInit test' })
   const session = rootModel.session!
-  const view = session.addView('BreakpointSplitView', { init })
+  const view = await session.launchView('BreakpointSplitView', { init })
   view.setWidth(800)
   return view
 }
@@ -188,7 +188,7 @@ test('BreakpointSplitView showImportForm is false when init is set', async () =>
 test('BreakpointSplitView showImportForm is true when no init', async () => {
   const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setSession({ name: 'BreakpointSplitViewInit test' })
-  const view = rootModel.session!.addView('BreakpointSplitView', {})
+  const view = await rootModel.session!.launchView('BreakpointSplitView', {})
   view.setWidth(800)
 
   expect(view.showImportForm).toBe(true)

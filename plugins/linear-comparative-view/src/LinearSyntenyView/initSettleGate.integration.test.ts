@@ -41,9 +41,9 @@ const views = [{ assembly: 'volvox' }, { assembly: 'volvox2' }]
 // false forever and a capture hangs instead of failing.
 test('an init pass declares the diagonalize gate rather than only raising it', async () => {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: { views },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   // what an init that requested a reorder and was superseded leaves behind
   view.beginAutoDiagonalize(true)
   view.setWidth(800)
@@ -58,9 +58,9 @@ test('an init pass declares the diagonalize gate rather than only raising it', a
 // synteny_canvas_done testid appears on a blank band and a capture takes it.
 test('a level does not settle while init is still adding its tracks', async () => {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: { views },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
 
   await when(() => view.levels.length > 0)
@@ -81,14 +81,14 @@ test('a level does not settle while init is still adding its tracks', async () =
 // anyway, with no warning to say why.
 test('a row spec sets the LGV view props on its own panel', async () => {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox', showAminoAcids: false, trackLabels: 'offset' },
         { assembly: 'volvox2' },
       ],
     },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
 
   await when(() => view.init === undefined)

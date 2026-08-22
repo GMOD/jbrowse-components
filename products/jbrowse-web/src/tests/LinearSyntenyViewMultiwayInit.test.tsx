@@ -23,7 +23,7 @@ test('multi-way LinearSyntenyView init routes tracks to per-level slots', async 
   // 3 assemblies — so 2 levels (between views[0]/[1] and views[1]/[2]).
   // volvox_del.paf maps volvox_del↔volvox  → level 0
   // volvox_ins.paf maps volvox↔volvox_ins  → level 1
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox_del' },
@@ -68,7 +68,7 @@ test('a hand-authored multi-way session sizes levels from its views', async () =
   // `levels` key, the shape a hand-authored defaultSession takes. Without the
   // load-time reconcile this rendered a single synteny band between the first
   // two rows and nothing between the last pair.
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     views: [
       { type: 'LinearGenomeView', init: { assembly: 'volvox_del' } },
       { type: 'LinearGenomeView', init: { assembly: 'volvox' } },
@@ -86,7 +86,7 @@ test('a failed init lands on the import form, not a permanent spinner', async ()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'no_such_assembly' }, { assembly: 'volvox' }],
     },
@@ -116,7 +116,7 @@ test('the track selector targets the level it was opened for', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox_del' },

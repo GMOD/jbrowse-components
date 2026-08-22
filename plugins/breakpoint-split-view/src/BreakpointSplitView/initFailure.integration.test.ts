@@ -33,9 +33,9 @@ function setup() {
 
 test('an unloadable assembly reports instead of spinning forever', async () => {
   const session = setup()
-  const view = session.addView('BreakpointSplitView', {
+  const view = (await session.launchView('BreakpointSplitView', {
     init: [{ assembly: 'volvox', loc: 'ctgA:1-100' }, { assembly: 'nope' }],
-  }) as BreakpointViewModel
+  })) as BreakpointViewModel
   view.setWidth(800)
 
   await when(() => !!view.error)
@@ -52,12 +52,12 @@ test('an unloadable assembly reports instead of spinning forever', async () => {
 
 test('rows that load leave the view usable', async () => {
   const session = setup()
-  const view = session.addView('BreakpointSplitView', {
+  const view = (await session.launchView('BreakpointSplitView', {
     init: [
       { assembly: 'volvox', loc: 'ctgA:1-100' },
       { assembly: 'volvox', loc: 'ctgA:200-300' },
     ],
-  }) as BreakpointViewModel
+  })) as BreakpointViewModel
   view.setWidth(800)
 
   // await the one async precondition rather than polling for it; see the note

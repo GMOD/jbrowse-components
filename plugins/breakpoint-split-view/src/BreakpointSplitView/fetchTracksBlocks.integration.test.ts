@@ -75,12 +75,12 @@ async function setup() {
     return call(sessionId, method as never, args as never)
   }) as typeof rpc.call
 
-  const view = session.addView('BreakpointSplitView', {
+  const view = (await session.launchView('BreakpointSplitView', {
     init: [
       { assembly: 'volvox', loc: 'ctgA:1-10000' },
       { assembly: 'volvox', loc: 'ctgA:1-10000' },
     ],
-  }) as BreakpointViewModel
+  })) as BreakpointViewModel
   view.setWidth(800)
   await when(() => view.initialized, { timeout: 20000 })
   for (const v of view.views) {

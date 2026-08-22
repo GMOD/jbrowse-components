@@ -30,12 +30,12 @@ interface SyntenyView {
 
 async function openSyntenyView() {
   const { session } = await getTestSession()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'volvox' }],
       tracks: ['volvox_fake_synteny'],
     },
-  }) as unknown as SyntenyView
+  })) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
     expect(view.initialized).toBe(true)

@@ -24,7 +24,7 @@ async function createSpreadsheetViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SpreadsheetView', { init })
+  const view = await session.launchView('SpreadsheetView', { init })
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
@@ -87,7 +87,7 @@ test('SpreadsheetView without init shows import form', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SpreadsheetView', {})
+  const view = await session.launchView('SpreadsheetView', {})
 
   expect(view.spreadsheet).toBeUndefined()
   expect(view.init).toBeUndefined()
@@ -102,7 +102,7 @@ test('snapshot persists cached file location synchronously', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SpreadsheetView', {
+  const view = await session.launchView('SpreadsheetView', {
     init: {
       assembly: 'volvox',
       uri: 'test_data/volvox/volvox.filtered.vcf.gz',

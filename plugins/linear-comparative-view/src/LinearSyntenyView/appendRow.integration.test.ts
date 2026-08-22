@@ -69,9 +69,9 @@ async function openStack(rowCount: number) {
       },
     })
   }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: { views: names.map(assembly => ({ assembly })) },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),
@@ -147,7 +147,9 @@ const menuLabels = (view: LinearSyntenyViewModel) =>
 test('the header menu offers Add assembly row only once there is a row', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assembly('volvox0'))
-  const empty = session.addView('LinearSyntenyView') as LinearSyntenyViewModel
+  const empty = (await session.launchView(
+    'LinearSyntenyView',
+  )) as LinearSyntenyViewModel
   openViews.push({ session, view: empty })
 
   expect(empty.showImportForm).toBe(true)

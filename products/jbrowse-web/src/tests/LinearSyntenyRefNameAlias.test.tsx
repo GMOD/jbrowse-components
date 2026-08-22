@@ -82,12 +82,12 @@ async function openWith(
   assemblies = ['volvox', 'volvox_del'],
 ) {
   const { session } = await getTestSession()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: assemblies.map(assembly => ({ assembly })),
       tracks: [trackId],
     },
-  }) as unknown as SyntenyView
+  })) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
     expect(view.initialized).toBe(true)

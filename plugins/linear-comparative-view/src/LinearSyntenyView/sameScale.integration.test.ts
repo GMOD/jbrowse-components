@@ -43,9 +43,9 @@ const views = [{ assembly: 'small' }, { assembly: 'large' }]
 
 async function launch(init: Record<string, unknown>) {
   const session = setup()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init,
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(() => view.init === undefined)
   return view
@@ -172,7 +172,7 @@ test('a restored session with the mode on attaches before any width', async () =
     .mockImplementation((...args: unknown[]) => {
       errors.push(args[0])
     })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     sameScale: true,
     views: [
       {
@@ -188,7 +188,7 @@ test('a restored session with the mode on attaches before any width', async () =
         ],
       },
     ],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   spy.mockRestore()
 
   expect(errors).toEqual([])
@@ -215,7 +215,7 @@ test('a restored session with the mode OFF attaches before any width', async () 
     .mockImplementation((...args: unknown[]) => {
       errors.push(args[0])
     })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     views: [
       {
         type: 'LinearGenomeView',
@@ -230,7 +230,7 @@ test('a restored session with the mode OFF attaches before any width', async () 
         ],
       },
     ],
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
 
   expect(errors).toEqual([])
   expect(view.sameScale).toBe(false)

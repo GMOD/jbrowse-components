@@ -33,7 +33,7 @@ test('the app marker counts a synteny level a walk of view.tracks cannot reach',
   const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
@@ -41,7 +41,7 @@ test('the app marker counts a synteny level a walk of view.tracks cannot reach',
       ],
       tracks: [['subset']],
     },
-  }) as {
+  })) as {
     setWidth: (n: number) => void
     levels: {
       markCanvasDrawn: () => void
@@ -178,7 +178,7 @@ test('a comparative import form contributes no loading display', async () => {
     displayPhase: string
     dotplotDisplays: unknown[]
   }
-  const synteny = session.addView('LinearSyntenyView', {}) as {
+  const synteny = (await session.launchView('LinearSyntenyView', {})) as {
     setWidth: (n: number) => void
     showImportForm: boolean
     trackContainers: { tracks: unknown[] }[]

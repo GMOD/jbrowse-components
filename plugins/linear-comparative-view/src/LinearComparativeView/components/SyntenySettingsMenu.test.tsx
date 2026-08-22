@@ -80,12 +80,12 @@ async function openMenu(adapter: Record<string, unknown> = PAF) {
     assemblyNames: ['volvox', 'volvox2'],
     adapter,
   })
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
       tracks: ['pair'],
     },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),

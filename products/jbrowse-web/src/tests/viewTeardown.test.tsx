@@ -228,7 +228,7 @@ test('a view-local track config goes out with the view', async () => {
     },
   })
 
-  const synteny = session.addView('LinearSyntenyView', {
+  const synteny = (await session.launchView('LinearSyntenyView', {
     views: [
       {
         type: 'LinearGenomeView',
@@ -248,7 +248,7 @@ test('a view-local track config goes out with the view', async () => {
         ],
       },
     ],
-  }) as unknown as {
+  })) as unknown as {
     views: {
       showTrack: (
         id: string,
@@ -391,10 +391,10 @@ test('an inline view-local config survives a session round trip', async () => {
       },
     },
   })
-  const built = first.session.addView(
+  const built = (await first.session.launchView(
     'LinearSyntenyView',
     viewSnap,
-  ) as unknown as {
+  )) as unknown as {
     showTrack: (
       trackId: string,
       level?: number,

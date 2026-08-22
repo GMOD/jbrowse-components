@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
-import { createTestSession } from '@jbrowse/web/testUtils'
+import { createTestSessionAsync } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 
@@ -46,7 +46,7 @@ const syntenyTrack = (trackId: string, assemblyNames: string[]) => ({
   adapter: { type: 'FromConfigAdapter', features: [] },
 })
 
-function setup({
+async function setup({
   assemblyNames = ['hg38', 'mm39'],
   aliases = {},
   tracks = [],
@@ -63,7 +63,7 @@ function setup({
   // where a plugin's own contributions would already be
   contribute?: (pluginManager: PluginManager) => void
 } = {}) {
-  const session = createTestSession({
+  const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: assemblyNames.map(name => assembly(name, aliases[name])),
       tracks,
@@ -167,10 +167,10 @@ function pickAssembly(rowIdx: number, assemblyName: string) {
   fireEvent.click(screen.getByRole('option', { name: assemblyName }))
 }
 
-test('an empty session opens on Manual with two different assemblies', () => {
+test('an empty session opens on Manual with two different assemblies', async () => {
   // both rows on one assembly would need a self-alignment track, so it would
   // open already flagged
-  setup()
+  await setup()
   expect(screen.getByRole('button', { name: 'Manual' })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -178,8 +178,8 @@ test('an empty session opens on Manual with two different assemblies', () => {
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39'])
 })
 
-test('a session with a synteny track opens on Quick start', () => {
-  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+test('a session with a synteny track opens on Quick start', async () => {
+  await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   expect(screen.getByRole('button', { name: 'Quick start' })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -192,8 +192,8 @@ test('a session with a synteny track opens on Quick start', () => {
 // start hands to Manual go into an assembly Select whose options are the
 // session's own names — so an alias was a value matching no option and the row
 // came over blank. The rows are the assembly, not the name the track uses.
-test('Quick start on an alias-named track hands Manual the assembly itself', () => {
-  setup({
+test('Quick start on an alias-named track hands Manual the assembly itself', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39'],
     aliases: { hg38: ['GRCh38'] },
     tracks: [syntenyTrack('aliased', ['GRCh38', 'mm39'])],
@@ -210,8 +210,8 @@ test('Quick start on an alias-named track hands Manual the assembly itself', () 
 // have built a row whose init fails with "Assembly ghost not found", erroring
 // the view. Not launchable, so not a Quick start option, so the session opens
 // on the form that can actually do something.
-test('a track naming an unloadable assembly does not open Quick start', () => {
-  setup({
+test('a track naming an unloadable assembly does not open Quick start', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39'],
     tracks: [syntenyTrack('hg38_ghost', ['hg38', 'ghost'])],
   })
@@ -222,16 +222,16 @@ test('a track naming an unloadable assembly does not open Quick start', () => {
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39'])
 })
 
-test('Swap reverses the rows the track implies', () => {
-  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+test('Swap reverses the rows the track implies', async () => {
+  await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   // the Tooltip title becomes the button's accessible name
   fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
   const rows = screen.getByTestId('quick-start-rows')
   expect(rows.textContent).toMatch(/1\. mm39.*2\. hg38/s)
 })
 
-test('Quick start launch builds one row per assembly and shows the track', () => {
-  const { model } = setup({
+test('Quick start launch builds one row per assembly and shows the track', async () => {
+  const { model } = await setup({
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
   fireEvent.click(launchButton())
@@ -239,8 +239,8 @@ test('Quick start launch builds one row per assembly and shows the track', () =>
   expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
 })
 
-test('an all-vs-all track stacks every assembly it names', () => {
-  const { model } = setup({
+test('an all-vs-all track stacks every assembly it names', async () => {
+  const { model } = await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
   })
@@ -251,8 +251,8 @@ test('an all-vs-all track stacks every assembly it names', () => {
   expect(levelTrackIds(model)).toEqual([['all'], ['all']])
 })
 
-test('switching to Manual hands over the rows Quick start had set up', () => {
-  setup({
+test('switching to Manual hands over the rows Quick start had set up', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
   })
@@ -264,10 +264,10 @@ test('switching to Manual hands over the rows Quick start had set up', () => {
   ).not.toBeInTheDocument()
 })
 
-test('the handover opens on the track pair, not the assembly-list order', () => {
+test('the handover opens on the track pair, not the assembly-list order', async () => {
   // the track pairs hg38 with rn7, so switching to Manual opens on those rows
   // even though mm39 comes first in the assembly list
-  setup({
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('hg38_rn7', ['hg38', 'rn7'])],
   })
@@ -275,8 +275,8 @@ test('the handover opens on the track pair, not the assembly-list order', () => 
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'rn7'])
 })
 
-test('a pair with no synteny dataset launches, stacking the rows blank', () => {
-  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+test('a pair with no synteny dataset launches, stacking the rows blank', async () => {
+  const { model } = await setup({ assemblyNames: ['hg38', 'mm39'] })
   expect(screen.getByTestId('synbutton')).toHaveAccessibleName(
     /No synteny dataset connects row 1 and 2/,
   )
@@ -286,8 +286,8 @@ test('a pair with no synteny dataset launches, stacking the rows blank', () => {
   expect(levelTrackIds(model)).toEqual([[]])
 })
 
-test('an unfinished new-track upload is the one thing that blocks launch', () => {
-  setup({ assemblyNames: ['hg38', 'mm39'] })
+test('an unfinished new-track upload is the one thing that blocks launch', async () => {
+  await setup({ assemblyNames: ['hg38', 'mm39'] })
   // picking "New track" starts an upload with no file yet; launching would drop it
   fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
   expect(launchButton()).toBeDisabled()
@@ -301,8 +301,8 @@ test('an unfinished new-track upload is the one thing that blocks launch', () =>
   expect(screen.getByTestId('synbutton')).toHaveAccessibleName(/set to None/)
 })
 
-test('a synteny track from a connection is applied to its pair', () => {
-  const { model, loadConnection } = setup({
+test('a synteny track from a connection is applied to its pair', async () => {
+  const { model, loadConnection } = await setup({
     assemblyNames: ['hg38', 'mm39'],
     connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
   })
@@ -325,8 +325,8 @@ test('a synteny track from a connection is applied to its pair', () => {
 // dataset comes from a connection — connect() has not resolved — and the mode
 // used to be snapshotted there, so the one dataset the session has was never
 // offered in the mode that launches it in a click.
-test('a connection that loads after mount still offers Quick start', () => {
-  const { loadConnection } = setup({
+test('a connection that loads after mount still offers Quick start', async () => {
+  const { loadConnection } = await setup({
     assemblyNames: ['hg38', 'mm39'],
     connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
   })
@@ -345,8 +345,8 @@ test('a connection that loads after mount still offers Quick start', () => {
 // Clicking the button you are already on is how a derived mode gets latched, so
 // it reaches the same handler the real switch does — and must not also re-run
 // the handover, which resets the rows to the Quick start track's.
-test('re-clicking Manual keeps what the manual form already holds', () => {
-  setup({
+test('re-clicking Manual keeps what the manual form already holds', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
@@ -357,8 +357,8 @@ test('re-clicking Manual keeps what the manual form already holds', () => {
 })
 
 // nothing loading afterwards moves the form under a user who has picked a mode
-test('a mode the user picked survives a connection loading', () => {
-  const { loadConnection } = setup({
+test('a mode the user picked survives a connection loading', async () => {
+  const { loadConnection } = await setup({
     assemblyNames: ['hg38', 'mm39'],
     connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
   })
@@ -375,8 +375,8 @@ test('a mode the user picked survives a connection loading', () => {
 // produce hg38/mm39/hg38: the same alignment again, upside down. A row nobody
 // has a dataset for yet is the honest answer, and its own broken-link icon says
 // so.
-test('Add row does not default to an assembly the stack already holds', () => {
-  setup({
+test('Add row does not default to an assembly the stack already holds', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
@@ -385,8 +385,8 @@ test('Add row does not default to an assembly the stack already holds', () => {
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39', 'rn7'])
 })
 
-test('Add row defaults to an assembly connected to the current bottom row', () => {
-  setup({
+test('Add row defaults to an assembly connected to the current bottom row', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [
       syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
@@ -411,8 +411,8 @@ test('Add row defaults to an assembly connected to the current bottom row', () =
 //
 // rn7's datasets are the ghost one first and a usable one second, so taking the
 // head of the list is exactly what has to be skipped.
-test('Add row skips a connected assembly the session cannot open', () => {
-  setup({
+test('Add row skips a connected assembly the session cannot open', async () => {
+  await setup({
     // no `ghost` assembly, though a track names one
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [
@@ -429,10 +429,10 @@ test('Add row skips a connected assembly the session cannot open', () => {
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'rn7', 'mm39'])
 })
 
-test('Add row selects the pair it just created', () => {
+test('Add row selects the pair it just created', async () => {
   // otherwise the track panel keeps showing the pair the user had been on, and
   // the row they asked for is configured only if they go find its chain icon
-  setup({
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
@@ -442,13 +442,13 @@ test('Add row selects the pair it just created', () => {
   expect(pairHeading()).toHaveTextContent('rows 2 and 3')
 })
 
-test('the pair heading names the assemblies, not only the row numbers', () => {
-  setup({ assemblyNames: ['hg38', 'mm39'] })
+test('the pair heading names the assemblies, not only the row numbers', async () => {
+  await setup({ assemblyNames: ['hg38', 'mm39'] })
   expect(pairHeading()).toHaveTextContent('between hg38 and mm39')
 })
 
-test('removing a row drops that pair selection and keeps the others', () => {
-  const { model } = setup({
+test('removing a row drops that pair selection and keeps the others', async () => {
+  const { model } = await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [
       syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
@@ -473,11 +473,11 @@ test('removing a row drops that pair selection and keeps the others', () => {
   expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
 })
 
-test('a None does not slide onto a different pair when a row is removed', () => {
+test('a None does not slide onto a different pair when a row is removed', async () => {
   // selections are indexed by pair position but are about a pair of
   // assemblies. Removing row 3 used to splice the list by index, leaving the
   // None chosen for mm39/rn7 sitting on the mm39/panTro6 pair that replaced it
-  const { model } = setup({
+  const { model } = await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7', 'panTro6'],
     tracks: [syntenyTrack('mm39_panTro6', ['mm39', 'panTro6'])],
   })
@@ -507,11 +507,11 @@ test('a None does not slide onto a different pair when a row is removed', () => 
   expect(levelTrackIds(model)).toEqual([[], ['mm39_panTro6']])
 })
 
-test('changing an assembly releases the pending upload for the old pair', () => {
+test('changing an assembly releases the pending upload for the old pair', async () => {
   // the upload was started for hg38/mm39. Once row 2 is something else it can
   // never be finished for this pair, so leaving it in place only disabled
   // Launch and offered "finish the upload" for a pair that no longer exists
-  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  await setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
   fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
   expect(launchButton()).toBeDisabled()
 
@@ -519,17 +519,17 @@ test('changing an assembly releases the pending upload for the old pair', () => 
   expect(launchButton()).toBeEnabled()
 })
 
-test('the last two rows cannot be removed', () => {
-  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+test('the last two rows cannot be removed', async () => {
+  await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   goManual()
   expect(screen.getByRole('button', { name: 'Remove row 1' })).toBeDisabled()
 })
 
-test('Reverse rows flips the stack, keeping every pair connected', () => {
+test('Reverse rows flips the stack, keeping every pair connected', async () => {
   // Auto-arrange only fires for a pair with no dataset, so a fully connected
   // stack had no reordering control at all before this. Which genome is on top
   // is the user's call, not a property of the track.
-  setup({
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [
       syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
@@ -557,9 +557,9 @@ test('Reverse rows flips the stack, keeping every pair connected', () => {
   expect(pairHeading()).toHaveTextContent('between rn7 and mm39')
 })
 
-test('Auto-arrange reorders rows so adjacent pairs share a dataset', () => {
+test('Auto-arrange reorders rows so adjacent pairs share a dataset', async () => {
   // hg38-rn7 and rn7-mm39 exist, so the launchable chain puts rn7 in the middle
-  setup({
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [
       syntenyTrack('hg38_rn7', ['hg38', 'rn7']),
@@ -585,8 +585,8 @@ test('Auto-arrange reorders rows so adjacent pairs share a dataset', () => {
   ).not.toBeInTheDocument()
 })
 
-test('Auto-arrange keeps a self-alignment pair adjacent', () => {
-  setup({
+test('Auto-arrange keeps a self-alignment pair adjacent', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39'],
     tracks: [
       syntenyTrack('hg38_self', ['hg38', 'hg38']),
@@ -608,8 +608,8 @@ test('Auto-arrange keeps a self-alignment pair adjacent', () => {
   ).not.toBeInTheDocument()
 })
 
-test('a same-assembly pair with no self-alignment track says so', () => {
-  setup({
+test('a same-assembly pair with no self-alignment track says so', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39'],
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
@@ -628,8 +628,8 @@ test('a same-assembly pair with no self-alignment track says so', () => {
 // One box per row, so the flat form put a field the reader has to decide about
 // beside every assembly they picked. The fragmented-assembly case they exist for
 // is the rare one, so they are opt-in — the same disclosure the dotplot carries.
-test('the chromosome boxes are hidden until asked for', () => {
-  setup({ assemblyNames: ['hg38', 'mm39'] })
+test('the chromosome boxes are hidden until asked for', async () => {
+  await setup({ assemblyNames: ['hg38', 'mm39'] })
   expect(
     screen.queryByTestId('chromosome-filter-row-0'),
   ).not.toBeInTheDocument()
@@ -639,8 +639,8 @@ test('the chromosome boxes are hidden until asked for', () => {
   expect(chromosomeBox(1)).toBeInTheDocument()
 })
 
-test('a chromosome box reaches that row as its init displayedRegionNames', () => {
-  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+test('a chromosome box reaches that row as its init displayedRegionNames', async () => {
+  const { model } = await setup({ assemblyNames: ['hg38', 'mm39'] })
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA, ctgB' } })
   fireEvent.click(launchButton())
@@ -652,10 +652,10 @@ test('a chromosome box reaches that row as its init displayedRegionNames', () =>
   ])
 })
 
-test('changing a row assembly drops the chromosomes typed for it', () => {
+test('changing a row assembly drops the chromosomes typed for it', async () => {
   // the names were typed about mm39; on rn7 they at best unrestrict the row
   // with a warning, at worst match and stack the wrong thing quietly
-  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  await setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA' } })
   fireEvent.change(chromosomeBox(1), { target: { value: 'ctgB' } })
@@ -666,10 +666,10 @@ test('changing a row assembly drops the chromosomes typed for it', () => {
   expect(chromosomeBox(0)).toHaveValue('ctgA')
 })
 
-test('removing a row carries the rows below it along with their text', () => {
+test('removing a row carries the rows below it along with their text', async () => {
   // every row below the removal shifts up, so matching on position alone
   // silently dropped what the user had typed on all of them
-  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  await setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
   fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
   pickAssembly(2, 'rn7')
   showChromosomeBoxes()
@@ -684,8 +684,8 @@ test('removing a row carries the rows below it along with their text', () => {
 
 // Hiding has to CLEAR, or a stack comes back restricted by a box that is no
 // longer on screen — the one failure the disclosure can introduce.
-test('hiding the boxes clears what was typed in them', () => {
-  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+test('hiding the boxes clears what was typed in them', async () => {
+  const { model } = await setup({ assemblyNames: ['hg38', 'mm39'] })
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox(0), { target: { value: 'ctgA' } })
 
@@ -716,8 +716,8 @@ const contributeServerOption = (pluginManager: PluginManager) => {
 const serverRadio = () =>
   screen.getByRole('radio', { name: 'Load from my server' })
 
-test('a plugin option survives a visit to another pair', () => {
-  setup({
+test('a plugin option survives a visit to another pair', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     contribute: contributeServerOption,
   })
@@ -738,8 +738,8 @@ test('a plugin option survives a visit to another pair', () => {
 
 // keyed by the pair's assemblies, the same rule remapSelectionsToPairs matches
 // selections by, so the two move together instead of one being stranded
-test('a plugin option follows its pair when the rows are reversed', () => {
-  setup({
+test('a plugin option follows its pair when the rows are reversed', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     contribute: contributeServerOption,
   })
@@ -761,8 +761,8 @@ test('a plugin option follows its pair when the rows are reversed', () => {
 // only pooled the pairs that HELD one, so the lower band's was the first thing
 // the upper band claimed, and the radio was keyed by the pair's assemblies,
 // which every band shares.
-test('a self-alignment stack keeps each band’s own configuration', () => {
-  setup({ assemblyNames: ['hg002'], contribute: contributeServerOption })
+test('a self-alignment stack keeps each band’s own configuration', async () => {
+  await setup({ assemblyNames: ['hg002'], contribute: contributeServerOption })
   fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
   expect(rowSelects().map(s => s.textContent)).toEqual([
     'hg002',
@@ -786,8 +786,8 @@ test('a self-alignment stack keeps each band’s own configuration', () => {
   expect(serverRadio()).not.toBeChecked()
 })
 
-test('a pair the option was never chosen for keeps the built-in default', () => {
-  setup({
+test('a pair the option was never chosen for keeps the built-in default', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     contribute: contributeServerOption,
   })

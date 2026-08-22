@@ -37,10 +37,10 @@ function setup() {
   return session
 }
 
-function launch(session: ReturnType<typeof setup>, views: unknown[]) {
-  const view = session.addView('LinearSyntenyView', {
+async function launch(session: ReturnType<typeof setup>, views: unknown[]) {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: { views },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   return view
 }
@@ -54,7 +54,7 @@ test.each([
 ])('%s opens the import form, with no error', async (_name, views) => {
   const session = setup()
   const notify = jest.spyOn(session, 'notifyError')
-  const view = launch(session, views)
+  const view = await launch(session, views)
 
   // consumed, not kept: a retry could not launch it either
   await when(() => view.init === undefined)
@@ -75,7 +75,7 @@ test.each([
 ])('%s is reported as malformed', async (_name, views) => {
   const session = setup()
   const notify = jest.spyOn(session, 'notifyError')
-  const view = launch(session, views)
+  const view = await launch(session, views)
 
   await when(() => view.init === undefined)
   expect(notify).toHaveBeenCalledWith(
@@ -87,7 +87,10 @@ test.each([
 test('every row named builds the rows', async () => {
   const session = setup()
   const notify = jest.spyOn(session, 'notifyError')
-  const view = launch(session, [{ assembly: 'volvox' }, { assembly: 'volvox' }])
+  const view = await launch(session, [
+    { assembly: 'volvox' },
+    { assembly: 'volvox' },
+  ])
 
   await when(() => view.views.length > 0)
   expect(view.views).toHaveLength(2)

@@ -32,7 +32,7 @@ async function createSvInspectorViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SvInspectorView', { init })
+  const view = await session.launchView('SvInspectorView', { init })
 
   return { view, session, rootModel, pluginManager }
 }

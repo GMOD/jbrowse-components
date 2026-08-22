@@ -61,12 +61,12 @@ async function openSwapView() {
       assemblyNames: [ASM, ASM],
     },
   }) as { trackId: string }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: ASM }, { assembly: ASM }],
       tracks: [added.trackId],
     },
-  }) as unknown as SyntenyView
+  })) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
     expect(view.initialized).toBe(true)

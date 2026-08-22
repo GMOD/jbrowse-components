@@ -28,7 +28,7 @@ async function createSyntenyViewWithInit(init: {
   const session = rootModel.session!
 
   // Add a LinearSyntenyView with init property
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init,
   })
 
@@ -151,7 +151,7 @@ test('LinearSyntenyView showImportForm is true when no init and no views', async
   const session = rootModel.session!
 
   // Add a LinearSyntenyView without init property
-  const view = session.addView('LinearSyntenyView', {})
+  const view = await session.launchView('LinearSyntenyView', {})
 
   // showImportForm should be true because hasSomethingToShow is false
   expect(view.showImportForm).toBe(true)

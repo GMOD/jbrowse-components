@@ -24,7 +24,7 @@ async function createBreakpointView(trackId: string, locs: [string, string]) {
   const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('BreakpointSplitView', {
+  const view = await session.launchView('BreakpointSplitView', {
     init: locs.map(loc => ({ loc, assembly: 'volvox', tracks: [trackId] })),
   })
   view.setWidth(800)

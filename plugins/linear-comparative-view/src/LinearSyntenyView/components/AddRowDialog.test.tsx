@@ -55,12 +55,12 @@ async function openDialog(datasets: string[][], openTracks: string[] = []) {
       },
     })
   }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
       tracks: openTracks,
     },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),
