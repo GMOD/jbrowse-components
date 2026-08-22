@@ -332,7 +332,8 @@ Of the 22 genuinely new errors, the causes were:
 
 | cause | what it was |
 | --- | --- |
-| `react` peer moved to `>=19.0.0` | 9 errors: a ref callback may no longer return a promise, and `useRef<T>(null)` is `RefObject<T \| null>` |
+| `react` peer moved to `>=19.0.0` | 10 errors: a ref callback may no longer return a promise (8), and `useRef<T>(null)` is `RefObject<T \| null>` (2) |
+| a function component takes one argument | 6 errors from one site: mobx-react's `IReactComponent` no longer admits a two-parameter function, which caught a display reading a prop off a second argument React never passed |
 | typed extension-point registry | `Core-preProcessTrackConfig` callbacks may not narrow their own parameter, and `TrackConfigSnapshot` was not exported for them to name (fixed, 606e9762df) |
 | notification points | `LinearGenomeView-searchResultSelected` moved to `listenToExtensionPoint`; the type says so and names the replacement |
 | `CascadingMenuProps.slotProps` removed | 3 errors, the component-prop surface above |
