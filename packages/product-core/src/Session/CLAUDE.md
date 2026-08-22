@@ -24,6 +24,15 @@ genuinely user-added tracks.
   survive a reload, which is `trackConfigDelta.ts`'s stated no-tombstones
   limitation.
 
+- **A working copy is cached against the delta it was built from**, not by
+  trackId alone. `writeDelta` re-stamps it, so the copy a value is still being
+  typed into is never swapped out mid-keystroke; nothing else can, so a delta
+  replaced from outside the mixin — an undo's `applySnapshot`, a session restore
+  — makes the next read rebuild it. Without that, an undone edit stayed on
+  screen against a snapshot that said default, and the next edit re-diffed the
+  stale copy and put the undone change back. Both directions are canaries in
+  `UpdateTrackConfiguration.test.ts`.
+
 ## Reset, not delete
 
 A delta can't be deleted (the admin track remains), so the menu swaps Delete for

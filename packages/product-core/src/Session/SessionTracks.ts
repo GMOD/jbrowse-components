@@ -31,6 +31,13 @@ export interface PlainTrackConfig {
   [key: string]: unknown
 }
 
+// One non-admin working copy, plus the trackConfigDeltas value it mirrors. That
+// stamp is the cache key, not trackId — see getEditableTrackConfig.
+interface EditableTrackConfig {
+  node: IAnyStateTreeNode
+  delta: PlainTrackConfig | undefined
+}
+
 // jbrowse.tracks holds frozen plain objects (app-core, web/desktop) or MST
 // config nodes (product-core, embedded react views); the delta math reads both
 // as plain track configs. Single site for that documented cast — per-node
@@ -177,8 +184,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
        * source of truth, and reset/programmatic edits keep a retained copy in
        * sync. Retention is volatile RAM only (never serialized), so it's not
        * worth a reference-counted prune at every track-removal path.
+       *
+       * Each entry carries the delta it mirrors, so a delta replaced from
+       * outside this mixin invalidates it — see `getEditableTrackConfig`.
        */
-      editableTrackConfigs: new Map<string, IAnyStateTreeNode>(),
+      editableTrackConfigs: new Map<string, EditableTrackConfig>(),
     }))
     .views(self => {
       // Memoize merged configs per (base object, delta value) pair so the tracks
@@ -254,6 +264,15 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * copy and never the shared frozen base node (see ADR-032). Undefined in
          * admin mode — there the base jbrowse.tracks entry is edited in place.
          * Called by TrackConfigurationReference during lazy hydration.
+         *
+         * Cached against the delta it was built from, not by trackId alone. A
+         * delta this mixin wrote re-stamps the entry, so the copy an edit is
+         * still being typed into is never swapped out mid-keystroke; a delta
+         * replaced from outside — an undo's `applySnapshot` on the session, a
+         * session restore — cannot, so the next read rebuilds the copy from the
+         * delta that now exists. Reading `trackConfigDeltas` here is also what
+         * makes an undo re-resolve the reference at all: the resolver's caller
+         * is already subscribed to it through `getTrackById`.
          */
         getEditableTrackConfig(
           trackId: string,
@@ -263,14 +282,15 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           if (self.adminMode) {
             return undefined
           }
+          const delta = self.trackConfigDeltas[trackId]
           const existing = self.editableTrackConfigs.get(trackId)
-          if (existing) {
-            return existing
+          if (existing && existing.delta === delta) {
+            return existing.node
           }
           const node = schemaType.create(frozenConfig, {
             pluginManager,
           }) as IAnyStateTreeNode
-          self.editableTrackConfigs.set(trackId, node)
+          self.editableTrackConfigs.set(trackId, { node, delta })
           return node
         },
       }
@@ -323,10 +343,20 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // preProcessSnapshot that toPlainConfig hydrates through, so this only
       // makes that reliance explicit.)
       function revertEditableTrackConfig(trackId: string) {
-        const node = self.editableTrackConfigs.get(trackId)
+        const entry = self.editableTrackConfigs.get(trackId)
         const base = baseTracks(self).find(t => t.trackId === trackId)
-        if (node && base) {
-          applySnapshot(node, toPlainConfig(base))
+        if (entry && base) {
+          applySnapshot(entry.node, toPlainConfig(base))
+        }
+      }
+      // Re-stamp a working copy with the delta now in trackConfigDeltas, so the
+      // copy this mixin just persisted from stays the one the next read
+      // resolves. Read back off the prop rather than reusing the written object,
+      // so the stamp is whatever `types.frozen` actually stored.
+      function stampEditableTrackConfig(trackId: string) {
+        const entry = self.editableTrackConfigs.get(trackId)
+        if (entry) {
+          entry.delta = self.trackConfigDeltas[trackId]
         }
       }
       // Single writer for trackConfigDeltas (pass undefined to clear). Clearing
@@ -345,6 +375,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         if (!delta && revertWorkingCopy) {
           revertEditableTrackConfig(trackId)
         }
+        stampEditableTrackConfig(trackId)
       }
       // Whether `trackConf` is the working copy's own current state — i.e. this
       // update came from the track's live `setSlot` edits rather than from the
@@ -354,8 +385,8 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         trackId: string,
         trackConf: PlainTrackConfig,
       ) {
-        const node = self.editableTrackConfigs.get(trackId)
-        return !!node && compareStructural(getSnapshot(node), trackConf)
+        const entry = self.editableTrackConfigs.get(trackId)
+        return !!entry && compareStructural(getSnapshot(entry.node), trackConf)
       }
       // Push a *programmatic* update (the config editor's Apply, or any
       // updateTrackConfiguration not driven by this node's own live edits) into
@@ -366,9 +397,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         trackId: string,
         fullConfig: PlainTrackConfig,
       ) {
-        const node = self.editableTrackConfigs.get(trackId)
-        if (node && !compareStructural(getSnapshot(node), fullConfig)) {
-          applySnapshot(node, fullConfig)
+        const entry = self.editableTrackConfigs.get(trackId)
+        if (entry && !compareStructural(getSnapshot(entry.node), fullConfig)) {
+          applySnapshot(entry.node, fullConfig)
         }
       }
       // The session-scoped add, shared by the action that always means the

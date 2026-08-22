@@ -71,12 +71,19 @@ gymnastics. The mechanism:
 - **A non-admin resolves each shown track to a private working copy.**
   `TrackConfigurationReference.get()` asks the session for
   `getEditableTrackConfig(trackId, frozen, schemaType)` (SessionTracks.ts): a
-  per-track MST node, seeded once from the current `base + delta`, cached by
-  trackId in a session-owned (volatile, non-persisted) `Map`. In-place quick
-  edits (`setSlot`) mutate **that** copy; the frozen `jbrowse.tracks` node is
-  never handed out to a non-admin and so is never mutated. The delta is still
-  computed the same way (`diffTrackConfig(base, workingCopy)` via
-  `updateTrackConfiguration`), from a node that was never the base.
+  per-track MST node, seeded from the current `base + delta`, cached in a
+  session-owned (volatile, non-persisted) `Map`. In-place quick edits (`setSlot`)
+  mutate **that** copy; the frozen `jbrowse.tracks` node is never handed out to a
+  non-admin and so is never mutated. The delta is still computed the same way
+  (`diffTrackConfig(base, workingCopy)` via `updateTrackConfiguration`), from a
+  node that was never the base.
+- **The cache entry is stamped with the delta it was seeded from**, and that
+  stamp is the key. `writeDelta` — the single writer — re-stamps, so the copy a
+  value is still being typed into is never swapped out mid-keystroke; nothing
+  outside the mixin can, so a delta replaced by an undo's `applySnapshot` or a
+  session restore makes the next read rebuild the copy. Keyed by trackId alone,
+  an undone edit stayed on screen against a snapshot that said default, and the
+  next edit re-diffed the stale copy and reinstated the undone change.
 - **Reset reverts the working copy in place** (`applySnapshot(node, base)`),
   keeping node identity so open views just re-render.
 - **Admin/embedded are unchanged.** `getEditableTrackConfig` returns undefined in

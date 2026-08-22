@@ -510,3 +510,133 @@ test('hiding then re-showing a track keeps its edit (delta is the source of trut
   expect(session.isTrackOverride(TRACK_ID)).toBe(true)
   expect(readConfObject(reopened, 'name')).toBe('Edited name')
 })
+
+// The working copy is cached per track (ADR-032), and nothing that replaced the
+// frozen delta from outside this mixin used to invalidate it — an undo is
+// `applySnapshot` on the whole session, so `trackConfigDeltas` lost the entry
+// while `TrackConfigurationReference` kept handing back the still-edited node.
+// The track stayed edited on screen against a session snapshot that said
+// default, and the next edit re-diffed that node and reinstated the undone
+// change. The three tests below pin the two directions and that last half.
+test('an undo that drops the delta drops the working copy with it', () => {
+  jest.useFakeTimers()
+  try {
+    const { rootModel } = getPluginManager(undefined, false)
+    const session = rootModel.session as unknown as TestSession
+    const view = session.views[0]!
+    view.showTrack(TRACK_ID)
+    const openConfig = () =>
+      view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
+        .configuration as AnyConfigurationModel & {
+        setSlot: (slot: string, value: unknown) => void
+      }
+    const originalName = readConfObject(openConfig(), 'name')
+
+    // let showTrack's own patch settle into history first, so the state undo
+    // returns to is "track shown, never edited"
+    jest.advanceTimersByTime(500)
+
+    openConfig().setSlot('name', 'Edited name')
+    jest.advanceTimersByTime(1000)
+    expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
+    expect(readConfObject(openConfig(), 'name')).toBe('Edited name')
+    expect(rootModel.history.canUndo).toBe(true)
+
+    rootModel.history.undo()
+
+    // the delta is gone, and so is the edit the working copy was holding
+    expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+    expect(session.isTrackOverride(TRACK_ID)).toBe(false)
+    expect(readConfObject(openConfig(), 'name')).toBe(originalName)
+    // and what a share link taken now says agrees with what is on screen
+    const snap = getSnapshot(rootModel.session) as {
+      trackConfigDeltas?: Record<string, unknown>
+    }
+    expect(snap.trackConfigDeltas).toBeUndefined()
+
+    // BaseTrackModel's reaction sees the rebuilt node and re-persists it; that
+    // must not write the undone edit back
+    jest.advanceTimersByTime(1000)
+    expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+    expect(readConfObject(openConfig(), 'name')).toBe(originalName)
+  } finally {
+    jest.useRealTimers()
+  }
+})
+
+test('an edit made after an undo does not reinstate the undone one', () => {
+  jest.useFakeTimers()
+  try {
+    const { rootModel } = getPluginManager(undefined, false)
+    const session = rootModel.session as unknown as TestSession
+    const view = session.views[0]!
+    view.showTrack(TRACK_ID)
+    const openConfig = () =>
+      view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
+        .configuration as AnyConfigurationModel & {
+        setSlot: (slot: string, value: unknown) => void
+      }
+    const originalName = readConfObject(openConfig(), 'name')
+    jest.advanceTimersByTime(500)
+
+    openConfig().setSlot('name', 'Edited name')
+    jest.advanceTimersByTime(1000)
+    rootModel.history.undo()
+
+    // a second edit, to a different slot: it is diffed against the base the
+    // undo restored, so the name it never touched stays at the default
+    openConfig().setSlot('description', 'Second edit')
+    jest.advanceTimersByTime(1000)
+
+    expect(Object.keys(session.trackConfigDeltas[TRACK_ID]!).sort()).toEqual([
+      'description',
+      'trackId',
+    ])
+    expect(readConfObject(openConfig(), 'name')).toBe(originalName)
+    expect(readConfObject(openConfig(), 'description')).toBe('Second edit')
+  } finally {
+    jest.useRealTimers()
+  }
+})
+
+test('persisting an edit keeps the working copy the next keystroke lands on', () => {
+  // The regression guard on the invalidation above: the cache is keyed on the
+  // delta's identity, and every persist writes a *fresh* delta object — so a
+  // cache that only compared identities would swap the node out from under a
+  // half-typed value 400ms into typing it. `writeDelta` re-stamps instead, which
+  // is what distinguishes "this mixin wrote the delta" from "a snapshot replaced
+  // it".
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  const view = session.views[0]!
+  view.showTrack(TRACK_ID)
+  const openConfig = () =>
+    view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
+      .configuration as AnyConfigurationModel & {
+      setSlot: (slot: string, value: unknown) => void
+    }
+  const workingCopy = openConfig()
+
+  // two successive persists of the same slot, as a debounced reaction firing
+  // twice mid-typing does
+  workingCopy.setSlot('name', 'Edited na')
+  session.updateTrackConfiguration(
+    getSnapshot(workingCopy) as unknown as PlainConfig,
+  )
+  const firstDelta = session.trackConfigDeltas[TRACK_ID]
+  workingCopy.setSlot('name', 'Edited nam')
+  session.updateTrackConfiguration(
+    getSnapshot(workingCopy) as unknown as PlainConfig,
+  )
+  // the delta really was replaced, so an identity check on it had something to
+  // reject
+  expect(session.trackConfigDeltas[TRACK_ID]).not.toBe(firstDelta)
+
+  // the keystroke after that one has not been persisted, and reading the track's
+  // config back has to still find it: asserted on the value first, because a
+  // node-identity mismatch is what loses it and `toBe` on two MST nodes prints
+  // nothing usable
+  workingCopy.setSlot('name', 'Edited name')
+  expect(readConfObject(openConfig(), 'name')).toBe('Edited name')
+  expect(Object.is(openConfig(), workingCopy)).toBe(true)
+})
