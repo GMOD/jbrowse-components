@@ -824,7 +824,10 @@ signal, read unconditionally, each pinned by its installer's test:
 
 Read the table as the checklist for a fourth: if you add a fetch skeleton with a
 gate, it needs a signal the gate never consults, read above the gate, and a test
-that fails when the read is deleted.
+that fails when the read is deleted. The circular view's `ChordVariantDisplay` —
+a bare-autorun fetch outside all three families — carries the same
+`reloadCounter` signal for the same reason (after an error every other input is
+unchanged), pinned by its `stateModelFactory.test.ts`.
 
 ### One latest-wins machine, one phase contract
 
@@ -833,7 +836,7 @@ three copies:
 
 | what | where | who runs on it |
 | --- | --- | --- |
-| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them — `FetchMixin.runFetch` wraps it and adds the observable bookkeeping (`isLoading`, `error`, `fetchGeneration`, `fetchCanceled`); the comparative installer and the two second-fetch autoruns hold one directly |
+| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them — `FetchMixin.runFetch` wraps it and adds the observable bookkeeping (`isLoading`, `error`, `fetchGeneration`, `fetchCanceled`); the comparative installer, the two second-fetch autoruns (variants sources, breakpoint overlay), chord's fetch and `withDiagonalizeProgress` hold one directly |
 | the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the global and comparative families; per-region is deliberately not this shape, see `RegionFetchContext` |
 | the leading-edge scheduler | `leadingEdgeAutorun` | all three installers, plus the dotplot view's region autorun |
 
@@ -1445,8 +1448,12 @@ as those two hooks, which are two different questions:
   before the RPC goes out, and stamps that value beside the loaded region; a
   region whose stamp no longer matches is stale.
 - **`regionHasData(idx)`** (default `true`) — whether the last fetch stored
-  anything. `fetchRegions` marks a region loaded even where the byte gate
-  refused it, so a display holding a per-region data map answers off that map.
+  anything for this region, where "stored" and "marked loaded" can differ by
+  design. A byte-gate refusal stamps nothing (`fetchRegions` and the fan-out
+  helpers skip the commit for a refused result), so the fail-open default is
+  unreachable from the gate; what keeps the default `true` is sequence's
+  empty-result path, which stamps a legitimately empty region without storing —
+  a store-derived default would refetch it forever.
 
 Keeping them apart is what lets a display say "the data is fine, it just isn't
 here" without inventing a key value for absence — a key that changed when data
@@ -1478,9 +1485,10 @@ arrived would be the `rpcProps()` loop in different clothes.
 **Three answer presence instead**, and the last of them is the zoom case that
 looks most like a key:
 
-- `LinearMultiRowFeatureDisplay` and canvas both return `rpcDataMap.has(idx)`,
-  so a too-large region — marked loaded, holding no data — refetches the moment
-  the gate releases.
+- `LinearMultiRowFeatureDisplay` and canvas both return `rpcDataMap.has(idx)`
+  as deliberate defense-in-depth: a refused region is never marked loaded on
+  any current path, so these overrides decide which way a future drift between
+  the commit sites and the stores would fail — as a refetch, not a freeze.
 - **MAF**: zoom picks *which fetch runs*, not a resolution — zoomed out with a
   configured summary adapter it pulls cheap per-species summary rows, zoomed in
   the full alignment. Crossing that threshold inside an already-loaded region

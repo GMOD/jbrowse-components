@@ -127,8 +127,10 @@ export interface ActiveFetch {
  * loading/error/commit side-effects in its autorun. Used by any bare-autorun
  * fetch: the comparative-view displays (dotplot, synteny, through
  * `installComparativeFetchAutorun`, which wraps this with their shared
- * debounce/flags/commit skeleton), the multi-sample-variant sources fetch, and
- * the breakpoint split view's overlay-feature fetch.
+ * debounce/flags/commit skeleton), the multi-sample-variant sources fetch, the
+ * breakpoint split view's overlay-feature fetch, the circular view's chord
+ * fetch, and the synteny diagonalize progress wrapper
+ * (`withDiagonalizeProgress`).
  *
  * `report` is passed rather than read off `self`, so where the status lands is
  * the caller's decision and not a shape this imposes. A display passes itself —

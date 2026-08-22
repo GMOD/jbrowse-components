@@ -54,13 +54,15 @@ density always releases on zoom, by construction. Read that list at the top of
 the golden file before concluding that a new term is needed; most questions
 about the gate are questions about which of the 7 a display is in.
 
-Everything here is plugin-internal but two types: the mixin, the floor and the
+Everything here is plugin-internal but four types: the mixin, the floor and the
 verdict helpers are not exported from `@jbrowse/plugin-linear-genome-view`, and
 [ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)
 is why they live in a plugin rather than a foundation package. The exceptions are
 `GateViewport` and `GateFetchState`, which canvas's duck-typed fetch contracts
 have to name — a display snapshots `gateFetchState()` when it issues a fetch and
-hands it back to `commitGateMeasurements`. The budget vocabulary is the one piece
+hands it back to `commitGateMeasurements` — plus `ByteEstimate` and
+`RegionTooLargeStatus`, exported only so the entry index's `.d.ts` can
+serialize. The budget vocabulary is the one piece
 that is deliberately *not* plugin-internal (§ A budget has a scope): three
 callers in three packages make the same comparison, and only `packages/core` is
 reachable from all of them.
@@ -337,11 +339,10 @@ nowhere else, tests included: a copy is one more place to forget that `gated`
 means "at issue", and a test copy that re-derives the rule cannot fail when the
 production rule changes.
 
-The gated half is one condition, in the two fetch autoruns:
-
-```js
-if (self.regionTooLarge && !self.gateMeasurementStale) return
-```
+The gated half is one condition — `gateSkipsMeasuredViewport`, the mixin's own
+consolidation of `regionTooLarge && !gateMeasurementStale` — read by both fetch
+skeletons (`planRegionFetch` for the per-region family,
+`installGlobalFetchAutorun` for the global one).
 
 Both halves are load-bearing. Skipping unconditionally freezes the estimate at
 the viewport it was captured over, which forces a *derived* second byte number to

@@ -32,16 +32,14 @@ export class GpuHicRenderer
   }
 
   uploadData(data: HicUploadData) {
-    if (data.numContacts === 0) {
-      this.hal.deleteRegion(REGION_KEY)
-      return
-    }
     // Zero-copy: the worker already packed this in the shader's own instance
     // layout (`HicDataResult.instances`), so there is nothing to interleave —
     // the buffer that arrived over the RPC boundary is the vertex buffer. This
     // used to call the generated `packInstances` over parallel
     // positions/counts arrays, which cost a full O(numContacts) rebuild and a
-    // 12-byte-per-contact allocation on the main thread on every fetch.
+    // 12-byte-per-contact allocation on the main thread on every fetch. No
+    // empty-upload guard: an empty pack IS the release (the HAL deletes the
+    // prior buffer before looking at the count).
     this.hal.uploadBuffer(
       REGION_KEY,
       PASS_MAIN,

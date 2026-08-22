@@ -916,11 +916,8 @@ export class GpuAlignmentsRenderer
     this.hal.clearViewport()
     this.hal.endFrame()
     this.hal.deleteRegion(OVERLAY_REGION)
-
-    if (!hasDrawn) {
-      this.hal.beginFrame(0, 0, 0, 0)
-      this.hal.endFrame()
-    }
+    // No second clearing bracket for the nothing-drawn case: `beginFrame`
+    // already cleared the canvas, and a frame with no draws submits that clear.
     return hasDrawn
   }
 

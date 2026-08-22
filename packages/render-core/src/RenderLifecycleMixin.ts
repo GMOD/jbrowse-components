@@ -14,9 +14,6 @@ export interface LifecycleHost extends IStateTreeNode {
     b: B,
     setup: () => RenderingBackendCallbacks<B>,
   ) => void
-  renderNow: () => void
-  setRenderError: (error: unknown) => void
-  currentRenderingBackend: unknown
 }
 
 export interface RenderingBackendCallbacks<B> {

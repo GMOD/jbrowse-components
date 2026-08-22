@@ -38,13 +38,16 @@ identifiers used here.
 
 ## The core contract
 
-Each GPU display is an MST model that composes `RenderLifecycleMixin` and calls
-`self.attachRenderingBackend(backend, { upload, render })` in its
-`startRenderingBackend(backend)` action. The mixin spawns two autoruns tied to
-the model's lifetime — one runs `upload(backend)`, one runs `render(backend)`.
-MobX auto-tracks every observable read inside each callback, so changes re-fire
-the right autorun with no manual dependency declarations. React components are
-thin bridges: create a canvas, hand the backend to the model via
+Each GPU display is an MST model that composes `RenderLifecycleMixin` and, in
+its `startRenderingBackend(backend)` action, installs one of the three
+render-core lifecycles (`installPerRegionLifecycle`, `installKeyedLifecycle`,
+`installGlobalLifecycle` — ADR-079); the installer is what calls the mixin's
+`attachRenderingBackend`, and `noHandRolledAttach` errors on a display calling
+it by hand. Underneath, the mixin spawns two autoruns tied to the model's
+lifetime — one runs the upload callback, one the render callback. MobX
+auto-tracks every observable read inside each callback, so changes re-fire the
+right autorun with no manual dependency declarations. React components are thin
+bridges: create a canvas, hand the backend to the model via
 `useRenderingBackend`, render JSX.
 
 ## The API
@@ -55,13 +58,13 @@ interface RenderingBackend {
   dispose(): void
 }
 
-// In the plugin's MST model:
+// In the plugin's MST model (the per-region form; keyed and global
+// installers take the same shape of callbacks):
 startRenderingBackend(backend: RenderingBackend) {
-  self.attachRenderingBackend<RenderingBackend>(backend, {
-    upload: b => {
-      // Read plugin observables, push bytes to the GPU.
-      // Re-fires on any observable change.
-    },
+  installPerRegionLifecycle(self, backend, {
+    data: () => self.rpcDataMap,
+    // The upload half is the installer's diff over `data`; an `encode` option
+    // is where a display transforms a region's payload on the way up.
     // `renderState` is a plain resolved getter — never `undefined`. "The view
     // isn't measured yet" is the mixins' `canRender` gate (see below), not a
     // nullable render state.
@@ -77,8 +80,8 @@ startRenderingBackend(backend: RenderingBackend) {
     // Add a guard only for something the backend genuinely cannot see, and say
     // what that is (alignments' zero-group grouped fetch, MAF's "no fetch has
     // landed yet" first-paint gate — see HISTORICAL.md).
-    render: b =>
-      b.renderBlocks(self.renderBlocks, self.rpcDataMap, self.renderState),
+    render: (b, dataMap) =>
+      b.renderBlocks(self.renderBlocks, dataMap, self.renderState),
   })
 }
 ```
@@ -114,7 +117,10 @@ RenderLifecycleMixin
     stopRenderingBackend()        clears currentRenderingBackend + resets canvasDrawn → autoruns idle
     renderNow()                   bumps renderTick → render autorun re-fires
     setRenderError(error)         set/clear renderError
-    attachRenderingBackend(b, cbs) spawns upload + render autoruns (once)
+    attachRenderingBackend(setup)  spawns upload + render autoruns (once);
+                                  takes a setup thunk run once per attach, so
+                                  callback-local state is rebuilt with the
+                                  backend on context-loss recovery
 
 MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
@@ -627,12 +633,12 @@ region isn't held alive by upload bookkeeping.
 The one sub-region exception is the **recolor**, and it rides on a narrower fact:
 `readYs` identity means "same layout run", because layout allocates it fresh
 (`cloneWithLayout`) and the color tier spreads over the result without touching
-it. Same bytes everywhere but the two per-read color arrays ⇒ retain the region
+it. Same bytes everywhere but the two per-read color arrays ⇒ skip the region
 and rewrite the read pass alone. Same split as
 `GpuSyntenyRenderer.getInterleaved`'s geometry/color token (ARCHITECTURE.md,
 "the color-lane patch"). It requires the model to keep the color bake in its own
-computed downstream of layout — see `laidOutByGroup` /
-`laidOutByGroupUncolored`.
+computed downstream of layout — the `laidOutByGroupUncolored` →
+`laidOutByGroupFramed` → `laidOutByGroup` chain.
 
 Synteny additionally has a level-of-detail axis upstream of all this: which PIF
 tier the fetch reads from. That's a fetch/adapter concern, not a backend one —
@@ -769,9 +775,9 @@ used by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
 display, `LinearBasicDisplay`, whose whole-map Y-layout keeps it on the
 computed-map form described below. (The canvas plugin's two displays sit on
 opposite upload strategies, so they're always spelled out where they diverge.
-`LinearMultiSampleVariantDisplay` is per-region too but derives its regions map
-from a single `cellData` computed and takes `createRegionUploadSync` — the same
-diff this helper runs on — directly.) Each plugin's `startRenderingBackend`
+`LinearMultiSampleVariantDisplay` is per-region too, deriving its regions map
+from a single `cellData` computed (`perRegionCellMap`) and handing that to this
+same installer.) Each plugin's `startRenderingBackend`
 collapses to a single call:
 
 ```ts
@@ -824,7 +830,7 @@ passes it to the render callback — wiggle's renderer reads from this map becau
 its renderer is stateless; other callers ignore the arg and read `rpcDataMap`
 directly.
 
-**Why `LinearBasicDisplay` / alignments call the diff directly instead:** those
+**Why `LinearBasicDisplay` / alignments are whole-map rather than streamed:** those
 lay out features into Y-rows across all loaded regions together (a gene spanning
 two adjacent regions lands on the same row in both), so any new arrival can in
 principle change the layout of everything already loaded. They route through a
@@ -907,7 +913,9 @@ memoize the packed bytes on `(one geometry array's identity, colors' identity)`
 and call `patchInstanceColors` when only the latter moved. The GPU re-upload
 still happens — the HAL has no partial-buffer update — but the CPU interleave,
 which dominates at 10⁵–10⁶ instances, does not. Any new keyed-upload backend
-whose palette is a separate main-thread pass wants the same two-line memo. The
+whose palette is a separate main-thread pass wants the same memo — extracted
+since as `createInstanceCache` (`@jbrowse/render-core/instanceCache`), which
+both renderers now take. The
 model-side half of this split — why the colors array is fresh in the first place,
 and why opacity is *not* in it — is
 [ARCHITECTURE.md § gpuProps and derived region
@@ -1521,7 +1529,9 @@ does the Canvas2D-only version); keep them in step with any change here.
     needed (rare).
   - Add a cached `renderState` view.
   - Define `startRenderingBackend(backend)` calling
-    `self.attachRenderingBackend(backend, { upload, render })`.
+    the render-core installer that fits its upload shape
+    (`installPerRegionLifecycle` / `installKeyedLifecycle` /
+    `installGlobalLifecycle`) — never a hand-rolled `attachRenderingBackend`.
   - Expose `rpcProps()`; add `gpuProps()` only when the main thread encodes GPU
     buffers from settings.
 - **React component** — `observer()`. Render the canvas through the shared

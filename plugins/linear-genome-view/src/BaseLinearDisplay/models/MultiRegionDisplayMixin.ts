@@ -227,6 +227,15 @@ export default function MultiRegionDisplayMixin() {
          * And the mixin cannot see a display's data map, so a key that changed
          * when data arrived would be the `rpcProps()` loop in different clothes.
          *
+         * **The fail-open default is load-bearing, not an omission.** A
+         * byte-gate refusal never marks a region loaded (the commit sits beside
+         * the store and skips refused results), so "marked loaded with nothing
+         * behind it" is unreachable from the gate — the one path that stamps
+         * without storing is sequence's legitimately-empty-region answer, and a
+         * store-derived default there would refetch forever: stamp, store
+         * nothing, read uncovered, fetch again. `true` is what lets "this fetch
+         * completed and there is genuinely nothing here" be a terminal state.
+         *
          * A view, not an action, for the reason `regionFetchKey` is a getter.
          */
         regionHasData(_displayedRegionIndex: number): boolean {

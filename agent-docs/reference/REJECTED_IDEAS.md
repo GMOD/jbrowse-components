@@ -456,6 +456,22 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   Shipped instead: a `break` past the window's right edge, fixing the head of
   the scan. A module-level `WeakMap` on the regions array is also out. Discuss
   before re-attempting.
+- **A `regionStores` hook (or a scan) behind `regionHasData` /
+  `clearDisplaySpecificData`** — parked 2026-08-20 as
+  `ideas/per-region-stores-are-named-four-times.md`, closed 2026-08-21 by
+  answering the question it parked on: the fail-open `regionHasData` default is
+  **unreachable** from the byte gate. A refusal — pre-flight or in-worker —
+  stamps nothing (`fetchRegions` returns before the work callback;
+  `fetchEachRegion`/`fetchAllRegions` and canvas's own commit skip refused
+  results), pinned by `fetchRegions.test.ts` and
+  `LinearBasicDisplay/loadedRegionCoverage.test.ts`. The one stamp-without-store
+  path is sequence's legitimately-empty-region answer, where fail-open is
+  load-bearing — a store-derived default would refetch an empty region forever.
+  So `regionHasData` is a tier-selection hook (MAF) plus deliberate
+  defense-in-depth (the two canvas `rpcDataMap.has` overrides, which decide
+  which way a future commit/store drift fails), its default is right, and there
+  is nothing for a hook or a scan to fix. The scan variant was also a check
+  that cannot fail (`mechanisms/green-checks-that-cannot-fail.md`).
 - **Region-too-large gate in render-core** —
   [ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md),
   [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md).
