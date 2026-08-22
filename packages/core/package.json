@@ -246,7 +246,7 @@
     "@gmod/shared-read-cache": "^1.7.2",
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/jexl": "^4.0.1",
-    "@jbrowse/mobx-state-tree": "^6.3.0",
+    "@jbrowse/mobx-state-tree": "^6.5.0",
     "@jbrowse/quick-lru": "^7.3.5",
     "@jbrowse/render-core": "workspace:^",
     "@leeoniya/ufuzzy": "^1.0.19",

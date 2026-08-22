@@ -33,7 +33,7 @@
     "@gmod/hic": "^1.2.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.3.0",
+    "@jbrowse/mobx-state-tree": "^6.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
