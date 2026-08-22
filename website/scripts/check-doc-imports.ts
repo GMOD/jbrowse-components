@@ -753,7 +753,8 @@ function collectSymbols() {
   // symbol claim, which reads as a checker bug and gets the line deleted rather
   // than the name fixed. The set only ever answers "does this exist anywhere",
   // so a wider net over real sources costs nothing but the read.
-  const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|slang)$/.test(name)
+  const isSource = (name: string) =>
+    /\.(tsx?|jsx?|mjs|cjs|slang|sh|py)$/.test(name)
   const add = (file: string) => {
     // Must stay in step with TICKED_SYMBOL, CONST_CASE alternative included.
     // The two regexes are one test read from both ends: widening only the doc
@@ -1019,7 +1020,8 @@ const problems = [
 // extensions is what made the directory reachable. A storybook cache under
 // products/ ships a bundled copy of a plugin's source comments, citation and
 // all — reported against a `CLAUDE.md` that resolves to the wrong package.
-const isSource = (name: string) => /\.(tsx?|jsx?|mjs|cjs|py)$/.test(name)
+const isSource = (name: string) =>
+  /\.(tsx?|jsx?|mjs|cjs|py|sh|slang)$/.test(name)
 const isBuildOutput = (file: string) =>
   file.includes('/esm/') || file.includes('/dist/')
 for (const base of [

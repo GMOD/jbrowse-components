@@ -1,7 +1,7 @@
-// Fails when `agent-docs/reference/` names a symbol that used to be ours and no
-// longer is. check-doc-imports exempts these docs because most of the names they
-// carry were never ours; asking "did we delete this" instead of "does this
-// exist" separates the drift from the outside world without an allowlist.
+// Fails when an agent-doc names a symbol that used to be ours and no longer is.
+// check-doc-imports exempts these docs because most of the names they carry were
+// never ours; asking "did we delete this" instead of "does this exist" separates
+// the drift from the outside world without an allowlist.
 //
 // History is sampled, not walked: a name only has to appear in SOME rung between
 // its birth and its death. A rung this checkout cannot resolve is skipped.
@@ -17,7 +17,13 @@ import {
 } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
-const referenceDir = join(repoRoot, 'agent-docs', 'reference')
+// `mechanisms/` joins because its premise is that this repo's code is the
+// evidence, which makes every name it cites a claim about current code.
+// `ideas/` (proposed names), `architecture-decision-records/` (superseded ones
+// on purpose) and `handoffs/` do not.
+const DOC_DIRS = ['reference', 'mechanisms'].map(d =>
+  join(repoRoot, 'agent-docs', d),
+)
 
 // Must stay in step with check-doc-imports' TICKED_SYMBOL and its source-side
 // twin: this asks a narrower question about the same names.
@@ -181,7 +187,7 @@ function liveSymbols() {
 
 function main() {
   const cited = new Map<string, string[]>()
-  for (const doc of docFiles(referenceDir)) {
+  for (const doc of DOC_DIRS.flatMap(dir => docFiles(dir))) {
     if (!ABSENCE_DOCS.has(basename(doc))) {
       readFileSync(doc, 'utf8')
         .split('\n')
@@ -220,7 +226,7 @@ function main() {
 
   reportProblems(
     problems,
-    `no reference doc names a symbol we deleted (${absent.size} absent names ` +
+    `no agent-doc names a symbol we deleted (${absent.size} absent names ` +
       `against ${rungs.length} history rungs: ${rungs.join(', ')})`,
   )
 }
