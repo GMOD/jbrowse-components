@@ -98,8 +98,11 @@ callsite) is not justified by the savings.
    actual lever for the trace's cost profile.
 2. **Worker-side coverage pack.** `uploadCoverage` (~715
    ms self-time in the trace) does not depend on main-thread Y values and could
-   move to the RPC worker without touching layout. Real but bounded win. Not
-   done.
+   move to the RPC worker without touching layout. Real but bounded win. Done
+   the day after this ADR was written, in `1ced51fcfd`: `packCoverageAreaForGpu`
+   (`plugins/alignments/src/shared/packCoverageArea.ts`, called from
+   `runCoveragePipeline`) packs every coverage-area buffer in the RPC worker,
+   and its header comment states this ADR as the reason it can.
 3. **Read/gap/mismatch pack** depends on main-thread-computed `readYs` (see
    `plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md`), so it can't be
    trivially moved worker-side. Headline 2.37 s remains on the main thread until

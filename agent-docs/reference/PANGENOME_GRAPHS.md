@@ -64,8 +64,10 @@ concept and would have needed five more for the tier alone. In use now:
 | `ct:Z:`                              | `bubbles_to_tier_bed.py`  | node type, `bubble` or `backbone`         |
 | `cn:i: cw:i: cs:i: cl:i: cv:i:`      | `bubbles_to_tier_bed.py`  | segments, traversals, shortest, longest, inversion |
 
-adr-028's precomputed `LO:Z:` layout position lands here too, with no format
-change.
+The precomputed `LO:Z:` layout position from the removed gfa-to-tabix tree's
+adr-028 lands here too, with no format change — this tree's adr-028 is an
+unrelated tooltip decision, and the one meant is
+`git show 3b98dbb985^:agent-docs/architecture-decision-records/adr-028-offline-graph-layout-tag.md`.
 
 **The tag grammar is checked, not trusted** (`GFA_TAG` in `rgfaBed.ts`). Files
 built before this column existed put a bare comma list there, and passing that
@@ -644,7 +646,10 @@ Rules they encode, each a reverted first attempt:
 ## Prior art
 
 **The abandoned `gfa-to-tabix` / `GfaTabixAdapter` effort** (removed in
-`fa737e4255`, `c72b88d177`, `3b98dbb985`) solved the same problem at HPRC scale:
+`fa737e4255`, `c72b88d177`, `3b98dbb985`) solved the same problem at HPRC scale.
+Its ADRs went with it, so every `adr-0NN` in this section is that tree's
+numbering rather than this one's —
+`git show 3b98dbb985^:agent-docs/architecture-decision-records/` lists them:
 
 - `getSubgraph` was never the failure — it matched `vg find` byte-for-byte in
   under 300 ms at ≤100 kb. `synteny_build` sank it, and adr-024 benchmarks the
@@ -658,10 +663,11 @@ Rules they encode, each a reverted first attempt:
   opposite-orientation (bp-weighted, so SNP nodes cannot outvote a reversed
   contig), then emit its steps in reverse. Our path walk does none of this; the
   E. coli demo does not need it, a real assembly set will.
-- **chain contraction does not coarsen a dense graph**: adr-014 measured
-  `vg mod -u` on HPRC chr20 at 0.95% reduction, because at 90 haplotypes almost
-  no node has bidirected degree 2. Superbubbles (`vg snarls`, BubbleGun) are the
-  primitive that works.
+- **chain contraction does not coarsen a dense graph**: `vg mod -u` on HPRC
+  chr20 measured 0.95% reduction, because at 90 haplotypes almost no node has
+  bidirected degree 2. Superbubbles (`vg snarls`, BubbleGun) are the primitive
+  that works. Taken in that tree's adr-014, which no longer exists in any
+  numbering here — this bullet is the measurement's home.
 - extraction is **not symmetric across reference paths, and that is biology**
   (adr-015), so the Reference path picker genuinely changing the drawing is
   expected.
@@ -724,9 +730,10 @@ The queue, with what each one is blocked on, is
   emit synthetic per-carrier ids and hit detection to resolve them back.
 - **Orientation is recorded but not drawn.** `StableCoordinate.strand` shows in
   the node popup; arrowheads are an edge property in `GeometryBuilder`.
-- **A precomputed global `odgi layout`, carried as an `LO:Z:` tag** (adr-028) is
-  not built. It is no longer about determinism — FMMM is seeded now, see below —
-  but about windows of one graph being laid out consistently with each other.
+- **A precomputed global `odgi layout`, carried as an `LO:Z:` tag** (the removed
+  tree's adr-028 — the tag column above has the path) is not built. It is no
+  longer about determinism — FMMM is seeded now, see below — but about windows
+  of one graph being laid out consistently with each other.
   The input exists: `~/ecoli_graph5/pggb/*.smooth.final.og.lay.tsv`.
 - ~~**Bubble collapse is the one that matters** for scale.~~ Producer done
   2026-08-02, see "Level of detail" above: a chromosome is 474 nodes. What is

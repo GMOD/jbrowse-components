@@ -195,7 +195,7 @@ not a source of divergence. It looks like one; it is not.
 A pair with **no computed orientation (`po === 0`)** is `nonSplit` to the read
 fills — deliberately the neutral grey, "distinct from the strand-colored split
 segments" — while the arcs have no such slot and fall to their baseline, which
-is `pairLR`. `swatchPaletteKeys` maps those to `colorNostrand` and
+is `pairLR`. `swatchPaletteKeys` maps those to `colorNeutralRead` and
 `colorPairLR`: two greys, not the same grey, and two legend rows for one thing.
 
 Pinned by the last `describe` in `overlayPaletteParity.test.ts`. Closing it is a
