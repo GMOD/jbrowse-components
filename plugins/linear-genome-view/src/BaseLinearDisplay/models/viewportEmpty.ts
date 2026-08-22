@@ -19,8 +19,10 @@
  * unbounded `when`. Both LGV foundations declare it over this one expression and
  * feed it to every answer a display gives about being finished: the loading term
  * (`computeLoadingTerm`), the export gate (`foundationSvgReady`'s freshness
- * thunk, not its eager terminals — this is a view read) and `paintInert`, which
- * is what the on-screen capture gate waits on.
+ * thunk, not its eager terminals — this is a view read), `paintInert`, which is
+ * what the on-screen capture gate waits on, and the dev-only retry check, whose
+ * dead-Retry report would otherwise fire on every display in the view at once
+ * and name a fix that does not exist.
  *
  * `false` before the view is measured: there the answer is "not known yet"
  * rather than "nothing", and `hasVisibleContent` reads `dynamicBlocks`, which

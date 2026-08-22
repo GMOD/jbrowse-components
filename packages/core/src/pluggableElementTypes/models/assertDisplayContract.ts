@@ -104,6 +104,12 @@ interface RetryContractHost {
    * declares it. A family that grows one declares it and gets the deferral.
    */
   awaitingPrerequisite?: boolean
+  /**
+   * Optional for the same reason: it is the LGV foundations' term for a view
+   * holding no content block, and a comparative display draws onto a shared
+   * surface that has no such state.
+   */
+  viewportEmpty?: boolean
 }
 
 // Displays whose fetch has started since the last time the caller looked, and
@@ -198,6 +204,16 @@ export function takeFetchStarted(self: object) {
  * thing to remember. A display that suppresses the scrim and still wants the
  * retry checked has the two questions genuinely apart and should say so here.
  *
+ * `viewportEmpty` is the second exemption and the same shape once more, reached
+ * from the view rather than declared by the display: with no content block on
+ * screen there is no region to ask for, so every display in that view declines
+ * and every one of their Retry buttons is inert *because the viewport is*, not
+ * because a `reload()` forgot to invalidate anything. Reporting there would be
+ * true and useless — the fix the message names does not exist — and it would
+ * fire on every display at once, which is how a check stops being read. Same
+ * term the scrim, the export gate and `painted` read, so this is the fourth
+ * reader of one answer rather than a rule of its own.
+ *
  * `awaitingPrerequisite` is not a second exemption — it is a *deferral*, and the
  * difference is the point. A two-stage `reload()` bumps the counter, wakes a
  * prerequisite fetch in another autorun, and declines here only until that
@@ -259,7 +275,12 @@ export function makeRetryContractCheck(
       // not Retry), and leaving the bump unconsumed would report against
       // whichever unrelated run cleared the gate later.
       lastCounter = self.reloadCounter
-      if (retried && outcome === 'declined' && !self.fetchInert) {
+      if (
+        retried &&
+        outcome === 'declined' &&
+        !self.fetchInert &&
+        !self.viewportEmpty
+      ) {
         report(
           `${getMembers(self).name}: reload() bumped reloadCounter but the ` +
             `fetch autorun's gate still declines, so Retry is a dead ` +

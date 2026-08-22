@@ -67,6 +67,10 @@ const TestDisplay = types
     gateMeasurementStale: true,
     // FetchMixin's, and the retry check's "deliberately not fetching" exemption
     fetchInert: false,
+    // the LGV foundations', and the check's second exemption: a view holding no
+    // content block declines every display in it, and none of those Retry
+    // buttons is dead for a reason a `reload()` could fix
+    viewportEmpty: false,
     // stands in for HiC's `effectiveResolution === undefined`, and read by
     // NOTHING else — which is what makes it a probe for whether the retry
     // check's reads leak into the autorun's dependency set. See the two
@@ -152,6 +156,9 @@ const TestDisplay = types
     },
     setPrereqPending(flag: boolean) {
       self.prereqPending = flag
+    },
+    setViewportEmpty(flag: boolean) {
+      self.viewportEmpty = flag
     },
     setStale(flag: boolean) {
       self.stale = flag
@@ -406,6 +413,22 @@ describe('the retry contract', () => {
     expect(reports()).toEqual([])
   })
 
+  // The viewport, not the display: with no content block on screen there is no
+  // region to ask for, so every display in the view declines and reporting would
+  // name a fix that does not exist — on all of them at once, which is how a
+  // check stops being read.
+  it('stays silent while the viewport holds no content block', async () => {
+    // the gate declines because the viewport does, the way every real global
+    // `prepare` declines on an empty block list
+    const { display } = await setup(d => !d.viewportEmpty)
+    display.setViewportEmpty(true)
+    await settle()
+
+    display.reload()
+    await settle()
+    expect(reports()).toEqual([])
+  })
+
   it('stays silent for a display that is deliberately not fetching', async () => {
     // LD with the triangle off: `reload()` correctly does nothing, because there
     // is nothing to load. Same flag the loading scrim reads, so this exemption
@@ -574,6 +597,21 @@ describe('the retry check leaks nothing into the dependency set', () => {
 
     const before = gateCalls.count
     display.setLoadingSuppressed(true)
+    await settle()
+    expect(gateCalls.count).toBe(before)
+  })
+
+  it('does not track viewportEmpty', async () => {
+    // same short-circuit as `fetchInert` above, one term further along
+    const { display, gateCalls } = await setup(d => !d.loaded)
+    display.setLoaded(true)
+    await settle()
+    display.reload()
+    await settle()
+    expect(reports().join('\n')).toMatch(/Retry is a dead button/)
+
+    const before = gateCalls.count
+    display.setViewportEmpty(true)
     await settle()
     expect(gateCalls.count).toBe(before)
   })
