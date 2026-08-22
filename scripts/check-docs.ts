@@ -68,6 +68,15 @@ const VALIDATORS: Validator[] = [
     argv: web('check-rename-archaeology.ts'),
   },
   {
+    // The half of `agent-docs/reference/` the check above cannot cover. It
+    // resolves a name against the tree, which those docs are exempt from because
+    // most of the names they carry were never ours; this asks the narrower
+    // question its exemption comment identified as the gap — a doc naming a
+    // symbol WE deleted, which is drift however the sentence is worded.
+    name: 'no reference doc names a symbol we deleted',
+    argv: web('check-doc-removed-symbols.ts'),
+  },
+  {
     name: 'every doc reachable from the sidebar',
     argv: web('check-sidebar.ts'),
   },

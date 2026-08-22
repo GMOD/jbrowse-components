@@ -423,9 +423,9 @@ this table exists at all: **a "pass" identifier means a PSO**, and **our uniform
 | **Instanced rendering** | the whole architecture — `stepMode: 'instance'`, `draw(verticesPerInstance, count)` | `InstancePass`, `uploadPass`, `instanceCache.ts` |
 | **Instance buffer / per-instance data** | the packed buffer a pass's `pack()` returns; `instanceStride` is its bytes-per-item | `instancePass.ts` |
 | **Vertex input layout / vertex buffer descriptor** | `vertexAttributes` (`VertexAttributeLayout`, generated as `VERTEX_ATTRIBUTES`) | `hal/types.ts`, emitted by the Slang codegen |
-| **Bind group / bind group layout** | same words | `webgpuUtils.ts`, `LayoutState` in `webgpuHal.ts` |
+| **Bind group / bind group layout** | same words | `webgpuUtils.ts`, `DeviceLayouts` in `deviceGpuCache.ts` |
 | **Bind group caching** | `passBindGroups` + the shared `uniformOnlyBindGroup` | `webgpuHal.getBindGroup` |
-| **Pipeline layout** | same word | `LayoutState` |
+| **Pipeline layout** | same word | `DeviceLayouts` |
 | **Shader reflection** | `ShaderBinding` / a shader module's `BINDINGS` export | `packages/shader-tools/src/shader-codegen/reflection.ts` |
 | **UBO / uniform buffer** | `writeUniforms`, bound at `@binding(1)` with `hasDynamicOffset` | `webgpuUtils.ts` |
 | **Dynamic uniform offset** | the per-draw `dynamicOffset` in `drawPass` | `webgpuHal.ts` |

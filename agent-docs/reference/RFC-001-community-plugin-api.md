@@ -163,7 +163,7 @@ The other three items, still open and still worth doing:
   Consistent under careful reading — the inside-frame path resets `uniformSlot`
   in `beginFrame` — but fragile to mis-modify. Make outside-frame writes a hard
   error, or document the invariant and add a boundary test.
-- **`Promise.all` → `Promise.allSettled` in `compilePipelines`.** Parallel
+- **`Promise.all` → `Promise.allSettled` in `resolvePipelines`.** Parallel
   pipeline compilation reports the first error and masks the rest; when porting
   a shader you want them all at once. ~10 lines, aggregating into a
   `ShaderCompileError`.

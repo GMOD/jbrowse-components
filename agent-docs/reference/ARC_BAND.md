@@ -380,9 +380,16 @@ As a variant, each gesture is right by default instead of by remembering:
   was `case 'none'` catching the arc and CLEARING THE SELECTION; an arc is now
   never `'none'`, so that is unreachable rather than guarded. The explicit
   `case 'arc': return` is there against a future `default:`.
-- `contextMenuFieldsForHit` answers `show: false` from its `default`, the same
-  answer coverage gets, so an arc falls through to the BROWSER's menu — which is
-  what a mark with nothing to offer should do. No `preventDefault`.
+- `contextMenuTargetForHit` returns `undefined` for an arc, so it falls through
+  to the BROWSER's menu rather than opening an empty one. No `preventDefault`.
+  The **rule** is "a mark with no items falls through", which is not arc-specific
+  — it is what `'none'` gets too. What IS arc-specific is that it has no items:
+  every item the menu builds wants a read or a coverage bin, and a junction is
+  neither. That is a gap rather than a property of arcs, though — the hit carries
+  `x1`/`x2`, `support` and a tick's `partnerRefNames`, so there is something a
+  junction could offer. `ArcMarkHit` narrows to `{tooltip, highlight}` and drops
+  the `ArcBandHitResult` behind them, which is what actually forecloses it
+  downstream. TODO.md §"Give an arc's right-click something to offer".
 
 `arcGestureGuard.test.ts` holds the behaviour, and it works the one pixel where an
 arc's ink lies over an interbase bar — the mark that answers a click with a widget

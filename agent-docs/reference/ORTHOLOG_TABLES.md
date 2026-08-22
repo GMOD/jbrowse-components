@@ -15,8 +15,8 @@ assembly-provenance bug worth never repeating.
 **The format and `MCScanBlocksAdapter` are NOT reference-anchored.** This was
 stated the other way round in `multiway_synteny.md` for a long time and is
 wrong. `pairRows(colA, colB)` joins exactly the two columns being drawn and
-keeps rows where both cells resolve through their BEDs; `pairColumns` resolves
-those indices by assembly name. Column 0 is never consulted. So:
+keeps rows where both cells resolve through their BEDs; `columnsFor` resolves
+those indices by assembly name and `columnPairs` enumerates the pairs. Column 0 is never consulted. So:
 
 - A row with a peach gene and a cacao gene draws a peach-cacao link whether or
   not that row also carries a grape gene.

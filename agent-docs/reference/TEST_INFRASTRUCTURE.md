@@ -245,7 +245,7 @@ Four sites do need it, and each carries a comment saying so — the full-suite r
 is what found them, so expect a failure rather than a slow test if you convert
 one of these back:
 
-- **A focus guard.** `BookmarkWidget`'s hotkeys only fire when the view has
+- **A focus guard.** `GridBookmarkWidget`'s hotkeys only fire when the view has
   focus, and only a real pointer sequence focuses `tracksContainer`;
   `fireEvent.click` leaves `activeElement` on `<body>` and the keydown is
   dropped.

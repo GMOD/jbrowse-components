@@ -30,6 +30,7 @@ before anyone noticed.
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [The desktop autosave interval](#decide-the-desktop-autosave-interval-or-scale-it-with-the-session) | desktop | a call about unsaved work; the flush paths already narrowed the window |
+| [An arc's right-click offers nothing](#give-an-arcs-right-click-something-to-offer) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
 | [Factory reset leaves the BLAT partition](#have-desktops-factory-reset-clear-the-blat-partition) | desktop, BLAT | two lines; `Partitions/jbrowse-blat` survives reset |
 | [Whether the web export pins its deployment](#decide-whether-the-web-export-pins-the-deployment-it-opens) | desktop, export | a deployment decision; the link already records what made it |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
@@ -228,6 +229,29 @@ The version worth proposing is an interval that scales with the serialized size,
 so a large session stops paying a small one's cadence. It is a judgment call
 about someone's unsaved work rather than an optimization, which is why it is
 written down instead of changed.
+
+### Give an arc's right-click something to offer
+
+A right-click on an arc or a tick falls through to the browser's menu, because
+`contextMenuTargetForHit` returns `undefined` for `type: 'arc'`. The fall-through
+itself is the right rule — an empty menu is worse — so what is open is whether a
+junction really has nothing, and it does not look that way: `ArcHitResult`
+carries `x1`/`x2` in absolute genomic bp and the `support` count behind the
+stroke width, and `ArcLineHitResult` carries `bp` plus `partnerRefNames`, which
+is exactly the "where does this reach" a tick's own geometry cannot show. Center
+on the mate, open the far side in a new view, copy the junction — all reachable
+from what the hit already resolved.
+
+Two things are in the way, and the second is the design question. `ArcMarkHit`
+narrows the hover to `{tooltip, highlight}` and drops the `ArcBandHitResult`
+behind them, so the coordinates do not survive to the menu builder — cheap to
+fix. Then `ContextMenuHit` **requires** `block` and `genomicPos`, and its comment
+says why: "a menu built without one was never a real state", which the split-state
+sort bugs earned. An arc resolves an `ArcHitRegion`, not a `ResolvedBlock`, so
+either arcs get a real block or that invariant needs a considered second shape.
+Don't relax it casually.
+
+Decide the item set first — it is a product call, not an implementation one.
 
 ### Have desktop's factory reset clear the BLAT partition
 
