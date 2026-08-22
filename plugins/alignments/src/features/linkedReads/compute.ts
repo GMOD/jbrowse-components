@@ -16,6 +16,7 @@ import { readNameAt } from '../../shared/readNameBlock.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
+import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 
 // Color type indices for linked-read connecting lines + bezier curves.
@@ -255,6 +256,10 @@ export interface LinkedPair {
   e1: ReadEntry
   e2: ReadEntry
   c: ClassifiedPair
+  // The loci this junction skips over — see `ReadConnection`. Carried on the
+  // pair rather than folded into `ClassifiedPair`, which answers what the
+  // connection IS; this answers what the view is missing of it.
+  hiddenSegmentsBetween?: string[]
 }
 
 // Enumerate the connections across all displayed regions: group reads by name,
@@ -263,8 +268,14 @@ export interface LinkedPair {
 // partitioning). Both the straight-line emitter (computeLinkedReadLinesByRegion)
 // and the bezier-curve emitter (computePileupBezierArcs) iterate this, so the
 // rules that define "a linked pair" live in one place.
+//
+// `canonicalRefName` is what lets a junction report the segments it skipped
+// (`hiddenSegmentsBetween`) in the view's own refName spelling. Only the emitter
+// that can DRAW that — the overlay, which dashes the arc — passes one; the
+// straight-line pass omits it and skips the SA parse.
 export function* iterLinkedPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
+  canonicalRefName?: CanonicalRefName,
 ): Generator<LinkedPair> {
   for (const [, entries] of groupReadsByName(laidOutPileupMap)) {
     // Pure fast path, NOT a correctness gate — a singleton group yields no
@@ -275,8 +286,18 @@ export function* iterLinkedPairs(
     // screen is the mate partition's question, and answering it from an entry
     // count is what once dropped a split read's off-screen mate arc.
     if (entries.length >= 2) {
-      for (const { e1, e2, isSplit } of readGroupConnections(entries)) {
-        yield { e1, e2, c: classifyPair(e1, e2, isSplit) }
+      for (const {
+        e1,
+        e2,
+        isSplit,
+        hiddenSegmentsBetween,
+      } of readGroupConnections(entries, canonicalRefName)) {
+        yield {
+          e1,
+          e2,
+          c: classifyPair(e1, e2, isSplit),
+          hiddenSegmentsBetween,
+        }
       }
     }
   }

@@ -2181,7 +2181,16 @@ export default function stateModelFactory(
             : this.renderSections.map(sec => ({
                 topOffset: sec.topOffset,
                 pileupHeight: sec.pileupHeight,
-                pairs: enumerateBezierPairs(sec.laidOutPileupMap, scope),
+                pairs: enumerateBezierPairs(
+                  sec.laidOutPileupMap,
+                  scope,
+                  // The same normalizer the arcs and the derivative paths take,
+                  // and what lets a junction name the off-screen segments it
+                  // steps over in the view's own refName spelling rather than
+                  // the BAM's. Its SA parse belongs to THIS getter's memo, not
+                  // to the per-frame projection that reads the result.
+                  self.canonicalRefName,
+                ),
               }))
         },
 

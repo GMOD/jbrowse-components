@@ -3,7 +3,10 @@ import { useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
+import {
+  bezierArcKey,
+  hiddenSegmentsNote,
+} from '../../features/linkedReads/computeOverlay.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
   BEZIER_ARC_STROKE_WIDTH,
@@ -19,7 +22,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // can't be transposed at the call site.
 function arcTooltip(
   model: LinearAlignmentsDisplayModel,
-  arc: Pick<PileupArc, 'label' | 'id1' | 'id2'>,
+  arc: Pick<PileupArc, 'label' | 'id1' | 'id2' | 'hiddenSegmentsBetween'>,
 ) {
   const parts: string[] = []
   for (const id of [arc.id1, arc.id2]) {
@@ -28,7 +31,14 @@ function arcTooltip(
       parts.push(formatFeatureLabel(info))
     }
   }
-  return parts.length > 0 ? `${arc.label}: ${parts.join(' → ')}` : arc.label
+  const connection =
+    parts.length > 0 ? `${arc.label}: ${parts.join(' → ')}` : arc.label
+  // A second line, the way the breakpoint split view's `buildPairTooltip` adds
+  // it: the dash says the junction is not direct and this says what it stepped
+  // through, which is the only place those loci are named at all.
+  return arc.hiddenSegmentsBetween?.length
+    ? `${connection}<br/>${hiddenSegmentsNote(arc.hiddenSegmentsBetween)}`
+    : connection
 }
 
 const PileupBezierOverlay = observer(function PileupBezierOverlay({
@@ -90,34 +100,53 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
       {ordered.map(({ arc, id: arcId }) => {
         const isSelected = arcId === selectedArcId
         const isHovered = arcId === hoveredArcId
+        const strokeWidth = isSelected
+          ? 5
+          : isHovered
+            ? 3
+            : BEZIER_ARC_STROKE_WIDTH
         return (
-          <path
-            key={arcId}
-            data-testid="pileup-bezier-arc"
-            d={arc.d}
-            stroke={arc.stroke}
-            strokeWidth={
-              isSelected ? 5 : isHovered ? 3 : BEZIER_ARC_STROKE_WIDTH
-            }
-            strokeOpacity={isHovered ? 1 : BEZIER_ARC_STROKE_OPACITY}
-            fill="none"
-            style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-            onMouseEnter={() => {
-              setHoveredArcId(arcId)
-              const tooltip = arcTooltip(model, arc)
-              if (tooltip) {
-                model.setMouseoverExtraInformation(tooltip)
-              }
-            }}
-            onMouseLeave={() => {
-              setHoveredArcId(prev => (prev === arcId ? null : prev))
-              model.clearMouseoverState()
-            }}
-            onClick={() => {
-              setSelectedArcId(isSelected ? null : arcId)
-              void model.selectFeatureById(arc.id1)
-            }}
-          />
+          <g key={arcId}>
+            <path
+              data-testid="pileup-bezier-arc"
+              d={arc.d}
+              stroke={arc.stroke}
+              strokeWidth={strokeWidth}
+              strokeOpacity={isHovered ? 1 : BEZIER_ARC_STROKE_OPACITY}
+              strokeDasharray={arc.dash}
+              fill="none"
+              // Inert, with the target path below answering instead — the rule
+              // `CrossRegionArcsOverlay` follows and for its reason:
+              // `pointerEvents: 'stroke'` answers on the INK, so a dashed
+              // connector would hover in its dashes and go dead in its gaps.
+              // Same geometry and same width, so a solid arc's target is exactly
+              // where its ink is.
+              style={{ pointerEvents: 'none' }}
+            />
+            <path
+              data-testid="pileup-bezier-arc-target"
+              d={arc.d}
+              stroke="transparent"
+              strokeWidth={strokeWidth}
+              fill="none"
+              style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+              onMouseEnter={() => {
+                setHoveredArcId(arcId)
+                const tooltip = arcTooltip(model, arc)
+                if (tooltip) {
+                  model.setMouseoverExtraInformation(tooltip)
+                }
+              }}
+              onMouseLeave={() => {
+                setHoveredArcId(prev => (prev === arcId ? null : prev))
+                model.clearMouseoverState()
+              }}
+              onClick={() => {
+                setSelectedArcId(isSelected ? null : arcId)
+                void model.selectFeatureById(arc.id1)
+              }}
+            />
+          </g>
         )
       })}
     </svg>

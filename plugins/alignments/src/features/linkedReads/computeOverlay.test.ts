@@ -34,6 +34,8 @@ import {
   bezierConnectionLegendItems,
   computePileupBezierArcs,
   enumerateBezierPairs,
+  HIDDEN_SEGMENT_DASH,
+  hiddenSegmentsNote,
 } from './computeOverlay.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -55,6 +57,12 @@ function makeData(opts: {
   // `PileupDataResult` that the worker always emits, and omitting it here only
   // ever compiled because of the `as unknown as` cast below.
   interchrom?: number[]
+  // Both OPTIONAL in the DTO and left absent unless a fixture asks, which is
+  // what keeps the read-order sort and the SA walk out of every other test
+  // here: clip-at-start-of-read is the axis a split read's segments chain on,
+  // and the SA tag is the only statement of the segments no region fetched.
+  clipAtStart?: number[]
+  suppAlignments?: string[]
 }): PileupDataResult {
   const n = opts.names.length
   const readPositions = new Uint32Array(n * 2)
@@ -73,6 +81,10 @@ function makeData(opts: {
     ),
     readYs: new Uint16Array(opts.ys),
     readInterchrom: Uint8Array.from(opts.interchrom ?? opts.names.map(() => 0)),
+    ...(opts.clipAtStart
+      ? { readClipAtStart: Uint32Array.from(opts.clipAtStart) }
+      : {}),
+    ...(opts.suppAlignments ? { readSuppAlignments: opts.suppAlignments } : {}),
   })
 }
 
@@ -569,6 +581,126 @@ describe('enumerateBezierPairs — the list is what gets drawn', () => {
       ys: [0, 1, 2],
     })
     expect(enumerateBezierPairs(new Map([[0, blocks]]))).toHaveLength(0)
+  })
+})
+
+// COLO829 tumour ONT chain 1, the shape it takes in a chr3-only view: one
+// unpaired read leaves chr3 forward, hops 199bp on chr10 and 183bp on chr12, and
+// lands back on chr3 reversed. The two chr3 arms OVERLAP, so that view fetches
+// both and neither of the two middle segments — leaving the arms read-adjacent on
+// screen and 382bp apart on the molecule. Joining them solid is a false
+// inversion, indistinguishable from a real one.
+describe('enumerateBezierPairs — a junction across segments nothing fetched', () => {
+  // `refName,pos(1-based),strand,CIGAR,mapQ,NM` — the read's four segments as its
+  // own SA tags state them. Each fetched segment's tag lists the other three.
+  const CHR3_FWD = 'chr3,25359069,+,500M882S,60,0'
+  const CHR10 = 'chr10,600001,+,500S199M683S,60,0'
+  const CHR12 = 'chr12,700001,+,699S183M500S,60,0'
+  const CHR3_REV = 'chr3,25358612,-,500M882S,60,0'
+
+  const foldback = makeData({
+    names: ['chain1', 'chain1'],
+    ids: ['chain1-primary', 'chain1-supp'],
+    flags: [0, SAM_FLAG_SUPPLEMENTARY],
+    strands: [1, -1],
+    positions: [
+      [25_359_068, 25_359_568],
+      [25_358_611, 25_359_111],
+    ],
+    // Read order, which for a foldback is not genomic order: the reverse arm's
+    // 882 clipped bases at the start of the read are the three segments before
+    // it, two of which no region fetched.
+    clipAtStart: [0, 882],
+    suppAlignments: [
+      [CHR10, CHR12, CHR3_REV].join(';'),
+      [CHR3_FWD, CHR10, CHR12].join(';'),
+    ],
+    ys: [0, 1],
+  })
+  const sections = new Map([[0, foldback]])
+  const identity = (refName: string) => refName
+
+  it('names the hidden loci in read order, once per hop', () => {
+    const pairs = enumerateBezierPairs(sections, 'all', identity)
+    expect(pairs).toHaveLength(1)
+    expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
+      'chr10:600,001-600,199',
+      'chr12:700,001-700,183',
+    ])
+  })
+
+  it('dashes the arc and carries the loci to the hover', () => {
+    const arcs = computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr3' }],
+      pairs: enumerateBezierPairs(sections, 'all', identity),
+    })
+    expect(arcs).toHaveLength(1)
+    // The same arc as before the dash existed: the connector is real, only its
+    // directness is not, so nothing about the geometry or the label moves.
+    expect(arcs[0]!.d).toMatch(/^M 25359568 5 C .* 25359111 17$/)
+    expect(arcs[0]!.label).toBe('Split alignment (inverted)')
+    expect(arcs[0]!.dash).toBe(HIDDEN_SEGMENT_DASH)
+    expect(hiddenSegmentsNote(arcs[0]!.hiddenSegmentsBetween!)).toBe(
+      'hidden segments not in view: chr10:600,001-600,199, chr12:700,001-700,183',
+    )
+  })
+
+  // The SA tag names chromosomes in the BAM's own spelling. Reported raw, a
+  // tooltip sends the reader to a refName the view does not have.
+  it('reports the loci in the assembly-canonical spelling', () => {
+    const pairs = enumerateBezierPairs(sections, 'all', refName =>
+      refName.replace('chr', ''),
+    )
+    expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
+      '10:600,001-600,199',
+      '12:700,001-700,183',
+    ])
+  })
+
+  // A junction whose flanking segments really are read-adjacent says nothing —
+  // the SA tag lists both of them, and neither is BETWEEN the two.
+  it('marks nothing when the read has no unfetched segment', () => {
+    const twoSegments = makeData({
+      names: ['chain2', 'chain2'],
+      ids: ['chain2-primary', 'chain2-supp'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, -1],
+      positions: [
+        [25_359_068, 25_359_568],
+        [25_358_611, 25_359_111],
+      ],
+      clipAtStart: [0, 500],
+      suppAlignments: [
+        'chr3,25358612,-,500M500S,60,0',
+        'chr3,25359069,+,500M500S,60,0',
+      ],
+      ys: [0, 1],
+    })
+    const pairs = enumerateBezierPairs(
+      new Map([[0, twoSegments]]),
+      'all',
+      identity,
+    )
+    expect(pairs).toHaveLength(1)
+    expect(pairs[0]!.hiddenSegmentsBetween).toBeUndefined()
+    expect(
+      computePileupBezierArcs({
+        colors: PALETTE,
+        ...baseOpts,
+        displayedRegions: [{ refName: 'chr3' }],
+        pairs,
+      })[0]!.dash,
+    ).toBeUndefined()
+  })
+
+  // The straight-line pass draws none of the junctions this marks, so it omits
+  // the normalizer and skips the SA parse entirely.
+  it('skips the walk when no normalizer is passed', () => {
+    expect(
+      enumerateBezierPairs(sections)[0]!.hiddenSegmentsBetween,
+    ).toBeUndefined()
   })
 })
 

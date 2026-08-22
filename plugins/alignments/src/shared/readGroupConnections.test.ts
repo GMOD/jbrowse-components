@@ -23,6 +23,9 @@ interface ReadSpec {
   end: number
   strand: 1 | -1
   clipAtStart?: number
+  // This segment's own SA tag records — what the read says about the segments
+  // that are not this one, whether or not any region fetched them.
+  sa?: string[]
 }
 
 interface Entry {
@@ -45,6 +48,7 @@ function entries(specs: ReadSpec[], region = 0): Entry[] {
     // optional, so the base leaves it out — this suite is about read-order
     // sorting, which is the one thing it decides
     readClipAtStart: new Uint32Array(specs.map(s => s.clipAtStart ?? 0)),
+    readSuppAlignments: specs.map(s => s.sa?.join(';') ?? ''),
     readKeys: specs.map(s => s.id),
     ...namesToBlock(specs.map(() => 'readA')),
   }
@@ -232,6 +236,79 @@ describe('readGroupConnections', () => {
         ]),
       ),
     ).toEqual(['s1-s2 split', 's2-s3 split'])
+  })
+})
+
+// Consecutive ON SCREEN is not consecutive on the molecule: the read's SA tags
+// name every segment it has, and a junction between two fetched ones may step
+// over any number the view never loaded. That is the difference between a real
+// rearrangement and a drawn one, so the junction reports it.
+describe('a junction over segments no region fetched', () => {
+  const canonical = (refName: string) => refName
+  // Both fetched segments sit at read bases 0-100 and 300-400; the read declares
+  // a third at 100-300 that only its tag knows about.
+  const twoOfThree = () =>
+    entries(
+      [
+        {
+          id: 'a',
+          flags: 0,
+          start: 100,
+          end: 200,
+          strand: 1,
+          clipAtStart: 0,
+          sa: ['ctgA,501,+,100S200M100S,60,0', 'ctgA,1001,+,300S100M,60,0'],
+        },
+        {
+          id: 'b',
+          flags: SAM_FLAG_SUPPLEMENTARY,
+          start: 1000,
+          end: 1100,
+          strand: 1,
+          clipAtStart: 300,
+          sa: ['ctgA,101,+,100M300S,60,0', 'ctgA,501,+,100S200M100S,60,0'],
+        },
+      ],
+      0,
+    )
+
+  test('names the segment between them, and only it', () => {
+    expect(
+      readGroupConnections(twoOfThree(), canonical).map(
+        c => c.hiddenSegmentsBetween,
+      ),
+    ).toEqual([['ctgA:501-700']])
+  })
+
+  test('says nothing without the normalizer that turns the walk on', () => {
+    expect(
+      readGroupConnections(twoOfThree()).map(c => c.hiddenSegmentsBetween),
+    ).toEqual([undefined])
+  })
+
+  test('a mate link is never marked — it joins two molecules, not two segments', () => {
+    expect(
+      readGroupConnections(
+        entries([
+          {
+            id: 'm1',
+            flags: PRIMARY_1,
+            start: 100,
+            end: 200,
+            strand: 1,
+            sa: ['ctgA,501,+,100S200M100S,60,0'],
+          },
+          {
+            id: 'm2',
+            flags: PRIMARY_2,
+            start: 900,
+            end: 1000,
+            strand: -1,
+          },
+        ]),
+        canonical,
+      ).map(c => c.hiddenSegmentsBetween),
+    ).toEqual([undefined])
   })
 })
 

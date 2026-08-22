@@ -1,6 +1,7 @@
 import {
   BEZIER_CONNECTOR_MAX_REACH_PX,
   bezierConnectorPath,
+  pluralize,
 } from '@jbrowse/core/util'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -15,6 +16,7 @@ import { connectionLabel, connectionMark, iterLinkedPairs } from './compute.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
+import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
@@ -32,6 +34,19 @@ function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
   )
 }
 
+// `stroke-dasharray` for a junction whose read passes through segments this view
+// never fetched: the connector is real, its DIRECTNESS is not. Same '4 3' the
+// breakpoint split view's `AlignmentConnections` dashes the same finding with,
+// deliberately, since the two draw the same read the same way one band apart.
+export const HIDDEN_SEGMENT_DASH = '4 3'
+
+// The tooltip line naming the loci a dashed connector skipped, word for word the
+// one `AlignmentConnections` shows in the breakpoint split view — the reader who
+// met this finding there should not have to learn a second phrasing for it.
+export function hiddenSegmentsNote(loci: string[]) {
+  return `hidden ${pluralize(loci.length, 'segment')} not in view: ${loci.join(', ')}`
+}
+
 export interface PileupArc {
   d: string
   stroke: string
@@ -42,6 +57,12 @@ export interface PileupArc {
   // the two are tellable apart at a glance; the tooltip names which evidence
   // produced the arc rather than overloading a second dimension onto the stroke.
   label: string
+  // Set together, and only for a junction across unfetched segments: the dash
+  // resolved HERE so the live overlay and the SVG export cannot disagree about
+  // which arcs are dashed (the invariant this file's stroke constants exist
+  // for), and the loci for the hover to name (`hiddenSegmentsNote`).
+  dash?: string
+  hiddenSegmentsBetween?: string[]
 }
 
 // Stable React key / selection identity for a bezier arc, shared by the live
@@ -139,9 +160,16 @@ export function bezierConnectionLegendItems(
 // `buildLaidOutChainMap` relayout it runs beside — 587ms and 1317ms on the same
 // inputs — that is +13% and +5%. So it is real but not the thing to attack in
 // this path, and it did not warrant a cheaper multi-region-name pre-pass.
+//
+// The SA parse behind `hiddenSegmentsBetween` belongs here for the same reason:
+// it is per read GROUP and scroll-invariant, so the memo pays it once per
+// relayout instead of once per frame. Only a group with two segments on one mate
+// reaches it at all — a plain pair partitions to one segment per side and
+// allocates nothing — which is what keeps it off the deep short-read path.
 export function enumerateBezierPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
   scope: BezierArcScope = 'all',
+  canonicalRefName?: CanonicalRefName,
 ): LinkedPair[] {
   if (
     scope === 'none' ||
@@ -160,7 +188,7 @@ export function enumerateBezierPairs(
   const predicate =
     scope === 'crossRegion' ? isCrossRegionPair : isBezierArcPair
   const out: LinkedPair[] = []
-  for (const pair of iterLinkedPairs(laidOutPileupMap)) {
+  for (const pair of iterLinkedPairs(laidOutPileupMap, canonicalRefName)) {
     if (predicate(pair)) {
       out.push(pair)
     }
@@ -218,7 +246,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const result: PileupArc[] = []
 
-  for (const { e1, e2, c } of pairs) {
+  for (const { e1, e2, c, hiddenSegmentsBetween } of pairs) {
     const r1 = displayedRegions[e1.displayedRegionIndex]
     const r2 = displayedRegions[e2.displayedRegionIndex]
     if (!r1 || !r2) {
@@ -270,6 +298,8 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       // `getFeatureInfoById`. One pair per drawn arc, not per read.
       id1: readIdAt(e1.data, e1.readIdx)!,
       id2: readIdAt(e2.data, e2.readIdx)!,
+      dash: hiddenSegmentsBetween?.length ? HIDDEN_SEGMENT_DASH : undefined,
+      hiddenSegmentsBetween,
     })
   }
 

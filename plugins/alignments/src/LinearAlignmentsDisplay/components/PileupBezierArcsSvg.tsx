@@ -31,6 +31,10 @@ const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
           stroke={arc.stroke}
           strokeWidth={BEZIER_ARC_STROKE_WIDTH}
           strokeOpacity={BEZIER_ARC_STROKE_OPACITY}
+          // Exported dashed too: the export is the same geometry from the same
+          // seam, and a junction across unfetched segments reads as a solid
+          // inversion in a figure exactly as it does on screen.
+          strokeDasharray={arc.dash}
           fill="none"
         />
       ))}

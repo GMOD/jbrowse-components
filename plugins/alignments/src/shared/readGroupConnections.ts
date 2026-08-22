@@ -1,12 +1,18 @@
 import {
   connectionEndpointBps,
+  featurizeSAEntries,
+  getClip,
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
+  splitSA,
 } from '@jbrowse/cigar-utils'
 
+import { formatLocationRange } from './locStrings.ts'
+
 import type { WorkerPileupData } from '../RenderAlignmentDataRPC/types.ts'
+import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
 import type { ReadKey } from './readIdentity.ts'
 
 // Minimal entry shape both the arc and bezier paths satisfy: a per-read array
@@ -33,6 +39,13 @@ export interface ReadConnection<E> {
   // mate link between the two reads of a pair. Drives endpoint selection and
   // coloring: split junctions carry no pair orientation / template length.
   isSplit: boolean
+  // Loc strings of the read's OWN segments that lie between these two in read
+  // order and that no fetched entry carries — the junction joins two segments
+  // that are read-adjacent on screen and not on the molecule. Absent when the
+  // two really are consecutive, and on every mate link. Same statement
+  // `hiddenSegmentsBefore` makes in the breakpoint split view
+  // (`markHiddenSegments`), which is what the renderer dashes.
+  hiddenSegmentsBetween?: string[]
 }
 
 export interface ConnectionEndpoints {
@@ -134,15 +147,130 @@ export function connectionEndpoints<E extends MinEntry>({
   return { bp1, s1, bp2, s2 }
 }
 
+// A segment of the read that no fetched entry carries: where it sits in the read
+// (the clip axis the junction walk compares on) and the locus to name it by.
+interface HiddenSegment {
+  clip: number
+  loc: string
+}
+
+// The read's own segments that sit inside its on-screen chain and are not part of
+// it — read off the SA tags of the segments that ARE.
+//
+// Two phases, and the split is what makes this affordable. A record's CLIP is the
+// head-or-tail digits of its CIGAR (`getClip` stops there); its LOCUS costs
+// `lengthOnRef`, a walk of every op, and an ONT SA record carries the whole
+// CIGAR of a long alignment. So phase one keeps only the records whose clip lands
+// strictly inside the chain and matches no fetched segment — the only ones that
+// can be hidden BETWEEN two of them — and phase two resolves loci for those
+// alone.
+//
+// Measured over `enumerateBezierPairs`, 20k reads where half are 2-segment split
+// reads with 900-op SA CIGARs: parsing every record cost +619ms per relayout,
+// this costs +372ms, and where the tag names only segments already on screen it
+// costs +27ms because phase two parses nothing. A 200k short-read fetch is
+// unchanged at +0ms — no read carried an SA tag, so `readSuppAlignments` is
+// absent and none of this runs.
+//
+// The records are also deduped, by clip: each segment's tag lists all the OTHERS,
+// so a read with n segments states each one n-1 times. Same rule and same reason
+// as `readChainSegments` in the breakpoint split view.
+//
+// A truncated or placeholder SA record parses to a zero-length or NaN span and
+// would name a junk locus in a tooltip, so it is dropped — the filter
+// `saSegments` applies on the arc path, over the same records.
+//
+// `featurizeSAEntries`' `id` / `readName` arguments feed only `uniqueId` and
+// `mate`, neither of which is read here, and its `strand` is consulted only
+// under `normalize`.
+function hiddenSegments<E extends MinEntry>(
+  ordered: E[],
+  canonicalRefName: CanonicalRefName,
+): HiddenSegment[] {
+  const firstClip = clipAt(ordered[0]!)
+  const lastClip = clipAt(ordered[ordered.length - 1]!)
+  const onScreen = new Set(ordered.map(clipAt))
+  const candidates = new Map<number, string>()
+  for (const e of ordered) {
+    const sa = e.data.readSuppAlignments?.[e.readIdx]
+    if (sa) {
+      for (const record of splitSA(sa)) {
+        // `refName,pos,strand,CIGAR,mapQ,NM`
+        const fields = record.split(',')
+        const cigar = fields[3]
+        if (cigar) {
+          const clip = getClip(cigar, fields[2] === '-' ? -1 : 1)
+          // A clip OUTSIDE the chain is the read leaving the screen and not
+          // coming back — a real mark this display does not draw, and not this
+          // junction's business (ideas/sa-hops-in-the-bezier-overlay.md).
+          if (clip > firstClip && clip < lastClip && !onScreen.has(clip)) {
+            candidates.set(clip, record)
+          }
+        }
+      }
+    }
+  }
+  return (
+    featurizeSAEntries([...candidates.values()], '', undefined, undefined)
+      .filter(sa => Number.isFinite(sa.start) && sa.end > sa.start)
+      .map(sa => ({
+        clip: sa.clipLengthAtStartOfRead,
+        loc: formatLocationRange(
+          canonicalRefName(sa.refName),
+          sa.start,
+          sa.end,
+        ),
+      }))
+      // Read order, so the loci a junction reports read the way the molecule does
+      // rather than the way the tags happened to list them.
+      .sort((a, b) => a.clip - b.clip)
+  )
+}
+
 // Order one read's segments along the read (5'→3', by clip-at-start-of-read,
 // which getClip already makes strand-correct) and emit a split junction between
 // each consecutive pair. Genomic order ≠ read order for inversions, so the sort
 // is what makes a fwd→rev junction chain the right two segments.
-function splitJunctions<E extends MinEntry>(segs: E[]): ReadConnection<E>[] {
+//
+// Consecutive ON SCREEN is not consecutive on the molecule. Where the read's own
+// SA tags declare a segment between the two — a hop this view never fetched —
+// the junction still gets emitted (the reader is following one molecule, and
+// dropping the connector loses the thread) but names the loci it skipped, which
+// is what the overlay draws dashed. The arc band answers the same question by
+// emitting nothing there (`unpairedChainArcs`), which is right for an aggregate
+// where a wrong junction would be counted.
+//
+// `canonicalRefName` omitted skips the SA walk entirely: the straight-line pass
+// (`computeLinkedReadLinesByRegion`) draws no junction this can mark, so it has
+// no use for the parse.
+function splitJunctions<E extends MinEntry>(
+  segs: E[],
+  canonicalRefName: CanonicalRefName | undefined,
+): ReadConnection<E>[] {
   const ordered = [...segs].sort((a, b) => clipAt(a) - clipAt(b))
+  // Only a read with a junction pays for the walk, which is what keeps this off
+  // the deep short-read path: the mate partition hands a plain pair one segment
+  // per side, so neither call allocates.
+  const hiddenInRead =
+    canonicalRefName && ordered.length > 1
+      ? hiddenSegments(ordered, canonicalRefName)
+      : []
   const out: ReadConnection<E>[] = []
   for (let j = 0; j < ordered.length - 1; j++) {
-    out.push({ e1: ordered[j]!, e2: ordered[j + 1]!, isSplit: true })
+    const e1 = ordered[j]!
+    const e2 = ordered[j + 1]!
+    // STRICTLY between, which is what assigns each hidden segment to exactly one
+    // junction: a fetched segment sits at exactly its own clip, so no window
+    // claims one of those.
+    const hidden = hiddenInRead.filter(
+      s => s.clip > clipAt(e1) && s.clip < clipAt(e2),
+    )
+    out.push({
+      e1,
+      e2,
+      isSplit: true,
+      hiddenSegmentsBetween: hidden.length ? hidden.map(s => s.loc) : undefined,
+    })
   }
   return out
 }
@@ -284,11 +412,16 @@ export function resolveReadGroup<E extends MinEntry, T>(
 // sub-read whose consecutive segments are split junctions. Secondary alignments
 // are dropped upstream; supplementary alignments are kept — they are the split
 // segments.
+//
+// Pass `canonicalRefName` to have each junction report the read's own segments
+// that this view never fetched (`hiddenSegmentsBetween`); omit it and the SA
+// walk is skipped.
 export function readGroupConnections<E extends MinEntry>(
   entries: E[],
+  canonicalRefName?: CanonicalRefName,
 ): ReadConnection<E>[] {
   return resolveReadGroup(entries, {
-    chainMate: splitJunctions,
+    chainMate: segs => splitJunctions(segs, canonicalRefName),
     mateLink: (e1, e2) => ({ e1, e2, isSplit: false }),
   })
 }
