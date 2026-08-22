@@ -154,6 +154,8 @@ naming the directory for the day it ran.
 It needs the header row and the leading `Orthogroup` id column dropped, each
 cell reduced to a gene id, and an empty cell marked `.`:
 
+<!-- from: scripts/build_orthofinder_synteny.sh -->
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/orthogroups_to_blocks.py
 python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \

@@ -96,6 +96,8 @@ with no reported association, and four Greek gray wolves as the outgroup.
 
 Before drawing anything, read the genotypes directly:
 
+<!-- from: scripts/build_dog10k_nhej1_sv.sh -->
+
 ```bash
 bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
   dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0'

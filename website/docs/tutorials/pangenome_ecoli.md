@@ -186,6 +186,8 @@ comes for free. Index it once with `jbrowse make-pif` and load it with an
 [`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter), so a
 range query fetches only the region in view:
 
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
+
 ```bash
 cp pggb/*.alignments.wfmash.paf ecoli_pggb_ava.paf
 jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
@@ -231,6 +233,8 @@ Sequence that collapsed into one set of nodes comes back as several query
 segments pointing at the same reference span.
 
 `-p` asks for PAF, so `make-pif` reads the output with nothing in between:
+
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 printf 'K12#1#chr\n' > target.txt
@@ -316,6 +320,8 @@ already defines, so `partitionField` and the colors carry across unchanged. The
 bubble-decomposition columns untangle does not report (`class`, `delta`, `path`
 and the rest) are left empty, holding the column positions. `lengthField` has
 nothing to read here, because untangle reports no length change:
+
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/untangle_to_bed.py
@@ -459,6 +465,8 @@ consistently the same genome. Re-root every block on K12 (dropping blocks that
 lack it) and rename the PanSN names to `sample.chr`, so the MAF display can
 split each row's species off on the `.`:
 
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/reroot_maf.py
 # reroot_maf.py keeps K12-containing blocks, puts K12 first (+ strand), sorts by
@@ -485,6 +493,8 @@ carrying that block's rows. The usual converter,
 assembly name and emits one line per block, undoing the split `reroot_maf.py`
 just made. `maf_to_bed.py` takes row 0 as the reference and keeps it:
 
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_bed.py
 python3 maf_to_bed.py ecoli_pggb.maf ecoli_pggb.maf.bed
@@ -497,6 +507,8 @@ The row order comes from the graph.
 reports how much of the graph each pair of samples shares, in seconds on a
 bacterial pangenome, and UPGMA over `1 - estimated.identity` turns that into the
 Newick the track reads as `nhLocation`:
+
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/odgi_similarity_to_newick.py
@@ -1079,6 +1091,8 @@ offsets come from.
 
 The same walk outside the browser puts those nodes on a linear track, so the
 segment under the cursor is the same segment in both panels:
+
+<!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_nodes_to_bed.py

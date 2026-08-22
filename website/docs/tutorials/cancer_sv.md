@@ -140,6 +140,8 @@ The search needs only the VCF. Two junctions belong to the same chain when an
 endpoint of one lands close enough to an endpoint of the other that a single
 read could carry both:
 
+<!-- from: scripts/build_cancer_sv_demo.sh -->
+
 ```bash
 python3 sv_multihop.py chains COLO829.somatic-sv.vcf.gz --min-hops 3
 ```
@@ -313,6 +315,8 @@ which is what the base-level checks below need: it pulls the reads spanning
 every locus, takes the longest as a backbone, polishes it into a consensus with
 the rest, aligns that consensus back to the reference, and realigns the reads to
 it.
+
+<!-- from: scripts/build_cancer_sv_demo.sh -->
 
 ```bash
 python3 sv_multihop.py derive \

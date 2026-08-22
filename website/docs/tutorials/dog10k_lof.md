@@ -80,6 +80,8 @@ chr30:38,261,635 truncates the protein at 373 of 513 residues. Checking the
 callset at exactly that position finds it, at 4.4% allele frequency and passing
 every filter:
 
+<!-- from: scripts/build_dog10k_cyp1a2.sh -->
+
 ```bash
 bcftools query -r chr30:38261635-38261636 -f '%POS\t%REF\t%ALT\t%FILTER\t%AC\t%AN\n' \
   "$SNVS"

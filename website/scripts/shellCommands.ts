@@ -112,6 +112,14 @@ function commandWord(word: string) {
   return opened.includes('(') ? opened : opened.replace(/\)+$/, '')
 }
 
+// Shell functions the pangenome scripts define to run a tool inside a
+// container, and that their pages show the same way. The wrapper is transparent
+// here: `in_pggb odgi untangle -i g.og` runs odgi, and reading the wrapper as
+// the tool leaves the tool itself unchecked, which is where a swap would hide.
+// `bash -c "…"` is not one of these, since what follows is a quoted string the
+// parser already keeps whole.
+const WRAPPERS = /^(in_[a-z0-9_]+|jb)$/
+
 // Tools that dispatch on a subcommand. Without the subcommand these carry no
 // information at all against a build script, since a script that runs `jbrowse`
 // or `bcftools` once runs it a dozen times: a page showing `jbrowse make-pif`
@@ -151,6 +159,9 @@ export function toolsAndFlags(body: string) {
         words[at] = substituted[1]!
         break
       }
+      at++
+    }
+    if (words[at] && WRAPPERS.test(words[at]!) && words[at + 1]) {
       at++
     }
     const tool = words[at] === undefined ? undefined : commandWord(words[at]!)

@@ -139,6 +139,8 @@ wrapper body and every call after it is unchanged. The
 Now build the graph. `--reference K12` makes K12 the minigraph backbone, and the
 path every projection is decomposed against:
 
+<!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
+
 ```bash
 in_cactus cactus-pangenome /data/js /data/seqfile.txt \
   --outDir /data/mc --outName ecoli --reference K12 \
@@ -180,6 +182,8 @@ the strand. (halSynteny keeps the query on `+` and flips only the target, so the
 PAF strand is the second character of the PSL strand field.)
 
 Index the combined PAF so a range query fetches only the region in view:
+
+<!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
 ```bash
 jbrowse make-pif ecoli_cactus_ava.paf   # -> ecoli_cactus_ava.pif.gz (+ .tbi)
@@ -284,6 +288,8 @@ of it. `hal2maf --refGenome K12` roots every block on K12 directly, and the
 HAL's `genome.sequence` rows come out as `K12.chr`, `Sakai.chr`, and so on, the
 `sample.contig` naming the MAF display splits each species off on:
 
+<!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_bed.py
 in_cactus hal2maf --refGenome K12 --noAncestors /data/mc/ecoli.full.hal /data/ecoli_cactus.maf
@@ -385,6 +391,8 @@ against the graph and emits a GAM, and `vg surject` projects that graph
 alignment onto one path as an ordinary BAM. The reads here are _E. coli_ KTa004
 ([ENA DRR063408](https://www.ebi.ac.uk/ena/browser/view/DRR063408), Illumina
 MiSeq), a strain the graph has never seen:
+
+<!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
 ```bash
 in_cactus vg giraffe -p \

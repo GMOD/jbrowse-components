@@ -109,6 +109,8 @@ The
 script does exactly this run-length encoding. Run it on the downloaded `.geno`,
 then sort, `bgzip`, and `tabix` the result:
 
+<!-- from: scripts/bxd_build_demo.sh -->
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/bxd_geno_to_painting_bed.py
 python3 bxd_geno_to_painting_bed.py BXD.geno bxd_painting.bed
@@ -171,6 +173,8 @@ strains are related.
 
 Fetch a trait's scan by its GeneNetwork id and reshape it with `jq`. Each record
 carries a marker, its mm10 position in Mb, a LOD score and a p-value:
+
+<!-- from: scripts/bxd_build_demo.sh -->
 
 ```bash
 GN='https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma'

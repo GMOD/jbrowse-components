@@ -77,10 +77,18 @@ build script invokes are the script's own problem — each fetches what it is
 missing, and the same check pins that list against what the script calls.
 
 **Mark the fence `<!-- from: scripts/build_<topic>.sh -->`** and
-`check-script-commands` asserts every tool and flag in it still runs in that
-script — tools and flags rather than text, since the page carries the general
-form and the script the pinned one. Leave the marker off a fence showing a route
-the script does not take.
+`check-script-commands` asserts every tool, subcommand and flag in it still runs
+in that script — those rather than text, since the page carries the general form
+and the script the pinned one. Leave the marker off a fence showing a route the
+script does not take, and off one whose command the script only approximates:
+`local_ancestry` shows `jbrowse sort-bed` where its script sorts inline to stay
+free of node, so that line stands in a fence of its own.
+
+**A `python` or `r` fence takes the same marker**, because a build script's
+analysis step is as often a heredoc as a command. There the callee stands in for
+the tool and the keyword-argument names for the flags, so `satuRn::fitDTU` and
+its `object`/`formula`/`parallel` are what has to agree, and the values stay
+free. `dtu` is the page to copy; `callArguments.ts` is the parser.
 
 Explain the flags in comments inside the fence, and don't assume the reader
 knows why one is there: `seed=42` is not "fixes the run", it is "FLARE draws

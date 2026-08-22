@@ -175,6 +175,8 @@ the `arabidopsis_wgbs.bam` produced above.
 Set up the assembly from the same `tair10.fa` reference (the CLI indexes and
 bgzips it for you):
 
+<!-- from: scripts/build_arabidopsis_wgbs.sh -->
+
 ```bash
 jbrowse add-assembly tair10.fa --name tair10 --load copy
 ```
@@ -182,6 +184,8 @@ jbrowse add-assembly tair10.fa --name tair10 --load copy
 The gene models come with the reference
 (`datasets download genome accession GCF_000001735.4 --include gff3`). Sort,
 compress, and index the GFF3, then add it as a `FeatureTrack`:
+
+<!-- from: scripts/build_arabidopsis_wgbs.sh -->
 
 ```bash
 jbrowse sort-gff genomic.gff | bgzip > tair10.gff.gz
