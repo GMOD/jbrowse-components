@@ -1,5 +1,6 @@
 import { GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { isUriLocation } from '@jbrowse/core/util'
+import { escapeHTML } from '@jbrowse/core/util/htmlText'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import type {
@@ -69,9 +70,12 @@ export function resolve(uri: string, baseUri?: string) {
 }
 
 // wrap a hub-relative html/htmlPath into an anchor pointing at the resolved url,
-// stored in track/assembly metadata for display
+// stored in track/assembly metadata for display. `path` is hub-controlled text
+// going into markup, so it is escaped on both sides of the tag rather than
+// relying on the sanitizer that happens to sit at the far end of every current
+// reader
 export function htmlLink(path: string, baseUri?: string) {
-  return `<a href="${resolve(path, baseUri)}">${path}</a>`
+  return `<a href="${escapeHTML(resolve(path, baseUri))}">${escapeHTML(path)}</a>`
 }
 
 // build the connection's success notification: which assemblies had tracks
