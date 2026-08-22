@@ -20,7 +20,7 @@ const TRACK_ID = 'volvox_filtered_vcf'
 const SLOT = 'displayMode'
 
 interface TestView {
-  showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   tracks: {
     configuration: { trackId: string }
     displays: ResolvableDisplay[]
@@ -49,9 +49,9 @@ async function openInTwoViews() {
   const { rootModel } = await getPluginManager()
   const session = rootModel.session as unknown as TestSession
   const first = session.views[0]!
-  first.showTrack(TRACK_ID)
+  await first.launchTrack(TRACK_ID)
   const second = session.addView('LinearGenomeView', {})
-  second.showTrack(TRACK_ID)
+  await second.launchTrack(TRACK_ID)
   return { session, first: displayIn(first), second: displayIn(second) }
 }
 
@@ -100,7 +100,7 @@ describe('override on an admin-configured promotable slot', () => {
     const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(ADMIN_TRACK)
+    await view.launchTrack(ADMIN_TRACK)
     const display = view.tracks.find(
       t => t.configuration.trackId === ADMIN_TRACK,
     )!.displays[0]!

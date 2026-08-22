@@ -9,7 +9,7 @@ import { getTestSession } from './util.tsx'
 // displayId — even when every other slot is default.
 async function getTrack(trackId: string) {
   const { view } = await getTestSession()
-  view.showTrack(trackId)
+  await view.launchTrack(trackId)
   return view.tracks.find(t => t.trackId === trackId)!
 }
 

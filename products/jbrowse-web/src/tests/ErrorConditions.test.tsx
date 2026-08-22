@@ -31,7 +31,7 @@ test('404 sequence file', async () => {
 test('wrong assembly', async () => {
   await mockConsole(async () => {
     const { view, findAllByText } = await createViewNoWait(wrongAssemblyTest)
-    view.showTrack('volvox_wrong_assembly')
+    await view.launchTrack('volvox_wrong_assembly')
     await findAllByText(/does not match/, {}, delay)
   })
 }, 30000)

@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { waitFor } from '@testing-library/react'
 
-import { createTestSession } from '../rootModel/test_util.ts'
+import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -12,7 +12,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // spins up a standalone GCContentTrack session track whose GCContentAdapter
 // wraps the reference track's own sequence adapter.
 function makeSession(displays: { id: string; type: string }[]) {
-  return createTestSession({
+  return createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
         {
@@ -55,7 +55,7 @@ function makeSession(displays: { id: string; type: string }[]) {
   })
 }
 
-function findGCTrack(session: ReturnType<typeof makeSession>) {
+function findGCTrack(session: Awaited<ReturnType<typeof makeSession>>) {
   const added = session.tracks.find(
     t => readConfObject(t, 'type') === 'GCContentTrack',
   )
@@ -66,7 +66,7 @@ function findGCTrack(session: ReturnType<typeof makeSession>) {
 }
 
 test('LinearReferenceSequenceDisplay adds a standalone GCContentTrack', async () => {
-  const session = makeSession([
+  const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
   const display = session.views[0].tracks[0].displays[0]
@@ -91,8 +91,8 @@ test('LinearReferenceSequenceDisplay adds a standalone GCContentTrack', async ()
   })
 })
 
-test('LinearGCContentDisplay carries its current params onto the new track', () => {
-  const session = makeSession([
+test('LinearGCContentDisplay carries its current params onto the new track', async () => {
+  const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
     { id: 'display2', type: 'LinearGCContentDisplay' },
   ])
@@ -112,8 +112,8 @@ test('LinearGCContentDisplay carries its current params onto the new track', () 
   expect(readConfObject(trackDisplay, 'gcMode')).toBe('skew')
 })
 
-test('hierarchical track selector menu offers "Add GC content track" on refseq', () => {
-  const session = makeSession([
+test('hierarchical track selector menu offers "Add GC content track" on refseq', async () => {
+  const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
   // the track selector sources the refseq config from the assembly, not from
@@ -135,8 +135,8 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
   )
 })
 
-test('in-view track menu offers "Add GC content track" on refseq', () => {
-  const session = makeSession([
+test('in-view track menu offers "Add GC content track" on refseq', async () => {
+  const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
   const refseqConf =
@@ -158,7 +158,7 @@ test('in-view track menu offers "Add GC content track" on refseq', () => {
 })
 
 test('standalone GCContentTrack display does not double-wrap its adapter', async () => {
-  const session = makeSession([
+  const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
   // addGCContentTrack shows the new track through the async launchTrack path
@@ -189,7 +189,7 @@ test('standalone GCContentTrack display does not double-wrap its adapter', async
 // adapter reaches the wiggle with no scores and the track silently draws an
 // empty axis rather than erroring.
 test('GCContentTrack display wraps a bare sequence adapter', async () => {
-  const session = createTestSession({
+  const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
         {
@@ -260,8 +260,8 @@ test('GCContentTrack display wraps a bare sequence adapter', async () => {
 // actions" and once at the top level — and the copy asked whether gccontent was
 // loaded by calling getTrackType, which throws on an unregistered type instead
 // of answering no.
-test('the refseq label menu offers "Add GC content track" exactly once', () => {
-  const session = makeSession([
+test('the refseq label menu offers "Add GC content track" exactly once', async () => {
+  const session = await makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
   const view = session.views[0]

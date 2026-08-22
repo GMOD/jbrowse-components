@@ -34,7 +34,7 @@ const tracks = [
 test('a session round-trips through the url form', async () => {
   const state = await createViewState({ assembly, tracks })
   state.session.setName('my session')
-  state.session.view.showTrack('volvox_sv')
+  await state.session.view.launchTrack('volvox_sv')
 
   const decoded = await decodeSession(await encodeSession(state))
 

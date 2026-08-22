@@ -238,7 +238,7 @@ test('a live setSlot edit persists exactly once and does not loop (admin)', asyn
     const { rootModel } = await getPluginManager(undefined, true)
 
     const session = rootModel.session
-    session.views[0].showTrack(TRACK_ID)
+    await session.views[0].launchTrack(TRACK_ID)
     const track = session.views[0].tracks.find(
       (t: any) => t.configuration.trackId === TRACK_ID,
     )
@@ -264,7 +264,7 @@ test('reset discards the delta and reverts an open track in place', async () => 
     'name',
   )
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   session.updateTrackConfiguration(editedSnapshot(session))
 
   // the open track resolves to the edited config
@@ -297,7 +297,7 @@ test('reset reverts a live in-place setSlot edit (stale hydration node not reuse
     'name',
   )
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const openTrack = () =>
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
   const openConfig = () =>
@@ -376,7 +376,7 @@ test('a live setSlot edit persists as a delta via the reaction (non-admin)', asy
     const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(TRACK_ID)
+    await view.launchTrack(TRACK_ID)
     const openConfig = () =>
       view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
         .configuration as AnyConfigurationModel & {
@@ -501,12 +501,12 @@ test('hiding then re-showing a track keeps its edit (delta is the source of trut
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   session.updateTrackConfiguration(editedSnapshot(session))
   view.hideTrack(TRACK_ID)
 
   // the delta persisted through hide, so re-showing resolves the edited config
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const reopened = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
   )!.configuration
@@ -527,7 +527,7 @@ test('an undo that drops the delta drops the working copy with it', async () => 
     const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(TRACK_ID)
+    await view.launchTrack(TRACK_ID)
     const openConfig = () =>
       view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
         .configuration as AnyConfigurationModel & {
@@ -573,7 +573,7 @@ test('an edit made after an undo does not reinstate the undone one', async () =>
     const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(TRACK_ID)
+    await view.launchTrack(TRACK_ID)
     const openConfig = () =>
       view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
         .configuration as AnyConfigurationModel & {
@@ -612,7 +612,7 @@ test('persisting an edit keeps the working copy the next keystroke lands on', as
   const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const openConfig = () =>
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
       .configuration as AnyConfigurationModel & {

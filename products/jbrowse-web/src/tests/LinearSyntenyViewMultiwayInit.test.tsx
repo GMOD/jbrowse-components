@@ -151,7 +151,7 @@ test('the track selector targets the level it was opened for', async () => {
   expect(offered.has('volvox_del.paf')).toBe(false)
 
   // ...and opening one lands in that band, not the first
-  selector.trackContainer.showTrack('volvox_ins.paf')
+  await selector.trackContainer.launchTrack('volvox_ins.paf')
   expect(view.levels[1].tracks.length).toBe(1)
   expect(view.levels[0].tracks.length).toBe(0)
   expect(selector.shownTrackIds.has('volvox_ins.paf')).toBe(true)

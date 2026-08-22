@@ -51,14 +51,16 @@ const WIN_KB = Number(process.env.WIN_KB || 12)
 interface StressView {
   tracks: { configuration: { trackId: string } }[]
   hideTrack: (trackId: string) => void
-  showTrack: (trackId: string) => void
+  launchTrack: (trackId: string) => Promise<unknown>
   navToLocString: (loc: string) => void
 }
 type Win = { JBrowseSession?: { views?: StressView[] } }
 
+// launchTrack, not showTrack: a display's state model is a dynamic import away
+// until something asks for it, and this waits for that load before returning
 function showTrack(page: Page, trackId: string) {
-  return page.evaluate(t => {
-    ;(window as unknown as Win).JBrowseSession?.views?.[0]?.showTrack(t)
+  return page.evaluate(async t => {
+    await (window as unknown as Win).JBrowseSession?.views?.[0]?.launchTrack(t)
   }, trackId)
 }
 

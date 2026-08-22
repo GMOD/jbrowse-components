@@ -160,7 +160,7 @@ test('exporting with nothing displayed says so instead of saving a blank', async
 // terminal, or an export awaiting it hangs with no error and no output
 test('a track opened before any regions leaves the export gate terminal', async () => {
   const { view } = await setup()
-  view.showTrack('sv')
+  await view.launchTrack('sv')
   const display = view.tracks[0]!.displays[0]!
   expect(display.features).toBeUndefined()
   expect(display.svgReady).toBe(true)

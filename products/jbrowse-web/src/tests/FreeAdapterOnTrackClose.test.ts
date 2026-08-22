@@ -8,7 +8,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 const TRACK_ID = 'volvox_filtered_vcf'
 
 interface TestView {
-  showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   hideTrack: (id: string) => void
   tracks: {
     rpcSessionId: string
@@ -38,8 +38,8 @@ async function setup() {
 
 test('a track in two views frees its adapter only when the last view closes it', async () => {
   const { pluginManager, view1, view2 } = await setup()
-  view1.showTrack(TRACK_ID)
-  view2.showTrack(TRACK_ID)
+  await view1.launchTrack(TRACK_ID)
+  await view2.launchTrack(TRACK_ID)
 
   const track = view1.tracks.find(t => t.configuration.trackId === TRACK_ID)!
   const sessionId = track.rpcSessionId
@@ -65,7 +65,7 @@ test('a track in two views frees its adapter only when the last view closes it',
 
 test('closing the only view holding a track frees its adapter', async () => {
   const { pluginManager, view1 } = await setup()
-  view1.showTrack(TRACK_ID)
+  await view1.launchTrack(TRACK_ID)
 
   const track = view1.tracks.find(t => t.configuration.trackId === TRACK_ID)!
   const sessionId = track.rpcSessionId
@@ -86,7 +86,7 @@ test('closing the only view holding a track frees its adapter', async () => {
 // retain added there must not throw in that window.
 test('destroying a session with an unobserved track does not throw', async () => {
   const { rootModel, view1 } = await setup()
-  view1.showTrack(TRACK_ID)
+  await view1.launchTrack(TRACK_ID)
   await settle()
 
   expect(() => {

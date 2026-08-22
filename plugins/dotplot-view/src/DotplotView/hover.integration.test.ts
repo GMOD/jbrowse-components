@@ -104,7 +104,7 @@ async function setup() {
         assemblyNames: ['volvox', 'volvox'],
       },
     })
-    view.showTrack(trackId)
+    await view.launchTrack(trackId)
   }
   await when(() => view.dotplotDisplays.every(d => d.ready))
   const [a, b] = view.dotplotDisplays

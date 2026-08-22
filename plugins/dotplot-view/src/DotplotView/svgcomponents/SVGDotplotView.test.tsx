@@ -117,7 +117,7 @@ test('an errored track fails the export, naming every track that failed', async 
         assemblyNames: ['volvox', 'volvox'],
       },
     })
-    view.showTrack(trackId)
+    await view.launchTrack(trackId)
   }
   // set directly rather than by failing a fetch: this asserts how the view
   // reports the terminal state, and both displays must be in it at once. After
@@ -188,7 +188,7 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
       assemblyNames: ['volvox', 'volvox'],
     },
   })
-  view.showTrack('ortho')
+  await view.launchTrack('ortho')
   await when(() => view.dotplotDisplays.every(d => d.ready))
 
   // Committed directly rather than fetched, the way the errored-tracks test

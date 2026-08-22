@@ -84,7 +84,7 @@ async function setup() {
   view.setWidth(800)
   await when(() => view.initialized, { timeout: 20000 })
   for (const v of view.views) {
-    v.showTrack('tk1')
+    await v.launchTrack('tk1')
   }
   await when(() => fetched.length > 0, { timeout: 20000 })
   return { view, fetched }

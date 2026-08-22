@@ -130,7 +130,7 @@ interface StressView {
   bpPerPx: number
   offsetPx: number
   hideTrack: (trackId: string) => void
-  showTrack: (trackId: string) => void
+  launchTrack: (trackId: string) => Promise<unknown>
   navToLocString: (loc: string) => void
   zoomTo: (bpPerPx: number) => void
   scrollTo: (offsetPx: number) => void
@@ -145,7 +145,7 @@ async function act(page: Page) {
   const track = pick(TRACKS)
   const loc = randomLoc()
   return page.evaluate(
-    (trackId, locStr, r, zoomIn, scrollLeft) => {
+    async (trackId, locStr, r, zoomIn, scrollLeft) => {
       const view = (
         window as unknown as { JBrowseSession?: { views?: StressView[] } }
       ).JBrowseSession?.views?.[0]
@@ -159,7 +159,7 @@ async function act(page: Page) {
           view.hideTrack(trackId)
           return `hide ${trackId}`
         }
-        view.showTrack(trackId)
+        await view.launchTrack(trackId)
         return `show ${trackId}`
       } else if (r < 0.7) {
         view.navToLocString(locStr)

@@ -1,6 +1,6 @@
 import { render, waitFor } from '@testing-library/react'
 
-import { createViewState } from '../index.ts'
+import { createViewStateAsync } from '../index.ts'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -58,7 +58,7 @@ const defaultSession = {
 }
 
 test('<JBrowseLinearGenomeView /> renders successfully', async () => {
-  const state = createViewState({
+  const state = await createViewStateAsync({
     assembly,
     tracks: [],
     defaultSession,
@@ -86,7 +86,7 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
 }, 40000)
 
 test('top-level location + highlight navigate via init', async () => {
-  const state = createViewState({
+  const state = await createViewStateAsync({
     assembly,
     tracks: [],
     location: 'ctgA:1-40',
@@ -130,7 +130,11 @@ test('top-level location + highlight navigate via init', async () => {
 // directly, because the message arriving is only half of what regressed -- the
 // other half is that this path reports at all.
 test('a failure the session survives reaches the screen', async () => {
-  const state = createViewState({ assembly, tracks: [], defaultSession })
+  const state = await createViewStateAsync({
+    assembly,
+    tracks: [],
+    defaultSession,
+  })
   const { findByText } = render(<JBrowseLinearGenomeView viewState={state} />)
 
   expect(state.session.view.showTrack('not_a_track_in_this_config')).toBe(

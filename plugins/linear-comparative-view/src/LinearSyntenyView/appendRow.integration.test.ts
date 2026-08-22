@@ -95,7 +95,7 @@ test('an appended level matches the auto-scaled stack it joins', async () => {
     expect(heights(view)).toEqual([64, 64, 64, 64, 64])
   })
 
-  view.appendRow({ assembly: 'volvox0' })
+  await view.appendRow({ assembly: 'volvox0' })
   await waitFor(() => {
     expect(heights(view)).toEqual([64, 64, 64, 64, 64, 64])
   })
@@ -105,9 +105,15 @@ test('an appended level matches the auto-scaled stack it joins', async () => {
 // add below it must not come in at the factory default either.
 test('an appended level matches a hand-resized stack', async () => {
   const { view } = await openStack(2)
+  // settle the launch first: its tracks land through the async launchTrack path
+  // and the auto-scale follows them, so a height set before that is one the
+  // init pass still overwrites. A pairwise stack auto-scales to the 100 default.
+  await waitFor(() => {
+    expect(heights(view)).toEqual([100])
+  })
   view.levels[0]!.setHeight(210)
 
-  view.appendRow({ assembly: 'volvox0' })
+  await view.appendRow({ assembly: 'volvox0' })
   expect(heights(view)).toEqual([210, 210])
 })
 
@@ -130,7 +136,7 @@ test('a track added in the same tick shows on the level it was added for', async
     },
   })
 
-  view.appendRow({ assembly: 'volvox0', syntenyTrackId: 'uploaded' })
+  await view.appendRow({ assembly: 'volvox0', syntenyTrackId: 'uploaded' })
 
   expect(view.levels.length).toBe(2)
   // on the new level, not the one that was already there (openStack configures

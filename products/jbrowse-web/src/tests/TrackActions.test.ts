@@ -1,3 +1,5 @@
+import { getEnv } from '@jbrowse/core/util'
+
 import { doBeforeEach, getTestSession, mockConsole } from './util.tsx'
 
 const TRACK_ID = 'volvox_gc'
@@ -6,7 +8,17 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const getView = async () => (await getTestSession()).view
+// These pin the SYNCHRONOUS door's contract — what showTrack/hideTrack/
+// toggleTrack return and leave behind — so the display's state model has to be
+// loaded first, which is the one thing the async launchTrack pair adds. Loading
+// it here rather than per test states that precondition once.
+const getView = async () => {
+  const { view } = await getTestSession()
+  await getEnv(view)
+    .pluginManager.getDisplayType('LinearGCContentTrackDisplay')
+    .loadStateModel()
+  return view
+}
 
 test('showTrack returns the track and adds it to view.tracks', async () => {
   const view = await getView()
@@ -42,7 +54,7 @@ test('showTrack passes displayInitialSnapshot state to the display', async () =>
 
 test('hideTrack returns true and removes the track when shown', async () => {
   const view = await getView()
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   expect(view.hideTrack(TRACK_ID)).toBe(true)
   expect(view.tracks).toHaveLength(0)
 })
@@ -60,7 +72,7 @@ test('toggleTrack returns true when transitioning to shown', async () => {
 
 test('toggleTrack returns false when transitioning to hidden', async () => {
   const view = await getView()
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   expect(view.toggleTrack(TRACK_ID)).toBe(false)
   expect(view.tracks).toHaveLength(0)
 })

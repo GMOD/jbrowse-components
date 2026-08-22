@@ -19,7 +19,7 @@ const SLOT = 'displayMode'
 const PROMOTED = 'compact'
 
 interface TestView {
-  showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   tracks: {
     configuration: AnyConfigurationModel
     displays: { type: string }[]
@@ -44,7 +44,7 @@ async function openVcfDisplay(adminMode = false) {
   const { rootModel } = await getPluginManager(undefined, adminMode)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const display = view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
     .displays[0]! as unknown as ResolvableDisplay
   return { rootModel, session, display }
@@ -134,7 +134,11 @@ test('the shared snapshot reproduces the sender value in a recipient with no pro
   )
 
   // fresh recipient: no promoted defaults of their own
-  const { rootModel: recipient } = await getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  // the shared snapshot names the display that was open when it was baked, and
+  // setSession is synchronous
+  await recipientPlugins.preloadSessionTypes(shared)
   recipient.setSession(shared)
   const recipientSession = recipient.session as unknown as TestSession
   const recipientDisplay = recipientSession.views[0]!.tracks.find(
@@ -161,7 +165,11 @@ test("a sender at base picks up the recipient's own promoted default", async () 
     getSnapshot(rootModel.session),
   )
 
-  const { rootModel: recipient } = await getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  // the shared snapshot names the display that was open when it was baked, and
+  // setSession is synchronous
+  await recipientPlugins.preloadSessionTypes(shared)
   recipient.setSession(shared)
   const recipientSession = recipient.session as unknown as TestSession
   recipientSession.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
@@ -184,7 +192,11 @@ test("a recipient's promoted default cannot override a baked value", async () =>
     getSnapshot(rootModel.session),
   )
 
-  const { rootModel: recipient } = await getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  // the shared snapshot names the display that was open when it was baked, and
+  // setSession is synchronous
+  await recipientPlugins.preloadSessionTypes(shared)
   recipient.setSession(shared)
   const recipientSession = recipient.session as unknown as TestSession
   // recipient promotes something else entirely
@@ -206,7 +218,7 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
   }
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const base = getSnapshot(
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
   ) as { trackId: string; displays: { type: string; displayId: string }[] }
@@ -216,7 +228,7 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
     d.displayId = `${clone.trackId}-${d.type}`
   }
   const added = session.publishTrackConf(clone)!
-  view.showTrack(added.trackId)
+  await view.launchTrack(added.trackId)
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
@@ -259,7 +271,7 @@ test('an opened connection track bakes into its persisted config, not a dead del
   }
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const base = getSnapshot(
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
   ) as { trackId: string; displays: { type: string; displayId: string }[] }
@@ -269,7 +281,7 @@ test('an opened connection track bakes into its persisted config, not a dead del
     d.displayId = `${clone.trackId}-${d.type}`
   }
   session.setConnectionTrackConfig(clone.trackId, 'testConnection', clone)
-  view.showTrack(clone.trackId)
+  await view.launchTrack(clone.trackId)
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
@@ -311,7 +323,7 @@ test('a connection track config with no displays array gets the baked display ad
   }
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const base = getSnapshot(
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
   ) as Record<string, unknown> & { trackId: string }
@@ -322,7 +334,7 @@ test('a connection track config with no displays array gets the baked display ad
     'testConnection',
     noDisplays,
   )
-  view.showTrack(noDisplays.trackId)
+  await view.launchTrack(noDisplays.trackId)
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
@@ -417,7 +429,9 @@ test('fidelity survives the real share encode/decode (long-URL round-trip)', asy
     await fromUrlSafeB64(sessionParam.replace(/^encoded-/, '')),
   ) as Record<string, unknown>
 
-  const { rootModel: recipient } = await getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  await recipientPlugins.preloadSessionTypes(decoded)
   recipient.setSession(decoded)
   const recipientSession = recipient.session as unknown as TestSession
   const recipientDisplay = recipientSession.views[0]!.tracks.find(

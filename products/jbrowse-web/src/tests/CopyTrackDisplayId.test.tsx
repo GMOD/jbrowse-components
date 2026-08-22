@@ -12,11 +12,11 @@ interface TrackSnap {
   displays?: DisplaySnap[]
 }
 
-function showAndSnapshot(
+async function showAndSnapshot(
   view: Awaited<ReturnType<typeof getTestSession>>['view'],
   trackId: string,
-): TrackSnap {
-  view.showTrack(trackId)
+): Promise<TrackSnap> {
+  await view.launchTrack(trackId)
   const track = view.tracks.find(t => t.trackId === trackId)!
   return getSnapshot(track.configuration)
 }
@@ -28,7 +28,7 @@ function showAndSnapshot(
 // types.identifier; a collision would crash MST)
 test('copied track gets unique displayIds derived from the new trackId', async () => {
   const { session, view } = await getTestSession()
-  const orig = showAndSnapshot(view, 'volvox_filtered_vcf')
+  const orig = await showAndSnapshot(view, 'volvox_filtered_vcf')
 
   // every display snapshot has the canonical id form
   for (const d of orig.displays!) {
@@ -44,7 +44,7 @@ test('copied track gets unique displayIds derived from the new trackId', async (
   }
 
   const added = session.publishTrackConf(snap) as { trackId: string }
-  const copy = showAndSnapshot(view, added.trackId)
+  const copy = await showAndSnapshot(view, added.trackId)
 
   const origIds = new Set(orig.displays!.map(d => d.displayId))
   for (const d of copy.displays!) {

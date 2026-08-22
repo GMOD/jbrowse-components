@@ -12,7 +12,7 @@ const SLOT = 'displayMode'
 const PROMOTED = 'compact'
 
 interface TestView {
-  showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   hideTrack: (id: string) => void
   tracks: { configuration: AnyConfigurationModel }[]
 }
@@ -38,7 +38,7 @@ async function openTrack() {
   const { rootModel } = await getPluginManager()
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const trackConfig = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
   )!.configuration

@@ -38,7 +38,7 @@ test('showTrack with an explicit display type attaches that display’s config',
   ) as {
     trackId: string
   }
-  view.showTrack(
+  await view.launchTrack(
     added.trackId,
     {},
     {
@@ -62,7 +62,7 @@ test('showTrack with no display type takes the track’s first declared display'
   ) as {
     trackId: string
   }
-  view.showTrack(added.trackId)
+  await view.launchTrack(added.trackId)
   const display = view.tracks.find(t => t.trackId === added.trackId)!
     .displays[0]!
   expect(display.type).toBe('LinearMultiSampleVariantMatrixDisplay')

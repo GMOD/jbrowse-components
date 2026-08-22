@@ -22,7 +22,7 @@ const SLOT = 'displayMode'
 const PROMOTED = 'compact'
 
 interface TestView {
-  showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   tracks: { configuration: AnyConfigurationModel }[]
 }
 interface TestSession {
@@ -73,7 +73,7 @@ function displayEntry(config: Record<string, unknown>) {
 test('a selector entry is frozen and a view entry is live', async () => {
   const { session, view } = await setup()
   expect(isStateTreeNode(fromSelector(session))).toBe(false)
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const inView = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
   )!.configuration
@@ -101,7 +101,7 @@ test('both entry points copy the same config', async () => {
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const selector = copiedConfig(pluginManager, session, fromSelector(session))
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const inView = copiedConfig(
     pluginManager,
     session,
@@ -117,7 +117,7 @@ test('both entry points copy the same config', async () => {
 test('hydration reuses the node the track itself later resolves', async () => {
   const { pluginManager, session, view } = await setup()
   const hydrated = hydrateTrackConfig(pluginManager, fromSelector(session))
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const inView = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
   )!.configuration
@@ -158,7 +158,7 @@ function displayConfig(trackConfig: AnyConfigurationModel) {
 
 test('a non-admin quick-edit reaches Copy config from both menus', async () => {
   const { pluginManager, session, view } = await setup(false)
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const inViewConf = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
   )!.configuration
@@ -181,7 +181,7 @@ test('a non-admin quick-edit reaches Copy config from both menus', async () => {
 test("a non-admin edit isn't reported as inherited from a session default", async () => {
   const { pluginManager, session, view } = await setup(false)
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const inViewConf = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
   )!.configuration

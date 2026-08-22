@@ -266,8 +266,8 @@ test('a view-local track config goes out with the view', async () => {
     }[]
   }
 
-  act(() => {
-    synteny.views[1]!.showTrack(
+  await act(async () => {
+    await synteny.views[1]!.launchTrack(
       'view-local',
       {},
       {},
@@ -401,16 +401,16 @@ test('an inline view-local config survives a session round trip', async () => {
     'LinearSyntenyView',
     viewSnap,
   )) as unknown as {
-    showTrack: (
+    launchTrack: (
       trackId: string,
       level?: number,
       initialSnapshot?: object,
       displaySnapshot?: object,
       inlineConf?: Record<string, unknown>,
-    ) => void
+    ) => Promise<unknown>
   }
-  act(() => {
-    built.showTrack('view-local-synteny', 0, {}, {}, inlineConf)
+  await act(async () => {
+    await built.launchTrack('view-local-synteny', 0, {}, {}, inlineConf)
   })
 
   // what a share link carries: JSON, so anything MST could not serialize is gone

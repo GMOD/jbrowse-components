@@ -346,7 +346,7 @@ test('appending a row that cannot answer yet leaves the stack alone', async () =
   const shared = small!.bpPerPx
   expect(shared).toBeCloseTo(large!.bpPerPx)
 
-  view.appendRow({ assembly: 'not-loaded-yet' })
+  await view.appendRow({ assembly: 'not-loaded-yet' })
 
   expect(view.sharedFit).toEqual({ answered: false })
   expect(small!.bpPerPx).toBeCloseTo(shared)
