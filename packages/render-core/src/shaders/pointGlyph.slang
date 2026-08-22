@@ -15,7 +15,7 @@ module pointGlyph;
 import antialias;
 import hpmath;
 
-// 1px device pad around a disc so the smoothstep edge has room to fade without
+// 1px device pad around a disc so the ramped edge has room to fade without
 // being clipped by the quad.
 public static const float AA_PAD_PX = 1.0;
 

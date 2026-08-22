@@ -63,7 +63,7 @@ public struct Instance {
 public static const float KIND_CIGAR_MIN = 3.0;
 
 // Distinguishes indel tiles from whole-feature BASE instances for shading only
-// (white pre-blend, no density width-fade); both share the same smoothstep AA.
+// (white pre-blend, no density width-fade); both share the same edge AA.
 public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 
 // The "location marker" tick: a periodic zero-width vertical line emitted
@@ -305,7 +305,7 @@ public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 // Using per-edge slopes is the fix for boundary fuzz on curved ribbons: the old
 // model measured distance from the centerline with one shared perpFactor, but
 // where the two edges diverge in slope — a width-changing / concave-neck region
-// — that shared slope is wrong for both edges, so the smoothstep transition
+// — that shared slope is wrong for both edges, so the coverage transition
 // smeared across many px (visibly fuzzy in transparent mode; hidden behind the
 // opaque base in colored mode). Measuring each edge's own signed perpendicular
 // distance keeps the transition ~1px on both edges regardless of curvature.
@@ -672,7 +672,7 @@ public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
   // the same reasoning that put maxEdgeDx in the curve pad below.
   //
   // CIGAR indel tiles use the same padded polygon as BASE — they share the
-  // analytic edge + smoothstep AA path (fillFs), so their perpendicular
+  // analytic edge + ramped AA path (fillFs), so their perpendicular
   // edges antialiase against the base block instead of stair-stepping.
   float2 d = ribbonEdgeDeltas(c);
   float slope = max(abs(d.x), abs(d.y)) / u.height;
