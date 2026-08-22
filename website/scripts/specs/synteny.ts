@@ -1170,8 +1170,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    // settled rather than painted: the display paints main-thread SVG whose
-    // first frame is legitimately empty while the .blocks table downloads
+    // phase ready covers both fetches: the display folds its dependent
+    // per-lane gene-model fetch into displayPhase, so the generic gates and
+    // this selector cannot land between the ortholog table and the gene
+    // models that fill the lanes
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     settleMs: 12000,
@@ -1186,6 +1188,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/lgv_track_zoom',
+    settleMs: 25000,
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/grape_peach_cacao/config.json',
@@ -1224,8 +1227,47 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
     viewportHeight: 680,
+  },
+
+  // The human pangenome case of the same track: the CFH cluster over hg38
+  // with two HPRC haplotype lanes, from the gene-name join table
+  // build_hprc_cfhr_synteny.sh writes out of the CAT annotations (CAT reuses
+  // the GENCODE gene names on every haplotype, so the join IS the ortholog
+  // table). HG01109.1 carries the CFHR3/CFHR1 deletion and its own annotation
+  // has neither gene, so their ribbon chains stop at the non-carrier lane —
+  // rowOrder puts the non-carrier between hg38 and the carrier for that
+  // reason (a ribbon connects adjacent lanes only).
+  {
+    mode: 'url',
+    name: 'multiway_synteny/hprc_cfhr_lanes',
+    url: sessionSpec('test_data/graphgenomeview/hprc.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr1:196,480,000-196,980,000',
+          tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              displayMode: 'compact',
+            },
+            {
+              trackId: 'hprc_cfhr_multiway',
+              type: 'MultiWaySyntenyDisplay',
+              rowOrder: ['HG00099.1', 'HG01109.1'],
+              height: 230,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 580,
   },
 
   // A COMPOSITION PART, no longer embedded on its own (review: "looks like dupe

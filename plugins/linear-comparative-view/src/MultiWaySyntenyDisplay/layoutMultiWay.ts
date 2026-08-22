@@ -193,6 +193,59 @@ export function rowFrameX(frame: RowFrame, bp: number, width: number) {
   return frame.flipped ? width * (1 - t) : width * t
 }
 
+// What a lane draws from a gene track's top-level features. An NCBI-style
+// GFF3 also carries a `region` row spanning the whole sequence, which would
+// paint the lane end to end; prefer the gene-typed features, and fall back to
+// everything that is not a whole-sequence container for annotations whose
+// top level is transcripts.
+const CONTAINER_TYPES = new Set(['region', 'chromosome', 'contig', 'scaffold'])
+
+export function laneGeneFeatures(features: Feature[]) {
+  const genes = features.filter(f => !!f.get('type')?.endsWith('gene'))
+  return genes.length
+    ? genes
+    : features.filter(f => {
+        const type = f.get('type')
+        return type === undefined || !CONTAINER_TYPES.has(type)
+      })
+}
+
+// Every exon interval under a gene feature, merged across its transcripts. A
+// feature with no exon subfeatures falls back to its CDS structure, and one
+// with neither is its own single interval, so a plain BED-backed feature still
+// draws as a box.
+export function mergedExonIntervals(feature: Feature) {
+  const exons: [number, number][] = []
+  const cds: [number, number][] = []
+  const walk = (f: Feature) => {
+    for (const sub of f.get('subfeatures') ?? []) {
+      const type = sub.get('type')
+      if (type === 'exon') {
+        exons.push([sub.get('start'), sub.get('end')])
+      } else if (type === 'CDS') {
+        cds.push([sub.get('start'), sub.get('end')])
+      }
+      walk(sub)
+    }
+  }
+  walk(feature)
+  const intervals = exons.length ? exons : cds
+  if (intervals.length === 0) {
+    return [[feature.get('start'), feature.get('end')] as [number, number]]
+  }
+  intervals.sort((a, b) => a[0] - b[0])
+  const merged: [number, number][] = []
+  for (const [start, end] of intervals) {
+    const last = merged[merged.length - 1]
+    if (last && start <= last[1]) {
+      last[1] = Math.max(last[1], end)
+    } else {
+      merged.push([start, end])
+    }
+  }
+  return merged
+}
+
 // The group's merged [x1, x2] px span on one row, or undefined when the group
 // has nothing on that row's dominant refName — which is what makes a ribbon
 // skip a row rather than draw to nowhere

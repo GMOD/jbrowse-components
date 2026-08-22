@@ -45,6 +45,19 @@
   ],
   "tracks": [
     {
+      "type": "FeatureTrack",
+      "trackId": "grape_genes",
+      "name": "grape genes",
+      "assemblyNames": ["grape"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "grape_genes.gff3",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
       "type": "SyntenyTrack",
       "trackId": "multiway_blocks",
       "name": "grape/peach/cacao blocks",

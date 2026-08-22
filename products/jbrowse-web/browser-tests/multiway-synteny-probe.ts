@@ -53,14 +53,14 @@ try {
     )
   } catch (e) {
     const state = await page.evaluate(() => {
-      const displays = [...document.querySelectorAll('[data-display-id]')].map(
-        el => ({
-          id: el.getAttribute('data-display-id'),
-          phase: el.getAttribute('data-display-phase'),
-          drawn: el.getAttribute('data-display-drawn'),
-          testid: el.getAttribute('data-testid'),
-        }),
-      )
+      const displays = [
+        ...document.querySelectorAll<HTMLElement>('[data-display-id]'),
+      ].map(el => ({
+        id: el.dataset.displayId,
+        phase: el.dataset.displayPhase,
+        drawn: el.dataset.displayDrawn,
+        testid: el.dataset.testid,
+      }))
       const errors = [
         ...document.querySelectorAll('[data-testid="display-error"]'),
       ].map(el => el.textContent)

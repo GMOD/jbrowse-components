@@ -274,6 +274,41 @@
         "csi": true,
         "columnNames": ["refName", "start", "end", "name", "gieStain"]
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_multiway",
+      "name": "CFH cluster orthologs (hg38 + 2 haplotypes, CAT)",
+      "assemblyNames": ["hg38", "HG01109.1", "HG00099.1"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "mcscanBlocksLocation": {
+          "uri": "hprc_cfhr.blocks",
+          "locationType": "UriLocation"
+        },
+        "blockAssemblies": ["hg38", "HG01109.1", "HG00099.1"],
+        "bedLocations": [
+          {
+            "uri": "hprc_cfhr_hg38.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG01109.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG00099.1.bed",
+            "locationType": "UriLocation"
+          }
+        ],
+        "assemblyNames": ["hg38", "HG01109.1", "HG00099.1"]
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "hprc_cfhr_multiway-MultiWaySyntenyDisplay"
+        }
+      ]
     }
   ]
 }

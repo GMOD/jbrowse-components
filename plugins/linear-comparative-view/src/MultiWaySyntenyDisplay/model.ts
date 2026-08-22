@@ -1,6 +1,15 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession, isFeature, openFeatureWidget } from '@jbrowse/core/util'
+import {
+  doesIntersect2,
+  getSession,
+  isFeature,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalFetchMixin,
@@ -9,14 +18,42 @@ import {
   foundationDisplayStatusPhase,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import { groupFeatures, rowAssembliesOf } from './layoutMultiWay.ts'
+import {
+  computeRowFrame,
+  groupFeatures,
+  rowAssembliesOf,
+} from './layoutMultiWay.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
+import type { RowFrame } from './layoutMultiWay.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type React from 'react'
+
+export interface LaneRegion {
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+}
+
+export interface LaneGenesFetchSpec {
+  assemblyName: string
+  adapterConfig: Record<string, unknown>
+  regions: LaneRegion[]
+}
+
+// widen a lane frame outward to a stable grid, so a sub-grid pan reuses the
+// last gene fetch the way the anchor's static blocks do
+function quantizeSpan(min: number, max: number) {
+  const grid = 2 ** Math.ceil(Math.log2(Math.max(max - min, 1)))
+  return {
+    start: Math.max(0, Math.floor(min / grid) * grid),
+    end: Math.ceil(max / grid) * grid,
+  }
+}
 
 /**
  * #stateModel MultiWaySyntenyDisplay
@@ -62,6 +99,16 @@ export function stateModelFactory(
        * #volatile
        */
       features: undefined as Feature[] | undefined,
+      /**
+       * #volatile
+       * per-lane gene models fetched from each assembly's own gene track, so a
+       * lane draws real exon structure at that genome's coordinates
+       */
+      laneGenes: undefined as Map<string, Feature[]> | undefined,
+      /**
+       * #volatile
+       */
+      laneGenesKey: '',
     }))
     .actions(self => ({
       /**
@@ -69,6 +116,13 @@ export function stateModelFactory(
        */
       setFeatures(f: Feature[]) {
         self.features = f
+      },
+      /**
+       * #action
+       */
+      setLaneGenes(key: string, genes: Map<string, Feature[]>) {
+        self.laneGenesKey = key
+        self.laneGenes = genes
       },
     }))
     .views(self => ({
@@ -88,12 +142,6 @@ export function stateModelFactory(
         return view.initialized
           ? blockKeySignature(view.staticBlocks.contentBlocks)
           : undefined
-      },
-      /**
-       * #getter
-       */
-      get displayPhase(): DisplayStatusPhase {
-        return foundationDisplayStatusPhase(self, () => true)
       },
       /**
        * #getter
@@ -137,6 +185,196 @@ export function stateModelFactory(
           }
         }
         return undefined
+      },
+      /**
+       * #getter
+       */
+      get anchorAssemblyName() {
+        return self.lgv.assemblyNames[0]!
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get anchorAssembly() {
+        return getSession(self).assemblyManager.get(self.anchorAssemblyName)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the groups whose anchor placement is inside the settled viewport —
+       * the population every lane's local frame is fitted to, so panning the
+       * anchor re-lays-out the other lanes
+       */
+      get visibleGroups() {
+        const view = self.lgv
+        const assembly = self.anchorAssembly
+        return view.initialized && assembly
+          ? self.groups.filter(group => {
+              const refName = assembly.getCanonicalRefName2(
+                group.anchor.refName,
+              )
+              return view.coarseDynamicBlocks.some(
+                block =>
+                  block.refName === refName &&
+                  doesIntersect2(
+                    block.start,
+                    block.end,
+                    group.anchor.start,
+                    group.anchor.end,
+                  ),
+              )
+            })
+          : []
+      },
+      /**
+       * #getter
+       */
+      get visibleBpSpan() {
+        const view = self.lgv
+        return view.initialized ? view.width * view.bpPerPx : 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * each mate lane's local coordinate frame
+       */
+      get rowFrames() {
+        return new Map<string, RowFrame | undefined>(
+          self.rowAssemblies.map(assemblyName => [
+            assemblyName,
+            computeRowFrame(
+              self.visibleGroups,
+              assemblyName,
+              self.visibleBpSpan,
+            ),
+          ]),
+        )
+      },
+      /**
+       * #getter
+       * per lane, the session's own gene track for that assembly: the first
+       * GFF3 feature track declared for it alone. The real pipelines this
+       * display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs
+       * from exactly these annotations, so the lane's exon structure comes
+       * from the file the table was built from
+       */
+      get laneGeneAdapters() {
+        const session = getSession(self)
+        const out = new Map<string, Record<string, unknown>>()
+        for (const assemblyName of [
+          self.anchorAssemblyName,
+          ...self.rowAssemblies,
+        ]) {
+          const conf = session.tracks.find(track => {
+            const names = readConfObject(track, 'assemblyNames') as string[]
+            const adapterType = (
+              readConfObject(track, 'adapter') as { type?: string } | undefined
+            )?.type
+            return (
+              names.length === 1 &&
+              names[0] === assemblyName &&
+              !!adapterType?.startsWith('Gff3')
+            )
+          })
+          if (conf) {
+            out.set(
+              assemblyName,
+              readConfObject(conf, 'adapter') as Record<string, unknown>,
+            )
+          }
+        }
+        return out
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * what the lane-genes autorun fetches: one spec per lane with a gene
+       * track, over quantized windows so a small pan reuses the last fetch
+       */
+      get laneGenesFetchSpecs() {
+        const view = self.lgv
+        const adapters = self.laneGeneAdapters
+        const specs: LaneGenesFetchSpec[] = []
+        if (view.initialized) {
+          const anchorAdapter = adapters.get(self.anchorAssemblyName)
+          if (anchorAdapter) {
+            const regions = view.staticBlocks.contentBlocks.map(block => ({
+              assemblyName: self.anchorAssemblyName,
+              refName: block.refName,
+              start: Math.max(0, Math.floor(block.start)),
+              end: Math.ceil(block.end),
+            }))
+            if (regions.length) {
+              specs.push({
+                assemblyName: self.anchorAssemblyName,
+                adapterConfig: anchorAdapter,
+                regions,
+              })
+            }
+          }
+          for (const [assemblyName, frame] of self.rowFrames) {
+            const adapter = adapters.get(assemblyName)
+            if (adapter && frame) {
+              specs.push({
+                assemblyName,
+                adapterConfig: adapter,
+                regions: [
+                  {
+                    assemblyName,
+                    refName: frame.refName,
+                    ...quantizeSpan(frame.min, frame.max),
+                  },
+                ],
+              })
+            }
+          }
+        }
+        return {
+          key: specs
+            .map(spec =>
+              spec.regions
+                .map(
+                  r => `${spec.assemblyName}:${r.refName}:${r.start}-${r.end}`,
+                )
+                .join(','),
+            )
+            .join(';'),
+          specs,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * whether the committed lane genes answer the current lane frames.
+       * Published as `data-lanes-current` on the body so a capture can wait on
+       * the dependent fetch — `displayPhase` deliberately does not cover it,
+       * since the lanes are an enhancement over the placement boxes
+       */
+      get laneGenesCurrent() {
+        const { key, specs } = self.laneGenesFetchSpecs
+        return (
+          specs.length === 0 ||
+          (self.laneGenes !== undefined && self.laneGenesKey === key)
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the dependent lane-genes fetch is part of loading, so an export or a
+       * capture never lands between the ortholog fetch and the gene models
+       * that fill the lanes. A failed lane fetch commits an empty result
+       * rather than hanging this at loading (see afterAttach)
+       */
+      get displayPhase(): DisplayStatusPhase {
+        const base = foundationDisplayStatusPhase(self, () => true)
+        return base === 'ready' && !self.laneGenesCurrent ? 'loading' : base
       },
     }))
     .actions(self => ({

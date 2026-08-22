@@ -39,6 +39,8 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="volatile-features">**features**</span><br><code>features: undefined as Feature[] &#124; undefined</code> |  | MultiWaySyntenyDisplay |
+| <span id="volatile-lanegenes">**laneGenes**</span><br><code>laneGenes: undefined as Map&lt;string, Feature[]&gt; &#124; undefined</code> | per-lane gene models fetched from each assembly's own gene track, so a lane draws real exon structure at that genome's coordinates | MultiWaySyntenyDisplay |
+| <span id="volatile-lanegeneskey">**laneGenesKey**</span><br><code>laneGenesKey: ''</code> |  | MultiWaySyntenyDisplay |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
 | <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
 | <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
@@ -62,12 +64,20 @@ the whole surface.
 | --- | --- | --- |
 | <span id="getter-canvaswidth">**canvasWidth**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | staleness axis is the static-block set, same as arc: pan/zoom past a block boundary refetches, a scroll inside the loaded blocks does not | MultiWaySyntenyDisplay |
-| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayStatusPhase</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-painted">**painted**</span><br><code>boolean</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-groups">**groups**</span><br><code>MultiWayGroup[]</code> | anchor-sorted gene groups reconstructed from the pairwise features | MultiWaySyntenyDisplay |
 | <span id="getter-rowassemblies">**rowAssemblies**</span><br><code>string[]</code> | mate assemblies in first-appearance order, one lane each below the anchor lane | MultiWaySyntenyDisplay |
 | <span id="getter-ribboncolor">**ribbonColor**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-anchorassemblyname">**anchorAssemblyName**</span><br><code>string</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-anchorassembly">**anchorAssembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promis…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promise&lt;…&gt; &#124; undefined; ... 9 more ...; refNameMismatches: Map&lt;...&gt;; } &amp; ... 13 more ... &amp; IStateTreeNode&lt;...&gt;) &#124; undefined</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |
+| <span id="getter-visiblegroups">**visibleGroups**</span><br><code>MultiWayGroup[]</code> | the groups whose anchor placement is inside the settled viewport — the population every lane's local frame is fitted to, so panning the anchor re-lays-out the other lanes | MultiWaySyntenyDisplay |
+| <span id="getter-visiblebpspan">**visibleBpSpan**</span><br><code>number</code> |  | MultiWaySyntenyDisplay |
+| <span id="getter-rowframes">**rowFrames**</span><br><code>Map&lt;string, RowFrame &#124; undefined&gt;</code> | each mate lane's local coordinate frame | MultiWaySyntenyDisplay |
+| <span id="getter-lanegeneadapters">**laneGeneAdapters**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> | per lane, the session's own gene track for that assembly: the first GFF3 feature track declared for it alone. The real pipelines this display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs from exactly these annotations, so the lane's exon structure comes from the file the table was built from | MultiWaySyntenyDisplay |
+| <span id="getter-lanegenesfetchspecs">**laneGenesFetchSpecs**</span><br><code>{ key: string; specs: LaneGenesFetchSpec[]; }</code> | what the lane-genes autorun fetches: one spec per lane with a gene track, over quantized windows so a small pan reuses the last fetch | MultiWaySyntenyDisplay |
+| <span id="getter-lanegenescurrent">**laneGenesCurrent**</span><br><code>boolean</code> | whether the committed lane genes answer the current lane frames. Published as `data-lanes-current` on the body so a capture can wait on the dependent fetch — `displayPhase` deliberately does not cover it, since the lanes are an enhancement over the placement boxes | MultiWaySyntenyDisplay |
+| <span id="getter-displayphase">**displayPhase**</span><br><code>DisplayStatusPhase</code> | the dependent lane-genes fetch is part of loading, so an export or a capture never lands between the ortholog fetch and the gene models that fill the lanes. A failed lane fetch commits an empty result rather than hanging this at loading (see afterAttach) | MultiWaySyntenyDisplay |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
 | <span id="getter-renderingcomponent">**RenderingComponent**</span><br><code>FC&lt;…&gt;</code> |  | [BaseDisplay](../basedisplay#getter-renderingcomponent) |
 | <span id="getter-displayblurb">**DisplayBlurb**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>FC&lt;{ model: ModelInstanceTypeProps&lt;{ id: IOptionalIType&lt;ISimple…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>FC&lt;{ model: ModelInstanceTypeProps&lt;{ id: IOptionalIType&lt;ISimpleType&lt;string&gt;, [undefined]&gt;; type: ISimpleType&lt;string&gt;; }&gt; &amp; { ...; } &amp; { ...; } &amp; IStateTreeNode&lt;...&gt;; }&gt; &#124; null</code></pre></dialog></span> |  | [BaseDisplay](../basedisplay#getter-displayblurb) |
@@ -128,6 +138,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(f: Feature[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-setlanegenes">**setLaneGenes**</span><br><code>(key: string, genes: Map&lt;string, Feature[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setroworder">**setRowOrder**</span><br><code>(order: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactN…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNode&gt;</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |

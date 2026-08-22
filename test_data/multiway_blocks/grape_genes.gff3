@@ -1,0 +1,6 @@
+##gff-version 3
+chr1	test	gene	101	200	.	+	.	ID=gene-g1;Name=g1
+chr1	test	mRNA	101	200	.	+	.	ID=rna-g1;Parent=gene-g1
+chr1	test	exon	101	130	.	+	.	ID=exon-g1-1;Parent=rna-g1
+chr1	test	exon	171	200	.	+	.	ID=exon-g1-2;Parent=rna-g1
+chr1	test	gene	301	400	.	+	.	ID=gene-g2;Name=g2

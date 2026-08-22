@@ -4,6 +4,8 @@ import {
   computeRowFrame,
   groupFeatures,
   groupSpanOnRow,
+  laneGeneFeatures,
+  mergedExonIntervals,
   rowAssembliesOf,
   rowFrameX,
 } from './layoutMultiWay.ts'
@@ -197,4 +199,99 @@ test('a group with nothing on the dominant refName gets no span on that row', ()
   const g1 = groups.find(g => g.name === 'g1')!
   const span = groupSpanOnRow(g1, 'peach', frame, 800)!
   expect(span[0]).toBeLessThan(span[1])
+})
+
+test('mergedExonIntervals merges exons across transcripts and falls back to the span', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene1',
+    refName: 'chr1',
+    start: 100,
+    end: 400,
+    subfeatures: [
+      {
+        uniqueId: 'rna1',
+        refName: 'chr1',
+        start: 100,
+        end: 400,
+        subfeatures: [
+          {
+            uniqueId: 'e1',
+            refName: 'chr1',
+            start: 100,
+            end: 150,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'e2',
+            refName: 'chr1',
+            start: 300,
+            end: 400,
+            type: 'exon',
+          },
+        ],
+      },
+      {
+        uniqueId: 'rna2',
+        refName: 'chr1',
+        start: 100,
+        end: 400,
+        subfeatures: [
+          {
+            uniqueId: 'e3',
+            refName: 'chr1',
+            start: 120,
+            end: 200,
+            type: 'exon',
+          },
+        ],
+      },
+    ],
+  })
+  expect(mergedExonIntervals(gene)).toEqual([
+    [100, 200],
+    [300, 400],
+  ])
+  const bare = new SimpleFeature({
+    uniqueId: 'bare',
+    refName: 'chr1',
+    start: 5,
+    end: 10,
+  })
+  expect(mergedExonIntervals(bare)).toEqual([[5, 10]])
+})
+
+test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => {
+  const region = new SimpleFeature({
+    uniqueId: 'r',
+    refName: 'chr1',
+    start: 0,
+    end: 1000000,
+    type: 'region',
+  })
+  const gene = new SimpleFeature({
+    uniqueId: 'g',
+    refName: 'chr1',
+    start: 10,
+    end: 20,
+    type: 'gene',
+  })
+  const pseudo = new SimpleFeature({
+    uniqueId: 'p',
+    refName: 'chr1',
+    start: 30,
+    end: 40,
+    type: 'pseudogene',
+  })
+  expect(laneGeneFeatures([region, gene, pseudo]).map(f => f.id())).toEqual([
+    'g',
+    'p',
+  ])
+  const mrna = new SimpleFeature({
+    uniqueId: 'm',
+    refName: 'chr1',
+    start: 30,
+    end: 40,
+    type: 'mRNA',
+  })
+  expect(laneGeneFeatures([region, mrna]).map(f => f.id())).toEqual(['m'])
 })

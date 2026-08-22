@@ -66,4 +66,22 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
   const g2 = display.groups[1]!
   expect(g2.mates.has('cacao')).toBe(false)
   expect(display.painted).toBe(true)
+
+  await waitFor(
+    () => {
+      expect(display.laneGenes?.get('grape')?.length).toBe(2)
+    },
+    { timeout: 30000 },
+  )
+  const gene = display
+    .laneGenes!.get('grape')!
+    .find(f => f.get('name') === 'g1')!
+  const exons = gene
+    .get('subfeatures')![0]!
+    .get('subfeatures')!
+    .filter(f => f.get('type') === 'exon')
+  expect(exons.map(f => [f.get('start'), f.get('end')])).toEqual([
+    [100, 130],
+    [170, 200],
+  ])
 }, 40000)

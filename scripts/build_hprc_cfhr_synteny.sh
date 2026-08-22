@@ -198,10 +198,49 @@ if failures:
 print('   the carrier is annotated without CFHR3 and CFHR1; the non-carrier has both')
 PY
 
+# ── The ortholog table, for the multi-way track ─────────────────────────────
+# CAT projects GENCODE onto every haplotype, so the same gene carries the same
+# name on GRCh38 and on each assembly's own contigs — a join by gene name IS
+# the ortholog table, no aligner in the loop. One row per GRCh38 gene in the
+# window, one column per genome, `.` where the annotation has no copy: the
+# MCScan blocks shape, with one plain BED per column placing the names
+# (`MCScanBlocksAdapter` reads exactly this pair, and the multi-way display's
+# lanes read their exon structure from the GFF3s sliced above).
+echo
+echo "== ortholog table (gene-name join across the CAT annotations)"
+tabix https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz \
+  "chr1:$((SLICE_START - GENE_FLANK))-$((SLICE_END + GENE_FLANK))" \
+  | awk -F'\t' -v OFS='\t' '$3=="gene" {
+      match($9, /ID=[^;]*/)
+      print $1, $4 - 1, $5, substr($9, RSTART+3, RLENGTH-3), 0, $7
+    }' > hprc_cfhr_hg38.bed
+while IFS=$'\t' read -r sample hap label; do
+  name="$sample.$hap"
+  zcat "hprc_cfhr_$name.genes.gff3.gz" \
+    | awk -F'\t' -v OFS='\t' '$3=="gene" {
+        match($9, /Name=[^;]*/)
+        print $1, $4 - 1, $5, substr($9, RSTART+5, RLENGTH-5), 0, $7
+      }' > "hprc_cfhr_$name.bed"
+done < cfhr_panel.txt
+python3 - <<'PY'
+def names(path):
+    return {l.split('\t')[3] for l in open(path).read().splitlines()}
+
+panel = [l.split('\t') for l in open('cfhr_panel.txt').read().splitlines()]
+columns = [names(f'hprc_cfhr_{s}.{h}.bed') for s, h, _ in panel]
+rows = [l.split('\t') for l in open('hprc_cfhr_hg38.bed').read().splitlines()]
+rows.sort(key=lambda r: int(r[1]))
+with open('hprc_cfhr.blocks', 'w') as fh:
+    for r in rows:
+        gene = r[3]
+        fh.write('\t'.join([gene, *[gene if gene in c else '.' for c in columns]]) + '\n')
+print(f'   {len(rows)} rows, {1 + len(columns)} columns')
+PY
+
 echo
 echo "The carrier's two records leave a gap on the reference axis and the"
 echo "non-carrier's single record runs through it. That gap is the deletion,"
 echo "and the genes it takes with it are missing from the carrier's own"
 echo "annotation."
-echo "Wrote $(pwd)/hprc_cfhr_*.paf, hprc_cfhr_*.chrom.sizes and"
-echo "hprc_cfhr_*.genes.gff3.gz"
+echo "Wrote $(pwd)/hprc_cfhr_*.paf, hprc_cfhr_*.chrom.sizes,"
+echo "hprc_cfhr_*.genes.gff3.gz, hprc_cfhr_*.bed and hprc_cfhr.blocks"
