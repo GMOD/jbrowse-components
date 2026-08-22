@@ -1,6 +1,6 @@
 ---
 name: tutorial-tour-candidates
-description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. Eleven are filmed and their entries record what each estimate got wrong; what is left is 5, 13 and 14. Read before writing a video spec for a tutorial.
+description: Fourteen tutorial pages whose route a figure cannot carry, ranked by the prose each tour would delete over the risk of filming it. Thirteen are filmed and their entries record what each estimate got wrong; what is left is 14. Read before writing a video spec for a tutorial.
 audience: internal
 ---
 
@@ -12,20 +12,19 @@ the wrong end of the corpus to have started at. `tutorial-tours-from-scratch.md`
 holds the remaining user-guide proposals and the harness analysis; this file is
 the tutorial half and is the one to work from.
 
-Coverage: **20 of 43 tutorials carry a tour** — `allvsall_synteny`,
-`analyze_trio`, `bxd_qtl`, `cancer_sv`, `chromhmm`, `dog10k_selection`,
-`genomes_proteins` (3), `genomes_synteny`, `hg002_haplotypes`,
-`hic_structural_variants`, `mcscan_synteny_grape_peach`, `methylation`,
-`multiway_synteny_grape_peach_cacao`, `pangenome_ecoli` (3), `pangenome_hprc`
-(2), `repeatmasker_classes`, `sv_multisamples`, `sv_visualization_cgiab`,
-`synteny_visualization`, `tcga_cohort_cnv`, `tcga_cohort_mutations`. The other 23
-do not.
+Coverage: **21 of 43 tutorials carry a tour** — `allvsall_synteny`,
+`analyze_trio`, `bisulfite`, `bxd_qtl`, `cancer_sv`, `chromhmm`,
+`dog10k_selection`, `genomes_proteins` (3), `genomes_synteny`,
+`hg002_haplotypes`, `hic_structural_variants`, `mcscan_synteny_grape_peach`,
+`methylation`, `multiway_synteny_grape_peach_cacao`, `pangenome_ecoli` (4),
+`pangenome_hprc` (2), `repeatmasker_classes`, `sv_multisamples`,
+`sv_visualization_cgiab`, `synteny_visualization`, `tcga_cohort_cnv`,
+`tcga_cohort_mutations`. The other 22 do not.
 
-**Eleven candidates are filmed and landed** on 2026-08-21 — 1 to 4, then 6, 7,
-8, 9, 10, 11 and 12, one clip serving two pages for 3. Their entries stay below
-with what each actually cost and what it corrected, because the next tour on
-those pages starts from them. **What is left is 5, 13 and 14**, and 14 wants its page
-restructured first.
+**Thirteen candidates are filmed and landed** on 2026-08-21 — 1 to 13, one clip
+serving two pages for 3. Their entries stay below with what each actually cost
+and what it corrected, because the next tour on those pages starts from them.
+**What is left is 14**, and it wants its page restructured first.
 
 Every candidate below came out of the ten-agent tutorial audit
 (`tutorial-structure-audit.md` is that audit's structural half). Each names the
@@ -141,13 +140,28 @@ comparison figure.
 
 ## The rest, ranked
 
-5. **`epigenomics/bisulfite_contexts`** (`bisulfite.md`) — `Color by... →
-   Bisulfite / EM-seq` cycling **CpG → CHG → CHH** on one pileup, over
-   `NC_003070.9:4,398,000-4,412,000`, the gene body dropping out while the LTR
-   element stays red. Deletes a **three-panel stacked figure** that exists only
-   to make a comparison one track can make by itself. Risk: it is a pileup, and
-   `website/CLAUDE.md` warns those block the main thread under swiftshader — try
-   `--headed` first.
+5. **`epigenomics/bisulfite_contexts`** (`bisulfite.md`) — **FILMED**, 848px
+   frame, 43s, and **headless was never in doubt**: 14 kb of Illumina WGBS over
+   a plant genome is not the deep human ONT lane the swiftshader warning is
+   about, and no take starved. `--headed` was not needed and nothing here says a
+   pileup tour needs it; the volume is what to look at.
+   It retires nothing, per the rule above — `arabidopsis_wgbs_contexts` stays,
+   and the clip sits under it. What it adds is the one claim three stacked
+   panels cannot make: they are the same molecules. The window is the page's
+   own, the aggregate MethylDackel rows stay put as the fixed reference, and the
+   lane is taller with bigger reads than the figure's copies, since a clip is
+   filmed at deviceScaleFactor 1 and the figure at 2.
+   **The page defect it found is in the submenu's shape.** `Show unmethylated
+   (blue)` exists only while bisulfite is already the scheme in force
+   (`bisulfiteMenu.ts`, `isBis`), so a reader opening `Bisulfite / EM-seq` for
+   the first time sees four contexts and no checkbox — where the page listed
+   both as though they arrived together. The prose says which comes first now,
+   and the clip's own submenu frame is the evidence.
+   Two harness findings went to `website/scripts/videos/CLAUDE.md`: Escape
+   leaves one cascade level per press and stops dead at three, where
+   `.MuiBackdrop-root` takes any depth in one click; and the wordmark cannot be
+   that click, because a covered target falls back to `node.click()` and an SVG
+   `<g>` has no such method.
 6. **`sv/multisample_sort`** (`sv_multisamples.md`) — **FILMED**, 1236px frame,
    34s. The page's only figure of that track is ALREADY sorted, by clicking, in
    its own `actions` — so the order a reader lands in appears nowhere, and
@@ -214,10 +228,40 @@ comparison figure.
     painting with no block in it and the run trades one for the other. On camera
     throughout: the run names its own phases over a determinate bar, which is
     the page's evidence rather than a spinner.
-13. **`pangenome/tier_to_fine`** (`pangenome_ecoli.md`) — the coarse-to-fine
-    ladder: find the arrowed IS5 bubble on the tier lane, then open the same span
-    through the fine index. The page states it as prose it cannot show and spends
-    two figures on the two ends without the move between them.
+13. **`pangenome/tier_to_fine`** (`pangenome_ecoli.md`) — **FILMED**, 810px
+    frame, 17s, headless (the graph-fetch risk this entry and the handoff both
+    flagged never appeared: the tour navigates a view rather than cutting a
+    subgraph, so nothing in it goes near the FMMM engine). What the estimate got
+    wrong, and what the next tour on this page starts from:
+
+    - **The move is the NODE'S OWN MENU, not the location box.** A tier node
+      carries the K12 span it stands for, and the plugin's `showInLinearView`
+      navigates the CONNECTED linear view rather than adding one — with a single
+      K12 view in the session it pairs with it by assembly — so
+      `Open in K12 — around this node` lands the view on the bubble and the
+      reader never types a coordinate. That is also what keeps this from being a
+      second filming of `pggb_subgraph_launch`: no paste, no typed locus, no
+      launch.
+    - **Don't end it on the fine graph.** Launching the fine subgraph from the
+      landed window was tried and measured: it puts a third view under the other
+      two (1,430px of app against 722px without it) and its drawing is the frame
+      `pggb_subgraph_launch` already ends on. The clip stops in the linear view.
+    - **The opening frame is the density gate on purpose**, which is the one
+      place that banner is the state the page describes: the section is titled
+      "when the window is wider than the graph can draw", and the banner going
+      away is what the last step waits on. A gated display reports its ready
+      phase while it is refusing to fetch, so `waitForText hidden` on the banner
+      is the wait, not `displayReady`.
+    - **`Highlight in K12` was tried and dropped.** It marks the bubble in the
+      100 kb window nicely and then the window becomes the highlight, so the
+      landed frame is washed orange edge to edge. The hover does the same job
+      for free: hovering a node syncs a band into the linear view above.
+    - The page defect it turned up is in the paragraph after the tier figure —
+      **Bubble spread → Compress lengths** is a force-layout instrument (the
+      plugin's own caption says so) and the tier figure is anchored, while the
+      "one arm is 1,199 bp against neighbours of one to seventy" it cites is the
+      FINE cut's numbers. Moved up under `pggb_subgraph_launch`, whose clip ends
+      on exactly that drawing.
 14. **`rnaseq/group_by_strand`** (`rnaseq.md`) — `Group by... → First-of-pair
     strand` on the MHC class III window. **Do the page's restructuring first**
     (`tutorial-structure-audit.md`): filming a page whose sections are

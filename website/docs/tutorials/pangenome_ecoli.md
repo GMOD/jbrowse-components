@@ -831,6 +831,14 @@ the same route on it.
 
 <Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed to 1.6 kb around the IS5 element, and the segments lane's own menu cutting the graph below. The nodes that arrive are the blocks the lane above draws." />
 
+One setting is doing work in the pane that clip ends on. A node's drawn length
+is proportional to its sequence by default, and here one arm is 1,199 bp against
+neighbours of one to seventy, wide enough to swallow the rest of the drawing.
+**Bubble spread → Compress lengths** pulls the longest and shortest nodes
+towards the graph's mean, which leaves the bubble legible as a bubble. Use it
+whenever a cut spans kilobases and single bases at once; leave it off when one
+node has to _read_ as long.
+
 #### One node per bubble, when the window is wider than the graph can draw
 
 The index above draws one node per GFA segment, and a pggb graph runs about 17
@@ -898,13 +906,11 @@ its shortest and longest allele. The two tiers are read together, the coarse one
 to find an event and the fine one to open it, which is why they are the same
 adapter pointed at a different prefix.
 
-One setting is doing work in that pane. A node's drawn length is proportional to
-its sequence by default, and here one arm is 1,199 bp against neighbours of one
-to seventy, wide enough to swallow the rest of the drawing. **Bubble spread →
-Compress lengths** pulls the longest and shortest nodes towards the graph's
-mean, which leaves the bubble legible as a bubble. Use it whenever a cut spans
-kilobases and single bases at once; leave it off when one node has to _read_ as
-long.
+The move between them is the node's own menu. A tier node carries the K12 span
+it stands for, so **Open in K12** takes the linear view straight to that span,
+which is inside the kilobase the fine index draws at.
+
+<Video src="/media/pangenome/tier_to_fine.mp4" caption="The coarse tier's IS5 bubble taken down to the fine index: hovering the node marks the K12 span it stands for in the linear view above, and the node's own Open in K12 entry lands the view on that span, where the segments lane draws." />
 
 Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that actually walks the

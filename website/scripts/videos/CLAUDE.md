@@ -16,6 +16,33 @@ refilm and none of which the run reports.
   and a `hover` elsewhere does not take a focus tooltip down — click
   `[aria-label="JBrowse"]`, a bare `<g>` with no handler, which parks the cursor
   clear of the tracks as well.
+- **Escape leaves ONE level per press, and only from the top of MUI's modal
+  stack.** Two of them work on a two-level cascade because the second lands back
+  in the root `Menu`, which is the focus trap it came from. At THREE levels —
+  `Color by...` then `Bisulfite / EM-seq` then the context radio — the second
+  press lands on whatever MUI restored focus to, which is inside no modal, and
+  the run dies at whichever `hidden` wait names the level that never closed.
+  **One click on `.MuiBackdrop-root` takes the whole cascade at any depth**: the
+  root menu is a plain MUI `Menu`, its backdrop spans the viewport, and every
+  submenu is a React child of its list. The backdrop that click reaches is the
+  root's, because a submenu's `HoverMenu` sets pointer-events none on its own
+  modal root and its backdrop inherits that. It is still two clicks in a row,
+  since the backdrop swallows the first: the second is the one that reaches
+  `[aria-label="JBrowse"]` and blurs the menu icon.
+- **The wordmark cannot BE the outside click.** `actions.ts` falls back to
+  `node.click()` for a target something covers, and a menu's backdrop covers
+  everything — but `click()` is on `HTMLElement`, and `[aria-label="JBrowse"]`
+  is a bare SVG `<g>`, so the step throws `node.click is not a function` after
+  the load and every step before it. It is the right place to park the cursor
+  and the wrong thing to dismiss a menu with.
+- **The camera opens with the pointer at the top middle of the frame**, which on
+  a full-width LGV is the overview ruler — and the view writes the position
+  under the pointer into its own title bar. So the opening frame carries a
+  coordinate chip from wherever that lands, which is a locus the tour never
+  visits. A first
+  `{ type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 }` moves the
+  real mouse off it; `moveCursor` drives `page.mouse.move`, so the drawn cursor
+  and the hover states cannot disagree.
 - **A display-type switch does not carry the old display's height.**
   `replaceDisplay` builds the new one from its own config, so a multi-row
   painting arriving at the default height fits every row it discovers into the
@@ -59,3 +86,23 @@ refilm and none of which the run reports.
   a slot a reader would sensibly set (`showLabels` off over a segment index
   whose names are GFA ids), and a ramp over the tour's own window is not one of
   those. `REJECTED_IDEAS.md` carries what that cost on the pggb page.
+- **A display over its density gate still reports `ready`.** It is refusing to
+  fetch, not failing to paint, so a tour that navigates from a gated window into
+  a drawable one and waits on `displayReady(...)` carries on with the banner
+  still on screen. What to wait on is the banner going away —
+  `{ type: 'waitForText', text: 'Too many features', hidden: true }` — and the
+  display id after it, for the paint. `pangenome/tier_to_fine` opens on that
+  banner deliberately, which is the one case where it is the state the page
+  describes rather than a spec pointed at the wrong locus.
+- **A highlight whose span becomes the window washes the whole frame.** The
+  graph's `Highlight in <assembly>` writes a translucent band into the linear
+  view, which reads well while the band is a slice of the window and edge to
+  edge once the tour has navigated onto it. Where the point is only WHERE the
+  thing is, a `hover` is free: hovering a node syncs the same interval into the
+  view above for as long as the pointer is on it, and leaves nothing behind.
+- **A node's `Open in <assembly>` navigates the connected linear view rather
+  than adding one** (the plugin pairs with the single view carrying that
+  assembly when no launch created the pairing), so a tour built on it keeps the
+  frame it opened at. That is what makes the coarse-to-fine route cheap to
+  frame; launching a second graph pane at the end of it costs ~700px and lands
+  on the drawing another clip already ends with.

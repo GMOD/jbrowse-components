@@ -38,6 +38,12 @@ const {
   locusSession,
   pangenomeConfig: PGGB_PANGENOME_CONFIG,
   strainLaunchNode: PGGB_STRAIN_NODE,
+  tierTrack: PGGB_TIER_TRACK_CONF,
+  tierTrackId: PGGB_TIER_TRACK,
+  tierWindow: PGGB_TIER_WINDOW,
+  tierRegion: PGGB_TIER_REGION,
+  tierIs5Node: PGGB_TIER_IS5_NODE,
+  tierLaneColor: PGGB_TIER_LANE_COLOR,
 } = pggbVideoFixtures
 
 // The graph alone, on the five-assembly config, which is the state a reader is
@@ -95,6 +101,56 @@ const cactusTourStart = sessionSpec(cactusVideoFixtures.config, {
       tracks: [
         { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
       ],
+    },
+  ],
+})
+
+// BOTH TIERS OVER ONE WINDOW, which is the state the section's "read together"
+// sentence describes and has no picture of. 100 kb is 60x what the fine index
+// can draw, so the segments lane opens on its own density gate while the tier
+// lane draws eleven bubbles and the pane below draws them as a graph -- and the
+// tour's whole move is getting the linear view from the first state to the
+// second without a coordinate being typed.
+//
+// The tier lane carries pggb_bubble_tier's own ramp over the same region, so the
+// bubble the figure arrows keeps its colour when the tour lands on it, and the
+// still and the clip are one window rather than two.
+const pggbTierStart = sessionSpec(PGGB_CONFIG, {
+  sessionTracks: [genesTrack, PGGB_TIER_TRACK_CONF, segmentsTrack],
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'K12',
+      loc: PGGB_TIER_WINDOW,
+      tracks: [
+        { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+        {
+          trackId: PGGB_TIER_TRACK,
+          type: 'LinearBasicDisplay',
+          showLabels: 'none',
+          height: 50,
+          color: PGGB_TIER_LANE_COLOR,
+        },
+        // Tall enough for the too-large banner the lane opens with, which is a
+        // row of text and a Force load button rather than the one row of blocks
+        // it holds once the tour has landed.
+        {
+          trackId: segmentsTrackId,
+          type: 'LinearBasicDisplay',
+          showLabels: 'none',
+          height: 70,
+        },
+      ],
+    },
+    {
+      type: 'GraphGenomeView',
+      loadedTrackId: PGGB_TIER_TRACK,
+      loadedRegion: PGGB_TIER_REGION,
+      // 'auto' IS the anchored layout, and it is the figure's: a tier is a chain
+      // of backbone and bubble, so there is no shape for a force solver to find
+      // and an anchored row puts each bubble under its own coordinate.
+      layoutMode: 'auto',
+      colorScheme: 'reference-position',
     },
   ],
 })
@@ -320,6 +376,87 @@ export const pangenomeVideos: VideoSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
     tailMs: 2500,
+  },
+  // THE LADDER, which the page states in one sentence and pictures at neither
+  // end: `pggb_bubble_tier` is the coarse still, `pggb_subgraph_launch` ends on
+  // the fine cut, and how a reader gets from one to the other is nowhere.
+  //
+  // The move is the NODE'S OWN MENU. A tier node knows the K12 span it stands
+  // for, and `showInLinearView` navigates the CONNECTED linear view rather than
+  // adding one -- with a single K12 view in the session the plugin pairs with it
+  // by assembly -- so the whole route is a hover and two clicks, and the reader
+  // never types a coordinate. That is also why this is not a second filming of
+  // `pggb_subgraph_launch`: no paste, no location box, no launch.
+  //
+  // THE OPENING FRAME IS THE DENSITY GATE ON PURPOSE, which is the one place
+  // that message is the state the page describes rather than an accident: the
+  // section is titled "when the window is wider than the graph can draw", and
+  // 100 kb of a graph cut every ~17 bp is 60x the fine index's own width. The
+  // tour navigates IN, and the banner going away is what the last step waits on.
+  {
+    name: 'pangenome/tier_to_fine',
+    description:
+      "The coarse tier's IS5 bubble taken down to the fine index: hover the node for the K12 span it collapses, then take its Open in K12 entry, which lands the linear view on that span",
+    url: pggbTierStart,
+    // The app is the same height at both ends -- the tour navigates a view
+    // rather than adding one, and the anchored pane sizes to its two rank rows
+    // whatever the window says -- so this is a frame with slack in it rather
+    // than a compromise between two states. The slack is for the caption chip,
+    // which is fixed off the frame's bottom and would otherwise sit over the
+    // graph pane's own rows.
+    viewportHeight: 810,
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    // Long, because the opening frame has to have SETTLED INTO its banner: the
+    // segments lane measures the fetch it is refusing, and a shorter settle
+    // films an empty lane that fills with a warning a second later.
+    settleMs: 9000,
+    steps: [
+      // the pointer off the overview's cytoband strip, where the camera parks it
+      { type: 'hover', selector: '[aria-label="JBrowse"]' },
+      // The graph's own tooltip, which is the page's "hover a node for the
+      // segments it collapsed" sentence happening -- and the hover also syncs a
+      // band into the linear view above, so the frame says where in the 100 kb
+      // the bubble is before anything has been clicked.
+      {
+        type: 'hover',
+        anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
+        say: 'Hover the bubble',
+        hold: 3200,
+      },
+      {
+        type: 'rightclick',
+        anchor: { view: 1, graphNode: PGGB_TIER_IS5_NODE },
+        say: 'Right-click the bubble',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Open in K12' },
+      {
+        type: 'click',
+        text: 'Open in K12',
+        say: 'Open in K12 — around this node',
+      },
+      // The banner going away is the app's own answer, and the display's ready
+      // phase is not: a gated display reports ready while it is refusing to
+      // fetch, so waiting on that alone would put the camera back on the lane
+      // before it had drawn a block.
+      {
+        type: 'waitForText',
+        text: 'Too many features',
+        hidden: true,
+        timeout: 120000,
+      },
+      {
+        type: 'waitForSelector',
+        selector: PGGB_SEGMENTS_READY,
+        timeout: 120000,
+      },
+      // the pointer off the canvas, or the graph's hover tooltip stands over the
+      // frame the poster is taken from
+      { type: 'hover', selector: '[aria-label="JBrowse"]' },
+      { type: 'delay', ms: 2500 },
+    ],
+    tailMs: 3000,
   },
   // THE RE-LAYOUT, on the 460 bp the page draws both ways. The still pair is
   // pangenome/pggb_locus_sample_rows; what it cannot carry is that the two

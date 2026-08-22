@@ -7,23 +7,29 @@ description: Live state of the tutorial video-tour thread — which candidates a
 
 ## State
 
-**Eleven candidates are filmed and landed** (2026-08-21): 1 to 4
+**Thirteen candidates are filmed and landed** (2026-08-21): 1 to 4
 (`variants/trio_phased_matrix`, `synteny/hg002_dotplot_import`,
 `sv/derivative_allele_route` over two pages, `repeats/painting_display_switch`),
 then 7, 9 and 11 (`hic/two_regions`, `synteny/restack_around_locus`,
 `synteny/dotplot_reorder`), then 6, 8 and 12 (`sv/multisample_sort`,
 `synteny/allvsall_launch_from_selection`, `epigenomics/chromhmm_cluster`), then
-10 (`synteny/liftover_launch`). Coverage is **20 tutorials of 43**. What is left
-is 5, 13 and 14.
+10 (`synteny/liftover_launch`), then 5 and 13
+(`epigenomics/bisulfite_contexts`, `pangenome/tier_to_fine`). Coverage is
+**21 tutorials of 43**. What is left is 14, and it wants its page restructured
+first.
 
-**5 and 13 are the two whose risk nobody has retired**: both are pileups or
-graph fetches, and `website/CLAUDE.md` warns those block the main thread under
-swiftshader. Try `--headed` first rather than assuming a spec is wrong.
+**The swiftshader warning was retired at both ends, and it is about VOLUME.**
+`website/CLAUDE.md` says the tours stay off pileups and graph fetches; both of
+the candidates that carried that risk filmed headless with nothing starved. 5 is
+a per-read pileup — 14 kb of Illumina WGBS over a plant genome, which is not the
+deep human ONT lane the warning was measured on — and 13 navigates a linear view
+rather than cutting a subgraph, so the FMMM engine never runs. Neither needed
+`--headed`, and neither says the next heavy tour will not.
 
 - **[ideas/tutorial-tour-candidates.md](../ideas/tutorial-tour-candidates.md)**
   — the ranked list, and the one to work from. Each filmed entry now records
   what its estimate got wrong, because the next tour on that page starts there.
-  Five of the eleven found a defect in the page they film, which is the
+  Six of the thirteen found a defect in the page they film, which is the
   strongest argument for the thread: a route nobody walks is a route the prose
   can be wrong about.
 - **[ideas/tutorial-structure-audit.md](../ideas/tutorial-structure-audit.md)**

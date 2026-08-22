@@ -188,6 +188,12 @@ const PGGB_TIER_REGION = {
   end: 1350000,
 }
 const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
+// The one node in the tier that stands for the IS5 element, arrowed in
+// pangenome/pggb_bubble_tier and right-clicked by pangenome/tier_to_fine. The id
+// is the tier's own -- source segment qualified by reference start, which is
+// what snarls_to_bubble_bed.py emits -- so the figure's callout and the tour's
+// menu open on one object.
+const PGGB_TIER_IS5_NODE = '79945@1299497'
 
 // The coarse level-of-detail tier of the pggb graph: one node per bubble, with
 // the invariant reference between bubbles as backbone. Same two files and same
@@ -1377,6 +1383,19 @@ export const pggbVideoFixtures = {
   // The CFT073 allele pangenome/pggb_strain_launch rings, so the tour and the
   // still open the same node's menu.
   strainLaunchNode: '118465-',
+  // THE COARSE END OF THE LADDER, shared with pangenome/pggb_bubble_tier so the
+  // clip and the figure are one window, one track and one node: the tier lane's
+  // ramp is over the same 100 kb, and the bubble the figure arrows is the one
+  // the tour opens the menu on.
+  tierTrack: PGGB_TIER_SESSION_TRACK,
+  tierTrackId: PGGB_TIER_TRACK,
+  tierWindow: PGGB_TIER_WINDOW,
+  tierRegion: PGGB_TIER_REGION,
+  tierIs5Node: PGGB_TIER_IS5_NODE,
+  // The ramp the figure paints its tier lane with. A fixture rather than a
+  // second spelling in the video module: it is a function of the region, and a
+  // second spelling of the region is a second window.
+  tierLaneColor: referencePositionColor(PGGB_TIER_REGION),
 }
 
 export const ecoliGraphSpecs: ScreenshotSpec[] = [
@@ -1529,7 +1548,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         maxWidth: 220,
         anchor: {
           view: 1,
-          graphNode: '79945@1299497',
+          graphNode: PGGB_TIER_IS5_NODE,
           alignY: 'bottom',
           dy: 70,
         },
@@ -1539,13 +1558,13 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         strokeWidth: 2,
         fromAnchor: {
           view: 1,
-          graphNode: '79945@1299497',
+          graphNode: PGGB_TIER_IS5_NODE,
           alignY: 'bottom',
           dy: 66,
         },
         anchor: {
           view: 1,
-          graphNode: '79945@1299497',
+          graphNode: PGGB_TIER_IS5_NODE,
           alignY: 'bottom',
           dy: 6,
         },
