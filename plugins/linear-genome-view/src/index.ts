@@ -127,6 +127,7 @@ export {
   installClearHoverOnViewportChange,
   installGlobalFetchAutorun,
   installGrowExitBake,
+  installPrerequisiteFetch,
   onDisplayedRegionsChange,
   plainTrackControl,
   runGlobalFetch,

@@ -76,6 +76,10 @@ export {
 } from './models/GlobalDataDisplayMixin.ts'
 export { blockKeySignature } from './models/GlobalFetchMixin.ts'
 export {
+  type PrerequisiteFetchContext,
+  installPrerequisiteFetch,
+} from './models/installPrerequisiteFetch.ts'
+export {
   type FetchMixinType,
   default as FetchMixin,
 } from './models/FetchMixin.ts'

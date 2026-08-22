@@ -6,7 +6,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import { getRpcSessionId, getSession } from '@jbrowse/core/util'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
   LegendMixin,
@@ -14,9 +14,9 @@ import {
   blockKeySignature,
   computeTriangleYScalar,
   installGlobalFetchAutorun,
+  installPrerequisiteFetch,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
-import { autorun } from 'mobx'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
@@ -652,68 +652,53 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       }
     })
     .actions(self => ({
-      /**
-       * #action
-       * One-shot header read: the file's normalization and binsize lists. Every
-       * contact fetch is gated on it (`prepare` requires
-       * `effectiveResolution`, which only exists once `availableResolutions`
-       * lands), so a failure here is terminal for this display, not a
-       * degradation — hence `setError` rather than a session snackbar. Without
-       * it the display sat on the loading scrim forever with nothing said, and
-       * `svgReady` (which resolves on `error`) never settled, hanging the whole
-       * view's SVG export on an unbounded `awaitSvgReady`.
-       */
-      async fetchHicInfo() {
-        // One of the display's operations, so it takes a slot on the status
-        // field rather than writing it (ADR-081). `reload()` re-reads the header
-        // while `effectiveResolution` is still set from the last load, so the
-        // contacts fetch runs beside this one — and the `''` this RPC's
-        // outermost phase closes on used to blank the label that fetch was
-        // still producing.
-        const stream = self.openStatusStream(() => isAlive(self))
-        try {
-          const { rpcManager } = getSession(self)
-          const rpcSessionId = getRpcSessionId(self)
-          const { norms, resolutions } = (await rpcManager.call(
-            rpcSessionId,
-            'CoreGetInfo',
-            // Reports (see below) but takes no stop token, deliberately: every
-            // contact fetch is gated on this one-shot read, so a cancel would
-            // not free the display, it would strand it — `effectiveResolution`
-            // stays undefined, `prepare` declines forever with no error set, and
-            // `svgReady` never settles.
-            // eslint-disable-next-line no-restricted-syntax
-            {
-              adapterConfig: self.adapterConfig,
-              // This call happens inside the pre-first-paint window, where the
-              // scrim is up because `canvasDrawn` is still false rather than
-              // because `isLoading` is — so `statusMessage` is the only thing
-              // that can say what is happening. Without it, opening a v8 `.hic`
-              // whose norm-vector index has to be discovered by walking the file
-              // sits on a bare "Loading..." for the whole chain of range reads.
-              //
-              // The labels this emits are distinct phases rather than a progress
-              // stream, and the 100ms window only guarantees the last of a
-              // burst — but each of them fronts a network range read, so none of
-              // them lands inside another's window.
-              statusCallback: stream.statusCallback,
-            },
-          )) as { norms?: string[]; resolutions?: number[] }
-          if (isAlive(self)) {
+      afterAttach() {
+        // One-shot header read: the file's normalization and binsize lists.
+        // Every contact fetch is gated on it (`prepare` requires
+        // `effectiveResolution`, which only exists once `availableResolutions`
+        // lands), so a failure here is terminal for this display, not a
+        // degradation — hence `setError` rather than a session snackbar; the
+        // chrome's retry button re-runs this through the skeleton's
+        // `reloadCounter` read.
+        installPrerequisiteFetch(self, {
+          run: async ctx =>
+            (await getSession(self).rpcManager.call(
+              getRpcSessionId(self),
+              'CoreGetInfo',
+              // Reports (see below) but takes no stop token, deliberately:
+              // every contact fetch is gated on this one-shot read, so a
+              // cancel would not free the display, it would strand it —
+              // `effectiveResolution` stays undefined, `prepare` declines
+              // forever with no error set, and `svgReady` never settles. The
+              // skeleton's rotation still supersedes an overlapped run at
+              // commit time; it just cannot abort its network reads.
+              // eslint-disable-next-line no-restricted-syntax
+              {
+                adapterConfig: self.adapterConfig,
+                // This call happens inside the pre-first-paint window, where
+                // the scrim is up because `canvasDrawn` is still false rather
+                // than because `isLoading` is — so `statusMessage` is the only
+                // thing that can say what is happening. Without it, opening a
+                // v8 `.hic` whose norm-vector index has to be discovered by
+                // walking the file sits on a bare "Loading..." for the whole
+                // chain of range reads.
+                statusCallback: ctx.statusCallback,
+              },
+            )) as { norms?: string[]; resolutions?: number[] },
+          commit: ({ norms, resolutions }) => {
             if (norms) {
               self.setAvailableNormalizations(norms)
             }
-            // An empty (or absent) binsize list is terminal for the same reason
-            // a thrown CoreGetInfo is, and needs saying just as loudly: it
-            // leaves `effectiveResolution` undefined, so `prepare` declines
+            // An empty (or absent) binsize list is terminal for the same
+            // reason a thrown CoreGetInfo is, and needs saying just as loudly:
+            // it leaves `effectiveResolution` undefined, so `prepare` declines
             // forever with no error set — the display would sit on the loading
-            // scrim and `svgReady` would never settle, hanging the whole view's
-            // export on an unbounded `awaitSvgReady`. Every resting state that
-            // never fetches has to be terminal (ARCHITECTURE.md §"SVG export").
+            // scrim and `svgReady` would never settle, hanging the whole
+            // view's export on an unbounded `awaitSvgReady`. Every resting
+            // state that never fetches has to be terminal (ARCHITECTURE.md
+            // §"SVG export").
             if (resolutions?.length) {
               self.setAvailableResolutions(resolutions)
-              // No initial selection needed — `effectiveResolution` derives
-              // the binsize from bpPerPx + `resolutionBias` on every fetch.
             } else {
               self.setError(
                 new Error(
@@ -721,36 +706,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
                 ),
               )
             }
-          }
-        } catch (e) {
-          // setError surfaces this in the display chrome with a retry, so
-          // logging it too would just double-report
-          if (isAlive(self)) {
-            self.setError(e)
-          }
-        } finally {
-          stream.clear()
-        }
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        // Tracks `reloadCounter` so the chrome's retry button re-reads the
-        // header too: `reload()` clears `error`, and without a re-read the
-        // display would drop straight back onto the permanent scrim.
-        addDisposer(
-          self,
-          // #region voidTracking
-          autorun(
-            () => {
-              void self.reloadCounter
-              // errors are captured in setError; fire-and-forget is safe
-              void self.fetchHicInfo()
-            },
-            { name: 'LinearHicDisplayInfo' },
-          ),
-          // #endregion
-        )
+          },
+          // no debounce: the only repeat triggers are a Retry click and an
+          // adapter swap, and the first paint waits on this
+          delay: 0,
+          name: 'LinearHicDisplayInfo',
+        })
 
         installGlobalFetchAutorun(self, {
           // The shared gates (minimized, data-current, signature pending) live

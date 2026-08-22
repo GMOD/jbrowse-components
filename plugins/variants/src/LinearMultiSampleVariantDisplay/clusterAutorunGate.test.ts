@@ -22,10 +22,20 @@ async function runWith(names: string[]) {
   const { display, mockRpcCall } = createDisplay({
     displaySnapshot: { runClustering: true },
   })
+  // The sources RPC has to agree with the hand-seeded sources: the
+  // prerequisite fetch runs on the leading edge, so a catch-all `[]` here
+  // lands over the seed before the clustering commit and fails its row-count
+  // validation. `warnings` is not optional in the payload — the commit walks
+  // it — so a mock that omits it is a broken stub, not a quiet one.
   mockRpcCall.mockImplementation((_sid: string, method: string) =>
     method === 'MultiSampleVariantClusterGenotypeMatrix'
       ? Promise.resolve({ order: [1, 0], tree: '(b,a);' })
-      : Promise.resolve([]),
+      : method === 'MultiSampleVariantGetSources'
+        ? Promise.resolve({
+            sources: names.map(name => ({ name })),
+            warnings: [],
+          })
+        : Promise.resolve([]),
   )
   display.setSources(names.map(name => ({ name })))
 

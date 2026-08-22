@@ -442,12 +442,6 @@ export default function MultiSampleVariantBaseModelF(
          * — fetchNeeded only needs to call setCellData(result).
          */
         cellData: undefined as CellDataResult | undefined,
-        // Bumped by reload() to retrigger the sources autorun. Sources is a
-        // one-shot fetch (per adapter, not per viewport), so it doesn't go
-        // through FetchMixin and can't watch fetchGeneration — that would
-        // refetch sources on every viewport change. This counter is its
-        // dedicated user-reload signal.
-        reloadCount: 0,
       }))
       .actions(self => ({
         setCellData(data: CellDataResult | undefined) {
@@ -1557,11 +1551,11 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * Retry here is two-stage: `reload()` bumps `reloadCount` for the
-         * sources autorun as well as resetting the fetch, and `fetchNeeded`
-         * below declines until `sourcesBase` lands. So the retry contract is
-         * judged on the run that follows, not on the declining one — see
-         * `FetchMixin.awaitingPrerequisite`.
+         * Retry here is two-stage: the sources autorun reads the same
+         * `reloadCounter` bump `reload()` makes for the region fetch, and
+         * `fetchNeeded` below declines until `sourcesBase` lands. So the retry
+         * contract is judged on the run that follows, not on the declining one
+         * — see `FetchMixin.awaitingPrerequisite`.
          *
          * Strictly narrower than the declines it explains, which is what makes it
          * a deferral rather than an opt-out: `FetchVisibleRegions` also declines
@@ -1637,19 +1631,6 @@ export default function MultiSampleVariantBaseModelF(
           })
         },
       }))
-      .actions(self => {
-        const superReload = self.reload
-        return {
-          reload() {
-            // Bump reloadCount so the sources autorun re-fires; super's
-            // clearAllRpcData clears error/regionTooLarge and bumps
-            // fetchGeneration to retrigger the cellData fetch via
-            // FetchVisibleRegions.
-            self.reloadCount++
-            superReload()
-          },
-        }
-      })
       .actions(self => ({
         /**
          * #action
