@@ -2,12 +2,12 @@ Widgets — the hierarchical track selector, feature details — open in a resiz
 side drawer, the way JBrowse Web does it. It moves left or right via the ⋮ menu,
 minimizes and closes.
 
-The view is otherwise content-height, so it can sit in a page that grows with
-it. `drawerViewHeight` on `createViewState` is the height it is clamped to
-_while a drawer is open_, giving the drawer a definite scroll region. Both sides
-of that clamp scroll — the drawer, and the view beside it when the track set is
-taller. It accepts any CSS height (`'600px'`, `'80%'`) and defaults to
-`'100vh'`.
+A drawer needs the view beside it to be tall against something, so an otherwise
+content-height view gets bounded while one is open: `height` on
+`createViewState` if you passed one, `drawerViewHeight` (default `'100vh'`)
+otherwise. Both sides of that bound scroll — the drawer, and the view beside it
+when the track set is taller. Prefer `height`: see
+[fitting the view in a fixed-height box](../default-session/#fixed-height).
 
 `init.tracklist` opens the track selector on load. Prefer it to calling
 [`activateTrackSelector`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-activatetrackselector)

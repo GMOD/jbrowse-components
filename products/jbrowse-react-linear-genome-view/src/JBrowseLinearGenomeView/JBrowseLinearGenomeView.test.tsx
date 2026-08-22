@@ -148,24 +148,56 @@ test('a failure the session survives reaches the screen', async () => {
   ).toBeTruthy()
 }, 40000)
 
-// `drawerViewHeight` is the only height this component sets for itself, and the
-// box it clamps is `overflow: hidden`. The host was never asked for a height, so
-// there is no scrollable ancestor either: before this, a track set taller than
-// the clamp simply had nothing below the fold reachable.
-test('the box a drawer clamps can scroll', async () => {
+// Two things at once, because they are the same fact from both sides. Given no
+// height the component is content-height -- nothing above it has a height, so
+// `height: 100%` down the chain resolves to auto -- and the host's own box is
+// what bounds it. Then `drawerViewHeight` bounds it after all, and the box that
+// clamp applies to is `overflow: hidden` with no scrollable ancestor: before
+// this, a track set taller than the clamp had nothing below the fold reachable.
+test('unbounded until a drawer opens, and then the box scrolls', async () => {
   const state = createViewState({ assembly, tracks: [], defaultSession })
   const { findByTestId } = render(<JBrowseLinearGenomeView viewState={state} />)
 
-  expect((await findByTestId('embedded-view-box')).style.overflowY).toBe('')
+  const box = await findByTestId('embedded-view-box')
+  expect(box.parentElement?.style.height).toBe('')
+  expect(box.style.overflowY).toBe('')
 
   state.session.view.activateTrackSelector()
 
   await waitFor(
-    async () => {
-      expect((await findByTestId('embedded-view-box')).style.overflowY).toBe(
-        'auto',
-      )
+    () => {
+      expect(box.parentElement?.style.height).toBe('100vh')
+      expect(box.style.overflowY).toBe('auto')
     },
     { timeout },
   )
+}, 40000)
+
+// `height` is what `drawerViewHeight` was reaching for: a drawer needs the view
+// beside it to be tall against something, and before this the only number that
+// did that arrived with a condition attached. So it applies with no drawer open,
+// and it wins over the older name when a host passes both.
+test('a height bounds the view with no drawer, and outranks drawerViewHeight', async () => {
+  const state = createViewState({
+    assembly,
+    tracks: [],
+    defaultSession,
+    height: '400px',
+    drawerViewHeight: '100vh',
+  })
+  const { findByTestId } = render(<JBrowseLinearGenomeView viewState={state} />)
+
+  const box = await findByTestId('embedded-view-box')
+  expect(box.parentElement?.style.height).toBe('400px')
+  expect(box.style.overflowY).toBe('auto')
+
+  state.session.view.activateTrackSelector()
+
+  await waitFor(
+    () => {
+      expect(state.session.visibleWidget).toBeTruthy()
+    },
+    { timeout },
+  )
+  expect(box.parentElement?.style.height).toBe('400px')
 }, 40000)

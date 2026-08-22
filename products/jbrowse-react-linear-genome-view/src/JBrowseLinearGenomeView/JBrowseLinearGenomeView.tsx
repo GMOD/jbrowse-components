@@ -56,12 +56,15 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
     drawerWidth,
   })
 
-  // The view is normally content-height so it can be embedded in a page that
-  // grows with it. Only when a drawer opens do we clamp to drawerViewHeight
-  // (default 100vh), giving the drawer's `overflowY: auto` a definite height to
-  // scroll within.
-  const style = drawerVisible
-    ? { gridTemplateColumns, height: viewState.drawerViewHeight }
+  // With no height the view is content-height, so it can be embedded in a page
+  // that grows with it and a host box is what bounds it. `drawerViewHeight` is
+  // the same idea under the condition it never needed -- it exists because
+  // there was no height to be tall against when a drawer opened -- so `height`
+  // wins wherever both are given.
+  const height =
+    viewState.height ?? (drawerVisible ? viewState.drawerViewHeight : undefined)
+  const style = height
+    ? { gridTemplateColumns, height }
     : { gridTemplateColumns }
 
   return (
@@ -75,14 +78,15 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                   <DrawerWidget session={session} />
                 </Suspense>
               ) : null}
-              {/* The clamp above can be shorter than the track set, and this
-                  box is `overflow: hidden` with no scrollable ancestor -- the
-                  host was never asked for a height -- so without a scrollbar of
+              {/* A bounded root can be shorter than the track set, and this box
+                  is `overflow: hidden` with no scrollable ancestor -- nothing
+                  above it was asked for a height -- so without a scrollbar of
                   its own everything below the fold is unreachable. Only the
-                  vertical axis: the LGV owns horizontal scrolling. */}
+                  vertical axis: the LGV owns horizontal scrolling. Unbounded,
+                  there is nothing to overflow and the host's box scrolls. */}
               <div
                 className={classes.container}
-                style={drawerVisible ? { overflowY: 'auto' } : undefined}
+                style={height ? { overflowY: 'auto' } : undefined}
                 data-testid="embedded-view-box"
               >
                 <EmbeddedViewContainer key={`view-${view.id}`} view={view}>

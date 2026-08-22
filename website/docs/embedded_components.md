@@ -245,12 +245,18 @@ reaches only one of them.
 affordances, for a page where the track set is yours to decide rather than the
 reader's.
 
-`drawerViewHeight` (default `100vh`) matters for one case: an embedded view is
-normally content-height, so it grows with the page, but a view with an open
-drawer widget has to be clamped to something for the drawer's own scrolling to
-have a definite height. This is that clamp, and it applies only while a drawer
-is open. The view scrolls inside it, so clamping to less than the track set is
-tall costs you nothing but the scrollbar.
+`height` takes any CSS height (`'400px'`, `'80vh'`) and bounds the component's
+own root. Without it an embedded view is content-height and grows with the page,
+which is what you want in a document and not in a panel; a host box with a
+height of its own bounds it too, and still does. The view scrolls inside the
+bound, so a height shorter than the track set is tall costs you nothing but the
+scrollbar.
+
+`drawerViewHeight` (default `100vh`) is the older spelling of the same thing,
+applied only while a drawer widget is open. That condition is why it existed: a
+drawer needs the view beside it to be tall against something, and before
+`height` there was no number that always was. It is honored when `height` is
+absent, and `height` wins when both are given. Prefer `height`.
 
 `@jbrowse/react-app2` adds `onPluginsUpdated`. The app cannot rebuild its own
 plugin manager — it never fetches plugins, and it does not own the React tree it

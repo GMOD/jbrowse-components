@@ -30,7 +30,7 @@ before anyone noticed.
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
-| [A fixed height on the embedded LGV, or a host box](#decide-whether-a-fixed-height-becomes-a-prop-on-the-embedded-lgv) | embedded, LGV | the clip is fixed; what is open is whether `height` becomes a prop |
+| [Three spellings of "how tall is the embed"](#three-spellings-of-how-tall-is-the-embed) | embedded, API | the LGV half shipped; decide whether the app's CSS variable becomes the same prop |
 | [An arc's right-click offers nothing](#give-an-arcs-right-click-something-to-offer) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
@@ -205,38 +205,47 @@ gate has to exempt them, which is its own small design question. Nor are the two
 surviving `"showLabels": "auto"` reads in that file drift: that is the current
 slot name under a current value, so nobody should "fix" those either.
 
-### Decide whether a fixed height becomes a prop on the embedded LGV
+### Three spellings of "how tall is the embed"
 
-The clip this entry started as is fixed: the box `drawerViewHeight` clamps
-carries `overflowY: auto` while a drawer is open, and
-`JBrowseLinearGenomeView.test.tsx` pins it. What is left is the naming question
-underneath.
+`@jbrowse/react-linear-genome-view2` now takes `height` — any CSS height,
+applied to the component's own root whether or not a drawer is open — and
+`drawerViewHeight` is deprecated behind it, honored only when `height` is
+absent. That is the LGV settled. What is open is that the three embedded
+products answer the same question three ways, and none of them is wrong on its
+own terms:
 
-`drawerViewHeight` (default `100vh`) is still the only height the embedded LGV
-sets for itself, and it applies only while a drawer widget is open. The
-unclamped path is fine, and it is already the answer to
-[#4526](https://github.com/GMOD/jbrowse-components/issues/4526): a host box with
-a height of its own bounds the view and scrolls it. It works because the chain
-of `height: 100%` stops at the MUI `ScopedCssBaseline` the component mounts
-inside, which has no height — 400 / 400 / 692 / 692 / 692 down the chain from a
-400px box. **Nothing pins that**, so an added wrapper or a MUI change turns the
-working case into the clipped one silently.
+- **LGV**: `height`, a prop. Content-height without it, because the chain of
+  `height: 100%` stops at the MUI `ScopedCssBaseline` it mounts inside, which
+  has no height.
+- **react-app2**: `--jbrowse-app-height`, a CSS custom property set on any
+  ancestor, feeding `height: var(--jbrowse-app-height, 100vh)` on the App root
+  (`app-core/ui/App/App.tsx`). Deliberate and documented — it has its own
+  `fit-to-container` examples page — and it propagates height on purpose:
+  `ScopedCssBaseline sx={{ height: '100%' }}`, which the LGV's does not.
+- **circular**: nothing. `ScopedCssBaseline` with no height like the LGV, so
+  content-height, but there is no drawer either (`ModalWidget` is its only
+  widget surface), so nothing ever bounds it and nothing clips.
 
-Open: whether a fixed height becomes a first-class `height` on
-`createViewState`, applied always, with `drawerViewHeight` folded in as a
-deprecated alias — or stays a host box the docs describe and a test pins. One
-name beats two for the same idea, and the prop is what makes the layout
-intentional rather than inherited from a wrapper that has no height by accident.
-The `fixed-height` section on the lineargenomeview examples site is the demo
-either way.
+So this is not "copy the prop twice". The question is whether `height` becomes
+the one spelling — on react-app2 it would set the variable rather than a style,
+since the variable is what App reads and hosts already use it — or whether a
+prop for a component and a variable for an app is the right split, in which case
+say so somewhere a host reads.
 
-**Sticky headers in the embedded session are not wanted**, and this entry is not
-a route to them. The ruler scrolling away with the first track is deliberate:
-`stickyViewHeaders` is a web session preference (`MultipleViews.ts`) that
-`EmbeddedSessionMixin` does not compose, and the LGV getter reads its absence as
-"don't pin" (`LinearGenomeView/model.ts`). PR #4237 merged and is the web half.
+Two things settled here so nobody re-derives them. **`drawerViewHeight` stays** —
+published API, and `height` wins when both are given. And **sticky headers in
+the embedded session are not wanted**: the ruler scrolling away with the first
+track is deliberate, `stickyViewHeaders` is a web session preference
+(`MultipleViews.ts`) that `EmbeddedSessionMixin` does not compose, and the LGV
+getter reads its absence as "don't pin" (`LinearGenomeView/model.ts`). PR #4237
+merged and is the web half.
 
-Nothing tests the content-height default, only the clamp.
+Also unpinned in every product: the unbounded path's real layout. The host box
+works because of that missing height on `ScopedCssBaseline` — 400 / 400 / 692 /
+692 / 692 down the chain from a 400px box — and jsdom computes no layout, so
+pinning it needs a browser test against an examples site rather than a jest one.
+The `height` prop is why this is no longer urgent for the LGV: a host that wants
+a bound now asks for one in a way jsdom can check.
 
 ### Give an arc's right-click something to offer
 

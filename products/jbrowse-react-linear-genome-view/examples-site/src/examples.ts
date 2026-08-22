@@ -60,7 +60,7 @@ export const pages: ExamplePage[] = [
         slug: 'fixed-height',
         title: 'Fitting the view in a fixed-height box',
         description:
-          'What a host box does to a view that is taller than it, and what drawerViewHeight does.',
+          'Bound the view with the height prop, or with a host box of your own.',
       },
     ],
   },

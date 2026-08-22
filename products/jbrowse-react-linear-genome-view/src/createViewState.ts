@@ -60,6 +60,22 @@ export interface CreateViewStateBaseOptions {
   plugins?: PluginInput[]
   disableAddTracks?: boolean
   makeWorkerInstance?: () => Worker
+  /**
+   * Any CSS height (`'400px'`, `'80vh'`), applied to the component's own root.
+   * Without it the component is content-height and grows as tracks are added,
+   * which is right for a document and wrong for a panel; a host box with a
+   * height of its own also bounds it, and still does.
+   *
+   * This is also what a drawer widget is tall against, so it supersedes
+   * `drawerViewHeight`: one number bounds the view and gives the drawer beside
+   * it a definite scroll region.
+   */
+  height?: string
+  /**
+   * @deprecated Pass `height` instead. This applied only while a drawer widget
+   * was open, which is the same idea under a condition it did not need. Still
+   * honored when `height` is absent.
+   */
   drawerViewHeight?: string
   /**
    * In-memory files, `name -> bytes`, that `tracks` may then refer to by that
@@ -125,6 +141,7 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
     defaultSession,
     session,
     localFiles,
+    height,
     drawerViewHeight = '100vh',
   } = opts
   const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
@@ -162,6 +179,7 @@ export default function createViewState(opts: ViewStateOptions): ViewModel {
         aggregateTextSearchAdapters,
       },
       disableAddTracks,
+      height,
       drawerViewHeight,
       session: defaultSession ?? {
         name: `New session ${new Date().toLocaleString()}`,

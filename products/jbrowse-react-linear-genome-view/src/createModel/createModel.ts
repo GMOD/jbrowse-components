@@ -15,7 +15,7 @@ import type { AssertNotAny, PluginInput } from '@jbrowse/product-core'
  * #stateModel JBrowseReactLinearGenomeViewRootModel
  * #category root
  * Composes the shared {@link EmbeddedRootModel} with a LinearGenomeView session
- * plus the LGV-only `disableAddTracks`/`drawerViewHeight` props.
+ * plus the LGV-only `disableAddTracks`/`height` props.
  */
 export default function createModel(
   runtimePlugins: PluginInput[],
@@ -43,6 +43,16 @@ export default function createModel(
     disableAddTracks: types.stripDefault(types.boolean, false),
     /**
      * #property
+     * Any CSS height, applied to the component's own root whether or not a
+     * drawer is open. Absent, the component is content-height and grows with
+     * the page, and the host's box is what bounds it.
+     */
+    height: types.maybe(types.string),
+    /**
+     * #property
+     * Superseded by `height`, which does the same thing without the "only
+     * while a drawer is open" condition. Still honored when `height` is
+     * absent.
      */
     drawerViewHeight: types.stripDefault(types.string, '100vh'),
   })

@@ -21,11 +21,11 @@ export default function WithDrawerWidget() {
         },
       },
     ],
-    // the height the view is clamped to *while a drawer is open*, so the
-    // drawer has a definite scroll region. '100vh' is the default and is
-    // spelled out here only because this is the page about the drawer — any
-    // CSS height works ('600px', '80%')
-    drawerViewHeight: '100vh',
+    // a drawer needs the view beside it to be tall against something, and
+    // `height` is that. Spelled out here because this is the page about the
+    // drawer; with no height at all the view is bounded to '100vh' while a
+    // drawer is open and content-height otherwise
+    height: '100vh',
     init: {
       loc: 'ctgA:1105..1221',
       tracks: ['volvox_gff3'],
