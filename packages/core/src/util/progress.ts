@@ -559,20 +559,31 @@ function downloadStatusReporter(
 }
 
 /**
- * Run a download phase with byte-granularity progress. Shows `label`, hands
- * `fn` the {@link downloadStatusReporter} to pass straight to an index reader's
- * `onProgress` (byte ticks upgrade the same label to a determinate bar), then
- * clears the status. Combines {@link updateStatus} with the reporter so the
- * label is written in exactly one place — the phase label and the progress
- * label can't drift apart.
+ * Run a download phase whose reader counts its own progress. Shows `label`,
+ * hands `fn` the {@link downloadStatusReporter} to pass straight to the
+ * reader's `onProgress` (its ticks upgrade the same label to a determinate
+ * bar), then clears the status. Combines {@link updateStatus} with the reporter
+ * so the label is written in exactly one place — the phase label and the
+ * progress label can't drift apart.
+ *
+ * The unit is whatever the reader counts, and the caller does not have to know
+ * which: bytes for the index readers, blocks and expected-value chunks for
+ * `@gmod/hic`. All of them report `(current, total?)`.
+ *
+ * `stopToken` makes the phase a cancellation boundary, exactly as it does on
+ * {@link updateStatus} — `fn` is checked on both sides of its await.
  */
 export async function downloadStatus<T>(
   label: string,
   statusCallback: StatusCallback | undefined,
   fn: (onProgress: ReturnType<typeof downloadStatusReporter>) => T | Promise<T>,
+  stopToken?: StopToken,
 ): Promise<T> {
-  return updateStatus(label, statusCallback, () =>
-    fn(downloadStatusReporter(statusCallback, label)),
+  return updateStatus(
+    label,
+    statusCallback,
+    () => fn(downloadStatusReporter(statusCallback, label)),
+    stopToken,
   )
 }
 

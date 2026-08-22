@@ -5,6 +5,7 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import HicAdapter from './HicAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
 const metadata = {
@@ -74,11 +75,16 @@ function makeMockParser() {
 // below are checked against it rather than typed through `never[]`/`unknown`.
 interface MockParser {
   getMetaData: () => Promise<typeof metadata>
-  getNormalizationOptions: () => Promise<string[]>
+  getNormalizationOptions: (opts?: {
+    onProgress?: (current: number, total: number) => void
+  }) => Promise<string[]>
   getContactRecords: (
     norm: string,
     ref: { chr: string },
     ref2: { chr: string },
+    units?: string,
+    binsize?: number,
+    opts?: { onProgress?: (current: number, total: number) => void },
   ) => Promise<ReturnType<typeof oneContact>>
 }
 
@@ -111,6 +117,123 @@ test('a missing inter-chromosomal pair does not fail the whole multi-region fetc
     { region1Idx: 0, region2Idx: 0, start: 0, end: 1 },
     { region1Idx: 1, region2Idx: 1, start: 1, end: 2 },
   ])
+})
+
+// Locating the normalization-vector index on a pre-v9 file walks the
+// expected-value vectors with two sequential range reads per chunk, which is
+// the slowest part of opening a `.hic` and used to sit under a bare label.
+test('the normalization-index walk reports its chunks', async () => {
+  const adapter = makeAdapter({
+    getMetaData: () => Promise.resolve(metadata),
+    getNormalizationOptions: opts => {
+      opts?.onProgress?.(3, 8)
+      return Promise.resolve(['NONE'])
+    },
+    getContactRecords: () => Promise.resolve(oneContact(0, 0, 5)),
+  })
+  const statuses: RpcStatus[] = []
+
+  await adapter.getHeader({
+    statusCallback: status => {
+      statuses.push(status)
+    },
+  })
+
+  expect(statuses).toContainEqual({
+    message: 'Reading normalization index',
+    current: 3,
+    total: 8,
+  })
+})
+
+// Pairs are the denominator — a whole-genome view is 325 of them, and it is the
+// one total known before any read goes out.
+test('a multi-pair fetch reports determinate progress', async () => {
+  const adapter = makeAdapter(makeMockParser())
+  const regions: Region[] = [
+    { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
+    { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
+  ]
+  const statuses: RpcStatus[] = []
+
+  await adapter.getMultiRegionContactRecords(regions, {
+    resolution: 100000,
+    normalization: 'NONE',
+    statusCallback: status => {
+      statuses.push(status)
+    },
+  })
+
+  // Emission is time-gated at 100ms and the mock resolves instantly, so only the
+  // first completion is guaranteed to land — what matters is that the phase is
+  // measurable at all, and against the three pairs two regions make.
+  expect(
+    statuses.filter(
+      s => typeof s === 'object' && s.message === 'Downloading data',
+    ),
+  ).toContainEqual({ message: 'Downloading data', current: 1, total: 3 })
+})
+
+// A pair holds many blocks, and its own block ticks are what move the bar
+// inside it. That is the whole of a single-region fetch — one pair, which
+// without them could only read 0% until it was done.
+test('block progress inside a pair moves the bar', async () => {
+  const adapter = makeAdapter({
+    getMetaData: () => Promise.resolve(metadata),
+    getNormalizationOptions: () => Promise.resolve(['NONE']),
+    getContactRecords: (_norm, _ref, _ref2, _units, _binsize, opts) => {
+      opts?.onProgress?.(1, 4)
+      return Promise.resolve(oneContact(0, 0, 5))
+    },
+  })
+  const regions: Region[] = [
+    { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
+  ]
+  const statuses: RpcStatus[] = []
+
+  await adapter.getMultiRegionContactRecords(regions, {
+    resolution: 100000,
+    normalization: 'NONE',
+    statusCallback: status => {
+      statuses.push(status)
+    },
+  })
+
+  // One of four blocks, on the fetch's only pair: a quarter of the way through.
+  expect(statuses).toContainEqual({
+    message: 'Downloading data',
+    current: 0.25,
+    total: 1,
+  })
+})
+
+// A pair the file has no matrix for reads nothing at all, so nothing but its
+// completion can move it off zero — and a fetch that ends below its own total
+// reads as stalled.
+test('a pair that reads no blocks still completes', async () => {
+  const adapter = makeAdapter({
+    getMetaData: () => Promise.resolve(metadata),
+    getNormalizationOptions: () => Promise.resolve(['NONE']),
+    getContactRecords: () => Promise.resolve(noContacts()),
+  })
+  const regions: Region[] = [
+    { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
+  ]
+  const statuses: RpcStatus[] = []
+
+  await adapter.getMultiRegionContactRecords(regions, {
+    resolution: 100000,
+    normalization: 'NONE',
+    statusCallback: status => {
+      statuses.push(status)
+    },
+  })
+
+  expect(statuses).toContainEqual({
+    message: 'Downloading data',
+    current: 1,
+    total: 1,
+  })
 })
 
 test('an already-stopped stopToken aborts the multi-region fetch', async () => {

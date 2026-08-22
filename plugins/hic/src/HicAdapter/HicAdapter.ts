@@ -1,11 +1,15 @@
 import { HicFile, NO_DATA_FOR_RESOLUTION } from '@gmod/hic'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import {
+  createProgressReporter,
+  downloadStatus,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import type { ContactRecords } from '@gmod/hic'
+import type { ContactRecords, ProgressOpts } from '@gmod/hic'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -82,13 +86,14 @@ interface HicParser {
     ref2: Ref,
     units: string,
     binsize: number,
+    opts?: ProgressOpts,
   ) => Promise<{
     records: ContactRecords
     appliedNormalization: string
     transposed: boolean
   }>
   getMetaData: () => Promise<HicMetadata>
-  getNormalizationOptions: () => Promise<string[]>
+  getNormalizationOptions: (opts?: ProgressOpts) => Promise<string[]>
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
@@ -133,10 +138,15 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     // recorded index position this walks the whole normalized-expected-values
     // section with a chain of sequential range reads, which is the slowest part
     // of opening a `.hic` and the part that used to sit under a bare "Loading".
-    const norms = await updateStatus(
+    // `@gmod/hic` counts the walk in expected-value chunks — one per
+    // (normalization type, binsize), known before the first read — so this is a
+    // bar rather than the spinner it was. `downloadStatus` is the same
+    // composition the byte-counting adapters use; the unit is whatever the
+    // reader counts.
+    const norms = await downloadStatus(
       'Reading normalization index',
       statusCallback,
-      () => this.hic.getNormalizationOptions(),
+      onProgress => this.hic.getNormalizationOptions({ onProgress }),
       stopToken,
     )
     return { norms, resolutions }
@@ -204,8 +214,12 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       { recs: ContactRecords; appliedNormalization: string } | undefined
     >(pairIndices.length)
 
+    // One spelling for the two writers of this phase — `updateStatus` announces
+    // it, the reporter's ticks upgrade it to a bar — because two labels that
+    // drift apart read to `aggregateStatus` as two phases rather than one.
+    const downloadPhase = 'Downloading data'
     await updateStatus(
-      'Downloading data',
+      downloadPhase,
       statusCallback,
       async () => {
         // Pairs run concurrently, bounded. Each is an independent chain of range
@@ -215,12 +229,39 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         // whole-genome view over 25 chromosomes is 325 of these round trips end
         // to end.
         //
-        // Bounded rather than an unbounded `Promise.all` because the cap is what
-        // the block cache is sized against (BLOCK_CACHE_SIZE, "a multi-region
-        // fetch's working set"): letting every pair read at once would put more
-        // blocks in flight than the cache holds and evict a fetch's own earlier
-        // reads before it finished.
+        // Bounded rather than an unbounded `Promise.all` because the block
+        // cache is sized against the pairs a fetch runs at once: letting every
+        // pair read at once would put more blocks in flight than the cache holds
+        // and evict a fetch's own earlier reads before it finished.
         const CONCURRENCY = 6
+        // Pairs are the denominator and blocks move the numerator: a pair
+        // counts as the fraction of its own blocks that have landed.
+        //
+        // Blocks alone would be the finer measure and cannot be the total —
+        // a pair's block count is only known once that pair has read its block
+        // index, so a Σblocks denominator would describe the pairs that have
+        // started rather than the fetch, and sit near complete for the whole
+        // sweep while it grew. The pair count is the one total known before any
+        // read. Pairs hold unequal numbers of blocks, so this weights them all
+        // alike; what it buys is that the bar moves *within* a pair, which is
+        // the whole of a single-region fetch and 1/325th of a whole-genome one.
+        //
+        // No stop token on the reporter: it would only add a throttled check
+        // beside the exact per-pair one below.
+        const report = createProgressReporter({
+          label: downloadPhase,
+          total: pairIndices.length,
+          statusCallback,
+        })
+        // Each pair's own share, so a tick can replace what that pair last
+        // contributed instead of the sum having to be retaken over all of them.
+        const pairShare = new Float64Array(pairIndices.length)
+        let progress = 0
+        const advance = (at: number, share: number) => {
+          progress += share - pairShare[at]!
+          pairShare[at] = share
+          report(progress)
+        }
         let next = 0
         const worker = async () => {
           while (next < pairIndices.length) {
@@ -235,7 +276,14 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
               region2: regions[j]!,
               normalization,
               resolution: res,
+              onProgress: (current, total) => {
+                advance(at, current / total)
+              },
             })
+            // Whole, however few blocks it reported — a pair the file has no
+            // matrix for reads nothing and would otherwise hold its share at
+            // zero for the rest of the fetch.
+            advance(at, 1)
           }
         }
         await Promise.all(
@@ -318,11 +366,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     region2,
     normalization,
     resolution,
+    onProgress,
   }: {
     region1: Region
     region2: Region
     normalization: string
     resolution: number
+    onProgress: (current: number, total: number) => void
   }): Promise<
     { recs: ContactRecords; appliedNormalization: string } | undefined
   > {
@@ -341,6 +391,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
           { chr: region2.refName, start: region2.start, end: region2.end },
           'BP',
           resolution,
+          { onProgress },
         )
       return {
         recs: transposed
