@@ -2,10 +2,10 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
   computeRowFrame,
+  geneGlyphShape,
   groupFeatures,
   groupSpanOnRow,
   laneGeneFeatures,
-  mergedExonIntervals,
   rowAssembliesOf,
   rowFrameX,
 } from './layoutMultiWay.ts'
@@ -201,7 +201,7 @@ test('a group with nothing on the dominant refName gets no span on that row', ()
   expect(span[0]).toBeLessThan(span[1])
 })
 
-test('mergedExonIntervals merges exons across transcripts and falls back to the span', () => {
+test('geneGlyphShape merges exons across transcripts and falls back to the span', () => {
   const gene = new SimpleFeature({
     uniqueId: 'gene1',
     refName: 'chr1',
@@ -247,17 +247,97 @@ test('mergedExonIntervals merges exons across transcripts and falls back to the 
       },
     ],
   })
-  expect(mergedExonIntervals(gene)).toEqual([
-    [100, 200],
-    [300, 400],
-  ])
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [
+      [100, 200],
+      [300, 400],
+    ],
+    thin: [],
+  })
   const bare = new SimpleFeature({
     uniqueId: 'bare',
     refName: 'chr1',
     start: 5,
     end: 10,
   })
-  expect(mergedExonIntervals(bare)).toEqual([[5, 10]])
+  expect(geneGlyphShape(bare)).toEqual({ full: [[5, 10]], thin: [] })
+})
+
+test('geneGlyphShape splits merged exons into CDS and UTR intervals', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene2',
+    refName: 'chr1',
+    start: 100,
+    end: 400,
+    subfeatures: [
+      {
+        uniqueId: 'rna1',
+        refName: 'chr1',
+        start: 100,
+        end: 400,
+        subfeatures: [
+          {
+            uniqueId: 'x1',
+            refName: 'chr1',
+            start: 100,
+            end: 160,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'x2',
+            refName: 'chr1',
+            start: 300,
+            end: 400,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'c1',
+            refName: 'chr1',
+            start: 140,
+            end: 160,
+            type: 'CDS',
+          },
+          {
+            uniqueId: 'c2',
+            refName: 'chr1',
+            start: 300,
+            end: 380,
+            type: 'CDS',
+          },
+        ],
+      },
+    ],
+  })
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [
+      [140, 160],
+      [300, 380],
+    ],
+    thin: [
+      [100, 140],
+      [380, 400],
+    ],
+  })
+})
+
+test('geneGlyphShape draws a CDS-only annotation full height', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene3',
+    refName: 'chr1',
+    start: 100,
+    end: 200,
+    subfeatures: [
+      { uniqueId: 'c1', refName: 'chr1', start: 100, end: 150, type: 'CDS' },
+      { uniqueId: 'c2', refName: 'chr1', start: 170, end: 200, type: 'CDS' },
+    ],
+  })
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [
+      [100, 150],
+      [170, 200],
+    ],
+    thin: [],
+  })
 })
 
 test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => {

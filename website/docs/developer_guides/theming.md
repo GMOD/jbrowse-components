@@ -85,6 +85,7 @@ Defaults for the `string`-valued feature colors, generated from the
 | Color | Name | Value | Description |
 | --- | --- | --- | --- |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:goldenrod;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="goldenrod"></span> | Feature (default) | `goldenrod` | A feature with no color of its own — no `color` slot, no BED itemRgb |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#357089;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#357089"></span> | UTR (default) | `#357089` | The untranslated ends of a gene glyph when no `utrColor` slot is set |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#e22;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#e22"></span> | Stop codon | `#e22` | Stop codon in gene/CDS tracks |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3e3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3e3"></span> | Start codon | `#3e3` | Start codon in gene/CDS tracks |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#808080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#808080"></span> | Deletion | `#808080` | Deletion markers in alignments |

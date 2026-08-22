@@ -18,6 +18,11 @@ import {
   foundationDisplayStatusPhase,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
+import {
+  syntenyRegionMenuItems,
+  widestRegion,
+} from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import {
   computeRowFrame,
   groupFeatures,
@@ -26,6 +31,7 @@ import {
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -126,6 +132,12 @@ export function stateModelFactory(
        * #volatile
        */
       laneLinksKey: '',
+      /**
+       * #volatile
+       * the ortholog group under the pointer; every ribbon of that group
+       * highlights, so one hover reads the group across all lanes
+       */
+      hoveredGroupKey: undefined as string | undefined,
     }))
     .actions(self => ({
       /**
@@ -147,6 +159,12 @@ export function stateModelFactory(
       setLaneLinks(key: string, links: Map<string, Feature[]>) {
         self.laneLinksKey = key
         self.laneLinks = links
+      },
+      /**
+       * #action
+       */
+      setHoveredGroupKey(key: string | undefined) {
+        self.hoveredGroupKey = key
       },
     }))
     .views(self => ({
@@ -474,6 +492,26 @@ export function stateModelFactory(
           (!self.laneGenesCurrent || !self.laneLinksCurrent)
           ? 'loading'
           : base
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * the same multi-panel launch the view menu and the rubberband offer,
+       * from the track that is already showing the lanes: every genome
+       * aligning to the visible window gets a full row of its own in a
+       * stacked linear synteny view, cut from this track's dataset
+       */
+      trackMenuItems(): MenuItem[] {
+        const view = self.lgv
+        return syntenyRegionMenuItems({
+          label: 'Launch stacked synteny view (visible region)',
+          region: widestRegion(view.dynamicBlocks.contentBlocks),
+          session: getSession(self),
+          openTracks: [self.parentTrack.configuration],
+          anchorTracks: anchorPanelTracks(view.tracks),
+          sourceView: view,
+        })
       },
     }))
     .actions(self => ({

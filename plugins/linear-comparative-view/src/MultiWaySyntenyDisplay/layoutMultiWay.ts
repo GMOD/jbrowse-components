@@ -242,11 +242,54 @@ export function laneGeneFeatures(features: Feature[]) {
       })
 }
 
-// Every exon interval under a gene feature, merged across its transcripts. A
-// feature with no exon subfeatures falls back to its CDS structure, and one
-// with neither is its own single interval, so a plain BED-backed feature still
-// draws as a box.
-export function mergedExonIntervals(feature: Feature) {
+function mergeIntervals(intervals: [number, number][]) {
+  intervals.sort((a, b) => a[0] - b[0])
+  const merged: [number, number][] = []
+  for (const [start, end] of intervals) {
+    const last = merged[merged.length - 1]
+    if (last && start <= last[1]) {
+      last[1] = Math.max(last[1], end)
+    } else {
+      merged.push([start, end])
+    }
+  }
+  return merged
+}
+
+function subtractIntervals(base: [number, number][], cut: [number, number][]) {
+  const out: [number, number][] = []
+  for (const [start, end] of base) {
+    let cursor = start
+    for (const [cutStart, cutEnd] of cut) {
+      if (cutEnd <= cursor || cutStart >= end) {
+        continue
+      }
+      if (cutStart > cursor) {
+        out.push([cursor, cutStart])
+      }
+      cursor = Math.max(cursor, cutEnd)
+    }
+    if (cursor < end) {
+      out.push([cursor, end])
+    }
+  }
+  return out
+}
+
+export interface GeneGlyphShape {
+  // full-height intervals: the merged CDS across the gene's transcripts, or
+  // the merged exons of a non-coding gene, or the whole span of a structure-
+  // less feature — so a plain BED-backed gene still draws as one box
+  full: [number, number][]
+  // the untranslated parts of the merged exons, drawn thinner in the UTR
+  // color the way the canvas gene track draws them
+  thin: [number, number][]
+}
+
+// A gene's drawable shape, merged across its transcripts: exon and CDS
+// intervals collected from the whole subtree, the CDS full-height and the
+// exon-minus-CDS remainder as UTR.
+export function geneGlyphShape(feature: Feature): GeneGlyphShape {
   const exons: [number, number][] = []
   const cds: [number, number][] = []
   const walk = (f: Feature) => {
@@ -261,21 +304,15 @@ export function mergedExonIntervals(feature: Feature) {
     }
   }
   walk(feature)
-  const intervals = exons.length ? exons : cds
-  if (intervals.length === 0) {
-    return [[feature.get('start'), feature.get('end')] as [number, number]]
-  }
-  intervals.sort((a, b) => a[0] - b[0])
-  const merged: [number, number][] = []
-  for (const [start, end] of intervals) {
-    const last = merged[merged.length - 1]
-    if (last && start <= last[1]) {
-      last[1] = Math.max(last[1], end)
-    } else {
-      merged.push([start, end])
-    }
-  }
-  return merged
+  const mergedCds = mergeIntervals(cds)
+  const mergedExons = exons.length
+    ? mergeIntervals(exons)
+    : mergedCds.length
+      ? mergedCds
+      : [[feature.get('start'), feature.get('end')] as [number, number]]
+  return exons.length && mergedCds.length
+    ? { full: mergedCds, thin: subtractIntervals(mergedExons, mergedCds) }
+    : { full: mergedExons, thin: [] }
 }
 
 // The group's merged [x1, x2] px span on one row, or undefined when the group

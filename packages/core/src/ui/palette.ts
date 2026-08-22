@@ -571,6 +571,16 @@ export const tagColorPalette = [
  */
 export const featureDefaultColor = 'goldenrod'
 
+/**
+ * #color theme-colors | UTR (default) | The untranslated ends of a gene glyph when no `utrColor` slot is set
+ *
+ * Same reasoning as featureDefaultColor: the canvas gene track and the
+ * multi-way synteny lanes both draw UTRs, and the two must be the same blue or
+ * a lane's gene models read as a different annotation from the gene track
+ * above them.
+ */
+export const utrDefaultColor = '#357089'
+
 /** #color theme-methylation | methylated5mC | 5-methylcytosine, methylated */
 export const methylated5mC = '#ff0000'
 /** #color theme-methylation | unmethylated5mC | 5-methylcytosine, unmethylated */

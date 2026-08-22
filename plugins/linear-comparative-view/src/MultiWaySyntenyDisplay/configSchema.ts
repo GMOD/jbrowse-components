@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -48,11 +49,22 @@ export function configSchemaFactory() {
       // #region contextVariableSlot
       color: {
         type: 'color',
-        description: 'the color of the gene glyphs',
-        defaultValue: `jexl:get(feature,'strand')==-1?'#20456e':'#3b5fa8'`,
+        description:
+          'the fill color of the gene glyphs, matching the canvas gene track default',
+        defaultValue: featureDefaultColor,
         contextVariable: ['feature'],
       },
       // #endregion
+      /**
+       * #slot
+       */
+      utrColor: {
+        type: 'color',
+        description:
+          'the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default',
+        defaultValue: utrDefaultColor,
+        contextVariable: ['feature'],
+      },
       /**
        * #slot
        */

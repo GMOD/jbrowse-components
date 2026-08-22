@@ -43,6 +43,7 @@ the whole surface.
 | <span id="volatile-lanegeneskey">**laneGenesKey**</span><br><code>laneGenesKey: ''</code> |  | MultiWaySyntenyDisplay |
 | <span id="volatile-lanelinks">**laneLinks**</span><br><code>laneLinks: undefined as Map&lt;string, Feature[]&gt; &#124; undefined</code> | alignments between ADJACENT mate lanes, fetched per pair from the same track when the source is an all-vs-all alignment file — the direct records the file holds for that pair, at the lanes' own coordinates | MultiWaySyntenyDisplay |
 | <span id="volatile-lanelinkskey">**laneLinksKey**</span><br><code>laneLinksKey: ''</code> |  | MultiWaySyntenyDisplay |
+| <span id="volatile-hoveredgroupkey">**hoveredGroupKey**</span><br><code>hoveredGroupKey: undefined as string &#124; undefined</code> | the ortholog group under the pointer; every ribbon of that group highlights, so one hover reads the group across all lanes | MultiWaySyntenyDisplay |
 | <span id="volatile-error">**error**</span><br><code>error: undefined as unknown</code> |  | [BaseDisplay](../basedisplay#volatile-error) |
 | <span id="volatile-statusmessage">**statusMessage**</span><br><code>statusMessage: undefined as string &#124; undefined</code> |  | [BaseDisplay](../basedisplay#volatile-statusmessage) |
 | <span id="volatile-statusprogress">**statusProgress**</span><br><code>statusProgress: undefined as number &#124; undefined</code> | <span data-pagefind-ignore>determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.</span> | [BaseDisplay](../basedisplay#volatile-statusprogress) |
@@ -145,6 +146,7 @@ the whole surface.
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(f: Feature[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlanegenes">**setLaneGenes**</span><br><code>(key: string, genes: Map&lt;string, Feature[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setlanelinks">**setLaneLinks**</span><br><code>(key: string, links: Map&lt;string, Feature[]&gt;) =&gt; void</code> |  | MultiWaySyntenyDisplay |
+| <span id="action-sethoveredgroupkey">**setHoveredGroupKey**</span><br><code>(key: string &#124; undefined) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-setroworder">**setRowOrder**</span><br><code>(order: string[]) =&gt; void</code> |  | MultiWaySyntenyDisplay |
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactN…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNode&gt;</code></pre></dialog></span> |  | MultiWaySyntenyDisplay |

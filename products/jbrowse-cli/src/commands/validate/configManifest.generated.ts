@@ -3585,6 +3585,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "utrColor",
+          "type": "(JexlString | string)"
+        },
+        {
           "name": "ribbonColor",
           "type": "(JexlString | string)"
         }

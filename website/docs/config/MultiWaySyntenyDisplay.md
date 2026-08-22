@@ -74,7 +74,8 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'jexl:get(feature,'strand')==-1?'#20456e':'#3b5fa8''</code> | the color of the gene glyphs<br>_callback args:_ `feature` |
+| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'goldenrod'</code> | the fill color of the gene glyphs, matching the canvas gene track default<br>_callback args:_ `feature` |
+| <span id="slot-utrcolor">**utrColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'#357089'</code> | the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default<br>_callback args:_ `feature` |
 | <span id="slot-ribboncolor">**ribbonColor**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(130,130,130,0.3)'</code> | the color of the ribbons connecting adjacent lanes |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">6 slots</span> |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
