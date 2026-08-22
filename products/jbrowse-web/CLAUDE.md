@@ -31,6 +31,25 @@ compares, so a fresh clone needs no command.
 - Goldens remain **environment-specific** — a real-GPU webgl golden will not
   match a swiftshader capture, and only canvas2d really travels. CI compares
   backends against each other.
+- **The webgpu goldens carry a device pixel ratio; the others do not.** Chrome
+  is launched with a `defaultViewport`, which pins `deviceScaleFactor` to 1
+  whatever the panel is, so canvas2d and webgl goldens survive a move to a
+  retina machine. WebGPU goes through Firefox, which follows the OS, and the
+  runner pins `layout.css.devPixelsPerPx` for neither browser — so the committed
+  1266x90 webgpu goldens meet a 2532x180 capture on a retina Mac and all of them
+  fail on SIZE before a pixel is compared. That is not a regression and it is
+  not something to `-u` away: a sweep there swaps a whole backend's goldens from
+  dpr 1 to dpr 2 under cover of whatever change is in flight. Shoot webgpu
+  goldens where the existing ones were shot, or pin the pref first.
+- **A `-u` run rewrites every golden past the 0.5% gate, not the ones your
+  change moved.** Measured on the wiggle suites 2026-08-22: 22 of them were past
+  it, and the same 22 were past it with the change reverted. Diff your own
+  captures against captures of the same suites at the base commit before reading
+  an update list as yours — `browser-tests/probe-bar-top-aa.ts` does that
+  comparison and classifies each differing pixel as a horizontal or a vertical
+  run, which is what separates "the mark moved" from "the mark is missing". A
+  capture that is short of its features reads as a huge blob diff with no edge
+  structure; one turned up in that measurement and was a half-loaded frame.
 - **Never screenshot with `fullPage: true`.** Puppeteer resizes the viewport to
   implement it, which invalidates the raster; under concurrent browser churn the
   capture returns before the content re-rasters, reported as a 10-25% snapshot
