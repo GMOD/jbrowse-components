@@ -795,8 +795,8 @@ are in the payload at all.
 
 **Status:** Mostly closed (2026-07); down to two mechanisms 2026-08-21, when
 HiC and LD moved to genomic worker output and the viewport-snapshot compare
-(`viewportMatchesLastDrawn`, `StaleViewportRescaleMixin`) retired with the
-fetch-time pixel space it existed for.
+(viewportMatchesLastDrawn, on the deleted StaleViewportRescaleMixin) retired
+with the fetch-time pixel space it existed for.
 
 Data freshness is still computed two ways — spatial coverage
 (`viewportWithinLoadedData`, per-region mixins) and signature compare

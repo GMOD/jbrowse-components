@@ -1328,8 +1328,9 @@ notices. A new main-thread slot means editing neither.
 **A slot that is in the payload only to invalidate it gets its own field** —
 once the config half is a pick of what the worker reads, anything riding along
 for the cache key alone has nowhere left to hide in it. The rule survives its
-one former instance: `LinearBasicDisplay`'s `gateSlots` (the raw gate budget
-slots, sent purely so an edit stayed a refetch) was deleted 2026-08-21 when the
+one former instance: `LinearBasicDisplay`'s gateSlots field (the raw gate
+budget slots, sent purely so an edit stayed a refetch) was deleted 2026-08-21
+when the
 question [REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md) had left open was
 settled — a budget edit reaches the verdict through tracked reads, so the field
 only ever bought a redundant full refetch of regions already loaded and in
