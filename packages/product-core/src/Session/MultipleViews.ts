@@ -92,6 +92,20 @@ function dropRefsInto(holder: IAnyStateTreeNode, view: IBaseViewModel) {
  * #stateModel MultipleViewsSessionMixin
  */
 export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
+  // An unknown type name passes through, so it still fails at the union with
+  // the same error it always has; this only intercepts the case where the
+  // failure would otherwise be a confusing union mismatch for a type that IS
+  // registered, just not loaded.
+  function assertViewStateModelLoaded(typeName: string) {
+    if (
+      pluginManager.getElementTypeRecord('view').has(typeName) &&
+      !pluginManager.getViewType(typeName).isStateModelLoaded
+    ) {
+      throw new Error(
+        `state model for view type ${typeName} is not loaded yet — use launchView(), or await getViewType('${typeName}').loadStateModel() first`,
+      )
+    }
+  }
   return types
     .compose(
       BaseSessionModel(pluginManager),
@@ -268,8 +282,13 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
+         * Requires the view type's state model to be loaded — every eagerly
+         * registered type always is. For a type registered with a lazy state
+         * model, use `launchView`, or preload with
+         * `getViewType(typeName).loadStateModel()`.
          */
         addView(typeName: string, initialState = {}) {
+          assertViewStateModelLoaded(typeName)
           const length = self.views.push({
             ...initialState,
             type: typeName,
@@ -307,6 +326,7 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
          * view's own menu.
          */
         replaceView(view: IBaseViewModel, typeName: string, initialState = {}) {
+          assertViewStateModelLoaded(typeName)
           // read before the removal, which is what makes both stale
           const idx = self.views.indexOf(view)
           // `idx` first, so a view already gone from the session short-circuits
@@ -442,6 +462,19 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         },
       }
     })
+    .actions(self => ({
+      /**
+       * #action
+       * `addView` for view types whose state model may be lazily loaded:
+       * resolves the state model first, then adds the view. The await means
+       * the view is NOT in `session.views` when this returns its promise —
+       * callers that need the created view use the resolved value.
+       */
+      async launchView(typeName: string, initialState = {}) {
+        await pluginManager.getViewType(typeName).loadStateModel()
+        return self.addView(typeName, initialState)
+      },
+    }))
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

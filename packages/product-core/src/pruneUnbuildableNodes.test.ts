@@ -18,26 +18,37 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 function fakePluginManager(
   groups: Record<string, string[]>,
   renames: Record<string, string> = {},
+  lazyGroups: Record<string, string[]> = {},
 ) {
   const elements = Object.fromEntries(
     Object.entries(groups).map(([group, names]) => [
       group,
-      names.map(name => ({
-        name,
-        stateModel: types
-          .model(name, { type: types.literal(name) })
-          .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
-            snap && renames[snap.type as string] === name
-              ? { ...snap, type: name }
-              : snap,
-          ),
-      })),
+      [
+        ...names.map(name => ({
+          name,
+          stateModel: types
+            .model(name, { type: types.literal(name) })
+            .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
+              snap && renames[snap.type as string] === name
+                ? { ...snap, type: name }
+                : snap,
+            ),
+        })),
+        // registered like a lazy ViewType: a loader in place of a model
+        ...(lazyGroups[group] ?? []).map(name => ({
+          name,
+          stateModelLoader: () =>
+            Promise.resolve(types.model(name, { type: types.literal(name) })),
+        })),
+      ],
     ]),
   )
   return {
     getElementTypesInGroup: (group: string) => elements[group] ?? [],
     pluggableMstType: (group: string) => {
-      const models = (elements[group] ?? []).map(t => t.stateModel)
+      const models = (elements[group] ?? []).flatMap(t =>
+        'stateModel' in t ? [t.stateModel] : [],
+      )
       return models.length > 0
         ? types.union(...models)
         : types.maybe(types.null)
@@ -228,4 +239,59 @@ test('describeUnbuildableNodes names each distinct type once', () => {
   ).toBe(
     'Removed session items that need plugins this JBrowse does not have: UcscResultsWidget, SpreadsheetView',
   )
+})
+
+test('keeps a view whose type is registered with an unloaded lazy state model, and reports it', () => {
+  const pm = fakePluginManager(
+    { view: ['LinearGenomeView'], widget: [], track: [], display: [] },
+    {},
+    { view: ['DotplotView'] },
+  )
+  const { snapshot, dropped, needsLoad } = pruneUnbuildableNodes(
+    {
+      name: 'shared',
+      views: [
+        { id: 'a', type: 'LinearGenomeView' },
+        { id: 'b', type: 'DotplotView' },
+        { id: 'c', type: 'NoSuchView' },
+      ],
+    },
+    pm,
+  )
+  expect((snapshot.views as { type: string }[]).map(v => v.type)).toEqual([
+    'LinearGenomeView',
+    'DotplotView',
+  ])
+  expect(dropped).toEqual([{ group: 'view', type: 'NoSuchView' }])
+  expect(needsLoad).toEqual([{ group: 'view', type: 'DotplotView' }])
+})
+
+test('collects lazy view types from the child views of a composite view', () => {
+  const pm = fakePluginManager(
+    { view: ['BreakpointSplitView'], widget: [], track: [], display: [] },
+    {},
+    { view: ['DotplotView'] },
+  )
+  const { needsLoad } = pruneUnbuildableNodes(
+    {
+      name: 'shared',
+      views: [
+        {
+          id: 'a',
+          type: 'BreakpointSplitView',
+          views: [{ id: 'b', type: 'DotplotView' }],
+        },
+      ],
+    },
+    pm,
+  )
+  expect(needsLoad).toEqual([{ group: 'view', type: 'DotplotView' }])
+})
+
+test('reports nothing to load when every named type is eagerly registered', () => {
+  const { needsLoad } = pruneUnbuildableNodes(
+    { name: 'shared', views: [{ id: 'a', type: 'LinearGenomeView' }] },
+    pluginManager,
+  )
+  expect(needsLoad).toEqual([])
 })

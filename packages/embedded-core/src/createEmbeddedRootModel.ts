@@ -20,6 +20,48 @@ interface SessionWithSetName {
   setName: (name: string) => void
 }
 
+// A session snapshot naming a view type that is registered with a lazy state
+// model loader cannot be cast synchronously; without this check, MST reports a
+// union mismatch that reads like a corrupt snapshot instead of a missing
+// preload. Walks nested views the same way PluginManager.preloadViewTypes
+// does.
+function assertViewTypesLoaded(
+  pluginManager: PluginManager,
+  snapshot: unknown,
+) {
+  const unloaded = new Set<string>()
+  const collect = (views: unknown) => {
+    if (Array.isArray(views)) {
+      for (const view of views) {
+        if (view && typeof view === 'object') {
+          const { type, views: children } = view as {
+            type?: unknown
+            views?: unknown
+          }
+          if (
+            typeof type === 'string' &&
+            pluginManager.getElementTypeRecord('view').has(type) &&
+            !pluginManager.getViewType(type).isStateModelLoaded
+          ) {
+            unloaded.add(type)
+          }
+          collect(children)
+        }
+      }
+    }
+  }
+  if (snapshot && typeof snapshot === 'object') {
+    const { view, views } = snapshot as { view?: unknown; views?: unknown }
+    collect(views)
+    collect(view ? [view] : undefined)
+  }
+  if (unloaded.size > 0) {
+    throw new Error(
+      `session names lazily loaded view types that are not loaded yet: ${[...unloaded].join(', ')}. Await pluginManager.preloadViewTypes(snapshot) before setting the session`,
+    )
+  }
+}
+
 /**
  * #stateModel EmbeddedRootModel
  * #category root
@@ -103,8 +145,13 @@ export function createEmbeddedRootModel<
       .actions(self => ({
         /**
          * #action
+         * Synchronous, so every view type the snapshot names must have its
+         * state model loaded — the guard turns what would otherwise be a
+         * confusing union mismatch into an actionable error. An async caller
+         * can `await pluginManager.preloadViewTypes(snapshot)` first.
          */
         setSession(sessionSnapshot: SnapshotIn<SESSION>) {
+          assertViewTypesLoaded(pluginManager, sessionSnapshot)
           self.session = cast(sessionSnapshot)
         },
         /**
@@ -121,6 +168,7 @@ export function createEmbeddedRootModel<
          * actually matters for a value this app did not author.
          */
         restoreSession(sessionSnapshot: SessionSnapshot) {
+          assertViewTypesLoaded(pluginManager, sessionSnapshot)
           self.session = cast(sessionSnapshot as SnapshotIn<SESSION>)
         },
         /**

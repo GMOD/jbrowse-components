@@ -50,6 +50,14 @@ export interface UnbuildableNode {
   cascade?: true
 }
 
+// A node whose type IS registered, but as a lazy loader that has not resolved
+// yet. Not unbuildable — buildable after a preload — so it is kept in the
+// snapshot and reported here for the caller to load before casting.
+export interface UnloadedNode {
+  group: PrunedGroup
+  type: string
+}
+
 // The type names a `pluggableMstType` union will accept outright. Mirrors that
 // function's own filter: a registered type whose `stateModel` is not a model
 // type is left out of the union, so a snapshot naming it fails the same way one
@@ -63,12 +71,32 @@ function registeredNames(pluginManager: PluginManager, group: PrunedGroup) {
   )
 }
 
+// The type names registered with a lazy state-model loader that has not
+// resolved yet — buildable after a preload, so kept rather than pruned.
+function lazyRegisteredNames(pluginManager: PluginManager, group: PrunedGroup) {
+  return new Set(
+    pluginManager.getElementTypesInGroup(group).flatMap(t => {
+      const { stateModel, stateModelLoader } = t as unknown as {
+        stateModel?: unknown
+        stateModelLoader?: unknown
+      }
+      return typeof stateModelLoader === 'function' &&
+        !(isType(stateModel) && isModelType(stateModel))
+        ? [t.name]
+        : []
+    }),
+  )
+}
+
 // One prune's view of the plugin manager. The unions are built on first use, so
 // a session naming only registered types — every session this build produced
 // itself — never constructs one.
 class Registry {
   private names = new Map<PrunedGroup, Set<string>>()
+  private lazyNames = new Map<PrunedGroup, Set<string>>()
   private unions = new Map<PrunedGroup, IAnyType>()
+
+  needsLoad: UnloadedNode[] = []
 
   constructor(private pluginManager: PluginManager) {}
 
@@ -84,7 +112,24 @@ class Registry {
       names = registeredNames(this.pluginManager, group)
       this.names.set(group, names)
     }
-    return names.has(type) || this.union(group).is(node)
+    if (names.has(type)) {
+      return true
+    }
+    let lazy = this.lazyNames.get(group)
+    if (!lazy) {
+      lazy = lazyRegisteredNames(this.pluginManager, group)
+      this.lazyNames.set(group, lazy)
+    }
+    if (lazy.has(type)) {
+      // note: a type ALIAS of a lazily registered type is not recognized here
+      // — aliases live on the not-yet-loaded model — so a legacy snapshot
+      // naming one is dropped as unbuildable until its plugin loads eagerly
+      if (!this.needsLoad.some(n => n.group === group && n.type === type)) {
+        this.needsLoad.push({ group, type })
+      }
+      return true
+    }
+    return this.union(group).is(node)
   }
 
   private union(group: PrunedGroup) {
@@ -200,7 +245,11 @@ function pruneWidgets(snapshot: Record<string, unknown>, prune: Prune) {
 export function pruneUnbuildableNodes(
   snapshot: Record<string, unknown>,
   pluginManager: PluginManager,
-): { snapshot: Record<string, unknown>; dropped: UnbuildableNode[] } {
+): {
+  snapshot: Record<string, unknown>
+  dropped: UnbuildableNode[]
+  needsLoad: UnloadedNode[]
+} {
   const prune: Prune = { registry: new Registry(pluginManager), dropped: [] }
   const pruned = {
     ...snapshot,
@@ -213,9 +262,10 @@ export function pruneUnbuildableNodes(
         }
       : {}),
   }
+  const { needsLoad } = prune.registry
   return prune.dropped.length > 0
-    ? { snapshot: pruned, dropped: prune.dropped }
-    : { snapshot, dropped: prune.dropped }
+    ? { snapshot: pruned, dropped: prune.dropped, needsLoad }
+    : { snapshot, dropped: prune.dropped, needsLoad }
 }
 
 /**

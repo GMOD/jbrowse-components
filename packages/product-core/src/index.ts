@@ -177,4 +177,4 @@ export {
   describeUnbuildableNodes,
   pruneUnbuildableNodes,
 } from './pruneUnbuildableNodes.ts'
-export type { UnbuildableNode } from './pruneUnbuildableNodes.ts'
+export type { UnbuildableNode, UnloadedNode } from './pruneUnbuildableNodes.ts'
