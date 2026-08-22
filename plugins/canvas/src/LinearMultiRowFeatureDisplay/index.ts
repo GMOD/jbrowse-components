@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaFactory from './configSchema.ts'
-import modelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -20,7 +19,9 @@ export default function register(pluginManager: PluginManager) {
       helpText:
         'Paints interval features as colored blocks on stacked rows, partitioned by a feature attribute — chromosome / ancestry painting.',
       configSchema,
-      stateModel: modelFactory(configSchema),
+      // lazily loaded: fetched when a track picks this display or a session
+      // names it, keeping the painting model out of the initial bundle
+      stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: LinearMultiRowFeatureDisplayComponent,

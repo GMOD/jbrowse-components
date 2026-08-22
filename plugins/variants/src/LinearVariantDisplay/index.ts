@@ -1,7 +1,6 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaF from './configSchema.ts'
-import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -30,7 +29,10 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
         helpText:
           'GPU-accelerated variant display with smooth zoom/pan. Data is uploaded once to GPU, enabling instant navigation.',
         configSchema,
-        stateModel: stateModelFactory(configSchema),
+        // lazily loaded: the model composes the canvas base display model, so a
+        // static edge here would pull that whole subgraph into the eager bundle
+        stateModel: () =>
+          import('./model.ts').then(f => f.default(configSchema)),
         trackType: 'VariantTrack',
         viewType: 'LinearGenomeView',
         ReactComponent,

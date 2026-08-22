@@ -6,7 +6,10 @@ import {
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+// the subpath, not the barrel: the barrel is eager, and a value edge from it
+// into the wiggle display model would undo that display's lazy loading. This
+// module is itself only reached through the GC displays' own loaders.
+import linearWiggleDisplayModelFactory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 import type { LinearGCContentDisplayConfigSchema } from './index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

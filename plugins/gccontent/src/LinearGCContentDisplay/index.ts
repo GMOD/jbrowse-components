@@ -3,8 +3,6 @@ import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
 import linearGCContentDisplayConfigSchema from './configSchemaReferenceSequence.ts'
 import linearGCContentTrackDisplayConfigSchema from './configSchemaTrack.ts'
-import stateModelReferenceSequenceF from './stateModelReferenceSequence.ts'
-import stateModelTrackF from './stateModelTrack.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -40,7 +38,13 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearGCContentDisplay',
       configSchema,
-      stateModel: stateModelReferenceSequenceF(pluginManager, configSchema),
+      // lazily loaded: both models compose the wiggle display model, which is
+      // itself lazy, so a static edge here would pull that subgraph back into
+      // the eager bundle
+      stateModel: () =>
+        import('./stateModelReferenceSequence.ts').then(f =>
+          f.default(pluginManager, configSchema),
+        ),
       displayName: 'GC content display',
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
@@ -53,7 +57,10 @@ export default function LinearGCContentDisplayF(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearGCContentTrackDisplay',
       configSchema,
-      stateModel: stateModelTrackF(pluginManager, configSchema),
+      stateModel: () =>
+        import('./stateModelTrack.ts').then(f =>
+          f.default(pluginManager, configSchema),
+        ),
       displayName: 'GC content display',
       trackType: 'GCContentTrack',
       viewType: 'LinearGenomeView',

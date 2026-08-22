@@ -17,7 +17,7 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
-import type { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import type linearWiggleDisplayModelFactory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 type WiggleDisplayModel = Instance<
   ReturnType<typeof linearWiggleDisplayModelFactory>

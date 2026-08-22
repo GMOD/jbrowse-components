@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
 import { configSchemaFactory } from './configSchema.ts'
-import { stateModelFactory } from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -16,7 +15,10 @@ export default function LinearPairedArcDisplayF(pluginManager: PluginManager) {
       helpText:
         'Can display arcs connecting SVs and breakends in VCF format or BEDPE pairs',
       configSchema,
-      stateModel: stateModelFactory(configSchema),
+      // lazily loaded: fetched when a track picks this display or a session
+      // names it
+      stateModel: () =>
+        import('./model.ts').then(f => f.stateModelFactory(configSchema)),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(() => import('./components/ReactComponent.tsx')),

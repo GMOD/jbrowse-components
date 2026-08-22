@@ -17,6 +17,11 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./LinearBasicDisplay/stateModel": "./src/LinearBasicDisplay/model.ts",
+    "./LinearBasicDisplay/baseStateModel": "./src/LinearBasicDisplay/baseModel.ts"
+  },
   "files": [
     "esm"
   ],
@@ -53,6 +58,14 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./LinearBasicDisplay/stateModel": {
+        "types": "./esm/LinearBasicDisplay/model.d.ts",
+        "import": "./esm/LinearBasicDisplay/model.js"
+      },
+      "./LinearBasicDisplay/baseStateModel": {
+        "types": "./esm/LinearBasicDisplay/baseModel.d.ts",
+        "import": "./esm/LinearBasicDisplay/baseModel.js"
       }
     }
   },
