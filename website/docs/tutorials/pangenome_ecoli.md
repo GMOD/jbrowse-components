@@ -829,7 +829,7 @@ track...**, and the graph cut from the window that leaves. The link under it
 opens the session it starts in, so pasting the block for your own graph walks
 the same route on it.
 
-<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed to 1.6 kb around the IS5 element, and the segments lane's own menu cutting the graph below. The nodes that arrive are the blocks the lane above draws." />
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS5 element, and the segments lane's own menu cutting the graph below. The nodes that arrive are the blocks the lane above draws." />
 
 One setting is doing work in the pane that clip ends on. A node's drawn length
 is proportional to its sequence by default, and here one arm is 1,199 bp against
