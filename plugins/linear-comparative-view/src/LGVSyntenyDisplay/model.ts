@@ -11,10 +11,13 @@ import {
   getFiltersMenuItems,
   getHitMenuItems,
   getSortByMenuItem,
-  linearAlignmentsDisplayStateModelFactory,
   NO_HIDDEN_GROUPS,
   pickColorOptions,
 } from '@jbrowse/plugin-alignments'
+// the subpath, not the barrel: the barrel is eager, and a value edge from it
+// into the alignments display model would undo that display's lazy loading.
+// This module is itself only reached through LGVSyntenyDisplay's own loader.
+import linearAlignmentsDisplayStateModelFactory from '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'
 import {
   getCoarseBpPerPxThreshold,
   lodMenuItems,
