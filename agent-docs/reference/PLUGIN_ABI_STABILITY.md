@@ -38,6 +38,18 @@ Whatever the policy ends up being, these three are already checked:
 duck-typed caller exactly as deleting the member would, so plugin-facing
 arguments may be added **optional** and never made required.
 
+**A fourth surface exists and nothing checks it: the props of an exported
+component.** `e5b39664a6` consolidated eight hand-rolled context menus onto
+`ContextMenu` and dropped `slotProps` from `CascadingMenuProps` — correct for
+the tree, where the last caller had gone. Apollo's three context menus passed
+`slotProps.transition.onExit` to clear their items after the close animation,
+so the removal is a compile error for a plugin rebuilt against v5 and, for a
+prebuilt bundle, a prop React silently ignores: the menu still closes, the items
+are never cleared. No baseline covers it, because the checked surfaces are
+export *names*, and the prop never was one. Apollo's `onClose` already cleared
+the same state, so nothing was lost there — the point is that the check would
+not have said so.
+
 ## What has already left the re-export surface
 
 Generated from `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`
@@ -83,6 +95,9 @@ six removals left in v5 with nothing recording them anywhere.
 - **`LinearGenomeViewPlugin.exports`**, reached at runtime as `pluginManager.getPlugin('LinearGenomeViewPlugin').exports.X`:
   - `BaseLinearDisplay` — the legacy block-render state model, removed with the server-side render path. A v4 plugin composing `exports.BaseLinearDisplay()` throws while its `install` runs, so its track type never registers and the user opens a saved session with the track simply absent
   - `BaseLinearDisplayComponent` — the React half of the same pair, and the last reader of the `DisplayMessageComponent` getter on `BaseDisplayModel`, which went with it. A display model no longer holds a React component at all
+- **`@jbrowse/plugin-linear-genome-view`'s type exports**, which a plugin built against the published package imports rather than looking up at runtime — so these break a build, not a session:
+  - `LayoutRecord` — the 4-tuple `[minX, minY, maxX, maxY]` the block layout handed back, exported from the plugin entry and the `BaseLinearDisplay` barrel with no consumer left in the tree. Its 5-tuple `LayoutFeatureMetadata` variant went with the floating-label code, so what was published in v5 was already the narrowed shape. `@jbrowse/plugin-breakpoint-split-view` declares an identical one of its own and still exports it, which is the import to move to
+  - `Layout` — the named-rectangle interface beside it (`minX`/`minY`/`maxX`/`maxY`/`name`), declared in the same file and never exported past it or read anywhere
 
 Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, nothing checks these against a published bundle: `abi.test.ts` pins `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters its findings on that same prefix, so a plugin `exports` object is observed by nothing at all and the session only by the members `pluginFacingSessionApi.test.ts` performs. Reading them here is the check.
 <!-- END GENERATED SESSION AND PLUGIN REMOVALS -->

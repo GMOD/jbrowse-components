@@ -31,6 +31,7 @@ export {
   createBaseTrackConfig,
   createBaseTrackModel,
   preprocessTrackConfigSnapshot,
+  type TrackConfigSnapshot,
   trackConfigActions,
 } from './models/index.ts'
 

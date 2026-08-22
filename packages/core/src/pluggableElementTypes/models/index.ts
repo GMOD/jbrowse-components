@@ -24,4 +24,5 @@ export {
 } from './baseTrackConfig.ts'
 export type { BaseTrackConfig } from './baseTrackConfig.ts'
 export { addDisplayConfigMigration } from './migrateTrackConfig.ts'
+export type { TrackConfigSnapshot } from './migrateTrackConfig.ts'
 export type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
