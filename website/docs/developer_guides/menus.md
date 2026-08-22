@@ -45,7 +45,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
         label: 'Spreadsheet view',
         icon: ViewComfyIcon,
         onClick: (session: AbstractSessionModel) => {
-          session.addView('SpreadsheetView', {})
+          void session.launchView('SpreadsheetView', {})
         },
       })
     }

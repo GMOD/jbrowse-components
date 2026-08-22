@@ -316,6 +316,20 @@ the check off (`HostChecksSlotNames`).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### launchOrReplaceView
+
+`addOrReplaceView` for view types whose state model may be lazily loaded:
+resolves the state model first, then opens the view in the slot `replacing`
+occupies or appended. The synchronous `addOrReplaceView` requires the state
+model to be loaded already.
+
+```js
+// type signature
+(args: { session: AbstractSessionModel; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<...>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
 ### makePin
 
 The pin for one promotable slot: "make this value the default for every track of

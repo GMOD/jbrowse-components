@@ -155,6 +155,20 @@ node has no session ancestor.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+## launchOrReplaceView
+
+`addOrReplaceView` for view types whose state model may be lazily loaded:
+resolves the state model first, then opens the view in the slot `replacing`
+occupies or appended. The synchronous `addOrReplaceView` requires the state
+model to be loaded already.
+
+```js
+// type signature
+(args: { session: AbstractSessionModel; typeName: string; initialState?: Record<string, unknown> | undefined; replacing?: AbstractViewModel | undefined; }) => Promise<...>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
 ## openPromotableDisplays
 
 Every display on an open track, across all open views — the reach of anything
