@@ -128,6 +128,7 @@ export {
   installGlobalFetchAutorun,
   installGrowExitBake,
   installPrerequisiteFetch,
+  makeFetchContext,
   onDisplayedRegionsChange,
   plainTrackControl,
   runGlobalFetch,

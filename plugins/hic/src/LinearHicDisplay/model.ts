@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
-import { getRpcSessionId, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalDataDisplayMixin,
@@ -661,30 +660,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         // chrome's retry button re-runs this through the skeleton's
         // `reloadCounter` read.
         installPrerequisiteFetch(self, {
+          // The injected status channel matters more here than for most
+          // fetches: this call happens inside the pre-first-paint window,
+          // where the scrim is up because `canvasDrawn` is still false rather
+          // than because `isLoading` is — so `statusMessage` is the only thing
+          // that can say what is happening while a v8 `.hic`'s norm-vector
+          // index is discovered by walking the file. The injected stop token
+          // is held by the skeleton's own rotation, so only a superseding
+          // header read ever aborts one — a user cancel of the contacts fetch
+          // cannot strand the display the way sharing the main fetch's token
+          // would.
           run: async ctx =>
-            (await getSession(self).rpcManager.call(
-              getRpcSessionId(self),
-              'CoreGetInfo',
-              // Reports (see below) but takes no stop token, deliberately:
-              // every contact fetch is gated on this one-shot read, so a
-              // cancel would not free the display, it would strand it —
-              // `effectiveResolution` stays undefined, `prepare` declines
-              // forever with no error set, and `svgReady` never settles. The
-              // skeleton's rotation still supersedes an overlapped run at
-              // commit time; it just cannot abort its network reads.
-              // eslint-disable-next-line no-restricted-syntax
-              {
-                adapterConfig: self.adapterConfig,
-                // This call happens inside the pre-first-paint window, where
-                // the scrim is up because `canvasDrawn` is still false rather
-                // than because `isLoading` is — so `statusMessage` is the only
-                // thing that can say what is happening. Without it, opening a
-                // v8 `.hic` whose norm-vector index has to be discovered by
-                // walking the file sits on a bare "Loading..." for the whole
-                // chain of range reads.
-                statusCallback: ctx.statusCallback,
-              },
-            )) as { norms?: string[]; resolutions?: number[] },
+            (await ctx.callRpc('CoreGetInfo', {
+              adapterConfig: self.adapterConfig,
+            })) as { norms?: string[]; resolutions?: number[] },
           commit: ({ norms, resolutions }) => {
             if (norms) {
               self.setAvailableNormalizations(norms)
@@ -741,20 +730,14 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             }
           },
           run: async ({ resolution, regions, axisBlocks, originBp }, ctx) =>
-            await getSession(self).rpcManager.call(
-              getRpcSessionId(self),
-              'RenderHicData',
-              {
-                adapterConfig: self.adapterConfig,
-                regions,
-                axisBlocks,
-                originBp,
-                resolution,
-                ...self.rpcProps(),
-                stopToken: ctx.stopToken,
-                statusCallback: ctx.statusCallback,
-              },
-            ),
+            await ctx.callRpc('RenderHicData', {
+              adapterConfig: self.adapterConfig,
+              regions,
+              axisBlocks,
+              originBp,
+              resolution,
+              ...self.rpcProps(),
+            }),
           commit: result => {
             self.setRpcData(result)
           },

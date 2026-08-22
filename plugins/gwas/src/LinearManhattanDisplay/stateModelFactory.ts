@@ -12,7 +12,6 @@ import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -630,16 +629,12 @@ export function stateModelFactory(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
           const { adapterConfig } = self
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
           return fetchEachRegion(self, needed, {
             call: (region, ctx) =>
-              rpcManager.call(sessionId, 'GetManhattanData', {
+              ctx.callRpc('GetManhattanData', {
                 adapterConfig,
                 region,
                 ...self.rpcProps(),
-                stopToken: ctx.stopToken,
-                statusCallback: ctx.statusCallback,
               }),
             onResult: (idx, result) => {
               self.setRpcData(idx, result)

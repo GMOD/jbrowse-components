@@ -8,7 +8,6 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -331,23 +330,15 @@ export default function stateModelFactory(
        * #action
        */
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        const view = self.lgv
         const { adapterConfig } = self
-        const { bpPerPx } = view
-        const sessionId = getRpcSessionId(self)
-        const { rpcManager } = getSession(self)
+        const { bpPerPx } = self.lgv
         return fetchAllRegions(self, needed, {
           call: (regions, ctx) =>
-            rpcManager.call(sessionId, 'RenderWiggleData', {
+            ctx.callRpc('RenderWiggleData', {
               adapterConfig,
               regions,
               ...self.rpcProps(),
-              stopToken: ctx.stopToken,
               bpPerPx,
-              // One batched call for every region, so `ctx.statusCallback` here
-              // is the whole fetch's rather than a fan-out slot — same field
-              // either way, which is the point of it living on the ctx.
-              statusCallback: ctx.statusCallback,
             }),
           onResult: (idx, result) => {
             self.setRpcData(idx, result)

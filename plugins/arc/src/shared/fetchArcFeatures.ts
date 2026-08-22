@@ -1,5 +1,4 @@
-import { dedupe, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { dedupe } from '@jbrowse/core/util'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -29,16 +28,10 @@ export function arcFetchPhases(
     },
     run: async ({ regions }, ctx) =>
       dedupe(
-        await getSession(self).rpcManager.call(
-          getRpcSessionId(self),
-          'CoreGetFeatures',
-          {
-            regions,
-            adapterConfig: self.adapterConfig,
-            stopToken: ctx.stopToken,
-            statusCallback: ctx.statusCallback,
-          },
-        ),
+        await ctx.callRpc('CoreGetFeatures', {
+          regions,
+          adapterConfig: self.adapterConfig,
+        }),
         r => r.id(),
       ),
     commit: features => {

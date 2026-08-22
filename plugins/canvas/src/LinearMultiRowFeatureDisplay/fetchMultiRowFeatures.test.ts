@@ -57,6 +57,19 @@ function makeSelf() {
             stopToken: 'tok',
             isStale: () => false,
             statusCallback: (s: RpcStatus) => reported.push(s),
+            // the real envelope, over this file's mocked rpcManager, so the
+            // fetch under test exercises the same injection production does
+            callRpc(
+              this: { stopToken: string; statusCallback: unknown },
+              method: string,
+              args: Record<string, unknown>,
+            ) {
+              return mockRpcCall('session-1', method, {
+                ...args,
+                stopToken: this.stopToken,
+                statusCallback: this.statusCallback,
+              })
+            },
             commitRegion: (idx: number) => {
               loadedIndices.push(idx)
             },

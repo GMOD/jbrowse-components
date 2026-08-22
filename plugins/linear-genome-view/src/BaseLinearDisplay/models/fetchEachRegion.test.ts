@@ -55,6 +55,9 @@ test('commits every region and completes when nothing went stale', async () => {
       stopToken: 'tok',
       isStale: () => false,
       statusCallback: () => {},
+      callRpc() {
+        throw new Error('callRpc is not stubbed in this test')
+      },
     }),
     NEEDED,
     {
@@ -80,6 +83,9 @@ test('a viewport that moved before any result lands commits nothing', async () =
       stopToken: 'tok',
       isStale: () => true,
       statusCallback: () => {},
+      callRpc() {
+        throw new Error('callRpc is not stubbed in this test')
+      },
     }),
     NEEDED,
     {
@@ -109,6 +115,9 @@ test('a region that arrived before the move still commits; a later one does not'
       stopToken: 'tok',
       isStale: () => stale,
       statusCallback: () => {},
+      callRpc() {
+        throw new Error('callRpc is not stubbed in this test')
+      },
     }),
     NEEDED,
     {
@@ -139,7 +148,14 @@ test('a region the worker refused is delivered but not marked loaded', async () 
   const committed: [number, unknown][] = []
   await fetchEachRegion(
     selfWith(
-      { stopToken: 'tok', isStale: () => false, statusCallback: () => {} },
+      {
+        stopToken: 'tok',
+        isStale: () => false,
+        statusCallback: () => {},
+        callRpc() {
+          throw new Error('callRpc is not stubbed in this test')
+        },
+      },
       loaded,
     ),
     NEEDED,
@@ -166,6 +182,9 @@ test('call receives the region, its own ctx and the displayed region index', asy
     stopToken: 'tok',
     isStale: () => false,
     statusCallback: () => {},
+    callRpc() {
+      throw new Error('callRpc is not stubbed in this test')
+    },
   }
   const seen: [string, boolean, boolean, number][] = []
   await fetchEachRegion(selfWith(ctx), NEEDED, {

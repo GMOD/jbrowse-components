@@ -1,4 +1,5 @@
 import { getMembers } from '@jbrowse/mobx-state-tree'
+import { makeFetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
@@ -587,7 +588,11 @@ describe('byte-estimate pre-flight forwarding', () => {
 
     await display.byteGateBlocksFetch(
       [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      { stopToken: 'tok', isStale: () => false, statusCallback },
+      makeFetchContext(display, {
+        stopToken: 'tok',
+        isStale: () => false,
+        statusCallback,
+      }),
     )
 
     const call = mockRpcCall.mock.calls.find(
@@ -610,13 +615,13 @@ describe('byte-estimate pre-flight forwarding', () => {
 
     await display.byteGateBlocksFetch(
       [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      {
+      makeFetchContext(display, {
         stopToken: 'tok',
         isStale: () => false,
         statusCallback: s => {
           seen.push(s)
         },
-      },
+      }),
     )
 
     // the label while it runs, then the clear that every phase helper ends with
@@ -636,7 +641,11 @@ describe('byte-estimate pre-flight forwarding', () => {
       {},
     ).createDisplay()
     view.zoomTo(100)
-    const ctx = { stopToken: 'tok', isStale: () => false, statusCallback() {} }
+    const ctx = makeFetchContext(display, {
+      stopToken: 'tok',
+      isStale: () => false,
+      statusCallback: () => {},
+    })
 
     const bytes = over(display)
     mockRpcCall.mockResolvedValue(bytes)
@@ -670,7 +679,11 @@ describe('byte-estimate pre-flight forwarding', () => {
 
     await display.byteGateBlocksFetch(
       [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      { stopToken: 'tok', isStale: () => false, statusCallback() {} },
+      makeFetchContext(display, {
+        stopToken: 'tok',
+        isStale: () => false,
+        statusCallback: () => {},
+      }),
     )
 
     expect(display.byteEstimate).toBeUndefined()

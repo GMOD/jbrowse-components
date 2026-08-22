@@ -15,7 +15,14 @@ const NEEDED = [
 ]
 
 function makeCtx(): FetchContext {
-  return { stopToken: 'tok', isStale: () => false, statusCallback: () => {} }
+  return {
+    stopToken: 'tok',
+    isStale: () => false,
+    statusCallback: () => {},
+    callRpc() {
+      throw new Error('callRpc is not stubbed in this test')
+    },
+  }
 }
 
 test('pairs each result with its displayedRegionIndex, in needed order', async () => {

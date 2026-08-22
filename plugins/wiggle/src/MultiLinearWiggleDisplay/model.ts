@@ -10,7 +10,6 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   LegendMixin,
@@ -567,8 +566,6 @@ export default function stateModelFactory(
           // filter missing sources when the filter is later widened.
           const { adapterConfig, sourcesWithoutLayout } = self
           const { bpPerPx } = view
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
           // Batched, not per-region: every subtrack adapter gets all the
           // visible regions in one call, so a whole-genome or
           // collapsed-intron view coalesces each file's on-disk blocks into
@@ -576,17 +573,12 @@ export default function stateModelFactory(
           // regions land together rather than painting progressively.
           return fetchAllRegions(self, needed, {
             call: (regions, ctx) =>
-              rpcManager.call(sessionId, 'RenderMultiWiggleData', {
+              ctx.callRpc('RenderMultiWiggleData', {
                 adapterConfig,
                 regions,
                 sources: sourcesWithoutLayout,
                 ...self.rpcProps(),
-                stopToken: ctx.stopToken,
                 bpPerPx,
-                // One batched call for every region, so `ctx.statusCallback`
-                // here is the whole fetch's rather than a fan-out slot — same
-                // field either way, which is the point of it living on the ctx.
-                statusCallback: ctx.statusCallback,
               }),
             onResult: (idx, result) => {
               self.setRpcData(idx, result)

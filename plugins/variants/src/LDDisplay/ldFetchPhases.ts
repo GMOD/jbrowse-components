@@ -1,5 +1,3 @@
-import { getRpcSessionId, getSession } from '@jbrowse/core/util'
-
 import type { RenderLDDataArgs } from '../RenderLDDataRPC/RenderLDData.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -73,18 +71,12 @@ export function ldFetchPhases(
           }
     },
     run: async ({ regions, originBp }, ctx) =>
-      await getSession(self).rpcManager.call(
-        getRpcSessionId(self),
-        'RenderLDData',
-        {
-          adapterConfig: self.adapterConfig,
-          regions,
-          originBp,
-          ...self.rpcProps(),
-          stopToken: ctx.stopToken,
-          statusCallback: ctx.statusCallback,
-        },
-      ),
+      await ctx.callRpc('RenderLDData', {
+        adapterConfig: self.adapterConfig,
+        regions,
+        originBp,
+        ...self.rpcProps(),
+      }),
     commit: result => {
       self.setRpcData(result)
     },

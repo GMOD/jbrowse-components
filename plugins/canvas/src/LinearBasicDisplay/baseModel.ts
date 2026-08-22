@@ -152,6 +152,7 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
+  FetchContext,
   GateFetchState,
   LegendItem,
   LinearGenomeViewModel,
@@ -2594,30 +2595,22 @@ export default function baseStateModelFactory(
           bpPerPx: number,
           byteLimit: number | undefined,
           maxFeatureDensity: number | undefined,
-          stopToken: StopToken,
-          statusCallback: StatusCallback,
+          ctx: FetchContext,
         ): Promise<RegionFetch> {
-          const sessionId = getRpcSessionId(self)
           const session = getSession(self)
           // Per-region translation table from the assembly's geneticCodes
           // config (alias-bridged via getGeneticCodeId), so the worker can
           // translate peptides on contigs whose features carry no transl_table.
           const assembly = session.assemblyManager.get(region.assemblyName)
-          const result = await session.rpcManager.call(
-            sessionId,
-            'RenderFeatureData',
-            {
-              adapterConfig: self.adapterConfig,
-              geneticCodeId: assembly?.getGeneticCodeId(region.refName),
-              ...self.rpcProps(),
-              region,
-              bpPerPx,
-              byteLimit,
-              maxFeatureDensity,
-              stopToken,
-              statusCallback,
-            },
-          )
+          const result = await ctx.callRpc('RenderFeatureData', {
+            adapterConfig: self.adapterConfig,
+            geneticCodeId: assembly?.getGeneticCodeId(region.refName),
+            ...self.rpcProps(),
+            region,
+            bpPerPx,
+            byteLimit,
+            maxFeatureDensity,
+          })
           return { displayedRegionIndex, region, result }
         }
 
@@ -2706,8 +2699,7 @@ export default function baseStateModelFactory(
                   bpPerPx,
                   byteLimit,
                   maxFeatureDensity,
-                  ctx.stopToken,
-                  slot(),
+                  { ...ctx, statusCallback: slot() },
                 ),
               )
               const results = await Promise.all(promises)

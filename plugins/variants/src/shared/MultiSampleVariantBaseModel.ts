@@ -1601,25 +1601,15 @@ export default function MultiSampleVariantBaseModelF(
           // the async boundary.
           const rpcProps = self.rpcProps()
           const { adapterConfig } = self
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
           await self.fetchRegions(regions, async (ctx: RegionFetchContext) => {
-            const result = await rpcManager.call(
-              sessionId,
-              'MultiSampleVariantGetCellData',
-              {
-                adapterConfig,
-                regions: regions.map(r => r.region),
-                displayedRegionIndices: regions.map(
-                  r => r.displayedRegionIndex,
-                ),
-                ...rpcProps,
-                // bound at factory call time, per subclass
-                mode: cellDataMode,
-                stopToken: ctx.stopToken,
-                statusCallback: ctx.statusCallback,
-              },
-            )
+            const result = await ctx.callRpc('MultiSampleVariantGetCellData', {
+              adapterConfig,
+              regions: regions.map(r => r.region),
+              displayedRegionIndices: regions.map(r => r.displayedRegionIndex),
+              ...rpcProps,
+              // bound at factory call time, per subclass
+              mode: cellDataMode,
+            })
             if (!ctx.isStale() && isAlive(self)) {
               self.setCellData(result)
               // beside the store: one RPC serves every region, so the whole

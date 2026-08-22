@@ -56,7 +56,17 @@ function selfWith(ctx: FetchContext, loaded: number[]) {
 }
 
 function fresh(): FetchContext {
-  return { stopToken: 'tok', isStale: () => false, statusCallback: () => {} }
+  return {
+    stopToken: 'tok',
+    isStale: () => false,
+    statusCallback: () => {},
+    // this suite hands `call` its own stub, so the envelope is never reached —
+    // throwing says so rather than letting a future edit read an undefined RPC
+    // as an empty answer
+    callRpc() {
+      throw new Error('callRpc is not stubbed in this test')
+    },
+  }
 }
 
 test('hands every needed region to one call, and commits each result', async () => {

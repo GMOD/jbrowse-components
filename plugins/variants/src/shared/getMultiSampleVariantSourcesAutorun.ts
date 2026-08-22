@@ -1,5 +1,4 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { installPrerequisiteFetch } from '@jbrowse/plugin-linear-genome-view'
 
 import type { Source } from './types.ts'
@@ -30,12 +29,10 @@ export function getMultiSampleVariantSourcesAutorun(
   installPrerequisiteFetch(self, {
     enabled: () =>
       (getContainingView(self) as LinearGenomeViewModel).initialized,
-    run: async ({ stopToken, statusCallback }) =>
-      await getSession(self).rpcManager.call(
-        getRpcSessionId(self),
-        'MultiSampleVariantGetSources',
-        { adapterConfig: self.adapterConfig, stopToken, statusCallback },
-      ),
+    run: async ctx =>
+      await ctx.callRpc('MultiSampleVariantGetSources', {
+        adapterConfig: self.adapterConfig,
+      }),
     commit: ({ sources, warnings }) => {
       self.setSources(sources)
       // A `samplesTsv` that matches only some of the VCF's samples still

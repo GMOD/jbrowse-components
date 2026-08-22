@@ -2,10 +2,8 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   getContainingView,
-  getSession,
   updateStatus,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, getMembers, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -1000,18 +998,12 @@ export default function RegionTooLargeMixin() {
           'Estimating size',
           ctx.statusCallback,
           () =>
-            getSession(self).rpcManager.call(
-              getRpcSessionId(self),
-              'CoreGetRegionByteEstimate',
-              {
-                regions,
-                adapterConfig: self.byteGateAdapterConfig,
-                // `gateByteLimit` is what a single region may cost
-                scope: 'largestRegion',
-                stopToken: ctx.stopToken,
-                statusCallback: ctx.statusCallback,
-              },
-            ),
+            ctx.callRpc('CoreGetRegionByteEstimate', {
+              regions,
+              adapterConfig: self.byteGateAdapterConfig,
+              // `gateByteLimit` is what a single region may cost
+              scope: 'largestRegion',
+            }),
           // makes the phase a cancellation boundary as well as a label: a fetch
           // superseded before the measure starts skips the RPC outright, and
           // `runFetch` swallows the abort as the ordinary end of a stale fetch

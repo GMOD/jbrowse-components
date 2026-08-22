@@ -225,8 +225,6 @@ async function fetchAnnotationData(
   if (!self.annotationDataActive || !adapterConfig) {
     return
   }
-  const { rpcManager } = getSession(self)
-  const sessionId = getRpcSessionId(self)
   try {
     if (await framesReadOverBudget(self, needed, adapterConfig, ctx)) {
       if (!ctx.isStale()) {
@@ -235,11 +233,9 @@ async function fetchAnnotationData(
       return
     }
     const results = await callEachRegion(needed, ctx, (region, regionCtx) =>
-      rpcManager.call(sessionId, 'LinearMafGetAnnotationData', {
+      regionCtx.callRpc('LinearMafGetAnnotationData', {
         adapterConfig,
         regions: [region],
-        stopToken: regionCtx.stopToken,
-        statusCallback: regionCtx.statusCallback,
       }),
     )
     if (!ctx.isStale()) {
@@ -256,21 +252,17 @@ async function fetchAnnotationData(
 }
 
 export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
-  const { rpcManager } = getSession(self)
-  const sessionId = getRpcSessionId(self)
   return fetchMafRegions(
     self,
     needed,
     (region, ctx) =>
-      rpcManager.call(sessionId, 'LinearMafGetAlignmentData', {
+      ctx.callRpc('LinearMafGetAlignmentData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
         // Row set, not row order: the worker ships only these genomes and
         // scores coverage over them. Placement is the client's (see
         // `placeMafRegionData`), so nothing order-dependent is sent.
         subtreeFilter: self.subtreeFilterSet,
-        stopToken: ctx.stopToken,
-        statusCallback: ctx.statusCallback,
       }),
     results => {
       for (const { displayedRegionIndex, result } of results) {
@@ -286,13 +278,11 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
  * canvas paints nothing while the summary overlay draws the bars.
  */
 export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
-  const { rpcManager } = getSession(self)
-  const sessionId = getRpcSessionId(self)
   return fetchMafRegions(
     self,
     needed,
     (region, ctx) =>
-      rpcManager.call(sessionId, 'LinearMafGetSummaryData', {
+      ctx.callRpc('LinearMafGetSummaryData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
         // Same row set as the detail path. It has to be sent even though the
@@ -301,8 +291,6 @@ export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
         // fetch that ignored the filter would re-download byte-identical rows
         // and then drop the same ones client-side.
         subtreeFilter: self.subtreeFilterSet,
-        stopToken: ctx.stopToken,
-        statusCallback: ctx.statusCallback,
       }),
     results => {
       self.clearAlignmentData()

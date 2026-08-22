@@ -115,6 +115,9 @@ const TestDisplay = types
         stopToken: '',
         isStale: () => self.stale,
         statusCallback: () => {},
+        callRpc() {
+          throw new Error('callRpc is not stubbed in this test')
+        },
       })
     }),
     // `GlobalFetchMixin.commitFetchResult`, minus the signature stamp the

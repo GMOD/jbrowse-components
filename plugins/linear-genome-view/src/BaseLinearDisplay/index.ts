@@ -75,13 +75,11 @@ export {
   runGlobalFetch,
 } from './models/GlobalDataDisplayMixin.ts'
 export { blockKeySignature } from './models/GlobalFetchMixin.ts'
-export {
-  type PrerequisiteFetchContext,
-  installPrerequisiteFetch,
-} from './models/installPrerequisiteFetch.ts'
+export { installPrerequisiteFetch } from './models/installPrerequisiteFetch.ts'
 export {
   type FetchMixinType,
   default as FetchMixin,
+  makeFetchContext,
 } from './models/FetchMixin.ts'
 // The phase mapping the in-tree foundations share. Only the backend-free variant
 // is public: it is what an out-of-tree SVG display (arc's shape) needs, and it

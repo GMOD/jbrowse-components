@@ -103,15 +103,9 @@ export function fetchFeaturesForRegion(
   region: Region,
   ctx: FetchContext,
 ) {
-  const session = getSession(self)
-  return session.rpcManager.call(getRpcSessionId(self), 'RenderAlignmentData', {
+  return ctx.callRpc('RenderAlignmentData', {
     adapterConfig,
     regions: [region],
     ...self.rpcProps(),
-    stopToken: ctx.stopToken,
-    // this region's slot on the fetch's fan-out, so the N parallel
-    // collapsed-intron fetches aggregate into one bar instead of clobbering
-    // each other's progress text
-    statusCallback: ctx.statusCallback,
   })
 }

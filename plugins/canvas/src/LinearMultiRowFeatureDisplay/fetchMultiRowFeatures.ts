@@ -1,6 +1,4 @@
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
-import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
@@ -57,8 +55,6 @@ interface FetchSelf extends IStateTreeNode {
 // payload and is skipped; onComplete commits the batch's measurements to the
 // shared gate. Byte-only — the display turns the mixin's density axis off.
 export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
-  const { rpcManager } = getSession(self)
-  const sessionId = getRpcSessionId(self)
   const byteLimit = self.resolvedByteLimit()
   // captured before the fetch, not at commit time
   const issued = self.gateFetchState()
@@ -70,15 +66,11 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   >()
   return fetchEachRegion(self, needed, {
     call: (region, ctx) =>
-      rpcManager.call(sessionId, 'MultiRowGetFeatures', {
+      ctx.callRpc('MultiRowGetFeatures', {
         adapterConfig: self.adapterConfig,
         region,
         byteLimit,
         ...self.rpcProps(),
-        stopToken: ctx.stopToken,
-        // this region's own slot on the fetch's fan-out, so the parallel
-        // per-region calls aggregate into one bar instead of clobbering
-        statusCallback: ctx.statusCallback,
       }),
     // `fetchEachRegion` marks the region loaded for us, and skips a refused one
     // — same `isRegionRefused` test as here, so what we store and what

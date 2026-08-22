@@ -13,10 +13,7 @@ import {
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
-import {
-  getRpcSessionId,
-  getTrackAssemblyNames,
-} from '@jbrowse/core/util/tracks'
+import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -386,21 +383,14 @@ export function modelFactory(
         if (self.zoomedOut) {
           return
         }
-        const { rpcManager, assemblyManager } = getSession(self)
-        const sessionId = getRpcSessionId(self)
+        const { assemblyManager } = getSession(self)
         const adapterConfig = self.adapterConfig
         await fetchEachRegion(self, needed, {
           call: async (region, ctx) => {
-            const features = await rpcManager.call(
-              sessionId,
-              'CoreGetFeatures',
-              {
-                regions: [region],
-                adapterConfig,
-                stopToken: ctx.stopToken,
-                statusCallback: ctx.statusCallback,
-              },
-            )
+            const features = await ctx.callRpc('CoreGetFeatures', {
+              regions: [region],
+              adapterConfig,
+            })
             const geneticCodeId =
               assemblyManager
                 .get(region.assemblyName)

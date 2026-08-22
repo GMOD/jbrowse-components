@@ -2,26 +2,11 @@ import { createStopTokenRotation, handleFetchError } from '@jbrowse/core/util'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 
-import type {
-  ActiveFetch,
-  RpcStatus,
-  StatusCallback,
-  StatusWindow,
-} from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { makeFetchContext } from './FetchMixin.ts'
 
-/**
- * What a prerequisite fetch's `run` is handed: this run's stop token, the
- * staleness guard the rotation closes over, and the status slot it reports
- * through. The same three `FetchMixin`'s `FetchContext` carries, named
- * separately because this fetch does not go through `runFetch`.
- */
-export interface PrerequisiteFetchContext {
-  stopToken: StopToken
-  isStale: () => boolean
-  statusCallback: StatusCallback
-}
+import type { FetchContext } from './FetchMixin.ts'
+import type { ActiveFetch, RpcStatus, StatusWindow } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any`
 // and silently turns off checking for every member below.
@@ -58,8 +43,8 @@ interface PrerequisiteFetchHost extends IStateTreeNode {
  *   spend the whole debounce window on a cold open — this fetch is what first
  *   paint waits on.
  *
- * `run` owns the RPC — the stop token and the status callback come off the
- * `ctx` it is handed — and returns the value to commit, or `undefined` for
+ * `run` owns the RPC — through `ctx.callRpc`, the same envelope every fetch
+ * context carries — and returns the value to commit, or `undefined` for
  * "nothing"; its synchronous prefix runs inside the autorun body, so what it
  * reads to build the call (`adapterConfig`) is tracked and re-fires the fetch.
  * `commit` runs only while the run is still current; a resolved-but-unusable
@@ -76,7 +61,7 @@ interface PrerequisiteFetchHost extends IStateTreeNode {
 export function installPrerequisiteFetch<T>(
   self: PrerequisiteFetchHost,
   opts: {
-    run: (ctx: PrerequisiteFetchContext) => Promise<T | undefined>
+    run: (ctx: FetchContext) => Promise<T | undefined>
     commit: (result: T) => void
     name: string
     delay: number
@@ -98,11 +83,13 @@ export function installPrerequisiteFetch<T>(
     end,
   }: ActiveFetch) => {
     try {
-      const result = await opts.run({
-        stopToken,
-        isStale: () => !isCurrent(),
-        statusCallback,
-      })
+      const result = await opts.run(
+        makeFetchContext(self, {
+          stopToken,
+          isStale: () => !isCurrent(),
+          statusCallback,
+        }),
+      )
       if (result !== undefined && isCurrent()) {
         opts.commit(result)
       }
@@ -120,10 +107,7 @@ export function installPrerequisiteFetch<T>(
   }
   leadingEdgeAutorun(
     self,
-    // #region voidTracking
     () => {
-      // the pure "go again" signal, read unconditionally above the gates so a
-      // Retry click re-runs the body even when nothing else moved
       void self.reloadCounter
       if (self.isMinimized || opts.enabled?.() === false) {
         return false
@@ -131,7 +115,6 @@ export function installPrerequisiteFetch<T>(
       void runOne(rotation.begin())
       return true
     },
-    // #endregion
     { name: opts.name, delay: opts.delay },
   )
 }
