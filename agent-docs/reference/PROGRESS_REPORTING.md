@@ -449,6 +449,15 @@ splits that into the job card's message and bar, and the `'end'` of the record
 stream hands over to a plain `'Sorting and writing index'` — the ixIxx tail is
 unmeasured, so the bar goes indeterminate rather than sitting at 100%.
 
+That chain is covered a hop at a time, which is worth knowing because the hop
+nobody covered is the one that kept breaking: `indexJobsModel.test.ts` takes the
+worker's byte counts to a `progressPct`, `CurrentJobCard.test.tsx` takes a
+`progressPct` to a drawn bar and a percent, and
+`jbrowse-web/browser-tests/suites/jobs-list-progress.ts` draws it in a real
+browser, where the `color-mix()` track and the indeterminate keyframe sweep exist
+at all. The card's determinate branch was repaired three times before anything
+rendered it.
+
 `PAFAdapter.getFeatures` still linear-scans every record per region query
 (`AllVsAllPAFAdapter` builds a `sidesByContig` index for this); that is a
 performance gap, not a reporting one, but it is what makes the unreported
