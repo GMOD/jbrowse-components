@@ -181,7 +181,15 @@ mkdir "$lock" 2>/dev/null || exit 0
       fi
       echo
       echo "(Every gate reads the working tree, so what one names below may be"
-      echo "another checkout's uncommitted edit rather than the commit that landed.)"
+      echo "an uncommitted edit rather than the commit that landed.)"
+      # Naming the count is the difference between "suspect the land" and
+      # "suspect whoever is editing here": typecheck and eslint see in-flight
+      # source that `autogen --check` mostly did not, so a dirty checkout is now
+      # the first thing to rule out rather than a footnote.
+      dirty=$(git status --porcelain 2>/dev/null | grep -c '^' || true)
+      if [ "${dirty:-0}" != 0 ]; then
+        echo "This checkout has $dirty uncommitted path(s). Rule those out first."
+      fi
       echo
       if [ "$agen" != 0 ]; then
         echo "Fix the artifact: pnpm autogen, then commit what it writes."
