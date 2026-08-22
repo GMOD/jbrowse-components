@@ -28,10 +28,12 @@
 // measured 678 -> 690 KB gzip on the synteny page. Restored, and
 // ../eagerBoundary.test.ts now fails on the import instead of the bundle.
 import { notEmpty } from '@jbrowse/core/util'
+import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
 import { safeParseBreakend } from '@jbrowse/sv-core'
 
-import type { LayoutRecord } from '../types.ts'
+import type { LayoutRecord, OverlayLevel } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 // The ALT of feat1 that names feat2's position as its mate, so Breakends can ask
 // which side of the junction it is drawing. Moved off the model side with
@@ -78,6 +80,58 @@ export function computeOverlayX(
   layout: LayoutRecord,
 ) {
   return isOffscreenLayout(layout) ? Math.min(Math.max(x, 0), width) : x
+}
+
+// Screen rect of one laid-out feature — the rectangle computeOverlayY resolves
+// down to a single midpoint, kept whole so the hover highlight can box the read
+// a connector points at.
+//
+// getLayoutHighlightCoords rather than a bpToPx per edge: a read in a breakpoint
+// panel routinely starts before the displayed region and ends after it, and
+// bpToPx answers undefined for such an edge — which would drop the box for
+// exactly the long reads a split view is opened to look at. It carries the
+// min-width floor and the reversed-view handling too.
+//
+// Undefined once the clamps close the rect: an off-display segment (see
+// makeOffscreenLayout), one scrolled out of its pileup, or one whose span lies
+// entirely off the panel. There is no read on screen to box in any of those, and
+// the connector terminating on the panel's bottom edge is already the only sign
+// an off-display segment exists.
+export function computeOverlayRect({
+  level,
+  layout,
+  refName,
+  viewLayout,
+}: {
+  level: OverlayLevel
+  layout: LayoutRecord
+  refName: string
+  viewLayout: ViewLayout
+}) {
+  const [startBp, layoutTop, endBp, layoutBottom] = layout
+  const coords = isOffscreenLayout(layout)
+    ? undefined
+    : getLayoutHighlightCoords(viewLayout, {
+        refName,
+        start: startBp,
+        end: endBp,
+      })
+  if (coords) {
+    const { yOffset, height, coverageOffset, scrollTop } = level
+    const left = Math.max(coords.left, 0)
+    const right = Math.min(coords.left + coords.width, viewLayout.width)
+    const top = Math.max(layoutTop - scrollTop + coverageOffset, coverageOffset)
+    const bottom = Math.min(layoutBottom - scrollTop + coverageOffset, height)
+    if (right > left && bottom > top) {
+      return {
+        x: left,
+        y: yOffset + top,
+        width: right - left,
+        height: bottom - top,
+      }
+    }
+  }
+  return undefined
 }
 
 // Mirrors findFeatureViewLevel in ../util.ts: which row (level) of the split

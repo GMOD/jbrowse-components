@@ -10,10 +10,19 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BreakpointTooltip from './BreakpointTooltip.tsx'
-import { computeOverlayX, isOffscreenLayout } from './overlayGeometry.ts'
+import {
+  computeOverlayRect,
+  computeOverlayX,
+  isOffscreenLayout,
+} from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
+import type {
+  LayoutMatch,
+  LayoutRecord,
+  OverlayLevel,
+  OverlayMatch,
+} from '../types.ts'
 import type { OverlayTrack } from '../util.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -353,6 +362,12 @@ export function isLevelPairMinimized(
 export interface ResolvedPair {
   f1: Feature
   f2: Feature
+  /**
+   * which layoutMatches chunk the two endpoints came from — for an alignments
+   * track that is the read chain, so a hover on any one connection can name
+   * every other connection and every segment of the same read
+   */
+  chunkIndex: number
   level1: number
   level2: number
   c1: LayoutRecord
@@ -378,7 +393,7 @@ export function* resolvedPairs({
   assembly: Assembly
   tracks: MinimizableTrack[]
 }): Generator<ResolvedPair> {
-  for (const chunk of match.layoutMatches) {
+  for (const [chunkIndex, chunk] of match.layoutMatches.entries()) {
     for (let i = 0; i < chunk.length - 1; i++) {
       const { layout: c1, feature: f1, level: level1 } = chunk[i]!
       const {
@@ -399,6 +414,7 @@ export function* resolvedPairs({
         yield {
           f1,
           f2,
+          chunkIndex,
           level1,
           level2,
           c1,
@@ -409,6 +425,58 @@ export function* resolvedPairs({
       }
     }
   }
+}
+
+export interface HighlightRect {
+  key: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+// Boxes over every on-screen segment of one chunk, i.e. of one read chain — what
+// a hovered connector is pointing at, which is the thing the overlay could not
+// say before.
+//
+// The whole chunk rather than the hovered connector's two ends: a multi-hop
+// rearrangement opens one panel per segment of the route, so a chain routinely
+// runs across three or four of them and the chain is what the hover is asking
+// about. It also picks up the segments no connector is drawn for — an intra-view
+// junction the pileup links itself (isDrawnByPileup), or one dropped with
+// showIntraviewLinks off — which would otherwise leave a visible gap in the
+// middle of the highlighted read.
+export function chainHighlightRects({
+  chunk,
+  assembly,
+  tracks,
+  levels,
+  layouts,
+}: {
+  chunk: LayoutMatch[]
+  assembly: Assembly
+  tracks: MinimizableTrack[]
+  levels: OverlayLevel[]
+  layouts: ViewLayout[]
+}) {
+  const rects: HighlightRect[] = []
+  for (const { feature, layout, level } of chunk) {
+    // strict resolver for the reason getCanonicalRefPair gives: a name the
+    // assembly does not know means draw nothing rather than draw it somewhere
+    const refName = assembly.getCanonicalRefName(feature.get('refName'))
+    if (refName && !tracks[level]?.minimized) {
+      const rect = computeOverlayRect({
+        level: levels[level]!,
+        layout,
+        refName,
+        viewLayout: layouts[level]!,
+      })
+      if (rect) {
+        rects.push({ key: `${level}-${feature.id()}`, ...rect })
+      }
+    }
+  }
+  return rects
 }
 
 // LEFT-edge screen coords for simple variant overlays (paired/breakend), also

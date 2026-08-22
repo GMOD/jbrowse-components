@@ -2,6 +2,7 @@ import { makeOffscreenLayout } from '../util.ts'
 import {
   buildBreakpointPath,
   buildSimplePath,
+  chainHighlightRects,
   isDrawnByPileup,
   resolvedPairs,
   strandToSign,
@@ -10,6 +11,7 @@ import {
 import type { LayoutMatch, LayoutRecord, OverlayLevel } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 describe('strandToSign', () => {
   test('returns 1 for positive strand', () => {
@@ -75,6 +77,114 @@ describe('resolvedPairs', () => {
     const match = { layoutMatches: [[entry('chr1'), entry('chr2')]] }
     const [pair] = [...resolvedPairs({ match, assembly, tracks })]
     expect(pair?.hiddenSegmentsBetween).toBeUndefined()
+  })
+
+  // What lets a hover on one hop name the rest of the read's route
+  test('every hop of one chain reports the same chunk, and a second chain a different one', () => {
+    const match = {
+      layoutMatches: [
+        [entry('chr1'), entry('chr2'), entry('chr3')],
+        [entry('chr4'), entry('chr5')],
+      ],
+    }
+    expect(
+      [...resolvedPairs({ match, assembly, tracks })].map(p => p.chunkIndex),
+    ).toEqual([0, 0, 1])
+  })
+})
+
+describe('chainHighlightRects', () => {
+  const feat = (id: string, refName: string) =>
+    ({
+      id: () => id,
+      get: (k: string) => (k === 'refName' ? refName : undefined),
+    }) as unknown as Feature
+  const entry = (
+    id: string,
+    refName: string,
+    level: number,
+    layout: LayoutRecord,
+  ): LayoutMatch => ({
+    feature: feat(id, refName),
+    layout,
+    level,
+    clipLengthAtStartOfRead: 0,
+  })
+  const assembly = {
+    getCanonicalRefName: (r: string) => (r === 'unknown' ? undefined : r),
+  } as unknown as Assembly
+  const level = (yOffset: number): OverlayLevel => ({
+    yOffset,
+    height: 100,
+    coverageOffset: 0,
+    scrollTop: 0,
+    offsetPx: 0,
+    linksReads: false,
+  })
+  const layout = (refName: string): ViewLayout => ({
+    displayedRegions: [
+      { refName, start: 0, end: 1000, assemblyName: 'volvox' },
+    ],
+    bpPerPx: 1,
+    offsetPx: 0,
+    width: 500,
+    minimumBlockWidth: 3,
+  })
+  const ctx = {
+    assembly,
+    tracks: [{ minimized: false }, { minimized: false }, { minimized: false }],
+    levels: [level(0), level(200), level(400)],
+    layouts: [layout('chr1'), layout('chr2'), layout('chr3')],
+  }
+
+  test('boxes every panel a multi-hop read visits', () => {
+    const rects = chainHighlightRects({
+      ...ctx,
+      chunk: [
+        entry('a', 'chr1', 0, [10, 5, 60, 15]),
+        entry('b', 'chr2', 1, [20, 5, 70, 15]),
+        entry('c', 'chr3', 2, [30, 5, 80, 15]),
+      ],
+    })
+    expect(rects).toEqual([
+      { key: '0-a', x: 10, y: 5, width: 50, height: 10 },
+      { key: '1-b', x: 20, y: 205, width: 50, height: 10 },
+      { key: '2-c', x: 30, y: 405, width: 50, height: 10 },
+    ])
+  })
+
+  test('a minimized level contributes no box', () => {
+    const rects = chainHighlightRects({
+      ...ctx,
+      tracks: [{ minimized: false }, { minimized: true }, { minimized: false }],
+      chunk: [
+        entry('a', 'chr1', 0, [10, 5, 60, 15]),
+        entry('b', 'chr2', 1, [20, 5, 70, 15]),
+      ],
+    })
+    expect(rects.map(r => r.key)).toEqual(['0-a'])
+  })
+
+  test('a refName the assembly does not know is dropped, not drawn somewhere', () => {
+    const rects = chainHighlightRects({
+      ...ctx,
+      chunk: [
+        entry('a', 'chr1', 0, [10, 5, 60, 15]),
+        entry('b', 'unknown', 1, [20, 5, 70, 15]),
+      ],
+    })
+    expect(rects.map(r => r.key)).toEqual(['0-a'])
+  })
+
+  test('an off-display segment is left to its bottom-edge connector', () => {
+    const rects = chainHighlightRects({
+      ...ctx,
+      chunk: [
+        entry('a', 'chr1', 0, [10, 5, 60, 15]),
+        entry('b', 'chr2', 1, makeOffscreenLayout(20, 70)),
+      ],
+    })
+    expect(rects.map(r => r.key)).toEqual(['0-a'])
   })
 })
 

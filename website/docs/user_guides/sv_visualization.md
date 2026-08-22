@@ -380,6 +380,13 @@ The header bar accepts location searches directly in either panel.
 The view also supports multi-hop events where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.
 
+Hovering a spline shades the reads it joins, so a junction says which alignments
+carry it rather than only that it exists. The shading follows the whole chain —
+every segment of the read, in every panel it visits — not just the two ends of
+the hop under the pointer, and every other spline of the same read thickens
+alongside it. Untick **Show... → Allow clicking alignment squiggles** to turn
+the overlay back into a static picture.
+
 ### Following a chain of breakends
 
 A BND record names one partner, so the record a launch starts from is two loci

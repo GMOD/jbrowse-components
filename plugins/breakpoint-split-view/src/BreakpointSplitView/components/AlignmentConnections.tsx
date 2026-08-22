@@ -14,6 +14,7 @@ import {
   LEFT,
   RIGHT,
   buildPairTooltip,
+  chainHighlightRects,
   createAlignmentMouseHandlers,
   getTestId,
   isDrawnByPileup,
@@ -45,6 +46,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
     ({
       f1,
       f2,
+      chunkIndex,
       level1,
       level2,
       c1,
@@ -126,6 +128,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
       return [
         {
           id: `${f1.id()}-${f2.id()}`,
+          chunkIndex,
           path,
           orientationColor: orientation?.color,
           f1,
@@ -145,17 +148,39 @@ const AlignmentConnections = observer(function AlignmentConnections({
     },
   )
   const hoveredConnection = connections.find(c => c.id === mouseoverElt)
+  // Only the hovered chain's boxes are built, so nothing here costs anything on
+  // a pan frame — the walk is over one chunk, not over every match on screen.
+  const highlightRects = hoveredConnection
+    ? chainHighlightRects({
+        chunk: layoutMatches[hoveredConnection.chunkIndex]!,
+        assembly,
+        tracks,
+        levels,
+        layouts,
+      })
+    : []
 
   return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
+      {highlightRects.map(({ key, x, y, width, height }) => (
+        <rect
+          key={key}
+          data-testid="chain-highlight"
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill={theme.palette.featureHoverStrong}
+        />
+      ))}
       {connections.map(
-        ({ id, path, orientationColor, f1, f2, hiddenSegment }) => (
+        ({ id, chunkIndex, path, orientationColor, f1, f2, hiddenSegment }) => (
           <path
             d={path}
             key={id}
             data-testid="r1"
             pointerEvents={interactiveOverlay ? 'auto' : undefined}
-            strokeWidth={mouseoverElt === id ? 5 : 1}
+            strokeWidth={hoveredConnection?.chunkIndex === chunkIndex ? 5 : 1}
             strokeDasharray={hiddenSegment ? '4 3' : undefined}
             {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
             {...createAlignmentMouseHandlers(
