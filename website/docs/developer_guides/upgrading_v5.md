@@ -123,10 +123,10 @@ offers it to a v5 user as compatible.
 
 ## Names removed from the session and from a plugin's `exports`
 
-Two more surfaces a plugin reaches, and both are quieter than the one above. A
-session member is looked up on an object at runtime — often behind
-`'x' in session` — so removing one throws nothing and the plugin simply stops
-asking. A plugin `exports` object is reached as
+The surfaces a plugin reaches without importing anything, which is what makes
+them quieter than the one above. A session member is looked up on an object at
+runtime — often behind `'x' in session` — so removing one throws nothing at all
+and the plugin simply stops asking. A plugin `exports` object is reached as
 `pluginManager.getPlugin('X').exports.Y`, where a missing name is `undefined`
 and calling it throws inside the reaching plugin's own `install`.
 
