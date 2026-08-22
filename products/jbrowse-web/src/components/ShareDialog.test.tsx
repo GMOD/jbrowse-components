@@ -7,9 +7,14 @@ import type { SessionWithShareURL } from '@jbrowse/core/util'
 
 // the dialog's only read of the live session; the baked snapshot is irrelevant
 // here, and producing a real one needs a whole app
+let mockSnapshot: Record<string, unknown> = { name: 'a session' }
 jest.mock('@jbrowse/product-core', () => ({
-  getShareableSessionSnapshot: () => ({ name: 'a session' }),
+  getShareableSessionSnapshot: () => mockSnapshot,
 }))
+
+afterEach(() => {
+  mockSnapshot = { name: 'a session' }
+})
 
 const session = { shareURL: 'https://share.example/' } as SessionWithShareURL
 
@@ -64,4 +69,42 @@ test('closing without bookmarking leaves the page URL alone', async () => {
 
   expect(handleClose).toHaveBeenCalled()
   expect(window.location.href).toContain('session=local-abc')
+})
+
+// a blob-backed track is in the sender's browser only, so the link carries a
+// config with nothing behind it
+test('warns about tracks the recipient cannot load', async () => {
+  mockSnapshot = {
+    sessionTracks: [
+      {
+        trackId: 't1',
+        name: 'my local bam',
+        adapter: { bamLocation: { blobId: 'b1' } },
+      },
+      {
+        trackId: 't2',
+        name: 'a remote bam',
+        adapter: { bamLocation: { uri: 'http://x/y.bam' } },
+      },
+    ],
+  }
+  const { getByText, queryByText } = await renderDialog()
+
+  expect(getByText(/my local bam/)).toBeTruthy()
+  expect(queryByText(/a remote bam/)).toBeNull()
+})
+
+test('no warning when everything is a URL', async () => {
+  mockSnapshot = {
+    sessionTracks: [
+      {
+        trackId: 't2',
+        name: 'a remote bam',
+        adapter: { bamLocation: { uri: 'http://x/y.bam' } },
+      },
+    ],
+  }
+  const { queryByText } = await renderDialog()
+
+  expect(queryByText(/files from your computer/)).toBeNull()
 })

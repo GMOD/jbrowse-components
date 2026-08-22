@@ -16,6 +16,7 @@ import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -26,6 +27,7 @@ import { observer } from 'mobx-react'
 
 import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { SHARE_MODE_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
+import { findLocalFileNames } from './localFileTracks.ts'
 
 import type { SessionShareMode, SessionWithShareURL } from '@jbrowse/core/util'
 
@@ -56,6 +58,7 @@ const ShareDialog = observer(function ShareDialog({
   // promotable-default cascade into concrete track values so the recipient sees
   // what the sender saw without inheriting their personal (un-shared) defaults.
   const [snap] = useState(() => getShareableSessionSnapshot(session))
+  const localFileNames = findLocalFileNames(snap)
   // The bookmark button below has to put the share URL in the address bar — a
   // browser can only bookmark what is there. Nothing put the page's own URL
   // back afterwards, and the address bar is what a reload restores from
@@ -119,6 +122,12 @@ const ShareDialog = observer(function ShareDialog({
           </>
         }
       >
+        {localFileNames.length > 0 ? (
+          <Alert severity="warning">
+            These use files from your computer, which a share link cannot carry,
+            so the recipient will see them empty: {localFileNames.join(', ')}
+          </Alert>
+        ) : null}
         <DialogContentText>
           Copy the URL below to share your current JBrowse session.
           <CascadingMenuButton
