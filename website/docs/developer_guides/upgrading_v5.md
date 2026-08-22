@@ -49,6 +49,32 @@ In practice the affected set is small: the significant custom renderers were
 ones we wrote ourselves, now vendored into core plugins, plus two known external
 ones, `jbrowse-plugin-gwas-hoot` and `NucContent`.
 
+## RPC methods that no longer exist
+
+An RPC method is addressed by string — `rpcManager.call(sessionId, name, args)`
+— so a plugin naming one of these has nothing that resolves. Six went in v5,
+alongside `CoreRender` above:
+
+- `WiggleGetGlobalQuantitativeStats` and
+  `WiggleGetMultiRegionQuantitativeStats`. There is no separate stats round trip
+  any more: `RenderWiggleData` returns the per-region score arrays and the
+  display derives its own domain from them, which is also what makes the new
+  local-percentile autoscale possible.
+- `MultiWiggleGetSources`. A multi-wiggle track's sources arrive on each
+  region's `RenderMultiWiggleData` payload, so a source that only appears in the
+  second region is picked up as that region lands.
+- `MultiVariantGetSources` and `MultiVariantGetGenotypeMatrix` are
+  `MultiSampleVariantGetSources` and `MultiSampleVariantGetGenotypeMatrix`.
+- `MultiVariantGetFeatureDetails` read a feature back out of the renderer
+  registry (`RendererType.getFeatureById`), so it went with the registry.
+  `MultiSampleVariantGetCellData` answers the same question from the display's
+  own data.
+
+This is the one removal on this page that fails **loudly**: `getRpcMethodType`
+bottoms out in a registry lookup that throws
+`RpcMethodType 'X' is not registered`, names the method and lists what this
+build does register — which is also the answer to "which plugin is missing".
+
 ## Names removed from the re-export ABI
 
 Names left the `@jbrowse/core/*` re-export ABI — the modules an external plugin
