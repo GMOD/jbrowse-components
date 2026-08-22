@@ -126,6 +126,36 @@ test('a region that arrived before the move still commits; a later one does not'
   expect(completed).toBe(0)
 })
 
+// The other skip in the same expression, and it had no test either — the
+// per-region twin of what `fetchAllRegions.test.ts` covers. `loadedRegions` is
+// the span `isBlockCovered` judges the viewport against, so a refused region
+// committed there reads as covered against a payload nobody received: the plan
+// answers `covered` on every later run, nothing refetches, and since the
+// ordinary fetch is the gate's own re-measure, nothing re-measures either. The
+// result still reaches `onResult` — that is what raises the banner.
+test('a region the worker refused is delivered but not marked loaded', async () => {
+  const loaded: number[] = []
+  const refused = { regionTooLarge: true as const, bytes: 9e9 }
+  const committed: [number, unknown][] = []
+  await fetchEachRegion(
+    selfWith(
+      { stopToken: 'tok', isStale: () => false, statusCallback: () => {} },
+      loaded,
+    ),
+    NEEDED,
+    {
+      call: region =>
+        Promise.resolve(region.refName === 'ctgA' ? refused : 'ctgB'),
+      onResult: (idx, result) => committed.push([idx, result]),
+    },
+  )
+  expect(committed).toEqual([
+    [2, refused],
+    [5, 'ctgB'],
+  ])
+  expect(loaded).toEqual([5])
+})
+
 // The ctx `call` receives is this region's, not the fetch's: same stop token
 // (one cancel takes the fan-out down) but its own `statusCallback` slot, so
 // `statusCallback: ctx.statusCallback` at the call site aggregates the parallel
