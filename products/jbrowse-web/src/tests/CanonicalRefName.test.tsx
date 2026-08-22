@@ -47,7 +47,7 @@ test('and resolves the alias once they have', async () => {
 // the question a user opens the assembly's About panel to ask, and the one
 // nothing in the model could answer before
 test('getAliasesForRefName answers from either side of the alias', async () => {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const assembly = await session.assemblyManager.waitForAssembly('volvox')
 
   expect(assembly!.getAliasesForRefName('ctgA')).toEqual(['A', 'contigA'])
@@ -59,8 +59,8 @@ test('getAliasesForRefName answers from either side of the alias', async () => {
 // it resolves through the total resolver so a render can call it, which means
 // the empty answer covers "not loaded yet" as well as "not this assembly's" —
 // `initialized` is what separates them
-test('getAliasesForRefName is empty, not a throw, before the aliases load', () => {
-  const { session } = getTestSession()
+test('getAliasesForRefName is empty, not a throw, before the aliases load', async () => {
+  const { session } = await getTestSession()
   const assembly = session.assemblyManager.get('volvox')!
 
   expect(assembly.initialized).toBe(false)
