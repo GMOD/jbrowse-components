@@ -14,13 +14,18 @@
 #
 #   pnpm autogen --check    ~34s
 #   pnpm typecheck           ~2s warm
+#   pnpm lint                ~7s
 #   pnpm lint:eslint         ~29s
 #
 # Typecheck warm is 2s (scripts/typecheck.ts measures it: 1.8s default, 2.3s at
 # --checkers 1, against 45-60s cold), so the gate that caught the worst of that
 # day costs a rounding error on a run that was already 34s. eslint is the
 # expensive one and earns it by owning the syntactic guards oxlint cannot do,
-# which is the class that reaches main without anyone noticing.
+# which is the class that reaches main without anyone noticing. oxlint is here
+# despite pre-commit running it because pre-commit only ever sees the paths in
+# ONE commit: a rule that fires on a file the commit did not touch -- a type
+# argument that became redundant when someone changed the type elsewhere -- is
+# invisible to it and lands. That is exactly what `mst-reflection.ts` did.
 #
 # WHY THIS EXISTS WHEN pre-push ALREADY CHECKS. It checks on push, and nothing
 # here pushes: agents land with `git -C <primary-checkout> merge --ff-only`, so
@@ -30,7 +35,7 @@
 # these gates only ran on push") and then still only ran on push. This is the
 # missing half.
 #
-# IT COSTS THE LANDER NOTHING. The checks are detached and runs after the merge
+# IT COSTS THE LANDER NOTHING. The checks are detached and run after the merge
 # has already returned, so `git merge` is as fast as it was. Nothing here can
 # fail a merge either -- post-merge runs after the fact and git ignores its exit
 # status -- which is the right shape: a landed commit is not something to
@@ -39,9 +44,10 @@
 # HOW YOU HEAR ABOUT IT. The background run leaves `autogen-stale` in the common
 # git dir -- named for the check it started as, kept because that path is what
 # pre-commit and autogen.ts both reach for -- and pre-commit prints it on your
-# next commit for the cost of one stat. That is deliberately not a terminal message from here: by the time the
-# check finishes, the shell that ran the merge has moved on, and writing to its
-# tty would land in the middle of whatever is there now.
+# next commit for the cost of one stat. That is deliberately not a terminal
+# message from here: by the time the check finishes, the shell that ran the
+# merge has moved on, and writing to its tty would land in the middle of
+# whatever is there now.
 #
 # WHOSE DRIFT IT IS, which is the first thing anyone asks and what the message
 # used to answer wrongly. It named the head it checked at, so a drift that had
@@ -133,8 +139,10 @@ mkdir "$lock" 2>/dev/null || exit 0
   # No --fix, unlike pre-push's copy: that one runs on your own push, this one
   # against a checkout other agents have open.
   esl=$(pnpm lint:eslint 2>&1) && esl_status=0 || esl_status=$?
+  oxl=$(pnpm lint 2>&1) && oxl_status=0 || oxl_status=$?
 
-  if [ "$agen" = 0 ] && [ "$tsc_status" = 0 ] && [ "$esl_status" = 0 ]; then
+  if [ "$agen" = 0 ] && [ "$tsc_status" = 0 ] && [ "$esl_status" = 0 ] &&
+    [ "$oxl_status" = 0 ]; then
     rm -f "$marker" "$since"
   else
     head=$(git rev-parse --short HEAD)
@@ -168,6 +176,9 @@ mkdir "$lock" 2>/dev/null || exit 0
     fi
     if [ "$esl_status" != 0 ]; then
       failed="${failed:+$failed, }eslint"
+    fi
+    if [ "$oxl_status" != 0 ]; then
+      failed="${failed:+$failed, }oxlint"
     fi
 
     {
@@ -241,6 +252,14 @@ mkdir "$lock" 2>/dev/null || exit 0
       if [ "$esl_status" != 0 ]; then
         echo "eslint, which owns the guards oxlint cannot do."
         printf '%s\n' "$esl" | grep -E '^/|error ' | head -20 || true
+        echo
+      fi
+
+      if [ "$oxl_status" != 0 ]; then
+        echo "oxlint. pre-commit runs it too, but only over the paths in one"
+        echo "commit -- this is the whole tree, where a rule can fire on a file"
+        echo "nobody touched."
+        printf '%s\n' "$oxl" | grep -E 'error' | head -20 || true
         echo
       fi
     } >"$marker" 2>/dev/null || true
