@@ -158,7 +158,7 @@ export function useCreateOnceAsync<T>(create: () => Promise<T>): T | undefined {
     }
     // started guards the once-ness; create is deliberately read on the first
     // effect only, same contract as useCreateOnce
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
   }, [])
   if (state && 'error' in state) {
     throw state.error
