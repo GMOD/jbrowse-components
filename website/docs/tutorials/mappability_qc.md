@@ -208,6 +208,25 @@ samtools view -c -q 60 "$CRAM" chr5:70,900,000-71,000,000      # placed uniquely
 
 Run it on the control window too, at the same width and from the same sample.
 
+The eye reads the Umap lane as high or low, and the number behind it is one
+command over the same bigWig the lane draws:
+
+<!-- from: scripts/scan_mappability_qc.sh -->
+
+```bash
+# A position where NO 100-mer maps uniquely is ABSENT from the file rather than
+# stored as zero, so bigWigToBedGraph emits no interval there at all. That makes
+# the fraction of the span carrying any value the number to read, and it is
+# stronger than the mean: a mean is taken only over what is present.
+bigWigToBedGraph -chrom=chr5 -start=70049000 -end=70077000 \
+  k100.Umap.MultiTrackMappability.bw stdout |
+  awk -v s=70049000 -v e=70077000 \
+    '{cov += $3 - $2} END {printf "%.1f%% has a value\n", 100 * cov / (e - s)}'
+```
+
+Run it over the control window too. A percentage means nothing until an ordinary
+gene has produced one.
+
 ## Reproduce it end to end
 
 Every number on this page comes from
