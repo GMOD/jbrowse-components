@@ -163,7 +163,28 @@ export function checkPage(mdPath: string) {
       .filter(l => !/^\s*#/.test(l))
       .join('\n')
 
-    for (const { name, parts } of language.parse(body)) {
+    // A marker over a fence the parser finds nothing in is the failure this
+    // whole check is shaped to avoid: it reports "still runs" forever, over a
+    // fence a sabotage cannot redden, and from outside it is indistinguishable
+    // from a healthy one. Two got in before this was here, both by accident.
+    // `mcscan_synteny_grape_peach` ran `python -m jcvi` in a form the parser
+    // dropped, and a fence of nothing but `curl` and `bash` parses empty
+    // because both are plumbing.
+    //
+    // The fix is never to widen the parser to accept the fence, it is to point
+    // the marker at a fence that shows a command, or to drop the marker. A
+    // route the script does not take is meant to be unmarked.
+    const found = language.parse(body)
+    if (found.length === 0) {
+      problems.push(
+        `${page}:${i + 1}: marker asserts nothing — no ${language.verb} ` +
+          `found in the fence below it, so it would pass whatever ${spec} ` +
+          `does. Mark a fence that shows a command, or drop the marker.`,
+      )
+      return
+    }
+
+    for (const { name, parts } of found) {
       if (!language.names(script, language.bare(name))) {
         problems.push(
           `${page}:${i + 1}: fence ${language.verb} \`${name}\`, ` +

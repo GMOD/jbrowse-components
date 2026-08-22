@@ -86,8 +86,14 @@ free of node, so that line stands in a fence of its own.
 
 **A page that shows no command at all is the other failure**, and
 `check-unshown-tools` ratchets it: hand a reader a build script without one
-marked fence and the list grows. `scripts/unshown-tools.txt` names the seven
-still on it and why four of them will never move.
+marked fence and the list grows. `scripts/unshown-tools.txt` names the four
+still on it and why none of them will move.
+
+**The marker has to go over a fence that shows a command.** Putting one over the
+`curl … | bash build_x.sh` fence satisfies the ratchet and asserts nothing,
+since both words are plumbing the parser skips, so `check-script-commands` fails
+a marker it finds no command under. Widening the parser to accept such a fence
+is the wrong repair; point the marker at a real command or drop it.
 
 **A `python` or `r` fence takes the same marker**, because a build script's
 analysis step is as often a heredoc as a command. There the callee stands in for
