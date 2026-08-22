@@ -39,6 +39,13 @@ compares, so a fresh clone needs no command.
   keeps that literal in the DOM, so the wait is always true and burns its full
   timeout. Wait on the `loading-overlay` test-id count, or `data-display-drawn`
   for canvas paint (`findDisplayPainted`).
+- **One `runner.ts` at a time per worktree.** Two gate runs in one checkout took
+  each other down twice on 2026-08-22: one was reaped at 117/136 captures, the
+  other wedged indefinitely on a suite the first was filtered to. A
+  golden-refresh wrapper doing `rm -rf __snapshots__` before restoring its own
+  copy is what makes it destructive rather than merely slow. Check
+  `ps -Ao command | grep runner.ts` before starting one, and read a
+  `--gate-only --drift-report` number as void if another run overlapped it.
 - `runner.ts` reaps orphaned test browsers at startup; SIGKILLed prior runs
   otherwise accumulate until the kernel OOM-kills a live renderer mid-run.
 - **A box's height cannot tell hard line breaks from wrapped text.** Anything

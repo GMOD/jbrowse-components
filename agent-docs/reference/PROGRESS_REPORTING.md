@@ -438,6 +438,14 @@ Two cancels on `FetchMixin`:
 clears it on pan/zoom, and `runFetch` start is the single un-cancel point.
 `reload()` is the retry path.
 
+**The comparative displays do this differently and deliberately** — they are not
+on `FetchMixin` (ADR-054) and their cancel is durable until Retry with no
+clear-on-viewport-change, so there is no internal twin at all. The one thing
+that does not carry over is that a flag is not a cancel there: the stop-token
+rotation lives in the autorun's closure, so `SyntenyFetchStateMixin` is handed
+`cancel` at install. See
+[SHARED_CANVAS_VIEWS.md](SHARED_CANVAS_VIEWS.md).
+
 ## Not yet wired (deferred, low priority)
 
 Worker sort/layout loops emit no per-iteration progress. They could go
