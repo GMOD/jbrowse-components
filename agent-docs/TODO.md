@@ -46,12 +46,12 @@ before anyone noticed.
 | [Midnight primary is invisible on dark stock](#midnight-primary-is-invisible-on-the-dark-stock-ground) | palette, theme | pick one of three; never re-tint a single component |
 | [The interbase stack overruns its half-band](#the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint) | alignments | a visual call; the overflow is measured, no fix is chosen |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
-| [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
-| [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
+| [Attribute the TIMEOUT mode](#attribute-the-60s-displaypainted-selector-wait) | browser tests | the census shipped; wrap the two selector waits that throw before it runs |
+| [Make the webgl blank verdict conclusive](#make-the-webgl-blank-verdict-conclusive) | browser tests | `--real-gpu` already discriminates; decide whether the override is still worth a run |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Shoot the multihop chain as counted arcs](#shoot-the-multihop-chain-as-counted-arcs-in-one-lgv) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Re-render the settings-menu figures](#re-render-the-five-figures-the-settings-menu-refactor-outran) | figures, synteny | five stale; the lock cannot catch this class |
-| [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
+| [Rebuild the OrthoFinder demos' chrom.sizes](#rebuild-the-three-orthofinder-demos-chromsizes) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
 | [A failed phase is credited bytes it never transferred](#a-failed-phase-is-credited-the-bytes-it-never-transferred) | core, progress | give `withProgress` an outcome; a credit rule alone re-breaks the backwards bar |
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
@@ -82,11 +82,11 @@ before anyone noticed.
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [The SV inspector rebuilds its chord track per filter](#the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [One inflate pool and byte cache per session](#give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
-| [The comparative displays sit behind neither bring-your-own seam](#the-comparative-displays-sit-behind-neither-bring-your-own-seam) | synteny, dotplot, embedded | fetch status done; tooltip and context menu left, and they need shapes of their own |
-| [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns 623 names and almost none are dead |
+| [The comparative context menu sits behind no seam](#the-comparative-context-menu-sits-behind-no-bring-your-own-seam) | synteny, dotplot, embedded | fetch status done, tooltip refused; the context menu needs a shape of its own |
+| [Sweep the unused exports, or close the question](#sweep-the-unused-exports-with-a-real-tool-or-close-the-question) | tooling, CI | configure knip per package; a grep returns hundreds of names and almost none are dead |
 | [charactersPerRow is a constant on a model](#charactersperrow-is-a-constant-living-on-a-model) | feature details | decide setting vs const; a setter with no UI is the worst option |
 | [Download plaintext writes an unreadable FASTA](#download-plaintext-writes-a-fasta-no-tool-can-read) | feature details | a product call, and it moves "Copy plaintext" too |
-| [The config-read baseline's remaining 125](#the-config-read-baselines-remaining-125-is-mostly-not-display-debt) | config, types | 72 of them are track/assembly reads; confirm that before estimating any of it |
+| [The config-read baseline's remaining 129](#the-config-read-baselines-remaining-129-is-mostly-not-display-debt) | config, types | 75 of them are track/assembly reads; confirm that before estimating any of it |
 | [Time a two-tier PIF to settled](#time-a-two-tier-pif-to-settled-in-a-browser) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
 | ["Phased" is unreachable on a haploid callset](#phased-is-unreachable-on-a-callset-that-is-entirely-haploid) | variants, pangenome | decide whether the gate widens to match the painter, or goes per-row |
 | [The clustering matrices trust feature 0's header](#the-clustering-matrices-trust-the-first-features-header) | variants, RPC | route both builders through `buildHeaderRemap`; the two-header fixture is the work |
@@ -207,9 +207,9 @@ Two things did not get decided, and they are the entry:
 Note the validator's two remaining errors on that file are **not** bugs to fix:
 `wombat` is the deliberate `volvox_wrong_assembly` fixture and `volvox_del2` is
 missing in the canonical config too, so both are inherited rather than drift. A
-gate has to exempt them, which is its own small design question — and `vvx`
-reports as a missing assembly when it is an assembly *alias*, which is a
-validator gap rather than a config error.
+gate has to exempt them, which is its own small design question. Nor are the two
+surviving `"showLabels": "auto"` reads in that file drift: that is the current
+slot name under a current value, so nobody should "fix" those either.
 
 ### Give an arc's right-click something to offer
 
@@ -288,9 +288,13 @@ labels will overflow the boxes laid out for them.
 
 ### Alignments / canvas
 
-- Group by strand, `plugins/canvas`. Nothing in `plugins/canvas` groups today;
-  the vocabulary to copy is `plugins/alignments/src/shared/groupFeatures.ts`
-  (`GROUP_BY_DIMENSIONS`, section dividers).
+- Group by strand, `plugins/canvas`. There is no FEATURE grouping in the canvas
+  pileup path today — `applyRowGroups`
+  (`LinearMultiRowFeatureDisplay/sourcesLogic.ts`) groups source ROWS, which is a
+  different axis and shipped with its own config slot, legend and SVG export — so
+  the vocabulary to copy is still
+  `plugins/alignments/src/shared/groupFeatures.ts` (`GROUP_BY_DIMENSIONS`,
+  section dividers).
 - Sample/library (SM/LB) grouping. `RG` already works via the generic tag
   dimension, but SM/LB live in the header's `@RG` lines, not in the record, so
   this needs an RG→SM/LB map from the adapter.
@@ -434,30 +438,56 @@ and `test:browser:gate:ci` both pass `--skip-webgpu` — so drop the flag by han
 from `products/jbrowse-web`:
 `node browser-tests/runner.ts --backend=all --swiftshader --gate-only`.
 
-### Attribute the browser-test TIMEOUT failure mode
+### Attribute the 60s `displayPainted` selector wait
 
-The other failure mode next to blank captures: a display never reports `-done`
-inside 60 s. Apply exactly the move that worked for blanks — when the wait
-expires, report what state the display is actually in (`data-display-phase`,
-whether the wrapper exists at all, whether an error banner is up) instead of an
-opaque timeout. `waits.ts` already notes the likely shape: a display in a
+The other failure mode next to blank captures: a display never satisfies
+`displayPainted` inside 60 s — the readiness attribute, not a mutating test id,
+since `b7f076fe04` deleted the `-done` suffix wholesale and made it
+`data-display-drawn` (ADR-065).
+
+**The census this asked for shipped.** `23d6fda584` added
+`pendingDisplayStates` / `describePendingDisplays`
+(`products/jbrowse-capture/src/sessionGate.ts:284-341`, tested in
+`pendingDisplays.test.ts`), which `snapshot.ts:271` consumes — re-reading the DOM
+at report time rather than off a held handle, exactly as this asked — so a wait
+that expires names each unpainted display and its own `data-display-phase`.
+
+**What is left is the wait that runs first.** `canvasSnapshot`
+(`products/jbrowse-web/browser-tests/snapshot.ts:479-489`) opens on a bare
+`page.waitForSelector(selector, { timeout: 60000 })` and throws puppeteer's
+opaque `TimeoutError` before `waitForCaptureSettled` — and so before that census
+— runs at all; `helpers.ts:47-77` is the same shape at a 30 s default. Those two
+sites are the work: catch the timeout, run the census that now exists, re-throw
+with it. `waits.ts` already notes the shape it will report
+(`products/jbrowse-capture/src/waits.ts:163-165,199-206`): a display in a
 terminal `tooLarge`/`renderError` state renders no wrapper and so can never
-report done, which reads as a timeout forever.
+report painted, which reads as a timeout forever.
 
 An earlier attempt was reverted (`839113dabe`) — re-query the selector per
 attempt rather than holding the handle, and prove the mechanism on a targeted
 reproduction first.
 
-### Make the webgl blank verdict readable
+### Make the webgl blank verdict conclusive
 
-Half the blank captures are unattributable today: a canvas2d blank self-reports
-"HAS content" and is conclusive, a webgl one self-reports "ALSO blank" and is
-not, because a cleared drawing buffer reads identically. Turning
-`preserveDrawingBuffer` on temporarily makes webgl's self-report conclusive, via
-an `evaluateOnNewDocument` override of `getContext` verified against a plain
-canvas first. **This is one deliberate diagnostic run, not another A/B, and it
-must not be left on** — it was measured and refuted as a *fix*
-([reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md)).
+Half the blank captures are unattributable, and the self-report now says which
+half it is in rather than reading as agreement: `canvasSelfReport`
+(`products/jbrowse-web/browser-tests/snapshot.ts:332-385`) probes
+`getContextAttributes().preserveDrawingBuffer` and, on a volatile buffer, states
+outright that a blank readback "says NOTHING about which side failed" and to
+re-run that one test with `--real-gpu` (`runner.ts:83`) — a SwiftShader
+compositing blank does not survive it, a render one does. That is `29f47a637d`,
+and it is the readable half done.
+
+The diagnostic itself still does not exist: nothing overrides `getContext`
+through `evaluateOnNewDocument` to turn `preserveDrawingBuffer` on, and
+[CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md):105-113 records it open
+as a diagnostic while refuting it as a *fix*. **This is one deliberate run, not
+another A/B, and it must not be left on.**
+
+**But the cheap discriminator lowers what the run buys.** `--real-gpu` is a real
+flag that separates the two sides on the one test that failed, with no build
+override and nothing to verify against a plain canvas first — so decide whether
+the override is worth doing at all before taking it.
 
 ### Shoot the multihop chain as counted arcs in one LGV
 
@@ -502,27 +532,27 @@ The first three are the ones the refactor itself invalidated; the last two were
 already known. Nothing in the lock can catch this class — it hashes the bytes in
 S3, not whether the UI still looks like them.
 
-### Re-render the ortholog-table figures after the blocks dedupe
+### Rebuild the three OrthoFinder demos' `chrom.sizes`
 
-`MCScanBlocksAdapter` now draws a gene pair once however many rows name it, and
-the five figures off a `.blocks` table were captured before that. They lose
-ribbons where the table repeated one, which for the OrthoFinder sets is not
-spread evenly: the wheat figure's tauschii/urartu band was 55% repeats against
-3% on the donor-to-hexaploid bands beside it, and the grasses figure's
-non-maize pairs were ~21% against ~10% on the maize ones. So the bands the
-duplication is NOT about get lighter and the ones it is about barely move, which
-is the point of the change.
+`598b8c05ef` changed the build script and nothing else
+(`scripts/build_orthofinder_synteny.sh:203-238`), and
+`demos/orthofinder_{grasses,vertebrates,wheat}/` have not been touched since
+`ffa68a2e84` — so every published figure is still drawn off the largest-30 rows,
+and the two spec-side workarounds are still carrying it
+(`website/scripts/specs/synteny.ts:2050-2058` and `:2167-2171`).
 
-`orthofinder_synteny/vertebrates`, `/grasses`, `/wheat`, and the two multiway
-grape/peach/cacao ones off `grape.blocks` (its transitive peach/cacao pair is
-~12.5% repeats; the two direct pairs have none).
+**The blocks dedupe this entry used to be about is already in the pictures**, so
+what follows is a SECOND re-render of the three OrthoFinder figures rather than
+the first. `85afc7733f` landed on 08-14 and all five `.blocks` figures were
+re-published twice after it — `9ce66dea98` on 08-15 and `572633a842` on 08-20,
+both against the local build (`website/scripts/specs/synteny.ts:876-882`), so the
+deduped adapter was in force and the ribbon losses have landed.
 
-**The three OrthoFinder ones want their `chrom.sizes` rebuilt first**, which is
-cheap — one pass over each GFF3 and BED, no OrthoFinder run — and has to reach
-`demos/orthofinder_*/` for the figures to see it. The script now picks the 30
-sequences carrying the most genes rather than the longest 30, which is a
-different 30 on most of these genomes: 14 of frog's 30 held no ortholog at all,
-18 of urartu's and 12 of tauschii's, while nine real chicken microchromosomes
+**Rebuilding is cheap** — one pass over each GFF3 and BED, no OrthoFinder run —
+and has to reach `demos/orthofinder_*/` for the figures to see it. The script now
+picks the 30 sequences carrying the most genes rather than the longest 30, which
+is a different 30 on most of these genomes: 14 of frog's 30 held no ortholog at
+all, 18 of urartu's and 12 of tauschii's, while nine real chicken microchromosomes
 (16, 25, 30, 31, 35, 36, 38, 39 among them) had fallen off the length cut with
 33 and 34 kept. The rows lose their dead tick labels and chicken gets its
 chromosomes back. Urartu is the one that stays awkward whatever the rule: its
@@ -589,13 +619,23 @@ a completion and `current` on a throw. That means a signal on the channel a bare
 `statusCallback(RpcStatus)` and every consumer treats a falsy message as a retire.
 Whatever shape it takes has to leave the backwards-bar case above green.
 
-### The comparative displays sit behind neither bring-your-own seam
+### The comparative context menu sits behind no bring-your-own seam
 
-**`ComparativeFetchStatus` is done — the remaining two are the tooltip and the
-context menu.** `ComparativeTooltip` and `SyntenyContextMenu` are mounted by the
-two comparative render areas and reach `@jbrowse/core/ui` directly, so an
-embedder who mounted `DisplayUIProvider` to keep Material off the page still
-gets it from a synteny or dotplot hover or right-click.
+**`ComparativeFetchStatus` is done and the tooltip was refused — the context menu
+is the whole of what is left.** `SyntenyContextMenu`
+(`LinearSyntenyDisplay/components/SyntenyContextMenu.tsx:1-3`) reaches
+`@jbrowse/core/ui`'s `ContextMenu` directly, which is `CascadingMenu.tsx:11` and
+so `@mui/material`, behind no seam at all — so an embedder who mounted
+`DisplayUIProvider` to keep Material off the page still gets it from a synteny or
+dotplot right-click.
+
+**The tooltip is NOT open, and it is the one thing here not to redo.**
+`ComparativeTooltip.tsx:1` goes through `@jbrowse/core/ui/BaseTooltip`, which
+lost `@mui/material` in `2377b8b9c9` and is pinned there three times —
+`muiFree.test.ts` in both `core` and `display-ui`, plus `BaseTooltip.test.tsx`.
+A third seam for it was considered and rejected on the record:
+[reference/DISPLAYCHROME.md](reference/DISPLAYCHROME.md):955-963, "reach for the
+palette before reaching for a fourth context".
 
 The fetch status now goes through the seam, and the design question this entry
 posed turned out not to be one. Its two states *are* `DisplayChromeOverlays`
@@ -607,19 +647,19 @@ one: `synteny-core` depends on `@jbrowse/display-ui`, reads
 (a package cannot depend on `plugin-linear-genome-view`'s bindings).
 `ComparativeFetchStatus.test.tsx` pins both directions.
 
-**Check the shapes before designing a contract for the other two.** The tooltip
-and the context menu genuinely are their own shapes, so they want entries of
-their own or a second small contract in the same package — but the fetch status
-looked like that too until someone compared the interfaces.
+**Check the shape before designing a contract for the one that is left.** The
+context menu genuinely is its own shape, so it wants an entry of its own or a
+second small contract in the same package — but the fetch status looked like that
+too until someone compared the interfaces.
 
 **One piece of this is fixed and the rest is latent, which is the trap.** The
 loading bar was the only one that rendered without the user doing anything, and
 `StatusProgressBar` is now toolkit-free, so the hole that was measured is closed
 on the axis it was measured on: the BYO site's `synteny` page reports 0 Material
 elements at rest **and** 0 during its first load. Everything else on that path is
-Material and simply has not been reached yet — the tooltip wants a hover, the
-context menu a right-click, and `LoadingOverlay`'s cancel and retry are
-`IconButton`s that only appear when a caller passes the handlers.
+Material and simply has not been reached yet — the context menu wants a
+right-click, and `LoadingOverlay`'s cancel and retry are `IconButton`s that only
+appear when a caller passes the handlers.
 
 **The bundle is a separate question and the answer there is still no.** That same
 page has 105 eager modules importing `@mui/material`, 42 of them first-party, and
@@ -649,11 +689,9 @@ rather than LGV display models.
 `recordMuiFromLoad` in the BYO site's `smoke.mjs` samples from before each page's
 own scripts run and holds the union to `MUI_BUDGET`, which is how the progress
 bar was found in the first place. It catches an element that *renders*, so it
-covers the cancel and retry buttons the moment a caller passes those handlers,
-and — since `muiRaisedByHover` reads that same union again once
-`censusWhileHovering` is done — a tooltip too, as far as a headless hover lands
-on a feature. The context menu is what is left: it needs a right-click nothing
-on that page drives.
+covers the cancel and retry buttons the moment a caller passes those handlers.
+The context menu is what it cannot reach: it needs a right-click nothing on that
+page drives.
 
 ### charactersPerRow is a constant living on a model
 
@@ -846,10 +884,10 @@ the offsets it was handed.
 An interchromosomal arc draws a foot at each end — a short horizontal tick lying
 over the sequence that end keeps, so outward reads as a deletion-type junction,
 inward as a duplication-type and parallel as an inversion
-(`features/arcs/mark.ts`, `arcPath.ts`, and the section in
-`LinearAlignmentsDisplay/CLAUDE.md`). An interchromosomal connection whose
-partner is **off screen** draws as a pair of TICKS instead, and those have no
-feet.
+(`features/arcs/mark.ts`, `arcPath.ts`, and
+[reference/ARC_BAND.md](reference/ARC_BAND.md):296, whose `:352` also has the
+foot's unconditional length). An interchromosomal connection whose partner is
+**off screen** draws as a pair of TICKS instead, and those have no feet.
 
 That is unfinished, not declined. A tick means "the partner is somewhere you
 cannot see", and the direction at the near foot is exactly as informative there
@@ -860,7 +898,9 @@ live in the SVG cross-region overlay, which re-traces `arc.mark` in TypeScript;
 `arcLine` is a GPU/Canvas2D pass. So this one needs a per-instance direction
 attribute, geometry in `arcLine.slang` plus `pnpm gen:shaders`, the Canvas2D
 mirror, the SVG export, and a decision about whether a foot is part of the
-tick's hit-test target. Roughly a day. Nothing in the landed arc work blocks it.
+tick's hit-test target. Roughly a day. Nothing in the landed arc work blocks it,
+and `LinearAlignmentsDisplay/components/arcBreakendFeet.test.ts` exists now,
+which is where a tick-foot direction assertion lands.
 
 The direction itself is already computed and already correct for this case:
 `readTrailingBodyDir` is a property of the junction rather than of the read, so a
@@ -1146,7 +1186,10 @@ Then, in no particular order:
   synthetic per-carrier ids plus hit detection resolving them back.
 - **Let a row set be requested.** Rows come from whoever contributed to the
   window, so a graph cannot be lined up row-for-row with a genotype matrix of
-  chosen donors — which is what `hprc_graph_vs_callset`'s open verdict asks for.
+  chosen donors — which is what a graph-beside-callset figure like
+  `hprc_graph_vs_callset` wants. The design ask is real; the pointer this used to
+  carry is not, since that figure's review verdict is `good` and
+  `screenshot-review.json` holds no `open` statuses at all.
   An explicit list of samples to row (empty rows included) would make the two
   panels comparable, pin the order across windows, and let the graph label
   `HG00642.1` where the callset labels `HG00642 HP0`.
@@ -1160,9 +1203,12 @@ Then, in no particular order:
   contig — a third small file keyed by segment id for allele interiors, or a link
   row carrying enough interior that no second query is needed. Producer plus
   adapter change, not a config swap.
-- **Regenerate the graph figures.** Every published one still shows the
-  pre-`ROW_HEIGHT_PX` pitch. The change moves every anchored figure by design,
-  which is exactly why it must not go out piecemeal.
+- **Regenerate the graph figures, if a pitch change is still owed.**
+  `ROW_HEIGHT_PX` has no trace in this repo, and every graph figure has been
+  republished at least twice since this was written (`fd707c4bff`, `82b3cdcde8`),
+  heights dropping the way a row-pitch change would — so read one against the
+  plugin before rendering anything. If it IS owed, the change moves every
+  anchored figure by design, which is exactly why it must not go out piecemeal.
 - **`graph.slang` would stretch every stroke's half-width by `scaleY/scaleX` on a
   row layout.** Dead code today — `createGraphRenderer` returns Canvas2D
   unconditionally — but `GraphRenderer.ts` states the one-token fix for whoever
@@ -1170,10 +1216,6 @@ Then, in no particular order:
 - **Launch the graph view from a clicked segment.** The data side is ready:
   `links.bed` states both endpoints in full, precisely so a reference segment can
   reach an off-reference neighbour. The affordance belongs in the plugin repo.
-- **Regenerate `pangenome/hprc_whole_chromosome` against the current plugin
-  pin.** It was excluded from the pin-bump regen because another agent had an
-  uncommitted `hprc_bubble_score` variability track in the same spec, and
-  regenerating would have folded their change in.
 
 ### Coarsen a graph loaded as a FILE: collapse trivial bubbles
 
@@ -1196,7 +1238,11 @@ the figure is about holds 26% while carrying 85%.
 spec edit: `auto` draws the alleles proportionally, as specks with no length for
 a path lane to run along — the thing the floor was added for — and `compress`
 pulls the arm toward the mean and piles its five ribbons into colour confetti.
-Both were rendered and rejected (see BUBBLE_SPREADS).
+Both were rendered and rejected; what each of the four shipped spreads is an
+instrument for is `website/docs/user_guides/graph_genome_view.md:268-288`, and the
+review notes are in `0c432e1141`. The fourth, `wide`, is untried here and is not
+worth trying: it is `open`'s floor lifted higher, so it clamps the same nineteen
+nodes, which is the arithmetic above rather than a matter of taste.
 
 **Collapse the bubble, and that is what lets the floor come off.** The two are
 one change: the floor exists only to give a bubble's ARMS room to separate, and a
@@ -1230,8 +1276,10 @@ In build order:
   route.
 
 Two findings already paid for, so they are not re-priced: **chain contraction is
-the wrong primitive** (ADR-014 measured `vg mod -u` at 0.95% on HPRC chr20,
-because at 90 haplotypes almost no node has bidirected degree 2), and
+the wrong primitive** (`vg mod -u` measured at 0.95% on HPRC chr20, because at 90
+haplotypes almost no node has bidirected degree 2 — the number is
+[reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md):661-663, which
+credits an `adr-014` that does not exist), and
 **BubbleGun as published does not reach human chr1** (the PangyPlot team measured
 chrY 2 s / 1 GB, chrX 30 s / 11 GB, chr9 ~40 min / 13 GB, chr1 hanging at
 15+ GB). PangyPlot's second mechanism — merging degree-2 runs into polylines and
@@ -1272,9 +1320,17 @@ plugin that has them. Two things follow it.
 **`proteins/annotation_1d` films a menu that is about to lose two rows.** The
 tour opens the split button and holds on it, and the release leaves **Launch 3D
 protein structure view** and **Launch 1D protein annotation view** where there
-were four. `pnpm video --filter annotation_1d`, then `figures push --filter
-annotation_1d` and commit `media.lock`. The caption no longer counts the rows,
-so it survives; nothing else on the page names the removed entries.
+were four. It has since been re-filmed for an unrelated reason (`5a3ffee134`,
+2026-08-21, `media.lock` committed with it), so the move is to check whether that
+clip already shows the shipped menu rather than to film it again. The caption no
+longer counts the rows, so it survives; nothing else on the page names the
+removed entries.
+
+**Two spec-side descriptions still say four, and they now contradict each
+other.** `website/scripts/videos/proteins.ts:240-241,287` and
+`website/scripts/specs/features.ts:137` both describe the four-destination menu
+while `features.ts:96-99` already records that protein3d removed two. Worth
+fixing in the same pass, whichever way the clip comes out.
 
 **Then re-read the page against the shipped menu.** `genomes_proteins.md` has
 had the two destinations, their caution and the third row of the "Where each MSA
@@ -1326,21 +1382,29 @@ more went with them for free: `SHOW_LABELS_OPTION_LABELS` into the leaf
 `LinearSyntenyView/cigarModes.ts`.
 
 The rest of the ~20 tables have no cited registry at all, and several are not
-convertible in principle — `SETTINGS_POPOVERS` and the `GRAPH_*` tables name
-controls in a plugin this repo does not build, and the config-slot names under
-`Track menu → Settings` are generated form fields rather than labels. Read the
-comment above each table before assuming one is available; the ones worth doing
-say where their labels came from.
+convertible in principle — the `GRAPH_*` tables name controls in a plugin this
+repo does not build, and the config-slot names under `Track menu → Settings` are
+generated form fields rather than labels. `SETTINGS_POPOVERS` is not one of them:
+it is `SETTINGS_SURFACES` since `d2b71b3a48`
+(`website/src/lib/spec-recipe/fields.ts:1465`) and both its labels are in this
+repo — `'Synteny display settings'` at `SyntenySettingsMenu.tsx:91`,
+`'Dotplot display settings'` at `DotplotSettingsMenu.tsx:54` — so it is
+convertible under the criterion above, as an extraction rather than an export,
+since both modules import MUI. Read the comment above each table before assuming
+one is available; the ones worth doing say where their labels came from.
 
-### The config-read baseline's remaining 125 is mostly not display debt
+### The config-read baseline's remaining 129 is mostly not display debt
 
-`scripts/configReadTypeGaps.txt` sits at 125 unchecked source reads, down from
-154 once every cross-cutting mixin named its own field table. The number invites
-a sweep and the sweep would mostly be the wrong work, so the split is worth
-having before anyone estimates it:
+`scripts/configReadTypeGaps.txt:35` sits at 129 unchecked source reads — 147 more
+in tests, of 911 config accessor calls in all — down from 154 once every
+cross-cutting mixin named its own field table, then ratcheted to 125
+(`a39ec369c0`) and re-banked at 129 by `d38e201db0`, whose message enumerates the
+five new gaps and the one that left. The number invites a sweep and the sweep
+would mostly be the wrong work, so the split is worth having before anyone
+estimates it:
 
-- **72 are track- or assembly-schema reads** — `name` 24, `assemblyNames` 21,
-  `adapter` 14, `trackId` 13. They are filed under whichever display or widget
+- **75 are track- or assembly-schema reads** — `name` 25, `assemblyNames` 22,
+  `adapter` 14, `trackId` 14. They are filed under whichever display or widget
   file contains them, so the list reads as display debt and isn't: naming a
   display factory's schema cannot reach a read against the containing track.
 - **~12 are the root config** — `theme` x5, `defaultDriver` x3, `extraThemes`
@@ -1705,9 +1769,10 @@ The last meaning still split between the read fills and the arc overlay. A pair
 with `po === 0` is `nonSplit` to the reads — deliberately the neutral grey,
 "distinct from the strand-colored split segments" — and the arcs have no such
 slot, so they fall to their baseline, `pairLR`. `swatchPaletteKeys` maps those
-to `colorNostrand` and `colorPairLR`: two greys, not the same grey, and two
-legend rows for one thing. Pinned by the last `describe` in
-`shaders/overlayPaletteParity.test.ts`.
+to `colorNeutralRead` (`#c8c8c8`, `palette.ts:385`) and `colorPairLR`
+(`#d3d3d3`, `palette.ts:353`): two greys, not the same grey, and two legend rows
+for one thing. Pinned by the last `describe` in
+`shaders/overlayPaletteParity.test.ts:142`.
 
 Two ways to close it, and the choice is visual rather than structural:
 
@@ -2428,12 +2493,15 @@ consumed. Layout then becomes "compute a row map", i.e. the 8.8ms part.
 **Measure the consumers before building it**, because they are the cost, not the
 layout. `GpuCanvasFeatureRenderer` already takes per-instance Y so an offset
 attribute is cheap there, but `components/hitTesting.ts`,
-`components/useOverlayElements.tsx`, `renderSvg.tsx`, `yMorph.ts`
-(`interpolateYData`, `captureFeatureTops`) and `scaleLaidOutData` all read absolute
-`topPx`/`bottomPx`/`rectYs` today. Count those call sites first and decide whether
-they can share one "resolve Y" accessor, or whether enough of them need the offset
-folded in that the clone comes straight back — that answer decides whether the
-spike is worth it at all.
+`components/overlayElements.tsx` (`useOverlayElements.tsx` until `e148172a5e`
+made its pseudo-hooks the observer components `FloatingLabelsLayer` and
+`HighlightLayer`), `yMorph.ts` (`interpolateYData`, `captureFeatureTops`) and
+`scaleLaidOutData` all read absolute `topPx`/`bottomPx`/`rectYs` today.
+`renderSvg.tsx` no longer does — it hands `laidOutDataMap` to the Canvas2D
+helpers — so the census is one consumer shorter than this entry counted. Count
+those call sites first and decide whether they can share one "resolve Y"
+accessor, or whether enough of them need the offset folded in that the clone
+comes straight back — that answer decides whether the spike is worth it at all.
 
 Two cheaper fallbacks if that is too invasive. `flatbushItems` and
 `subfeatureInfos` are arrays of objects cloned by spread, so parallel typed
@@ -2450,16 +2518,23 @@ Take it in the same pass; it was a separate entry until 2026-08-13 and each one
 said to pair it with the other, which is the tell. `baseModel.ts`'s
 `featureItemMap` allocates one entry object per feature AND per subfeature across
 every visible region, on every layout change, pan or zoom. Its consumers ask very
-little of it: `useHighlightOverlays` does a handful of `.get()`s (and genuinely
-needs `entry.vr` / `entry.data`), while `useFloatingLabels` uses it only for
-`?.kind === 'feature'` to decide whether a label is clickable.
+little of it: `HighlightLayer` does a handful of `.get()`s (and genuinely needs
+`entry.vr` / `entry.data`), while `FloatingLabelsLayer` asks twice — the
+`?.kind === 'feature'` check at `components/overlayElements.tsx:467`, which
+decides whether a label is clickable, and `resolveTarget` at `:521-531`.
 
-That second consumer is removable outright. `emitSubfeatureLabel` always sets
+Only the first of the two is removable. `emitSubfeatureLabel` always sets
 `parentFeatureId` and `processFeatureRecord` never does, so
 `clickable === (labelData.parentFeatureId === undefined)` with no map at all.
+`resolveTarget` is not that: it returns `entry.item` to the click, context-menu
+and mousemove handlers, which a `parentFeatureId` cannot supply, and it predates
+this entry (`8a3a06cbb8`) — the claim that the second consumer went outright was
+wrong on arrival.
 
-With it gone the map is built for roughly five lookups, so replace it with an
-on-demand region scan or a lazily-populated per-id cache.
+So the map stays and what is open is what it costs: replace it with an on-demand
+region scan or a lazily-populated per-id cache, and fold in `baseModel.ts`'s
+`featureIdIndex` / `subfeatureIdIndex` (`:1678-1687`), which build two
+neighbouring id indexes the same way.
 
 ### The SV inspector rebuilds its chord track from the whole callset per filter
 
@@ -2577,8 +2652,9 @@ that sweep is done — this entry is only the exports half it deliberately left.
 
 **The premise is unconfirmed, and a grep will not confirm it.** A crude pass —
 every `export const|function|class|interface|type|enum` whose identifier appears
-in no other file — returns **623 names**, and spot-checking says almost none of
-them are dead:
+in no other file — returns **hundreds of names** (623 when this was written, ~741
+from a crude equivalent today, so read the size as indicative and not as a
+figure), and spot-checking says almost none of them are dead:
 
 - Most are exported *types* of published packages. `@jbrowse/core` and every
   `@jbrowse/plugin-*` ship to npm, so a type nobody imports in-tree is API, and
@@ -2588,8 +2664,10 @@ them are dead:
   only `.ts`/`.tsx` never sees a `.astro` importer, and under `jsx: react-jsx`
   it never sees `react/jsx-runtime` either — the same blind spot that made
   `astro` and `react` read as dead dependencies in `f783f4444c`'s first pass.
-- `_AssertAddTracks`, `AssertEnumListsCoverUpstream` and friends are
-  compile-time assertions. Appearing once is what they are for.
+- `_AssertAddSessionTrack` / `_AssertPublishTrackConf`
+  (`createSessionModel.ts:102,106`, which `f1a0a46316` split out of the single
+  `_AssertAddTracks` this used to name), `AssertEnumListsCoverUpstream` and
+  friends are compile-time assertions. Appearing once is what they are for.
 
 So the first move is **not** to delete anything. Run `knip` (or `ts-prune`)
 configured per package — entry points declared, published `exports` maps treated
