@@ -4,6 +4,7 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { resolveSampleName } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
+import { buildHeaderRemap, collectSampleNames } from './computeSampleInfo.ts'
 import { MISSING, readAltDosages } from './genotypeMatrixEncoding.ts'
 
 import type { Source } from '../shared/types.ts'
@@ -122,12 +123,14 @@ export async function getGenotypeMatrix({
   // via processGenotypes (no Record / no substring slices) into a reusable
   // dosage buffer indexed by sample-array position. Falls back to the
   // genotypes-Record path if features don't support processGenotypes.
-  const sampleNames =
-    filteredVariants.length > 0
-      ? ((filteredVariants[0]!.feature.get('sampleNames') as
-          | string[]
-          | undefined) ?? [])
-      : []
+  //
+  // The union of every header in the fetch, not feature 0's list: a
+  // SplitVcfTabixAdapter opens one file — one header — per refName, and a view
+  // spanning chr1 and chrY hands back features from both, interleaved. Feature
+  // 0's header then names the wrong samples for every feature out of the other
+  // file, and `buildHeaderRemap` below is what lines each feature's own header
+  // up against this union.
+  const sampleNames = collectSampleNames(filteredVariants)
   const samplesLen = sampleNames.length
   const sampleIdxByKey = new Map<string, number>()
   for (let i = 0; i < samplesLen; i++) {
@@ -147,6 +150,12 @@ export async function getGenotypeMatrix({
     return idx
   })
 
+  // The header the last remap was built for, and the remap itself. A header
+  // array is identity-stable per parser, so this rebuilds once per file rather
+  // than once per variant.
+  let lastHeaderNames: string[] | undefined
+  let lastRemap: Int32Array | undefined
+
   const report = createProgressReporter({
     label: 'Building genotype matrix',
     total: numFeatures,
@@ -163,9 +172,19 @@ export async function getGenotypeMatrix({
       // feature's dosage standing in that slot. Only the slots this site uses
       // are cleared — the scratch is sized for the widest site in the set.
       dosages.fill(MISSING, 0, samplesLen * numAlts)
+      // `sampleIdx` counts against this feature's own header, `dosages` against
+      // the canonical union; `undefined` is the direct-index fast path taken
+      // whenever the two orders already agree.
+      const headerNames = feature.get('sampleNames') as string[] | undefined
+      if (headerNames !== lastHeaderNames) {
+        lastHeaderNames = headerNames
+        lastRemap = buildHeaderRemap(headerNames, sampleIdxByKey)
+      }
+      const remap = lastRemap
       feature.processGenotypes((str, start, end, sampleIdx) => {
-        if (used[sampleIdx]) {
-          readAltDosages(str, start, end, dosages, sampleIdx * numAlts, numAlts)
+        const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
+        if (column >= 0 && column < samplesLen && used[column]) {
+          readAltDosages(str, start, end, dosages, column * numAlts, numAlts)
         }
       })
       for (let k = 0; k < rowArrays.length; k++) {

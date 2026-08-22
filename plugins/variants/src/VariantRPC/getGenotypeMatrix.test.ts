@@ -199,3 +199,58 @@ describe('getGenotypeMatrix (processGenotypes fast path)', () => {
     expect([...rows.get('HG002')!]).toEqual([0, 1, 2])
   })
 })
+
+// A SplitVcfTabixAdapter opens one file — and so one header — per refName, and
+// `getFeaturesInMultipleRegions` merges the per-region streams, so a view
+// spanning chr1 and chrY arrives here as features from two different headers.
+// The chrY file was called on the male subset, so its header omits the females:
+// header position and canonical position part company at the first omission,
+// and indexing the canonical order by `sampleIdx` files each chrY genotype
+// against a neighbouring sample. Every write stays in bounds, so nothing errors
+// — the dendrogram simply groups samples by someone else's calls, and the row
+// order it writes outlives the run.
+describe('getGenotypeMatrix across two VCF headers', () => {
+  // identity-stable per file, as one parser's features are
+  const chr1Header = ['FEMALE', 'MALE1', 'MALE2']
+  const chrYHeader = ['MALE1', 'MALE2']
+  const cohort = [{ name: 'FEMALE' }, { name: 'MALE1' }, { name: 'MALE2' }]
+
+  test('files a chrY genotype against the sample whose header slot it is', async () => {
+    const rows = await build(
+      [
+        makeVcfFeature('chr1:1', chr1Header, {
+          FEMALE: '0/1',
+          MALE1: '0/0',
+          MALE2: '1/1',
+        }),
+        makeVcfFeature('chrY:1', chrYHeader, { MALE1: '1/1', MALE2: '0/0' }),
+      ],
+      cohort,
+    )
+    // the female is simply absent from the chrY file, not the carrier of the
+    // first male's call
+    expect([...rows.get('FEMALE')!]).toEqual([1, NaN])
+    expect([...rows.get('MALE1')!]).toEqual([0, 2])
+    expect([...rows.get('MALE2')!]).toEqual([2, 0])
+  })
+
+  // The other interleaving: the subset header is seen first, so the canonical
+  // union is [MALE1, MALE2, FEMALE] and it is the *full* header that disagrees
+  // with it position for position.
+  test('remaps the full header too when the subset file is seen first', async () => {
+    const rows = await build(
+      [
+        makeVcfFeature('chrY:1', chrYHeader, { MALE1: '1/1', MALE2: '0/0' }),
+        makeVcfFeature('chr1:1', chr1Header, {
+          FEMALE: '0/1',
+          MALE1: '0/0',
+          MALE2: '1/1',
+        }),
+      ],
+      cohort,
+    )
+    expect([...rows.get('FEMALE')!]).toEqual([NaN, 1])
+    expect([...rows.get('MALE1')!]).toEqual([2, 0])
+    expect([...rows.get('MALE2')!]).toEqual([0, 2])
+  })
+})

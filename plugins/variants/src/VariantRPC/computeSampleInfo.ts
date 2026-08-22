@@ -113,7 +113,10 @@ export interface AnalyzedVariants {
 //
 // Empty for an adapter whose features carry no header sample list at all; that
 // path takes its order from the genotype records instead, after the pass.
-function collectSampleNames(filteredVariants: FilteredVariant[]) {
+//
+// Exported for the clustering matrix builders, which need the same union for
+// the same reason and used to take feature 0's header alone.
+export function collectSampleNames(filteredVariants: FilteredVariant[]) {
   const sampleNames: string[] = []
   const seen = new Set<string>()
   const seenHeaders = new Set<string[]>()

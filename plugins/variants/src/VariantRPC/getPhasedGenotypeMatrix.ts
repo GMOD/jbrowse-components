@@ -4,6 +4,7 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
+import { buildHeaderRemap, collectSampleNames } from './computeSampleInfo.ts'
 import {
   MISSING,
   readPhasedAlleleIndicators,
@@ -105,12 +106,14 @@ export async function getPhasedGenotypeMatrix({
   // processGenotypes into a reusable per-sample scratch buffer indexed by
   // sample-array position, no genotypes Record and no substring per call. This
   // path matters more here than there — phased mode builds twice the rows.
-  const sampleNames =
-    filteredVariants.length > 0
-      ? ((filteredVariants[0]!.feature.get('sampleNames') as
-          | string[]
-          | undefined) ?? [])
-      : []
+  //
+  // The union of every header in the fetch, not feature 0's list: a
+  // SplitVcfTabixAdapter opens one file — one header — per refName, and a view
+  // spanning chr1 and chrY hands back features from both, interleaved. Feature
+  // 0's header then names the wrong samples for every feature out of the other
+  // file, and `buildHeaderRemap` below is what lines each feature's own header
+  // up against this union.
+  const sampleNames = collectSampleNames(filteredVariants)
   const samplesLen = sampleNames.length
   const sampleIdxByKey = new Map<string, number>()
   for (let i = 0; i < samplesLen; i++) {
@@ -139,6 +142,12 @@ export async function getPhasedGenotypeMatrix({
   const indicators = new Float32Array(samplesLen * maxPloidy)
   const scratch = new Float32Array(maxPloidy)
 
+  // The header the last remap was built for, and the remap itself. A header
+  // array is identity-stable per parser, so this rebuilds once per file rather
+  // than once per variant.
+  let lastHeaderNames: string[] | undefined
+  let lastRemap: Int32Array | undefined
+
   const report = createProgressReporter({
     label: 'Building genotype matrix',
     total: numFeatures,
@@ -152,14 +161,24 @@ export async function getPhasedGenotypeMatrix({
       // fields stop before GT, which would otherwise leave the previous
       // feature's alleles standing in that slot.
       indicators.fill(MISSING)
+      // `sampleIdx` counts against this feature's own header, `indicators`
+      // against the canonical union; `undefined` is the direct-index fast path
+      // taken whenever the two orders already agree.
+      const headerNames = feature.get('sampleNames') as string[] | undefined
+      if (headerNames !== lastHeaderNames) {
+        lastHeaderNames = headerNames
+        lastRemap = buildHeaderRemap(headerNames, sampleIdxByKey)
+      }
+      const remap = lastRemap
       feature.processGenotypes((str, start, end, sampleIdx) => {
-        if (used[sampleIdx]) {
+        const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
+        if (column >= 0 && column < samplesLen && used[column]) {
           readPhasedAlleleIndicators(
             str,
             start,
             end,
             indicators,
-            sampleIdx * maxPloidy,
+            column * maxPloidy,
             maxPloidy,
           )
         }
