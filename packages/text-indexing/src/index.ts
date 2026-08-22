@@ -3,20 +3,6 @@
 // deliberately re-exports none of core's surface: a symbol gets one import path,
 // so the two packages cannot drift into disagreeing about the same name.
 export { createTextSearchConf, findTrackConfigsToIndex } from './util.ts'
-export type {
-  Assembly,
-  BgzipFastaAdapter,
-  ChromeSizesAdapter,
-  Config,
-  CustomRefNameAliasAdapter,
-  CustomSequenceAdapter,
-  IndexedFastaAdapter,
-  RefNameAliasAdapter,
-  Sequence,
-  TextSearching,
-  TrixTextSearchAdapter,
-  TwoBitAdapter,
-  indexType,
-} from './util.ts'
+export type { indexType } from './util.ts'
 
 export { indexTracks } from './TextIndexing.ts'

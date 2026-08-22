@@ -2,12 +2,21 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+export type JobState = 'running' | 'queued' | 'finished' | 'aborted'
+
+export interface JobFields {
+  state: JobState
+  statusMessage?: string
+  progressPct?: number
+  cancelCallback: () => void
+}
+
 /**
  * #stateModel
  * #internal desktop text-indexing queue internals — kept out of the website docs
  * #category widget
  *
- * Created standalone by `JobsListModel` and held in its volatile lists rather
+ * Created standalone by `JobsListModel` and held in its volatile list rather
  * than attached under it — nothing here belongs in a saved session.
  */
 export const Job = types
@@ -17,42 +26,36 @@ export const Job = types
      */
     name: types.string,
   })
-  .volatile(() => ({
+  .volatile((): JobFields => ({
+    /**
+     * #volatile
+     * which of the widget's four sections the job is filed under. One field
+     * rather than membership of one of four lists, so it cannot be in two.
+     */
+    state: 'queued',
     /**
      * #volatile
      */
-    cancelCallback() {},
-    /**
-     * #volatile
-     */
-    statusMessage: undefined as string | undefined,
+    statusMessage: undefined,
     /**
      * #volatile
      * undefined when the current phase has no fraction to report, which the
      * card draws as an indeterminate bar
      */
-    progressPct: undefined as number | undefined,
+    progressPct: undefined,
+    /**
+     * #volatile
+     */
+    cancelCallback: () => {},
   }))
   .actions(self => ({
     /**
      * #action
+     * A key that is present is written, so `{statusMessage: undefined}` clears
+     * the message and `{}` touches nothing.
      */
-    setCancelCallback(cancelCallback: () => void) {
-      self.cancelCallback = cancelCallback
-    },
-
-    /**
-     * #action
-     */
-    setStatusMessage(message?: string) {
-      self.statusMessage = message
-    },
-
-    /**
-     * #action
-     */
-    setProgressPct(pct?: number) {
-      self.progressPct = pct
+    update(fields: Partial<JobFields>) {
+      Object.assign(self, fields)
     },
   }))
 

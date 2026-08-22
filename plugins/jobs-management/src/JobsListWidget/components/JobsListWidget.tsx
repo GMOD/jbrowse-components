@@ -19,37 +19,37 @@ const JobsListWidget = observer(function JobsListWidget({
   model: JobsListModel
 }) {
   const { classes } = useStyles()
-  const { jobs, finished, queued, aborted } = model
+  const { jobs } = model
   return (
     <div className={classes.root}>
       <JobsSection
         title="Running jobs"
-        jobs={jobs}
+        jobs={jobs.filter(j => j.state === 'running')}
         emptyText="No running jobs"
         renderCard={job => <CurrentJobCard key={job.name} job={job} />}
       />
       <JobsSection
         title="Queued jobs"
-        jobs={queued}
+        jobs={jobs.filter(j => j.state === 'queued')}
         emptyText="No queued jobs"
         renderCard={job => <JobCard key={job.name} job={job} />}
       />
       <JobsSection
         title="Completed jobs"
-        jobs={finished}
+        jobs={jobs.filter(j => j.state === 'finished')}
         emptyText="No completed jobs"
         renderCard={job => <JobCard key={job.name} job={job} />}
         onClear={() => {
-          model.clearFinished()
+          model.clearJobs('finished')
         }}
       />
       <JobsSection
         title="Aborted jobs"
-        jobs={aborted}
+        jobs={jobs.filter(j => j.state === 'aborted')}
         emptyText="No aborted jobs"
         renderCard={job => <JobCard key={job.name} job={job} />}
         onClear={() => {
-          model.clearAborted()
+          model.clearJobs('aborted')
         }}
       />
     </div>

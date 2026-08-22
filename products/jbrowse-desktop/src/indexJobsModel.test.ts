@@ -6,7 +6,11 @@ import jobsModelFactory from './indexJobsModel.ts'
 import type { TextJobsEntry } from './indexJobsModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
+import type {
+  JobInput,
+  JobState,
+  JobsListModel,
+} from '@jbrowse/plugin-jobs-management'
 import type { Track } from '@jbrowse/text-indexing-core'
 
 interface RpcArgs {
@@ -32,59 +36,35 @@ const JobsManager = jobsModelFactory(pluginManager)
 // the Job it filed), so pinning them here would buy nothing and force the fake
 // to build MST nodes.
 type JobsListApi = {
-  [
-    K in keyof Pick<
-      JobsListModel,
-      | 'addJob'
-      | 'addQueuedJob'
-      | 'addFinishedJob'
-      | 'addAbortedJob'
-      | 'removeJob'
-      | 'removeQueuedJob'
-      | 'updateJobStatus'
-    >
-  ]: (...args: Parameters<JobsListModel[K]>) => void
+  [K in keyof Pick<JobsListModel, 'addJob' | 'updateJobStatus'>]: (
+    ...args: Parameters<JobsListModel[K]>
+  ) => void
 }
 
-interface JobCard {
-  name: string
-  statusMessage?: string
-  progressPct?: number
-}
+type JobCard = JobInput
 
-// Records the cards a user would see, in the four lists the real widget files
-// them into, without pulling the widget's MST model into a desktop unit test.
+// Records the cards a user would see, keyed by name the way the real widget
+// files them, without pulling its MST model into a desktop unit test.
 function makeJobsListFake() {
   const jobs: JobCard[] = []
-  const queued: JobCard[] = []
-  const finished: JobCard[] = []
-  const aborted: JobCard[] = []
-  const remove = (arr: JobCard[], name: string) => {
-    const i = arr.findIndex(j => j.name === name)
-    if (i !== -1) {
-      arr.splice(i, 1)
-    }
-  }
   const api: JobsListApi = {
-    addJob: job => jobs.push({ ...job }),
-    addQueuedJob: job => queued.push({ ...job }),
-    addFinishedJob: job => finished.push({ ...job }),
-    addAbortedJob: job => aborted.push({ ...job }),
-    removeJob: name => {
-      remove(jobs, name)
-    },
-    removeQueuedJob: name => {
-      remove(queued, name)
-    },
-    updateJobStatus: (name, message, pct) => {
+    addJob: ({ name, ...fields }) => {
       const job = jobs.find(j => j.name === name)
       if (job) {
-        job.statusMessage = message
-        job.progressPct = pct
+        Object.assign(job, fields)
+      } else {
+        jobs.push({ name, ...fields })
+      }
+    },
+    updateJobStatus: (name, statusMessage, progressPct) => {
+      const job = jobs.find(j => j.name === name)
+      if (job) {
+        Object.assign(job, { statusMessage, progressPct })
       }
     },
   }
-  return { ...api, jobs, queued, finished, aborted }
+  const inState = (state: JobState) => jobs.filter(j => j.state === state)
+  return { ...api, jobs, inState }
 }
 
 // the error paths console.error on purpose; the spies that silence them are
@@ -160,38 +140,37 @@ function setup({
 
 test('reportStatus turns the worker’s byte counts into a human status', () => {
   const { jobsManager, widget } = setup()
-  jobsManager.setJobName('job1')
-  widget.addJob({ name: 'job1' })
+  widget.addJob({ name: 'job1', state: 'running' })
+  const card = widget.jobs[0]!
 
-  jobsManager.reportStatus({
+  jobsManager.reportStatus('job1', {
     message: 'Indexing files',
     current: 5000,
     total: 20000,
   })
-  expect(jobsManager.statusMessage).toBe('Indexing files: 5.0 kB / 20.0 kB')
-  expect(widget.jobs[0]!.statusMessage).toBe('Indexing files: 5.0 kB / 20.0 kB')
-  expect(widget.jobs[0]!.progressPct).toBe(25)
+  expect(card.statusMessage).toBe('Indexing files: 5.0 kB / 20.0 kB')
+  expect(card.progressPct).toBe(25)
 
   // no total yet: report what has been read rather than a bogus denominator,
   // and leave the bar indeterminate
-  jobsManager.reportStatus({
+  jobsManager.reportStatus('job1', {
     message: 'Indexing files',
     current: 5000,
     total: 0,
   })
-  expect(jobsManager.statusMessage).toBe('Indexing files: 5.0 kB')
-  expect(widget.jobs[0]!.progressPct).toBeUndefined()
+  expect(card.statusMessage).toBe('Indexing files: 5.0 kB')
+  expect(card.progressPct).toBeUndefined()
 
   // a plain string is already the message, and carries no fraction
-  jobsManager.reportStatus({
+  jobsManager.reportStatus('job1', {
     message: 'Indexing files',
     current: 20000,
     total: 20000,
   })
-  expect(widget.jobs[0]!.progressPct).toBe(100)
-  jobsManager.reportStatus('Sorting and writing index')
-  expect(jobsManager.statusMessage).toBe('Sorting and writing index')
-  expect(widget.jobs[0]!.progressPct).toBeUndefined()
+  expect(card.progressPct).toBe(100)
+  jobsManager.reportStatus('job1', 'Sorting and writing index')
+  expect(card.statusMessage).toBe('Sorting and writing index')
+  expect(card.progressPct).toBeUndefined()
 })
 
 test('queueJob shows the widget and files the job as queued', () => {
@@ -199,13 +178,8 @@ test('queueJob shows the widget and files the job as queued', () => {
   jobsManager.queueJob(makeEntry())
 
   expect(session.showWidget).toHaveBeenCalledWith(widget)
-  expect(widget.queued.map(j => j.name)).toEqual(['job1'])
+  expect(widget.inState('queued').map(j => j.name)).toEqual(['job1'])
   expect(jobsManager.jobsQueue).toHaveLength(1)
-})
-
-test('dequeueJob on an empty queue returns undefined', () => {
-  const { jobsManager } = setup()
-  expect(jobsManager.dequeueJob()).toBeUndefined()
 })
 
 test('a successful perTrack run indexes only the supported adapters', async () => {
@@ -226,8 +200,9 @@ test('a successful perTrack run indexes only the supported adapters', async () =
   )
   await jobsManager.runJob()
 
-  // runJob moves the card from queued to running before handing off
-  expect(widget.queued).toHaveLength(0)
+  // one card throughout: queued -> running -> finished, never two of them
+  expect(widget.jobs).toHaveLength(1)
+  expect(widget.inState('queued')).toHaveLength(0)
 
   // t2's adapter can't be indexed, so it is filtered out before the RPC — and
   // must not get a success notice or a textSearchAdapter pointing at an .ix
@@ -244,7 +219,7 @@ test('a successful perTrack run indexes only the supported adapters', async () =
   expect(tracks[1]!.textSearching).toBeUndefined()
 
   expect(textSearchManager.clearCache).toHaveBeenCalled()
-  expect(widget.finished.map(j => j.name)).toEqual(['job1'])
+  expect(widget.inState('finished').map(j => j.name)).toEqual(['job1'])
   expect(jobsManager.running).toBe(false)
 })
 
@@ -282,7 +257,7 @@ test('a job naming a since-deleted track is dequeued, not left stuck', async () 
   // autorun forever on a queue entry that can never succeed.
   expect(call).not.toHaveBeenCalled()
   expect(jobsManager.jobsQueue).toHaveLength(0)
-  expect(widget.aborted.map(j => j.name)).toEqual(['job1'])
+  expect(widget.inState('aborted').map(j => j.name)).toEqual(['job1'])
   expect(session.notifyError).toHaveBeenCalled()
 })
 
@@ -323,7 +298,7 @@ test('a cancelled job reports as cancelled rather than as an error', async () =>
     'info',
   )
   expect(session.notifyError).not.toHaveBeenCalled()
-  expect(widget.aborted[0]!.statusMessage).toBe('Cancelled')
+  expect(widget.inState('aborted')[0]!.statusMessage).toBe('Cancelled')
   // clear() resets the flag, so the next job isn't reported as cancelled too
   expect(jobsManager.aborted).toBe(false)
 })

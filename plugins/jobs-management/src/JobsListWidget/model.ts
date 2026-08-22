@@ -4,16 +4,13 @@ import { observable } from 'mobx'
 
 import { Job } from './jobModel.ts'
 
-import type { JobModel } from './jobModel.ts'
+import type { JobFields, JobModel, JobState } from './jobModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { IObservableArray } from 'mobx'
 
-export interface JobInput {
+export interface JobInput extends Partial<JobFields> {
   name: string
-  statusMessage?: string
-  progressPct?: number
-  cancelCallback?: () => void
+  state: JobState
 }
 
 /**
@@ -36,121 +33,46 @@ export function stateModelFactory(_pluginManager: PluginManager) {
     .volatile(() => ({
       /**
        * #volatile
-       * Volatile like the `jobsQueue` these mirror: persisted, a session saved
+       * Volatile like the `jobsQueue` it mirrors: persisted, a session saved
        * mid-index came back with a permanent "Running" card whose Cancel called
        * the default no-op, and a "Queued" card in no queue.
        */
       jobs: observable.array<JobModel>([], { deep: false }),
-      /**
-       * #volatile
-       */
-      finished: observable.array<JobModel>([], { deep: false }),
-      /**
-       * #volatile
-       */
-      queued: observable.array<JobModel>([], { deep: false }),
-      /**
-       * #volatile
-       */
-      aborted: observable.array<JobModel>([], { deep: false }),
     }))
-    .actions(self => {
-      function addJobToArray(arr: IObservableArray<JobModel>, job: JobInput) {
-        // dedupe by name so re-adding doesn't create a duplicate card, but
-        // still refresh the fields so a repeated same-named job (common in
-        // Apollo's job manager) shows current status rather than stale state
-        let target = arr.find(j => j.name === job.name)
-        if (!target) {
-          target = Job.create({ name: job.name })
-          arr.push(target)
+    .actions(self => ({
+      /**
+       * #action
+       * Files a job under `state`, or moves the one already named that and
+       * refreshes whatever fields came with it. A job runs, finishes and is
+       * retried under one name, so this is the only way a card is filed.
+       */
+      addJob({ name, ...fields }: JobInput) {
+        let job = self.jobs.find(j => j.name === name)
+        if (!job) {
+          job = Job.create({ name })
+          self.jobs.push(job)
         }
-        if (job.cancelCallback) {
-          target.setCancelCallback(job.cancelCallback)
-        }
-        if (job.statusMessage !== undefined) {
-          target.setStatusMessage(job.statusMessage)
-        }
-        if (job.progressPct !== undefined) {
-          target.setProgressPct(job.progressPct)
-        }
-        return target
-      }
-
-      function removeFromArray(
-        arr: IObservableArray<JobModel>,
-        jobName: string,
-      ) {
-        const index = arr.findIndex(j => j.name === jobName)
-        if (index === -1) {
-          return undefined
-        }
-        return arr.splice(index, 1)[0]
-      }
-
-      return {
-        /**
-         * #action
-         */
-        addJob(job: JobInput) {
-          return addJobToArray(self.jobs, job)
-        },
-        /**
-         * #action
-         */
-        removeJob(jobName: string) {
-          return removeFromArray(self.jobs, jobName)
-        },
-        /**
-         * #action
-         */
-        addFinishedJob(job: JobInput) {
-          return addJobToArray(self.finished, job)
-        },
-        /**
-         * #action
-         */
-        addQueuedJob(job: JobInput) {
-          return addJobToArray(self.queued, job)
-        },
-        /**
-         * #action
-         */
-        addAbortedJob(job: JobInput) {
-          return addJobToArray(self.aborted, job)
-        },
-        /**
-         * #action
-         */
-        removeQueuedJob(jobName: string) {
-          return removeFromArray(self.queued, jobName)
-        },
-        /**
-         * #action
-         */
-        clearFinished() {
-          self.finished.clear()
-        },
-        /**
-         * #action
-         */
-        clearAborted() {
-          self.aborted.clear()
-        },
-        /**
-         * #action
-         * A phase carrying no fraction clears the old one rather than leaving
-         * the bar where the last phase left it.
-         */
-        updateJobStatus(jobName: string, message?: string, pct?: number) {
-          // absent if cancelled/removed while a status callback was in flight
-          const job = self.jobs.find(j => j.name === jobName)
-          if (job) {
-            job.setStatusMessage(message)
-            job.setProgressPct(pct)
-          }
-        },
-      }
-    })
+        job.update(fields)
+        return job
+      },
+      /**
+       * #action
+       * A phase carrying no fraction clears the old one rather than leaving
+       * the bar where the last phase left it.
+       */
+      updateJobStatus(name: string, statusMessage?: string, pct?: number) {
+        // absent if the widget was rebuilt while a status callback was in flight
+        self.jobs
+          .find(j => j.name === name)
+          ?.update({ statusMessage, progressPct: pct })
+      },
+      /**
+       * #action
+       */
+      clearJobs(state: JobState) {
+        self.jobs.replace(self.jobs.filter(j => j.state !== state))
+      },
+    }))
 }
 
 export type JobsListStateModel = ReturnType<typeof stateModelFactory>

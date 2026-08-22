@@ -12,9 +12,8 @@ function setup() {
 
 test('a job list saves nothing into the session snapshot', () => {
   const model = setup()
-  model.addJob({ name: 'job1', statusMessage: 'Indexing files' })
-  model.addQueuedJob({ name: 'job2' })
-  model.addFinishedJob({ name: 'job3' })
+  model.addJob({ name: 'job1', state: 'running', statusMessage: 'Indexing' })
+  model.addJob({ name: 'job2', state: 'queued' })
 
   expect(getSnapshot(model)).toEqual({
     id: 'JobsList',
@@ -26,7 +25,7 @@ test('a restored session drops the job lists an older one saved', () => {
   const model = JobsList.create({
     id: 'JobsList',
     type: 'JobsListWidget',
-    // an older build persisted these four
+    // an older build persisted four separate lists
     jobs: [{ name: 'job1' }],
     queued: [{ name: 'job2' }],
     finished: [],
@@ -35,22 +34,33 @@ test('a restored session drops the job lists an older one saved', () => {
   } as any)
 
   expect(model.jobs).toHaveLength(0)
-  expect(model.queued).toHaveLength(0)
 })
 
-test('adding a job that is already listed refreshes it rather than duplicating', () => {
+test('a job that changes state moves rather than being listed twice', () => {
   const model = setup()
-  const first = model.addJob({ name: 'job1', statusMessage: 'Starting' })
-  const again = model.addJob({ name: 'job1', statusMessage: 'Indexing files' })
+  const queued = model.addJob({ name: 'job1', state: 'queued' })
+  const running = model.addJob({ name: 'job1', state: 'running' })
 
   expect(model.jobs).toHaveLength(1)
-  expect(again).toBe(first)
-  expect(first.statusMessage).toBe('Indexing files')
+  expect(running).toBe(queued)
+  expect(queued.state).toBe('running')
+})
+
+test('a field left out of addJob is not disturbed', () => {
+  const model = setup()
+  const job = model.addJob({
+    name: 'job1',
+    state: 'running',
+    statusMessage: 'Indexing files',
+  })
+  model.addJob({ name: 'job1', state: 'finished' })
+
+  expect(job.statusMessage).toBe('Indexing files')
 })
 
 test('a status with no fraction leaves the bar indeterminate', () => {
   const model = setup()
-  const job = model.addJob({ name: 'job1' })
+  const job = model.addJob({ name: 'job1', state: 'running' })
 
   model.updateJobStatus('job1', 'Indexing files', 40)
   expect(job.progressPct).toBe(40)
@@ -62,20 +72,20 @@ test('a status with no fraction leaves the bar indeterminate', () => {
 
 test('a status for a job that is gone is dropped', () => {
   const model = setup()
-  model.addJob({ name: 'job1' })
-  model.removeJob('job1')
+  model.addJob({ name: 'job1', state: 'finished' })
+  model.clearJobs('finished')
 
   expect(() => {
     model.updateJobStatus('job1', 'Indexing files', 40)
   }).not.toThrow()
 })
 
-test('clearing a list leaves the others alone', () => {
+test('clearing one state leaves the others alone', () => {
   const model = setup()
-  model.addFinishedJob({ name: 'job1' })
-  model.addAbortedJob({ name: 'job2' })
+  model.addJob({ name: 'job1', state: 'finished' })
+  model.addJob({ name: 'job2', state: 'aborted' })
+  model.addJob({ name: 'job3', state: 'running' })
 
-  model.clearFinished()
-  expect(model.finished).toHaveLength(0)
-  expect(model.aborted.map(j => j.name)).toEqual(['job2'])
+  model.clearJobs('finished')
+  expect(model.jobs.map(j => j.name)).toEqual(['job2', 'job3'])
 })

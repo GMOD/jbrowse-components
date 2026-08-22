@@ -85,6 +85,63 @@ function formatBytes(bytes: number) {
   return `${i === 0 ? n : n.toFixed(1)} ${units[i]}`
 }
 
+// Both conf writers are plain functions rather than actions on the model: they
+// are called from inside `runIndexingJob`, and MST's action context is the call
+// stack, so the writes are still inside one.
+function addTrackTextSearchConf(
+  tracks: Track[],
+  {
+    trackId,
+    assemblies,
+    attributes,
+    exclude,
+    outLocation,
+  }: {
+    trackId: string
+    assemblies: string[]
+    attributes: string[]
+    exclude: string[]
+    outLocation: string
+  },
+) {
+  const track = tracks.find(t => trackId === t.trackId)
+  if (track) {
+    track.textSearching = {
+      textSearchAdapter: createTextSearchConf(
+        `${trackId}-index`,
+        [trackId],
+        assemblies,
+        outLocation,
+      ),
+      indexingAttributes: attributes,
+      indexingFeatureTypesToExclude: exclude,
+    }
+  }
+}
+
+function addAggregateTextSearchConf(
+  adapters: { textSearchAdapterId: string }[],
+  {
+    trackIds,
+    assemblyName,
+    outLocation,
+  }: { trackIds: string[]; assemblyName: string; outLocation: string },
+) {
+  const id = `${assemblyName}-index`
+  const trixConf = createTextSearchConf(
+    id,
+    trackIds,
+    [assemblyName],
+    outLocation,
+  )
+  const foundIdx = adapters.findIndex(x => x.textSearchAdapterId === id)
+  if (foundIdx === -1) {
+    adapters.push(trixConf)
+  } else {
+    adapters[foundIdx] = trixConf
+  }
+}
+
 // the byte counts behind the fraction: a percentage alone doesn't say whether
 // the rest is seconds or minutes
 function statusText(status: RpcStatus) {
@@ -113,14 +170,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #volatile
        */
       running: false,
-      /**
-       * #volatile
-       */
-      statusMessage: '',
-      /**
-       * #volatile
-       */
-      jobName: '',
       /**
        * #volatile
        * stop token for the currently running RPC indexing job, used to cancel
@@ -193,12 +242,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setJobName(name: string) {
-        self.jobName = name
-      },
-      /**
-       * #action
-       */
       setStopToken(token?: StopToken) {
         self.stopToken = token
       },
@@ -213,24 +256,18 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       },
       /**
        * #action
+       * The job card is the only copy of the message and the fraction; this
+       * model kept a second one that nothing outside it read.
        */
-      reportStatus(status: RpcStatus) {
-        this.setStatusMessage(statusText(status))
+      reportStatus(jobName: string, status: RpcStatus) {
         const fraction = statusFraction(status)
         self
           .getJobStatusWidget()
           .updateJobStatus(
-            self.jobName,
-            self.statusMessage,
+            jobName,
+            statusText(status),
             fraction === undefined ? undefined : fraction * 100,
           )
-      },
-
-      /**
-       * #action
-       */
-      setStatusMessage(arg: string) {
-        self.statusMessage = arg
       },
 
       /**
@@ -239,24 +276,19 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       queueJob(props: TextJobsEntry) {
         const jobStatusWidget = self.getJobStatusWidget()
         self.session.showWidget(jobStatusWidget)
-        const { name, statusMessage = '' } = props
-        jobStatusWidget.addQueuedJob({ name, statusMessage })
+        jobStatusWidget.addJob({
+          name: props.name,
+          state: 'queued',
+          statusMessage: props.statusMessage,
+          progressPct: undefined,
+        })
         self.jobsQueue.push(props)
-      },
-      /**
-       * #action
-       */
-      dequeueJob() {
-        self.getJobStatusWidget().removeJob(self.jobName)
-        return self.jobsQueue.shift()
       },
       /**
        * #action
        */
       clear() {
         this.setRunning(false)
-        this.setStatusMessage('')
-        this.setJobName('')
         // stop before dropping the reference: this runs after every job, and a
         // job that *succeeded* was never stopped by `abortJob`, so dropping it
         // here leaks the blob URL and any AbortControllers taken against it —
@@ -289,7 +321,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         }
         try {
           this.setRunning(true)
-          this.setJobName(entry.name)
           // resolve configs inside the try: a since-deleted track makes
           // findTrackConfigsToIndex throw, and doing it here dequeues the job in
           // the catch rather than looping the autorun on the stuck queue entry
@@ -313,7 +344,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             outLocation,
             stopToken,
             statusCallback: status => {
-              this.reportStatus(status)
+              this.reportStatus(entry.name, status)
             },
           })
           if (indexType === 'perTrack') {
@@ -322,7 +353,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             // adapter (or since-deleted) must not get a "success" notice and a
             // textSearchAdapter config pointing at an .ix that was never written
             for (const { trackId } of trackConfigs) {
-              this.addTrackTextSearchConf({
+              addTrackTextSearchConf(self.tracks, {
                 trackId,
                 assemblies,
                 attributes,
@@ -339,7 +370,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               const indexedTrackIds = trackConfigs
                 .filter(track => track.assemblyNames.includes(assemblyName))
                 .map(trackConf => trackConf.trackId)
-              this.addAggregateTextSearchConf({
+              addAggregateTextSearchConf(self.aggregateTextSearchAdapters, {
                 trackIds: indexedTrackIds,
                 assemblyName,
                 outLocation,
@@ -355,16 +386,15 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           // clear the text search adapter cache so stale adapters pointing
           // at old index files are discarded
           self.root.textSearchManager.clearCache()
-          // remove from the queue and add to finished/completed jobs
-          const current = this.dequeueJob()
-          if (current) {
-            const jobStatusWidget = self.getJobStatusWidget()
-            session.showWidget(jobStatusWidget)
-            jobStatusWidget.addFinishedJob({
-              name: current.name,
-              statusMessage: current.statusMessage ?? 'done',
-            })
-          }
+          self.jobsQueue.shift()
+          const jobStatusWidget = self.getJobStatusWidget()
+          session.showWidget(jobStatusWidget)
+          jobStatusWidget.addJob({
+            name: entry.name,
+            state: 'finished',
+            statusMessage: 'Done',
+            progressPct: undefined,
+          })
         } catch (e) {
           if (self.aborted) {
             session.notify(`Cancelled indexing job: ${entry.name}`, 'info')
@@ -377,20 +407,20 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               {
                 name: 'Retry',
                 onClick: () => {
-                  // re-queue a plain snapshot; `entry` was detached from the
-                  // observable queue by dequeueJob below
+                  // a plain snapshot; the shift below drops `entry` from the
+                  // observable queue
                   this.queueJob(toJS(entry))
                 },
               },
             )
           }
-          const failed = this.dequeueJob()
-          if (failed) {
-            self.getJobStatusWidget().addAbortedJob({
-              name: failed.name,
-              statusMessage: self.aborted ? 'Cancelled' : `${e}`,
-            })
-          }
+          self.jobsQueue.shift()
+          self.getJobStatusWidget().addJob({
+            name: entry.name,
+            state: 'aborted',
+            statusMessage: self.aborted ? 'Cancelled' : `${e}`,
+            progressPct: undefined,
+          })
         }
         // clear
         this.clear()
@@ -404,79 +434,17 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           const firstIndexingJob = self.jobsQueue[0]!
           const jobStatusWidget = self.getJobStatusWidget()
           self.session.showWidget(jobStatusWidget)
-          const { name, statusMessage } = firstIndexingJob
           jobStatusWidget.addJob({
-            name,
-            statusMessage: statusMessage ?? '',
+            name: firstIndexingJob.name,
+            state: 'running',
+            statusMessage: firstIndexingJob.statusMessage,
             cancelCallback: () => {
               this.abortJob()
             },
           })
-          jobStatusWidget.removeQueuedJob(name)
           await this.runIndexingJob(firstIndexingJob)
         }
       },
-      /**
-       * #action
-       */
-      addTrackTextSearchConf({
-        trackId,
-        assemblies,
-        attributes,
-        exclude,
-        outLocation,
-      }: {
-        trackId: string
-        assemblies: string[]
-        attributes: string[]
-        exclude: string[]
-        outLocation: string
-      }) {
-        const track = self.tracks.find(t => trackId === t.trackId)
-        if (track) {
-          const id = `${trackId}-index`
-          const adapterConf = createTextSearchConf(
-            id,
-            [trackId],
-            assemblies,
-            outLocation,
-          )
-          track.textSearching = {
-            textSearchAdapter: adapterConf,
-            indexingAttributes: attributes,
-            indexingFeatureTypesToExclude: exclude,
-          }
-        }
-      },
-      /**
-       * #action
-       */
-      addAggregateTextSearchConf({
-        trackIds,
-        assemblyName,
-        outLocation,
-      }: {
-        trackIds: string[]
-        assemblyName: string
-        outLocation: string
-      }) {
-        const id = `${assemblyName}-index`
-        const foundIdx = self.aggregateTextSearchAdapters.findIndex(
-          x => x.textSearchAdapterId === id,
-        )
-        const trixConf = createTextSearchConf(
-          id,
-          trackIds,
-          [assemblyName],
-          outLocation,
-        )
-        if (foundIdx === -1) {
-          self.aggregateTextSearchAdapters.push(trixConf)
-        } else {
-          self.aggregateTextSearchAdapters[foundIdx] = trixConf
-        }
-      },
-
       afterCreate() {
         addDisposer(
           self,

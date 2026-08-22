@@ -60,7 +60,7 @@ const CurrentJobCard = observer(function CurrentJobCard({
           color="inherit"
           disabled={clicked}
           onClick={() => {
-            job.setStatusMessage('Cancelling…')
+            job.update({ statusMessage: 'Cancelling…' })
             job.cancelCallback()
             setClicked(true)
           }}

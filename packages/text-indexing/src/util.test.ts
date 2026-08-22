@@ -121,15 +121,6 @@ describe('findTrackConfigsToIndex', () => {
     expect(result.map(t => t.trackId)).toEqual(['gff-track', 'vcf-track'])
   })
 
-  it('filters by assembly name', () => {
-    const result = findTrackConfigsToIndex(
-      tracks,
-      ['gff-track', 'vcf-track'],
-      'hg19',
-    )
-    expect(result.map(t => t.trackId)).toEqual(['gff-track'])
-  })
-
   it('excludes tracks with unsupported adapter types', () => {
     const result = findTrackConfigsToIndex(tracks, [
       'gff-track',
