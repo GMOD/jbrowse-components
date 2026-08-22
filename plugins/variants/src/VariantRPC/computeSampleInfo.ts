@@ -87,6 +87,20 @@ function accumulateSampleInfo(
 export interface AnalyzedVariants {
   sampleInfo: Record<string, SampleInfo>
   hasPhased: boolean
+  // Whether any called genotype is one the phased painter treats as phased or
+  // haploid data — `isPhasedOrHaploid` in shared/getPhasedColor.ts, i.e. it
+  // carries no `/`. Wider than `hasPhased`, deliberately: a pangenome callset is
+  // haploid per assembly path and `vg deconstruct` writes bare `0`/`1`/`23`, so
+  // no `|` appears anywhere in a file phased mode renders correctly. This is
+  // what gates the menu entry, so the gate matches the painter.
+  //
+  // The one place it is narrower than the per-genotype predicate is an uncalled
+  // genotype: `.` and `.|.` carry no `/` but are no data, so they count toward
+  // neither this nor `hasUnphased` (which requires a called allele for the same
+  // reason). A bare `.` is how plenty of files spell a missing diploid call, and
+  // treating that as haploid evidence would offer the mode on any unphased
+  // callset with a hole in it.
+  hasPhasedOrHaploid: boolean
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
@@ -204,6 +218,7 @@ export function computeSampleInfo(
 ): AnalyzedVariants {
   const sampleInfo: Record<string, SampleInfo> = {}
   let hasPhased = false
+  let hasPhasedOrHaploid = false
   let hasSecondaryAlt = false
   let hasUnphased = false
   let hasNoCall = false
@@ -373,6 +388,7 @@ export function computeSampleInfo(
           }
         }
         hasPhased ||= phased
+        hasPhasedOrHaploid ||= called && !unphased
         // A no-call carries a `/` separator but isn't unphased data, so only a
         // genotype with an actual called allele counts toward "Unphased".
         hasUnphased ||= unphased && called
@@ -443,6 +459,7 @@ export function computeSampleInfo(
           }
         }
         hasPhased ||= phased
+        hasPhasedOrHaploid ||= called && !unphased
         hasUnphased ||= unphased && called
         hasNoCall ||= phased ? missing : !called
         accumulateSampleInfo(sampleInfo, key, ploidy, phased)
@@ -507,6 +524,7 @@ export function computeSampleInfo(
   return {
     sampleInfo,
     hasPhased,
+    hasPhasedOrHaploid,
     hasSecondaryAlt,
     hasUnphased,
     hasNoCall,

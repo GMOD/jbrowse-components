@@ -281,3 +281,70 @@ describe('buildHeaderRemap', () => {
     )
   })
 })
+
+// A feature with no `processGenotypes`, i.e. the genotypes-Record fallback any
+// non-@gmod/vcf adapter takes. The flags have to come out the same on both
+// paths — a fetch can mix them.
+function makeRecordFeature(
+  id: string,
+  genotypes: Record<string, string>,
+): FilteredVariant {
+  const feature = {
+    id: () => id,
+    get: (k: string) =>
+      k === 'genotypes' ? genotypes : k === 'ALT' ? ['A'] : undefined,
+    toJSON: () => ({}),
+  } as unknown as Feature
+  return { feature, mostFrequentAlt: '1' }
+}
+
+// `hasPhasedOrHaploid` is what gates the "Phased" rendering-mode entry, and it
+// has to answer for the genotypes the painter treats as phased data —
+// `isPhasedOrHaploid` in shared/getPhasedColor.ts, which is "carries no `/`".
+// `hasPhased` cannot: a pangenome callset is haploid per assembly path and `vg
+// deconstruct` writes bare `0`/`1`/`23`, so a whole file that phased mode
+// renders correctly contains no `|` at all.
+describe('computeSampleInfo phasing flags', () => {
+  const flags = (header: string[], genotypes: string[]) =>
+    computeSampleInfo([makeFeature('f1', header, genotypes)], new Map())
+
+  it('reports a callset with no `|` anywhere as phased-or-haploid', () => {
+    const result = flags(['S1', 'S2'], ['1', '23'])
+    expect(result.hasPhased).toBe(false)
+    expect(result.hasPhasedOrHaploid).toBe(true)
+  })
+
+  it('reports an unphased diploid callset as neither', () => {
+    const result = flags(['S1', 'S2'], ['0/1', '1/1'])
+    expect(result.hasPhased).toBe(false)
+    expect(result.hasPhasedOrHaploid).toBe(false)
+  })
+
+  it('takes an uncalled genotype as evidence of neither', () => {
+    // A bare '.' is how plenty of files spell a missing diploid call, so
+    // counting it as haploid evidence would offer phased mode on any unphased
+    // callset with a hole in it. `hasUnphased` already declines './.' for the
+    // same reason.
+    const result = flags(['S1', 'S2'], ['./.', '.'])
+    expect(result.hasPhasedOrHaploid).toBe(false)
+    expect(result.hasUnphased).toBe(false)
+  })
+
+  it('reports a mixed-ploidy phased file as both', () => {
+    // 1000G chrX non-PAR: haploid males beside phased diploid females
+    const result = flags(['FEMALE', 'MALE'], ['0|1', '1'])
+    expect(result.hasPhased).toBe(true)
+    expect(result.hasPhasedOrHaploid).toBe(true)
+  })
+
+  it('agrees on the genotypes-Record path', () => {
+    expect(
+      computeSampleInfo([makeRecordFeature('f1', { S1: '1' })], new Map())
+        .hasPhasedOrHaploid,
+    ).toBe(true)
+    expect(
+      computeSampleInfo([makeRecordFeature('f1', { S1: '0/1' })], new Map())
+        .hasPhasedOrHaploid,
+    ).toBe(false)
+  })
+})

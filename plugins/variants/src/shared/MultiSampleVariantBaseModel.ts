@@ -494,6 +494,19 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Whether any called genotype is phased or haploid, which is what gates
+         * the "Phased" rendering mode. Wider than `hasPhased` on purpose: the
+         * painter's rule is `isPhasedOrHaploid` (no `/`), because a pangenome
+         * callset is haploid per assembly path and `vg deconstruct` writes bare
+         * `0`/`1`/`23` — a file with no `|` anywhere that phased mode renders
+         * correctly. Gating the menu on `hasPhased` left that rendering
+         * reachable only from the config slot.
+         */
+        get hasPhasedOrHaploid() {
+          return self.cellData?.hasPhasedOrHaploid ?? false
+        },
+        /**
+         * #getter
          * Whether any visible site is multiallelic (drives the "Other alt
          * allele" legend entry). Computed in the worker since the simplified
          * features sent to the client don't carry ALT.

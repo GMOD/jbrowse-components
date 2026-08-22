@@ -85,19 +85,30 @@ export function variantTrackMenuItems(
           },
         },
         {
+          // Gated on `hasPhasedOrHaploid`, the predicate the painter itself uses
+          // (`isPhasedOrHaploid`), not on a literal `|`. A pangenome callset is
+          // haploid per assembly path and `vg deconstruct` writes bare
+          // `0`/`1`/`23`, so `hasPhased` is false across a whole file that
+          // phased mode renders correctly — one HP0 row per sample coloured by
+          // allele identity — and `setPhasedMode` has no other caller, so the
+          // config slot was the only door into a rendering this menu claimed did
+          // not apply.
           label: `Phased${
-            self.hasPhased
+            self.hasPhasedOrHaploid
               ? ''
               : !loaded
                 ? ' (checking for phased variants...)'
-                : ' (disabled, no phased variants found)'
+                : ' (disabled, every genotype is unphased)'
           }`,
           helpText:
             'Phased mode splits each sample into multiple rows representing each haplotype, and the phasing of the variants is used to color the variant in the individual haplotype rows. For example, a diploid sample SAMPLE1 will generate two rows SAMPLE1-HP0 and SAMPLE1 HP1 and a variant 1|0 will draw a box in the top row but not the bottom row',
-          disabled: !self.hasPhased,
+          disabled: !self.hasPhasedOrHaploid,
+          // What is left when the gate is off is exactly "every called genotype
+          // carries a `/`", so the message says that rather than the narrower
+          // "no phased variants", which was wrong about a haploid file.
           disabledHelpText: !loaded
             ? 'Checking for phased variants...'
-            : 'No phased variants found in this dataset',
+            : 'Every genotype in view is unphased (a / separator), so there is no haplotype to split a sample into',
           checked: self.renderingMode === 'phased',
           type: 'radio',
           onClick: () => {

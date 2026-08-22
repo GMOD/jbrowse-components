@@ -31,6 +31,7 @@ function cellData(insertedBp: number): CellDataResult {
     sampleInfo: { S0: { maxPloidy: 2, isPhased: false } },
     rowNames: ['S0'],
     hasPhased: false,
+    hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
     hasUnphased: false,
     hasNoCall: false,

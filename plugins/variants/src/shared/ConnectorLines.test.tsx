@@ -14,6 +14,7 @@ function matrixCellData(starts: number[]): CellDataResult {
     sampleInfo: {},
     rowNames: [],
     hasPhased: false,
+    hasPhasedOrHaploid: false,
     hasSecondaryAlt: false,
     hasUnphased: false,
     hasNoCall: false,

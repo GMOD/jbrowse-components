@@ -72,6 +72,10 @@ interface CellDataBase {
   // convention, so they match the client's expansion exactly.
   rowNames: string[]
   hasPhased: boolean
+  // Whether any called genotype is phased OR haploid, which is the predicate the
+  // phased painter uses (`isPhasedOrHaploid`) and so the one that gates the
+  // "Phased" rendering-mode entry — see computeSampleInfo.
+  hasPhasedOrHaploid: boolean
   // Whether any variant site is multiallelic (drives the "Other alt allele"
   // legend entry), whether any genotype call is unphased (drives the "Unphased"
   // legend entry in phased mode), and whether any genotype is a no-call (drives
@@ -240,6 +244,7 @@ export async function executeVariantCellData({
   const {
     sampleInfo,
     hasPhased,
+    hasPhasedOrHaploid,
     hasSecondaryAlt,
     hasUnphased,
     hasNoCall,
@@ -371,6 +376,7 @@ export async function executeVariantCellData({
         sampleInfo,
         rowNames,
         hasPhased,
+        hasPhasedOrHaploid,
         hasSecondaryAlt,
         hasUnphased,
         hasNoCall,
@@ -424,6 +430,7 @@ export async function executeVariantCellData({
         sampleInfo,
         rowNames,
         hasPhased,
+        hasPhasedOrHaploid,
         hasSecondaryAlt,
         hasUnphased,
         hasNoCall,
