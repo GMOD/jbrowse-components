@@ -143,3 +143,18 @@ refilm and none of which the run reports.
   filled in — a click that changes nothing, reported as success. The frame that
   says so is the menu BEFORE the click: a radio already selected is the tell,
   and the fix is usually the ORDER, on the page as well as in the spec.
+- **The run cannot see which state a tour is left standing in.**
+  `PAGE BACKGROUND UNDER THE APP` measures the TALLEST state against the frame,
+  so a tour that grows the app in the middle and shrinks back reports clean
+  while its last frame — and the poster taken from it — is a third page
+  background. `pggb_layout_switch` switched layout and switched back inside a
+  frame sized to the taller drawing and shipped that way past every run it was
+  ever in. Where two states differ by hundreds of pixels, END ON THE TALL ONE:
+  the slack then falls at the opening, which is the shorter half of the clip and
+  not the frame the poster comes from.
+- **A purple chip with a number in it over a MAF row is a rendered insertion**,
+  not a tooltip left standing — `drawMafInsertions` centres the inserted length
+  in the marker once the row is tall enough for letters, and it does not move
+  with the pointer. The page's own still of the same window is the cheapest way
+  to tell a drawn feature from a hover artifact: pull the figure beside the
+  frame before writing a step to clear something.

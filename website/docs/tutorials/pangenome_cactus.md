@@ -491,7 +491,7 @@ session carrying the plugin and its gene track and nothing else, then the IS1
 window cut out of it. The link under the clip opens the session it starts in, so
 the same three moves run on any graph indexed this way.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed to the 1.6 kb past flhD, and Launch view → Graph genome view (this region) on the segments lane's own menu." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS1 element past flhD, and Launch view → Graph genome view (this region) on the segments lane's own menu." />
 
 A kilobase or two is the width to open one at, and the downstream edge of the
 flagellar operon is a place where the five strains have something to disagree

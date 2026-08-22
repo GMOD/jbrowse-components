@@ -13,7 +13,7 @@ import {
   PGGB_SEGMENTS_TRACK_JSON,
   pggbVideoFixtures,
 } from '../specs/graph-ecoli.ts'
-import { TOOLBAR_READY } from '../specs/graph-fixtures.ts'
+import { GRAPH_DRAWN, TOOLBAR_READY } from '../specs/graph-fixtures.ts'
 import {
   HPRC_SEGMENTS_TRACK_JSON,
   TOUR_MHC_LOCUS,
@@ -261,6 +261,11 @@ const CACTUS_SEGMENTS_READY = displayReady(
 // runs after the graph loads and the toolbar is up before there is a row to
 // label.
 const ROWS_DRAWN = `body:has([data-testid="graph-row-label"]) ${LAYOUT_SELECT}`
+// And the force drawing has replaced them. TOOLBAR_READY cannot say this on a
+// pane that was already drawn: `data-geometry-vertices` is non-empty from the
+// sample-rows layout onwards, so it is satisfied the instant the dropdown is
+// picked. The row labels going away is the re-layout itself.
+const FORCE_DRAWN = `body:has(${GRAPH_DRAWN}):not(:has([data-testid="graph-row-label"])) ${LAYOUT_SELECT}`
 
 export const pangenomeVideos: VideoSpec[] = [
   // THE ROUTE, FROM NOTHING. Every graph pane in pangenome_ecoli.md was cut this
@@ -461,26 +466,42 @@ export const pangenomeVideos: VideoSpec[] = [
   // THE RE-LAYOUT, on the 460 bp the page draws both ways. The still pair is
   // pangenome/pggb_locus_sample_rows; what it cannot carry is that the two
   // drawings are the same nodes, which is the whole of what the dropdown does.
-  // Switched there and back, so the correspondence is seen twice and the clip
-  // ends in the layout the surrounding prose is about.
+  //
+  // IT ENDS ON THE FORCE DRAWING, and it used to switch back. The two states
+  // are 440px apart and one frame has to hold both, so whichever one the clip
+  // is left standing in is the one the tail and the poster carry: switching
+  // back put a third of every ending frame under page background. Ending on
+  // the taller state moves that slack to the OPENING, where it is four seconds
+  // rather than the tail's six and a half and is not the frame the poster comes
+  // from — the trade pggb_subgraph_launch and pggb_out_to_strain above already
+  // take on this page. Seeing the correspondence twice was not worth the poster.
   {
     name: 'pangenome/pggb_layout_switch',
     description:
-      'The same 460 bp of the pggb graph in both layouts: sample rows, force-directed, and back',
+      'The same 460 bp of the pggb graph in both layouts: sample rows through the Layout dropdown to force-directed',
     url: locusSession('samplerows', {
       region: rowsLocus,
       window: rowsWindow,
       mafLane: true,
     }),
-    // Sized to the FORCE drawing, which is the tour's tallest state and not one
-    // of its ends: the run reports 802px of app in sample rows at both the first
-    // frame and the last, and 1242px in between. A frame sized to either end
-    // cuts the drawing the switch was filmed to show.
+    // Sized to the FORCE drawing, which is the state the tour ends in: the run
+    // reports 802px of app in sample rows at the first frame and 1242px at the
+    // last. The drawing is a backbone with the alternate routes hanging off it
+    // and it uses every one of those pixels, so this is not a frame to give
+    // back — a viewport sized to the opening cuts the payoff in half.
     viewportHeight: 1250,
     readySelector: ROWS_DRAWN,
     readyTimeout: 120000,
     settleMs: 5000,
     steps: [
+      // The pointer off the overview's cytoband strip, where the camera parks
+      // it: the view writes the position under the pointer into its own title
+      // bar, and the opening frame carried a coordinate chip for a locus 1.3 Mb
+      // from anywhere this tour goes.
+      { type: 'hover', selector: '[aria-label="JBrowse"]' },
+      // the rows held still long enough to be read against the MAF lane above
+      // them, which is what the paragraph before the embed is about
+      { type: 'delay', ms: 2500 },
       { type: 'click', selector: LAYOUT_SELECT, say: 'Layout', hold: 800 },
       { type: 'waitForText', text: 'Force-directed layout' },
       {
@@ -490,20 +511,13 @@ export const pangenomeVideos: VideoSpec[] = [
       },
       {
         type: 'waitForSelector',
-        selector: TOOLBAR_READY,
+        selector: FORCE_DRAWN,
         timeout: 120000,
         cut: true,
       },
-      { type: 'delay', ms: 3000 },
-      { type: 'click', selector: LAYOUT_SELECT, say: 'Layout', hold: 800 },
-      { type: 'waitForText', text: 'Sample rows' },
-      { type: 'click', text: 'Sample rows', say: 'Sample rows' },
-      {
-        type: 'waitForSelector',
-        selector: ROWS_DRAWN,
-        timeout: 120000,
-        cut: true,
-      },
+      // long enough for the simulation to settle before the tail freezes on it,
+      // since the last repaints of a run never reach the file
+      { type: 'delay', ms: 3500 },
     ],
     tailMs: 3000,
   },

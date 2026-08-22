@@ -942,7 +942,7 @@ instead. The MAF row above says the same thing base by base.
 Watching the dropdown redraw them says one thing the pair of pictures cannot,
 which is that the two drawings hold the same nodes:
 
-<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown and back. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing lets the axis go, and the alternate routes hang off the backbone where the rows had flattened them." />
+<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing lets the axis go, and the alternate routes hang off the backbone where the rows had flattened them." />
 
 #### Who carries a segment
 
