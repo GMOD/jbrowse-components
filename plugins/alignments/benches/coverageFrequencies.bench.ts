@@ -65,6 +65,13 @@
 // per POSITION rather than per mismatch, so the run structure is work it needs
 // anyway.)
 //
+// THE ONE REGIME NO FIXTURE HERE REACHES is a short-read pileup at 300x, where a
+// position carries tens of mismatches rather than the two `longread-dense` gives
+// it — the run length `run-walk` wants, and the opposite end of
+// `shortread-sparse-density`'s 0.2. Nothing above says which arm wins that, so
+// add the fixture before re-opening the arm on the strength of the run-length
+// argument.
+//
 // `with-iupac` is there to price the fallback rather than assume it away: 2% of
 // bases outside ACGTN still runs at 4.6x+, because the Map it falls back to
 // then holds 2% of the entries rather than all of them. The same 2% is what
