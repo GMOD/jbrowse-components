@@ -1,11 +1,12 @@
 import { sha256Base64Url } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.tsx'
 
-function makeAccount(extraConf: Record<string, unknown> = {}) {
-  return stateModelFactory(configSchema).create({
-    type: 'OAuthInternetAccount',
+function accountSnapshot(extraConf: Record<string, unknown> = {}) {
+  return {
+    type: 'OAuthInternetAccount' as const,
     // a snapshot, not configSchema.create: ConfigurationReference stores an
     // instance by identifier, which nothing in this bare tree can resolve
     configuration: {
@@ -17,6 +18,46 @@ function makeAccount(extraConf: Record<string, unknown> = {}) {
       domains: ['data.example.com'],
       ...extraConf,
     },
+  }
+}
+
+function makeAccount(extraConf: Record<string, unknown> = {}) {
+  return stateModelFactory(configSchema).create(accountSnapshot(extraConf))
+}
+
+interface QueuedPrompt {
+  internetAccountId: string
+  handleClose: (proceed: boolean) => void
+}
+
+let queuedPrompts: QueuedPrompt[] = []
+
+// isSessionModel is a duck-type check for rpcManager and configuration
+const fakeSession = {
+  rpcManager: {},
+  configuration: {},
+  queueDialog: (
+    callback: (doneCallback: () => void) => [unknown, QueuedPrompt],
+  ) => {
+    const [, props] = callback(() => {})
+    queuedPrompts.push(props)
+  },
+}
+
+// internet accounts live on the root model beside the session, which is where
+// the login prompt is queued — a bare account has nothing to queue it on
+function makeAccountInSession(extraConf: Record<string, unknown> = {}) {
+  const root = types
+    .model({ internetAccounts: types.array(stateModelFactory(configSchema)) })
+    .volatile(() => ({ session: fakeSession }))
+    .create({ internetAccounts: [accountSnapshot(extraConf)] })
+  return root.internetAccounts[0]!
+}
+
+function setUserActivation(isActive: boolean) {
+  Object.defineProperty(navigator, 'userActivation', {
+    value: { isActive, hasBeenActive: true },
+    configurable: true,
   })
 }
 
@@ -30,8 +71,14 @@ let fetchMock: jest.Mock<Promise<Response>, [RequestInfo, RequestInit?]>
 beforeEach(() => {
   sessionStorage.clear()
   localStorage.clear()
+  queuedPrompts = []
   fetchMock = jest.fn()
   globalThis.fetch = fetchMock as unknown as typeof fetch
+})
+
+afterEach(() => {
+  // jsdom has no userActivation of its own, so the tests that need one add it
+  Reflect.deleteProperty(navigator, 'userActivation')
 })
 
 test('a working token is not re-proven on every request', async () => {
@@ -122,6 +169,70 @@ test('a blocked popup fails the flow instead of hanging', async () => {
   await expect(makeAccount().getTokenViaAuthFlow()).rejects.toThrow(
     'Could not open the testOAuth login window',
   )
+})
+
+// A share link to an authenticated resource authorizes with no click of the
+// user's anywhere in the flow, and a popup opened without one is what the
+// pop-up blocker eats — issue #2386
+test('with no user activation the login window waits for a click', async () => {
+  setUserActivation(false)
+  const opened: URL[] = []
+  window.open = jest.fn(url => {
+    opened.push(new URL(String(url)))
+    return {} as Window
+  })
+
+  const promise = makeAccountInSession().getTokenViaAuthFlow()
+  await Promise.resolve()
+
+  // not attempted: the browser has already said there is no activation to
+  // spend, so the attempt only trips the blocker
+  expect(window.open).not.toHaveBeenCalled()
+  expect(queuedPrompts.length).toBe(1)
+
+  queuedPrompts[0]!.handleClose(true)
+  expect(window.open).toHaveBeenCalledTimes(1)
+
+  const state = opened[0]!.searchParams.get('state')
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      origin: window.location.origin,
+      data: {
+        name: 'JBrowseAuthWindow-testOAuth',
+        redirectUri: `http://localhost/#access_token=granted&state=${state}`,
+      },
+    }),
+  )
+  expect(await promise).toBe('granted')
+})
+
+test('dismissing the login prompt fails the flow', async () => {
+  setUserActivation(false)
+  window.open = jest.fn(() => ({}) as Window)
+
+  const promise = makeAccountInSession().getTokenViaAuthFlow()
+  await Promise.resolve()
+  queuedPrompts[0]!.handleClose(false)
+
+  await expect(promise).rejects.toThrow('OAuth login prompt was dismissed')
+  expect(window.open).not.toHaveBeenCalled()
+})
+
+test('a popup blocked despite an activation is retried behind the prompt', async () => {
+  setUserActivation(true)
+  window.open = jest.fn(() => null)
+
+  const promise = makeAccountInSession().getTokenViaAuthFlow()
+  await Promise.resolve()
+
+  expect(window.open).toHaveBeenCalledTimes(1)
+  expect(queuedPrompts.length).toBe(1)
+  queuedPrompts[0]!.handleClose(true)
+
+  await expect(promise).rejects.toThrow(
+    'Could not open the testOAuth login window',
+  )
+  expect(window.open).toHaveBeenCalledTimes(2)
 })
 
 test('a 401 with no refresh token surfaces the validation error', async () => {

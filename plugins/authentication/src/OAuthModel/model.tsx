@@ -5,14 +5,16 @@ import {
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   isElectron,
+  isSessionModel,
   localStorageGetItem,
   localStorageRemoveItem,
   localStorageSetItem,
   sha256Base64Url,
   toBase64Url,
 } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getRoot, types } from '@jbrowse/mobx-state-tree'
 
+import { OAuthLoginPrompt } from '../lazyLoginForms.ts'
 import { getResponseError } from '../util.ts'
 import {
   finishOAuthRedirect,
@@ -32,6 +34,63 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 function randomBytes(length: number) {
   return globalThis.crypto.getRandomValues(new Uint8Array(length))
+}
+
+// Whether a popup opened right now would be one the browser lets through.
+// `in`, because the property is typed as always present but Firefox has no
+// implementation — and a browser that cannot answer gets the attempt.
+const hasTransientActivation = () =>
+  'userActivation' in navigator ? navigator.userActivation.isActive : true
+
+/**
+ * Puts the login window behind a click, for the flow that has no user
+ * activation to open one with — a session loading a track of an authenticated
+ * resource, which is every share link to one. Rejects if the user dismisses
+ * the prompt, and `getToken` drops the cached promise on a rejection so a
+ * later read asks again.
+ */
+function promptForLoginWindow({
+  internetAccountId,
+  session,
+  openLoginWindow,
+  waitForToken,
+}: {
+  internetAccountId: string
+  session: unknown
+  openLoginWindow: () => Window | null
+  waitForToken: (popup: Window) => Promise<string>
+}) {
+  const blocked = new Error(
+    `Could not open the ${internetAccountId} login window. Allow popups for this site and try again.`,
+  )
+  // an embedded root need not have a session to queue the prompt on, and a
+  // popup that never opens used to leave this promise pending forever — which
+  // `getToken` caches, so the account stayed wedged for the rest of the
+  // session with nothing shown to the user
+  if (!isSessionModel(session)) {
+    throw blocked
+  }
+  return new Promise<string>((resolve, reject) => {
+    session.queueDialog(doneCallback => [
+      OAuthLoginPrompt,
+      {
+        internetAccountId,
+        handleClose: (proceed: boolean) => {
+          // opened before doneCallback, so the open still runs inside the
+          // click whose activation it is spending
+          const popup = proceed ? openLoginWindow() : null
+          doneCallback()
+          if (popup) {
+            resolve(waitForToken(popup))
+          } else {
+            reject(
+              proceed ? blocked : new Error('OAuth login prompt was dismissed'),
+            )
+          }
+        },
+      },
+    ])
+  })
 }
 
 /**
@@ -384,30 +443,39 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           return token
         } else {
-          const popup = window.open(
-            url,
-            `JBrowseAuthWindow-${self.internetAccountId}`,
-            'width=500,height=600,left=0,top=0',
-          )
-          // A blocked popup used to leave the returned promise pending forever,
-          // and `getToken` caches that promise — so the account stayed wedged
-          // for the rest of the session with nothing shown to the user
-          if (!popup) {
-            throw new Error(
-              `Could not open the ${self.internetAccountId} login window. Allow popups for this site and try again.`,
+          const openLoginWindow = () =>
+            window.open(
+              url,
+              `JBrowseAuthWindow-${self.internetAccountId}`,
+              'width=500,height=600,left=0,top=0',
             )
-          }
-          // no await between the open above and the listener below, so the
-          // redirect message cannot be delivered before we are listening
-          return waitForOAuthMessage(
-            event => finishOAuthWindow(event, oauthParams),
-            {
-              popup,
-              isOwnMessage: event =>
-                getOAuthRedirectUri(event, self.internetAccountId) !==
-                undefined,
-            },
-          )
+          // no await between the open and this listener, so the redirect
+          // message cannot be delivered before we are listening
+          const waitForToken = (popup: Window) =>
+            waitForOAuthMessage(
+              event => finishOAuthWindow(event, oauthParams),
+              {
+                popup,
+                isOwnMessage: event =>
+                  getOAuthRedirectUri(event, self.internetAccountId) !==
+                  undefined,
+              },
+            )
+          // A popup only opens while the page holds transient activation, and
+          // a session that loads an authenticated track has none — so the open
+          // is what trips the pop-up blocker, on a share link the user did
+          // nothing else to. Ask for the click that carries the activation
+          // instead, and don't spend the blocked attempt first where the
+          // browser will tell us there is no activation to spend.
+          const popup = hasTransientActivation() ? openLoginWindow() : null
+          return popup
+            ? waitForToken(popup)
+            : promptForLoginWindow({
+                internetAccountId: self.internetAccountId,
+                session: getRoot<{ session?: unknown }>(self).session,
+                openLoginWindow,
+                waitForToken,
+              })
         }
       },
     }))
