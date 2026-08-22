@@ -50,7 +50,6 @@ before anyone noticed.
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Shoot the multihop chain as counted arcs](#shoot-the-multihop-chain-as-counted-arcs-in-one-lgv) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
-| [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Re-render the settings-menu figures](#re-render-the-five-figures-the-settings-menu-refactor-outran) | figures, synteny | five stale; the lock cannot catch this class |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
@@ -77,7 +76,6 @@ before anyone noticed.
 | [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [Does a sixth track want a sixth RPC worker](#does-a-sixth-alignments-track-want-a-sixth-rpc-worker) | RPC, limits | one `workerCount` line to try; the answer is a memory measurement, not a stopwatch |
 | [Cross-region arc count at 300x](#read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
-| [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Does a quality floor still buy anything on the band](#does-a-base-quality-floor-still-buy-anything-on-the-coverage-band) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](#walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
@@ -480,31 +478,6 @@ feature has, which is why it is worth shooting.
 the nanomonsv VCF / `sv_multihop.py derive` output rather than from reading the
 picture — [reference/SV_MULTIHOP.md](reference/SV_MULTIHOP.md) has the chain and
 what is established about it.
-
-### Render the twenty specs whose callouts were converted to anchors
-
-The anchoring pass landed in the specs and **no figure was regenerated** — the
-worktree it was done in carried another agent's in-flight display edits, so a
-render there would have baked unlanded work into a committed PNG. So these are
-correct in the spec and stale on disk until a sweep picks them up.
-
-`--check` passes at 0.000% on every changed spec (`maf_codon_tooltip` at
-0.001%), which is the proof that every anchor resolves — `drawAnnotations`
-throws on one that does not, and several gate on what the click produced rather
-than only on where it landed. Most are placement-identical by construction.
-Five deliberately move, so a reviewer should expect a diff and not read it as
-drift:
-
-| figure | what moves | why |
-| --- | --- | --- |
-| `trio-crossover-paternal` / `-maternal` | frames' OUTER edges, 3px left and 5px right | they were inset from the view; they are now the window's own. The rows, the pitch and the abutment at the crossover are unchanged arithmetic |
-| `lgv_usage_guide` | pills and tails, ≤1px | the lift is 59px off the controls' resolved row (y=121.4) rather than y=62 on the page |
-| `bookmark_widget_edit_label` | arrowhead, ~8px left and 1px down | it points at the label cell's centre plus a nudge, where it used to be a raw point |
-| `linear_align_ctx_menu` | arrowhead ~5px right, pill ≤2px | head and pill now share the click's own anchor |
-| `customized_feature_details` / `upstream_downstream_details` | the click, from x=430 to the Apple3 mRNA's midpoint | same feature, same row, furthest point from either end of it |
-
-[reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)
-is the method, including why the 40 remaining raw coordinates are deliberate.
 
 ### Re-render the five figures the settings-menu refactor outran
 
@@ -2384,15 +2357,6 @@ never re-run, so treat them the same way: that HG02768 view yields 0
 cross-region arcs both as one region and as two regions 2 Mb apart — the 52 came
 from splitting it 300 bp apart — and 865 of 9204 arcs are interchromosomal at
 `1:2,000,000` on HG002 300x.
-
-### Measure the dense-lane SNP change on a deep pileup
-
-`57e26565a4` moved SNP segments into dense lanes and lives in
-`packages/alignments-core`, so the alignments coverage pipeline inherits it — but
-every measurement behind it is MAF data (78 → 27 ms). A deep pileup has a
-different mismatch distribution, far more mismatches per position and far fewer
-distinct positions, which is the shape where dense lanes win by the most. The
-direction is safe and verified output-identical; the magnitude is unmeasured.
 
 ### Alignments still repacks every row-instanced pass on the main thread
 
