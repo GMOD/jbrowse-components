@@ -56,6 +56,12 @@ export const pages: ExamplePage[] = [
         title: 'Widgets in a side drawer',
         description: 'Put the track selector and feature details in a drawer.',
       },
+      {
+        slug: 'fixed-height',
+        title: 'Fitting the view in a fixed-height box',
+        description:
+          'What a host box does to a view that is taller than it, and what drawerViewHeight does.',
+      },
     ],
   },
 

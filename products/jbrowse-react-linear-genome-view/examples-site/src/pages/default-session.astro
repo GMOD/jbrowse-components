@@ -5,6 +5,8 @@ import DisableAddTrack from '../examples/DisableAddTrack.tsx'
 import DisableAddTrackCode from '../examples/DisableAddTrack.tsx?raw'
 import WithDrawerWidget from '../examples/WithDrawerWidget.tsx'
 import WithDrawerWidgetCode from '../examples/WithDrawerWidget.tsx?raw'
+import FixedHeight from '../examples/FixedHeight.tsx'
+import FixedHeightCode from '../examples/FixedHeight.tsx?raw'
 import { getPage, section } from '../examples.ts'
 import Layout from '../layouts/ExampleLayout.astro'
 import Section from '../layouts/ExampleSection.astro'
@@ -13,6 +15,7 @@ const page = getPage('default-session')
 const sec0 = section(page, 'default-session')
 const sec1 = section(page, 'disable-add-track')
 const sec2 = section(page, 'with-drawer-widget')
+const sec3 = section(page, 'fixed-height')
 ---
 
 <Layout page={page}>
@@ -24,5 +27,8 @@ const sec2 = section(page, 'with-drawer-widget')
   </Section>
   <Section {...sec2} code={WithDrawerWidgetCode}>
     <WithDrawerWidget client:only="react" />
+  </Section>
+  <Section {...sec3} code={FixedHeightCode}>
+    <FixedHeight client:only="react" />
   </Section>
 </Layout>
