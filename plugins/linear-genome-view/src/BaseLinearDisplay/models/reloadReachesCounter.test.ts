@@ -106,7 +106,9 @@ test.each(declarations.map(d => [d.where, d.body] as const))(
   (where, body) => {
     const code = withoutComments(body)
     const empty = !code.replaceAll(/[{}\s]/g, '')
-    const bumps = code.includes('reloadCount')
+    // the whole name now that variants' `reloadCount` is gone — a prefix match
+    // would pass a body bumping some other counter that merely starts this way
+    const bumps = code.includes('reloadCounter')
     // `superReload()`, the spelling MST forces: an override replaces the action
     // outright, so chaining means capturing it before the block.
     const chains = /super\w*\(\)/.test(code)

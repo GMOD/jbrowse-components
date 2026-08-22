@@ -353,8 +353,8 @@ describe('installGlobalFetchAutorun', () => {
   })
 
   it('refetches when a reload() bump also reopens the gate', async () => {
-    // what a display gets by pairing the counter bump with dropping its own
-    // freshness signal (ArcFetchModel.reload clears loadedRegionSignature)
+    // what a display gets by pairing the counter bump with dropping its
+    // freshness signal (GlobalFetchMixin.reload clears loadedFetchSignature)
     const { display, fetched } = await setup(d => !d.loaded)
     display.setLoaded(true)
     await settle()
