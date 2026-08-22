@@ -145,7 +145,7 @@ const state = { ...model.renderState, canvasWidth, canvasHeight: height }
 Two displays legitimately paint at a different width and say so at the seam: the
 **variant matrix** (`view.totalWidthPxWithoutBorders` — the content width its
 columns, connector lines and hit-test all key off) and **LD** (same, for its
-triangle and recombination plot). Both still take the shell's `canvasWidth` for
+triangle). Both still take the shell's `canvasWidth` for
 the frame they draw inside.
 
 ### The one permitted body guard: a TypeScript narrow
@@ -241,11 +241,11 @@ their terminals differently and keep their own call.
   because the fetch trigger is a debounced `afterAttach` autorun, so at export
   time `isLoading` can be false with no data yet, and a `displayPhase !==
   'loading'` test would capture an empty render. `dataCurrent` is an overridable
-  getter (default `false`) each display must implement. Since 2026-08-21 all
-  three answer it through the same `isDataCurrent` signature compare — over the
-  static-block set for arc and HiC, over the visible span plus the settings
-  that shape it for LD — with HiC and LD adding their own `rpcData !== null`
-  term because a commit sets both. Presence alone
+  getter (default `false`) each display must implement. Since 2026-08-21 they
+  all answer it through the same `isDataCurrent` signature compare (the census
+  below is the roster and what each signature is built from), with HiC and LD
+  adding their own `rpcData !== null` term because a commit sets both.
+  Presence alone
   (`rpcData !== null`) would leave an in-place-refetch gap: a pan/zoom export
   resolving on the pre-pan matrix during the debounce+RPC window, since neither
   fetch clears `rpcData` at refetch start. A display that forgets to override
@@ -254,6 +254,23 @@ their terminals differently and keep their own call.
   that wait (`svgReady` is a terminal state, so it resolves once the fetch it
   observes settles); a missing `dataCurrent` override shows up as an export that
   never finishes, not as a diagnostic.
+
+#### Who answers `dataCurrent` by signature
+
+<!-- BEGIN GENERATED FRESHNESS_SIGNATURE_CENSUS -->
+
+
+5 models across 5 packages answer `dataCurrent` by comparing the signature their data was loaded for against the one the live view calls for. A display joins by calling `isDataCurrent` and leaves by not calling it.
+
+<!-- prettier-ignore -->
+| Model | Loaded signature | Live signature |
+| --- | --- | --- |
+| `plugins/arc/src/shared/ArcFetchModel.ts` | `self.loadedRegionSignature` | `currentRegionSignature(self)` |
+| `plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx` | `self.loadedFetchKey` | `this.currentFetchKey` |
+| `plugins/hic/src/LinearHicDisplay/model.ts` | `self.loadedSignature` | `self.hicFetchSignature` |
+| `plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts` | `self.loadedFetchKey` | `this.currentFetchKey` |
+| `plugins/variants/src/LDDisplay/shared.ts` | `self.loadedSignature` | `this.ldFetchSignature` |
+<!-- END GENERATED FRESHNESS_SIGNATURE_CENSUS -->
 
 ### The view-level wait: `awaitViewInitialized`
 
@@ -485,12 +502,15 @@ peptide overlays, so exported text stays crisp.
 the rounding only perturbs the shape's own width and height. What that leaves
 exposed is the *linear* part: a `ctx.scale` below 0.005 rounds to `0`, and the
 whole layer exports blank. Hi-C hit it — under absolute coordinates its
-`viewScale` is `1 / bpPerPx`, about 1e-4 at gene scale, and the exported
-triangle collapsed while the on-screen canvas was correct. The fix is the one to
-reach for generally: a *uniform* scale commutes with rotation, so multiply it
-onto the coordinates and leave the ctx stack holding only O(1) terms (Hi-C keeps
-the 45° rotation and the fit-to-height squash there). Anything that shows up
-only in the export and only at high zoom is worth checking against this first.
+`viewScale` is `1 / bpPerPx`, so it crosses that threshold the moment the window
+passes ~200 kb and sits around 1e-4 at the megabase windows a contact map is
+actually read at, and the exported triangle collapsed while the on-screen canvas
+was correct. The fix is the one to reach for generally: a *uniform* scale
+commutes with rotation, so multiply it onto the coordinates and leave the ctx
+stack holding only O(1) terms (Hi-C keeps the 45° rotation and the fit-to-height
+squash there). A bp-derived scale shrinks as the view *widens*, so this is worth
+checking first against anything that exports blank only in wide views — the
+opposite of where an export bug is usually looked for.
 
 **Avoid hand-rolled JSX-SVG inside `renderSvg.tsx`.** Anything draw-shaped
 (rects, paths, fills, strokes) should go through `PaintLayer` so both raster and
@@ -512,9 +532,8 @@ rasterize, drifts from on-screen output, and locks in vector output.
   is "interactive" — these already render as JSX on-screen, so the JSX path *is*
   the on-screen path.
 - **Shared React-SVG overlays** the on-screen view also uses (`VariantLabels`,
-  `LinesConnectingMatrixToGenomicPosition`, `RecombinationTrack`,
-  `SvgSampleRowLabelGutter`, `SvgRowLabels`/`SvgTreePath` from
-  `@jbrowse/tree-sidebar`). Same component
+  `LinesConnectingMatrixToGenomicPosition`, `SvgSampleRowLabelGutter`,
+  `SvgRowLabels`/`SvgTreePath` from `@jbrowse/tree-sidebar`). Same component
   renders on-screen + in export via an `exportSVG` prop. The heavy
   raster-friendly fill path (the matrix itself) **must** still go through
   `PaintLayer`; only the overlays stay JSX.

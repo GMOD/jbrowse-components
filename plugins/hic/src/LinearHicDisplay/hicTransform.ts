@@ -4,7 +4,8 @@
  * The forward map is `hic.slang`'s `vs_main`, which the Canvas2D path
  * implements as coordinates pre-multiplied by the uniform `viewScale` (which
  * commutes with rotation, and must stay out of the ctx matrix — SvgCanvas
- * rounds serialized transforms to 2 decimals, and 1/bpPerPx rounds to zero)
+ * rounds serialized transforms to 2 decimals, and 1/bpPerPx is under 0.005 past
+ * ~200 bp/px, so the export rounds the whole triangle to zero)
  * under a `ctx.translate/scale(1, yScalar)/rotate` stack the SVG export
  * inherits through `SvgCanvas`'s CTM: rotate the bin into the triangle
  * **first**, then apply the fit-to-height squash. That order is load-bearing —

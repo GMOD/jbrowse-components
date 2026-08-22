@@ -66,13 +66,8 @@ export function drawHicBlocks(
   const minSum = (-viewOffsetX / viewScale) * Math.SQRT2 - pad
   const maxSum = ((width - viewOffsetX) / viewScale) * Math.SQRT2 + pad
 
-  // The uniform `viewScale` rides on the coordinates, not the ctx transform:
-  // uniform scaling commutes with rotation, so the pixels are identical — and
-  // the ctx entries stay O(1), which the SVG export needs. SvgCanvas rounds
-  // serialized transforms to 2 decimals, and `viewScale` is 1/bpPerPx (~1e-4
-  // at gene scale), so putting it in the matrix rounds the whole triangle to
-  // zero. `yScalar` stays in the matrix: it is a y-only scale, so it must land
-  // AFTER the rotation (see hicTransform.ts), and it is O(1).
+  // `viewScale` rides on the coordinates rather than the ctx matrix, and
+  // `yScalar` stays in it: hicTransform.ts has both reasons.
   ctx.save()
   ctx.translate(viewOffsetX, 0)
   ctx.scale(1, yScalar)

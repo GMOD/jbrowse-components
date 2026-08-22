@@ -44,7 +44,7 @@ formats (VCF `POS`, GFF `start`) subtract 1 on ingest; exporters that write
 |---|---|---|---|
 | **LGV bp** | alignments, canvas basic + multi-row, wiggle, variants, MAF, GWAS | absolute genomic `uint` | `bpToClipX(bp, u)` (hi/lo split, below) |
 | **Window-relative cumulative bp** | synteny, dotplot | `float bpRel = cumBp − base` | `bpRel * bpPerPxInv + panPx`, then `screenToClip` |
-| **Origin-relative diagonal bp** | Hi-C, LD (both passes) | `float2` of bp/√2 relative to the payload's own `originBp` | `diagonalCellToClip(pos, canvasSize, viewScale, viewOffsetX, yScalar)` |
+| **Origin-relative diagonal bp** | Hi-C, LD (both passes) | bp/√2 off the payload's own `originBp` — a `float2` attribute, or (LD index mode) a decoded instance index times `uniformW` | `diagonalCellToClip(pos, canvasSize, viewScale, viewOffsetX, yScalar)` |
 | **Screen space** | variant matrix | CSS px, computed on the CPU | `screenToClip(px, resolution)` |
 
 `hpmath.slang` hosts the hi/lo helpers plus the generic ones every family lands
@@ -153,8 +153,9 @@ captured when the geometry is built):
   `DisplayName/instanceInterleave.ts` owns its pack loop (hand-written, not the
   generated `packInstances`, because both apply a per-element transform a flat
   ArrayLike packer can't express: synteny's `featureId = instanceFeatureIdx + 1`,
-  dotplot's `cumBp − base`), and each exports the same
-  `interleaveInstances` / `patchInstanceColors` pair — see [the recolor fast
+  dotplot's `cumBp − base`), and each exports that loop as `interleaveInstances`
+  plus the `InstanceCacheOpts` descriptor naming its geometry token and color
+  lane, which `createInstanceCache` drives — see [the recolor fast
   path](../ARCHITECTURE.md#gpuprops-and-derived-region-maps--re-upload-without-refetch).
   Offsets and stride always come from the shader's generated interface, so only
   the loop is local.
@@ -333,12 +334,13 @@ teaches hosts to draw exactly these overlays.
 
 ### Hi-C and LD are not a precision problem, and the origin is why
 
-`diagonalGrid.slang` says its grid units are "genomic bp for Hi-C", and since
-the 2026-08-21 rewrite that is literally true — `w = res / √2`
-(`executeRenderHicData.ts`), so an instance position is genomic bp on the
-rotated axis, not the viewport-pixel-scale number it used to be. That reads like
-the Gbp-scale Float32 hazard synteny and dotplot both had to solve, and it is
-answered the same way: the worker subtracts an origin first.
+Since the 2026-08-21 rewrite the diagonal grid really is in genomic units:
+`w = res / √2` (`executeRenderHicData.ts`), so an instance position is genomic
+bp projected onto the rotated axis — bp/√2, which `diagonalCellToClip`'s own
+`ROT_45` factor collapses back — rather than the viewport-pixel-scale number it
+used to be. That reads like the Gbp-scale Float32 hazard synteny and dotplot
+both had to solve, and it is answered the same way: the worker subtracts an
+origin first.
 
 `calcAxisBlocks` picks `originBp` — the leading edge of the fetched block set —
 and every position ships relative to it, so a Float32 instance attribute carries
@@ -358,10 +360,11 @@ position while a refetch runs. The staleness mechanism that existed to rescale
 fetch-time pixels retired with it (ARCHITECTURAL_LIMITS.md §"Staleness
 mechanisms behind one name").
 
-**A uniform scale that small must stay out of the SVG ctx matrix.** `viewScale`
-is ~1e-4 at gene scale, and the export rounds serialized transforms to 2
-decimals; Hi-C multiplies it onto the coordinates instead and keeps only the
-rotation and the y-squash on the ctx stack. SVG_EXPORT.md carries the rule.
+**A uniform scale that small must stay out of the SVG ctx matrix.** The export
+rounds serialized transforms to 2 decimals, and `viewScale` is `1 / bpPerPx`, so
+it rounds to zero past ~200 bp/px — every window a contact map is actually read
+at. Hi-C multiplies it onto the coordinates instead and keeps only the rotation
+and the y-squash on the ctx stack. SVG_EXPORT.md carries the rule.
 
 ## The readout direction: a pixel back to a base
 

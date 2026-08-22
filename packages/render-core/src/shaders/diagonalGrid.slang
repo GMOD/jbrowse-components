@@ -12,8 +12,9 @@ import hpmath;
 // cos(45°) = sin(45°).
 static const float ROT_45 = 0.7071067811865476;
 
-// Grid-space cell corner → clip space. `pos` is in the caller's grid units
-// (genomic bp for Hi-C, cell pitch for the LD uniform grid).
+// Grid-space cell corner → clip space. `pos` is in the caller's grid units,
+// pre-rotation: bp/√2 off the payload origin for Hi-C and genomic-mode LD, cell
+// pitch for the LD uniform grid. ROT_45 collapses the √2 back out.
 public float4 diagonalCellToClip(
   float2 pos, float2 canvasSize, float viewScale, float viewOffsetX, float yScalar
 ) {

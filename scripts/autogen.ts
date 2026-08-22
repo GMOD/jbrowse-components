@@ -163,6 +163,17 @@ const GENERATORS: Generator[] = [
     name: 'display state census',
     argv: web('generate-display-state-census.ts'),
   },
+  {
+    // SVG_EXPORT.md's roster of who answers `dataCurrent` by signature compare.
+    // Same gap as the census above, one doc over: the prose said HiC and LD
+    // compared a viewport snapshot for weeks after they had stopped, and
+    // `isDataCurrent`'s own JSDoc counted four callers when there were six.
+    // Neither is reachable by check-doc-imports — it resolves the identifiers a
+    // doc names, never the claims about how many, and `agent-docs/reference/`
+    // is outside its scope besides.
+    name: 'freshness signature census',
+    argv: web('generate-freshness-census.ts'),
+  },
   // Before the README is mirrored into the docs site, since this rewrites it.
   {
     name: 'jbrowse-img README commands',

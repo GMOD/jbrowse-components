@@ -84,10 +84,6 @@ describe('Canvas2DHicRenderer', () => {
     expect(ctx.fillRect).toHaveBeenCalledWith(10, 20, 10, 10)
   })
 
-  // The uniform viewScale rides on the coordinates, never the ctx matrix:
-  // SvgCanvas serializes ctx transforms rounded to 2 decimals, and viewScale is
-  // 1/bpPerPx, which rounds to zero at gene scale — only the O(1) yScalar (a
-  // y-only squash, so it must land after the rotation) belongs in the stack.
   test('applies yScalar via the ctx stack and viewScale on the coordinates', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DHicRenderer(canvas)

@@ -907,15 +907,15 @@ color-lane patch.** A genuine recolor (`colorBy`, `opacityByIdentity`, a track
 palette shift) does produce a fresh `colors` array, and the `geometry` getter
 then hands the backend a fresh object over the *same* coordinate arrays — which
 is exactly what `createKeyedUploadSync`'s reference diff is meant to catch, but a
-naive backend re-packs every lane to change one. So
-`GpuSyntenyRenderer.getInterleaved` / `GpuDotplotRenderer.getInterleaved` both
-memoize the packed bytes on `(one geometry array's identity, colors' identity)`
-and call `patchInstanceColors` when only the latter moved. The GPU re-upload
-still happens — the HAL has no partial-buffer update — but the CPU interleave,
-which dominates at 10⁵–10⁶ instances, does not. Any new keyed-upload backend
-whose palette is a separate main-thread pass wants the same memo — extracted
-since as `createInstanceCache` (`@jbrowse/render-core/instanceCache`), which
-both renderers now take. The
+naive backend re-packs every lane to change one. So both renderers hold a
+`createInstanceCache` (`@jbrowse/render-core/instanceCache`), which memoizes the
+packed bytes on `(one geometry array's identity, colors' identity)` and patches
+the color lane in place when only the latter moved. The GPU re-upload still
+happens — the HAL has no partial-buffer update — but the CPU interleave, which
+dominates at 10⁵–10⁶ instances, does not. Each plugin supplies an
+`InstanceCacheOpts` naming its geometry token, its color accessor and the stride
+and color offset the patch has to write at; any new keyed-upload backend whose
+palette is a separate main-thread pass wants the same. The
 model-side half of this split — why the colors array is fresh in the first place,
 and why opacity is *not* in it — is
 [ARCHITECTURE.md § gpuProps and derived region
