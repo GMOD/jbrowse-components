@@ -345,7 +345,7 @@ float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
   // value on slanted ribbons) — a near-hard side edge on the ribbon's top and
   // bottom rows. At a bowtie's pinch the 2x2 quad straddles the edge-identity
   // swap and reads 0.707. aaHalf is right in both.
-  return aaSmoothRamp(dL, aaHalf) * aaSmoothRamp(dR, aaHalf) * widthFade;
+  return aaRamp(dL, 2.0 * aaHalf) * aaRamp(dR, 2.0 * aaHalf) * widthFade;
 }
 
 // Ribbon edge X positions + per-edge slope foreshortening at a point along the
