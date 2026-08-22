@@ -473,7 +473,9 @@ export const uiVideos: VideoSpec[] = [
         selector: '[data-testid="assembly-name"]',
         timeout: 60000,
       },
-      { type: 'delay', ms: 3000, say: 'Assembly name' },
+      // `Genome name` is the field's rendered label; `assembly-name` is only its
+      // testid, and nothing checks a `say` against a string the app draws.
+      { type: 'delay', ms: 3000, say: 'Genome name' },
       // It names it after the file, `hg38.prefix`. The field is editable, and
       // the rest of the quickstart calls the assembly `hg38`, so the tour
       // renames it rather than leaving the page and the film disagreeing.
@@ -482,7 +484,7 @@ export const uiVideos: VideoSpec[] = [
         selector: '[data-testid="assembly-name"]',
         value: 'hg38',
         clear: true,
-        say: 'Rename it hg38',
+        say: 'hg38',
         hold: 1600,
       },
       { type: 'click', text: 'Submit', say: 'Submit' },
