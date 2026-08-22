@@ -1169,10 +1169,25 @@ tabix -p bed out.bubbles.bed.gz
 Carriage is already [a published file](#carriage-at-the-graphs-own-granularity),
 tabix-indexed like the callset. The route that rebuilds it,
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh),
-runs `minigraph --call` over the assemblies and writes one row per haplotype per
-bubble for the guide's
+writes one row per haplotype per bubble for the guide's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
-lane, at the cost of a 464-assembly download and a mapping run.
+lane, at the cost of a 464-assembly download and a mapping run. One call per
+sample is the whole of it:
+
+<!-- from: scripts/build_minigraph_paths.sh -->
+
+```bash
+# --call asks for the path each sample takes through every bubble rather than an
+# alignment. It emits one line per `gfatools bubble` line above, in the same
+# order for every sample, so line N of one sample and line N of another are the
+# same bubble and can be joined on line number alone.
+# -xasm is the assembly-to-graph preset, and -c asks for the base-level
+# alignment the call is read off.
+minigraph -cxasm --call -t 8 graph.rgfa.gz sample.fa > sample.call.bed
+```
+
+Run it once per assembly, with the reference first: the reference's path through
+a bubble is the allele every other sample's path is compared against.
 
 `build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
 sample, and writes a second index pair keyed only under that sample's sequences
