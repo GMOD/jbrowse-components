@@ -3,14 +3,19 @@
 /**
  * Which of `antialias.slang`'s two ramp shapes is closer to a box filter.
  *
- * The module offers `aaRamp` (linear in the signed distance) and
- * `aaSmoothRamp` (the smoothstep cubic), both spanning exactly one output
- * pixel, and the tree runs both — dotplot's capsule takes the cubic where
- * wiggle's identically-shaped capsule takes the linear. The choice was never
- * made against a reference, only argued: linear "is what a box filter
- * produces", cubic "reads softer on a curve".
+ * `antialias.slang` offered two shapes over exactly one output pixel — `aaRamp`
+ * (linear in the signed distance) and `aaSmoothRamp` (the smoothstep cubic) —
+ * and the tree ran both, dotplot's capsule taking the cubic where wiggle's
+ * identically-shaped capsule took the linear. The choice was never made against
+ * a reference, only argued: linear "is what a box filter produces", cubic "reads
+ * softer on a curve".
  *
- * So this measures it. Exact coverage of the unit pixel square by a half plane
+ * This measured it, and the cubic lost at every angle, so the four shaders that
+ * took it moved onto `aaRamp` and the cubic is no longer in the tree. Both
+ * shapes are modelled here in JS, so the comparison is still runnable and this
+ * script is where the smoothstep form is now written down.
+ *
+ * Exact coverage of the unit pixel square by a half plane
  * is integrated on a fine sub-grid — obviously right rather than cleverly
  * right — and both ramps are scored against it as a function of the edge's
  * signed perpendicular distance from the pixel centre. The band table then
@@ -53,7 +58,7 @@ function exactCoverage(d: number, theta: number) {
 /** `aaRamp(signedInk, 1.0)` — the ramp one output pixel wide. */
 const linear = (d: number) => Math.min(1, Math.max(0, d + 0.5))
 
-/** `aaSmoothRamp(signedInk, 0.5)` — the same support, cubic. */
+/** The retired `aaSmoothRamp(signedInk, 0.5)` — the same support, cubic. */
 const smooth = (d: number) => {
   const t = Math.min(1, Math.max(0, d + 0.5))
   return t * t * (3 - 2 * t)

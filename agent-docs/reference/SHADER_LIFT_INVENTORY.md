@@ -13,7 +13,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 95 functions
+Scanned 42 shaders with entry points. 94 functions
 are inside the emitter's subset, of which **67 are exported**.
 
 ## Candidates
@@ -35,7 +35,6 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | --- | --- | --- |
 | `aaHalfPx` | `(f32) -> f32` | half of one output pixel in CSS px, which only a fragment measuring in CSS px against a device-px grid needs; Canvas2D rasterizes in its own transform and never asks |
 | `aaRamp` | `(f32, f32) -> f32` | the stroke antialiasing ramp, measured per fragment; Canvas2D and SVG get their edge AA from the rasterizer. Split from strokeAaRamp for the referee, not for a consumer: check-oracle sweeps by signature, so a scalar core is swept whether or not anything imports it |
-| `aaSmoothRamp` | `(f32, f32) -> f32` | the cubic form of the same per-fragment edge ramp, for the same reason |
 | `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |

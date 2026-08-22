@@ -109,9 +109,9 @@ describe('glyph SDF gradients', () => {
 
   test('the bar is constant, which is what the ramp floor is for', () => {
     expect(gradMag(SDFS.bar, 0.3, -0.4)).toBe(0)
-    // 0.5 * max(0, 1e-5) is a positive half-ramp, and smoothstep of a coverage
-    // far above it is 1 — the solid fill SHAPE_BAR wants.
-    expect(0.5 * Math.max(0, 1e-5)).toBeGreaterThan(0)
+    // max(0, 1e-5) is a positive ramp width, and a coverage of 1 over a ramp
+    // that narrow clamps to 1 — the solid fill SHAPE_BAR wants.
+    expect(Math.max(0, 1e-5)).toBeGreaterThan(0)
   })
 })
 
@@ -126,8 +126,9 @@ function rampGeometry(
   y: number,
   radiusPx: number,
   dpr: number,
-  // how the shader turns its measured derivative into the smoothstep's
-  // half-width. The shader halves it; the retired spelling used it whole.
+  // how the shader turns its measured derivative into the ramp's half-width.
+  // `aaRamp` takes the measurement as the FULL ramp width, so the half is half
+  // of it; the retired spelling used fwidth's overshooting value as the half.
   halfRampOf = (measuredPerDevicePx: number) => 0.5 * measuredPerDevicePx,
   // what the shader differentiates WITH. These are two separate quantities and
   // conflating them is what hides the bug: the ramp's width in coverage units
