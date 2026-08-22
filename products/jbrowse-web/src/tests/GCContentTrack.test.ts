@@ -65,7 +65,7 @@ function findGCTrack(session: ReturnType<typeof makeSession>) {
   return added
 }
 
-test('LinearReferenceSequenceDisplay adds a standalone GCContentTrack', () => {
+test('LinearReferenceSequenceDisplay adds a standalone GCContentTrack', async () => {
   const session = makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
@@ -79,13 +79,16 @@ test('LinearReferenceSequenceDisplay adds a standalone GCContentTrack', () => {
   expect(readConfObject(added, ['adapter', 'sequenceAdapter', 'type'])).toBe(
     'FromConfigSequenceAdapter',
   )
-  // and it is shown in the view
-  expect(
-    session.views[0].tracks.some(
-      (t: { configuration: AnyConfigurationModel }) =>
-        readConfObject(t.configuration, 'type') === 'GCContentTrack',
-    ),
-  ).toBe(true)
+  // and it is shown in the view — the show goes through the async
+  // launchTrack path now
+  await waitFor(() => {
+    expect(
+      session.views[0].tracks.some(
+        (t: { configuration: AnyConfigurationModel }) =>
+          readConfObject(t.configuration, 'type') === 'GCContentTrack',
+      ),
+    ).toBe(true)
+  })
 })
 
 test('LinearGCContentDisplay carries its current params onto the new track', () => {
@@ -154,12 +157,20 @@ test('in-view track menu offers "Add GC content track" on refseq', () => {
   ).toBe(true)
 })
 
-test('standalone GCContentTrack display does not double-wrap its adapter', () => {
+test('standalone GCContentTrack display does not double-wrap its adapter', async () => {
   const session = makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
-  // addGCContentTrack already shows the new track in the view
+  // addGCContentTrack shows the new track through the async launchTrack path
   session.views[0].tracks[0].displays[0].addGCContentTrack()
+  await waitFor(() => {
+    expect(
+      session.views[0].tracks.some(
+        (t: { configuration: AnyConfigurationModel }) =>
+          readConfObject(t.configuration, 'type') === 'GCContentTrack',
+      ),
+    ).toBe(true)
+  })
 
   const shown = session.views[0].tracks.find(
     (t: { configuration: AnyConfigurationModel }) =>

@@ -3,7 +3,7 @@ import '@testing-library/jest-dom'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSessionAsync } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import DotplotImportForm from './index.tsx'
 
@@ -172,7 +172,12 @@ test('Quick start launch sets the axes and shows the track', async () => {
   })
   fireEvent.click(launchButton())
   expect(model.assemblyNames).toEqual(['mm39', 'hg38'])
-  expect(model.tracks.map(t => t.configuration.trackId)).toEqual(['hg38_mm39'])
+  // the show goes through the async launchTrack path now
+  await waitFor(() => {
+    expect(model.tracks.map(t => t.configuration.trackId)).toEqual([
+      'hg38_mm39',
+    ])
+  })
 })
 
 test('an all-vs-all track says which assemblies a dotplot leaves out', async () => {
@@ -361,7 +366,9 @@ test('a None does not carry onto a pair the user never silenced', async () => {
   fireEvent.mouseDown(axisSelect('X'))
   fireEvent.click(screen.getByRole('option', { name: 'rn7' }))
   fireEvent.click(launchButton())
-  expect(model.tracks).toHaveLength(1)
+  await waitFor(() => {
+    expect(model.tracks).toHaveLength(1)
+  })
 })
 
 test('None leaves the launch without a track', async () => {

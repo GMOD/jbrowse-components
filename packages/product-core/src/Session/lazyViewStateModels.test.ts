@@ -89,7 +89,7 @@ test('launchView loads the state model and adds the view', async () => {
   expect(view.displayName).toBe('mine')
 })
 
-test('a session snapshot naming a lazy view type casts after preloadViewTypes', async () => {
+test('a session snapshot naming a lazy view type casts after preloadSessionTypes', async () => {
   const { pluginManager, sessionModel } = setup()
   const snapshot = {
     name: 'test',
@@ -98,7 +98,7 @@ test('a session snapshot naming a lazy view type casts after preloadViewTypes', 
       { id: 'l', type: 'FakeLazyView' },
     ],
   }
-  await pluginManager.preloadViewTypes(snapshot)
+  await pluginManager.preloadSessionTypes(snapshot)
   const session = sessionModel.create(snapshot, { pluginManager })
   expect(session.views.map(v => v.type)).toEqual([
     'FakeEagerView',

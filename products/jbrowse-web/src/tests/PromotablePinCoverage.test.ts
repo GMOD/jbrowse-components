@@ -172,11 +172,11 @@ function overlayWithSources(d: any) {
 }
 
 interface TestView {
-  showTrack: (
+  launchTrack: (
     trackId: string,
     initialSnapshot?: Record<string, unknown>,
     displayInitialSnapshot?: Record<string, unknown>,
-  ) => unknown
+  ) => Promise<unknown>
   tracks: {
     displays: (ResolvableDisplay & { trackMenuItems: () => MenuItem[] })[]
   }[]
@@ -195,7 +195,9 @@ beforeEach(() => {
 async function openDisplay({ displayType, trackId, displaySnapshot }: Fixture) {
   const { rootModel } = await getPluginManager()
   const view = rootModel.session!.views[0] as unknown as TestView
-  view.showTrack(trackId, {}, { type: displayType, ...displaySnapshot })
+  // launchTrack, not showTrack: some of these display types (the alignments
+  // ones) load their state model lazily, and the sync path throws for those
+  await view.launchTrack(trackId, {}, { type: displayType, ...displaySnapshot })
   const display = view.tracks
     .flatMap(t => t.displays)
     .find(d => d.type === displayType)

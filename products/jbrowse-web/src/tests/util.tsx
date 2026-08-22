@@ -67,7 +67,7 @@ export async function getPluginManager(
 
   // setDefaultSession instantiates the config's defaultSession synchronously,
   // so any lazily registered view state model it names has to be in place first
-  await pluginManager.preloadViewTypes(config.defaultSession)
+  await pluginManager.preloadSessionTypes(config.defaultSession)
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()

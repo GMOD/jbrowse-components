@@ -14,6 +14,7 @@ interface PlainConfig {
 
 interface TestView {
   showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   hideTrack: (id: string) => void
   tracks: { configuration: AnyConfigurationModel }[]
 }
@@ -469,7 +470,9 @@ test('a shorthand-uri track edit does not pin the expanded adapter into the delt
   )!
   expect((rawBase.adapter as { uri?: string }).uri).toBeDefined()
 
-  view.showTrack(SHORTHAND_TRACK)
+  // launchTrack, not showTrack: this is an AlignmentsTrack, and
+  // LinearAlignmentsDisplay's state model is loaded lazily
+  await view.launchTrack(SHORTHAND_TRACK)
   const openConfig = () =>
     view.tracks.find(t => t.configuration.trackId === SHORTHAND_TRACK)!
       .configuration as AnyConfigurationModel & {

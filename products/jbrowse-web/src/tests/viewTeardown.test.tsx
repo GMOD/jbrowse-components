@@ -256,6 +256,12 @@ test('a view-local track config goes out with the view', async () => {
         displaySnapshot?: object,
         inlineConf?: Record<string, unknown>,
       ) => unknown
+      launchTrack: (
+        id: string,
+        initialSnapshot?: object,
+        displaySnapshot?: object,
+        inlineConf?: Record<string, unknown>,
+      ) => Promise<unknown>
       tracks: { configuration: AnyConfigurationModel }[]
     }[]
   }

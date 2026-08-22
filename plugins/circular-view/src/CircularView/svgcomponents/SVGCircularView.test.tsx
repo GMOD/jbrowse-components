@@ -60,7 +60,10 @@ function addVolvoxConf(session: ReturnType<typeof createTestSession>) {
 async function setup(init?: Record<string, unknown>) {
   const session = createTestSession()
   addVolvoxConf(session)
-  const view = session.addView('CircularView', init) as CircularViewModel
+  const view = (await session.launchView(
+    'CircularView',
+    init,
+  )) as CircularViewModel
   view.setWidth(800)
   // Causal, not a wall clock: the only async precondition here is the assembly
   // load, so await that and let `when` resolve on the reaction tick after it.
@@ -97,10 +100,10 @@ async function setupRefNames(
       },
     },
   })
-  const view = session.addView('CircularView', {
+  const view = (await session.launchView('CircularView', {
     init: { assembly: 'test' },
     ...viewSnap,
-  }) as CircularViewModel
+  })) as CircularViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('test')
   await when(() => view.displayedRegions.length > 0)

@@ -1,4 +1,5 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
 import type { LinearSyntenyViewModel } from './model.ts'
@@ -88,10 +89,16 @@ const heights = (view: LinearSyntenyViewModel) => view.levels.map(l => l.height)
 // existence and has to land on the same number the other two do.
 test('an appended level matches the auto-scaled stack it joins', async () => {
   const { view } = await openStack(6)
-  expect(heights(view)).toEqual([64, 64, 64, 64, 64])
+  // the init tracks land through the async launchTrack path now, and the
+  // auto-scale follows them
+  await waitFor(() => {
+    expect(heights(view)).toEqual([64, 64, 64, 64, 64])
+  })
 
   view.appendRow({ assembly: 'volvox0' })
-  expect(heights(view)).toEqual([64, 64, 64, 64, 64, 64])
+  await waitFor(() => {
+    expect(heights(view)).toEqual([64, 64, 64, 64, 64, 64])
+  })
 })
 
 // A band the user dragged is the height they chose for this stack; the row they

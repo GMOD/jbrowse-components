@@ -90,6 +90,6 @@ export function createTestSession(args?: CreateTestSessionArgs) {
  */
 export async function createTestSessionAsync(args?: CreateTestSessionArgs) {
   const built = buildTestRoot(args)
-  await built.pluginManager.preloadViewTypes(built.snapshot)
+  await built.pluginManager.preloadSessionTypes(built.snapshot)
   return finishTestSession(built)
 }

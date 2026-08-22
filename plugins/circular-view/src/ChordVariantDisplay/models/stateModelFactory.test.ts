@@ -55,9 +55,9 @@ function addConf(session: ReturnType<typeof createTestSession>) {
 async function setup() {
   const session = createTestSession()
   addConf(session)
-  const view = session.addView('CircularView', {
+  const view = (await session.launchView('CircularView', {
     init: { assembly: 'volvox', tracks: ['sv'] },
-  }) as CircularViewModel
+  })) as CircularViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('volvox')
   await when(() => view.tracks.length > 0)

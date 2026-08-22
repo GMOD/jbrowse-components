@@ -27,7 +27,7 @@ async function createCircularViewWithInit(init: {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('CircularView', { init })
+  const view = await session.launchView('CircularView', { init })
   view.setWidth(800)
 
   return { view, session, rootModel, pluginManager }
@@ -96,7 +96,9 @@ test('disableImportForm suppresses the form on error too, not just on empty', as
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('CircularView', { disableImportForm: true })
+  const view = await session.launchView('CircularView', {
+    disableImportForm: true,
+  })
   view.setWidth(800)
 
   expect(view.showImportForm).toBe(false)
@@ -115,7 +117,7 @@ test('an error opens the import form when it is not disabled', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('CircularView', {})
+  const view = await session.launchView('CircularView', {})
   view.setWidth(800)
   view.setError(new Error('assembly went away'))
 
@@ -127,7 +129,7 @@ test('CircularView showImportForm is true when no init', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('CircularView', {})
+  const view = await session.launchView('CircularView', {})
 
   expect(view.showImportForm).toBe(true)
   expect(view.hasSomethingToShow).toBe(false)
@@ -202,7 +204,7 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('CircularView', {
+  const view = await session.launchView('CircularView', {
     init: {
       assembly: 'nonexistent',
     },
@@ -227,7 +229,7 @@ test('snapshot keeps init while not materialized, strips it once regions load', 
   const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('CircularView', {
+  const view = await session.launchView('CircularView', {
     init: { assembly: 'volvox' },
   })
 

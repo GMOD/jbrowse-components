@@ -4,7 +4,14 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { createTestSessionAsync } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 
 import LinearSyntenyImportForm from './LinearSyntenyImportForm.tsx'
 
@@ -236,7 +243,10 @@ test('Quick start launch builds one row per assembly and shows the track', async
   })
   fireEvent.click(launchButton())
   expect(launchedRows(model)).toEqual(['hg38', 'mm39'])
-  expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
+  // the show goes through the async launchTrack path now
+  await waitFor(() => {
+    expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
+  })
 })
 
 test('an all-vs-all track stacks every assembly it names', async () => {
@@ -248,7 +258,9 @@ test('an all-vs-all track stacks every assembly it names', async () => {
   fireEvent.click(launchButton())
   expect(launchedRows(model)).toEqual(['hg38', 'mm39', 'rn7'])
   // the one track backs both adjacent bands
-  expect(levelTrackIds(model)).toEqual([['all'], ['all']])
+  await waitFor(() => {
+    expect(levelTrackIds(model)).toEqual([['all'], ['all']])
+  })
 })
 
 test('switching to Manual hands over the rows Quick start had set up', async () => {
@@ -318,7 +330,9 @@ test('a synteny track from a connection is applied to its pair', async () => {
     /Configure synteny track/,
   )
   fireEvent.click(launchButton())
-  expect(levelTrackIds(model)).toEqual([['conn_track']])
+  await waitFor(() => {
+    expect(levelTrackIds(model)).toEqual([['conn_track']])
+  })
 })
 
 // The launchable list is empty on the first render of a session whose synteny
@@ -470,7 +484,10 @@ test('removing a row drops that pair selection and keeps the others', async () =
   ])
   fireEvent.click(launchButton())
   expect(launchedRows(model)).toEqual(['hg38', 'mm39'])
-  expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
+  // the show goes through the async launchTrack path now
+  await waitFor(() => {
+    expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
+  })
 })
 
 test('a None does not slide onto a different pair when a row is removed', async () => {
@@ -504,7 +521,9 @@ test('a None does not slide onto a different pair when a row is removed', async 
   ])
   // the silenced pair is gone, so mm39/panTro6 is free to find its own track
   fireEvent.click(launchButton())
-  expect(levelTrackIds(model)).toEqual([[], ['mm39_panTro6']])
+  await waitFor(() => {
+    expect(levelTrackIds(model)).toEqual([[], ['mm39_panTro6']])
+  })
 })
 
 test('changing an assembly releases the pending upload for the old pair', async () => {

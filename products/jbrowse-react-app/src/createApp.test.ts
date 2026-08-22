@@ -32,8 +32,8 @@ function mount() {
   return el
 }
 
-test('createApp opens the declarative views', () => {
-  const controller = createApp(mount(), {
+test('createApp opens the declarative views', async () => {
+  const controller = await createApp(mount(), {
     assemblies,
     views: [
       { type: 'LinearGenomeView', init: { assembly: 'volvox' } },
@@ -50,8 +50,8 @@ test('createApp opens the declarative views', () => {
   controller.destroy()
 })
 
-test('addView opens another view after launch', () => {
-  const controller = createApp(mount(), { assemblies })
+test('addView opens another view after launch', async () => {
+  const controller = await createApp(mount(), { assemblies })
 
   controller.addView({ type: 'LinearGenomeView', id: 'later' })
 
@@ -62,8 +62,8 @@ test('addView opens another view after launch', () => {
   controller.destroy()
 })
 
-test('createApp restores a serialized session in place of views', () => {
-  const controller = createApp(mount(), {
+test('createApp restores a serialized session in place of views', async () => {
+  const controller = await createApp(mount(), {
     assemblies,
     views: [{ type: 'LinearGenomeView' }],
     session: { name: 'restored', views: [{ id: 'v', type: 'CircularView' }] },
@@ -81,8 +81,8 @@ test('createApp restores a serialized session in place of views', () => {
 // tree stays alive with its autoruns running and its RPC worker pool orphaned,
 // which is a per-mount leak for hosts that mount and discard repeatedly (a
 // Jupyter cell re-run, an SPA route change).
-test('destroy tears down the engine, not just the React root', () => {
-  const controller = createApp(mount(), { assemblies })
+test('destroy tears down the engine, not just the React root', async () => {
+  const controller = await createApp(mount(), { assemblies })
   const { viewState } = controller
   const destroyDrivers = jest.spyOn(viewState.rpcManager, 'destroy')
 
@@ -94,8 +94,8 @@ test('destroy tears down the engine, not just the React root', () => {
   expect(isAlive(viewState)).toBe(false)
 })
 
-test('destroy is idempotent', () => {
-  const controller = createApp(mount(), { assemblies })
+test('destroy is idempotent', async () => {
+  const controller = await createApp(mount(), { assemblies })
 
   controller.destroy()
   expect(() => {
@@ -106,13 +106,13 @@ test('destroy is idempotent', () => {
 // `session` is a mount option, but the state a host wants to apply often arrives
 // later — a URL the user pasted, a saved view they picked from a list. Without
 // this the only way to swap it is to destroy the app and build another.
-test('setSession replaces the session after launch', () => {
-  const controller = createApp(mount(), {
+test('setSession replaces the session after launch', async () => {
+  const controller = await createApp(mount(), {
     assemblies,
     views: [{ type: 'LinearGenomeView' }],
   })
 
-  controller.setSession({
+  await controller.setSession({
     name: 'restored',
     views: [{ id: 'v', type: 'CircularView' }],
   })
@@ -125,15 +125,15 @@ test('setSession replaces the session after launch', () => {
   controller.destroy()
 })
 
-test('setSession with nothing returns to the launch views', () => {
-  const controller = createApp(mount(), {
+test('setSession with nothing returns to the launch views', async () => {
+  const controller = await createApp(mount(), {
     assemblies,
     sessionName: 'launch',
     views: [{ type: 'LinearGenomeView' }],
   })
-  controller.setSession({ name: 'restored' })
+  await controller.setSession({ name: 'restored' })
 
-  controller.setSession()
+  await controller.setSession()
 
   const { session } = controller.viewState
   expect(session.name).toMatch(/^launch /)
@@ -145,8 +145,8 @@ test('setSession with nothing returns to the launch views', () => {
 
 // with no id given the view gets a generated one, which the host has no other
 // way to learn — leaving removeView, which takes an id, unusable for it
-test('addView returns the id removeView takes', () => {
-  const controller = createApp(mount(), { assemblies })
+test('addView returns the id removeView takes', async () => {
+  const controller = await createApp(mount(), { assemblies })
 
   const id = controller.addView({ type: 'LinearGenomeView' })
   expect(id).toBeTruthy()
@@ -161,16 +161,16 @@ test('addView returns the id removeView takes', () => {
 // kernel, an R session). Both of ours hand-rolled these before they lived here,
 // and both captured `viewState.session` outside the autorun — which setSession
 // replaces wholesale, so every read-back went dead on the first session restore.
-test('the read-backs survive a setSession', () => {
+test('the read-backs survive a setSession', async () => {
   const sessions: unknown[] = []
-  const controller = createApp(mount(), {
+  const controller = await createApp(mount(), {
     assemblies,
     views: [{ type: 'LinearGenomeView', id: 'first' }],
     onSessionChange: session => sessions.push(session),
   })
   expect(sessions).toHaveLength(1)
 
-  controller.setSession({
+  await controller.setSession({
     name: 'restored',
     views: [{ id: 'v', type: 'CircularView' }],
   })
@@ -180,15 +180,15 @@ test('the read-backs survive a setSession', () => {
 
   // and the new node is still observed: opening another view reports again
   const before = sessions.length
-  controller.addView({ type: 'CircularView', id: 'later' })
+  await controller.launchView({ type: 'CircularView', id: 'later' })
   expect(sessions.length).toBeGreaterThan(before)
 
   controller.destroy()
 })
 
-test('destroy stops the read-backs', () => {
+test('destroy stops the read-backs', async () => {
   const locations: unknown[] = []
-  const controller = createApp(mount(), {
+  const controller = await createApp(mount(), {
     assemblies,
     onLocationChange: locs => locations.push(locs),
   })
@@ -205,8 +205,8 @@ test('destroy stops the read-backs', () => {
   expect(locations).toHaveLength(after)
 })
 
-test('removeView closes a view, and ignores an unknown id', () => {
-  const controller = createApp(mount(), {
+test('removeView closes a view, and ignores an unknown id', async () => {
+  const controller = await createApp(mount(), {
     assemblies,
     views: [
       { type: 'LinearGenomeView', id: 'keep' },
