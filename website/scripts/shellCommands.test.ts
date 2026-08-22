@@ -68,12 +68,53 @@ test('a bare assignment line contributes no tool', () => {
 test('comments are dropped outside quotes and kept inside them', () => {
   expect(toolsAndFlags('# just a note')).toEqual([])
   expect(toolsAndFlags('samtools view in.bam  # trailing note')).toEqual([
-    { tool: 'samtools', flags: [] },
+    { tool: 'samtools', flags: ['view'] },
   ])
   // `#` inside a PanSN path is data, not a comment.
   const found = toolsAndFlags(`awk -v p="K12#1#chr" '{print $1}' in.tsv`)
   expect(found).toHaveLength(1)
   expect(found[0]!.flags).toEqual(['-v'])
+})
+
+test('a dispatching tool carries its subcommand', () => {
+  // Without it a marked fence pins nothing: every one of these scripts runs
+  // `jbrowse` and `bcftools` a dozen times, so the bare word always matches.
+  expect(toolsAndFlags('jbrowse make-pif in.paf')[0]!.flags).toEqual([
+    'make-pif',
+  ])
+  expect(
+    toolsAndFlags('bcftools view -g het -Oz -o out.vcf.gz in.vcf.gz')[0]!.flags,
+  ).toEqual(['view', '-g', '-Oz', '-o'])
+  // A tool that takes no subcommand is unaffected, and so is a first positional
+  // that is plainly a file rather than a verb.
+  expect(toolsAndFlags('minimap2 -cx asm5 ref.fa q.fa')[0]!.flags).toEqual([
+    '-cx',
+  ])
+  expect(toolsAndFlags('samtools faidx GRCh38.fa')[0]!.flags).toEqual(['faidx'])
+  expect(toolsAndFlags('vg giraffe -p -Z g.gbz')[0]!.flags).toEqual([
+    'giraffe',
+    '-p',
+    '-Z',
+  ])
+})
+
+test('a brace group contributes no tool of its own', () => {
+  // Regression: `}` parsed as a tool no script could contain, which is how the
+  // header-commenting idiom two pages use came back unmarkable.
+  const found = toolsAndFlags(
+    [
+      "{ head -1 in.ld | awk '{$1=\"#\"$1}1' OFS='\\t'",
+      '  tail -n +2 in.ld | sort -k1,1 -k2,2n',
+      '} | bgzip > out.ld.gz',
+    ].join('\n'),
+  )
+  expect(found.map(t => t.tool)).toEqual([
+    'head',
+    'awk',
+    'tail',
+    'sort',
+    'bgzip',
+  ])
 })
 
 test('shell builtins and quickstart plumbing are skipped', () => {

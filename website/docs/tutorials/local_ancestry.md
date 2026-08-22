@@ -197,6 +197,13 @@ labels from a two-column `labels.tsv` and coloring by ancestry via `itemRgb`:
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/flare_anc_to_bed.py
 python3 flare_anc_to_bed.py wolfdog_chr1.anc.vcf.gz labels.tsv ancestry.chr1.bed
+```
+
+Sort and index it the way any BED track is prepared. The build script does this
+part inline with `sort` to stay free of node, so its output is the same file by
+another route:
+
+```bash
 jbrowse sort-bed ancestry.chr1.bed | bgzip > ancestry.chr1.bed.gz
 tabix -p bed ancestry.chr1.bed.gz
 ```

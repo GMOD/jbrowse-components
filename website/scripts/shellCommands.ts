@@ -112,9 +112,28 @@ function commandWord(word: string) {
   return opened.includes('(') ? opened : opened.replace(/\)+$/, '')
 }
 
+// Tools that dispatch on a subcommand. Without the subcommand these carry no
+// information at all against a build script, since a script that runs `jbrowse`
+// or `bcftools` once runs it a dozen times: a page showing `jbrowse make-pif`
+// matched a script that only ever calls `jbrowse add-track`. Only tools whose
+// first positional word is reliably a verb belong here, because the check has
+// no way to know which words are values of the flags before them.
+const DISPATCHERS = new Set([
+  'bcftools',
+  'diamond',
+  'gfatools',
+  'jbrowse',
+  'odgi',
+  'samtools',
+  'vcftools',
+  'vg',
+])
+
 /**
  * The tool each invocation runs and the flags it passes, skipping shell
- * builtins, `VAR=value` prefixes and anything that is not a command word.
+ * builtins, `VAR=value` prefixes and anything that is not a command word. A
+ * dispatching tool's subcommand rides along with the flags, since it has to
+ * agree with the script for the same reason they do.
  */
 export function toolsAndFlags(body: string) {
   const found: { tool: string; flags: string[] }[] = []
@@ -138,10 +157,12 @@ export function toolsAndFlags(body: string) {
     if (!tool || IGNORED.has(tool) || /^[-$"'({]/.test(tool)) {
       continue
     }
-    found.push({
-      tool,
-      flags: words.slice(at).filter(w => /^--?[A-Za-z][\w-]*$/.test(w)),
-    })
+    const flags = words.slice(at).filter(w => /^--?[A-Za-z][\w-]*$/.test(w))
+    const sub = words[at + 1]
+    if (DISPATCHERS.has(tool) && sub && /^[a-z][a-z0-9-]*$/.test(sub)) {
+      flags.unshift(sub)
+    }
+    found.push({ tool, flags })
   }
   return found
 }
