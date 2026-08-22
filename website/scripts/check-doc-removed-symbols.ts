@@ -91,6 +91,10 @@ function resolves(rev: string) {
   try {
     execFileSync(
       'git',
+      // `^{commit}` is git's peel syntax, not a broken `${...}` — the rule
+      // cannot tell them apart, and spelling the peel around the interpolation
+      // to dodge it would be worse to read than saying so here.
+      // eslint-disable-next-line unicorn/no-incorrect-template-string-interpolation
       ['rev-parse', '--verify', '--quiet', `${rev}^{commit}`],
       {
         cwd: repoRoot,
