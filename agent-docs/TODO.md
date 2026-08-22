@@ -10,7 +10,7 @@ entries actually disagree on. Roughly two fifths are ordinary build work; a
 quarter carry a design that survived a rejected alternative and needs following
 rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing. Seven are blocked on a visual call that is
+building first would be guessing. Nine are blocked on a visual call that is
 not the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
@@ -30,13 +30,9 @@ before anyone noticed.
 | [Let a dotplot click open the alignment it is on](#let-a-dotplot-click-open-the-alignment-it-is-on) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](#import-the-recipes-remaining-copied-label-tables) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](#decide-whether-the-examples-sites-configs-get-a-validator-gate) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
-| [The desktop autosave interval](#decide-the-desktop-autosave-interval-or-scale-it-with-the-session) | desktop | a call about unsaved work; the flush paths already narrowed the window |
 | [An arc's right-click offers nothing](#give-an-arcs-right-click-something-to-offer) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
-| [Factory reset leaves the BLAT partition](#have-desktops-factory-reset-clear-the-blat-partition) | desktop, BLAT | two lines; `Partitions/jbrowse-blat` survives reset |
-| [Whether the web export pins its deployment](#decide-whether-the-web-export-pins-the-deployment-it-opens) | desktop, export | a deployment decision; the link already records what made it |
 | [A config slot for `bezierRadiusRatio`](#decide-whether-bezierradiusratio-becomes-a-config-slot) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](#give-the-coordinate-ruler-a-genuinely-fixed-tick-pool) | LGV, perf | the key half landed; what is left is the count delta |
-| [Canvas2D fades a curved sub-pixel ribbon by one number](#canvas2d-fades-a-curved-sub-pixel-ribbon-by-one-number) | synteny, canvas2d | most of the measured drift was the fill-vs-stroke branch and is fixed; 0.31pp of fade left, at N strokes in the 500k-instance loop |
 | [Move the four cubic AA ramps onto the linear one](#move-the-four-cubic-aa-ramps-onto-the-linear-one) | shaders, GPU | the measurement is done; convert the dotplot capsule and read the cross-backend gate's drift, which should fall |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | seven independent small items |
@@ -57,7 +53,6 @@ before anyone noticed.
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Re-render the settings-menu figures](#re-render-the-five-figures-the-settings-menu-refactor-outran) | figures, synteny | five stale; the lock cannot catch this class |
 | [Re-render the ortholog-table figures](#re-render-the-ortholog-table-figures-after-the-blocks-dedupe) | figures, synteny | five specs; raise alpha only uniformly, if at all |
-| [Contract checks are stripped in production](#the-display-contract-checks-are-stripped-in-production) | limits, plugins | the in-tree half is gated; decide the out-of-tree channel |
 | [Delete or implement the RPC `timeout` option](#delete-or-implement-the-rpc-timeout-option) | RPC | delete half done; the implement half goes in `RpcHandles` |
 | [A failed phase is credited bytes it never transferred](#a-failed-phase-is-credited-the-bytes-it-never-transferred) | core, progress | give `withProgress` an outcome; a credit rule alone re-breaks the backwards bar |
 | [Brand the out-of-request refNames](#brand-the-out-of-request-refnames) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
@@ -103,35 +98,8 @@ before anyone noticed.
 | [v4.3.0's per-view highlight setting is dropped on load](#v430s-per-view-highlight-setting-is-dropped-on-load) | session, compat | decide migration vs upgrade-guide note; MST ignores the key either way |
 | [Release-validation leftovers](#release-validation-leftovers) | colour, session, LGV | seven independent small items, four reachable |
 | [Six RPC method names left unrecorded](#six-rpc-method-names-left-with-nothing-recording-them) | RPC, plugins, ABI | name them in the upgrade guide; separately make an unknown method throw a real error |
-| [65 suites pay ~5s each to import createTestSession](#65-test-suites-pay-5s-each-to-import-createtestsession) | tests, web | measured; decide whether a lighter session fixture is worth two ways to build one |
 
 ## Ready to build: small and self-contained
-
-### 65 test suites pay ~5s each to import createTestSession
-
-Measured on 2026-08-22, warm jest cache, one worker: an empty suite is 2.0s, a
-suite whose only body is `import { createTestSession } from
-'@jbrowse/web/testUtils'` is 6.7s. Cold it is 12.6s. The calls themselves are
-not the cost — `createTestSession()` is ~25ms after the first, so the nine-test
-`PluginStoreWidget` suite spends essentially all of its 10.6s on module load.
-
-`test_util.ts` imports `../corePlugins.ts`, so every suite that wants a session
-evaluates the whole web plugin set, and jest gives each suite a fresh module
-registry so none of it is shared. 65 suites import it
-(`grep -rl "@jbrowse/web/testUtils"`), which is where a meaningful slice of the
-wall clock goes.
-
-**What is open is not the measurement but whether the fix is worth it.** A
-fixture that builds a session from only the plugins a suite names would be
-fast, and would also be a second way to build a session that can drift from the
-real one — which is the thing `createTestSession` exists to prevent. Decide
-that first. If it is worth it, the shape is a `createTestSession({ plugins })`
-overload sharing one code path, not a parallel helper.
-
-Not the flake it looks like: the `findByText` timeouts this used to produce were
-testing-library's own 1s `asyncUtilTimeout`, now 5s in
-`config/jest/testingLibraryTimeout.js`. That stopped the failures; it did not
-make the import cheaper.
 
 ### Repeat and CRISPR subpart labels draw into an unreserved row
 
@@ -245,18 +213,6 @@ gate has to exempt them, which is its own small design question — and `vvx`
 reports as a missing assembly when it is an assembly *alias*, which is a
 validator gap rather than a config error.
 
-### Decide the desktop autosave interval, or scale it with the session
-
-`autorun`'s `delay` is a throttle rather than a debounce, so the 1 s autosave
-fires for as long as anything keeps changing — panning included. The data-loss
-window that number was chosen against is much smaller now: `closeGuard` flushes
-on window close, and Exit, return-to-start-screen and session-swap all flush too.
-
-The version worth proposing is an interval that scales with the serialized size,
-so a large session stops paying a small one's cadence. It is a judgment call
-about someone's unsaved work rather than an optimization, which is why it is
-written down instead of changed.
-
 ### Give an arc's right-click something to offer
 
 A right-click on an arc or a tick falls through to the browser's menu, because
@@ -279,22 +235,6 @@ either arcs get a real block or that invariant needs a considered second shape.
 Don't relax it casually.
 
 Decide the item set first — it is a product call, not an implementation one.
-
-### Have desktop's factory reset clear the BLAT partition
-
-Reset prunes the userData directories but not `Partitions/jbrowse-blat`, so a
-solved CAPTCHA's `cf_clearance` survives it. Two lines. It was judged out of
-scope alongside the partition itself (`electron/blatSession.ts`); take it if
-reset should mean reset.
-
-### Decide whether the web export pins the deployment it opens
-
-`DEFAULT_WEB_BASE_URL` is `.../jb2/latest/`, and the hosted base config a link
-diffs against is fetched fresh on both ends, so an export made today opens
-against whatever is deployed when someone follows it. The link records what
-produced it — `exportedFrom=jbrowse-desktop@<version>` — which closes the
-diagnosis half; what is open is whether it should also pin what it opens, and
-that is a deployment decision rather than a code one.
 
 ### Decide whether `bezierRadiusRatio` becomes a config slot
 
@@ -339,53 +279,6 @@ zoom spring and snapping exact on settle.
 [reference/INTERACTION_PERF.md](reference/INTERACTION_PERF.md) has both
 measurements and the repro tool, including the trap that it serves
 `products/jbrowse-web/build` and so needs a rebuild between arms.
-### Canvas2D fades a curved sub-pixel ribbon by one number
-
-A sub-pixel ribbon is drawn as a ~1px band whose alpha carries how much of a
-pixel it really covers. The GPU measures that width per fragment from the local
-perpendicular; Canvas2D measures it once per ribbon off the centerline chord
-(`ribbonPerpWidth`). Identical in straight mode. On a bezier the tangent is
-vertical at both ends and twice the chord slope at the middle, so a rearranged
-block is at its *widest* perpendicular exactly where it meets the frame — and one
-number per ribbon cannot say that. The GPU is the accurate side.
-
-**Scoped to the ALPHA, since `ribbonMaxPerpWidth` split off — and most of what
-was measured here was the other half.** The same one number used to decide
-fill-vs-centerline-stroke, and through that pickability, which put a curved
-ribbon several px wide at both ends on the stroke branch as a 1px hairline that
-could not be clicked. That is fixed: the branch asks the widest the ribbon ever
-gets, which on a bezier is an end and is foreshortened by nothing. What is left
-here is the fade applied once the branch has settled on a stroke — ribbons
-genuinely under a pixel everywhere.
-
-Re-measured with `probe-synteny-backend-drift.ts`, one build either side of that
-one line, everything else held:
-
-| hs1/mm39 | curved | straight |
-| --- | --- | --- |
-| diagonalized, before | 1.59% | 0.58% |
-| diagonalized, after | **0.57%** | 0.58% |
-| not diagonalized, after | **0.78%** | 0.47% |
-| grape/peach, after | 0.01% | 0.01% |
-
-So the curve-mode excess was about 1.0pp of branch error and about 0.3pp of
-fade, not 1.0pp of fade — the numbers this entry was opened on
-(1.54% / 0.53%, and 1.72% / 0.44% steeper) were reading both at once. What
-remains is the 0.31pp gap in the steepest arm; the diagonalized view no longer
-distinguishes the two modes at all.
-
-**Why it is parked rather than fixed:** closing it means replacing one
-`ctx.stroke()` of the centerline with N segments at N alphas, in
-`drawSyntenyTrack`'s per-instance loop — the loop `StyleCache` exists for,
-because `rgba()` string construction alone cost >100ms at 500k instances. Paying
-N× the stroke calls there to sharpen the fallback backend is the wrong trade
-unless someone wants the SVG export to match too, which is the case that would
-justify it: the export goes through the same `strokeCenterline`, and a figure is
-looked at closely in a way a fallback render is not.
-
-**First move if it is picked up:** decide it on the SVG export, not the canvas.
-If the export is the reason, N is small (a figure has few visible ribbons after
-culling) and the interactive loop can keep the single stroke.
 
 ### Extra large text SVG mode for pub-ready figures
 
@@ -668,26 +561,6 @@ The alpha values were tuned against the old density — 0.15 on wheat and grasse
 0.3 on vertebrates, 0.5 on the two 4A figures. **Raise them only uniformly and
 only if the whole band reads too faint**, since the thing that just went away was
 a per-band bias and putting ink back per band would restore it.
-
-### The display-contract checks are stripped in production
-
-In-tree they are gated now: `config/jest/console.js` buffers the
-`[jbrowse <family> contract]` prefix and `config/jest/contractGate.js`
-fails the test that collected one (ARCHITECTURAL_LIMITS.md §"Ordering is the
-contract"). Out of tree, nothing catches anything —
-`process.env.NODE_ENV === 'production'` no-ops every one of them, so a plugin
-author whose display overrides a renamed gate hook gets the unguarded download
-and no message, ever. That is the population least able to diagnose it, and the
-one nobody can write a test for. **The lint conversions do not change this and
-do not shrink it**: a selector reaches an out-of-tree plugin exactly as little as
-a stripped `console.error` does, so each contract that moved to
-`no-restricted-syntax` left this item holding the same gap it held before.
-
-Whether it is worth a session flag is the whole item, and the question is
-*channel*, not cost — the checks are a `getMembers` call per display at attach.
-A `console.error` surviving into a production build reaches nobody either; the
-version worth building is one a plugin author would see, which means a session
-notification behind a developer flag rather than an unstripped `console.error`.
 
 ### Delete or implement the RPC `timeout` option
 

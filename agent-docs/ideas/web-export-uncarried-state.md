@@ -1,6 +1,6 @@
 ---
 name: web-export-uncarried-state
-description: Three things desktop's "export to web" can only report, not carry — a track delta it cannot tell from hub drift, an assembly edit, an internet account. Read before adding a carrier or a pristine-base snapshot.
+description: Four things desktop's "export to web" can only report, not carry — a track delta it cannot tell from hub drift, an assembly edit, an internet account, and the deployment version the link opens against. Read before adding a carrier or a pristine-base snapshot.
 ---
 
 # What the web export can report but not carry
@@ -83,3 +83,24 @@ config is a client id, a set of domains and a token endpoint, and auto-shipping
 one turns "share my session" into "hand someone else my organisation's auth
 configuration". If it lands it wants to be a choice at export time, listed like
 the upload consent for a short link, not a silent carrier.
+
+## 4. The export does not pin the deployment it opens
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-22, where it was an action item
+for a decision that is not a code one.
+
+`DEFAULT_WEB_BASE_URL` is `.../jb2/latest/`, and the hosted base config a link
+diffs against is fetched fresh on **both** ends — so an export made today opens
+against whatever is deployed when someone follows it. This is §1's hub drift one
+step later in the link's life: §1 is the base moving between session creation
+and export, this is the base moving between export and open.
+
+The diagnosis half is closed. The link records what produced it —
+`exportedFrom=jbrowse-desktop@<version>` — so a recipient whose view does not
+match the sender's can at least be told which desktop built it.
+
+What is open is whether the link should also pin what it *opens*, and that is a
+deployment decision rather than a code one: pinning means every exported link
+holds a versioned deployment alive indefinitely, and `latest/` exists precisely
+so that a fix reaches every link ever sent. Whoever decides it is deciding how
+long jbrowse.org keeps old builds, not how `planWebExport` is written.

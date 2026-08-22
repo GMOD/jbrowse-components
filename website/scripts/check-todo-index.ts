@@ -78,7 +78,53 @@ for (const [anchor, label] of rowAnchors) {
   }
 }
 
+// The preamble also carries a count — "Nine are blocked on a visual call" —
+// which rots the same way the table did, and had already drifted to seven by
+// the time anyone counted. It is the one prose number in the file that is
+// derivable, so derive it.
+const NUMBER_WORDS = [
+  'Zero',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+  'Ten',
+  'Eleven',
+  'Twelve',
+]
+
+const visualCallSection = '## Blocked on a visual call'
+let inVisualCall = false
+let visualCallEntries = 0
+for (const line of lines) {
+  if (line.startsWith('## ')) {
+    inVisualCall = line.trim() === visualCallSection
+  } else if (inVisualCall && line.startsWith('### ')) {
+    visualCallEntries++
+  }
+}
+
+// the sentence wraps, so match against the file with newlines flattened
+const claim = /(\w+) are blocked on a visual call/.exec(
+  lines.join(' ').replaceAll(/\s+/g, ' '),
+)
+const expected = NUMBER_WORDS[visualCallEntries]
+if (!claim) {
+  problems.push(
+    `${rel}: the preamble no longer says "<N> are blocked on a visual call". Restore the sentence or drop this check with it.`,
+  )
+} else if (claim[1] !== expected) {
+  problems.push(
+    `${rel}: the preamble says "${claim[1]} are blocked on a visual call" and "${visualCallSection}" holds ${visualCallEntries}. Write "${expected}".`,
+  )
+}
+
 reportProblems(
   problems,
-  `${rel}: ${headings.size} entries, all indexed, every row resolves.`,
+  `${rel}: ${headings.size} entries, all indexed, every row resolves; ${visualCallEntries} blocked on a visual call, as the preamble says.`,
 )

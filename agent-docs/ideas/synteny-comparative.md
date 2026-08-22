@@ -1,6 +1,6 @@
 ---
 name: synteny-comparative
-description: SV-type classification, `syntenyGroupId`, all-vs-all PAF, PIF limits, block-level chaining, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, and the 2026-07 vendor-format survey.
+description: SV-type classification, `syntenyGroupId`, all-vs-all PAF, PIF limits, block-level chaining, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
 ---
 
 # Synteny / comparative
@@ -478,3 +478,53 @@ the multi-tier-on-disk model); block-pif schema (reuse `de:f:` identity? carry a
 member count / syntenic-vs-inverted classification for coloring?); classify
 rearrangements like SyRI or emit collinear blocks + strand only; and multi-genome
 (>2) blocks (ntSynt's strength) vs today's pairwise pif container.
+
+### Canvas2D fades a curved sub-pixel ribbon by one number
+
+Moved out of [TODO.md](../TODO.md) on 2026-08-22. Most of what that entry was
+opened on turned out to be a different bug, which is now fixed; what is left is
+0.31pp of drift behind a trade the entry itself argues against taking.
+
+A sub-pixel ribbon is drawn as a ~1px band whose alpha carries how much of a
+pixel it really covers. The GPU measures that width per fragment from the local
+perpendicular; Canvas2D measures it once per ribbon off the centerline chord
+(`ribbonPerpWidth`). Identical in straight mode. On a bezier the tangent is
+vertical at both ends and twice the chord slope at the middle, so a rearranged
+block is at its *widest* perpendicular exactly where it meets the frame — and one
+number per ribbon cannot say that. The GPU is the accurate side.
+
+**Scoped to the ALPHA, since `ribbonMaxPerpWidth` split off.** The same one
+number used to decide fill-vs-centerline-stroke, and through that pickability,
+which put a curved ribbon several px wide at both ends on the stroke branch as a
+1px hairline that could not be clicked. That is fixed: the branch asks the widest
+the ribbon ever gets, which on a bezier is an end and is foreshortened by
+nothing. What remains here is the fade applied once the branch has settled on a
+stroke — ribbons genuinely under a pixel everywhere.
+
+Re-measured with `probe-synteny-backend-drift.ts`, one build either side of that
+one line, everything else held:
+
+| hs1/mm39 | curved | straight |
+| --- | --- | --- |
+| diagonalized, before | 1.59% | 0.58% |
+| diagonalized, after | **0.57%** | 0.58% |
+| not diagonalized, after | **0.78%** | 0.47% |
+| grape/peach, after | 0.01% | 0.01% |
+
+So the curve-mode excess was about 1.0pp of branch error and about 0.3pp of
+fade, not 1.0pp of fade — the numbers this was opened on (1.54% / 0.53%, and
+1.72% / 0.44% steeper) were reading both at once. What is left is the 0.31pp gap
+in the steepest arm; the diagonalized view no longer distinguishes the two modes
+at all.
+
+**Why it is parked.** Closing it means replacing one `ctx.stroke()` of the
+centerline with N segments at N alphas, in `drawSyntenyTrack`'s per-instance
+loop — the loop `StyleCache` exists for, because `rgba()` string construction
+alone cost >100ms at 500k instances. Paying N× the stroke calls there to sharpen
+the *fallback* backend is the wrong trade.
+
+**The one case that would justify it is the SVG export**, which goes through the
+same `strokeCenterline` — a figure is looked at closely in a way a fallback
+render is not, and after culling a figure has few visible ribbons, so N is small
+there. So if this is ever picked up: **decide it on the SVG export, not the
+canvas**, and let the interactive loop keep its single stroke.

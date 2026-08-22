@@ -1050,8 +1050,8 @@ only on a real violation):
   factory spread into the block, which no display does. The ADR records that.
   What none of the three forms covers is an out-of-tree display, which runs
   neither our lint nor our tests, and which the production strip already left
-  with nothing (TODO.md §"The display-contract checks are stripped in
-  production").
+  with nothing
+  ([ideas/contract-checks-out-of-tree.md](../ideas/contract-checks-out-of-tree.md)).
 
 - **`gateEnabled` must not be overridden.** It is `measuresBytesPreFlight ||
   measuresBytesInFetch` by construction, so a second `get gateEnabled()`
