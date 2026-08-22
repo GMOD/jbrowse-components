@@ -6,7 +6,11 @@ import { DEFAULT_MOTIFS } from './defaultMotifs.ts'
 
 // the panel only touches the session on submit, so rendering needs no more than
 // the shape of the model
-const model = { assemblyNames: ['volvox'], showTrack: () => {} }
+const model = {
+  assemblyNames: ['volvox'],
+  showTrack: () => {},
+  launchTrack: async () => {},
+}
 
 // The default list is the textarea's initial value, so a typo in it would open
 // the dialog in an error state with Submit disabled.

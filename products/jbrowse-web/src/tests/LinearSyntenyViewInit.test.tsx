@@ -23,12 +23,12 @@ async function createSyntenyViewWithInit(init: {
   views: { loc?: string; assembly: string; tracks?: string[] }[]
   tracks?: string[][]
 }) {
-  const { pluginManager, rootModel } = getPluginManager(configSnapshot)
+  const { pluginManager, rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
   // Add a LinearSyntenyView with init property
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init,
   })
 
@@ -145,13 +145,13 @@ test('snapshot keeps init while views empty, strips it once materialized', async
   expect(after.init).toBeUndefined()
 }, 40000)
 
-test('LinearSyntenyView showImportForm is true when no init and no views', () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+test('LinearSyntenyView showImportForm is true when no init and no views', async () => {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
   // Add a LinearSyntenyView without init property
-  const view = session.addView('LinearSyntenyView', {})
+  const view = await session.launchView('LinearSyntenyView', {})
 
   // showImportForm should be true because hasSomethingToShow is false
   expect(view.showImportForm).toBe(true)

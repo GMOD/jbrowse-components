@@ -116,6 +116,7 @@ export {
   getContainingTrack,
   getContainingView,
   getEnv,
+  launchOrReplaceView,
   getFileFromCache,
   getFileHandle,
   getFileName,

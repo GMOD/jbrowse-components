@@ -19,7 +19,7 @@ beforeEach(() => {
 
 test('404 sequence file', async () => {
   await mockConsole(async () => {
-    const { findAllByText } = createViewNoWait(chromeSizesConfig)
+    const { findAllByText } = await createViewNoWait(chromeSizesConfig)
     await findAllByText(
       /HTTP 404 fetching grape.chrom.sizes.nonexist/,
       {},
@@ -30,15 +30,15 @@ test('404 sequence file', async () => {
 
 test('wrong assembly', async () => {
   await mockConsole(async () => {
-    const { view, findAllByText } = createViewNoWait(wrongAssemblyTest)
-    view.showTrack('volvox_wrong_assembly')
+    const { view, findAllByText } = await createViewNoWait(wrongAssemblyTest)
+    await view.launchTrack('volvox_wrong_assembly')
     await findAllByText(/does not match/, {}, delay)
   })
 }, 30000)
 
 test('invalid track config surfaces as a snackbar, not a crash', async () => {
   await mockConsole(async () => {
-    const { view, findAllByText } = createViewNoWait(brokenTrackConfig)
+    const { view, findAllByText } = await createViewNoWait(brokenTrackConfig)
     const track = view.showTrack('broken_config_demo')
 
     // showTrack swallows the validation error: nothing is opened and no throw
@@ -54,7 +54,7 @@ test('adding an invalid sessionTrack config surfaces a snackbar, not a crash', a
   await mockConsole(async () => {
     // adminMode false routes through the typed sessionTracks array, which
     // validates on push (this is the "Copy and open track" crash path)
-    const { session, findAllByText } = createViewNoWait(
+    const { session, findAllByText } = await createViewNoWait(
       brokenTrackConfig,
       false,
     )

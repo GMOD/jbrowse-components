@@ -5,7 +5,7 @@ import { ColorByLegend } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
-import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
+import { asSyntenyModel } from '../../LinearSyntenyView/asSyntenyModel.ts'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
 import type { LinearSyntenyViewHelperModel } from '../../LinearSyntenyViewHelper/stateModelFactory.ts'

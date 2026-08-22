@@ -1,12 +1,12 @@
-import { createTestSession } from '@jbrowse/web/testUtils'
+import { createTestSessionAsync } from '@jbrowse/web/testUtils'
 import { render } from '@testing-library/react'
 
 import DotplotHighlight from './DotplotHighlight.tsx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-function setup() {
-  const session = createTestSession({
+async function setup() {
+  const session = (await createTestSessionAsync({
     sessionSnapshot: {
       views: [
         {
@@ -30,7 +30,7 @@ function setup() {
         },
       ],
     },
-  }) as any
+  })) as any
   const widget = session.addWidget('GridBookmarkWidget', 'GridBookmark')
   widget.addBookmark({
     assemblyName: 'volvox',
@@ -41,8 +41,8 @@ function setup() {
   return { model: session.views[0], session }
 }
 
-test('bookmark bands render and respect bookmarkHighlightsVisible', () => {
-  const { model, session } = setup()
+test('bookmark bands render and respect bookmarkHighlightsVisible', async () => {
+  const { model, session } = await setup()
   const { container, rerender } = render(
     <svg>
       <DotplotHighlight model={model} />

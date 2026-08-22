@@ -23,7 +23,7 @@ afterEach(() => {
 
 test('three level', async () => {
   const { session } = await createView()
-  session.addView('LinearSyntenyView', {
+  await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox_del' },
@@ -49,7 +49,9 @@ test('open tracklist file', async () => {
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
-  expect(session.views.length).toBe(2)
+  await waitFor(() => {
+    expect(session.views.length).toBe(2)
+  }, delay)
   fireEvent.click(await findByText('Manual'))
   fireEvent.mouseDown(await findByRole('combobox', { name: 'Row 2 assembly' }))
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
@@ -63,7 +65,9 @@ test('open local paf', async () => {
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
-  expect(session.views.length).toBe(2)
+  await waitFor(() => {
+    expect(session.views.length).toBe(2)
+  }, delay)
   fireEvent.click(await findByText('Manual'))
 
   fireEvent.mouseDown(await findByRole('combobox', { name: 'Row 1 assembly' }))
@@ -88,7 +92,9 @@ test('open local pif', async () => {
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
-  expect(session.views.length).toBe(2)
+  await waitFor(() => {
+    expect(session.views.length).toBe(2)
+  }, delay)
   fireEvent.click(await findByText('Manual'))
 
   fireEvent.mouseDown(await findByRole('combobox', { name: 'Row 1 assembly' }))

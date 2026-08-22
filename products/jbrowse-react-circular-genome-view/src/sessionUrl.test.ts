@@ -32,9 +32,9 @@ const tracks = [
 ]
 
 test('a session round-trips through the url form', async () => {
-  const state = createViewState({ assembly, tracks })
+  const state = await createViewState({ assembly, tracks })
   state.session.setName('my session')
-  state.session.view.showTrack('volvox_sv')
+  await state.session.view.launchTrack('volvox_sv')
 
   const decoded = await decodeSession(await encodeSession(state))
 
@@ -42,12 +42,14 @@ test('a session round-trips through the url form', async () => {
   // the open track travels too, not just the session name. `session` (not
   // `defaultSession`) is the slot for a snapshot whose shape is only known at
   // runtime
-  const restored = createViewState({ assembly, tracks, session: decoded })
+  const restored = await createViewState({ assembly, tracks, session: decoded })
   expect(restored.session.view.tracks).toHaveLength(1)
 })
 
 test('the encoded form is url-safe and carries jbrowse-web`s prefix', async () => {
-  const encoded = await encodeSession(createViewState({ assembly, tracks }))
+  const encoded = await encodeSession(
+    await createViewState({ assembly, tracks }),
+  )
 
   // the value can be dropped into jbrowse-web's `?session=` unchanged
   expect(encoded.startsWith('encoded-')).toBe(true)

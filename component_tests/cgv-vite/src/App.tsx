@@ -10,15 +10,16 @@ import tracks from './tracks'
 
 export default function View() {
   const [viewState, setViewState] =
-    useState<ReturnType<typeof createViewState>>()
+    useState<Awaited<ReturnType<typeof createViewState>>>()
 
   useEffect(() => {
-    const state = createViewState({
+    void createViewState({
       assembly,
       tracks,
+    }).then(state => {
+      state.session.view.showTrack('volvox_sv_test_renamed')
+      setViewState(state)
     })
-    state.session.view.showTrack('volvox_sv_test_renamed')
-    setViewState(state)
   }, [])
 
   if (!viewState) {

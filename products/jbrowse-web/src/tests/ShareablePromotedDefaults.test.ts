@@ -19,7 +19,7 @@ const SLOT = 'displayMode'
 const PROMOTED = 'compact'
 
 interface TestView {
-  showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   tracks: {
     configuration: AnyConfigurationModel
     displays: { type: string }[]
@@ -40,18 +40,18 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-function openVcfDisplay(adminMode = false) {
-  const { rootModel } = getPluginManager(undefined, adminMode)
+async function openVcfDisplay(adminMode = false) {
+  const { rootModel } = await getPluginManager(undefined, adminMode)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const display = view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
     .displays[0]! as unknown as ResolvableDisplay
   return { rootModel, session, display }
 }
 
-test('a track following a promoted default bakes the resolved value into the shared snapshot', () => {
-  const { rootModel, session, display } = openVcfDisplay()
+test('a track following a promoted default bakes the resolved value into the shared snapshot', async () => {
+  const { rootModel, session, display } = await openVcfDisplay()
 
   // sanity: no promotion yet, display resolves to promotedBase
   expect(resolveConf(display, SLOT)).toBe('normal')
@@ -89,8 +89,8 @@ test('a track following a promoted default bakes the resolved value into the sha
 // because jsdom has no `structuredClone` and the repo shims it with a JSON
 // round-trip that accepts a proxy; `promotedValueCloneable.test.ts` opts into the
 // node environment to pin the clone semantics themselves.
-test('a promoted object default is stored plain, not wrapped in a mobx proxy', () => {
-  const { session } = openVcfDisplay()
+test('a promoted object default is stored plain, not wrapped in a mobx proxy', async () => {
+  const { session } = await openVcfDisplay()
   const colorBy = { type: 'insertSizeAndOrientation' }
   session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'colorBy', colorBy)
 
@@ -102,12 +102,12 @@ test('a promoted object default is stored plain, not wrapped in a mobx proxy', (
   expect(promoted).toEqual(colorBy)
 })
 
-test('the bake writes only track config, never display state', () => {
+test('the bake writes only track config, never display state', async () => {
   // the bake's whole mechanism is that a baked value lands in the track's config
   // and so reads as *customized* on the recipient's side, which is the top of the
   // cascade. It therefore needs nothing on the display node — no per-display
   // opt-out flag, which is what a second shape-aware walk used to exist to stamp.
-  const { rootModel, session } = openVcfDisplay()
+  const { rootModel, session } = await openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const snap = bakePromotedDefaultsIntoSnapshot(
@@ -123,8 +123,8 @@ test('the bake writes only track config, never display state', () => {
   }
 })
 
-test('the shared snapshot reproduces the sender value in a recipient with no promoted default', () => {
-  const { rootModel, session, display } = openVcfDisplay()
+test('the shared snapshot reproduces the sender value in a recipient with no promoted default', async () => {
+  const { rootModel, session, display } = await openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
   expect(resolveConf(display, SLOT)).toBe(PROMOTED)
 
@@ -134,7 +134,11 @@ test('the shared snapshot reproduces the sender value in a recipient with no pro
   )
 
   // fresh recipient: no promoted defaults of their own
-  const { rootModel: recipient } = getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  // the shared snapshot names the display that was open when it was baked, and
+  // setSession is synchronous
+  await recipientPlugins.preloadSessionTypes(shared)
   recipient.setSession(shared)
   const recipientSession = recipient.session as unknown as TestSession
   const recipientDisplay = recipientSession.views[0]!.tracks.find(
@@ -144,7 +148,7 @@ test('the shared snapshot reproduces the sender value in a recipient with no pro
   expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })
 
-test("a sender at base picks up the recipient's own promoted default", () => {
+test("a sender at base picks up the recipient's own promoted default", async () => {
   // The one case the bake deliberately does not cover, asserted so the trade is
   // visible rather than discovered. The sender was at `base`, so there is nothing
   // to bake — the value equals base and `stripDefault` drops it from the snapshot
@@ -153,7 +157,7 @@ test("a sender at base picks up the recipient's own promoted default", () => {
   // Covering this needs a per-display `ignorePromotedDefaults` flag, which was
   // removed: it cost a second walk that had to track the bake's by hand, and it
   // detached received tracks from the recipient's pins for good.
-  const { rootModel, session, display } = openVcfDisplay()
+  const { rootModel, session, display } = await openVcfDisplay()
   expect(resolveConf(display, SLOT)).toBe('normal')
 
   const shared = bakePromotedDefaultsIntoSnapshot(
@@ -161,7 +165,11 @@ test("a sender at base picks up the recipient's own promoted default", () => {
     getSnapshot(rootModel.session),
   )
 
-  const { rootModel: recipient } = getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  // the shared snapshot names the display that was open when it was baked, and
+  // setSession is synchronous
+  await recipientPlugins.preloadSessionTypes(shared)
   recipient.setSession(shared)
   const recipientSession = recipient.session as unknown as TestSession
   recipientSession.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
@@ -172,11 +180,11 @@ test("a sender at base picks up the recipient's own promoted default", () => {
   expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })
 
-test("a recipient's promoted default cannot override a baked value", () => {
+test("a recipient's promoted default cannot override a baked value", async () => {
   // the complement, and the reason the flag is unnecessary for every case that
   // has a value: a baked value is a track config value, so it reads as
   // customized and the recipient's session tier is never consulted.
-  const { rootModel, session } = openVcfDisplay()
+  const { rootModel, session } = await openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const shared = bakePromotedDefaultsIntoSnapshot(
@@ -184,7 +192,11 @@ test("a recipient's promoted default cannot override a baked value", () => {
     getSnapshot(rootModel.session),
   )
 
-  const { rootModel: recipient } = getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  // the shared snapshot names the display that was open when it was baked, and
+  // setSession is synchronous
+  await recipientPlugins.preloadSessionTypes(shared)
   recipient.setSession(shared)
   const recipientSession = recipient.session as unknown as TestSession
   // recipient promotes something else entirely
@@ -196,17 +208,17 @@ test("a recipient's promoted default cannot override a baked value", () => {
   expect(resolveConf(recipientDisplay, SLOT)).toBe(PROMOTED)
 })
 
-test('a user-added (sessionTracks) track bakes into its own config, not a delta', () => {
+test('a user-added (sessionTracks) track bakes into its own config, not a delta', async () => {
   // the shape a desktop self-contained export ships: the track lives in
   // sessionTracks (no admin base), so the bake writes the resolved value into
   // that config rather than a trackConfigDeltas entry
-  const { rootModel } = getPluginManager(undefined, false)
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession & {
     publishTrackConf: (c: unknown) => { trackId: string } | undefined
   }
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const base = getSnapshot(
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
   ) as { trackId: string; displays: { type: string; displayId: string }[] }
@@ -216,7 +228,7 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
     d.displayId = `${clone.trackId}-${d.type}`
   }
   const added = session.publishTrackConf(clone)!
-  view.showTrack(added.trackId)
+  await view.launchTrack(added.trackId)
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
@@ -240,12 +252,12 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
   ).toBeUndefined()
 })
 
-test('an opened connection track bakes into its persisted config, not a dead delta', () => {
+test('an opened connection track bakes into its persisted config, not a dead delta', async () => {
   // a connection track lives in neither jbrowse.tracks nor sessionTracks: its
   // config is persisted under connectionTrackConfigs, and trackConfigDeltas is
   // only ever merged over an admin base. A delta written for one is inert, so
   // the recipient would render the base value instead of what the sender saw.
-  const { rootModel } = getPluginManager(undefined, false)
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession & {
     connectionTrackConfigs: Record<
       string,
@@ -259,7 +271,7 @@ test('an opened connection track bakes into its persisted config, not a dead del
   }
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const base = getSnapshot(
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
   ) as { trackId: string; displays: { type: string; displayId: string }[] }
@@ -269,7 +281,7 @@ test('an opened connection track bakes into its persisted config, not a dead del
     d.displayId = `${clone.trackId}-${d.type}`
   }
   session.setConnectionTrackConfig(clone.trackId, 'testConnection', clone)
-  view.showTrack(clone.trackId)
+  await view.launchTrack(clone.trackId)
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
@@ -293,11 +305,11 @@ test('an opened connection track bakes into its persisted config, not a dead del
   ).toBeUndefined()
 })
 
-test('a connection track config with no displays array gets the baked display added', () => {
+test('a connection track config with no displays array gets the baked display added', async () => {
   // a hub-provided config need not carry `displays` at all (the stubs are
   // injected at hydration), so the bake has to add the display rather than
   // assume a row to merge into
-  const { rootModel } = getPluginManager(undefined, false)
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession & {
     connectionTrackConfigs: Record<
       string,
@@ -311,7 +323,7 @@ test('a connection track config with no displays array gets the baked display ad
   }
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const base = getSnapshot(
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!.configuration,
   ) as Record<string, unknown> & { trackId: string }
@@ -322,7 +334,7 @@ test('a connection track config with no displays array gets the baked display ad
     'testConnection',
     noDisplays,
   )
-  view.showTrack(noDisplays.trackId)
+  await view.launchTrack(noDisplays.trackId)
 
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
@@ -343,8 +355,8 @@ test('a connection track config with no displays array gets the baked display ad
   expect(typeof baked.displayId).toBe('string')
 })
 
-test('a promoted default merges into an existing delta without clobbering a prior edit', () => {
-  const { rootModel, session, display } = openVcfDisplay()
+test('a promoted default merges into an existing delta without clobbering a prior edit', async () => {
+  const { rootModel, session, display } = await openVcfDisplay()
   const s = session as unknown as TestSession & {
     jbrowse: { tracks: { trackId: string; [k: string]: unknown }[] }
     updateTrackConfiguration: (c: {
@@ -381,8 +393,8 @@ test('a promoted default merges into an existing delta without clobbering a prio
   expect(resolveConf(display, SLOT)).toBe(PROMOTED)
 })
 
-test('baking does not mutate the live session (cascade stays live)', () => {
-  const { rootModel, session, display } = openVcfDisplay()
+test('baking does not mutate the live session (cascade stays live)', async () => {
+  const { rootModel, session, display } = await openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const before = getSnapshot(rootModel.session)
@@ -398,7 +410,7 @@ test('baking does not mutate the live session (cascade stays live)', () => {
 })
 
 test('fidelity survives the real share encode/decode (long-URL round-trip)', async () => {
-  const { rootModel, session, display } = openVcfDisplay()
+  const { rootModel, session, display } = await openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
   expect(resolveConf(display, SLOT)).toBe(PROMOTED)
 
@@ -417,7 +429,9 @@ test('fidelity survives the real share encode/decode (long-URL round-trip)', asy
     await fromUrlSafeB64(sessionParam.replace(/^encoded-/, '')),
   ) as Record<string, unknown>
 
-  const { rootModel: recipient } = getPluginManager(undefined, false)
+  const { rootModel: recipient, pluginManager: recipientPlugins } =
+    await getPluginManager(undefined, false)
+  await recipientPlugins.preloadSessionTypes(decoded)
   recipient.setSession(decoded)
   const recipientSession = recipient.session as unknown as TestSession
   const recipientDisplay = recipientSession.views[0]!.tracks.find(

@@ -20,14 +20,11 @@ utilizeFetchMockForTest(volvoxGetFile)
 // so these drive the real flow (adapter -> worker RPC -> overlayMatches) to
 // assert the view rejoins them into a drawable connection, rather than only
 // checking the helper in isolation.
-function createBreakpointView(
-  trackId: string,
-  locs: [string, string],
-): BreakpointViewModel {
-  const { rootModel } = getPluginManager()
+async function createBreakpointView(trackId: string, locs: [string, string]) {
+  const { rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
-  const view = session.addView('BreakpointSplitView', {
+  const view = await session.launchView('BreakpointSplitView', {
     init: locs.map(loc => ({ loc, assembly: 'volvox', tracks: [trackId] })),
   })
   view.setWidth(800)
@@ -52,7 +49,7 @@ async function waitForMatches(view: BreakpointViewModel, trackId: string) {
 
 test('pairs the two halves of an interchromosomal bedpe record', async () => {
   // volvox.bedpe row 2 spans A:21681-21682 <-> B:1982-1983
-  const view = createBreakpointView('volvox_bedpe', [
+  const view = await createBreakpointView('volvox_bedpe', [
     'ctgA:21,000..24,000',
     'ctgB:1,500..2,500',
   ])
@@ -74,7 +71,7 @@ test('pairs the two halves of an interchromosomal bedpe record', async () => {
 test('pairs the two halves of an interchromosomal STAR-Fusion record', async () => {
   // volvox.star-fusion.tsv EDEN--IPKMT2 spans A:2700 <-> B:1982. Fusion
   // features are paired the same way bedpe ones are, differing only in type
-  const view = createBreakpointView('volvox_star_fusion', [
+  const view = await createBreakpointView('volvox_star_fusion', [
     'ctgA:2,000..3,500',
     'ctgB:1,500..2,500',
   ])

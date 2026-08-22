@@ -620,6 +620,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           'zoomTo',
           'showTrack',
           'toggleTrack',
+          'launchTrack',
+          'launchToggleTrack',
           'hideTrack',
           'setTrackLabels',
           'setShowCenterLine',

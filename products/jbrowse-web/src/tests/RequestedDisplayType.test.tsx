@@ -31,14 +31,14 @@ function twoDisplayTrackConf(trackId: string) {
   }
 }
 
-test('showTrack with an explicit display type attaches that display’s config', () => {
-  const { session, view } = getTestSession()
+test('showTrack with an explicit display type attaches that display’s config', async () => {
+  const { session, view } = await getTestSession()
   const added = session.publishTrackConf(
     twoDisplayTrackConf('two_displays'),
   ) as {
     trackId: string
   }
-  view.showTrack(
+  await view.launchTrack(
     added.trackId,
     {},
     {
@@ -55,14 +55,14 @@ test('showTrack with an explicit display type attaches that display’s config',
   expect(display.lineZoneHeight).toBe(0)
 })
 
-test('showTrack with no display type takes the track’s first declared display', () => {
-  const { session, view } = getTestSession()
+test('showTrack with no display type takes the track’s first declared display', async () => {
+  const { session, view } = await getTestSession()
   const added = session.publishTrackConf(
     twoDisplayTrackConf('two_displays2'),
   ) as {
     trackId: string
   }
-  view.showTrack(added.trackId)
+  await view.launchTrack(added.trackId)
   const display = view.tracks.find(t => t.trackId === added.trackId)!
     .displays[0]!
   expect(display.type).toBe('LinearMultiSampleVariantMatrixDisplay')

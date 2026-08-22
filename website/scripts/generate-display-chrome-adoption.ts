@@ -220,15 +220,21 @@ function registrationProperty(
   return undefined
 }
 
-/** `lazy(() => import('X'))` → `'X'`, at any nesting. */
-function lazyImportTarget(node: ts.Node): string | undefined {
-  if (
-    !ts.isCallExpression(node) ||
-    !ts.isIdentifier(node.expression) ||
-    node.expression.text !== 'lazy'
-  ) {
+/**
+ * `() => import('X').then(f => f.default(configSchema))` → `'X'` — the lazy
+ * state-model idiom. The specifier IS the answer this function's eager
+ * counterpart works to reach: there the module has to be found by resolving the
+ * factory identifier's import binding, here the registration names it outright.
+ */
+function loaderImportTarget(node: ts.Node): string | undefined {
+  if (!ts.isArrowFunction(node) && !ts.isFunctionExpression(node)) {
     return undefined
   }
+  return dynamicImportTarget(node)
+}
+
+/** The first `import('X')` anywhere under `node` → `'X'`. */
+function dynamicImportTarget(node: ts.Node): string | undefined {
   let found: string | undefined
   const visit = (n: ts.Node) => {
     if (
@@ -241,6 +247,18 @@ function lazyImportTarget(node: ts.Node): string | undefined {
   }
   ts.forEachChild(node, visit)
   return found
+}
+
+/** `lazy(() => import('X'))` → `'X'`, at any nesting. */
+function lazyImportTarget(node: ts.Node): string | undefined {
+  if (
+    !ts.isCallExpression(node) ||
+    !ts.isIdentifier(node.expression) ||
+    node.expression.text !== 'lazy'
+  ) {
+    return undefined
+  }
+  return dynamicImportTarget(node)
 }
 
 /**
@@ -502,6 +520,13 @@ function resolveStateModel(
       `${rel(file)}: cannot read the \`stateModel\` of a DisplayType registration — a shorthand with no \`const stateModel = ...\` in the enclosing function, or a property shape this generator has not been taught.`,
     )
   }
+  // Every display registers a loader now — `stateModel: () => import(...)` —
+  // and the module it names is the model half's entry point, the same thing the
+  // eager form below resolves its factory identifier to.
+  const loaded = loaderImportTarget(init)
+  if (loaded) {
+    return moduleFrom(file, loaded)
+  }
   const bases = modelChainBases(init, localBindings(init))
   // One base is what every registration has today: `factory(configSchema)`,
   // possibly with `.named(...).props(...)` chained on. A registration that
@@ -648,9 +673,37 @@ function moduleForName(
     return moduleFrom(file, spec)
   }
   if (spec?.startsWith('@jbrowse/plugin-')) {
-    return findPluginExport(spec, name)
+    return pluginSubpathModule(spec) ?? findPluginExport(spec, name)
   }
   return undefined
+}
+
+/**
+ * `@jbrowse/plugin-x/Some/Sub` → the file that package's `exports` maps the
+ * subpath to, read from its package.json rather than guessed from the path.
+ *
+ * A lazily registered display keeps its model OFF the plugin barrel on purpose
+ * — a value edge from an eager barrel holds the whole model subgraph in the
+ * initial download — so a display composing another's model imports it by
+ * subpath, and following the barrel finds nothing. Undefined for a bare
+ * package specifier, which is `findPluginExport`'s case.
+ */
+function pluginSubpathModule(spec: string) {
+  const match = /^(@jbrowse\/plugin-[^/]+)\/(.+)$/.exec(spec)
+  if (!match) {
+    return undefined
+  }
+  const [, pkg, subpath] = match
+  const dir = join(repoRoot, 'plugins', pkg!.replace('@jbrowse/plugin-', ''))
+  const manifest = join(dir, 'package.json')
+  if (!isFile(manifest)) {
+    return undefined
+  }
+  const { exports } = JSON.parse(readFileSync(manifest, 'utf8')) as {
+    exports?: Record<string, string>
+  }
+  const target = exports?.[`./${subpath!}`]
+  return target ? join(dir, target) : undefined
 }
 
 function rel(file: string) {

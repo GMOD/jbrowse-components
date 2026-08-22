@@ -44,19 +44,23 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SvInspectorView | async | Programmatically launch the SV inspector view */
-  pluginManager.addToExtensionPoint('LaunchView-SvInspectorView', args => {
-    const { session, assembly, uri, fileType, filterText, ...viewProps } = args
-    // carry an init whenever the caller named anything to apply. With a uri it
-    // imports the file; with only an assembly it still lands on the import
-    // form, but with that assembly selected rather than the first one. An
-    // empty init is skipped so no one feeds an empty location to openLocation
-    // (which surfaces a spurious "invalid fileLocation" error)
-    session.addView('SvInspectorView', {
-      ...viewProps,
-      ...(assembly || uri
-        ? { init: { assembly, uri, fileType, filterText } }
-        : {}),
-    })
-    return args
-  })
+  pluginManager.addToExtensionPoint(
+    'LaunchView-SvInspectorView',
+    async args => {
+      const { session, assembly, uri, fileType, filterText, ...viewProps } =
+        args
+      // carry an init whenever the caller named anything to apply. With a uri it
+      // imports the file; with only an assembly it still lands on the import
+      // form, but with that assembly selected rather than the first one. An
+      // empty init is skipped so no one feeds an empty location to openLocation
+      // (which surfaces a spurious "invalid fileLocation" error)
+      await session.launchView('SvInspectorView', {
+        ...viewProps,
+        ...(assembly || uri
+          ? { init: { assembly, uri, fileType, filterText } }
+          : {}),
+      })
+      return args
+    },
+  )
 }

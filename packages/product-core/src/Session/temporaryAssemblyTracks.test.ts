@@ -50,7 +50,7 @@ describe('the copy actions on a temporary-assembly track', () => {
         deleteTrackConf: () => {},
       },
       config: config as BaseTrackConfig,
-      view: { showTrack: () => {} },
+      view: { showTrack: () => {}, launchTrack: async () => {} },
       canEdit: true,
       makeCopy: () => ({ trackId: 'copy' }),
     })

@@ -11,7 +11,7 @@ function nonCartModel() {
   const recent: string[] = []
   const model = {
     trackContainer: {
-      showTrack: (id: string) => shown.add(id),
+      launchTrack: async (id: string) => shown.add(id),
       hideTrack: (id: string) => shown.delete(id),
     },
     addToRecentlyUsed: (id: string) => recent.push(id),
@@ -86,7 +86,7 @@ describe('derived selection state (shopping-cart mode)', () => {
 })
 
 describe('toggle handlers (shown-tracks mode)', () => {
-  test('toggleRow shows an unselected track and records recent use', () => {
+  test('toggleRow shows an unselected track and records recent use', async () => {
     const { model, shown, recent } = nonCartModel()
     getRowSelectionState({
       model,
@@ -95,6 +95,8 @@ describe('toggle handlers (shown-tracks mode)', () => {
       selectionSet: new Set<string>(),
       filteredRows: rows,
     }).toggleRow('t2')
+    // the show goes through the async launchTrack path now
+    await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown.has('t2')).toBe(true)
     expect(recent).toEqual(['t2'])
   })
@@ -112,7 +114,7 @@ describe('toggle handlers (shown-tracks mode)', () => {
     expect(shown.has('t2')).toBe(false)
   })
 
-  test('toggleAll shows the rows not yet selected', () => {
+  test('toggleAll shows the rows not yet selected', async () => {
     const { model, shown } = nonCartModel()
     getRowSelectionState({
       model,
@@ -121,6 +123,7 @@ describe('toggle handlers (shown-tracks mode)', () => {
       selectionSet: new Set<string>(),
       filteredRows: rows,
     }).toggleAll()
+    await new Promise(resolve => setTimeout(resolve, 0))
     expect([...shown].sort()).toEqual(['t2', 't3'])
   })
 })

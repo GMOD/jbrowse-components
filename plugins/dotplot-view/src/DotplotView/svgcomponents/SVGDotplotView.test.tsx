@@ -17,9 +17,9 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 async function setup() {
   const session = createTestSession()
   addVolvoxAssembly(session)
-  const view = session.addView('DotplotView', {
+  const view = (await session.launchView('DotplotView', {
     init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] },
-  }) as DotplotViewModel
+  })) as DotplotViewModel
   view.setWidth(800)
   // Causal, not a wall clock: the only async precondition here is the assembly
   // load, so await that and let `when` resolve on the reaction tick after it.
@@ -117,7 +117,7 @@ test('an errored track fails the export, naming every track that failed', async 
         assemblyNames: ['volvox', 'volvox'],
       },
     })
-    view.showTrack(trackId)
+    await view.launchTrack(trackId)
   }
   // set directly rather than by failing a fetch: this asserts how the view
   // reports the terminal state, and both displays must be in it at once. After
@@ -188,7 +188,7 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
       assemblyNames: ['volvox', 'volvox'],
     },
   })
-  view.showTrack('ortho')
+  await view.launchTrack('ortho')
   await when(() => view.dotplotDisplays.every(d => d.ready))
 
   // Committed directly rather than fetched, the way the errored-tracks test

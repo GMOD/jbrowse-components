@@ -149,7 +149,7 @@ export function addMultiWiggleTrack({
   ...rest
 }: {
   session: SessionWithAddSessionTrack
-  view?: { showTrack: (trackId: string) => void }
+  view?: { launchTrack: (trackId: string) => Promise<unknown> }
   name: string
   assemblyNames: string[]
   adapter: Record<string, unknown>

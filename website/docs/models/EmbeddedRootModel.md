@@ -53,7 +53,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot: SnapshotIn&lt;SESSION&gt;) =&gt; void</code> |  | EmbeddedRootModel |
+| <span id="action-setsession">**setSession**</span><br><code>(sessionSnapshot: SnapshotIn&lt;SESSION&gt;) =&gt; void</code> | Synchronous, so every view type the snapshot names must have its state model loaded — the guard turns what would otherwise be a confusing union mismatch into an actionable error. An async caller can `await pluginManager.preloadSessionTypes(snapshot)` first. | EmbeddedRootModel |
 | <span id="action-restoresession">**restoreSession**</span><br><code>(sessionSnapshot: SessionSnapshot) =&gt; void</code> | Load a session whose shape is only known at runtime — decoded from a URL, read back from storage, handed over by a non-TypeScript host.<br><br>Separate from `setSession` because that one takes the compiler-checked snapshot type, which a value parsed out of JSON can never satisfy. The assertion below is the whole reason this exists: it is the single place the conversion happens, instead of every caller asserting at its own site. Nothing is unchecked at runtime — MST validates the snapshot as it applies it and throws on a mismatch, which is the check that actually matters for a value this app did not author. | EmbeddedRootModel |
 | <span id="action-renamecurrentsession">**renameCurrentSession**</span><br><code>(sessionName: string) =&gt; void</code> |  | EmbeddedRootModel |
 | <span id="action-seterror">**setError**</span><br><code>(error: unknown) =&gt; void</code> |  | EmbeddedRootModel |

@@ -49,7 +49,7 @@ interface SyntenyView {
 // 1:1 self-alignment the follow's answer for a row is the contig it is already
 // on, so a row that snapped back would look exactly like a row that stayed.
 async function openSwapView() {
-  const { session } = getTestSession()
+  const { session } = await getTestSession()
   const added = session.addTrackConf({
     type: 'SyntenyTrack',
     trackId: 'volvox_contig_swap',
@@ -61,12 +61,12 @@ async function openSwapView() {
       assemblyNames: [ASM, ASM],
     },
   }) as { trackId: string }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: ASM }, { assembly: ASM }],
       tracks: [added.trackId],
     },
-  }) as unknown as SyntenyView
+  })) as unknown as SyntenyView
   view.setWidth(800)
   await waitFor(() => {
     expect(view.initialized).toBe(true)

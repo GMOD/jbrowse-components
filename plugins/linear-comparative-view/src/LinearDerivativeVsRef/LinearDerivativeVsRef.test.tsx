@@ -165,7 +165,7 @@ test('the segments config rides on the track, reaching no session list', async (
       },
     }))
     .actions(self => ({
-      showTrack(
+      launchTrack(
         trackId: string,
         _initialSnapshot?: object,
         _displaySnapshot?: object,

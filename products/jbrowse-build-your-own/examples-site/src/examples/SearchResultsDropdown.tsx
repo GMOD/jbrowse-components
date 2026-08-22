@@ -289,9 +289,9 @@ function ResultList({
                 onChosen()
                 view
                   .navToLocString(location, volvox.name, 0.2)
-                  .then(() => {
+                  .then(async () => {
                     if (trackId) {
-                      view.showTrack(trackId)
+                      await view.launchTrack(trackId)
                     }
                   })
                   .catch((e: unknown) => {

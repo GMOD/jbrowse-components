@@ -60,7 +60,10 @@ function addVolvoxConf(session: ReturnType<typeof createTestSession>) {
 async function setup(init?: Record<string, unknown>) {
   const session = createTestSession()
   addVolvoxConf(session)
-  const view = session.addView('CircularView', init) as CircularViewModel
+  const view = (await session.launchView(
+    'CircularView',
+    init,
+  )) as CircularViewModel
   view.setWidth(800)
   // Causal, not a wall clock: the only async precondition here is the assembly
   // load, so await that and let `when` resolve on the reaction tick after it.
@@ -97,10 +100,10 @@ async function setupRefNames(
       },
     },
   })
-  const view = session.addView('CircularView', {
+  const view = (await session.launchView('CircularView', {
     init: { assembly: 'test' },
     ...viewSnap,
-  }) as CircularViewModel
+  })) as CircularViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('test')
   await when(() => view.displayedRegions.length > 0)
@@ -157,7 +160,7 @@ test('exporting with nothing displayed says so instead of saving a blank', async
 // terminal, or an export awaiting it hangs with no error and no output
 test('a track opened before any regions leaves the export gate terminal', async () => {
   const { view } = await setup()
-  view.showTrack('sv')
+  await view.launchTrack('sv')
   const display = view.tracks[0]!.displays[0]!
   expect(display.features).toBeUndefined()
   expect(display.svgReady).toBe(true)

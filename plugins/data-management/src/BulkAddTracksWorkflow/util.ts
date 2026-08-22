@@ -161,7 +161,7 @@ export function locationWarnings(locations: FileLocation[]): string[] {
  * show the new tracks if the open view is on the chosen assembly and close the
  * widget.
  */
-export function submitBulkTracks({
+export async function submitBulkTracks({
   model,
   named,
   assembly,
@@ -185,6 +185,9 @@ export function submitBulkTracks({
   // added and publishTrackConf would silently hand back those instead.
   const timestamp = Date.now()
   let added = 0
+  // the shows follow the transaction rather than sitting in it: each display's
+  // state model may still be a dynamic import away
+  const toShow: string[] = []
   // adding a batch one track at a time otherwise re-renders the track
   // selector once per file, which is the whole point of this workflow
   transaction(() => {
@@ -201,7 +204,7 @@ export function submitBulkTracks({
       if (session.publishTrackConf(conf)) {
         added++
         if (showInView) {
-          trackContainer?.showTrack(conf.trackId)
+          toShow.push(conf.trackId)
         }
       }
     }
@@ -213,6 +216,9 @@ export function submitBulkTracks({
       finishAddTrack(model, session)
     }
   })
+  for (const trackId of toShow) {
+    await trackContainer?.launchTrack(trackId)
+  }
   if (added > 0 && !showInView) {
     session.notify(
       `Added ${added} ${pluralize(added, 'track')} to the session that ${pluralize(added, 'was', 'were')} not displayed because assembly "${assembly}" is not open in this view`,

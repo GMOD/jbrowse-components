@@ -36,7 +36,7 @@ test('addAndShowTrack adds to the session, and shows what it added', () => {
   const shown: string[] = []
 
   addAndShowTrack(session as unknown as SessionWithAddSessionTrack, CONF, {
-    showTrack: (trackId: string) => shown.push(trackId),
+    launchTrack: async (trackId: string) => shown.push(trackId),
   })
 
   expect(calls).toEqual(['session:t1'])
@@ -56,7 +56,7 @@ test('addAndShowTrack shows nothing when the add was rejected', () => {
       addSessionTrackConf: () => undefined,
     } as unknown as SessionWithAddSessionTrack,
     CONF,
-    { showTrack: (trackId: string) => shown.push(trackId) },
+    { launchTrack: async (trackId: string) => shown.push(trackId) },
   )
 
   expect(shown).toEqual([])
@@ -72,7 +72,7 @@ test('addTrackFromWidget publishes, and does not touch the session store', () =>
     model: {
       trackContainer: {
         assemblyNames: ['hg38'],
-        showTrack: (trackId: string) => shown.push(trackId),
+        launchTrack: async (trackId: string) => shown.push(trackId),
       },
       clearData: () => {},
     } as never,
@@ -98,7 +98,7 @@ test('addTrackFromWidget puts a synthesized-assembly track on the track, not in 
     model: {
       trackContainer: {
         assemblyNames: ['tmp'],
-        showTrack: (
+        launchTrack: async (
           trackId: string,
           _s: unknown,
           _d: unknown,

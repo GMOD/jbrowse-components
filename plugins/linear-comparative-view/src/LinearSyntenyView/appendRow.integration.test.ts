@@ -1,4 +1,5 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
 import type { LinearSyntenyViewModel } from './model.ts'
@@ -69,9 +70,9 @@ async function openStack(rowCount: number) {
       },
     })
   }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: { views: names.map(assembly => ({ assembly })) },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),
@@ -88,19 +89,31 @@ const heights = (view: LinearSyntenyViewModel) => view.levels.map(l => l.height)
 // existence and has to land on the same number the other two do.
 test('an appended level matches the auto-scaled stack it joins', async () => {
   const { view } = await openStack(6)
-  expect(heights(view)).toEqual([64, 64, 64, 64, 64])
+  // the init tracks land through the async launchTrack path now, and the
+  // auto-scale follows them
+  await waitFor(() => {
+    expect(heights(view)).toEqual([64, 64, 64, 64, 64])
+  })
 
-  view.appendRow({ assembly: 'volvox0' })
-  expect(heights(view)).toEqual([64, 64, 64, 64, 64, 64])
+  await view.appendRow({ assembly: 'volvox0' })
+  await waitFor(() => {
+    expect(heights(view)).toEqual([64, 64, 64, 64, 64, 64])
+  })
 })
 
 // A band the user dragged is the height they chose for this stack; the row they
 // add below it must not come in at the factory default either.
 test('an appended level matches a hand-resized stack', async () => {
   const { view } = await openStack(2)
+  // settle the launch first: its tracks land through the async launchTrack path
+  // and the auto-scale follows them, so a height set before that is one the
+  // init pass still overwrites. A pairwise stack auto-scales to the 100 default.
+  await waitFor(() => {
+    expect(heights(view)).toEqual([100])
+  })
   view.levels[0]!.setHeight(210)
 
-  view.appendRow({ assembly: 'volvox0' })
+  await view.appendRow({ assembly: 'volvox0' })
   expect(heights(view)).toEqual([210, 210])
 })
 
@@ -123,7 +136,7 @@ test('a track added in the same tick shows on the level it was added for', async
     },
   })
 
-  view.appendRow({ assembly: 'volvox0', syntenyTrackId: 'uploaded' })
+  await view.appendRow({ assembly: 'volvox0', syntenyTrackId: 'uploaded' })
 
   expect(view.levels.length).toBe(2)
   // on the new level, not the one that was already there (openStack configures
@@ -147,7 +160,9 @@ const menuLabels = (view: LinearSyntenyViewModel) =>
 test('the header menu offers Add assembly row only once there is a row', async () => {
   const session = createTestSession()
   session.addAssemblyConf(assembly('volvox0'))
-  const empty = session.addView('LinearSyntenyView') as LinearSyntenyViewModel
+  const empty = (await session.launchView(
+    'LinearSyntenyView',
+  )) as LinearSyntenyViewModel
   openViews.push({ session, view: empty })
 
   expect(empty.showImportForm).toBe(true)

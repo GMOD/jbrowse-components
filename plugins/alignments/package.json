@@ -17,6 +17,10 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./LinearAlignmentsDisplay/stateModel": "./src/LinearAlignmentsDisplay/model.ts"
+  },
   "files": [
     "esm"
   ],
@@ -61,6 +65,10 @@
       ".": {
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
+      },
+      "./LinearAlignmentsDisplay/stateModel": {
+        "types": "./esm/LinearAlignmentsDisplay/model.d.ts",
+        "import": "./esm/LinearAlignmentsDisplay/model.js"
       }
     }
   },

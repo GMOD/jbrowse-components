@@ -24,7 +24,10 @@ export type {
 // product does. Kept out of createApp deliberately — see its doc comment.
 export { resolveAssemblies } from '@jbrowse/product-core'
 export { default as createModel } from './createModel.ts'
-export { default as createViewState } from './createViewState.ts'
+export {
+  default as createViewState,
+  createViewStateAsync,
+} from './createViewState.ts'
 export type { CreateViewStateOptions } from './createViewState.ts'
 export type { PluginsUpdate } from './rootModel/rootModel.ts'
 export { useCreateViewState } from './useCreateViewState.ts'

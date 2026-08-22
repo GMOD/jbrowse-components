@@ -3,7 +3,7 @@ import '@testing-library/jest-dom'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { when } from 'mobx'
 
 import AddRowDialog from './AddRowDialog.tsx'
@@ -55,12 +55,12 @@ async function openDialog(datasets: string[][], openTracks: string[] = []) {
       },
     })
   }
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
       tracks: openTracks,
     },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
   await when(
     () => view.views.length > 0 && view.views.every(v => v.initialized),
@@ -141,8 +141,12 @@ test('Add appends the picked dataset as a new bottom row', async () => {
   // the row and its level are the click's own work
   expect(view.views.length).toBe(3)
   expect(view.levels.length).toBe(2)
-  expect(view.levels[1]!.tracks.length).toBe(1)
   expect(closed.yes).toBe(true)
+  // the track on it is not, quite: showing one loads the synteny display's
+  // state model first, so it lands a tick later
+  await waitFor(() => {
+    expect(view.levels[1]!.tracks.length).toBe(1)
+  })
 
   // the assembly is not: appendRow hands the row an LGV `init`, whose afterAttach
   // autorun resolves the assembly and navigates it
@@ -207,6 +211,6 @@ test('the row just added anchors the dialog before it has loaded', async () => {
 
   expect(view.views.at(-1)!.assemblyNames).toEqual([])
   expect(
-    screen.getByText(/dataset 0 already draws the band above volvox3/),
+    await screen.findByText(/dataset 0 already draws the band above volvox3/),
   ).toBeTruthy()
 })

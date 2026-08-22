@@ -4,7 +4,7 @@ import { observeSession } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
 import JBrowseApp from './JBrowseApp/index.ts'
-import { createViewStateFromProps } from './createViewStateFromProps.ts'
+import { createViewStateFromPropsAsync } from './createViewStateFromProps.ts'
 import { destroyViewState } from './destroyViewState.ts'
 
 import type { ManagedView } from './JBrowse/index.ts'
@@ -23,6 +23,12 @@ export interface JBrowseAppController {
    * which is otherwise unobtainable and is what `removeView` takes.
    */
   addView(view: ManagedView): string
+  /**
+   * `addView` for view types whose state model may be lazily loaded: resolves
+   * the state model first. `addView` requires it loaded already and throws
+   * otherwise.
+   */
+  launchView(view: ManagedView): Promise<string>
   /** close a view opened at launch or by `addView`; unknown ids are ignored */
   removeView(id: string): void
   /**
@@ -30,8 +36,10 @@ export interface JBrowseAppController {
    * you stored. The counterpart of the `session` mount option, for the state
    * that arrives after mount: a URL the user pasted, a saved view they picked.
    * Pass nothing to return to the `views` the app launched with.
+   * Asynchronous because the incoming session may name view types whose state
+   * models are lazily loaded; they are loaded before the swap.
    */
-  setSession(session?: SessionSnapshot): void
+  setSession(session?: SessionSnapshot): Promise<void>
   /**
    * Unmount the app and tear the engine down — React root, RPC worker threads,
    * and the MST tree's autoruns. The controller is unusable afterwards.
@@ -49,11 +57,11 @@ export interface JBrowseAppController {
  * root's render is not committed synchronously, so a ref would not be populated
  * in time to hand back a controller.
  */
-export function createApp(
+export async function createApp(
   el: HTMLElement,
   opts: CreateAppOptions,
-): JBrowseAppController {
-  const viewState = createViewStateFromProps(opts)
+): Promise<JBrowseAppController> {
+  const viewState = await createViewStateFromPropsAsync(opts)
   const disposeObservers = observeSession(viewState, opts)
   const root = createRoot(el)
   root.render(createElement(JBrowseApp, { viewState }))
@@ -68,17 +76,26 @@ export function createApp(
         init: view.init,
       }).id
     },
+    async launchView(view) {
+      const created = await viewState.session.launchView(view.type, {
+        id: view.id,
+        init: view.init,
+      })
+      return created.id
+    },
     removeView(id) {
       const view = viewState.session.views.find(v => v.id === id)
       if (view) {
         viewState.session.removeView(view)
       }
     },
-    setSession(session) {
+    async setSession(session) {
       if (session) {
+        await viewState.pluginManager.preloadSessionTypes(session)
         viewState.setSession(session)
       } else {
-        // back to the app's own starting state, which `views` defined
+        // back to the app's own starting state, which `views` defined —
+        // preloaded when this app was created, so settable synchronously
         viewState.setDefaultSession()
       }
     },

@@ -131,6 +131,42 @@ export function useCreateOnce<T>(create: () => T): T {
 }
 
 /**
+ * `useCreateOnce` for an asynchronous factory: `create` runs once per
+ * component life (StrictMode's double-invoked effects included), and the hook
+ * returns undefined until it resolves. A rejection is rethrown from render so
+ * an error boundary sees it.
+ *
+ * Teardown is not this hook's business — pair it with `useFinalUnmount`, and
+ * note the value can resolve after the component is gone: a caller whose value
+ * is expensive to leak (an engine with a worker pool) should use
+ * product-core's `useAsyncEngineLifecycle`, which discards that late arrival.
+ */
+export function useCreateOnceAsync<T>(create: () => Promise<T>): T | undefined {
+  const started = useRef(false)
+  const [state, setState] = useState<{ value: T } | { error: unknown }>()
+  useEffect(() => {
+    if (!started.current) {
+      started.current = true
+      create().then(
+        value => {
+          setState({ value })
+        },
+        (error: unknown) => {
+          setState({ error })
+        },
+      )
+    }
+    // started guards the once-ness; create is deliberately read on the first
+    // effect only, same contract as useCreateOnce
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
+  }, [])
+  if (state && 'error' in state) {
+    throw state.error
+  }
+  return state?.value
+}
+
+/**
  * Run `cleanup` when the component *really* unmounts.
  *
  * "Really" is the whole difficulty, because React does not distinguish a final

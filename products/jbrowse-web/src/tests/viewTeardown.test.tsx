@@ -184,7 +184,7 @@ test('a comparative view gives its temporary assembly back when removed', async 
   })
   expect(session.temporaryAssemblies.map(a => a.name)).toContain('readvsref')
 
-  const dotplot = session.addView('DotplotView', {
+  const dotplot = await session.launchView('DotplotView', {
     assemblyNames: ['readvsref'],
   })
   act(() => {
@@ -228,7 +228,7 @@ test('a view-local track config goes out with the view', async () => {
     },
   })
 
-  const synteny = session.addView('LinearSyntenyView', {
+  const synteny = (await session.launchView('LinearSyntenyView', {
     views: [
       {
         type: 'LinearGenomeView',
@@ -248,7 +248,7 @@ test('a view-local track config goes out with the view', async () => {
         ],
       },
     ],
-  }) as unknown as {
+  })) as unknown as {
     views: {
       showTrack: (
         id: string,
@@ -256,12 +256,18 @@ test('a view-local track config goes out with the view', async () => {
         displaySnapshot?: object,
         inlineConf?: Record<string, unknown>,
       ) => unknown
+      launchTrack: (
+        id: string,
+        initialSnapshot?: object,
+        displaySnapshot?: object,
+        inlineConf?: Record<string, unknown>,
+      ) => Promise<unknown>
       tracks: { configuration: AnyConfigurationModel }[]
     }[]
   }
 
-  act(() => {
-    synteny.views[1]!.showTrack(
+  await act(async () => {
+    await synteny.views[1]!.launchTrack(
       'view-local',
       {},
       {},
@@ -391,20 +397,20 @@ test('an inline view-local config survives a session round trip', async () => {
       },
     },
   })
-  const built = first.session.addView(
+  const built = (await first.session.launchView(
     'LinearSyntenyView',
     viewSnap,
-  ) as unknown as {
-    showTrack: (
+  )) as unknown as {
+    launchTrack: (
       trackId: string,
       level?: number,
       initialSnapshot?: object,
       displaySnapshot?: object,
       inlineConf?: Record<string, unknown>,
-    ) => void
+    ) => Promise<unknown>
   }
-  act(() => {
-    built.showTrack('view-local-synteny', 0, {}, {}, inlineConf)
+  await act(async () => {
+    await built.launchTrack('view-local-synteny', 0, {}, {}, inlineConf)
   })
 
   // what a share link carries: JSON, so anything MST could not serialize is gone

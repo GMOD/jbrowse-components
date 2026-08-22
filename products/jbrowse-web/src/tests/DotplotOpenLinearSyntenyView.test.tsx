@@ -19,12 +19,12 @@ jest.mock('../makeWorkerInstance', () => () => {})
 utilizeFetchMockForTest(grapePeachGetFile)
 
 test('Linear synteny view of selection from dotplot view', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
   // Create a DotplotView with a synteny track
-  const dotplotView = session.addView('DotplotView', {
+  const dotplotView = await session.launchView('DotplotView', {
     init: {
       views: [{ assembly: 'peach' }, { assembly: 'grape' }],
       tracks: ['subset'],
@@ -70,12 +70,12 @@ test('Linear synteny view of selection from dotplot view', async () => {
 }, 50000)
 
 test('Linear synteny view of selection from dotplot preserves track configuration', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
   // Create a DotplotView with a synteny track
-  const dotplotView = session.addView('DotplotView', {
+  const dotplotView = await session.launchView('DotplotView', {
     init: {
       views: [{ assembly: 'peach' }, { assembly: 'grape' }],
       tracks: ['subset'],

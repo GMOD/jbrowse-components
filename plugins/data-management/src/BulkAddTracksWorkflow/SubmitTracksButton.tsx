@@ -32,11 +32,13 @@ const SubmitTracksButton = observer(function SubmitTracksButton({
       className={classes.submit}
       disabled={okNamed.length === 0 || !assembly}
       onClick={() => {
-        try {
-          submitBulkTracks({ model, named: okNamed, assembly })
-        } catch (e) {
-          getSession(model).notifyError(`${e}`, e)
-        }
+        void (async () => {
+          try {
+            await submitBulkTracks({ model, named: okNamed, assembly })
+          } catch (e) {
+            getSession(model).notifyError(`${e}`, e)
+          }
+        })()
       }}
     >
       Add {okNamed.length} {pluralize(okNamed.length, 'track')}

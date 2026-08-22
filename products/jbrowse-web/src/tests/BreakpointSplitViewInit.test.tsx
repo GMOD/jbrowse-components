@@ -58,11 +58,11 @@ afterEach(() => {
 // which is not just noise — an async rejection with no owner is attributed to
 // whichever test happens to be running, so it turns a clean suite into an
 // intermittently red one somewhere else.
-function createBreakpointView(init: object) {
-  const { rootModel } = getPluginManager(configSnapshot)
+async function createBreakpointView(init: object) {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setSession({ name: 'BreakpointSplitViewInit test' })
   const session = rootModel.session!
-  const view = session.addView('BreakpointSplitView', { init })
+  const view = await session.launchView('BreakpointSplitView', { init })
   view.setWidth(800)
   return view
 }
@@ -71,7 +71,7 @@ function createBreakpointView(init: object) {
 // exist `init` is what names the assemblies; once they do, the wait belongs to
 // the first uninitialized LGV and this delegates to the one it already computes.
 test('BreakpointSplitView loadingMessage reports what the assembly load is downloading', async () => {
-  const view = createBreakpointView([
+  const view = await createBreakpointView([
     { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
     { loc: 'chr6:56,758,000..56,759,000', assembly: 'hg19' },
   ])
@@ -103,7 +103,7 @@ test('BreakpointSplitView loadingMessage reports what the assembly load is downl
 }, 40000)
 
 test('BreakpointSplitView initializes with init property', async () => {
-  const view = createBreakpointView([
+  const view = await createBreakpointView([
     { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
     { loc: 'chr6:56,758,000..56,759,000', assembly: 'hg19' },
   ])
@@ -124,7 +124,7 @@ test('BreakpointSplitView initializes with init property', async () => {
 }, 40000)
 
 test('BreakpointSplitView initializes with tracks', async () => {
-  const view = createBreakpointView([
+  const view = await createBreakpointView([
     {
       loc: 'chr3:186,700,000..186,701,000',
       assembly: 'hg19',
@@ -151,7 +151,7 @@ test('BreakpointSplitView initializes with tracks', async () => {
 }, 40000)
 
 test('BreakpointSplitView init without loc shows all regions', async () => {
-  const view = createBreakpointView([
+  const view = await createBreakpointView([
     { assembly: 'hg19' },
     { assembly: 'hg19' },
   ])
@@ -169,7 +169,7 @@ test('BreakpointSplitView init without loc shows all regions', async () => {
 }, 40000)
 
 test('BreakpointSplitView showImportForm is false when init is set', async () => {
-  const view = createBreakpointView([
+  const view = await createBreakpointView([
     { loc: 'chr3:1..1000', assembly: 'hg19' },
     { loc: 'chr6:1..1000', assembly: 'hg19' },
   ])
@@ -185,10 +185,10 @@ test('BreakpointSplitView showImportForm is false when init is set', async () =>
   )
 }, 40000)
 
-test('BreakpointSplitView showImportForm is true when no init', () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+test('BreakpointSplitView showImportForm is true when no init', async () => {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setSession({ name: 'BreakpointSplitViewInit test' })
-  const view = rootModel.session!.addView('BreakpointSplitView', {})
+  const view = await rootModel.session!.launchView('BreakpointSplitView', {})
   view.setWidth(800)
 
   expect(view.showImportForm).toBe(true)

@@ -25,6 +25,11 @@ import type { ViewStateOptions } from './createViewState.ts'
  * Do NOT reach for `useState(() => createViewState(opts))` plus a
  * `destroyViewState` cleanup by hand: both halves are StrictMode traps, and
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
+ *
+ * Synchronous, so a `session` restored from elsewhere that names a display type
+ * whose state model is lazily loaded throws here rather than loading it. That
+ * host wants `createViewStateAsync` — with product-core's
+ * `useAsyncEngineLifecycle` if React should still own the engine.
  */
 export function useCreateViewState(opts: ViewStateOptions): ViewModel {
   const state = useCreateOnce(() => createViewState(opts))

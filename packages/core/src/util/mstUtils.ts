@@ -3,9 +3,11 @@ import {
   getParent,
   hasParent,
   isAlive,
+  isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 
 import {
+  addOrReplaceView,
   isDisplayModel,
   isSessionModel,
   isTrackModel,
@@ -206,6 +208,37 @@ export function canonicalizeViewRefName(
  */
 export function getEnv(obj: IAnyStateTreeNode) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
+}
+
+/**
+ * #api core/util
+ * `addOrReplaceView` for view types whose state model may be lazily loaded:
+ * resolves the state model first, then opens the view in the slot `replacing`
+ * occupies or appended. The synchronous `addOrReplaceView` requires the state
+ * model to be loaded already.
+ */
+export async function launchOrReplaceView(args: {
+  session: AbstractSessionModel
+  typeName: string
+  initialState?: Record<string, unknown>
+  replacing?: AbstractViewModel
+}) {
+  // a fake session in a test is not an MST node, or is one built without the
+  // pluginManager environment; skipping the preload there leaves addView's
+  // own not-loaded guard as the error path
+  if (isStateTreeNode(args.session)) {
+    const { pluginManager } = getEnvMST<{ pluginManager?: PluginManager }>(
+      args.session,
+    )
+    await pluginManager?.getViewType(args.typeName).loadStateModel()
+    // the snapshot names more than the view type: a read-vs-ref launch arrives
+    // with its rows and the tracks on them, and those displays' state models
+    // are dynamic imports too
+    await pluginManager?.preloadSessionTypes({
+      views: [{ type: args.typeName, ...args.initialState }],
+    })
+  }
+  return addOrReplaceView(args)
 }
 
 export function hashCode(str: string) {

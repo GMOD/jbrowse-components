@@ -40,14 +40,14 @@ test('a bad per-row init loc keeps the built rows', async () => {
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   jest.spyOn(console, 'error').mockImplementation()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox', loc: 'nonexistent:1-2' },
         { assembly: 'volvox2', loc: 'ctgA:5000-15000' },
       ],
     },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
 
   await when(() => view.init === undefined)
@@ -69,11 +69,11 @@ test('an unloadable assembly keeps init and shows the import form', async () => 
   const session = setup()
   const notifyError = jest.spyOn(session, 'notifyError').mockImplementation()
   jest.spyOn(console, 'error').mockImplementation()
-  const view = session.addView('LinearSyntenyView', {
+  const view = (await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'volvox' }, { assembly: 'nope' }],
     },
-  }) as LinearSyntenyViewModel
+  })) as LinearSyntenyViewModel
   view.setWidth(800)
 
   await when(() => !!view.error)
@@ -94,12 +94,12 @@ test('an unloadable assembly keeps init and shows the import form', async () => 
 // The third outcome, and the one a host is most likely to mistake for ready: no
 // rows and no `init` is a synteny view nobody has told what to compare, which
 // is what JBrowse's own apps draw the import form for.
-test('no rows and no init is noRegions', () => {
+test('no rows and no init is noRegions', async () => {
   const session = setup()
-  const view = session.addView(
+  const view = (await session.launchView(
     'LinearSyntenyView',
     {},
-  ) as LinearSyntenyViewModel
+  )) as LinearSyntenyViewModel
   view.setWidth(800)
 
   expect(view.hasSomethingToShow).toBe(false)

@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { addOrReplaceView, getSession } from '@jbrowse/core/util'
+import { getSession, launchOrReplaceView } from '@jbrowse/core/util'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
@@ -38,7 +38,7 @@ export async function launchLinearReadVsRef({
   })
 
   session.addTemporaryAssembly?.(temporaryAssembly)
-  addOrReplaceView({
+  await launchOrReplaceView({
     session,
     typeName: 'LinearSyntenyView',
     initialState: viewSpec,

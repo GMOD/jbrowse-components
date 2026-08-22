@@ -17,7 +17,7 @@ import type { AssertNotAny, PluginInput } from '@jbrowse/product-core'
  * #category root
  * Composes the shared {@link EmbeddedRootModel} with a CircularView session.
  */
-export default function createModel(
+export default async function createModel(
   runtimePlugins: PluginInput[],
   makeWorkerInstance?: () => Worker,
 ) {
@@ -30,6 +30,9 @@ export default function createModel(
     // boots from — see toPluginLoadRecord
     ...runtimePlugins.map(toPluginLoadRecord),
   ]).createPluggableElements()
+  // the session model embeds CircularView's lazily registered state model as
+  // its `view` prop, so resolve it before the factory reads it
+  await pluginManager.getViewType('CircularView').loadStateModel()
   const model = createEmbeddedRootModel({
     name: 'ReactCircularGenomeView',
     version,
@@ -40,7 +43,7 @@ export default function createModel(
   return { model, pluginManager }
 }
 
-type ViewStateModel = ReturnType<typeof createModel>['model']
+type ViewStateModel = Awaited<ReturnType<typeof createModel>>['model']
 // `interface … extends`, not `type … =`, for the same build reason as the LGV
 // product's: as an alias the declaration emitter inlines the whole root-model
 // type at every use, and the two entry points below then fail `build:esm` with

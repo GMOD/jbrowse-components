@@ -18,14 +18,18 @@ export function addAndShowTrack(
   conf: Parameters<SessionWithAddSessionTrack['addSessionTrackConf']>[0] & {
     trackId: string
   },
-  view?: { showTrack: (trackId: string) => void },
+  view?: { launchTrack: (trackId: string) => Promise<unknown> },
 ) {
   const added = session.addSessionTrackConf(conf)
   // addSessionTrackConf already notified on an invalid conf; showing a trackId
   // that was never added would only add a second "Could not resolve identifier"
   // snackbar
+  //
+  // `launchTrack`, voided: the display's state model may still be a dynamic
+  // import away, and every caller here is a menu item or a dialog button whose
+  // return value is the added config rather than the opened track
   if (added) {
-    view?.showTrack(conf.trackId)
+    void view?.launchTrack(conf.trackId)
   }
   return added
 }

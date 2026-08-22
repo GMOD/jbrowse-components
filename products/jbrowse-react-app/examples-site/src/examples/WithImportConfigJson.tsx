@@ -13,6 +13,8 @@ export default function WithImportConfigJson() {
   // `useCreateViewState`, not `useState(() => createViewState(…))`: React
   // double-invokes a state initializer under StrictMode and throws the second
   // result away, which for an engine is a whole orphaned worker pool per mount.
+  // undefined for the frame in which the engine is still being built — the
+  // view and display types the config's session names load first
   const state = useCreateViewState({ config })
-  return <JBrowseApp viewState={state} />
+  return state ? <JBrowseApp viewState={state} /> : null
 }

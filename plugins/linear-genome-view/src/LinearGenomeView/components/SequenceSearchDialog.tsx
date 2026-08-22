@@ -46,7 +46,7 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
 }: {
   model: {
     assemblyNames: string[]
-    showTrack: (trackId: string) => void
+    launchTrack: (trackId: string) => Promise<unknown>
   }
   handleClose: () => void
 }) {

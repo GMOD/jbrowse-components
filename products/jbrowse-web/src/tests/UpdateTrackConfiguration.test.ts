@@ -14,6 +14,7 @@ interface PlainConfig {
 
 interface TestView {
   showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   hideTrack: (id: string) => void
   tracks: { configuration: AnyConfigurationModel }[]
 }
@@ -44,8 +45,8 @@ function editedSnapshot(session: TestSession, name = 'Edited name') {
   return { ...base, name }
 }
 
-test('a non-admin edit is stored as a delta, not a full session-track copy', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('a non-admin edit is stored as a delta, not a full session-track copy', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const before = session.tracks.length
 
@@ -65,8 +66,8 @@ test('a non-admin edit is stored as a delta, not a full session-track copy', () 
   expect(readConfObject(resolved, 'name')).toBe('Edited name')
 })
 
-test('a second edit updates the same delta rather than adding another', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('a second edit updates the same delta rather than adding another', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
 
   session.updateTrackConfiguration(editedSnapshot(session))
@@ -78,8 +79,8 @@ test('a second edit updates the same delta rather than adding another', () => {
   expect(readConfObject(resolved, 'name')).toBe('Edited again')
 })
 
-test('an admin change to an untouched field flows through the delta', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('an admin change to an untouched field flows through the delta', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
 
   session.updateTrackConfiguration(editedSnapshot(session))
@@ -96,8 +97,8 @@ test('an admin change to an untouched field flows through the delta', () => {
   expect(readConfObject(resolved, 'category')).toEqual(['Corrected'])
 })
 
-test('admin edits update the jbrowse config in place, no delta', () => {
-  const { rootModel } = getPluginManager(undefined, true)
+test('admin edits update the jbrowse config in place, no delta', async () => {
+  const { rootModel } = await getPluginManager(undefined, true)
   const session = rootModel.session as unknown as TestSession
 
   session.updateTrackConfiguration(editedSnapshot(session))
@@ -108,8 +109,8 @@ test('admin edits update the jbrowse config in place, no delta', () => {
   expect(readConfObject(resolved, 'name')).toBe('Edited name')
 })
 
-test('a non-admin delta survives session export + reload (shareable)', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('a non-admin delta survives session export + reload (shareable)', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   session.updateTrackConfiguration(editedSnapshot(session))
 
@@ -117,7 +118,7 @@ test('a non-admin delta survives session export + reload (shareable)', () => {
   const exported = getSnapshot(rootModel.session)
 
   // reload into a fresh app instance
-  const { rootModel: reloaded } = getPluginManager(undefined, false)
+  const { rootModel: reloaded } = await getPluginManager(undefined, false)
   reloaded.setSession(exported)
   const session2 = reloaded.session as unknown as TestSession
 
@@ -126,8 +127,8 @@ test('a non-admin delta survives session export + reload (shareable)', () => {
   expect(readConfObject(resolved, 'name')).toBe('Edited name')
 })
 
-test('a legacy full-override session track migrates to a delta on load', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('a legacy full-override session track migrates to a delta on load', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
 
@@ -139,7 +140,7 @@ test('a legacy full-override session track migrates to a delta on load', () => {
     trackConfigDeltas: {},
   }
 
-  const { rootModel: reloaded } = getPluginManager(undefined, false)
+  const { rootModel: reloaded } = await getPluginManager(undefined, false)
   reloaded.setSession(exported)
   const session2 = reloaded.session as unknown as TestSession
 
@@ -154,13 +155,13 @@ test('a legacy full-override session track migrates to a delta on load', () => {
 // and then edit the very tracks it overrides. An admin edit rewrites the base
 // config itself, so it has to supersede the delta -- otherwise the delta merges
 // straight back over the new base and the admin's edit silently reverts.
-test("an admin's edit clears a shared session's delta for that track", () => {
-  const { rootModel: nonAdminRoot } = getPluginManager(undefined, false)
+test("an admin's edit clears a shared session's delta for that track", async () => {
+  const { rootModel: nonAdminRoot } = await getPluginManager(undefined, false)
   const nonAdmin = nonAdminRoot.session as unknown as TestSession
   nonAdmin.updateTrackConfiguration(editedSnapshot(nonAdmin, 'NonAdminName'))
   const shared = getSnapshot(nonAdminRoot.session)
 
-  const { rootModel } = getPluginManager(undefined, true)
+  const { rootModel } = await getPluginManager(undefined, true)
   rootModel.setSession(shared)
   const session = rootModel.session as unknown as TestSession
   // the admin first sees the session as its author shared it
@@ -183,8 +184,8 @@ test("an admin's edit clears a shared session's delta for that track", () => {
 // full shadow into sessionTracks -- that silently demotes a catalog track to a
 // session track and drops its delta-override semantics. addSessionTrackConf dedupes
 // against everything getTrackById resolves, not just sessionTracks.
-test('addSessionTrackConf does not shadow an existing catalog track into sessionTracks', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('addSessionTrackConf does not shadow an existing catalog track into sessionTracks', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
 
@@ -200,8 +201,8 @@ test('addSessionTrackConf does not shadow an existing catalog track into session
   )
 })
 
-test('isTrackOverride distinguishes a delta from a plain config track', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('isTrackOverride distinguishes a delta from a plain config track', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
 
   expect(session.isTrackOverride(TRACK_ID)).toBe(false)
@@ -209,8 +210,8 @@ test('isTrackOverride distinguishes a delta from a plain config track', () => {
   expect(session.isTrackOverride(TRACK_ID)).toBe(true)
 })
 
-test('track menu offers Reset for an override, Delete otherwise', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('track menu offers Reset for an override, Delete otherwise', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const config = session.tracks.find(t => t.trackId === TRACK_ID)!
 
@@ -226,7 +227,7 @@ test('track menu offers Reset for an override, Delete otherwise', () => {
   expect(labelsAfter).not.toContain('Delete track')
 })
 
-test('a live setSlot edit persists exactly once and does not loop (admin)', () => {
+test('a live setSlot edit persists exactly once and does not loop (admin)', async () => {
   // Regression: BaseTrackModel's debounced save watches the re-resolving
   // `self.configuration` reference. Admin `updateTrackConf` replaces the frozen
   // jbrowse.tracks entry and rehydrates a new MST node on every write, so a
@@ -234,10 +235,10 @@ test('a live setSlot edit persists exactly once and does not loop (admin)', () =
   // must settle it.
   jest.useFakeTimers()
   try {
-    const { rootModel } = getPluginManager(undefined, true)
+    const { rootModel } = await getPluginManager(undefined, true)
 
     const session = rootModel.session
-    session.views[0].showTrack(TRACK_ID)
+    await session.views[0].launchTrack(TRACK_ID)
     const track = session.views[0].tracks.find(
       (t: any) => t.configuration.trackId === TRACK_ID,
     )
@@ -254,8 +255,8 @@ test('a live setSlot edit persists exactly once and does not loop (admin)', () =
   }
 })
 
-test('reset discards the delta and reverts an open track in place', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('reset discards the delta and reverts an open track in place', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
   const originalName = readConfObject(
@@ -263,7 +264,7 @@ test('reset discards the delta and reverts an open track in place', () => {
     'name',
   )
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   session.updateTrackConfiguration(editedSnapshot(session))
 
   // the open track resolves to the edited config
@@ -280,7 +281,7 @@ test('reset discards the delta and reverts an open track in place', () => {
   expect(readConfObject(openTrack().configuration, 'name')).toBe(originalName)
 })
 
-test('reset reverts a live in-place setSlot edit (stale hydration node not reused)', () => {
+test('reset reverts a live in-place setSlot edit (stale hydration node not reused)', async () => {
   // Regression: a live track-menu setSlot mutates the base config's shared
   // hydrated MST node in place. Storing the delta rehydrates a fresh (merged)
   // node, but dropping the delta on reset made the `tracks` getter return the
@@ -288,7 +289,7 @@ test('reset reverts a live in-place setSlot edit (stale hydration node not reuse
   // mutated node, so the reset visibly reverted to the edited value. Distinct
   // from the snapshot-driven reset test above: only an in-place setSlot dirties
   // the cached base node, so that test never exercised this path.
-  const { rootModel } = getPluginManager(undefined, false)
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
   const originalName = readConfObject(
@@ -296,7 +297,7 @@ test('reset reverts a live in-place setSlot edit (stale hydration node not reuse
     'name',
   )
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const openTrack = () =>
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
   const openConfig = () =>
@@ -318,8 +319,8 @@ test('reset reverts a live in-place setSlot edit (stale hydration node not reuse
   expect(readConfObject(openConfig(), 'name')).toBe(originalName)
 })
 
-test('a save identical to the base stores no delta (no spurious override)', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('a save identical to the base stores no delta (no spurious override)', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
 
@@ -332,8 +333,8 @@ test('a save identical to the base stores no delta (no spurious override)', () =
   expect(session.isTrackOverride(TRACK_ID)).toBe(false)
 })
 
-test('editing a slot back to its base value clears the delta (implicit reset)', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('editing a slot back to its base value clears the delta (implicit reset)', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
 
@@ -347,8 +348,8 @@ test('editing a slot back to its base value clears the delta (implicit reset)', 
   expect(session.isTrackOverride(TRACK_ID)).toBe(false)
 })
 
-test('a redundant identical save does not churn the delta identity', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('a redundant identical save does not churn the delta identity', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
 
   session.updateTrackConfiguration(editedSnapshot(session))
@@ -364,7 +365,7 @@ test('a redundant identical save does not churn the delta identity', () => {
   expect(session.trackConfigDeltas).toBe(firstDeltas)
 })
 
-test('a live setSlot edit persists as a delta via the reaction (non-admin)', () => {
+test('a live setSlot edit persists as a delta via the reaction (non-admin)', async () => {
   // End-to-end for the working-copy refactor: an in-place setSlot on the
   // resolved config (a private working copy) must be picked up by
   // BaseTrackModel's debounced reaction and stored as a delta — without the
@@ -372,10 +373,10 @@ test('a live setSlot edit persists as a delta via the reaction (non-admin)', () 
   // the actual reaction fires, not a simulated persist.
   jest.useFakeTimers()
   try {
-    const { rootModel } = getPluginManager(undefined, false)
+    const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(TRACK_ID)
+    await view.launchTrack(TRACK_ID)
     const openConfig = () =>
       view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
         .configuration as AnyConfigurationModel & {
@@ -397,7 +398,7 @@ test('a live setSlot edit persists as a delta via the reaction (non-admin)', () 
   }
 })
 
-test('a config-editor widget edit persists as a delta via its debounced autorun (non-admin)', () => {
+test('a config-editor widget edit persists as a delta via its debounced autorun (non-admin)', async () => {
   // End-to-end for the widget's own save path (ConfigurationEditorWidget's
   // afterCreate autorun) — distinct from BaseTrackModel's reaction, which is
   // covered above. The track is deliberately NOT shown: with no BaseTrackModel
@@ -407,7 +408,7 @@ test('a config-editor widget edit persists as a delta via its debounced autorun 
   // 400ms debounce calls updateTrackConfiguration.
   jest.useFakeTimers()
   try {
-    const { rootModel } = getPluginManager(undefined, false)
+    const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession & {
       editConfiguration: (config: PlainConfig) => void
       getTrackConfigChanges: (
@@ -448,7 +449,7 @@ test('a config-editor widget edit persists as a delta via its debounced autorun 
   }
 })
 
-test('a shorthand-uri track edit does not pin the expanded adapter into the delta', () => {
+test('a shorthand-uri track edit does not pin the expanded adapter into the delta', async () => {
   // Regression: BaseTrackModel persists getSnapshot(configuration) — the
   // *hydrated* form, where a `uri`-shorthand adapter has been expanded to
   // bamLocation/index (+baseUri) and {type, displayId} display stubs injected.
@@ -459,7 +460,7 @@ test('a shorthand-uri track edit does not pin the expanded adapter into the delt
   // adapter-URL fix. Normalizing the base through the track schema before
   // diffing cancels everything untouched, leaving only the real edit.
   const SHORTHAND_TRACK = 'volvox_alignments'
-  const { rootModel } = getPluginManager(undefined, false)
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
 
@@ -469,7 +470,9 @@ test('a shorthand-uri track edit does not pin the expanded adapter into the delt
   )!
   expect((rawBase.adapter as { uri?: string }).uri).toBeDefined()
 
-  view.showTrack(SHORTHAND_TRACK)
+  // launchTrack, not showTrack: this is an AlignmentsTrack, and
+  // LinearAlignmentsDisplay's state model is loaded lazily
+  await view.launchTrack(SHORTHAND_TRACK)
   const openConfig = () =>
     view.tracks.find(t => t.configuration.trackId === SHORTHAND_TRACK)!
       .configuration as AnyConfigurationModel & {
@@ -493,17 +496,17 @@ test('a shorthand-uri track edit does not pin the expanded adapter into the delt
   expect(readConfObject(resolved, 'name')).toBe('Edited name')
 })
 
-test('hiding then re-showing a track keeps its edit (delta is the source of truth)', () => {
-  const { rootModel } = getPluginManager(undefined, false)
+test('hiding then re-showing a track keeps its edit (delta is the source of truth)', async () => {
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
 
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   session.updateTrackConfiguration(editedSnapshot(session))
   view.hideTrack(TRACK_ID)
 
   // the delta persisted through hide, so re-showing resolves the edited config
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const reopened = view.tracks.find(
     t => t.configuration.trackId === TRACK_ID,
   )!.configuration
@@ -518,13 +521,13 @@ test('hiding then re-showing a track keeps its edit (delta is the source of trut
 // The track stayed edited on screen against a session snapshot that said
 // default, and the next edit re-diffed that node and reinstated the undone
 // change. The three tests below pin the two directions and that last half.
-test('an undo that drops the delta drops the working copy with it', () => {
+test('an undo that drops the delta drops the working copy with it', async () => {
   jest.useFakeTimers()
   try {
-    const { rootModel } = getPluginManager(undefined, false)
+    const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(TRACK_ID)
+    await view.launchTrack(TRACK_ID)
     const openConfig = () =>
       view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
         .configuration as AnyConfigurationModel & {
@@ -564,13 +567,13 @@ test('an undo that drops the delta drops the working copy with it', () => {
   }
 })
 
-test('an edit made after an undo does not reinstate the undone one', () => {
+test('an edit made after an undo does not reinstate the undone one', async () => {
   jest.useFakeTimers()
   try {
-    const { rootModel } = getPluginManager(undefined, false)
+    const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(TRACK_ID)
+    await view.launchTrack(TRACK_ID)
     const openConfig = () =>
       view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
         .configuration as AnyConfigurationModel & {
@@ -599,17 +602,17 @@ test('an edit made after an undo does not reinstate the undone one', () => {
   }
 })
 
-test('persisting an edit keeps the working copy the next keystroke lands on', () => {
+test('persisting an edit keeps the working copy the next keystroke lands on', async () => {
   // The regression guard on the invalidation above: the cache is keyed on the
   // delta's identity, and every persist writes a *fresh* delta object — so a
   // cache that only compared identities would swap the node out from under a
   // half-typed value 400ms into typing it. `writeDelta` re-stamps instead, which
   // is what distinguishes "this mixin wrote the delta" from "a snapshot replaced
   // it".
-  const { rootModel } = getPluginManager(undefined, false)
+  const { rootModel } = await getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession
   const view = session.views[0]!
-  view.showTrack(TRACK_ID)
+  await view.launchTrack(TRACK_ID)
   const openConfig = () =>
     view.tracks.find(t => t.configuration.trackId === TRACK_ID)!
       .configuration as AnyConfigurationModel & {

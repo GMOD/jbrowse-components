@@ -7,7 +7,7 @@ import {
 import { ColorBySelector } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
+import { asSyntenyModel } from '../../LinearSyntenyView/asSyntenyModel.ts'
 import FollowSyntenyToggle from './FollowSyntenyToggle.tsx'
 import SyntenySettingsMenu from './SyntenySettingsMenu.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'

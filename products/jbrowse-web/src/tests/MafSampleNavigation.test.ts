@@ -14,8 +14,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-function setup() {
-  const { rootModel } = getPluginManager(configSnapshot)
+async function setup() {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const track = rootModel.jbrowse.tracks.find(
@@ -45,7 +45,7 @@ function targetFor(sample: Sample) {
 }
 
 test('a sample whose assembly is absent loads it from its own config', async () => {
-  const { session, samples, reported } = setup()
+  const { session, samples, reported } = await setup()
   const simvolvox = samples.find(s => s.id === 'simvolvox')!
   expect(session.assemblyManager.has('simvolvox')).toBe(false)
 
@@ -63,7 +63,7 @@ test('a sample whose assembly is absent loads it from its own config', async () 
 })
 
 test('a sample whose assembly is already in the config is not refetched', async () => {
-  const { session, samples, reported } = setup()
+  const { session, samples, reported } = await setup()
   const volvox = samples.find(s => s.id === 'volvox')!
   expect(volvox.assemblyConfigLocation).toBeUndefined()
 
@@ -75,8 +75,8 @@ test('a sample whose assembly is already in the config is not refetched', async 
   ])
 })
 
-test('samples with no assemblyName carry no navigation target', () => {
-  const { samples } = setup()
+test('samples with no assemblyName carry no navigation target', async () => {
+  const { samples } = await setup()
   expect(samples.filter(s => s.assemblyName).map(s => s.id)).toEqual([
     'volvox',
     'simvolvox',

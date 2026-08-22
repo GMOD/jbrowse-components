@@ -50,7 +50,7 @@ function onMainThreadRpc(jbrowse: Record<string, unknown>) {
   }
 }
 
-export function getPluginManager(
+export async function getPluginManager(
   initialState?: Record<string, unknown>,
   adminMode = true,
 ) {
@@ -58,17 +58,16 @@ export function getPluginManager(
     corePlugins.map(P => new P()),
   ).createPluggableElements()
 
+  const config = initialState ?? configSnapshot
   const rootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
     adminMode,
-  }).create(
-    {
-      jbrowse: onMainThreadRpc(initialState ?? configSnapshot),
-    },
-    { pluginManager },
-  )
+  }).create({ jbrowse: onMainThreadRpc(config) }, { pluginManager })
 
+  // setDefaultSession instantiates the config's defaultSession synchronously,
+  // so any lazily registered view state model it names has to be in place first
+  await pluginManager.preloadSessionTypes(config.defaultSession)
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
@@ -296,7 +295,7 @@ export async function waitForRenderedCanvas(timeout = 20000) {
 }
 
 export async function createView(args?: any, adminMode?: boolean) {
-  const ret = createViewNoWait(args, adminMode)
+  const ret = await createViewNoWait(args, adminMode)
   const { view } = ret
   if ('initialized' in view) {
     await waitFor(
@@ -315,8 +314,11 @@ export interface Results extends ReturnType<typeof render> {
   rootModel: AppRootModel
 }
 
-export function createViewNoWait(args?: any, adminMode?: boolean): Results {
-  const { pluginManager, rootModel } = getPluginManager(args, adminMode)
+export async function createViewNoWait(
+  args?: any,
+  adminMode?: boolean,
+): Promise<Results> {
+  const { pluginManager, rootModel } = await getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
   const session = rootModel.session! as WebSessionModel
   const view = session.views[0] as LGV
@@ -328,11 +330,11 @@ export function createViewNoWait(args?: any, adminMode?: boolean): Results {
  * model-logic tests that don't need a React render. Typed via the real
  * WebSessionModel/LGV so callers don't hand-roll ad-hoc cast interfaces.
  */
-export function getTestSession(
+export async function getTestSession(
   args?: Record<string, unknown>,
   adminMode?: boolean,
 ) {
-  const { rootModel } = getPluginManager(args, adminMode)
+  const { rootModel } = await getPluginManager(args, adminMode)
   const session = rootModel.session! as WebSessionModel
   const view = session.views[0] as LGV
   return { rootModel, session, view }

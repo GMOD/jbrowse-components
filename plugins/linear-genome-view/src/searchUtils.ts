@@ -233,7 +233,7 @@ export async function navToOption({
     grow ?? SEARCH_HIT_GROW,
   )
   if (trackId && isAlive(model)) {
-    model.showTrack(trackId)
+    await model.launchTrack(trackId)
   }
 
   // same detach hazard as showTrack above: navToLocations awaits, and handlers

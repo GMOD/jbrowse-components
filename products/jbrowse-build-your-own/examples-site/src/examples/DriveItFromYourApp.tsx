@@ -411,11 +411,14 @@ function ZoomButtons({ view }: { view: BrowserView }) {
 /**
  * Show and hide tracks.
  *
- * `showTrack(trackId)` instantiates the track and its display from the config
+ * `launchTrack(trackId)` instantiates the track and its display from the config
  * of that id and appends it to `view.tracks`; `hideTrack(trackId)` removes it,
  * which disposes the display and everything it had on the GPU. Adding a track
  * to the *config* is a separate thing -- these two only turn on what is already
  * declared.
+ *
+ * `launchTrack` is async because a display's code may still need loading; there
+ * is nothing to await here, so the promise is voided.
  *
  * The checkbox reads `view.tracks` rather than a `useState` next to it. There
  * is no way for the two to disagree that way, which matters as soon as anything
@@ -443,7 +446,7 @@ const TrackToggles = observer(function TrackToggles({
                 if (shown) {
                   view.hideTrack(id)
                 } else {
-                  view.showTrack(id)
+                  void view.launchTrack(id)
                 }
               }}
             />
@@ -458,10 +461,10 @@ const TrackToggles = observer(function TrackToggles({
 /**
  * Jump somewhere, and bring a track list with you.
  *
- * Two calls in one handler, and the order matters only in that `showTrack` is
- * synchronous while `navToLocString` is not -- so the tracks are up before the
- * navigation resolves, and they fetch once, for the destination, rather than
- * once for here and again for there.
+ * Two calls in one handler, and the order matters only in that `launchTrack` is
+ * started before `navToLocString` -- so the track is up before the navigation
+ * resolves, and it fetches once, for the destination, rather than once for here
+ * and again for there.
  *
  * The `.catch` logs rather than showing the reader anything, which is the
  * opposite of `LocationBox` above and is deliberate: these locstrings are your
@@ -479,7 +482,7 @@ function Bookmarks({ view }: { view: BrowserView }) {
             if (
               !view.tracks.some(t => t.configuration.trackId === 'volvox_genes')
             ) {
-              view.showTrack('volvox_genes')
+              void view.launchTrack('volvox_genes')
             }
             view.navToLocString(loc).catch((e: unknown) => {
               console.error(e)

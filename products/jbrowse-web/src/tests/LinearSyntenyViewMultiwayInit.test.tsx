@@ -16,14 +16,14 @@ jest.mock('../makeWorkerInstance', () => () => {})
 utilizeFetchMockForTest(volvoxGetFile)
 
 test('multi-way LinearSyntenyView init routes tracks to per-level slots', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
   // 3 assemblies — so 2 levels (between views[0]/[1] and views[1]/[2]).
   // volvox_del.paf maps volvox_del↔volvox  → level 0
   // volvox_ins.paf maps volvox↔volvox_ins  → level 1
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox_del' },
@@ -59,8 +59,8 @@ test('multi-way LinearSyntenyView init routes tracks to per-level slots', async 
   expect(view.init).toBeUndefined()
 }, 40000)
 
-test('a hand-authored multi-way session sizes levels from its views', () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+test('a hand-authored multi-way session sizes levels from its views', async () => {
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
@@ -68,7 +68,7 @@ test('a hand-authored multi-way session sizes levels from its views', () => {
   // `levels` key, the shape a hand-authored defaultSession takes. Without the
   // load-time reconcile this rendered a single synteny band between the first
   // two rows and nothing between the last pair.
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     views: [
       { type: 'LinearGenomeView', init: { assembly: 'volvox_del' } },
       { type: 'LinearGenomeView', init: { assembly: 'volvox' } },
@@ -82,11 +82,11 @@ test('a hand-authored multi-way session sizes levels from its views', () => {
 })
 
 test('a failed init lands on the import form, not a permanent spinner', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init: {
       views: [{ assembly: 'no_such_assembly' }, { assembly: 'volvox' }],
     },
@@ -112,11 +112,11 @@ test('a failed init lands on the import form, not a permanent spinner', async ()
 }, 40000)
 
 test('the track selector targets the level it was opened for', async () => {
-  const { rootModel } = getPluginManager(configSnapshot)
+  const { rootModel } = await getPluginManager(configSnapshot)
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('LinearSyntenyView', {
+  const view = await session.launchView('LinearSyntenyView', {
     init: {
       views: [
         { assembly: 'volvox_del' },
@@ -151,7 +151,7 @@ test('the track selector targets the level it was opened for', async () => {
   expect(offered.has('volvox_del.paf')).toBe(false)
 
   // ...and opening one lands in that band, not the first
-  selector.trackContainer.showTrack('volvox_ins.paf')
+  await selector.trackContainer.launchTrack('volvox_ins.paf')
   expect(view.levels[1].tracks.length).toBe(1)
   expect(view.levels[0].tracks.length).toBe(0)
   expect(selector.shownTrackIds.has('volvox_ins.paf')).toBe(true)

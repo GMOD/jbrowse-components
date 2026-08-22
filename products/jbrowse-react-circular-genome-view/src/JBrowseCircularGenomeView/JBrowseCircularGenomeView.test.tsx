@@ -57,7 +57,7 @@ const defaultSession = {
 beforeEach(() => jest.useFakeTimers())
 
 test('<JBrowseCircularGenomeView />', async () => {
-  const state = createViewState({
+  const state = await createViewState({
     assembly,
     tracks: [],
     defaultSession,
@@ -76,7 +76,7 @@ test('<JBrowseCircularGenomeView />', async () => {
 }, 10000)
 
 test('createViewState with no defaultSession auto-displays the assembly', async () => {
-  const state = createViewState({ assembly, tracks: [] })
+  const state = await createViewState({ assembly, tracks: [] })
   // with no session, createViewState seeds view.init to draw the whole assembly
   expect(state.session.view.init).toEqual({ assembly: 'volvox' })
   state.session.view.setWidth(800)
@@ -97,7 +97,7 @@ test('createViewState with no defaultSession auto-displays the assembly', async 
 // JBrowseLinearGenomeView.test.tsx for why this is asserted through a call that
 // really fails rather than by pushing a message onto the session.
 test('a failure the session survives reaches the screen', async () => {
-  const state = createViewState({ assembly, tracks: [], defaultSession })
+  const state = await createViewState({ assembly, tracks: [], defaultSession })
   state.session.view.setWidth(800)
   const { findByText } = render(
     <Suspense fallback={<div>Loading...</div>}>
@@ -118,8 +118,8 @@ test('a failure the session survives reaches the screen', async () => {
   ).toBeTruthy()
 }, 10000)
 
-test('config internetAccounts are auto-initialized via the shared mixin', () => {
-  const state = createViewState({
+test('config internetAccounts are auto-initialized via the shared mixin', async () => {
+  const state = await createViewState({
     assembly,
     tracks: [],
     internetAccounts: [

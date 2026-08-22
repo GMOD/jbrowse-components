@@ -11,6 +11,10 @@ export { default as LinearGenomeView } from './LinearGenomeView/index.ts'
 export type { LinearGenomeViewProps } from './LinearGenomeView/index.ts'
 export { default as createModel } from './createModel/index.ts'
 export { default as createViewState } from './createViewState.ts'
+// the async twin, for a `session` that came from somewhere else and may name
+// display types whose state models are lazily loaded — a session restored from
+// a URL is the usual one
+export { createViewStateAsync } from './createViewState.ts'
 export type { ViewStateOptions } from './createViewState.ts'
 // tear down an engine the host built and is discarding — React unmount alone
 // leaves its RPC workers and autoruns running

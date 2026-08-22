@@ -38,17 +38,20 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-LinearSyntenyView | async | Programmatically launch a linear synteny view */
-  pluginManager.addToExtensionPoint('LaunchView-LinearSyntenyView', args => {
-    // views/tracks and the remaining init fields (colorBy, autoDiagonalize,
-    // levelHeights, ...) forward verbatim; tracks is one entry per level, with a
-    // flat string[] as shorthand for "all on level 0".
-    const { session, id, views = [], tracks = [], ...rest } = args
-    launchSyntenyView({
-      session,
-      id,
-      viewType: 'LinearSyntenyView',
-      init: { views, tracks: normalizeTrackLevels(tracks), ...rest },
-    })
-    return args
-  })
+  pluginManager.addToExtensionPoint(
+    'LaunchView-LinearSyntenyView',
+    async args => {
+      // views/tracks and the remaining init fields (colorBy, autoDiagonalize,
+      // levelHeights, ...) forward verbatim; tracks is one entry per level, with a
+      // flat string[] as shorthand for "all on level 0".
+      const { session, id, views = [], tracks = [], ...rest } = args
+      await launchSyntenyView({
+        session,
+        id,
+        viewType: 'LinearSyntenyView',
+        init: { views, tracks: normalizeTrackLevels(tracks), ...rest },
+      })
+      return args
+    },
+  )
 }

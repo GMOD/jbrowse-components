@@ -21,7 +21,7 @@ interface MakeTrackArg {
 // importing the selector's own model type would make the plugin that owns the
 // widget a dependency of this one, and it already depends on this one.
 interface TrackSelectorSelf extends IStateTreeNode {
-  view?: { showTrack: (trackId: string) => void }
+  view?: { launchTrack: (trackId: string) => Promise<unknown> }
   selection: AnyConfigurationModel[]
 }
 

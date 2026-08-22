@@ -126,25 +126,51 @@ export interface ViewStateOptions extends CreateViewStateBaseOptions {
 }
 
 export default function createViewState(opts: ViewStateOptions): ViewModel {
+  const { plugins = [], makeWorkerInstance } = opts
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  return finishCreateViewState(opts, model, pluginManager)
+}
+
+/**
+ * `createViewState` for a `session` or `defaultSession` that may name display
+ * types whose state models are lazily loaded (registered as loaders): resolves
+ * them first. The synchronous `createViewState` requires every type its session
+ * names to be loaded already, and throws saying so otherwise — a session
+ * restored from a URL is the case that reaches this, since it carries whatever
+ * displays were open when it was saved.
+ */
+export async function createViewStateAsync(opts: ViewStateOptions) {
+  const { plugins = [], makeWorkerInstance } = opts
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  // both, not one or the other: the tree is created with `defaultSession` and a
+  // restored `session` is applied to it afterwards, so each one's types have to
+  // be there
+  await pluginManager.preloadSessionTypes(opts.defaultSession)
+  await pluginManager.preloadSessionTypes(opts.session)
+  return finishCreateViewState(opts, model, pluginManager)
+}
+
+function finishCreateViewState(
+  opts: ViewStateOptions,
+  model: ReturnType<typeof createModel>['model'],
+  pluginManager: ReturnType<typeof createModel>['pluginManager'],
+): ViewModel {
   const {
     assembly,
     tracks,
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins = [],
     init,
     location,
     highlight,
     disableAddTracks = false,
-    makeWorkerInstance,
     defaultSession,
     session,
     localFiles,
     height,
     drawerViewHeight = '100vh',
   } = opts
-  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
   // registered once, here, rather than per track: each registration pushes a
   // File into core's process-global blobMap. Adapters are expanded out of their
   // `{ type, uri }` shorthand first, because that is the form the substitution

@@ -20,7 +20,7 @@ const TRACK_ID = 'volvox_filtered_vcf'
 const SLOT = 'displayMode'
 
 interface TestView {
-  showTrack: (id: string) => void
+  launchTrack: (id: string) => Promise<unknown>
   tracks: {
     configuration: { trackId: string }
     displays: ResolvableDisplay[]
@@ -45,24 +45,24 @@ function displayIn(view: TestView) {
     .displays[0]!
 }
 
-function openInTwoViews() {
-  const { rootModel } = getPluginManager()
+async function openInTwoViews() {
+  const { rootModel } = await getPluginManager()
   const session = rootModel.session as unknown as TestSession
   const first = session.views[0]!
-  first.showTrack(TRACK_ID)
+  await first.launchTrack(TRACK_ID)
   const second = session.addView('LinearGenomeView', {})
-  second.showTrack(TRACK_ID)
+  await second.launchTrack(TRACK_ID)
   return { session, first: displayIn(first), second: displayIn(second) }
 }
 
-test('one track shown in two views is two displays over one config', () => {
-  const { first, second } = openInTwoViews()
+test('one track shown in two views is two displays over one config', async () => {
+  const { first, second } = await openInTwoViews()
   expect(first).not.toBe(second)
   expect(first.configuration).toBe(second.configuration)
 })
 
-test('the override count is per track, not per open display', () => {
-  const { session, first } = openInTwoViews()
+test('the override count is per track, not per open display', async () => {
+  const { session, first } = await openInTwoViews()
   // customize the track away from what we are about to promote, which is what
   // puts it in the override set at all
   setConf(first, SLOT, 'normal')
@@ -94,13 +94,13 @@ describe('override on an admin-configured promotable slot', () => {
     jest.useRealTimers()
   })
 
-  test('survives the debounced delta round-trip', () => {
+  test('survives the debounced delta round-trip', async () => {
     // non-admin: an admin's edits rewrite jbrowse.tracks itself and never go
     // near a delta, so the case does not exist there
-    const { rootModel } = getPluginManager(undefined, false)
+    const { rootModel } = await getPluginManager(undefined, false)
     const session = rootModel.session as unknown as TestSession
     const view = session.views[0]!
-    view.showTrack(ADMIN_TRACK)
+    await view.launchTrack(ADMIN_TRACK)
     const display = view.tracks.find(
       t => t.configuration.trackId === ADMIN_TRACK,
     )!.displays[0]!

@@ -40,7 +40,7 @@ function addBlobTrack(page: Page) {
         assemblyNames: ['volvox'],
         adapter: { type: 'BigWigAdapter', bigWigLocation: location },
       })
-      session.views[0].showTrack(trackId)
+      await session.views[0].launchTrack(trackId)
     },
     { trackId: TRACK_ID, file: FILE },
   )

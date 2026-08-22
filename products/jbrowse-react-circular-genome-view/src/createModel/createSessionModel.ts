@@ -37,6 +37,10 @@ export type _SessionModelParentCheck = AssertExtends<
  * so a host adding a track after mount got a TypeError, and there was no other
  * door: this product's whole track set had to be decided at build time.
  */
+// The registered CircularView state model is a lazy loader, and this factory
+// embeds it as the session's `view` prop — so createViewState awaits its
+// loadStateModel() before calling this. The read below throws if that was
+// skipped.
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -78,6 +82,17 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * does nothing
        */
       removeView() {},
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * same as addView — the single view type here is always eagerly
+       * registered, so there is nothing to load; async to satisfy the
+       * AbstractViewContainer contract
+       */
+      async launchView(typeName: string, initialState = {}) {
+        return self.addView(typeName, initialState)
+      },
     }))
 }
 

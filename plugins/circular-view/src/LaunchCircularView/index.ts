@@ -45,7 +45,7 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchCircularViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-CircularView | async | Programmatically launch a circular view */
-  pluginManager.addToExtensionPoint('LaunchView-CircularView', args => {
+  pluginManager.addToExtensionPoint('LaunchView-CircularView', async args => {
     const {
       session,
       assembly,
@@ -62,7 +62,7 @@ export default function LaunchCircularViewF(pluginManager: PluginManager) {
     // goes on the snapshot: MST restores it natively, validates it, and it
     // round-trips on save. `id` rides along the same way, which is what makes
     // MST's optional identifier honor it rather than generating one.
-    session.addView('CircularView', {
+    await session.launchView('CircularView', {
       ...viewProps,
       init: {
         assembly,

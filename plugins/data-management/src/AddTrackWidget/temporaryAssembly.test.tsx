@@ -44,10 +44,12 @@ test('the widget offers no choice of assembly here', () => {
   expect(readVsRefPanel().widget.assembly).toBe('readvsref')
 })
 
-test('a file opened in a synthesized-assembly panel leaves no session entry', () => {
+test('a file opened in a synthesized-assembly panel leaves no session entry', async () => {
   const { session, view, widget } = readVsRefPanel()
 
   doSubmit({ model: widget })
+  // the show goes through the async launchTrack path now
+  await new Promise(resolve => setTimeout(resolve, 0))
 
   expect(session.sessionTracks).toHaveLength(0)
   expect(view.tracks).toHaveLength(1)

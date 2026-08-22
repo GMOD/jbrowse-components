@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { createTestSession } from '@jbrowse/web/testUtils'
+import { createTestSessionAsync } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import DotplotImportForm from './index.tsx'
 
@@ -44,7 +44,7 @@ const syntenyTrack = (trackId: string, assemblyNames: string[]) => ({
   adapter: { type: 'FromConfigAdapter', features: [] },
 })
 
-function setup({
+async function setup({
   assemblyNames = ['hg38', 'mm39'],
   aliases = {},
   tracks = [],
@@ -57,7 +57,7 @@ function setup({
   // tracks a connection supplies, which live outside session.tracks
   connectionTracks?: ReturnType<typeof syntenyTrack>[]
 } = {}) {
-  const session = createTestSession({
+  const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: assemblyNames.map(name => assembly(name, aliases[name])),
       tracks,
@@ -124,8 +124,8 @@ const goManual = () => {
   fireEvent.click(screen.getByRole('button', { name: 'Manual' }))
 }
 
-test('an empty session opens on Manual, since Quick start has nothing to launch', () => {
-  setup()
+test('an empty session opens on Manual, since Quick start has nothing to launch', async () => {
+  await setup()
   expect(screen.getByRole('button', { name: 'Manual' })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -135,8 +135,8 @@ test('an empty session opens on Manual, since Quick start has nothing to launch'
   expect(axisSelect('Y')).toBeInTheDocument()
 })
 
-test('a session with a synteny track opens on Quick start naming both axes', () => {
-  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+test('a session with a synteny track opens on Quick start naming both axes', async () => {
+  await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   const axes = screen.getByTestId('quick-start-axes')
   // a track's assemblyNames are [query, target] = [y, x]
   expect(axes).toHaveTextContent('X-axis: mm39')
@@ -146,8 +146,8 @@ test('a session with a synteny track opens on Quick start naming both axes', () 
 // The axes come from the track's rows, which go into an AssemblySelector on
 // handover and into assembly1/assembly2 on Launch — both of which want the
 // session's own name for the assembly, not whichever name the track uses.
-test('an alias-named track names its axes by the assembly', () => {
-  setup({
+test('an alias-named track names its axes by the assembly', async () => {
+  await setup({
     aliases: { hg38: ['GRCh38'] },
     tracks: [syntenyTrack('aliased', ['GRCh38', 'mm39'])],
   })
@@ -156,8 +156,8 @@ test('an alias-named track names its axes by the assembly', () => {
   expect(axes).toHaveTextContent('Y-axis: hg38')
 })
 
-test('Swap puts each assembly on the other axis', () => {
-  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+test('Swap puts each assembly on the other axis', async () => {
+  await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   fireEvent.click(
     screen.getByRole('button', { name: /Put each assembly on the other axis/ }),
   )
@@ -166,27 +166,32 @@ test('Swap puts each assembly on the other axis', () => {
   expect(axes).toHaveTextContent('Y-axis: mm39')
 })
 
-test('Quick start launch sets the axes and shows the track', () => {
-  const { model } = setup({
+test('Quick start launch sets the axes and shows the track', async () => {
+  const { model } = await setup({
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
   fireEvent.click(launchButton())
   expect(model.assemblyNames).toEqual(['mm39', 'hg38'])
-  expect(model.tracks.map(t => t.configuration.trackId)).toEqual(['hg38_mm39'])
+  // the show goes through the async launchTrack path now
+  await waitFor(() => {
+    expect(model.tracks.map(t => t.configuration.trackId)).toEqual([
+      'hg38_mm39',
+    ])
+  })
 })
 
-test('an all-vs-all track says which assemblies a dotplot leaves out', () => {
-  setup({
+test('an all-vs-all track says which assemblies a dotplot leaves out', async () => {
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
   })
   expect(screen.getByText(/This track spans 3 assemblies/)).toBeInTheDocument()
 })
 
-test('Swap on an all-vs-all track transposes the pair, not which pair', () => {
+test('Swap on an all-vs-all track transposes the pair, not which pair', async () => {
   // Swap used to reverse the row list, so on a 3-assembly track it swapped in
   // rn7 and dropped hg38 — a different pair, not the transpose of this one
-  setup({
+  await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
   })
@@ -198,31 +203,31 @@ test('Swap on an all-vs-all track transposes the pair, not which pair', () => {
   expect(axes).toHaveTextContent('Y-axis: mm39')
 })
 
-test('Manual opens on two different assemblies, not the same one twice', () => {
+test('Manual opens on two different assemblies, not the same one twice', async () => {
   // both axes on one assembly would open on an empty track picker. This is the
   // opens-directly-in-Manual case; with a track present the form opens in Quick
   // start and switching hands over that track's axes instead.
-  setup({ assemblyNames: ['hg38', 'mm39'] })
+  await setup({ assemblyNames: ['hg38', 'mm39'] })
   expect(axisSelect('X')).toHaveTextContent('hg38')
   expect(axisSelect('Y')).toHaveTextContent('mm39')
 })
 
-test('switching to Manual hands over the axes Quick start had set up', () => {
-  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+test('switching to Manual hands over the axes Quick start had set up', async () => {
+  await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   goManual()
   // [query, target] = [y, x], so the track's first assembly lands on y
   expect(axisSelect('X')).toHaveTextContent('mm39')
   expect(axisSelect('Y')).toHaveTextContent('hg38')
 })
 
-test('Manual launch sets the axes the user picked, x first', () => {
-  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+test('Manual launch sets the axes the user picked, x first', async () => {
+  const { model } = await setup({ assemblyNames: ['hg38', 'mm39'] })
   fireEvent.click(launchButton())
   expect(model.assemblyNames).toEqual(['hg38', 'mm39'])
 })
 
-test('the chromosome box reaches the init as that axis displayedRegionNames', () => {
-  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+test('the chromosome box reaches the init as that axis displayedRegionNames', async () => {
+  const { model } = await setup({ assemblyNames: ['hg38', 'mm39'] })
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA, ctgB' } })
   fireEvent.click(launchButton())
@@ -234,10 +239,10 @@ test('the chromosome box reaches the init as that axis displayedRegionNames', ()
   })
 })
 
-test('changing an axis assembly drops the chromosomes typed for it', () => {
+test('changing an axis assembly drops the chromosomes typed for it', async () => {
   // the names were typed about hg38; on rn7 they are at best unrestricting the
   // axis with a warning, at worst plotting the wrong thing quietly
-  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  await setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
   fireEvent.change(chromosomeBox('y'), { target: { value: 'ctgB' } })
@@ -248,8 +253,8 @@ test('changing an axis assembly drops the chromosomes typed for it', () => {
   expect(chromosomeBox('y')).toHaveValue('ctgB')
 })
 
-test('switching to Manual drops chromosomes typed against the axes it replaces', () => {
-  setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
+test('switching to Manual drops chromosomes typed against the axes it replaces', async () => {
+  await setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   goManual()
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
@@ -262,8 +267,8 @@ test('switching to Manual drops chromosomes typed against the axes it replaces',
 
 // The boxes are the fragmented-assembly case and every other form opens without
 // them, so they are off unless asked for.
-test('the chromosome boxes are hidden until asked for', () => {
-  setup({ assemblyNames: ['hg38', 'mm39'] })
+test('the chromosome boxes are hidden until asked for', async () => {
+  await setup({ assemblyNames: ['hg38', 'mm39'] })
   expect(screen.queryByTestId('chromosome-filter-x')).not.toBeInTheDocument()
   expect(screen.queryByTestId('chromosome-filter-y')).not.toBeInTheDocument()
 
@@ -275,8 +280,8 @@ test('the chromosome boxes are hidden until asked for', () => {
 // Hiding has to CLEAR, or a plot comes back restricted by names typed into a
 // box that is no longer on screen — the one failure a disclosure can introduce
 // that the flat form could not.
-test('hiding the boxes clears what was typed in them', () => {
-  const { model } = setup({ assemblyNames: ['hg38', 'mm39'] })
+test('hiding the boxes clears what was typed in them', async () => {
+  const { model } = await setup({ assemblyNames: ['hg38', 'mm39'] })
   showChromosomeBoxes()
   fireEvent.change(chromosomeBox('x'), { target: { value: 'ctgA' } })
   fireEvent.change(chromosomeBox('y'), { target: { value: 'ctgB' } })
@@ -289,8 +294,8 @@ test('hiding the boxes clears what was typed in them', () => {
   expect(model.init).toBeUndefined()
 })
 
-test('the track picker offers a connection-supplied synteny track', () => {
-  const { loadConnection } = setup({
+test('the track picker offers a connection-supplied synteny track', async () => {
+  const { loadConnection } = await setup({
     assemblyNames: ['hg38', 'mm39'],
     connectionTracks: [syntenyTrack('conn_track', ['hg38', 'mm39'])],
   })
@@ -308,8 +313,8 @@ test('the track picker offers a connection-supplied synteny track', () => {
   ).toHaveTextContent('conn_track')
 })
 
-test('a same-assembly pair names the self-alignment case', () => {
-  setup({ assemblyNames: ['hg38', 'mm39'] })
+test('a same-assembly pair names the self-alignment case', async () => {
+  await setup({ assemblyNames: ['hg38', 'mm39'] })
   // MUI's Select opens its menu on mouseDown, not click
   fireEvent.mouseDown(axisSelect('Y'))
   fireEvent.click(screen.getByRole('option', { name: 'hg38' }))
@@ -319,11 +324,11 @@ test('a same-assembly pair names the self-alignment case', () => {
   ).toBeInTheDocument()
 })
 
-test('an unfinished new-track upload blocks launch', () => {
+test('an unfinished new-track upload blocks launch', async () => {
   // picking "New track" starts an upload with no file yet. Launching would
   // resolve to no action and open an empty dotplot with nothing saying why,
   // which is the same case the synteny import form refuses.
-  setup({ assemblyNames: ['hg38', 'mm39'] })
+  await setup({ assemblyNames: ['hg38', 'mm39'] })
   fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
   expect(launchButton()).toBeDisabled()
   expect(screen.getByText(/new synteny track is unfinished/)).toBeVisible()
@@ -333,11 +338,11 @@ test('an unfinished new-track upload blocks launch', () => {
   expect(launchButton()).toBeEnabled()
 })
 
-test('changing an axis releases the pending upload for the old pair', () => {
+test('changing an axis releases the pending upload for the old pair', async () => {
   // the upload was started for hg38/mm39. Once the y-axis is something else it
   // can never be finished for this pair, so leaving it in place only disables
   // Launch and offers "choose a file" for a pair that no longer exists
-  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  await setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
   fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
   expect(launchButton()).toBeDisabled()
 
@@ -346,8 +351,8 @@ test('changing an axis releases the pending upload for the old pair', () => {
   expect(launchButton()).toBeEnabled()
 })
 
-test('a None does not carry onto a pair the user never silenced', () => {
-  const { model } = setup({
+test('a None does not carry onto a pair the user never silenced', async () => {
+  const { model } = await setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
     tracks: [
       syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
@@ -361,11 +366,13 @@ test('a None does not carry onto a pair the user never silenced', () => {
   fireEvent.mouseDown(axisSelect('X'))
   fireEvent.click(screen.getByRole('option', { name: 'rn7' }))
   fireEvent.click(launchButton())
-  expect(model.tracks).toHaveLength(1)
+  await waitFor(() => {
+    expect(model.tracks).toHaveLength(1)
+  })
 })
 
-test('None leaves the launch without a track', () => {
-  const { model } = setup({
+test('None leaves the launch without a track', async () => {
+  const { model } = await setup({
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
   })
   goManual()

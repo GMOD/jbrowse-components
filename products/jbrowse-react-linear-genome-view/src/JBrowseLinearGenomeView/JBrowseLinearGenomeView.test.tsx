@@ -1,6 +1,6 @@
 import { render, waitFor } from '@testing-library/react'
 
-import { createViewState } from '../index.ts'
+import { createViewStateAsync } from '../index.ts'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -58,7 +58,7 @@ const defaultSession = {
 }
 
 test('<JBrowseLinearGenomeView /> renders successfully', async () => {
-  const state = createViewState({
+  const state = await createViewStateAsync({
     assembly,
     tracks: [],
     defaultSession,
@@ -86,7 +86,7 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
 }, 40000)
 
 test('top-level location + highlight navigate via init', async () => {
-  const state = createViewState({
+  const state = await createViewStateAsync({
     assembly,
     tracks: [],
     location: 'ctgA:1-40',
@@ -130,7 +130,11 @@ test('top-level location + highlight navigate via init', async () => {
 // directly, because the message arriving is only half of what regressed -- the
 // other half is that this path reports at all.
 test('a failure the session survives reaches the screen', async () => {
-  const state = createViewState({ assembly, tracks: [], defaultSession })
+  const state = await createViewStateAsync({
+    assembly,
+    tracks: [],
+    defaultSession,
+  })
   const { findByText } = render(<JBrowseLinearGenomeView viewState={state} />)
 
   expect(state.session.view.showTrack('not_a_track_in_this_config')).toBe(
@@ -155,7 +159,11 @@ test('a failure the session survives reaches the screen', async () => {
 // clamp applies to is `overflow: hidden` with no scrollable ancestor: before
 // this, a track set taller than the clamp had nothing below the fold reachable.
 test('unbounded until a drawer opens, and then the box scrolls', async () => {
-  const state = createViewState({ assembly, tracks: [], defaultSession })
+  const state = await createViewStateAsync({
+    assembly,
+    tracks: [],
+    defaultSession,
+  })
   const { findByTestId } = render(<JBrowseLinearGenomeView viewState={state} />)
 
   const box = await findByTestId('embedded-view-box')
@@ -178,7 +186,7 @@ test('unbounded until a drawer opens, and then the box scrolls', async () => {
 // did that arrived with a condition attached. So it applies with no drawer open,
 // and it wins over the older name when a host passes both.
 test('a height bounds the view with no drawer, and outranks drawerViewHeight', async () => {
-  const state = createViewState({
+  const state = await createViewStateAsync({
     assembly,
     tracks: [],
     defaultSession,

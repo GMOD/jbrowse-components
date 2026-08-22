@@ -58,23 +58,45 @@ export interface CreateViewStateOptions {
 export default function createViewState(
   opts: CreateViewStateOptions,
 ): ViewModel {
-  const {
-    config,
-    plugins = [],
-    session,
-    onPluginsUpdated,
+  const { plugins = [], makeWorkerInstance } = opts
+  const { model, pluginManager } = createModel({
+    runtimePlugins: plugins,
     makeWorkerInstance,
-    localFiles,
-  } = opts
+  })
+  return finishCreateViewState(opts, model, pluginManager)
+}
+
+/**
+ * `createViewState` for a config or session that may name view types whose
+ * state models are lazily loaded (registered as loaders): resolves them
+ * first. The synchronous `createViewState` requires every view type the
+ * session names to be eagerly registered, and throws otherwise.
+ */
+export async function createViewStateAsync(opts: CreateViewStateOptions) {
+  const { plugins = [], makeWorkerInstance } = opts
+  const { model, pluginManager } = createModel({
+    runtimePlugins: plugins,
+    makeWorkerInstance,
+  })
+  // both, not one or the other: the tree is created with `defaultSession` and a
+  // restored `session` is applied to it afterwards, so each one's types have to
+  // be there
+  await pluginManager.preloadSessionTypes(opts.config.defaultSession)
+  await pluginManager.preloadSessionTypes(opts.session)
+  return finishCreateViewState(opts, model, pluginManager)
+}
+
+function finishCreateViewState(
+  opts: CreateViewStateOptions,
+  model: ReturnType<typeof createModel>['model'],
+  pluginManager: ReturnType<typeof createModel>['pluginManager'],
+): ViewModel {
+  const { config, session, onPluginsUpdated, localFiles } = opts
   // the config model's own default for this slot, restated because a root with
   // no session at all is a different (broken) state than one with an empty
   // session — `session` is a types.maybe, so passing undefined means "no
   // session", not "the default one"
   const { defaultSession = { name: 'New Session' } } = config
-  const { model, pluginManager } = createModel({
-    runtimePlugins: plugins,
-    makeWorkerInstance,
-  })
   // what the plugin manager actually installed at runtime, i.e. the subset of
   // `plugins` that carried a definition (a bare plugin class carries none)
   const loaded = pluginManager.runtimePluginDefinitions

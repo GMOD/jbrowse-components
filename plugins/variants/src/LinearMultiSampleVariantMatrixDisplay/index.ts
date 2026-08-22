@@ -3,7 +3,6 @@ import { lazy } from 'react'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import configSchemaF from './configSchema.ts'
-import stateModelFactory from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,7 +17,9 @@ export default function LinearMultiSampleVariantMatrixDisplayF(
       helpText:
         'GPU accelerated matrix variant display. Draws variants as columns in a heatmap grid with GPU-accelerated rendering for smooth scrolling.',
       configSchema,
-      stateModel: stateModelFactory(configSchema),
+      // lazily loaded: shares the multi-sample base model with the regular
+      // display above, and is fetched the same way
+      stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: lazy(

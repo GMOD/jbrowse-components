@@ -51,7 +51,9 @@ jest.mock('./sessionLoaderHelpers', () => ({
 }))
 
 jest.mock('./createPluginManager', () => ({
-  createPluginManager: jest.fn(),
+  // async in production (it preloads lazy view state models); a bare jest.fn()
+  // returns undefined and buildPluginManager's .then would throw on it
+  createPluginManager: jest.fn().mockResolvedValue({}),
 }))
 
 describe('SessionLoader', () => {

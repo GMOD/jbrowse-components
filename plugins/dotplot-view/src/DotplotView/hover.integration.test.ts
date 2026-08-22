@@ -85,9 +85,9 @@ async function setup() {
       },
     },
   })
-  const view = session.addView('DotplotView', {
+  const view = (await session.launchView('DotplotView', {
     init: { views: [{ assembly: 'volvox' }, { assembly: 'volvox' }] },
-  }) as DotplotViewModel
+  })) as DotplotViewModel
   view.setWidth(800)
   await session.assemblyManager.waitForAssembly('volvox')
   await when(() => view.initialized)
@@ -104,7 +104,7 @@ async function setup() {
         assemblyNames: ['volvox', 'volvox'],
       },
     })
-    view.showTrack(trackId)
+    await view.launchTrack(trackId)
   }
   await when(() => view.dotplotDisplays.every(d => d.ready))
   const [a, b] = view.dotplotDisplays

@@ -3,12 +3,15 @@ import path from 'node:path'
 
 // The boundary `components/overlayGeometry.ts` documents, as a test.
 //
-// model.ts is evaluated at plugin-registration time, so it and everything it
-// statically imports are eager; `components/` is reached only through a lazy().
-// A React-free module imported by BOTH sides gets grouped with the lazy chunk,
-// and model.ts's eager import of it then drags the whole chunk — the eight
-// overlay components and @floating-ui behind BreakpointTooltip — onto a page
-// that never opens a breakpoint split view.
+// model.ts is now itself lazily loaded (the ViewType registers a stateModel
+// loader), so the boundary this pins is no longer eager-vs-lazy but
+// chunk-vs-chunk: model.ts and its static imports form the state-model chunk,
+// `components/` a separate one behind the ReactComponent lazy(). A React-free
+// module imported by BOTH sides gets grouped with one of them, and the other
+// side's import then drags that whole chunk — the eight overlay components and
+// @floating-ui behind BreakpointTooltip — in alongside a load that only needed
+// the helper. The state-model chunk also still loads well before components
+// (session hydration vs first render), so the merge costs real bytes early.
 //
 // This is not hypothetical and it is not obvious from a diff, which is why it is
 // pinned here. A duplication sweep (24aba4d012) read the four small helpers

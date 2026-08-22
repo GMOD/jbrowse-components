@@ -211,7 +211,7 @@ export async function navToSingleLevelBreak({
         session,
       }))
   const { refName, pos: startPos, mateRefName, matePos: endPos } = coverage
-  const { view, reused } = openOrReuseSplitView({
+  const { view, reused } = await openOrReuseSplitView({
     session,
     stableViewId,
     tracks,
@@ -224,7 +224,7 @@ export async function navToSingleLevelBreak({
     view.views[0]?.setDisplayedRegions(snap.views[0]!.displayedRegions)
     view.setDisplayName(snap.displayName)
   } else {
-    openDefaultTracks(view.views, defaultTrackIds)
+    await openDefaultTracks(view.views, defaultTrackIds)
   }
   if (!(await whenViewSettled(view))) {
     throw new Error(`Cannot open breakpoint split view: ${view.error}`, {

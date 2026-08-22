@@ -140,6 +140,18 @@ export function BaseRootModelFactory({
             migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>),
             pluginManager,
           )
+          if (pruned.needsLoad.length > 0) {
+            // a lazy state model cannot be loaded from inside a synchronous
+            // action, and casting without it would mis-classify the node as a
+            // union failure — the calling code owns the async boundary
+            throw new Error(
+              `session names lazily loaded types that are not loaded yet: ${pruned.needsLoad
+                .map(n => n.type)
+                .join(
+                  ', ',
+                )}. Await pluginManager.preloadSessionTypes(snapshot) before setSession`,
+            )
+          }
           migrated = pruned.snapshot
           unbuildable.push(...pruned.dropped)
         }

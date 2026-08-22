@@ -1,6 +1,6 @@
-import { useCreateOnce, useDestroyOnUnmount } from '@jbrowse/product-core'
+import { useAsyncEngineLifecycle } from '@jbrowse/product-core'
 
-import createViewState from './createViewState.ts'
+import { createViewStateAsync } from './createViewState.ts'
 
 import type { CreateViewStateOptions } from './createViewState.ts'
 
@@ -26,7 +26,7 @@ import type { CreateViewStateOptions } from './createViewState.ts'
  * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
  */
 export function useCreateViewState(opts: CreateViewStateOptions) {
-  const state = useCreateOnce(() => createViewState(opts))
-  useDestroyOnUnmount(state)
-  return state
+  // undefined until the engine's lazily loaded view and display state models
+  // resolve — render a fallback (or nothing) for that frame
+  return useAsyncEngineLifecycle(() => createViewStateAsync(opts))
 }

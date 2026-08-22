@@ -44,7 +44,7 @@ function fakeSession() {
       {
         type: 'LinearGenomeView',
         assemblyNames: ['hg19'],
-        showTrack: (trackId: string) => calls.shownTracks.push(trackId),
+        launchTrack: async (trackId: string) => calls.shownTracks.push(trackId),
         navToLocString: (loc: string) => {
           calls.navigated.push(loc)
           return Promise.resolve()

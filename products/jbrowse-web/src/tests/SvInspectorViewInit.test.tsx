@@ -23,22 +23,22 @@ afterEach(async () => {
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-function createSvInspectorViewWithInit(init: {
+async function createSvInspectorViewWithInit(init: {
   assembly: string
   uri?: string
   fileType?: string
 }) {
-  const { pluginManager, rootModel } = getPluginManager()
+  const { pluginManager, rootModel } = await getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
 
-  const view = session.addView('SvInspectorView', { init })
+  const view = await session.launchView('SvInspectorView', { init })
 
   return { view, session, rootModel, pluginManager }
 }
 
 test('SvInspectorView initializes its spreadsheet from init', async () => {
-  const { view } = createSvInspectorViewWithInit({
+  const { view } = await createSvInspectorViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.dup.vcf.gz',
   })
@@ -59,7 +59,7 @@ test('SvInspectorView initializes its spreadsheet from init', async () => {
 // a spreadsheet mid-parse as settled. There is no display-level wait to fall
 // back on: a spreadsheet mounts no displays.
 test('SvInspectorView reports loading while its spreadsheet loads', async () => {
-  const { view } = createSvInspectorViewWithInit({
+  const { view } = await createSvInspectorViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.dup.vcf.gz',
   })
@@ -90,8 +90,8 @@ test('SvInspectorView reports loading while its spreadsheet loads', async () => 
 // A view sitting on its import form is finished content, not a pending state —
 // the same line ViewContainer draws for every other view. Without this the
 // phase would never clear for a launch that names no file.
-test('SvInspectorView on the import form reports ready, not loading', () => {
-  const { view } = createSvInspectorViewWithInit({ assembly: 'volvox' })
+test('SvInspectorView on the import form reports ready, not loading', async () => {
+  const { view } = await createSvInspectorViewWithInit({ assembly: 'volvox' })
 
   expect(view.showLoading).toBe(false)
   expect(view.spreadsheetView.showLoading).toBe(false)
@@ -99,8 +99,8 @@ test('SvInspectorView on the import form reports ready, not loading', () => {
 
 // Regression: a launch that named an assembly but no file dropped the assembly,
 // and the import form fell back to whichever assembly sorted first
-test('an assembly with no uri lands on the import form, on that assembly', () => {
-  const { view } = createSvInspectorViewWithInit({ assembly: 'volvox' })
+test('an assembly with no uri lands on the import form, on that assembly', async () => {
+  const { view } = await createSvInspectorViewWithInit({ assembly: 'volvox' })
 
   expect(view.spreadsheetView.importWizard.selectedAssemblyName).toBe('volvox')
   expect(view.showCircularView).toBe(false)
@@ -109,7 +109,7 @@ test('an assembly with no uri lands on the import form, on that assembly', () =>
 }, 40000)
 
 async function loadedSvInspector() {
-  const { view } = createSvInspectorViewWithInit({
+  const { view } = await createSvInspectorViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.dup.vcf.gz',
   })
@@ -217,8 +217,8 @@ test('dragging moves the divider by the distance dragged', async () => {
 // yet still reloads via the child's persisted cachedFileLocation rather than
 // stranding on the import form. This is why SvInspector can strip init
 // unconditionally where the async-materializing views must keep it.
-test('snapshot forwards init to child spreadsheet synchronously', () => {
-  const { view } = createSvInspectorViewWithInit({
+test('snapshot forwards init to child spreadsheet synchronously', async () => {
+  const { view } = await createSvInspectorViewWithInit({
     assembly: 'volvox',
     uri: 'test_data/volvox/volvox.dup.vcf.gz',
   })

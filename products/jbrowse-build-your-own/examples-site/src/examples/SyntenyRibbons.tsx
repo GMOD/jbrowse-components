@@ -1,7 +1,7 @@
 import { Suspense, useRef, useSyncExternalStore } from 'react'
 
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { useCreateOnce, useWidthSetter } from '@jbrowse/core/util/hooks'
+import { useCreateOnceAsync, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider, TrackOverlaySlot } from '@jbrowse/display-ui'
 import {
@@ -9,8 +9,10 @@ import {
   type LinearSyntenyViewHelperModel,
   type LinearSyntenyViewModel,
 } from '@jbrowse/plugin-linear-comparative-view'
-import { createViewState } from '@jbrowse/react-app2'
+import { createViewStateAsync } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
+
+import type { ReactNode } from 'react'
 
 // Human and mouse at BRCA1, one above the other, and the ribbons that say which
 // piece of one is which piece of the other. Drag either row -- they move
@@ -140,11 +142,17 @@ const HUMAN_LOC = 'chr17:43,040,000..43,130,000'
 const MOUSE_LOC = 'chr11:101,375,000..101,447,000'
 
 /**
- * `createViewState` from the app product takes its config in one blob and
+ * `createViewStateAsync` from the app product takes its config in one blob and
  * builds the session from `defaultSession`, rather than the single-view
  * product's `setInit` on a view that already exists. Same idea, one level up:
  * declare what you want and let the engine resolve assemblies in the right
  * order.
+ *
+ * The async spelling, because this session names `LinearSyntenyView`: a view
+ * type's state model is a dynamic import until something asks for it, and the
+ * synchronous `createViewState` requires every type its session names to be
+ * loaded already. Awaiting is the whole difference — `createViewStateAsync`
+ * loads what the session names, then builds the same tree.
  *
  * `init` on the view snapshot is the synteny view's own version of `setInit`:
  * per row an assembly, where to open it and which tracks to show, and per band
@@ -152,8 +160,8 @@ const MOUSE_LOC = 'chr11:101,375,000..101,447,000'
  * builds a linear genome view for each row -- so a row arrives already at its
  * gene, rather than at the whole genome and then navigating.
  */
-function makeView() {
-  const state = createViewState({
+async function makeView() {
+  const state = await createViewStateAsync({
     config: {
       assemblies,
       tracks: [syntenyTrack, ...geneTracks],
@@ -206,7 +214,8 @@ function makeView() {
   }
 }
 
-type SyntenyView = ReturnType<typeof makeView>['view']
+type SyntenyView = Awaited<ReturnType<typeof makeView>>['view']
+type SyntenySession = Awaited<ReturnType<typeof makeView>>['session']
 type BrowserView = SyntenyView['views'][number]
 
 const TrackRow = observer(function TrackRow({
@@ -411,8 +420,30 @@ function useSiteMode() {
 // session-wide, and a synteny view's rows are ordinary linear genome views
 // sharing this session -- not separately themed browsers.
 
-const SyntenyRibbons = observer(function SyntenyRibbons() {
-  const { view, session } = useCreateOnce(makeView)
+function DemoMessage({
+  error,
+  children,
+}: {
+  error?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div
+      role={error ? 'alert' : 'status'}
+      style={{ fontSize: '0.85rem', opacity: 0.7, padding: 8 }}
+    >
+      {children}
+    </div>
+  )
+}
+
+const SyntenyRibbonsDemo = observer(function SyntenyRibbonsDemo({
+  view,
+  session,
+}: {
+  view: SyntenyView
+  session: SyntenySession
+}) {
   const mode = useSiteMode()
   // One measurement for the whole stack: `setWidth` on the synteny view assigns
   // it to every row, so the rows cannot disagree about how wide they are.
@@ -445,20 +476,30 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
             // instead, and this view's `error` folds in its rows' -- so a 404
             // on the mouse genome names itself here rather than stalling the
             // pair.
-            <div
-              role={status.type === 'error' ? 'alert' : 'status'}
-              style={{ fontSize: '0.85rem', opacity: 0.7, padding: 8 }}
-            >
+            <DemoMessage error={status.type === 'error'}>
               {status.type === 'error'
                 ? `Could not load: ${status.error instanceof Error ? status.error.message : String(status.error)}`
                 : status.type === 'loading'
                   ? status.message
                   : 'Nothing to show yet'}
-            </div>
+            </DemoMessage>
           )}
         </div>
       </DisplayUIProvider>
     </SessionPaletteProvider>
+  )
+})
+
+// The engine is built asynchronously (see makeView), so this stands the demo up
+// once it exists. Splitting it out rather than gating inside the demo is what
+// keeps every hook there — the width measurement, the palette, the pan/zoom —
+// reading a view model that is already there.
+const SyntenyRibbons = observer(function SyntenyRibbons() {
+  const created = useCreateOnceAsync(makeView)
+  return created ? (
+    <SyntenyRibbonsDemo session={created.session} view={created.view} />
+  ) : (
+    <DemoMessage>Loading…</DemoMessage>
   )
 })
 

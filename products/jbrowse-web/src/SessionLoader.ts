@@ -150,6 +150,7 @@ const SessionLoader = types
     pluginLoadFailures: PluginLoadFailure[]
     configError: unknown
     pluginManager: PluginManager | undefined
+    pluginManagerBuildStarted: boolean
     pluginManagerError: unknown
     buildAutorunDisposer: (() => void) | undefined
     initializeStarted: boolean
@@ -189,6 +190,13 @@ const SessionLoader = types
      * #volatile
      */
     pluginManager: undefined,
+    /**
+     * #volatile
+     * true while an async createPluginManager is in flight (it preloads lazy
+     * view state models before instantiating the session), so the build
+     * autorun cannot start a second one. Reset by disposePluginManager.
+     */
+    pluginManagerBuildStarted: false,
     /**
      * #volatile
      */
@@ -400,19 +408,43 @@ const SessionLoader = types
     },
     /**
      * #action
+     */
+    setPluginManager(pluginManager: PluginManager) {
+      // a build landing after this loader was replaced (plugin reload) or
+      // disposed (which resets pluginManagerBuildStarted) must not install
+      // itself over the replacement's
+      if (!self.superseded && self.pluginManagerBuildStarted) {
+        self.pluginManager = pluginManager
+      }
+    },
+    /**
+     * #action
+     */
+    setPluginManagerError(error: unknown) {
+      self.pluginManagerError = error
+    },
+    /**
+     * #action
      * Builds the pluginManager (and rootModel) from the loaded config/session.
-     * Idempotent: a second call while one already exists is a no-op.
+     * Asynchronous because lazily registered view state models the session
+     * names are loaded before the session snapshot is instantiated; the result
+     * lands via setPluginManager. Idempotent: a second call while one exists
+     * or is being built is a no-op.
      */
     buildPluginManager(reloadCallback: ReloadPluginManagerCallback) {
-      if (self.pluginManager) {
+      if (self.pluginManager || self.pluginManagerBuildStarted) {
         return
       }
-      try {
-        self.pluginManager = createPluginManager(self, reloadCallback)
-      } catch (e) {
-        console.error(e)
-        self.pluginManagerError = e
-      }
+      self.pluginManagerBuildStarted = true
+      createPluginManager(self, reloadCallback).then(
+        pm => {
+          this.setPluginManager(pm)
+        },
+        (e: unknown) => {
+          console.error(e)
+          this.setPluginManagerError(e)
+        },
+      )
     },
     /**
      * #action
@@ -453,6 +485,7 @@ const SessionLoader = types
         scheduleDetachedDestroy(rootModel)
       }
       self.pluginManager = undefined
+      self.pluginManagerBuildStarted = false
     },
   }))
   .actions(self => ({

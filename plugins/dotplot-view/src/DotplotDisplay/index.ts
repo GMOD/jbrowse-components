@@ -1,7 +1,6 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 import { configSchemaFactory } from './configSchema.ts'
-import { stateModelFactory } from './stateModelFactory.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -12,7 +11,12 @@ export default function DotplotDisplayF(pm: PluginManager) {
       name: 'DotplotDisplay',
       displayName: 'Dotplot display',
       configSchema,
-      stateModel: stateModelFactory(configSchema),
+      // lazily loaded: fetched when a synteny track is shown in a dotplot or a
+      // session names this display
+      stateModel: () =>
+        import('./stateModelFactory.tsx').then(f =>
+          f.stateModelFactory(configSchema),
+        ),
       trackType: 'SyntenyTrack',
       viewType: 'DotplotView',
       ReactComponent: () => null,

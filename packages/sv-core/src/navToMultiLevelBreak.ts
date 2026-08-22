@@ -85,7 +85,7 @@ export async function navToMultiLevelBreak({
   })
 
   const tracks = viewTracks ?? []
-  const { view, reused } = openOrReuseSplitView({
+  const { view, reused } = await openOrReuseSplitView({
     session,
     stableViewId,
     tracks: viewTracks,
@@ -113,7 +113,7 @@ export async function navToMultiLevelBreak({
   if (reused) {
     view.setDisplayName(makeTitle(feature))
   } else {
-    openDefaultTracks(view.views, defaultTrackIds)
+    await openDefaultTracks(view.views, defaultTrackIds)
   }
   await Promise.all(
     panels.map((panel, idx) =>

@@ -15,7 +15,7 @@ import {
   DEFAULT_LINE_WIDTH,
   DEFAULT_MIN_ALIGNMENT_LENGTH,
   DEFAULT_MIN_IDENTITY,
-} from '../model.ts'
+} from '../consts.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'

@@ -2,7 +2,7 @@ import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
 
 export interface SequenceSearchModel {
   assemblyNames: string[]
-  showTrack: (trackId: string) => void
+  launchTrack: (trackId: string) => Promise<unknown>
 }
 
 // Props for a search-mode panel: it renders its own fields and action buttons
@@ -30,7 +30,7 @@ export function addReferenceScanTrack(
       type: 'FeatureTrack',
       adapter: args.adapter,
     })
-    model.showTrack(args.trackId)
+    void model.launchTrack(args.trackId)
   } else {
     session.notify('This session does not support adding tracks', 'warning')
   }

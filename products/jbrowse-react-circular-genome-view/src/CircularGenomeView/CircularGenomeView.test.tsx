@@ -1,6 +1,6 @@
 import { Suspense, createRef } from 'react'
 
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 
 import CircularGenomeView from './CircularGenomeView.tsx'
 
@@ -44,6 +44,9 @@ test('<CircularGenomeView /> builds its own engine and shows regions via init', 
       <CircularGenomeView ref={ref} assembly={assembly} tracks={[]} init={{}} />
     </Suspense>,
   )
+  await waitFor(() => {
+    expect(ref.current).toBeDefined()
+  })
   ref.current!.session.view.setWidth(800)
   await findAllByText('ctgA', {}, { timeout: 10000 })
 

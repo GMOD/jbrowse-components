@@ -10,19 +10,20 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // A real view, because the whole mechanism is "ask the model what properties it
 // has". A hand-rolled stand-in with the setters on it would pass while proving
 // nothing, which is what the per-property tests this file used to carry did.
-function view() {
-  return createTestSession().addView(
+async function view() {
+  const session = createTestSession()
+  return (await session.launchView(
     'LinearSyntenyView',
     {},
-  ) as LinearSyntenyViewModel
+  )) as LinearSyntenyViewModel
 }
 
 describe('applyInitSettings', () => {
   // The gap this replaced: a property was authorable only once someone
   // remembered to write an arm for it here, and `drawLocationMarkers` shipped
   // without one. None of these names is mentioned anywhere in initHelpers.
-  test('applies any declared view property, named nowhere in this module', () => {
-    const v = view()
+  test('applies any declared view property, named nowhere in this module', async () => {
+    const v = await view()
     applyInitSettings(v, {
       views: [],
       drawLocationMarkers: true,
@@ -40,22 +41,22 @@ describe('applyInitSettings', () => {
     expect(v.alpha).toBe(0.55)
   })
 
-  test('applies a property a composed mixin contributes', () => {
-    const v = view()
+  test('applies a property a composed mixin contributes', async () => {
+    const v = await view()
     applyInitSettings(v, { views: [], colorBy: 'query', showColorLegend: true })
     expect(v.colorBy).toBe('query')
     expect(v.showColorLegend).toBe(true)
   })
 
-  test('false is applied, not read as absent', () => {
-    const v = view()
+  test('false is applied, not read as absent', async () => {
+    const v = await view()
     applyInitSettings(v, { views: [], showColorLegend: true })
     applyInitSettings(v, { views: [], showColorLegend: false })
     expect(v.showColorLegend).toBe(false)
   })
 
-  test('an omitted property keeps its default', () => {
-    const v = view()
+  test('an omitted property keeps its default', async () => {
+    const v = await view()
     applyInitSettings(v, { views: [] })
     expect(v.cigarMode).toBe('full')
     expect(v.drawCurves).toBe(false)
@@ -64,8 +65,8 @@ describe('applyInitSettings', () => {
   // `views` is the reason commands are skipped by name rather than by "is it a
   // property": the spec's is a list of assemblies to open, the model's is the
   // rows built from them.
-  test('the spec commands are left alone, including the ones that shadow a property', () => {
-    const v = view()
+  test('the spec commands are left alone, including the ones that shadow a property', async () => {
+    const v = await view()
     applyInitSettings(v, {
       views: [{ assembly: 'volvox' }],
       tracks: ['a_track'],
@@ -76,9 +77,9 @@ describe('applyInitSettings', () => {
     expect(v.views).toHaveLength(0)
   })
 
-  test('an unrecognized key is reported and changes nothing', () => {
+  test('an unrecognized key is reported and changes nothing', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const v = view()
+    const v = await view()
     // cast: the static type rejects this, which is the point — the runtime
     // guard is for JSON off a URL, which has no static type at all
     applyInitSettings(v, {
@@ -92,9 +93,9 @@ describe('applyInitSettings', () => {
   })
 
   // An init blob comes off a URL, so one bad value costs that key and no more.
-  test('a value the property rejects is dropped, and its neighbours still land', () => {
+  test('a value the property rejects is dropped, and its neighbours still land', async () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const v = view()
+    const v = await view()
     applyInitSettings(v, {
       views: [],
       alpha: 'loud',

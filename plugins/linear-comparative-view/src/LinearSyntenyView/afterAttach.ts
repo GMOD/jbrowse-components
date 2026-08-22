@@ -175,7 +175,7 @@ async function applyInitViewLocsAndTracks(
           for (const track of viewInit.tracks) {
             const { trackId, trackSnapshot, displaySnapshot } =
               normalizeTrackInit(track)
-            view.showTrack(trackId, trackSnapshot, displaySnapshot)
+            await view.launchTrack(trackId, trackSnapshot, displaySnapshot)
           }
         }
         // AFTER navigation, and applied here rather than by the row's own LGV
@@ -197,14 +197,14 @@ async function applyInitViewLocsAndTracks(
 
 // The synteny tracks themselves: `init.tracks` is per level (the gap between
 // views[i] and views[i+1]), so a 3-way view has two entries.
-function applyInitSyntenyTracks(
+async function applyInitSyntenyTracks(
   self: LinearSyntenyViewModel,
   init: LinearSyntenyViewInit,
 ) {
   if (init.tracks) {
     for (const [i, ids] of normalizeTrackLevels(init.tracks).entries()) {
       for (const trackId of ids) {
-        self.showTrack(trackId, i)
+        await self.launchTrack(trackId, i)
       }
     }
   }
@@ -257,7 +257,7 @@ async function applyInit(
   self.beginAutoDiagonalize(!!init.autoDiagonalize)
   await buildViews(self, init, superseded)
   await applyInitViewLocsAndTracks(self, init)
-  applyInitSyntenyTracks(self, init)
+  await applyInitSyntenyTracks(self, init)
   // split the band budget across however many levels this view has, so a
   // multi-way stack doesn't spend the whole viewport on ribbons. A no-op at two
   // levels (a pairwise view keeps the 100px default), and applyInitSettings

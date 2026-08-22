@@ -9,7 +9,7 @@ import type { WebSessionModel } from '../sessionModel/index.ts'
 import type Plugin from '@jbrowse/core/Plugin'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
-export function createTestSession(args?: {
+interface CreateTestSessionArgs {
   adminMode?: boolean
   sessionSnapshot?: Record<string, unknown>
   jbrowseConfig?: {
@@ -19,7 +19,9 @@ export function createTestSession(args?: {
   // pre-loaded runtime plugins, mirroring how createPluginManager builds
   // metadata so installed-plugin/session-plugin UI flows can be exercised
   runtimePlugins?: { plugin: Plugin; definition: PluginDefinition }[]
-}): WebSessionModel {
+}
+
+function buildTestRoot(args?: CreateTestSessionArgs) {
   const {
     sessionSnapshot = {},
     adminMode = false,
@@ -53,14 +55,41 @@ export function createTestSession(args?: {
     },
     { pluginManager },
   )
-  root.setSession({
-    name: 'testSession',
-    ...sessionSnapshot,
-  })
+  return {
+    pluginManager,
+    root,
+    snapshot: {
+      name: 'testSession',
+      ...sessionSnapshot,
+    },
+  }
+}
+
+function finishTestSession({
+  pluginManager,
+  root,
+  snapshot,
+}: ReturnType<typeof buildTestRoot>) {
+  root.setSession(snapshot)
 
   const session = root.session as WebSessionModel
   session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(root)
   pluginManager.configure()
   return session
+}
+
+export function createTestSession(args?: CreateTestSessionArgs) {
+  return finishTestSession(buildTestRoot(args))
+}
+
+/**
+ * `createTestSession` for a session snapshot that names a view type whose state
+ * model is registered lazily — `setSession` is synchronous and throws on one
+ * that has not been loaded, so the load has to happen first.
+ */
+export async function createTestSessionAsync(args?: CreateTestSessionArgs) {
+  const built = buildTestRoot(args)
+  await built.pluginManager.preloadSessionTypes(built.snapshot)
+  return finishTestSession(built)
 }

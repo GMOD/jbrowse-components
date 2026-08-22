@@ -63,7 +63,7 @@ const PLUGIN_FACING = {
   views: 'graphgenomeviewer',
 }
 
-test('the session keeps every member a published plugin reaches for', () => {
+test('the session keeps every member a published plugin reaches for', async () => {
   const session = createTestSession()
   const missing = Object.entries(PLUGIN_FACING)
     .filter(([name]) => !(name in session))
@@ -179,7 +179,7 @@ function openTrackIds(view: unknown): string[] {
   })
 }
 
-test('the automation-facing session walk still resolves', () => {
+test('the automation-facing session walk still resolves', async () => {
   const session = createTestSession({
     jbrowseConfig: {
       assemblies: [
@@ -213,7 +213,7 @@ test('the automation-facing session walk still resolves', () => {
   expect('initialized' in view).toBe(true)
   expect('assemblyNames' in view).toBe(true)
 
-  view.showTrack('volvox-genes')
+  await view.launchTrack('volvox-genes')
   // Walked blindly, exactly as a script in a `page.evaluate` walks it, rather
   // than through the view's TypeScript types: those describe the model this repo
   // compiles against, and what is being pinned here is what survives a property

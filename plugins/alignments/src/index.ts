@@ -32,10 +32,11 @@ export default class AlignmentsPlugin extends Plugin {
   }
 }
 
-export {
-  linearAlignmentsDisplayConfigSchemaFactory,
-  linearAlignmentsDisplayStateModelFactory,
-} from './LinearAlignmentsDisplay/index.ts'
+// The state model factory is deliberately NOT re-exported here: a value edge
+// from this barrel would keep the whole display model subgraph eager, which is
+// the point of the lazy registration. It is reachable at
+// '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'.
+export { linearAlignmentsDisplayConfigSchemaFactory } from './LinearAlignmentsDisplay/index.ts'
 export type {
   AlignmentLane,
   LaneSection,

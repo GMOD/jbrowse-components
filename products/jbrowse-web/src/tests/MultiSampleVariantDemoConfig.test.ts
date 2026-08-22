@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 
 import corePlugins from '../corePlugins.ts'
-import { createTestSession } from '../rootModel/test_util.ts'
+import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -30,7 +30,7 @@ function hydrate(snap: Record<string, unknown>) {
   }
 }
 
-test('v4.1.1 multi-sample variant demo config still hydrates', () => {
+test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
   const conf = hydrate({
     type: 'VariantTrack',
     trackId: 'volvox multi-sample sv',
@@ -81,8 +81,8 @@ test('v4.1.1 multi-sample variant demo config still hydrates', () => {
 // with no dispatcher, so the old `MultiLinearVariantDisplay` type must be
 // remapped by the model's own preProcessSnapshot for the union to resolve it.
 // This exercises that session-restore path so old saved sessions keep loading.
-test('old MultiLinearVariantDisplay instance resolves on session restore', () => {
-  const session = createTestSession({
+test('old MultiLinearVariantDisplay instance resolves on session restore', async () => {
+  const session = await createTestSessionAsync({
     jbrowseConfig: {
       assemblies: [
         {
