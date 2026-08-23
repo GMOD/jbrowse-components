@@ -2,6 +2,8 @@ import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import {
   createProgressReporter,
   groupBy,
@@ -461,10 +463,32 @@ export async function executeRenderAlignmentData({
     drawSingletons = true,
     drawProperPairs = true,
     showOnlySplitAlignments = false,
+    byteLimit,
     statusCallback,
     stopToken,
   } = args
   const region = regions[0]!
+
+  // The gate, and the first await of the fetch: an over-budget region is
+  // refused off one index read, before a single read is downloaded. Resolving
+  // the adapter here rather than inside `fetchFeaturesFromAdapter` below costs
+  // nothing — `getAdapter` is cached, so the second resolution is a map hit.
+  const { bytes, tooLarge } = await measureRegionBytes({
+    dataAdapter: await getFeatureAdapterOrThrow({
+      pluginManager,
+      sessionId,
+      adapterConfig,
+      sequenceAdapter,
+    }),
+    region,
+    byteLimit,
+    stopToken,
+    statusCallback,
+  })
+  if (tooLarge) {
+    return tooLarge
+  }
+
   const isChain = linkedReads !== 'off'
   // Chain mode never expands soft clips or fetches sequence/sort-tag data.
   const effShowSoftClipping = isChain ? false : showSoftClipping
@@ -600,5 +624,5 @@ export async function executeRenderAlignmentData({
     })
   }
 
-  return rpcResult({ groups }, collectGroupedTransferables(groups))
+  return rpcResult({ groups, bytes }, collectGroupedTransferables(groups))
 }

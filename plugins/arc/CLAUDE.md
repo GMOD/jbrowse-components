@@ -32,5 +32,8 @@ display except this one.
   gate and goes false on a pan past a block boundary; `data-display-drawn` uses
   the looser `drawn`, which stays true across a refetch so the testid doesn't
   churn on pan.
-- Byte-gated only. `runGlobalFetch` runs the pre-flight (`byteGateBlocksFetch`);
-  arc's opt-in is the `measuresBytesPreFlight` override alone.
+- Byte-gated only, and the gate is inside the fetch: `ArcGetFeatures` measures
+  the index before it downloads and answers a `RegionTooLargeResult` instead of
+  features. Arc's opt-in is the `gateEnabled` override plus the `byteLimit` its
+  `run` passes. It reads its own RPC rather than `CoreGetFeatures` for exactly
+  that reason — that method has eight callers and none of the others gates.

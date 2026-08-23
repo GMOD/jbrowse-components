@@ -23,6 +23,7 @@
  */
 import { fetchAllRegions } from './MultiRegionDisplayMixin.ts'
 
+import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
 
@@ -37,11 +38,25 @@ const NEEDED = [
   },
 ]
 
-// `self` only has to supply `fetchRegions`, which normally rotates the stop
-// token and applies the byte gate. Running `work` directly with a ctx the test
+const ISSUED: GateFetchState = {
+  viewport: { spanBp: 100, key: 'ctgA:0-100' },
+  gated: true,
+  tierKey: undefined,
+}
+
+// `self` supplies `fetchRegions`, which normally rotates the stop token, plus
+// the gate's two commit members. Running `work` directly with a ctx the test
 // controls isolates what this helper owns from that machinery.
-function selfWith(ctx: FetchContext, loaded: number[]) {
+function selfWith(
+  ctx: FetchContext,
+  loaded: number[],
+  bytes: (number | undefined)[][] = [],
+) {
   return {
+    gateFetchState: () => ISSUED,
+    commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
+      bytes.push(perRegionBytes)
+    },
     fetchRegions: (
       _needed: typeof NEEDED,
       work: (ctx: RegionFetchContext) => Promise<void>,
@@ -142,23 +157,23 @@ test('a viewport that moved commits nothing and skips the post-fetch step', asyn
 describe('a region the worker refused', () => {
   const refused = { regionTooLarge: true as const, bytes: 9e9 }
 
-  it('is delivered to the display but never marked loaded', async () => {
+  it('reaches the gate but neither the display store nor loadedRegions', async () => {
     const loaded: number[] = []
+    const bytes: (number | undefined)[][] = []
     const results: [number, unknown][] = []
     let completed = 0
-    await fetchAllRegions(selfWith(fresh(), loaded), NEEDED, {
+    await fetchAllRegions(selfWith(fresh(), loaded, bytes), NEEDED, {
       call: () => Promise.resolve([refused, 'data:ctgB']),
       onResult: (idx, result) => results.push([idx, result]),
       onComplete: () => {
         completed++
       },
     })
-    // the display still hears about it — that result is what raises the banner
-    // and records the gate measurement — and only the commit is skipped
-    expect(results).toEqual([
-      [2, refused],
-      [5, 'data:ctgB'],
-    ])
+    // `onResult` is the payload path and a marker is not a payload; what the
+    // refusal does reach is the gate, which is what raises the banner and what
+    // lets it release once the user zooms
+    expect(results).toEqual([[5, 'data:ctgB']])
+    expect(bytes).toEqual([[9e9, undefined]])
     expect(loaded).toEqual([5])
     expect(completed).toBe(1)
   })

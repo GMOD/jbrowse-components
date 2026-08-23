@@ -1,4 +1,7 @@
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
+
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
+import { loadMafSummaryAdapter } from '../util/loadMafSummaryAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
 import type { BaseMafRpcArgs, MafSummaryRecord, Sample } from '../types.ts'
@@ -25,6 +28,13 @@ export interface LinearMafGetSummaryDataResult {
    */
   samplesCanonical: boolean
   records: MafSummaryRecord[]
+  /**
+   * What the summary sub-adapter's index quoted for this region. The summary
+   * tier is cheap per base — no sequence — but a `BigBedAdapter` read is still
+   * a whole-feature download, and this tier covers every zoom out to the whole
+   * genome, so it is measured like the detail one.
+   */
+  bytes?: number
 }
 
 /**
@@ -44,7 +54,7 @@ export async function executeMafSummaryData({
 }: {
   pluginManager: PluginManager
   args: RpcExecuteArgs<'LinearMafGetSummaryData'>
-}): Promise<LinearMafGetSummaryDataResult> {
+}) {
   const {
     regions,
     adapterConfig,
@@ -52,6 +62,7 @@ export async function executeMafSummaryData({
     stopToken,
     statusCallback,
     subtreeFilter,
+    byteLimit,
   } = args
   const region = regions[0]!
   const {
@@ -60,6 +71,26 @@ export async function executeMafSummaryData({
     treeNewick,
   } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig)
   const hasConfiguredSamples = configSamples.length > 0
+
+  // The gate, on the file THIS tier reads — the `summaryAdapter` sub-adapter,
+  // not the alignment. Measuring the alignment here would quote a download
+  // nobody is doing, which at genome scale blocks the cheap tier on the
+  // expensive one's cost. It is the same file `byteGateAdapterPath` names while
+  // `showSummary` holds, so the banner and the worker agree by construction.
+  const summaryAdapter =
+    byteLimit === undefined ? undefined : await loadMafSummaryAdapter(adapter)
+  const { bytes, tooLarge } = summaryAdapter
+    ? await measureRegionBytes({
+        dataAdapter: summaryAdapter,
+        region,
+        byteLimit,
+        stopToken,
+        statusCallback,
+      })
+    : { bytes: undefined, tooLarge: undefined }
+  if (tooLarge) {
+    return tooLarge
+  }
 
   // Rows outside the active subtree are dropped here rather than shipped and
   // hidden, exactly as the detail path does. `samples` stays the full set so
@@ -99,5 +130,6 @@ export async function executeMafSummaryData({
     treeNewick,
     samplesCanonical: hasConfiguredSamples,
     records,
+    bytes,
   }
 }

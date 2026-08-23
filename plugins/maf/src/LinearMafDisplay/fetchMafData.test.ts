@@ -84,20 +84,33 @@ const NEEDED = [
 // which this test exercises — it just runs the work callback with a fresh ctx.
 function makeSelf() {
   const reported: RpcStatus[] = []
-  // what the fetch marked loaded — MAF gates pre-flight, so a refusal returns
-  // before the work callback and everything reaching it is stored
+  // what the fetch marked loaded. MAF's batch is atomic: the sample set is a
+  // decision over every region, so one refused region refuses the batch and
+  // nothing is marked loaded.
   const loadedIndices: number[] = []
+  const committedBytes: (number | undefined)[][] = []
   const cleared: string[] = []
   const framesFetched: number[] = []
   const framesBlocked: boolean[] = []
   return {
     reported,
     loadedIndices,
+    committedBytes,
     cleared,
     framesFetched,
     framesBlocked,
     self: {
       adapterConfig: {},
+      // `RegionTooLargeMixin`'s two commit members, which the fan-out helper
+      // calls for every display
+      gateFetchState: () => ({
+        viewport: { spanBp: 100, key: 'k' },
+        gated: true,
+        tierKey: undefined,
+      }),
+      commitFetchBytes: (bytes: (number | undefined)[]) => {
+        committedBytes.push(bytes)
+      },
       annotationDataActive: false,
       annotationAdapterConfig: undefined as Record<string, unknown> | undefined,
       resolvedByteLimit: () => 1_000_000 as number | undefined,
@@ -182,6 +195,61 @@ describe('MAF fetch progress reporting', () => {
   })
 })
 
+// The gate is one argument at the call and one commit after it. Each tier's RPC
+// measures the file IT reads — the alignment index on the detail path, the
+// `summaryAdapter` sub-adapter on the summary one — so the number the banner
+// quotes always describes the download that was refused.
+describe('the byte gate rides in the tier fetch', () => {
+  test.each([
+    ['alignment', fetchMafAlignmentData],
+    ['summary', fetchMafSummaryData],
+  ])('%s fetch sends the resolved byte budget', async (_name, fetchFn) => {
+    const { self } = makeSelf()
+    await fetchFn(self as any, NEEDED)
+
+    for (const call of mockRpcCall.mock.calls) {
+      expect(call[2].byteLimit).toBe(1_000_000)
+    }
+  })
+
+  test('a force-loaded display sends no budget, so the worker measures nothing', async () => {
+    const { self } = makeSelf()
+    self.resolvedByteLimit = () => undefined
+    await fetchMafAlignmentData(self as any, NEEDED)
+
+    for (const call of mockRpcCall.mock.calls) {
+      expect(call[2].byteLimit).toBeUndefined()
+    }
+  })
+
+  // One refused region refuses the batch, because the sample union is a
+  // decision over all of them: a set derived from the regions that happened to
+  // fit is not the set this viewport has. The largest measurement still reaches
+  // the gate, which is what puts a size in the banner and releases it on a
+  // later zoom.
+  test('a refused region refuses the batch, and its bytes still reach the gate', async () => {
+    const { self, loadedIndices, committedBytes } = makeSelf()
+    mockRpcCall.mockImplementation((_s: string, _m: string, args: any) =>
+      Promise.resolve(
+        args.regions[0].refName === 'ctgA'
+          ? { regionTooLarge: true, bytes: 9e9 }
+          : {
+              samples: [],
+              treeNewick: undefined,
+              samplesCanonical: false,
+              regionData: { blocks: [] },
+              bytes: 10,
+            },
+      ),
+    )
+
+    await fetchMafAlignmentData(self as any, NEEDED)
+
+    expect(loadedIndices).toEqual([])
+    expect(committedBytes).toEqual([[9e9]])
+  })
+})
+
 // The swap is one-directional on purpose. Entering summary mode drops the
 // alignment blocks so the GPU sequence canvas paints nothing under the summary
 // overlay; zooming back in keeps the summary records, because `regionHasData`
@@ -206,8 +274,8 @@ describe('summary/detail data swap', () => {
 // concurrently with whichever of those won. So nothing was watching it, and it
 // is not small by nature: one record per CDS exon *per species*, over the
 // buffered region, at every zoom the summary tier reaches. That is the premise
-// `measuresBytesPreFlight`'s own docstring rejects — "off means nothing is
-// watching, and 'this tier is cheap' is a premise, not a bound".
+// `gateEnabled`'s own docstring rejects — "off means nothing is watching, and
+// 'this tier is cheap' is a premise, not a bound".
 describe('the CDS-frame read is measured against its own file', () => {
   function framesSelf(over: Record<string, unknown> = {}) {
     const made = makeSelf()

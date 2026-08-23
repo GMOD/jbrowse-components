@@ -15,6 +15,7 @@
  */
 import { fetchEachRegion } from './MultiRegionDisplayMixin.ts'
 
+import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
 
@@ -29,11 +30,26 @@ const NEEDED = [
   },
 ]
 
-// `self` only has to supply `fetchRegions`, which normally rotates the stop
-// token and applies the byte gate. Running `work` directly with a ctx the test
-// controls isolates the guards from that machinery.
-function selfWith(ctx: FetchContext, loaded: number[] = []) {
+const ISSUED: GateFetchState = {
+  viewport: { spanBp: 100, key: 'ctgA:0-100' },
+  gated: true,
+  tierKey: undefined,
+}
+
+// `self` supplies `fetchRegions`, which normally rotates the stop token, and
+// the gate's two commit members, which the helper calls for every display.
+// Running `work` directly with a ctx the test controls isolates the guards from
+// that machinery.
+function selfWith(
+  ctx: FetchContext,
+  loaded: number[] = [],
+  bytes: (number | undefined)[][] = [],
+) {
   return {
+    gateFetchState: () => ISSUED,
+    commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
+      bytes.push(perRegionBytes)
+    },
     fetchRegions: (
       _needed: typeof NEEDED,
       work: (ctx: RegionFetchContext) => Promise<void>,
@@ -140,10 +156,15 @@ test('a region that arrived before the move still commits; a later one does not'
 // the span `isBlockCovered` judges the viewport against, so a refused region
 // committed there reads as covered against a payload nobody received: the plan
 // answers `covered` on every later run, nothing refetches, and since the
-// ordinary fetch is the gate's own re-measure, nothing re-measures either. The
-// result still reaches `onResult` — that is what raises the banner.
-test('a region the worker refused is delivered but not marked loaded', async () => {
+// ordinary fetch is the gate's own re-measure, nothing re-measures either.
+//
+// The refusal reaches the display's store nowhere at all — `onResult` is the
+// payload path and a marker is not a payload — and reaches the GATE instead,
+// through `commitFetchBytes`, which is what raises the banner and what lets it
+// release once the user zooms.
+test('a region the worker refused is neither stored nor marked loaded, and its bytes still reach the gate', async () => {
   const loaded: number[] = []
+  const bytes: (number | undefined)[][] = []
   const refused = { regionTooLarge: true as const, bytes: 9e9 }
   const committed: [number, unknown][] = []
   await fetchEachRegion(
@@ -157,19 +178,47 @@ test('a region the worker refused is delivered but not marked loaded', async () 
         },
       },
       loaded,
+      bytes,
     ),
     NEEDED,
     {
       call: region =>
-        Promise.resolve(region.refName === 'ctgA' ? refused : 'ctgB'),
+        Promise.resolve(
+          region.refName === 'ctgA' ? refused : { bytes: 10, value: 'ctgB' },
+        ),
       onResult: (idx, result) => committed.push([idx, result]),
     },
   )
-  expect(committed).toEqual([
-    [2, refused],
-    [5, 'ctgB'],
-  ])
+  expect(committed).toEqual([[5, { bytes: 10, value: 'ctgB' }]])
   expect(loaded).toEqual([5])
+  // max, not sum: the budget is what one region may cost
+  expect(bytes).toEqual([[9e9, 10]])
+})
+
+// The gate state is captured before the first RPC goes out, never re-read at
+// commit time — a view that moved during the round trip would otherwise label
+// the measurement with a viewport it never covered.
+test('the gate state handed to onComplete is the one captured at issue', async () => {
+  const seen: GateFetchState[] = []
+  await fetchEachRegion(
+    selfWith({
+      stopToken: 'tok',
+      isStale: () => false,
+      statusCallback: () => {},
+      callRpc() {
+        throw new Error('callRpc is not stubbed in this test')
+      },
+    }),
+    NEEDED,
+    {
+      call: region => Promise.resolve(region.refName),
+      onResult: () => {},
+      onComplete: issued => {
+        seen.push(issued)
+      },
+    },
+  )
+  expect(seen).toEqual([ISSUED])
 })
 
 // The ctx `call` receives is this region's, not the fetch's: same stop token

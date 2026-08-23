@@ -1,6 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { set1 } from '@jbrowse/core/ui/colors'
 
+import ArcGetFeaturesRPCMethodsF from './ArcGetFeaturesRPC/index.ts'
 import LinearArcDisplayF from './LinearArcDisplay/index.ts'
 import LinearPairedArcDisplayF from './LinearPairedArcDisplay/index.ts'
 
@@ -12,6 +13,7 @@ export default class ArcPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     LinearArcDisplayF(pluginManager)
     LinearPairedArcDisplayF(pluginManager)
+    ArcGetFeaturesRPCMethodsF(pluginManager)
 
     /** #jexlFunction Slot defaults from plugins | logThickness(feature, 'score') | log(attribute + 1), the arc display's default thickness */
     pluginManager.jexl.addFunction(

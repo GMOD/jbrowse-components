@@ -79,6 +79,10 @@ const TestDisplay = types
     // what `FetchMixin.runFetch`'s own `isStale` answers once a newer fetch or a
     // cancel has superseded this one
     stale: false,
+    // every `commitFetchBytes` the runner made, as the per-region list it was
+    // handed — the byte gate's whole main-thread surface now that the fetch
+    // itself measures
+    committedBytes: [] as (number | undefined)[][],
   }))
   .views(self => ({
     rpcProps() {
@@ -129,9 +133,18 @@ const TestDisplay = types
     commitFetchResult(commit: () => void, _signature: string) {
       commit()
     },
-    // `RegionTooLargeMixin`'s pre-flight, stubbed to "not gated"
-    async byteGateBlocksFetch() {
-      return false
+    // `RegionTooLargeMixin`'s byte-gate commit pair. The gate state is what a
+    // measurement is judged against; this fixture records the bytes the runner
+    // hands back so a test can assert the refusal path reached the gate.
+    gateFetchState() {
+      return {
+        viewport: { spanBp: 100, key: 'ctgA:0-100' },
+        gated: self.regionTooLarge,
+        tierKey: undefined,
+      }
+    },
+    commitFetchBytes(perRegionBytes: (number | undefined)[]) {
+      self.committedBytes.push(perRegionBytes)
     },
   }))
   .actions(self => ({

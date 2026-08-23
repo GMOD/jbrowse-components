@@ -613,9 +613,9 @@ export default function stateModelFactory(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // `measuresBytesPreFlight` below: `fetchRegions` then measures the region set
-      // before it downloads, and afterAttach clears the estimate on chromosome
-      // nav. Byte-only — no density axis.
+      // `gateEnabled` below: the tier's own RPC then measures the file it is
+      // about to read before it downloads, and afterAttach clears the estimate
+      // on chromosome nav. Byte-only — no density axis.
       .views(self => ({
         /**
          * #getter
@@ -2355,13 +2355,15 @@ export default function stateModelFactory(
         /**
          * #getter
          * Enable byte-estimate gating: a MAF-aware byte estimate (per-species
-         * sequence × span) is checked against `fetchSizeLimit`, blocking the
-         * fetch with a force-load prompt rather than downloading hundreds of
-         * species' bases at genome scale.
+         * sequence × span) is checked against `fetchSizeLimit` inside the tier's
+         * own RPC, blocking the fetch with a force-load prompt rather than
+         * downloading hundreds of species' bases at genome scale.
          *
          * On for **both** tiers, and `byteGateAdapterPath` below is what makes
-         * that safe: each is measured against the file it actually reads. This
-         * used to be `!showSummary`, exempting the summary tier on the grounds
+         * that safe: each RPC measures the file it actually reads — the
+         * alignment index on the detail path, the `summaryAdapter` sub-adapter
+         * on the summary one. This used to be `!showSummary`, exempting the
+         * summary tier on the grounds
          * that it is the cheap one. It is cheap *per base* — no sequence — but it
          * is still a whole-feature download (`BigBedAdapter.getFeatures`), and
          * `showSummary` covers every zoom from 20kb to the whole genome. So the
@@ -2371,7 +2373,7 @@ export default function stateModelFactory(
          * `fetchSizeLimit` and never sees a banner; that is the estimate's job to
          * decide, not this getter's.
          */
-        get measuresBytesPreFlight() {
+        get gateEnabled() {
           return true
         },
         /**

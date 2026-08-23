@@ -129,11 +129,11 @@ export function collectGatedAdapterBudgets(): Record<string, string> {
   return Object.fromEntries(Object.entries(found).sort())
 }
 
-// A display opts into the byte gate by overriding one of these to true. Matched
-// as a getter body rather than a mention, so the mixin's own defaults and the
-// dozens of prose references to them don't count.
+// A display opts into the byte gate by overriding this to true. Matched as a
+// getter body rather than a mention, so the mixin's own default and the dozens
+// of prose references to it don't count.
 const displayOptIn =
-  /get (?:measuresBytesPreFlight|measuresBytesInFetch)\s*\([^)]*\)\s*(?::[^{]+)?\{\s*return true\b/s
+  /get gateEnabled\s*\([^)]*\)\s*(?::[^{]+)?\{\s*return true\b/s
 
 /**
  * Every file that opts a display into the byte gate, as repo-relative paths.

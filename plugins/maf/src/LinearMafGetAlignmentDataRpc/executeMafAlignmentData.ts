@@ -1,3 +1,4 @@
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
@@ -37,6 +38,13 @@ export interface LinearMafGetAlignmentDataResult {
    */
   samplesCanonical: boolean
   regionData: MafWireRegionData
+  /**
+   * What the alignment index quoted for this region, when the fetch carried a
+   * `byteLimit`. Carried back on the success path too, so the display's gate
+   * re-anchors its stored estimate on every fetch rather than only on the ones
+   * it refuses.
+   */
+  bytes?: number
 }
 
 /**
@@ -98,7 +106,15 @@ export async function executeMafAlignmentData({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'LinearMafGetAlignmentData'>
 }) {
-  const { regions, adapterConfig, sessionId, subtreeFilter } = args
+  const {
+    regions,
+    adapterConfig,
+    sessionId,
+    subtreeFilter,
+    byteLimit,
+    stopToken,
+    statusCallback,
+  } = args
   const region = regions[0]!
   const {
     adapter,
@@ -106,6 +122,21 @@ export async function executeMafAlignmentData({
     treeNewick,
   } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig)
   const hasConfiguredSamples = configSamples.length > 0
+
+  // The gate, on the file this tier reads: the MAF adapter's own index, which
+  // is what `byteGateAdapterPath` names while the display is on the detail
+  // tier. A 470-way alignment is megabytes inside a 40kb window, so this is the
+  // one measurement standing between a zoomed-out view and every species' bases.
+  const { bytes, tooLarge } = await measureRegionBytes({
+    dataAdapter: adapter,
+    region,
+    byteLimit,
+    stopToken,
+    statusCallback,
+  })
+  if (tooLarge) {
+    return tooLarge
+  }
 
   // Samples come from config or the guide tree (see getSamples). With a set,
   // the adapter resolves tokens against it. With neither, the adapter discovers
@@ -228,6 +259,7 @@ export async function executeMafAlignmentData({
     treeNewick,
     samplesCanonical: hasConfiguredSamples,
     regionData,
+    bytes,
   }
   // second arg is the transfer list: these buffers are moved to the main
   // thread, not structured-cloned. collectMafTransferables walks the result and

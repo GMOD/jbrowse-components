@@ -5,15 +5,16 @@ import RegionTooLargeMixin, {
   reportRenamedHooks,
 } from './RegionTooLargeMixin.ts'
 
-// The gate members were renamed in 2026-08 (`byteGateEnabled` →
-// `measuresBytesPreFlight`, `byteGateActive` → `gateActive`, …). An out-of-tree
-// display still overriding an old name lands on a getter nothing reads: the gate
-// quietly stays off and the track downloads unguarded, with no banner and no
-// error — the same silent-disable this mixin's additive OR and the compose-order
-// lint rule exist to prevent. A lint rule is no use for this one, because the
-// population it is for never runs our lint. So `afterAttach` calls
-// `reportRenamedHooks`, and a dev check nobody tests is a check that stops
-// firing without anyone noticing.
+// The gate members were renamed in 2026-08 (`byteGateEnabled` → `gateEnabled`,
+// `byteGateActive` → `gateActive`, …) and the pre-flight measurement path was
+// deleted outright soon after (`measuresBytesPreFlight`,
+// `byteGateBlocksFetch`). An out-of-tree display still overriding one of those
+// names lands on a getter nothing reads: the gate quietly stays off and the
+// track downloads unguarded, with no banner and no error — the same
+// silent-disable the compose-order lint rule exists to prevent. A lint rule is
+// no use for this one, because the population it is for never runs our lint. So
+// `afterAttach` calls `reportRenamedHooks`, and a dev check nobody tests is a
+// check that stops firing without anyone noticing.
 //
 // Called directly rather than through `afterAttach`, because MST materializes
 // child nodes lazily and there is no display fixture in this package to attach
@@ -39,7 +40,22 @@ test('reports an override left on a renamed hook, naming the new name', () => {
   const errors = takeContractReports()
   expect(errors).toHaveLength(1)
   expect(errors[0]).toContain('byteGateEnabled')
+  expect(errors[0]).toContain('gateEnabled')
+})
+
+// The pre-flight hooks have no new name: the display shape changed, so the
+// report has to describe the shape rather than point at a rename.
+test('reports an override left on a removed hook, naming what replaced it', () => {
+  reportRenamedHooks(
+    displayDeclaring({
+      measuresBytesPreFlight: () => true,
+    }),
+  )
+
+  const errors = takeContractReports()
+  expect(errors).toHaveLength(1)
   expect(errors[0]).toContain('measuresBytesPreFlight')
+  expect(errors[0]).toContain('byteLimit')
 })
 
 test('reports every renamed name the display still declares', () => {
@@ -52,14 +68,14 @@ test('reports every renamed name the display still declares', () => {
 
   const errors = takeContractReports()
   expect(errors).toHaveLength(2)
-  expect(errors.join('\n')).toContain('measuresBytesInFetch')
+  expect(errors.join('\n')).toContain('gateEnabled')
   expect(errors.join('\n')).toContain('gateActive')
 })
 
 test('says nothing about a display using the current names', () => {
   reportRenamedHooks(
     displayDeclaring({
-      measuresBytesPreFlight: () => true,
+      gateEnabled: () => true,
     }),
   )
 

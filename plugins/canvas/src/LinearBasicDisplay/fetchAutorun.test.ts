@@ -54,15 +54,13 @@ afterEach(() => {
   jest.useRealTimers()
 })
 
-// CanvasFeatureGateMixin contributes the opt-in additively, via
-// `measuresBytesInFetch`, which RegionTooLargeMixin ORs into
-// `gateEnabled` alongside the pre-flight `measuresBytesPreFlight` — so
-// the gate stays on regardless of the order the two are composed in. This test
-// is the pin on that (it used to pin the composition order itself, which was the
-// only thing keeping the gate alive).
-test('the gate opt-in survives regardless of mixin composition order', () => {
+// CanvasFeatureGateMixin contributes `gateEnabled`, and `types.compose`
+// resolves a member collision to the LATER argument, so the gate is on only
+// while the mixin is composed after `MultiRegionDisplayMixin`.
+// `no-restricted-syntax` fails the other order; this is the runtime pin under
+// it.
+test('the gate opt-in survives the display composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  expect(display.measuresBytesPreFlight).toBe(false)
   expect(display.gateEnabled).toBe(true)
 })
 
@@ -1748,8 +1746,9 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
   })
 })
 
-// Regression: `commitGateMeasurements` must anchor the estimate to the span
-// captured when the fetch was ISSUED. Reading `view.visibleBp` back when the
+// Regression: the byte commit must anchor the estimate to the span captured
+// when the fetch was ISSUED — `fetchEachRegion` reads `gateFetchState()` before
+// it issues anything, for exactly this. Reading `view.visibleBp` back when the
 // reply lands re-anchors a wide-span measurement onto whatever a mid-flight
 // zoom left on screen, inflating the estimate by the zoom ratio — and since
 // `FetchVisibleRegions` skips while `regionTooLarge` holds, the resulting

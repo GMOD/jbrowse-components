@@ -367,19 +367,20 @@ export default function sharedModelFactory(
        * #getter
        * Opt into RegionTooLargeMixin's derived byte gate (byte axis only, no
        * density axis). On for every adapter, including the pre-computed ones
-       * (PlinkLD*), which serve no features at all: `CoreGetRegionByteEstimate`
-       * answers `undefined` for those — "unmeasurable", the same answer a
-       * BigWig gives — and an unmeasurable estimate keeps the byte axis out of
-       * the verdict without anything here having to know which adapter it has.
+       * (PlinkLD*), which serve no features at all: `RenderLDData` measures the
+       * genotype adapter it is about to read and skips those entirely, so they
+       * report no bytes — "unmeasurable", the same answer a BigWig gives — and
+       * an unmeasurable estimate keeps the byte axis out of the verdict without
+       * anything here having to know which adapter it has.
        *
        * This is the last display-side answer to an adapter-side question to go
        * — the same shape as the `alwaysRender` estimate flag that preceded it —
-       * so `measuresBytesPreFlight` now has no "except when the adapter would explode"
-       * caveat anywhere in the tree. What it costs is one round trip per
-       * pre-computed fetch that returns undefined by construction; those
-       * adapters load lazily, so resolving one reads no file.
+       * so the opt-in has no "except when the adapter would explode" caveat
+       * anywhere in the tree. It used to cost one pre-flight round trip per
+       * pre-computed fetch, returning undefined by construction; folded into
+       * the fetch, it costs nothing at all.
        */
-      get measuresBytesPreFlight() {
+      get gateEnabled() {
         return true
       },
     }))

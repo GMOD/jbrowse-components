@@ -31,8 +31,7 @@ const TruthTableDisplay = types
     'GateTruthTableDisplay',
     RegionTooLargeMixin(),
     types.model({
-      inPreFlight: types.boolean,
-      inInFetch: types.boolean,
+      inGateEnabled: types.boolean,
       inDensityEnabled: types.boolean,
       inDensityTooLarge: types.boolean,
       inConfigForceLoad: types.boolean,
@@ -42,11 +41,8 @@ const TruthTableDisplay = types
     }),
   )
   .views(self => ({
-    get measuresBytesPreFlight() {
-      return self.inPreFlight
-    },
-    get measuresBytesInFetch() {
-      return self.inInFetch
+    get gateEnabled() {
+      return self.inGateEnabled
     },
     get densityGateEnabled() {
       return self.inDensityEnabled
@@ -90,8 +86,7 @@ const TruthTableDisplay = types
 const CONFIG_LIMIT = 1_000_000
 
 interface Row {
-  preFlight: boolean
-  inFetch: boolean
+  gateEnabled: boolean
   densityEnabled: boolean
   densityTooLarge: boolean
   configForceLoad: boolean
@@ -145,33 +140,30 @@ const BYTES = [
 
 function enumerateRows() {
   const rows: Row[] = []
-  for (const preFlight of BOOLS) {
-    for (const inFetch of BOOLS) {
-      for (const densityEnabled of BOOLS) {
-        for (const densityTooLarge of BOOLS) {
-          for (const configForceLoad of BOOLS) {
-            for (const forceLoadTrack of BOOLS) {
-              for (const spanBp of SPANS) {
-                for (const adapterLimit of ADAPTER_LIMITS) {
-                  for (const bytes of BYTES) {
-                    for (const zoomIneffective of bytes === undefined
-                      ? [false]
-                      : BOOLS) {
-                      for (const stale of BOOLS) {
-                        rows.push({
-                          preFlight,
-                          inFetch,
-                          densityEnabled,
-                          densityTooLarge,
-                          configForceLoad,
-                          forceLoadTrack,
-                          spanBp,
-                          adapterLimit,
-                          bytes,
-                          zoomIneffective,
-                          stale,
-                        })
-                      }
+  for (const gateEnabled of BOOLS) {
+    for (const densityEnabled of BOOLS) {
+      for (const densityTooLarge of BOOLS) {
+        for (const configForceLoad of BOOLS) {
+          for (const forceLoadTrack of BOOLS) {
+            for (const spanBp of SPANS) {
+              for (const adapterLimit of ADAPTER_LIMITS) {
+                for (const bytes of BYTES) {
+                  for (const zoomIneffective of bytes === undefined
+                    ? [false]
+                    : BOOLS) {
+                    for (const stale of BOOLS) {
+                      rows.push({
+                        gateEnabled,
+                        densityEnabled,
+                        densityTooLarge,
+                        configForceLoad,
+                        forceLoadTrack,
+                        spanBp,
+                        adapterLimit,
+                        bytes,
+                        zoomIneffective,
+                        stale,
+                      })
                     }
                   }
                 }
@@ -187,8 +179,7 @@ function enumerateRows() {
 
 function evaluate(row: Row): Out {
   const display = TruthTableDisplay.create({
-    inPreFlight: row.preFlight,
-    inInFetch: row.inFetch,
+    inGateEnabled: row.gateEnabled,
     inDensityEnabled: row.densityEnabled,
     inDensityTooLarge: row.densityTooLarge,
     inConfigForceLoad: row.configForceLoad,
@@ -264,8 +255,7 @@ function observableKey(out: Out) {
 
 function rowKey(row: Row) {
   return [
-    `preFlight=${row.preFlight}`,
-    `inFetch=${row.inFetch}`,
+    `gateEnabled=${row.gateEnabled}`,
     `densityEnabled=${row.densityEnabled}`,
     `densityTooLarge=${row.densityTooLarge}`,
     `cfgForceLoad=${row.configForceLoad}`,
@@ -352,11 +342,9 @@ describe('gate invariants', () => {
     ).toEqual([])
   })
 
-  it('a display that opted into neither measurement never gates', () => {
+  it('a display that did not opt in never gates', () => {
     expect(
-      violations(
-        ({ row, out }) => row.preFlight || row.inFetch || !out.tooLarge,
-      ),
+      violations(({ row, out }) => row.gateEnabled || !out.tooLarge),
     ).toEqual([])
   })
 

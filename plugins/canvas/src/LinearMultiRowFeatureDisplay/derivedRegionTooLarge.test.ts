@@ -21,15 +21,14 @@ function emptyRegionData(): MultiRowRegionData {
   }
 }
 
-// CanvasFeatureGateMixin never sets `measuresBytesPreFlight` (it folds the byte check
-// into its feature RPC instead of running the pre-flight), so the opt-in comes
-// entirely from `measuresBytesInFetch`, which RegionTooLargeMixin ORs into
-// `gateEnabled`. Additive, so the gate survives either
-// composition order — this used to hinge on the mixin composing last, and
-// swapping the two lines turned the whole byte/density gate off silently.
-test('the gate opt-in survives regardless of mixin composition order', () => {
+// CanvasFeatureGateMixin contributes `gateEnabled`, and `types.compose`
+// resolves a member collision to the LATER argument — so the gate is on only
+// while the mixin is composed after `MultiRegionDisplayMixin`. Swapping the two
+// lines hands the opt-in back to the base's `false` and turns the whole
+// byte/density gate off silently; `no-restricted-syntax` fails that order, and
+// this is the runtime pin under it.
+test('the gate opt-in survives the display composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  expect(display.measuresBytesPreFlight).toBe(false)
   expect(display.gateEnabled).toBe(true)
 })
 
@@ -227,9 +226,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   // unmeasurable": committing it would wipe a good estimate, and putting the
   // track back under the gate would have no verdict to raise the banner from
   // until a fresh worker rejection came back. It would also reset the
-  // zoom-effectiveness comparison, which needs two real measurements. The
-  // pre-flight path never had this — `byteGateBlocksFetch` skips the RPC and
-  // writes nothing.
+  // zoom-effectiveness comparison, which needs two real measurements.
   it('keeps a good estimate when a batch measured no bytes', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
@@ -239,16 +236,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
 
     display.setForceLoadTrack(true)
     expect(display.resolvedByteLimit()).toBeUndefined()
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000 },
-          result: { featureCount: 12 },
-        },
-      ],
-      display.gateFetchState(),
-    )
+    display.commitFetchBytes([undefined], display.gateFetchState())
     expect(display.byteEstimate).toEqual({
       bytes: 8_000_000,
       measuredSpanBp: issued.spanBp,
@@ -266,24 +254,13 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   // force-loaded fetch carries no budget on either axis, so it asked nothing.
   // Stamping it anyway left a revoked track holding a stamp from fetches that
   // never measured, so the fetch autoruns would skip the one re-measure the
-  // banner needs until the viewport moved. The pre-flight path always got this
-  // right — `byteGateBlocksFetch` returns above its own stamp when the gate is
-  // inactive — and the two paths have to mean the same thing by the stamp.
+  // banner needs until the viewport moved.
   it('does not stamp the viewport for a fetch the gate sat out', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     display.setForceLoadTrack(true)
 
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000 },
-          result: { featureCount: 12 },
-        },
-      ],
-      display.gateFetchState(),
-    )
+    display.commitFetchBytes([undefined], display.gateFetchState())
 
     display.setForceLoadTrack(false)
     expect(display.gateMeasurementStale).toBe(true)
@@ -297,10 +274,12 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
 
-    display.commitGateMeasurements([], display.gateFetchState())
+    display.commitFetchBytes([], display.gateFetchState())
     expect(display.gateMeasurementStale).toBe(true)
     expect(display.byteEstimate).toBeUndefined()
 
+    const unlabelled = { viewport: undefined, gated: true, tierKey: undefined }
+    display.commitFetchBytes([8_000_000], unlabelled)
     display.commitGateMeasurements(
       [
         {
@@ -309,7 +288,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { bytes: 8_000_000, featureCount: 12 },
         },
       ],
-      { viewport: undefined, gated: true, tierKey: undefined },
+      unlabelled,
     )
     expect(display.gateMeasurementStale).toBe(true)
     expect(display.byteEstimate).toBeUndefined()
@@ -326,16 +305,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
 
     // ...and the user force-loads while it is in flight
     display.setForceLoadTrack(true)
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000 },
-          result: { bytes: 1000, featureCount: 12 },
-        },
-      ],
-      issued,
-    )
+    display.commitFetchBytes([1000], issued)
 
     // the measurement happened, so the viewport has been asked about
     display.setForceLoadTrack(false)
@@ -352,16 +322,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
 
     // ...and the track is put back under the gate before the results land
     display.setForceLoadTrack(false)
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000 },
-          result: { featureCount: 12 },
-        },
-      ],
-      issued,
-    )
+    display.commitFetchBytes([undefined], issued)
 
     // nothing was measured, so the next settled viewport still has to ask
     expect(display.gateMeasurementStale).toBe(true)
@@ -409,11 +370,11 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
   })
 })
 
-// The in-fetch (canvas) path commits ONE estimate for a region set: the
-// per-region byte **max** (each region is gated against the same per-region
-// budget, so a multi-region view where every region individually fits is never
-// blanked by the cross-region total), labelled with the **total** visibleBp
-// across the visible regions.
+// A fetch commits ONE estimate for a region set: the per-region byte **max**
+// (each region is gated against the same per-region budget, so a multi-region
+// view where every region individually fits is never blanked by the
+// cross-region total), labelled with the **total** visibleBp across the visible
+// regions.
 //
 // Those used to be different denominators of a division, and the mismatch was
 // recorded here as accepted behavior: zooming into one chromosome shrank the
@@ -438,21 +399,7 @@ describe('multi-region estimates over a shrinking region set', () => {
 
     // ctgA's fetch reports 20 Mb of index, ctgB's a tenth of that. The gate
     // keeps the max, labelled with the total span.
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000_000 },
-          result: { bytes: 20_000_000 },
-        },
-        {
-          displayedRegionIndex: 1,
-          region: { start: 0, end: 10_000_000 },
-          result: { bytes: 2_000_000 },
-        },
-      ],
-      display.gateFetchState(),
-    )
+    display.commitFetchBytes([20_000_000, 2_000_000], display.gateFetchState())
     expect(display.byteEstimate).toMatchObject({
       bytes: 20_000_000,
       measuredSpanBp: 20_000_000,
@@ -469,39 +416,19 @@ describe('multi-region estimates over a shrinking region set', () => {
     expect(display.regionTooLarge).toBe(true)
 
     // it releases on a measurement of what is actually on screen now
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 4_000_000 },
-          result: { bytes: 8_000_000 },
-        },
-      ],
-      display.gateFetchState(),
-    )
+    display.commitFetchBytes([8_000_000], display.gateFetchState())
     expect(display.regionTooLarge).toBe(true)
     expect(display.resolvedByteLimit()).toBe(5_000_000)
   })
 
-  // The half of a divergence that is a decision, not an accident, and the half
-  // that has a harness — so it is pinned here and named on the other side in
-  // `LDDisplay/derivedRegionTooLarge.test.ts`.
-  //
-  // Canvas measures one region per RPC and keeps the **max**: every region is
-  // gated against the same per-region budget, so a multi-region view where each
-  // region individually fits is never blanked by what they add up to. The
-  // pre-flight path hands the whole region set to `getRegionByteSize` in one
-  // call and gets the summed, chunk-merged total back, so on this same input it
-  // banners. Two 3 Mb regions against a 5 Mb budget is the smallest case that
-  // separates them, and the same VCF really does reach opposite verdicts
-  // through `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay`.
-  //
-  // Both readings are defensible — one is what the wire costs, the other is
-  // what any single region costs — and neither is cheaply convertible to the
-  // other. This is here so that changing either one fails rather than silently
-  // flipping a documented decision. See REGION_TOO_LARGE.md § Canvas folds the
-  // byte check into its fetch RPC.
-  it('gates on the worst region, not the total, where the pre-flight sums', () => {
+  // The budget is what ONE region may cost, on every display: a multi-region
+  // view where each region individually fits is never blanked by what they add
+  // up to. Two 3 Mb regions against a 5 Mb budget is the smallest case that
+  // separates the max from the sum, and the sum is what a `wholeRequest`
+  // measurement would have compared — which is why every gated fetch measures
+  // its regions one at a time. See REGION_TOO_LARGE.md § "A budget has a
+  // scope".
+  it('gates on the worst region, not the total', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, view } = createDisplay()
     view.setDisplayedRegions([
@@ -511,21 +438,7 @@ describe('multi-region estimates over a shrinking region set', () => {
     view.moveTo({ index: 0, offset: 0 }, { index: 1, offset: 10_000_000 })
 
     const perRegion = 3_000_000
-    display.commitGateMeasurements(
-      [
-        {
-          displayedRegionIndex: 0,
-          region: { start: 0, end: 10_000_000 },
-          result: { bytes: perRegion },
-        },
-        {
-          displayedRegionIndex: 1,
-          region: { start: 0, end: 10_000_000 },
-          result: { bytes: perRegion },
-        },
-      ],
-      display.gateFetchState(),
-    )
+    display.commitFetchBytes([perRegion, perRegion], display.gateFetchState())
 
     expect(display.resolvedByteLimit()).toBe(5_000_000)
     // the max, not the 6 Mb sum

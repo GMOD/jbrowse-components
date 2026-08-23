@@ -67,4 +67,14 @@ export interface LDDataResult {
   // for the GPU interleaved buffer).
   positions?: Float32Array
   cellSizes?: Float32Array
+  /**
+   * What the index quoted for the largest region, when the fetch carried a
+   * `byteLimit` and the adapter had an estimate to give. Carried back on the
+   * success path too, so the display's gate re-anchors its stored estimate on
+   * every fetch rather than only on the ones it refuses.
+   *
+   * Absent for the pre-computed adapters (`PlinkLD*`), which serve no features
+   * and are never measured — see `executeRenderLDData`.
+   */
+  bytes?: number
 }

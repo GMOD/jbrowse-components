@@ -1,3 +1,4 @@
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { of } from 'rxjs'
 
@@ -5,6 +6,7 @@ import { executeMafAlignmentData } from './executeMafAlignmentData.ts'
 
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Feature } from '@jbrowse/core/util'
 
 // The RPC packs each block into the arena as its feature arrives, instead of
@@ -40,6 +42,16 @@ function row(seq: string, start = 0): AlignmentRecord {
   return { chr: 'chr1', start, strand: 1, srcSize: 1000, seq }
 }
 
+// This suite never passes a `byteLimit`, so the executor measures nothing and
+// the refusal arm of its return is unreachable. Narrowed once here rather than
+// at every assertion.
+function payload<T>(result: T | RegionTooLargeResult) {
+  if (isRegionRefused(result)) {
+    throw new Error('unexpected region-too-large result')
+  }
+  return result
+}
+
 async function run(features: Feature[], subtreeFilter?: string[]) {
   mockLoadAdapter.mockResolvedValue({
     adapter: { getFeatures: () => of(...features) },
@@ -55,7 +67,7 @@ async function run(features: Feature[], subtreeFilter?: string[]) {
       subtreeFilter,
     },
   })
-  return unwrapRpcResult(result)
+  return payload(unwrapRpcResult(result))
 }
 
 const decoder = new TextDecoder()

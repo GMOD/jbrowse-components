@@ -1,5 +1,6 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { measureRegionsBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
@@ -101,6 +102,13 @@ interface CellDataBase {
   // `genotypeCodes` Uint32Array is aligned to.
   genotypeDict: string[]
   sampleNames: string[]
+  /**
+   * What the index quoted for the largest fetched region, when the fetch
+   * carried a `byteLimit` and the adapter had an estimate to give. Carried back
+   * on the success path too, so the display's gate re-anchors its stored
+   * estimate on every fetch rather than only on the ones it refuses.
+   */
+  bytes?: number
 }
 
 // The cell computations already emit the shipped shape — their genotypes are
@@ -138,6 +146,7 @@ export async function executeVariantCellData({
     statusCallback,
     stopToken,
     displayedRegionIndices,
+    byteLimit,
   } = args
 
   // Only regular mode consumes per-region grouping (it ships one cell blob per
@@ -158,6 +167,20 @@ export async function executeVariantCellData({
     sessionId,
     adapterConfig,
   })
+
+  // The gate, and the first thing this fetch awaits on the adapter: the index
+  // estimate for the largest region, so an over-budget viewport is refused
+  // before a single genotype is downloaded.
+  const { bytes, tooLarge } = await measureRegionsBytes({
+    dataAdapter: adapter,
+    regions,
+    byteLimit,
+    stopToken,
+    statusCallback,
+  })
+  if (tooLarge) {
+    return tooLarge
+  }
 
   const rawFeatures = await updateStatus(
     'Downloading features',
@@ -386,6 +409,7 @@ export async function executeVariantCellData({
         simplifiedFeatures,
         genotypeDict,
         sampleNames,
+        bytes,
         perRegionCellData: shippedPerRegion,
       },
       [...transferables],
@@ -440,6 +464,7 @@ export async function executeVariantCellData({
         simplifiedFeatures,
         genotypeDict,
         sampleNames,
+        bytes,
         ...cellData,
       },
       [...transferables],

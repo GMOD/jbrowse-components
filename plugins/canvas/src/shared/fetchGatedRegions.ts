@@ -1,4 +1,3 @@
-import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { RegionGateMeasurement } from './CanvasFeatureGateMixin.ts'
@@ -21,13 +20,15 @@ interface GatedFetchModel extends FetchEachRegionModel {
 }
 
 /**
- * `fetchEachRegion` for a display whose feature RPC carries its own byte and
- * density measurement (`CanvasFeatureGateMixin`). The gate state is captured
- * at issue, each region's measurement is collected as it lands whether or not
- * the worker refused it, and the batch commits to the gate once at the end —
- * a byte max across the batch, not a sum. `onResult` sees only the regions
- * that were not refused, so what the display stores and what `loadedRegions`
- * claims cannot come apart.
+ * `fetchEachRegion` for a display whose feature RPC also measures **density**
+ * (`CanvasFeatureGateMixin`). The byte axis needs nothing here — the helper
+ * commits it for every display that passes a `byteLimit` — so what is left is
+ * collecting each region's feature count, refused or not, and committing the
+ * batch once the regions have landed.
+ *
+ * Collected in `call` rather than in `onResult`, because a refusal is exactly
+ * the result the density axis wants: a region that short-circuited on the
+ * feature count reports one, and `onResult` never sees it.
  */
 export function fetchGatedRegions<
   Payload extends RegionGateMeasurement['result'],
@@ -46,20 +47,20 @@ export function fetchGatedRegions<
     ) => void
   },
 ) {
-  const issued = self.gateFetchState()
   const results = new Map<number, Payload | RegionTooLargeResult>()
   return fetchEachRegion(self, needed, {
-    call: opts.call,
-    onResult: (displayedRegionIndex, result) => {
+    call: async (region, ctx, displayedRegionIndex) => {
+      const result = await opts.call(region, ctx)
       results.set(displayedRegionIndex, result)
-      if (!isRegionRefused(result)) {
-        const { region } = needed.find(
-          n => n.displayedRegionIndex === displayedRegionIndex,
-        )!
-        opts.onResult(displayedRegionIndex, result, region)
-      }
+      return result
     },
-    onComplete: () => {
+    onResult: (displayedRegionIndex, result: Payload) => {
+      const { region } = needed.find(
+        n => n.displayedRegionIndex === displayedRegionIndex,
+      )!
+      opts.onResult(displayedRegionIndex, result, region)
+    },
+    onComplete: issued => {
       self.commitGateMeasurements(
         needed.flatMap(({ region, displayedRegionIndex }) => {
           const result = results.get(displayedRegionIndex)

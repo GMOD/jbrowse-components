@@ -20,6 +20,14 @@ import type { Observable } from 'rxjs'
 export interface BaseMafRpcArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
+  /**
+   * `resolvedByteLimit()`. Both tiers take it, and each measures the file it is
+   * about to read — the alignment index on the detail path, the
+   * `summaryAdapter` sub-adapter on the summary one — so the number the banner
+   * quotes always describes the download that was actually refused. Absent
+   * means the gate may not act, and the executor then measures nothing.
+   */
+  byteLimit?: number
 }
 
 /**

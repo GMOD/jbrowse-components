@@ -5,12 +5,13 @@ import type {
   LinearMafGetSummaryDataResult,
 } from './executeMafSummaryData.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     LinearMafGetSummaryData: {
       args: LinearMafGetSummaryDataArgs
-      return: LinearMafGetSummaryDataResult
+      return: LinearMafGetSummaryDataResult | RegionTooLargeResult
     }
   }
 }

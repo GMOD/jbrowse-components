@@ -3737,10 +3737,12 @@ export default function stateModelFactory(
         // #region byteGate
         /**
          * #getter
-         * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
-         * region set with `CoreGetRegionByteEstimate` before downloading reads.
+         * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
+         * `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is
+         * the index estimate — so an over-budget region is refused before a
+         * single read is downloaded.
          */
-        get measuresBytesPreFlight() {
+        get gateEnabled() {
           return true
         },
         // #endregion
@@ -3809,9 +3811,9 @@ export default function stateModelFactory(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // `measuresBytesPreFlight` above: `fetchRegions` measures the region set
-      // before it downloads and afterAttach clears the estimate on chromosome
-      // nav. Byte-only — no density axis. The hover is dropped on the flip by
+      // `gateEnabled` above: the fetch RPC measures the region before it
+      // downloads and afterAttach clears the estimate on chromosome nav.
+      // Byte-only — no density axis. The hover is dropped on the flip by
       // `installClearHoverOnViewportChange`, along with the three viewport axes.
       .actions(self => ({
         /**

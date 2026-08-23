@@ -15,6 +15,7 @@
  */
 import { fetchRegionsBatched } from './MultiRegionDisplayMixin.ts'
 
+import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
 
@@ -29,11 +30,25 @@ const REGIONS = [
   },
 ]
 
-// `self` only has to supply `fetchRegions`, which normally rotates the stop
-// token and applies the byte gate. Running `work` directly with a ctx the test
+const ISSUED: GateFetchState = {
+  viewport: { spanBp: 100, key: 'ctgA:0-100' },
+  gated: true,
+  tierKey: undefined,
+}
+
+// `self` supplies `fetchRegions`, which normally rotates the stop token, plus
+// the gate's two commit members. Running `work` directly with a ctx the test
 // controls isolates what this helper owns from that machinery.
-function selfWith(ctx: FetchContext, loaded: number[] = []) {
+function selfWith(
+  ctx: FetchContext,
+  loaded: number[] = [],
+  bytes: (number | undefined)[][] = [],
+) {
   return {
+    gateFetchState: () => ISSUED,
+    commitFetchBytes: (perRegionBytes: (number | undefined)[]) => {
+      bytes.push(perRegionBytes)
+    },
     fetchRegions: (
       _needed: typeof REGIONS,
       work: (ctx: RegionFetchContext) => Promise<void>,
@@ -117,19 +132,21 @@ test('passes the fetch ctx straight through to call', async () => {
   expect(seen[0]!.statusCallback).toBe(ctx.statusCallback)
 })
 
-// Neither in-tree caller can produce one — both gate pre-flight, which returns
-// before `call` runs — which is why it needs a test rather than why it does
-// not. A refusal committed here would make every region read as covered against
-// a payload nobody received: the plan answers `covered` forever, and since the
-// ordinary fetch IS the gate's re-measure, nothing re-measures either.
-test('a refused batch reaches commit but marks nothing loaded', async () => {
+// One payload covers the set, so a refusal refuses the set. A refusal
+// committed here would make every region read as covered against a payload
+// nobody received: the plan answers `covered` forever, and since the ordinary
+// fetch IS the gate's re-measure, nothing re-measures either. What the refusal
+// does reach is the gate, which is what puts a size in the banner.
+test('a refused batch commits nothing and marks nothing loaded, but its bytes reach the gate', async () => {
   const loaded: number[] = []
+  const bytes: (number | undefined)[][] = []
   const refused = { regionTooLarge: true as const, bytes: 9e9 }
   const committed: unknown[] = []
-  await fetchRegionsBatched(selfWith(fresh(), loaded), REGIONS, {
+  await fetchRegionsBatched(selfWith(fresh(), loaded, bytes), REGIONS, {
     call: () => Promise.resolve(refused),
     commit: result => committed.push(result),
   })
-  expect(committed).toEqual([refused])
+  expect(committed).toEqual([])
   expect(loaded).toEqual([])
+  expect(bytes).toEqual([[9e9]])
 })

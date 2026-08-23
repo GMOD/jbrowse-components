@@ -2,6 +2,7 @@ import {
   assertDisplayContract,
   makeRetryContractCheck,
 } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
+import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
@@ -10,7 +11,9 @@ import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 
+import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -111,23 +114,20 @@ export type GlobalDataDisplayMixinType = ReturnType<
  * `FetchMixin.runFetch` and its `FetchContext`. The rules live on
  * {@link FetchPhases}; the comparative family names the same type over its own
  * context.
+ *
+ * `run` may answer the worker's refusal marker in place of a payload, which is
+ * how the byte gate reaches this family: the RPC takes `resolvedByteLimit()`,
+ * measures before it downloads, and {@link runGlobalFetch} turns the marker
+ * into a byte measurement and no commit.
  */
-export type GlobalFetchPhases<TArgs, TResult> = FetchPhases<
-  TArgs,
-  TResult,
-  FetchContext
->
-
-// Every global fetch's args carry the region set it is issued for, which is
-// what the shared byte-gate pre-flight below measures. The fields rather than
-// `Region`, so a display may pass its view's content blocks as-is.
-export interface GlobalFetchArgs {
-  regions: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-  }[]
+export interface GlobalFetchPhases<TArgs, TResult> extends Omit<
+  FetchPhases<TArgs, TResult, FetchContext>,
+  'run'
+> {
+  run: (
+    args: TArgs,
+    ctx: FetchContext,
+  ) => Promise<TResult | RegionTooLargeResult | undefined>
 }
 
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves through
@@ -144,13 +144,15 @@ export interface GlobalFetchHost extends IStateTreeNode {
   fetchSignature: string | undefined
   dataCurrent: boolean
   commitFetchResult: (commit: () => void, signature: string) => void
-  // `RegionTooLargeMixin`'s pre-flight, a no-op for a display that has not
-  // opted in — which is what lets the runner call it unconditionally instead of
-  // each display remembering to.
-  byteGateBlocksFetch: (
-    regions: GlobalFetchArgs['regions'],
-    ctx: FetchContext,
-  ) => Promise<boolean>
+  // `RegionTooLargeMixin`'s byte-gate commit pair: the gate as it stood when
+  // this fetch was issued, and where the bytes its result reports go. A display
+  // that passes no `byteLimit` measures nothing and commits nothing, which is
+  // what lets the runner call them unconditionally.
+  gateFetchState: () => GateFetchState
+  commitFetchBytes: (
+    perRegionBytes: (number | undefined)[],
+    issued: GateFetchState,
+  ) => void
 }
 
 export interface GlobalFetchAutorunHost extends GlobalFetchHost {
@@ -175,19 +177,26 @@ export interface GlobalFetchAutorunHost extends GlobalFetchHost {
  * One fetch through the phases, with the family's shared gates around them:
  * decline while minimized, while the signature is not yet computable (a
  * prerequisite pending), or while `dataCurrent` says the held data already
- * answers; then the byte-gate pre-flight, the display's `run` under
- * `FetchMixin.runFetch` (which owns cancellation, the error and the loading
- * flag), and a commit that stamps the signature the fetch was *issued* for —
- * captured here, before any await, so a mid-flight view change cannot relabel
- * the data. Each display used to spell some subset of this and each subset was
- * missing a different piece (LD never declined on current data, HiC's signature
- * missed the settings axis, a reload had to remember its own invalidation).
+ * answers; then the display's `run` under `FetchMixin.runFetch` (which owns
+ * cancellation, the error and the loading flag), the byte measurement its
+ * result carried, and a commit that stamps the signature the fetch was *issued*
+ * for — captured here, before any await, so a mid-flight view change cannot
+ * relabel the data. Each display used to spell some subset of this and each
+ * subset was missing a different piece (LD never declined on current data,
+ * HiC's signature missed the settings axis, a reload had to remember its own
+ * invalidation).
+ *
+ * **A refused result commits its bytes and nothing else.** `dataCurrent`
+ * therefore stays false, and what stops the autorun spinning on that is
+ * `gateSkipsMeasuredViewport` one level up: the commit stamped the viewport the
+ * measurement was taken at, so the next run has nothing left to learn until the
+ * user moves.
  *
  * Returns the fetch's promise, or `undefined` when the gates or the display's
  * `prepare` declined — so the autorun below can say which happened, and a
  * caller that wants one round trip on demand can await it.
  */
-export function runGlobalFetch<TArgs extends GlobalFetchArgs, TResult>(
+export function runGlobalFetch<TArgs, TResult>(
   self: GlobalFetchHost,
   { prepare, run, commit }: GlobalFetchPhases<TArgs, TResult>,
 ): Promise<void> | undefined {
@@ -199,15 +208,18 @@ export function runGlobalFetch<TArgs extends GlobalFetchArgs, TResult>(
   if (args === undefined) {
     return undefined
   }
+  // Captured before the round trip, so the measurement it comes back with is
+  // labelled with the viewport and the tier it was asked for.
+  const issued = self.gateFetchState()
   return self.runFetch(async ctx => {
-    if (await self.byteGateBlocksFetch(args.regions, ctx)) {
-      return
-    }
     const result = await run(args, ctx)
     if (result !== undefined && !ctx.isStale()) {
-      self.commitFetchResult(() => {
-        commit(result, args)
-      }, signature)
+      self.commitFetchBytes([measuredBytes(result)], issued)
+      if (!isRegionRefused(result)) {
+        self.commitFetchResult(() => {
+          commit(result, args)
+        }, signature)
+      }
     }
   })
 }
@@ -251,10 +263,7 @@ export function runGlobalFetch<TArgs extends GlobalFetchArgs, TResult>(
  * same: `rpcProps()` must return only user-controlled settings, never fetched
  * data (see ARCHITECTURE.md §"rpcProps() loop trap").
  */
-export function installGlobalFetchAutorun<
-  TArgs extends GlobalFetchArgs,
-  TResult,
->(
+export function installGlobalFetchAutorun<TArgs, TResult>(
   self: GlobalFetchAutorunHost,
   opts: GlobalFetchPhases<TArgs, TResult> & {
     delay: number
@@ -294,10 +303,11 @@ export function installGlobalFetchAutorun<
       // `prepare`, because it is not "don't fetch" — it is "don't fetch a
       // viewport you have already measured". A blocked display still runs its
       // fetch once per settled viewport, which costs one index read and no
-      // features (`byteGateBlocksFetch` measures and stops — this family has no
-      // density axis), and that is the only thing that ever re-measures while the
-      // banner holds. Skipping unconditionally, which is what the composers used
-      // to do, froze the estimate at the viewport it was captured over.
+      // features (the RPC measures and returns the refusal marker — this family
+      // has no density axis), and that is the only thing that ever re-measures
+      // while the banner holds. Skipping unconditionally, which is what the
+      // composers used to do, froze the estimate at the viewport it was
+      // captured over.
       // `gateSkipsMeasuredViewport` is the shared spelling — the per-region
       // foundation applies the same one. A display with no byte gate reads
       // `regionTooLarge` as a literal false, so it is never true here.

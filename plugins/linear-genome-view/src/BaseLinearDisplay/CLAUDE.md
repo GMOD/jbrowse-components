@@ -97,9 +97,10 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
   region), `fetchRegionsBatched` (one RPC, one payload covering every region),
   `callEachRegion` (fan-out only, MAF's alone). The first three own the
   `ctx.isStale()` guard; forgetting it is a stale-data write. A batch-wide step
-  after the regions land is `fetchEachRegion`'s `onComplete`, which is what the
-  two canvas displays commit their gate measurements from — that, not a second
-  loop, is what a hand-rolled `Promise.all` was buying.
+  after the regions land is `fetchEachRegion`'s `onComplete`, handed the gate
+  state captured at issue and what the two canvas displays commit their DENSITY
+  measurements from — that, not a second loop, is what a hand-rolled
+  `Promise.all` was buying.
 - **`loadedRegions` is written where the payload is stored**, through
   `ctx.commitRegion(displayedRegionIndex)` — the helpers above call it for you,
   and skip a region the worker refused for size (`isRegionRefused`). It takes an
@@ -114,9 +115,14 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
   `setRpcData` a region by hand, so it went missing once uncaught.
 - `clearAllRpcData` deliberately leaves the too-large gate and its cached
   estimate alone, so the banner doesn't flicker.
-- No display calls `byteGateBlocksFetch` by hand: `fetchRegions` runs it for the
-  per-region family and `runGlobalFetch` for the global one, and it is a no-op
-  for a display that has not opted in.
+- **The byte gate is one line at the call and nothing else.** A display sets
+  `gateEnabled` and passes `byteLimit: self.resolvedByteLimit()` in its fetch
+  RPC's args; the RPC measures the index before it downloads and answers a
+  `RegionTooLargeResult` in place of its payload when the region is over.
+  `fetchEachRegion` / `fetchAllRegions` / `fetchRegionsBatched` commit that
+  measurement (`commitFetchBytes`) and skip the store and `loadedRegions` for a
+  refused region; `runGlobalFetch` does the same for the global family. There is
+  no pre-flight estimate RPC and no display-side commit.
 - The foundation's own tests come in two halves, and a change usually belongs in
   one of them rather than in a plugin's suite. `planRegionFetch.test.ts` is the
   **decision** — given these inputs, fetch this region set — and needs no tree.

@@ -49,7 +49,7 @@ export type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
  *
  * Per-region fetch lifecycle for LGV-based GPU displays. Installs the fetch
  * autoruns in `afterAttach` and exposes overridable hooks (`fetchNeeded`,
- * `rpcProps`, `regionFetchKey`, `regionHasData`, `measuresBytesPreFlight`) plus
+ * `rpcProps`, `regionFetchKey`, `regionHasData`, `gateEnabled`) plus
  * the `fetchRegions` / `loadedRegions` machinery.
  */
 export default function MultiRegionDisplayMixin() {
@@ -490,7 +490,7 @@ export default function MultiRegionDisplayMixin() {
         return {
           /**
            * #action
-           * Run a per-region fetch with byte-estimate gating. The work callback
+           * Run a per-region fetch. The work callback
            * calls `ctx.commitRegion` as it stores each region's payload, which is
            * what marks it loaded — see {@link RegionFetchContext} for why this
            * function no longer does that itself. Its only callers are the three
@@ -513,16 +513,6 @@ export default function MultiRegionDisplayMixin() {
               needed.map(n => [n.displayedRegionIndex, n.region]),
             )
             await self.runFetch(async ctx => {
-              // No-op unless the display set `measuresBytesPreFlight` — see
-              // RegionTooLargeMixin
-              if (
-                await self.byteGateBlocksFetch(
-                  needed.map(r => r.region),
-                  ctx,
-                )
-              ) {
-                return
-              }
               let committed = 0
               await work({
                 ...ctx,

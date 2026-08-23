@@ -151,7 +151,7 @@ describe('arc reload', () => {
     await settle()
 
     const featureFetches = () =>
-      mockRpcCall.mock.calls.filter(c => c[1] === 'CoreGetFeatures').length
+      mockRpcCall.mock.calls.filter(c => c[1] === 'ArcGetFeatures').length
     expect(display.dataCurrent).toBe(true)
     expect(featureFetches()).toBe(1)
 

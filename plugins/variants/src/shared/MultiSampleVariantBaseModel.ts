@@ -669,7 +669,7 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // `measuresBytesPreFlight` below: `fetchRegions` then measures the region set
+      // `gateEnabled` below: the cell-data RPC then measures the region set
       // before it downloads, and afterAttach clears the estimate on chromosome
       // nav. Byte-only — no density axis.
       .actions(self => {
@@ -1483,10 +1483,12 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
-         * region set with `CoreGetRegionByteEstimate` before it downloads cells.
+         * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
+         * `resolvedByteLimit()` to `MultiSampleVariantGetCellData`, whose first
+         * await on the adapter is the index estimate — so an over-budget
+         * viewport is refused before a single genotype is downloaded.
          */
-        get measuresBytesPreFlight() {
+        get gateEnabled() {
           return true
         },
 
@@ -1620,6 +1622,11 @@ export default function MultiSampleVariantBaseModelF(
                 adapterConfig,
                 regions: batch.map(r => r.region),
                 displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
+                // Passed at the call rather than through `rpcProps()`: it
+                // swings at the 20kb span tier and would otherwise be an RPC
+                // cache key — see REGION_TOO_LARGE.md §"How the verdict is
+                // built".
+                byteLimit: self.resolvedByteLimit(),
                 ...rpcProps,
                 // bound at factory call time, per subclass
                 mode: cellDataMode,

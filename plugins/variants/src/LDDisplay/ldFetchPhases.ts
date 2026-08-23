@@ -16,7 +16,13 @@ export interface LDFetchSelf extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
   // Derived from the RPC's own arg type rather than restated, so a field added
   // to the payload cannot arrive here under a different name.
-  rpcProps(): Omit<RenderLDDataArgs, 'adapterConfig' | 'regions' | 'originBp'>
+  rpcProps(): Omit<
+    RenderLDDataArgs,
+    'adapterConfig' | 'regions' | 'originBp' | 'byteLimit'
+  >
+  // `RegionTooLargeMixin`'s: the budget the worker enforces, and the same one
+  // the banner compares against
+  resolvedByteLimit(): number | undefined
   setRpcData(data: LDDataResult): void
 }
 
@@ -52,10 +58,11 @@ function axisOriginBp(
  * The LD matrix fetch, as the three phases `installGlobalFetchAutorun` runs it
  * in. `afterAttach` hands these to the skeleton; a caller wanting one round trip
  * on demand passes them to `runGlobalFetch`. The shared gates — minimized,
- * data-current, the byte-gate pre-flight, the signature stamp at commit — live
+ * data-current, the byte measurement the result carries, the signature stamp at
+ * commit — live
  * in `runGlobalFetch` (and the region-too-large skip one level up in the
  * skeleton), so what is left here is LD's own: the triangle toggle, the block
- * set, and the axis origin.
+ * set, the axis origin, and the budget the worker measures against.
  */
 export function ldFetchPhases(
   self: LDFetchSelf,
@@ -70,11 +77,12 @@ export function ldFetchPhases(
             originBp: axisOriginBp(regions[0]!, self.lgv.displayedRegions),
           }
     },
-    run: async ({ regions, originBp }, ctx) =>
-      await ctx.callRpc('RenderLDData', {
+    run: ({ regions, originBp }, ctx) =>
+      ctx.callRpc('RenderLDData', {
         adapterConfig: self.adapterConfig,
         regions,
         originBp,
+        byteLimit: self.resolvedByteLimit(),
         ...self.rpcProps(),
       }),
     commit: result => {

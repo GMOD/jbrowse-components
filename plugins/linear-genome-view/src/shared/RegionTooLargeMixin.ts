@@ -1,9 +1,6 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getContainingView,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
+import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
 import { addDisposer, getMembers, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -14,7 +11,6 @@ import {
   resolveByteLimit,
 } from './regionTooLargeUtils.ts'
 
-import type { FetchContext } from '../BaseLinearDisplay/models/FetchMixin.ts'
 import type { BaseLinearDisplayConfigModel } from '../BaseLinearDisplay/models/configSchema.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type {
@@ -60,20 +56,32 @@ function applyGateEvent(self: GateState, event: GateEvent) {
 // out of tree, where a lint rule reaches nothing; a rename is only safe if it is
 // louder than the thing it renamed, so this says so at attach.
 export const RENAMED_HOOKS: Record<string, string> = {
-  byteGateEnabled: 'measuresBytesPreFlight',
-  gateFoldedIntoFetch: 'measuresBytesInFetch',
+  byteGateEnabled: 'gateEnabled',
+  gateFoldedIntoFetch: 'gateEnabled',
+  measuresBytesInFetch: 'gateEnabled',
   derivedRegionTooLargeEnabled: 'gateEnabled',
   byteGateExempt: 'gateExempt',
   byteGateActive: 'gateActive',
   gateVisibleBp: 'gateViewport?.spanBp',
 }
 
-// The same failure for a removed hook rather than a renamed one, over ACTIONS
-// because that is what these were.
+// The same failure for a hook that is gone rather than renamed: there is no new
+// name to point at, only a different shape to write the display in.
+const REMOVED_VIEW_HOOKS: Record<string, string> = {
+  measuresBytesPreFlight:
+    'the measurement folded into the fetch: set `gateEnabled`, pass ' +
+    '`byteLimit: self.resolvedByteLimit()` in the fetch RPC, and answer a ' +
+    '`RegionTooLargeResult` from the worker when the region is over budget',
+}
+
+// The same failure again, over ACTIONS because that is what these were.
 const REMOVED_ACTION_HOOKS: Record<string, string> = {
   onRegionTooLarge:
     'installClearHoverOnViewportChange, which clears on the `regionTooLarge` ' +
     'flip as well as on the three viewport axes',
+  byteGateBlocksFetch:
+    'the fetch RPC itself, which measures before it downloads — nothing ' +
+    'calls a pre-flight any more',
 }
 
 // Dev-only, from `afterAttach`, so it fires once for every display composing
@@ -96,8 +104,11 @@ export function reportRenamedHooks(self: IAnyStateTreeNode) {
       )
     }
   }
-  for (const [old, replacement] of Object.entries(REMOVED_ACTION_HOOKS)) {
-    if (actions.includes(old)) {
+  for (const [old, replacement] of Object.entries({
+    ...REMOVED_VIEW_HOOKS,
+    ...REMOVED_ACTION_HOOKS,
+  })) {
+    if (views.includes(old) || actions.includes(old)) {
       console.error(
         `[jbrowse display contract] ${name}: \`${old}\` was removed. ` +
           `Nothing calls it, so this override never runs — its job is done by ` +
@@ -141,8 +152,8 @@ function host(self: object) {
  * judging. Two mechanisms, one per state, and between them the estimate is never
  * a model:
  *
- * - **Not gated:** the fetch measures. `byteGateBlocksFetch` runs at the top of
- *   every fetch (canvas measures inside its own feature RPC instead), so every
+ * - **Not gated:** the fetch measures. Every gated display's feature RPC takes
+ *   `resolvedByteLimit()` and reads the index before it downloads, so every
  *   fetch re-anchors the estimate to what it is about to pull.
  * - **Gated:** the fetch measures anyway, once. `FetchVisibleRegions` and
  *   `installGlobalFetchAutorun` used to return early on `regionTooLarge`, which
@@ -155,8 +166,8 @@ function host(self: object) {
  *   fetch it was built around.
  *
  *   What that costs, precisely, because "it re-fetches while blocked" reads
- *   alarming: on the **byte** axis, one index read and no features, on both
- *   paths. On canvas's **density** axis, the pre-fetch probe
+ *   alarming: on the **byte** axis, one index read and no features. On canvas's
+ *   **density** axis, the pre-fetch probe
  *   (`samplePreFetchDensity`) — a 1kb sample window, doubling until it has seen
  *   70 features — and then the short-circuit. A region dense enough to be
  *   density-blocked is exactly the region that satisfies that on the first
@@ -173,13 +184,14 @@ function host(self: object) {
  * Every gated track above the old floor paid for that with a release, an aborted
  * fetch, and a re-banner on each zoom step.
  *
- * A pre-flight display opts in with one line: override `measuresBytesPreFlight`
- * to true. The call itself is the fetch runners' — `fetchRegions` per-region,
- * `runGlobalFetch` global — and the measurement and the verdict both live here,
- * so they can't drift apart and the "capture the viewport before the await"
- * rule is structural rather than a call-site convention. Add
- * `densityTooLarge` for a second gating axis (canvas's feature-density
- * gate); the budget hooks default off the display config.
+ * A display opts in with two lines: override `gateEnabled` to true, and pass
+ * `byteLimit: self.resolvedByteLimit()` in its fetch RPC's args. The commit is
+ * the fetch runners' — the three fan-out helpers per-region, `runGlobalFetch`
+ * global — so the measurement and the verdict both live here, they can't drift
+ * apart, and the "capture the viewport before the await" rule is structural
+ * rather than a call-site convention. Add `densityTooLarge` for a second gating
+ * axis (canvas's feature-density gate); the budget hooks default off the
+ * display config.
  *
  * `MultiRegionDisplayMixin` drops the cached estimate on chromosome nav for
  * everything it composes; the two displays outside that family (LD, arc) wire
@@ -199,8 +211,7 @@ function host(self: object) {
  * nothing else carries one.** The gate reads as three questions asked in order,
  * and the middle one is shared:
  *
- * - *how does this display measure?* — `measuresBytesPreFlight` /
- *   `measuresBytesInFetch`, a pair, with `gateEnabled` as their OR.
+ * - *does this display measure at all?* — `gateEnabled`.
  * - *may the gate act right now?* — `gateActive` (opted in, not exempt, view
  *   measured). Nothing axis-specific here.
  * - *may this axis act?* — `gateActive` plus that axis's own terms.
@@ -268,39 +279,39 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * One of the two ways a display measures, and the pair is named as a pair
-       * on purpose: `gateEnabled` is their OR, so a reader can see that the two
-       * are alternatives without being told. This one is "I check the byte cost
-       * inside my own feature RPC" (canvas, whose worker short-circuits an
-       * over-budget region before downloading features).
+       * Whether this display measures at all. **The whole opt-in**: a display
+       * that answers true passes `resolvedByteLimit()` into its fetch RPC, that
+       * RPC measures the index before it downloads anything and answers a
+       * `RegionTooLargeResult` when the region is over budget, and the fan-out
+       * helper commits what came back. False for the ungated displays (wiggle,
+       * manhattan, sequence, synteny), which therefore never evaluate the
+       * LGV-only getters below.
        *
-       * Additive, never an override of `gateEnabled` — the two would otherwise
-       * race on composition order, and the later `.compose()` argument silently
-       * winning is invisible to both the type system and the tests.
-       */
-      get measuresBytesInFetch(): boolean {
-        return false
-      },
-      /**
-       * #getter
-       * The other half of the pair: "I measure with a pre-flight
-       * `CoreGetRegionByteEstimate` before fetching". `byteGateBlocksFetch`
-       * reads it (so a display that calls the gate unconditionally still pays no
-       * RPC when it's off) and so does the verdict, which is why requesting the
-       * estimate and gating on it can't drift apart.
+       * It was the OR of two opt-ins, `measuresBytesPreFlight` and
+       * `measuresBytesInFetch`, because there were two measurement paths — a
+       * `CoreGetRegionByteEstimate` round trip before the fetch, and the
+       * measurement folded into the fetch itself. The second strictly dominates
+       * (one round trip; the adapter already in hand; one result carrying every
+       * measurement taken on the way to it), so the first is gone and with it
+       * the additive OR, the lint rule that stopped a display overriding this
+       * name, and the pair of names that only made sense against each other.
        *
-       * **Nothing in the tree turns it off**, and there is no longer a reason
-       * to. "Can this adapter be measured" is the adapter's answer, not a
-       * display's: one with no index estimate reports `undefined`, one that
-       * serves no features at all gets `undefined` from
-       * `CoreGetRegionByteEstimate`, and an unmeasurable estimate keeps the byte
-       * axis out of the verdict on its own. It is emphatically not for a fetch
-       * believed to be small — a display that reads a cheaper file at some zooms
-       * points `byteGateAdapterConfig` at that file and stays gated, which is
-       * what MAF does. Off means nothing is watching, and "this tier is cheap"
-       * is a premise, not a bound.
+       * **Nothing in the tree turns it off once on**, and there is no longer a
+       * reason to. "Can this adapter be measured" is the adapter's answer, not
+       * a display's: one with no index estimate reports `undefined`, and an
+       * unmeasurable estimate keeps the byte axis out of the verdict on its
+       * own. It is emphatically not for a fetch believed to be small — a
+       * display that reads a cheaper file at some zooms points
+       * `byteGateAdapterConfig` at that file and stays gated, which is what MAF
+       * does. Off means nothing is watching, and "this tier is cheap" is a
+       * premise, not a bound.
+       *
+       * A mixin contributing this — `CanvasFeatureGateMixin` is the one that
+       * does — has to be composed AFTER the mixin that declares it, since
+       * `types.compose` resolves a member collision to the later argument.
+       * `no-restricted-syntax` fails the other order and says why.
        */
-      get measuresBytesPreFlight(): boolean {
+      get gateEnabled(): boolean {
         return false
       },
       /**
@@ -309,8 +320,7 @@ export default function RegionTooLargeMixin() {
        * display at all. **False here, and `CanvasFeatureGateMixin` is what
        * turns it on** — the axis is on exactly where something measures it, and
        * that mixin is the only thing in the tree that does. It contributes this
-       * beside `measuresBytesInFetch` for the same reason and by the same
-       * route.
+       * beside `gateEnabled` for the same reason and by the same route.
        *
        * It defaulted to *true* until 2026-08, on the reading that "both axes
        * are on and the display supplies the numbers". The reading was harmless
@@ -341,7 +351,7 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Which adapter the pre-flight measures: the config sitting at
+       * Which adapter the gate measures: the config sitting at
        * `byteGateAdapterPath`, which is `['adapter']` here — the display's own,
        * correct wherever a display has one fetch path.
        *
@@ -351,7 +361,7 @@ export default function RegionTooLargeMixin() {
        * was built for: past the force-load floor it reads a `summaryAdapter`
        * instead of the alignment, and measuring the alignment there would quote a
        * download nobody is doing. The alternative it replaced — turning
-       * `measuresBytesPreFlight` off for the cheap tier — exempted that tier from the
+       * `gateEnabled` off for the cheap tier — exempted that tier from the
        * gate entirely, which is only safe if the tier really is bounded. A
        * `BigBedAdapter` read is a full-feature download (see its `getFeatures`),
        * so at genome scale it is not, and the exemption was hiding it.
@@ -488,28 +498,6 @@ export default function RegionTooLargeMixin() {
     .views(self => ({
       /**
        * #getter
-       * Whether this display measures at all — the union of the two ways it can
-       * (`measuresBytesPreFlight`, `measuresBytesInFetch`). Additive, never an
-       * override, so a gate mixin's opt-in doesn't hinge on which side of
-       * `.compose()` it lands on. False for the ungated displays (wiggle,
-       * manhattan, sequence, synteny), which therefore never evaluate the
-       * LGV-only getters below.
-       *
-       * Overriding this rather than an opt-in switches the gate off in a way
-       * the additive OR cannot see, so a second `get gateEnabled()` anywhere in
-       * source is an eslint error — `no-restricted-syntax`, with
-       * `RegionTooLargeMixin.ts` exempted as the declaration.
-       *
-       * It was `derivedRegionTooLargeEnabled`, which named an implementation
-       * detail of 2026 ("the verdict is derived now, not an imperative flag")
-       * rather than the question, and was long enough that both opt-ins were
-       * named for how they differ from *it* instead of from each other.
-       */
-      get gateEnabled(): boolean {
-        return self.measuresBytesPreFlight || self.measuresBytesInFetch
-      },
-      /**
-       * #getter
        * Which tier the stored estimate is *about*, as a comparable value. The
        * cached estimate answers "how many bytes would the fetch pull", and a
        * display that swaps `byteGateAdapterConfig` by zoom changes which fetch
@@ -590,12 +578,11 @@ export default function RegionTooLargeMixin() {
        *
        * Running the ordinary fetch is the whole re-measure, because every gated
        * display's fetch begins by measuring and stops there when the answer is
-       * over budget — the pre-flight in `byteGateBlocksFetch`, or
-       * `measureRegionBytes` ahead of `getFeaturesArray` in canvas's own feature
-       * RPC. On the byte axis that is one index read and no features; on canvas's
-       * density axis it is the 1kb pre-fetch probe. Adding a second,
-       * measurement-only RPC path would have bought nothing and given canvas the
-       * two-call coordination it exists to avoid.
+       * over budget — `measureRegionBytes` ahead of the download, inside the
+       * display's own feature RPC. On the byte axis that is one index read and
+       * no features; on canvas's density axis it is the 1kb pre-fetch probe. A
+       * second, measurement-only RPC path would buy nothing and cost every
+       * display the two-call coordination.
        */
       get gateMeasurementStale(): boolean {
         return self.gateMeasuredViewportKey !== self.gateViewport?.key
@@ -659,16 +646,16 @@ export default function RegionTooLargeMixin() {
        * bypassable by zooming into it, which is what the floor's own banner told
        * people to do.
        *
-       * Everything reads it rather than restating it: the verdict, the
-       * pre-flight (no estimate RPC when nothing could act on it), the worker's
-       * `resolvedByteLimit()`, and the density axis below.
+       * Everything reads it rather than restating it: the verdict, the worker's
+       * `resolvedByteLimit()` (an undefined budget is an RPC that measures
+       * nothing at all), and the density axis below.
        */
       get gateActive(): boolean {
         // The view is consulted only past the two cheap terms, so a display that
         // never gates — including a non-LGV consumer of this mixin — never
         // touches `getContainingView`. A measured view is still required: with
-        // no viewport there are no regions to measure, so the pre-flight RPC
-        // would be issued for nothing.
+        // no viewport there are no regions to measure, so there would be
+        // nothing to label a measurement with.
         return (
           self.gateEnabled &&
           !self.gateExempt &&
@@ -962,9 +949,10 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * The measurement-commit protocol, held once for both gate paths — the
-       * pre-flight below and canvas's in-fetch RPC (`commitGateMeasurements`).
-       * Four rules, each of which used to be spelled at both sites or nowhere:
+       * The measurement-commit protocol, held once for every display: the
+       * fan-out helpers reach it through `commitFetchBytes` and the global
+       * runner through the same. Four rules, each of which used to be spelled
+       * at two call sites or nowhere:
        *
        * - a measurement is judged by the tier it was *issued* against — a fetch
        *   still in flight when `ClearByteEstimateOnTierSwap` fires would
@@ -1000,6 +988,40 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
+       * The byte axis of a finished fetch, committed from what its results
+       * measured. **The fan-out helpers call this, not the display**: a display
+       * opts into the gate by passing `byteLimit: self.resolvedByteLimit()` in
+       * its RPC call and nothing else, and every RPC that takes that budget
+       * answers `bytes` — in the payload when it was under, in the
+       * `RegionTooLargeResult` when it was not.
+       *
+       * **Max, not sum**: the budget is what one region may cost, so a batch
+       * commits its largest. An empty batch commits nothing, because a fetch
+       * with no results asked the adapter nothing and stamping the viewport
+       * would tell `gateMeasurementStale` otherwise.
+       *
+       * The rules about which measurement wins, what an unmeasurable result
+       * leaves alone and which tier a number is about are all
+       * `commitByteMeasurement`'s — this adds only the max and the capture.
+       */
+      commitFetchBytes(
+        perRegionBytes: (number | undefined)[],
+        issued: GateFetchState,
+      ) {
+        const { viewport, gated, tierKey } = issued
+        if (perRegionBytes.length > 0 && viewport !== undefined) {
+          self.commitByteMeasurement({
+            viewport,
+            gated,
+            tierKey,
+            bytes: largestRegionBytes(perRegionBytes),
+          })
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * Force-load: exempt this track from the gate and refetch. One click covers
        * every region and both axes, informed by the size the banner just quoted.
        * The display chrome calls this from TooLargeMessage's button; concrete
@@ -1008,77 +1030,6 @@ export default function RegionTooLargeMixin() {
       forceLoad() {
         self.setForceLoadTrack(true)
         self.reload()
-      },
-
-      /**
-       * #action
-       * The entire pre-flight gate for one fetch: measure the region set, commit
-       * the estimate with the viewport it describes, and answer whether the
-       * caller must abandon the fetch — either superseded mid-measure, or over
-       * budget.
-       *
-       * Both fetch runners call this and return on true — `fetchRegions` for
-       * the MultiRegionDisplayMixin family, `runGlobalFetch` for the global one
-       * — so no display calls it by hand. It short-circuits to false when
-       * `measuresBytesPreFlight` is off, so the call is unconditional at every
-       * site — canvas leaves it off and measures inside its own feature RPC
-       * instead.
-       *
-       * Sequencing the steps at a call site is what used to go wrong: the
-       * viewport is read here, *before* the await, so the estimate is labelled
-       * with the one it actually covers. A re-read afterwards would pin it to
-       * whatever a mid-fetch zoom left on screen, and both things the label is
-       * for — `gateMeasurementStale`, `zoomIneffective` — would then answer about a
-       * viewport the number was never taken at.
-       */
-      async byteGateBlocksFetch(
-        regions: {
-          refName: string
-          start: number
-          end: number
-          assemblyName: string
-        }[],
-        // the whole FetchContext, not just its `isStale`: this measurement
-        // downloads index chunks on every viewport change for BAM/CRAM/tabix,
-        // so it is exactly as worth cancelling as the fetch it precedes — and
-        // it is the first thing the user waits on when a track opens wide, so
-        // it is worth naming on the status channel too. Narrowing the parameter
-        // to `isStale` left both on the floor at every call site.
-        ctx: FetchContext,
-      ) {
-        // Captured whole, before the await, so the commit below is judged
-        // against the viewport AND the tier this fetch was issued for.
-        const issued = self.gateFetchState()
-        const { viewport } = issued
-        // `viewport` is `gateActive`'s own third term, restated only because
-        // TypeScript needs the narrowing to hand it to the two commits below.
-        if (!self.measuresBytesPreFlight || !viewport || !issued.gated) {
-          return false
-        }
-        const bytes = await updateStatus(
-          'Estimating size',
-          ctx.statusCallback,
-          () =>
-            ctx.callRpc('CoreGetRegionByteEstimate', {
-              regions,
-              adapterConfig: self.byteGateAdapterConfig,
-              // `gateByteLimit` is what a single region may cost
-              scope: 'largestRegion',
-            }),
-          // makes the phase a cancellation boundary as well as a label: a fetch
-          // superseded before the measure starts skips the RPC outright, and
-          // `runFetch` swallows the abort as the ordinary end of a stale fetch
-          ctx.stopToken,
-        )
-        if (ctx.isStale()) {
-          return true
-        }
-        // gated: true by construction — the opt-in and `gateActive` were the
-        // early return above
-        self.commitByteMeasurement({ ...issued, viewport, bytes })
-        // Read after the commit: the verdict is a pure function of the estimate,
-        // and the estimate was just taken at this viewport.
-        return self.regionTooLarge
       },
     }))
     .actions(self => ({

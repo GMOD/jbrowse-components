@@ -167,37 +167,29 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
 
     mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
-      method === 'CoreGetRegionByteEstimate' ? 700_000 : null,
+      method === 'RenderLDData' ? { bytes: 700_000 } : null,
     )
     // counted from here, since the autorun installed above has already run one
     // fetch of its own against the default (undefined-returning) mock
     mockRpcCall.mockClear()
     await runGlobalFetch(display, ldFetchPhases(display))
 
-    expect(
-      mockRpcCall.mock.calls.filter(c => c[1] === 'CoreGetRegionByteEstimate'),
-    ).toHaveLength(1)
+    // one call, not two: the measurement rides in the fetch that would have
+    // followed it
+    const calls = mockRpcCall.mock.calls.filter(c => c[1] === 'RenderLDData')
+    expect(calls).toHaveLength(1)
+    expect(calls[0]![2].byteLimit).toBe(display.gateByteLimit)
     expect(display.estimatedFetchBytes).toBe(700_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
-  // The other half of the divergence pinned in canvas's
-  // `LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`, "gates on the
-  // worst region, not the total".
-  //
-  // The pre-flight hands the **whole region set** to `getRegionByteSize` in one
-  // RPC and stores the single figure that comes back — which for every tabix
-  // adapter here is the chunk-merged total across all of them. Canvas measures
-  // one region per RPC and keeps the max, so on two 3 Mb regions against a 5 Mb
-  // budget the two paths reach opposite verdicts on the same file. That is a
-  // known divergence, not a bug (one is what the wire costs, the other what any
-  // single region costs), and neither is cheaply convertible to the other: this
-  // path has no per-region number to keep, canvas has no cross-region call to
-  // sum. Pinned on both sides so changing either fails loudly.
-  //
-  // What this asserts is the structural half — one call, carrying every region
-  // — since the summing itself happens inside the adapter, worker-side.
-  it('measures the whole region set in one call, where canvas measures per region', async () => {
+  // One RPC carries the whole region set, and the worker measures each region
+  // separately against the same per-region budget (`measureRegionsBytes`) — so
+  // LD reads the budget the way every other display does: what ONE region may
+  // cost. One region over refuses the set, because there is one payload
+  // covering all of them, and the largest measurement comes back with the
+  // refusal so the banner can quote it.
+  it('refuses the whole set on one over-budget region, quoting its bytes', async () => {
     const { display, view, mockRpcCall } =
       createTestEnvironment().createDisplay()
     await new Promise(res => setTimeout(res, 0))
@@ -208,19 +200,18 @@ describe('LD derived regionTooLarge', () => {
     view.moveTo({ index: 0, offset: 0 }, { index: 1, offset: 100_000 })
 
     mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
-      method === 'CoreGetRegionByteEstimate' ? 6_000_000 : null,
+      method === 'RenderLDData'
+        ? { regionTooLarge: true, bytes: 6_000_000 }
+        : null,
     )
     mockRpcCall.mockClear()
     await runGlobalFetch(display, ldFetchPhases(display))
 
-    const estimateCalls = mockRpcCall.mock.calls.filter(
-      c => c[1] === 'CoreGetRegionByteEstimate',
-    )
-    expect(estimateCalls).toHaveLength(1)
-    // every visible region in that one call — the adapter sums across them, so
-    // there is one figure for the set rather than one per region
+    const calls = mockRpcCall.mock.calls.filter(c => c[1] === 'RenderLDData')
+    expect(calls).toHaveLength(1)
+    // every visible region in that one call
     expect(
-      (estimateCalls[0]![2] as { regions: { refName: string }[] }).regions.map(
+      (calls[0]![2] as { regions: { refName: string }[] }).regions.map(
         r => r.refName,
       ),
     ).toEqual(['ctgA', 'ctgB'])

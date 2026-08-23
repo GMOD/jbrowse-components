@@ -1,5 +1,4 @@
 import { getMembers } from '@jbrowse/mobx-state-tree'
-import { makeFetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
@@ -43,7 +42,7 @@ describe('MAF summary swap vs the force-load floor', () => {
     expect(display.aboveForceLoadFloor).toBe(true)
     expect(display.showSummary).toBe(false)
     // so the detail path is what gates
-    expect(display.measuresBytesPreFlight).toBe(true)
+    expect(display.gateEnabled).toBe(true)
   })
 
   // A byte-only display has no features-per-pixel number, so it must not claim
@@ -72,7 +71,7 @@ describe('MAF summary swap vs the force-load floor', () => {
     // The summary tier is gated too — it is a whole-feature read, not a
     // zoom-reduced one — but against its own file, so a small summary read is
     // nowhere near the cap and never sees a banner.
-    expect(display.measuresBytesPreFlight).toBe(true)
+    expect(display.gateEnabled).toBe(true)
     expect(display.gateActive).toBe(true)
     expect(display.byteGateAdapterConfig).toEqual({ type: 'BigBedAdapter' })
 
@@ -80,7 +79,7 @@ describe('MAF summary swap vs the force-load floor', () => {
     expect(view.visibleBp).toBeLessThan(20_000)
     expect(display.aboveForceLoadFloor).toBe(false)
     expect(display.showSummary).toBe(false)
-    expect(display.measuresBytesPreFlight).toBe(true)
+    expect(display.gateEnabled).toBe(true)
   })
 
   it('summarizes nothing before the view is measured', () => {
@@ -590,98 +589,22 @@ describe('MAF derived regionTooLarge', () => {
   })
 })
 
-// The pre-flight is a real download — index chunks, re-read on every viewport
-// change for BAM/CRAM/tabix — so it is exactly as worth cancelling as the fetch
-// it precedes, and exactly as worth naming while the user waits on it. It went
-// unwired because `byteGateBlocksFetch` narrowed its parameter to
-// `{ isStale }`, which silently dropped the rest of the FetchContext both
-// callers were already handing it. Pinned here rather than left to the type:
-// re-narrowing that parameter still compiles at every call site.
-describe('byte-estimate pre-flight forwarding', () => {
-  it('forwards the fetch stop token and status callback to the RPC', async () => {
-    const { display, view, mockRpcCall } = createMafTestEnvironment(
-      {},
-    ).createDisplay()
+// The byte gate's commit protocol, at this display. The measurement now comes
+// back inside the tier's own fetch result, so what is left on the main thread is
+// `commitFetchBytes` — and both of its rules are ones this display used to get
+// wrong on the path that is gone.
+describe('the byte gate commit', () => {
+  it('keeps a good estimate when the fetch measured no bytes', () => {
+    const { display, view } = createMafTestEnvironment({}).createDisplay()
     view.zoomTo(100)
-    mockRpcCall.mockResolvedValue(1000)
-    const statusCallback = jest.fn()
-
-    await display.byteGateBlocksFetch(
-      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      makeFetchContext(display, {
-        stopToken: 'tok',
-        isStale: () => false,
-        statusCallback,
-      }),
-    )
-
-    const call = mockRpcCall.mock.calls.find(
-      c => c[1] === 'CoreGetRegionByteEstimate',
-    )
-    expect(call).toBeDefined()
-    expect(call![2]).toMatchObject({
-      stopToken: 'tok',
-      statusCallback,
-    })
-  })
-
-  it('names the phase it is making the user wait through', async () => {
-    const { display, view, mockRpcCall } = createMafTestEnvironment(
-      {},
-    ).createDisplay()
-    view.zoomTo(100)
-    mockRpcCall.mockResolvedValue(1000)
-    const seen: unknown[] = []
-
-    await display.byteGateBlocksFetch(
-      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      makeFetchContext(display, {
-        stopToken: 'tok',
-        isStale: () => false,
-        statusCallback: s => {
-          seen.push(s)
-        },
-      }),
-    )
-
-    // the label while it runs, then the clear that every phase helper ends with
-    expect(seen).toEqual(['Estimating size', ''])
-  })
-
-  // The pre-flight's half of "a fetch that measured nothing writes nothing".
-  // Canvas's half is pinned as "keeps a good estimate when a batch measured no
-  // bytes" in LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts; this
-  // path published `bytes: undefined` instead until 2026-08, which wiped the
-  // last real measurement and reset the two-point `zoomIneffective` comparison
-  // with it. `ByteEstimate.bytes` being a number is what makes re-introducing
-  // that a type error, but the SKIP itself is a call-site decision — coercing an
-  // unmeasurable answer to 0 would compile and would gate nothing forever.
-  it('keeps a good estimate when the adapter answers unmeasurable', async () => {
-    const { display, view, mockRpcCall } = createMafTestEnvironment(
-      {},
-    ).createDisplay()
-    view.zoomTo(100)
-    const ctx = makeFetchContext(display, {
-      stopToken: 'tok',
-      isStale: () => false,
-      statusCallback: () => {},
-    })
-
     const bytes = over(display)
-    mockRpcCall.mockResolvedValue(bytes)
-    await display.byteGateBlocksFetch(
-      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      ctx,
-    )
+    display.commitFetchBytes([bytes], display.gateFetchState())
     expect(display.regionTooLarge).toBe(true)
 
-    // an adapter quoting no index estimate: "unmeasurable", not "zero bytes"
-    mockRpcCall.mockResolvedValue(undefined)
-    await display.byteGateBlocksFetch(
-      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      ctx,
-    )
-
+    // an adapter quoting no index estimate: "unmeasurable", not "zero bytes".
+    // Publishing it would wipe the last real measurement and reset the
+    // two-point `zoomIneffective` comparison with it.
+    display.commitFetchBytes([undefined], display.gateFetchState())
     expect(display.byteEstimate?.bytes).toBe(bytes)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -690,23 +613,33 @@ describe('byte-estimate pre-flight forwarding', () => {
   // running one fetch per settled viewport instead of wedging on a stamp it
   // never wrote. The stamp and the estimate are separate commits for exactly
   // this case.
-  it('still stamps the viewport it asked about', async () => {
-    const { display, view, mockRpcCall } = createMafTestEnvironment(
-      {},
-    ).createDisplay()
+  it('still stamps the viewport it asked about', () => {
+    const { display, view } = createMafTestEnvironment({}).createDisplay()
     view.zoomTo(100)
-    mockRpcCall.mockResolvedValue(undefined)
 
-    await display.byteGateBlocksFetch(
-      [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' }],
-      makeFetchContext(display, {
-        stopToken: 'tok',
-        isStale: () => false,
-        statusCallback: () => {},
-      }),
-    )
+    display.commitFetchBytes([undefined], display.gateFetchState())
 
     expect(display.byteEstimate).toBeUndefined()
     expect(display.gateMeasurementStale).toBe(false)
+  })
+
+  // The tier the estimate is ABOUT: a fetch still in flight across the summary
+  // swap would otherwise re-instate the old tier's bytes right behind
+  // `ClearByteEstimateOnTierSwap`, and the banner would quote megabytes of
+  // alignment against a summary read.
+  it('drops a measurement issued against the other tier', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    view.zoomTo(20)
+    expect(display.showSummary).toBe(false)
+    const issued = display.gateFetchState()
+
+    view.zoomTo(100)
+    expect(display.showSummary).toBe(true)
+    display.commitFetchBytes([over(display)], issued)
+
+    expect(display.byteEstimate).toBeUndefined()
+    expect(display.regionTooLarge).toBe(false)
   })
 })

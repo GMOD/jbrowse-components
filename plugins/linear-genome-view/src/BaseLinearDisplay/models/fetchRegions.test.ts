@@ -70,18 +70,23 @@ describe('the loading flag', () => {
     spy.mockRestore()
   })
 
-  it('clears when the byte gate stops the fetch', async () => {
+  // The gate no longer stops the fetch before it starts: the fetch runs, the
+  // worker measures first and answers a refusal instead of a payload, and what
+  // the display is left with is the banner and nothing stored. Which is the
+  // whole point — running the fetch IS the re-measure that lets the banner
+  // release.
+  it('clears when the fetch stops at the byte measurement', async () => {
     const { display, control } = setup({ measuresBytes: true })
     await afterFirstFetch(display)
     control.estimateBytes = 1_000_000_000
 
-    let ranWork = false
-    await display.fetchRegions([region], async () => {
-      ranWork = true
+    display.fetchNeeded([region])
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
     })
-    expect(ranWork).toBe(false)
+    expect(display.loadedData.size).toBe(0)
+    expect(display.loadedRegions.size).toBe(0)
     expect(display.isLoading).toBe(false)
-    expect(display.regionTooLarge).toBe(true)
   })
 })
 

@@ -1,4 +1,9 @@
-import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
+import {
+  isRegionRefused,
+  largestRegionBytes,
+  measuredBytes,
+  overByteBudget,
+} from '@jbrowse/core/rpc/byteBudget'
 import { createStatusFanOut } from '@jbrowse/core/util'
 import {
   callEachRegion,
@@ -7,6 +12,7 @@ import {
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type {
   FetchContext,
@@ -87,8 +93,11 @@ export function unionSampleSets(
  * cross-region decision over the whole result set, so the batch is what the
  * staleness guard has to wrap: a partial commit would publish a sample set
  * derived from a superseded viewport. Every region is marked loaded together,
- * which is honest here — MAF's size gate is the pre-flight kind, so a refusal
- * returns before `call` runs at all and nothing below can arrive empty-handed.
+ * and **one refused region refuses the batch** for the same reason: the sample
+ * union is a decision over all of them, so a set derived from the regions that
+ * happened to fit is not the set this viewport has. The largest measurement
+ * still goes back to the gate, which is what puts a size in the banner and
+ * releases it once the user zooms.
  *
  * The RPC payload carries no color/style settings — worker output is purely
  * data-dependent and the main thread encodes from it plus `gpuProps()`, so
@@ -105,12 +114,19 @@ async function fetchMafRegions<R extends SampleSet>(
     region: Region,
     ctx: FetchContext,
     displayedRegionIndex: number,
-  ) => Promise<R>,
+  ) => Promise<R | RegionTooLargeResult>,
   commit: (results: { displayedRegionIndex: number; result: R }[]) => void,
 ) {
   // #region rawFetchRegions
+  type MafBatch = {
+    results: { displayedRegionIndex: number; result: R }[]
+    bytes?: number
+  }
   await fetchRegionsBatched(self, needed, {
-    call: async (regions, ctx) => {
+    // Annotated, because the two arms are what tells `fetchRegionsBatched`
+    // which half is the payload: inferred, the marker's absent fields would
+    // widen the payload's own.
+    call: async (regions, ctx): Promise<MafBatch | RegionTooLargeResult> => {
       // The CDS-frame annotation overlay (when configured) fetches in the same
       // stop-token-guarded pass as the main data so the two share staleness +
       // loadedRegions book-keeping; the two RPCs run concurrently.
@@ -124,9 +140,26 @@ async function fetchMafRegions<R extends SampleSet>(
         callEachRegion(regions, { ...ctx, statusCallback: slot() }, call),
         fetchAnnotationData(self, regions, { ...ctx, statusCallback: slot() }),
       ])
-      return results
+      // The batch's own byte number, whichever way it goes: the budget is what
+      // one region may cost, so the largest is what was judged and what the
+      // banner quotes.
+      const bytes = largestRegionBytes(
+        results.map(r => measuredBytes(r.result)),
+      )
+      const kept: { displayedRegionIndex: number; result: R }[] = []
+      let refused = false
+      for (const { displayedRegionIndex, result } of results) {
+        if (isRegionRefused(result)) {
+          refused = true
+        } else {
+          kept.push({ displayedRegionIndex, result })
+        }
+      }
+      return refused
+        ? { regionTooLarge: true as const, bytes }
+        : { results: kept, bytes }
     },
-    commit: results => {
+    commit: ({ results }) => {
       const sampleSet = unionSampleSets(results)
       if (sampleSet) {
         self.setSamples(sampleSet)
@@ -144,18 +177,20 @@ async function fetchMafRegions<R extends SampleSet>(
  * The display's byte gate measures exactly one file — `byteGateAdapterConfig`,
  * the alignment or the summary depending on the tier — and `mafFrames` is a
  * third, fetched concurrently with whichever of those won. So nothing was
- * watching it, which is the premise `measuresBytesPreFlight`'s own docstring
- * rejects in as many words: "off means nothing is watching, and 'this tier is
- * cheap' is a premise, not a bound." It is not cheap at every zoom — the file is
+ * watching it, which is the premise `gateEnabled`'s own docstring rejects in as
+ * many words: "off means nothing is watching, and 'this tier is cheap' is a
+ * premise, not a bound." It is not cheap at every zoom — the file is
  * one record per CDS exon **per species**, so on a deep alignment the read grows
  * with the span times the species count, exactly like the alignment the gate
  * does watch, and the summary tier carries it out to whole-genome spans.
  *
- * Measured here rather than through `byteGateBlocksFetch` because that one owns
- * the *banner*: it stamps `byteEstimate`, which is the number the too-large
- * message quotes, and quoting the frames file's cost for a track whose alignment
- * loaded fine would be a banner about the wrong download. This is a private
- * bound on an auxiliary overlay, so it reports nothing and simply declines.
+ * Measured here rather than through the display's own gate because that one
+ * owns the *banner*: it stamps `byteEstimate`, which is the number the
+ * too-large message quotes, and quoting the frames file's cost for a track
+ * whose alignment loaded fine would be a banner about the wrong download. This
+ * is a private bound on an auxiliary overlay, so it reports nothing and simply
+ * declines — which is why it is still a separate `CoreGetRegionByteEstimate`
+ * probe rather than a `byteLimit` on the frames RPC.
  *
  * `undefined` bytes means unmeasurable (an adapter quoting no index estimate),
  * which keeps the byte axis out of the verdict here exactly as it does there.
@@ -247,6 +282,7 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
       ctx.callRpc('LinearMafGetAlignmentData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
+        byteLimit: self.resolvedByteLimit(),
         // Row set, not row order: the worker ships only these genomes and
         // scores coverage over them. Placement is the client's (see
         // `placeMafRegionData`), so nothing order-dependent is sent.
@@ -273,6 +309,7 @@ export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
       ctx.callRpc('LinearMafGetSummaryData', {
         adapterConfig: self.adapterConfig,
         regions: [region],
+        byteLimit: self.resolvedByteLimit(),
         // Same row set as the detail path. It has to be sent even though the
         // records are small: `subtreeFilter` is an `rpcProps()` cache key, so
         // narrowing the clade already discards every loaded region — a summary

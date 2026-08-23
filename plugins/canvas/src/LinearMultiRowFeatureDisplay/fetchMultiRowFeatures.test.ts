@@ -85,6 +85,8 @@ function makeSelf() {
       commitGateMeasurements: (m: RegionGateMeasurement[]) => {
         committed.push(m)
       },
+      // the byte half, which the fan-out helper commits for every display
+      commitFetchBytes: () => {},
     },
   }
 }

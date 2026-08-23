@@ -3,14 +3,16 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 import type { CellDataResult } from './executeVariantCellData.ts'
 import type { GetCellDataArgs } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiSampleVariantGetCellData: {
       args: GetCellDataArgs
-      return: CellDataResult
-      // wrapped in rpcResult so postMessage transfers its buffers
-      transferables: true
+      return: CellDataResult | RegionTooLargeResult
+      // only the data half owns buffers to transfer, so only it is wrapped in
+      // rpcResult — the refusal marker crosses as itself
+      transferables: CellDataResult
     }
   }
 }

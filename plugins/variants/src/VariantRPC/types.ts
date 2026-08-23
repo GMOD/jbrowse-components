@@ -49,6 +49,11 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   featureColor?: string
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
+  /**
+   * `resolvedByteLimit()`. Absent means the gate may not act, and the executor
+   * then measures nothing.
+   */
+  byteLimit?: number
 }
 
 export interface MultiSampleVariantGetSourcesArgs {

@@ -14,6 +14,7 @@ import { fetchEachRegion } from './fetchEachRegion.ts'
 
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DISPLAY_NAME = 'PerRegionTestDisplay'
@@ -51,7 +52,13 @@ export interface PerRegionTestControl {
   failNextFetch: boolean
   /** hold each fetch open this long, so a test can act while one is in flight */
   fetchDelayMs: number
-  /** what `CoreGetRegionByteEstimate` answers, and how often it was asked */
+  /**
+   * What the display's own fetch measures for a region, and how often it
+   * measured. There is no separate estimate RPC any more: a gated display
+   * passes `resolvedByteLimit()` into its fetch, the fetch measures first and
+   * answers a `RegionTooLargeResult` instead of a payload when it is over — so
+   * this stands in for the worker-side `measureRegionBytes`.
+   */
   estimateBytes: number
   estimateCalls: number
   /** the display's own density verdict, canvas's second too-large axis */
@@ -68,8 +75,7 @@ export interface PerRegionTestControl {
  */
 /** Which of the gate's opt-in hooks this display overrides. */
 export interface GateOptIns {
-  measuresBytesPreFlight?: boolean
-  measuresBytesInFetch?: boolean
+  gateEnabled?: boolean
   densityGateEnabled?: boolean
 }
 
@@ -104,11 +110,8 @@ function makeStateModel(
       fetchKey: '',
     }))
     .views(self => ({
-      get measuresBytesPreFlight() {
-        return gate.measuresBytesPreFlight ?? false
-      },
-      get measuresBytesInFetch() {
-        return gate.measuresBytesInFetch ?? false
+      get gateEnabled() {
+        return gate.gateEnabled ?? false
       },
       get densityGateEnabled() {
         return gate.densityGateEnabled ?? false
@@ -142,8 +145,17 @@ function makeStateModel(
     .actions(self => ({
       fetchNeeded(needed: IndexedRegion[]) {
         self.fetchLog.push(needed)
+        // The budget is read here, at issue, exactly as a real display reads it
+        // to put in its RPC args.
+        const byteLimit = self.resolvedByteLimit()
         return fetchEachRegion(self, needed, {
-          call: async () => {
+          // Annotated for the reason a real display's RPC return type is
+          // declared: the refusal arm and the payload arm have to stay
+          // distinguishable, and inference merges two object literals into one
+          // widened shape.
+          call: async (): Promise<
+            { value: string; bytes?: number } | RegionTooLargeResult
+          > => {
             if (control.fetchDelayMs > 0) {
               await new Promise(r => setTimeout(r, control.fetchDelayMs))
             }
@@ -151,10 +163,20 @@ function makeStateModel(
               control.failNextFetch = false
               throw new Error('rpc failed')
             }
-            return 'data'
+            // What a gated worker does: measure, then refuse or fetch. No
+            // budget means no measurement at all, which is why `estimateCalls`
+            // stays at zero for an ungated display.
+            if (byteLimit === undefined) {
+              return { value: 'data' }
+            }
+            control.estimateCalls += 1
+            const bytes = control.estimateBytes
+            return bytes > byteLimit
+              ? { regionTooLarge: true as const, bytes }
+              : { value: 'data', bytes }
           },
           onResult: (idx, result) => {
-            self.setLoaded(idx, result)
+            self.setLoaded(idx, result.value)
           },
         })
       },
@@ -173,13 +195,13 @@ export function createPerRegionTestEnvironment({
   estimateBytes = 100,
   ...opts
 }: Partial<Parameters<typeof createDisplayTestEnvironment>[0]> & {
-  /** shorthand for `gate: { measuresBytesPreFlight: true }` */
+  /** shorthand for `gate: { gateEnabled: true }` */
   measuresBytes?: boolean
   /** which of the gate's opt-in hooks the display overrides */
   gate?: GateOptIns
   /**
-   * What `CoreGetRegionByteEstimate` answers, set before the display exists.
-   * A test that wants the banner has to pass it here rather than raise
+   * What the display's fetch measures, set before the display exists. A test
+   * that wants the banner has to pass it here rather than raise
    * `control.estimateBytes` afterwards: the fetch autorun is leading-edge, so
    * the first fetch runs the moment the display attaches, and a later write
    * would be measuring a display that had already loaded at the default.
@@ -195,7 +217,7 @@ export function createPerRegionTestEnvironment({
     estimateCalls: 0,
     densityTooLarge: false,
   }
-  const optIns: GateOptIns = gate ?? { measuresBytesPreFlight: measuresBytes }
+  const optIns: GateOptIns = gate ?? { gateEnabled: measuresBytes }
   const env = createDisplayTestEnvironment<PerRegionTestDisplay>({
     trackType: 'FeatureTrack',
     displayName: DISPLAY_NAME,
@@ -207,13 +229,7 @@ export function createPerRegionTestEnvironment({
     // leaves the display's `configuration` reference unresolved, and every slot
     // the gate reads — `fetchSizeLimit` above all — answers undefined
     displayConfig: {},
-    rpcCall: (_sessionId, method) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        control.estimateCalls += 1
-        return control.estimateBytes
-      }
-      return []
-    },
+    rpcCall: () => [],
     ...opts,
   })
   return { ...env, control }

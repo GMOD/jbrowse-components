@@ -91,8 +91,13 @@ export async function fetchFeatureDetails(
 export interface FetchFeaturesSelf {
   rpcProps: () => Omit<
     RenderAlignmentDataArgs,
-    'adapterConfig' | 'sequenceAdapter' | 'regions'
+    'adapterConfig' | 'sequenceAdapter' | 'regions' | 'byteLimit'
   >
+  // `RegionTooLargeMixin`'s: the budget the worker enforces, and the same one
+  // the banner compares against. Passed at the call rather than through
+  // `rpcProps()` because it swings at the 20kb span tier and would otherwise be
+  // an RPC cache key — see REGION_TOO_LARGE.md §"How the verdict is built".
+  resolvedByteLimit: () => number | undefined
 }
 
 // One RPC for both pileup and chain modes; the worker branches on `linkedReads`
@@ -106,6 +111,7 @@ export function fetchFeaturesForRegion(
   return ctx.callRpc('RenderAlignmentData', {
     adapterConfig,
     regions: [region],
+    byteLimit: self.resolvedByteLimit(),
     ...self.rpcProps(),
   })
 }

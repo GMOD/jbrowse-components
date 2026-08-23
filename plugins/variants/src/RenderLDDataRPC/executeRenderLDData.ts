@@ -1,3 +1,5 @@
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { measureRegionsBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
@@ -37,6 +39,7 @@ function emptyResult(
   signedLD: boolean,
   genomicMode: boolean,
   originBp: number,
+  bytes: number | undefined,
 ) {
   return rpcResultWithArrayBuffers<LDDataResult>({
     ldValues: new Float32Array(0),
@@ -51,6 +54,7 @@ function emptyResult(
     signedLD,
     snps: [],
     filterStats,
+    bytes,
   })
 }
 
@@ -74,10 +78,37 @@ export async function executeRenderLDData({
     jexlFilters,
     signedLD,
     useGenomicPositions,
+    byteLimit,
+    stopToken,
     statusCallback,
   } = args
 
   const isPrecomputed = isPrecomputedLDAdapter(adapterConfig.type)
+
+  // Measured on the adapter this fetch is about to READ, which is the genotype
+  // feature adapter — the same one `getLDMatrix` resolves a moment later, out
+  // of the same cache. The pre-computed adapters (`PlinkLD*`) are skipped
+  // entirely: they are not feature adapters at all, so there is no index
+  // estimate to take and measuring them was always a measurement of nothing.
+  // An absent `bytes` keeps the byte axis out of the display's verdict, which
+  // is the same answer the old pre-flight round trip produced for them.
+  const measured =
+    byteLimit === undefined || isPrecomputed
+      ? { bytes: undefined, tooLarge: undefined }
+      : await measureRegionsBytes({
+          dataAdapter: await getFeatureAdapterOrThrow({
+            pluginManager,
+            sessionId,
+            adapterConfig,
+          }),
+          regions,
+          byteLimit,
+          stopToken,
+          statusCallback,
+        })
+  if (measured.tooLarge) {
+    return measured.tooLarge
+  }
   // What the values in hand will actually be, not what was asked for: the
   // pre-computed path reads magnitudes out of a file and has no genotypes to
   // recover a sign from, so it cannot honor the request. Answering honestly here
@@ -124,7 +155,13 @@ export async function executeRenderLDData({
 
   const region = regions[0]
   if (ldData.snps.length === 0 || !region) {
-    return emptyResult(ldData, signedResult, genomicMode, originBp)
+    return emptyResult(
+      ldData,
+      signedResult,
+      genomicMode,
+      originBp,
+      measured.bytes,
+    )
   }
 
   // LD values themselves are orientation-free; only the axis is. A reversed
@@ -167,6 +204,7 @@ export async function executeRenderLDData({
     signedLD: signedResult,
     snps,
     filterStats: ldData.filterStats,
+    bytes: measured.bytes,
     ...cellBuffers,
   })
 }

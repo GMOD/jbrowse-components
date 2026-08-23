@@ -2,14 +2,16 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import type { GroupedAlignmentsResult, RenderAlignmentDataArgs } from './types'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderAlignmentData: {
       args: RenderAlignmentDataArgs
-      return: GroupedAlignmentsResult
-      // wrapped in rpcResult so postMessage transfers its buffers
-      transferables: true
+      return: GroupedAlignmentsResult | RegionTooLargeResult
+      // only the data half owns buffers to transfer, so only it is wrapped in
+      // rpcResult — the refusal marker crosses as itself
+      transferables: GroupedAlignmentsResult
     }
   }
 }

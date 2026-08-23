@@ -1,5 +1,4 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { onDisplayedRegionsChange } from '@jbrowse/plugin-linear-genome-view'
@@ -12,17 +11,17 @@ import type { RegionDensityStats } from './regionDensity.ts'
 import type {
   BaseLinearDisplayConfigModel,
   GateFetchState,
-  GateViewport,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * The members a composing display provides that this gate reads but doesn't own:
- * the config (via `getConf`) and the two `RegionTooLargeMixin` names the density
- * axis needs — "may anything gate?" and where to commit a measurement. Declared
- * once so the gate can reference them type-safely without threading them through
- * every getter — the runtime instance has them because the final model also
- * composes `MultiRegionDisplayMixin`, which brings `RegionTooLargeMixin`.
+ * the config (via `getConf`) and the `RegionTooLargeMixin` names the density
+ * axis needs — "may anything gate?" and which tier a measurement is about.
+ * Declared once so the gate can reference them type-safely without threading
+ * them through every getter — the runtime instance has them because the final
+ * model also composes `MultiRegionDisplayMixin`, which brings
+ * `RegionTooLargeMixin`.
  */
 export interface GateHost {
   // Narrow, not `AnyConfigurationModel`, so `maxFeatureScreenDensity` below
@@ -31,12 +30,6 @@ export interface GateHost {
   gateActive: boolean
   densityGateActive: boolean
   byteGateAdapterKey: string
-  commitByteMeasurement: (measurement: {
-    viewport: GateViewport
-    gated: boolean
-    tierKey: string | undefined
-    bytes?: number
-  }) => void
 }
 
 function host(self: object) {
@@ -62,14 +55,13 @@ export interface RegionGateMeasurement {
 }
 
 /**
- * Shared byte + density region-too-large gate for canvas feature displays.
+ * Shared density region-too-large gate for canvas feature displays.
  *
  * Composes on top of `RegionTooLargeMixin` (via `MultiRegionDisplayMixin`) to add
- * the *density* axis — the byte axis and its worker budget
- * (`resolvedByteLimit()`) are entirely the base mixin's — so a display that folds
- * the byte/density check into its own fetch RPC (canvas-style, no pre-flight)
- * opts in by composing this mixin and calling `commitGateMeasurements` from its
- * fetch. The
+ * the *density* axis — the byte axis, its worker budget (`resolvedByteLimit()`)
+ * and its commit are entirely the base mixin's — so a display whose fetch RPC
+ * counts features as well as measuring bytes opts in by composing this mixin
+ * and calling `commitGateMeasurements` from its fetch. The
  * mixin clears its own stale per-region stats on chromosome nav (its `afterAttach`,
  * so a composing display can't forget the cleanup and silently mis-gate a reused
  * `displayedRegionIndex`). Every gating decision routes through the shared pure
@@ -107,11 +99,14 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * Contributes the opt-in additively rather than overriding `gateEnabled`:
-       * `RegionTooLargeMixin` ORs this with `measuresBytesPreFlight`, so the
-       * gate stays on whichever side of `.compose()` this mixin lands.
+       * The byte-gate opt-in, contributed by composing this mixin. It overrides
+       * `RegionTooLargeMixin`'s `false`, so this mixin has to be composed AFTER
+       * the one that declares it — `types.compose` resolves a member collision
+       * to the later argument, and the wrong order hands the opt-in back to the
+       * default with no banner and no error. `no-restricted-syntax` fails that
+       * order and says why.
        */
-      get measuresBytesInFetch() {
+      get gateEnabled() {
         return true
       },
       /**
@@ -122,9 +117,9 @@ export default function CanvasFeatureGateMixin() {
        * defaults it false so the byte-only displays don't claim an axis they
        * have no number for.
        *
-       * Contributed the same way as `measuresBytesInFetch` above, and it fails
-       * the same way in the wrong compose order — the base's `false` wins and
-       * the density axis is silently off. `no-restricted-syntax` fails a
+       * Contributed the same way as `gateEnabled` above, and it fails the same
+       * way in the wrong compose order — the base's `false` wins and the
+       * density axis is silently off. `no-restricted-syntax` fails a
        * `CanvasFeatureGateMixin()` written before `MultiRegionDisplayMixin()` in
        * one `types.compose` and says why, so neither opt-in needs a getter read
        * back at attach to notice.
@@ -229,21 +224,22 @@ export default function CanvasFeatureGateMixin() {
     .actions(self => ({
       /**
        * #action
-       * Commit a batch of per-region fetch outcomes. Byte **max**, not sum: the
-       * budget is per-region. See agent-docs/reference/REGION_TOO_LARGE.md.
+       * Commit a batch of per-region fetch outcomes on the **density** axis
+       * alone. The byte axis is `RegionTooLargeMixin.commitFetchBytes`, which
+       * the fan-out helper calls for every display whose RPC carries a
+       * `byteLimit` — this mixin owns only the number nothing else measures.
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],
         issued: GateFetchState,
       ) {
-        const { viewport, gated, tierKey } = issued
+        const { viewport, tierKey } = issued
         if (
-          measurements.length === 0 ||
           !viewport ||
           // the tier guard `nextGateState` applies to the byte half, applied
           // to the density half too: a fetch issued against a previous adapter
           // config must not gate the new file against the old file's feature
-          // counts. Same rule, both axes, one commit.
+          // counts. Same rule, both axes.
           (tierKey !== undefined && tierKey !== host(self).byteGateAdapterKey)
         ) {
           return
@@ -257,14 +253,6 @@ export default function CanvasFeatureGateMixin() {
             })
           }
         }
-        // the tier, stamp-only-if-gated and skip-undefined-bytes rules live in
-        // the shared commit, beside the pre-flight's copy of the same protocol
-        host(self).commitByteMeasurement({
-          viewport,
-          gated,
-          tierKey: issued.tierKey,
-          bytes: largestRegionBytes(measurements.map(m => m.result.bytes)),
-        })
       },
     }))
     .actions(self => ({

@@ -135,15 +135,10 @@ const HOOKS: Hook[] = [
       'same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own',
   },
   {
-    name: 'measuresBytesPreFlight',
+    name: 'gateEnabled',
     owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
     ifNotOverridden:
       'no byte gate: the track downloads whatever it is pointed at, with no banner and no error',
-  },
-  {
-    name: 'measuresBytesInFetch',
-    owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
-    ifNotOverridden: 'the same, for the in-RPC half canvas uses',
   },
   {
     name: 'densityTooLarge',

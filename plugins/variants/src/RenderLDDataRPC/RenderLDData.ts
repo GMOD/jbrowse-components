@@ -3,6 +3,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 
 export interface RenderLDDataArgs {
@@ -24,13 +25,21 @@ export interface RenderLDDataArgs {
   jexlFilters: string[]
   signedLD: boolean
   useGenomicPositions: boolean
+  /**
+   * `resolvedByteLimit()`. Absent means the gate may not act, and the executor
+   * then measures nothing.
+   */
+  byteLimit?: number
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     RenderLDData: {
       args: RenderLDDataArgs
-      return: LDDataResult
+      return: LDDataResult | RegionTooLargeResult
+      // Only the data half owns buffers to transfer, so only it is wrapped —
+      // the refusal marker crosses as itself.
+      //
       // The odd one out among the Render* family until now: `ldValues` is the
       // O(n²) pair matrix — 4MB at a thousand SNPs — and it crossed by structure
       // clone on every fetch, alongside three more Float32Arrays. Every buffer
@@ -38,7 +47,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       // `getLDMatrixFromPlink`, `computeBoundaries`, `buildGenomicCellBuffers`,
       // and both empty results), so there is nothing held across calls for the
       // transfer to detach.
-      transferables: true
+      transferables: LDDataResult
     }
   }
 }

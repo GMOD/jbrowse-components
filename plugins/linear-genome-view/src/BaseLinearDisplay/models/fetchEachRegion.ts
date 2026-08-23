@@ -1,17 +1,32 @@
-import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
+import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
 import { createStatusFanOut } from '@jbrowse/core/util'
 
+import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+/**
+ * What the three fan-out helpers below need a display to be. The two gate
+ * members are `RegionTooLargeMixin`'s, which every display in this family
+ * composes through `MultiRegionDisplayMixin` — they are here rather than in a
+ * separate gated variant because the helpers commit the byte axis for every
+ * display, and one that never passes a `byteLimit` measures nothing and commits
+ * nothing.
+ */
 export interface FetchEachRegionModel extends IStateTreeNode {
   fetchRegions: (
     needed: IndexedRegion[],
     work: (ctx: RegionFetchContext) => Promise<void>,
   ) => Promise<void>
+  gateFetchState: () => GateFetchState
+  commitFetchBytes: (
+    perRegionBytes: (number | undefined)[],
+    issued: GateFetchState,
+  ) => void
 }
 
 /**
@@ -98,36 +113,39 @@ export async function fetchEachRegion<R>(
       region: Region,
       ctx: FetchContext,
       displayedRegionIndex: number,
-    ) => Promise<R>
+    ) => Promise<R | RegionTooLargeResult>
     onResult: (displayedRegionIndex: number, result: R) => void
-    onComplete?: () => void
+    onComplete?: (issued: GateFetchState) => void
   },
 ) {
+  // Captured before anything is issued, so the byte measurements this batch
+  // brings back are judged against the viewport and the tier they were asked
+  // for rather than whatever the view moved to during the round trip.
+  const issued = self.gateFetchState()
   await self.fetchRegions(needed, async ctx => {
     // per-region guard, not one around the batch: a region that arrives before
     // the user moves on still commits
     const perRegion = fanOutStatus(ctx, needed.length)
-    await Promise.all(
+    const results = await Promise.all(
       needed.map(async ({ region, displayedRegionIndex }, i) => {
         const result = await opts.call(
           region,
           perRegion[i]!,
           displayedRegionIndex,
         )
-        if (!ctx.isStale()) {
+        // A refused region stored nothing, so neither the display's store nor
+        // `loadedRegions` may claim it — the viewport would read as covered
+        // against a payload nobody received. See RegionFetchContext.
+        if (!ctx.isStale() && !isRegionRefused(result)) {
           opts.onResult(displayedRegionIndex, result)
-          // beside the store, and skipped for a region the worker refused for
-          // size — `loadedRegions` must describe data that exists, or the
-          // viewport reads as covered against a payload nobody received. See
-          // RegionFetchContext.
-          if (!isRegionRefused(result)) {
-            ctx.commitRegion(displayedRegionIndex)
-          }
+          ctx.commitRegion(displayedRegionIndex)
         }
+        return result
       }),
     )
     if (!ctx.isStale()) {
-      opts.onComplete?.()
+      self.commitFetchBytes(results.map(measuredBytes), issued)
+      opts.onComplete?.(issued)
     }
   })
 }
@@ -149,11 +167,15 @@ export async function fetchAllRegions<R>(
   self: FetchEachRegionModel,
   needed: IndexedRegion[],
   opts: {
-    call: (regions: Region[], ctx: FetchContext) => Promise<R[]>
+    call: (
+      regions: Region[],
+      ctx: FetchContext,
+    ) => Promise<(R | RegionTooLargeResult)[]>
     onResult: (displayedRegionIndex: number, result: R) => void
-    onComplete?: () => void
+    onComplete?: (issued: GateFetchState) => void
   },
 ) {
+  const issued = self.gateFetchState()
   await self.fetchRegions(needed, async ctx => {
     const results = await opts.call(
       needed.map(n => n.region),
@@ -167,12 +189,13 @@ export async function fetchAllRegions<R>(
       }
       needed.forEach(({ displayedRegionIndex }, i) => {
         const result = results[i]!
-        opts.onResult(displayedRegionIndex, result)
         if (!isRegionRefused(result)) {
+          opts.onResult(displayedRegionIndex, result)
           ctx.commitRegion(displayedRegionIndex)
         }
       })
-      opts.onComplete?.()
+      self.commitFetchBytes(results.map(measuredBytes), issued)
+      opts.onComplete?.(issued)
     }
   })
 }
@@ -195,23 +218,29 @@ export async function fetchAllRegions<R>(
  *
  * The single `ctx.isStale()` guard is the same correctness primitive the other
  * helpers own, at the only granularity that exists here: there is one result, so
- * a viewport that moved drops all of it. A refused result is delivered to
- * `commit` and marks nothing loaded, for the reason spelled out in
- * `RegionFetchContext`.
+ * a viewport that moved drops all of it, and a refusal refuses the set.
  */
 export async function fetchRegionsBatched<R>(
   self: FetchEachRegionModel,
   regions: IndexedRegion[],
   opts: {
-    call: (regions: IndexedRegion[], ctx: FetchContext) => Promise<R>
+    call: (
+      regions: IndexedRegion[],
+      ctx: FetchContext,
+    ) => Promise<R | RegionTooLargeResult>
     commit: (result: R) => void
   },
 ) {
+  const issued = self.gateFetchState()
   await self.fetchRegions(regions, async ctx => {
     const result = await opts.call(regions, ctx)
     if (!ctx.isStale()) {
-      opts.commit(result)
+      self.commitFetchBytes([measuredBytes(result)], issued)
+      // One payload covers the whole set, so a refusal refuses the set: nothing
+      // is committed and nothing is marked loaded, for the reason spelled out
+      // in `RegionFetchContext`.
       if (!isRegionRefused(result)) {
+        opts.commit(result)
         for (const { displayedRegionIndex } of regions) {
           ctx.commitRegion(displayedRegionIndex)
         }

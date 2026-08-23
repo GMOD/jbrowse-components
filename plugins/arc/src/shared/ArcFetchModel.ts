@@ -17,9 +17,9 @@ import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
  * special region-too-large handling: the banner is a pure function of the last
  * measurement, and what keeps that measurement describing the viewport on screen
  * is that a blocked display keeps running this fetch once per settled viewport,
- * stopping at the pre-flight. No imperative clear, and no derived second byte
- * number scaled by span — see RegionTooLargeMixin §"Measurement follows the
- * viewport".
+ * stopping at the worker's own measurement. No imperative clear, and no derived
+ * second byte number scaled by span — see RegionTooLargeMixin §"Measurement
+ * follows the viewport".
  *
  * #stateModel ArcFetchModel
  * #category display
@@ -44,17 +44,18 @@ export function ArcFetchModel() {
           self.features = f
         },
       }))
-      // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases on
-      // zoom-in, no flicker on pan): this switch is the whole opt-in — the
-      // pre-flight `byteGateBlocksFetch` call runs inside `runGlobalFetch`, so
-      // no display calls it by hand. afterAttach clears the estimate on
-      // chromosome nav. Byte-only — no density axis. The mixin reads
-      // `fetchSizeLimit` / `forceLoad` straight off the display config.
+      // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases
+      // on zoom-in, no flicker on pan): this switch plus the `byteLimit` the
+      // fetch passes are the whole opt-in — `ArcGetFeatures` measures before it
+      // downloads and `runGlobalFetch` commits what it measured. afterAttach
+      // clears the estimate on chromosome nav. Byte-only — no density axis. The
+      // mixin reads `fetchSizeLimit` / `forceLoad` straight off the display
+      // config.
       .views(() => ({
         /**
          * #getter
          */
-        get measuresBytesPreFlight() {
+        get gateEnabled() {
           return true
         },
       }))

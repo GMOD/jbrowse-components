@@ -18,8 +18,9 @@ export function createTestEnvironment() {
     stateModel: (_pm, schema) => stateModelFactory(schema),
     viewModel: linearGenomeViewStateModelFactory,
     assemblyEnd: 10_000_000,
-    // arc is byte-gated, so its fetch only commits once the estimate answers
+    // arc is byte-gated, and the measurement rides in the fetch: `ArcGetFeatures`
+    // answers the features plus what the index quoted for them
     rpcCall: (_sessionId, method) =>
-      method === 'CoreGetRegionByteEstimate' ? 100 : [],
+      method === 'ArcGetFeatures' ? { features: [], bytes: 100 } : [],
   })
 }

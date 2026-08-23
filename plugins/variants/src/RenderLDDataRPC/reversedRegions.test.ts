@@ -1,3 +1,4 @@
+import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 
 import { getLDMatrix, ldPairIndex } from '../VariantRPC/getLDMatrix.ts'
@@ -6,6 +7,7 @@ import { executeRenderLDData } from './executeRenderLDData.ts'
 import type { LDMatrixResult, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 
 jest.mock('../VariantRPC/getLDMatrix.ts', () => ({
@@ -61,6 +63,16 @@ function matrix(snps: LDSnp[]): LDMatrixResult {
   }
 }
 
+// This suite never passes a `byteLimit`, so the executor measures nothing and
+// the refusal arm of its return is unreachable. Narrowed once here rather than
+// at every assertion.
+function payload<T>(result: T | RegionTooLargeResult) {
+  if (isRegionRefused(result)) {
+    throw new Error('unexpected region-too-large result')
+  }
+  return result
+}
+
 async function run(
   regions: Region[],
   snps: LDSnp[],
@@ -69,26 +81,28 @@ async function run(
   jest.mocked(getLDMatrix).mockResolvedValue(matrix(snps))
   // the envelope `deserializeReturn` takes off for the real caller: the four
   // Float32Arrays are transferred rather than cloned
-  return unwrapRpcResult(
-    await executeRenderLDData({
-      pluginManager: {} as PluginManager,
-      args: {
-        sessionId: 'test',
-        adapterConfig: {
-          type: 'VcfTabixAdapter',
+  return payload(
+    unwrapRpcResult(
+      await executeRenderLDData({
+        pluginManager: {} as PluginManager,
+        args: {
+          sessionId: 'test',
+          adapterConfig: {
+            type: 'VcfTabixAdapter',
+          },
+          regions,
+          originBp: 0,
+          ldMetric: 'r2',
+          minorAlleleFrequencyFilter: 0,
+          lengthCutoffFilter: 0,
+          hweFilterThreshold: 0,
+          callRateFilter: 0,
+          jexlFilters: [],
+          signedLD: false,
+          useGenomicPositions,
         },
-        regions,
-        originBp: 0,
-        ldMetric: 'r2',
-        minorAlleleFrequencyFilter: 0,
-        lengthCutoffFilter: 0,
-        hweFilterThreshold: 0,
-        callRateFilter: 0,
-        jexlFilters: [],
-        signedLD: false,
-        useGenomicPositions,
-      },
-    }),
+      }),
+    ),
   )
 }
 

@@ -60,6 +60,11 @@ export interface RenderAlignmentDataArgs {
   drawSingletons?: boolean
   drawProperPairs?: boolean
   showOnlySplitAlignments?: boolean
+  /**
+   * `resolvedByteLimit()`. Absent means the gate may not act, and the executor
+   * then measures nothing.
+   */
+  byteLimit?: number
 }
 
 export type { CoverageTooltipBin } from '@jbrowse/alignments-core'
@@ -495,4 +500,11 @@ export interface AlignmentGroup {
 // The RenderAlignmentData RPC return. Always at least one group.
 export interface GroupedAlignmentsResult {
   groups: AlignmentGroup[]
+  /**
+   * What the index quoted for this region, when the fetch carried a `byteLimit`
+   * and the adapter had an estimate to give. Carried back on the success path
+   * too, so the display's gate re-anchors its stored estimate on every fetch
+   * rather than only on the ones it refuses.
+   */
+  bytes?: number
 }

@@ -8,8 +8,29 @@ import type { GroupedAlignmentsResult } from '../RenderAlignmentDataRPC/types.ts
 
 // RenderAlignmentData now returns the grouped envelope; ungrouped fetches are a
 // single section with key ''.
-function makeEmptyGroupedData(): GroupedAlignmentsResult {
-  return { groups: [{ key: '', label: '', data: makeEmptyPileupData() }] }
+function makeEmptyGroupedData(bytes?: number): GroupedAlignmentsResult {
+  return {
+    groups: [{ key: '', label: '', data: makeEmptyPileupData() }],
+    bytes,
+  }
+}
+
+// The gate rides inside the fetch: `RenderAlignmentData` takes the display's
+// `byteLimit`, reads the index before it downloads anything, and answers a
+// `RegionTooLargeResult` in place of the pileup when the region is over. There
+// is no separate estimate RPC to stub any more — this stands in for the
+// worker's own `measureRegionBytes`.
+function respondWithBytes(mockRpcCall: jest.Mock, bytes: number) {
+  mockRpcCall.mockImplementation(
+    (_sid: string, method: string, args: { byteLimit?: number }) =>
+      Promise.resolve(
+        method === 'RenderAlignmentData' &&
+          args.byteLimit !== undefined &&
+          bytes > args.byteLimit
+          ? { regionTooLarge: true, bytes }
+          : makeEmptyGroupedData(bytes),
+      ),
+  )
 }
 
 function createTestEnvironment(opts?: {
@@ -147,13 +168,7 @@ describe('FetchVisibleRegions autorun', () => {
   // ordinary data at this zoom measures small and loads.
   it('still measures below the AUTO_FORCE_LOAD_BP floor, and loads when it fits', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockImplementation((_sid: string, method: string) =>
-      Promise.resolve(
-        method === 'CoreGetRegionByteEstimate'
-          ? 50_000
-          : makeEmptyGroupedData(),
-      ),
-    )
+    respondWithBytes(mockRpcCall, 50_000)
 
     const { view, display } = createDisplay()
     view.zoomTo(1)
@@ -165,9 +180,13 @@ describe('FetchVisibleRegions autorun', () => {
     await waitFor(() => {
       expect(display.loadedRegions.size).toBe(1)
     })
-    expect(mockRpcCall.mock.calls.map(c => c[1])).toContain(
-      'CoreGetRegionByteEstimate',
-    )
+    // the budget went out with the fetch, so the worker measured
+    expect(
+      mockRpcCall.mock.calls
+        .filter(c => c[1] === 'RenderAlignmentData')
+        .every(c => c[2].byteLimit !== undefined),
+    ).toBe(true)
+    expect(display.estimatedFetchBytes).toBe(50_000)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -175,13 +194,7 @@ describe('FetchVisibleRegions autorun', () => {
   // bytes the gate had refused one zoom level earlier.
   it('gates an over-budget region below the floor instead of downloading it', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockImplementation((_sid: string, method: string) =>
-      Promise.resolve(
-        method === 'CoreGetRegionByteEstimate'
-          ? 50_000_000
-          : makeEmptyGroupedData(),
-      ),
-    )
+    respondWithBytes(mockRpcCall, 50_000_000)
 
     const { view, display } = createDisplay()
     view.zoomTo(1)
@@ -193,11 +206,10 @@ describe('FetchVisibleRegions autorun', () => {
     await waitFor(() => {
       expect(display.regionTooLarge).toBe(true)
     })
-    // the reads themselves were never requested
-    expect(mockRpcCall.mock.calls.map(c => c[1])).not.toContain(
-      'RenderAlignmentData',
-    )
+    // the fetch went out — that is what takes the measurement — and came back
+    // refused, so no reads were downloaded and nothing is marked loaded
     expect(display.loadedRegions.size).toBe(0)
+    expect(display.rpcDataMap.size).toBe(0)
   })
 
   it('does not loop after regionTooLarge is set', async () => {
@@ -215,12 +227,7 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve(50_000_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    respondWithBytes(mockRpcCall, 50_000_000)
 
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
@@ -252,12 +259,7 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve(50_000_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    respondWithBytes(mockRpcCall, 50_000_000)
 
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
@@ -269,12 +271,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Navigate to a small region whose measurement fits. The release is the
     // estimate, not the zoom: dropping under 20kb does not wave the fetch
     // through on its own, and nothing scales the stored number by span.
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve(50_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    respondWithBytes(mockRpcCall, 50_000)
     view.setDisplayedRegions([
       {
         assemblyName: 'volvox',
@@ -310,12 +307,7 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve(50_000_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    respondWithBytes(mockRpcCall, 50_000_000)
 
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
@@ -378,12 +370,7 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve(50_000_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    respondWithBytes(mockRpcCall, 50_000_000)
 
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
@@ -410,13 +397,9 @@ describe('FetchVisibleRegions autorun', () => {
     view.zoomTo(50)
 
     // The estimate never changes: force-load exempts the track outright
-    // (`gateExempt`), it doesn't raise a ceiling the adapter reports.
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve(50_000_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    // (`gateExempt`), so the next fetch carries no budget at all and the worker
+    // measures nothing rather than measuring against a raised ceiling.
+    respondWithBytes(mockRpcCall, 50_000_000)
 
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
@@ -438,7 +421,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
-  it('does not make duplicate byte estimate RPC calls', async () => {
+  it('measures once per settled viewport, not once per autorun run', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
     const { display, view } = createDisplay()
@@ -453,14 +436,16 @@ describe('FetchVisibleRegions autorun', () => {
     ])
     view.zoomTo(50)
 
-    let densityCallCount = 0
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        densityCallCount++
-        return Promise.resolve(50_000_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    let measured = 0
+    mockRpcCall.mockImplementation(
+      (_sid: string, method: string, args: { byteLimit?: number }) => {
+        if (method === 'RenderAlignmentData' && args.byteLimit !== undefined) {
+          measured++
+          return Promise.resolve({ regionTooLarge: true, bytes: 50_000_000 })
+        }
+        return Promise.resolve(makeEmptyGroupedData())
+      },
+    )
 
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
@@ -469,9 +454,10 @@ describe('FetchVisibleRegions autorun', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // Only one CoreGetRegionByteEstimate call should have been made
-    // (isLoading guard prevents the autorun from firing concurrently)
-    expect(densityCallCount).toBe(1)
+    // one measuring fetch, not one per autorun run: the isLoading guard stops
+    // them overlapping and `gateSkipsMeasuredViewport` stops the next one until
+    // the viewport moves
+    expect(measured).toBe(1)
   })
 
   it('fetch error sets display error and stops retrying', async () => {
@@ -823,12 +809,7 @@ describe('FetchVisibleRegions autorun', () => {
     // the main thread from its config, not echoed through the estimate),
     // 3MB < 5MB → should NOT be regionTooLarge.
     expect(display.adapterFetchSizeLimit).toBe(5_000_000)
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetRegionByteEstimate') {
-        return Promise.resolve(3_000_000)
-      }
-      return Promise.resolve(makeEmptyGroupedData())
-    })
+    respondWithBytes(mockRpcCall, 3_000_000)
 
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()

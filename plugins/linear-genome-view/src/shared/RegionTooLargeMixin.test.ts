@@ -58,16 +58,10 @@ const CLOSER = 60
 const NARROW = 25
 const TINY = 5
 
-describe('gateEnabled is the OR of the two opt-ins, never an override', () => {
+describe('gateEnabled is the whole opt-in', () => {
   it.each([
-    ['neither', {}, false],
-    ['pre-flight only', { measuresBytesPreFlight: true }, true],
-    ['in-fetch only', { measuresBytesInFetch: true }, true],
-    [
-      'both',
-      { measuresBytesPreFlight: true, measuresBytesInFetch: true },
-      true,
-    ],
+    ['off by default', {}, false],
+    ['on where a display overrides it', { gateEnabled: true }, true],
   ])('%s', (_label, gate, expected) => {
     const { display } = setup(gate)
     expect(display.gateEnabled).toBe(expected)
@@ -81,14 +75,14 @@ describe('gateActive', () => {
   })
 
   it('is true once a display opts in and the view is measured', () => {
-    const { display } = setup({ measuresBytesPreFlight: true })
+    const { display } = setup({ gateEnabled: true })
     expect(display.gateViewport).toBeDefined()
     expect(display.gateActive).toBe(true)
   })
 
   it('is false before the view is measured', () => {
     const env = createPerRegionTestEnvironment({
-      gate: { measuresBytesPreFlight: true },
+      gate: { gateEnabled: true },
       assemblyEnd: ASSEMBLY_END,
     })
     const { display } = env.createDisplay({ skipWidth: true }) as {
@@ -99,7 +93,7 @@ describe('gateActive', () => {
   })
 
   it('is false while the track is force-loaded', () => {
-    const { display } = setup({ measuresBytesPreFlight: true })
+    const { display } = setup({ gateEnabled: true })
     display.setForceLoadTrack(true)
     expect(display.gateExempt).toBe(true)
     expect(display.gateActive).toBe(false)
@@ -107,7 +101,7 @@ describe('gateActive', () => {
 
   it('is false while the forceLoad config slot is set', () => {
     const { display } = setup(
-      { measuresBytesPreFlight: true },
+      { gateEnabled: true },
       {
         forceLoad: true,
       },
@@ -124,7 +118,7 @@ describe('the AUTO_FORCE_LOAD_BP floor', () => {
   it.each([WIDE, CLOSER, NARROW, TINY])(
     'agrees with the resolved span at %i bp/px',
     bpPerPx => {
-      const { display, view } = setup({ measuresBytesPreFlight: true })
+      const { display, view } = setup({ gateEnabled: true })
       zoomTo(view, bpPerPx)
       const { spanBp } = display.gateViewport!
       expect(display.aboveForceLoadFloor).toBe(spanBp >= AUTO_FORCE_LOAD_BP)
@@ -132,7 +126,7 @@ describe('the AUTO_FORCE_LOAD_BP floor', () => {
   )
 
   it('the two fixtures really do straddle it', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, CLOSER)
     const closer = display.gateViewport!.spanBp
     zoomTo(view, WIDE)
@@ -147,7 +141,7 @@ describe('the AUTO_FORCE_LOAD_BP floor', () => {
 
   it('is false before the view is measured', () => {
     const env = createPerRegionTestEnvironment({
-      gate: { measuresBytesPreFlight: true },
+      gate: { gateEnabled: true },
       assemblyEnd: ASSEMBLY_END,
     })
     const { display } = env.createDisplay({ skipWidth: true }) as {
@@ -160,7 +154,7 @@ describe('the AUTO_FORCE_LOAD_BP floor', () => {
   // multiplied rather than the gate switched off, so the gate stays reachable
   // at every zoom instead of being bypassable by zooming into it.
   it('raises the byte budget below itself rather than disabling the gate', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, WIDE)
     const wideLimit = display.gateByteLimit
     expect(display.gateActive).toBe(true)
@@ -177,7 +171,7 @@ describe('the AUTO_FORCE_LOAD_BP floor', () => {
 // keeps the floor the byte axis dropped.
 describe('densityGateActive', () => {
   const gate: GateOptIns = {
-    measuresBytesInFetch: true,
+    gateEnabled: true,
     densityGateEnabled: true,
   }
 
@@ -195,7 +189,7 @@ describe('densityGateActive', () => {
   })
 
   it('is off for a display that did not opt the axis in', () => {
-    const { display, view } = setup({ measuresBytesInFetch: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, WIDE)
     expect(display.gateActive).toBe(true)
     expect(display.densityGateActive).toBe(false)
@@ -221,14 +215,14 @@ describe('densityGateActive', () => {
 
 describe('gateByteLimit', () => {
   it('takes the display config default', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, WIDE)
     expect(display.gateByteLimit).toBe(display.configuredFetchSizeLimit)
   })
 
   it('prefers a positive adapter limit over the config', () => {
     const env = createPerRegionTestEnvironment({
-      gate: { measuresBytesPreFlight: true },
+      gate: { gateEnabled: true },
       assemblyEnd: ASSEMBLY_END,
       adapter: {
         name: 'TestAdapter',
@@ -248,7 +242,7 @@ describe('gateByteLimit', () => {
 
 describe('resolvedByteLimit is what the worker enforces', () => {
   it('is the banner’s own number while the gate is active', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, WIDE)
     expect(display.resolvedByteLimit()).toBe(display.gateByteLimit)
   })
@@ -259,7 +253,7 @@ describe('resolvedByteLimit is what the worker enforces', () => {
   })
 
   it('is undefined while force-loaded, so the worker stops gating too', () => {
-    const { display } = setup({ measuresBytesPreFlight: true })
+    const { display } = setup({ gateEnabled: true })
     display.setForceLoadTrack(true)
     expect(display.resolvedByteLimit()).toBeUndefined()
   })
@@ -270,18 +264,18 @@ describe('resolvedByteLimit is what the worker enforces', () => {
 // has been measured stops fetching and a viewport that has not gets one more.
 describe('gateMeasurementStale', () => {
   it('is true before anything has been measured', () => {
-    const { display } = setup({ measuresBytesPreFlight: true })
+    const { display } = setup({ gateEnabled: true })
     expect(display.gateMeasurementStale).toBe(true)
   })
 
   it('is false once the current viewport is stamped', () => {
-    const { display } = setup({ measuresBytesPreFlight: true })
+    const { display } = setup({ gateEnabled: true })
     display.setGateMeasuredViewport(display.gateViewport!)
     expect(display.gateMeasurementStale).toBe(false)
   })
 
   it('goes true again when the viewport moves under it', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     display.setGateMeasuredViewport(display.gateViewport!)
     view.scrollTo(view.offsetPx + view.width)
     expect(display.gateMeasurementStale).toBe(true)
@@ -290,7 +284,7 @@ describe('gateMeasurementStale', () => {
   // It records that the gate ASKED about this viewport, not that it learned a
   // number: an adapter quoting no estimate still moves it.
   it('is separate from having an estimate', () => {
-    const { display } = setup({ measuresBytesPreFlight: true })
+    const { display } = setup({ gateEnabled: true })
     display.setGateMeasuredViewport(display.gateViewport!)
     expect(display.estimatedFetchBytes).toBeUndefined()
     expect(display.gateMeasurementStale).toBe(false)
@@ -305,12 +299,12 @@ describe('zoomCanReleaseGate', () => {
   }
 
   it('is true before anything has been measured', () => {
-    const { display } = setup({ measuresBytesPreFlight: true })
+    const { display } = setup({ gateEnabled: true })
     expect(display.zoomCanReleaseGate).toBe(true)
   })
 
   it('is true on a single measurement — one point is not evidence', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, WIDE)
     overBudget(display)
     expect(display.regionTooLarge).toBe(true)
@@ -318,7 +312,7 @@ describe('zoomCanReleaseGate', () => {
   })
 
   it('goes false when a materially closer zoom returns the same bytes', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, WIDE)
     overBudget(display)
     // an index quotes whole blocks, so this file's estimate does not move
@@ -328,7 +322,7 @@ describe('zoomCanReleaseGate', () => {
   })
 
   it('comes back the moment the bytes do fall', () => {
-    const { display, view } = setup({ measuresBytesPreFlight: true })
+    const { display, view } = setup({ gateEnabled: true })
     zoomTo(view, WIDE)
     overBudget(display)
     zoomTo(view, CLOSER)
@@ -346,7 +340,7 @@ describe('zoomCanReleaseGate', () => {
   // banner would then withhold the one way out that works.
   it('stays true on a density banner, however flat the bytes are', () => {
     const { display, view, control } = setup({
-      measuresBytesInFetch: true,
+      gateEnabled: true,
       densityGateEnabled: true,
     })
     control.densityTooLarge = true
