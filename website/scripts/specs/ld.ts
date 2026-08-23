@@ -756,6 +756,23 @@ export const ldSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: 'chr2:116,000,000-156,000,000',
           tracks: [
+            // The same gene lane the frame below carries, so the wide panel is
+            // a stretch of chromosome with genes all along it rather than a
+            // bare scatter, and the peak is over one of them (review: "it
+            // might be useful to show the gene track in the first figure of
+            // the lct panel in the zoom out").
+            //
+            // showOnlyGenes for the same reason as below, and `collapsed`
+            // because 40 Mb of RefSeq stacks into rows that are all the same
+            // statement at this width: what a reader can take off the lane
+            // here is where genes are, not which transcript is which.
+            {
+              trackId: 'hg38-ncbiRefSeqCurated',
+              type: 'LinearBasicDisplay',
+              displayMode: 'collapsed',
+              height: 40,
+              showOnlyGenes: true,
+            },
             {
               trackId: 'kgp_lct_fst_scan',
               type: 'LinearWiggleDisplay',
@@ -780,8 +797,8 @@ export const ldSpecs: ScreenshotSpec[] = [
     // cut off below 0.2 and the noise floor went with it, which is the half of
     // the picture that makes the peak a peak. Neither of the run's own reports
     // sees this -- the clipping is the viewport cutting the display, not content
-    // below the fold.
-    viewportHeight: 450,
+    // below the fold. The gene lane and its header take the rest.
+    viewportHeight: 520,
     // The peak named, from the side. It sits at 0.474 on an axis that stops at
     // 0.5, so there is no room above it for a pill, and the y is derived rather
     // than measured: wiggle-core's axisPlotBox insets the plot by

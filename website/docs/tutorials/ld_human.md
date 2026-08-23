@@ -70,28 +70,35 @@ notebook. It applies to the one view that declares it;
 [`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) sets a
 ceiling for the whole track at every locus.
 
-## A sweep leaves a long haplotype
+## Where the block comes from
 
-Selection driving one haplotype to high frequency carries every variant on it
-along, leaving a stretch of correlated variants. That stretch is the signal
-[Bersaglieri et al. 2004](https://doi.org/10.1086/421051) read at this locus.
+A haplotype is a run of neighbouring variants sitting on the same copy of a
+chromosome, passed on together as a unit. Selection favouring one of them, here
+the allele that keeps lactase switched on into adulthood, carries the whole run
+up in frequency with it. That is a selective sweep, and it leaves every variant
+along the run correlated with the others, which is the block in the triangle.
+The stretch it left at this locus is what
+[Bersaglieri et al. 2004](https://doi.org/10.1086/421051) read.
 
-<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, Weir and Cockerham Fst per variant across 40 Mb of chr2. Under the wedge, the same locus, window and MAF floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
+<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across 40 Mb of chr2. Under the wedge, the same locus, window and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
 Every site in the frame sits on the swept haplotype, so the frame's own
 background is the sweep and the lanes around it carry the outside evidence.
 
-- **Fst, top.** Widened to forty megabases, rs4988235 is the most differentiated
-  variant in the span and the ten highest-scoring sites are all inside the block
-  with it. Read it per variant, which is what the
+- **Fst, top.** Fst scores how differently two sets of samples carry a variant,
+  so a variant one panel carries and the other mostly lacks scores high. Widened
+  to forty megabases, rs4988235 is the most differentiated variant in the span
+  and the ten highest-scoring sites are all inside the block with it. Read it
+  per variant, which is what the
   [build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
   scores: a sweep differentiates the variants on its own haplotype and leaves
   the rest of a bin on the background, so averaging a bin averages the signal
   away.
 - **Genetic map.** The block fills the span where the deCODE map
   ([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) reads
-  flat, with a hotspot at each end. It counts crossovers in sequenced families,
-  so it carries no LD of its own. It loads as an ordinary
+  flat, with a recombination hotspot at each end, where crossovers are frequent
+  enough to break a haplotype up. It counts crossovers in sequenced families, so
+  it carries no LD of its own. It loads as an ordinary
   [quantitative track](/docs/user_guides/quantitative_track) from the same hg38
   hub as the gene lane.
 - **The two triangles.** Lactase persistence swept in Europe, so the block is a
