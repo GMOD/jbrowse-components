@@ -32,9 +32,11 @@ The input file should be bgzipped and tabix-indexed:
 
 ```bash
 plink --bfile study --r2 --out study
-{ printf '#'; head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n; } \
-  > study.sorted.ld
-bgzip study.sorted.ld
+# plink pads its columns with spaces and tabix indexes on tabs, so retab as
+# well as commenting the header; sort-bed is `sort -k1,1 -k2,2n` under
+# LC_ALL=C with the `#` line kept on top
+awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' study.ld |
+  jbrowse sort-bed | bgzip > study.sorted.ld.gz
 tabix -s 1 -b 2 -e 2 study.sorted.ld.gz
 ```
 

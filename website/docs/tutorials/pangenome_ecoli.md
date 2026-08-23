@@ -309,10 +309,9 @@ has nothing to read here, because untangle reports no length change:
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/untangle_to_bed.py
 python3 untangle_to_bed.py ecoli_pggb_untangle.paf chr > ecoli_pggb_untangle_rows.bed
-# keep the header first, sort the rest
-(head -1 ecoli_pggb_untangle_rows.bed
- tail -n +2 ecoli_pggb_untangle_rows.bed | sort -k1,1 -k2,2n) \
-  | bgzip > ecoli_pggb_untangle_rows.bed.gz
+# the writer's header line is `#`-prefixed, and `jbrowse sort-bed` keeps every
+# such line on top while sorting the rest — `sort -k1,1 -k2,2n` under LC_ALL=C
+jbrowse sort-bed ecoli_pggb_untangle_rows.bed | bgzip > ecoli_pggb_untangle_rows.bed.gz
 tabix -p bed ecoli_pggb_untangle_rows.bed.gz
 ```
 

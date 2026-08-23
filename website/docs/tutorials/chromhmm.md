@@ -79,9 +79,8 @@ per-cell-type BEDs:
   done
 } > multirow.bed
 
-# `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C with the #-defline kept on
-# top: the order tabix wants, and the one a bare `sort` gets wrong in any other
-# locale
+# `sort-bed` is `sort -k1,1 -k2,2n` with the #-defline kept on top, and pins
+# LC_ALL=C so nine files' worth of refnames group the same way everywhere
 jbrowse sort-bed multirow.bed | bgzip > multirow.bed.gz
 tabix -p bed multirow.bed.gz
 ```

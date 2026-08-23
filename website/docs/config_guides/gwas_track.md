@@ -24,12 +24,13 @@ to `negLog10` (raw p-value) or `negLog10FromLn` (natural-log p-value, e.g. a
 Pan-UKBB `ln P` column) and the conversion happens at read time.
 
 Prefix the header so tabix skips it, sort the data rows by chromosome and
-position (keeping the header on the first line), and bgzip/tabix:
+position, and bgzip/tabix:
 
 ```bash
-(sed '1s/^/#/;q' results.tsv; tail -n +2 results.tsv | sort -k1,1 -k2,2n) > results.sorted.txt
-
-bgzip results.sorted.txt
+# `jbrowse sort-bed` is `sort -k1,1 -k2,2n` with every #-prefixed line kept on
+# top rather than sorted into the data, and pins LC_ALL=C so the grouping tabix
+# indexes on comes out the same everywhere
+sed '1s/^/#/' results.tsv | jbrowse sort-bed | bgzip > results.sorted.txt.gz
 tabix -p bed results.sorted.txt.gz
 ```
 
@@ -78,11 +79,12 @@ genome-wide LD, bgzip and tabix the file so only pairs in the visible region are
 fetched, then use [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter):
 
 ```bash
-# Comment the header with '#', then sort the remaining lines by CHR_A, BP_A
-{ printf '#'; head -1 study.ld; tail -n +2 study.ld | sort -k1,1 -k2,2n; } \
-  > study.sorted.ld
+# plink pads its columns with spaces and tabix indexes on tabs, so the awk
+# retabs as well as commenting the header. `jbrowse sort-bed` is then
+# `sort -k1,1 -k2,2n` under LC_ALL=C with that `#` line kept on top.
+awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' study.ld |
+  jbrowse sort-bed | bgzip > study.sorted.ld.gz
 
-bgzip study.sorted.ld
 # BP positions in PLINK output are 1-based, matching tabix's default
 tabix -s 1 -b 2 -e 2 study.sorted.ld.gz
 ```

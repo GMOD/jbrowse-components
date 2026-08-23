@@ -291,13 +291,9 @@ jb make-pif ecoli_pggb_untangle.paf
 # picture), and untangle's `sc:f:` self-coverage, above 1 exactly where the graph
 # collapsed a repeat.
 python3 "$SCRIPT_DIR/untangle_to_bed.py" ecoli_pggb_untangle.paf chr \
-  > ecoli_pggb_untangle_rows.bed.tmp
-# keep the header first, sort the rest
-(head -1 ecoli_pggb_untangle_rows.bed.tmp
- tail -n +2 ecoli_pggb_untangle_rows.bed.tmp | sort -k1,1 -k2,2n) \
   > ecoli_pggb_untangle_rows.bed
-rm -f ecoli_pggb_untangle_rows.bed.tmp
-bgzip -f ecoli_pggb_untangle_rows.bed
+# the writer's header line is `#`-prefixed, so sort-bed keeps it on top
+jb sort-bed ecoli_pggb_untangle_rows.bed | bgzip > ecoli_pggb_untangle_rows.bed.gz
 tabix -f -p bed ecoli_pggb_untangle_rows.bed.gz
 
 # ── Projection 2: pangenome variants (rename the REF path to the assembly chr) ─
