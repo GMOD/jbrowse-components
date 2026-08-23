@@ -10,7 +10,7 @@ entries actually disagree on. Roughly two fifths are ordinary build work; a
 quarter carry a design that survived a rejected alternative and needs following
 rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing. Ten are blocked on a visual call that is
+building first would be guessing. Eleven are blocked on a visual call that is
 not the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
@@ -86,6 +86,7 @@ the half that rots is the half it covers.
 | [Synteny clicked outline in tiled mode](todo/the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode.md) | synteny | get the visual call — hull silhouette or per-tile |
 | [Sub-pixel matrix rows draw 1px on the GPU and thinner on Canvas2D](todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md) | variants, backends | a visual call; the 41% is measured and neither side is obviously wrong |
 | [Fill the hi-C rectangle, not just the triangle](todo/fill-the-whole-display-rectangle-not-just-the-hi-c-triangle.md) | hic, GPU | decide what the y axis means once the apex stops bounding it; the cost is measured |
+| [A mixed region set banners the whole display](todo/per-region-banner-for-a-mixed-region-set.md) | limits, chrome | decide whether a partially-refused display draws at all; the fetch is per-region and the banner is not |
 
 ## Measure first: the premise or the cost attribution is unconfirmed
 
