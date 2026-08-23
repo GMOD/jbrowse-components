@@ -1,100 +1,90 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util'
 
-// Command imports
-import { run as addAssemblyRun } from './commands/add-assembly/index.ts'
-import { run as addConnectionRun } from './commands/add-connection.ts'
-import { run as addTrackJsonRun } from './commands/add-track-json.ts'
-import { run as addTrackRun } from './commands/add-track.ts'
-import { run as adminServerRun } from './commands/admin-server/index.ts'
-import { run as createRun } from './commands/create.ts'
-import { run as makePIFRun } from './commands/make-pif/index.ts'
-import { run as removeTrackRun } from './commands/remove-track.ts'
-import { run as setDefaultSessionRun } from './commands/set-default-session.ts'
-import { run as sortBedRun } from './commands/sort-bed.ts'
-import { run as sortGffRun } from './commands/sort-gff.ts'
-import { run as textIndexRun } from './commands/text-index/index.ts'
-import { run as upgradeRun } from './commands/upgrade.ts'
-import { run as validateRun } from './commands/validate/index.ts'
 import { version } from './version.ts'
 
 // single source of truth for both dispatch and the global help listing, so a
-// new command can never be wired into one but forgotten in the other
+// new command can never be wired into one but forgotten in the other.
+//
+// Each command is LOADED WHEN IT IS DISPATCHED, not imported here: a static
+// import list makes every invocation pay for every command's module graph, and
+// text-index's parsers alone are most of it. `jbrowse add-track` went from
+// 0.35s to 0.21s of startup, which is the whole of what that command does.
 const registry: {
   name: string
   summary: string
-  run: (args: string[]) => Promise<void>
+  load: () => Promise<(args: string[]) => Promise<void>>
 }[] = [
   {
     name: 'create',
     summary: 'Downloads and installs the latest JBrowse 2 release',
-    run: createRun,
+    load: () => import('./commands/create.ts').then(m => m.run),
   },
   {
     name: 'add-assembly',
     summary: 'Add an assembly to a JBrowse 2 configuration',
-    run: addAssemblyRun,
+    load: () => import('./commands/add-assembly/index.ts').then(m => m.run),
   },
   {
     name: 'add-track',
     summary: 'Add a track to a JBrowse 2 configuration',
-    run: addTrackRun,
+    load: () => import('./commands/add-track.ts').then(m => m.run),
   },
   {
     name: 'validate',
     summary:
       'Check a configuration for errors, including ones JBrowse accepts silently',
-    run: validateRun,
+    load: () => import('./commands/validate/index.ts').then(m => m.run),
   },
   {
     name: 'text-index',
     summary: 'Make a text-indexing file for any given track(s)',
-    run: textIndexRun,
+    load: () => import('./commands/text-index/index.ts').then(m => m.run),
   },
   {
     name: 'admin-server',
     summary: 'Start up a small admin server for JBrowse configuration',
-    run: adminServerRun,
+    load: () => import('./commands/admin-server/index.ts').then(m => m.run),
   },
   {
     name: 'upgrade',
     summary: 'Upgrades JBrowse 2 to latest version',
-    run: upgradeRun,
+    load: () => import('./commands/upgrade.ts').then(m => m.run),
   },
   {
     name: 'make-pif',
     summary: 'Creates pairwise indexed PAF (PIF), with bgzip and tabix',
-    run: makePIFRun,
+    load: () => import('./commands/make-pif/index.ts').then(m => m.run),
   },
   {
     name: 'sort-gff',
     summary: 'Sort a GFF/GTF for tabix: sort -k1,1 -k4,4n, header kept on top',
-    run: sortGffRun,
+    load: () => import('./commands/sort-gff.ts').then(m => m.run),
   },
   {
     name: 'sort-bed',
     summary: 'Sort a BED for tabix: sort -k1,1 -k2,2n, header kept on top',
-    run: sortBedRun,
+    load: () => import('./commands/sort-bed.ts').then(m => m.run),
   },
   {
     name: 'add-connection',
     summary: 'Add a connection to a JBrowse 2 configuration',
-    run: addConnectionRun,
+    load: () => import('./commands/add-connection.ts').then(m => m.run),
   },
   {
     name: 'add-track-json',
     summary: 'Add a track configuration directly from a JSON hunk',
-    run: addTrackJsonRun,
+    load: () => import('./commands/add-track-json.ts').then(m => m.run),
   },
   {
     name: 'remove-track',
     summary: 'Remove a track configuration from a JBrowse 2 configuration',
-    run: removeTrackRun,
+    load: () => import('./commands/remove-track.ts').then(m => m.run),
   },
   {
     name: 'set-default-session',
     summary: 'Set a default session with views and tracks',
-    run: setDefaultSessionRun,
+    load: () => import('./commands/set-default-session.ts').then(m => m.run),
   },
 ]
 
@@ -155,7 +145,9 @@ export async function main(args: string[]) {
     if (flags.help && !commandArgs.some(a => a === '--help' || a === '-h')) {
       commandArgs.push('--help')
     }
-    await command.run(commandArgs)
+    await (
+      await command.load()
+    )(commandArgs)
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     const code =
