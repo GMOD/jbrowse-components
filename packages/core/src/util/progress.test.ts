@@ -9,6 +9,7 @@ import {
   statusMessageText,
   statusProgressLabel,
   statusReading,
+  throttleStatusEmits,
   updateStatus,
   withProgress,
 } from './progress.ts'
@@ -360,6 +361,95 @@ describe('createStatusWindow', () => {
       clock += 100
       jest.advanceTimersByTime(100)
       expect(seen).toEqual(['Downloading'])
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+})
+
+describe('throttleStatusEmits', () => {
+  let clock = 0
+  beforeEach(() => {
+    clock = 1_000_000
+    jest.spyOn(Date, 'now').mockImplementation(() => clock)
+  })
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  const open = () => {
+    const seen: RpcStatus[] = []
+    return { seen, emit: throttleStatusEmits(s => seen.push(s)) }
+  }
+
+  it('passes the first reading and thins the ones behind it', () => {
+    jest.useFakeTimers()
+    try {
+      const { seen, emit } = open()
+      for (const current of [1, 2, 3]) {
+        emit({ message: 'Downloading', current, total: 10 })
+      }
+      expect(seen).toEqual([{ message: 'Downloading', current: 1, total: 10 }])
+      clock += 100
+      jest.advanceTimersByTime(100)
+      // the newest of the burst, not the next one in line
+      expect(seen).toEqual([
+        { message: 'Downloading', current: 1, total: 10 },
+        { message: 'Downloading', current: 3, total: 10 },
+      ])
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  // A label change is a phase boundary, and the aggregate credits the phase it
+  // leaves at the total of the last reading it saw — so the queued reading has
+  // to land first or that credit is computed from a stale one.
+  it('flushes what is queued ahead of a new phase, and both go at once', () => {
+    jest.useFakeTimers()
+    try {
+      const { seen, emit } = open()
+      emit({ message: 'Downloading', current: 1, total: 10 })
+      emit({ message: 'Downloading', current: 9, total: 10 })
+      emit('Parsing')
+      expect(seen).toEqual([
+        { message: 'Downloading', current: 1, total: 10 },
+        { message: 'Downloading', current: 9, total: 10 },
+        'Parsing',
+      ])
+      jest.advanceTimersByTime(1000)
+      expect(seen).toHaveLength(3)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  it('never delays the phase-over sentinel or a failure', () => {
+    jest.useFakeTimers()
+    try {
+      const { seen, emit } = open()
+      emit('Downloading')
+      emit({ message: 'Downloading', failed: true, current: 3, total: 10 })
+      emit('')
+      expect(seen).toEqual([
+        'Downloading',
+        { message: 'Downloading', failed: true, current: 3, total: 10 },
+        '',
+      ])
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  it('lets a reading through once the window has passed', () => {
+    jest.useFakeTimers()
+    try {
+      const { seen, emit } = open()
+      emit('Downloading')
+      clock += 100
+      jest.advanceTimersByTime(100)
+      emit('Downloading')
+      expect(seen).toEqual(['Downloading', 'Downloading'])
     } finally {
       jest.useRealTimers()
     }

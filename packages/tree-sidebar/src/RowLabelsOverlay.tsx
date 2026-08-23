@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
 
 import { SvgRowLabels } from './SvgRowLabels.tsx'
@@ -36,6 +38,14 @@ import type { RowLabelSource } from './types.ts'
  * label overlay with nothing in it is a `<svg>` swallowing nothing, but it is
  * also a DOM node that test selectors and screenshot doneness gates can see.
  *
+ * **Memoized**, because none of what it draws is a function of the viewport. A
+ * display body re-renders on every animation frame of a wheel zoom — its
+ * `visible*` getters are all derived from the view's coordinates — and dragged
+ * this whole overlay along with it: one `measureText` per row to size the label
+ * box, a `getContrastText` per row, and N rects and texts to reconcile, none of
+ * which a zoom changes. `sources` is a MobX computed, so its identity is stable
+ * for exactly as long as the row list is.
+ *
  * `showLabels: false` keeps that `<svg>` and drops only the labels inside it,
  * for the same reason: this element is the doneness signal several displays gate
  * their capture on (it exists only once rows are derived from fetched data,
@@ -43,7 +53,7 @@ import type { RowLabelSource } from './types.ts'
  * element itself instead would make turning labels off also turn off the gate,
  * and the figure would capture blank.
  */
-export function RowLabelsOverlay({
+export const RowLabelsOverlay = memo(function RowLabelsOverlay({
   sources,
   rowHeight,
   labelOffset,
@@ -99,4 +109,4 @@ export function RowLabelsOverlay({
       </svg>
     </TrackOverlayPortal>
   ) : null
-}
+})

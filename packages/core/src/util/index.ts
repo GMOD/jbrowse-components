@@ -140,6 +140,7 @@ export {
   statusMessageText,
   statusProgressLabel,
   statusReading,
+  throttleStatusEmits,
   updateStatus,
   withProgress,
 } from './progress.ts'

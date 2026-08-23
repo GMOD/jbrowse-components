@@ -119,15 +119,21 @@ export default function LoadingOverlay({
   // flips `immediate` mid-load: it passes `immediate={!painted}`, so first paint
   // drops it while the phase is still `loading` — region 1 drawn, regions 2..n
   // in flight. The scrim then blinked out for a fresh 250 ms in the middle of
-  // one continuous load. Same input as `cancelableAfterDelay` below, which never
-  // had the bug.
+  // one continuous load.
   const shownAfterDelay = useDelayedFlag(!!isVisible, flashDelayMs)
-  const shown = isVisible && (immediate || shownAfterDelay)
+  const shown = !!isVisible && (!!immediate || shownAfterDelay)
 
   // only offer cancel after the overlay has been continuously visible for a few
-  // seconds, so a quick load can't be canceled by an accidental click
-  const cancelableAfterDelay = useDelayedFlag(!!isVisible, cancelDelayMs)
-  const cancelable = isVisible && cancelableAfterDelay
+  // seconds, so a quick load can't be canceled by an accidental click.
+  //
+  // Keyed on `shown` rather than `isVisible`, which is what "continuously
+  // visible" means and is also what keeps this timer out of a zoom: a display
+  // refetching per animation frame flips `isVisible` a couple of times a frame,
+  // and each flip was a clearTimeout/setTimeout pair for a five-second delay
+  // that could never elapse — 368 timer installs over a ten-second gesture,
+  // half of them these.
+  const cancelableAfterDelay = useDelayedFlag(shown, cancelDelayMs)
+  const cancelable = shown && cancelableAfterDelay
 
   // Rendered only while shown. The content chip is `pointerEvents:auto`, so
   // leaving it mounted (merely transparent) in the idle state would silently

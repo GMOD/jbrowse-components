@@ -173,6 +173,15 @@ interface WheelState {
   zoomAccum: number
   target: WheelZoomTarget | undefined
   lastClientX: number
+  // Left edge of the origin element, measured once per gesture. Reading it in
+  // the rAF is a forced layout against the DOM React committed for the previous
+  // frame, so the browser lays out twice per frame of a zoom — measured at
+  // ~1.5ms a frame on a four-track view. Nothing a zoom does moves that edge:
+  // the gesture preventDefaults the scroll, and the tracks container's left is
+  // set by the view's chrome, not by its content. A gesture that starts after a
+  // resize or a drawer opening measures again, because the cache lives exactly
+  // as long as the gesture.
+  originLeft: number | undefined
   // the previous frame's stamp, which the zoom rate limit measures elapsed
   // against. The frame itself belongs to the coalescer, not to this state.
   lastRafTime: number | null
@@ -217,6 +226,7 @@ export function createWheelZoomController({
     zoomAccum: 0,
     target: undefined,
     lastClientX: 0,
+    originLeft: undefined,
     lastRafTime: null,
     lastZoomTime: null,
     lastEventTime: null,
@@ -230,6 +240,7 @@ export function createWheelZoomController({
     ? trackPointerPresence(element, () => {
         s.scrollDelta = 0
         s.zoomAccum = 0
+        s.originLeft = undefined
       })
     : undefined
 
@@ -239,9 +250,13 @@ export function createWheelZoomController({
     const { target } = s
     if (target) {
       const origin = target.originElement()
+      if (s.zoomAccum !== 0 && origin && s.originLeft === undefined) {
+        s.originLeft = origin.getBoundingClientRect().left
+      }
+      const originLeft = s.originLeft
       transaction(() => {
-        if (s.zoomAccum !== 0 && origin) {
-          const offset = s.lastClientX - origin.getBoundingClientRect().left
+        if (s.zoomAccum !== 0 && originLeft !== undefined) {
+          const offset = s.lastClientX - originLeft
           for (const view of target.views) {
             view.zoomTo(
               applyZoomAccum(view.bpPerPx, s.zoomAccum, elapsed),
@@ -278,6 +293,7 @@ export function createWheelZoomController({
       // otherwise lift the zoom rate limit on the first frame back
       if (!isActivelyZooming(event.timeStamp, s.lastEventTime)) {
         s.lastRafTime = null
+        s.originLeft = undefined
       }
       s.lastEventTime = event.timeStamp
       s.target = target

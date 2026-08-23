@@ -1,6 +1,6 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { setNumberGrouping } from '@jbrowse/core/util'
+import { setNumberGrouping, throttleStatusEmits } from '@jbrowse/core/util'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 import { enableStaticRendering } from 'mobx-react'
@@ -109,9 +109,12 @@ export function wrapForRpc(func: RpcFunc) {
         ? rest
         : {
             ...rest,
-            statusCallback: (message: RpcStatus) => {
+            // thinned here rather than only where it lands: every emit costs a
+            // postMessage, a task and a clone on the main thread, which then
+            // throttles the same stream again to decide what to draw
+            statusCallback: throttleStatusEmits((message: RpcStatus) => {
               self.rpcServer?.emit(channel, message)
-            },
+            }),
           },
     )
   }

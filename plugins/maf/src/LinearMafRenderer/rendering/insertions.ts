@@ -10,6 +10,15 @@ import { CHAR_SIZE_WIDTH, LABEL_FONT } from './types.ts'
 import type { InsertionMarker } from '../../LinearMafDisplay/components/computeVisibleInsertions.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
+function insertionDrawsLabel(marker: InsertionMarker, pxPerBp: number) {
+  const type = getInsertionType(marker.length, pxPerBp)
+  return (
+    marker.h >= MIN_HEIGHT_FOR_TEXT &&
+    (type === 'large' ||
+      (type === 'small' && pxPerBp >= MIN_PX_PER_BP_FOR_TEXT))
+  )
+}
+
 /**
  * Draw one insertion marker + its length label, shared by the on-screen MAF
  * `InsertionsOverlay` and the Canvas2D export path so the two can't drift. The
@@ -66,8 +75,18 @@ export function drawMafInsertions(
   insertionColor: string,
   pxPerBp: number,
 ) {
-  ctx.font = LABEL_FONT.css
-  ctx.textBaseline = 'middle'
+  // Only when a marker will actually draw a count. Touching text on a canvas —
+  // the `font` setter and `fillText` alike — makes the browser resolve the
+  // canvas element's font, which flushes the whole document's pending style
+  // recalc. This overlay draws from a passive effect, right after React has
+  // committed a frame's worth of dirty inline styles, so an unconditional
+  // `ctx.font` charged this draw for all of it (measured at 1.3ms a frame on a
+  // four-track view, at zoom levels where the rows are too short for a single
+  // letter). Markers themselves are rects, which force nothing.
+  if (markers.some(m => insertionDrawsLabel(m, pxPerBp))) {
+    ctx.font = LABEL_FONT.css
+    ctx.textBaseline = 'middle'
+  }
   for (const m of markers) {
     drawMafInsertionMarker(
       ctx,

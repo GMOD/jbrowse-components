@@ -56,6 +56,35 @@ const TimeTraveller = types
     let snapshotDisposer: IDisposer | undefined
     let skipNextUndoState = false
     let debounceTimer: ReturnType<typeof setTimeout> | undefined
+    // When the last patch arrived, so one armed timer can decide on its own
+    // whether the store has gone quiet — see `armRecording`.
+    let lastPatchMs = 0
+
+    const debounceMs = 300
+
+    /**
+     * Record a snapshot once the target has been quiet for {@link debounceMs}.
+     *
+     * A debounce that re-times itself rather than one that is torn down and
+     * rebuilt per patch: a wheel zoom writes the view on every animation frame,
+     * and clearing plus reinstalling a timer for each of those patches was 320
+     * timer installs over a ten-second gesture. An armed timer that finds the
+     * store still busy re-arms for the remaining wait instead, so a burst of any
+     * length costs one timer.
+     */
+    const armRecording = (record: () => void) => {
+      lastPatchMs = Date.now()
+      const fire = () => {
+        const quietFor = Date.now() - lastPatchMs
+        if (quietFor < debounceMs) {
+          debounceTimer = setTimeout(fire, debounceMs - quietFor)
+        } else {
+          debounceTimer = undefined
+          record()
+        }
+      }
+      debounceTimer ??= setTimeout(fire, debounceMs)
+    }
 
     /**
      * Apply `history[undoIdx]` to the target without recording it. The flag
@@ -148,6 +177,15 @@ const TimeTraveller = types
         self.history = []
         self.undoIdx = -1
 
+        // read the target's current state rather than a snapshot captured per
+        // change: any change inside the debounce window re-times it, so when it
+        // does fire the two agree
+        const record = () => {
+          if (targetStore) {
+            this.addUndoState(getSnapshot(targetStore))
+          }
+        }
+
         // onPatch, not onSnapshot: this only needs to know *that* the target
         // changed, and the snapshot is taken once per debounce window below.
         // onSnapshot would serialize the whole target on every single change to
@@ -181,18 +219,7 @@ const TimeTraveller = types
             return
           }
 
-          if (debounceTimer) {
-            clearTimeout(debounceTimer)
-          }
-          debounceTimer = setTimeout(() => {
-            debounceTimer = undefined
-            // read the target's current state rather than a snapshot captured
-            // per change: any change inside the window resets this timer, so
-            // when it does fire the two agree
-            if (targetStore) {
-              this.addUndoState(getSnapshot(targetStore))
-            }
-          }, 300)
+          armRecording(record)
         })
 
         this.addUndoState(getSnapshot(targetStore))

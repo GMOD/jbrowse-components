@@ -418,6 +418,64 @@ function createStatusAggregate({ holdLastReading = false } = {}) {
 const STATUS_THROTTLE_MS = 100
 
 /**
+ * Thin one channel's status emits at the *source*, for a transport that pays
+ * per message.
+ *
+ * {@link createStatusWindow} already throttles what reaches a display's status
+ * field, but it runs on the main thread: every emit the worker made still cost
+ * a postMessage, a task and a structured clone to get there and be dropped. A
+ * scroll-zoom measured 9,668 of those in ten seconds — 23% of the main thread's
+ * busy time — for the ~100 statuses the window let through.
+ *
+ * What it drops is only ever an intermediate reading of a phase a later reading
+ * of the same phase supersedes, so {@link createStatusAggregate} is unaffected:
+ * it takes the latest reading per slot, and credits a phase its total only when
+ * the *label* changes. A change of label — including the `''` retire — and a
+ * {@link PhaseFailure} therefore go through untouched, and a reading queued
+ * behind the window is flushed ahead of the label that supersedes it so the
+ * transition still carries the phase's own last numbers.
+ */
+export function throttleStatusEmits(emit: StatusCallback) {
+  let lastEmitMs = 0
+  let lastPhase: string | undefined
+  let queued: RpcStatus | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const send = (status: RpcStatus) => {
+    lastEmitMs = Date.now()
+    lastPhase = phaseOf(status)
+    emit(status)
+  }
+  const clearQueued = () => {
+    if (timer !== undefined) {
+      clearTimeout(timer)
+      timer = undefined
+    }
+    queued = undefined
+  }
+  return (status: RpcStatus) => {
+    const wait = STATUS_THROTTLE_MS - (Date.now() - lastEmitMs)
+    if (wait > 0 && phaseOf(status) === lastPhase && !isPhaseFailure(status)) {
+      queued = status
+      timer ??= setTimeout(() => {
+        timer = undefined
+        // an assertion rather than a guard: the timer is scheduled in the same
+        // breath as the write to `queued`, and `clearQueued` drops the two
+        // together
+        const pending = queued!
+        queued = undefined
+        send(pending)
+      }, wait)
+    } else {
+      if (queued !== undefined) {
+        send(queued)
+      }
+      clearQueued()
+      send(status)
+    }
+  }
+}
+
+/**
  * Open a {@link StatusWindow} over one status field. `write` is that field's
  * **only** writer, statuses and the closing blank alike, so whatever guards it
  * — `isAlive(self)`, a React `alive` flag — guards every one of them by

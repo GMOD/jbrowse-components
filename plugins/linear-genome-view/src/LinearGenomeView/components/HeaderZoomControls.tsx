@@ -25,6 +25,15 @@ const useStyles = makeStyles()(theme => ({
   slider: {
     width: 100,
     color: theme.palette.text.secondary,
+    // The value here is live `bpPerPx`, so MUI's default 150ms ease on the thumb
+    // and the track restarts on every animation frame of a wheel zoom: the
+    // transition never completes, the thumb trails the zoom it is reporting, and
+    // the compositor gives up on the track's animated width every frame. A
+    // slider that reports a value rather than being dragged to one wants no
+    // transition at all.
+    '& .MuiSlider-thumb, & .MuiSlider-track': {
+      transition: 'none',
+    },
   },
 }))
 
