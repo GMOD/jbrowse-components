@@ -282,13 +282,12 @@ content hung the whole view's export and sat under a scrim that never lifted.
 <!-- BEGIN GENERATED FRESHNESS_SIGNATURE_CENSUS -->
 
 
-3 models across 3 packages answer `dataCurrent` by comparing the signature their data was loaded for against the one the live view calls for. A display joins by calling `isDataCurrent` and leaves by not calling it.
+2 models across 2 packages answer `dataCurrent` by comparing the signature their data was loaded for against the one the live view calls for. A display joins by calling `isDataCurrent` and leaves by not calling it.
 
 <!-- prettier-ignore -->
 | Model | Loaded signature | Live signature |
 | --- | --- | --- |
-| `plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx` | `self.loadedFetchKey` | `this.currentFetchKey` |
-| `plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts` | `self.loadedFetchKey` | `this.currentFetchKey` |
+| `packages/synteny-core/src/comparativeFetchFlags.ts` | `self.loadedFetchKey` | `self.currentFetchKey` |
 | `plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts` | `self.loadedFetchSignature` | `self.fetchSignature` |
 <!-- END GENERATED FRESHNESS_SIGNATURE_CENSUS -->
 
