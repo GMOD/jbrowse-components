@@ -16,14 +16,16 @@ import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { CanvasColorLegend } from './baseModel.ts'
 import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { Pin, ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  HeightModeMenuModel,
+  LegendItem,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // What the recovery rows (clear highlights, unpin, the filter family) carry so
 // they sort to the bottom of the track menu. Every menu level sorts by
@@ -86,9 +88,10 @@ interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
   // it just isn't reaching the canvas in this display mode. ('auto' hiding at
   // high density needs no such note: that is the mode doing its advertised job.)
   displayMode: DisplayMode
-  // the display's color-key chrome hook, present whenever it has a key at all —
-  // the "Show legend" checkbox below is the only way back from the key's own "×"
-  colorLegend: CanvasColorLegend | undefined
+  colorLegend: LegendItem[]
+  showLegend: boolean
+  showLegendDisplayTypeDefault: Pin
+  setShowLegend: (value: boolean) => void
   setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void
 }
@@ -137,20 +140,17 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 // before the radio groups so the menu reads top-to-bottom as
 // checkboxes-then-radios rather than an interleaved mix.
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
-  const legend = self.colorLegend
   return [
     toggleItem('Show outline', self.showOutline, self.setShowOutline),
-    // Only where there is a key to show — a plain feature track declaring no
-    // `legend` slot, and a variant track colored by anything but its two preset
-    // schemes, have nothing to toggle. Offered at all because the key's own "×"
-    // is otherwise a one-way door: it removes the surface it lives on, so a
-    // dismissal lasted the whole session with nothing anywhere naming it. Same
-    // item and same reasoning as the multi-row painting's.
-    ...(legend
+    ...(self.colorLegend.length
       ? [
-          showLegendCheckboxItem(!legend.dismissed, () => {
-            legend.setDismissed(!legend.dismissed)
-          }),
+          showLegendCheckboxItem(
+            self.showLegend,
+            () => {
+              self.setShowLegend(!self.showLegend)
+            },
+            { pin: self.showLegendDisplayTypeDefault },
+          ),
         ]
       : []),
   ]

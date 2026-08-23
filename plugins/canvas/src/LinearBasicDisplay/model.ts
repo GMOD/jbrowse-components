@@ -352,17 +352,7 @@ export default function stateModelFactory(
        * happened to correlate.
        */
       get colorLegend() {
-        const items = getConf(self, 'legend') as LegendItem[]
-        // Present whenever the slot declares a key, dismissed or not — see
-        // CanvasColorLegend for why dismissal is a flag on the hook rather than
-        // the hook's absence.
-        return items.length > 0
-          ? {
-              items,
-              dismissed: self.colorLegendDismissed,
-              setDismissed: self.setColorLegendDismissed,
-            }
-          : undefined
+        return getConf(self, 'legend') as LegendItem[]
       },
     }))
     .views(self => {

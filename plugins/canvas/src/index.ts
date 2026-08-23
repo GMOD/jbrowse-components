@@ -101,10 +101,7 @@ export type {
 // Types that appear in the inferred shape of the exported display models. They
 // have to be reachable from this entry or tsc names them by source path in
 // consumers' .d.ts — see scripts/check-declaration-leaks.ts.
-export type {
-  CanvasColorLegend,
-  GeneGlyphNotice,
-} from './LinearBasicDisplay/baseModel.ts'
+export type { GeneGlyphNotice } from './LinearBasicDisplay/baseModel.ts'
 export type { RegionDensityStats } from './shared/regionDensity.ts'
 export type { CanvasFeatureRenderingBackend } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
 export type { LinearBasicDisplayComponentProps } from './LinearBasicDisplay/components/FeatureComponent.tsx'

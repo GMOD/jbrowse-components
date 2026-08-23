@@ -30,6 +30,7 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   HeightModeMixin,
+  LegendMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   autorunOnReadyView,
@@ -193,20 +194,6 @@ export interface GeneGlyphNotice {
   dismiss: () => void
 }
 
-export interface CanvasColorLegend {
-  items: LegendItem[]
-  // Session-only visibility, and the reason this is a flag rather than the
-  // one-way `dismiss()` it used to be: the key's own "×" is the only thing that
-  // could put it away, and it disappears with the key it just removed, so a
-  // dismissal lasted until reload with nothing anywhere offering it back. The
-  // multi-row painting hit this and answered it with a "Show legend" checkbox;
-  // the hook is therefore present whenever a key EXISTS — dismissed or not — so
-  // that checkbox has something to see. Drawing is `!dismissed`, on screen and
-  // in the SVG export alike.
-  dismissed: boolean
-  setDismissed: (value: boolean) => void
-}
-
 export type { Region } from '@jbrowse/core/util'
 
 const ColorByAttributeDialog = lazy(
@@ -243,6 +230,7 @@ export default function baseStateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         HeightModeMixin(),
+        LegendMixin(),
         MultiRegionDisplayMixin(),
         // The feature-density axis of the region-too-large gate: the model-side
         // sibling of DisplayChrome. Supplies densityStatsPerRegion,
@@ -349,14 +337,6 @@ export default function baseStateModelFactory(
          * #volatile
          */
         rpcDataMap: regionDataMap<LoadedFeatureData>('rpcDataMap'),
-        /**
-         * #volatile
-         * Session-only acknowledgement of the color key's "×". Owned here
-         * rather than by each display that declares a `colorLegend`, since the
-         * hook, the drawing and the "Show legend" checkbox that reverses it are
-         * all the base's — see CanvasColorLegend.
-         */
-        colorLegendDismissed: false,
         /**
          * #volatile
          */
@@ -479,14 +459,13 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Overridable hook (default absent): a floating color key to draw over
-         * the canvas. Present whenever a display's active coloring HAS a key
-         * worth showing (variants' consequence impact / SV type presets, the
-         * `legend` config slot) — whether or not the user has put it away, which
-         * is the hook's own `dismissed` flag. See CanvasColorLegend.
+         * Overridable hook (default none): the color key to draw over the
+         * canvas whenever the display's active coloring has one — variants'
+         * consequence impact / SV type presets, the `legend` config slot.
+         * Whether it shows is `LegendMixin`'s `showLegend`.
          */
-        get colorLegend(): CanvasColorLegend | undefined {
-          return undefined
+        get colorLegend(): LegendItem[] {
+          return []
         },
       }))
       .views(self => ({
@@ -2245,9 +2224,6 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-          setColorLegendDismissed(value: boolean) {
-            self.colorLegendDismissed = value
-          },
 
           /**
            * #action

@@ -491,15 +491,12 @@ const FeatureBody = observer(function FeatureBody({
 const ColorLegendOverlay = observer(function ColorLegendOverlay({
   model,
 }: LinearBasicDisplayComponentProps) {
-  const legend = model.colorLegend
-  // The hook is present whenever a key exists; `dismissed` is what decides
-  // whether it draws, so the track menu's "Show legend" checkbox can still see a
-  // key the user has put away. See CanvasColorLegend.
-  return legend && !legend.dismissed ? (
+  const items = model.colorLegend
+  return model.showLegend && items.length > 0 ? (
     <FloatingLegend
-      items={legend.items}
+      items={items}
       onDismiss={() => {
-        legend.setDismissed(true)
+        model.setShowLegend(false)
       }}
     />
   ) : null

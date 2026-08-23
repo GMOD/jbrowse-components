@@ -23,10 +23,10 @@ import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { CanvasColorLegend } from './baseModel.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type {
   ExportSvgDisplayOptions,
+  LegendItem,
   LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -43,7 +43,8 @@ export interface RenderSvgModel extends SvgExportable {
   // in — see the model getter
   renderedShowSubfeatureLabels: boolean
   labelFontSize: number
-  colorLegend: CanvasColorLegend | undefined
+  colorLegend: LegendItem[]
+  showLegend: boolean
 }
 
 export async function renderSvg(
@@ -174,12 +175,12 @@ function CanvasFeaturesSvgBody({
           `onDismiss`, since an exported legend can't be clicked. Skipped when
           the user has put the key away on screen, so the export matches what
           they were looking at. */}
-      {colorLegend && !colorLegend.dismissed ? (
+      {model.showLegend && colorLegend.length > 0 ? (
         <SvgColorLegend
           canvasWidth={canvasWidth}
           maxHeight={height}
           testid="canvas-color-legend"
-          entries={colorLegend.items.map(item => ({
+          entries={colorLegend.map(item => ({
             key: item.label,
             label: item.label,
             color: item.color,

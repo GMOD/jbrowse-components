@@ -58,6 +58,19 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       // (default 1) — single source of truth for the density gate
       /**
        * #slot
+       * show the display's color key when it has one (the `legend` slot, or a
+       * variant track's consequence-impact / SV-type presets). Unset (the
+       * default) follows the session-wide default for this display type,
+       * falling back to on; an explicit true/false customizes the track
+       */
+      showLegend: {
+        type: 'maybeBoolean',
+        description:
+          'show the color key. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+        promotedBase: true,
+      },
+      /**
+       * #slot
        */
       showLabels: {
         type: 'maybeStringEnum',

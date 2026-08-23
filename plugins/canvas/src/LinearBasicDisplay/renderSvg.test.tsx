@@ -102,7 +102,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     // label widths are baked at LABEL_FONT_SIZE and scaled to the drawn size, so
     // the fixture has to name a size the display actually resolves to
     labelFontSize: LABEL_FONT_SIZE,
-    colorLegend: undefined,
+    colorLegend: [],
+    showLegend: true,
     ...overrides,
   }
 }
@@ -317,27 +318,24 @@ describe('renderSvg', () => {
   // screen stays away, so the export matches what they were looking at.
   it('bakes the display color key into the export, and omits it when absent or dismissed', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
-    const exportWith = async (dismissed: boolean) =>
+    const exportWith = async (showLegend: boolean) =>
       renderResult(
         await renderSvg(
           makeModel({
             laidOutDataMap: new Map([[0, data]]),
-            colorLegend: {
-              items: [
-                { label: 'HIGH', color: '#d32f2f' },
-                { label: 'LOW', color: '#fbc02d' },
-              ],
-              dismissed,
-              setDismissed: () => {},
-            },
+            showLegend,
+            colorLegend: [
+              { label: 'HIGH', color: '#d32f2f' },
+              { label: 'LOW', color: '#fbc02d' },
+            ],
           }),
         ),
       )
-    const withKey = await exportWith(false)
+    const withKey = await exportWith(true)
     expect(withKey).toContain('HIGH')
     expect(withKey).toContain('#d32f2f')
 
-    expect(await exportWith(true)).not.toContain('HIGH')
+    expect(await exportWith(false)).not.toContain('HIGH')
 
     const withoutKey = renderResult(
       await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),

@@ -10,40 +10,24 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // `colorLegend` returns.
 
 describe('declared color legend', () => {
-  it('is absent until the legend slot carries entries', () => {
+  it('is empty until the legend slot carries entries', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    expect(display.colorLegend).toBeUndefined()
+    expect(display.colorLegend).toEqual([])
 
     setConf(display, 'legend', [
       { label: 'SINE', color: '#e41a1c' },
       { label: 'LINE', color: '#377eb8' },
     ])
-    expect(display.colorLegend?.items).toEqual([
+    expect(display.colorLegend).toEqual([
       { label: 'SINE', color: '#e41a1c' },
       { label: 'LINE', color: '#377eb8' },
     ])
   })
 
-  // Dismissing is session-only (a volatile), like the isoform-collapse chip's:
-  // the config still declares the key, the user has just put it away.
-  it('dismisses for the session without clearing the slot', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    setConf(display, 'legend', [{ label: 'SINE', color: '#e41a1c' }])
-
-    display.colorLegend!.setDismissed(true)
-
-    // the hook stays — it is what the "Show legend" checkbox reads — and says it
-    // is dismissed, which is what the overlay and the SVG export draw off
-    expect(display.colorLegend?.dismissed).toBe(true)
-    expect(display.colorLegendDismissed).toBe(true)
-  })
-
-  // The key's own "×" removes the surface it lives on, so without a menu item
-  // the dismissal lasted the whole session with nothing anywhere naming it —
-  // the same hole the multi-row painting's "Show legend" checkbox closed.
-  it('offers a way back from the dismissal, and only where there is a key', () => {
+  // The key's own "×" writes the same showLegend slot the track menu's
+  // checkbox toggles, so putting it away and getting it back are one setting.
+  it('offers the showLegend toggle only where there is a key', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
@@ -58,19 +42,19 @@ describe('declared color legend', () => {
         (i: MenuItem) => 'label' in i && i.label === 'Show legend',
       )
 
-    // a track declaring no key has nothing to toggle
     expect(legendItem()).toBeUndefined()
 
     setConf(display, 'legend', [{ label: 'SINE', color: '#e41a1c' }])
+    expect(display.showLegend).toBe(true)
     expect(legendItem()).toMatchObject({ type: 'checkbox', checked: true })
 
-    display.colorLegend!.setDismissed(true)
-    const dismissed = legendItem()!
-    expect(dismissed).toMatchObject({ type: 'checkbox', checked: false })
+    display.setShowLegend(false)
+    const hidden = legendItem()!
+    expect(hidden).toMatchObject({ type: 'checkbox', checked: false })
 
-    if ('onClick' in dismissed) {
-      dismissed.onClick()
+    if ('onClick' in hidden) {
+      hidden.onClick()
     }
-    expect(display.colorLegend?.dismissed).toBe(false)
+    expect(display.showLegend).toBe(true)
   })
 })

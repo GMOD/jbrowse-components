@@ -123,18 +123,6 @@ export default function stateModelFactory(
         }
         return []
       },
-      /**
-       * #getter
-       */
-      // Whether a preset coloring is active, i.e. whether there is a key at all.
-      // NOT anded with `colorLegendDismissed`: dismissal is the hook's own flag
-      // (see CanvasColorLegend), so the track menu's "Show legend" checkbox can
-      // offer the way back from the key's own "×".
-      get showColorLegend() {
-        // `this` for the sibling defined just above (same block), `self` for
-        // what earlier blocks and the volatile added — see the MST patterns guide
-        return this.colorLegendItems.length > 0
-      },
       // #endregion
 
       /**
@@ -144,13 +132,7 @@ export default function stateModelFactory(
        * (its `ReactComponent` is the one LinearBasicDisplay registers).
        */
       get colorLegend() {
-        return this.showColorLegend
-          ? {
-              items: this.colorLegendItems,
-              dismissed: self.colorLegendDismissed,
-              setDismissed: self.setColorLegendDismissed,
-            }
-          : undefined
+        return this.colorLegendItems
       },
     }))
     .views(self => ({
@@ -188,7 +170,7 @@ export default function stateModelFactory(
             type: 'radio' as const,
             checked: self.colorsByConsequenceImpact,
             onClick: () => {
-              self.setColorLegendDismissed(false)
+              self.setShowLegend(true)
               self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
             },
           },
@@ -197,7 +179,7 @@ export default function stateModelFactory(
             type: 'radio' as const,
             checked: self.colorsBySvType,
             onClick: () => {
-              self.setColorLegendDismissed(false)
+              self.setShowLegend(true)
               self.setFeatureColor(SV_TYPE_COLOR_JEXL)
             },
           },
