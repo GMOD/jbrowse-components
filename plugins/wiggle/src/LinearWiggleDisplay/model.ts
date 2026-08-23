@@ -46,10 +46,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
-import type {
-  WiggleDataResult,
-  WiggleRenderingBackend,
-} from '@jbrowse/wiggle-core'
+import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
 
@@ -304,13 +301,6 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
-        self.rpcDataMap.set(displayedRegionIndex, data)
-      },
-
       /**
        * #action
        */

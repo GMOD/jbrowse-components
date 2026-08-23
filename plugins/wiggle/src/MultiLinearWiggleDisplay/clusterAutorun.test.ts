@@ -24,10 +24,10 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
 
     const { display } = createDisplay({ runClustering: true })
 
-    // fetch autorun loads sourcesVolatile
+    // fetch autorun loads sourcesWithoutLayout
     jest.advanceTimersByTime(700)
     await waitFor(() => {
-      expect(display.sourcesVolatile.length).toBe(2)
+      expect(display.sourcesWithoutLayout.length).toBe(2)
     })
 
     // cluster autorun (500ms mobx delay) then fires against the now-loaded sources
@@ -77,7 +77,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
 
     jest.advanceTimersByTime(700)
     await waitFor(() => {
-      expect(display.sourcesVolatile.length).toBe(2)
+      expect(display.sourcesWithoutLayout.length).toBe(2)
     })
     jest.advanceTimersByTime(700)
     await jest.runAllTimersAsync()
@@ -115,7 +115,7 @@ describe('MultiLinearWiggleDisplay declarative runClustering', () => {
 
     jest.advanceTimersByTime(700)
     await waitFor(() => {
-      expect(display.sourcesVolatile.length).toBe(2)
+      expect(display.sourcesWithoutLayout.length).toBe(2)
     })
     jest.advanceTimersByTime(700)
     await jest.runAllTimersAsync()

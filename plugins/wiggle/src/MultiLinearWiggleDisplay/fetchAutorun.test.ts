@@ -1,4 +1,5 @@
 import { waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
 
 import { processFeaturesFromArrays } from '../util.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -77,18 +78,42 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
   // #3 regression: a plain feature adapter (the bedMethyl use-case) discovers
   // sources per region rather than from a static getSources. A source with zero
   // features in the first fetched region must still appear once a later region
-  // reveals it — setRpcData merges into sourcesVolatile instead of populating it
-  // only once, otherwise the source stays invisible forever.
+  // reveals it — `sourcesWithoutLayout` unions every loaded region rather than
+  // reading the first one, otherwise the source stays invisible forever.
   it('merges sources first seen in a later region', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
     display.setRpcData(0, makeMultiWiggleData(['a', 'b']))
-    expect(display.sourcesVolatile.map(s => s.name)).toEqual(['a', 'b'])
+    expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual(['a', 'b'])
 
     display.setRpcData(1, makeMultiWiggleData(['a', 'b', 'c']))
-    expect(display.sourcesVolatile.map(s => s.name)).toEqual(['a', 'b', 'c'])
+    expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual([
+      'a',
+      'b',
+      'c',
+    ])
     expect(display.numSources).toBe(3)
+  })
+
+  // The list reaches `gpuProps()`, whose identity re-encodes every loaded
+  // region — so a refetch that reports the same rows has to hand back the same
+  // array. That is the structural comparer on the computed behind this getter,
+  // and it only holds while something observes it, which the upload autorun
+  // does.
+  it('hands back one array while the rows are unchanged', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    const seen: unknown[] = []
+    const stop = autorun(() => {
+      seen.push(display.sourcesWithoutLayout)
+    })
+    display.setRpcData(0, makeMultiWiggleData(['a', 'b']))
+    display.setRpcData(1, makeMultiWiggleData(['a', 'b']))
+    stop()
+
+    expect(new Set(seen).size).toBe(2)
   })
 
   it('preserves existing order and appends only genuinely-new sources', () => {
@@ -97,6 +122,10 @@ describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
 
     display.setRpcData(0, makeMultiWiggleData(['b', 'a']))
     display.setRpcData(1, makeMultiWiggleData(['a', 'c', 'b']))
-    expect(display.sourcesVolatile.map(s => s.name)).toEqual(['b', 'a', 'c'])
+    expect(display.sourcesWithoutLayout.map(s => s.name)).toEqual([
+      'b',
+      'a',
+      'c',
+    ])
   })
 })

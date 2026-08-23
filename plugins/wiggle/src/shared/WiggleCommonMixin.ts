@@ -313,6 +313,15 @@ export function WiggleCommonMixin() {
       },
       /**
        * #action
+       * The store half of both displays' `fetchNeeded`. Everything either one
+       * derives from a fetch — multi-wiggle's row list included — is a getter
+       * over this map, so there is nothing else for a result to update.
+       */
+      setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
+        self.rpcDataMap.set(displayedRegionIndex, data)
+      },
+      /**
+       * #action
        */
       setHoveredFeature(feat?: WiggleHoveredFeature) {
         self.hoveredWiggleFeature = feat

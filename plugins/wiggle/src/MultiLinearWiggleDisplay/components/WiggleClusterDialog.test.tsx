@@ -27,9 +27,9 @@ function setup() {
   return env
 }
 
-async function loadSources(display: { sourcesVolatile: unknown[] }) {
+async function loadSources(display: { sourcesWithoutLayout: unknown[] }) {
   await waitFor(() => {
-    expect(display.sourcesVolatile.length).toBe(2)
+    expect(display.sourcesWithoutLayout.length).toBe(2)
   })
 }
 

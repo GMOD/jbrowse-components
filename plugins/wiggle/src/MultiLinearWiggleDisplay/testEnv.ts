@@ -8,8 +8,8 @@ import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { WiggleDataResult, WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // A minimal but fully-typed zero-feature source: enough to populate
-// `sourcesVolatile` (which is what unblocks clustering and the row-count menu
-// gates), with no features to render.
+// `sourcesWithoutLayout` (which is what unblocks clustering and the row-count
+// menu gates), with no features to render.
 export function makeSource(name: string): WiggleSourceData {
   return {
     name,

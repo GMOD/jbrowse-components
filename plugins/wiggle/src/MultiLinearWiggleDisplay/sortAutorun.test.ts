@@ -91,7 +91,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
 
       jest.advanceTimersByTime(700)
       await waitFor(() => {
-        expect(display.sourcesVolatile.length).toBe(2)
+        expect(display.sourcesWithoutLayout.length).toBe(2)
       })
 
       expect(display.layout).toEqual([])
@@ -111,7 +111,7 @@ describe('MultiLinearWiggleDisplay declarative sortRowsBy', () => {
 
     jest.advanceTimersByTime(700)
     await waitFor(() => {
-      expect(display.sourcesVolatile.length).toBe(2)
+      expect(display.sourcesWithoutLayout.length).toBe(2)
     })
 
     expect(display.layout).toEqual([])

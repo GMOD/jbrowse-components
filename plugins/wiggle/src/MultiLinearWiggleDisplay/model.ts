@@ -35,6 +35,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
+import { compareStructural, computed } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
@@ -53,7 +54,11 @@ import {
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import { buildSources, rowColorMode } from './sourcesLogic.ts'
+import {
+  buildSources,
+  rowColorMode,
+  sourcesFromRegionData,
+} from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { Source } from '../util.ts'
@@ -65,11 +70,7 @@ import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSortSpec } from '@jbrowse/tree-sidebar'
-import type {
-  SourceInfo,
-  WiggleDataResult,
-  WiggleRenderingBackend,
-} from '@jbrowse/wiggle-core'
+import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
@@ -156,7 +157,6 @@ export default function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      sourcesVolatile: [] as SourceInfo[],
       /**
        * #volatile
        * Where the right-click menu opens (viewport coords) plus the genomic
@@ -178,26 +178,36 @@ export default function stateModelFactory(
         return isOverlayMode(self.renderingType)
       },
     }))
-    .views(self => ({
-      // Raw adapter sources, in adapter order. Used as input to clustering:
-      // cluster RPC reads `name` and `buildClusteredLayout` maps order
-      // indices into this list.
-      get sourcesWithoutLayout(): Source[] {
-        return self.sourcesVolatile
-      },
+    .views(self => {
+      // A plain getter would hand out a fresh array on every region arrival,
+      // and this list reaches `gpuProps()` — whose identity re-encodes every
+      // loaded region. The structural comparer keeps the previous array while
+      // the row metadata is unchanged, which is what a refetch of the same
+      // track produces.
+      const sources = computed(() => sourcesFromRegionData(self.rpcDataMap), {
+        equals: compareStructural,
+      })
+      return {
+        // Raw adapter sources, discovered from the loaded regions in adapter
+        // order. Used as input to clustering: cluster RPC reads `name` and
+        // `buildClusteredLayout` maps order indices into this list.
+        get sourcesWithoutLayout(): Source[] {
+          return sources.get()
+        },
 
-      // Adapter rows merged with the user's saved arrangement, in layout order —
-      // no subtree filter and no palette synthesis, so the edit dialog only
-      // persists colors the user actually chose. `reconcileLayout` owns the
-      // membership rules (drop layout entries the adapter no longer reports,
-      // append subtracks the layout never saw) and is shared with every other
-      // multi-row display, so this display has nothing of its own to keep in
-      // step. It used to, and that was the whole job of the wrapper this
-      // replaced: aliasing `source` onto `name` before handing the rows over.
-      get editableSources(): Source[] {
-        return reconcileLayout(self.sourcesVolatile, self.layout)
-      },
-    }))
+        // Adapter rows merged with the user's saved arrangement, in layout order —
+        // no subtree filter and no palette synthesis, so the edit dialog only
+        // persists colors the user actually chose. `reconcileLayout` owns the
+        // membership rules (drop layout entries the adapter no longer reports,
+        // append subtracks the layout never saw) and is shared with every other
+        // multi-row display, so this display has nothing of its own to keep in
+        // step. It used to, and that was the whole job of the wrapper this
+        // replaced: aliasing `source` onto `name` before handing the rows over.
+        get editableSources(): Source[] {
+          return reconcileLayout(this.sourcesWithoutLayout, self.layout)
+        },
+      }
+    })
     .views(self => ({
       get sources(): Source[] {
         return buildSources(
@@ -447,194 +457,153 @@ export default function stateModelFactory(
         return buildSpatialIndex(self.hierarchy)
       },
     }))
-    .actions(self => {
-      const { clearDisplaySpecificData: superClearDisplaySpecificData } = self
-      return {
-        // sourcesVolatile is piggy-backed on each region's data — wipe it
-        // whenever we wipe the data, so the next fetch's first region
-        // repopulates with current adapter metadata (handles adapter
-        // reconfigure / chromosome navigation).
-        clearDisplaySpecificData() {
-          superClearDisplaySpecificData()
-          self.sourcesVolatile = []
-        },
-        setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
-          self.rpcDataMap.set(displayedRegionIndex, data)
-          // Merge (not replace-once): a multi-source adapter reports its full
-          // static list in the first region, but a plain fallback adapter
-          // discovers sources per region, so a source absent from the first
-          // fetched region must still be appended when a later region reveals
-          // it (otherwise it stays invisible forever). Appending keeps existing
-          // order/layout stable.
-          const seen = new Set(self.sourcesVolatile.map(s => s.name))
-          const added = data.sources
-            .filter(s => !seen.has(s.name))
-            .map(({ name, color, labelColor, label, group, baseUri }) => ({
-              name,
-              color,
-              labelColor,
-              label,
-              group,
-              baseUri,
-            }))
-          if (added.length > 0) {
-            self.sourcesVolatile = [...self.sourcesVolatile, ...added]
-          }
-        },
+    .actions(self => ({
+      startRenderingBackend(backend: WiggleRenderingBackend) {
+        installWiggleRenderingBackend(self, backend)
+      },
 
-        startRenderingBackend(backend: WiggleRenderingBackend) {
-          installWiggleRenderingBackend(self, backend)
-        },
+      setShowRowSeparators(arg: boolean) {
+        setConf(self, 'showRowSeparators', arg)
+      },
 
-        setShowRowSeparators(arg: boolean) {
-          setConf(self, 'showRowSeparators', arg)
-        },
+      /**
+       * #action
+       * Rank the rows by each source's score at one genomic base. Reads the
+       * region data already in hand — no refetch, no RPC — and writes the
+       * order through `layout`, the same channel clustering and the
+       * arrangement dialog write, so "Reset row order" undoes all three.
+       *
+       * Named by coordinate rather than by loaded-region index because both
+       * entry points are: the right-click hit resolves to one, and a session's
+       * `sortRowsBy` carries one across a reload. The region is looked up
+       * here, and a position no loaded region covers is left alone rather than
+       * sorted against nothing (which would rank every row equally and read as
+       * the sort having silently done nothing).
+       */
+      sortRowsByScoreAt(refName: string, pos: number) {
+        const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+        const data =
+          index === undefined ? undefined : self.rpcDataMap.get(index)
+        // Fewer than two rows has nothing to order, and the write is not a
+        // harmless no-op: `setLayout` drops the cluster tree whenever the row
+        // set changes, so an adapter that reported no sources for the loaded
+        // region would trade a dendrogram for an empty layout. The
+        // right-click item is already gated on the same count; this is the
+        // declarative `sortRowsBy` entry point, which is not, and the same
+        // guard the multi-row feature display's twin carries.
+        if (data && self.editableSources.length > 1) {
+          // editableSources, not `sources`: layout-merged (so a user's
+          // colors survive the reorder) and unfiltered by the subtree, so a
+          // focused clade doesn't persist itself as the whole row order and
+          // drop everything it was hiding.
+          self.setLayout(sortSourcesByScoreAt(self.editableSources, data, pos))
+        }
+      },
 
-        /**
-         * #action
-         * Rank the rows by each source's score at one genomic base. Reads the
-         * region data already in hand — no refetch, no RPC — and writes the
-         * order through `layout`, the same channel clustering and the
-         * arrangement dialog write, so "Reset row order" undoes all three.
-         *
-         * Named by coordinate rather than by loaded-region index because both
-         * entry points are: the right-click hit resolves to one, and a session's
-         * `sortRowsBy` carries one across a reload. The region is looked up
-         * here, and a position no loaded region covers is left alone rather than
-         * sorted against nothing (which would rank every row equally and read as
-         * the sort having silently done nothing).
-         */
-        sortRowsByScoreAt(refName: string, pos: number) {
-          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
-          const data =
-            index === undefined ? undefined : self.rpcDataMap.get(index)
-          // Fewer than two rows has nothing to order, and the write is not a
-          // harmless no-op: `setLayout` drops the cluster tree whenever the row
-          // set changes, so an adapter that reported no sources for the loaded
-          // region would trade a dendrogram for an empty layout. The
-          // right-click item is already gated on the same count; this is the
-          // declarative `sortRowsBy` entry point, which is not, and the same
-          // guard the multi-row feature display's twin carries.
-          if (data && self.editableSources.length > 1) {
-            // editableSources, not `sources`: layout-merged (so a user's
-            // colors survive the reorder) and unfiltered by the subtree, so a
-            // focused clade doesn't persist itself as the whole row order and
-            // drop everything it was hiding.
-            self.setLayout(
-              sortSourcesByScoreAt(self.editableSources, data, pos),
-            )
-          }
-        },
+      /**
+       * #action
+       * Trigger (or clear) a one-shot declarative row sort; consumed and reset
+       * by `setupRowSortAutorun`. The right-click menu calls
+       * `sortRowsByScoreAt` directly (instant, the data is already loaded);
+       * this prop is the session-level entry point.
+       */
+      setSortRowsBy(arg?: RowSortSpec) {
+        self.sortRowsBy = arg
+      },
 
-        /**
-         * #action
-         * Trigger (or clear) a one-shot declarative row sort; consumed and reset
-         * by `setupRowSortAutorun`. The right-click menu calls
-         * `sortRowsByScoreAt` directly (instant, the data is already loaded);
-         * this prop is the session-level entry point.
-         */
-        setSortRowsBy(arg?: RowSortSpec) {
-          self.sortRowsBy = arg
-        },
+      /**
+       * #action
+       */
+      openContextMenu(info: ContextMenuAnchor & MultiWiggleContextHit) {
+        self.contextMenuInfo = info
+      },
 
-        /**
-         * #action
-         */
-        openContextMenu(info: ContextMenuAnchor & MultiWiggleContextHit) {
-          self.contextMenuInfo = info
-        },
+      /**
+       * #action
+       */
+      closeContextMenu() {
+        self.contextMenuInfo = undefined
+      },
+    }))
+    .actions(self => ({
+      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+        const view = self.lgv
+        // Always fetch the full (unfiltered, un-reordered) source list. A
+        // subtree filter or reorder only affects client-side rendering
+        // (gpuProps re-upload) and the autoscale domain — never what's
+        // fetched — so every region's payload stays complete and consistent.
+        // Filtering here instead would leave regions fetched under a stale
+        // filter missing sources when the filter is later widened.
+        const { adapterConfig, sourcesWithoutLayout } = self
+        const { bpPerPx } = view
+        // Batched, not per-region: every subtrack adapter gets all the
+        // visible regions in one call, so a whole-genome or
+        // collapsed-intron view coalesces each file's on-disk blocks into
+        // one pass instead of one pass per region per subtrack. The
+        // regions land together rather than painting progressively.
+        return fetchAllRegions(self, needed, {
+          call: (regions, ctx) =>
+            ctx.callRpc('RenderMultiWiggleData', {
+              adapterConfig,
+              regions,
+              sources: sourcesWithoutLayout,
+              ...self.rpcProps(),
+              bpPerPx,
+            }),
+          onResult: (idx, result) => {
+            self.setRpcData(idx, result)
+          },
+        })
+      },
 
-        /**
-         * #action
-         */
-        closeContextMenu() {
-          self.contextMenuInfo = undefined
-        },
-      }
-    })
-    .actions(self => {
-      return {
-        fetchNeeded(
-          needed: { region: Region; displayedRegionIndex: number }[],
-        ) {
-          const view = self.lgv
-          // Always fetch the full (unfiltered, un-reordered) source list. A
-          // subtree filter or reorder only affects client-side rendering
-          // (gpuProps re-upload) and the autoscale domain — never what's
-          // fetched — so every region's payload stays complete and consistent.
-          // Filtering here instead would leave regions fetched under a stale
-          // filter missing sources when the filter is later widened.
-          const { adapterConfig, sourcesWithoutLayout } = self
-          const { bpPerPx } = view
-          // Batched, not per-region: every subtrack adapter gets all the
-          // visible regions in one call, so a whole-genome or
-          // collapsed-intron view coalesces each file's on-disk blocks into
-          // one pass instead of one pass per region per subtrack. The
-          // regions land together rather than painting progressively.
-          return fetchAllRegions(self, needed, {
-            call: (regions, ctx) =>
-              ctx.callRpc('RenderMultiWiggleData', {
-                adapterConfig,
-                regions,
-                sources: sourcesWithoutLayout,
-                ...self.rpcProps(),
-                bpPerPx,
-              }),
-            onResult: (idx, result) => {
-              self.setRpcData(idx, result)
-            },
-          })
-        },
+      // No superAfterAttach() call: the fork auto-chains hooks, so
+      // MultiRegionDisplayMixin's afterAttach already runs (see
+      // afterAttachAutoChain.test.ts). An explicit call would double-install
+      // its fetch autoruns.
+      afterAttach() {
+        // Both are mobx-only glue and the barrel is a static import above, so
+        // they install synchronously. The tree drawing one came through
+        // `await import('@jbrowse/tree-sidebar')` until it was measured: a
+        // dynamic import of a barrel this file already imports statically
+        // deferred one 4KB module and dragged the rest of the barrel into an
+        // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
+        setupRowSortAutorun(self, {
+          name: 'MultiWiggleSortRows',
+          sortRows: (refName, pos) => {
+            self.sortRowsByScoreAt(refName, pos)
+          },
+        })
+        setupTreeDrawingAutorun(self)
 
-        // No superAfterAttach() call: the fork auto-chains hooks, so
-        // MultiRegionDisplayMixin's afterAttach already runs (see
-        // afterAttachAutoChain.test.ts). An explicit call would double-install
-        // its fetch autoruns.
-        afterAttach() {
-          // Both are mobx-only glue and the barrel is a static import above, so
-          // they install synchronously. The tree drawing one came through
-          // `await import('@jbrowse/tree-sidebar')` until it was measured: a
-          // dynamic import of a barrel this file already imports statically
-          // deferred one 4KB module and dragged the rest of the barrel into an
-          // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
-          setupRowSortAutorun(self, {
-            name: 'MultiWiggleSortRows',
-            sortRows: (refName, pos) => {
-              self.sortRowsByScoreAt(refName, pos)
-            },
-          })
-          setupTreeDrawingAutorun(self)
-
-          // The "Cluster columns" flavor of the shared declarative-clustering
-          // autorun: fires once on `runClustering: true` and runs the real
-          // score-matrix RPC over the `clusterRegion` locus if the session
-          // named one and the visible blocks if not. Refuses a single row,
-          // matching the track menu's gate.
-          //
-          // Installed synchronously; the heavy half is code-split inside `run`,
-          // so the clustering module loads when a run starts rather than on
-          // every attach.
-          setupRunClusteringAutorun(self, {
-            name: 'AutoRunMultiWiggleClustering',
-            ready: () => self.sourcesWithoutLayout.length > 1,
-            run: async args => {
-              const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
-                await Promise.all([
-                  import('./runWiggleClustering.ts'),
-                  import('./components/clusterOptions.ts'),
-                ])
-              await runWiggleClustering({
-                model: self,
-                // the default density, not the dialog's persisted preference —
-                // see DEFAULT_SAMPLES_PER_PIXEL for why this path ignores it
-                samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
-                ...args,
-              })
-            },
-          })
-        },
-      }
-    })
+        // The "Cluster columns" flavor of the shared declarative-clustering
+        // autorun: fires once on `runClustering: true` and runs the real
+        // score-matrix RPC over the `clusterRegion` locus if the session
+        // named one and the visible blocks if not. Refuses a single row,
+        // matching the track menu's gate.
+        //
+        // Installed synchronously; the heavy half is code-split inside `run`,
+        // so the clustering module loads when a run starts rather than on
+        // every attach.
+        setupRunClusteringAutorun(self, {
+          name: 'AutoRunMultiWiggleClustering',
+          ready: () => self.sourcesWithoutLayout.length > 1,
+          run: async args => {
+            const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
+              await Promise.all([
+                import('./runWiggleClustering.ts'),
+                import('./components/clusterOptions.ts'),
+              ])
+            await runWiggleClustering({
+              model: self,
+              // the default density, not the dialog's persisted preference —
+              // see DEFAULT_SAMPLES_PER_PIXEL for why this path ignores it
+              samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
+              ...args,
+            })
+          },
+        })
+      },
+    }))
     .views(self => ({
       trackMenuItems() {
         const showItems: MenuItem[] = [
@@ -700,7 +669,7 @@ export default function stateModelFactory(
           ...makePointSizeMenuItems(self),
           ...makeLineWidthMenuItems(self),
           rowArrangementMenuItem({
-            ready: !!self.sourcesVolatile.length,
+            ready: !!self.sourcesWithoutLayout.length,
             onOpen: () => {
               getSession(self).queueDialog(handleClose => [
                 SetColorDialog,
