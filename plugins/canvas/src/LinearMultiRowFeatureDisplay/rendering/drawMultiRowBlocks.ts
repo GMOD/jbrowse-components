@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { drawnFeatureContext, forEachDrawnFeature } from './featurePainting.ts'
-import { MIN_DRAWN_CELL_PX, rowBand } from './rowBand.ts'
+import { MULTI_ROW_MIN_CELL_PX, rowBand } from './rowBand.ts'
 
 import type {
   MultiRowRegionData,
@@ -47,9 +47,9 @@ export function drawMultiRowBlocks(
           const xa = bpToPx(featureStarts[i]!)
           const xb = bpToPx(featureEnds[i]!)
           // rowRect.slang's own floor, the horizontal twin of the row floor
-          // `rowBand` applies — a cell narrower than a pixel can miss every
-          // pixel center and vanish, so it is widened rather than dropped.
-          const width = Math.max(MIN_DRAWN_CELL_PX, Math.abs(xb - xa))
+          // `rowBand` applies — a cell this narrow reads as a smudge or misses
+          // every pixel center entirely, so it is widened rather than dropped.
+          const width = Math.max(MULTI_ROW_MIN_CELL_PX, Math.abs(xb - xa))
           if (color !== lastColor) {
             lastColor = color
             setAbgrFill(ctx, color)

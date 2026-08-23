@@ -2950,6 +2950,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "colorRowLabels",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "showLegend",
           "type": "(JexlString | (boolean | undefined))"
         },

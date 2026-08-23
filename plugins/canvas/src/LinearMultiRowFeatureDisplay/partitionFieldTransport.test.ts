@@ -35,10 +35,15 @@ describe('partitionField reaches the worker unevaluated', () => {
     expect(display.rpcProps().partitionField).toBe('sample')
   })
 
-  it('reads the schema default when the slot is unset', () => {
+  // The unset slot is the AUTO sentinel, and auto is resolved in the worker off
+  // the columns the file turns out to carry (resolvePartitionField). Sending the
+  // main thread's guess instead — 'name', which is what auto falls back to —
+  // would make the repClass pick unreachable: the worker cannot tell a guess
+  // from a choice.
+  it('forwards the unset slot as the empty auto sentinel', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
-    expect(display.rpcProps().partitionField).toBe('name')
+    expect(display.rpcProps().partitionField).toBe('')
   })
 })

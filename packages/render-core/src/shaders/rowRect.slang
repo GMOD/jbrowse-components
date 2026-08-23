@@ -11,13 +11,13 @@
 // Row placement comes from uniforms rather than the instance data, so a
 // rowHeight / rowProportion change re-renders without a refetch.
 //
-// What the two callers legitimately differ on is the *unit* they write into
-// `viewportWidth` (CSS px vs device px), which only moves the min-width floor —
-// see GpuMafRenderer's note. That is a uniform-write decision, not a reason for
-// two shaders. It is also unsettled, and device px additionally makes MAF's
-// floor depend on the reader's monitor:
-// `agent-docs/ideas/maf-subpixel-cells.md`.
-//! export-consts: MIN_DRAWN_ROW_PX, MIN_DRAWN_CELL_PX
+// What the two callers legitimately differ on is the min-width floor: both the
+// width they write into `minCellPx` and the *unit* they measure it in, via
+// `viewportWidth` (CSS px vs device px) — see GpuMafRenderer's note. Those are
+// uniform-write decisions, not a reason for two shaders. The unit is also
+// unsettled, and device px additionally makes MAF's floor depend on the
+// reader's monitor: `agent-docs/ideas/maf-subpixel-cells.md`.
+//! export-consts: MIN_DRAWN_ROW_PX, MIN_DRAWN_CELL_PX, MULTI_ROW_MIN_CELL_PX
 //! js-export: drawnRowHeightPx, rowBandOffsetPx
 module rowRect;
 
@@ -34,9 +34,13 @@ public struct RowRectInstance {
 public struct RowRectUniforms {
   public float3 bpRangeX;      // [bpStartHi, bpStartLo, ±clippedLengthBp]
   public float  canvasHeight;  // CSS px
-  // Width the 1px min-cell floor is measured against; the caller picks CSS or
+  // Width the min-cell floor is measured against; the caller picks CSS or
   // device px (see the module header).
   public float  viewportWidth;
+  // Narrowest a cell is painted, in whatever unit `viewportWidth` is in.
+  // MIN_DRAWN_CELL_PX is the floor a caller takes when it has no reason to
+  // widen further; the multi-row painter does (see MULTI_ROW_MIN_CELL_PX).
+  public float  minCellPx;
   public float  zero;          // always 0.0 — prevents hp-split collapse
   public float  rowHeight;     // CSS px per row
   public float  rowProportion; // rect height = rowHeight * rowProportion
@@ -58,14 +62,11 @@ public struct RowRectVsOut {
 // thinner. Floored, neighbours overlap instead.
 static const float MIN_DRAWN_ROW_PX = 1.0;
 
-// Narrowest a cell is ever painted, for the same reason on the other axis.
-//
-// Named because it was not: the vertical twin above has carried a name and an
-// `export-consts` since it was written, while this one was a bare `1.0` in
-// `rowRectVertex` and a bare `1` in the multi-row painter's `Math.max(1, …)`.
-// The header's whole paragraph about which unit each caller measures the floor
-// in was pointing at a number nothing named — and the two GPU renderers each
-// spend a paragraph on that choice, so the number is anything but incidental.
+// Thinnest a cell can be painted and still be drawable at all, for the same
+// reason as the row floor above on the other axis. A caller writes this into
+// `minCellPx` when a cell being *visible* is not its problem, only a cell
+// existing; one whose whole encoding is carried by sub-pixel cells asks for
+// more (MULTI_ROW_MIN_CELL_PX).
 //
 // One caller mirrors it on the Canvas2D side and one deliberately does not: the
 // multi-row painter floors, MAF draws cells at their natural sub-pixel width.
@@ -73,6 +74,21 @@ static const float MIN_DRAWN_ROW_PX = 1.0;
 // sharing the constant does not decide it, it just stops the value being
 // anonymous in the places that DO agree.
 static const float MIN_DRAWN_CELL_PX = 1.0;
+
+// What the multi-row painter ("chromosome painting") writes into `minCellPx`.
+//
+// Wider than a pixel because this display has no second channel to fall back
+// on. MAF's cells tile the row, so a sub-pixel cell sits in a run of its
+// neighbours and the run is what is read; a painting's features are sparse
+// intervals, and at chromosome zoom a RepeatMasker element is a single tick
+// against white paper with nothing beside it. At one pixel — anti-aliased
+// across two, so neither reaches full opacity — the tick reads as a smudge, and
+// the eye scanning for structure across the rows finds none.
+//
+// Both floors distort width; that is what a floor is. This one distorts more,
+// and only where the alternative was showing nothing legible: a feature wide
+// enough to matter is already past it.
+static const float MULTI_ROW_MIN_CELL_PX = 2.0;
 
 public struct RowBand {
   public float height;  // what the rect is painted at
@@ -113,7 +129,7 @@ public RowRectVsOut rowRectVertex(
 
   float sx1 = hpToClipX(hpSplitUint(inst.startBp), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(inst.endBp), u.bpRangeX, u.zero);
-  sx2 = extendToMinWidthX(sx1, sx2, MIN_DRAWN_CELL_PX, u.viewportWidth);
+  sx2 = extendToMinWidthX(sx1, sx2, u.minCellPx, u.viewportWidth);
 
   float yPx = lerp(rowY, rowY + h, local.y);
 

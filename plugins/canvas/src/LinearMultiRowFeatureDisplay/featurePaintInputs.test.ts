@@ -19,6 +19,7 @@ function regionData(): MultiRowRegionData {
     featureIds: ['a', 'b'],
     usedItemRgb: false,
     partitionCandidates: [],
+    resolvedPartitionField: 'name',
   }
 }
 

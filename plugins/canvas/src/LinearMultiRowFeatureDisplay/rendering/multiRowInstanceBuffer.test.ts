@@ -39,6 +39,7 @@ const region: MultiRowRegionData = {
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
   partitionCandidates: [],
+  resolvedPartitionField: 'name',
 }
 
 // The three inputs to "does this feature paint, and in what color". Always

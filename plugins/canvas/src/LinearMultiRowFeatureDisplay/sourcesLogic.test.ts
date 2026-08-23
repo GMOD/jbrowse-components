@@ -1,4 +1,4 @@
-import { tagColorPalette } from '@jbrowse/core/ui/theme'
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { orderPartitionValues, resolveRowColors } from './sourcesLogic.ts'
@@ -7,9 +7,9 @@ const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
 
 test('resolveRowColors: default color slot → palette by display index', () => {
   expect(resolveRowColors(rows, {}, true)).toEqual([
-    cssColorToABGR(tagColorPalette[0]!),
-    cssColorToABGR(tagColorPalette[1]!),
-    cssColorToABGR(tagColorPalette[2]!),
+    cssColorToABGR(categoricalPalette[0]!),
+    cssColorToABGR(categoricalPalette[1]!),
+    cssColorToABGR(categoricalPalette[2]!),
   ])
 })
 
@@ -23,9 +23,9 @@ test('resolveRowColors: customized color slot → no palette (per-feature wins)'
 
 test('resolveRowColors: sampleColorMap beats palette, per row', () => {
   expect(resolveRowColors(rows, { dad: 'blue' }, true)).toEqual([
-    cssColorToABGR(tagColorPalette[0]!),
+    cssColorToABGR(categoricalPalette[0]!),
     cssColorToABGR('blue'),
-    cssColorToABGR(tagColorPalette[2]!),
+    cssColorToABGR(categoricalPalette[2]!),
   ])
 })
 

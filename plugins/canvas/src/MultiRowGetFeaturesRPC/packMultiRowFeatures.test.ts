@@ -326,6 +326,49 @@ test('partitions on a jexl expression, not just an attribute', () => {
   expect([...r.featurePartitionIndex]).toEqual([0, 1, 0, 2])
 })
 
+// The empty slot is the auto sentinel. A RepeatMasker table carries `repClass`
+// as a column, and `name` there is the repeat instance — tens of thousands of
+// one-feature rows — so the pick has to happen off the columns rather than off
+// the config, which never saw them.
+describe('the empty partitionField picks a column off the data', () => {
+  const rmskFeatures = [
+    feat({ start: 0, end: 50, name: 'L1HS', repClass: 'LINE' }),
+    feat({ start: 0, end: 30, name: 'AluY', repClass: 'SINE' }),
+    feat({ start: 30, end: 50, name: 'L1PA2', repClass: 'LINE' }),
+  ]
+
+  function packed(features: Feature[], partitionField: string) {
+    return packMultiRowFeatures({
+      features,
+      partitionField,
+      lengthField: '',
+      colorConfig: undefined,
+      jexl: createJexlInstance(),
+    })
+  }
+
+  it('takes repClass where the features carry it', () => {
+    const r = packed(rmskFeatures, '')
+    expect(r.resolvedPartitionField).toBe('repClass')
+    expect(r.partitionValues).toEqual(['LINE', 'SINE'])
+    expect([...r.featurePartitionIndex]).toEqual([0, 1, 0])
+  })
+
+  it('falls back to name where nothing preferred is there', () => {
+    const r = packed([feat({ start: 0, end: 5, name: 'seg1' })], '')
+    expect(r.resolvedPartitionField).toBe('name')
+    expect(r.partitionValues).toEqual(['seg1'])
+  })
+
+  // A configured field is a decision, and auto does not get to second-guess it —
+  // including on the very file the preference exists for.
+  it('leaves a configured field alone', () => {
+    const r = packed(rmskFeatures, 'name')
+    expect(r.resolvedPartitionField).toBe('name')
+    expect(r.partitionValues).toEqual(['L1HS', 'AluY', 'L1PA2'])
+  })
+})
+
 test('a feature the expression throws on costs its own row, not the region', () => {
   const r = packMultiRowFeatures({
     // no '#', so the inner split yields undefined and the outer one throws

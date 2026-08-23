@@ -40,6 +40,10 @@ export interface RenderSvgModel extends SvgExportable {
   rpcDataMap: { get: (key: number) => MultiRowRegionData | undefined }
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
+  // `sources` with the per-row painted color folded into `labelColor` when the
+  // display asks for it — the sidebar's view of the rows, and the only one the
+  // tree/labels layer should read
+  labelSources: MultiRowSource[]
   effectiveRowHeight: number
   treeAreaWidth: number
   showTree: boolean
@@ -119,7 +123,7 @@ function MultiRowSvgBody({
         showTree={self.showTree}
         showLabels={self.showRowLabels}
         hierarchy={self.hierarchy}
-        sources={self.sources}
+        sources={self.labelSources}
         rowHeight={self.effectiveRowHeight}
         treeAreaWidth={self.treeAreaWidth}
         availableHeight={height}

@@ -14,7 +14,7 @@ function makeModel(names: string[]) {
     sourcesWithoutLayout: names.map(name => ({ name })),
     layout: [],
     adapterConfig: { type: 'BedTabixAdapter' },
-    partitionField: 'sample',
+    effectivePartitionField: 'sample',
     colorConfig: 'jexl:get(feature,"color")',
     setLayoutAndClusterTree,
   } satisfies MultiRowClusterModel

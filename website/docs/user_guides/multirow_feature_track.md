@@ -19,13 +19,14 @@ Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
 
 ## Turning a feature track into rows
 
-Picking it from **Display types** shows the rows right away, split on the `name`
-column. Which column assigns a feature to a row is then **Partition by…** in the
-same track menu: it lists the attribute names the loaded features carry, so on
-RepeatMasker it offers `repClass` and `repFamily` beside `name`, and one row per
-repeat class is a click. Repartitioning discards a saved row order, a clustering
-run and any hidden categories, since all three name rows that the new partition
-does not have.
+Picking it from **Display types** shows the rows right away, split on whichever
+column the file turns out to carry: a RepeatMasker table opens as ~20 rows of
+`repClass`, and anything else falls back to the `name` column. Which column
+assigns a feature to a row is then **Partition by…** in the same track menu,
+which lists the attribute names the loaded features carry — so RepeatMasker also
+offers `repFamily` and `name` beside the class it started on. Repartitioning
+discards a saved row order, a clustering run and any hidden categories, since
+all three name rows that the new partition does not have.
 
 <Figure src="/img/multirow/display_types_menu.png" caption="Turning the UCSC RepeatMasker track into rows: the track menu's Display types submenu (top), and the same window partitioned by repeat class (bottom). Any feature track can be switched over this way." />
 
@@ -192,6 +193,13 @@ returns the rows to file order.
 **Show... → Show sidebar with tree and labels** toggles the row labels and the
 dendrogram. It sits with the other visibility toggles, since the row labels are
 useful with no clustering run.
+
+**Show... → Color row labels by row color** tints each label with the color that
+row's blocks are painted in, so a row can be found by color rather than by
+reading down a column of similar names. It is off by default: the label box is
+also what `rowGroups` and a color set in **Edit colors/arrangement…** use, and
+both of those win over it. It does nothing on a track colored per feature (an
+`itemRgb` painting, a jexl `color` slot), where no single color is the row's.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="chr17:39.0-40.5Mb, 1104 TCGA-BRCA tumors clustered by copy-number profile with the dendrogram and row labels beside them. Rows sort into amplified, gained, lost, and balanced bands instead of the input file's order." />
 

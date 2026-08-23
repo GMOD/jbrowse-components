@@ -11,6 +11,7 @@ import {
   writeCoverageBandUniforms,
 } from '@jbrowse/render-core/coverageBand'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { MIN_DRAWN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
@@ -211,6 +212,10 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
       // has the three candidates, why alignments' `sizeAlpha` is not one of
       // them, and why fixing the dpr-dependence on its own is the wrong move.
       viewportWidth: clip.pxW,
+      // The bare drawable-at-all floor. Multi-row asks for more (see
+      // MULTI_ROW_MIN_CELL_PX); MAF's cells tile the row, so a sub-pixel cell is
+      // read as part of the run around it rather than on its own.
+      minCellPx: MIN_DRAWN_CELL_PX,
       zero: 0,
       rowHeight: state.rowHeight,
       rowProportion: state.rowProportion,

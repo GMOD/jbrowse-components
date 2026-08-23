@@ -69,6 +69,21 @@ const ggplot2Colors5 = ['#F8766D', '#A3A500', '#00BF7D', '#00B0F6', '#E76BF3']
 const ggplot2Colors4 = ['#F8766D', '#7CAE00', '#00BFC4', '#C77CFF']
 const ggplot2Colors3 = ['#F8766D', '#00BA38', '#619CFF']
 
+// A neutral has no place in a categorical palette that paints FILLS. Grey reads
+// as "uncolored / no value" — it is what `randomColor` hands a value-less
+// feature, what a synteny ribbon defaults to, what alignments paint a read with
+// no tag — so a category landing on one says the opposite of what the palette
+// is for. `refNameColorHexes` below drops category10's grey for this reason and
+// has since it was written; this is the same rule applied to every scheme at
+// once.
+const NEUTRALS = new Set([
+  '#bab0ab',
+  '#999999',
+  '#666666',
+  '#b3b3b3',
+  '#7f7f7f',
+])
+
 export const paletteColors = {
   category10,
   dark2,
@@ -80,6 +95,33 @@ export const paletteColors = {
   set2,
   tableau10,
 }
+
+/**
+ * The wide qualitative palette: every scheme above, in order, deduped and with
+ * the neutrals dropped. ~40 entries.
+ *
+ * One list, because "give each row a distinct color" is one question this repo
+ * answers in two places — the multi-row painter handing colors out by row
+ * index, and the arrangement dialog's palette-by-attribute — and two lists
+ * would mean a track's automatic colors and the colors it takes when a user
+ * palettes it by hand were different palettes for no reason a reader could see.
+ *
+ * `tableau10` leads because its hues are the most evenly separated, so a track
+ * with a handful of rows spends only that. The tail is what makes the 26
+ * 1000-Genomes population codes, or a repeat painting's classes, all get a
+ * curated color instead of falling out to `randomColor`.
+ *
+ * Past the end is the caller's problem, and the two callers answer differently
+ * on purpose: an attribute palette-by hashes the VALUE (stable across
+ * re-palettes), while a by-position painter has no value to hash and wraps.
+ */
+export const categoricalPalette = [
+  ...new Set(
+    [...tableau10, ...set1, ...dark2, ...set2, ...category10].filter(
+      hex => !NEUTRALS.has(hex.toLowerCase()),
+    ),
+  ),
+]
 
 // only category10 and set1 are imported by name; the rest are reached through
 // paletteColors above
@@ -107,13 +149,13 @@ export function getQueryColor(queryName: string) {
   return category10[hashString(queryName) % category10.length]!
 }
 
-// The by-refName painting palette. category10's grey (#7f7f7f) is dropped: a
-// grey chromosome reads as "uncolored/broken", and it collides with every
-// display's own neutral — the synteny ribbon default, the alignments
-// `noTagValue` fill.
-const refNameColorHexes = category10.filter(
-  hex => hex.toLowerCase() !== '#7f7f7f',
-)
+// The by-refName painting palette: category10 with its grey dropped, since a
+// grey chromosome reads as "uncolored/broken" (see NEUTRALS).
+//
+// category10 rather than the wide `categoricalPalette` — a karyotype wants nine
+// hues it can re-light into tones a reader can compare, not forty unrelated
+// ones, and `PALETTE_LAP_TONES` below is what that costs.
+const refNameColorHexes = category10.filter(hex => !NEUTRALS.has(hex))
 
 // Nine do not cover a karyotype, so each LAP around the list re-lights the same
 // hues: chromosome 10 is a deep version of chromosome 1's blue, chromosome 19 a

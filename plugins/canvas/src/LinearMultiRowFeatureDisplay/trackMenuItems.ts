@@ -54,6 +54,8 @@ interface MultiRowMenuSelf
   showRowSeparators: boolean
   showRowLabels: boolean
   setShowRowLabels: (f: boolean) => void
+  colorRowLabels: boolean
+  setColorRowLabels: (f: boolean) => void
   effectiveRowHeight: number
   colorLegend: LegendEntry[]
   // the display's other color key (see `rowGroupLegend`) — not toggleable
@@ -67,7 +69,7 @@ interface MultiRowMenuSelf
   hiddenCategorySet: ReadonlySet<string>
   // which attribute assigns a feature to a row, and the names the loaded
   // features actually carry — the menu offers the second and writes the first
-  partitionField: string
+  effectivePartitionField: string
   partitionCandidates: string[]
   setPartitionField: (field: string) => void
   showBranchLength: boolean
@@ -119,6 +121,21 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
         ]
       : []),
     showRowSeparatorsMenuItem(self),
+    // Sits under the labels toggle it depends on, and only while they are on:
+    // with the labels hidden this tints nothing (SvgRowLabels' swatch stripe
+    // reads `labelColor` too, but only where the labels themselves have been
+    // dropped for height, which is a different question than this toggle asks).
+    ...(self.showRowLabels
+      ? [
+          checkboxItem(
+            'Color row labels by row color',
+            self.colorRowLabels,
+            () => {
+              self.setColorRowLabels(!self.colorRowLabels)
+            },
+          ),
+        ]
+      : []),
     treeBranchLengthMenuItem(self),
   ]
 }
@@ -180,7 +197,10 @@ function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
 // is built on that had no way in from the UI. Picking the display type from
 // "Display types" left `partitionField` at its `name` default, which on
 // RepeatMasker is one row per repeat: thousands of hairlines, and no menu item
-// anywhere to say what a reader was supposed to do about it.
+// anywhere to say what a reader was supposed to do about it. The default now
+// picks off the data instead (`resolvePartitionField`), which is why the radio
+// reads `effectivePartitionField` — the checked row is often one no config
+// names.
 //
 // The options are DISCOVERED, off the loaded features' own attribute names
 // (`partitionCandidates`), the same way the rows are. So a file gains a column
@@ -193,11 +213,11 @@ function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
 // Nothing here can write one: an expression is a config-level thing, and a menu
 // that could clear it but not restore it would be a one-way door.
 function partitionMenuItems(self: MultiRowMenuSelf): MenuItem[] {
-  const { partitionCandidates, partitionField } = self
+  const { partitionCandidates, effectivePartitionField } = self
   if (!partitionCandidates.length) {
     return []
   }
-  const isExpression = partitionField.startsWith('jexl:')
+  const isExpression = effectivePartitionField.startsWith('jexl:')
   return [
     {
       label: 'Partition by...',
@@ -208,7 +228,7 @@ function partitionMenuItems(self: MultiRowMenuSelf): MenuItem[] {
           : []),
         ...radioItems(
           partitionCandidates.map(value => ({ value, label: value })),
-          isExpression ? undefined : partitionField,
+          isExpression ? undefined : effectivePartitionField,
           (field: string) => {
             self.setPartitionField(field)
           },

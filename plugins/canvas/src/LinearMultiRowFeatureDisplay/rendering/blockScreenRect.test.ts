@@ -1,4 +1,5 @@
 import { blockScreenRect } from './blockScreenRect.ts'
+import { MULTI_ROW_MIN_CELL_PX } from './rowBand.ts'
 
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -65,8 +66,12 @@ test('no box while the hovered region is off screen', () => {
   expect(rect({ hit: rowHit({ regionIndex: 1 }) })).toBeUndefined()
 })
 
+// One px wider than the block's own floor, so the border reads around a
+// sub-pixel block rather than replacing it
 test('a sub-pixel block keeps a visible box', () => {
-  expect(rect({ hit: rowHit({ end: 120.2 }) })?.width).toBe(2)
+  expect(rect({ hit: rowHit({ end: 120.2 }) })?.width).toBe(
+    MULTI_ROW_MIN_CELL_PX + 1,
+  )
 })
 
 // A sub-pixel block widens away from its START edge, which is the right edge on a
@@ -78,7 +83,7 @@ test('the widened box anchors where the painter anchors it', () => {
     blocks: [{ ...block, reversed: true }],
   })
   expect(forward?.left).toBe(20)
-  expect(reversed?.left).toBe(78)
+  expect(reversed?.left).toBe(80 - (MULTI_ROW_MIN_CELL_PX + 1))
 })
 
 function rowHit(overrides: Partial<Args['hit']>) {

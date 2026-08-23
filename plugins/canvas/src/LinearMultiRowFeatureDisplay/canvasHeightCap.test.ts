@@ -18,6 +18,7 @@ function rowsOnly(n: number): MultiRowRegionData {
     featureIds: [],
     usedItemRgb: false,
     partitionCandidates: [],
+    resolvedPartitionField: 'name',
   }
 }
 

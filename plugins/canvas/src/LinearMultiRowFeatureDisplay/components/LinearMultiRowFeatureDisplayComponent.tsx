@@ -62,6 +62,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     canvasWidthPx,
     height,
     sources,
+    labelSources,
     effectiveRowHeight,
     sidebarOffset,
     showLegend,
@@ -120,7 +121,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           agent-docs/reference/SCREENSHOT_CAPTURE_RACE.md. */}
       <RowLabelsOverlay
         testId="multirow-row-labels"
-        sources={sources}
+        sources={labelSources}
         rowHeight={effectiveRowHeight}
         labelOffset={sidebarOffset}
         width={canvasWidthPx}

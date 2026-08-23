@@ -20,7 +20,10 @@ export interface MultiRowGetFeaturesArgs {
   // fail at this call site rather than silently pass an argument the worker
   // ignores. See agent-docs/reference/REGION_TOO_LARGE.md.
   byteLimit?: number
-  // feature attribute whose value assigns each feature to a row
+  // feature attribute whose value assigns each feature to a row. Empty is the
+  // auto sentinel — the worker picks one off the columns the data turns out to
+  // carry, and reports the pick back as `resolvedPartitionField`. See
+  // resolvePartitionField.
   partitionField: string
   // feature attribute holding a signed bp length change against the reference,
   // which turns on the indel-glyph pass. Empty string = off (no deltas packed).
@@ -73,6 +76,11 @@ export interface MultiRowRegionData {
   // same on every line, and a union over half a million features would rebuild a
   // Set per region for an answer the first few rows already give.
   partitionCandidates: string[]
+  // The attribute this region's rows were actually partitioned on — the
+  // configured `partitionField`, or what auto picked off `partitionCandidates`
+  // when the slot was left empty (resolvePartitionField). The main thread has no
+  // second way to know: the pick depends on columns only the worker has seen.
+  resolvedPartitionField: string
 }
 
 // What the worker actually returns: the painting plus what the fetch measured on

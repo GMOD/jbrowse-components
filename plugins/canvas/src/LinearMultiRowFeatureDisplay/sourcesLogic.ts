@@ -1,4 +1,4 @@
-import { tagColorPalette } from '@jbrowse/core/ui/palette'
+import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 // A row in the painting. `name` is the partition value (the row identity, and
@@ -89,28 +89,58 @@ export function applyRowGroups(
 }
 
 /**
- * The single per-row color resolver (→ ABGR by display row), the one place
+ * The single per-row color resolver (→ CSS by display row), the one place
  * "color a whole row" is decided. Precedence: the row's interactively-set
  * `color` (arrangement dialog) wins; else the config `sampleColorMap` keyed by
  * the row's partition value; else — only when the `color` slot is left at its
  * default — a categorical palette color by display index. `undefined` rows fall
  * through to the worker-baked per-feature `color` slot (e.g. per-segment
  * `itemRgb` painting), so per-row and per-feature coloring compose.
+ *
+ * CSS rather than ABGR because the painter is no longer the only consumer: the
+ * sidebar label can be tinted with the color its row is painted in
+ * (`colorRowLabels`), and that is a DOM/SVG fill. One resolver, two encodings —
+ * a label showing a color the blocks beside it are not painted in would be
+ * worse than no label color at all.
+ *
+ * The fallback is `categoricalPalette`, the same wide list the arrangement
+ * dialog's palette-by-attribute hands out, so a track's automatic row colors and
+ * the colors it takes when a user palettes it by hand come from one place. It
+ * replaced `tagColorPalette`, which is the pale tol_light scheme and is right
+ * for an alignment read — a fill under a stroked outline that carries the shape
+ * — and wrong here, where a block has no outline and, at chromosome zoom, barely
+ * any width: `#EEEEBB` on white paper is not a color the eye finds. Its length
+ * matters as much as its tone. A partition is twenty-odd repeat classes, and a
+ * ten-color list wraps into a second row of blue while the reader is still using
+ * color to tell the rows apart.
  */
+export function resolveRowColorStrings(
+  sources: MultiRowSource[],
+  sampleColorMap: Record<string, string>,
+  colorSlotIsDefault: boolean,
+): (string | undefined)[] {
+  return sources.map((s, i) => {
+    return (
+      s.color ??
+      sampleColorMap[s.name] ??
+      (colorSlotIsDefault
+        ? categoricalPalette[i % categoricalPalette.length]
+        : undefined)
+    )
+  })
+}
+
+/** {@link resolveRowColorStrings} in the packed form the painters read. */
 export function resolveRowColors(
   sources: MultiRowSource[],
   sampleColorMap: Record<string, string>,
   colorSlotIsDefault: boolean,
 ): (number | undefined)[] {
-  return sources.map((s, i) => {
-    const css =
-      s.color ??
-      sampleColorMap[s.name] ??
-      (colorSlotIsDefault
-        ? tagColorPalette[i % tagColorPalette.length]
-        : undefined)
-    return css === undefined ? undefined : cssColorToABGR(css)
-  })
+  return resolveRowColorStrings(
+    sources,
+    sampleColorMap,
+    colorSlotIsDefault,
+  ).map(css => (css === undefined ? undefined : cssColorToABGR(css)))
 }
 
 /**

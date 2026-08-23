@@ -1,14 +1,15 @@
 import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 
-import { rowBand } from './rowBand.ts'
+import { MULTI_ROW_MIN_CELL_PX, rowBand } from './rowBand.ts'
 
 import type { MultiRowHit } from '../model.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Minimum on-screen width of the hover box. One px wider than the block's own
 // floor (drawMultiRowBlocks) so the border reads around a sub-pixel block rather
-// than replacing it.
-const MIN_WIDTH_PX = 2
+// than replacing it — derived from that floor rather than restated, since the
+// two only mean anything relative to each other.
+const MIN_WIDTH_PX = MULTI_ROW_MIN_CELL_PX + 1
 
 /**
  * Screen box of one block, in the geometry the painter gives it: `spanLeft` off

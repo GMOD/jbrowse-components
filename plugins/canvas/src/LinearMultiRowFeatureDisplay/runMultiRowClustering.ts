@@ -16,7 +16,9 @@ export interface MultiRowClusterModel {
   sourcesWithoutLayout: MultiRowSource[]
   layout: MultiRowSource[]
   adapterConfig: Record<string, unknown>
-  partitionField: string
+  // the resolved one, never the raw slot — the matrix has to bucket each
+  // feature into the row the painting drew it in
+  effectivePartitionField: string
   colorConfig: string | undefined
   setLayoutAndClusterTree: (
     layout: MultiRowSource[],
@@ -52,7 +54,7 @@ export async function runMultiRowClustering({
     regions,
     sources: sourcesWithoutLayout.map(s => s.name),
     adapterConfig: model.adapterConfig,
-    partitionField: model.partitionField,
+    partitionField: model.effectivePartitionField,
     colorConfig: model.colorConfig,
     stopToken,
     statusCallback,
@@ -65,7 +67,7 @@ export async function runMultiRowClustering({
     // by…" and the same rows over the same locus give a different tree, which
     // is only defensible if the caption says which coloring produced this one.
     clusterProvenanceFromRegions(regions, [
-      { name: 'rows', value: model.partitionField },
+      { name: 'rows', value: model.effectivePartitionField },
       ...(model.colorConfig
         ? [{ name: 'color', value: model.colorConfig }]
         : []),

@@ -1,6 +1,7 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
 import { drawMultiRowBlocks } from './drawMultiRowBlocks.ts'
+import { MULTI_ROW_MIN_CELL_PX } from './rowBand.ts'
 
 import type {
   MultiRowRegionData,
@@ -48,6 +49,7 @@ const region: MultiRowRegionData = {
   featureDeltas: new Int32Array(0),
   usedItemRgb: false,
   partitionCandidates: [],
+  resolvedPartitionField: 'name',
 }
 
 const block: RenderBlock = {
@@ -82,13 +84,13 @@ test('draws one rect per feature at its row + genomic span and color', () => {
   ])
 })
 
-// A sub-1px feature is widened to the 1px minimum by extendToMinWidth, anchored
-// on its start edge exactly as multiRow.slang does. On a reversed block the
-// start edge is the mark's *right* edge, so the fill must grow leftward from it;
-// growing rightward off the leftmost edge instead offsets every sub-pixel
-// feature ~1px from where the GPU path paints it — the zoomed-out case on a
-// flipped region, i.e. most of the features on screen.
-test('sub-pixel features widen to 1px away from their anchored start edge', () => {
+// A sub-minimum feature is widened by extendToMinWidth, anchored on its start
+// edge exactly as multiRow.slang does. On a reversed block the start edge is the
+// mark's *right* edge, so the fill must grow leftward from it; growing rightward
+// off the leftmost edge instead offsets every sub-pixel feature from where the
+// GPU path paints it — the zoomed-out case on a flipped region, i.e. most of the
+// features on screen.
+test('sub-pixel features widen away from their anchored start edge', () => {
   // 100bp over 50px => 0.5px/bp, so this 1bp feature spans half a pixel.
   const narrow: MultiRowRegionData = {
     ...region,
@@ -110,10 +112,13 @@ test('sub-pixel features widen to 1px away from their anchored start edge', () =
     )
     return calls[0]!
   }
-  // Forward: bp 50 starts at x=25, mark grows right to [25,26].
-  expect(draw(false)).toMatchObject({ x: 25, w: 1 })
-  // Reversed: bp 50 still starts at x=25, but the mark grows *left* to [24,25].
-  expect(draw(true)).toMatchObject({ x: 24, w: 1 })
+  // Forward: bp 50 starts at x=25, mark grows right to [25,27].
+  expect(draw(false)).toMatchObject({ x: 25, w: MULTI_ROW_MIN_CELL_PX })
+  // Reversed: bp 50 still starts at x=25, but the mark grows *left* to [23,25].
+  expect(draw(true)).toMatchObject({
+    x: 25 - MULTI_ROW_MIN_CELL_PX,
+    w: MULTI_ROW_MIN_CELL_PX,
+  })
 })
 
 test('skips features whose row is filtered out of rowIndexByValue', () => {

@@ -1,5 +1,6 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as multiRowShader from './shaders/multiRow.generated.ts'
@@ -50,12 +51,13 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
       // CSS px, not physical: `extendToMinWidthX` in rowRect.slang divides
-      // MIN_DRAWN_CELL_PX by this to reach clip space, so a CSS width is what
-      // makes it a 1-CSS-pixel minimum feature width, matching the Canvas2D
-      // `Math.max(MIN_DRAWN_CELL_PX, …)` path — the same constant on both sides
-      // now, rather than the same digit. clip.pxW is dpr-scaled, so on hi-DPI it
-      // would halve the min width.
+      // `minCellPx` by this to reach clip space, so a CSS width is what makes
+      // the floor below a CSS-pixel one, matching the Canvas2D
+      // `Math.max(MULTI_ROW_MIN_CELL_PX, …)` path — the same constant on both
+      // sides, rather than the same digit. clip.pxW is dpr-scaled, so on hi-DPI
+      // it would halve the min width.
       viewportWidth: clip.scissorW,
+      minCellPx: MULTI_ROW_MIN_CELL_PX,
       zero: 0,
       rowHeight: state.rowHeight,
       rowProportion: state.rowProportion,

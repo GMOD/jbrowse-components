@@ -60,6 +60,7 @@ function makeRegionData(): MultiRowGetFeaturesResult {
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     partitionCandidates: [],
+    resolvedPartitionField: 'name',
   }
 }
 
@@ -88,6 +89,9 @@ function makeHierarchy(): ClusterHierarchyNode {
 }
 
 function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
+  // the sidebar reads `labelSources`, which is `sources` plus a derived label
+  // tint — an override naming only one of them means both here
+  const sources = overrides.sources ?? [{ name: 'a' }, { name: 'b' }]
   return {
     id: 'test',
     height: 100,
@@ -107,7 +111,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       hiddenColors: new Set<number>(),
       rowColorsByIndex: [undefined, undefined],
     },
-    sources: [{ name: 'a' }, { name: 'b' }],
+    sources,
+    labelSources: sources,
     effectiveRowHeight: 50,
     treeAreaWidth: 80,
     showTree: false,

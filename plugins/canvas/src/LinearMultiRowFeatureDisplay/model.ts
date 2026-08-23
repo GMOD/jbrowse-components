@@ -14,6 +14,7 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -68,7 +69,7 @@ import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
   orderPartitionValues,
-  resolveRowColors,
+  resolveRowColorStrings,
 } from './sourcesLogic.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
@@ -229,6 +230,14 @@ export default function stateModelFactory(
       get showRowSeparators(): boolean {
         return getConf(self, 'showRowSeparators')
       },
+      /**
+       * #getter
+       * Whether the sidebar label box is tinted with the color its row is
+       * painted in — see `labelSources`.
+       */
+      get colorRowLabels(): boolean {
+        return getConf(self, 'colorRowLabels')
+      },
     }))
     .views(self => ({
       /**
@@ -328,6 +337,30 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * The attribute the rows are actually partitioned on: the `partitionField`
+       * slot, or — with the slot at its empty default — what the worker picked
+       * off the columns the data turned out to carry (`resolvePartitionField`,
+       * `repClass` on a RepeatMasker file). `name` until something has loaded,
+       * which is what auto falls back to anyway.
+       *
+       * The resolved twin of the `partitionField` transport read above, which
+       * stays the raw slot because that is what the fetch has to send — resolve
+       * it there and the worker would be handed the main thread's guess at a
+       * question only the worker can answer, and the auto pick could never
+       * happen. Everything that asks "which attribute are these rows" — the
+       * menu's radio, the clustering call that has to land features in the rows
+       * the painting drew — reads this one.
+       *
+       * Off the first loaded region rather than a vote across them: one file's
+       * columns are one file's columns, and a region that disagreed would be a
+       * different partition, not a tiebreak.
+       */
+      get effectivePartitionField(): string {
+        const [first] = self.rpcDataMap.values()
+        return first === undefined ? 'name' : first.resolvedPartitionField
+      },
+      /**
+       * #getter
        * The attribute names the loaded features carry, which is what the
        * "Partition by..." menu offers. Unioned across regions and re-sorted,
        * since two regions can be served by adapters that saw different optional
@@ -392,17 +425,17 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Per-row color (ABGR) by display row — the single per-row resolver
-       * (dialog color > config `sampleColorMap` > palette-when-default). Applied
-       * at render time over the worker-baked per-feature `color` slot, so any
-       * color change repaints without a refetch.
+       * Per-row color (CSS) by display row — the single per-row resolver
+       * (dialog color > config `sampleColorMap` > palette-when-default).
+       * `undefined` where the row has none, and the worker-baked per-feature
+       * color paints instead.
        */
-      get rowColorsByIndex(): (number | undefined)[] {
+      get rowColorStringsByIndex(): (string | undefined)[] {
         // Resolved over the unfiltered rows, then read back per display row: the
         // fallback palette indexes by row position, so resolving over the
         // filtered list would recolor every surviving row when the user focuses
         // a clade in the tree (filterRowsBySubtree is hide-only).
-        const colors = resolveRowColors(
+        const colors = resolveRowColorStrings(
           self.editableSources,
           self.sampleColorMap,
           self.colorConfig === undefined && !self.usedItemRgb,
@@ -411,6 +444,45 @@ export default function stateModelFactory(
           self.editableSources.map((s, i) => [s.name, colors[i]] as const),
         )
         return self.sources.map(s => byName.get(s.name))
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `rowColorStringsByIndex` packed for the painters. Applied at render time
+       * over the worker-baked per-feature `color` slot, so any color change
+       * repaints without a refetch.
+       */
+      get rowColorsByIndex(): (number | undefined)[] {
+        return self.rowColorStringsByIndex.map(css =>
+          css === undefined ? undefined : cssColorToABGR(css),
+        )
+      },
+      /**
+       * #getter
+       * The rows as the sidebar draws them: `sources`, with each row's painted
+       * color carried into `labelColor` when `colorRowLabels` is on.
+       *
+       * Off by default because the tint is not free — it spends the label box,
+       * which `rowGroups` also spends (and wins here, along with a color set in
+       * the arrangement dialog: both are something the user or the config
+       * asked for by name, where this is derived). It earns the space on a
+       * painting whose rows are palette-colored and whose labels are a wall of
+       * similar names, and costs legibility on one where the labels were doing
+       * fine, which is why it is a toggle rather than a judgment made here.
+       *
+       * A no-op in per-feature color mode: there is no single color a row is
+       * painted in, `rowColorStringsByIndex` is `undefined` throughout, and the
+       * labels come back exactly as `sources` had them.
+       */
+      get labelSources(): MultiRowSource[] {
+        const colors = self.rowColorStringsByIndex
+        return self.colorRowLabels
+          ? self.sources.map((s, i) => ({
+              ...s,
+              labelColor: s.labelColor ?? colors[i],
+            }))
+          : self.sources
       },
       /**
        * #getter
@@ -882,6 +954,12 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       */
+      setColorRowLabels(f: boolean) {
+        setConf(self, 'colorRowLabels', f)
+      },
+      /**
+       * #action
        * Show/hide a legend category by label (render-time, no refetch).
        */
       toggleCategory(label: string) {
@@ -919,7 +997,11 @@ export default function stateModelFactory(
        * multi-sample variant displays and clears it for the same reason.
        */
       setPartitionField(field: string) {
-        if (field === self.partitionField) {
+        // Against the EFFECTIVE field, not the slot: with the slot at its empty
+        // auto default the menu checks whatever auto picked, and picking that
+        // same radio would otherwise pin it — a full refetch to produce the
+        // painting already on screen, and an opt-out of auto nobody asked for.
+        if (field === self.effectivePartitionField) {
           return
         }
         setConf(self, 'partitionField', field)

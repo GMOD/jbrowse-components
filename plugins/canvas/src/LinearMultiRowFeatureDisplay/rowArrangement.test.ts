@@ -9,6 +9,7 @@ import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTyp
 function regionData(
   partitionValues: string[],
   partitionCandidates: string[] = [],
+  resolvedPartitionField = 'name',
 ): MultiRowRegionData {
   return {
     partitionValues,
@@ -21,6 +22,7 @@ function regionData(
     featureDeltas: new Int32Array(0),
     usedItemRgb: false,
     partitionCandidates,
+    resolvedPartitionField,
   }
 }
 
@@ -76,6 +78,23 @@ describe('repartitioning', () => {
     ])
   })
 
+  // The slot is empty by default and the worker picks the column, so the menu's
+  // checked radio names a field nothing in the config does — and until a region
+  // has loaded there is no pick to report, only what auto would fall back to.
+  it('reports the field the worker actually partitioned on', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    expect(display.partitionField).toBe('')
+    expect(display.effectivePartitionField).toBe('name')
+
+    display.setRpcData(
+      0,
+      regionData(['LINE'], ['repClass', 'name'], 'repClass'),
+    )
+
+    expect(display.effectivePartitionField).toBe('repClass')
+    expect(display.partitionField).toBe('')
+  })
+
   // `layout` names rows by VALUE, so under a new partition its entries name
   // rows that no longer exist — and `getSources` appends a row a layout omits
   // rather than dropping it, so the old row set would have come back beside the
@@ -112,12 +131,18 @@ describe('repartitioning', () => {
     expect(rowNames(display)).toEqual(['x', 'y'])
   })
 
+  // Against the EFFECTIVE field, not the slot. With the slot at its empty auto
+  // default the menu checks whatever the worker picked, so picking that same
+  // radio arrives here as a name the slot does not hold — and comparing against
+  // the slot would take it for a repartition, dropping a clustered layout to
+  // refetch the painting already on screen.
   it('leaves everything alone when the partition is already that', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setRpcData(0, regionData(['a', 'b'], ['sample']))
     display.setLayoutAndClusterTree([{ name: 'b' }, { name: 'a' }], '(b,a);')
+    expect(display.partitionField).toBe('')
 
-    display.setPartitionField(display.partitionField)
+    display.setPartitionField(display.effectivePartitionField)
 
     expect(display.layout).toEqual([{ name: 'b' }, { name: 'a' }])
     expect(display.clusterTree).toBe('(b,a);')

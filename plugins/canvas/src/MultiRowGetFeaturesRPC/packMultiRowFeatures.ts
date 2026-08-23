@@ -123,6 +123,57 @@ function collectPartitionCandidates(features: Feature[]) {
   return [...names].sort()
 }
 
+// The `partitionField` slot left empty: pick the row attribute off the data.
+export const AUTO_PARTITION_FIELD = ''
+
+// What auto picks, in preference order, when the loaded features carry it.
+//
+// One entry, and it is RepeatMasker's. That file is both the commonest track
+// anyone points this display at and the one where the old default was worst:
+// `name` on rmsk is the repeat instance, so the display opened as tens of
+// thousands of one-feature rows — a hairline each, no structure, and the fix
+// (Partition by... → repClass) discoverable only by opening a menu the reader
+// had no reason to think they needed. `repClass` is ~20 rows of exactly the
+// signal the track is read for.
+//
+// Kept a list because the next entry is a matter of finding another attribute
+// name that is this unambiguous, not of changing anything here.
+const PREFERRED_PARTITION_FIELDS = ['repClass']
+
+// What auto falls back to: the feature's own name. Right for a file whose rows
+// ARE its names — an ancestry painting keyed by sample — and the historical
+// default, so a track that was relying on it keeps its rows.
+const FALLBACK_PARTITION_FIELD = 'name'
+
+/**
+ * The attribute a region actually partitions on: the configured one, or — when
+ * the slot is left empty — the first preferred attribute the data carries.
+ *
+ * Resolved in the worker, against the same sampled `partitionCandidates` the
+ * "Partition by..." menu is built from, because this is the only side that
+ * knows the answer before the features are walked. Doing it on the main thread
+ * means fetching a region to discover its columns and then fetching it again to
+ * partition on one of them, which on the RepeatMasker files this exists for is
+ * the expensive half of the load, twice.
+ *
+ * Reported back as `resolvedPartitionField` so the menu can check the radio for
+ * a field nobody configured, and so clustering — which must land each feature in
+ * the row the painting drew it in — asks for the same one.
+ */
+export function resolvePartitionField(
+  partitionField: string,
+  partitionCandidates: string[],
+) {
+  const preferred = PREFERRED_PARTITION_FIELDS.find(f =>
+    partitionCandidates.includes(f),
+  )
+  return partitionField === AUTO_PARTITION_FIELD
+    ? preferred === undefined
+      ? FALLBACK_PARTITION_FIELD
+      : preferred
+    : partitionField
+}
+
 /**
  * Build the per-feature row resolver for a `partitionField` value: the plain
  * attribute lookup, or a `jexl:` expression evaluated per feature.
@@ -210,7 +261,15 @@ export function packMultiRowFeatures({
   // an unset (`maybeColor` undefined) slot is what lets the file's own color, or
   // the per-row palette, paint — see the `color` slot in configSchema.ts
   const featureColor = makeFeatureColorResolver(colorConfig, jexl)
-  const featurePartition = makeFeaturePartitionResolver(partitionField, jexl)
+  const partitionCandidates = collectPartitionCandidates(features)
+  const resolvedPartitionField = resolvePartitionField(
+    partitionField,
+    partitionCandidates,
+  )
+  const featurePartition = makeFeaturePartitionResolver(
+    resolvedPartitionField,
+    jexl,
+  )
   // A painting repeats a handful of color strings across every feature it has —
   // eight ancestry hues over half a million segments — and parsing one is not
   // cheap: trim, lowercase, a named-color lookup, a BED-triple regex, then the
@@ -275,6 +334,7 @@ export function packMultiRowFeatures({
     featureNames,
     featureIds,
     usedItemRgb,
-    partitionCandidates: collectPartitionCandidates(features),
+    partitionCandidates,
+    resolvedPartitionField,
   }
 }

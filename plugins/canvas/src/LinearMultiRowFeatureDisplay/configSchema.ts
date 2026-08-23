@@ -73,6 +73,14 @@ export default function configSchemaF() {
        * change. `rowOrder` and `sampleColorMap` are how a row's position and
        * color are held fixed while that set changes underfoot.
        *
+       * **Empty (the default) picks the attribute off the data**: a file
+       * carrying `repClass` is partitioned by repeat class, and anything else
+       * falls back to `name`. RepeatMasker is why — `name` there is the repeat
+       * instance, so the display used to open as tens of thousands of
+       * single-feature rows and the twenty-row view the track is actually read
+       * for was one unadvertised track-menu click away. Set this explicitly to
+       * pin a column and opt out.
+       *
        * A `jexl:` expression works here too, for a file that carries the
        * category without carrying a column for it. UCSC's `bigRmskBed` is the
        * case this was added for: the repeat class is a suffix on the name
@@ -86,9 +94,9 @@ export default function configSchemaF() {
        */
       partitionField: {
         type: 'string',
-        defaultValue: 'name',
+        defaultValue: '',
         description:
-          'feature attribute that assigns each feature to a row, or a jexl expression deriving one',
+          'feature attribute that assigns each feature to a row, or a jexl expression deriving one. Empty = pick one off the data (repClass if present, else name)',
         // What makes the config editor offer this slot's value/callback toggle
         // at all (SlotEditor gates that switch on a non-empty contextVariable),
         // and what names `feature` in the callback editor's help. Without it the
@@ -208,6 +216,28 @@ export default function configSchemaF() {
         type: 'boolean',
         defaultValue: false,
         description: 'draw separator lines between rows',
+      },
+      /**
+       * #slot
+       * Tint each sidebar label box with the color that row's blocks are painted
+       * in, so a row can be found by color at a glance instead of by reading
+       * down a column of similar names.
+       *
+       * Off by default, and a toggle rather than a rule, because the label box is
+       * a scarce surface: `rowGroups` already spends it on a grouping the
+       * painting does not show, and a color set in the "Edit colors/arrangement"
+       * dialog spends it too. Both of those win over this, being asked for by
+       * name where this is derived.
+       *
+       * Nothing happens in per-feature color mode (an `itemRgb` painting, or a
+       * `jexl:` `color` slot): there is no one color the row is painted in, so
+       * there is nothing honest to tint the label with.
+       */
+      colorRowLabels: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          "tint each sidebar label with the color that row's blocks are painted in",
       },
       /**
        * #slot

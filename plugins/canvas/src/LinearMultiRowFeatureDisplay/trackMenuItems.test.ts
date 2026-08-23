@@ -24,13 +24,15 @@ function makeSelf(
     showRowSeparators: false,
     showRowLabels: true,
     setShowRowLabels: () => {},
+    colorRowLabels: false,
+    setColorRowLabels: () => {},
     effectiveRowHeight: 14,
     colorLegend: [],
     rowGroupLegend: [],
     hiddenCategories: [],
     // nothing loaded by default, which is the "Partition by..." item's own
     // absent condition — a case that wants the submenu supplies candidates
-    partitionField: 'name',
+    effectivePartitionField: 'name',
     partitionCandidates: [] as string[],
     setPartitionField: () => {},
     showBranchLength: true,
@@ -102,6 +104,7 @@ describe('multi-row track menu', () => {
       'Show sidebar with tree and labels',
       'Show row labels',
       'Show row separators',
+      'Color row labels by row color',
       'Tree branch lengths',
     ])
   })
@@ -288,7 +291,7 @@ describe('multi-row track menu', () => {
         buildMultiRowTrackMenuItems(
           makeSelf({
             partitionCandidates: ['repClass', 'repFamily'],
-            partitionField: 'repClass',
+            effectivePartitionField: 'repClass',
           }),
         ),
         'Partition by...',
@@ -305,7 +308,7 @@ describe('multi-row track menu', () => {
         buildMultiRowTrackMenuItems(
           makeSelf({
             partitionCandidates: ['repClass', 'repFamily'],
-            partitionField: 'repClass',
+            effectivePartitionField: 'repClass',
             setPartitionField: (f: string) => {
               picked.push(f)
             },
@@ -326,7 +329,7 @@ describe('multi-row track menu', () => {
         buildMultiRowTrackMenuItems(
           makeSelf({
             partitionCandidates: ['name'],
-            partitionField: "jexl:split(feature.name,'#')[1]",
+            effectivePartitionField: "jexl:split(feature.name,'#')[1]",
           }),
         ),
         'Partition by...',
