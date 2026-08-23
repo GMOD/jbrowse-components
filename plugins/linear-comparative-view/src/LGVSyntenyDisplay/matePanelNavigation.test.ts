@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   containingPanelStack,
@@ -8,8 +9,9 @@ import {
 } from './matePanelNavigation.ts'
 import { createPanelStack } from './testEnv.ts'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { PanelStack } from './matePanelNavigation.ts'
+import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // The one method `matePanelIndexes` needs of an assembly manager. `hg38` here
 // answers to `GRCh38` as well, which is what a session with an `aliases` entry
@@ -207,68 +209,210 @@ test('a panel finds its stack and a standalone view finds none', () => {
   expect(containingPanelStack(standalone)).toBeUndefined()
 })
 
-// A panel, as much of one as the move touches. `navTo` resolving is what stands
-// for "the span is inside the regions this panel already displays".
-function movablePanel({ reachable = true } = {}) {
-  const navTo = jest.fn(() => {
-    if (!reachable) {
-      throw new Error('not in displayed regions')
-    }
+// A panel, as much of one as the move touches, and a REAL node: `takeFollowAnchor`
+// and `captureRowViewport` both guard on liveness, so a plain object throws on
+// the two paths — the release and the Undo — most worth testing.
+//
+// `reachable` is whether `navTo` resolves, which stands for "the span is inside
+// the regions this panel already displays". `landed` is `navToLocString`
+// answering false: it resolves without navigating when the contig is not a
+// refName here and the text search raises a picker instead.
+const TestPanel = types
+  .model('TestPanel', {
+    reachable: types.optional(types.boolean, true),
+    landed: types.optional(types.boolean, true),
   })
-  const navToLocString = jest.fn(() => Promise.resolve(true))
-  return {
-    navTo,
-    navToLocString,
-  } as unknown as LinearGenomeViewModel & {
-    navTo: jest.Mock
-    navToLocString: jest.Mock
-  }
+  .volatile(() => ({
+    displayedRegions: [
+      {
+        refName: 'chr8_PATERNAL',
+        start: 0,
+        end: 10_000_000,
+        assemblyName: 'hg002v1.2',
+      },
+    ] as Region[],
+    windowWidthBp: 100_000,
+    windowStartBp: 500_000,
+    navToCalls: [] as unknown[],
+    navToLocStringCalls: [] as string[],
+  }))
+  .actions(self => ({
+    navTo(loc: unknown) {
+      self.navToCalls.push(loc)
+      if (!self.reachable) {
+        throw new Error('not in displayed regions')
+      }
+    },
+    navToLocString(loc: string) {
+      self.navToLocStringCalls.push(loc)
+      return Promise.resolve(self.landed)
+    },
+    setDisplayedRegions(regions: Region[]) {
+      self.displayedRegions = regions
+    },
+    setWindow(widthBp: number, startBp: number) {
+      self.windowWidthBp = widthBp
+      self.windowStartBp = startBp
+    },
+  }))
+
+type TestPanelModel = Instance<typeof TestPanel>
+
+function movablePanel(opts: { reachable?: boolean; landed?: boolean } = {}) {
+  return TestPanel.create(opts)
 }
 
-const session = {
-  notifyError: jest.fn(),
-} as unknown as AbstractSessionModel
+// The one cast these mocks need, in the two places that build a stack out of
+// them: a `PanelStack` holds real `LinearGenomeViewModel`s, and standing up two
+// dozen unread properties per panel to say so would hide what the move actually
+// touches.
+function asPanelStack<T>(stack: T) {
+  return stack as T & PanelStack
+}
+
+// The follow state a stack carries, as its own node so `release` has something
+// alive to write. `panels` is volatile because the panels are not real LGVs and
+// a typed array would insist they were.
+const TestStack = types
+  .model('TestStack', {
+    followSynteny: types.optional(types.boolean, true),
+    followAnchorIndex: types.optional(types.number, 0),
+  })
+  .volatile(() => ({ views: [] as TestPanelModel[] }))
+  .actions(self => ({
+    setViews(views: TestPanelModel[]) {
+      self.views = views
+    },
+    setFollowAnchorIndex(idx: number) {
+      self.followAnchorIndex = idx
+    },
+  }))
+
+function followingStack(
+  views: TestPanelModel[],
+  opts: { followSynteny?: boolean; followAnchorIndex?: number } = {},
+) {
+  const stack = TestStack.create(opts)
+  stack.setViews(views)
+  return asPanelStack(stack)
+}
+
+// The BreakpointSplitView shape: a stack with no follow at all, which is what
+// `isFollowingStack` answers false for.
+function plainStack(views: TestPanelModel[]) {
+  return asPanelStack({ views })
+}
+
+const notify = jest.fn()
+const notifyError = jest.fn()
+const session = { notify, notifyError } as unknown as AbstractSessionModel
+
+beforeEach(() => {
+  notify.mockClear()
+  notifyError.mockClear()
+})
 
 const window = { start: 2_000_000, end: 2_100_000 }
+
+const noCigarFeature = () =>
+  new SimpleFeature({
+    uniqueId: 'nocigar',
+    refName: 'chr8_MATERNAL',
+    start: 0,
+    end: 10_000_000,
+    strand: 1,
+    mate: {
+      refName: 'chr8_PATERNAL',
+      start: 0,
+      end: 10_000_000,
+      assemblyName: 'hg002v1.2',
+    },
+  })
+
+// The single Undo the snackbar carries, or undefined when it offered none.
+function undoAction() {
+  const action = notify.mock.calls.at(-1)?.[2] as
+    | { name: string; onClick: () => void }
+    | undefined
+  return action?.name === 'Undo' ? action : undefined
+}
 
 // `navToLocString` REPLACES `displayedRegions` with the single contig it lands
 // on, and the synteny fetch keeps a block only when both ends are in view — so a
 // whole-genome panel moved once was narrowed permanently, losing the ribbons the
 // move exists to line up. `navTo` moves inside the regions the panel already
 // has.
-test('a panel that can reach the span is moved without replacing its regions', () => {
+test('a panel that can reach the span is moved without replacing its regions', async () => {
   const panel = movablePanel()
-  moveMatePanels({
-    stack: { views: [movablePanel(), panel] },
+  await moveMatePanels({
+    stack: plainStack([movablePanel(), panel]),
     anchorIndex: 0,
     indexes: [1],
     feature: chainFeature(),
     region: window,
     session,
   })
-  expect(panel.navTo).toHaveBeenCalledWith({
-    refName: 'chr8_PATERNAL',
-    start: 1_999_000,
-    end: 2_099_000,
+  expect(panel.navToCalls).toEqual([
+    { refName: 'chr8_PATERNAL', start: 1_999_000, end: 2_099_000 },
+  ])
+  expect(panel.navToLocStringCalls).toEqual([])
+})
+
+// Nothing was discarded to get there and no anchor was taken, so there is
+// nothing to put back — a snackbar here would be one on every move.
+test('a move that stays inside the panel raises no snackbar', async () => {
+  await moveMatePanels({
+    stack: plainStack([movablePanel(), movablePanel()]),
+    anchorIndex: 0,
+    indexes: [1],
+    feature: chainFeature(),
+    region: window,
+    session,
   })
-  expect(panel.navToLocString).not.toHaveBeenCalled()
+  expect(notify).not.toHaveBeenCalled()
 })
 
 // The fallback is still there for a panel genuinely not displaying the contig —
 // replacing its regions is the only way to reach the span at all.
-test('a panel that cannot reach the span falls back to the locstring', () => {
+test('a panel that cannot reach the span falls back to the locstring', async () => {
   const panel = movablePanel({ reachable: false })
-  moveMatePanels({
-    stack: { views: [movablePanel(), panel] },
+  await moveMatePanels({
+    stack: plainStack([movablePanel(), panel]),
     anchorIndex: 0,
     indexes: [1],
     feature: chainFeature(),
     region: window,
     session,
   })
-  expect(panel.navToLocString).toHaveBeenCalledWith(
-    'chr8_PATERNAL:1999001..2099000',
-  )
+  expect(panel.navToLocStringCalls).toEqual(['chr8_PATERNAL:1999001..2099000'])
+})
+
+// That fallback is the one branch that discards something: a region list the
+// reader may have built over several navigations, which "show all regions" is
+// not an undo for.
+test('the region-replacing fallback offers an Undo that puts the regions back', async () => {
+  const panel = movablePanel({ reachable: false })
+  const before = panel.displayedRegions
+  await moveMatePanels({
+    stack: plainStack([movablePanel(), panel]),
+    anchorIndex: 0,
+    indexes: [1],
+    feature: chainFeature(),
+    region: window,
+    session,
+  })
+  panel.setDisplayedRegions([
+    {
+      refName: 'chr8_PATERNAL',
+      start: 0,
+      end: 100,
+      assemblyName: 'hg002v1.2',
+    },
+  ])
+  panel.setWindow(1, 1)
+  undoAction()!.onClick()
+  expect(panel.displayedRegions).toEqual(before)
+  expect([panel.windowWidthBp, panel.windowStartBp]).toEqual([100_000, 500_000])
 })
 
 // A panel the follow MOVES is re-asserted onto the anchor's mapping the moment
@@ -276,29 +420,49 @@ test('a panel that cannot reach the span falls back to the locstring', () => {
 // the anchor the item ran, moved the neighbour, and the follow pulled it
 // straight back. Anchoring the clicked panel is the item's own label: this one
 // stays, the others come to it.
-test('a following stack is anchored on the clicked panel', () => {
-  const setFollowAnchorIndex = jest.fn()
-  moveMatePanels({
-    stack: {
-      views: [movablePanel(), movablePanel(), movablePanel()],
-      followSynteny: true,
-      followAnchorIndex: 0,
-      setFollowAnchorIndex,
-    },
+test('a following stack is anchored on the clicked panel', async () => {
+  const stack = followingStack(
+    [movablePanel(), movablePanel(), movablePanel()],
+    { followAnchorIndex: 0 },
+  )
+  await moveMatePanels({
+    stack,
     anchorIndex: 2,
     indexes: [1],
     feature: chainFeature(),
     region: window,
     session,
   })
-  expect(setFollowAnchorIndex).toHaveBeenCalledWith(2)
+  expect(stack.followAnchorIndex).toBe(2)
+  expect(undoAction()).toBeDefined()
+})
+
+// The take moved rows the click never named — the follow re-places every panel
+// off the new anchor — so its Undo has to put the anchor back too, not just the
+// panel that was navigated.
+test('the Undo gives the follow anchor back', async () => {
+  const stack = followingStack([movablePanel(), movablePanel()], {
+    followAnchorIndex: 1,
+  })
+  await moveMatePanels({
+    stack,
+    anchorIndex: 0,
+    indexes: [1],
+    feature: chainFeature(),
+    region: window,
+    session,
+  })
+  expect(stack.followAnchorIndex).toBe(0)
+  undoAction()!.onClick()
+  expect(stack.followAnchorIndex).toBe(1)
 })
 
 // Two stacks that must not be written: one with the follow switched off, where
 // the anchor is a persisted setting this click never touched, and one that has
-// no follow at all (BreakpointSplitView).
-test('a stack that is not following keeps its anchor', () => {
-  const setFollowAnchorIndex = jest.fn()
+// no follow at all (BreakpointSplitView), which is what the type guard is for —
+// with the three properties independently optional, the second one took an
+// optional call and wrote nothing, which is indistinguishable from a bug.
+test('a stack that is not following keeps its anchor', async () => {
   const args = {
     anchorIndex: 1,
     indexes: [0],
@@ -306,53 +470,104 @@ test('a stack that is not following keeps its anchor', () => {
     region: window,
     session,
   }
-  moveMatePanels({
-    stack: {
-      views: [movablePanel(), movablePanel()],
-      followSynteny: false,
-      followAnchorIndex: 0,
-      setFollowAnchorIndex,
-    },
+  const stack = followingStack([movablePanel(), movablePanel()], {
+    followSynteny: false,
+    followAnchorIndex: 0,
+  })
+  await moveMatePanels({ stack, ...args })
+  await moveMatePanels({
+    stack: plainStack([movablePanel(), movablePanel()]),
     ...args,
   })
-  moveMatePanels({
-    stack: { views: [movablePanel(), movablePanel()] },
-    ...args,
-  })
-  expect(setFollowAnchorIndex).not.toHaveBeenCalled()
+  expect(stack.followAnchorIndex).toBe(0)
 })
 
 // A CIGAR-less block names no region, so nothing is navigated — and nothing is
 // anchored either, since the take is a state change a move that cannot happen
 // has not earned.
-test('a block with no answer moves nothing and anchors nothing', () => {
-  const setFollowAnchorIndex = jest.fn()
+test('a block with no answer moves nothing and anchors nothing', async () => {
   const panel = movablePanel()
-  moveMatePanels({
-    stack: {
-      views: [movablePanel(), panel],
-      followSynteny: true,
-      followAnchorIndex: 1,
-      setFollowAnchorIndex,
-    },
+  const stack = followingStack([movablePanel(), panel], {
+    followAnchorIndex: 1,
+  })
+  await moveMatePanels({
+    stack,
     anchorIndex: 0,
     indexes: [1],
-    feature: new SimpleFeature({
-      uniqueId: 'nocigar',
-      refName: 'chr8_MATERNAL',
-      start: 0,
-      end: 10_000_000,
-      strand: 1,
-      mate: {
-        refName: 'chr8_PATERNAL',
-        start: 0,
-        end: 10_000_000,
-        assemblyName: 'hg002v1.2',
-      },
-    }),
+    feature: noCigarFeature(),
     region: window,
     session,
   })
-  expect(panel.navTo).not.toHaveBeenCalled()
-  expect(setFollowAnchorIndex).not.toHaveBeenCalled()
+  expect(panel.navToCalls).toEqual([])
+  expect(stack.followAnchorIndex).toBe(1)
+})
+
+// The take happens BEFORE the navigation, because the follow propagates away
+// from the anchor and a panel moved while another holds it is pulled straight
+// back. That makes it a state change the navigation has not earned yet: a
+// contig the moving panel's assembly does not have fails both branches, and
+// without the release the item reported an error and re-pointed the follow at a
+// different panel anyway.
+test('a navigation that throws gives the anchor back', async () => {
+  const panel = movablePanel({ reachable: false })
+  jest
+    .spyOn(panel, 'navToLocString')
+    .mockRejectedValue(new Error('unknown refName'))
+  const stack = followingStack([movablePanel(), panel], {
+    followAnchorIndex: 1,
+  })
+  await moveMatePanels({
+    stack,
+    anchorIndex: 0,
+    indexes: [1],
+    feature: chainFeature(),
+    region: window,
+    session,
+  })
+  expect(notifyError).toHaveBeenCalled()
+  expect(notify).not.toHaveBeenCalled()
+  expect(stack.followAnchorIndex).toBe(1)
+})
+
+// `navToLocString` resolving false is the picker case — ordinary for a PAF
+// naming contigs `1`,`2` against an assembly spelling them `chr1`,`chr2`.
+// Counted as a move it left the anchor taken for a navigation that never
+// happened, and posted a live Undo over a stack nothing had touched.
+test('a navigation that resolves without moving gives the anchor back', async () => {
+  const stack = followingStack(
+    [movablePanel(), movablePanel({ reachable: false, landed: false })],
+    { followAnchorIndex: 1 },
+  )
+  await moveMatePanels({
+    stack,
+    anchorIndex: 0,
+    indexes: [1],
+    feature: chainFeature(),
+    region: window,
+    session,
+  })
+  expect(notify).not.toHaveBeenCalled()
+  expect(stack.followAnchorIndex).toBe(1)
+})
+
+// A self-alignment moves BOTH neighbours, and one of them failing must not
+// decide for the other: the anchor is earned if either landed.
+test('one neighbour failing does not release an anchor the other earned', async () => {
+  const good = movablePanel()
+  const bad = movablePanel({ reachable: false })
+  jest.spyOn(bad, 'navToLocString').mockRejectedValue(new Error('nope'))
+  const stack = followingStack([bad, movablePanel(), good], {
+    followAnchorIndex: 0,
+  })
+  await moveMatePanels({
+    stack,
+    anchorIndex: 1,
+    indexes: [0, 2],
+    feature: chainFeature(),
+    region: window,
+    session,
+  })
+  expect(notifyError).toHaveBeenCalled()
+  expect(good.navToCalls).toHaveLength(1)
+  expect(stack.followAnchorIndex).toBe(1)
 })

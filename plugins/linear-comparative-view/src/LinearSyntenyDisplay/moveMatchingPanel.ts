@@ -1,15 +1,44 @@
 import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
+import { runInAction } from 'mobx'
 
-import { takeFollowAnchor } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+import {
+  captureStackViewports,
+  takeFollowAnchor,
+} from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 
 import type {
   ResolvedSpan,
   SpanOfInterest,
 } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
+import type { FollowAnchorTake } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+/**
+ * How a `navToResolvedSpan` ended. The callers have to tell the three apart:
+ * only `replaced` discarded a region list, which is the one thing here worth an
+ * Undo, and only `unmoved` means a follow anchor taken for this navigation was
+ * never earned.
+ */
+export type SpanNavOutcome = 'inPlace' | 'replaced' | 'unmoved'
+
+/**
+ * A span with the one-base clamp applied, which is silent when left out: a
+ * zero-width span assembles into an inverted locstring.
+ *
+ * Shared so a navigation and the snackbar reporting it cannot name two
+ * different places.
+ */
+function clampedSpan(span: ResolvedSpan) {
+  return {
+    refName: span.refName,
+    start: span.start,
+    end: Math.max(span.start + 1, span.end),
+  }
+}
 
 /**
  * Send `view` to a resolved span, the way every one-shot path does.
@@ -36,23 +65,113 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * — one the user navigated to a single region — still gets the replacement,
  * which is the only way to reach the span at all.
  *
- * Shared for the one-base clamp, which is silent when left out: a zero-width
- * span assembles into an inverted locstring.
+ * Shared for the one-base clamp `clampedSpan` applies.
+ *
+ * IT REPORTS WHICH BRANCH IT TOOK, because they are not equally free. The
+ * fallback discards a region list the reader may have built over several
+ * navigations, so a caller that offers an Undo has to know it happened. And
+ * `navToLocString` resolves WITHOUT navigating when the contig is not a refName
+ * here and the text search raises a picker over the hits instead — ordinary for
+ * a PAF naming contigs `1`,`2` against an assembly spelling them `chr1`,`chr2`.
+ * Reported as a move, that left a follow anchor taken for a navigation that
+ * never happened, which pulls every other row to a correspondence nothing
+ * established.
  */
 export async function navToResolvedSpan(
   view: LinearGenomeViewModel,
   span: ResolvedSpan,
-) {
-  const { refName } = span
-  const start = span.start
-  const end = Math.max(span.start + 1, span.end)
+): Promise<SpanNavOutcome> {
+  const clamped = clampedSpan(span)
   try {
-    view.navTo({ refName, start, end })
-    return
+    view.navTo(clamped)
+    return 'inPlace'
   } catch {
     // the span is not inside this row's displayed regions
   }
-  await view.navToLocString(assembleLocStringRaw({ refName, start, end }))
+  const landed = await view.navToLocString(assembleLocStringRaw(clamped))
+  return landed ? 'replaced' : 'unmoved'
+}
+
+/**
+ * Move every panel in `panels` to `span`, and SETTLE UP for the anchor that was
+ * taken to do it.
+ *
+ * Three things the two move items each got wrong on their own, which is why
+ * this is one function rather than two spellings.
+ *
+ * NOTHING MOVED, NOTHING KEPT. The anchor is taken before the navigation,
+ * because the follow propagates away from the anchor and a panel moved while
+ * some other one holds it is a panel the next pass pulls straight back. That
+ * makes the take a state change the navigation has not earned yet: a contig the
+ * moving panel's assembly does not have — ordinary, since mate names come out
+ * of the alignment file — fails both branches, and without the release the item
+ * reported an error and re-pointed the follow at a different panel anyway.
+ *
+ * `allSettled`, so one panel's failure does not decide for the other. A
+ * self-alignment moves BOTH neighbours, and the anchor is earned if either of
+ * them landed.
+ *
+ * AN UNDO ONLY WHEN THERE IS SOMETHING TO PUT BACK, which is what keeps this
+ * from being a snackbar on every move. `navToResolvedSpan` stays inside a
+ * panel's own regions wherever it can, and that leaves nothing discarded — but
+ * its fallback replaces `displayedRegions` with the one contig it landed on,
+ * which is the permanent self-inflicted narrowing the navTo-first order exists
+ * to avoid and cannot always avoid. A taken anchor counts too: the follow
+ * re-places every other panel, so the click moved rows it never named.
+ */
+export async function movePanelsToSpan({
+  panels,
+  span,
+  anchor,
+  restore,
+  session,
+  followNote,
+}: {
+  panels: LinearGenomeViewModel[]
+  span: ResolvedSpan
+  anchor: FollowAnchorTake
+  // the whole stack's viewports as captured BEFORE the take, since the follow
+  // re-places every panel and restoring only the moved one leaves the stack
+  // mirrored: the click's arrangement under the pre-click anchor
+  restore: () => void
+  session: AbstractSessionModel
+  // how the snackbar names the panel the anchor went to, which differs by item:
+  // the clicked panel for the LGV display, the one that stayed for a band
+  followNote: string
+}) {
+  const settled = await Promise.allSettled(
+    panels.map(panel => navToResolvedSpan(panel, span)),
+  )
+  const outcomes: SpanNavOutcome[] = []
+  for (const result of settled) {
+    if (result.status === 'fulfilled') {
+      outcomes.push(result.value)
+    } else {
+      session.notifyError(`${result.reason}`, result.reason)
+    }
+  }
+  if (outcomes.some(outcome => outcome !== 'unmoved')) {
+    if (anchor.taken || outcomes.includes('replaced')) {
+      const loc = assembleLocStringRaw(clampedSpan(span))
+      session.notify(
+        anchor.taken ? `Showing ${loc}, ${followNote}` : `Showing ${loc}`,
+        'info',
+        {
+          name: 'Undo',
+          onClick: () => {
+            // one transaction, so the follow sees the settled pre-click state
+            // rather than a half-restored one
+            runInAction(() => {
+              restore()
+              anchor.release()
+            })
+          },
+        },
+      )
+    }
+  } else {
+    anchor.release()
+  }
 }
 
 /**
@@ -211,8 +330,9 @@ export async function resolveMatchingSpan({
  * something other than what it says. Anchoring the staying panel is what the
  * item MEANS, and it makes the follow keep the correspondence the move just
  * established rather than overwrite it. `takeFollowAnchor` is the same take
- * `showOffscreenMateContig` makes, minus the undo: this moves a panel inside its
- * own regions wherever it can, so there is no discarded region list to restore.
+ * `showOffscreenMateContig` makes; `movePanelsToSpan` gives it back when the
+ * navigation does not land, and offers the Undo when it lands by replacing the
+ * panel's regions.
  */
 export async function moveMatchingPanel({
   model,
@@ -245,8 +365,17 @@ export async function moveMatchingPanel({
     )
     return
   }
-  // after the resolve, so an alignment that turns out to have no answer leaves
-  // the anchor where the user had it
-  takeFollowAnchor(model.view, stayingIndex)
-  await navToResolvedSpan(movingView, span)
+  // Captured before the take, which already re-places the other panels. After
+  // the resolve too, so an alignment that turns out to have no answer leaves the
+  // anchor where the user had it.
+  const restore = captureStackViewports([...model.view.views])
+  const anchor = takeFollowAnchor(model.view, stayingIndex)
+  await movePanelsToSpan({
+    panels: [movingView],
+    span,
+    anchor,
+    restore,
+    session: getSession(model),
+    followNote: 'and following the panel that stayed',
+  })
 }

@@ -209,6 +209,8 @@ function movePanelItem(
               feature,
               region,
               session: getSession(self),
+            }).catch((e: unknown) => {
+              getSession(self).notifyError(`${e}`, e)
             })
           },
         },

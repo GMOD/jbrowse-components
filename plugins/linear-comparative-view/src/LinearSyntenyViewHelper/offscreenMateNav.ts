@@ -43,12 +43,33 @@ export function navLocString(refName: string, locus?: OffscreenMateLocus) {
 
 // The view-wide follow state a mark's navigation borrows. A state tree node
 // because `release` has to know THIS is still alive — it is what gets written.
-interface FollowAnchorHost extends IStateTreeNode {
+export interface FollowAnchorHost extends IStateTreeNode {
   followSynteny: boolean
   followAnchorIndex: number
   // identity only, so `unknown` is all `release` needs from a row
   views: readonly unknown[]
   setFollowAnchorIndex: (idx: number) => void
+}
+
+/**
+ * A taken follow anchor and the undo for it. Named so that a caller with no
+ * follow host at all — BreakpointSplitView is a panel stack with no such mode —
+ * can stand in the inert take rather than branch around every use of one.
+ */
+export interface FollowAnchorTake {
+  taken: boolean
+  release: () => void
+}
+
+/**
+ * The take for a stack that cannot follow: nothing was moved, so nothing is
+ * given back.
+ */
+export function noFollowAnchor(): FollowAnchorTake {
+  return {
+    taken: false,
+    release() {},
+  }
 }
 
 /**
@@ -75,7 +96,10 @@ interface FollowAnchorHost extends IStateTreeNode {
  * value back that was never moved silently re-points it at whichever row a mark
  * was last clicked on.
  */
-export function takeFollowAnchor(host: FollowAnchorHost, row: number) {
+export function takeFollowAnchor(
+  host: FollowAnchorHost,
+  row: number,
+): FollowAnchorTake {
   const previous = host.followAnchorIndex
   const anchored = host.views[row]
   const taken = host.followSynteny && previous !== row

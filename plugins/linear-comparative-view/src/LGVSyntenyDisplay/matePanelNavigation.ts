@@ -3,30 +3,62 @@ import { isViewModel } from '@jbrowse/core/util/types'
 import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 
 import { resolvedMateSpan } from '../LaunchSyntenyView/resolvePanel.ts'
-import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
+import { movePanelsToSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
+import {
+  captureStackViewports,
+  noFollowAnchor,
+  takeFollowAnchor,
+} from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import { getCigar } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // A stack of genome panels, one above the next: LinearSyntenyView,
 // LinearComparativeView and BreakpointSplitView are each one. Duck-typed rather
 // than imported, because what reaches this file is a display inside one of the
 // panels and a panel has no idea which kind of stack it is in.
-export interface PanelStack {
+export interface PanelStack extends IStateTreeNode {
   views: LinearGenomeViewModel[]
   // The follow state, OPTIONAL because only two of the three stacks have it: a
   // LinearSyntenyView and a LinearComparativeView can be following,
-  // BreakpointSplitView has no such mode. Declared here rather than tested for
-  // with a type guard — a stack without the mode simply reads `undefined`, which
-  // is the same answer "not following" and needs no special case.
+  // BreakpointSplitView has no such mode.
   followSynteny?: boolean
   followAnchorIndex?: number
   setFollowAnchorIndex?: (idx: number) => void
+}
+
+/**
+ * A stack that has the follow at all, whether or not it is switched on.
+ *
+ * The three properties are one fact, so they are tested as one: with them
+ * declared independently optional, a stack carrying `followSynteny` but no
+ * setter would take an optional call and write nothing, which is the follow
+ * quietly not being taken rather than an error. Whether the follow is ON is
+ * `takeFollowAnchor`'s decision and stays there — this only answers whether
+ * there is anything to ask.
+ */
+type FollowingStack = PanelStack &
+  Required<
+    Pick<
+      PanelStack,
+      'followSynteny' | 'followAnchorIndex' | 'setFollowAnchorIndex'
+    >
+  >
+
+function isFollowingStack(stack: PanelStack): stack is FollowingStack {
+  return (
+    typeof stack.followSynteny === 'boolean' &&
+    typeof stack.followAnchorIndex === 'number' &&
+    typeof stack.setFollowAnchorIndex === 'function'
+  )
 }
 
 /**
@@ -168,12 +200,12 @@ export function matePanelSpan(
  * MEANS: this panel stays, the others come to it, which is the item's own label.
  * `showOffscreenMateContig` states the rule at length.
  *
- * No undo here, unlike that one: this moves a panel within its own regions
- * wherever it can, so there is no discarded region list to hand back, and the
- * anchor it takes is the panel the user clicked in rather than one a mark named
- * for them.
+ * `takeFollowAnchor` itself rather than the two conditions restated here, which
+ * is what a stack with no follow at all needs `isFollowingStack` for.
+ * `movePanelsToSpan` owns the rest: the release when nothing landed, and the
+ * Undo for a panel that could only be moved by replacing its regions.
  */
-export function moveMatePanels({
+export async function moveMatePanels({
   stack,
   anchorIndex,
   indexes,
@@ -191,18 +223,20 @@ export function moveMatePanels({
 }) {
   const span = matePanelSpan(feature, region)
   if (span) {
-    // the same two conditions `takeFollowAnchor` applies: only while following,
-    // and only when it is a change
-    if (stack.followSynteny && stack.followAnchorIndex !== anchorIndex) {
-      stack.setFollowAnchorIndex?.(anchorIndex)
-    }
-    for (const i of indexes) {
-      const panel = stack.views[i]
-      if (panel) {
-        navToResolvedSpan(panel, span).catch((e: unknown) => {
-          session.notifyError(`${e}`, e)
-        })
-      }
-    }
+    // captured before the take, which already re-places the other panels
+    const restore = captureStackViewports([...stack.views])
+    const anchor = isFollowingStack(stack)
+      ? takeFollowAnchor(stack, anchorIndex)
+      : noFollowAnchor()
+    await movePanelsToSpan({
+      panels: indexes
+        .map(i => stack.views[i])
+        .filter(panel => panel !== undefined),
+      span,
+      anchor,
+      restore,
+      session,
+      followNote: 'and following this panel',
+    })
   }
 }
