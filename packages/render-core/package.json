@@ -43,6 +43,7 @@
     "./instanceCache": "./src/instanceCache.ts",
     "./instancePass": "./src/instancePass.ts",
     "./keyedRenderingBackend": "./src/keyedRenderingBackend.ts",
+    "./namedReactions": "./src/namedReactions.ts",
     "./OverlayCanvas": "./src/OverlayCanvas.tsx",
     "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
     "./renderBlock": "./src/renderBlock.ts",
@@ -154,6 +155,10 @@
       "./keyedRenderingBackend": {
         "types": "./esm/keyedRenderingBackend.d.ts",
         "import": "./esm/keyedRenderingBackend.js"
+      },
+      "./namedReactions": {
+        "types": "./esm/namedReactions.d.ts",
+        "import": "./esm/namedReactions.js"
       },
       "./OverlayCanvas": {
         "types": "./esm/OverlayCanvas.d.ts",
@@ -291,6 +296,9 @@
         ],
         "keyedRenderingBackend": [
           "esm/keyedRenderingBackend.d.ts"
+        ],
+        "namedReactions": [
+          "esm/namedReactions.d.ts"
         ],
         "OverlayCanvas": [
           "esm/OverlayCanvas.d.ts"

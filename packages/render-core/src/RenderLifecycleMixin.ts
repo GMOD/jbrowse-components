@@ -1,6 +1,8 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { recordNamedReaction } from './namedReactions.ts'
+
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -271,65 +273,63 @@ export function RenderLifecycleMixin() {
         // un-installed and the next backend can try again.
         const cbs = setup()
         self.autorunsInstalled = true
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              const b = self.currentRenderingBackend as B | undefined
-              if (b === undefined || !self.canRender) {
-                return
+        const upload = autorun(
+          () => {
+            const b = self.currentRenderingBackend as B | undefined
+            if (b === undefined || !self.canRender) {
+              return
+            }
+            // A throw in the upload callback (malformed worker data, a bad
+            // buffer-packing edge case) is routed to `renderError` for the
+            // same reason as the render autorun below: an uncaught reaction
+            // error would skip `renderNow()`, never flip `canvasDrawn`, and
+            // strand the display on 'loading' forever with no retry. For
+            // DisplayChrome consumers setting `renderError` unmounts the
+            // canvas and disposes the backend, so this can't re-fire into a
+            // loop; a shared-canvas consumer (dotplot, synteny) keeps the
+            // canvas mounted through an error (ADR-025), so there the only
+            // pacing is that autoruns re-fire on dep changes — a
+            // deterministically-throwing callback re-throws once per change,
+            // each landing on `setRenderError`'s identity guard.
+            try {
+              if (cbs.upload(b)) {
+                self.renderNow()
               }
-              // A throw in the upload callback (malformed worker data, a bad
-              // buffer-packing edge case) is routed to `renderError` for the
-              // same reason as the render autorun below: an uncaught reaction
-              // error would skip `renderNow()`, never flip `canvasDrawn`, and
-              // strand the display on 'loading' forever with no retry. For
-              // DisplayChrome consumers setting `renderError` unmounts the
-              // canvas and disposes the backend, so this can't re-fire into a
-              // loop; a shared-canvas consumer (dotplot, synteny) keeps the
-              // canvas mounted through an error (ADR-025), so there the only
-              // pacing is that autoruns re-fire on dep changes — a
-              // deterministically-throwing callback re-throws once per change,
-              // each landing on `setRenderError`'s identity guard.
-              try {
-                if (cbs.upload(b)) {
-                  self.renderNow()
-                }
-              } catch (e) {
-                self.setRenderError(e)
-              }
-            },
-            { name: 'RenderLifecycle:upload' },
-          ),
+            } catch (e) {
+              self.setRenderError(e)
+            }
+          },
+          { name: 'RenderLifecycle:upload' },
         )
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              const b = self.currentRenderingBackend as B | undefined
-              void self.renderTick
-              if (b === undefined || !self.canRender) {
-                return
+        recordNamedReaction(self, 'RenderLifecycle:upload', upload)
+        addDisposer(self, upload)
+        const render = autorun(
+          () => {
+            const b = self.currentRenderingBackend as B | undefined
+            void self.renderTick
+            if (b === undefined || !self.canRender) {
+              return
+            }
+            // A throw in the render callback (e.g. an invalid render-state
+            // input like an empty rendering type) would otherwise escape as
+            // an uncaught reaction error and leave the display stuck on
+            // "loading" forever. Route it to `renderError` so it surfaces as
+            // the render-error overlay (with the message + retry) instead.
+            // Same loop caveat as the upload autorun above: the
+            // unmount-and-dispose that prevents re-fire is DisplayChrome's,
+            // not a shared canvas's.
+            try {
+              if (cbs.render(b)) {
+                self.markCanvasDrawn()
               }
-              // A throw in the render callback (e.g. an invalid render-state
-              // input like an empty rendering type) would otherwise escape as
-              // an uncaught reaction error and leave the display stuck on
-              // "loading" forever. Route it to `renderError` so it surfaces as
-              // the render-error overlay (with the message + retry) instead.
-              // Same loop caveat as the upload autorun above: the
-              // unmount-and-dispose that prevents re-fire is DisplayChrome's,
-              // not a shared canvas's.
-              try {
-                if (cbs.render(b)) {
-                  self.markCanvasDrawn()
-                }
-              } catch (e) {
-                self.setRenderError(e)
-              }
-            },
-            { name: 'RenderLifecycle:render' },
-          ),
+            } catch (e) {
+              self.setRenderError(e)
+            }
+          },
+          { name: 'RenderLifecycle:render' },
         )
+        recordNamedReaction(self, 'RenderLifecycle:render', render)
+        addDisposer(self, render)
       },
     }))
 }

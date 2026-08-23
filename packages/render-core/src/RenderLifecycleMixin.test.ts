@@ -2,6 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction } from 'mobx'
 
 import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
+import { reactionDependencies } from './namedReactions.ts'
 
 const TestModel = types.compose(
   'TestModel',
@@ -310,4 +311,57 @@ test('painted tracks canvasDrawn for a display that does render one', () => {
   // to reporting pending rather than claiming a paint it no longer has
   model.stopRenderingBackend()
   expect(model.painted).toBe(false)
+})
+
+describe('the dependency set is the contract', () => {
+  // What each autorun subscribes to, stated as a value. A read that moves in
+  // or out of either body changes this list, which is the failure that
+  // counting runs against one hand-picked observable does not see.
+  it('render tracks the backend, the tick, the gate and what the callback reads', () => {
+    const model = TestModel.create()
+    const data = observable.map<number, string>(undefined, {
+      deep: false,
+      name: 'data',
+    })
+    const palette = observable.box('dark', { name: 'palette' })
+    model.attachRenderingBackend({}, () => ({
+      upload: () => {
+        void data.size
+        return true
+      },
+      render: () => {
+        void palette.get()
+        return data.size > 0
+      },
+    }))
+    expect(reactionDependencies(model, 'RenderLifecycle:upload')).toEqual([
+      'TestModel.canRender',
+      'TestModel.currentRenderingBackend',
+      'data.keys()',
+    ])
+    expect(reactionDependencies(model, 'RenderLifecycle:render')).toEqual([
+      'TestModel.canRender',
+      'TestModel.currentRenderingBackend',
+      'TestModel.renderTick',
+      'data.keys()',
+      'palette',
+    ])
+  })
+
+  it('a stopped backend leaves both autoruns subscribed to the backend alone, plus the tick', () => {
+    const model = TestModel.create()
+    const data = observable.map<number, string>(undefined, { deep: false })
+    model.attachRenderingBackend({}, () => ({
+      upload: () => data.size > 0,
+      render: () => data.size > 0,
+    }))
+    model.stopRenderingBackend()
+    expect(reactionDependencies(model, 'RenderLifecycle:upload')).toEqual([
+      'TestModel.currentRenderingBackend',
+    ])
+    expect(reactionDependencies(model, 'RenderLifecycle:render')).toEqual([
+      'TestModel.currentRenderingBackend',
+      'TestModel.renderTick',
+    ])
+  })
 })

@@ -117,7 +117,8 @@ RenderLifecycleMixin
     stopRenderingBackend()        clears currentRenderingBackend + resets canvasDrawn → autoruns idle
     renderNow()                   bumps renderTick → render autorun re-fires
     setRenderError(error)         set/clear renderError
-    attachRenderingBackend(setup)  spawns upload + render autoruns (once);
+    attachRenderingBackend(setup)  spawns upload + render autoruns (once), each recorded by name
+                                  for `reactionDependencies` (namedReactions.ts);
                                   takes a setup thunk run once per attach, so
                                   callback-local state is rebuilt with the
                                   backend on context-loss recovery

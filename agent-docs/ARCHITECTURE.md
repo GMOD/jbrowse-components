@@ -670,6 +670,20 @@ Two test files, one per half; a third (`fetchRegions.test.ts`) covers the commit
 ordering. Before the split all three were transcriptions of the autoruns, and
 deleting the half-screen prefetch buffer from production left every one green.
 
+**The dependency set is itself a value, and the wiring test states it.** Every
+installer records its reaction through `recordNamedReaction`
+(`@jbrowse/render-core/namedReactions`), and `reactionDependencies(node, name)`
+answers, as sorted leaf names, what that reaction subscribed to on its last run
+— MobX rebuilds the set every run, so the answer is per state. The mutate-and-
+count tests above pin one observable each, and only the ones someone thought to
+write; the "dependency set is the contract" blocks in
+`installPerRegionFetchAutoruns.test.ts` and `RenderLifecycleMixin.test.ts` pin
+the whole list per state instead: the two pure signals present in every state,
+the viewport present only while the display can act on it, `isLoading` and
+`loadedRegions` absent from all of them. A read that moves in or out of a body
+— a trigger dropped under a gate, a guard that stopped being `untracked`, a dev
+check leaking a read — changes the list, whichever observable it was.
+
 Why the byte estimate is dropped here: `displayedRegionIndex` is reused across
 chromosomes, so a stale estimate describes the previous chromosome's numbers and
 the banner quotes them at the new region until a re-measure lands. Only that

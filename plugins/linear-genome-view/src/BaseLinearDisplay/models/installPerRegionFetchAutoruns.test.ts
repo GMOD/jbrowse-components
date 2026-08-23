@@ -1,3 +1,4 @@
+import { reactionDependencies } from '@jbrowse/render-core/namedReactions'
 import { waitFor } from '@testing-library/react'
 
 import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
@@ -349,5 +350,82 @@ describe('the too-large gate re-measures once per settled viewport', () => {
     await quiet(display)
     expect(display.regionTooLarge).toBe(false)
     expect(display.loadedRegions.size).toBeGreaterThan(0)
+  })
+})
+
+describe('the dependency set is the contract', () => {
+  // The list itself, stated once per state, rather than one probe per
+  // observable someone thought to write. Every rule above is visible in it: the
+  // two pure signals present in every state, the viewport present only while
+  // the display can act on it, and the untracked guards (`isLoading`,
+  // `loadedRegions`) absent from all of them.
+  const signals = [
+    'PerRegionTestDisplay.fetchGeneration',
+    'PerRegionTestDisplay.reloadCounter',
+  ]
+  const viewport = [
+    'LinearGenomeView.displayedRegions',
+    'LinearGenomeView.minimumBlockWidth',
+    'LinearGenomeView.windowStartBp',
+    'LinearGenomeView.windowWidthBp',
+  ]
+
+  it('after a fetch: the signals, the blocking flags, the gate, the track and the viewport', async () => {
+    const { display } = setup()
+    await quiet(display)
+    expect(reactionDependencies(display, 'FetchVisibleRegions')).toEqual(
+      [
+        'DisplayTestSession.assemblyManager',
+        'FeatureTrack.configuration',
+        'FeatureTrack.minimized',
+        'FeatureTrackConfigurationSchema.assemblyNames',
+        ...viewport,
+        'LinearGenomeView.init',
+        'LinearGenomeView.volatileWidth',
+        'PerRegionTestDisplay.byteEstimate',
+        'PerRegionTestDisplay.error',
+        'PerRegionTestDisplay.fetchCanceled',
+        'PerRegionTestDisplay.fetchKey',
+        ...signals,
+        'PerRegionTestDisplay.gateEnabled',
+        'alive',
+        'string[]',
+      ].sort(),
+    )
+  })
+
+  it('while minimized: the signals and the flag stay, the viewport drops', async () => {
+    const { display, track } = setup()
+    await quiet(display)
+    track.setMinimized(true)
+    await quiet(display)
+    const deps = reactionDependencies(display, 'FetchVisibleRegions')
+    expect(deps).toEqual(
+      expect.arrayContaining([...signals, 'FeatureTrack.minimized']),
+    )
+    expect(deps).not.toEqual(expect.arrayContaining(viewport))
+  })
+
+  it('under an error: the signals, the flags and the gate stay, the viewport drops', async () => {
+    // The gate reads sit beside `error` in the plan's argument list, so they
+    // are evaluated on every run; only what is behind a thunk drops out.
+    const { display } = setup()
+    await quiet(display)
+    display.setError(new Error('down'))
+    await quiet(display)
+    expect(reactionDependencies(display, 'FetchVisibleRegions')).toEqual(
+      [
+        'DisplayTestSession.assemblyManager',
+        'LinearGenomeView.displayedRegions',
+        'LinearGenomeView.init',
+        'LinearGenomeView.volatileWidth',
+        'PerRegionTestDisplay.byteEstimate',
+        'PerRegionTestDisplay.error',
+        'PerRegionTestDisplay.fetchCanceled',
+        'PerRegionTestDisplay.gateEnabled',
+        ...signals,
+        'alive',
+      ].sort(),
+    )
   })
 })

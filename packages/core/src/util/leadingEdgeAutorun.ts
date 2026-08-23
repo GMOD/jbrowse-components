@@ -1,4 +1,5 @@
 import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { recordNamedReaction } from '@jbrowse/render-core/namedReactions'
 import { autorun } from 'mobx'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -48,24 +49,24 @@ export function leadingEdgeAutorun(
   { name, delay }: LeadingEdgeAutorunOptions,
 ) {
   let primed = false
-  addDisposer(
-    self,
-    autorun(
-      () => {
-        if (body()) {
-          primed = true
+  const disposer = autorun(
+    () => {
+      if (body()) {
+        primed = true
+      }
+    },
+    {
+      name,
+      scheduler: run => {
+        if (primed) {
+          setTimeout(run, delay)
+        } else {
+          queueMicrotask(run)
         }
       },
-      {
-        name,
-        scheduler: run => {
-          if (primed) {
-            setTimeout(run, delay)
-          } else {
-            queueMicrotask(run)
-          }
-        },
-      },
-    ),
+    },
   )
+  recordNamedReaction(self, name, disposer)
+  addDisposer(self, disposer)
+  return disposer
 }

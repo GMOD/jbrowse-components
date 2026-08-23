@@ -174,4 +174,9 @@ the visible half left exactly the same empty export behind.
   **wiring**, on a real display in a real view (`perRegionTestEnv.ts`), because
   which reads MobX tracks is not something a pure function can state. Three
   earlier files tested transcriptions of the autoruns instead; deleting the
-  half-screen prefetch buffer from production left all of them green.
+  half-screen prefetch buffer from production left all of them green. The wiring
+  file's last block pins the whole dependency set per state through
+  `reactionDependencies(display, 'FetchVisibleRegions')`
+  (`@jbrowse/render-core/namedReactions`); a new tracked or untracked read
+  belongs in those lists, and a read that changes them by accident is the
+  finding.
