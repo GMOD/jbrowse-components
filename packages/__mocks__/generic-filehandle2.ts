@@ -5,6 +5,14 @@ import type { FilehandleOptions, GenericFilehandle } from 'generic-filehandle2'
 export class LocalFile implements GenericFilehandle {
   private filename: string
 
+  // mirrors the real class. `implements GenericFilehandle` does not require it —
+  // `source` is optional there, because a BlobFile genuinely has none — so a
+  // mock that omits it typechecks and then silently reports undefined for every
+  // local file in every test
+  public get source() {
+    return this.filename
+  }
+
   public constructor(source: string, _opts: FilehandleOptions = {}) {
     this.filename = source
   }

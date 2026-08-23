@@ -86,7 +86,7 @@
     "@jbrowse/add-track-core": "workspace:*",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@jbrowse/cli": "workspace:*",
-    "generic-filehandle2": "^2.3.1",
+    "generic-filehandle2": "^2.4.0",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0"
   }

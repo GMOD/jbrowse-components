@@ -1,4 +1,5 @@
-import { downloadStatus, updateStatus } from './progress.ts'
+import { redactSource } from './getLocationUri.ts'
+import { downloadStatus, phaseOf, updateStatus } from './progress.ts'
 import { withStopTokenSignal } from './stopToken.ts'
 
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
@@ -16,8 +17,8 @@ export async function fetchAndMaybeUnzip(
   // required because most callers are a track's one data file, where the track
   // name is already on screen; name it wherever several files load at once
   // behind a single indicator and "Downloading file" can't say which (the four
-  // parallel assembly loads, say). `downloadPhase(label, location)` builds the
-  // form that also carries the URL, which is what a stalled load shows
+  // parallel assembly loads, say). The URL is not the caller's to supply — see
+  // below
   label: string | StatusPhase = 'Downloading file',
 ) {
   // statusCallback is passed through as-is rather than defaulted to a no-op, so
@@ -31,12 +32,26 @@ export async function fetchAndMaybeUnzip(
   // buys is that a caller who asked for no reporting gets none, here and in the
   // worker alike; the read speed is a wash at best and against us at the sizes a
   // whole-file load usually is.
+  // Where a stalled load gets the URL it names, and the reason no call site
+  // passes one: `loc` knows. Every filehandle `openLocation` builds carries the
+  // address it was constructed with (generic-filehandle2 2.4.0), so this is true
+  // of every download in the tree rather than of the handful that remembered to
+  // say so. A Blob and a FileHandle report nothing, which is right — their bytes
+  // came from the user and there is no server to go and check.
+  //
+  // Redacted here rather than at the source, because the handle's `source` is
+  // verbatim what it fetches (a presigned URL keeps its signature) and this is
+  // the layer that hands it to a display.
+  const phase =
+    loc.source === undefined
+      ? label
+      : { message: phaseOf(label), source: redactSource(loc.source) }
   const { statusCallback, stopToken } = opts
   // the stop token becomes the read's signal, so a cancelled whole-file load
   // drops at the socket rather than downloading a multi-GB body to completion
   const buf = await withStopTokenSignal(stopToken, signal =>
     downloadStatus(
-      label,
+      phase,
       statusCallback,
       onProgress =>
         loc.readFile({ ...opts, onProgress, signal }) as Promise<Uint8Array>,

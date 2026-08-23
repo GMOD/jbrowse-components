@@ -2,8 +2,10 @@ import {
   fetchAndMaybeUnzip,
   fetchAndMaybeUnzipText,
 } from './fetchAndMaybeUnzip.ts'
+import { statusMessageText, statusSource } from './progress.ts'
 import { stopStopToken } from './stopToken.ts'
 
+import type { RpcStatus } from './progress.ts'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 function fakeFilehandle(body: string) {
@@ -65,5 +67,52 @@ describe('fetchAndMaybeUnzip', () => {
   it('decodes text', async () => {
     const { handle } = fakeFilehandle('a\tb')
     expect(await fetchAndMaybeUnzipText(handle)).toBe('a\tb')
+  })
+})
+
+// The source is taken off the handle, not passed in. That is what makes the
+// stalled-load notice true of every download in the tree rather than of the
+// handful of call sites that remembered to name their own file.
+describe('the phase names the file the handle points at', () => {
+  const handleWithSource = (source?: string) =>
+    ({
+      source,
+      readFile: () => Promise.resolve(new TextEncoder().encode('hello')),
+    }) as unknown as GenericFilehandle
+
+  it('takes the url off the filehandle with no call site supplying one', async () => {
+    const seen: RpcStatus[] = []
+    await fetchAndMaybeUnzip(
+      handleWithSource('https://example.com/hg38.chromAlias.txt'),
+      { statusCallback: s => seen.push(s) },
+      'Downloading chromosome aliases',
+    )
+    expect(statusMessageText(seen[0])).toBe('Downloading chromosome aliases')
+    expect(statusSource(seen[0])).toBe(
+      'https://example.com/hg38.chromAlias.txt',
+    )
+  })
+
+  // a presigned link's credential lives in the query string, and this is the
+  // layer that hands the address to a display
+  it('drops the query string on the way out', async () => {
+    const seen: RpcStatus[] = []
+    await fetchAndMaybeUnzip(
+      handleWithSource(
+        'https://s3.amazonaws.com/b/hg38.2bit?X-Amz-Signature=x',
+      ),
+      { statusCallback: s => seen.push(s) },
+    )
+    expect(statusSource(seen[0])).toBe('https://s3.amazonaws.com/b/hg38.2bit')
+  })
+
+  // a Blob or a FileHandle: bytes the user handed the page, with no server to
+  // go and check, so the phase stays the bare label it always was
+  it('stays a plain label for a handle with no address', async () => {
+    const seen: RpcStatus[] = []
+    await fetchAndMaybeUnzip(handleWithSource(), {
+      statusCallback: s => seen.push(s),
+    })
+    expect(seen[0]).toBe('Downloading file')
   })
 })

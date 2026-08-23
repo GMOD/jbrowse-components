@@ -1,7 +1,6 @@
 import { isBlank } from '../util/assemblyConfigUtils.ts'
 import { fetchAndMaybeUnzipText } from '../util/fetchAndMaybeUnzip.ts'
 import { parseTranslTable } from '../util/geneticCodes.ts'
-import { downloadPhase } from '../util/getLocationUri.ts'
 import { openLocation } from '../util/io/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -61,7 +60,7 @@ export async function getGeneticCodesFromFile({
     const text = await fetchAndMaybeUnzipText(
       openLocation(location, pluginManager),
       opts,
-      downloadPhase('Downloading genetic codes', location),
+      'Downloading genetic codes',
     )
     for (const line of text.split(/\r\n|\r|\n/)) {
       if (line && !line.startsWith('#')) {

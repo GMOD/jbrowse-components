@@ -1,8 +1,4 @@
-import {
-  SimpleFeature,
-  downloadPhase,
-  fetchAndMaybeUnzipText,
-} from '../../util/index.ts'
+import { SimpleFeature, fetchAndMaybeUnzipText } from '../../util/index.ts'
 import { openLocation } from '../../util/io/index.ts'
 import { BaseAdapter } from '../BaseAdapter/index.ts'
 
@@ -18,7 +14,7 @@ export default class CytobandAdapter extends BaseAdapter {
     const text = await fetchAndMaybeUnzipText(
       openLocation(conf, this.pluginManager),
       opts,
-      downloadPhase('Downloading cytobands', conf),
+      'Downloading cytobands',
     )
     return text
       .split(/\n|\r\n|\r/)

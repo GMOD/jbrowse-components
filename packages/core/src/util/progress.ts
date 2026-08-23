@@ -231,10 +231,11 @@ export function statusSource(status: RpcStatus | undefined) {
 
 /**
  * The phase a status names, verbatim — its label, whichever shape it arrived in.
- * The raw form, `''` and all, for the two places that have to reason about the
- * sentinel itself. Everywhere else wants {@link statusMessageText}.
+ * The raw form, `''` and all, for the few places that have to reason about the
+ * sentinel itself, or that are rebuilding a phase around the label they were
+ * handed. Everywhere else wants {@link statusMessageText}.
  */
-function phaseOf(status: RpcStatus) {
+export function phaseOf(status: RpcStatus) {
   return typeof status === 'object' ? status.message : status
 }
 

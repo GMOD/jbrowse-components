@@ -28,12 +28,13 @@ export function resolveUri({
  * puts it in front of whoever is looking at the screen and into every screenshot
  * of it. The host and path are the whole diagnostic anyway.
  *
- * Same reasoning as {@link getFileName}'s own strip, and the same limitation: a
- * URI only. `?` is a legal character in a POSIX filename, so a local path keeps
- * whatever it was given.
+ * Same reasoning as {@link getFileName}'s own strip. A URL only: `?` is a legal
+ * character in a POSIX filename, so a path keeps whatever it was given, and a
+ * scheme is what tells the two apart when the caller has a bare string rather
+ * than a typed location.
  */
-function withoutQuery(uri: string) {
-  return uri.split(/[?#]/)[0]!
+export function redactSource(source: string) {
+  return source.includes('://') ? source.split(/[?#]/)[0]! : source
 }
 
 /**
@@ -47,7 +48,7 @@ function withoutQuery(uri: string) {
  */
 export function getLocationUri(location: FileLocation) {
   if (isUriLocation(location)) {
-    return withoutQuery(resolveUri(location))
+    return redactSource(resolveUri(location))
   }
   if (isLocalPathLocation(location)) {
     return location.localPath
@@ -60,6 +61,12 @@ export function getLocationUri(location: FileLocation) {
  * notice — a source-carrying phase when the location has an address to show, and
  * the bare label when it does not, which is the same thing the phase helpers
  * always took.
+ *
+ * **Only for a read this process does not perform.** Anything going through
+ * `fetchAndMaybeUnzip` takes its source off the filehandle and needs none of
+ * this; what is left is the readers that open a handle and then do their own
+ * reads through it — `@gmod/twobit` and `@gmod/indexedfasta` — where the phase
+ * has to be built from the config the handle was opened from instead.
  */
 export function downloadPhase(message: string, location: FileLocation) {
   const source = getLocationUri(location)

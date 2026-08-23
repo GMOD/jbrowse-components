@@ -42,7 +42,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
         await fetchAndMaybeUnzipText(
           openLocation(conf, this.pluginManager),
           opts,
-          downloadPhase('Downloading chromosome sizes', conf),
+          'Downloading chromosome sizes',
         ),
       )
     }
