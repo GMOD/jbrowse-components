@@ -60,11 +60,9 @@ const GATES: Gate[] = [
     slow: true,
   },
   { name: 'docs', argv: pnpm('check-docs'), slow: true },
-  // Last, and the only gate here that is not also a CI job: `build:esm` runs in
-  // the pre-push hook and nowhere else, which makes it a gate you cannot run
-  // until the moment it blocks you. It is the only thing that compiles what we
-  // PUBLISH — each package's own tsconfig, without node types and without the
-  // React compiler — so `typecheck` does not stand in for it: a node-only helper
+  // Last: `build:esm` is the only thing that compiles what we PUBLISH — each
+  // package's own tsconfig, without node types and without the React compiler
+  // — so `typecheck` does not stand in for it: a node-only helper
   // imported from browser source typechecks against the root config and breaks
   // here. That is how main broke on 2026-08-13, and a case-only module collision
   // (see the gate above) is how it broke again for days on 2026-08-20, with

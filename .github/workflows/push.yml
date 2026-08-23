@@ -154,6 +154,20 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Typecheck codebase
         run: pnpm typecheck
+      # The published artifact, which `pnpm typecheck` does not stand in for:
+      # that reads the root tsconfig, where node types are present and every
+      # file is in scope, while this reads each package's own config, which has
+      # neither. A node-only helper imported from browser source typechecks
+      # cleanly and fails here — that is how main broke on 2026-08-13, and a
+      # `process.env.NODE_ENV` with no `declare const process` beside it is how
+      # it broke again on 2026-08-23.
+      #
+      # It ran in .githooks/pre-push and nowhere else until then, which made it
+      # the one gate nobody could see the state of: a push from a checkout that
+      # skipped the hook left main red with no run saying so. Cold here (no
+      # .tsbuildinfo to reuse), which the project references keep to ~1min.
+      - name: Build what we publish
+        run: pnpm build:esm
       # Rides this job rather than earning its own: it builds a program from the
       # same root tsconfig `typecheck:web` does, so it wants exactly this
       # checkout and toolchain, and takes ~10s on top.

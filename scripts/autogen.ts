@@ -15,8 +15,9 @@
 // check mode (`diffPaths`) rewrites its output and diffs it instead, so
 // --check is not side-effect free for those.
 
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { rmSync } from 'node:fs'
+import { availableParallelism } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -365,6 +366,31 @@ function run(argv: string[], extra: string[] = []) {
   })
 }
 
+// The same, captured rather than inherited, for the pooled `--check` runs below
+// — interleaved output from six processes at once is unreadable, so each one's
+// is held and printed whole when it finishes.
+function runCaptured(argv: string[], extra: string[] = []) {
+  return new Promise<{ status: number | null; output: string }>(resolve => {
+    const child = spawn(argv[0]!, [...argv.slice(1), ...extra], {
+      cwd: root,
+      shell: process.platform === 'win32',
+    })
+    let output = ''
+    for (const stream of [child.stdout, child.stderr]) {
+      stream.setEncoding('utf8')
+      stream.on('data', (chunk: string) => {
+        output += chunk
+      })
+    }
+    child.on('error', e => {
+      resolve({ status: 1, output: `${output}${String(e)}\n` })
+    })
+    child.on('close', status => {
+      resolve({ status, output })
+    })
+  })
+}
+
 // Everything under `paths` that differs from HEAD, including files a generator
 // just created (`git diff` alone would miss those).
 function changedFiles(paths: string[]) {
@@ -459,8 +485,13 @@ if (skipFigureDependent) {
   )
 }
 
-for (const { name, argv, diffPaths, figureRoot } of selected) {
-  if (figureRoot && !figureRootPulled(figureRoot)) {
+const timings: { name: string; ms: number }[] = []
+
+// A worktree with no corpus cannot answer this generator's question, and says
+// so rather than reporting the absence as staleness.
+function skipsForMissingFigures({ name, figureRoot }: Generator) {
+  const missing = figureRoot !== undefined && !figureRootPulled(figureRoot)
+  if (missing) {
     console.warn(
       `\n=== ${name}: SKIPPED — this worktree holds none of the figures ` +
         `figures.lock lists under ${figureRoot}. Figure bytes are gitignored: ` +
@@ -468,9 +499,55 @@ for (const { name, argv, diffPaths, figureRoot } of selected) {
         `CI pulls them, so it still runs before merge.`,
     )
     skipped.push(name)
+  }
+  return missing
+}
+
+// A generator with its own `--check` writes nothing, so in check mode there is
+// nothing for one to race another over and they run pooled. The `diffPaths`
+// ones write to be compared, so they stay in sequence AND stay after the pool:
+// what they rewrite (the docs, the manifest) is what the pool reads.
+//
+// A REWRITE run keeps every generator in sequence. Ordering is load-bearing
+// there — the manifest feeds gendocs, the measurement tables feed the page that
+// publishes them — and two generators rewriting one doc at once would lose one
+// of the two.
+const pooled = check ? selected.filter(g => !g.diffPaths) : []
+const sequential = selected.filter(g => !pooled.includes(g))
+
+const queue = [...pooled]
+await Promise.all(
+  Array.from(
+    { length: Math.min(6, Math.max(1, availableParallelism() - 2)) },
+    async () => {
+      while (queue.length > 0) {
+        const generator = queue.shift()!
+        if (!skipsForMissingFigures(generator)) {
+          const started = performance.now()
+          const { status, output } = await runCaptured(generator.argv, [
+            '--check',
+          ])
+          if (status !== 0) {
+            stale.push(generator.name)
+          }
+          console.log(`\n=== ${generator.name}\n${output}`.trimEnd())
+          timings.push({
+            name: generator.name,
+            ms: performance.now() - started,
+          })
+        }
+      }
+    },
+  ),
+)
+
+for (const generator of sequential) {
+  const { name, argv, diffPaths } = generator
+  if (skipsForMissingFigures(generator)) {
     continue
   }
   console.log(`\n=== ${name}`)
+  const started = performance.now()
   if (diffPaths) {
     // A generator with no --check has to write to be compared, so anything
     // already modified when it started is not evidence of staleness — without
@@ -495,7 +572,18 @@ for (const { name, argv, diffPaths, figureRoot } of selected) {
   } else if (run(argv, check ? ['--check'] : []).status !== 0) {
     stale.push(name)
   }
+  timings.push({ name, ms: performance.now() - started })
 }
+
+console.log('\ntimings (ms):')
+for (const { name, ms } of [...timings].sort((a, b) => b.ms - a.ms)) {
+  console.log(`  ${Math.round(ms).toString().padStart(6)}  ${name}`)
+}
+console.log(
+  `  ${Math.round(timings.reduce((a, t) => a + t.ms, 0))
+    .toString()
+    .padStart(6)}  TOTAL`,
+)
 
 if (crashed.length > 0) {
   console.error(

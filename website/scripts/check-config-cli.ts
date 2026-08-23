@@ -31,7 +31,7 @@
 // (type / adapter / uri / name / assemblyNames), which is what we compare.
 //
 // Run: `pnpm check-config-cli` (needs products/jbrowse-cli built).
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import {
   existsSync,
   mkdtempSync,
@@ -39,7 +39,7 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { availableParallelism, tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import remarkGfm from 'remark-gfm'
@@ -154,11 +154,36 @@ function targetConfig(assemblyNames: unknown) {
   }
 }
 
+// One CLI run. Every case below is one of these and they are independent of
+// each other, so they run through the pool at the bottom rather than in
+// sequence: the corpus is ~240 cases, the work in each is a node process
+// starting an oclif command, and serially that was the slowest thing in
+// `pnpm check-docs` by a factor of four.
+function runNode(args: string[], input: string | undefined) {
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn('node', args, { stdio: ['pipe', 'ignore', 'pipe'] })
+    let stderr = ''
+    child.stderr.setEncoding('utf8')
+    child.stderr.on('data', (chunk: string) => {
+      stderr += chunk
+    })
+    child.on('error', reject)
+    child.on('close', code => {
+      if (code === 0) {
+        resolve()
+      } else {
+        reject(new Error(stderr.trim() || `jbrowse exited ${code}`))
+      }
+    })
+    child.stdin.end(input ?? '')
+  })
+}
+
 // Run the CLI against a throwaway config and return the config it wrote.
 // `input` feeds stdin, which is how the emitted set-default-session command
 // carries its session — running it any other way would check a command the
 // docs don't show.
-function runCliConfig(
+async function runCliConfig(
   target: object,
   argv: (dir: string) => string[],
   input?: string,
@@ -167,10 +192,7 @@ function runCliConfig(
   try {
     const cfgPath = join(dir, 'config.json')
     writeFileSync(cfgPath, JSON.stringify(target))
-    execFileSync('node', [cli, ...argv(dir), '--target', cfgPath], {
-      stdio: 'pipe',
-      input,
-    })
+    await runNode([cli, ...argv(dir), '--target', cfgPath], input)
     return JSON.parse(readFileSync(cfgPath, 'utf8')) as {
       tracks?: Record<string, unknown>[]
       assemblies?: Record<string, unknown>[]
@@ -182,21 +204,25 @@ function runCliConfig(
 }
 
 // Run the CLI against a throwaway config and return the track it added.
-function runCli(
+async function runCli(
   target: object,
   argv: (dir: string) => string[],
   trackId: unknown,
 ) {
-  return runCliConfig(target, argv).tracks?.find(t => t.trackId === trackId)
+  const { tracks } = await runCliConfig(target, argv)
+  return tracks?.find(t => t.trackId === trackId)
 }
 
 // Run add-track for one block and return the mismatch reason, or '' on success.
-function roundTrip(config: Record<string, unknown>, args: string[]): string {
+async function roundTrip(
+  config: Record<string, unknown>,
+  args: string[],
+): Promise<string> {
   try {
     // force `--load inPlace`; match on the flag rather than the literal 'copy',
     // which could equally be a track's name or id
     const argv = args.map((a, i) => (args[i - 1] === '--load' ? 'inPlace' : a))
-    const track = runCli(
+    const track = await runCli(
       targetConfig(config.assemblyNames),
       () => argv,
       config.trackId,
@@ -226,9 +252,9 @@ function roundTrip(config: Record<string, unknown>, args: string[]): string {
 // The fallback path: `add-track-json` takes a track config verbatim, so this
 // only has to prove the round trip reproduces it exactly rather than checking
 // individual fields the way `roundTrip` does for `add-track`'s flags.
-function roundTripJson(config: Record<string, unknown>): string {
+async function roundTripJson(config: Record<string, unknown>): Promise<string> {
   try {
-    const track = runCli(
+    const track = await runCli(
       { tracks: [] },
       dir => {
         const trackPath = join(dir, 'track.json')
@@ -251,17 +277,17 @@ function roundTripJson(config: Record<string, unknown>): string {
 // things the tab exists to say: that the emitted heredoc reaches the CLI intact
 // through `--session -`, and that what lands in `defaultSession` is the block's
 // own session — the unwrapping is the step a reader would otherwise get wrong.
-function roundTripSession(
+async function roundTripSession(
   config: Record<string, unknown>,
   json: string,
-): string {
+): Promise<string> {
   const session = defaultSessionObject(config)
   const stdin = sessionStdin(config, json)
   if (session === null || stdin === null) {
     return 'not a lone "defaultSession": leave this block untagged'
   }
   try {
-    const result = runCliConfig(
+    const result = await runCliConfig(
       { assemblies: [], tracks: [] },
       () => ['set-default-session', '--session', '-'],
       stdin,
@@ -283,15 +309,15 @@ function roundTripSession(
 // shorthand leaves implicit, so what is compared is the assembly's identity
 // (name, aliases, sequence adapter type and file) and every slot the derived
 // command claimed to set.
-function roundTripAssembly(
+async function roundTripAssembly(
   config: Record<string, unknown>,
   args: string[],
-): string {
+): Promise<string> {
   try {
     // --force skips the file-existence checks, so no data file has to exist,
     // and inPlace keeps the config referencing the path as written
     const argv = args.map((a, i) => (args[i - 1] === '--load' ? 'inPlace' : a))
-    const result = runCliConfig({ assemblies: [], tracks: [] }, () => [
+    const result = await runCliConfig({ assemblies: [], tracks: [] }, () => [
       ...argv,
       '--force',
     ])
@@ -366,7 +392,7 @@ function aliasFileUri(refNameAliases: unknown) {
 }
 
 // Parse and round-trip one block; '' when it checks out.
-function checkBlock(json: string, kind: Block['kind']): string {
+async function checkBlock(json: string, kind: Block['kind']): Promise<string> {
   let config: Record<string, unknown>
   try {
     config = asRecord(JSON.parse(json))
@@ -388,18 +414,23 @@ function checkBlock(json: string, kind: Block['kind']): string {
   return args === null ? roundTripJson(config) : roundTrip(config, args)
 }
 
-const errorLines: string[] = []
+// Every case is `where it came from` plus the round trip that answers it. They
+// are collected rather than run on the spot so the pool below can overlap the
+// CLI processes; the report is still assembled in this order.
+interface Case {
+  where: string
+  run: () => Promise<string>
+}
+const cases: Case[] = []
+
 let checked = 0
 for (const file of docFiles(docsDir)) {
   for (const block of taggedBlocks(readFileSync(file, 'utf8'), file)) {
     checked++
-    const reason = checkBlock(block.json, block.kind)
-    if (reason) {
-      errorLines.push(
-        `  ${block.file.slice(repoRoot.length + 1)}:${block.line}`,
-        `    → ${reason}\n`,
-      )
-    }
+    cases.push({
+      where: `  ${block.file.slice(repoRoot.length + 1)}:${block.line}`,
+      run: () => checkBlock(block.json, block.kind),
+    })
   }
 }
 // Every tagged doc block is currently CLI-clean, so the add-track-json fallback
@@ -429,16 +460,13 @@ const FALLBACK_FIXTURES: Record<string, unknown>[] = [
   },
 ]
 for (const fixture of FALLBACK_FIXTURES) {
-  const reason =
-    deriveAddTrackArgs(fixture) === null
-      ? roundTripJson(fixture)
-      : 'expected this fixture to need the add-track-json fallback'
-  if (reason) {
-    errorLines.push(
-      `  fallback fixture (${fixture.trackId})`,
-      `    → ${reason}\n`,
-    )
-  }
+  cases.push({
+    where: `  fallback fixture (${fixture.trackId})`,
+    run: async () =>
+      deriveAddTrackArgs(fixture) === null
+        ? roundTripJson(fixture)
+        : 'expected this fixture to need the add-track-json fallback',
+  })
 }
 
 // An assembly config the derivation refuses gets no CLI tab, so nothing in the
@@ -457,12 +485,13 @@ const UNDERIVABLE_ASSEMBLY = {
     },
   },
 }
-if (deriveAddAssemblyArgs(UNDERIVABLE_ASSEMBLY) !== null) {
-  errorLines.push(
-    `  underivable assembly fixture (${UNDERIVABLE_ASSEMBLY.name})`,
-    `    → expected this fixture to have no add-assembly equivalent\n`,
-  )
-}
+cases.push({
+  where: `  underivable assembly fixture (${UNDERIVABLE_ASSEMBLY.name})`,
+  run: async () =>
+    deriveAddAssemblyArgs(UNDERIVABLE_ASSEMBLY) === null
+      ? ''
+      : 'expected this fixture to have no add-assembly equivalent',
+})
 
 // The refusals that keep a session tab from claiming more than the command
 // writes. Both shapes appear in the docs untagged, so nothing else here would
@@ -483,12 +512,13 @@ const UNDERIVABLE_SESSIONS: [string, unknown][] = [
   ],
 ]
 for (const [label, config] of UNDERIVABLE_SESSIONS) {
-  if (defaultSessionObject(config) !== null) {
-    errorLines.push(
-      `  underivable session fixture (${label})`,
-      `    → expected this fixture to have no set-default-session equivalent\n`,
-    )
-  }
+  cases.push({
+    where: `  underivable session fixture (${label})`,
+    run: async () =>
+      defaultSessionObject(config) === null
+        ? ''
+        : 'expected this fixture to have no set-default-session equivalent',
+  })
 }
 
 // The same two commands, derived from a figure's `sessionTracks` for the CLI
@@ -535,10 +565,30 @@ for (const track of recipeTracks.values()) {
     quoted.push(track)
   } else {
     // the flag derivation, through the real CLI, exactly as a fence gets it
-    const reason = roundTrip(asRecord(track), args)
-    if (reason) {
-      errorLines.push(`  recipe track (${track.trackId})`, `    → ${reason}\n`)
+    cases.push({
+      where: `  recipe track (${track.trackId})`,
+      run: () => roundTrip(asRecord(track), args),
+    })
+  }
+}
+
+// One CLI process per core. The work is a child process each time, so the pool
+// is bounded by cores rather than by anything this process does.
+const errorLines: string[] = []
+const queue = [...cases]
+const reasons = new Map<Case, string>()
+await Promise.all(
+  Array.from({ length: Math.max(1, availableParallelism() - 1) }, async () => {
+    while (queue.length > 0) {
+      const next = queue.shift()!
+      reasons.set(next, await next.run())
     }
+  }),
+)
+for (const item of cases) {
+  const reason = reasons.get(item)
+  if (reason) {
+    errorLines.push(item.where, `    → ${reason}\n`)
   }
 }
 const emitted = deriveCliRecipe(quoted)

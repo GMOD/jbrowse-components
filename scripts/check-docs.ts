@@ -5,9 +5,28 @@
 //
 // Runs all of them and reports every failure, rather than stopping at the
 // first, so one push clears the whole set.
+//
+// They run POOLED, not in sequence. Each is its own process reading the tree
+// and writing nothing, so the only thing sequence bought was tidy output, and
+// it cost the sum of every validator instead of the slowest one. Output is
+// captured per validator and printed whole when it finishes, so a run's blocks
+// arrive in completion order rather than list order; the summary at the end is
+// in list order either way.
+//
+// The pool is deliberately smaller than the core count: two of these are
+// whole-repo TypeScript programs, and check-config-cli runs a pool of CLI
+// processes of its own.
 
-import { spawnSync } from 'node:child_process'
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { availableParallelism } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -260,29 +279,117 @@ const VALIDATORS: Validator[] = [
   },
 ]
 
+// stdout and stderr both go to `output` in arrival order, so a validator's
+// diagnostic still reads the way it did when it wrote straight to the terminal.
 function run(argv: string[]) {
-  return spawnSync(argv[0]!, argv.slice(1), {
-    cwd: root,
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
-  }).status
+  return new Promise<{ status: number | null; output: string }>(resolve => {
+    const child = spawn(argv[0]!, argv.slice(1), {
+      cwd: root,
+      shell: process.platform === 'win32',
+    })
+    let output = ''
+    for (const stream of [child.stdout, child.stderr]) {
+      stream.setEncoding('utf8')
+      stream.on('data', (chunk: string) => {
+        output += chunk
+      })
+    }
+    child.on('error', e => {
+      resolve({ status: 1, output: `${output}${String(e)}\n` })
+    })
+    child.on('close', status => {
+      resolve({ status, output })
+    })
+  })
+}
+
+// LONGEST FIRST, off what the last run measured. A pool finishes when its
+// slowest member does, so starting a 30s validator once the 1s ones have taken
+// the workers costs the whole 30s at the end — which is what the list order
+// did, since the slowest of them sits two thirds of the way down it. A
+// validator nothing has timed yet sorts first: an unknown cost is more likely
+// to be the new long pole than the new short one.
+//
+// The file is a cache and is treated like one — a missing or unparseable one is
+// simply the unsorted order, never an error.
+const timingCache = join(root, 'node_modules/.cache/check-docs-timings.json')
+
+function lastRunMs() {
+  try {
+    return new Map(
+      Object.entries(
+        JSON.parse(readFileSync(timingCache, 'utf8')) as Record<string, number>,
+      ),
+    )
+  } catch {
+    return new Map<string, number>()
+  }
 }
 
 const failed: string[] = []
+const timings: { name: string; ms: number }[] = []
+const known = lastRunMs()
+const queue = [...VALIDATORS].sort(
+  (a, b) =>
+    (known.get(b.name) ?? Number.POSITIVE_INFINITY) -
+    (known.get(a.name) ?? Number.POSITIVE_INFINITY),
+)
 
-for (const { name, argv, needsBuild } of VALIDATORS) {
-  console.log(`\n=== ${name}`)
-  const buildFailed =
-    needsBuild && needsRebuild(needsBuild) && run(needsBuild.argv) !== 0
-  if (buildFailed) {
-    // Say so here rather than letting the validator fail on a missing binary,
-    // which reads as a docs problem.
-    console.error(`could not build ${needsBuild.built}`)
-    failed.push(`${name} (prerequisite build failed)`)
-  } else if (run(argv) !== 0) {
-    failed.push(name)
-  }
+await Promise.all(
+  Array.from(
+    { length: Math.min(4, Math.max(1, availableParallelism() - 1)) },
+    async () => {
+      while (queue.length > 0) {
+        const { name, argv, needsBuild } = queue.shift()!
+        const started = performance.now()
+        const build =
+          needsBuild && needsRebuild(needsBuild)
+            ? { built: needsBuild.built, ...(await run(needsBuild.argv)) }
+            : undefined
+        if (build && build.status !== 0) {
+          // Say so here rather than letting the validator fail on a missing
+          // binary, which reads as a docs problem.
+          failed.push(`${name} (prerequisite build failed)`)
+          console.log(
+            `\n=== ${name}\n${build.output}could not build ${build.built}`.trimEnd(),
+          )
+        } else {
+          const { status, output } = await run(argv)
+          if (status !== 0) {
+            failed.push(name)
+          }
+          console.log(
+            `\n=== ${name}\n${build?.output ?? ''}${output}`.trimEnd(),
+          )
+        }
+        timings.push({ name, ms: performance.now() - started })
+      }
+    },
+  ),
+)
+
+try {
+  mkdirSync(dirname(timingCache), { recursive: true })
+  writeFileSync(
+    timingCache,
+    JSON.stringify(
+      Object.fromEntries(timings.map(t => [t.name, Math.round(t.ms)])),
+    ),
+  )
+} catch {
+  // a cache that cannot be written just means the next run sorts on the run
+  // before it, or on nothing
 }
+
+console.log('\ntimings (ms):')
+for (const { name, ms } of [...timings].sort((a, b) => b.ms - a.ms)) {
+  console.log(`  ${Math.round(ms).toString().padStart(6)}  ${name}`)
+}
+console.log(
+  `  ${Math.round(timings.reduce((a, t) => a + t.ms, 0))
+    .toString()
+    .padStart(6)}  TOTAL`,
+)
 
 if (failed.length > 0) {
   console.error(

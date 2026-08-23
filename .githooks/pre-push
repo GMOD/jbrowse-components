@@ -5,10 +5,11 @@
 # core.hooksPath here; skip with SKIP_DOCS_CHECK=1 or `git push --no-verify`.
 #
 # IT FIXES RATHER THAN REPORTS. Three of the five gates have an autofixer, so
-# this runs the fixer: `pnpm autogen` (not `--check`), both linters with
-# `--fix`, and `pnpm format` over the pushed paths. Reporting "regenerate and
-# commit" only to have the person run the exact command the hook already knew
-# was ~2min of waiting to be told to wait ~2min more.
+# this runs the fixer: `pnpm autogen` whenever its `--check` says anything is
+# stale, both linters with `--fix`, and `pnpm format` over the whole tree.
+# Reporting "regenerate and commit" only to have the person run the exact
+# command the hook already knew was minutes of waiting to be told to wait
+# minutes more.
 #
 # AND IT COMMITS AND PUSHES WHAT IT FIXED. The fixes land in the working tree,
 # not in the commits on their way out, so the push git is holding would send
@@ -40,21 +41,22 @@
 #
 # WHY PRE-PUSH AND NOT PRE-COMMIT. All of them read the whole tree — there is
 # no staged-paths version of "is this generated artifact current", because the
-# artifact is a function of every source that feeds it. At ~45s that is far too
-# slow per commit and about right per push, which is also the moment the cost
-# lands on other people rather than on you.
+# artifact is a function of every source that feeds it. At minutes that is far
+# too slow per commit and about right per push, which is also the moment the
+# cost lands on other people rather than on you.
 #
-# WHAT IT COSTS. Measured warm on this tree (docs/autogen 2026-08-10, the rest
-# 2026-08-13):
-#   pnpm check-docs         43.1s
-#   pnpm autogen            33.9s
-#   pnpm lint:eslint        29s
-#   pnpm lint                7s
-#   pnpm format              7s whole tree, 6309 files
-#   pnpm build:esm           1s incremental
-# ~115s wall measured, not the ~45s the sum of the long pole would suggest:
-# they are all CPU-bound and this machine runs several agents, so they contend
-# rather than overlap. Budget two minutes.
+# WHAT IT COSTS. Measured warm in a worktree on 2026-08-23, with the numbers
+# this file carried before that pass beside them — every one of the four that
+# moved was a serial loop over independent processes, not work that had grown:
+#   pnpm autogen --check    73s   (118s sequential; the rewrite still is)
+#   pnpm check-docs         84s   (344s, of which one validator was 218s)
+#   pnpm lint               24s
+#   pnpm lint:eslint         9s   (127s without --cache)
+#   pnpm format             17s   whole tree, 6908 files
+#   pnpm build:esm           5s   incremental
+# ~3min wall, with check-docs overlapping the three fixers after it. The gates
+# are all CPU-bound and this machine runs several agents, so a number here is
+# the contended one, not the best case.
 #
 # THE FIXERS RUN IN SEQUENCE, unlike the old all-parallel version, because they
 # write to the same files: autogen emits sources the linters then lint, and both
@@ -63,9 +65,12 @@
 # anyway.
 #
 # A COLD `build:esm` is worse and happens once per checkout — tsc has no
-# .tsbuildinfo to reuse and takes minutes. Every run after that is the 1s above.
+# .tsbuildinfo to reuse and takes a minute or more. Every run after that is the
+# 5s above. It compiles what we PUBLISH, which `pnpm typecheck` does not: the
+# Typecheck job runs it too now, so this is the local copy of that gate rather
+# than the only one there is.
 #
-# WHY IT EARNS THE 45s. On 2026-08-10 the first two gates went red on main four
+# WHY IT EARNS THE WAIT. On 2026-08-10 the first two gates went red on main four
 # separate times in one day, every time because a figure or docs commit landed
 # without its regeneration. On 2026-08-13 the other three were found red on main
 # ALL AT ONCE, having drifted unseen for two days: 11 eslint errors across
@@ -150,7 +155,7 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: regenerating docs and artifacts, fixing lint and format, building esm (~2min, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~3min, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -239,8 +244,19 @@ if [ -n "$autogen_skipped" ]; then
   echo "pre-push: skipping the figure-dependent generators, because $autogen_skipped" >&2
 fi
 
+# ASKS BEFORE IT WRITES. `--check` is the pooled run — every generator that has
+# its own check mode writes nothing, so those go concurrently and the pass costs
+# about half what the rewrite does. On the push where nothing is stale, which is
+# most of them, that is the whole of the autogen cost. The rewrite is sequential
+# (ordering between generators is load-bearing, and two of them splice into one
+# doc), so it is only paid when there is something to regenerate — the push this
+# hook exists for, and the one already paying for a commit.
 astatus=0
-pnpm autogen $autogen_flags >"$tmp/autogen.log" 2>&1 || astatus=$?
+pnpm autogen --check $autogen_flags >"$tmp/autogen.log" 2>&1 || astatus=$?
+if [ "$astatus" != 0 ]; then
+  astatus=0
+  pnpm autogen $autogen_flags >"$tmp/autogen.log" 2>&1 || astatus=$?
+fi
 if [ "$astatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm autogen failed" >&2
@@ -295,8 +311,15 @@ if [ "$lstatus" != 0 ]; then
   status=$lstatus
 fi
 
+#
+# `--cache` on the eslint half only, and only here: it keys on each file's
+# content and the config's mtime, so a push re-lints what changed and reads the
+# rest out of the cache — 127s to 9s on this tree. CI gets a fresh checkout
+# every time and would only pay to write a cache nothing reads, which is why the
+# flag is on this line rather than in the script.
 estatus=0
-pnpm lint:eslint --fix >"$tmp/eslint.log" 2>&1 || estatus=$?
+pnpm lint:eslint --fix --cache --cache-location node_modules/.cache/eslint/ \
+  >"$tmp/eslint.log" 2>&1 || estatus=$?
 if [ "$estatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm lint:eslint --fix left errors it cannot fix" >&2
