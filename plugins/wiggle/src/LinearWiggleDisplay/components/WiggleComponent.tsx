@@ -7,7 +7,6 @@ import {
   CrossHatches,
   ScoreRules,
   YScaleBarOverlay,
-  axisPlotBox,
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -96,7 +95,7 @@ const WiggleBody = observer(function WiggleBody({
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
   const mouseState = useMouseState(mouseTracker)
-  const plotBox = axisPlotBox(height)
+  const { yTop, plotHeight } = model.plotGeometry
   // Pin the right-aligned score legend to the content's right edge, not the
   // full track width (see legendRightEdgePx). Read HERE, in the body, and not
   // where the chrome is mounted — `visibleRegions` rebuilds its array on every
@@ -113,10 +112,10 @@ const WiggleBody = observer(function WiggleBody({
         style={{
           width,
           // the box `model.ticks` places itself in, so a tick lands on its data
-          height: plotBox.plotHeight,
+          height: plotHeight,
           position: 'absolute',
           left: 0,
-          top: plotBox.yTop,
+          top: yTop,
         }}
       />
       {model.isDensityMode && model.domain ? (

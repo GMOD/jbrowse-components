@@ -1,5 +1,6 @@
 import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
+import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { MultiWiggleContextHit } from './findHit.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
@@ -26,6 +27,9 @@ export interface MultiWiggleDisplayModel
   sourcesWithoutLayout: { name: string }[]
   domain: [number, number] | undefined
   scaleType: string
+  // where the plot canvas sits inside the display's height — the same value
+  // `ticks` and the SVG export are laid out against
+  plotGeometry: WigglePlotGeometry
   // WiggleGpuProps above carries the raw `summaryScoreMode` slot (the encoder
   // wants it verbatim); the hit/tooltip path reads the resolved one, which is
   // what density actually draws

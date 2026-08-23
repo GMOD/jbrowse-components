@@ -33,17 +33,14 @@ import {
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
 } from '@jbrowse/tree-sidebar'
-import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
+import { makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { compareStructural, computed } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
-import {
-  getRowHeight,
-  isOverlayMode,
-  makeWiggleRenderState,
-} from '../shared/wiggleComponentUtils.ts'
+import { getRowHeight, isOverlayMode } from '../shared/wiggleComponentUtils.ts'
+import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
   makeGroupedRenderingTypeSubMenu,
   makeLineWidthMenuItems,
@@ -278,85 +275,71 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The color ramp the density legend draws, or undefined when there is no
-       * single ramp to describe. Only density spends color on the score, and
-       * only when every row shares the one ramp: a source with its own color is
-       * drawn on its own pos side (see buildSourceRenderData), so a single bar
-       * would describe none of them.
+       * Rows stacked edge-to-edge over the full height, no scalebar-label inset
+       * (unlike single-wiggle): the axis is drawn per row and maximum density is
+       * the point. Each row's own box is what the ticks are laid out in.
        */
-      get scoreRamp() {
-        return self.isDensityMode && self.sources.every(s => !s.color)
-          ? {
-              posColor: self.posColor,
-              negColor: self.negColor,
-              pivot: self.bicolorPivot,
-              gradientId: `score-ramp-${self.id}`,
-            }
-          : undefined
-      },
-
-      get ticks() {
-        return computeYTicks({
-          symlogConstant: self.symlogConstant,
-          height: self.effectiveRowHeight,
-          domain: self.domain,
-          scaleType: self.scaleType,
-          minimalTicks: getConf(self, 'minimalTicks'),
-          offset: 0,
-        })
-      },
-
-      get renderState() {
-        return makeWiggleRenderState(self, {
-          width: self.canvasWidthPx,
-          // Full height, no YSCALEBAR_LABEL_OFFSET inset (unlike single-wiggle):
-          // rows stack edge-to-edge for maximum density. Don't "unify" with
-          // LinearWiggleDisplay's inset — the divergence is intentional.
-          height: self.height,
+      get plotGeometry() {
+        return {
+          yTop: 0,
+          plotHeight: self.height,
           numRows: self.numRows,
-        })
+          tickHeight: self.effectiveRowHeight,
+        }
       },
 
-      // bicolorPivot is unconditional here: Multi has no global `color`
-      // setting, only posColor/negColor.
-      //
-      // summaryScoreMode rides along so an adapter can skip work it cannot be
-      // asked to show. A store that keeps min/max beside each mean holds three
-      // arrays per level, and `avg` — the default — draws none of them, so
-      // sending the mode turns the common case back into one read per level
-      // instead of three, and drops the two `processFeaturesFromArrays`
-      // allocates per source per region for values it then discards.
-      //
-      // The raw slot, deliberately, and NOT effectiveSummaryScoreMode. The
-      // effective one would be tighter -- density resolves whiskers to avg, so
-      // it could skip the read there too -- but it changes when the rendering
-      // type changes, and anything in rpcProps invalidates the fetch. That
-      // would make switching to density discard the data and re-download it,
-      // on every multi-wiggle track, including the ones whose adapter gets its
-      // summary for free and gains nothing here. Over-fetching in
-      // density-with-whiskers is the cheaper mistake.
-      //
-      // In rpcProps rather than gpuProps because it changes what is fetched:
-      // switching the slot to max has to refetch, since a max nobody read
-      // cannot be drawn.
+      /**
+       * #getter
+       * Only density spends color on the score, and only when every row shares
+       * the one ramp: a source with its own color is drawn on its own pos side
+       * (see buildSourceRenderData), so a single bar would describe none of
+       * them.
+       */
+      get scoreRampApplies() {
+        return self.isDensityMode && self.sources.every(s => !s.color)
+      },
+    }))
+    .views(self => wiggleDisplayViews(self))
+    .views(self => ({
+      /**
+       * #method
+       * summaryScoreMode rides along so an adapter can skip work it cannot be
+       * asked to show. A store that keeps min/max beside each mean holds three
+       * arrays per level, and `avg` — the default — draws none of them, so
+       * sending the mode turns the common case back into one read per level
+       * instead of three, and drops the two `processFeaturesFromArrays`
+       * allocates per source per region for values it then discards.
+       *
+       * The raw slot, deliberately, and NOT effectiveSummaryScoreMode. The
+       * effective one would be tighter -- density resolves whiskers to avg, so
+       * it could skip the read there too -- but it changes when the rendering
+       * type changes, and anything in rpcProps invalidates the fetch. That
+       * would make switching to density discard the data and re-download it,
+       * on every multi-wiggle track, including the ones whose adapter gets its
+       * summary for free and gains nothing here. Over-fetching in
+       * density-with-whiskers is the cheaper mistake.
+       *
+       * In rpcProps rather than gpuProps because it changes what is fetched:
+       * switching the slot to max has to refetch, since a max nobody read
+       * cannot be drawn.
+       */
       rpcProps() {
         return {
-          bicolorPivot: self.bicolorPivot,
-          resolution: self.resolution,
+          ...self.sharedRpcProps(),
           summaryScoreMode: self.summaryScoreMode,
         }
       },
 
+      /**
+       * #method
+       * The row list is this display's own: the encoder places each payload
+       * source by its position here, so a filter or a reorder re-uploads
+       * bytes already in hand.
+       */
       gpuProps() {
         return {
+          ...self.sharedGpuProps(),
           sources: self.sources,
-          posColor: self.posColor,
-          negColor: self.negColor,
-          effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
-          renderingType: self.renderingType,
-          isDensityMode: self.isDensityMode,
-          bicolorPivot: self.bicolorPivot,
-          maxGapMultiple: self.maxGapMultiple,
         }
       },
     }))

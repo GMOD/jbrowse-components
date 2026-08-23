@@ -1,4 +1,5 @@
 import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
+import type { WigglePlotGeometry } from '../../shared/wiggleDisplayViews.ts'
 import type { WiggleHoveredFeature } from '../../util.ts'
 import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
@@ -14,6 +15,9 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   configuration: { displayId: string }
   domain: [number, number] | undefined
   scaleType: string
+  // where the plot canvas sits inside the display's height — the same value
+  // `ticks` and the SVG export are laid out against
+  plotGeometry: WigglePlotGeometry
   // the resolved mode, never the raw `summaryScoreMode` slot: density draws
   // averages whatever the slot says, and the tooltip has to report what the
   // plot (and the track menu's radio) actually shows

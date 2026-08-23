@@ -92,7 +92,7 @@ export function renderingTypeToInt(type: string): WiggleRenderingType {
 // the model, so the two displays supply only what genuinely differs: single
 // wiggle insets by the scalebar label gutter and draws one row, multi stacks
 // rows edge-to-edge over the full height.
-interface WiggleRenderStateModel {
+export interface WiggleRenderStateModel {
   domain: [number, number] | undefined
   scaleType: string
   symlogConstant: number

@@ -16,7 +16,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   axisPlotBox,
-  computeYTicks,
   makeCrossHatchItem,
   makeScoreNormalizer,
   parseScoreRules,
@@ -29,7 +28,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import { wiggleColorAdornment } from '../shared/wiggleColorAdornment.tsx'
-import { makeWiggleRenderState } from '../shared/wiggleComponentUtils.ts'
+import { wiggleDisplayViews } from '../shared/wiggleDisplayViews.ts'
 import {
   makeLineWidthMenuItems,
   makePointSizeMenuItems,
@@ -156,15 +155,24 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The single plot, inset by the scalebar label gutter at top and bottom
+       * so it never overlaps the axis labels drawn in those bands. `ticks`, the
+       * render height, the on-screen canvas and the SVG clip all read it, which
+       * is what keeps a tick on the data it labels.
        */
-      get ticks() {
-        return computeYTicks({
-          symlogConstant: self.symlogConstant,
-          height: self.height,
-          domain: self.domain,
-          scaleType: self.scaleType,
-          minimalTicks: getConf(self, 'minimalTicks'),
-        })
+      get plotGeometry() {
+        const { yTop, plotHeight } = axisPlotBox(self.height)
+        return { yTop, plotHeight, numRows: 1, tickHeight: self.height }
+      },
+
+      /**
+       * #getter
+       * Single-wiggle density always draws from posColor (the config doc for
+       * `color` says so), so with bicolor off there is only one side to
+       * describe and the plain [min, max] text stays the honest legend.
+       */
+      get scoreRampApplies() {
+        return self.isDensityMode && self.useBicolor
       },
 
       /**
@@ -207,50 +215,18 @@ export default function stateModelFactory(
       get prefersOffset() {
         return !self.isDensityMode
       },
-
-      /**
-       * #getter
-       * The color ramp the density legend draws, or undefined when there is no
-       * single ramp to describe. Lives on the model so the on-screen legend and
-       * the SVG export can't disagree about whether density has a ramp.
-       *
-       * Single-wiggle density always draws from posColor (the config doc for
-       * `color` says so), so with bicolor off there is only one side to describe
-       * and the plain [min, max] text stays the honest legend.
-       */
-      get scoreRamp() {
-        return self.isDensityMode && self.useBicolor
-          ? {
-              posColor: self.posColor,
-              negColor: self.negColor,
-              pivot: self.bicolorPivot,
-              gradientId: `score-ramp-${self.id}`,
-            }
-          : undefined
-      },
-
-      /**
-       * #getter
-       */
-      get renderState() {
-        return makeWiggleRenderState(self, {
-          width: self.canvasWidthPx,
-          // inset by the scalebar label gutter at top and bottom so the plot
-          // never overlaps the axis labels drawn in those bands — the same box
-          // `ticks` places itself in, which is why both read it from one helper
-          height: axisPlotBox(self.height).plotHeight,
-          numRows: 1,
-        })
-      },
-
+    }))
+    .views(self => wiggleDisplayViews(self))
+    .views(self => ({
       /**
        * #method
+       * `useBicolor` is a fetch key because the worker is what splits the
+       * features into the pos and neg arrays (ADR-016).
        */
       rpcProps() {
         return {
+          ...self.sharedRpcProps(),
           useBicolor: self.useBicolor,
-          bicolorPivot: self.bicolorPivot,
-          resolution: self.resolution,
         }
       },
 
@@ -274,29 +250,25 @@ export default function stateModelFactory(
        * negColor below it, against a legend describing a single ramp.
        */
       gpuProps() {
-        // The one color the plot draws in when bicolor is off. Density ignores
-        // the `color` slot and always draws from posColor (see that slot's
-        // config doc, and `scoreRamp`, which describes no negative side there).
+        // The one color the plot draws in when bicolor is off. Density
+        // ignores the `color` slot and always draws from posColor (see that
+        // slot's config doc, and `scoreRamp`, which describes no negative
+        // side there).
         const solidColor = self.isDensityMode ? self.posColor : self.color
         return {
+          ...self.sharedGpuProps(),
           sources: [
             {
               name: SINGLE_WIGGLE_SOURCE_NAME,
-              // no override in density: solidColor is already the posColor the
-              // build falls back to
+              // no override in density: solidColor is already the posColor
+              // the build falls back to
               color:
                 !self.useBicolor && !self.isDensityMode
                   ? self.color
                   : undefined,
             },
           ],
-          posColor: self.posColor,
           negColor: self.useBicolor ? self.negColor : solidColor,
-          effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
-          isDensityMode: self.isDensityMode,
-          renderingType: self.renderingType,
-          bicolorPivot: self.bicolorPivot,
-          maxGapMultiple: self.maxGapMultiple,
         }
       },
     }))

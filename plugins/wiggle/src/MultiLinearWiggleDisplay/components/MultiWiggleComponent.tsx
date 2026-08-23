@@ -144,6 +144,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
   const mouseState = useMouseState(mouseTracker)
+  const { yTop, plotHeight } = model.plotGeometry
   const labelOffset = treeSidebarOffset(model)
 
   // Pin the right-aligned legends to the content's right edge, not the full
@@ -158,10 +159,11 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
           ref={canvasRef}
           style={{
             width: totalWidth,
-            height,
+            // the box `model.ticks` stacks its per-row axes in
+            height: plotHeight,
             position: 'absolute',
             left: 0,
-            top: 0,
+            top: yTop,
           }}
         />
       </div>

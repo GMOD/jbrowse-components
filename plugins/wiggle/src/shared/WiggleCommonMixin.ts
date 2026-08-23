@@ -33,11 +33,13 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
- * The one slot this mixin reads that no shared table can hold: each wiggle
- * display gives `defaultRendering` a different enum and default (`xyplot` vs
- * `multirowxy`), so only its TYPE is common, which is all the cast needs.
- * Naming it keeps the other slot names below checked; widening the cast to
- * cover it gives up all of them.
+ * The slots this mixin reads that no shared table can hold. `defaultRendering`
+ * is given a different enum and default by each wiggle display (`xyplot` vs
+ * `multirowxy`), so only its TYPE is common, which is all the cast needs;
+ * `minimalTicks` is declared per display because the shared field table is
+ * spread by `LinearManhattanDisplay` too, which owns its own axis. Naming them
+ * keeps the other slot names below checked; widening the cast to cover them
+ * gives up all of them.
  *
  * A runtime value rather than a bare type so the restatement can be checked
  * against the real declarations — see `legendMixinSlots` for why, and
@@ -46,6 +48,7 @@ import type { WiggleDataResult } from '@jbrowse/wiggle-core'
  */
 export const wiggleCommonExtraSlots = {
   defaultRendering: { type: 'stringEnum', defaultValue: '' },
+  minimalTicks: { type: 'boolean', defaultValue: false },
 } as const
 
 type WiggleCommonConfigModel = ConfigModelForFields<
@@ -203,6 +206,12 @@ export function WiggleCommonMixin() {
        */
       get renderingType(): string {
         return getConf(confNode(self), 'defaultRendering')
+      },
+      /**
+       * #getter
+       */
+      get minimalTicks(): boolean {
+        return getConf(confNode(self), 'minimalTicks')
       },
       /**
        * #getter
