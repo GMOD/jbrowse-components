@@ -369,8 +369,11 @@ export function hpyloriUrl(session: object) {
 // url), so new display settings like readConnections render — jbrowse.org/code/
 // jb2/latest is an older release that ignores them. specLiveUrl still turns
 // this into a jbrowse.org link for readers.
-const KG_CONFIG =
-  'https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json'
+//
+// `demos/` rather than the `genomes/GRCh38/1000genomes/` path it sat under
+// until 2026-08-23, which is where every other hand-built config we host
+// lives. The old url still serves the same file and keeps working.
+const KG_CONFIG = 'https://jbrowse.org/demos/1000g/config.json'
 
 export function kgUrl(session: object) {
   return `?config=${encodeURIComponent(KG_CONFIG)}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`

@@ -307,12 +307,17 @@ export const chromhmmVideoFixtures = {
   }),
 }
 
-// The 1000 Genomes ensemble SV callset, 3202 samples, read straight from EBI.
+// The 1000 Genomes ensemble SV callset, 3202 samples. Our own copy of EBI's
+// file, because the original has no AWS or NCBI mirror and EBI stalls a
+// connection for tens of seconds often enough that three specs reading this
+// callset failed the 2026-08-23 sweep on it. Byte-identical, so the provenance
+// url the tutorial cites still names the same data.
+//
 // Declared twice below, once per display: `showTrack` resolves by trackId and
 // hands back the open track, so two displays of one callset means two session
 // tracks pointing at the same file.
 const KGP_ENSEMBLE_SV_VCF =
-  'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz'
+  'https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz'
 
 // THE RHD PANEL, shared by the `multisv_rhd` figure below and by the
 // `sv/multisample_sort` tour in videos/sv.ts. It loads UNSORTED — nothing here

@@ -92,7 +92,7 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/integrated_sv_map/supporting/GRCh38_positions/ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf.gz"
+        "uri": "https://1000genomes.s3.amazonaws.com/phase3/integrated_sv_map/supporting/GRCh38_positions/ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf.gz"
       }
     }
   ]

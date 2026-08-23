@@ -317,7 +317,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
     // The first match IS the top lane: FloatingLegend portals into its own
     // TrackContainer's overlay node (TrackOverlayPortal), so the two legends sit
     // in track order rather than in mount order.
-    actions: [{ type: 'click', selector: '[title="Hide legend"]' }],
+    actions: [{ type: 'click', selector: '[aria-label="Hide legend"]' }],
     // Narrower than the 1500 default: the matrix reads as a texture rather than
     // as per-column detail, so it loses nothing, and the figure is then not
     // twice the page width when both lanes are in it.

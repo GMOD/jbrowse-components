@@ -131,7 +131,7 @@ const SUBMIT_AND_WAIT: ScreenshotAction[] = [
 // arrived and the spec times out on a frame that is otherwise correct.
 // Gate on the legend, then put it away.
 const COLLAPSE_DOMAIN_KEY: ScreenshotAction[] = [
-  { type: 'click', selector: 'button[title="Collapse domain key"]' },
+  { type: 'click', selector: 'button[title="Collapse key"]' },
   { type: 'delay', ms: 500 },
 ]
 

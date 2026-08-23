@@ -141,7 +141,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
       // MAF projection the figure is actually about. A missing selector throws
       // the regen, so this cannot fail into a silently clipped legend the way a
       // hideSelectors rule would.
-      { type: 'click', selector: '[title="Hide legend"]' },
+      { type: 'click', selector: '[aria-label="Hide legend"]' },
       PARK_CURSOR,
       { type: 'delay', ms: 2000 },
     ],

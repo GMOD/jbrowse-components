@@ -30,9 +30,9 @@ RHCE1, RHCE2 = 25362249, 25430192
 
 # genotype at HGSV_1821, the callset record the tutorial sorts on
 URLS = {
-    'HG00113  1/1': 'https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240129/HG00113.final.cram',
-    'HG00096  0/1': 'https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240114/HG00096.final.cram',
-    'HG00097  0/0': 'https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240115/HG00097.final.cram',
+    'HG00113  1/1': 'https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240129/HG00113.final.cram',
+    'HG00096  0/1': 'https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240114/HG00096.final.cram',
+    'HG00097  0/0': 'https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240115/HG00097.final.cram',
 }
 
 # FLAG(0x2) RNAME(0x4) POS(0x8) RNEXT(0x40) PNEXT(0x80); no SEQ, so no reference

@@ -25,14 +25,15 @@ The 1000 Genomes 2022 high-coverage ensemble SV callset
 against three of its own samples' CRAMs and QuicK-mer2 copy number for the whole
 cohort.
 
-- the ensemble SV callset, 3202 samples:
-  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
+- the ensemble SV callset, 3202 samples. EBI publishes it and nobody mirrors it,
+  so the demo reads our own byte-for-byte copy[^ebi]:
+  https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
 - HG00113 (homozygous alt) high-coverage CRAM:
-  https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240129/HG00113.final.cram
+  https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240129/HG00113.final.cram
 - HG00096 (heterozygous) high-coverage CRAM:
-  https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240114/HG00096.final.cram
+  https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240114/HG00096.final.cram
 - HG00097 (homozygous reference) high-coverage CRAM:
-  https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240115/HG00097.final.cram
+  https://1000genomes.s3.amazonaws.com/1000G_2504_high_coverage/data/ERR3240115/HG00097.final.cram
 - QuicK-mer2 copy number for the cohort, the store the
   [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory
   of chunks rather than a file, so it is the `uri` an adapter takes:
@@ -58,7 +59,7 @@ all.
 
 The tracks are added with the usual `jbrowse add-track` workflow. The callset is
 bgzip-compressed and tabix-indexed, and the alignment tracks stream the
-published high-coverage CRAMs directly from the 1000 Genomes FTP.
+published high-coverage CRAMs directly from the urls above.
 
 In the track selector, enable the 1KGP 2022 Illumina ensemble SV callset under
 **1000 Genomes → SV callsets**, <!-- menu-path-ok --> listed by its file name
@@ -169,3 +170,10 @@ the span the same way.
 - [](/docs/tutorials/population_cnv)
 - [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/jbrowse_anywidget)
+
+[^ebi]:
+    The file EBI publishes lives at
+    https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
+    and our copy is byte-for-byte that. The CRAM urls above are the Registry of
+    Open Data mirror of the same 1000 Genomes ftp tree, which answers a range
+    request in a fraction of the time EBI takes.
