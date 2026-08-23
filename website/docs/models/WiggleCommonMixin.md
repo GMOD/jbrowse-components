@@ -54,6 +54,7 @@ the whole surface.
 | <span id="getter-maxgapmultiple">**maxGapMultiple**</span><br><code>number</code> | Interpolated-line gap threshold, as a multiple of the track's own mean point spacing (see gapBreakLimit). 0 keeps one connected line. | WiggleCommonMixin |
 | <span id="getter-summaryscoremode">**summaryScoreMode**</span><br><code>string</code> |  | WiggleCommonMixin |
 | <span id="getter-renderingtype">**renderingType**</span><br><code>string</code> |  | WiggleCommonMixin |
+| <span id="getter-minimalticks">**minimalTicks**</span><br><code>boolean</code> |  | WiggleCommonMixin |
 | <span id="getter-hasresolution">**hasResolution**</span><br><code>boolean</code> |  | WiggleCommonMixin |
 | <span id="getter-effectivesummaryscoremode">**effectiveSummaryScoreMode**</span><br><code>string</code> | The summary mode actually drawn. Density has no whiskers presentation — `sourceLayers` falls back to the average scores — so the autoscale domain reads this rather than the raw slot; otherwise the color ramp spans the whisker extremes while the plot paints averages, and the score legend reports a range nothing on screen reaches. Single-wiggle defaults to whiskers, so plain "plot type → Density" hit this. | WiggleCommonMixin |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt; &#124; undefined</code> | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. | WiggleCommonMixin |
@@ -81,6 +82,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-cleardisplayspecificdata">**clearDisplaySpecificData**</span><br><code>() =&gt; void</code> |  | WiggleCommonMixin |
+| <span id="action-setrpcdata">**setRpcData**</span><br><code>(displayedRegionIndex: number, data: WiggleDataResult) =&gt; void</code> | The store half of both displays' `fetchNeeded`. Everything either one derives from a fetch — multi-wiggle's row list included — is a getter over this map, so there is nothing else for a result to update. | WiggleCommonMixin |
 | <span id="action-sethoveredfeature">**setHoveredFeature**</span><br><code>(feat?: WiggleHoveredFeature &#124; undefined) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feat: WiggleHoveredFeature) =&gt; void</code> |  | WiggleCommonMixin |
 | <span id="action-setresolution">**setResolution**</span><br><code>(res: number) =&gt; void</code> |  | WiggleCommonMixin |
