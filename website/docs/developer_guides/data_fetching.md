@@ -160,7 +160,8 @@ await fetchRegionsBatched(self, needed, {
     // The batch's own byte number, whichever way it goes: the budget is what
     // one region may cost, so the largest is what was judged and what the
     // banner quotes.
-    const bytes = largestRegionBytes(results.map(r => measuredBytes(r.result)))
+    const perRegionBytes = results.map(r => measuredBytes(r.result))
+    const bytes = largestRegionBytes(perRegionBytes)
     const kept: { displayedRegionIndex: number; result: R }[] = []
     let refused = false
     for (const { displayedRegionIndex, result } of results) {
