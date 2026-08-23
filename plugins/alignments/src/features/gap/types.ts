@@ -16,10 +16,8 @@ export interface GapUploadData {
 // rather than spelled `0 | 1`, so the union follows gap.slang instead of
 // agreeing with it by coincidence.
 //
-// It is what the two packers and the two draw functions take, and the point is
-// that `gapTypes` is a `Uint8Array`: every read out of it is a `number`, so
-// selecting on one is unchecked at both ends. `packGapsOfType(data, 7)` would
-// otherwise compile, allocate a zero-length buffer and draw nothing — the
-// silent-empty-pass failure the single `InstancePass` object exists to prevent,
-// arriving through the argument instead.
+// No production code takes one any more: the three consumers select through
+// `gapMark`, which reads the byte rather than being handed one to compare
+// against it. What is left is a fixture's way of saying which kind it is
+// building, and the compile-time record of what the array may contain.
 export type GapTypeCode = typeof GAP_DELETION | typeof GAP_SKIP

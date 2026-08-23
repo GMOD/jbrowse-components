@@ -3,7 +3,8 @@ import {
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
-import { packGapsOfType } from './packGpu.ts'
+import { DELETION_MARK, SKIP_MARK } from './mark.ts'
+import { packGaps } from './packGpu.ts'
 
 import type { GapUploadData } from './types.ts'
 
@@ -39,12 +40,12 @@ function instances(buf: ArrayBuffer) {
 // over-allocated buffer draws its trailing capacity as instances at position 0
 // — a bar across the left edge of the block, with nothing to attribute it to.
 test('each pass allocates exactly its own kind', () => {
-  expect(instances(packGapsOfType(GAPS, GAP_SKIP))).toEqual([
+  expect(instances(packGaps(GAPS, SKIP_MARK))).toEqual([
     { start: 10, end: 20, row: 0, type: GAP_SKIP },
     { start: 50, end: 60, row: 2, type: GAP_SKIP },
     { start: 70, end: 80, row: 3, type: GAP_SKIP },
   ])
-  expect(instances(packGapsOfType(GAPS, GAP_DELETION))).toEqual([
+  expect(instances(packGaps(GAPS, DELETION_MARK))).toEqual([
     { start: 30, end: 40, row: 1, type: GAP_DELETION },
   ])
 })
@@ -55,8 +56,8 @@ test('each pass allocates exactly its own kind', () => {
 // exhaustive over LAYERS, not over `gapTypes`.
 test('the two passes partition the array', () => {
   const packed = [
-    ...instances(packGapsOfType(GAPS, GAP_SKIP)),
-    ...instances(packGapsOfType(GAPS, GAP_DELETION)),
+    ...instances(packGaps(GAPS, SKIP_MARK)),
+    ...instances(packGaps(GAPS, DELETION_MARK)),
   ]
   expect(packed).toHaveLength(GAPS.gapTypes.length)
   expect(packed.map(g => g.start).sort((a, b) => a - b)).toEqual([
@@ -64,19 +65,26 @@ test('the two passes partition the array', () => {
   ])
 })
 
-// Compile-time only, and it guards itself: `GapTypeCode` is
-// `typeof GAP_DELETION | typeof GAP_SKIP`, so if the generated constants ever
-// gained a `: number` annotation the union would silently collapse to `number`
-// — a type that documents the argument while checking nothing. Then this call
-// would compile, the `@ts-expect-error` would go unused, and `pnpm typecheck`
-// fails on the directive instead. Which is the point: the assertion breaks in
-// both directions.
-function typeGuard() {
-  // @ts-expect-error a byte value that is neither gap kind selects nothing,
-  // packs a zero-length buffer and draws nothing — silently, on both backends
-  packGapsOfType(GAPS, 7)
-}
-void typeGuard
+// The byte that selects nothing is no longer spellable: a consumer names one of
+// the two marks, whose `selects` reads `gapTypes` rather than being handed a
+// value to compare against it. The `@ts-expect-error` guard that used to stand
+// here — `packGapsOfType(GAPS, 7)`, which compiled, allocated a zero-length
+// buffer and drew nothing — is gone with the argument it guarded.
+//
+// What survives it is the other half: a byte that is neither kind is still
+// packed by neither pass, which is what makes "a mark added to that array has to
+// pick a pass" (plugins/alignments/src/CLAUDE.md) a property rather than a
+// promise. Silent by construction on both backends, so it is pinned here.
+test('a gap type belonging to neither mark is packed by neither pass', () => {
+  const withUnknown: GapUploadData = {
+    gapPositions: new Uint32Array([10, 20]),
+    gapYs: new Uint16Array([0]),
+    gapTypes: new Uint8Array([7]),
+    gapFrequencies: new Uint8Array([255]),
+  }
+  expect(packGaps(withUnknown, SKIP_MARK).byteLength).toBe(0)
+  expect(packGaps(withUnknown, DELETION_MARK).byteLength).toBe(0)
+})
 
 test('an empty payload packs an empty buffer', () => {
   const empty: GapUploadData = {
@@ -85,5 +93,5 @@ test('an empty payload packs an empty buffer', () => {
     gapTypes: new Uint8Array(0),
     gapFrequencies: new Uint8Array(0),
   }
-  expect(packGapsOfType(empty, GAP_SKIP).byteLength).toBe(0)
+  expect(packGaps(empty, SKIP_MARK).byteLength).toBe(0)
 })
