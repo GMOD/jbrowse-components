@@ -284,8 +284,9 @@ pick, and no index to remember.
 
 Inside the worker, and in the main-thread paths that fan out by hand, reach for
 `createStatusFanOut` yourself: `BaseFeatureDataAdapter`'s multi-region `merge`, a
-`Promise.all` over sidecar files, MAF's two concurrent branches, the canvas basic
-display's own `Promise.all`. The tell that it is missing: the first operation to
+`Promise.all` over sidecar files, MAF's two concurrent branches — which is the
+last main-thread one, the canvas basic display's own `Promise.all` having gone
+back to `fetchEachRegion`. The tell that it is missing: the first operation to
 finish writes the `''` that every phase helper clears with, and the label blanks
 while the rest are still running.
 

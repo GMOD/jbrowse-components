@@ -92,18 +92,22 @@ re-remembering the cancel term — one edit from the dead-Retry bug.
 
 ## Fetching
 
-- **Don't hand-roll the fetch loop.** `fetchEachRegion` (default),
-  `fetchAllRegions` (batched), `callEachRegion` (fan-out only). The first two
-  own the `ctx.isStale()` guard; forgetting it is a stale-data write.
+- **Don't hand-roll the fetch loop, and no display does any more.**
+  `fetchEachRegion` (default), `fetchAllRegions` (one RPC, one result per
+  region), `fetchRegionsBatched` (one RPC, one payload covering every region),
+  `callEachRegion` (fan-out only, MAF's alone). The first three own the
+  `ctx.isStale()` guard; forgetting it is a stale-data write. A batch-wide step
+  after the regions land is `fetchEachRegion`'s `onComplete`, which is what the
+  two canvas displays commit their gate measurements from — that, not a second
+  loop, is what a hand-rolled `Promise.all` was buying.
 - **`loadedRegions` is written where the payload is stored**, through
-  `ctx.commitRegion(displayedRegionIndex)` — the two helpers above call it for
-  you, and skip a region the worker refused for size (`isRegionRefused`). A
-  display calling `fetchRegions` directly puts the call beside its own store. It
-  takes an index and no span: `fetchRegions` resolves that against the regions
-  it issued, so a fetch cannot claim a span it never asked for. The raw writer
-  under it, `setLoadedRegion`, does take one — tests stage a loaded display with
-  it, and production has no reason to. Marking a region loaded that holds
-  nothing for that span is what froze canvas displays until a page reload:
+  `ctx.commitRegion(displayedRegionIndex)` — the helpers above call it for you,
+  and skip a region the worker refused for size (`isRegionRefused`). It takes an
+  index and no span: `fetchRegions` resolves that against the regions it issued,
+  so a fetch cannot claim a span it never asked for. The raw writer under it,
+  `setLoadedRegion`, does take one — tests stage a loaded display with it, and
+  production has no reason to. Marking a region loaded that holds nothing for
+  that span is what froze canvas displays until a page reload:
   REGION_TOO_LARGE.md, and `RegionFetchContext`.
 - `bufferedVisibleRegions` carries `reversed` alongside the widened bounds, and
   that is load-bearing — canvas stamps it onto `rpcDataMap`, and unit tests hand

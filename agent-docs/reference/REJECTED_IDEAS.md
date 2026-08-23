@@ -461,9 +461,9 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `ideas/per-region-stores-are-named-four-times.md`, closed 2026-08-21 by
   answering the question it parked on: the fail-open `regionHasData` default is
   **unreachable** from the byte gate. A refusal — pre-flight or in-worker —
-  stamps nothing (`fetchRegions` returns before the work callback;
-  `fetchEachRegion`/`fetchAllRegions` and canvas's own commit skip refused
-  results), pinned by `fetchRegions.test.ts` and
+  stamps nothing (`fetchRegions` returns before the work callback; the
+  `fetchEachRegion` family skips refused results), pinned by
+  `fetchRegions.test.ts` and
   `LinearBasicDisplay/loadedRegionCoverage.test.ts`. The one stamp-without-store
   path is sequence's legitimately-empty-region answer, where fail-open is
   load-bearing — a store-derived default would refetch an empty region forever.

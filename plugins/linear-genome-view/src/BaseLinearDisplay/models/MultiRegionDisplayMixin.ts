@@ -441,8 +441,10 @@ export default function MultiRegionDisplayMixin() {
       .actions(_self => ({
         /**
          * #action
-         * Overridable hook (no-op base): override to call
-         * `this.fetchRegions(needed, async ctx => { ... })`.
+         * Overridable hook (no-op base): override to call one of the three
+         * helpers in `fetchEachRegion.ts` — `fetchEachRegion` (one RPC per
+         * region), `fetchAllRegions` (one RPC, one result per region) or
+         * `fetchRegionsBatched` (one RPC, one payload covering all of them).
          */
         fetchNeeded(_needed: IndexedRegion[]) {
           // no-op base
@@ -490,9 +492,10 @@ export default function MultiRegionDisplayMixin() {
            * Run a per-region fetch with byte-estimate gating. The work callback
            * calls `ctx.commitRegion` as it stores each region's payload, which is
            * what marks it loaded — see {@link RegionFetchContext} for why this
-           * function no longer does that itself. The fan-out helpers
-           * (`fetchEachRegion`, `fetchAllRegions`) make the call for the displays
-           * that use them.
+           * function no longer does that itself. Its only callers are the three
+           * helpers in `fetchEachRegion.ts`, which make that call for every
+           * display in the family; a display reaching past them owns both
+           * `ctx.isStale()` guards and the commit by hand, and none does.
            *
            * The fetch key is captured here, at issue, and carried into every
            * commit — never re-read after the await. `ctx.isStale()` trips on a

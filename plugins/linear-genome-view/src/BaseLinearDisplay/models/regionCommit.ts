@@ -48,10 +48,17 @@ export interface LoadedRegion extends Region {
  *
  * **The span is not a parameter**, and that is the half that makes the rule
  * structural rather than advisory: `commitRegion` names an index, and
- * `fetchRegions` resolves it against the very `needed` list it issued. A display
+ * `fetchRegions` resolves it against the very `needed` list it issued. A fetch
  * writing through this context can say "this region landed" and nothing else —
  * it cannot name a span, so it cannot claim one the fetch never asked for. What
  * is left to get wrong is forgetting the call, which costs a redundant refetch.
+ *
+ * No display holds one of these any more: the three helpers in
+ * `fetchEachRegion.ts` are `fetchRegions`' only callers, and each makes the
+ * commit itself at the granularity its shape has. What a display still decides
+ * is whether to *store* a refused payload, and it decides it with the same
+ * `isRegionRefused` test the helper applies to the same result — so the store
+ * and the claim about it cannot come apart.
  *
  * Through this context, and only through it. `setLoadedRegion` is the raw write
  * underneath and does take a span, because the tests that stage an
@@ -63,11 +70,11 @@ export interface LoadedRegion extends Region {
  * The global family reached the same property from the other side.
  * `GlobalFetchPhases.commit` is a phase the skeleton invokes only when `run`
  * produced a result, so nothing is recorded from the request there either.
- * Per-region cannot simply adopt those phases: four displays make a
- * cross-region decision mid-fetch (a batched gate commit, a sample-set union, a
- * tag-map union, one RPC serving every region), and a strict per-region
- * `run`/`commit` has nowhere to put it. Same invariant, two shapes, and the
- * reason they differ is that one dataset arrives once and N regions stream.
+ * Per-region cannot simply adopt those phases: some displays make a
+ * cross-region decision mid-fetch (a batched gate commit, a sample-set union,
+ * one RPC serving every region), and a strict per-region `run`/`commit` has
+ * nowhere to put it. Same invariant, two shapes, and the reason they differ is
+ * that one dataset arrives once and N regions stream.
  */
 export interface RegionFetchContext extends FetchContext {
   /**

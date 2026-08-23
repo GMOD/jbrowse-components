@@ -105,67 +105,72 @@ cannot issue an RPC that the cancel and the progress bar do not know about.
 Hand-threading them is silent when you forget — no cancellation for that
 display, or no progress. The envelope keeps the literal method name at the call
 site so the registry's typed args and return survive, and the `ctx` it receives
-is that region's own, so every region's progress aggregates into one bar. A
-batched counterpart, `fetchAllRegions`, hands all regions to a single RPC call
-(use it when the adapter serves the whole set in one pass more efficiently, e.g.
-BigWig coalescing adjacent blocks).
+is that region's own, so every region's progress aggregates into one bar.
 
-### The raw `fetchRegions` primitive
+A batch-wide step after every region has landed goes in `onComplete`, which runs
+once and under the same staleness guard — both canvas feature displays commit
+their region-too-large measurements there, which is the one thing that has to be
+atomic across a batch whose payloads are not.
 
-Drop to `fetchRegions` directly only when a display's fetch genuinely diverges
-from one-call-per-region:
+### The two batched counterparts
 
-- **canvas** prunes and folds a too-large result
-- **MAF** fetches summary vs detail
-- **alignments** builds a chain payload
+Reach past `fetchEachRegion` when the worker does not answer one payload per
+region:
 
-You then own both `ctx.isStale()` guards by hand. MAF's is a worked case — it
-runs a second RPC concurrently under the same stop token, and takes one
-staleness guard around the whole batch rather than per region:
+- **`fetchAllRegions`** hands all regions to a single RPC call that returns one
+  result per region, `results[i]` paired with `needed[i]`. Use it when the
+  adapter serves the whole set in one pass more efficiently — BigWig coalesces
+  adjacent on-disk blocks across region boundaries, which N independent calls
+  cannot.
+- **`fetchRegionsBatched`** is for a worker answer that covers every region and
+  cannot be split: multi-sample variant's `cellData`, MAF's per-batch sample
+  union. One `call`, one `commit`, and every region marked loaded together. The
+  region list is its argument rather than the plan's `needed`, because a display
+  on it picks its own set — the variant matrix lays columns out across the whole
+  visible width, so a partial refetch has no meaning there.
+
+MAF's is the worked case for the second, since it also runs a second RPC
+concurrently under the same stop token, and takes one staleness guard around the
+whole batch rather than per region:
 
 <!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
 ```ts
-await self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
-  // The CDS-frame annotation overlay (when configured) fetches in the same
-  // stop-token-guarded pass as the main data so the two share staleness +
-  // loadedRegions book-keeping; the two RPCs run concurrently.
-  //
-  // Concurrently, and each is itself a per-region fan-out, so they get a slot
-  // apiece rather than the shared callback: two fan-outs writing one status
-  // field directly is last-writer-wins between them, and the annotation
-  // branch's rows are a small fraction of the alignment's.
-  const slot = createStatusFanOut(ctx.statusCallback)
-  const [results] = await Promise.all([
-    callEachRegion(needed, { ...ctx, statusCallback: slot() }, call),
-    fetchAnnotationData(self, needed, { ...ctx, statusCallback: slot() }),
-  ])
-  // One guard around the whole batch, not per region as in `fetchEachRegion`:
-  // `setSamples` is a cross-region decision over `results`, so a partial
-  // commit would publish a sample set derived from a superseded viewport.
-  if (ctx.isStale()) {
-    return
-  }
-  const sampleSet = unionSampleSets(results)
-  if (sampleSet) {
-    self.setSamples(sampleSet)
-  }
-  commit(results)
-  // beside the store, and every region gets one: MAF's size gate is the
-  // pre-flight kind, so a refusal returns from `fetchRegions` before this
-  // callback runs at all and nothing here can arrive empty-handed.
-  for (const { displayedRegionIndex } of needed) {
-    ctx.commitRegion(displayedRegionIndex)
-  }
+await fetchRegionsBatched(self, needed, {
+  call: async (regions, ctx) => {
+    // The CDS-frame annotation overlay (when configured) fetches in the same
+    // stop-token-guarded pass as the main data so the two share staleness +
+    // loadedRegions book-keeping; the two RPCs run concurrently.
+    //
+    // Concurrently, and each is itself a per-region fan-out, so they get a
+    // slot apiece rather than the shared callback: two fan-outs writing one
+    // status field directly is last-writer-wins between them, and the
+    // annotation branch's rows are a small fraction of the alignment's.
+    const slot = createStatusFanOut(ctx.statusCallback)
+    const [results] = await Promise.all([
+      callEachRegion(regions, { ...ctx, statusCallback: slot() }, call),
+      fetchAnnotationData(self, regions, { ...ctx, statusCallback: slot() }),
+    ])
+    return results
+  },
+  commit: results => {
+    const sampleSet = unionSampleSets(results)
+    if (sampleSet) {
+      self.setSamples(sampleSet)
+    }
+    commit(results)
+  },
 })
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed
-while the fetch was in flight. Always check it before writing results, since
-stale writes trigger unnecessary re-renders. Where you put the check is the
-decision `fetchEachRegion` makes for you: per region, results commit as they
-arrive; around the batch, as above, a cross-region decision can't be made from a
-half-superseded set.
+while the fetch was in flight. Where the check goes is the decision the helper
+makes for you, and it is the only thing that separates them: per region, results
+commit as they arrive; around the batch, as above, a cross-region decision can't
+be made from a half-superseded set. `fetchRegions` itself is the primitive
+underneath all three, and no display calls it directly — one that did would own
+both guards and the `ctx.commitRegion` beside its own store by hand, which is
+the class of bug the helpers exist to make unavailable.
 
 ## rpcProps: the cache key
 

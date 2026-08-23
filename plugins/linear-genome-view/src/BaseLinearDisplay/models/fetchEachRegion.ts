@@ -43,12 +43,12 @@ function fanOutStatus<C extends FetchContext>(ctx: C, count: number): C[] {
  * array to commit from, which is what a cross-region decision needs (MAF picks
  * the sample set from whichever region actually discovered samples).
  *
- * Use this only inside a `fetchRegions` work callback you already own — it does
- * no staleness checking of its own, because the *caller* decides the
- * granularity: {@link fetchEachRegion} guards per region so an early result
- * still commits, while a display that commits atomically guards once around the
- * whole batch. Prefer `fetchEachRegion` unless you need the collected array or
- * a concurrent side-fetch under the same stop token.
+ * Use this only inside a `call` one of the wrappers below hands you — it does no
+ * staleness checking of its own, because the *caller* decides the granularity:
+ * {@link fetchEachRegion} guards per region so an early result still commits,
+ * while {@link fetchRegionsBatched} guards once around the whole batch. Its one
+ * caller is MAF, which needs both the collected array (the sample set is a
+ * cross-region pick) and a concurrent side-fetch under the same stop token.
  */
 export function callEachRegion<R>(
   needed: IndexedRegion[],
@@ -83,16 +83,11 @@ export function callEachRegion<R>(
  * `statusCallback: ctx.statusCallback` — the ctx `call` is handed, which is that
  * region's own status slot, so the parallel per-region fetches aggregate into
  * one bar instead of clobbering each other.
- * A display whose fetch genuinely diverges — canvas (prune + fold a too-large
- * result), MAF (a concurrent annotation fetch + a cross-region sample pick),
- * alignments (chain payload) — keeps its own `fetchNeeded` and calls
- * `fetchRegions` directly. MAF and alignments then reach for
- * {@link callEachRegion} for the fan-out; `LinearBasicDisplay` does not, and
- * should not — its per-region call already returns the `displayedRegionIndex`
- * inside its own result shape, so the pairing `callEachRegion` exists to provide
- * would be a second wrapper to unwrap. Its plain `Promise.all` is the right
- * answer there, and the single `ctx.isStale()` around the batch is deliberate:
- * it commits the batch's gate measurements atomically.
+ * A display with a batch-wide step after the regions land keeps it in
+ * `onComplete`, which runs once and under the same guard — canvas's two feature
+ * displays commit their gate measurements there. That is the whole of what used
+ * to justify a hand-rolled `Promise.all`: the per-region commits and the
+ * atomic one are different granularities, not different loops.
  */
 export async function fetchEachRegion<R>(
   self: FetchEachRegionModel,
