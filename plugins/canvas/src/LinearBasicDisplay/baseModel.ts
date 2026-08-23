@@ -13,7 +13,6 @@ import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
   canonicalizeViewRefName,
-  createStatusFanOut,
   getContainingView,
   getSession,
   isFeature,
@@ -35,6 +34,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   autorunOnReadyView,
+  fetchEachRegion,
   installGrowExitBake,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -123,6 +123,7 @@ import type {
   RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -153,10 +154,8 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  GateFetchState,
   LegendItem,
   LinearGenomeViewModel,
-  RegionFetchContext,
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -2570,73 +2569,6 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => {
-        // One fetched region: the raw RPC response paired with the context
-        // needed to commit it. `result` is too-large (density or byte
-        // short-circuit) or the full feature payload — both optionally carry an
-        // index `bytes` estimate.
-        interface RegionFetch {
-          displayedRegionIndex: number
-          region: Region
-          result: RenderFeatureDataResult
-        }
-
-        // Both gate budgets arrive as arguments rather than through
-        // `rpcProps()`: they are resolved values that swing on the viewport, and
-        // as cache keys they invalidated the whole display at the force-load
-        // floor. See the note in `rpcProps`.
-        async function fetchFeaturesForRegion(
-          region: Region,
-          displayedRegionIndex: number,
-          bpPerPx: number,
-          byteLimit: number | undefined,
-          maxFeatureDensity: number | undefined,
-          // `RegionFetchContext`, which is what the caller has, rather than the
-          // `FetchContext` this body actually needs: a file that names
-          // `FetchContext` and also emits an inherited member typed by it gets
-          // that member's `.d.ts` serialized as the declaring source path, which
-          // `check-declaration-leaks` fails on.
-          ctx: RegionFetchContext,
-        ): Promise<RegionFetch> {
-          const session = getSession(self)
-          // Per-region translation table from the assembly's geneticCodes
-          // config (alias-bridged via getGeneticCodeId), so the worker can
-          // translate peptides on contigs whose features carry no transl_table.
-          const assembly = session.assemblyManager.get(region.assemblyName)
-          const result = await ctx.callRpc('RenderFeatureData', {
-            adapterConfig: self.adapterConfig,
-            geneticCodeId: assembly?.getGeneticCodeId(region.refName),
-            ...self.rpcProps(),
-            region,
-            bpPerPx,
-            byteLimit,
-            maxFeatureDensity,
-          })
-          return { displayedRegionIndex, region, result }
-        }
-
-        function applyFetchResults(
-          fetches: RegionFetch[],
-          issued: GateFetchState,
-          ctx: RegionFetchContext,
-        ) {
-          for (const { displayedRegionIndex, region, result } of fetches) {
-            // The commit sits beside the store, and a region the worker refused
-            // for size gets neither: `loadedRegions` has to describe data that
-            // exists, or every later run of the plan reads the viewport as
-            // covered against a payload nobody received. See RegionFetchContext.
-            if (!isRegionRefused(result)) {
-              self.setRpcData(displayedRegionIndex, result, region)
-              ctx.commitRegion(displayedRegionIndex)
-            }
-          }
-          // Commit the per-region byte/density estimates to the shared gate (byte
-          // **max**, not sum, so a multi-region view where each region fits isn't
-          // blanked by the cross-region total). `RegionFetch` already IS the
-          // measurement shape — same helper the multi-row display uses, so the two
-          // canvas gates can't drift.
-          self.commitGateMeasurements(fetches, issued)
-        }
-
         const superReload = self.reload
         return {
           // `superReload()` is not optional: it is what bumps `reloadCounter`,
@@ -2685,28 +2617,59 @@ export default function baseStateModelFactory(
                 view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
               ),
             )
-            void self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
-              // `createStatusFanOut` by hand rather than through
-              // `callEachRegion`, which is what hands the other multi-region
-              // displays their slots — this one keeps its own `Promise.all` for
-              // the reason `fetchEachRegion`'s docs give, and the slot is the
-              // only thing it was getting from the helper
-              const slot = createStatusFanOut(ctx.statusCallback)
-              const promises = needed.map(({ region, displayedRegionIndex }) =>
-                fetchFeaturesForRegion(
+            const regions = new Map(
+              needed.map(n => [n.displayedRegionIndex, n.region]),
+            )
+            // Per-region byte/density estimates keyed by the index `onResult`
+            // reports back, committed to the shared gate once the batch ends. A
+            // region whose fetch was skipped as stale never lands here.
+            const gateResults = new Map<number, RenderFeatureDataResult>()
+            void fetchEachRegion(self, needed, {
+              call: (region, ctx) => {
+                // Per-region translation table from the assembly's geneticCodes
+                // config (alias-bridged via getGeneticCodeId), so the worker can
+                // translate peptides on contigs whose features carry no
+                // transl_table.
+                const assembly = getSession(self).assemblyManager.get(
+                  region.assemblyName,
+                )
+                return ctx.callRpc('RenderFeatureData', {
+                  adapterConfig: self.adapterConfig,
+                  geneticCodeId: assembly?.getGeneticCodeId(region.refName),
+                  ...self.rpcProps(),
                   region,
-                  displayedRegionIndex,
                   bpPerPx,
                   byteLimit,
                   maxFeatureDensity,
-                  { ...ctx, statusCallback: slot() },
-                ),
-              )
-              const results = await Promise.all(promises)
-              if (ctx.isStale()) {
-                return
-              }
-              applyFetchResults(results, issued, ctx)
+                })
+              },
+              // `fetchEachRegion` marks the region loaded for us, and skips a
+              // refused one — same `isRegionRefused` test as here, so what we
+              // store and what `loadedRegions` claims cannot come apart.
+              onResult: (displayedRegionIndex, result) => {
+                gateResults.set(displayedRegionIndex, result)
+                if (!isRegionRefused(result)) {
+                  self.setRpcData(
+                    displayedRegionIndex,
+                    result,
+                    regions.get(displayedRegionIndex)!,
+                  )
+                }
+              },
+              // Byte **max**, not sum, so a multi-region view where each region
+              // fits isn't blanked by the cross-region total. Assembled from
+              // `needed`, which already carries each region's span, so the region
+              // pairs with its result by construction.
+              onComplete: () => {
+                const measurements: RegionGateMeasurement[] = []
+                for (const { region, displayedRegionIndex } of needed) {
+                  const result = gateResults.get(displayedRegionIndex)
+                  if (result) {
+                    measurements.push({ displayedRegionIndex, region, result })
+                  }
+                }
+                self.commitGateMeasurements(measurements, issued)
+              },
             })
           },
         }
