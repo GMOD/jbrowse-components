@@ -114,6 +114,15 @@ Answerable only from the fetched lanes:
   laid-out map**, since a grouped fetch over an empty region partitions to zero
   lanes and the overlay never clears.
 
+**The same rule one layer down: `renderBlocks` reports paint off the SYNCED
+REGION, never off a band having pixels in it.** A section whose fetch landed
+paints the frame it should paint, and a blank one is a frame. Both backends
+answered "did a band with non-zero height draw" and both wedged a display at
+"Loading": the pileup band alone stranded read-cloud, and coverage-plus-pileup-
+plus-arcs stranded a coverage-off `LGVSyntenyDisplay` — and any alignments track
+with the coverage band off — on every window its file has no records in.
+`coverageParity.test.ts` runs the scenario table against both.
+
 `hiddenGroupKeys` must be filtered out of the **cross-group** derivations too
 (coverage stats, legend, sashimi, arcs) — for arcs, before `poolArcScale`.
 

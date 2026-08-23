@@ -352,12 +352,11 @@ export function drawAlignmentBlocks(
     return false
   }
 
-  // Whether any band actually painted, mirroring the GPU's
-  // `drewCoverage || drewPileup || arcBand !== undefined` per-section contract
-  // so both backends flip `canvasDrawn` on the same states (see the parity
-  // cases in coverageParity.test.ts). A bare `true` here — decided by
-  // `regions.size` before the loop — drifted from the GPU: a coverage-off,
-  // collapsed-pileup, no-arc section paints nothing yet reported drawn.
+  // Whether any block had a section with data to paint from, mirroring the
+  // GPU's `drawSection` contract so both backends flip `canvasDrawn` on the same
+  // states (see the parity cases in coverageParity.test.ts). The band heights
+  // deliberately do not enter into it: a section whose fetch landed paints the
+  // frame it should paint, blank included, and `drawSection` carries why.
   let painted = false
 
   // Which layers draw this frame, resolved once. The gates read the
@@ -406,20 +405,14 @@ export function drawAlignmentBlocks(
       return found.length > 0 ? found : undefined
     },
     (sections, block, { fullBlockWidth, bpLength, scissorX, scissorW }) => {
+      // Every block reaching here has a section with a region, which is the
+      // GPU's test too.
+      painted = true
+
       // Each stacked section sets its own vertical offsets and clip bands.
       // Section 0's region key equals the raw region index, so the ungrouped
       // (single-section) path reproduces the prior draw exactly.
       for (const { sec, sectionState, region } of sections) {
-        // Same three bands the GPU's drawSection counts. A collapsed band
-        // (height 0) draws nothing — matching the GPU's `cov.height > 0` /
-        // `pileup.height > 0` gates — so it must not count as a paint. Arcs and
-        // coverage-only sections (empty pileup, e.g. read-cloud) still count.
-        const drewCoverage = state.showCoverage && sec.covClipHeight > 0
-        const drewPileup = sec.pileupClipHeight > 0
-        if (drewCoverage || drewPileup || sec.arcBand !== undefined) {
-          painted = true
-        }
-
         if (state.showCoverage) {
           withClip(
             ctx,

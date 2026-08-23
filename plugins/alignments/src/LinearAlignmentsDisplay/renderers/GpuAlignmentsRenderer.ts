@@ -952,10 +952,19 @@ export class GpuAlignmentsRenderer
     return hasDrawn
   }
 
-  // Draw one stacked section of one block. Returns whether any band painted, so
-  // the caller can flip `canvasDrawn`. A coverage- or arcs-only section (empty
-  // pileup band, e.g. read-cloud) still counts as a paint — gating this
-  // on the pileup band once left read-cloud stuck on "Loading".
+  // Draw one stacked section of one block. Returns whether the section had data
+  // to paint from, so the caller can flip `canvasDrawn`.
+  //
+  // **The test is the region, not the pixels.** A section whose fetch has landed
+  // paints the frame it should paint — including the blank one an empty region
+  // deserves — and a display that never paints anything else is finished, not
+  // loading. Gating this on a band having non-zero height instead is what left a
+  // SyntenyTrack lane in a plain LGV stuck at "Loading" forever on any window its
+  // file has no records for: `LGVSyntenyDisplay` turns the coverage band off, so
+  // with no reads there is no band of any kind, `canvasDrawn` never flipped and
+  // the scrim never came down. Read-cloud had the same bug one band earlier
+  // (coverage- and arcs-only sections were the exceptions carved out then); this
+  // is that rule taken to its end rather than a third exception.
   private drawSection(
     block: RenderBlock,
     geom: BlockGeom,
@@ -992,8 +1001,7 @@ export class GpuAlignmentsRenderer
     // `drawPass` after it reads that slot, which is exactly the handoff the arc
     // band below relies on as well.
     const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
-    const drewCoverage = state.showCoverage && cov.height > 0
-    if (drewCoverage) {
+    if (state.showCoverage && cov.height > 0) {
       fillCoverageBandUniforms(this.uCoverage, sectionState, frame)
       this.hal.writeUniforms(this.uCoverage)
       this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
@@ -1015,8 +1023,7 @@ export class GpuAlignmentsRenderer
       scaleY,
       bufH,
     )
-    const drewPileup = pileup.height > 0
-    if (drewPileup) {
+    if (pileup.height > 0) {
       this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
       for (const layer of PILEUP_LAYERS) {
         if (layer.enabled(state)) {
@@ -1044,7 +1051,7 @@ export class GpuAlignmentsRenderer
       )
     }
 
-    return drewCoverage || drewPileup || sec.arcBand !== undefined
+    return true
   }
 
   private drawArcsPass(

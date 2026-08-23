@@ -392,12 +392,16 @@ const FOLLOW_PAN_MAT = 'chr8_MATERNAL:7,735,000-7,805,000'
 // -- a haplotype-specific insertion is a gap in the chain, not a missing
 // contig.
 //
-// NOT chrX. HG002 is male, so chrX is maternal and chrY paternal and neither
-// has a counterpart to chain to, which reads like the obvious unaligned window
-// and cost a capture to reject: a SyntenyTrack lane in a plain LGV never
-// finishes loading on a refName the alignment file has no records for. The
-// frame is then of a track stuck at "Loading...", which is a picture of that
-// bug rather than of this mode (agent-docs/todo/a-synteny-lane-never-finishes-loading-on-a-refname-the-file-has-no-records-for.md).
+// NOT chrX, and the reason is now history rather than a constraint. HG002 is
+// male, so chrX is maternal and chrY paternal and neither has a counterpart to
+// chain to, which reads like the obvious unaligned window -- and it cost a
+// capture, because the lane sat at "Loading..." forever. That was never about
+// the refName: an alignments display with the coverage band off reported
+// nothing drawn whenever its fetch landed on no reads, so ANY empty window did
+// it (fixed in GpuAlignmentsRenderer.drawSection / drawAlignmentBlocks). The
+// gap between two chains stays the frame anyway: it is the general case the
+// linear synteny view guide describes, where a haplotype-specific insertion is
+// a gap in the chain rather than a missing contig.
 const UNALIGNED_ANCHOR_PAT = DRIFT_WINDOW_PAT_BEFORE
 
 // THE MARKERS FIGURE MOVED TO THE PERICENTROMERE (reviewer: 'the show location

@@ -577,13 +577,14 @@ describe('GPU sync skips regions whose data is unchanged', () => {
   })
 })
 
-// `renderBlocks` returns whether anything painted; the model feeds that into
-// `canvasDrawn`. The GPU and Canvas2D backends must agree on this: a coverage-
-// or arcs-only section (empty pileup band, e.g. read-cloud) still paints real
-// content, while a section with no visible band paints nothing. Gating the
-// return on the pileup band once left read-cloud stuck on "Loading"; a bare
-// `true` from the Canvas2D path once drifted the other way. One scenario table,
-// both backends, same expected result — lock the shared contract in.
+// `renderBlocks` returns whether the frame painted from data the backend holds;
+// the model feeds that into `canvasDrawn`. The GPU and Canvas2D backends must
+// agree on this, and the test is the SYNCED REGION rather than a non-zero band
+// height: a section whose fetch landed is finished even when every band it could
+// draw is empty. Both narrower rules shipped and both wedged a display at
+// "Loading" — the pileup band alone stranded read-cloud, and all three bands
+// together stranded a coverage-off LGVSyntenyDisplay on any window its file has
+// no records for. One scenario table, both backends, same expected result.
 describe('renderBlocks canvasDrawn gating parity', () => {
   // Nothing here asserts on a colour — the scenarios are about whether a block
   // reports having drawn — so this is makeTestPalette's all-zero palette rather
@@ -664,25 +665,40 @@ describe('renderBlocks canvasDrawn gating parity', () => {
     } as unknown as HTMLCanvasElement)
   }
 
-  function synced(renderer: AlignmentsRenderingBackend) {
-    renderer.sync({
-      sections: [
+  // A region whose fetch landed on nothing at all: no reads, no coverage bins.
+  // What a SyntenyTrack lane in a plain LGV gets on a window its file has no
+  // records for, and what the empty-band scenarios below are really about.
+  function emptyCoverage(): CoverageUploadData {
+    return {
+      ...makeCoverageData(),
+      coverageDepths: new Float32Array(),
+      coverageMaxDepth: 0,
+      coverageGpuBinCount: 0,
+      snpPackedBuffer: packSnpInstances(
         {
-          groupKey: '',
-          laidOutPileupMap: new Map([
-            [0, makeMinimalPileupResult(makeCoverageData())],
-          ]),
-          arcsRpcDataMap: new Map(),
+          position: [],
+          yOffset: [],
+          segHeight: [],
+          colorType: [],
+          relDepth: [],
         },
-      ],
-      readConnectionsLineWidth: 1,
-    })
+        0,
+      ),
+      indicatorPackedBuffer: packedIndicators([]),
+    }
+  }
+
+  function synced(
+    renderer: AlignmentsRenderingBackend,
+    cov: CoverageUploadData = makeCoverageData(),
+  ) {
+    renderer.sync(oneRegion(makeMinimalPileupResult(cov)))
     return renderer
   }
 
   const scenarios: {
     name: string
-    sync: boolean
+    sync: boolean | 'empty'
     section: Partial<SectionRender>
     extra?: Partial<RenderState>
     expected: boolean
@@ -705,10 +721,20 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       expected: true,
     },
     {
-      name: 'a section where no band paints',
+      // The synteny lane on a window its chain file has no records for:
+      // coverage off, no reads to stack, no arcs. Nothing is visible and
+      // nothing should be — the display is done, not loading.
+      name: 'a section that fetched nothing, with every band empty',
+      sync: 'empty',
+      section: { covClipHeight: 0, pileupClipHeight: 0 },
+      expected: true,
+    },
+    {
+      // The same for a band the user collapsed over data that is there.
+      name: 'a synced section whose bands are all collapsed',
       sync: true,
       section: { covClipHeight: 0, pileupClipHeight: 0 },
-      expected: false,
+      expected: true,
     },
     {
       name: 'a block with no synced region',
@@ -726,7 +752,9 @@ describe('renderBlocks canvasDrawn gating parity', () => {
     describe(backend, () => {
       for (const { name, sync, section, extra, expected } of scenarios) {
         it(`returns ${expected} for ${name}`, () => {
-          const renderer = sync ? synced(make()) : make()
+          const renderer = sync
+            ? synced(make(), sync === 'empty' ? emptyCoverage() : undefined)
+            : make()
           expect(
             renderer.renderBlocks([block], makeState(section, extra)),
           ).toBe(expected)
