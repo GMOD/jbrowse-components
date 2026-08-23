@@ -63,6 +63,7 @@ export {
   default as MultiRegionDisplayMixin,
   fetchAllRegions,
   fetchEachRegion,
+  fetchRegionsBatched,
   onDisplayedRegionsChange,
 } from './models/MultiRegionDisplayMixin.ts'
 export {

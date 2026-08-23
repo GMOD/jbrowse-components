@@ -117,6 +117,7 @@ export {
   computeTriangleYScalar,
   fetchAllRegions,
   fetchEachRegion,
+  fetchRegionsBatched,
   foundationDisplayStatusPhase,
   gradientSvgLegendWidth,
   legendMixinSlots,

@@ -23,6 +23,7 @@ import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  fetchRegionsBatched,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
@@ -65,7 +66,6 @@ import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 import type {
   LegendSection,
   LinearGenomeViewModel,
-  RegionFetchContext,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // Apply a `colorBy` palette to the sample sources. Returns the colored sources,
@@ -1593,9 +1593,9 @@ export default function MultiSampleVariantBaseModelF(
 
         // Ignores `needed` and refetches all visible regions because the
         // cellData RPC payload is monolithic — one call returns data covering
-        // all visible regions, so partial refetches don't fit. Other LGV
-        // displays pass `needed` directly to fetchRegions for per-region
-        // caching of rpcDataMap entries.
+        // all visible regions, so partial refetches don't fit. That is why the
+        // region list is `fetchRegionsBatched`'s argument: the set this display
+        // derives is both what the RPC is sent and what the commits name.
         async fetchNeeded(
           _needed: { region: Region; displayedRegionIndex: number }[],
         ) {
@@ -1612,23 +1612,21 @@ export default function MultiSampleVariantBaseModelF(
           // the async boundary.
           const rpcProps = self.rpcProps()
           const { adapterConfig } = self
-          await self.fetchRegions(regions, async (ctx: RegionFetchContext) => {
-            const result = await ctx.callRpc('MultiSampleVariantGetCellData', {
-              adapterConfig,
-              regions: regions.map(r => r.region),
-              displayedRegionIndices: regions.map(r => r.displayedRegionIndex),
-              ...rpcProps,
-              // bound at factory call time, per subclass
-              mode: cellDataMode,
-            })
-            if (!ctx.isStale() && isAlive(self)) {
+          // One RPC serves every region, so the whole batch is held or none of
+          // it is, and `fetchRegionsBatched` marks them loaded together.
+          await fetchRegionsBatched(self, regions, {
+            call: (batch, ctx) =>
+              ctx.callRpc('MultiSampleVariantGetCellData', {
+                adapterConfig,
+                regions: batch.map(r => r.region),
+                displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
+                ...rpcProps,
+                // bound at factory call time, per subclass
+                mode: cellDataMode,
+              }),
+            commit: result => {
               self.setCellData(result)
-              // beside the store: one RPC serves every region, so the whole
-              // batch is held or none of it is
-              for (const { displayedRegionIndex } of regions) {
-                ctx.commitRegion(displayedRegionIndex)
-              }
-            }
+            },
           })
         },
       }))

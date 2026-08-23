@@ -180,3 +180,46 @@ export async function fetchAllRegions<R>(
     }
   })
 }
+
+/**
+ * The monolithic counterpart to the other two: one `call` over the whole region
+ * set answering **one** payload that covers all of them, one `commit`, and then
+ * every issued region marked loaded together. Where {@link fetchAllRegions}
+ * batches the request and keeps the per-region results apart, this is for the
+ * displays whose worker returns a value that cannot be split — multi-sample
+ * variant's `cellData`, MAF's per-batch sample union — so the whole set is held
+ * or none of it is.
+ *
+ * **The region list is the argument, not `needed`.** A display on this helper
+ * decides its own set: variants ignores the plan's `needed` entirely and derives
+ * one from the mode (`fetchRegionsForMode`), because the columns of a matrix
+ * lay out across the whole visible width and a partial refetch has no meaning.
+ * Whatever list is passed is both what `call` receives and what the commits name,
+ * so the two cannot come apart.
+ *
+ * The single `ctx.isStale()` guard is the same correctness primitive the other
+ * helpers own, at the only granularity that exists here: there is one result, so
+ * a viewport that moved drops all of it. A refused result is delivered to
+ * `commit` and marks nothing loaded, for the reason spelled out in
+ * `RegionFetchContext`.
+ */
+export async function fetchRegionsBatched<R>(
+  self: FetchEachRegionModel,
+  regions: IndexedRegion[],
+  opts: {
+    call: (regions: IndexedRegion[], ctx: FetchContext) => Promise<R>
+    commit: (result: R) => void
+  },
+) {
+  await self.fetchRegions(regions, async ctx => {
+    const result = await opts.call(regions, ctx)
+    if (!ctx.isStale()) {
+      opts.commit(result)
+      if (!isRegionRefused(result)) {
+        for (const { displayedRegionIndex } of regions) {
+          ctx.commitRegion(displayedRegionIndex)
+        }
+      }
+    }
+  })
+}
