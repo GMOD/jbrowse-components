@@ -1,4 +1,5 @@
 import { followAxes } from './followAxes.ts'
+import { preferIncumbent } from './pickFollowFeature.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
@@ -21,7 +22,7 @@ interface Accumulator {
 // and where the window's two edges land on it.
 interface Target {
   name: string
-  total: number
+  overlap: number
   startAt: Accumulator
   endAt: Accumulator
 }
@@ -124,11 +125,13 @@ export function followWindowsMapping({
   windows,
   toMate,
   mateAssembly,
+  incumbentTarget,
 }: {
   data: SyntenyFeatureData
   windows: FollowWindow[]
   toMate: boolean
   mateAssembly?: string
+  incumbentTarget?: string
 }): (ResolvedSpan | undefined)[] {
   const {
     refNameIds,
@@ -201,7 +204,7 @@ export function followWindowsMapping({
       slots[nameId] = slot
       targets.push({
         name: otherRefNameDict[nameId]!,
-        total: 0,
+        overlap: 0,
         startAt: newAccumulator(windowStartBp),
         endAt: newAccumulator(windowEndBp),
       })
@@ -215,7 +218,7 @@ export function followWindowsMapping({
     // and so never wins, which is what stops a neighbour from being picked.
     const overlap = Math.min(aHi, windowEndBp) - Math.max(aLo, windowStartBp)
     if (overlap > 0) {
-      target.total += overlap
+      target.overlap += overlap
     }
     // `atLo`/`atHi` are the mate coordinates this block's LEFT and RIGHT anchor
     // edges map to, so a reverse-strand block simply reports them swapped and
@@ -228,12 +231,23 @@ export function followWindowsMapping({
   }
   return targetsPerWindow.map(targets => {
     let best: Target | undefined
+    let incumbent: Target | undefined
     for (const t of targets) {
-      if (!best || t.total > best.total) {
+      if (!best || t.overlap > best.overlap) {
         best = t
       }
+      if (t.name === incumbentTarget) {
+        incumbent = t
+      }
     }
-    return best && best.total > 0 ? span(best) : undefined
+    // THE SAME HYSTERESIS THE BLOCK PICK HAS, and for a case that is worse:
+    // panning a window across a fusion breakpoint moves summed overlap from one
+    // mate contig to the other, and the two are equal at the midpoint, so a bare
+    // comparison flung the row to another chromosome on the rounding — every
+    // frame, since the frame pass re-runs this. An incumbent that no block under
+    // the window reaches totals zero and cannot hold the answer.
+    const chosen = preferIncumbent(best, incumbent)
+    return chosen && chosen.overlap > 0 ? span(chosen) : undefined
   })
 }
 
@@ -246,16 +260,19 @@ export function followWindowMapping({
   window,
   toMate,
   mateAssembly,
+  incumbentTarget,
 }: {
   data: SyntenyFeatureData
   window: FollowWindow
   toMate: boolean
   mateAssembly?: string
+  incumbentTarget?: string
 }) {
   return followWindowsMapping({
     data,
     windows: [window],
     toMate,
     mateAssembly,
+    incumbentTarget,
   })[0]
 }

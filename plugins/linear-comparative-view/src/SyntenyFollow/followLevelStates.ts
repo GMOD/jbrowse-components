@@ -18,6 +18,12 @@ export interface LevelPick {
   feat: FeatPos
   display: LinearSyntenyDisplayModel
   toMate: boolean
+  // The contig this level last placed the row on, which the envelope's vote
+  // between the mate contigs under the window is biased toward. Here rather
+  // than beside the state because it is the same decision the `feat` above is:
+  // dropping the pick to hold the row drops the bias with it, and a fresh
+  // window then chooses freely.
+  target: string
   // Absent for an envelope answer. That is a union several blocks contributed
   // to, so it carries no one strand, and a forward transform built from one
   // placed the row mirrored inside an inverted alignment until the next settle.

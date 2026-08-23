@@ -14,9 +14,11 @@ export interface FollowCandidate {
   overlap: number
 }
 
-// applied twice over the same margin: within a display, and across the displays
-// on a level over each one's answer
-export function preferIncumbent<T extends FollowCandidate>(
+// applied over the same margin wherever the follow re-chooses between two
+// things a pan can put within rounding of each other: the block, within a
+// display and then across the displays on a level, and the envelope's target
+// contig
+export function preferIncumbent<T extends { overlap: number }>(
   best: T | undefined,
   incumbent: T | undefined,
 ) {

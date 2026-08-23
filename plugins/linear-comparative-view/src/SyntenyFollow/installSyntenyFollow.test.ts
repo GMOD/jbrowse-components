@@ -1,0 +1,152 @@
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { types } from '@jbrowse/mobx-state-tree'
+
+import { packSyntenyFeatureData } from '../LinearSyntenyDisplay/testUtils.ts'
+import { followAnchorWindows } from './followAnchorWindow.ts'
+import { installSyntenyFollow } from './installSyntenyFollow.ts'
+
+import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
+import type { FeatureBlock } from '../LinearSyntenyDisplay/testUtils.ts'
+import type { FollowPair } from './installSyntenyFollow.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// A UNIT HARNESS, where every other follow test that drives both passes is in
+// jbrowse-web. The case needs an assembly with a contig BETWEEN two that map,
+// and every volvox fixture is ctgA and ctgB laid next to each other — an
+// interval spanning both has no filler in it, so the amplification this file
+// exists for is invisible at that scale whatever the rows do.
+//
+// Nine chromosomes of a megabase each, the same layout in every row, so an
+// interval spanning two of them is exactly as many contigs wide as the gap
+// between them.
+const CONTIG = 1_000_000
+const CONTIGS = 9
+const WIDTH = 800
+
+// Base1DView is the whole of what the follow reads off a row: the blocks it is
+// showing, the layout it can be placed within, and moveTo's two actions. The
+// debounce the real `coarseDynamicBlocks` carries is the one thing a test does
+// not want.
+const Row = Base1DView.views(self => ({
+  get coarseDynamicBlocks() {
+    return self.dynamicBlocks.contentBlocks
+  },
+}))
+
+function row(assemblyName: string) {
+  const view = Row.create({ bpPerPx: 2500 })
+  view.setVolatileWidth(WIDTH)
+  view.setDisplayedRegions(
+    Array.from({ length: CONTIGS }, (_, i) => ({
+      refName: `chr${i + 1}`,
+      start: 0,
+      end: CONTIG,
+      assemblyName,
+    })),
+  )
+  return view
+}
+
+function display(blocks: FeatureBlock[]) {
+  return {
+    featureData: packSyntenyFeatureData(blocks, { hasCigar: false }),
+  } as LinearSyntenyDisplayModel
+}
+
+// A whole contig of one row against a whole contig of the next.
+function pairing(refName: string, mateRefName: string) {
+  return {
+    refName,
+    start: 0,
+    end: CONTIG,
+    mateRefName,
+    mateStart: 0,
+    mateEnd: CONTIG,
+  }
+}
+
+const Host = types
+  .model('TestSyntenyFollowHost', {})
+  .volatile(() => ({
+    followSynteny: true,
+    followUnaligned: false,
+    followApproximate: false,
+    followPairs: [] as FollowPair[],
+  }))
+  .actions(self => ({
+    setFollowPairs(pairs: FollowPair[]) {
+      self.followPairs = pairs
+    },
+    setFollowUnaligned(arg: boolean) {
+      self.followUnaligned = arg
+    },
+    setFollowApproximate(arg: boolean) {
+      self.followApproximate = arg
+    },
+  }))
+
+const shown = (view: ReturnType<typeof row>) => [
+  ...new Set(view.dynamicBlocks.contentBlocks.map(b => b.refName)),
+]
+
+// A CHROMOSOMAL FUSION, which is the shape that puts a row's two answers on
+// contigs that are not neighbours: the anchor's chr1 and chr2 are the next
+// row's chr1 and chr3, so placing that row on both also puts chr2 on its screen
+// — filler, and unavoidable, since a row lays its regions end to end.
+//
+// The level beyond it is where that matters. Read back off the blocks, the
+// filler is a window like any other, and here it has an alignment of its own to
+// a chromosome six along.
+describe('a spread carried up a three-row stack', () => {
+  function stack() {
+    const rows = [row('a'), row('b'), row('c')]
+    const levels = [
+      {
+        linearSyntenyDisplays: [
+          display([pairing('chr1', 'chr1'), pairing('chr2', 'chr3')]),
+        ],
+      },
+      {
+        linearSyntenyDisplays: [
+          display([
+            pairing('chr1', 'chr1'),
+            pairing('chr3', 'chr3'),
+            // the filler's own alignment, and the whole of the amplification
+            pairing('chr2', 'chr9'),
+          ]),
+        ],
+      },
+    ]
+    const host = Host.create()
+    host.setFollowPairs(
+      levels.map((level, i) => ({
+        level,
+        stayingView: rows[i] as unknown as LinearGenomeViewModel,
+        movingView: rows[i + 1] as unknown as LinearGenomeViewModel,
+        toMate: true,
+      })),
+    )
+    installSyntenyFollow(host)
+    return rows
+  }
+
+  test('the middle row is placed across the gap between its two answers', () => {
+    const [, middle] = stack()
+    expect(shown(middle!)).toEqual(['chr1', 'chr2', 'chr3'])
+  })
+
+  test('the far row follows the contigs that mapped, not the ones on screen', () => {
+    const [, middle, far] = stack()
+    // the middle row really is showing three contigs — the assertion below is
+    // about what the level beyond it READS, not about what it displays
+    expect(
+      followAnchorWindows(middle!.dynamicBlocks.contentBlocks),
+    ).toHaveLength(3)
+    expect(shown(far!)).toEqual(['chr1', 'chr2', 'chr3'])
+  })
+
+  test('the anchor is left where it was', () => {
+    const [anchor] = stack()
+    expect(shown(anchor!)).toEqual(['chr1', 'chr2'])
+  })
+})

@@ -7,6 +7,7 @@ import { alreadyShowing } from './alreadyShowing.ts'
 import {
   followAnchorWindow,
   followAnchorWindows,
+  followPlacedWindows,
 } from './followAnchorWindow.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
 import { createFollowLevelStates } from './followLevelStates.ts'
@@ -65,6 +66,26 @@ interface FollowWork {
   seq: number
   generation: number
 }
+
+/**
+ * What this pass has decided each row it moves should be showing, for the level
+ * beyond it to read INSTEAD OF that row's own blocks.
+ *
+ * A row placed across several contigs also shows every contig between them —
+ * `positionViewOnSpans` places an interval of one layout, and a row lays its
+ * regions end to end — so read back off the blocks, filler the follow was
+ * forced to include is indistinguishable from a contig that mapped. The next
+ * level then maps it, its answer widens to reach wherever that filler points,
+ * and the level after that inherits the wider set: three rows was enough to
+ * leave the far one on the whole genome from a two-contig answer.
+ * `followPlacedWindows` is the shape of what goes in here.
+ *
+ * Keyed by the view rather than the level, since it is written for a level's
+ * moving row and read for the next level's staying row, which are the same row
+ * under a different name. `followPairs` is ordered outward from the anchor, so
+ * the entry is always written before the level that reads it.
+ */
+type PlacedWindows = Map<LinearGenomeViewModel, FollowWindow[]>
 
 // One level's placement when the anchor is showing SEVERAL contigs. No RPC and
 // no block: the answer is the union of what those contigs map to, and the row
@@ -165,6 +186,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       feat: step.feat,
       display: step.display,
       toMate: step.toMate,
+      target: span.refName,
       transform: step.windowInsideFeat
         ? followTransform(step.window, span, step.feat.strand === -1)
         : undefined,
@@ -302,7 +324,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // `execute` is async and MobX stops tracking at its first `await`, so a field
   // missing from `FollowStep` can only be read untracked, producing a follow
   // that works once and never re-fires.
-  function planLevel(pair: FollowPair): FollowPlan {
+  function planLevel(pair: FollowPair, placed: PlacedWindows): FollowPlan {
     const { level, stayingView, movingView, toMate, mateAssembly } = pair
     const state = levelStates.get(level)
     // EVERY LEVEL THE PASS VISITS, not only the ones it goes on to resolve. A
@@ -311,7 +333,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // anyway — while the header reported it as holding, which is the one thing
     // that state promises.
     const seq = ++state.seq
-    const windows = followAnchorWindows(stayingView.coarseDynamicBlocks)
+    // WHAT THIS PASS PLACED THE ROW ON, where it placed it, rather than what the
+    // row is showing — the two differ by the filler between two mapped contigs,
+    // and reading that back is what compounds a spread up a stack. Not reading
+    // the blocks also drops the dependency on a row this pass writes; what
+    // re-asserts a hand-nudged interior row is the level's own fetch key, which
+    // names both rows, exactly as it is for the multi-contig rung's moving row.
+    const carried = placed.get(stayingView)
+    const windows =
+      carried ?? followAnchorWindows(stayingView.coarseDynamicBlocks)
     const window = windows[0]
     if (!window) {
       // an anchor with no window says nothing about alignment either way
@@ -331,6 +361,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         toMate,
         mateAssembly,
       })
+      if (spans.length) {
+        placed.set(movingView, followPlacedWindows(spans))
+      }
       return {
         spread: spans.length ? { level, movingView, spans } : undefined,
         unaligned:
@@ -348,6 +381,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       toMate,
       mateAssembly,
       incumbentId: state.pick?.feat.id,
+      incumbentTarget: state.pick?.target,
     })
     return {
       work: step && {
@@ -375,7 +409,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           levelStates.clear()
           return
         }
-        const plans = self.followPairs.map(pair => planLevel(pair))
+        const placed: PlacedWindows = new Map()
+        const plans = self.followPairs.map(pair => planLevel(pair, placed))
         // written, never read here: reading either would make the autorun a
         // dependency of its own write
         self.setFollowUnaligned(plans.some(p => p.unaligned))
@@ -435,12 +470,20 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           return
         }
         const written = new Set<LinearGenomeViewModel>()
+        const placed: PlacedWindows = new Map()
         for (const pair of self.followPairs) {
           const { level, stayingView, movingView, toMate, mateAssembly } = pair
-          const blocks = written.has(stayingView)
-            ? untracked(() => stayingView.dynamicBlocks.contentBlocks)
-            : stayingView.dynamicBlocks.contentBlocks
-          const windows = followAnchorWindows(blocks)
+          // The carry subsumes `written` for the row it covers: a row this pass
+          // placed across several contigs is not read at all, so there is no
+          // read to take untracked.
+          const carried = placed.get(stayingView)
+          const windows =
+            carried ??
+            followAnchorWindows(
+              written.has(stayingView)
+                ? untracked(() => stayingView.dynamicBlocks.contentBlocks)
+                : stayingView.dynamicBlocks.contentBlocks,
+            )
           const window = windows[0]
           // The multi-contig rung, recomputed here rather than steered by the
           // settle: it chooses no block, so there is nothing cached to steer by
@@ -453,8 +496,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
               toMate,
               mateAssembly,
             })
-            if (spans.length && positionViewOnSpans(movingView, spans)) {
-              written.add(movingView)
+            if (spans.length) {
+              placed.set(movingView, followPlacedWindows(spans))
+              positionViewOnSpans(movingView, spans)
             }
             continue
           }
@@ -483,6 +527,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             mateAssembly,
             transform: pick.transform,
             map: levelStates.mapFor(level, pick.feat.id),
+            incumbentTarget: pick.target,
           })
           if (span && positionViewOnSpan(movingView, span)) {
             written.add(movingView)

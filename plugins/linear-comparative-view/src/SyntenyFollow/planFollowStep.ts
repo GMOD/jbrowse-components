@@ -47,12 +47,14 @@ export function planFollowStep({
   toMate,
   mateAssembly,
   incumbentId,
+  incumbentTarget,
 }: {
   displays: LinearSyntenyDisplayModel[]
   window: FollowWindow
   toMate: boolean
   mateAssembly?: string
   incumbentId?: string
+  incumbentTarget?: string
 }): FollowStep | undefined {
   let widest: FollowPick | undefined
   let incumbent: FollowPick | undefined
@@ -103,6 +105,12 @@ export function planFollowStep({
     // used to pay for once per improving candidate
     envelope: inside
       ? undefined
-      : followWindowMapping({ data, window, toMate, mateAssembly }),
+      : followWindowMapping({
+          data,
+          window,
+          toMate,
+          mateAssembly,
+          incumbentTarget,
+        }),
   }
 }

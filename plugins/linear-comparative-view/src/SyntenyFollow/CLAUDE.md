@@ -79,6 +79,20 @@ left the anchor showing everything and sent every row below it to whichever
 single chromosome aligned to that widest one. Reported on grape/peach/cacao, and
 it is not specific to that command: any overview did it.
 
+**Rung 2's target contig is a vote, and the vote carries the block pick's
+margin.** A window wider than one alignment reaches several of the mate's
+contigs, and `followWindowsMapping` picks the one most of the window aligns to.
+A fusion is the case that breaks a bare comparison: the anchor's contig is two
+of the mate's laid end to end, so panning across the join moves summed overlap
+from one to the other and the two are equal at the join itself — the answer
+flipped chromosome on the rounding, every frame, since `followFrameSpan` re-runs
+this mapping per frame once the window is past its block. `preferIncumbent`
+holds it at the same 1.5x used for the block. The incumbent is
+`LevelPick.target`, where the last settle placed the row, so it dies with the
+pick — a rung-3 pass or a held row clears it and the next window chooses freely
+— and an incumbent no block under the window reaches totals zero, so it cannot
+hold the answer on the bias alone.
+
 **Every visible contig is asked, not the two outer edges.** Mapping the leftmost
 and rightmost visible bp is the obvious cheaper spelling and is wrong whenever
 the two assemblies order their contigs differently — which the multiway demo
@@ -150,6 +164,29 @@ An alignment relates one pair of rows, so the follow propagates one level at a
 time and an interior row is both an output and an input. `followPairs` sorts by
 `followDirection`'s `distance`, not `level.level`; the two coincide only when
 the anchor is the top row.
+
+**An interior row is read as the answer it was PLACED ON, never as what it ends
+up showing.** `PlacedWindows` carries that answer across the pass, and the two
+differ only at rung 3 — where placing a row on chr1 and chr9 also puts
+chr2..chr8 on its screen, because a row lays its regions end to end and no
+placement can decline the filler. Read back off the blocks that filler is a
+window like any other: the same size as the two that mapped, so
+`MIN_SHARE_OF_WIDEST` keeps every one, and each maps somewhere of its own at the
+next level. The union there widens to reach those, the level beyond inherits the
+wider set, and it compounds — a two-contig answer left the far row of a
+three-row stack on the whole genome. `installSyntenyFollow.test.ts` measures it
+as nine chromosomes against the three the carry keeps.
+
+The carry is **not filtered against what the moving row can show**,
+deliberately: the fetch keeps a block only when both ends are in view, so a
+carried window on a contig the row is not displaying has nothing loaded under it
+and maps to nothing. And a carried row's blocks are not read AT ALL, which is
+the frame pass's own untracked-read rule arrived at from the other side — what
+re-asserts a hand-nudged interior row is the level's fetch key, which names both
+rows, exactly as it is for rung 3's moving row.
+
+The mechanism, stated without the genomics:
+`agent-docs/mechanisms/carry-the-decision-not-the-rendered-state.md`.
 
 ## `planLevel` is the only place observables are read
 

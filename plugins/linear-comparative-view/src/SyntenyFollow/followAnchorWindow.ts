@@ -77,6 +77,49 @@ export function followAnchorWindows(blocks: ContentBlock[]): FollowWindow[] {
 }
 
 /**
+ * The windows the level BEYOND this one reads off a row this pass has just
+ * placed: the spans it was placed on, unioned per refName.
+ *
+ * A row placed across an interval of its own layout shows every contig between
+ * the leftmost mapped one and the rightmost — chr2..chr8 for a fusion answering
+ * on chr1 and chr9 — and a row lays its regions end to end, so that filler is
+ * not something the follow can decline to show. What it can decline to do is
+ * READ IT BACK AS INPUT. Off the row's blocks a filler chromosome is
+ * indistinguishable from a mapped one, clears `MIN_SHARE_OF_WIDEST` comfortably
+ * at chromosome sizes, and so earns its own vote and its own span at the next
+ * level — whose union then reaches wherever THAT maps, pulling in more filler
+ * still. It compounds per level: a two-contig answer on a three-row stack was
+ * enough to leave the far row on the whole genome.
+ *
+ * PER REFNAME because `followWindowsMapping` slots blocks by refName id and two
+ * windows sharing one collide on that slot, so the later takes every block and
+ * the earlier answers nothing. Several synteny tracks on a level produce that
+ * routinely — each contributes its own span per contig.
+ *
+ * NO SHARE FLOOR, unlike the blocks form. A small span is a small alignment,
+ * which is a fact about the data; a 2px contig is a neighbour being scrolled
+ * off, which is a fact about the drag. A span on a contig the moving row cannot
+ * show needs no filtering either: the synteny fetch keeps a block only when
+ * both ends are in view, so the next level has nothing loaded under such a
+ * window and it maps to nothing.
+ */
+export function followPlacedWindows(spans: FollowWindow[]): FollowWindow[] {
+  const byRefName = new Map<string, FollowWindow>()
+  for (const { refName, start, end } of spans) {
+    const prev = byRefName.get(refName)
+    if (prev) {
+      prev.start = Math.min(prev.start, start)
+      prev.end = Math.max(prev.end, end)
+    } else {
+      byRefName.set(refName, { refName, start, end })
+    }
+  }
+  return [...byRefName.values()]
+    .sort((a, b) => b.end - b.start - (a.end - a.start))
+    .slice(0, MAX_WINDOWS)
+}
+
+/**
  * The one window a single-contig follow reads off the anchor panel: the widest
  * by SCREEN px, which is what the eye picks as "where the view is" and stays
  * true across contigs differing in size by orders of magnitude.

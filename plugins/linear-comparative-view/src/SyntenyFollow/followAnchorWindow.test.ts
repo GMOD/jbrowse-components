@@ -1,6 +1,7 @@
 import {
   followAnchorWindow,
   followAnchorWindows,
+  followPlacedWindows,
 } from './followAnchorWindow.ts'
 
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -158,5 +159,56 @@ describe('a sliver beside a full panel', () => {
         ),
       ]).map(w => w.refName),
     ).toEqual(['chr1', 'chr2'])
+  })
+})
+
+// The windows for the level BEYOND a row this pass placed, which are the spans
+// it was placed ON rather than the contigs it ended up showing. A row spanning
+// two mapped contigs also shows every contig between them, and read back off
+// the blocks that filler is a window like any other — one that maps somewhere
+// of its own and widens the next level's answer to reach it.
+describe('the windows carried to the next level', () => {
+  test('are the mapped contigs, not the ones an interval had to span', () => {
+    // what the row shows is chr1..chr9; what mapped is the two ends
+    expect(
+      followPlacedWindows([
+        { refName: 'chr1', start: 0, end: 1000 },
+        { refName: 'chr9', start: 500, end: 900 },
+      ]).map(w => w.refName),
+    ).toEqual(['chr1', 'chr9'])
+  })
+
+  test('one contig answered by two tracks is one window', () => {
+    // `followWindowsMapping` slots blocks by refName id, so a second window on
+    // one refName takes the slot and the first answers nothing
+    expect(
+      followPlacedWindows([
+        { refName: 'chr1', start: 200, end: 800 },
+        { refName: 'chr1', start: 100, end: 400 },
+      ]),
+    ).toEqual([{ refName: 'chr1', start: 100, end: 800 }])
+  })
+
+  test('a small mapped span is kept where a small block is not', () => {
+    // no share floor here: a 100bp span is a small alignment, which is a fact
+    // about the data, where a 2px block is a contig being scrolled off
+    expect(
+      followPlacedWindows([
+        { refName: 'chr1', start: 0, end: 1_000_000 },
+        { refName: 'chr9', start: 0, end: 100 },
+      ]).map(w => w.refName),
+    ).toEqual(['chr1', 'chr9'])
+  })
+
+  test('the count is capped the same way, keeping the widest', () => {
+    const windows = followPlacedWindows(
+      Array.from({ length: 200 }, (_, i) => ({
+        refName: `ctg${i}`,
+        start: 0,
+        end: i + 1,
+      })),
+    )
+    expect(windows).toHaveLength(64)
+    expect(windows[0]).toMatchObject({ refName: 'ctg199' })
   })
 })

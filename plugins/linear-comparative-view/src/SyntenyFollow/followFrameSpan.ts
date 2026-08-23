@@ -43,6 +43,7 @@ export function followFrameSpan({
   mateAssembly,
   transform,
   map,
+  incumbentTarget,
 }: {
   feat: FeatPos
   data: SyntenyFeatureData
@@ -51,10 +52,17 @@ export function followFrameSpan({
   mateAssembly?: string
   transform?: FollowTransform
   map?: SyntenyCigarMapResult
+  incumbentTarget?: string
 }): ResolvedSpan | undefined {
   return windowInsideFeat(feat, window, toMate)
     ? ((map ? cigarMapSpan({ feat, map, window, toMate }) : undefined) ??
         (transform ? applyFollowTransform(transform, window) : undefined) ??
         interpolateFollowSpan({ feat, window, toMate }))
-    : followWindowMapping({ data, window, toMate, mateAssembly })
+    : followWindowMapping({
+        data,
+        window,
+        toMate,
+        mateAssembly,
+        incumbentTarget,
+      })
 }

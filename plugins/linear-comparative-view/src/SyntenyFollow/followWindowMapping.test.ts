@@ -184,3 +184,57 @@ describe('several windows at once', () => {
     ).toEqual(windows.map(w => map(genome, w)))
   })
 })
+
+// A FUSION: the anchor's one contig is two of the mate's laid end to end, so a
+// window panned across the join moves summed overlap from one target to the
+// other and the two are equal at the join itself. Without a margin the vote
+// flips there on rounding — and a flip is a jump to another chromosome, run by
+// the frame pass on every frame of the pan.
+describe('the target vote across a fusion join', () => {
+  const fusion = data([
+    { start: 0, end: 500_000, mateStart: 0, mateEnd: 500_000 },
+    {
+      start: 500_000,
+      end: 1_000_000,
+      mateRefName: 'Pp09',
+      mateStart: 0,
+      mateEnd: 500_000,
+    },
+  ])
+
+  const vote = (w: FollowWindow, incumbentTarget?: string) =>
+    followWindowMapping({
+      data: fusion,
+      window: w,
+      toMate: true,
+      incumbentTarget,
+    })?.refName
+
+  test('tips with the summed overlap when nothing is incumbent', () => {
+    expect(vote(win(290_000, 700_000))).toBe('Pp01')
+    expect(vote(win(310_000, 700_000))).toBe('Pp09')
+  })
+
+  test('a 20kb pan does not move the row to another chromosome', () => {
+    expect(vote(win(310_000, 700_000), 'Pp01')).toBe('Pp01')
+  })
+
+  test('and the margin holds the other way round too', () => {
+    expect(vote(win(290_000, 700_000), 'Pp09')).toBe('Pp09')
+  })
+
+  test('a window that has really moved onto the other side switches', () => {
+    // 5:1 against the incumbent, well past the margin
+    expect(vote(win(400_000, 1_000_000), 'Pp01')).toBe('Pp09')
+  })
+
+  test('an incumbent the window has left cannot hold the answer', () => {
+    // the blocks are all off this window's left end, so the target exists with
+    // nothing aligned under the window and must not win on the bias alone
+    expect(vote(win(600_000, 700_000), 'Pp01')).toBe('Pp09')
+  })
+
+  test('an incumbent no block names is simply not there', () => {
+    expect(vote(win(310_000, 700_000), 'Pp22')).toBe('Pp09')
+  })
+})
