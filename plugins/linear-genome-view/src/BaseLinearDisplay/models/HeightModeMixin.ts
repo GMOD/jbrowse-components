@@ -1,5 +1,5 @@
 import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 

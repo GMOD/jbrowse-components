@@ -1,5 +1,4 @@
-import { getSession } from './index.ts'
-import { getRpcSessionId } from './tracks.ts'
+import { getRpcSessionId, getSession } from './mstUtils.ts'
 
 import type { RpcCallArgs, RpcCallReturn } from '../rpc/RpcRegistry.ts'
 import type { StatusCallback } from './progress.ts'

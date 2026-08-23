@@ -1,4 +1,4 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { reaction } from 'mobx'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'

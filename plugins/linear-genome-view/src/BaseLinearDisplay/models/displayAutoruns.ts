@@ -1,5 +1,5 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
+import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 

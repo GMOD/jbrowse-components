@@ -1,21 +1,21 @@
 import { noteFetchStarted } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
+import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
+import { makeFetchContext } from '@jbrowse/core/util/fetchContext'
+import { runFetchOnce } from '@jbrowse/core/util/installFetch'
+import { localStorageGetBoolean } from '@jbrowse/core/util/localStorage'
 import {
   createStatusWindow,
-  createStopTokenRotation,
-  localStorageGetBoolean,
   progressLabel,
   statusFraction,
   statusMessageText,
-} from '@jbrowse/core/util'
-import { makeFetchContext } from '@jbrowse/core/util/fetchContext'
-import { runFetchOnce } from '@jbrowse/core/util/installFetch'
+} from '@jbrowse/core/util/progress'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
-import type { RpcStatus } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
+import type { RpcStatus } from '@jbrowse/core/util/progress'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 

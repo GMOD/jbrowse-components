@@ -3,7 +3,7 @@ import {
   makeRetryContractCheck,
   takeFetchStarted,
 } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
+import { getContainingTrack, getSession } from '@jbrowse/core/util/mstUtils'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { untracked } from 'mobx'
@@ -21,7 +21,7 @@ import {
 } from './planRegionFetch.ts'
 
 import type { IndexedRegion } from './planRegionFetch.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**

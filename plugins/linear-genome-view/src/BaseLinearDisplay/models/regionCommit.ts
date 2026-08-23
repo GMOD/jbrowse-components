@@ -1,7 +1,7 @@
 import { getType } from '@jbrowse/mobx-state-tree'
 
 import type { FetchContext } from './FetchMixin.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // This ESM package builds without @types/node, but consuming bundlers still

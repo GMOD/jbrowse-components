@@ -4,10 +4,15 @@
 // getter that fires before its own require has run.
 export { getFileName } from './getFileName.ts'
 
+// Lives in `./mstUtils.ts` with the rest of the tree walks, and is re-exported
+// here because `@jbrowse/core/util/tracks` is a plugin ABI module that offers
+// it. `fetchContext.ts` takes it from mstUtils instead, which is what keeps the
+// configuration schemas this file pulls in out of the fetch harness's graph.
+export { getRpcSessionId } from './mstUtils.ts'
+
 import {
   getParent,
   getSnapshot,
-  isRoot,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
@@ -154,39 +159,6 @@ export function getConfAssemblyNames(conf: AnyConfigurationModel) {
     }
   }
   return trackAssemblyNames
-}
-
-/**
- * The `rpcSessionId` of the highest node at or above `thisNode` that declares
- * one — which webworker its work is routed to.
- *
- * The walk includes the root. It used to stop *before* it (`!isRoot(node)` as
- * the loop condition), which silently made a tree whose only rpcSessionId-
- * bearing node was the root throw "no parent node in the state tree has an
- * `rpcSessionId`". Nothing in the app hit that — the id lives on a track, deep
- * in the tree — but a test building a minimal session had to wrap it in a
- * throwaway root purely to dodge this.
- */
-export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
-  interface NodeWithRpcSessionId extends IStateTreeNode {
-    rpcSessionId: string
-  }
-  let highestRpcSessionId: string | undefined
-
-  for (let node = thisNode; ; node = getParent<IAnyStateTreeNode>(node)) {
-    if ('rpcSessionId' in node) {
-      highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
-    }
-    if (isRoot(node)) {
-      break
-    }
-  }
-  if (!highestRpcSessionId) {
-    throw new Error(
-      'getRpcSessionId failed, no parent node in the state tree has an `rpcSessionId` attribute',
-    )
-  }
-  return highestRpcSessionId
 }
 
 export const UNKNOWN = 'UNKNOWN'

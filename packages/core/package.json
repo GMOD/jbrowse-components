@@ -160,6 +160,7 @@
     "./util/colord": "./src/util/colord.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/copyText": "./src/util/copyText.ts",
+    "./util/createStopTokenRotation": "./src/util/createStopTokenRotation.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/eventPoint": "./src/util/eventPoint.ts",
     "./util/fetchContext": "./src/util/fetchContext.ts",
@@ -180,6 +181,7 @@
     "./util/installInitAutorun": "./src/util/installInitAutorun.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
+    "./util/isDataCurrent": "./src/util/isDataCurrent.ts",
     "./util/jexl": "./src/util/jexl.ts",
     "./util/jexlFilters": "./src/util/jexlFilters.ts",
     "./util/jexlStrings": "./src/util/jexlStrings.ts",
@@ -188,7 +190,9 @@
     "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
     "./util/leadingEdgeAutorun": "./src/util/leadingEdgeAutorun.ts",
     "./util/librpc": "./src/util/librpc.ts",
+    "./util/localStorage": "./src/util/localStorage.ts",
     "./util/makeAssembly": "./src/util/makeAssembly.ts",
+    "./util/mstUtils": "./src/util/mstUtils.ts",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
@@ -209,6 +213,7 @@
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
     "./util/types": "./src/util/types/index.ts",
+    "./util/types/data": "./src/util/types/data.ts",
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/unzip": "./src/util/unzip.ts",
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
@@ -836,6 +841,10 @@
         "types": "./esm/util/copyText.d.ts",
         "import": "./esm/util/copyText.js"
       },
+      "./util/createStopTokenRotation": {
+        "types": "./esm/util/createStopTokenRotation.d.ts",
+        "import": "./esm/util/createStopTokenRotation.js"
+      },
       "./util/diagonalizeRegions": {
         "types": "./esm/util/diagonalizeRegions.d.ts",
         "import": "./esm/util/diagonalizeRegions.js"
@@ -916,6 +925,10 @@
         "types": "./esm/util/io/RemoteFileWithRangeCache.d.ts",
         "import": "./esm/util/io/RemoteFileWithRangeCache.js"
       },
+      "./util/isDataCurrent": {
+        "types": "./esm/util/isDataCurrent.d.ts",
+        "import": "./esm/util/isDataCurrent.js"
+      },
       "./util/jexl": {
         "types": "./esm/util/jexl.d.ts",
         "import": "./esm/util/jexl.js"
@@ -948,9 +961,17 @@
         "types": "./esm/util/librpc.d.ts",
         "import": "./esm/util/librpc.js"
       },
+      "./util/localStorage": {
+        "types": "./esm/util/localStorage.d.ts",
+        "import": "./esm/util/localStorage.js"
+      },
       "./util/makeAssembly": {
         "types": "./esm/util/makeAssembly.d.ts",
         "import": "./esm/util/makeAssembly.js"
+      },
+      "./util/mstUtils": {
+        "types": "./esm/util/mstUtils.d.ts",
+        "import": "./esm/util/mstUtils.js"
       },
       "./util/nanoid": {
         "types": "./esm/util/nanoid.d.ts",
@@ -1031,6 +1052,10 @@
       "./util/types": {
         "types": "./esm/util/types/index.d.ts",
         "import": "./esm/util/types/index.js"
+      },
+      "./util/types/data": {
+        "types": "./esm/util/types/data.d.ts",
+        "import": "./esm/util/types/data.js"
       },
       "./util/types/mst": {
         "types": "./esm/util/types/mst.d.ts",
@@ -1515,6 +1540,9 @@
         "util/copyText": [
           "esm/util/copyText.d.ts"
         ],
+        "util/createStopTokenRotation": [
+          "esm/util/createStopTokenRotation.d.ts"
+        ],
         "util/diagonalizeRegions": [
           "esm/util/diagonalizeRegions.d.ts"
         ],
@@ -1575,6 +1603,9 @@
         "util/io/RemoteFileWithRangeCache": [
           "esm/util/io/RemoteFileWithRangeCache.d.ts"
         ],
+        "util/isDataCurrent": [
+          "esm/util/isDataCurrent.d.ts"
+        ],
         "util/jexl": [
           "esm/util/jexl.d.ts"
         ],
@@ -1599,8 +1630,14 @@
         "util/librpc": [
           "esm/util/librpc.d.ts"
         ],
+        "util/localStorage": [
+          "esm/util/localStorage.d.ts"
+        ],
         "util/makeAssembly": [
           "esm/util/makeAssembly.d.ts"
+        ],
+        "util/mstUtils": [
+          "esm/util/mstUtils.d.ts"
         ],
         "util/nanoid": [
           "esm/util/nanoid.d.ts"
@@ -1661,6 +1698,9 @@
         ],
         "util/types": [
           "esm/util/types/index.d.ts"
+        ],
+        "util/types/data": [
+          "esm/util/types/data.d.ts"
         ],
         "util/types/mst": [
           "esm/util/types/mst.d.ts"

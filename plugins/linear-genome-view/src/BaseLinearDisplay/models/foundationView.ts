@@ -1,4 +1,4 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util/mstUtils'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

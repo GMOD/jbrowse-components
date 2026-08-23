@@ -1,4 +1,4 @@
-import { isDataCurrent } from '@jbrowse/core/util'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 

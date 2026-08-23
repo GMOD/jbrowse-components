@@ -1,4 +1,4 @@
-import type { Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types/data'
 
 /** A region paired with the index that joins it to the display's data map. */
 export interface IndexedRegion {

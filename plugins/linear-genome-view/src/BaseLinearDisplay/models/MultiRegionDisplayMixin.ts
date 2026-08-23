@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util/mstUtils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
@@ -20,7 +20,7 @@ import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { Region } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util/types/data'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 export type { FetchContext } from './FetchMixin.ts'
@@ -233,6 +233,28 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * Overridable hook (default false): the held data is loaded and covers
+         * the viewport, but a fetch input this display has *already settled on*
+         * has moved past it — so the data is about to be cleared and refetched.
+         * A display says so here rather than overriding `dataCurrent`, for the
+         * reason `FetchMixin.fetchInert` is a hook: an override has to restate
+         * the freshness terms and then misses the next one added.
+         *
+         * On screen this window is invisible (the clear lands a tick later and
+         * the loading scrim covers it), which is exactly why it needs saying:
+         * `awaitSvgReady` samples freshness once, and an export that samples it
+         * inside this window renders the data that is about to be discarded —
+         * or, once the clear lands mid-render, nothing at all. GWAS's LD
+         * auto-index is the case: adopting the top hit as the index SNP is an
+         * `rpcProps` change, so the very load that produced the top hit is what
+         * it invalidates.
+         */
+        get dataSuperseded(): boolean {
+          return false
+        },
+
+        /**
+         * #getter
          * Shared cached view for every LGV-based GPU display. A single
          * displayedRegion may produce multiple render blocks (shared GPU
          * buffer, different scissor clips on screen). Plugins that want to
@@ -264,9 +286,17 @@ export default function MultiRegionDisplayMixin() {
          *
          * Distinct from `viewportWithinLoadedData`, which is the raw coverage
          * predicate the fetch autorun and the loading overlay use.
+         *
+         * `dataSuperseded` is the third term: data that a settled fetch-input
+         * change is about to invalidate answers nothing about what is on screen
+         * a tick from now, so it is not current either.
          */
         get dataCurrent(): boolean {
-          return self.viewportWithinLoadedData && self.loadedRegions.size > 0
+          return (
+            self.viewportWithinLoadedData &&
+            self.loadedRegions.size > 0 &&
+            !self.dataSuperseded
+          )
         },
 
         /**
