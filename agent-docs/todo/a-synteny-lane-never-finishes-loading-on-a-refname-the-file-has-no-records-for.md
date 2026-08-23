@@ -39,8 +39,8 @@ display waiting on a fetch look identical from the frame.
 
 Attribution note: seen against a `products/jbrowse-web/build` from 2026-08-23
 09:25, which **predates** that day's byte-gating changes in
-`packages/core/src/rpc/byteBudget.ts` and
-`plugins/canvas/src/RenderFeatureDataRPC/byteGate.ts` (12:26 onward). So it is
+`packages/core/src/rpc/byteBudget.ts` (12:26 onward; the canvas-side byte
+gate it replaced is gone since). So it is
 not those, and it may or may not still reproduce on a fresh build — rebuild
 before attributing.
 

@@ -456,8 +456,8 @@ so only it is untouched by ADR-078:
   invalidates renderState, not just the size gate" pins it.
 - **`LinearManhattanDisplay`** passes `self.rpcDataMap` into `renderBlocks`,
   where the renderer `.get()`s per block inside the render autorun.
-- **The wiggle family** through `renderState` → `domain` → `visibleScoreStats` →
-  `visibleEntries` (`WiggleCommonMixin`), which reads `rpcDataMap.size` and
+- **The wiggle family** through `renderState` → `domain` →
+  `visibleStatsDomain` (`WiggleCommonMixin`), which reads `rpcDataMap.size` and
   `.get()`.
 
 Two things that already coalesce correctly, so don't "fix" them:
@@ -981,16 +981,11 @@ file rather than being attributed wrongly.
 **Now checked** (dev-only; every one but the retry contract at the end reports
 only on a real violation):
 
-- **A renamed or removed gate hook must not be left overridden.**
-  `RegionTooLargeMixin`'s `afterAttach` reads `getMembers(self)` against three
-  maps — the names renamed in 2026-08 (`byteGateEnabled` → `gateEnabled` and the
-  rest), and the pre-flight members deleted when the gate collapsed onto one
-  measurement path (`measuresBytesPreFlight`, `byteGateBlocksFetch`) — and
-  reports any it finds. Same failure as the compose-order case
-  and reached a different way: an out-of-tree display's override lands on a
-  getter nothing reads, so the gate stays off and the track downloads unguarded.
-  **The general move: a rename of an opt-in is only safe if it is louder than the
-  thing it renamed** — extend the map before renaming the next one.
+- **A renamed gate hook leaves an override reading nothing.** In tree the hook
+  table's generator asserts every hook is still declared by the file owning
+  its default; out of tree nothing reports it — the dev-only reporter that
+  did was compatibility scaffolding and went with the one-path gate
+  (2026-08-23). A renamed opt-in is a breaking change.
 - **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
   lifecycle hooks, so capturing and calling it double-installs all five autoruns
   (`models/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
