@@ -157,7 +157,7 @@ two, under a header naming the columns, is the whole difference between the
     }' repeats.out
 } > rmsk.bed
 
-# `sort-bed` puts the #-header on top and sorts the rest under LC_ALL=C
+# `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C, header kept on top
 jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
 tabix -p bed rmsk.bed.gz
 ```

@@ -68,12 +68,12 @@ const registry: {
   },
   {
     name: 'sort-gff',
-    summary: 'Helper utility to sort GFF files for tabix',
+    summary: 'Sort a GFF/GTF for tabix: sort -k1,1 -k4,4n, header kept on top',
     run: sortGffRun,
   },
   {
     name: 'sort-bed',
-    summary: 'Helper utility to sort BED files for tabix',
+    summary: 'Sort a BED for tabix: sort -k1,1 -k2,2n, header kept on top',
     run: sortBedRun,
   },
   {

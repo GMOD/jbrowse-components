@@ -186,8 +186,8 @@ plink --bfile common --allow-extra-chr --keep keep.CMgam.txt \
 
 # awk retabs plink's space-padded columns and comments the header — commented
 # rather than skipped with `tabix -S 1`, since only a commented one comes back
-# from -H. `jbrowse sort-bed` then does for the .ld what it does for a BED: the
-# `#` line on top, the rest sorted on those same two columns under LC_ALL=C.
+# from -H. `sort-bed` is then just `sort -k1,1 -k2,2n` under LC_ALL=C with that
+# `#` line kept on top, which is what a .ld wants too: same first two columns.
 awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' ag1000g_2L_CMgam.ld |
   jbrowse sort-bed | bgzip > ag1000g_2L_CMgam.ld.gz
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.ld.gz

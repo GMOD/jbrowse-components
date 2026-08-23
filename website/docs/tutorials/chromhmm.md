@@ -79,8 +79,9 @@ per-cell-type BEDs:
   done
 } > multirow.bed
 
-# `sort-bed` moves the #-defline to the top and sorts the rest under LC_ALL=C,
-# which is the order tabix wants and the one a bare `sort` gets wrong elsewhere
+# `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C with the #-defline kept on
+# top: the order tabix wants, and the one a bare `sort` gets wrong in any other
+# locale
 jbrowse sort-bed multirow.bed | bgzip > multirow.bed.gz
 tabix -p bed multirow.bed.gz
 ```

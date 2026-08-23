@@ -22,7 +22,7 @@ export interface SortConfig {
 
 export const BED_CONFIG: SortConfig = {
   description:
-    'Helper utility to sort BED files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep',
+    'Sort a BED file for tabix. It is `sort -k1,1 -k2,2n` with LC_ALL=C and a tab separator, plus every line starting with # kept at the top rather than sorted into the data. Takes a file, or the same data on stdin',
   examples: [
     '# sort bed and pipe to bgzip',
     '$ jbrowse sort-bed input.bed | bgzip > sorted.bed.gz',
@@ -36,7 +36,7 @@ export const BED_CONFIG: SortConfig = {
 
 export const GFF_CONFIG: SortConfig = {
   description:
-    'Helper utility to sort GFF (and GTF, which shares the same refname/start column layout) files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep',
+    'Sort a GFF or GTF for tabix — the two share a refname/start column layout. It is `sort -k1,1 -k4,4n` with LC_ALL=C and a tab separator, plus every line starting with # kept at the top rather than sorted into the data. Takes a file, or the same data on stdin',
   examples: [
     '# sort gff and pipe to bgzip',
     '$ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz',

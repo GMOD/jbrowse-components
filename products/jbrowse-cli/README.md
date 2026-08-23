@@ -59,8 +59,8 @@ COMMANDS
   admin-server         Start up a small admin server for JBrowse configuration
   upgrade              Upgrades JBrowse 2 to latest version
   make-pif             Creates pairwise indexed PAF (PIF), with bgzip and tabix
-  sort-gff             Helper utility to sort GFF files for tabix
-  sort-bed             Helper utility to sort BED files for tabix
+  sort-gff             Sort a GFF/GTF for tabix: sort -k1,1 -k4,4n, header kept on top
+  sort-bed             Sort a BED for tabix: sort -k1,1 -k2,2n, header kept on top
   add-connection       Add a connection to a JBrowse 2 configuration
   add-track-json       Add a track configuration directly from a JSON hunk
   remove-track         Remove a track configuration from a JBrowse 2 configuration
@@ -485,8 +485,8 @@ skipped even when indexing all tracks or a whole assembly, so you do not have to
 pass --excludeTracks on every run.
 
 Only tracks with an indexable adapter type (Gff3Adapter, Gff3TabixAdapter,
-GtfAdapter, VcfAdapter, VcfTabixAdapter) are indexed; tracks with other adapter
-types are skipped automatically.
+GtfAdapter, GtfTabixAdapter, VcfAdapter, VcfTabixAdapter) are indexed; tracks
+with other adapter types are skipped automatically.
 
 GTF has no Name/ID attributes, so the default --attributes also match their GTF
 spellings (gene_name, transcript_name, gene_id, transcript_id).
@@ -652,9 +652,10 @@ $ jbrowse make-pif input.paf --no-coarse
 ## jbrowse sort-gff
 
 ```
-Helper utility to sort GFF (and GTF, which shares the same refname/start column
-layout) files for tabix. Moves all lines starting with # to the top of the file,
-and sort by refname and start position using unix utilities sort and grep
+Sort a GFF or GTF for tabix — the two share a refname/start column layout. It is
+`sort -k1,1 -k4,4n` with LC_ALL=C and a tab separator, plus every line starting
+with # kept at the top rather than sorted into the data. Takes a file, or the
+same data on stdin
 
 Usage: jbrowse sort-gff [file] [options]
 
@@ -678,9 +679,9 @@ $ tabix -p gff sorted.gtf.gz
 ## jbrowse sort-bed
 
 ```
-Helper utility to sort BED files for tabix. Moves all lines starting with # to
-the top of the file, and sort by refname and start position using unix utilities
-sort and grep
+Sort a BED file for tabix. It is `sort -k1,1 -k2,2n` with LC_ALL=C and a tab
+separator, plus every line starting with # kept at the top rather than sorted
+into the data. Takes a file, or the same data on stdin
 
 Usage: jbrowse sort-bed [file] [options]
 
