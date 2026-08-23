@@ -32,8 +32,7 @@ window you cut and on which samples went in.
 called natively on GRCh38, so no liftover sits between the calls and the hg38
 coordinates the figures use.
 
-- phased chromosome 2, which the commands slice to a 3.4 Mb region and call
-  `$CALLSET`:
+- phased chromosome 2, which the commands slice to a 3.4 Mb region:
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 - the release's own unrelated set, whose SAMPLE_NAME column is
   `unrelated.samples`. Relatives share long haplotypes for reasons that have
@@ -122,7 +121,8 @@ it:
 # -S is one sample name per line; -e drops the symbolic SV records, which are
 # spans rather than the allele indicators the display correlates.
 bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
-  -e 'ALT[0]~"<"' -Oz -o pooled.vcf.gz "$CALLSET"
+  -e 'ALT[0]~"<"' -Oz -o pooled.vcf.gz \
+  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 tabix -p vcf pooled.vcf.gz
 ```
 
@@ -389,9 +389,16 @@ frequencies the six populations were chosen for.
   [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
 
 [^plink]:
-    PLINK 1.9 installs as `plink`, and Debian and Ubuntu package that build as
-    plink1.9. PLINK 2.0 is a separate program with its own plink2 binary, where
-    `--r2` splits in two: `--r2-unphased` is the genotypic correlation 1.9
-    computes, and `--r2-phased` is the haplotypic one an `LDDisplay` computes,
-    so on a phased VCF that second spelling puts the table and the triangle on
-    the same footing. Every other flag in these commands keeps its name in 2.0.
+    The commands here are PLINK 1.9's, whose binary is `plink`; Debian and
+    Ubuntu package that build as plink1.9. PLINK 2.0 installs a separate
+    `plink2` binary, which asks which r² is meant, so running the same command
+    there is one flag different:
+
+    - `plink --r2` → `plink2 --r2-unphased` prints what 1.9 prints, r² between
+      genotype allele counts.
+    - `plink --r2` → `plink2 --r2-phased` prints the haplotypic r² an
+      `LDDisplay` computes, which is the one that can be read against the
+      triangle cell by cell.
+
+    Every flag around it is spelled the same in 2.0, `--ld-snp`, `--maf`,
+    `--set-missing-var-ids` and the `--ld-window` trio included.
