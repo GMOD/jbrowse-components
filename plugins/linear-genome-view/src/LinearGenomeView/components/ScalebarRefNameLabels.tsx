@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
+import { assembleLocString } from '@jbrowse/core/util'
+import { copyText } from '@jbrowse/core/util/copyText'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -202,6 +204,27 @@ const RefNameMenu = observer(function RefNameMenu({
               { index: idx, offset: region.end - region.start },
             )
           },
+        },
+        {
+          label: 'Copy to clipboard',
+          subMenu: [
+            {
+              label: 'Reference sequence name',
+              onClick: () => {
+                void copyText(model, refName, 'reference sequence name')
+              },
+            },
+            {
+              label: 'Region',
+              onClick: () => {
+                void copyText(
+                  model,
+                  assembleLocString(displayedRegions[idx]!),
+                  'region',
+                )
+              },
+            },
+          ],
         },
         {
           label: 'Actions',
