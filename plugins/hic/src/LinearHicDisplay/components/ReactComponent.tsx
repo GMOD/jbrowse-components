@@ -18,22 +18,30 @@ function formatLocus(data: HicDataResult, regionIdx: number, bin: number) {
   return `${refName}:${toLocale(start + 1)}-${toLocale(end)}`
 }
 
+// Strings, not the payload the loci were read off. React's dev-only component
+// performance track diffs a changed prop by walking it, and a typed array is
+// walked element by element (react-dom `addObjectToProperties`), so passing
+// `rpcData` here spent ~6s and ~1GB per refetch-under-the-cursor enumerating
+// `instances`. Nothing reads a whole payload through a prop anymore; keep it
+// that way.
 function HicTooltip({
-  item,
-  data,
+  locus1,
+  locus2,
+  counts,
   x,
   y,
 }: {
-  item: NonNullable<ReturnType<LinearHicDisplayModel['hitTest']>>
-  data: HicDataResult
+  locus1: string
+  locus2: string
+  counts: number
   x: number
   y: number
 }) {
   return (
     <BaseTooltip clientPoint={{ x, y }}>
-      <div>{formatLocus(data, item.region1Idx, item.bin1)}</div>
-      <div>{formatLocus(data, item.region2Idx, item.bin2)}</div>
-      <div>Score: {reducePrecision(item.counts)}</div>
+      <div>{locus1}</div>
+      <div>{locus2}</div>
+      <div>Score: {reducePrecision(counts)}</div>
     </BaseTooltip>
   )
 }
@@ -169,8 +177,9 @@ const HicBody = observer(function HicBody({
           />
           {item && model.rpcData ? (
             <HicTooltip
-              item={item}
-              data={model.rpcData}
+              locus1={formatLocus(model.rpcData, item.region1Idx, item.bin1)}
+              locus2={formatLocus(model.rpcData, item.region2Idx, item.bin2)}
+              counts={item.counts}
               x={mouseState.clientX}
               y={mouseState.clientY}
             />
