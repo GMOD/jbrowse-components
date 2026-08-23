@@ -18,7 +18,7 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
     gap: 4,
-    height: HEADER_BAR_HEIGHT,
+    minHeight: HEADER_BAR_HEIGHT,
   },
   spacer: {
     flexGrow: 1,

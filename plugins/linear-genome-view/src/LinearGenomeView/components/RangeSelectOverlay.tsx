@@ -4,6 +4,7 @@ import { Menu } from '@jbrowse/core/ui'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { stickyChromeTops } from '../stickyChrome.ts'
 import VerticalGuide from './VerticalGuide.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -22,7 +23,8 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
   range: ReturnType<typeof useRangeSelect>
   menuOffsetX?: number
 }) {
-  const { stickyViewHeaders, rubberbandTop, isScalebarRefNameMenuOpen } = model
+  const { stickyViewHeaders, headerHeight, isScalebarRefNameMenuOpen } = model
+  const { scalebar } = stickyChromeTops({ stickyViewHeaders, headerHeight })
   const {
     guideX,
     rubberbandOn,
@@ -45,7 +47,7 @@ const RangeSelectOverlay = observer(function RangeSelectOverlay({
             left={rubberband.left}
             width={rubberband.width}
             viewWidth={model.width}
-            stickyTop={stickyViewHeaders ? rubberbandTop : undefined}
+            stickyTop={scalebar}
             leftLabel={stringify(rubberband.leftBpOffset)}
             rightLabel={stringify(rubberband.rightBpOffset)}
             size={getBpDisplayStr(rubberband.numOfBpSelected)}

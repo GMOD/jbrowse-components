@@ -334,3 +334,58 @@ export function useScrollPortHeightVar() {
   }, [])
   return ref
 }
+
+/**
+ * Heights of the chrome boxes a sticky element below them has to clear. Each is
+ * published from a measurement rather than assumed, because the constants they
+ * default to are nominal: `VIEW_HEADER_HEIGHT` and the LGV header bar's height
+ * were written into the CSS by the pin-elements work (#4237) so that the sticky
+ * offsets summing them would be true, and a box pinned to a constant clips its
+ * own content once the root font size grows — measured on the stock theme, the
+ * view header overflows at a 18px root and the LGV controls row at 24px.
+ *
+ * So the CSS heights are minimums and these carry the truth. The fallbacks keep
+ * the nominal answer for the frame before the first measurement, and for a host
+ * that mounts no publisher.
+ */
+export const VIEW_HEADER_HEIGHT_VAR = '--jbrowse-view-header-height'
+export const LGV_HEADER_HEIGHT_VAR = '--jbrowse-lgv-header-height'
+
+/**
+ * Publishes the measured height of `ref`'s element as `varName`, set on its
+ * **parent**. The parent, not the element itself: what reads these is a sticky
+ * sibling *below* the measured box, so publishing on the box would put the
+ * property out of the reader's inheritance chain.
+ *
+ * Takes the ref rather than returning one — the boxes being measured are also
+ * the ones a view scrolls into view or hangs a gesture on, so they tend to
+ * already have one.
+ *
+ * Written straight to the node rather than through state, for the reason
+ * {@link useScrollPortHeightVar} gives — and here with the extra one that a
+ * header re-rendering on its own resize is a loop waiting for a rounding error.
+ */
+export function useChromeHeightVar(
+  ref: React.RefObject<HTMLElement | null>,
+  varName: string,
+) {
+  useEffect(() => {
+    const el = ref.current
+    const parent = el?.parentElement
+    if (!el || !parent || !('ResizeObserver' in window)) {
+      return
+    }
+    // the border box: this is a distance a sibling below has to clear, not a
+    // content area
+    const publish = () => {
+      parent.style.setProperty(varName, `${el.offsetHeight}px`)
+    }
+    publish()
+    const observer = new ResizeObserver(publish)
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+      parent.style.removeProperty(varName)
+    }
+  }, [ref, varName])
+}

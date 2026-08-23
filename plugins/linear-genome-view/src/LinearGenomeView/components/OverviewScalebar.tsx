@@ -80,7 +80,10 @@ const useStyles = makeStyles()(theme => ({
     left: 0,
   },
   overview: {
-    height: HEADER_BAR_HEIGHT,
+    // the band the "you are here" trapezoid is drawn over, and the box the
+    // controls row sits in — a minimum so the row can outgrow it, since the
+    // svg above is absolutely positioned and does not hold it open
+    minHeight: HEADER_BAR_HEIGHT,
     position: 'relative',
   },
   overviewSvg: {

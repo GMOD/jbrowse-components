@@ -118,8 +118,6 @@ the whole surface.
 | <span id="getter-assemblydisplaynames">**assemblyDisplayNames**</span><br><code>string[]</code> |  |
 | <span id="getter-istoplevelview">**isTopLevelView**</span><br><code>boolean</code> | checking if lgv is a 'top-level' view is used for toggling pin track capability, sticky positioning |
 | <span id="getter-stickyviewheaders">**stickyViewHeaders**</span><br><code>boolean</code> | only uses sticky view headers when it is a 'top-level' view and session allows it |
-| <span id="getter-rubberbandtop">**rubberbandTop**</span><br><code>number</code> |  |
-| <span id="getter-pinnedtrackstop">**pinnedTracksTop**</span><br><code>number</code> |  |
 | <span id="getter-scalebardisplayprefix">**scalebarDisplayPrefix**</span><br><code>string &#124; undefined</code> | Assembly-name prefix for the scalebar refName labels, or undefined for none. A container view (e.g. LinearSyntenyView) opts its sub-views in by exposing showAssemblyNameInSubviewScalebar; duck-typed rather than matching a concrete view type so no upward plugin dependency is needed and any container can opt in. A wrong nesting depth simply yields no prefix — hence the hasParent guard, since getParent throws (rather than returning undefined) when the view sits shallower than depth 2. |
 | <span id="getter-assembliesnotfound">**assembliesNotFound**</span><br><code>string &#124; undefined</code> |  |
 | <span id="getter-assemblyerrors">**assemblyErrors**</span><br><code>string</code> |  |
@@ -142,6 +140,8 @@ the whole surface.
 | <span id="getter-tracktrailingchrome">**trackTrailingChrome**</span><br><code>number</code> | ...and what it puts below: the resize divider, plus the matching bottom border. |
 | <span id="getter-trackchromeheight">**trackChromeHeight**</span><br><code>number</code> | A track's full cost beyond its display height.<br><br>The track *label* is not counted, and cannot be: an offset label is an in-flow box whose height is whatever the theme renders a Paper of icon buttons at — 31.140625px on the stock theme, and not a number this file can derive. So these getters are exact while labels are hidden or overlapping, and short by one label box per labelled track otherwise. Anything needing the offset to the pixel with labels showing measures the DOM; `BreakpointSplitViewOverlay` does, and falls back to this arithmetic only for a track with no mounted div. |
 | <span id="getter-headerheight">**headerHeight**</span><br><code>number</code> |  |
+| <span id="getter-rubberbandtop">**rubberbandTop**</span><br><code>number</code> | Where the scalebar pins when the view's chrome is sticky: everything stacked above it, which is the view's own title bar plus this view's header. Expressed from `headerHeight` rather than re-summing its constants — the two are the same box, and a second spelling of the sum is free to drift from the first while both typecheck. |
+| <span id="getter-pinnedtrackstop">**pinnedTracksTop**</span><br><code>number</code> |  |
 | <span id="getter-trackheights">**trackHeights**</span><br><code>number</code> |  |
 | <span id="getter-trackheightswithchrome">**trackHeightsWithChrome**</span><br><code>number</code> |  |
 | <span id="getter-height">**height**</span><br><code>number</code> |  |

@@ -56,7 +56,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function anchorStyle(stickyTop: number | undefined) {
+function anchorStyle(stickyTop: string | undefined) {
   return stickyTop === undefined
     ? ({ position: 'relative' } as const)
     : ({ position: 'sticky', top: stickyTop } as const)
@@ -90,7 +90,7 @@ export function GuideLabel({
 }: {
   coordX: number
   viewWidth: number
-  stickyTop: number | undefined
+  stickyTop: string | undefined
   children: React.ReactNode
 }) {
   const { classes, cx } = useStyles()
@@ -162,7 +162,7 @@ export function SpanEdgeLabels({
   insideLeft,
   insideRight,
 }: {
-  stickyTop: number | undefined
+  stickyTop: string | undefined
   left: React.ReactNode
   right: React.ReactNode
   insideLeft: boolean

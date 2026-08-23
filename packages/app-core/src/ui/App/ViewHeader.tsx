@@ -2,6 +2,10 @@ import { useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import {
+  VIEW_HEADER_HEIGHT_VAR,
+  useChromeHeightVar,
+} from '@jbrowse/core/util/hooks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { observer } from 'mobx-react'
@@ -21,7 +25,11 @@ const useStyles = makeStyles()(theme => ({
   },
   viewHeader: {
     display: 'flex',
-    height: VIEW_HEADER_HEIGHT,
+    // a minimum, not a height: the constant exists so the sticky boxes below
+    // can clear this one, and pinning the box to it clipped the title row at a
+    // larger root font size. `useChromeHeightVar` publishes what it actually
+    // measures, so growing here moves them rather than overlapping them
+    minHeight: VIEW_HEADER_HEIGHT,
     top: 0,
     zIndex: 900,
   },
@@ -60,6 +68,7 @@ const ViewHeader = observer(function ViewHeader({
 }) {
   const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
+  useChromeHeightVar(scrollRef, VIEW_HEADER_HEIGHT_VAR)
   const stickyViewHeaders = getSession(view).stickyViewHeaders === true
 
   // Scroll a newly-added view into view on mount. Gated on scrollOnMount so a

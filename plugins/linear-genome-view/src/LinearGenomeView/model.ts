@@ -698,30 +698,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           getSession(self).stickyViewHeaders === true && this.isTopLevelView
         )
       },
-
-      /**
-       * #getter
-       */
-      get rubberbandTop() {
-        let pinnedTracksTop = 0
-        if (this.stickyViewHeaders) {
-          pinnedTracksTop = VIEW_HEADER_HEIGHT
-          if (!self.hideHeader) {
-            pinnedTracksTop += HEADER_BAR_HEIGHT
-            if (!self.hideHeaderOverview) {
-              pinnedTracksTop += HEADER_OVERVIEW_HEIGHT
-            }
-          }
-        }
-        return pinnedTracksTop
-      },
-
-      /**
-       * #getter
-       */
-      get pinnedTracksTop() {
-        return this.rubberbandTop + SCALE_BAR_HEIGHT
-      },
     }))
     .views(self => ({
       /**
@@ -1008,6 +984,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
         } else {
           return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
         }
+      },
+
+      /**
+       * #getter
+       * Where the scalebar pins when the view's chrome is sticky: everything
+       * stacked above it, which is the view's own title bar plus this view's
+       * header. Expressed from `headerHeight` rather than re-summing its
+       * constants — the two are the same box, and a second spelling of the sum
+       * is free to drift from the first while both typecheck.
+       */
+      get rubberbandTop() {
+        return self.stickyViewHeaders
+          ? VIEW_HEADER_HEIGHT + this.headerHeight
+          : 0
+      },
+
+      /**
+       * #getter
+       */
+      get pinnedTracksTop() {
+        return this.rubberbandTop + this.scalebarHeight
       },
 
       /**

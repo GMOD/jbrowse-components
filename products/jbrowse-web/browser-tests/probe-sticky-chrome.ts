@@ -16,6 +16,13 @@
 //     window — it sits under the app bar here, and is a dockview cell or the
 //     host's box elsewhere — so the cap that exists to stop pinned tracks
 //     burying the unpinned stack was a full app-bar too generous.
+//   - a chrome box pinned to the constant the offsets sum. `VIEW_HEADER_HEIGHT`
+//     and the LGV header bar's height were written into the CSS by #4237 so
+//     that the sums would be true, and a box that cannot grow clips its own
+//     content: at a 24px root font the view header overflowed by 2px, with its
+//     title row squeezed from the 35.7px it wanted into 28. Both are minimums
+//     now and publish what they measure, so the sweep below walks the root font
+//     size and asks that the scalebar still land flush.
 //
 //     node browser-tests/probe-sticky-chrome.ts
 //     PORT=3001 CPU=6 node browser-tests/probe-sticky-chrome.ts
@@ -86,6 +93,24 @@ function readPinnedCap() {
   }
 }
 
+// The one invariant, read off the DOM at whatever size the chrome came out:
+// the scalebar's top is the header's bottom. Everything else here is a way of
+// making that fail.
+function readChromeStack() {
+  const tc = document.querySelector('[data-testid="tracksContainer"]')!
+  const header = tc.parentElement!.previousElementSibling!
+  const rb = document.querySelector('[data-testid="rubberband_controls"]')!
+  const viewHeader = tc.closest('[data-testid^="view-container-"]')!
+    .firstElementChild as HTMLElement
+  return {
+    viewHeaderHeight: +viewHeader.getBoundingClientRect().height.toFixed(2),
+    viewHeaderOverflow: viewHeader.scrollHeight - viewHeader.clientHeight,
+    gap: +(
+      rb.getBoundingClientRect().top - header.getBoundingClientRect().bottom
+    ).toFixed(2),
+  }
+}
+
 async function main() {
   const browser = await puppeteer.launch({
     headless: process.env.HEADLESS !== '0',
@@ -153,8 +178,34 @@ async function main() {
       : `  FAIL off by ${cap.maxHeight - available}px`,
   )
 
+  // unpin, so the font sweep measures the plain stack
+  await page.evaluate(() => {
+    const view = (window as any).JBrowseSession.views[0]
+    for (const t of view.tracks) {
+      t.setPinned(false)
+    }
+  })
+  let fontFailures = 0
+  console.log('chrome stack across root font sizes:')
+  for (const fontSize of [16, 18, 20, 24]) {
+    await page.evaluate(f => {
+      document.documentElement.style.fontSize = `${f}px`
+    }, fontSize)
+    await delay(600)
+    const s = await page.evaluate(readChromeStack)
+    // sub-pixel: the var is published from offsetHeight, which is rounded
+    const ok = Math.abs(s.gap) <= 1 && s.viewHeaderOverflow === 0
+    if (!ok) {
+      fontFailures++
+    }
+    console.log(
+      `  ${ok ? 'PASS' : 'FAIL'} ${String(fontSize).padStart(2)}px root: view header ${s.viewHeaderHeight}px (overflow ${s.viewHeaderOverflow}), scalebar ${s.gap}px below the header`,
+    )
+  }
+
   await browser.close()
-  process.exitCode = detached.length || cap.maxHeight !== available ? 1 : 0
+  process.exitCode =
+    detached.length || cap.maxHeight !== available || fontFailures ? 1 : 0
 }
 
 main().catch((e: unknown) => {

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useRef, useState } from 'react'
 
 import {
   CascadingMenuButton,
@@ -6,6 +6,10 @@ import {
   VIEW_HEADER_HEIGHT,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import {
+  VIEW_HEADER_HEIGHT_VAR,
+  useChromeHeightVar,
+} from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MenuIcon from '@mui/icons-material/Menu'
 import { IconButton, Typography, alpha } from '@mui/material'
@@ -29,13 +33,13 @@ const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',
     alignItems: 'center',
-    // VIEW_HEADER_HEIGHT, not this bar's natural 32px, and the height is what
-    // makes it pinnable rather than a style choice: the LGV header below it
-    // sticks at `top: VIEW_HEADER_HEIGHT` and `rubberbandTop` measures the
-    // pinned stack from the same constant, so a title of any other height
-    // leaves a band of scrolled track above the header and puts every overlay
-    // off by the difference. Same height the web app's view header has.
-    height: VIEW_HEADER_HEIGHT,
+    // A floor rather than a height, and the same one the web app's view header
+    // has: the LGV header below sticks past this bar, so a title box of some
+    // other size has to *move* the boxes below it rather than be clipped to fit
+    // them. `useChromeHeightVar` publishes what this measures and they read it;
+    // the constant is only what they fall back to. This bar's own content wants
+    // 32px, so it is the floor that gives way, not the content.
+    minHeight: VIEW_HEADER_HEIGHT,
     top: 0,
     zIndex: 900,
     // a sticky element does not carry its parent's background, and what would
@@ -68,8 +72,11 @@ const ViewTitle = observer(function ViewTitle({
   // session with no such notion reads as "don't pin", which is what the LGV
   // model's own getter does with it too
   const stickyViewHeaders = session.stickyViewHeaders === true
+  const ref = useRef<HTMLDivElement>(null)
+  useChromeHeightVar(ref, VIEW_HEADER_HEIGHT_VAR)
   return (
     <div
+      ref={ref}
       className={classes.container}
       style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
     >

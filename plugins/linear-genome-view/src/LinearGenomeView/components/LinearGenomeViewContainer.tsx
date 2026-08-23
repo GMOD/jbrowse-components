@@ -3,7 +3,10 @@ import { Suspense, lazy, useEffect, useRef } from 'react'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import {
+  LGV_HEADER_HEIGHT_VAR,
   SCROLL_PORT_HEIGHT_VAR,
+  VIEW_HEADER_HEIGHT_VAR,
+  useChromeHeightVar,
   useFocusOnInteraction,
 } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -12,6 +15,7 @@ import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
+import { stickyChromeTops } from '../stickyChrome.ts'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
@@ -33,7 +37,10 @@ const HINT_LINGER_MS = 5000
 const useStyles = makeStyles()(theme => ({
   header: {
     background: theme.palette.background.paper,
-    top: VIEW_HEADER_HEIGHT,
+    // measured, with the constant as the fallback: the view header above is a
+    // minimum-height box that grows with its content, so summing constants
+    // here put this over the bottom of it at a larger root font size
+    top: `var(${VIEW_HEADER_HEIGHT_VAR}, ${VIEW_HEADER_HEIGHT}px)`,
     zIndex: 850,
   },
   pinnedTracks: {
@@ -57,11 +64,14 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   const {
     pinnedTracks,
     stickyViewHeaders,
-    pinnedTracksTop,
+    headerHeight,
     tracks,
     unpinnedTracks,
     hideHeader,
   } = model
+  const stickyTops = stickyChromeTops({ stickyViewHeaders, headerHeight })
+  const headerRef = useRef<HTMLDivElement>(null)
+  useChromeHeightVar(headerRef, LGV_HEADER_HEIGHT_VAR)
   const { classes } = useStyles()
   const session = getSession(model)
   const ref = useRef<HTMLDivElement>(null)
@@ -162,6 +172,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         live one. */}
         <NavigationAnnouncer model={model} />
         <div
+          ref={headerRef}
           className={classes.header}
           style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
         >
@@ -188,13 +199,13 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
                       elevation={6}
                       className={classes.pinnedTracks}
                       style={{
-                        top: pinnedTracksTop,
+                        top: stickyTops.pinnedTracks,
                         // the scroll port this sticks in, not the window: it is
                         // under the app bar in the classic stack, a dockview
                         // cell in a workspace, and the host's box when embedded.
                         // The fallback is what an unbounded embed gets, where
                         // the page itself is the scroller
-                        maxHeight: `calc(var(${SCROLL_PORT_HEIGHT_VAR}, 100vh) - ${pinnedTracksTop}px)`,
+                        maxHeight: `calc(var(${SCROLL_PORT_HEIGHT_VAR}, 100vh) - ${stickyTops.pinnedTracks})`,
                       }}
                     >
                       {pinnedTracks.map(track => (

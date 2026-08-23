@@ -3,6 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { GuideLabel } from '../../shared/coordLabels.tsx'
+import { stickyChromeTops } from '../stickyChrome.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -28,15 +29,12 @@ const VerticalGuide = observer(function VerticalGuide({
   coordX: number
 }) {
   const { classes } = useStyles()
-  const { width, stickyViewHeaders, rubberbandTop } = model
+  const { width, stickyViewHeaders, headerHeight } = model
+  const { scalebar } = stickyChromeTops({ stickyViewHeaders, headerHeight })
 
   return (
     <>
-      <GuideLabel
-        coordX={coordX}
-        viewWidth={width}
-        stickyTop={stickyViewHeaders ? rubberbandTop : undefined}
-      >
+      <GuideLabel coordX={coordX} viewWidth={width} stickyTop={scalebar}>
         {stringify(model.pxToBp(coordX))}
       </GuideLabel>
       <div

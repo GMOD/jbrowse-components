@@ -3,6 +3,7 @@ import { useRef } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { stickyChromeTops } from '../stickyChrome.ts'
 import RangeSelectOverlay from './RangeSelectOverlay.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
 
@@ -28,7 +29,8 @@ const Rubberband = observer(function Rubberband({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
-  const { stickyViewHeaders, rubberbandTop } = model
+  const { stickyViewHeaders, headerHeight } = model
+  const { scalebar } = stickyChromeTops({ stickyViewHeaders, headerHeight })
   const range = useRangeSelect(ref, model)
 
   return (
@@ -37,11 +39,7 @@ const Rubberband = observer(function Rubberband({
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}
-        style={
-          stickyViewHeaders
-            ? { top: rubberbandTop, position: 'sticky' }
-            : undefined
-        }
+        style={scalebar ? { top: scalebar, position: 'sticky' } : undefined}
         ref={ref}
         onMouseDown={range.mouseDown}
         onMouseMove={range.mouseMove}

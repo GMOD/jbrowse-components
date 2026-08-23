@@ -36,7 +36,7 @@ export default function RubberbandSpan({
   left: number
   width: number
   viewWidth: number
-  stickyTop: number | undefined
+  stickyTop: string | undefined
   leftLabel: React.ReactNode
   rightLabel: React.ReactNode
   size?: React.ReactNode
