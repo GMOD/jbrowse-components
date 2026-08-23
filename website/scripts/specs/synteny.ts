@@ -474,6 +474,38 @@ const ECOLI_ONE_VS_ALL_LANES = sessionSpec(
   },
 )
 
+// The grasses multi-way lanes at the rice window the maize-WGD stacked figure
+// reads, shared between the `multiway_synteny/grasses_rice_lanes` still and
+// the track-menu launch tour so the film and the figure open the same app.
+const GRASSES_RICE_LANES = sessionSpec(
+  encodeURIComponent(
+    'https://jbrowse.org/demos/orthofinder_grasses/config.json',
+  ),
+  {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'rice',
+        loc: '3:31,590,000-31,775,000',
+        tracks: [
+          {
+            trackId: 'rice_genes',
+            type: 'LinearBasicDisplay',
+            showOnlyGenes: true,
+            displayMode: 'compact',
+          },
+          {
+            trackId: 'grasses_orthogroups',
+            type: 'MultiWaySyntenyDisplay',
+            rowOrder: ['sorghum', 'brachypodium', 'setaria', 'maize'],
+            height: 320,
+          },
+        ],
+      },
+    ],
+  },
+)
+
 // The three frames of the "launch a synteny view from a selection" flow, all
 // starting from the same one-vs-all lane session and the same rubberband drag
 // over ~chr:800,000-808,000 of its 20 kb window. Each frame carries the actions
@@ -1357,41 +1389,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // orthofinder_synteny/grasses_maize_wgd stacked figure reads, over the same
   // five-genome orthogroups track, with a lane per grass carrying its own gene
   // models. The maize lane keeps the better-populated of maize's two WGD
-  // copies (chr1) — one refName per lane — which is exactly what the
-  // track-menu launch is for: the stacked view it opens is where the second
-  // copy becomes visible, and the tutorial section carrying this figure says
-  // so and points at the stacked figure as the destination.
+  // copies (chr1) — one refName per lane — and the section carrying this
+  // figure hands the reader to the track-menu launch and the stacked figure
+  // for the rest.
   {
     mode: 'url',
     name: 'multiway_synteny/grasses_rice_lanes',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/orthofinder_grasses/config.json',
-      ),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'rice',
-            loc: '3:31,590,000-31,775,000',
-            tracks: [
-              {
-                trackId: 'rice_genes',
-                type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
-                displayMode: 'compact',
-              },
-              {
-                trackId: 'grasses_orthogroups',
-                type: 'MultiWaySyntenyDisplay',
-                rowOrder: ['sorghum', 'brachypodium', 'setaria', 'maize'],
-                height: 320,
-              },
-            ],
-          },
-        ],
-      },
-    ),
+    url: GRASSES_RICE_LANES,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     settleMs: 12000,
@@ -4448,6 +4452,9 @@ export const syntenyVideoFixtures = {
   // hover point sits just below the anchor lane's glyph row, where that
   // group's ribbon leaves it.
   multiwayHoverLocus: '11:836,500',
+  // Where the track-menu launch tour starts: the same grasses lane state its
+  // still is of.
+  grassesLanes: GRASSES_RICE_LANES,
   strains: {
     top: 'hpylori_26695',
     middle: 'hpylori_chc155',

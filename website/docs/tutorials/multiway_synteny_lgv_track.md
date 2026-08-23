@@ -146,15 +146,16 @@ lets each of them be navigated.
 
 The five-grass OrthoFinder table behind
 [Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny#what-to-do-with-a-duplicated-gene)
-is the case that shows what each side of the handoff is for. As lanes, a rice
-window reads across sorghum, brachypodium, setaria and maize in one track under
-rice's own genes. A lane holds one region per genome, and maize carries this
-block twice from its whole-genome duplication, so its lane shows the
-better-populated copy; launching the stack around this window is how the second
-copy gets a row, which is the reading that tutorial's stacked figure is built
-on.
+is a case both halves of that serve. As lanes, a rice window reads across
+sorghum, brachypodium, setaria and maize in one track under rice's own genes,
+with the maize lane on the better-populated of the two copies its whole-genome
+duplication left. Launching the stack from here gives every grass a full row of
+its own to drive; pointing the maize row at both of its windows is then how that
+tutorial's stacked figure reads the duplication itself.
 
 <Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows the better-kept of maize's two duplicated copies." src="/img/multiway_synteny/grasses_rice_lanes.png" />
+
+<Video src="/media/synteny/multiway_launch_stack.mp4" caption="The handoff from the grasses lane track: the track menu's launch entry, the dialog printing where each grass's row would open, one row whose span comes back out of scale unticked, and Replace current view swapping the lane view for the stack." />
 
 ## The same shape on the human pangenome
 

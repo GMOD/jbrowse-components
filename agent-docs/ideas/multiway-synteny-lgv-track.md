@@ -110,7 +110,16 @@ Deliberately basic: the likely future is a GPU-emitting backend (see per-base
 lanes above), and the parts that transfer are the interval math and the model
 state, not the SVG. Don't invest in the SVG path beyond what a figure needs.
 
-**Cross-row identity.** The display groups on gene name with `syntenyId` as
+**Launch-side outlier robustness.** Found filming the grasses launch tour:
+`resolvePanel`'s span union keeps every block on the winning contig, so one
+stray same-contig orthogroup hit stretches a launched panel to tens of
+megabases (brachypodium came back `1:5,237,628..54,451,482` for a 185 kb rice
+window whose lane frame was 185 kb) — the exact failure `computeRowFrame`'s
+length-weighted-median filter exists for. The dialog prints the span, so a
+user can see it and untick the row, which is what the tour films. The fix, if
+wanted, is the median-reach filter applied in `resolvePanel` before the union
+— but it is shared launch machinery (rubberband, view menu, right-click), so
+it needs its own pass with those consumers' cases in hand, not a drive-by. The display groups on gene name with `syntenyId` as
 the nameless fallback; the first-class `syntenyGroupId` this approximates is
 specified in [synteny-comparative](synteny-comparative.md) §"syntenyGroupId for
 cross-row block identity" and should be built there, not here — this display

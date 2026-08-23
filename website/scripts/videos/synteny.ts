@@ -18,6 +18,7 @@ const {
   allVsAllMoved,
   allVsAllSpan,
   emptySyntenyForm,
+  grassesLanes,
   liftoverBlock,
   liftoverLgv,
   multiwayHoverLocus,
@@ -163,6 +164,98 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'waitForAppSettled', timeout: 120000 },
       // the block-level state the page's first figure is of, held as the end
       // state
+      { type: 'delay', ms: 3000 },
+    ],
+    tailMs: 4500,
+  },
+
+  // THE HANDOFF THE LANES CANNOT PERFORM ON THEMSELVES. "From lanes to a full
+  // stack" names a track-menu entry, a dialog and a replaced view, and every
+  // one of those is a shape the reader has not seen — the same reason the
+  // rubberband launch got its film. This one starts from the TRACK that is
+  // already showing the lanes, so there is no drag and no dataset choice: the
+  // dialog opens cut from this track alone over the visible window, one row
+  // offered per grass.
+  //
+  // No reorder clicks: the restack tour is the film of the arrows, and here
+  // the anchor-on-top order the dialog opens in is the one the launched stack
+  // wants. What this dialog gets instead is its CHECKBOXES: the span column
+  // prints where each panel would open, and brachypodium's block union is
+  // stretched to tens of megabases by a stray same-contig hit (the lane
+  // display's median fit filters that; the launch's span union does not — see
+  // the ideas doc), so its row is out of scale with the rest and the tour
+  // unticks it on camera, off the number the dialog itself shows. It ends on
+  // Replace current view for the same reason both launch tours do — the
+  // genome rows do not share a window with the lane view they came from.
+  {
+    name: 'synteny/multiway_launch_stack',
+    description:
+      "From the grasses lane track to the stacked view: the track menu's Launch stacked synteny view entry, the dialog offering a row per grass with each panel's span printed beside it, one out-of-scale row unticked, and Replace current view putting the stack in the lane view's place",
+    url: grassesLanes,
+    // Sized to the LAUNCHED STACK, the tallest of the three states and the
+    // frame the poster comes from: the run measured the app at 665 on the
+    // opening lanes and 705 once the five rows and four bands were standing,
+    // so 750 holds the payoff with the caption chip's strip under it — and
+    // leaves the dialog's paper far over what the allvsall tour measured five
+    // rows needing. The blank under the lanes early on is the stack's room.
+    viewportHeight: 750,
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      // the lanes, held: one per grass under rice's own genes
+      { type: 'delay', ms: 2500 },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid="grasses_orthogroups"]',
+        say: 'Track settings',
+        hold: 1400,
+      },
+      { type: 'waitForText', text: 'Launch stacked synteny view' },
+      {
+        type: 'hover',
+        text: 'Launch stacked synteny view (visible region)',
+        hold: 1600,
+      },
+      {
+        type: 'click',
+        text: 'Launch stacked synteny view (visible region)',
+        say: 'Launch stacked synteny view (visible region)',
+      },
+      { type: 'waitForText', text: 'Panels, top to bottom' },
+      // The rows arrive from the worker's mate discovery, which re-reads the
+      // table the lanes already pulled — a cache hit in the same worker.
+      // Waiting on maize's arrow asserts every grass got its row.
+      {
+        type: 'waitForSelector',
+        selector: 'button[aria-label*="Move maize"]',
+        timeout: 180000,
+      },
+      // long enough to read the order the dialog opens in and the span the
+      // dialog prints beside each row
+      { type: 'delay', ms: 3000, say: 'One panel per grass' },
+      // the row whose span the dialog shows out of scale with the rest
+      {
+        type: 'click',
+        selector: '::-p-aria([name="brachypodium"][role="checkbox"])',
+        say: 'Untick brachypodium',
+        hold: 2200,
+      },
+      {
+        type: 'click',
+        text: 'Replace current view',
+        say: 'Replace current view',
+      },
+      // Camera stays on: the lane view being replaced by the five-row stack
+      // IS the payoff, and the bands read the file the lanes already pulled.
+      {
+        type: 'waitForSelector',
+        selector: displayPainted('synteny_canvas'),
+        timeout: 180000,
+      },
+      { type: 'waitForAppSettled', timeout: 180000 },
       { type: 'delay', ms: 3000 },
     ],
     tailMs: 4500,
