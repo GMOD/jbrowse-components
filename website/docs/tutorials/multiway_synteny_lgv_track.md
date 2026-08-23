@@ -108,8 +108,17 @@ centered on it.
 
 <Figure caption="The same lanes cut to a few genes, close enough to read exon structure in the annotated lanes. Each ribbon links one gene to its ortholog in the lane below, and the lanes that kept a single gene here show it at the anchor's scale." src="/img/multiway_synteny/lgv_track_zoom.png" />
 
-Clicking a glyph opens the feature detail panel for its ortholog group, on any
-lane.
+The gene models draw the way the gene track above them does: coding intervals
+full height, untranslated ends thinner in the contrasting blue, introns carrying
+direction chevrons. Hovering a ribbon highlights its whole ortholog group down
+every lane that kept the gene and names it; clicking a glyph opens the feature
+detail panel for its ortholog group, on any lane.
+
+Zooming back out is where the lanes differ from a projected view: each lane
+re-fits its own frame to whatever orthologs the anchor's window brings in, so
+the re-layout is per genome rather than one re-scale repeated down the stack.
+
+<Video src="/media/synteny/multiway_zoom_out.mp4" caption="The grape lanes from gene scale back out to the block: a hovered ribbon reads one ortholog group down the stack, and each zoom-out re-fits every lane's own frame to the anchor's widening window." />
 
 ## What the lanes can say
 
@@ -123,6 +132,29 @@ The display draws whatever pairs the track serves for the visible window, so it
 works on any adapter whose features carry a `mate` per other assembly. An
 ortholog group is keyed by gene name, with the adapter's `syntenyId` as the
 fallback for sources that carry no names.
+
+## From lanes to a full stack
+
+A lane you want to drive around independently is the stacked view's job, and the
+track menu carries the handoff: **Launch stacked synteny view (visible region)**
+opens the same multi-panel launch dialog the
+[rubberband route](/docs/tutorials/multiway_synteny_grape_peach_cacao#restacking-around-a-locus)
+reaches, cut from this track's dataset over the visible window. Every genome
+aligning there is offered a full row of its own, ordered with the dialog's
+arrows, so the lane stack that said which genomes matter becomes the view that
+lets each of them be navigated.
+
+The five-grass OrthoFinder table behind
+[Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny#what-to-do-with-a-duplicated-gene)
+is the case that shows what each side of the handoff is for. As lanes, a rice
+window reads across sorghum, brachypodium, setaria and maize in one track under
+rice's own genes. A lane holds one region per genome, and maize carries this
+block twice from its whole-genome duplication, so its lane shows the
+better-populated copy; launching the stack around this window is how the second
+copy gets a row, which is the reading that tutorial's stacked figure is built
+on.
+
+<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows the better-kept of maize's two duplicated copies." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
 ## The same shape on the human pangenome
 

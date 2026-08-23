@@ -1353,6 +1353,51 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 660,
   },
 
+  // The grasses radiation as lanes: the rice window the
+  // orthofinder_synteny/grasses_maize_wgd stacked figure reads, over the same
+  // five-genome orthogroups track, with a lane per grass carrying its own gene
+  // models. The maize lane keeps the better-populated of maize's two WGD
+  // copies (chr1) — one refName per lane — which is exactly what the
+  // track-menu launch is for: the stacked view it opens is where the second
+  // copy becomes visible, and the tutorial section carrying this figure says
+  // so and points at the stacked figure as the destination.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/grasses_rice_lanes',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_grasses/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'rice',
+            loc: '3:31,590,000-31,775,000',
+            tracks: [
+              {
+                trackId: 'rice_genes',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+              },
+              {
+                trackId: 'grasses_orthogroups',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: ['sorghum', 'brachypodium', 'setaria', 'maize'],
+                height: 320,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 660,
+  },
+
   // A COMPOSITION PART, no longer embedded on its own (review: "looks like dupe
   // of homoeolog_synteny/wheat_vs_oat" — and it was the same PNG twice, since
   // wheat_vs_oat composes this frame beside the oat one). multiway_synteny.md
@@ -4355,6 +4400,54 @@ export const syntenyVideoFixtures = {
   emptySyntenyForm: hpyloriUrl({
     views: [{ type: 'LinearSyntenyView', views: [{}, {}] }],
   }),
+  // Where the multi-way zoom-out tour starts, which is the state
+  // `multiway_synteny/lgv_track_zoom` above captures: the gene-level cut of the
+  // grape lanes, close enough that each ribbon connects one gene to one
+  // ortholog. The tour zooms OUT from here, so the re-fit each lane makes as
+  // the anchor's window widens is the film's whole subject — the two committed
+  // figures are its endpoints and the re-layout between them is what a still
+  // cannot carry.
+  multiwayLanes: sessionSpec(
+    encodeURIComponent(
+      'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+    ),
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'grape',
+          loc: '11:828,000-866,000',
+          tracks: [
+            {
+              trackId: 'grape_genes',
+              type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              displayMode: 'compact',
+              showLabels: 'auto',
+            },
+            {
+              trackId: 'grape_peach_cacao_blocks',
+              type: 'MultiWaySyntenyDisplay',
+              rowOrder: [
+                'peach',
+                'cacao',
+                'poplar',
+                'citrus',
+                'arabidopsis',
+                'tomato',
+              ],
+              height: 340,
+            },
+          ],
+        },
+      ],
+    },
+  ),
+  // An anchor gene of the tandem expansion the zoom figure reads (three grape
+  // copies against one peach ortholog), whose ribbon the tour hovers: the
+  // hover point sits just below the anchor lane's glyph row, where that
+  // group's ribbon leaves it.
+  multiwayHoverLocus: '11:836,500',
   strains: {
     top: 'hpylori_26695',
     middle: 'hpylori_chc155',

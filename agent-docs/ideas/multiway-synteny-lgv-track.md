@@ -87,20 +87,28 @@ artifact for all haplotypes, resolvable locus→node-ids→GAF through the
 walk offsets are exactly what the 19x-smaller reference-keyed index dropped
 ([PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md)).
 
-**The interaction surface.** `rowOrder` is a declared property with no UI —
-authorable from a session spec and nothing else; a track-menu lane editor (or
-drag on the lane labels) is the missing half, and the label is also the obvious
-home for per-lane actions the display cannot express today: hide a lane, open
+**The interaction surface.** What shipped since: hovering a ribbon highlights
+its whole ortholog group across every lane (`hoveredGroupKey`, main-thread
+recolor), and the track menu carries **Launch stacked synteny view (visible
+region)** — the `syntenyRegionMenuItems` dialog seeded from this track alone,
+which is the "lane you want to drive independently" handoff. Still missing:
+`rowOrder` has no UI (a track-menu lane editor or drag on the lane labels),
+and the label is the obvious home for per-lane actions — hide a lane, open
 that assembly in its own LGV (`LaunchLinearGenomeView` exists), re-anchor the
-whole track on that lane's assembly. Hover currently shows a `<title>` tooltip
-per glyph; highlighting the whole ortholog group across every lane on hover is
-cheap (the group key is already on every glyph) and is the reading the ribbons
-exist for. Ribbon color modes (strand for inversions, identity from the PAF's
-`de:f:`) fit the existing `ribbonColor` slot as a colorBy the way
-`syntenyColors.ts` does it — main-thread recolor, no refetch. Per-lane pan/zoom
-is deliberately absent: the lanes re-fit to the anchor's viewport by design,
-and a lane you want to drive independently is the stacked LinearSyntenyView's
-job.
+whole track on that lane's assembly. Ribbon color modes (strand for
+inversions, identity from the PAF's `de:f:`) fit the existing `ribbonColor`
+slot as a colorBy the way `syntenyColors.ts` does it — main-thread recolor, no
+refetch. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the
+anchor's viewport by design, and the launch above is the route to a lane you
+drive yourself.
+
+**Gene glyph rendering.** The lanes draw the canvas gene track's geometry
+(merged CDS full height, exon-minus-CDS thinner in `utrDefaultColor`, intron
+chevrons, a downstream arrowhead, direction resolved in pixel space so flipped
+lanes point the way they read) as main-thread SVG through `geneGlyphShape`.
+Deliberately basic: the likely future is a GPU-emitting backend (see per-base
+lanes above), and the parts that transfer are the interval math and the model
+state, not the SVG. Don't invest in the SVG path beyond what a figure needs.
 
 **Cross-row identity.** The display groups on gene name with `syntenyId` as
 the nameless fallback; the first-class `syntenyGroupId` this approximates is

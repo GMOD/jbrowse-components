@@ -84,4 +84,8 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
     [100, 130],
     [170, 200],
   ])
+
+  expect(display.trackMenuItems().map(item => item.label)).toContain(
+    'Launch stacked synteny view (visible region)',
+  )
 }, 40000)
