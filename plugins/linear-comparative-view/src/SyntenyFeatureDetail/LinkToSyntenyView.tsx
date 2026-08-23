@@ -13,10 +13,7 @@ import { getMate } from '../syntenyMate.ts'
 import { syntenyCenterTargets } from './centerOnFeature.ts'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
-import type {
-  AbstractSessionModel,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util'
+import type { SimpleFeatureSerialized, TrackCatalog } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 // lazies
@@ -34,7 +31,7 @@ const LaunchSyntenyViewDialog = lazy(
 // own: a synteny track arriving from a connection is the case this link used to
 // drop, hiding the launch on exactly the datasets that are loaded by reference.
 function findTrackAssemblyNames(
-  session: AbstractSessionModel,
+  session: TrackCatalog,
   trackId: string | undefined,
 ) {
   const track = allSessionTracks(session).find(

@@ -6,7 +6,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import { IconButton, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AssemblyHost } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   row: {
@@ -35,7 +35,7 @@ const ImportFormRow = observer(function ImportFormRow({
   count: number
   assembly: string
   loc: string
-  session: AbstractSessionModel
+  session: AssemblyHost
   onAssemblyChange: (val: string) => void
   onLocChange: (val: string) => void
   onRemove: () => void

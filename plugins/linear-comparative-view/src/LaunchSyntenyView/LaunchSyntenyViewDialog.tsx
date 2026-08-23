@@ -13,8 +13,9 @@ import {
 
 import type { RegionOfInterest } from './resolvePanel.ts'
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
   AbstractViewModel,
+  NotificationSink,
   Feature,
 } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
@@ -33,7 +34,7 @@ export default function LaunchSyntenyViewDialog({
   trackId,
   handleClose,
 }: {
-  session: AbstractSessionModel
+  session: AbstractViewContainer & NotificationSink
   region?: RegionOfInterest
   feature: Feature
   anchorAssembly: string

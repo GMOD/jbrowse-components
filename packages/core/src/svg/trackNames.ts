@@ -2,7 +2,7 @@ import { coarseStripHTML } from '../util/index.ts'
 import { getTrackName } from '../util/tracks.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
-import type { AbstractSessionModel } from '../util/index.ts'
+import type { NotificationSink, TrackCatalog } from '../util/index.ts'
 
 /**
  * The name an export writes for a track. HTML in a config's name is stripped
@@ -14,7 +14,7 @@ import type { AbstractSessionModel } from '../util/index.ts'
  */
 export function svgTrackName(
   track: { configuration: AnyConfigurationModel },
-  session: AbstractSessionModel,
+  session: TrackCatalog,
 ) {
   return coarseStripHTML(getTrackName(track.configuration, session))
 }
@@ -31,7 +31,7 @@ export function svgTrackName(
  * reader of the file has no way to tell the difference afterwards.
  */
 export function notifySkippedSvgTracks(
-  session: AbstractSessionModel,
+  session: NotificationSink & TrackCatalog,
   skipped: { configuration: AnyConfigurationModel }[],
 ) {
   if (skipped.length === 0) {

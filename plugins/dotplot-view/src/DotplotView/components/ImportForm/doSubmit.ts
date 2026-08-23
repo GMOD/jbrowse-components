@@ -3,7 +3,11 @@ import { applySyntenyTrackSelections } from '@jbrowse/synteny-core'
 import { transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../../model.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type {
+  AssemblyHost,
+  NotificationSink,
+  TrackCatalog,
+} from '@jbrowse/core/util'
 
 export function doSubmit({
   model,
@@ -14,7 +18,7 @@ export function doSubmit({
   regionsY = '',
 }: {
   model: DotplotViewModel
-  session: AbstractSessionModel
+  session: AssemblyHost & NotificationSink & TrackCatalog
   assemblyX: string
   assemblyY: string
   regionsX?: string

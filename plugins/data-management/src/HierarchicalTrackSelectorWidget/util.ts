@@ -9,7 +9,7 @@ import type {
   TreeTrackNode,
 } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { TrackCatalog } from '@jbrowse/core/util'
 
 // The tree id of a category: its group (the config's own tracks, or a
 // connection) plus the comma-joined category path. Built in one place so the
@@ -52,7 +52,7 @@ export function trackNodeSourceFor(
     session,
     isSessionTrack = false,
   }: {
-    session: AbstractSessionModel
+    session: TrackCatalog
     isSessionTrack?: boolean
   },
 ): TrackNodeSource {

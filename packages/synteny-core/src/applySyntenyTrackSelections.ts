@@ -5,7 +5,11 @@ import { toJS } from 'mobx'
 import { resolveSyntenyTrackActions } from './resolveRowTrackAction.ts'
 
 import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type {
+  AssemblyHost,
+  NotificationSink,
+  TrackCatalog,
+} from '@jbrowse/core/util'
 
 /**
  * Turn an import form's per-pair selections into open tracks: resolve what each
@@ -26,7 +30,7 @@ export function applySyntenyTrackSelections({
   assemblyNames,
   showTrack,
 }: {
-  session: AbstractSessionModel
+  session: AssemblyHost & NotificationSink & TrackCatalog
   selections: (ImportFormSyntenyTrack | undefined)[]
   /** the form's assembly rows, top to bottom; a dotplot's are [x, y] */
   assemblyNames: string[]

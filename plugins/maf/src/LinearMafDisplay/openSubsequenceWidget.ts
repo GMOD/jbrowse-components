@@ -3,8 +3,8 @@ import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 
 import type { Sample } from '../types.ts'
 import type { LinearMafDisplayModel } from './stateModel.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -62,7 +62,7 @@ export function selectionRegion(left: PxToBpResult, right: PxToBpResult) {
  * `selectionRegion`).
  */
 export function openSubsequenceWidget(
-  session: AbstractSessionModel,
+  session: IStateTreeNode,
   model: LinearMafDisplayModel,
   view: LinearGenomeViewModel,
   startPx: number,

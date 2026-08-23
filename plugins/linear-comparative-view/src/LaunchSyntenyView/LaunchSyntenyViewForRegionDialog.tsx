@@ -32,8 +32,9 @@ import { useMateDiscovery } from './useMateDiscovery.ts'
 
 import type { MateDiscovery } from './discoverMates.ts'
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
   AbstractViewModel,
+  NotificationSink,
   Region,
   RpcStatus,
 } from '@jbrowse/core/util'
@@ -208,7 +209,7 @@ export default function LaunchSyntenyViewForRegionDialog({
   discoverMatesFor,
   handleClose,
 }: {
-  session: AbstractSessionModel
+  session: AbstractViewContainer & NotificationSink
   region: Region
   tracks: LaunchableTrack[]
   // the launching view's own tracks, for the panel that opens on its assembly

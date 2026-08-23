@@ -6,7 +6,7 @@ import { anchorSpanOfPanels, resolveFeaturePanels } from './resolvePanel.ts'
 import type { LinearSyntenyViewInit } from '../LinearSyntenyView/types.ts'
 import type { RegionOfInterest, ResolvedPanel } from './resolvePanel.ts'
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
   AbstractViewModel,
   Feature,
 } from '@jbrowse/core/util'
@@ -140,7 +140,7 @@ export function launchSyntenyViewForPanels({
   replacing,
   ...rest
 }: BuildSyntenyViewSpecArgs & {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // the launching view, when the dialog's "Replace current view" was used
   replacing?: AbstractViewModel
 }) {

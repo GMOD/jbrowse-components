@@ -85,6 +85,7 @@ export {
   type SessionWithWidgets,
   type SnackAction,
   type TrackActionView,
+  type TrackCatalog,
   type TrackContainer,
   type TrackViewModel,
   type TypeTestedByPredicate,

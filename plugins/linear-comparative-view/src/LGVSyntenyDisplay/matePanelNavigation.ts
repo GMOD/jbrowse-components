@@ -13,7 +13,7 @@ import { getCigar } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { Feature, NotificationSink } from '@jbrowse/core/util'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type {
   IAnyStateTreeNode,
@@ -219,7 +219,7 @@ export async function moveMatePanels({
   indexes: number[]
   feature: Feature
   region: RegionOfInterest
-  session: AbstractSessionModel
+  session: NotificationSink
 }) {
   const span = matePanelSpan(feature, region)
   if (span) {

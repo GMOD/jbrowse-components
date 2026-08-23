@@ -10,7 +10,7 @@ import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 
 import type { TrackLabelMode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { TrackCatalog } from '@jbrowse/core/util'
 import type { ReactNode } from 'react'
 
 // Just the per-track heights that the vertical-layout math needs; every track
@@ -283,7 +283,7 @@ export function trackLabelLeftOffset({
   trackLabels: TrackLabelMode
   fontSize: number
   fontFamily?: string
-  session: AbstractSessionModel
+  session: TrackCatalog
 }) {
   return trackLabels === 'left'
     ? max(

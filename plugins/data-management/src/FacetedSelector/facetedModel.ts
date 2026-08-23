@@ -26,7 +26,7 @@ import {
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { TrackCatalog } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
@@ -113,7 +113,7 @@ export function facetedStateTreeF() {
       /**
        * #volatile
        */
-      session: undefined as AbstractSessionModel | undefined,
+      session: undefined as TrackCatalog | undefined,
     }))
     .actions(self => ({
       /**
@@ -121,7 +121,7 @@ export function facetedStateTreeF() {
        */
       setTrackSource(
         getTracks: () => AnyConfigurationModel[],
-        session: AbstractSessionModel,
+        session: TrackCatalog,
         assemblyNames: string[],
       ) {
         self.getTracks = getTracks

@@ -18,7 +18,11 @@ import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type {
+  AssemblyHost,
+  NotificationSink,
+  TrackCatalog,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/PluginManager' {
@@ -29,7 +33,7 @@ declare module '@jbrowse/core/PluginManager' {
       args: undefined
       result: undefined | Promise<void>
       props: {
-        session: AbstractSessionModel
+        session: AssemblyHost & NotificationSink & TrackCatalog
         /** the search result that was selected */
         result: BaseResult
         model: LinearGenomeViewModel
@@ -127,7 +131,7 @@ function destination(result: BaseResult, assembly?: Assembly) {
 function trackRank(
   result: BaseResult,
   model: LinearGenomeViewModel,
-  session: AbstractSessionModel,
+  session: TrackCatalog,
 ) {
   const trackId = result.getTrackId()
   if (trackId === undefined) {
@@ -152,7 +156,7 @@ export function unanimousResult({
 }: {
   results: BaseResult[]
   model: LinearGenomeViewModel
-  session: AbstractSessionModel
+  session: TrackCatalog
   assembly?: Assembly
 }) {
   // computed once per hit rather than once per comparison: a broad query can
@@ -263,7 +267,7 @@ export class SearchResultsNotFoundError extends Error {
 // outcome of typing a name that isn't there, so it shows its own sentence
 // rather than `${e}`, which would prefix it with the class name. Shared so the
 // import form and the header box can't drift apart on it again.
-export function notifySearchFailure(session: AbstractSessionModel, e: unknown) {
+export function notifySearchFailure(session: NotificationSink, e: unknown) {
   console.error(e)
   session.notify(
     e instanceof SearchResultsNotFoundError ? e.message : `${e}`,

@@ -116,14 +116,29 @@ export interface TrackActionView {
  */
 export type AnimationMode = 'system' | 'enabled' | 'disabled'
 
+/**
+ * The tracks and assemblies a host offers, which is what a track picker, a
+ * track-name lookup and a search result read.
+ *
+ * App-shaped by construction — `AnyConfigurationModel` is the configuration
+ * schema machinery — so this lives here beside the session family rather than
+ * in `./services.ts`, which is the file that stays cheap to name.
+ */
+export interface TrackCatalog {
+  tracks: AnyConfigurationModel[]
+  assemblies: AnyConfigurationModel[]
+  connectionInstances?: { tracks: AnyConfigurationModel[] }[]
+  getTrackById: (id: string) => AnyConfigurationModel | undefined
+}
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel
   extends
     AbstractViewContainer,
     RenderingServices,
     NotificationSink,
-    DialogHost {
-  getTrackById: (id: string) => AnyConfigurationModel | undefined
+    DialogHost,
+    TrackCatalog {
   /** @deprecated prefer the per-id reactive `getTrackById(id)` */
   getTracksById: () => Record<string, AnyConfigurationModel>
   jbrowse: IAnyStateTreeNode
@@ -137,7 +152,6 @@ export interface AbstractSessionModel
   configuration: AnyConfigurationModel
   rpcManager: RpcManager
   assemblyNames: string[]
-  assemblies: AnyConfigurationModel[]
   selection?: unknown
   focusedViewId?: string
   themeName?: string
@@ -244,7 +258,6 @@ export interface AbstractSessionModel
 
   name: string
   id?: string
-  tracks: AnyConfigurationModel[]
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return isSessionServices(thing)

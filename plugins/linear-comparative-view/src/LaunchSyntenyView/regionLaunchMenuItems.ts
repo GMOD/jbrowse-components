@@ -10,10 +10,30 @@ import { makeMateDiscovery } from './discoverMates.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
   AbstractViewModel,
+  AssemblyHost,
+  DialogHost,
+  NotificationSink,
   Region,
+  RpcHost,
+  TrackCatalog,
 } from '@jbrowse/core/util'
+
+/**
+ * What launching a synteny view from a region asks of its host: an assembly to
+ * resolve the region's tracks against, an RPC to discover their mates, a dialog
+ * to choose among them, somewhere to report a failure, and a slot to put the
+ * launched view in.
+ */
+export interface SyntenyLaunchHost
+  extends
+    AbstractViewContainer,
+    AssemblyHost,
+    DialogHost,
+    NotificationSink,
+    RpcHost,
+    TrackCatalog {}
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 
 const LaunchSyntenyViewForRegionDialog = lazy(
@@ -50,7 +70,7 @@ interface LaunchableTrack {
 // view's assembly by definition, but it may name an alias of it, which is what
 // getSyntenyTracks resolves through.
 function launchableTracks(
-  session: AbstractSessionModel,
+  session: AssemblyHost & TrackCatalog,
   assemblyName: string,
   openTracks: AnyConfigurationModel[],
 ): LaunchableTrack[] {
@@ -120,7 +140,7 @@ export function syntenyRegionMenuItems({
 }: {
   label: string
   region: Region | undefined
-  session: AbstractSessionModel
+  session: SyntenyLaunchHost
   // the launching view's open track configs, which are the datasets on offer
   openTracks: AnyConfigurationModel[]
   // the launching view's own tracks, offered to the panel that opens on its

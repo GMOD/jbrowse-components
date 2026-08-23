@@ -15,8 +15,9 @@ import { partitionLaunchKeys, warnUnknownLaunchKeys } from './initKeys.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AssemblyHost, NotificationSink } from '@jbrowse/core/util'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 function warnInitKeyProblems(self: LinearGenomeViewModel, init: InitState) {
   const { viewProps, unknown } = partitionLaunchKeys(
@@ -47,7 +48,7 @@ function asArray<T>(arg: T[] | T | undefined) {
 // the change only when activating it actually opens the column.
 async function openTracklist(
   self: LinearGenomeViewModel,
-  session: AbstractSessionModel,
+  session: IStateTreeNode & NotificationSink,
   superseded: () => boolean,
 ) {
   // activateTrackSelector throws without widget support, which would abort the
@@ -94,7 +95,7 @@ async function openTracklist(
 // the same name list the same way.
 function showNamedRegions(
   self: LinearGenomeViewModel,
-  session: AbstractSessionModel,
+  session: AssemblyHost & NotificationSink,
   assemblyName: string,
   names: string[],
 ) {
@@ -131,7 +132,7 @@ function showNamedRegions(
 
 async function navigateInit(
   self: LinearGenomeViewModel,
-  session: AbstractSessionModel,
+  session: AssemblyHost & NotificationSink,
   init: InitState,
 ) {
   try {
@@ -203,7 +204,7 @@ function backfillHighlightAssemblies(self: LinearGenomeViewModel) {
  */
 export function applyInitHighlights(
   self: LinearGenomeViewModel,
-  session: AbstractSessionModel,
+  session: AssemblyHost & NotificationSink,
   init: Pick<InitState, 'highlight' | 'assembly'>,
 ) {
   for (const h of asArray(init.highlight)) {

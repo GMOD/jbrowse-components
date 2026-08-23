@@ -2,7 +2,11 @@ import { parseRegionNames } from '@jbrowse/core/util'
 import { applySyntenyTrackSelections } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type {
+  AssemblyHost,
+  NotificationSink,
+  TrackCatalog,
+} from '@jbrowse/core/util'
 
 export function doSubmit({
   selectedAssemblyNames,
@@ -15,7 +19,7 @@ export function doSubmit({
   // assembly
   regionNames?: string[]
   model: LinearSyntenyViewModel
-  session: AbstractSessionModel
+  session: AssemblyHost & NotificationSink & TrackCatalog
 }) {
   // each row is a LinearGenomeView built from a declarative `init` — its
   // afterAttach autorun loads the assembly regions and shows the whole genome,

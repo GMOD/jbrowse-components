@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { allSessionTracks, connectedEndpoints } from '@jbrowse/synteny-core'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AssemblyHost, TrackCatalog } from '@jbrowse/core/util'
 
 export interface AddRowOption {
   // dataset and endpoint together, so a dataset reaching two assemblies is two
@@ -38,7 +38,7 @@ export function getAddRowOptions({
   terminalAssembly,
   levelAbove,
 }: {
-  session: AbstractSessionModel
+  session: AssemblyHost & TrackCatalog
   terminalAssembly: string
   levelAbove?: LevelAbove
 }) {
