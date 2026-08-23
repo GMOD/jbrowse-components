@@ -134,11 +134,22 @@ async function flush() {
   }
 }
 
-/** let the debounce fire, for the reruns that are no longer on the leading edge */
-async function settleDebounce() {
-  await new Promise(r => {
-    setTimeout(r, DELAY * 2)
-  })
+/**
+ * let the debounce fire, for the reruns that are no longer on the leading
+ * edge — polls the predicate rather than sleeping a fixed multiple of
+ * `DELAY`, because a loaded CI runner can push the `setTimeout` well past a
+ * small fixed margin
+ */
+async function settleDebounce(predicate: () => boolean) {
+  const deadline = Date.now() + 5000
+  while (!predicate()) {
+    if (Date.now() > deadline) {
+      break
+    }
+    await new Promise(r => {
+      setTimeout(r, DELAY)
+    })
+  }
 }
 
 function silenceErrorLog() {
@@ -176,7 +187,7 @@ test('a superseded run cannot commit behind the one that replaced it', async () 
   const host = makeHost()
   await flush()
   host.reload()
-  await settleDebounce()
+  await settleDebounce(() => host.runs.length >= 2)
   expect(host.runs).toHaveLength(2)
 
   host.runs[1]!.resolve('fresh')
@@ -194,7 +205,7 @@ test("a superseded run's failure does not publish over its successor", async () 
   const host = makeHost()
   await flush()
   host.reload()
-  await settleDebounce()
+  await settleDebounce(() => host.runs.length >= 2)
 
   host.runs[0]!.reject(new Error('superseded'))
   await flush()
@@ -237,7 +248,7 @@ test('a reload re-runs the body when nothing else has moved', async () => {
   expect(host.error).toBeDefined()
 
   host.reload()
-  await settleDebounce()
+  await settleDebounce(() => host.runs.length >= 2)
   expect(host.runs).toHaveLength(2)
   spy.mockRestore()
 })
@@ -254,7 +265,7 @@ test('a reload re-runs a body that declined', async () => {
   expect(host.runs).toHaveLength(0)
 
   host.reload()
-  await settleDebounce()
+  await settleDebounce(() => host.probe.bodyRuns >= 2)
   expect(host.probe.bodyRuns).toBe(2)
 })
 
@@ -294,7 +305,7 @@ test('a retriggered run clears the previous failure at its start', async () => {
   host.setMinimized(true)
   await flush()
   host.setMinimized(false)
-  await settleDebounce()
+  await settleDebounce(() => host.runs.length >= 2)
   expect(host.runs).toHaveLength(2)
   expect(host.error).toBeUndefined()
 
