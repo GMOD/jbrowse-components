@@ -11,7 +11,7 @@
  * whole value is being the same everywhere.
  *
  * `TCtx` is what each family hands its `run`: a `FetchContext` on the LGV side,
- * a `ComparativeFetchContext` (adapter config, session id, refName rename) on
+ * a `ComparativeFetchContext` (that plus adapter config and refName rename) on
  * the other. That is the one thing that genuinely differs, so it is the one
  * parameter.
  *
