@@ -6,11 +6,29 @@ import SequencePanel from './SequencePanel.tsx'
 import { SequenceFeatureDetailsF } from './model.ts'
 import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
-import { getSequencePlaintext } from './util.ts'
+import { getSequenceFasta } from './util.ts'
 
 import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
 import type { SeqState } from '../util.tsx'
 import type { SequenceDisplayMode, SequenceHoverPosition } from './model.ts'
+
+// What the panel puts on screen, which is not what `getSequenceFasta` exports:
+// the rendered rows carry their coordinate label and the space every ten bases,
+// and the FASTA deliberately carries neither. An assertion about layout reads
+// these; an assertion about the file reads the export.
+function renderedRow(panel: HTMLElement, index: number) {
+  return panel.textContent.split('\n')[index]
+}
+
+function renderedRowStarts(panel: HTMLElement) {
+  return [...panel.querySelectorAll('[data-no-fasta="coord"]')].map(
+    el => +el.textContent.trim(),
+  )
+}
+
+// the sequence spans, i.e. not the coordinate labels the panel draws beside
+// them — both are <span> and the label comes first in the row
+const SEQ_SPAN = 'span:not([data-no-fasta])'
 
 // the panel publishes hovered bases to whoever opened it (a feature-detail
 // widget, a track's sequence dialog); tests stand in a plain recorder
@@ -144,7 +162,7 @@ test('NCDN collapsed intron', () => {
   const element = getByTestId('sequence_panel')
 
   // UTR
-  expect(getSequencePlaintext(element)).toMatchSnapshot()
+  expect(getSequenceFasta(element)).toMatchSnapshot()
 })
 
 test('NCDN updownstream', () => {
@@ -168,7 +186,7 @@ test('NCDN updownstream', () => {
   )
 
   const element = getByTestId('sequence_panel')
-  expect(getSequencePlaintext(element)).toMatchSnapshot()
+  expect(getSequenceFasta(element)).toMatchSnapshot()
 })
 
 test('updownstream annotation shown in header for collapsed-intron+flanks mode', () => {
@@ -188,12 +206,47 @@ test('updownstream annotation shown in header for collapsed-intron+flanks mode',
   expect(header).toContain('up/downstream bp')
 })
 
-test('plaintext copy strips legend so it does not corrupt FASTA output', () => {
+test('the legend is stripped so it does not corrupt FASTA output', () => {
   const el = document.createElement('div')
   el.innerHTML =
-    '<div data-no-plaintext>legend note: selenocysteine</div>' +
+    '<div data-no-fasta>legend note: selenocysteine</div>' +
     '<pre>&gt;made_up\nACGTACGT</pre>'
-  expect(getSequencePlaintext(el)).toEqual('>made_up\nACGTACGT')
+  expect(getSequenceFasta(el)).toEqual('>made_up\nACGTACGT')
+})
+
+// The property the export exists for, and the one the panel's own text cannot
+// have: with coordinates on, the panel draws `1201   ACGTACGTAC ACGT…` down the
+// page, and a `.fa` whose lines read that way parses nowhere.
+test('the export is FASTA even with coordinates on', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'ACGT'.repeat(75) }}
+      feature={{
+        start: 1200,
+        end: 1500,
+        refName: 'chr1',
+        strand: 1,
+        type: 'region',
+        uniqueId: 'fwd',
+        name: 'fwd',
+      }}
+    />,
+  )
+  const panel = getByTestId('sequence_panel')
+  // the labels are on screen
+  expect(panel.textContent).toContain('1201   ')
+
+  const [header, ...body] = getSequenceFasta(panel).split('\n')
+  expect(header).toBe('>fwd-genomic chr1:1,201-1,500(+)')
+  expect(body.filter(Boolean)).toEqual([
+    'ACGT'.repeat(25),
+    'ACGT'.repeat(25),
+    'ACGT'.repeat(25),
+  ])
 })
 
 test('single exon cDNA should not have duplicate sequences', () => {
@@ -206,7 +259,7 @@ test('single exon cDNA should not have duplicate sequences', () => {
   const element = getByTestId('sequence_panel')
 
   expect(
-    getSequencePlaintext(element)
+    getSequenceFasta(element)
       .split('\n')
       .slice(1)
       .map(s => s.trim())
@@ -225,7 +278,7 @@ test('single exon cDNA display genomic coords', () => {
   )
 
   const element = getByTestId('sequence_panel')
-  expect(getSequencePlaintext(element)).toMatchSnapshot()
+  expect(getSequenceFasta(element)).toMatchSnapshot()
 })
 
 test('reverse strand genomic coords count down across rows', () => {
@@ -250,12 +303,7 @@ test('reverse strand genomic coords count down across rows', () => {
     />,
   )
 
-  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
-    .split('\n')
-    .slice(1)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map(s => +s.split(/\s+/, 1)[0]!)
+  const rowStarts = renderedRowStarts(getByTestId('sequence_panel'))
 
   // reverse strand genomic coordinates must decrement, not increment
   expect(rowStarts).toEqual([300, 200, 100])
@@ -280,12 +328,7 @@ test('switching relative to genomic coordinates updates the row labels', () => {
     model.setShowCoordinates('genomic')
   })
 
-  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
-    .split('\n')
-    .slice(1)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map(s => +s.split(/\s+/, 1)[0]!)
+  const rowStarts = renderedRowStarts(getByTestId('sequence_panel'))
 
   expect(rowStarts).toEqual([1201, 1301, 1401])
 })
@@ -305,12 +348,7 @@ test('a sticky genomic setting renders relative coords in cDNA mode', () => {
     />,
   )
 
-  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
-    .split('\n')
-    .slice(1)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map(s => +s.split(/\s+/, 1)[0]!)
+  const rowStarts = renderedRowStarts(getByTestId('sequence_panel'))
 
   // relative to the feature start, not the genomic 1200
   expect(rowStarts).toEqual([0, 100, 200])
@@ -343,12 +381,7 @@ test('reverse strand rows break where a flank leaves a row half filled', () => {
     />,
   )
 
-  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
-    .split('\n')
-    .slice(1)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map(s => +s.split(/\s+/, 1)[0]!)
+  const rowStarts = renderedRowStarts(getByTestId('sequence_panel'))
 
   // feature end 1050 + 150bp flank => first label 1200, counting down
   expect(rowStarts).toEqual([1200, 1100, 1000, 900])
@@ -371,12 +404,7 @@ test('genomic coords thread continuously across the upstream flank boundary', ()
     />,
   )
 
-  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
-    .split('\n')
-    .slice(1)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map(s => +s.split(/\s+/, 1)[0]!)
+  const rowStarts = renderedRowStarts(getByTestId('sequence_panel'))
 
   // feature starts at 1200 (1-based 1201); 100bp upstream => first label 1101
   expect(rowStarts).toEqual([1101, 1201, 1301, 1401])
@@ -422,7 +450,7 @@ test('hovering the genomic sequence reports the genomic base under the cursor', 
       feature={feature}
     />,
   )
-  const span = getByTestId('sequence_panel').querySelector('span')!
+  const span = getByTestId('sequence_panel').querySelector(SEQ_SPAN)!
   const rectSpy = mockRowRect(span)
 
   // cursor at the row start => first feature base (0-based 1200)
@@ -468,7 +496,7 @@ test('hovering a reverse-strand genomic sequence counts positions down', () => {
       feature={feature}
     />,
   )
-  const span = getByTestId('sequence_panel').querySelector('span')!
+  const span = getByTestId('sequence_panel').querySelector(SEQ_SPAN)!
   const rectSpy = mockRowRect(span)
 
   // display char 0 is the last genomic base (0-based 99)
@@ -502,7 +530,7 @@ test('hovering does not report positions when coordinates are not genomic', () =
       }}
     />,
   )
-  const span = getByTestId('sequence_panel').querySelector('span')!
+  const span = getByTestId('sequence_panel').querySelector(SEQ_SPAN)!
   const rectSpy = mockRowRect(span)
   fireEvent.mouseMove(span, { clientX: 55 })
   expect(hover.position).toBeUndefined()
@@ -531,7 +559,7 @@ const renderCdna = (subfeatures: SimpleFeatureSerializedNoId[]) => {
       feature={utrFeature(subfeatures)}
     />,
   )
-  return getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1]
+  return getSequenceFasta(getByTestId('sequence_panel')).split('\n')[1]
 }
 
 test.each([
@@ -615,9 +643,9 @@ test.each([
       feature={revFeat(subfeatures)}
     />,
   )
-  expect(
-    getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1],
-  ).toBe(revCdna)
+  expect(getSequenceFasta(getByTestId('sequence_panel')).split('\n')[1]).toBe(
+    revCdna,
+  )
 })
 
 const exon = { refName: 'chr1', start: 1000, end: 1400, type: 'exon' }
@@ -635,7 +663,7 @@ const renderLegend = (
       feature={utrFeature(subfeatures)}
     />,
   )
-  return getByTestId('sequence_panel').querySelector('[data-no-plaintext]')
+  return getByTestId('sequence_panel').querySelector('[data-no-fasta]')
     ?.textContent
 }
 
@@ -676,8 +704,8 @@ test('the rendered legend stays out of the copyable sequence', () => {
   )
   const panel = getByTestId('sequence_panel')
   // it is on screen, but must not reach the FASTA the user copies out
-  expect(panel.querySelector('[data-no-plaintext]')).toBeTruthy()
-  expect(getSequencePlaintext(panel)).toBe(
+  expect(panel.querySelector('[data-no-fasta]')).toBeTruthy()
+  expect(getSequenceFasta(panel)).toBe(
     `>utrs-cdna chr1:1,001-1,400(+)\n${utrSeq}`,
   )
 })
@@ -745,7 +773,7 @@ test('hovering publishes the assembly so the refName can be canonicalized', () =
       }}
     />,
   )
-  const span = getByTestId('sequence_panel').querySelector('span')!
+  const span = getByTestId('sequence_panel').querySelector(SEQ_SPAN)!
   const rectSpy = mockRowRect(span)
   fireEvent.mouseMove(span, { clientX: 0 })
   expect(hover.position).toEqual({
@@ -782,9 +810,7 @@ test('coordinate spacing continues across exon/intron boundaries', () => {
       }}
     />,
   )
-  expect(
-    getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1],
-  ).toBe(
+  expect(renderedRow(getByTestId('sequence_panel'), 1)).toBe(
     '1001   AAAAAAAAAA AAAAAAAAAA cccccccccc GGGGGGGGGG GGGGGGGGGG GGGGGGGGGG',
   )
 })
@@ -823,9 +849,7 @@ test('exons short of the feature bounds keep their genomic coordinates', () => {
   )
   // the flanks read as the uncolored genomic stretches they are, the same way
   // the intron between the two exons does
-  expect(
-    getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1],
-  ).toBe(
+  expect(renderedRow(getByTestId('sequence_panel'), 1)).toBe(
     '1001   tttttttttt AAAAAAAAAA cccccccccc GGGGGGGGGG GGGGGGGGGG aaaaaaaaaa',
   )
 })
@@ -860,7 +884,7 @@ test('single exon cDNA display relative coords', () => {
   )
 
   const element = getByTestId('sequence_panel')
-  expect(getSequencePlaintext(element)).toMatchSnapshot()
+  expect(getSequenceFasta(element)).toMatchSnapshot()
 })
 
 test('reverse complement flips a plus-strand genomic readout', () => {
@@ -883,7 +907,7 @@ test('reverse complement flips a plus-strand genomic readout', () => {
     />,
   )
 
-  const text = getSequencePlaintext(getByTestId('sequence_panel'))
+  const text = getSequenceFasta(getByTestId('sequence_panel'))
   expect(text).toContain('CGGGTTTT')
   // the FASTA header records it, so a downloaded sequence says which strand it
   // came off
@@ -912,9 +936,7 @@ test('reverse complement of a minus-strand feature is the plus strand', () => {
     />,
   )
 
-  expect(getSequencePlaintext(getByTestId('sequence_panel'))).toContain(
-    'AAAACCCG',
-  )
+  expect(getSequenceFasta(getByTestId('sequence_panel'))).toContain('AAAACCCG')
 })
 
 test('reverse complement counts genomic coordinates down', () => {
@@ -938,12 +960,7 @@ test('reverse complement counts genomic coordinates down', () => {
     />,
   )
 
-  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
-    .split('\n')
-    .slice(1)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map(s => +s.split(/\s+/, 1)[0]!)
+  const rowStarts = renderedRowStarts(getByTestId('sequence_panel'))
 
   expect(rowStarts).toEqual([300, 200, 100])
 })
@@ -971,7 +988,7 @@ test('reverse complement is ignored by spliced sequence types', () => {
     />,
   )
 
-  const text = getSequencePlaintext(getByTestId('sequence_panel'))
+  const text = getSequenceFasta(getByTestId('sequence_panel'))
   expect(text).toContain('AAAACCCG')
   expect(text.split('\n')[0]).not.toContain('revcomp')
 })

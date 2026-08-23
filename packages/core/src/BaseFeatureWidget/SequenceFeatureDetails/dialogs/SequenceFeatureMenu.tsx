@@ -12,7 +12,7 @@ import {
   resolveShowCoordinates,
   showGenomicCoordsOption,
 } from '../featureTypeUtil.ts'
-import { getSequencePlaintext } from '../util.ts'
+import { getSequenceFasta } from '../util.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
 import type { AbstractSessionModel } from '../../../util/index.ts'
@@ -69,13 +69,9 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
       <CascadingMenuButton
         menuItems={[
           {
-            label: 'Copy plaintext',
+            label: 'Copy FASTA',
             onClick: withPanel(panel =>
-              copyTextWithSession(
-                session,
-                getSequencePlaintext(panel),
-                'sequence',
-              ),
+              copyTextWithSession(session, getSequenceFasta(panel), 'sequence'),
             ),
           },
           {
@@ -87,13 +83,13 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
             ),
           },
           {
-            label: 'Download plaintext',
+            label: 'Download FASTA',
             onClick: withPanel(panel => {
               saveAs(
-                new Blob([getSequencePlaintext(panel)], {
+                new Blob([getSequenceFasta(panel)], {
                   type: 'text/plain;charset=utf-8',
                 }),
-                'sequence.txt',
+                'sequence.fa',
               )
             }),
           },

@@ -8,9 +8,9 @@ export default function SequenceLegend({
 }) {
   return (
     <div
-      // excluded from plaintext/FASTA copy+download (see getSequencePlaintext);
+      // excluded from the FASTA copy+download (see getSequenceFasta);
       // retained in HTML copy so the swatch colors survive
-      data-no-plaintext
+      data-no-fasta
       style={{
         display: 'flex',
         flexWrap: 'wrap',

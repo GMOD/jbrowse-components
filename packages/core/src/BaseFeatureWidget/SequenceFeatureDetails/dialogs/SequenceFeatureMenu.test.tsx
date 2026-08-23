@@ -54,9 +54,9 @@ function clickMenuItem(label: string) {
   fireEvent.click(item!)
 }
 
-test('copies plaintext through the session its opener supplied', async () => {
+test('copies FASTA through the session its opener supplied', async () => {
   const { notified, errors } = renderDetachedMenu()
-  clickMenuItem('Copy plaintext')
+  clickMenuItem('Copy FASTA')
 
   await waitFor(() => {
     expect(notified).toEqual(['Copied sequence to clipboard'])
@@ -82,7 +82,7 @@ test('a rejected clipboard write reaches the same session', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
   copyMock.mockRejectedValueOnce(new Error('the browser said no'))
   const { notified, errors } = renderDetachedMenu()
-  clickMenuItem('Copy plaintext')
+  clickMenuItem('Copy FASTA')
 
   await waitFor(() => {
     expect(errors).toEqual(['Error: the browser said no'])

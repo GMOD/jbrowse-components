@@ -68,7 +68,6 @@ the half that rots is the half it covers.
 | [PanSN prefixes in the add-track form](todo/offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form.md) | comparative | the error half shipped; this is the discovery half |
 | [The comparative context menu sits behind no seam](todo/the-comparative-context-menu-sits-behind-no-bring-your-own-seam.md) | synteny, dotplot, embedded | fetch status done, tooltip refused; the context menu needs a shape of its own |
 | [charactersPerRow is a constant on a model](todo/charactersperrow-is-a-constant-living-on-a-model.md) | feature details | decide setting vs const; a setter with no UI is the worst option |
-| [Download plaintext writes an unreadable FASTA](todo/download-plaintext-writes-a-fasta-no-tool-can-read.md) | feature details | a product call, and it moves "Copy plaintext" too |
 | [The config-read baseline's remaining 129](todo/the-config-read-baselines-remaining-129-is-mostly-not-display-debt.md) | config, types | 75 of them are track/assembly reads; confirm that before estimating any of it |
 | [Do the plugin `exports` surfaces earn a baseline](todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md) | plugins, ABI | recorded; build the plugin-`exports` baseline, and read the session one's blocker first |
 

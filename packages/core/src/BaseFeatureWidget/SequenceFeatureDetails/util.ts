@@ -208,14 +208,27 @@ function formatWithCoordinateSpacing(
 }
 
 /**
- * Text content of the sequence panel for plaintext/FASTA copy+download, with
- * `[data-no-plaintext]` elements (e.g. the legend) stripped so they don't
- * corrupt the sequence output.
+ * The sequence panel as FASTA, for the copy and download rows.
+ *
+ * Not the panel's text. The panel draws a position label down its left edge and
+ * a space every ten bases, both of which are there to be read by a person, and
+ * a `>`-headed file carrying either parses nowhere — the header promises a tool
+ * it can be parsed and then hands it `1201   ACGTACGTAC ACGT…`. So: drop every
+ * `[data-no-fasta]` node (the legend, and those labels), then strip the spacing
+ * out of each sequence line. A line opening with `>` is a header and survives
+ * whole, since a FASTA description is words.
+ *
+ * What the panel renders is still `el.textContent`, and that is what the HTML
+ * rows copy — coordinates, colors and all. Selecting the panel by hand gets it
+ * too, so nothing here is the only way to a positioned readout.
  */
-export function getSequencePlaintext(el: HTMLElement) {
+export function getSequenceFasta(el: HTMLElement) {
   const clone = el.cloneNode(true) as HTMLElement
-  for (const node of clone.querySelectorAll('[data-no-plaintext]')) {
+  for (const node of clone.querySelectorAll('[data-no-fasta]')) {
     node.remove()
   }
-  return clone.textContent || ''
+  return (clone.textContent || '')
+    .split('\n')
+    .map(line => (line.startsWith('>') ? line : line.replaceAll(/\s/g, '')))
+    .join('\n')
 }

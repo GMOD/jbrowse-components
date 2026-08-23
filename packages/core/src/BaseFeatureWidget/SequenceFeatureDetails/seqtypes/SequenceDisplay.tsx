@@ -85,7 +85,11 @@ const SequenceDisplay = observer(function SequenceDisplay({
       /* biome-ignore lint/suspicious/noArrayIndexKey: */
       // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of sequence chunks, never reorder
       <Fragment key={`${chunk}-${idx}`}>
-        {showCoordinates ? prefix : null}
+        {showCoordinates && prefix ? (
+          // out of the FASTA export: a row label is panel chrome, and a
+          // sequence line carrying its own position number parses nowhere
+          <span data-no-fasta="coord">{prefix}</span>
+        ) : null}
         {highlight && sequenceOffsets ? (
           <HighlightedChunk
             chunk={chunk}
