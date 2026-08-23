@@ -62,7 +62,7 @@ exports[`<AboutWidget /> renders 1`] = `
         >
           <button
             aria-expanded="true"
-            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
             tabindex="0"
             type="button"
           >
@@ -131,7 +131,7 @@ exports[`<AboutWidget /> renders 1`] = `
         >
           <button
             aria-expanded="true"
-            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+            class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
             tabindex="0"
             type="button"
           >
