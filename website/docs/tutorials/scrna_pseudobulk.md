@@ -31,13 +31,9 @@ rows.
 Putting the cells on genomic coordinates says where in the gene the reads
 landed: which end, which exons, which annotated transcript the pile agrees with.
 
-<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal walks down the diagonal." src="/img/scrna/marker_panel.png" />
-
-The signal piling up at one end of each gene is the chemistry: 10x 3' kits
-sequence the 3' end of each transcript, so a coverage track of that library is a
-spike near the polyadenylation site. Reading a marker gene means comparing the
-heights of those spikes across rows, and the figure is on a log scale because
-the rows share one axis. Full-length chemistries (Smart-seq, and 5' kits to a
+Where the signal piles up in a gene is the chemistry: 10x 3' kits sequence the
+3' end of each transcript, so a coverage track of that library is a spike near
+the polyadenylation site. Full-length chemistries (Smart-seq, and 5' kits to a
 lesser degree) spread coverage over the gene body.
 
 ## Generating per-cell-type BigWigs
@@ -102,8 +98,8 @@ bedGraphToBigWig celltype.cpm.bg hg38.chrom.sizes celltype.bw
 ## Loading the BigWigs
 
 One `MultiQuantitativeTrack` holds the whole set, one `BigWigAdapter` subadapter
-per cell type, each carrying the row's `name`, `color`, and `group`. The
-figure's nine rows are nine such entries; here are the first three:
+per cell type, each carrying the row's `name`, `color`, and `group`. The nine
+rows in the figure below are nine such entries; here are the first three:
 
 ```json
 {
@@ -148,6 +144,11 @@ figure's nine rows are nine such entries; here are the first three:
 Take the row order and the row colors from the single-cell object: related
 lineages stay adjacent, and a row keeps the color its cluster had on the UMAP,
 so a reader can move between the two pictures.
+
+<Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal walks down the diagonal." src="/img/scrna/marker_panel.png" />
+
+Reading a marker gene means comparing the height of its 3' spike from row to
+row. The figure is on a log scale, because every row shares one axis.
 
 The `--multiwig` CLI form and the add-track UI workflow build the same track
 without hand-writing it, and both are covered on
