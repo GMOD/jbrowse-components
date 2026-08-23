@@ -1,6 +1,6 @@
 {
   "defaultSession": {
-    "name": "SLE GWAS LocusZoom demo",
+    "name": "GWAS LocusZoom demos",
     "views": [
       {
         "id": "sle_lz_view",

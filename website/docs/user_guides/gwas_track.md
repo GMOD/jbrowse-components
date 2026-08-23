@@ -19,7 +19,7 @@ summary statistics straight from the Pan-UKBB public S3 bucket.
 
 ## Example file
 
-To try the workflow without preparing anything, paste this hg19 SLE GWAS summary
+To try the workflow without preparing anything, paste this hg19 BMI GWAS summary
 statistics file (with `neg_log_pvalue` as the score column) into the Add GWAS
 track form:
 
@@ -27,8 +27,13 @@ track form:
 https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz
 ```
 
-Its matching PLINK `.ld` file (1000G CEU reference panel) is already wired up in
-the demo config, so the LD-colored view below opens ready to explore.
+Its peaks are the ones a BMI scan is known for, FTO at chr16:53.8 Mb first by a
+wide margin, then TMEM18, MC4R and SEC16B, so a view that lands on any of them
+has something to show.
+
+That file carries no LD of its own. The LD-colored demo below is a second pair,
+`gwas_giant-bmi_meta_women-only.gz` with a PLINK table beside it, both under
+`jbrowse.org/demos/gwas/`, which is what the demo config wires together.
 
 ## Public data sources
 
