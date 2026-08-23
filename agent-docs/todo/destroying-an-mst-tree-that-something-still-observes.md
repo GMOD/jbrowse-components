@@ -1,6 +1,6 @@
 ---
 name: destroying-an-mst-tree-that-something-still-observes
-description: give each lazy its own Suspense boundary; verified 2 leaked -> 0
+description: the boundaries are already clean; measured, the discarded unit is a whole boundary subtree and the leak is app-wide, not the drawer's four
 metadata:
   area: app-core, drawer
   category: measure-first
@@ -192,16 +192,65 @@ remedy and its non-deterministic timing is a documented caveat, not an
 oversight. A report saying "reactions from uncommitted renders are not disposed
 promptly" would be restating their design.
 
-What that leaves is a usage change here, and it is worth doing on the numbers
-above: audit the drawer's Suspense boundaries so a suspending `lazy` cannot
-discard `observer` siblings. The nesting is the problem — `App.tsx` wraps a lazy
-`DrawerWidget`, whose widget `ReactComponent` is lazy again
-(`HierarchicalTrackSelectorWidget/index.ts`), with further lazy dialogs below in
-`HamburgerMenu.tsx` and `TrackCategory.tsx`. Each is a boundary that can throw
-away a pass containing observers.
+## The boundary audit is already clean, and the leak is bigger than the drawer
 
-Not established, and worth measuring rather than assuming: *which* of those
-actually suspends at the moment the 14 reactions appear. The count is taken at
-steady state after load, with no dialog open, so it is not the dialogs. Find the
-suspending sibling first, then move that one boundary and re-measure with the
-observer count rather than by eye.
+The measurement the paragraph above asked for has been taken, in jsdom rather
+than a browser: a jbrowse-web test (`createView` on a one-track volvox config,
+React 19.2.8, no StrictMode) with `Reaction` subclassed to log every
+`observer*` creation, `OverrideBadge` wrapped in a render/commit counter, and
+`getObserverTree(widget, 'trackContainer')` read at the end.
+
+- `trackContainer` carries **10 observers with 2 rows in the DOM**; `OverrideBadge`
+  **renders 4 times and commits twice**. So exactly one full pass is discarded,
+  matching the browser's shape at a smaller N.
+- The creation histogram says where that pass starts and stops. Everything from
+  `ClassicViewsContainer` down (`ViewStack`, `ViewContainer`, `ViewWrapper`,
+  `LinearGenomeView`, the whole LGV header and scalebar) and everything from
+  `DrawerWidget` down (`Drawer`, `DrawerHeader`, `WidgetBody`,
+  `HierarchicalTrackSelector`, every row) is created **exactly twice**. `App`,
+  `ViewsContainer`, `DialogQueue`, `AppFab`, `Snackbar` are created **once**.
+- Those two doubled roots are precisely the children of two Suspense
+  boundaries — `ViewsContainer.tsx`'s and `App.tsx`'s drawer one. The discarded
+  unit is a **boundary's whole child subtree**, not an `observer` sibling of a
+  `lazy`.
+
+**So "audit the drawer's Suspense boundaries" does not close it: they are
+already clean.** Every `lazy` on this path has its own boundary with no
+`observer` sibling inside it — `App.tsx:69` wraps only `DrawerWidget`,
+`WidgetBody` wraps only the widget's `ReactComponent`, `HamburgerMenu`'s and
+`TrackCategory`'s dialogs are queued into the session dialog stack, and
+`DrawerHeader`'s boundary holds a component that is not lazy at all.
+
+**What actually suspends** is a lazy one level *below* a boundary that has not
+committed yet. During the discarded pass, `ClassicViewsContainer` reaches the
+LGV's `ReactComponent` (`plugins/linear-genome-view/src/LinearGenomeView/index.ts:47`)
+and `DrawerWidget` reaches the track selector's
+(`HierarchicalTrackSelectorWidget/index.ts:19`). Each of those has its own
+`Suspense`, but the boundary enclosing it is itself mid-mount, so React
+restarts the outer attempt rather than committing an inner fallback into a tree
+nobody can see yet. Mounting a second time in the same module registry — where
+both `lazy` payloads are already resolved — stops the doubling of those
+subtrees, which is what pins it on the suspension rather than on anything else
+in the pass.
+
+The 30-line repro above still reproduces exactly as written (3 observers with 1
+in the DOM shared, 1 and 1 split), so the shared-boundary shape is real. It is
+just not the shape this app is hitting.
+
+Two consequences for the entry:
+
+- **The size is wrong by an order of magnitude.** It is not 14 reactions in the
+  track selector; it is one per `observer` under either boundary, which at load
+  is most of the app tree. The drawer's four were only the ones the
+  destroyed-session warning happened to name.
+- **The fix has to be about the cascade, not the nesting.** The candidate is to
+  start a child chunk's import when the model that will render it is created —
+  a view's `ReactComponent` when the view is added, a widget's when `showWidget`
+  runs — so the inner `lazy` is resolved by the time the outer boundary renders
+  and the boundary commits once. Not built, and not costed against what it does
+  to the initial bundle graph.
+
+Still open, and now the narrower question: a warm second mount stops doubling
+the view and drawer chrome but leaves the track selector's own subtree at 3x,
+with `PluggableComponent` created 5 times. Something inside the widget suspends
+even with every chunk resolved, and that one has not been chased.
