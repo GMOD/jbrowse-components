@@ -460,9 +460,8 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `clearDisplaySpecificData`** — parked 2026-08-20 as
   `ideas/per-region-stores-are-named-four-times.md`, closed 2026-08-21 by
   answering the question it parked on: the fail-open `regionHasData` default is
-  **unreachable** from the byte gate. A refusal — pre-flight or in-worker —
-  stamps nothing (`fetchRegions` returns before the work callback; the
-  `fetchEachRegion` family skips refused results), pinned by
+  **unreachable** from the byte gate. A refusal stamps nothing — the
+  `fetchEachRegion` family skips refused results outright — pinned by
   `fetchRegions.test.ts` and
   `LinearBasicDisplay/loadedRegionCoverage.test.ts`. The one stamp-without-store
   path is sequence's legitimately-empty-region answer, where fail-open is

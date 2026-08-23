@@ -8,12 +8,13 @@ description: LGVSyntenyDisplay inherits the byte-gate opt-in from LinearAlignmen
 ## The state today
 
 `LGVSyntenyDisplay` extends `LinearAlignmentsDisplay` wholesale, which brings
-`measuresBytesPreFlight = true` — so every fetch already pays the
-`CoreGetRegionByteEstimate` RPC. But no adapter in
-`plugins/comparative-adapters` implements `getRegionByteSize`, so the estimate
-comes back `undefined` and the gate never fires: no banner, no cap, and a
-fine-tier `.pif.gz` over a whole chromosome downloads whatever it holds. The
-pre-flight round trip is paid for nothing.
+`gateEnabled = true` — so every fetch already sends a `byteLimit` to
+`RenderAlignmentData`. But no adapter in `plugins/comparative-adapters`
+implements `getRegionByteSize`, so the measurement comes back `undefined` and
+the gate never fires: no banner, no cap, and a fine-tier `.pif.gz` over a whole
+chromosome downloads whatever it holds. Since the collapse onto one measurement
+path this costs nothing per fetch — the executor measures inside the fetch it
+was going to make anyway — so what is left is only the missing bound.
 
 Recorded as a decision (inert, known) in
 [REGION_TOO_LARGE.md](../reference/REGION_TOO_LARGE.md) §"Two ungated shapes

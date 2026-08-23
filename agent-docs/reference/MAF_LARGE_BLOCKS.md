@@ -453,7 +453,7 @@ the draw loop:
 
 A third gap was in it and is now closed, worth recording because the reasoning
 generalizes. The summary tier used to turn the byte gate off outright
-(`measuresBytesPreFlight = !showSummary`), on the grounds that it is the cheap tier. It
+(`gateEnabled = !showSummary`), on the grounds that it is the cheap tier. It
 is cheap per base — no sequence — but `mafSummaryFeatures` calls
 `adapter.getFeatures` on the sub-adapter, and a `BigBedAdapter` read is a
 whole-feature download; `showSummary` covers 20kb to the whole genome; and a

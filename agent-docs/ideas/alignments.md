@@ -176,7 +176,7 @@ just exposes the next — so this is a program of work, not a single fix:
   there's no BigWig-style pre-binned summary source (contrast wiggle, which gets
   screen-resolution data free from bbi zoom levels and reports no byte estimate at
   all, so nothing gates it). So whole-chromosome coverage means downloading every read
-  in the region; the byte-estimate gate (`byteGateBlocksFetch`, default
+  in the region; the byte-estimate gate (`measureRegionBytes` inside the fetch RPC, default
   `fetchSizeLimit` 1 MB) blocks it first and forces "Force load to see features".
   A genuine large-region mode would need either a reworked/removed byte gate for
   the coverage-only path, or a precomputed-coverage sidecar (emit a companion

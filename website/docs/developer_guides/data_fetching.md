@@ -136,8 +136,15 @@ whole batch rather than per region:
 <!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
 ```ts
+type MafBatch = {
+  results: { displayedRegionIndex: number; result: R }[]
+  bytes?: number
+}
 await fetchRegionsBatched(self, needed, {
-  call: async (regions, ctx) => {
+  // Annotated, because the two arms are what tells `fetchRegionsBatched`
+  // which half is the payload: inferred, the marker's absent fields would
+  // widen the payload's own.
+  call: async (regions, ctx): Promise<MafBatch | RegionTooLargeResult> => {
     // The CDS-frame annotation overlay (when configured) fetches in the same
     // stop-token-guarded pass as the main data so the two share staleness +
     // loadedRegions book-keeping; the two RPCs run concurrently.
@@ -151,9 +158,24 @@ await fetchRegionsBatched(self, needed, {
       callEachRegion(regions, { ...ctx, statusCallback: slot() }, call),
       fetchAnnotationData(self, regions, { ...ctx, statusCallback: slot() }),
     ])
-    return results
+    // The batch's own byte number, whichever way it goes: the budget is what
+    // one region may cost, so the largest is what was judged and what the
+    // banner quotes.
+    const bytes = largestRegionBytes(results.map(r => measuredBytes(r.result)))
+    const kept: { displayedRegionIndex: number; result: R }[] = []
+    let refused = false
+    for (const { displayedRegionIndex, result } of results) {
+      if (isRegionRefused(result)) {
+        refused = true
+      } else {
+        kept.push({ displayedRegionIndex, result })
+      }
+    }
+    return refused
+      ? { regionTooLarge: true as const, bytes }
+      : { results: kept, bytes }
   },
-  commit: results => {
+  commit: ({ results }) => {
     const sampleSet = unionSampleSets(results)
     if (sampleSet) {
       self.setSamples(sampleSet)
@@ -229,25 +251,31 @@ with one getter:
 ```ts
 /**
  * #getter
- * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
- * region set with `CoreGetRegionByteEstimate` before downloading reads.
+ * Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes
+ * `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is
+ * the index estimate — so an over-budget region is refused before a
+ * single read is downloaded.
  */
-get measuresBytesPreFlight() {
+get gateEnabled() {
   return true
 },
 ```
 
-`fetchRegions` then calls `CoreGetRegionByteEstimate` before your work callback.
-When the estimate for the visible span exceeds the byte limit (the adapter's own
-`fetchSizeLimit`, else the display config's), the fetch is skipped and
-`DisplayChrome` shows the too-large banner with a "Force load" button.
+...and one argument at the fetch: pass `byteLimit: self.resolvedByteLimit()` in
+your RPC's args. The worker then reads the adapter's index estimate as the first
+thing it awaits, and when that exceeds the byte limit (the adapter's own
+`fetchSizeLimit`, else the display config's) it returns a `RegionTooLargeResult`
+instead of a payload rather than downloading anything. The fan-out helpers
+commit that measurement, skip the store and `loadedRegions` for the refused
+region, and `DisplayChrome` shows the too-large banner with a "Force load"
+button.
 
 Two things fall out of that:
 
 - `regionTooLarge` is **derived**, not a flag: it is a pure comparison of the
   last measurement against the budget. What keeps that measurement describing
   what you are looking at is that a blocked display keeps running its fetch,
-  once per settled viewport — the fetch stops at the estimate, so it costs an
+  once per settled viewport — the fetch stops at the measurement, so it costs an
   index read and downloads nothing. So the banner releases itself on a fresh
   measurement, with no imperative clear and no flicker while you pan.
 - "Force load" sets one volatile boolean for the whole track (`forceLoadTrack`),

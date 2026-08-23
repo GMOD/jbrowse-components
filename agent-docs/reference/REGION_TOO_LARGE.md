@@ -1,6 +1,6 @@
 ---
 name: region-too-large
-description: The byte/density gate that raises the "region too large" banner and holds off the fetch — the derived getter, the shared verdict primitives, and how canvas folds the byte check into its feature RPC. Read when touching fetch gating or the too-large banner.
+description: The byte/density gate that raises the "region too large" banner and holds off the fetch — the derived getter, the shared verdict primitives, and the one measurement path every gated feature RPC runs as its first await. Read when touching fetch gating or the too-large banner.
 ---
 
 # The region-too-large gate
@@ -24,17 +24,18 @@ axis's own terms.
 | --- | --- |
 | `RegionTooLargeMixin` (derived gate, byte axis, worker byte budget) | `plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts` |
 | Shared verdict primitives | `plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts` |
-| Budget vocabulary both sides of the worker share | `packages/core/src/rpc/byteBudget.ts` |
-| Pre-flight estimate RPC | `packages/core/src/rpc/methods/CoreGetRegionByteEstimate.ts` |
+| Budget vocabulary, and the in-fetch measurement every gated RPC runs | `packages/core/src/rpc/byteBudget.ts` |
 | Adapter estimate | `BaseFeatureDataAdapter.getRegionByteSize` |
-| In-fetch byte short-circuit (both canvas RPCs) | `plugins/canvas/src/RenderFeatureDataRPC/byteGate.ts` |
+| The byte-commit the fan-out helpers make | `commitFetchBytes`, `RegionTooLargeMixin.ts` |
 | `CanvasFeatureGateMixin` (density axis) | `plugins/canvas/src/shared/CanvasFeatureGateMixin.ts` |
 | MAF's private bound on the `mafFrames` overlay | `framesReadOverBudget`, `plugins/maf/src/LinearMafDisplay/fetchMafData.ts` |
-| The save dialog's own pre-flight, not the gate | `fetchTrackData.ts` + `BaseTrackModel.exportByteLimit` |
+| The save dialog's own size check, not the gate | `CoreGetRegionByteEstimate` + `fetchTrackData.ts` + `BaseTrackModel.exportByteLimit` |
 
 Tests: `regionTooLargeUtils.test.ts` for the shared primitives, a
-`derivedRegionTooLarge.test.ts` per gated display, and a "the gate opt-in
-survives regardless of mixin composition order" pin in
+`derivedRegionTooLarge.test.ts` per gated display, the three fan-out helpers'
+own files (`fetchEachRegion.test.ts`, `fetchAllRegions.test.ts`,
+`fetchRegionsBatched.test.ts`) for the commit and the refusal skip, and a "the
+gate opt-in survives the display composition order" pin in
 `plugins/canvas/src/LinearBasicDisplay/fetchAutorun.test.ts` and
 `plugins/canvas/src/LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
@@ -58,29 +59,26 @@ Everything here is plugin-internal but four types: the mixin, the floor and the
 verdict helpers are not exported from `@jbrowse/plugin-linear-genome-view`, and
 [ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)
 is why they live in a plugin rather than a foundation package. The exceptions are
-`GateViewport` and `GateFetchState`, which canvas's duck-typed fetch contracts
-have to name — a display snapshots `gateFetchState()` when it issues a fetch and
-hands it back to `commitGateMeasurements` — plus `ByteEstimate` and
+`GateViewport` and `GateFetchState`, which the duck-typed fetch contracts have
+to name — a fan-out helper snapshots `gateFetchState()` when it issues a fetch
+and hands it back to `commitFetchBytes` — plus `ByteEstimate` and
 `RegionTooLargeStatus`, exported only so the entry index's `.d.ts` can
 serialize. The budget vocabulary is the one piece
 that is deliberately *not* plugin-internal (§ A budget has a scope): three
 callers in three packages make the same comparison, and only `packages/core` is
 reachable from all of them.
 
-The pre-flight RPC takes a stop token, and it earns it. `getRegionByteSize`
-bottoms out in an index lookup (`bytesForRegions`), which is a set of range reads
-over the network for BAM/CRAM/tabix and runs on the critical path of the fetch it
-precedes — so a superseded viewport must stop measuring a file it will not
-download. `byteGateBlocksFetch` issues it through `ctx.callRpc`, which injects
-this fetch's stop token and status callback, and wraps it in
-`updateStatus('Estimating size', …)` — so the phase is a cancellation boundary
-as well as the label the user sees first when a track opens wide. The envelope
-is what makes that structural: hand-threading the pair was silent when a call
-site forgot, and `ctx.isStale()` alone left both on the floor. Only `headers` is
-unused RPC-base boilerplate.
+The measurement takes a stop token, and it earns it. `getRegionByteSize` bottoms
+out in an index lookup (`bytesForRegions`), which is a set of range reads over
+the network for BAM/CRAM/tabix and runs on the critical path of the fetch whose
+first await it is — so a superseded viewport must stop measuring a file it will
+not download. `measureRegionBytes` takes the fetch's own stop token and status
+callback (the RPC driver hands them to every executor) and wraps the read in
+`updateStatus('Checking region size', …)`, so the phase is a cancellation
+boundary as well as the label the user sees first when a track opens wide.
 
-**One caller of that RPC is not the gate at all**, and it is easy to miss when
-changing either: "Save track data" pre-flights the same index lookup in
+**`CoreGetRegionByteEstimate` still exists and is not the gate.** It is easy to
+miss when changing either: "Save track data" runs the same index lookup in
 `packages/core/.../fetchTrackData.ts`, against `BaseTrackModel.exportByteLimit`.
 It pulls the region a blocked display just refused, so it needs a bound of its
 own — deliberately more generous, since a save is a confirmation rather than a
@@ -100,14 +98,22 @@ For the wider picture and the five fetch autoruns that consult the verdict, see
 
 Four steps and a note, all on `RegionTooLargeMixin`:
 
-- `byteGateBlocksFetch(regions, ctx)` is the whole pre-flight, in one action:
-  read `gateViewport`, run `CoreGetRegionByteEstimate`, commit, return
-  `regionTooLarge`. Callers do `if (await self.byteGateBlocksFetch(regions, ctx))
-  return` and nothing else — and **no display is a caller**: the two fetch
-  runners make it, `fetchRegions` for the whole `MultiRegionDisplayMixin` family
-  and `runGlobalFetch` for the global one, so a display's whole opt-in is the
-  `measuresBytesPreFlight` getter. It short-circuits to false when that is off,
-  so the call is unconditional at both sites.
+- **The measurement is inside the fetch, and the display's whole part in it is
+  two lines**: override `gateEnabled` to true, and pass
+  `byteLimit: self.resolvedByteLimit()` in the fetch RPC's args. The RPC runs
+  `measureRegionBytes` (or `measureRegionsBytes`, for one that serves a whole
+  region set) as its first await and answers a `RegionTooLargeResult` in place
+  of its payload when the region is over — carrying `bytes` either way, so the
+  banner has a number on the success path too.
+
+  **Committing it is the fetch runners', not the display's.** `fetchEachRegion`,
+  `fetchAllRegions` and `fetchRegionsBatched` capture `gateFetchState()` before
+  they issue anything and call `commitFetchBytes(perRegionBytes, issued)` when
+  the results land; `runGlobalFetch` does the same for the global family. They
+  also skip `onResult` and `ctx.commitRegion` for a refused region, so what the
+  display stores and what `loadedRegions` claims cannot come apart. A display
+  that never passes a `byteLimit` measures nothing and commits nothing, which is
+  what lets the runners call this unconditionally.
 - `gateViewport` is **what a measurement is about**: the span on screen plus a
   key identifying that stretch of genome. It is the mixin's **only** view read
   (`adapterFetchSizeLimit` reaches the containing track, and that is the only
@@ -119,8 +125,7 @@ Four steps and a note, all on `RegionTooLargeMixin`:
   the number with a viewport it never covered, and both readers of that label
   then answer wrongly: `gateMeasurementStale` thinks the new viewport was
   measured, `zoomIneffective` reads the zoom as having bought nothing.
-  `byteGateBlocksFetch` reads it above the await, so no call site has to
-  remember.
+  The fan-out helpers read it above the await, so no display has to remember.
 - `setByteEstimate({ bytes, viewport })` and `setGateMeasuredViewport(viewport)`
   are the two commits, and they are deliberately separate. The first stores the
   bytes and the span, through `nextByteEstimate`, which is also where
@@ -132,7 +137,9 @@ Four steps and a note, all on `RegionTooLargeMixin`:
   byte result must not overwrite a good estimate. Folding them would make a
   density-blocked display refetch forever.
 
-  Both of them, `clearByteEstimate` and `setForceLoadTrack` are now one-line
+  `commitFetchBytes` reduces a batch to one `commitByteMeasurement` — the
+  per-region **max**, because the budget is what one region may cost — and both
+  of them, `clearByteEstimate` and `setForceLoadTrack` are one-line
   delegations to **`nextGateState(prev, event)`** (`regionTooLargeUtils.ts`),
   which is where the whole commit protocol lives. The point of it being pure is
   the tests: `gateTruthTable.test.ts` is a cross-product of *states* and cannot
@@ -178,7 +185,7 @@ which fetch that is.
   window; zoom out past 20kb and `showSummary` flips to the cheap tier while that
   number — megabytes — banners a summary read that would have measured ~60 kB.
   Only that direction is unsafe: a stale *summary* estimate under-reports, so the
-  fetch proceeds and the pre-flight re-measures before `work()` runs. The clear
+  fetch proceeds and re-measures on its way to the download. The clear
   is keyed on the tier, never on the zoom, or a single-file track would re-derive
   its banner on every pass across the floor. All three pinned in
   `plugins/maf/src/LinearMafDisplay/derivedRegionTooLarge.test.ts`.
@@ -315,15 +322,14 @@ four questions that ruled that out reaches a static span tier
 The verdict is the last measurement, so the whole design question is *when does a
 new one get taken*. Two states, and the answer in both is "the fetch takes it":
 
-- **Not gated** — every fetch measures before it downloads. The pre-flight in
-  `byteGateBlocksFetch`, or `measureRegionBytes` ahead of `getFeaturesArray` in
-  canvas's own feature RPC.
+- **Not gated** — every fetch measures before it downloads: `measureRegionBytes`
+  is the first await of every gated feature RPC.
 - **Gated** — the fetch autoruns run that same fetch **once per settled
   viewport**, and it stops at whichever gate rejected it, because that is what a
   fetch does when the answer is over budget.
 
   What a blocked track costs per settled pan or zoom: on the **byte** axis, one
-  index read and no features, on both paths. On canvas's **density** axis, the
+  index read and no features. On canvas's **density** axis, the
   pre-fetch probe `samplePreFetchDensity` — a 1kb sample window, doubling until
   it has seen 70 features — then the short-circuit. A region dense enough to be
   density-blocked satisfies that on the first window, so it is bounded but not
@@ -332,25 +338,27 @@ new one get taken*. Two states, and the answer in both is "the fetch takes it":
 **A fetch the gate sat out is not a measurement, and neither path stamps one.**
 `gateMeasurementStale` compares a stamp against `gateViewport.key`, and the stamp
 means "the gate asked the adapter about this viewport". A force-loaded fetch
-carries no budget on either axis, so the worker measured against nothing, and
-`byteGateBlocksFetch` returns above its own stamp when `gateActive` is false. Two
-paths disagreeing about what a stamp means is only ever found the hard way. The
-density *stats* are still committed on a force-loaded fetch, which is what lets
-zooming back out re-gate from the live main-thread verdict.
+carries no budget on either axis, so the worker measured against nothing and
+`gateFetchState()` records `gated: false`, which is what stops the commit
+stamping the viewport. The density *stats* are still committed on a force-loaded
+fetch, which is what lets zooming back out re-gate from the live main-thread
+verdict.
 
 **Both halves of that read the fetch's own state, not the live one.**
-`commitGateMeasurements` takes a `GateFetchState` — `{ viewport, gated }` —
-captured where the fetch was issued, because a result is judged by the state that
-produced it and neither field can be recovered afterwards. `gated` in particular
+`commitFetchBytes` (and `commitGateMeasurements` on the density side) takes a
+`GateFetchState` — `{ viewport, gated, tierKey }` — captured where the fetch was
+issued, because a result is judged by the state that produced it and none of its
+fields can be recovered afterwards. `gated` in particular
 is not a live `gateActive` read at commit time: that is a different question
 whenever force-load moves during the round trip, and it answers wrongly in both
 directions.
 
 `gateFetchState()` on `RegionTooLargeMixin` is the capture, and calling it *is*
-the snapshot — a method rather than a getter for that reason. Spell it there and
-nowhere else, tests included: a copy is one more place to forget that `gated`
-means "at issue", and a test copy that re-derives the rule cannot fail when the
-production rule changes.
+the snapshot — a method rather than a getter for that reason. The fan-out
+helpers are the only production callers, so no display has to remember where the
+capture goes. Spell it there and nowhere else, tests included: a copy is one
+more place to forget that `gated` means "at issue", and a test copy that
+re-derives the rule cannot fail when the production rule changes.
 
 The gated half is one condition — `gateSkipsMeasuredViewport`, the mixin's own
 consolidation of `regionTooLarge && !gateMeasurementStale` — read by both fetch
@@ -371,9 +379,12 @@ for the reason the two separate commits carry (§ How the verdict is built).
 
 **No measurement-only RPC path exists, and that is deliberate.** A
 `remeasureByteEstimate()` the blocked autorun calls instead of fetching would
-give canvas a second RPC racing its feature fetch — the two-call coordination it
-is built to avoid — to take a measurement its own fetch already takes. It also
-spreads staleness over two mechanisms.
+give every display a second RPC racing its feature fetch — the two-call
+coordination this codebase avoids — to take a measurement its own fetch already
+takes. It also spreads staleness over two mechanisms. There *was* such a path:
+a `CoreGetRegionByteEstimate` round trip five displays ran ahead of their fetch,
+which resolved the adapter, asked the index, returned, and left the feature RPC
+to resolve the same adapter again. It is gone.
 
 **"Zoom in to see features" is measured too — and only on the byte axis.**
 `zoomCanReleaseGate` first asks `tooLargeStatus.axis` which axis tripped. Screen
@@ -399,35 +410,36 @@ blocked track asks.
 
 Most displays override none of these.
 
-**`measuresBytesPreFlight`** defaults to false, meaning no pre-flight and no
-gating. `byteGateBlocksFetch` and the verdict both read it, so requesting the
-estimate and gating on it are one decision: alignments, maf and
-multi-sample-variant can't drift into fetching estimates nothing reads, or gating
-on estimates nobody fetched. It is a plain boolean **getter**, so that it is read
-tracked — a method returning the viewport from an `.actions` block reads
-untracked, which is how MultiSampleVariant's gate silently went dead.
+**`gateEnabled`** defaults to false, meaning no measurement and no gating.
+Where it is false (wiggle, Manhattan, sequence, synteny) `regionTooLarge` is a
+literal false, the LGV-only getters below it are never evaluated, and a non-LGV
+consumer of the mixin never reads `view.visibleBp`. It is a plain boolean
+**getter**, so that it is read tracked — a method returning the viewport from an
+`.actions` block reads untracked, which is how MultiSampleVariant's gate
+silently went dead.
 
-**`gateEnabled`** is `measuresBytesPreFlight || measuresBytesInFetch`. Where both
-are false (wiggle, Manhattan, sequence, synteny) `regionTooLarge` is a literal
-false, the LGV-only getters below it are never evaluated, and a non-LGV consumer
-of the mixin never reads `view.visibleBp`.
+It was the OR of two opt-ins — `measuresBytesPreFlight` and
+`measuresBytesInFetch` — because there were two measurement paths, and the OR
+existed so a *contributed* opt-in (`CanvasFeatureGateMixin`'s) could not race
+the base on compose order. With one path there is one opt-in and every override
+is a direct one, so the OR, the pair of names, and the `no-restricted-syntax`
+rule that forbade a second `get gateEnabled()` are all gone.
 
-**Overriding it is the one silent-disable the additive OR does not cover** — the
-OR keeps a *contributed* opt-in from racing the base, and does nothing about a
-display redefining the OR itself, which `types.compose` and the type system both
-accept without a word: false over a live opt-in is the whole gate off with no
-banner and no error, true over neither evaluates the LGV-only getters for a
-display that measures nothing. In this tree a second `get gateEnabled()` is an
-eslint error (`no-restricted-syntax`, this mixin exempted as the declaration).
-Out of tree it is not, and nothing at runtime reports it: an out-of-tree display
-contributes an opt-in instead, the way `CanvasFeatureGateMixin` does.
+**What survives is the compose-order hazard**, since `types.compose` resolves a
+member collision to the LATER argument: a mixin *contributing* this — only
+`CanvasFeatureGateMixin` does — composed before the mixin that declares it hands
+the opt-in back to the default, with no banner, no error and nothing the type
+system objects to. `no-restricted-syntax` fails that order and says why. Out of
+tree it does not, which is what `RENAMED_HOOKS` below is for.
 
 **Renaming a gate hook is itself a hazard**, and `RegionTooLargeMixin`'s
-`afterAttach` carries a dev-time check for it (`RENAMED_HOOKS`). An out-of-tree
-display overriding an old name lands on a getter nothing reads: the gate stays
-off and the display downloads whatever it is pointed at with no banner and no
-error — the same silent-disable failure the additive OR and the compose-order
-lint rule exist to prevent. Add to that map before renaming another one. **This
+`afterAttach` carries a dev-time check for it (`RENAMED_HOOKS`, plus
+`REMOVED_VIEW_HOOKS` / `REMOVED_ACTION_HOOKS` for the ones with no new name —
+`measuresBytesPreFlight` and `byteGateBlocksFetch` are both there). An
+out-of-tree display overriding a dead name lands on a getter nothing reads: the
+gate stays off and the display downloads whatever it is pointed at with no
+banner and no error — the same silent-disable the compose-order lint rule exists
+to prevent. Add to those maps before renaming another one. **This
 one stays a runtime check on purpose**: the population it exists for is
 out-of-tree displays, which never run our lint, and in tree there is nothing for
 a selector to find, since a rename that left an old name behind would have been
@@ -454,7 +466,7 @@ snapshot `byteGateAdapterConfig` hands back cannot answer it: slots sitting at
 their schema default are absent from a snapshot, so a sub-adapter's limit is
 unreadable there in any config that does not restate the number.
 
-**`byteGateAdapterConfig`** is which adapter the pre-flight measures, and it is
+**`byteGateAdapterConfig`** is which adapter the gate is *about*, and it is
 the config at that path — `getConf(track, byteGateAdapterPath)`. So the
 measurement and the budget describe one file by construction rather than by two
 overrides agreeing, and MAF's swap is a single getter. Overriding the path is
@@ -475,8 +487,10 @@ an override is a config-time fact — so what pins it is
 `derivedRegionTooLarge.test.ts`'s "reads the budget off the tier it measured",
 against a `summaryAdapter` carrying a limit no in-tree config writes.
 
-That getter lets a tiered display keep `measuresBytesPreFlight` on for **both**
-tiers. Spelling the swap as `measuresBytesPreFlight = !showSummary` instead —
+That getter lets a tiered display keep `gateEnabled` on for **both** tiers, and
+each tier's RPC measures the file IT reads: the MAF alignment index on the
+detail path, the `summaryAdapter` sub-adapter on the summary one. Spelling the
+swap as `gateEnabled = !showSummary` instead —
 exempting the summary tier for being the cheap one — reads as obviously safe and
 is not. MAF's summary tier is cheap *per base*, since it carries no sequence, but
 a `BigBedAdapter` read is still a whole-feature download and `showSummary` is on
@@ -486,36 +500,53 @@ decline. **Exempting a tier assumes it is bounded; measuring it doesn't have to*
 — a genuinely small summary read sits orders of magnitude under `fetchSizeLimit`
 and never banners.
 
-**Nothing turns `measuresBytesPreFlight` off, and there is no reason to.** A
-non-feature adapter is not a special case: `CoreGetRegionByteEstimate` returns
-`undefined` for one — "unmeasurable", the same answer a BigWig gives by not
-implementing `getRegionByteSize` — and an undefined `estimatedFetchBytes` already
-keeps the byte axis out of the verdict. The cost is one round trip per fetch, and
-LD's pre-computed adapters (PlinkLD\*) load lazily
-(`PlinkLDAdapterBase.loadConfigCached`), so resolving one reads no file.
+**Nothing turns `gateEnabled` off once on, and there is no reason to.** A
+non-feature adapter is not a special case: it has no `getRegionByteSize` to
+call, so the executor measures nothing — "unmeasurable", the same answer a
+BigWig gives — and an undefined `estimatedFetchBytes` already keeps the byte
+axis out of the verdict. LD is the worked example: `RenderLDData` measures the
+genotype feature adapter it is about to read and skips the pre-computed
+`PlinkLD*` adapters entirely, which serve no features at all. Under the
+pre-flight that case cost a round trip returning `undefined` by construction;
+folded into the fetch it costs nothing.
 
 The general rule: **a display-side flag that exists to describe an *adapter* will
 be wrong for the next adapter that display is pointed at.**
 
-## Canvas folds the byte check into its fetch RPC
+## Every gated fetch measures before it downloads
 
-Canvas opts out of the pre-flight entirely — `measuresBytesPreFlight` stays
-false, because a second estimate RPC racing the per-region feature fetch is
-exactly the two-call coordination this codebase avoids. Instead
-`executeRenderFeatureData` and `executeMultiRowGetFeatures` call the adapter's
-`getRegionByteSize`, an index-only estimate that downloads no features
-(`undefined` by default on `BaseFeatureDataAdapter`, overridden by the tabix
-adapters). An over-budget region short-circuits there, before `getFeaturesArray`
-runs, and comes back as `{ regionTooLarge, bytes }`. Both RPCs run that stage
-through the one shared `measureRegionBytes` (`RenderFeatureDataRPC/byteGate.ts`),
-the byte-axis counterpart to `densityGate.ts`.
+There is one measurement path, and it is inside the feature RPC. Seven
+executors run it — canvas's two, the alignments pileup, arc's `ArcGetFeatures`,
+MAF's detail and summary tiers, `MultiSampleVariantGetCellData` and
+`RenderLDData` — and every one of them takes `byteLimit` from
+`resolvedByteLimit()`, calls the adapter's `getRegionByteSize` as its first
+await (an index-only estimate that downloads no features, `undefined` by default
+on `BaseFeatureDataAdapter` and overridden by the tabix adapters), and returns
+`{ regionTooLarge, bytes }` in place of its payload when the region is over.
+The shared implementation is `measureRegionBytes` in
+`packages/core/src/rpc/byteBudget.ts` — beside `overByteBudget` and the refusal
+marker, because a second copy is a second answer to the same question.
+`measureRegionsBytes` is the same thing for an RPC handed a whole region set:
+it measures each region separately and judges the largest, since the budget is
+per-region.
 
 That makes the byte gate symmetric with the density gate, which already
 short-circuits inside the RPC and returns `{ regionTooLarge, featureCount }`.
 The payoff shows on a whole-genome fan-out: one cheap index read per chromosome
-instead of downloading every chromosome's features.
+instead of downloading every chromosome's features — and one round trip instead
+of two, since the adapter is already resolved and the density sample can run on
+it between the byte stage and the download.
 
-**The span is a label, not a denominator.** `commitGateMeasurements` stores the
+**A refusal refuses what the fetch is granular in.** On the per-region helpers a
+refused region is skipped and its neighbours still draw; on the batched one —
+variants' monolithic `cellData`, MAF's per-batch sample union, LD's triangle,
+arc's block set — a refusal refuses the whole payload, because that is what the
+worker answers with. So a multi-region view with one over-budget region draws
+the small ones and banners under alignments and canvas, and banners as a whole
+under MAF, variants, LD and arc. That is a visible change for alignments, which
+used to refuse the set on its largest region.
+
+**The span is a label, not a denominator.** `commitFetchBytes` stores the
 per-region *max* bytes labelled with the *total* `visibleBp`, and dividing one by
 the other releases a region the worker still refuses: zooming into one chromosome
 shrinks the total span far faster than that chromosome's own bytes. So a
@@ -524,14 +555,14 @@ on what is on screen. Pinned by "does not release on a shrinking region set unti
 a re-measure says so" in
 `LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
-**The pre-flight has a smaller version of the same seam, inert for a different
-reason.** `fetchRegions` measures `needed` — only the regions the loaded data
-doesn't already cover — while `byteGateBlocksFetch` labels the result with the
-whole `gateViewport.spanBp`. Nothing divides one by the other, so the banner
-quotes what the adapter said about the regions actually being fetched. The one
-reader spanning two measurements is `zoomIneffective`, which compares bytes taken
-over region sets that may differ — so a zoom-in whose covered set *grows* can
-read as "the bytes didn't fall", costing one measurement pair's zoom advice. It
+**A smaller version of the same seam, inert for a different reason.** The
+per-region family fetches `needed` — only the regions the loaded data doesn't
+already cover — while the commit labels the result with the whole
+`gateViewport.spanBp`. Nothing divides one by the other, so the banner quotes
+what the adapter said about the regions actually being fetched. The one reader
+spanning two measurements is `zoomIneffective`, which compares bytes taken over
+region sets that may differ — so a zoom-in whose covered set *grows* can read as
+"the bytes didn't fall", costing one measurement pair's zoom advice. It
 self-corrects on the next, and threading a per-region anchor through would burden
 the single-region case that is nearly every case.
 
@@ -549,9 +580,9 @@ every test in the tree.
 `gateByteLimit` answers "what may a **single region** cost". Every region is
 checked against it, and a multi-region view where each region individually fits
 must not be blanked by what they add up to — so a region set reduces to one
-comparable number **by max**, in both places: `commitGateMeasurements` over
-canvas's per-region fetches, and `CoreGetRegionByteEstimate` for the pre-flight,
-which asks for it by name with `scope: 'largestRegion'`.
+comparable number **by max**, worker-side in `measureRegionsBytes` and
+main-thread-side in `commitFetchBytes`. `CoreGetRegionByteEstimate` keeps the
+`scope` argument for the save dialog, which asks the other question.
 
 **`scope` is required, with no default.** `getRegionByteSize` merges and sums the
 index chunks across every region it is handed, so it answers "what does the whole
@@ -617,9 +648,8 @@ rejection.
 
 **`ByteEstimate.bytes` is a `number`, and that is what holds the rule.** So
 "unmeasurable" and "not measured yet" are one state — no stored estimate — and
-each writer skips its write rather than publishing an empty one, with no third
-option to reach for: `commitGateMeasurements` when no region in the batch
-reported bytes, `byteGateBlocksFetch` when the RPC answered `undefined`. An
+`commitFetchBytes` skips its write rather than publishing an empty one when no
+region in the batch reported bytes, with no third option to reach for. An
 all-stale batch likewise commits nothing, so a superseded fetch can't wipe a good
 estimate. Pinned by "keeps a good estimate when a batch measured no bytes" in
 `LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
@@ -629,9 +659,11 @@ What a batch *does* publish is `bytes` and the span they cover, and nothing else
 same getter that produced the worker's `resolvedByteLimit()`, so the two agree by
 construction rather than by echoing a limit back across the boundary.
 
-A measurement is handed over as `{ displayedRegionIndex, region, result }` — the
-shape a fetch already holds — so neither canvas display does span arithmetic of
-its own; features-per-bp is the gate's business.
+The byte half is handed over as a plain `(number | undefined)[]`, one entry per
+region, which is all the max needs. The density half is
+`{ displayedRegionIndex, region, result }` — the shape a fetch already holds —
+so neither canvas display does span arithmetic of its own; features-per-bp is
+the gate's business.
 
 Multi-row's fetch RPC (`MultiRowGetFeatures`) is **byte-only, in both
 directions**: it takes a `byteLimit` and deliberately no `maxFeatureDensity`, and
@@ -655,8 +687,8 @@ place to drift.
 **Whether the axis is on is `RegionTooLargeMixin`'s too**, beside the
 `densityTooLarge` hook, so "is the density axis on?" has one spelling within
 `densityGateActive`'s reach — but the `true` is **contributed here**, next to
-the measurement, the way `measuresBytesInFetch` is. The axis is on where
-something measures it, and this mixin is the only thing that does.
+the measurement, the way `gateEnabled` is. The axis is on where something
+measures it, and this mixin is the only thing that does.
 
 `densityGateEnabled` defaulted to `true` on the base until 2026-08, which put
 the five byte-only displays permanently in `densityGateActive === true` — inert,
@@ -678,7 +710,8 @@ mixin composed ahead of a base *model* that carries the foundation — nor an
 out-of-tree display, which runs neither our lint nor our tests.
 
 A display opts in by composing the mixin and calling `commitGateMeasurements`
-from its fetch (with the `visibleBp` captured *before* the fetch). It does **not**
+from its fetch's `onComplete`, which is handed the gate state the helper
+captured before it issued anything. It does **not**
 have to teach anything that a refused region holds no data: the refusal is a
 typed answer (`isRegionRefused`, beside the byte budget in core), and nothing
 that sees one commits the region. `regionHasData` stays, but its job is now the
@@ -871,8 +904,7 @@ Adapters with no `fetchSizeLimit` of their own, which therefore take whichever d
 
   **You don't have to remember that.** `scripts/check-gated-adapter-budgets.ts`
   fails the `lint` job when a new gated adapter, or a new display overriding
-  `measuresBytesPreFlight` / `measuresBytesInFetch`, has no budget decided for
-  it; `--write` regenerates its baseline. Inheriting the display's is a fine
+  `gateEnabled`, has no budget decided for it; `--write` regenerates its baseline. Inheriting the display's is a fine
   answer — the check only insists it be an answer, and that the display be
   named, since an opt-in often sits in a shared mixin serving several. It is a
   check rather than an `autogen.ts` generator on purpose: autogen would write a
@@ -926,8 +958,8 @@ than re-deriving a finding:
   one has asked for the genome-wide picture. Revisit only with a budget derived
   from what the display can actually draw, not the base 1 Mb.
 - **`LGVSyntenyDisplay`'s inherited gate is inert.** It extends
-  `LinearAlignmentsDisplay` wholesale, `measuresBytesPreFlight` included, but no
-  comparative adapter implements `getRegionByteSize`, so every pre-flight
+  `LinearAlignmentsDisplay` wholesale, `gateEnabled` included, but no
+  comparative adapter implements `getRegionByteSize`, so every measurement
   returns no estimate and the gate never fires — a fine-tier PIF over a whole
   chromosome downloads unbounded. Making it live is one `bytesForRegions` call
   on the indexed PAF adapters plus a budget decision that has to be taken from
