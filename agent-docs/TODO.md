@@ -10,7 +10,7 @@ entries actually disagree on. Roughly two fifths are ordinary build work; a
 quarter carry a design that survived a rejected alternative and needs following
 rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing. Nine are blocked on a visual call that is
+building first would be guessing. Ten are blocked on a visual call that is
 not the implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
@@ -83,6 +83,7 @@ the half that rots is the half it covers.
 | [Midnight primary is invisible on dark stock](todo/midnight-primary-is-invisible-on-the-dark-stock-ground.md) | palette, theme | pick one of three; never re-tint a single component |
 | [The interbase stack overruns its half-band](todo/the-interbase-stack-overruns-its-half-band-at-a-split-read-breakpoint.md) | alignments | a visual call; the overflow is measured, no fix is chosen |
 | [Overlay labels cover the row below](todo/overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes.md) | canvas | decide: reserve a row, or call overlay normal-mode only |
+| [The polyprotein strand arrow centres on the whole stack](todo/the-polyprotein-strand-arrow-sits-at-the-centre-of-the-whole-stack.md) | canvas, glyphs | a visual call; the transcript path one file over says one row, this one says all of them |
 | [Synteny clicked outline in tiled mode](todo/the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode.md) | synteny | get the visual call — hull silhouette or per-tile |
 | [Sub-pixel matrix rows draw 1px on the GPU and thinner on Canvas2D](todo/a-sub-pixel-matrix-row-draws-1px-on-the-gpu-and-thinner-on-canvas2d.md) | variants, backends | a visual call; the 41% is measured and neither side is obviously wrong |
 | [Fill the hi-C rectangle, not just the triangle](todo/fill-the-whole-display-rectangle-not-just-the-hi-c-triangle.md) | hic, GPU | decide what the y axis means once the apex stops bounding it; the cost is measured |
