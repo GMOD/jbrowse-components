@@ -183,26 +183,25 @@ description:
   pluggable elements.
 ---
 
-This guide covers how JBrowse 2 code is packaged and structured, and how to
-create new plugins and pluggable elements.
+JBrowse 2 is published as products people run and plugins that add to them.
+This page describes both, links working plugins to read, and indexes the guides
+for each kind of pluggable element.
 
 ## Products and plugins
 
-The JBrowse 2 ecosystem has two main types of top-level artifacts that are
-published on their own: products and plugins.
+Two kinds of package are published on their own: products and plugins.
 
-<Figure src="/img/products_and_plugins.png" caption="Architecture diagram of JBrowse 2, showing how plugins encapsulate views (e.g. LinearGenomeView, DotplotView etc.), tracks (AlignmentsTrack, VariantTrack, etc.), adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like mobx state tree autoruns that add logic to other parts of the app (e.g. adding context menus)"/>
+<Figure src="/img/products_and_plugins.png" caption="A product owns a PluginManager and loads plugins at runtime. A plugin's install() registers what it packages: views, tracks, display types, adapters, and the MST autoruns that extend the rest of the app."/>
 
-A "product" is an application of some kind that is published on its own (a web
-app, an electron app, a CLI app, etc). \`jbrowse-web\`, \`jbrowse-desktop\`, and
-\`jbrowse-cli\` are products.
+A product is an application published on its own: \`jbrowse-web\` in a browser,
+\`jbrowse-desktop\` in Electron, \`jbrowse-cli\` on the command line, and the
+embedded React components.
 
-A "plugin" is a package of functionality that is designed to "plug in" to a
-product **at runtime** to add functionality. These can be written and published
-by anyone, not just the JBrowse core team. Most products load plugins at
-runtime, though it isn't required.
+A plugin adds functionality to a product **at runtime**. Anyone can write and
+publish one, and a product loads plugins from a URL. A product can also be built
+with its plugins bundled in, which is what the embedded components do.
 
-<Figure src="/img/product_architecture.png" caption="This figure summarizes the general architecture of our state model and React component tree"/>
+<Figure src="/img/product_architecture.png" caption="A product instantiates the RootModel, and the state tree below it runs from the session through views, tracks and displays. Each React component on the right observes the state node across from it."/>
 
 ## Example plugins
 
@@ -215,35 +214,29 @@ Plugin templates:
 Working plugin examples:
 
 - [jbrowse-plugin-ucsc-api](https://github.com/cmdcolin/jbrowse-plugin-ucsc-api)
-  probably the simplest plugin example, it demonstrates accessing data from UCSC
-  REST API
-- [jbrowse-plugin-gwas](https://github.com/cmdcolin/jbrowse-plugin-gwas) a
-  custom plugin to display manhattan plot GWAS data
+  is the smallest of these, an adapter that reads the UCSC REST API
+- [jbrowse-plugin-gwas](https://github.com/cmdcolin/jbrowse-plugin-gwas) draws
+  GWAS data as a manhattan plot
 - [jbrowse-plugin-biothings-api](https://github.com/cmdcolin/jbrowse-plugin-biothings-api)
-  demonstrates accessing data from mygene.info, part of the "biothings API"
-  family
-- [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview) -
-  demonstrates creating a custom view type that doesn't use any conventional
-  tracks
-- [jbrowse-plugin-gdc](https://github.com/GMOD/jbrowse-plugin-gdc) demonstrates
-  accessing GDC cancer data GraphQL API, plus a custom drawer and track type for
-  coloring variants by impact score
+  reads mygene.info, one of the "biothings API" services
+- [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview)
+  creates a custom view type that holds no tracks at all
+- [jbrowse-plugin-gdc](https://github.com/GMOD/jbrowse-plugin-gdc) reads the
+  GDC cancer data GraphQL API, and adds a drawer widget and a track type that
+  colors variants by impact score
 - [jbrowse-plugin-systeminformation](https://github.com/garrettjstevens/jbrowse-plugin-systeminformation)
-  demonstrates using desktop specific functionality, accessing system node
-  libraries. This desktop specific functionality should use the CJS bundle type
-  (electron doesn't support ESM yet)
-
-Use these as references when building your own.
+  reaches node system libraries from JBrowse Desktop. A desktop-only plugin like
+  this one ships as a CJS bundle, which is what Electron loads
 
 The [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) is the
-community plugin registry: browse it to find published plugins or submit your
-own via pull request.
+community plugin registry: browse it to find published plugins, or submit your
+own through a pull request.
 
 `
 
   const toc = buildTocSection(developerGuides, '###')
 
-  return preamble + ['## Developer guides', '', ...toc].join('\n')
+  return preamble + ['## Guides by topic', '', ...toc].join('\n')
 }
 
 // A page that fails either check is invisible in the index with no other
