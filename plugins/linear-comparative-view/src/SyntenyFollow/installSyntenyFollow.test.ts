@@ -92,7 +92,9 @@ const Host = types
     followSynteny: true,
     followUnaligned: false,
     followApproximate: false,
-    followPartial: false,
+    followPartial: undefined as
+      | { following: string; elsewhere: string[] }
+      | undefined,
     followPairs: [] as FollowPair[],
   }))
   .actions(self => ({
@@ -105,7 +107,9 @@ const Host = types
     setFollowApproximate(arg: boolean) {
       self.followApproximate = arg
     },
-    setFollowPartial(arg: boolean) {
+    setFollowPartial(
+      arg: { following: string; elsewhere: string[] } | undefined,
+    ) {
       self.followPartial = arg
     },
   }))
@@ -220,13 +224,18 @@ describe('a straddle whose answers are far apart', () => {
     // the settled pass resolves through a promise before it navigates
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1'])
-    expect(host.followPartial).toBe(true)
+    // named, both sides: scrolling the anchor onto chr2 is how the reader sees
+    // the answer this refused, and nothing else would tell them it is there
+    expect(host.followPartial).toEqual({
+      following: 'chr1',
+      elsewhere: ['chr2'],
+    })
   })
 
   test('and it spreads as before when the two answers are neighbours', async () => {
     const { rows, host } = stack('chr2')
     await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toEqual(['chr1', 'chr2'])
-    expect(host.followPartial).toBe(false)
+    expect(host.followPartial).toBeUndefined()
   })
 })

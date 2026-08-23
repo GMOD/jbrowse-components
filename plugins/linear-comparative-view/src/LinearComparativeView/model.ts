@@ -18,6 +18,7 @@ import { installSyntenyFollow } from '../SyntenyFollow/installSyntenyFollow.ts'
 import { levelHeightForCount } from './levelHeightBudget.ts'
 import { sharedFit } from './sharedFit.ts'
 
+import type { FollowPartialReport } from '../SyntenyFollow/installSyntenyFollow.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackContainer } from '@jbrowse/core/util'
@@ -163,11 +164,12 @@ function stateModelFactory(pluginManager: PluginManager) {
        * The follow had a multi-contig answer and refused it: placing a row on
        * two regions that are not neighbours in its layout puts every contig
        * between them on screen too, and past a point that is nearly all of what
-       * the reader is looking at. The row is on the widest of the anchor's
-       * regions instead and the other answers are off screen. Read only by the
-       * header's follow tooltip.
+       * the reader is looking at. The rows are on one of the anchor's regions
+       * instead, and this names it and the ones whose answers are therefore off
+       * screen — enough for the header to say which region to scroll onto to
+       * see those instead. Read only by the header's follow tooltip.
        */
-      followPartial: false,
+      followPartial: undefined as FollowPartialReport | undefined,
     }))
     .views(self => ({
       /**
@@ -362,7 +364,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        * Same terms again: written by the autorun, read only by the header.
        */
-      setFollowPartial(arg: boolean) {
+      setFollowPartial(arg: FollowPartialReport | undefined) {
         self.followPartial = arg
       },
       /**

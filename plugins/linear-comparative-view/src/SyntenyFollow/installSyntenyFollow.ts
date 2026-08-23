@@ -42,12 +42,28 @@ export interface FollowPair {
   mateAssembly?: string
 }
 
+/**
+ * A level that refused its multi-contig answer, in the two names the header
+ * needs: the anchor region the rows are following, and the ones whose answers
+ * are not on screen.
+ *
+ * Named regions rather than a bare flag because that is the whole difference
+ * between a silent loss and a reachable one — the reader gets to the other
+ * answer by scrolling the anchor onto the region that carries it, which is an
+ * ordinary navigation of the row they are already driving, needing no button
+ * and no undo. What they cannot do is guess that the region is there.
+ */
+export interface FollowPartialReport {
+  following: string
+  elsewhere: string[]
+}
+
 export interface SyntenyFollowHost extends IStateTreeNode {
   followSynteny: boolean
   followPairs: FollowPair[]
   setFollowUnaligned: (arg: boolean) => void
   setFollowApproximate: (arg: boolean) => void
-  setFollowPartial: (arg: boolean) => void
+  setFollowPartial: (arg: FollowPartialReport | undefined) => void
 }
 
 // One level's placement, with the observables the async half needs already read
@@ -108,9 +124,9 @@ interface FollowPlan {
   spread?: SpreadWork
   unaligned: boolean
   approximate: boolean
-  // the multi-contig rung had an answer and refused it as mostly filler, so the
-  // row is on the widest of the anchor's regions and the rest is off screen
-  partial: boolean
+  // set when the multi-contig rung had an answer and refused it as mostly
+  // filler, naming the region the rows follow and the ones they do not
+  partial?: FollowPartialReport
 }
 
 // One navigation, as "from where" and "to where". Both halves matter: the same
@@ -397,7 +413,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
           !spans.length && level.linearSyntenyDisplays.some(d => d.featureData),
         // an interpolation over several alignments at once, never a walk
         approximate: spans.length > 0,
-        partial: false,
       } satisfies FollowPlan,
     }
   }
@@ -427,7 +442,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const widest = windows[0]
     if (!widest) {
       // an anchor with no window says nothing about alignment either way
-      return { unaligned: false, approximate: false, partial: false }
+      return { unaligned: false, approximate: false }
     }
 
     // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
@@ -486,7 +501,13 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       // a level still fetching has no answer YET rather than no answer
       unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),
       approximate: !!step && (!step.windowInsideFeat || !step.hasCigar),
-      partial: !!spread && !spread.plan,
+      partial:
+        state.spread?.spreading === false && state.spread.onto
+          ? {
+              following: state.spread.onto,
+              elsewhere: state.spread.elsewhere ?? [],
+            }
+          : undefined,
     }
   }
 
@@ -497,7 +518,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         if (!self.followSynteny) {
           self.setFollowUnaligned(false)
           self.setFollowApproximate(false)
-          self.setFollowPartial(false)
+          self.setFollowPartial(undefined)
           levelStates.clear()
           return
         }
@@ -507,7 +528,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // dependency of its own write
         self.setFollowUnaligned(plans.some(p => p.unaligned))
         self.setFollowApproximate(plans.some(p => p.approximate))
-        self.setFollowPartial(plans.some(p => p.partial))
+        // the first level that refused, since one sentence is what the header
+        // has and a second one would say the same thing about another pair
+        self.setFollowPartial(plans.find(p => p.partial)?.partial)
         // UNTRACKED, because `execute` runs synchronously up to its first
         // `await` and so still inside this reaction. `FollowStep` is meant to
         // be everything it needs, but the resolve reaches the display for

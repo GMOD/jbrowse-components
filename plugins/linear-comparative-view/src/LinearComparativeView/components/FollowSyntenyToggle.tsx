@@ -43,7 +43,7 @@ export function followToggleTitle({
   followSynteny: boolean
   unaligned?: boolean
   approximate?: boolean
-  partial?: boolean
+  partial?: { following: string; elsewhere: string[] }
   anchorAssembly?: string
 }) {
   if (!followSynteny) {
@@ -55,9 +55,12 @@ export function followToggleTitle({
   }
   // Ahead of `approximate`, which is the normal condition of a zoomed-out view
   // and so says less: this one is the reader's question about a row that is not
-  // showing everything the anchor aligns to.
-  if (partial) {
-    return `Following ${anchor} — its regions align far apart, so the rows follow the widest one and the rest are off screen`
+  // showing everything the anchor aligns to. It NAMES BOTH SIDES, because the
+  // way to see the other answer is to scroll the anchor onto the region that
+  // carries it — no button, no undo, just the row they are already driving —
+  // and the only thing they cannot do is guess that region is there.
+  if (partial?.elsewhere.length) {
+    return `Following ${anchor} on ${partial.following} — ${partial.elsewhere.join(', ')} aligns too far away to show at once, so scroll onto it to follow that instead`
   }
   if (approximate) {
     return `Following ${anchor} — no per-base alignment at this zoom, so positions are approximate`

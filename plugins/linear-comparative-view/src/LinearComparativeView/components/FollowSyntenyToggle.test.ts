@@ -73,3 +73,42 @@ test('the approximate wording is only reachable while following', () => {
     'Follow the matching region',
   )
 })
+
+// A row that is not showing everything the anchor aligns to has to say so, or
+// the refusal is indistinguishable from the follow being wrong more quietly.
+test('a refused multi-contig answer names both sides', () => {
+  expect(
+    followToggleTitle({
+      followSynteny: true,
+      partial: { following: 'chr1', elsewhere: ['chr9'] },
+      anchorAssembly: 'peach',
+    }),
+  ).toBe(
+    'Following peach on chr1 — chr9 aligns too far away to show at once, so scroll onto it to follow that instead',
+  )
+})
+
+// ahead of approximate, which is the ordinary condition of a zoomed-out view
+// and so answers a question nobody is asking here
+test('it outranks the approximate wording', () => {
+  expect(
+    followToggleTitle({
+      followSynteny: true,
+      approximate: true,
+      partial: { following: 'chr1', elsewhere: ['chr9'] },
+      anchorAssembly: 'peach',
+    }),
+  ).toMatch(/scroll onto it/)
+})
+
+// nothing aligning at all is the louder state and stays first
+test('but not the unaligned wording', () => {
+  expect(
+    followToggleTitle({
+      followSynteny: true,
+      unaligned: true,
+      partial: { following: 'chr1', elsewhere: ['chr9'] },
+      anchorAssembly: 'peach',
+    }),
+  ).toMatch(/nothing aligns here/)
+})

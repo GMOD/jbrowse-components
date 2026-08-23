@@ -136,9 +136,15 @@ from a coin toss.
 **`followPartial` is the third header flag**, on the terms the other two keep:
 written in `planLevel`, read only by the header. A row that is not showing
 everything the anchor aligns to has to say so, or the demotion is a silent loss.
-`followDebug` prints the whole decision per settle under
-`localStorage.debugSyntenyFollow`, and `browser-tests/follow-spread-probe.ts`
-drives a live session with it.
+It carries **both region names, not a boolean**, and that is what makes the
+refused answer reachable: scrolling the anchor onto the other region makes it
+the widest window, so the rows follow it — an ordinary navigation of the row the
+reader is already driving, needing no button, no anchor take and no undo. The
+only thing they cannot do is guess the region is there. A control that navigated
+for them would be one, since it would move a row the follow moves and owe the
+whole `showOffscreenMateContig` dance. `followDebug` prints the whole decision
+per settle under `localStorage.debugSyntenyFollow`, and
+`browser-tests/follow-spread-probe.ts` drives a live session with it.
 
 **Every visible contig is asked, not the two outer edges.** Mapping the leftmost
 and rightmost visible bp is the obvious cheaper spelling and is wrong whenever
