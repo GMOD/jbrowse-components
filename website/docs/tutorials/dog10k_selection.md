@@ -36,19 +36,19 @@ animal of fourteen toy or small breeds against every animal of eleven giant
 breeds. Hudson Fst
 ([Hudson et al. 1992](https://doi.org/10.1093/genetics/132.2.583)) per window
 over the Dog10K phased imputation panel scores how far apart their allele
-frequencies sit, summed as a ratio of averages rather than averaged over sites
+frequencies sit, summed as a ratio of averages
 ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113)), and
 [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
 writes one BED line per window.
 
-A Manhattan track expects a `-log10(p)` column, and this file has neither a p
-column nor a p-value. `GWASAdapter` takes the column to read as the score
+A Manhattan track expects a `-log10(p)` column, and this file has an Fst column.
+`GWASAdapter` takes the column to read as the score
 ([`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn)) and the transform
 to apply to it
 ([`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform)) as separate
-settings, so a differentiation statistic loads with no reshaping. Fst is already
-on the scale the plot draws, so only the column has to be named.
-[](/docs/tutorials/bxd_qtl) loads a LOD column through the same two slots.
+settings, so naming the column is enough: Fst is already on the scale the plot
+draws. [](/docs/tutorials/bxd_qtl) loads a LOD column through the same two
+slots.
 
 ```json
 {
@@ -68,35 +68,32 @@ on the scale the plot draws, so only the column has to be named.
 }
 ```
 
-Opening the assembly without a location shows all of its regions at once, so the
-display lays the autosomes out side by side rather than one at a time.
+Opening the assembly with no location shows all of its regions at once, so the
+display lays the autosomes out side by side.
 
 <Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the top half's own 200 kb window." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
-Each point is a window, so a peak names a region rather than a variant. A
-genome-wide scan has to bin wide enough to hold down twelve thousand windows'
-worth of noise, which is what makes the _IGF1_ peak a single bar up there.
+Each point is a window, so a peak names a region. A genome-wide scan bins wide
+enough to hold down twelve thousand windows' worth of noise, which is what makes
+the _IGF1_ peak a single bar.
 
 Fst has no p-value, so
 [`significanceLine`](/docs/config/linearmanhattandisplay/#slot-significanceline)
-draws the threshold this scan is read against, which is a quantile of its own
-windows rather than a test: the dashed line is the 99.9th percentile, printed by
-the build script alongside the ranked windows. It is a property of these windows
-at this size, so rebinning the scan means taking it again. The peaks the figure
-labels are the check on the scan rather than its result: the tallest of them, on
-chr10, is _HMGA2_, which is one of the six variants
+draws a quantile of the scan's own windows: the dashed line is the 99.9th
+percentile, printed by the build script alongside the ranked windows. It is a
+property of these windows at this size, so rebinning the scan means taking it
+again. The tallest labelled peak, on chr10, is _HMGA2_, one of the six variants
 [Rimbault et al. 2013](https://doi.org/10.1101/gr.157339.113) fit to about half
 the size variation across breeds.
 
-Each group is a set of closed populations rather than a sample of animals, so
-drift inside one large breed scores the same way differentiation across the
-contrast does. What a window has behind it is fourteen breeds against eleven,
-not eighty-odd dogs against as many.
+Each group is a set of closed populations, so drift inside one large breed
+scores the same way differentiation across the contrast does. A window has
+fourteen breeds against eleven behind it.
 
 The lower half is the same panel and the same estimator rebinned to 20 kb over
-two megabases, where the peak turns out to have a shape. Rerunning the build
-script from [Reproduce it end to end](#reproduce-it-end-to-end) over one region
-is all that takes:
+two megabases, where the peak resolves into a sweep. Rerunning the build script
+from [Reproduce it end to end](#reproduce-it-end-to-end) over one region does
+that:
 
 ```bash
 WINDOW=20000 REGIONS=chr15:40600000-42600000 \
@@ -106,24 +103,19 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
 
 ## The locus
 
-The rest of this tutorial takes the _IGF1_ peak rather than the taller one on
-chr10, because the next step needs a locus where there is something to draw per
-animal. _IGF1_ is a major determinant of body size in dogs: small breeds share a
-haplotype at the locus that large breeds largely lack
-([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). Drawing that
-haplotype per animal rather than as an allele frequency shows how far along the
-chromosome it extends, which animals depart from their breed, and where wolves
-fall, none of which a window score carries.
+The rest of this tutorial takes the _IGF1_ peak. _IGF1_ is a major determinant
+of body size in dogs: small breeds share a haplotype at the locus that large
+breeds largely lack
+([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). Drawn per
+animal, that haplotype shows how far along the chromosome it extends, which
+animals depart from their breed, and where the wolves fall.
 
 ## Choosing the panel
 
 The panel is the two groups the scan compared plus the twelve Greek gray wolves,
-taken from the Dog10K sample table by breed name. Rows are selected on breed
-rather than on genotype, since rows selected by what they carry would group by
-what they carry and the clustering below would reproduce the selection rather
-than test it. Whole breeds go in rather than a few animals each, because the
-variation within a breed is part of the result and several breeds depart from
-the pattern one animal at a time.
+taken from the Dog10K sample table by breed name: whole breeds, selected on
+breed, since the variation within a breed is part of what the clustering below
+has to recover, and several breeds depart from the pattern one animal at a time.
 
 ## Slicing the locus out of the callset
 
@@ -149,10 +141,9 @@ animals draws an empty column.
 
 ## Loading it with sample metadata
 
-The display draws one row per sample. Instead of a `layout` entry per animal,
-point the adapter at a TSV whose first column is the sample name and whose other
-columns are attributes; the display can then color and order rows by any of
-them:
+The display draws one row per sample. For a panel this size, point the adapter
+at a TSV whose first column is the sample name and whose other columns are
+attributes; the display colors and orders rows by any of them:
 
 ```
 name	breed	size
@@ -194,23 +185,19 @@ and draws a dendrogram in the sidebar.
 The clustering reads genotypes only. The swatch is applied afterwards from the
 sample table, so the two are independent.
 
-## Framing it
+## Framing the window
 
 In a matrix every record is one column of equal width, so a window's width in
-the frame is a count of records rather than a span of chromosome. The build
-script prints which sites actually separate the two size classes, a minority of
-those in the slice, and this window is that span with a margin of
-undifferentiated sequence on each side. Framed on the differentiated sites
-alone, every point in the Fst lane is high and nothing says where the signal
-starts or stops.
+the frame is a count of records. The build script prints which sites separate
+the two size classes, and this window is that span with a margin of
+undifferentiated sequence on each side, which is where the Fst lane comes back
+down.
 
-Clustering reads the region on screen, so where you run it matters as much as
-what you frame afterwards: over the whole window the separating columns are
-diluted by the undifferentiated sites around them. Zoom to the core, cluster
-there, then widen back out, and the row order is kept because it orders rows by
-name rather than re-deriving from what is in view. A session can say that
-instead of performing it, since the display takes `clusterRegion` beside
-`runClustering`, which is what the figure below does.
+Clustering reads the region on screen, and over the whole window the separating
+columns are diluted by the undifferentiated sites around them. Zoom to the core,
+cluster there, then widen back out: the order holds, because it is stored per
+sample name. A session can state it directly, since the display takes
+`clusterRegion` beside `runClustering`, which is what the figure below does.
 
 <Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens back out. The size swatch starts as three breed blocks and ends interleaved." />
 
@@ -218,31 +205,26 @@ instead of performing it, since the display takes `clusterRegion` beside
 
 <Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
 
-Clustering on genotypes alone recovers the size split without being told it, and
-the block's boundaries fall within the window, so its extent reads against the
-gene track above it rather than being inferred. The recovery is partial rather
-than two clean bands: the two panels differ here by a shift in allele frequency
-rather than by carrying different alleles, so the block is a run of columns
-where one class is enriched rather than a solid slab.
+Clustering on genotypes alone recovers the size split, and the block's
+boundaries fall within the window, so its extent reads against the gene track
+above it. The two panels differ here by a shift in allele frequency, so the
+block is a run of columns where one class is enriched.
 
 The lane between them says which columns are doing the work: the same Hudson Fst
 as the genome scan, between the same two panels, computed one site at a time
-over this VCF rather than in 200 kb windows. Every point is one column of the
-matrix, though not the column directly beneath it, since the matrix gives each
-record equal width and the Fst lane keeps genomic spacing. The sloped lines
-between the two are the display tying each column back to its coordinate. The
-scan reads the phased imputation panel and this lane reads the SNV callset, so
-the peak is recovered twice off different files rather than redrawn.
+over this VCF. Every point is one column of the matrix, though not the column
+directly beneath it, since the matrix gives each record equal width and the Fst
+lane keeps genomic spacing; the sloped lines between the two tie each column
+back to its coordinate. The scan reads the phased imputation panel and this lane
+reads the SNV callset, so the peak comes off two different files.
 
 Rows depart from their swatch in both directions: single orange rows sit within
 the giant cluster and single blue rows within the small one. The build script
-prints the range within each size class alongside its median, so the extent of
-that overlap is available as a number.
+prints the range within each size class alongside its median.
 
-The wolves form a contiguous band, and it sits within the toy and small side of
-the split rather than with the giants. The other two Dog10K tutorials use wild
-canids as a control that carries none of the allele under study; here they carry
-part of the haplotype, which bears on its origin but does not establish it.
+The wolves form a contiguous band, on the toy and small side of the split. In
+the other two Dog10K tutorials the wild canids carry none of the allele under
+study; here they carry part of the haplotype.
 
 ## Where to go next
 
@@ -266,16 +248,13 @@ bash build_dog10k_igf1.sh       # writes ./dog10k_igf1_build/
 
 [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
 downloads the Dog10K sample table, derives the two breed panels from it, streams
-one autosome at a time out of the phased panel, and prints the ranked windows so
-the peaks the figure labels can be re-derived rather than taken from the
-labelling.
+one autosome at a time out of the phased panel, and prints the ranked windows.
 
 [`build_dog10k_igf1.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_igf1.sh)
 derives the same panels plus the metadata TSV, slices the _IGF1_ window out of
 the callset, scores every site in it with the same estimator the scan uses, and
 reports the alt-allele dosage per size class over the sites inside the gene that
-separate the two dog classes, so the split can be checked numerically as well as
-read from the figure.
+separate the two dog classes.
 
 ## See also
 

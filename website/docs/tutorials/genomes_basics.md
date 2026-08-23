@@ -25,7 +25,7 @@ In 2025 we created [genomes.jbrowse.org](https://genomes.jbrowse.org) which
 hosts JBrowse 2 instances for all the main UCSC database browsers (e.g. hg19,
 hg38, hs1, mm39 etc) plus the UCSC GenArk project assemblies (which are
 trackhubs created for over 50,000 NCBI plants, animals, fungi, bacteria,
-viruses, etc). This guide will briefly show you how to use the site
+viruses, etc).
 
 <Figure src="/img/genomes_basics/site_home.png" caption="The genomes.jbrowse.org front page. The top table is the short list of main genomes; the GenArk half below it is the bulk catalog, split by clade and by project." />
 
@@ -55,13 +55,12 @@ ships a name index, so gene symbols resolve with no setup, and coordinates like
 
 RefSeq All draws each transcript of a gene on its own row and writes the gene
 name under the stack, and TP53 has far more transcripts than a track opens tall
-enough to show. Rather than hide the last ones behind the track's scrollbar, the
-default keeps as many as the height has rows for and says what it left out: the
-gene name reads **TP53 +20 more**, and the circled chip at the bottom right says
-`Isoforms trimmed to fit`. That is the middle panel. Clicking **+20 more** opens
+enough to show. The default keeps as many as the height has rows for and says
+what it left out: the gene name reads **TP53 +20 more**, and the circled chip at
+the bottom right says `Isoforms trimmed to fit`. Clicking **+20 more** opens
 that one gene; clicking the chip opens **Auto / All transcripts / Representative
 transcript**, and picking the last collapses every gene to one transcript, which
-is the bottom panel and what the rest of this page uses.
+is what the rest of this page uses.
 
 ## Finding a track
 
@@ -79,23 +78,22 @@ the label it has there. UCSC publishes several phyloP tracks for hg38 and the
 filter box leaves all of them, so the words after the parenthesis are what picks
 one out.
 
-## Reading it
+## Reading the phyloP track
 
 phyloP scores each base against the neutral rate the alignment implies. The
-score is signed, so the track has a pivot rather than a floor: blue above the
-line changes more slowly than neutral, red below it faster.
+score is signed, so the track has a pivot: blue above the line changes more
+slowly than neutral, red below it faster.
 
 <Figure src="/img/genomes_basics/phylop_tp53.png" caption="The TP53 transcript over the gene body with phyloP under it, as the track opens. Two blocks are shaded: exons 5-8, and the 3' UTR at the left." />
 
-The peaks are the width of the coding exons rather than of the gene. Exons 5-8
-carry the codons this gene is most often mutated at in cancer, and phyloP is
-high across all four of them, so a variant landing there has 100 vertebrates
-saying the base matters.
+The peaks are the width of the coding exons. Exons 5-8 carry the codons this
+gene is most often mutated at in cancer, and phyloP is high across all four of
+them, so a variant landing there has 100 vertebrates saying the base matters.
 
 The introns drop to the pivot, and so does the other shaded block: the 3' UTR,
 an exon as wide as any coding one and present in every transcript. The track
 follows the protein, and the 3' UTR is where the protein and the transcript come
-apart. A variant there gets no support from this track either way.
+apart.
 
 ## Checking it against the raw data
 
@@ -106,17 +104,15 @@ in human cancer: Arg248 reaches into the DNA itself, and the other two hold the
 loop that carries it.
 
 One more click makes it readable: tick **Reference sequence**, which is off by
-default. The isoform control is the same one the search figure used, and its (×)
-shrinks the chip to the icon circled below, which stays in that corner and opens
-the same options. At this zoom it matters more, since the default draws the
-codon row once per transcript.
+default. The isoform control's (×) shrinks the chip to the icon circled below,
+which stays in that corner and opens the same options. At this zoom the default
+draws the codon row once per transcript.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
 
-At that zoom the score is visibly one bar per base, and within a codon the third
-base is the short one: most third-position changes leave the amino acid alone,
-so the constraint is on the protein rather than on the DNA. Hovering a bar reads
-back its score.
+At that zoom the score is one bar per base, and within a codon the third base is
+the short one: most third-position changes leave the amino acid alone, so the
+constraint is on the protein. Hovering a bar reads back its score.
 
 ## The alignment the score came from
 
@@ -133,13 +129,12 @@ nearly every species differs from human, but all carry the **same** base and the
 score stays above the line: one substitution on the human branch, however many
 rows show it. Under T256 and G244 fewer rows differ and those that do disagree
 with each other, and there the score goes red. phyloP counts substitution events
-on the tree rather than rows that differ from the reference.
+on the tree.
 
 This track only opens at this zoom. A MAF block carries a row per species, so
 the byte estimate crosses the too-much-data limit within a few kb and a
 gene-wide view asks you to confirm before fetching. Zoomed further out it swaps
-to a precomputed summary and draws a conservation bar per species instead of
-bases.
+to a precomputed summary and draws a conservation bar per species.
 
 ## The regulatory end of the same gene
 
@@ -200,15 +195,13 @@ The same two clicks reach the rest of the catalog. A few that come up often:
 
 - **Conserved Elements - 100 Vert. El** (Comparative Genomics) is the interval
   companion to phyloP: phyloP scores each base, phastCons calls the runs.
-- **RepeatMasker** (Repeats) says which parts of a window are repeat elements,
-  worth knowing before reading much into a signal over one.
+- **RepeatMasker** (Repeats) says which parts of a window are repeat elements.
 - **GTEx cis-eQTLs - GTEx DAP-G eQTLs** (Regulation) names the variants
   associated with expression of nearby genes.
 - **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size
   range short reads call badly.
-- **liftOver** (Pairwise alignments) is a genome-to-genome alignment rather than
-  an annotation, and gets a page of its own in
-  [](/docs/tutorials/genomes_synteny).
+- **liftOver** (Pairwise alignments) is a genome-to-genome alignment, and gets a
+  page of its own in [](/docs/tutorials/genomes_synteny).
 
 Drag a track by the handle at the left of its header to reorder it; the `×`
 closes it.
@@ -255,8 +248,8 @@ only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
 
 <Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box of the GCF_ accession." />
 
-The gene is the same gene. The span is not: the axolotl genome is one of the
-largest sequenced, and this locus covers a few hundred kb of it.
+The same gene spans a few hundred kb here: the axolotl genome is one of the
+largest sequenced.
 
 ## See also
 

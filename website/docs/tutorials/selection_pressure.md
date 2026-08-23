@@ -38,9 +38,6 @@ faster than silent ones, which is purifying selection and is where most genes
 sit most of the time. Above it, amino acid changes fixed faster than silent
 ones, which takes positive selection to explain.
 
-That is a property of a PAIR of genes, not of a position on one genome, which is
-why it belongs on a synteny link rather than on a wiggle track.
-
 ## Producing the data
 
 The two assemblies are
@@ -49,9 +46,9 @@ The two assemblies are
 [GCA_003339765.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_003339765.3/)
 (rhesus macaque Mmul_10), with gene models from Ensembl 116.
 
-Rhesus macaque rather than chimpanzee: dS has to be large enough to estimate and
-small enough not to saturate, and human against chimpanzee is too close, leaving
-a denominator near zero on most genes.
+dS has to be large enough to estimate and small enough not to saturate, and
+rhesus macaque sits in that window against human. Chimpanzee leaves a
+denominator near zero on most genes.
 
 ### Orthologs
 
@@ -94,23 +91,21 @@ python3 kaks_from_pairs.py pairs.tsv both.cds.fa.gz \
 aligns each pair as protein, back-translates to codons so that nothing shifts
 frame, and runs Nei-Gojobori.
 
-### Keeping the pairs the counts can support
+### Filtering paralogs and low-count pairs
 
 Two species diverged once, so their true orthologs share a divergence time and
 their dS values cluster. A pair whose dS comes out an order of magnitude above
-that cluster is not an ortholog, it is a paralog the aligner preferred, and the
-script's `--max-ds` doubles as the filter that removes it.
+that cluster is a paralog the aligner preferred, and the script's `--max-ds`
+removes it.
 
-The other end matters more, and it is a matter of counting rather than of rate.
 Sorting the table by dN/dS and reading off the top returns the pairs with almost
 nothing to divide by: _HBA1_, about as strongly conserved as a gene gets, comes
 out over 2 off a single synonymous difference, and so do the others near the
-top. `--min-syn-subs` is the floor, on the count itself. A rate cannot do this
-job, because dS is per site and the same rate is much weaker evidence in a short
-gene than a long one.
+top. `--min-syn-subs` is a floor on that count. dS is per site, so the same rate
+is much weaker evidence in a short gene than a long one.
 
-So every row also carries that count and a two-sided Fisher exact p, which is
-the test
+Every row also carries that count and a two-sided Fisher exact p, which is the
+test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
 prescribes when the numbers of substitutions are small, where the large-sample
 Z-test over-rejects. They are `attributeColumns` like the rates, so clicking a
@@ -142,21 +137,20 @@ is the `.blocks` shape
 `attributeColumns` names the columns after the two gene columns, so each becomes
 a feature attribute visible in the detail panel, and `dn` with `ds` together
 drive **Color by... → dN/dS**. `syn_subs` and `fisher_p` are what a reader
-checks a colour against once the ramp has drawn their eye to it.
+checks a colour against.
 
-That ramp's middle is 1 and its top is 2, fixed rather than scaled to the data:
-which side of 1 a pair falls on is the question being asked, and an auto-scaled
-mode would put the pivot wherever the maximum happened to land.
+That ramp is fixed, with 1 at its middle and 2 at its top, so a pair's colour
+says which side of 1 it falls on.
 
 Two settings matter for a view this sparse, and both are properties of the
-`LinearSyntenyView` rather than of the track. `alpha` defaults to 0.2, which is
-tuned for whole-genome views where thousands of ribbons overlap and would wash a
-dozen out to nothing; at 0.95 the colour is the colour. `drawCurves` renders the
-links as beziers, which separates neighbours that would otherwise stack.
+`LinearSyntenyView` rather than of the track. `alpha` defaults to 0.2, tuned for
+whole-genome views where thousands of ribbons overlap; at 0.95 the colour is the
+colour. `drawCurves` renders the links as beziers, which separates stacked
+neighbours.
 
 ## Reading the plot
 
-<Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot of 1; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
+<Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Lysozyme (LYZ) is the one gene above the ramp's pivot; its neighbour YEATS4 is at the other end." src="/img/selection_pressure/lysozyme.png" />
 
 The neighbourhood is collinear, so the ribbons run parallel and colour is the
 only thing that varies across them. Lysozyme is a good gene to find there:
@@ -167,9 +161,7 @@ fermenters.
 Click the orange link and the detail panel gives the count and the p behind it:
 a handful of synonymous differences, and a Fisher p nowhere near significant.
 One pairwise comparison carries very little power, and the published result
-rests on codon models across many primate lineages. What the figure gives you is
-a gene whose ratio stands apart from every neighbour's, which is where a codon
-model would start.
+rests on codon models across many primate lineages.
 
 The blue is the colour that tests strongly here: a conserved gene accumulates
 enough synonymous change to measure while holding non-synonymous change near
@@ -180,17 +172,14 @@ _below_ 1 and almost none significantly above.
 
 The figure carries its own control. _YEATS4_ begins just past where _LYZ_ ends,
 so the two share a locus, a divergence time and a neighbourhood, and they land
-at opposite ends of the ramp. Anything that moved both genes together, an
-alignment artefact or a mis-set divergence, would not produce that. _YEATS4_ is
-also the case a floor on dS would have thrown away: it is conserved and compact,
-so its dS is low while its synonymous count is perfectly adequate, which is why
-the floor counts substitutions instead.
+at opposite ends of the ramp. _YEATS4_ is also the pair the substitution-count
+floor keeps: it is conserved and compact, so its dS is low while its synonymous
+count is adequate.
 
 The [script](#reproduce-it-end-to-end) prints the neighbourhood beside the
-genome-wide distribution, and reports it as two counts rather than one: how many
-pairs exceed 1, and how many of those survive the Fisher test. Few do the first,
-and those that survive the second are about what chance alone would give at that
-many tests.
+genome-wide distribution as two counts: how many pairs exceed 1, and how many of
+those survive the Fisher test. Few do the first, and those that survive the
+second are about what chance alone would give at that many tests.
 
 ## Reproduce it end to end
 

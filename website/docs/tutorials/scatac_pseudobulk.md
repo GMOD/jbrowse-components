@@ -30,12 +30,11 @@ draws one row per file.
 One ATAC cell contributes only a few thousand fragments, so a coverage track of
 a single cell is almost entirely zero. Pseudobulking pools every fragment
 belonging to a label into one profile, and each cell type comes out as a dense
-track resembling a bulk ATAC experiment run on that cell type alone. JBrowse
-stacks the resulting files as rows of one track.
+track resembling a bulk ATAC experiment on that cell type alone. JBrowse stacks
+the resulting files as rows of one track.
 
-PBMCs make a good dataset to try this on, since the answer is known in advance:
-at a T-cell marker the T-cell rows should carry the signal, and at a B-cell
-marker those rows should go flat while the B-cell rows light up.
+PBMC markers are the check: at a T-cell marker the T-cell rows carry the signal,
+and at a B-cell marker the B-cell rows light up.
 
 <Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
 
@@ -51,8 +50,8 @@ Signac, or SnapATAC2. Two settings decide whether the rows this page draws can
 be compared to each other, whichever tool writes them:
 
 - **Normalization.** Groups differ in cell count and in total fragments, so each
-  track needs normalizing (CPM / RPKM, or per-cell-count). Without it a tall
-  peak can just mean "more cells in this group".
+  track needs normalizing (CPM / RPKM, or per-cell-count) for a peak's height to
+  mean accessibility.
 - **Bin size**, which trades resolution against file size. Peak shape is the
   readable part of an ATAC track, so the bin has to stay well inside one peak;
   `export_coverage` below uses 25 bp.
@@ -78,19 +77,17 @@ snap.ex.export_coverage(
 # writes bw/<cell_type>.bw, one per group, keyed by group in the returned dict
 ```
 
-`n_jobs` is a memory knob rather than a speed one, since each worker holds a
-whole genome-wide coverage vector, and the BigWig writer dies partway through
-the groups rather than degrading when it runs out. The default was too high
-here.
+`n_jobs` is a memory knob: each worker holds a whole genome-wide coverage
+vector, and the BigWig writer dies partway through the groups when memory runs
+out. Two workers fit this dataset.
 
 `groupby` is the whole decision: pass the cluster column (`"leiden"`) to get one
 row per cluster, or the annotated column (`"cell_type"`) to get one row per cell
 type. Nothing else in the workflow changes.
 
-### If your data lives somewhere else
+### Other starting points
 
-Every route ends the same way, one `.bw` per cell type, and the rest of this
-page does not care which produced them. The tools are linked under
+Every route ends at one `.bw` per cell type. The tools are linked under
 [References](#references):
 
 - **An `ArchRProject`**: `getGroupBW(groupBy = "CellType", tileSize = 25)`
@@ -118,9 +115,9 @@ and an optional `group`.
 
 From the "Add track" workflow, switch to "Add multi-wiggle track" and paste your
 BigWig URLs one per line (or a JSON array of subadapter objects). JBrowse builds
-the `MultiQuantitativeTrack` for you. This is the fastest way to try a set of
-files. Export the session to get the JSON config. On JBrowse Desktop the same
-workflow loads the `.bw` files straight from local disk with no web server.
+the `MultiQuantitativeTrack` for you, and exporting the session gets the JSON
+config back out. On JBrowse Desktop the same workflow loads the `.bw` files
+straight from local disk with no web server.
 
 ### Via the CLI
 
@@ -184,11 +181,10 @@ three-cell-type example against hg38:
 }
 ```
 
-Three things about that list are worth writing deliberately rather than taking
-from the filesystem:
+Three things in that list are worth writing by hand:
 
 - **Order.** Subadapters draw in the order given, so list them grouped by
-  lineage. A single-cell object's own category order usually interleaves them.
+  lineage.
 - **`color`.** Take each row's from the cluster's color in your analysis, so a
   cell type is the same color in the browser as on the UMAP.
 - **`group`.** What the sidebar tree branches on, and what
@@ -219,18 +215,16 @@ slot:
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
 lists every mode, and the track menu switches between them live. `multirowxy`
 (the default, and the figures on this page) is best for comparing peak shape;
-`multirowdensity` maps score to color instead of height, which fits more rows in
-the same space. [](/docs/user_guides/multiquantitative_track) covers the rest of
-the menu.
+`multirowdensity` maps score to color, which fits more rows in the same space.
+[](/docs/user_guides/multiquantitative_track) covers the rest of the menu.
 
-## Atlas rows, with no pseudobulk step of your own
+## Published atlas BigWigs
 
-Published atlases distribute their per-cell-type pileups as BigWigs, which is
-the same set of files this page has been building, so they load through the same
-adapter with nothing to run. [CATlas](https://www.catlas.org/) publishes hg38
-coverage under
-`https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one file
-per cell type, so naming the ones you want is the whole track:
+Published atlases distribute their per-cell-type pileups as BigWigs, the same
+set of files this page has been building, so they load through the same adapter
+with nothing to run. [CATlas](https://www.catlas.org/) publishes hg38 coverage
+under `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one
+file per cell type, so naming the ones you want is the whole track:
 
 ```json
 {
@@ -275,10 +269,9 @@ per cell type, so naming the ones you want is the whole track:
 }
 ```
 
-The `%2B` is a literal `+` in the cell-type name, which has to stay
-percent-encoded in the URL. The rows read the same way whether the files came
-from an atlas or from your own `export_coverage` call, so an atlas is also a way
-to check a lineage in your own data against a much larger reference.
+The `%2B` is a literal `+` in the cell-type name, percent-encoded in the URL. An
+atlas set loads beside your own `export_coverage` output, so a lineage in your
+data has a much larger reference to read against.
 
 ## Reproduce it end to end
 
@@ -305,15 +298,14 @@ own work is short:
   which writes one BigWig per cell type into `bw/`
 - a `sources.json` of subadapters, taking each row's color from the same object
   and its `group` and position from a lineage map the script states outright.
-  That map is the one dataset-specific thing in it, and running it on your own
-  experiment means replacing it
+  Running it on your own experiment means replacing that map
 - `jbrowse create` plus `add-assembly` for hg38 and a RefSeq gene track, then
   the one `MultiQuantitativeTrack` those subadapters make up
 
 Navigate the finished instance to the two markers in the figure and read the
 rows against the labels. Rows that stay open everywhere usually mean the
 normalization step was skipped, since an unnormalized group's height tracks its
-cell count rather than its accessibility.
+cell count.
 
 ## See also
 

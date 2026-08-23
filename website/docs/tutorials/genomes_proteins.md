@@ -21,7 +21,7 @@ linked to the genome, so hovering a variant highlights the residue it lands on.
 - to add these views to your own JBrowse instead, see
   [Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance)
 
-## Two ways in
+## Two ways to open a protein view
 
 Two hosted sites reach the same three linked views, and they suit different
 starting points.
@@ -30,8 +30,8 @@ starting points.
 are already looking at a genome. It hosts a JBrowse instance for every UCSC
 genome, each carrying that genome's UCSC track catalog, and each loading both
 protein plugins. Search a gene, right-click it, and the two launchers are in the
-menu. It works on any gene in any of those genomes, which is why the rest of
-this page walks that route.
+menu. It works on any gene in any of those genomes, and the rest of this page
+walks that route.
 
 The [JBrowseMSA Gene Explorer](https://gmod.org/JBrowseMSA/gene-explorer/) is
 the one to take when the gene is what you have. Pick a species, type a gene
@@ -40,17 +40,13 @@ built and connected. It takes a `gene` and a `taxon` in its own URL, so
 [?gene=TP53&taxon=9606](https://gmod.org/JBrowseMSA/gene-explorer/?gene=TP53&taxon=9606)
 arrives with the gene resolved and one button left to press.
 
-The Gene Explorer's session differs from the click-path below in two ways worth
-knowing before you pick one. Its genome view collapses the introns, so the
-coding exons sit side by side and the whole CDS is on screen at residue zoom.
-And its catalog is seven species: human genes arrive with all three views, while
-mouse, zebrafish, fly, worm, plant and yeast arrive as a genome view and a
-structure. The right-click route works on every genome the site hosts.
+The Gene Explorer's genome view collapses the introns, so the coding exons sit
+side by side and the whole CDS is on screen at residue zoom. Its catalog is
+seven species: human genes arrive with all three views, and mouse, zebrafish,
+fly, worm, plant and yeast arrive as a genome view and a structure. The
+right-click route works on every genome the site hosts.
 
 <Video src="/media/proteins/gene_explorer.mp4" caption="TP53 from the Gene Explorer's examples row: the session it builds opens the collapsed coding exons, the vertebrate alignment and the AlphaFold model in one window, and a hover in the genome answers in all three at once." />
-
-The three views are connected in every direction, so a hover in the alignment or
-a click on the structure highlights the codon it belongs to back in the genome.
 
 ## Launching a structure
 
@@ -70,9 +66,9 @@ picks which transcript becomes the query, tagging the isoforms whose translation
 matches the structure's own residues. **Launch** renders the structure with
 [Mol\*](https://molstar.org/).
 
-The structure the dialog resolves carries its own sequence, and it is often not
-the translation of the transcript you clicked: an AlphaFold model covers one
-UniProt isoform, and a PDB entry can be a construct, a fragment or another
+The structure the dialog resolves carries its own sequence, which often differs
+from the translation of the transcript you clicked: an AlphaFold model covers
+one UniProt isoform, and a PDB entry can be a construct, a fragment or another
 species. When the two differ the dialog says so and aligns them in the browser
 before mapping any position. The gear beside that notice opens **Alignment
 settings**, which switches between **Smith-Waterman (local alignment)**, the
@@ -86,36 +82,31 @@ pairwise alignment in Clustal format instead. The same options sit under
 The structure arrives with the genome view still above it, and the two are
 connected. Hovering a genomic position highlights the matching residue on the
 structure, on the pairwise alignment above it, and in the per-residue tracks
-beside them; hovering the structure highlights the genomic position. That is
-what makes a variant track worth having in the same session: the residue a
-variant lands on is a click away from the variant itself.
+beside them; hovering the structure highlights the genomic position.
 
 Both views map a genomic position to a residue through the transcript's CDS with
-[g2p_mapper](https://github.com/cmdcolin/g2p_mapper), so a hover highlights
-nothing when the position has no residue to land on. Introns and UTRs have none,
-and neither does a residue the structure is missing, which shows up as a gap in
-the **Pairwise alignment** panel above the structure. That panel shows the
-transcript row against the structure row with a consensus line, so it is where
-to check a mapping before trusting a highlight. For exact correspondence, fold
-the transcript's own sequence with AlphaFold instead of taking a database
-structure.
+[g2p_mapper](https://github.com/cmdcolin/g2p_mapper), so a highlight needs a
+position with a residue under it. Introns and UTRs have none, and neither does a
+residue the structure is missing, which shows up as a gap in the **Pairwise
+alignment** panel above the structure. That panel carries the transcript row
+against the structure row with a consensus line, which is where a mapping can be
+read off. Folding the transcript's own sequence with AlphaFold gives an exact
+correspondence.
 
 The lookup needs a gene feature carrying a recognizable protein or transcript
-ID. The RefSeq gene tracks on the hosted configs have them, so a feature track
-without such IDs will not resolve a structure.
+ID, and the RefSeq gene tracks on the hosted configs carry them.
 
 The protein view carries the AlphaFold structure, the genome-to-structure
 sequence alignment, and per-residue tracks for pLDDT confidence, domains,
 helices and hydrophobicity. The gear beside the dialog's **Launch** button opens
 **Launch settings**, whose side-by-side option puts the protein view beside the
-genome view rather than under it.
+genome view.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq and ClinVar beside the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from across both genome tracks." src="/img/protein/connected.png" />
 
-### The other things that dialog launches
+### Other views from the same dialog
 
-The arrow beside **Launch** opens everything the dialog can build: the 3D
-structure that **Launch** itself renders, and one other.
+The arrow beside **Launch** lists everything the dialog can build.
 
 **Launch 1D protein annotation view** opens a linear genome view whose genome is
 the protein. The plugin registers the UniProt accession as a temporary assembly
@@ -124,8 +115,8 @@ UniProt feature type over it, plus Antigen, Variation, AlphaFold confidence
 (pLDDT) and AlphaMissense scores. The view opens empty, and the tracks are in
 its selector under **Session tracks**. Coordinates are residues, so this is the
 view to take when the question is where along the chain something falls. It
-needs a session it can add tracks to, which is why it does not appear in the
-single-view embedded components.
+needs a session it can add tracks to, so it is absent from the single-view
+embedded components.
 
 <Figure src="/img/protein/annotation_1d.png" caption="TP53 on hg38 above the 1D protein view its gene menu launched, with four of the session tracks turned on: the DNA binding call, UniProt natural variants, AlphaFold pLDDT and AlphaMissense substitution scores, all in residue coordinates. Confidence and variant density both fall away over the terminal tails." />
 
@@ -151,15 +142,13 @@ three fields on it matter:
   the one the genome view stays linked to, so hovering the alignment highlights
   the matching codons back in the linear view.
 
-**MSA Algorithm** is what EBI is asked to run, Clustal Omega by default, and is
-the step the wait is actually in. What it costs scales with the row count, so
-**Rows to align** is the dial between a deeper panel and a shorter wait.
+**MSA Algorithm** is what EBI is asked to run, Clustal Omega by default, and it
+is where the wait is. The cost scales with the row count, so **Rows to align**
+trades panel depth against wait time.
 
-NCBI publishes one ortholog gene per species for most annotated genes, so this
-tab looks up what this gene is in each species. The lookup returns immediately,
-which leaves the multiple alignment as the only step that takes real time. For a
-gene with no resolvable symbol there is nothing to look up, and the dialog's
-**NCBI BLAST query** tab is the route to take instead.
+NCBI publishes one ortholog gene per species for most annotated genes, and this
+tab looks that up per species; the lookup returns immediately. A gene with no
+resolvable symbol goes through the dialog's **NCBI BLAST query** tab.
 
 Press **Submit**. A multiple sequence alignment view opens below the genome
 view, with a tree on the left, the alignment beside it, and the conserved-domain
@@ -169,34 +158,30 @@ The view opens at residue zoom, which on a long protein is a window on its N
 terminus. **Fit horizontally**, under the toolbar's fit and zoom button, puts
 the whole alignment on screen, which is the zoom the domain blocks read at.
 
-The figures below take _NLRP1_ rather than _TP53_, because the overlay only says
-something when the rows differ, and _NLRP1_ is an inflammasome sensor whose
-domain architecture is not the same in every mammal.
+The figures below take _NLRP1_, an inflammasome sensor whose domain architecture
+varies between mammals.
 
 <Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds. In the panel the leftmost block comes and goes down the rows while the stack to the right of it is on every one." />
 
 ### Reading the overlay
 
-Each colored block is an NCBI conserved domain, drawn in alignment columns
-rather than at each protein's own residue positions. That is what makes the rows
-comparable: the same domain lands in the same column in every row that has it,
-however different the proteins are in length.
+Each colored block is an NCBI conserved domain, drawn in alignment columns: the
+same domain lands in the same column in every row that has it, whatever the
+proteins' lengths.
 
 Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus. Some
 rows have it and some do not, mouse _Nlrp1a_ among those that do not, so the
 overlay reads as a block on the left that comes and goes down the panel against
-a stack to the right of it that every row shares. Because the aligner's tree
-orders the rows, the rows that have it sit together, and the pattern reads as
-clades rather than as a scatter.
+a stack to the right of it that every row shares. The aligner's tree orders the
+rows, so the rows that have it sit together.
 
-The shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD run
-across every row, so a missing block on the left only means something because
-the blocks around it agree.
+The shared core is the control: NACHT, the winged helix, HD2, FIIND and CARD run
+across every row.
 
 The calls ride along on NCBI's own protein records, so they arrive with the
-sequences and cost no extra step. For a protein NCBI has no calls for, **File →
-Annotations → Open InterProScan results...** reads them from a file and **File →
-Annotations → Query InterProScan...** computes them.
+sequences. For a protein NCBI has no calls for, **File → Annotations → Open
+InterProScan results...** reads them from a file and **File → Annotations →
+Query InterProScan...** computes them.
 
 ### Checking it against the raw alignment
 
@@ -210,12 +195,10 @@ is one or two rows' private N-terminal extensions. **Hide columns w/ >N% gaps**,
 the slider in the alignment's toolbar, brings the columns the panel shares (the
 pyrin among them) to the left edge.
 
-The rows without a pyrin block are not all the same. Some carry ordinary
-residues under those columns with nothing called over them, which is a different
-statement from the sequence being absent; some carry a generic death-domain call
-instead of the pyrin-specific one; and some are gap right across the frame,
-because their rows begin further right in the alignment. Only the third is an
-absent sequence, and at whole-protein zoom all three looked alike.
+The rows without a pyrin block come in three kinds: ordinary residues under
+those columns with nothing called over them; a generic death-domain call in
+place of the pyrin-specific one; and gap right across the frame, where the row
+begins further right in the alignment. The third kind is the absent sequence.
 
 <Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 orthologs at the residue zoom the view opens on, with the gappiest columns hidden. Under the pyrin columns some rows carry residues with no call over them and others are gap." />
 
@@ -225,19 +208,18 @@ The overlay's calls come from NCBI's conserved-domain database. UniProt
 annotates the same proteins independently, and UCSC projects those annotations
 back onto the genome, so the hosted config already carries them as ordinary
 tracks: **UniProt - Domains**, under Genes and Gene Predictions, is the domain
-architecture in genomic coordinates instead of in alignment columns.
+architecture in genomic coordinates.
 
 Turn it on in the linear view you launched from and the human row's blocks have
-a counterpart under the gene, from a different database and reached by a
-different route. _NLRP1_ is transcribed right to left, so the pyrin block sits
-at the right-hand end of the gene, where its N terminus is, and NACHT, FIIND and
-CARD follow it leftward. They are projections of protein spans through exons, so
-a domain drawn once in the alignment is drawn once per isoform here, and the
-ones that share exons overlap. **Filter by... → Edit filters...** on the track
-menu narrows that to one record: the figure below keeps the features whose
-`uniProtId` is the gene's reviewed entry. The neighbouring **UniProt - Chains**,
-**Mutations** and **AA Modifications** tracks are the same projection of the
-rest of the record.
+a counterpart under the gene. _NLRP1_ is transcribed right to left, so the pyrin
+block sits at the right-hand end of the gene, where its N terminus is, and
+NACHT, FIIND and CARD follow it leftward. These are projections of protein spans
+through exons, so a domain drawn once in the alignment is drawn once per isoform
+here, and the ones that share exons overlap. **Filter by... → Edit filters...**
+on the track menu narrows that to one record: the figure below keeps the
+features whose `uniProtId` is the gene's reviewed entry. The neighbouring
+**UniProt - Chains**, **Mutations** and **AA Modifications** tracks are the same
+projection of the rest of the record.
 
 <Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry. Pyrin sits at the right-hand end, where the N terminus is, and NACHT, FIIND and CARD run leftward from it." />
 
@@ -247,10 +229,9 @@ The same click-path works on any gene in the view whose symbol NCBI recognises.
 What changes between genes is how far down the tree the panel reaches, and the
 tree on the left is where you read it. Every _NLRP1_ ortholog NCBI has is a
 mammal, so the panel stops at mammals however high **Rows to align** is set,
-while the same click-path on _CFTR_ reaches birds, amphibians and fish. The rows
-arrive grouped by clade rather than by the order they were fetched, because the
-tree comes from the aligner. Genes annotated with an Ensembl identifier and no
-symbol fall through to the BLAST tab.
+while the same click-path on _CFTR_ reaches birds, amphibians and fish. Genes
+annotated with an Ensembl identifier and no symbol fall through to the BLAST
+tab.
 
 ## Where each MSA comes from
 
@@ -261,9 +242,6 @@ one you want depends on what the rows are for.
 | ------------------------------------ | ---------------------------------------------------------------- | ----------------------------------- |
 | **Launch MSA view** on the gene menu | built per gene from NCBI's ortholog records, aligned at EBI      | one per species, named              |
 | The Gene Explorer                    | UCSC's precomputed multiz alignment across a hundred vertebrates | one per species, named; human genes |
-
-A row means a species in both, which is what makes them the panels to read a
-present-or-absent domain call across.
 
 ## Sharing a connected view as a URL
 
@@ -293,20 +271,18 @@ locus with NCBI RefSeq and ClinVar loaded.
 The fence above is the short form: a UniProt accession plus a transcript ID, and
 the plugin derives the AlphaFold structure, finds the transcript in the
 `connectedView` tracks at `loc`, and translates its CDS to align against the
-structure. The explicit form takes a structure `url`, feature, and protein
-sequence instead, for a transcript no loaded track serves. See the parameters
-and further example URLs in the
+structure. The explicit form takes a structure `url`, feature and protein
+sequence, for a transcript no loaded track serves. See the parameters and
+further example URLs in the
 [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md#connected-genome--protein-view).
 
 A `ProteinView` with only a structure `url` and no `connectedView` opens as a
-standalone structure: it renders and is interactive, but nothing maps its
-residues to a genome, so no highlight is exchanged.
+standalone interactive structure, with no genome to exchange highlights with.
 
 ## Adding the plugins to your own instance
 
-Both plugins are worth installing together rather than picking one: they open
-the same gene's structure and its cross-species alignment, and the three views
-stay connected when both are in the session.
+The two plugins open the same gene's structure and its cross-species alignment,
+and the three views stay connected when both are in the session.
 
 - Open the [plugin store](/docs/user_guides/plugin_store) (Tools menu) and
   install **Protein3d** and **MSAView**, or
@@ -316,9 +292,9 @@ stay connected when both are in the session.
 Both plugins add view types launched from a gene's right-click menu in JBrowse
 Web and Desktop. The single-view embedded components host only a linear genome
 view, so neither view type appears there. The full-app embedded components can
-host one in principle: [](/docs/jbrowser)'s `JBrowseRApp` takes both runtime
-plugins and a `views` list, while [anywidget](/docs/jbrowse_anywidget)'s
-`JBrowseApp` has no plugin loading yet.
+host one: [](/docs/jbrowser)'s `JBrowseRApp` takes both runtime plugins and a
+`views` list, while [anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` has no
+plugin loading yet.
 
 The approach is described in
 [_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)

@@ -37,13 +37,13 @@ Human (hs1) liftOver**. Type `TNNT3` into the location box to navigate to the
 gene; the hosted config ships a name index, so gene symbols work without any
 setup.
 
-hs1 does not need to be added. The hg38 config declares only hg38, but when a
-track references an assembly JBrowse does not know, it asks its plugins to
-resolve the name (the `Core-handleUnrecognizedAssembly` extension point) and the
-site's hub plugin supplies the config. Every liftOver track on the site works
-this way, so none of them need a second assembly set up by hand.
+The hg38 config declares only hg38. When a track references an assembly JBrowse
+does not know, it asks its plugins to resolve the name (the
+`Core-handleUnrecognizedAssembly` extension point) and the site's hub plugin
+supplies the config, which is how every liftOver track on the site reaches its
+mate genome.
 
-The liftOver track is a synteny track, but in a plain linear genome view it
+The liftOver track is a synteny track, and in a plain linear genome view it
 draws the way an alignments track does: one feature per chain block, laid out in
 rows.
 
@@ -52,13 +52,11 @@ rows.
 Right-click any chain block and choose **Launch synteny view for this
 position**. The dialog that opens controls how the second panel is framed, and
 its defaults suit the block you clicked. **Use CIGAR to map the current visible
-region to the target** is the option to note: with it, JBrowse walks the
-alignment to find the interval matching what is in view, rather than framing on
-the whole block's endpoints. On a close pair that is the whole difference: the
-chain running through _TNNT3_ spans the chromosome, so with the box unticked
-both panels open on the whole of chromosome 11. A reverse-strand block adds
-another checkbox, **Horizontally flip inverted targets**, ticked by default so
-the target panel still reads left to right.
+region to the target** is the option to note: JBrowse walks the alignment to
+find the interval matching what is in view. The chain running through _TNNT3_
+spans the chromosome, so unticked it frames both panels on the whole of
+chromosome 11. A reverse-strand block adds another checkbox, **Horizontally flip
+inverted targets**, ticked by default so the target panel reads left to right.
 
 The dialog then offers two ways out, both building the same view. **Open in new
 view** appends it below the linear view you launched from; **Replace current
@@ -75,9 +73,9 @@ whose button in the view header lists one per panel.
 A locus that no single chain block covers (a gene that several blocks tile, or
 one you have only navigated to) takes a second route: drag-select it on the
 scale bar and pick **Launch → Linear synteny view**, whose dialog picks the
-synteny dataset to read it from. This starts from the region rather than from a
-block, and offers every assembly the session's synteny datasets align to it, so
-use it when more than one liftOver track is on. See
+synteny dataset to read it from. It starts from the region, and offers every
+assembly the session's synteny datasets align to it, so use it when more than
+one liftOver track is on. See
 [the linear synteny view guide](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 
 ## Ribbon display settings
@@ -85,12 +83,11 @@ use it when more than one liftOver track is on. See
 Three settings change how the ribbons read. Two are in the synteny view's
 settings menu, the sliders button in its header:
 
-- **Curved lines**, ticked, draws each ribbon as a curve instead of a straight
-  shear, so a block that lands far from where it started is easier to follow
-  across the gap.
-- **CIGAR indels** → **Transparent indels** stops painting the insertions and
-  deletions inside each block, leaving them as see-through gaps. With strand
-  coloring on, that keeps color meaning only one thing.
+- **Curved lines**, ticked, draws each ribbon as a curve, so a block that lands
+  far from where it started is easier to follow across the gap.
+- **CIGAR indels** → **Transparent indels** leaves the insertions and deletions
+  inside each block as see-through gaps, so with strand coloring on the color
+  means one thing.
 
 The third is the palette button further along the same header, whose menu sets
 what every ribbon is colored by. **Strand** paints each block by the orientation
@@ -98,7 +95,7 @@ it landed in, and is the setting the TNNT3 figures below use.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings, with the menu that holds them open on top. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels." />
 
-## The rearrangement
+## The TNNT3 rearrangement
 
 _TNNT3_ is the locus from Fig 5C of the T2T human variation paper. Called
 against GRCh38 the region reads as a 24 kb inversion plus a 22 kb deletion that
@@ -111,12 +108,11 @@ Colored by strand, that segment is the one off-color ribbon in the view.
 ## Trying other pairs
 
 The same click-path works for any liftOver track under **Pairwise alignments** →
-**liftOver**. The one thing that changes is how much of the chain survives: a
-close comparison like hs1 or panTro6 gives long collinear blocks, while a
-distant one gives short scattered ones, and the CIGAR option matters more the
-more diverged the pair is. That **liftOver** category is itself the index of
-which pairs exist, since there is one track in it per chain file UCSC publishes
-against the genome you are in.
+**liftOver**. How much of the chain survives changes with the pair: a close
+comparison like hs1 or panTro6 gives long collinear blocks, a distant one short
+scattered ones, and the CIGAR option matters more the more diverged the pair is.
+That **liftOver** category is itself the index of which pairs exist, with one
+track in it per chain file UCSC publishes against the genome you are in.
 
 The figure below is that route on **hg38 to Chimp (panTro6) liftOver**, across
 an intron of _FTO_, and its clicks are the ones in the clip above.
@@ -131,12 +127,12 @@ other repeat in the window but not that one.
 
 The chimp panel's own track selector offers **NCBI RefSeq - RefSeq All** and
 **RepeatMasker**, because naming panTro6 also brought in the panTro6 hub's gene,
-repeat and gap tracks. The rest of that hub is not loaded with them; open it
-from **File → Open connection** as a JBrowse 2 hub at
-`https://jbrowse.org/ucsc/panTro6/config.json` when you want its conservation or
-expression tracks too.
+repeat and gap tracks. The rest of that hub loads from **File → Open
+connection** as a JBrowse 2 hub at
+`https://jbrowse.org/ucsc/panTro6/config.json`, which is where its conservation
+and expression tracks are.
 
-To come at it from a gene rather than from a pair of assemblies, the site's
+To start from a gene, the site's
 [ortholog search](https://genomes.jbrowse.org/orthologs) takes a gene symbol and
 lists its NCBI orthologs among the hosted genomes, with a synteny view per row
 wherever the two assemblies have an alignment.

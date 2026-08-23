@@ -22,9 +22,8 @@ blocks that drive it.
   [desktop quickstart](/docs/quickstart_desktop) to add the built files with no
   hosting step)
 
-On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it. No statistical
-package is needed: the QTL scan is
-[downloaded already computed](#track-2-the-qtl-manhattan) rather than run here.
+On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it. The QTL scan is
+[downloaded already computed](#track-2-the-qtl-manhattan).
 
 ## The BXD panel
 
@@ -32,8 +31,7 @@ The [BXD family](https://genenetwork.org) is a panel of ~200 mouse
 recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
 and DBA/2J (the "D" parent). Each strain's genome is a fixed pattern of B and D
 blocks, and the same strains have been phenotyped for thousands of traits at
-[GeneNetwork](https://genenetwork.org). That combination is what this tutorial
-visualizes: a trait scan on top, and the B/D blocks underneath it.
+[GeneNetwork](https://genenetwork.org).
 
 This tutorial builds two JBrowse tracks from the same BXD panel, on mm10:
 
@@ -71,9 +69,8 @@ Download it from
 
 Its own header describes what the columns are: "198 BXD strains and ... the
 reciprocal F1s", of which "191 are independent, whereas 7 are substrains". The
-painting below skips the F1 columns, since an F1 is heterozygous at every marker
-by construction and the QTL scan is computed over the strains rather than the
-F1s.
+painting below skips the F1 columns: an F1 is heterozygous at every marker by
+construction, and the scan is computed over the strains.
 
 On JBrowse Desktop, add the `.bed.gz`/`.tsv.gz` files you build through **Add
 track** with no hosting step needed
@@ -143,24 +140,22 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
 
 - `partitionField: "sample"` splits the one file into one labeled row per
   strain.
-- No color setting is needed: a BED carrying `itemRgb` is painted with it
-  automatically
+- A BED carrying `itemRgb` is painted with it automatically
   ([`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)), so every
   block gets its genotype color straight from the file.
 - [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) names the
-  two parents the colors stand for. Which strain a block came from is the row
-  label, so the color is free to carry the genotype, and that mapping is a
-  semantic the BED itself does not record. Its entries also drive the track
-  menu's **Categories** toggles, so hiding `H` isolates the B/D contrast.
+  two parents the colors stand for, a mapping the BED itself does not record.
+  Its entries also drive the track menu's **Categories** toggles, so hiding `H`
+  isolates the B/D contrast.
 - `disableGeneHeuristic: true` keeps the BED adapter from reading each block as
-  a gene, since the `thickStart`/`thickEnd` columns would otherwise trip its
-  BED12 transcript detection.
+  a gene: the `thickStart`/`thickEnd` columns trip its BED12 transcript
+  detection.
 
 ## Track 2: the QTL Manhattan
 
-GeneNetwork maps these traits itself, so the scan is a download rather than a
-computation: its API serves the whole per-marker result of a GEMMA run, the
-mixed model that accounts for how closely the BXD strains are related.
+GeneNetwork maps these traits itself, and its API serves the whole per-marker
+result of a GEMMA run, the mixed model that accounts for how closely the BXD
+strains are related.
 
 Fetch a trait's scan by its GeneNetwork id and reshape it with `jq`. Each record
 carries a marker, its mm10 position in Mb, a LOD score and a p-value:
@@ -225,9 +220,9 @@ The coat-color scan puts a plateau of tied markers on chr4, whose interval
 contains _Tyrp1_. To line the painting up with it, right-click the painting at
 that column and pick the "Sort rows by color here" option (a saved session can
 bake the same sort in through the display's `sortRowsBy` position). Rows then
-order by their B/D genotype at the peak, so the clean B/D split directly beneath
-it is exactly the contrast the scan scores, and it breaks up into mixed B/D
-blocks away from the locus.
+order by their B/D genotype at the peak: the split directly beneath it is the
+contrast the scan scores, and it breaks up into mixed B/D blocks away from the
+locus.
 
 <Video src="/media/qtl/painting_sort.mp4" caption="The sort as the menu item does it: 198 strains arrive in their recombinant mosaic, a right-click on the column under the peak reaches Sort rows by color here, and the rows resolve into the B/D split the scan scores." />
 
@@ -235,17 +230,15 @@ blocks away from the locus.
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a peak at ~80 Mb over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean D (red) over B (blue) split at the gene."/>
 
-### Ordering the rows by the whole chromosome instead
+### Clustering the rows by similarity
 
 Sorting keys every row on one column. The track menu's **Clustering → Cluster
-rows by similarity** keys them on the whole visible region instead and draws the
-tree down the left-hand side; a session can trigger it declaratively with
+rows by similarity** keys them on the whole visible region and draws the tree
+down the left-hand side; a session can trigger it declaratively with
 `runClustering: true`, the same way `sortRowsBy` bakes in a sort. See
 [](/docs/user_guides/clustering).
 
-Clustering is computed over the region in view, so this is chr4 similarity
-rather than a genome-wide relatedness. For this scan the sorted order above is
-the one to read.
+Clustering is computed over the region in view, so this is chr4 similarity.
 
 ## Reproduce it end to end
 
@@ -263,13 +256,12 @@ npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 It downloads JBrowse and the GeneNetwork consensus genotypes, builds the
 painting, fetches the coat-color scan (trait `11280`) from GeneNetwork's mapping
 API, and writes a `config.json` that opens on mm10 chr4 with the scan over the
-painting. It prints the scan's peak marker and LOD as it goes, so the figures
-can be checked against the data. It needs `curl`, `jq`, `python3` and htslib
-(`bgzip`, `tabix`) on your `PATH`.
+painting. It prints the scan's peak marker and LOD as it goes. It needs `curl`,
+`jq`, `python3` and htslib (`bgzip`, `tabix`) on your `PATH`.
 
-Any GeneNetwork trait id can be swapped in, but most will scan flatter than this
-one: coat color is close to Mendelian here, and a polygenic trait leaves no peak
-sharp enough to be worth sorting the painting underneath.
+Any GeneNetwork trait id can be swapped in. Coat color is close to Mendelian
+here, and a polygenic trait scans flatter, with no peak sharp enough to sort the
+painting under.
 
 ## See also
 

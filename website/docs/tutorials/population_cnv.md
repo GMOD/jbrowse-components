@@ -2,7 +2,7 @@
 title: CNV across a population (1000 Genomes)
 description:
   Read k-mer depth copy number for every individual in the 1000 Genomes panel,
-  and see the structure a symbolic-allele callset cannot hold
+  and pack the whole panel into one Zarr store
 guide_category: Tutorials
 tutorial_category: Structural variation
 data: download
@@ -10,9 +10,9 @@ data: download
 
 **TL;DR:** point a `MultiQuantitativeTrack` at per-sample copy-number BigWigs
 and render it as a `multirowdensity` heatmap, with the color pivot at the
-diploid baseline of 2. Every individual becomes one row, colored by copy number.
-Past a few hundred samples the per-file requests become the bottleneck, so the
-second half packs the same values into one Zarr store.
+diploid baseline of 2, one row per individual. Past a few hundred samples the
+per-file requests become the bottleneck, so the second half packs the same
+values into one Zarr store.
 
 ## Prerequisites
 
@@ -39,11 +39,10 @@ unmodified at
 because the lab's own download share is offline. **If you use them, cite
 [Shen and Kidd 2020](https://doi.org/10.3390/genes11020141).**
 
-QuicK-mer2 counts only k-mers that occur exactly once in the reference, so it
-reads _paralogs_ apart instead of collapsing a gene family into one averaged
-pile.
+QuicK-mer2 counts only k-mers that occur exactly once in the reference, so its
+estimates are per _paralog_.
 
-## Load it
+## Load the panel as one track
 
 The whole panel goes in as one track, so the display, the clustering and the
 color settings are declared once. Add hg38 first, then the track:
@@ -77,41 +76,38 @@ plain list of absolute URLs and names each subtrack from its filename. Four
 display settings turn that into a copy-number heatmap:
 
 - [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
-  `multirowdensity` gives each sample one strip of color instead of one plot.
+  `multirowdensity` gives each sample one strip of color.
 - [`bicolorPivot`](/docs/config/multilinearwiggledisplay/#slot-bicolorpivot) `2`
   puts white at the diploid baseline, so
   [`posColor`](/docs/config/multilinearwiggledisplay/#slot-poscolor) paints
   gains and [`negColor`](/docs/config/multilinearwiggledisplay/#slot-negcolor)
-  losses. Left at its default of 0 the whole track reads as one shade of "some
-  signal".
+  losses.
 - [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore) and
   [`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore) pin the
-  scale. Two copies mean the same thing in every window, so the color should
-  too, and autoscale follows the noise at the baseline, clips the
-  amplifications, and rescales after every navigation.
+  scale, so two copies are the same color in every window and after every
+  navigation.
 
-  Keep the bounds **symmetric around the pivot**. The ramp divides both sides by
-  the longer one, so 0 to 6 would cap a homozygous deletion at half saturation,
-  the same shade as one extra copy. 0 to 4 lets both extremes saturate, and
-  gains past 4 clamp, which the legend shows.
+  Keep the bounds **symmetric around the pivot**: the ramp divides both sides by
+  the longer one, so 0 to 4 lets both extremes saturate, and gains past 4 clamp,
+  which the legend shows.
 
-Then run **Clustering → Cluster rows by score...** in the track menu. Rows are
-in file order until you do, and copy-number classes only read as blocks once
-similar samples sit together.
+Then run **Clustering → Cluster rows by score...** in the track menu, which
+brings similar samples together so the copy-number classes read as blocks. Rows
+are in file order until you do.
 
-## Read it
+## Read the copy-number heatmap
 
-The heatmap is a summary of per-sample profiles, and those profiles are flat and
-quantized. Six individuals spanning the range, plotted rather than colored:
+The heatmap summarizes per-sample profiles. Six individuals spanning the range,
+each plotted as a profile:
 
 <Figure caption="The same window as six stacked profiles on a shared 0-10 axis, from an individual carrying about nine copies down to one carrying none. The plateaus are flat and land on integers." src="/img/cnv1000g/ccl3l1_ladder.png" />
 
 Two paralogous blocks carry the variation. The right-hand one spans CCL3L1 and
 CCL4L1, chemokine genes that exist in a variable number of tandem copies. The
 left-hand one is a TBC1D3 repeat. Between them, an individual in this panel
-carries anywhere from zero to ten copies, and the levels are discrete.
+carries anywhere from zero to ten copies.
 
-## What the callset says about the same window
+## The same window in the 1000 Genomes SV map
 
 The 1000 Genomes phase 3 integrated SV map, the standard variant-level answer
 for this cohort, covers this window with one CNV record. It sits at
@@ -120,11 +116,9 @@ chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`, `<CN3>`,
 widest range. Between 36,155,499 and 36,461,232 the GRCh38 release of that
 callset has no copy-number record at all.
 
-This is a limit of the representation rather than a callset bug. A VCF record is
-one interval with fixed breakpoints and a small set of symbolic alleles, and
-nested multiallelic copy number is neither. Depth in turn carries no genotype,
-allele frequency or phasing, all of which the callset has, so the two are
-complements.
+A VCF record is one interval with fixed breakpoints and a small set of symbolic
+alleles, and nested multiallelic copy number is neither. Depth in turn carries
+no genotype, allele frequency or phasing, all of which the callset has.
 
 Where the variation does fit the representation, they agree:
 
@@ -132,8 +126,8 @@ Where the variation does fit the representation, they agree:
 
 ## Scaling past one population
 
-The track above stops at 104 individuals because that is about where one BigWig
-per sample stops being pleasant, and size is not the reason.
+The track above stops at 104 individuals, about where one BigWig per sample
+stops being pleasant.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
 counts what filling this tutorial's window costs each way at panel scale, all
 2504 BigWigs against a store holding those same 2504 samples, by wrapping
@@ -161,11 +155,11 @@ Against the hosted files, at a median range request of 25 ms:
 Six reads per BigWig, against two metadata reads plus one chunk of 2504 samples
 by 256 bins.
 
-The bytes are not the problem, the request count is: every BigWig needs a few
-reads to find where a region's values live, once per file and waiting on each
-other, so the cost is a round trip times the number of files. The fix is a
-format that answers the same question in a couple of requests, one array of
-samples by bins stored so that a single read covers every sample at once.
+The request count is the cost: every BigWig needs a few reads to find where a
+region's values live, once per file and waiting on each other, so the cost is a
+round trip times the number of files. One array of samples by bins, stored so
+that a single read covers every sample at once, answers the same question in a
+couple of requests.
 
 [Zarr](https://zarr.dev/) v3 is that format, and it needs no tile server:
 [zarrita.js](https://github.com/manzt/zarrita.js) reads chunks straight off
@@ -218,12 +212,10 @@ store sitting beside `config.json` needs no absolute URL.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies: the CCL3L1/CCL4L1 block stands in flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 
-That figure is the whole panel, and the panel is not what it cost. Two of the
-requests are metadata and happen once per store; the rest are chunks, and a
-chunk carries every sample across a range of bins. So what a view costs follows
-the width of the window rather than the size of the cohort. This frame is wider
-than the one measured above and spans a few more chunks, where 2504 BigWigs
-would still have been six reads each.
+Two of the requests are metadata and happen once per store; the rest are chunks,
+and a chunk carries every sample across a range of bins, so what a view costs
+follows the width of the window. This frame is wider than the one measured above
+and spans a few more chunks.
 
 ## Build the store
 
@@ -249,18 +241,16 @@ That is the command behind this tutorial's figures, all 2504 samples over the
 windows the page visits. The converter prints the sizes as it writes; this store
 lands at 1.4 MB.
 
-`--levels` is the one flag worth thinking about, and it is the resolution
-pyramid: one samples-by-bins array per entry, coarser ones averaged from the
-finest. The adapter reads the coarsest level whose bins are still no wider than
-a screen pixel, so a whole-chromosome view costs the same couple of requests the
-CCL3L1 window does rather than every bin under it. Give it your input's bin size
-first, then steps of roughly 3x: `10000,30000,100000` rather than
+`--levels` is the resolution pyramid: one samples-by-bins array per entry,
+coarser ones averaged from the finest. The adapter reads the coarsest level
+whose bins are still no wider than a screen pixel, so a whole-chromosome view
+costs the same couple of requests the CCL3L1 window does. Give it your input's
+bin size first, then steps of roughly 3x: `10000,30000,100000` rather than
 `10000,100000`, since a 10x gap leaves a view landing just under a level
 fetching 10x the bins it can draw.
 
-A pyramid of means alone would lose whatever is narrower than a bin, so every
-level above the finest also stores the minimum and maximum of the bins it
-averages, the way a BigWig zoom record carries all three.
+Every level above the finest stores the minimum and maximum of the bins it
+averages alongside the mean, the way a BigWig zoom record carries all three.
 [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
 picks which one a view draws, so an amplification narrower than a bin is visible
 under `max` and averaged back to the diploid baseline under `avg`.
@@ -282,12 +272,11 @@ gives the layout the adapter expects.
 
 ## Your own samples
 
-Nothing here is specific to the 1000 Genomes panel. To put a genome of your own
-on the same scale, run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over
-its aligned reads. The lab's
-[tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md) takes
-one 30x 1000 Genomes CRAM through `count` and `est` command by command, with its
-own sample output to check against. For GRCh38 its k-mer index is
+To put a genome of your own on the same scale, run
+[QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over its aligned reads. The
+lab's [tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md)
+takes one 30x 1000 Genomes CRAM through `count` and `est` command by command,
+with its own sample output to check against. For GRCh38 its k-mer index is
 [prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/),
 which skips the `search` pass over the reference. It is a cluster-sized job
 either way: the tutorial reports 67 GB of reference files, roughly 50 GB of RAM
@@ -313,9 +302,8 @@ estimate of that genome as a check.
 
 [`build_1000g_cnv_zarr.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_1000g_cnv_zarr.sh)
 derives the full 2504-sample list from the Kidd lab `trackDb` and runs the
-converter over it, so nothing above depends on a hand-written sample list. It
-fetches the converter and installs its two packages beside its own output, so
-one download is the whole setup:
+converter over it. It fetches the converter and installs its two packages beside
+its own output, so one download is the whole setup:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_1000g_cnv_zarr.sh

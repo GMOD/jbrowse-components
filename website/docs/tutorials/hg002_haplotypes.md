@@ -27,11 +27,11 @@ the chain between them, so there is nothing to align.
 ## The config
 
 The Q100 project serves both the assembly and the alignment between the
-haplotypes, so nothing here has to be downloaded, converted or indexed.
+haplotypes, and JBrowse reads each from its published URL.
 
 Start with the assembly, one entry in `assemblies`. It needs a name and the URL
-of its sequence and nothing else: the adapter comes from the file extension, and
-the `.fai` and `.gzi` sitting beside the FASTA are found the same way.
+of its sequence: the adapter comes from the file extension, and the `.fai` and
+`.gzi` sitting beside the FASTA are found the same way.
 
 ```json addassembly
 {
@@ -41,9 +41,9 @@ the `.fai` and `.gzi` sitting beside the FASTA are found the same way.
 }
 ```
 
-The alignment goes in as a synteny track. It is the Q100 project's own chain,
-read as published, and the thing to notice is that both of its endpoints are the
-same assembly, since the two haplotypes are contigs of one:
+The alignment goes in as a synteny track over the Q100 project's own chain. Both
+of its endpoints are the same assembly, since the two haplotypes are contigs of
+one:
 
 ```json addtrack
 {
@@ -62,26 +62,24 @@ same assembly, since the two haplotypes are contigs of one:
 
 ## The whole genome first
 
-With those two in place, the first thing to ask a haplotype-resolved assembly is
-whether anything moved between chromosomes at all. A dotplot answers that in one
-frame.
+With those two in place, a dotplot shows whether anything moved between
+chromosomes.
 
 Open **Add → Dotplot view**. Both axis dropdowns already read
-`T2T-HG002 v1.2 (diploid)`, since it is the only assembly here, and an axis set
-to it carries both haplotypes: left alone, the plot puts every maternal and
-paternal contig on both axes, interleaved.
+`T2T-HG002 v1.2 (diploid)`, the only assembly here, and an axis set to it
+carries both haplotypes, so every maternal and paternal contig lands on both
+axes, interleaved.
 
 Switch to **Manual** and tick **Plot only certain chromosomes**, which puts a
 box beside each assembly. Each takes a comma-separated list of contig names,
 where `*` matches any characters, so `*_MATERNAL` on the X axis and `*_PATERNAL`
-on the Y axis give one haplotype per axis. Leave a box empty and you get the
-whole assembly.
+on the Y axis give one haplotype per axis. An empty box takes the whole
+assembly.
 
 <Figure caption="The dotplot import form in Manual mode. Both axes are the same assembly, and the chromosome boxes cut each one down to a single haplotype. The Q100 chain is already selected as the synteny track." src="/img/hg002_haplotypes_import_form.png" />
 
 Press **Launch**, then click the palette icon in the view's header and pick
-**Strand**. Without it the plot is one black diagonal; with it the collinear
-blocks are red and the inverted ones blue.
+**Strand**, which draws the collinear blocks red and the inverted ones blue.
 
 <Video src="/media/synteny/hg002_dotplot_import.mp4" caption="Building the whole-genome dotplot from the import form: switching modes, opening the chromosome boxes, restricting each axis to one haplotype, and coloring the launched plot by strand." />
 
@@ -103,11 +101,10 @@ it needs. Then:
   the same range on `chr8_PATERNAL` below
 - pick **Strand** from the palette icon
 - turn the chain track on in each panel's own track selector, where it draws as
-  blocks on that panel's ruler rather than as ribbons between the panels
+  blocks on that panel's own ruler
 
-Genes read the inversion a second way. The assembly has no annotation of its
-own, but the JHU Liftoff GFFs are published beside it, one per haplotype, on
-contig names that already match:
+Genes read the inversion a second way. The JHU Liftoff GFFs are published beside
+the assembly, one per haplotype, on contig names that already match:
 
 - they annotate v1.1, the newest gene set the project publishes, and on
   chromosome 8 the lanes still land where the v1.2 ribbons do
@@ -136,11 +133,11 @@ contig names that already match:
 Then, on each gene lane:
 
 - `geneGlyphMode` keeps the longest coding transcript, so the lane is one row
-  deep rather than a stack of every RefSeq isoform
+  deep
 - **Color by... → Strand** paints forward red and reverse blue, matching the
   ribbons
-- no gene can carry a label at this zoom; a second track over the same GFF, cut
-  to a few genes with **Filter by...**, can
+- labels arrive at this zoom on a second track over the same GFF, cut to a few
+  genes with **Filter by...**
 
 <Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled lane beside the ribbons carries the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
@@ -155,10 +152,9 @@ matching region**, which does the same walk once.
 
 <Figure caption="Before and after the follow button, maternal over paternal with the Q100 chain blocks on each haplotype's own coordinates. The paternal lane is empty on the left because those coordinates land past the end of the block above them." src="/img/hg002_haplotypes_follow_panel.png" />
 
-To check the alignment inside a ribbon rather than at its edges, turn on
-**Location markers** in the header's settings menu. It draws lines through the
-ribbon at regularly spaced positions, each joining a point on the top row to the
-point it maps to on the bottom.
+**Location markers**, in the header's settings menu, reads the alignment inside
+a ribbon. It draws lines through the ribbon at regularly spaced positions, each
+joining a point on the top row to the point it maps to on the bottom.
 
 <Figure caption="The same pair of panels with location markers on, and the settings menu that turned them on still open over it." src="/img/hg002_haplotypes_location_markers.png" />
 

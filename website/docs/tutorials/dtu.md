@@ -27,12 +27,10 @@ One [script](#reproduce-it-end-to-end) runs all four.
 
 **Fetch the quantifications.** Eight RSEM per-transcript tables from ENCODE's
 ENTEx panel, skeletal muscle and liver, four donors each, quantified against
-GENCODE v29. The accessions are written into the script rather than re-derived
-from a portal search, whose facets move.
+GENCODE v29. The accessions are written into the script.
 
 **Build the matrices.** One pass over those tables writes a count matrix and a
-TPM matrix. Both come from the same pass because they feed different steps:
-counts feed the model, TPM feeds the effect size.
+TPM matrix: counts feed the model, TPM feeds the effect size.
 
 **Test usage.** [satuRn](https://doi.org/10.12688/f1000research.51749.1) fits a
 quasi-binomial model to each transcript's share of its gene's reads and tests
@@ -89,19 +87,18 @@ Three properties of that line, each of which fails without an error:
 
 `dtu` is a flag with the values `muscle`, `liver` and `ns`, set by the same
 threshold the script reports on. The color branches on it before reading `dif`,
-so transcripts the test could not separate stay neutral rather than taking a
-color from an effect size that is not significant.
+so transcripts the test could not separate stay neutral.
 
-### Two choices in the test
+### The effect size and the FDR gate
 
 **Effect size from TPM, model fit on counts.** Isoform fraction is a molar
 quantity, and read counts scale with abundance times effective length, so a
 count-based fraction is biased toward long isoforms.
 
-**The gate is satuRn's regular FDR, not its empirical FDR.** The empirical null
-assumes most tests are null, which does not hold for this contrast: `locfdr`
-reports a misfit, and no transcript passes the empirical FDR. The script prints
-the minimum empirical FDR beside its count.
+**The gate is satuRn's regular FDR.** Its empirical FDR assumes most tests are
+null, which does not hold for this contrast: `locfdr` reports a misfit, and no
+transcript passes it. The script prints the minimum empirical FDR beside its
+count.
 
 ## Configuring the track
 
@@ -141,10 +138,9 @@ isoform's own numbers are in the details panel, one click away.
 }
 ```
 
-Loaded over the two coverage tracks, at _ATP5F1C_: GENCODE annotates ten
-transcripts there and the test separated two, so eight stay gray. The coverage
-lanes are an independent check on the color, since satuRn used no genomic
-coordinates.
+The track loads over the two coverage tracks at _ATP5F1C_. satuRn used no
+genomic coordinates, so the coverage lanes are an independent check on the
+color.
 
 <Figure caption="ATP5F1C on hg38. ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the isoform-fraction change satuRn measured between the two tissues. The marked column is the cassette exon, where the muscle lane is flat and the liver lane peaks." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 

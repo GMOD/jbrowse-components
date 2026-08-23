@@ -51,18 +51,16 @@ The flags each do one thing:
   strains are the same species but diverge well past that, so they need `asm20`.
 - `-c` emits the base-level CIGAR the linear synteny view draws from.
 - `--eqx` splits CIGAR matches (`=`) from mismatches (`X`). The ribbon band
-  treats both as matches, but the same track opened in a plain linear genome
-  view draws per-base mismatches the way a read pileup does, and the `X`
-  operations are what it reads them from. Per-alignment identity does not depend
-  on it: that comes from the PAF's own divergence tag, or from its match counts,
-  so
+  treats both as matches, and the same track opened in a plain linear genome
+  view draws the `X` operations as per-base mismatches, the way a read pileup
+  does.
   [Color by → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
-  works either way.
+  reads the PAF's own divergence tag, or its match counts.
 
-Using [MUMmer](https://github.com/mummer4/mummer) or UCSC chains instead is
-fine: JBrowse loads `.delta` and `.chain` directly, and
+JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
+`.chain` files directly, and
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js) has
-`delta2paf` and `chain2paf` if you would rather convert.
+`delta2paf` and `chain2paf` for converting them.
 
 ## Loading the assemblies and the alignment
 
@@ -97,7 +95,7 @@ right-click inside the box and choose **Linear synteny view**.
 ## Stacking the three strains
 
 A band is drawn between adjacent rows only, so a 26695 / CHC155 / J99 stack
-needs the two adjacent alignments rather than the one the dotplot opened:
+needs the two adjacent alignments:
 
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
@@ -114,8 +112,8 @@ Add the third assembly and both alignments the same way as above, then:
    track: 26695 against CHC155, then CHC155 against J99.
 4. Click **Launch**, and all three strains stack in one view.
 
-Open each strain's gene track from its own track selector to make the alignment
-readable, so that conserved genes line up down the stack ribbon by ribbon.
+Open each strain's gene track from its own track selector; conserved genes then
+line up down the stack ribbon by ribbon.
 
 <Video src="/media/synteny/three_strain_import.mp4" caption="The four steps above and the gene tracks after them: Manual, a genome per row with Add row for the third, each connector showing the alignment it resolved for that pair, Launch, and each strain's gene track from that row's own track selector." />
 
@@ -129,22 +127,20 @@ building one from a session-spec URL.
 
 ## Coloring genes by ortholog
 
-The ribbons connect aligned sequence rather than annotated genes. The gene
-tracks color independently, and in bacteria the gene symbol is effectively the
-ortholog id, since NCBI reuses standardized symbols across strains. On each gene
-track, open the track menu and pick **Color by... → Attribute...**, then enter
-`gene`. The dialog prints the expression it is about to write, and every
-distinct value of that attribute gets its own deterministic color, so an
-ortholog carries one color down all three panels.
+The ribbons connect aligned sequence, and the gene tracks color independently.
+In bacteria the gene symbol is effectively the ortholog id, since NCBI reuses
+standardized symbols across strains. On each gene track, open the track menu and
+pick **Color by... → Attribute...**, then enter `gene`. The dialog prints the
+expression it is about to write, and every distinct value of that attribute gets
+its own deterministic color, so an ortholog carries one color down all three
+panels.
 
-Features with no value for that attribute are painted a neutral grey rather than
-given a color of their own, which matters here: most of the genes in this window
-carry only a locus tag.
+Features with no value for that attribute are painted a neutral grey; most of
+the genes in this window carry only a locus tag.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
-The dialog writes a display color expression, so the same thing is one line of
-config when you would rather ship it than click it:
+The dialog writes a display color expression, which is one line of config:
 
 ```json addtrack
 {
@@ -184,10 +180,10 @@ the remedy.
 
 <Figure caption="A synteny track whose assemblyNames are reversed. No chromosome name resolves, so the band is empty, and the header warning reports the reversal." src="/img/sv_synteny/assembly_order_warning.png" />
 
-A view that draws but scatters its blocks randomly is the other failure, and it
-is the alignment rather than the config: a preset too tight for the divergence
-leaves only short spurious anchors. Raise it, `asm5` up to about 5% and
-`asm10`/`asm20` past that, and check `-c --eqx` were passed.
+A view that draws but scatters its blocks randomly comes from the alignment: a
+preset too tight for the divergence leaves only short spurious anchors. Raise
+it, `asm5` up to about 5% and `asm10`/`asm20` past that, and check `-c --eqx`
+were passed.
 
 ## Reproduce it end to end
 

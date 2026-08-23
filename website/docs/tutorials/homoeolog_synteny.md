@@ -37,8 +37,7 @@ gene exists three times.
 
 The copies of one ancestral gene across those subgenomes are homoeologs. A table
 of them is a comparative dataset drawn from a single assembly, so the same
-`MCScanBlocksAdapter` that stacks several genomes puts one genome on both axes
-instead.
+`MCScanBlocksAdapter` that stacks several genomes puts one genome on both axes.
 
 Two things are then worth asking of it. Where the copies sit relative to each
 other is the karyotype, and where a segment has moved between homoeologous
@@ -49,9 +48,7 @@ dN/dS, which is a per-pair measurement and therefore a colour.
 
 The assembly is
 [GCA_951802345.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_951802345.1/),
-oat cultivar Williams, which is the most contiguous oat assembly available. Its
-gene models come from Ensembl Plants, which annotates it; NCBI hosts no gene
-annotation for any oat assembly.
+oat cultivar Williams, with gene models from Ensembl Plants.
 
 ### Gene models, a proteome, and chromosome sizes
 
@@ -66,18 +63,15 @@ python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
 awk -F'\t' '$1 ~ /^[1-7][ACD]$/' oat.all.bed > oat.bed
 ```
 
-The `awk` keeps the 21 chromosomes and drops the unplaced contigs, an anchor on
-one of which places nowhere on the plot.
+The `awk` keeps the 21 chromosomes and drops the unplaced contigs.
 
-The proteome is translated from the CDS rather than downloaded. Ensembl's
-protein FASTA is keyed on protein ids, and every other id in this pipeline is a
-transcript id; translating keeps one namespace from the BED through the anchors
-to the codon alignments. The [end-to-end script](#reproduce-it-end-to-end) has
-the loop.
+The proteome is translated from the CDS, which keeps one namespace from the BED
+through the anchors to the codon alignments: Ensembl's protein FASTA is keyed on
+protein ids, and every other id in this pipeline is a transcript id. The
+[end-to-end script](#reproduce-it-end-to-end) has the loop.
 
-No genome FASTA is needed. The assembly is a `ChromSizesAdapter` built from the
-GFF3's own `##sequence-region` header, which is all a gene-level view reads. Oat
-as sequence is over 11 GB; as names and lengths it is a few hundred bytes. See
+The assembly is a `ChromSizesAdapter` built from the GFF3's own
+`##sequence-region` header, which is all a gene-level view reads. See
 [assemblies without sequence](/docs/tutorials/orthofinder_synteny#assemblies-without-sequence).
 
 ### Syntenic anchors from a self-alignment
@@ -98,43 +92,37 @@ python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
 Two flags carry the run.
 
 `--self_remove` defaults to 98 and discards every hit at or above that percent
-identity, which suits its usual job of finding ancient duplications and would
-throw away most of oat's A-D homoeologs, which are recent enough to sit above
-it. At 100 only a perfectly identical protein pair is dropped.
+identity. Oat's A-D homoeologs are recent enough to sit above it, so this run
+sets 100, where only a perfectly identical protein pair is dropped.
 
-`--no_strip_names` keeps the ids byte-identical to the BED. Without it the
-adapter drops every row whose gene neither BED has, which for a whole-file
-suffix mismatch is every row.
+`--no_strip_names` keeps the ids byte-identical to the BED, which is what the
+adapter joins the two sides on.
 
-The alignment is the long step, over an hour on every core here, because
-Ensembl's annotation of this assembly calls a large number of transcripts and
-this is a proteome against itself. It is run separately rather than left to
-jcvi, which would call DIAMOND `--ultra-sensitive --max-target-seqs 1000`: those
-settings are for finding orthologs across a hundred million years, where
-homoeologs are recent enough that default sensitivity finds every one of them.
-jcvi picks the file up by name and skips its own alignment step.
+The alignment is the long step, over an hour on every core here: Ensembl's
+annotation of this assembly calls a large number of transcripts, and this is a
+proteome against itself. Running it separately keeps DIAMOND at default
+sensitivity, which finds homoeologs this recent; jcvi's own call uses
+`--ultra-sensitive --max-target-seqs 1000`, for orthologs across a hundred
+million years. jcvi picks the file up by name and skips its alignment step.
 
-Chaining is the reason to run a synteny pipeline rather than take reciprocal
-best hits. A gene family's best hit lands wherever the family's closest member
-is, and off-diagonal noise from that is indistinguishable from the translocated
-segments this plot is about. An anchor survives only where its neighbours agree.
+Chaining is what the synteny pipeline adds: an anchor survives only where its
+neighbours agree. A gene family's best hit lands wherever the family's closest
+member is, and that off-diagonal noise looks like the translocated segments this
+plot is about.
 
 A self-comparison also chains each subgenome's own tandem and segmental
-duplicates, which are paralogs rather than homoeologs. A homoeolog pair is one
-whose two ends sit on different subgenomes, which the chromosome name says, so
-the script filters on it.
+duplicates, which are paralogs. A homoeolog pair has its two ends on different
+subgenomes, which the chromosome name says, so the script filters on it.
 
-Take `oat.oat.anchors` and not the `oat.oat.lifted.anchors` written beside it.
-Liftover recruits extra pairs near an established block rather than by chaining,
-and on this genome the pairs it adds are a different population: their median dS
-is several times that of the chained ones, which is the grasses' ancient
-duplication and gene families rather than the subgenomes. That difference is
-invisible in a count and fatal in a figure whose colour _is_ divergence.
+Take `oat.oat.anchors`, and leave the `oat.oat.lifted.anchors` written beside
+it. Liftover recruits extra pairs near an established block, and on this genome
+those pairs are a different population: their median dS is several times that of
+the chained ones, the grasses' ancient duplication and gene families.
 
 ### dN and dS on each anchor
 
-Nothing publishes these. Ensembl declares `dn` and `ds` in every homology export
-and fills neither, in any division, so they are computed:
+Ensembl declares `dn` and `ds` in every homology export and fills neither, in
+any division, so they are computed here:
 
 <!-- from: scripts/build_oat_homoeologs.sh -->
 
@@ -146,19 +134,16 @@ python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz \
 [`kaks_from_pairs.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/kaks_from_pairs.py)
 aligns each pair as protein, back-translates to codons so that nothing shifts
 frame, and runs Nei-Gojobori. `--key record` reads the CDS by transcript id, so
-each rate is measured on the exact pair the synteny was called on rather than on
-the longest isoform of each end.
+each rate is measured on the pair the synteny was called on.
 
-It reports what it could not measure rather than writing a row that would draw
-without a colour. Two of those cases are the method's own edges: past dS around
-2 the correction has taken more than it can support, and at dS of 0 the ratio
-has no denominator at all.
+It reports the pairs it could not measure. Two of those cases are the method's
+own edges: past dS around 2 the correction has taken more than it can support,
+and at dS of 0 the ratio has no denominator.
 
-`--min-syn-subs` is the third, and it counts rather than thresholding a rate. A
-pair with one or two synonymous differences can return any ratio at all, and
-those pairs are exactly the ones that top an unfiltered table. A floor on dS
-cannot do this job, because dS is per site: the same rate is far weaker evidence
-in a short gene than in a long one.
+`--min-syn-subs` is the third, a floor on the count of synonymous differences: a
+pair with one or two of them can return any ratio at all, and those pairs top an
+unfiltered table. dS is per site, so the same rate is weaker evidence in a short
+gene than in a long one.
 
 ## Loading it in JBrowse
 
@@ -190,61 +175,47 @@ feature attribute, so it shows in the detail panel when a link is clicked, and
 `fisher_p` are the evidence behind a colour: how many synonymous differences the
 ratio divided by, and a Fisher exact test against neutrality.
 
-That ramp is read against 1 rather than against its own maximum: below it a gene
-is under purifying selection, above it under positive selection, and which side
-a pair falls on is the whole question. So its middle is 1 and its top is 2,
-where an auto-scaled mode would put the pivot wherever the data's maximum
-happened to fall.
+The ramp is pivoted at 1: below it a gene is under purifying selection, above it
+under positive selection. Its middle is 1 and its top is 2.
 
-A dotplot rather than two stacked rows. Both axes are the same genome in the
-same order, so as linear rows every link is near-vertical and the whole table
-reads as a barcode; on two axes the links resolve into the grid the subgenomes
-make.
+The session opens this as a dotplot, both axes the same genome in the same
+order, where the links resolve into the grid the subgenomes make.
 
 ## Reading the plot
 
 Every point off the diagonal is one chromosome's gene paired with its own copy
 on another chromosome, and the pattern those points make is the karyotype.
-Aligning either genome to a diploid relative answers a different question and
-cannot see the copies at all.
 
-Oat's plot is on the right below and bread wheat's on the left. Both are
-hexaploid self-alignments over the same three homoeologous groups, drawn the
-same way, so the difference between them is the karyotype rather than the
-method.
+Oat's plot is on the right below and bread wheat's on the left, both hexaploid
+self-alignments over the same three homoeologous groups, drawn the same way.
 
 <Figure caption="Left, the bread wheat self-alignment; right, the oat one. Both hexaploids over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1. Wheat's groups stay in their own blocks; oat pairs across groups throughout." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
 The wheat panel comes from Ensembl Compara's own homoeolog calls
 ([`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py)),
 so the two sides differ in assembly and in how the pairs were called as well as
-in species. The segments still read as collinear on one side and scattered on
-the other, which is a pattern neither pipeline put there.
+in species.
 
 ## Checking it against the raw data
 
-The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture
-rather than on the picture.
+The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture.
 
 The control is dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs have
 to come out at a lower synonymous divergence than A-C or C-D. If all three land
 together, the rates are measuring the pipeline rather than the polyploidy.
 
-The colour needs reading with more care than the structure does. Almost every
-pair here is blue, and the Fisher test in the `fisher_p` column returns
-overwhelming support for the great majority of them. A ratio over 1 between two
-copies this recently separated rests on few substitutions, hardly any of them
-clear the test, and the count that do is close to what that many tests would
-throw up by chance. Treat a warm link as a gene worth a codon model rather than
-as a result; the [primate walkthrough](/docs/tutorials/selection_pressure) goes
-through that arithmetic on a locus small enough to check by eye.
+Almost every pair here is blue, and the Fisher test in the `fisher_p` column
+supports the great majority of them. A ratio over 1 between two copies this
+recently separated rests on few substitutions, and the count clearing the test
+is close to what that many tests throw up by chance. A warm link is a gene worth
+a codon model; the [primate walkthrough](/docs/tutorials/selection_pressure)
+goes through that arithmetic on a locus small enough to check by eye.
 
-The claim about the karyotype is a count: how many anchors join two chromosomes
-from _different_ homoeologous groups, and how many chromosome pairs carry enough
-of them to be a segment rather than noise. Wheat's translocations are the ones
-involving 4A and nothing else, where oat's segments leave their group
-repeatedly.
+The karyotype claim is a count: how many anchors join two chromosomes from
+_different_ homoeologous groups, and how many chromosome pairs carry enough of
+them to be a segment. Wheat's translocations involve 4A, where oat's segments
+leave their group repeatedly.
 
 ## Reproduce it end to end
 
@@ -263,7 +234,7 @@ npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 The wheat half of the [two-hexaploid figure](#reading-the-plot) is a second
-script, taking the Compara route rather than calling its own anchors:
+script, taking the Compara route:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_wheat_homoeologs.sh
@@ -273,7 +244,7 @@ bash build_wheat_homoeologs.sh   # writes ./wheat_homoeologs_build/
 [`build_wheat_homoeologs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_wheat_homoeologs.sh)
 reads Ensembl Compara's homoeolog tables through
 [`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py),
-which it downloads itself, and needs no aligner: the pairs are already called.
+which it downloads itself; the pairs are already called, so no aligner runs.
 
 ## See also
 

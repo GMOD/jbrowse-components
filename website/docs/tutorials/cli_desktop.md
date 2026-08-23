@@ -6,10 +6,10 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-**TL;DR:** build a `config.json` from the command line with `@jbrowse/cli`.
-Because it records each data file by a path relative to the config, the same
-folder opens in JBrowse Desktop or served on the web, and Desktop leaves the
-config it opens alone, so the same folder keeps working in both.
+**TL;DR:** build a `config.json` from the command line with `@jbrowse/cli`. It
+records each data file by a path relative to the config, so the same folder
+opens in JBrowse Desktop or served on the web, and Desktop leaves the config it
+opens alone.
 
 ## Prerequisites
 
@@ -18,10 +18,9 @@ config it opens alone, so the same folder keeps working in both.
 
 ## One folder that opens in either app
 
-The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
-command line instead of clicking through the **Add track** form. You run a few
-commands and end up with one folder (a `config.json` sitting next to your data
-files) that you can open directly in JBrowse Desktop _or_ serve on the web.
+The [`@jbrowse/cli`](/docs/cli) builds a JBrowse configuration from the command
+line. A few commands produce one folder, a `config.json` sitting next to your
+data files, that you can open directly in JBrowse Desktop _or_ serve on the web.
 
 It works in both places because the CLI records each file by a path _relative_
 to `config.json`: Desktop resolves those paths against the folder on disk, and a
@@ -30,8 +29,7 @@ web server resolves them against the served config's URL.
 ## Install the CLI
 
 Install Node.js from [NodeSource](https://github.com/nodesource) or
-[NVM](https://github.com/nvm-sh/nvm) rather than `apt`, which tends to ship old
-versions.
+[NVM](https://github.com/nvm-sh/nvm); the `apt` packages tend to be old.
 
 ```bash
 npm install -g @jbrowse/cli
@@ -43,8 +41,8 @@ command below.
 
 ## Prepare your files first
 
-The CLI references and copies your data, but it does not compress or index it,
-and JBrowse reads only indexed, compressed formats. So get each input into a
+The CLI references and copies your data without compressing or indexing it, and
+JBrowse reads only indexed, compressed formats, so get each input into a
 JBrowse-ready form first: a bgzipped and `faidx`-indexed FASTA, a sorted and
 indexed BAM or CRAM, a bgzipped and tabixed VCF, GFF3, or BED. The
 [web quickstart](/docs/quickstart_web#adding-tracks) has the
@@ -90,8 +88,7 @@ myproject/
 └── variants.vcf.gz  (+ .vcf.gz.tbi)
 ```
 
-Inside `config.json`, the CLI referenced each file by its bare relative name
-(you don't need to edit this, it's just what the CLI wrote):
+Inside `config.json`, the CLI referenced each file by its bare relative name:
 
 ```json
 "adapter": {
@@ -111,7 +108,7 @@ tracks are loaded, but nothing is displayed until you launch a view and tick
 them in the track selector. To have the folder open ready to read, write the
 session you want and hand it to the CLI. `assembly` is the `--name` you gave
 `add-assembly`, and `tracks` takes the `trackId`s the CLI derived from your
-filenames (they are in `config.json`), not the display names:
+filenames, which are in `config.json`:
 
 ```json
 {
@@ -133,8 +130,8 @@ filenames (they are in `config.json`), not the display names:
 jbrowse set-default-session --session session.json --out myproject
 ```
 
-`session.json` itself is not part of the folder, only what it wrote into
-`config.json` is.
+`session.json` itself stays outside the folder; the CLI copies its contents into
+`config.json`.
 
 ## Open it in JBrowse Desktop
 
@@ -142,10 +139,9 @@ In JBrowse Desktop, choose **File → Session → Open config.json or .jbrowse
 file...** (or the **Open .jbrowse or config.json or link** button on the start
 screen) and pick `myproject/config.json`. Desktop resolves each relative path
 against the config's own folder, loading the copied files straight from local
-disk, with no web server and no re-adding tracks through the UI.
+disk with no web server.
 
-Since you already have a terminal open, you can also hand the config straight to
-Desktop and skip the start screen entirely:
+You can also hand the config straight to Desktop:
 
 ```sh
 jbrowse-desktop myproject/config.json
@@ -156,10 +152,6 @@ jbrowse-desktop myproject/config.json
 
 <Figure src="/img/desktop-cli-config.png" caption="A CLI-built folder opened in JBrowse Desktop by path, with no start screen and no Add track form. The session name, the assembly and the track labels all come from the commands above."/>
 
-Desktop's **Add track** picker still works for a one-off file. The CLI route
-here is the one to reach for when you want a scripted, repeatable setup, or the
-same config on both Desktop and the web.
-
 Desktop does not save back into a `config.json` it opens. It resolves the
 relative `uri`s into absolute local paths for the renderer, then starts a
 session of its own and autosaves there, so the folder you built stays portable
@@ -168,10 +160,9 @@ wrote, does save in place.
 
 ## Also use it on the web
 
-The same config and data work on the web too. The relative paths resolve against
-the served config's URL instead of a local folder. JBrowse Web is a separate
-app, though: serving `myproject/` on its own hosts the files but not the browser
-that reads them. Two ways to get there:
+The same config and data work on the web too, with the relative paths resolving
+against the served config's URL. JBrowse Web is a separate app, so a served
+`myproject/` needs a JBrowse Web instance alongside it. Two ways to get there:
 
 - Build into a JBrowse Web install: run `jbrowse create jbrowse2` first and pass
   `--out jbrowse2` on the commands above, so the app and your config live in one

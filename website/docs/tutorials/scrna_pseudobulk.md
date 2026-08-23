@@ -26,40 +26,35 @@ rows.
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-## What the tracks show
+## Where in the gene the reads land
 
-A UMAP or a dot plot gives you how much of a gene each cell type made. Putting
-the same cells on genomic coordinates adds where in the gene the reads landed:
-which end, which exons, which annotated transcript the pile agrees with.
+Putting the cells on genomic coordinates says where in the gene the reads
+landed: which end, which exons, which annotated transcript the pile agrees with.
 
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view, in the same order as the rows they mark. The signal walks down the diagonal." src="/img/scrna/marker_panel.png" />
 
-The signal piling up at one end of each gene is the chemistry showing through:
-10x 3' kits sequence the 3' end of each transcript, so a coverage track of that
-library is a spike near the polyadenylation site and very little else. Reading a
-marker gene means comparing the heights of those spikes across rows. The figure
-is on a log scale because the rows share one axis and the brightest marker sits
-well above the dimmest. Full-length chemistries (Smart-seq, and 5' kits to a
-lesser degree) spread coverage over the gene body instead, and the rest of this
-page applies unchanged.
+The signal piling up at one end of each gene is the chemistry: 10x 3' kits
+sequence the 3' end of each transcript, so a coverage track of that library is a
+spike near the polyadenylation site. Reading a marker gene means comparing the
+heights of those spikes across rows, and the figure is on a log scale because
+the rows share one axis. Full-length chemistries (Smart-seq, and 5' kits to a
+lesser degree) spread coverage over the gene body.
 
 ## Generating per-cell-type BigWigs
 
 Clustering and labeling stay upstream, in Seurat, scanpy, or whatever produced
 the annotation. This page starts from a barcode-to-label table and the BAM.
 
-Two decisions determine whether the rows can be compared to each other, and both
-are about what goes into a row rather than how it is drawn:
+Two decisions about what goes into a row determine whether the rows can be
+compared to each other:
 
 - **Duplicates.** Cell Ranger flags PCR duplicates of the same UMI with the
-  standard `0x400` flag. Keeping them makes a row's height track amplification
-  rather than expression, so filter them out. Restricting to uniquely mapped
-  reads (`MAPQ` 255, which is what STAR emits inside Cell Ranger) drops the
-  multimappers that would otherwise pile onto paralogs.
+  standard `0x400` flag; filter them out so a row's height tracks expression.
+  Restricting to uniquely mapped reads (`MAPQ` 255, which is what STAR emits
+  inside Cell Ranger) keeps multimappers off paralogs.
 - **Normalization.** Cell types differ in cell count and in sequencing depth, so
   each pooled track needs scaling (CPM is the usual choice) before one row's
-  height means anything next to another's. Without it a tall row can just mean
-  more cells went into it.
+  height means anything next to another's.
 
 Coverage must also be splice-aware: an RNA read spanning an intron carries an
 `N` in its CIGAR, and counting that as covered fills in introns that no read
@@ -87,10 +82,9 @@ the BAM to disk, split N ways.
 
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 takes the other route: it reads the BAM by region straight over HTTPS,
-accumulating each cell type's coverage in one pass, so nothing is downloaded and
-nothing is split. On a BAM the size this one is, that is the difference between
-needing scratch space and needing none. Either way the last step is where the
-normalization lands:
+accumulating each cell type's coverage in one pass, so nothing is downloaded,
+nothing is split and no scratch space is needed. Either way the last step is
+where the normalization lands:
 
 <!-- from: scripts/build_scrna_pseudobulk.sh -->
 
@@ -151,40 +145,36 @@ figure's nine rows are nine such entries; here are the first three:
 }
 ```
 
-Take the row order and the row colors from the single-cell object rather than
-from the filesystem, so related lineages stay adjacent instead of alphabetized
-and a row keeps the color its cluster had on the UMAP, which is what lets a
-reader move between the two pictures.
+Take the row order and the row colors from the single-cell object: related
+lineages stay adjacent, and a row keeps the color its cluster had on the UMAP,
+so a reader can move between the two pictures.
 
 The `--multiwig` CLI form and the add-track UI workflow build the same track
 without hand-writing it, and both are covered on
-[](/docs/tutorials/scatac_pseudobulk), which loads an ATAC set the same way;
-nothing about the RNA case differs.
+[](/docs/tutorials/scatac_pseudobulk), which loads an ATAC set the same way.
 
 ## One row per cell
 
 A pseudobulk row is a sum over thousands of cells, and it draws that sum as a
 smooth curve. The cells themselves can go under it, one row each, read from a
-cells-by-bins Zarr matrix instead of one file per cell.
+cells-by-bins Zarr matrix.
 
 <Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
-The speckle is what the pseudobulk row above cannot show. Summed, the lymphocyte
-rows are a low flat line next to the monocyte peak; per cell, many of those
-cells carry a single UMI of a monocyte gene, which is ambient RNA in the droplet
-rather than transcription in the cell.
+Summed, the lymphocyte rows are a low flat line beside the monocyte peak. Per
+cell, many of those cells carry a single UMI of a monocyte gene: ambient RNA in
+the droplet.
 
-Two settings decide whether that is visible at all:
+Two settings decide whether the speckle is visible at all:
 
 - **Order the rows by cell type.** Thousands of rows in a few hundred pixels is
   well under a pixel each, so a block only means anything if the cells in it are
   adjacent. The `group` on each row seeds that, and it also drives the sidebar
   tree.
-- **Pin the score axis.** With autoscale the maximum is whatever the home cell
-  type reached, which at LYZ is a single monocyte far above everything else, and
-  every single-UMI cell renders white against it. A pinned `minScore: 0` and a
-  low `maxScore` puts one UMI a visible fraction up the ramp, the same reasoning
-  as the copy-number heatmap in [](/docs/tutorials/population_cnv).
+- **Pin the score axis.** A `minScore: 0` and a low `maxScore` put one UMI a
+  visible fraction up the color ramp, the same as the copy-number heatmap in
+  [](/docs/tutorials/population_cnv). Autoscale takes its maximum from the
+  tallest single cell in view.
 
 The store is read by the `MultiWiggleZarrAdapter` that
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds,
@@ -227,14 +217,12 @@ A relative `uri` resolves against the config that holds it, so a store sitting
 beside `config.json` needs no absolute URL, and nothing runs on the server.
 
 The store's bin axis lays each window end to end keyed by refName, so it holds
-one window per chromosome; the marker genes it covers are picked to sit on
-different chromosomes for that reason. Per-cell coverage only says anything at a
-locus the cells actually have reads at, so covering marker windows rather than
-the genome is the whole design, and it is why the store is under a megabyte.
+one window per chromosome, and the marker genes it covers sit on different
+chromosomes. Per-cell coverage says something only at a locus the cells have
+reads at, so the store covers marker windows and stays under a megabyte.
 
-Because the rows are just signal, an RNA set and an ATAC set stack in one view:
-the demo config carries a pseudobulk scATAC set over the same PBMCs beside the
-RNA one, and the two assays disagree about where the interesting coordinate is.
+The rows are signal, so an RNA set and an ATAC set stack in one view: the demo
+config carries a pseudobulk scATAC set over the same PBMCs beside the RNA one.
 
 ## Linking the UMAP to the tracks
 
@@ -247,11 +235,9 @@ Selecting cell types calls the display's own row filter:
 display.setSubtreeFilter(['CD8 T', 'NK'])
 ```
 
-Filtering also tightens the shared score axis onto the visible rows, so two cell
-types compared against each other are not left short against a maximum set by a
-row that is no longer drawn. Clicking a gene in the track goes the other way and
-recolors the cells by that gene's expression, read from `session.selection` with
-no click handler.
+Filtering also tightens the shared score axis onto the rows still drawn.
+Clicking a gene in the track goes the other way and recolors the cells by that
+gene's expression, read from `session.selection` with no click handler.
 
 ## Reproduce it end to end
 
@@ -268,10 +254,8 @@ PBMC marker panels, and prints the whole score matrix so the labels can be
 checked against it. It then pseudobulks the BAM against those labels and writes
 the finished JBrowse instance, plus the UMAP's own data files.
 
-Cluster labels are the one step with real judgment in it. A cluster whose best
-panel score is weak is labeled unassigned rather than folded into the nearest
-lineage, which is what usually happens to the low-count cluster a PBMC run
-produces.
+A cluster whose best panel score is weak is labeled unassigned, which is where
+the low-count cluster a PBMC run produces usually ends up.
 
 ## See also
 

@@ -8,8 +8,7 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-**TL;DR:** a somatic caller hands you hundreds of junctions and clicking through
-them one at a time is the slow part. `jb2export batch` renders each one as a
+**TL;DR:** `jb2export batch` renders every junction in a somatic callset as a
 breakpoint split view, so triage becomes a directory of images. The matched
 normal, rendered the same way, is the control.
 
@@ -33,8 +32,8 @@ reads are Oxford Nanopore R10 from the
 are that release's own `wf-somatic-variation` run, served alongside the
 [cancer SV demo](/docs/tutorials/cancer_sv).
 
-That tutorial follows **one** event all the way down. This one goes the other
-way: every junction in the callset, at a glance, which is what you do first.
+That tutorial follows **one** event all the way down. This one renders every
+junction in the callset at a glance.
 
 ## The contact sheet
 
@@ -56,11 +55,11 @@ wrote 100/100 images to tumor
 ```
 
 **100 junctions.** Insertions name one locus, so there is no second panel to
-stack and they are counted out rather than dropped in silence; what remains
-collapses because a caller writes each breakend pair twice. That is the same 100
-that `sv_multihop.py chains` reports on this file in the
-[multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), and the two
-agree junction for junction, in the same order.
+stack and the run counts them out in its warning; what remains collapses because
+a caller writes each breakend pair twice. That is the same 100 that
+`sv_multihop.py chains` reports on this file in the
+[multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), junction for
+junction and in the same order.
 
 They agree because neither parses the ALT bracket by hand, which goes wrong four
 ways, all of them silent:
@@ -79,9 +78,9 @@ to the VCF row it came from. A file with no ID column falls back to
 
 `--flank` is the setting that decides the picture. A caller's breakend is one
 base, and a panel drawn on one base is zoomed past anything readable, so the
-flank is what actually frames it. `--dryRun` prints the file and loci of every
-row and renders nothing, and `--limit 20` renders the first few, so you can
-check the framing before committing to the whole callset.
+flank is what frames it. `--dryRun` prints the file and loci of every row and
+renders nothing, and `--limit 20` renders the first few, so you can check the
+framing before committing to the whole callset.
 
 Two flags for a long run. `--resume` skips a row whose image is already in
 `--outDir`, so an interrupted callset continues from where it stopped.
@@ -93,14 +92,12 @@ where the failed rows stay readable after the run's output has scrolled past.
 takes the first N in _file_ order, so on an unfiltered callset the two go
 together.
 
-Nothing is downloaded and no browser is involved: the reads stream from the
-hosted CRAM and each image is rendered server-side. The run is a single process,
-so the module graph loads once for the whole callset rather than once per
-variant, and a `--config` URL or a `--hub` is fetched once rather than per row.
+The reads stream from the hosted CRAM and each image is rendered server-side.
+The run is a single process, so the module graph loads once for the whole
+callset, and a `--config` URL or a `--hub` is fetched once.
 
 A row that cannot be rendered is reported and the run continues, so a
-translocation into a contig the assembly does not have costs you that row and
-not the other 99.
+translocation into a contig the assembly does not have costs you that row alone.
 
 A junction is two loci, so that is what `batch` draws. A connector drawn dashed
 means the read carrying it has a segment at a locus the frame does not show, and
@@ -111,13 +108,12 @@ belongs beside it: one render per sample, the same `--loc` list and the same
 <Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumor nanopore reads carry a solid curve at every breakend and the matched normal carries none. On the right, the same three loci as one 39.5 kb reconstructed contig." src="/img/jbrowse-img/sv_review_pair.png" />
 
 Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
-on one screen; at the default height the picture is mostly pileup and the curves
-it is read for are drawn over it.
+on one screen.
 
 A curve says two loci are joined in this sample; a contig says in what order and
-in which orientation, which takes a reconstruction step this page does not do.
-The [multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from
-these same reads, and rendering it is another `jb2export` run with a different
+in which orientation, which takes a reconstruction step. The
+[multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from these
+same reads, and rendering it is another `jb2export` run with a different
 `--assembly`, since a derivative allele is an assembly like any other.
 
 ## The control
@@ -132,25 +128,20 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
 ```
 
 Put the two directories side by side and the somatic calls are the ones with
-curves in `tumor/` and none in `normal/`, which is why the normal renders at the
-same flank and width.
+curves in `tumor/` and none in `normal/`, rendered at the same flank and width.
 
 ## Reading the sheet
 
-What the picture can tell you, and what it cannot:
+What each picture says:
 
 - **a fan of curves at both breakends** is the junction as the reads describe it
 - **nothing connecting the panels** means the reads do not support the caller's
   coordinates, which is either a false call or a breakpoint placed far enough
-  off that `--flank` missed it. Re-render that row wider before concluding
-  anything
+  off that `--flank` missed it. Re-render that row wider
 - **curves in the normal too** means germline, not somatic
 - **a dense fan in a region of ragged coverage** is usually a repeat. The
   connectors are drawn from what the aligner said, so a read mismapped into a
   repeat contributes a confident-looking curve
-
-The images rank nothing and vouch for nothing; they are a fast way to put your
-eyes on every call in the set rather than on the handful there was time for.
 
 ## Opening one in the browser
 
@@ -170,8 +161,8 @@ figures above, is three junctions across three chromosomes, and the
 
 ## Other callers
 
-The recipe is the format, not the caller. Anything that writes breakends or
-symbolic SVs to a VCF goes through the same two commands:
+The recipe follows the format. Anything that writes breakends or symbolic SVs to
+a VCF goes through the same two commands:
 
 - **cuteSV, Sniffles, pbsv, Delly, Manta, GRIDSS** all write a VCF that
   `sv_multihop.py bedpe` reads directly
@@ -184,9 +175,8 @@ symbolic SVs to a VCF goes through the same two commands:
   a bedGraph, `bedGraphToBigWig` it, and add it as a `--bigwig` so every image
   carries the copy number under the reads
 
-JBrowse deliberately does not order breakends into a derivative chromosome
-itself. Doing that properly needs allele-specific copy number and a centromere
-constraint, which is exactly what
+Ordering breakends into a derivative chromosome needs allele-specific copy
+number and a centromere constraint, which is what
 [LINX does with PURPLE's purity and ploidy](https://doi.org/10.1016/j.xgen.2022.100112);
 run it, and load its output here.
 
@@ -197,8 +187,6 @@ is three `jb2export` invocations: two `breakpoint` renders with one `--loc` per
 panel, one per sample, and a plain render of the derivative assembly, which are
 the `sv_review_tumor`, `sv_review_normal` and `sv_review_derivative` specs in
 [`website/scripts/specs/jbrowse-img.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/specs/jbrowse-img.ts).
-Putting them side by side, and labelling which is which, is the figure
-pipeline's job, not jb2export's.
 
 ## See also
 

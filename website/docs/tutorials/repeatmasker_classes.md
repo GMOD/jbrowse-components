@@ -9,12 +9,12 @@ tutorial_category: genomes.jbrowse.org
 data: hosted
 ---
 
-**TL;DR:** a RepeatMasker track is one packed lane of colored blocks, which says
-what each block is but not how much of a window each class covers. The same file
-opened as a
+**TL;DR:** a RepeatMasker track is one packed lane of colored blocks. The same
+file opened as a
 [multi-row feature display](/docs/user_guides/multirow_feature_track) is one
-labelled lane per class. No new files: the class is already in the file, and the
-display discovers the lanes from it.
+labelled lane per class, whose height is that class's share of the window. No
+new files: the class is already in the file, and the display discovers the lanes
+from it.
 
 ## Prerequisites
 
@@ -28,8 +28,7 @@ display discovers the lanes from it.
 
 ## The class is already in the file
 
-The two hub pipelines store it differently, which is the only thing that changes
-between them:
+The two hub pipelines store it differently:
 
 - A **UCSC golden-path** assembly ships a BED whose header names its columns,
   `repClass` among them. That is an attribute, so `partitionField` is just
@@ -91,9 +90,9 @@ by the class, so a lane keeps its color as the window's class list changes, and
 }
 ```
 
-A lane not named in `sampleColorMap` is not an error, it just takes a color from
-the categorical palette by its position in the stack, which is why naming the
-classes you care about is worth the lines.
+A lane not named in `sampleColorMap` takes a color from the categorical palette
+by its position in the stack, so its color moves as the window's class list
+changes.
 
 Two things worth knowing about the config, both because their absence is silent:
 
@@ -107,8 +106,8 @@ Two things worth knowing about the config, both because their absence is silent:
 
 ## Checking the lanes against the file
 
-The lane heights are a real claim about the window, so read the same numbers out
-of the file. Over the window in the figures:
+The lane heights are a claim about the window, so read the same numbers out of
+the file. Over the window in the figures:
 
 ```bash
 tabix https://jbrowse.org/ucsc/hg38/rmsk.bed.gz chr17:45,700,000-45,750,000 |
@@ -121,10 +120,10 @@ The classes it prints are the lanes on screen, and their bp totals are the ink
 in each lane. A lane in the picture with no line here, or the reverse, means the
 view is not showing the file you think it is.
 
-The `Unknown` lane is the control. It is not in the `sampleColorMap` above, it
-is not in the cookbook's lookup table either, and it is on screen anyway,
-because the lanes come from the file rather than from any list in the config.
-Pan to a window whose output has no `Unknown` line and the lane goes away.
+The `Unknown` lane is the control: no entry in the `sampleColorMap` above and
+none in the cookbook's lookup table, and it is on screen anyway, because the
+lanes come from the file. Pan to a window whose output has no `Unknown` line and
+the lane goes away.
 
 The same command with `$6` instead of `$7` counts `repFamily`, which is the
 finer partition (`L1`, `Alu`, `MIR`) if the classes turn out to be too coarse
@@ -182,8 +181,8 @@ npx --yes serve repeatmasker_build/jbrowse2               # then open the printe
 It runs the conversion above, `samtools faidx` over the FASTA for the assembly,
 and `jbrowse add-track` with the display already set.
 
-That ordering is also what makes the conversion checkable. Run the script on a
-genome UCSC masks too, and its output can be compared against UCSC's own:
+Run the script on a genome UCSC masks too, and its output can be compared
+against UCSC's own:
 
 ```bash
 curl -o ucsc_rmsk.bed.gz https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
@@ -193,9 +192,8 @@ diff <(gzip -dc repeatmasker_build/rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort
 
 Silence means every interval, name, strand, family and class agrees with UCSC's
 conversion of the same `.out`. The two places this can disagree are both in the
-`.out` format rather than in the display: its coordinates are 1-based and
-inclusive where BED's are 0-based and half-open, and its strand column spells
-the minus strand `C`.
+`.out` format: its coordinates are 1-based and inclusive where BED's are 0-based
+and half-open, and its strand column spells the minus strand `C`.
 
 ## See also
 

@@ -41,7 +41,7 @@ Kinh-Vietnamese trio HG02024, chr1 only:
 
 The finished tracks also render inline in a notebook through the
 [Python anywidget interface](/docs/jbrowse_anywidget), or [](/docs/jbrowser) in
-R. This tutorial builds its tracks on the command line, not in a notebook.
+R. This tutorial builds its tracks on the command line.
 
 Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
 "Add track" workflow. The
@@ -86,10 +86,9 @@ painted track.
 
 ## Finding the matching blocks programmatically
 
-That matching can be computed rather than eyeballed.
-[hap-ibd](https://github.com/browning-lab/hap-ibd) finds "identical by descent"
-blocks. It's built for population-scale cohorts but works fine on a single trio
-VCF. It needs two things:
+[hap-ibd](https://github.com/browning-lab/hap-ibd) computes that matching, as
+"identical by descent" blocks. It is built for population-scale cohorts and runs
+on a single trio VCF. It needs two things:
 
 - a phased VCF, like the
   [trio dataset](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
@@ -129,9 +128,8 @@ them:
 child haplotype, the matching _parental_ copy flips between the parent's copy 1
 and copy 2 at each crossover. Those flips are what the track below paints.
 
-Don't paint the raw segments, though. hap-ibd's output has gaps, plus short
-spurious segments from the statistical phasing, so collapse it into clean blocks
-first.
+hap-ibd's output has gaps, plus short spurious segments from the statistical
+phasing, so it is collapsed into clean blocks before painting.
 
 ## Converting hap-ibd data into painted inheritance blocks
 
@@ -168,9 +166,8 @@ the file and the order does not shift with your locale.
 
 Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`, which
 draws one row per distinct value of `partitionField`, so `parenthap` gives the
-four parental-haplotype rows and `rowOrder` sets their top-to-bottom order.
-There is no color config: a BED carrying `itemRgb` is painted with it
-automatically.
+four parental-haplotype rows and `rowOrder` sets their top-to-bottom order. A
+BED carrying `itemRgb` is painted with it automatically.
 
 ```json
 {
@@ -194,17 +191,15 @@ automatically.
 }
 ```
 
-The adapter needs no `columnNames`: the BED's `#`-header line already names its
-columns, and `parenthap` is the one the display partitions on.
+The BED's `#`-header line names its columns, so the adapter needs no
+`columnNames`, and `parenthap` is the one the display partitions on.
 [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
-off because here the color and the row label carry the same four categories, so
-a color key would only repeat the sidebar.
+off: the color and the row label carry the same four categories.
 
 ## Reading the painted crossovers
 
-No manual markup this time. The painting comes straight from the data. The four
-rows are each parent's two copies, blues for father HG02026 and reds for mother
-HG02025:
+The painting comes straight from the data. The four rows are each parent's two
+copies, blues for father HG02026 and reds for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
@@ -213,10 +208,9 @@ of them is filled at any position, and that is which of the father's two copies
 the child got there. Every step between the blue rows is a crossover. The red
 rows work the same way for the maternal chromosome.
 
-That rule is also the figure's own control. Two filled blue rows at a position,
-or neither, is a contradiction rather than a result: hap-ibd has matched one
-child haplotype to both of the father's copies or to neither. The centromere is
-the legitimate blank, having no markers to match on at all.
+That rule is the figure's own control: two filled blue rows at a position, or
+neither, means hap-ibd matched one child haplotype to both of the father's
+copies or to neither. The centromere is the blank with no markers to match on.
 
 The same display paints rows by whatever category is in the BED: point
 `partitionField` at a different column and the rows change with it. The
@@ -227,8 +221,8 @@ haplotype to paint FLARE ancestry calls, and the
 ## Relating the painting back to the genotypes
 
 Stack the painting directly above the same VCF in the **phased multi-sample
-variant display**, which draws genotypes at their real genomic positions, rather
-than _matrix_ mode, whose evenly-spaced columns will not line up with it.
+variant display**, which draws genotypes at their real genomic positions.
+_Matrix_ mode spaces its columns evenly, on a scale of its own.
 
 Zoom to a few hundred kb around one boundary, where the block-step is obvious
 and the genotype columns resolve into individual variants. Start with the
@@ -242,8 +236,8 @@ copies:
 
 <Figure caption="Maternal crossover at chr1:55,753,613, in a 400 kb window, the same idea in a different palette: the painting steps from Mother hap2 to Mother hap1, and the frames tie Child hap2 to each in turn." src="/img/trio-crossover-maternal.png"/>
 
-The genotypes underneath switch between the two parental copies far more often
-than real crossovers do, which is what the painting above summarises away.
+The genotypes underneath switch between the two parental copies more often than
+real crossovers do, and the painting above summarises those switches away.
 
 ## Where the boundaries come from
 
@@ -251,10 +245,9 @@ This 1000 Genomes VCF is _statistically_ phased, and its haplotypes carry switch
 errors, which are the extra copy-switches visible in the genotype rows.
 hap-ibd's cM-length threshold filters most of them out, so its blocks track the
 real boundaries more closely and the two crossovers above are the well-supported
-ones; the finer blocks are approximate. hap-ibd is a simple way to get paintable
-inheritance blocks, and a pedigree-aware method such as
-[duoHMM](https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm.html) is
-what crossover mapping proper would use.
+ones; the finer blocks are approximate. hap-ibd gives paintable inheritance
+blocks, and crossover mapping proper uses a pedigree-aware method such as
+[duoHMM](https://mathgen.stats.ox.ac.uk/genetics_software/duohmm/duohmm.html).
 
 ## Reproduce it end to end
 

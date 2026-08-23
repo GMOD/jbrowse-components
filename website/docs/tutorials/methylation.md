@@ -28,9 +28,8 @@ the two parental alleles pulled apart.
 
 The locus is the SNRPN / Prader-Willi imprinting center on chr15, where one
 parental allele is methylated and the other is not. That makes it a dataset with
-its own control: whatever the views show has to come out as two populations, not
-one intermediate blur, and both the reads and the aggregate profile have to
-agree on which allele is which.
+its own control: the views have to come out as two populations, and the reads
+and the aggregate profile have to agree on which allele is which.
 
 ## Per-read methylation from the alignments
 
@@ -53,24 +52,22 @@ assembly already configured in JBrowse (see the
 ```
 
 Set **Color by... → Modifications** from the track menu and each read is painted
-with its own 5mC calls, no extra processing and no methylation caller. Two modes
-are offered: one paints only the positions the MM tag reports as modified, the
-other (IGV's "2-color" scheme) also fills in every CpG the tag left implicit, so
-an unmethylated region reads as solid blue rather than as empty space. The
+with its own 5mC calls. Two modes are offered: one paints only the positions the
+MM tag reports as modified, the other (IGV's "2-color" scheme) also fills in
+every CpG the tag left implicit, so an unmethylated region reads as solid blue.
+The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes, the probability threshold, and the cytosine-context submenu.
 
-At this point the reads carry the answer but do not show it: the pileup over the
-CpG island is an interleaved mix of methylated and unmethylated reads, and
-nothing in that mix says whether it is one allele or two. Splitting them apart
-is one setting, two sections below.
+The pileup over the CpG island is an interleaved mix of methylated and
+unmethylated reads. Splitting it by allele is one setting, two sections below.
 
 ## Aggregate methylation with modkit bedMethyl
 
 [modkit pileup](https://nanoporetech.github.io/modkit/) collapses the per-read
 calls into a bedMethyl file, one row per CpG per modification type, carrying the
 fraction of reads that were modified. It is the compact form of the same
-information, and the form that stays fast at whole-genome zoom.
+information, and stays fast at whole-genome zoom.
 
 ```bash
 modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
@@ -80,7 +77,7 @@ tabix -p bed output.bedmethyl.gz
 
 `--preset traditional` collapses 5mC and 5hmC into a single 5mC fraction
 (bisulfite-equivalent). Omit it to keep separate rows per modification type (`m`
-for 5mC, `h` for 5hmC). Passing `--partition-tag HP` instead writes one file per
+for 5mC, `h` for 5hmC). Passing `--partition-tag HP` writes one file per
 haplotype, which is what this dataset uses.
 
 Because bedMethyl is a BED file with a numeric score column, it loads through a
@@ -109,13 +106,10 @@ The Y axis is percent methylation, each CpG a vertical bar.
 Each long read is a single DNA molecule, so reads that carry an `HP` haplotype
 tag (from WhatsHap, HiPhase, or ONT's `wf-human-variation`) can be separated by
 allele. Pick **Group by... → Tag...** from the track menu and enter `HP`. The
-dialog scans the reads in view and reports the values it found, and it offers to
-color reads by the same tag. The box arrives **checked**, because any scheme
-that is not already a tag counts as replaceable. Uncheck it, or the haplotypes
-come back as two flat colors and the methylation the section is about is gone.
-The pileup then stacks into one band per haplotype, computed in the browser with
-no external tool, and the interleaved mix from the first section resolves: one
-band is methylated over the island, the other is not.
+dialog scans the reads in view, reports the values it found, and offers to color
+reads by the same tag, with that box arriving **checked**; uncheck it to keep
+the methylation coloring. The pileup then stacks into one band per haplotype,
+computed in the browser, one band methylated over the island and the other not.
 
 <Video src="/media/methylation/group_by_hp.mp4" caption="The split as the menu does it: the interleaved pileup, the tag dialog finding HP values 1 and 2 in the reads themselves, the coloring box turned back off, and one methylated band resolving over one unmethylated." />
 
@@ -126,17 +120,15 @@ and its source in the same view, on one x scale.
 
 <Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Grouping reads by HP keeps the summary profile on top and the individual reads below it as the same data." src="/img/methylation/hg002_snrpn_combined.png" />
 
-The aggregate says one allele is methylated over the island and the other is
-not, and the reads below it show the same split molecule by molecule, with the
-same haplotype on the same side. An aggregate profile that disagreed with the
-reads under it would mean the phasing changed, not the methylation.
+The aggregate and the reads below it split the same way, molecule by molecule,
+with the same haplotype on the same side.
 
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
 the Group-by dialog and the [phased-trio tutorial](/docs/tutorials/analyze_trio)
 for producing `HP`-tagged reads.
 
-## Choosing between the two approaches
+## Aggregate for navigation, reads for detail
 
 Keep the bedMethyl track for whole-genome navigation, since it stays quick at
 any zoom and is what a tumor-versus-normal comparison reads off, then drop the
@@ -156,8 +148,7 @@ without a large download:
 
 - the per-haplotype bedMethyl from the `wf-human-variation` sup run on HG002
   (`giab_2025.01/.../PAW70337/output/SAMPLE.wf_mods.{1,2}.bedmethyl.gz`),
-  restricted to the SNRPN locus and to `m` (5mC) rows, since the `h` and `a`
-  rows are near-empty here and only clutter the plot;
+  restricted to the SNRPN locus and to `m` (5mC) rows, the populated ones here;
 - the reads from the HG002 sup basecalls
   (`giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram`), sliced to the same
   locus and haplotagged with `whatshap haplotag` against the phased SNP calls

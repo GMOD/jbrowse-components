@@ -27,7 +27,7 @@ The example gene is _ACTB_, a compact gene with deep, even read coverage.
 Each grey box below is a read. The thin teal lines jumping across a gap are
 spliced alignments, where a read maps partly to one exon and partly to the next,
 skipping the intron between them. The histogram along the top is read coverage
-at each position, and the reference gene annotation (an NCBI GFF) sits above it.
+at each position.
 
 <Figure caption="RNA-seq reads over ACTB: the coverage histogram (top), strand-colored splice arcs, the spliced read pileup, and the NCBI RefSeq gene model." src="/img/rnaseq/basic.png" />
 
@@ -35,7 +35,7 @@ at each position, and the reference gene annotation (an NCBI GFF) sits above it.
 
 The histogram counts the reads in the pileup below it at each position.
 Comparing genes or libraries needs the transcript-length and library-size
-normalization a counts pipeline applies and the browser does not.
+normalization a counts pipeline applies.
 
 Pick **Read height → Compact** in the track menu to pack the full read stack
 into view:
@@ -67,8 +67,7 @@ directly, while minimap2's `ts` records the orientation relative to the read,
 which JBrowse combines with the read's own strand. Red for forward, blue for
 reverse. A read carrying none of those tags gets the no-strand color, so a BAM
 aligned by STAR without `--outSAMstrandField intronMotif` gives arcs of one
-neutral color. The track in the figure above is named `(BAM,XS)` for that
-reason.
+neutral color.
 
 At Normal read height each spliced read stands on its own: two grey exon-aligned
 ends joined by a thin teal line across the skipped intron. That connector is
@@ -77,11 +76,10 @@ read crossing a junction.
 
 ## Strand-specific RNA-seq
 
-The arc colors above cover only spliced reads. A _strand-specific_ library,
-which this one is, records the strand in which mate of the pair a read is, so it
-carries the answer for every read. That matters where genes sit close together
-or overlap on opposite strands, since otherwise nothing says which gene a read
-belongs to.
+The arc colors above cover only spliced reads. A _strand-specific_ library
+records the transcript strand in which mate of the pair a read is, so every read
+carries it. That is what tells apart genes sitting close together or overlapping
+on opposite strands.
 
 The surfeit locus packs genes tightly and alternates their strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_), so the coloring, which comes from the reads alone,
@@ -90,10 +88,11 @@ Paired end → First of pair strand**:
 
 <Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 
-Coloring answers the question one read at a time; the coverage histogram answers
-it for a whole gene. Pick **Group by... → First-of-pair strand**, then turn off
-**Show... → Show pileup**. Each group gets its own band computed from only its
-reads, leaving two histograms, forward and reverse, on one autoscaled axis.
+Coloring answers the question one read at a time, and the coverage histogram
+answers it for a whole gene. Pick **Group by... → First-of-pair strand**, then
+turn off **Show... → Show pileup**. Each group gets its own band computed from
+only its reads, leaving two histograms, forward and reverse, on one autoscaled
+axis.
 
 In the gene-dense MHC class III region, _NELFE_ and _SKIV2L_ sit back to back on
 opposite strands:
@@ -104,7 +103,7 @@ Swapping to **Strand** groups on the read's own strand, which for a paired-end
 library sends the two mates of every pair to opposite bands, so neither band is
 the transcript strand.
 
-## Short reads vs long reads
+## Short reads and long reads
 
 Short-read RNA-seq (usually Illumina, ~150 bp per read) fragments each
 transcript, so a transcript is reassembled from many overlapping reads. A long

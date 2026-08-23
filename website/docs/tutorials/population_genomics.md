@@ -12,8 +12,6 @@ data: pipeline
 **TL;DR:** compute per-window Fst, nucleotide diversity (π), and Tajima's D from
 a multi-sample VCF, load them as bigWig quantitative tracks stacked in one view,
 each on its own y-axis, and read where the signals line up against genes.
-JBrowse draws the windowed statistic your tool produced; it runs no
-population-genetic inference of its own.
 
 ## Prerequisites
 
@@ -44,8 +42,8 @@ against the genes underneath it. Haplotype-based selection statistics (iHS,
 XP-EHH, e.g. from [selscan](https://github.com/szpiech/selscan)) capture sweeps
 that Fst misses and, being per-site or per-window scores, load the same way.
 
-No single statistic is decisive alone, so this tutorial stacks Fst, π and
-Tajima's D in one view, each scaled to its own data. The panel is the
+This tutorial stacks Fst, π and Tajima's D in one view, each scaled to its own
+data. The panel is the
 [Drosophila Genetic Reference Panel](https://dgrpool.epfl.ch/) (DGRP), 205
 inbred lines ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)) on dm6,
 and the two signals it draws are Fst across the `In(2L)t` inversion, which
@@ -66,8 +64,7 @@ the `In(2L)t` typing of
 [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554). The karyotype column
 is `0` for standard homozygotes, `2` for inverted homozygotes, and `1` for
 heterozygotes, which is what splits the panel into the two groups Fst compares.
-The heterozygotes are dropped from both groups, since contrasting homozygous
-arrangements gives the clearest inversion signal.
+The heterozygotes are dropped from both groups.
 
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 downloads both files and derives the two sample lists, normalizing DGRPool's
@@ -108,12 +105,10 @@ awk -F'\t' 'NR==FNR{len[$1]=$2; next}
 bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
 ```
 
-Taking `chrom.sizes` from the VCF header rather than from the assembly is what
-keeps the naming consistent, since the scans carry the header's contig names,
-and it is also what the clamp reads window ends against. Diversity is the same
-three steps with `--window-pi 2000`, reading `$5` of `pi_all.windowed.pi`, and
-`--keep` restricts it to one arrangement. Reading `$4` of the same table instead
-gives the called-variant count the figure below stacks under π.
+The clamp reads window ends against that same `chrom.sizes`. Diversity is the
+same three steps with `--window-pi 2000`, reading `$5` of `pi_all.windowed.pi`,
+and `--keep` restricts it to one arrangement. Reading `$4` of the same table
+instead gives the called-variant count the figure below stacks under π.
 
 The two groups here are very unequal, since the inverted arrangement is the
 rarer one. Weir & Cockerham corrects for sample size, and Hudson's estimator
@@ -146,33 +141,31 @@ that a single-gene sweep like _Cyp6g1_ resolves sharply. Widen toward 5-10 kb
 for smoother genome-wide overviews, or narrow further only where SNP density
 stays high.
 
-The one thing to check yourself is chromosome naming, because a mismatch draws
-an empty track rather than an error. The bigWigs take their contig names from
-the VCF header, which spells the arms `2L`, `2R`, `3L`, `3R`, `X` and `4`,
-FlyBase style, where UCSC dm6 prefixes them `chr2L`. If your dm6 assembly uses
-the UCSC names, [refname aliasing](/docs/developer_guides/refname_aliasing)
-reconciles the two at display time.
+The one thing to check yourself is chromosome naming: a mismatch draws an empty
+track with no error. The bigWigs take their contig names from the VCF header,
+which spells the arms `2L`, `2R`, `3L`, `3R`, `X` and `4`, FlyBase style, where
+UCSC dm6 prefixes them `chr2L`. If your dm6 assembly uses the UCSC names,
+[refname aliasing](/docs/developer_guides/refname_aliasing) reconciles the two
+at display time.
 
-Three properties of the values carry into the figures. Negative Fst estimates,
-an artifact of the Weir & Cockerham estimator at low-differentiation sites, are
-floored at 0, while Tajima's D keeps its sign, since its negative excursions are
-the signal.
+Negative Fst estimates, an artifact of the Weir & Cockerham estimator at
+low-differentiation sites, are floored at 0. Tajima's D keeps its sign, since
+its negative excursions are the signal.
 
 Because this VCF holds variant sites only, `--window-pi` divides by the nominal
 window size, so every position not in the file counts as invariant and callable
 alike. A window that lost sites to filtering or to coverage reads as low
-diversity rather than as unmeasured, and how much each window lost varies.
+diversity, and how much each window lost varies.
 [pixy](https://pixy.readthedocs.io/)
 ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) takes an
 allSites VCF, where an invariant position and a missing one are distinguishable,
 and reports π, dxy and Fst per window without that bias, one row per window, so
 its output packs into a bigWig the same way.
 
-Tajima's D is read as an excursion against the panel's own background rather
-than against zero. A variant-sites-only callset of inbred lines lifts the whole
-baseline, since filtering takes the rare alleles D is most sensitive to and
-vcftools counts two chromosomes where a line contributes one. Neither moves a
-trough relative to its flanks.
+Tajima's D is read as an excursion against the panel's own background. A
+variant-sites-only callset of inbred lines lifts the whole baseline, since
+filtering takes the rare alleles D is most sensitive to and vcftools counts two
+chromosomes where a line contributes one.
 
 ## Loading it in JBrowse
 
@@ -231,26 +224,23 @@ inverted and standard diversity load as one track on one shared y-domain:
 ```
 
 The inverted lines carry somewhat less diversity than the standard ones across
-the inverted region, most noticeably near the breakpoints, but it is a mild
-difference. Fst, below, is the signal that actually makes this arrangement stand
-out.
+the inverted region, most noticeably near the breakpoints.
 
 ## Reading the signals
 
-The three scans are read against each other rather than one at a time. Search
-`Cyp6g1` (on `2R`) in the location box and add the Tajima's D track alongside π.
-Both dip together over the swept window. D carries π inside it, so the pair says
-the frequency spectrum is skewed further toward rare alleles than the drop in
-diversity on its own accounts for. Add the called-variant count under them,
-which is column 4 of the table π comes from, so it counts the same windows over
-the same calls. A duplication of `Cyp6g1` segregates alongside the resistance
-allele ([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)),
-and copy number costs a window called sites, so how far the count falls beside π
-is worth seeing rather than assuming.
+The three scans are read against each other. Search `Cyp6g1` (on `2R`) in the
+location box and add the Tajima's D track alongside π. Both dip together over
+the swept window. D carries π inside it, so the pair says the frequency spectrum
+is skewed further toward rare alleles than the drop in diversity on its own
+accounts for. Add the called-variant count under them, which is column 4 of the
+table π comes from, so it counts the same windows over the same calls. A
+duplication of `Cyp6g1` segregates alongside the resistance allele
+([Schmidt et al. 2010](https://doi.org/10.1371/journal.pgen.1000998)), and copy
+number costs a window called sites.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D, π and called variants per window across 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). D and π dip over the highlighted window against their background either side, the joint trough being the hard-sweep signature. The count under them falls too, but nothing like as far."/>
 
-Each pair of values reads differently, which is what the stack is for:
+Each pair of values reads differently:
 
 | Fst  | Within-group π         | Reading                                          |
 | ---- | ---------------------- | ------------------------------------------------ |
@@ -267,22 +257,17 @@ grouping step with its phenotype scans `3R` exactly as the steps above scan
 ## The inversion, genome-wide and per line
 
 Opening the assembly with no location shows all of its regions at once, so the
-six arms lay out side by side and the block has the rest of the genome to be
-measured against. The `In(2L)t` Fst track rises over the inverted region of
-chromosome 2L, while every other arm sits at low background Fst.
+six arms lay out side by side. The `In(2L)t` Fst track rises over the inverted
+region of chromosome 2L, against low background Fst on every other arm.
 
-That view summarizes the inversion into one number per window, which is a
-statement about the arrangement and not about any line that carries it. To see
-which lines those are, represent the whole arrangement as a single
-structural-variant call, one `<INV>` record spanning the In(2L)t breakpoints
-(`2L:2,225,744-13,154,180`), genotyped across every karyotyped line, and load it
-in the
+That view gives one number per window across the arrangement. To see which lines
+carry it, represent the whole arrangement as a single structural-variant call,
+one `<INV>` record spanning the In(2L)t breakpoints (`2L:2,225,744-13,154,180`),
+genotyped across every karyotyped line, and load it in the
 [regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail),
 which draws each genotype at the call's true span so the carriers line up under
-the Fst plateau. A per-SNP view cannot hold an ~11 Mb inversion on screen; one
-SV call is a single feature no matter how wide it is.
-[](/docs/tutorials/ld_mosquitoes) builds the same one-record karyotype track for
-a 22 Mb mosquito inversion.
+the Fst plateau. [](/docs/tutorials/ld_mosquitoes) builds the same one-record
+karyotype track for a 22 Mb mosquito inversion.
 
 The build script writes both inputs: a `samples.tsv` whose first column is the
 sample name and whose other columns are attributes the display can order and
@@ -316,23 +301,19 @@ Load it as a `VariantTrack` whose adapter carries the samples TSV, with a
 }
 ```
 
-Viewed across the whole arm, the single call resolves the arrangement at once:
-each row is a line, colored by its genotype at the inversion, so the standard
-lines form the pale homozygous-reference field and the In(2L)t carriers the
-darker block beneath it, with the karyotype strip down the sidebar. `groupBy` is
-what keeps those two blocks contiguous. Without it the rows keep the VCF's
-column order, and the split only reads as two blocks by luck.
+Viewed across the whole arm, each row is a line colored by its genotype at the
+inversion, with the karyotype strip down the sidebar. `groupBy` keeps the two
+karyotype classes contiguous, so each reads as one block.
 
 <Figure src="/img/popgen/in2lt_inversion.png" caption="Top: all six dm6 arms, with the In(2L)t extent over Fst between the two arrangements, the block on 2L standing against low background everywhere else. Bottom: the same two tracks across chr2L alone, with one row per DGRP line under them, genotyped for the inversion and grouped by karyotype. The carrier block spans breakpoint to breakpoint; the Fst plateau above it runs past both." links="Six arms=popgen/fst_in2lt_2L,Chromosome 2L=popgen/in2lt_per_sample"/>
 
-The genotypes here are the arrangement karyotypes themselves, so the lane is a
-direct record of which lines carry the inversion. That ordinary SNPs across the
-region co-segregate with it, which is why the arrangement behaves as one
-recombination-suppressed block, is what the two Fst lanes above it quantify. The
-plateau carries a few megabases past each breakpoint, which is the margin
+The genotypes here are the arrangement karyotypes themselves, so the lane
+records which lines carry the inversion, and the two Fst lanes above it quantify
+how far ordinary SNPs across the region co-segregate with it. The plateau
+carries a few megabases past each breakpoint, the margin
 [Corbett-Detig & Hartl](https://doi.org/10.1371/journal.pgen.1003056) report for
-the common _Drosophila_ inversions; the extent comes from the lane at the top,
-which is published coordinates.
+the common _Drosophila_ inversions; the extent at the top of the frame is
+published coordinates.
 
 ## Reproduce it end to end
 

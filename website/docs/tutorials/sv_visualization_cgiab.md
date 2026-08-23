@@ -13,7 +13,7 @@ data: pipeline
 tumor/normal PDAC cell line, as PacBio HiFi reads, a draft SV and CNV benchmark,
 and a telomere-to-telomere assembly of the tumor. Load them as tracks and read
 each benchmark call against the alignments and the copy number under it, in a
-tumor genome that is hypodiploid, so the depth baseline is not two.
+hypodiploid tumor genome where arm-level loss is the backdrop.
 
 ## Prerequisites
 
@@ -43,14 +43,13 @@ matched tumor (HG008-T) and normal pancreatic tissue (HG008-N-P) sequenced with
 PacBio HiFi long reads, plus a near-complete telomere-to-telomere de novo
 assembly of the tumor genome.
 
-HG008-T is **hypodiploid**: its assembly recapitulates 35 tumor chromosomes
-rather than 46, with widespread arm-level loss and 16 truncal interchromosomal
+HG008-T is **hypodiploid**: its assembly recapitulates 35 tumor chromosomes,
+down from 46, with widespread arm-level loss and 16 truncal interchromosomal
 rearrangements
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). That matters
-for every copy-number figure below, since the middle of a depth track is not
-copy number 2 here and a balanced region is the exception. The benchmark CNV BED
-reports absolute copy number per interval, so it is what every other track gets
-read against.
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Arm-level
+loss is the backdrop for every copy-number figure below, so the benchmark CNV
+BED, which reports absolute copy number per interval, is what every other track
+gets read against.
 
 For the full call sets, auxiliary assays and methods, see the
 [NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
@@ -62,7 +61,7 @@ this page is the data-loading workflow and a few worked examples.
 ## Setting up
 
 The instance itself is the [web quickstart](/docs/quickstart_web) unchanged. Two
-of the prerequisites are release binaries rather than apt packages:
+of the prerequisites install from release binaries:
 
 ```bash
 wget https://github.com/ChristopherWilks/megadepth/releases/download/1.2.0/megadepth
@@ -72,13 +71,10 @@ curl -L https://github.com/PacificBiosciences/HiFiCNV/releases/download/v1.0.1/h
 ```
 
 The assembly is the C-GIAB build of GRCh38, with decoys and several masked
-regions. The build does not matter to the visualization, but the same one has to
-be used when converting the BAMs to CRAM below, or every position reads as a
-mismatch.
+regions, and it is the reference the BAMs get converted to CRAM against below.
 
 [Reproduce it end to end](#reproduce-it-end-to-end) fetches that reference and
-every file below. What follows is the part that is track config rather than data
-preparation.
+every file below. What follows is the track config.
 
 ## The benchmark SV and CNV calls
 
@@ -86,7 +82,7 @@ The V0.5 HG008-T draft benchmark SV calls (VCF) and CNV calls (BED) load as
 remote URL tracks, with nothing downloaded.
 
 The CNV BED ships without a header, so its columns beyond `chrom/start/end` load
-unnamed. Rather than editing the file, name them on the adapter with the
+unnamed. Name them on the adapter with the
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames) slot:
 
 ```json addtrack
@@ -147,11 +143,9 @@ nothing downloaded:
 
 <Figure caption="The chr3 breakends of the benchmark's cluster_3 in five SV callsets, over the HiFiCNV depth and the benchmark's CNV lane: the V0.5 benchmark, Severus, the minda ensemble, DRAGEN and NYGC's BEDPE. Every callset marks both breakends, the depth steps down between them, and the CNV lane crosses the whole window as one segment." src="/img/sv_cgiab/sv_callset_comparison.png" />
 
-The benchmark files those two breakends under one `EVENT`, and the depth says
-what they bound: the interval between them carries fewer copies than its flanks,
-with both steps landing where the callsets put a breakend. The benchmark CNV BED
-covers the same window with a single segment named `noCNV`, which is the scale
-that callset works at, so an event this size is the SV lanes' to carry.
+The benchmark files those two breakends under one `EVENT`. Its CNV BED covers
+the same window with a single segment named `noCNV`, the scale that callset
+works at, so an event this size is the SV lanes' to carry.
 
 The second junction is written two ways. The benchmark and minda place a
 breakend; Severus and DRAGEN write a symbolic inversion whose `SVLEN` runs far
@@ -160,8 +154,8 @@ draw a mark.
 
 ### Severus and DRAGEN
 
-Both are one indexed VCF, and both are records at a breakend rather than spans,
-so they load with no display settings:
+Both are one indexed VCF holding records at a breakend, so they load with no
+display settings:
 
 ```json addtrack
 {
@@ -189,15 +183,15 @@ so they load with no display settings:
 }
 ```
 
-DRAGEN's record over the chr3-chr13 junction is one to click rather than to read
-off the lane: it places the breakend where the others do and then carries
-`MaxDepth` in its own `FILTER` column, the depth cap a caller applies where a
-pileup runs far above the genome average.
+DRAGEN's record over the chr3-chr13 junction places the breakend where the
+others do and carries `MaxDepth` in its own `FILTER` column, the depth cap a
+caller applies where a pileup runs far above the genome average. Clicking the
+record shows it.
 
 ### minda: the caller runs behind each junction
 
 The ensemble callset is a plain VCF, so [`VcfAdapter`](/docs/config/vcfadapter)
-loads it whole rather than by index:
+loads it whole, with no index:
 
 ```json addtrack
 {
@@ -214,11 +208,10 @@ loads it whole rather than by index:
 
 Each record's `SUPP_VEC` names the individual caller runs that supported it,
 prefixed by the technology they ran on: `PB_severus_BND1941_1`,
-`ONT_Sniffles2.INV.30AM2`, `ILL_gridss63ff_2860h`. Clicking a junction is then
-how many independent runs saw it, and on which reads, and it is the field that
-says whether a call rests on one technology.
+`ONT_Sniffles2.INV.30AM2`, `ILL_gridss63ff_2860h`. Clicking a junction then says
+how many independent runs saw it, and on which technologies.
 
-### NYGC: a BEDPE, and the arcs it can be drawn as
+### NYGC: a BEDPE drawn as arcs
 
 [`BedpeAdapter`](/docs/config/bedpeadapter) reads a paired-end BED whole, with
 no index, and serves it to a variant track. The `#` header names the columns, so
@@ -241,9 +234,7 @@ paired-end counts:
 
 Each record holds both ends, so the whole callset reads as arcs at chromosome
 scale: **Display types → Variant display arcs** on the track menu draws one arc
-per record between its two breakends. At the base-level zoom the figure above
-uses, an arc leaves the window at both ends, and the default display's marks are
-what line up against the other callsets.
+per record between its two breakends.
 
 ## Copy number from the published callsets
 
@@ -262,9 +253,9 @@ all four callsets can share one view:
 The benchmark CNV BED added above is the lane the others get read against, since
 its copy numbers are absolute. It states its diploid regions explicitly as CN 2,
 and it leaves out segments whose breakpoints the project could not place on
-GRCh38, so a gap in that lane is a gap in the benchmark and not a call of no
-change. Depth per bin is the one signal no callset publishes, and the end of
-this section computes it from the tumor reads.
+GRCh38, so a gap in that lane is a gap in the benchmark. Depth per bin is the
+one signal no callset publishes, and the end of this section computes it from
+the tumor reads.
 
 <Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth and B-allele frequency above them: the V0.5 benchmark, NYGC's annotated BIC-seq2 segments, DRAGEN's somatic CNV VCF, and Wakhan's two haplotype rows. Depth drops out over CDKN2A, where the benchmark and NYGC both carry a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 
@@ -329,21 +320,19 @@ tier.
 
 `HG008-T--HG008-N.bicseq2.txt` is the same segmentation in quantitative form,
 one log2 ratio per segment, and it reshapes into a bedGraph in one `awk` line.
-Plot it as a **line (step)** over a fixed range, which keeps a homozygous
-deletion (no reads, so no finite ratio) from setting the axis for a whole
-chromosome. The balanced baseline sits above zero because BIC-seq2 normalizes on
-total read counts and this genome is hypodiploid; the track is shown as
-published, and it is the steps that get read against the benchmark's absolute
-copy numbers.
+Plot it as a **line (step)** over a fixed range, since a homozygous deletion
+carries no reads and so no finite ratio. The balanced baseline sits above zero
+because BIC-seq2 normalizes on total read counts and this genome is hypodiploid;
+read its steps against the benchmark's absolute copy numbers.
 
 ### Wakhan: copy number per parental haplotype
 
 A log2 ratio and a folded allele frequency both average the two parental alleles
 together, so at whole-genome zoom an LOH block reads as balanced.
 [Wakhan](https://github.com/KolmogorovLab/Wakhan) phases the germline
-heterozygous SNPs and reports copy number _per haplotype_ instead, which keeps
-the LOH signal at every zoom. C-GIAB publishes two Wakhan runs on this tumor,
-and the later one phases the normal with Arima Hi-C alongside the HiFi reads:
+heterozygous SNPs and reports copy number _per haplotype_, which keeps the LOH
+signal at every zoom. C-GIAB publishes two Wakhan runs on this tumor, and the
+later one phases the normal with Arima Hi-C alongside the HiFi reads:
 `HG008_HiFi_HiC_copynumbers_segments.bed` and `HG008_HiFi_HiC_loh_segments.bed`,
 both of them URL tracks.
 
@@ -401,11 +390,11 @@ to `haplotype` and it paints one row per parental copy.
 }
 ```
 
-`copynumber_state` is one parental copy rather than the total, so `1` is the
-expected state and a `0` row is the lost haplotype that makes an arm LOH. Wakhan
-emits fractional states for segments that are not clonal, so bucket the color
-rather than matching integers exactly. `coverage` is Wakhan's median depth for
-the segment, where the per-copy depth scale can be read directly.
+`copynumber_state` is one parental copy, so `1` is the expected state and a `0`
+row is the lost haplotype that makes an arm LOH. Wakhan emits fractional states
+for segments that are not clonal, so the color buckets ranges. `coverage` is
+Wakhan's median depth for the segment, where the per-copy depth scale can be
+read directly.
 
 ### Depth per bin, and B-allele frequency
 
@@ -457,22 +446,20 @@ bcftools mpileup -f GRCh38.fa -T hets.vcf.gz -a AD -q 1 -Q 0 tumor.bam |
 bedGraphToBigWig baf.bedgraph GRCh38.chrom.sizes tumor_baf.bw
 ```
 
-Plot it with **scatter** over a fixed 0 to 1 range, since the spread is the
-entire signal and a line rendering would average the two LOH bands back to 0.5.
+Plot it with **scatter** over a fixed 0 to 1 range: the spread is the entire
+signal.
 
 <Figure caption="Chromosome 3 over the benchmark CNV calls: BIC-seq2's segmented log2 copy ratio, the HiFiCNV depth it summarizes, and B-allele frequency. The p-arm is a single-copy loss with loss-of-heterozygosity; the q-arm is balanced." src="/img/sv_cgiab/cnv_depth_baf.png" />
 
 #### Keep the BAF track off bigWig summaries
 
-A bigWig carries precomputed zoom levels, and each zoomed bin holds only a
-minimum, an average and a maximum. That is a fair summary of read depth and a
-meaningless one for BAF, which is a _distribution_: every bin over an LOH arm
+A bigWig carries precomputed zoom levels, and each zoomed bin holds a minimum,
+an average and a maximum. BAF is a _distribution_, so every bin over an LOH arm
 comes back as minimum 0, maximum 1 and an average that wanders. The default
 [`summaryScoreMode`](/docs/config/linearwiggledisplay/#slot-summaryscoremode) of
-`whiskers` draws all three, so the split this track exists to show paints as a
-solid full-height wash.
+`whiskers` draws all three, which paints the arm as a solid full-height wash.
 
-Fix it on the adapter, not the display, with
+The fix goes on the adapter, with
 [`resolutionMultiplier`](/docs/config/bigwigadapter/#slot-resolutionmultiplier).
 It scales the bases-per-bin the adapter asks for, and a small enough value keeps
 the fetch on the raw per-site values at the zoom levels these figures use:
@@ -498,13 +485,11 @@ the fetch on the raw per-site values at the zoom levels these figures use:
 ```
 
 Raw het sites are cheap here: a whole chromosome is well under two megabytes,
-because the track only carries one value per heterozygous site rather than one
-per base. Whole-genome view still falls back to the summary, which is what
-Wakhan's segments above are for.
+because the track carries one value per heterozygous site. Whole-genome view
+still falls back to the summary, which is what Wakhan's segments above are for.
 
 **Resolution → Finer** in the track menu is the same control interactively.
-Reach for it whenever a scatter track looks like a filled band rather than a
-cloud of points.
+Reach for it whenever a scatter track paints as a filled band.
 
 ### Subclonal copy number
 
@@ -562,9 +547,6 @@ across the whole arm and the bulk depth holds one level under it.
 
 <Figure caption="The p-arm of chr3 over the HG008-T clones: the HiFiCNV depth, the benchmark CNV call, and one row per clone from the per-clone CNVkit BED. One row departs from the rest at the p-terminus and rejoins them partway down the arm." src="/img/sv_cgiab/subclonal_cnv.png" />
 
-Each clone was grown from a single cell and sequenced on its own, so a row is
-that clone's own copy number and the bulk lanes above it are the mixture.
-
 ## Align the tumor assembly to GRCh38
 
 The C-GIAB project provides a near-complete telomere-to-telomere de novo
@@ -616,9 +598,7 @@ That chord is one breakend of a larger event. The V0.5 benchmark tags `SV_20`
 with `EVENTTYPE=CHROMOPLEXY` and files it under `EVENT=cluster_3` with its mate
 on chr13 and two further breakends on chr3. Interchromosomal translocations in
 HG008 are frequently complex this way
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)), which is why
-the assembly views below are worth reaching for once a chord has said where to
-look.
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
 
 For the SV inspector workflow itself (filtering the table, search, configuring
 the circular overview), see the
@@ -630,12 +610,11 @@ The chord says where to look. Three things in this instance say what is there,
 and none of them is derived from the others.
 
 **The caller.** `SV_20` and `SV_190` are one junction written twice, joining
-chr3:139,976,414 to chr13:114,353,244. A BND record names one partner, so on its
-own each describes a translocation and nothing more. The `EVENT` field is what
-says otherwise: the benchmark files both under `cluster_3` alongside two further
-breakends and tags them `EVENTTYPE=CHROMOPLEXY`. A caller can group junctions
-into an event because it sees the whole callset at once. It cannot say which
-molecule carries them.
+chr3:139,976,414 to chr13:114,353,244. A BND record names one partner, so each
+describes a translocation. The `EVENT` field groups them: the benchmark files
+both under `cluster_3` alongside two further breakends and tags them
+`EVENTTYPE=CHROMOPLEXY`. A caller can group junctions into an event because it
+sees the whole callset at once. It cannot say which molecule carries them.
 
 **The reads.** Put both breakpoint loci on screen and, from the tumor PacBio
 HiFi track's menu, choose **Launch view → Reconstruct derivative allele...**.
@@ -662,15 +641,14 @@ Reading the list below the top route is the other half of the exercise. This
 window ends at the chr13 q-terminus, so most of what is offered under the real
 junction is reads mismapped into the terminal repeats of other chromosomes, each
 a confident-looking two-segment route with a real read count behind it. The read
-count ranks the routes rather than vouching for them; what vouches for this one
-is that the caller and the assembly put its two ends in the same two places.
+count ranks the routes. What picks this one out is that the caller and the
+assembly put its two ends in the same two places.
 
 The reconstruction is bounded twice by what is loaded. It is assembled from the
-reads in the **displayed regions**, so a locus not on screen contributes no
-route however plainly its reads describe one, which is why both sides of this
-junction are open above. And the hosted demo slices the tumor reads to the loci
-these walkthroughs visit, so the reads reach one of `cluster_3`'s junctions
-where the assembly contig carries both. Rebuilding from the full BAM with
+reads in the **displayed regions**, which is why both sides of this junction are
+open above. And the hosted demo slices the tumor reads to the loci these
+walkthroughs visit, so the reads reach one of `cluster_3`'s junctions where the
+assembly contig carries both. Rebuilding from the full BAM with
 [the build script](#reproduce-it-end-to-end) lifts that limit.
 
 ### Which of these calls are drivers
@@ -683,14 +661,12 @@ _CDKN2A_, _TP53_ and _SMAD4_
 [Bailey et al. 2016](https://doi.org/10.1038/nature16965)), and the copy-number
 walkthroughs below visit all four in this genome.
 
-Nothing in the browser marks that distinction: the benchmark BED states copy
-number and haplotype rather than consequence, and neither does the gene track.
-The somatic driver catalogues that would answer it as a lane (COSMIC's Cancer
-Gene Census among them) are licensed rather than redistributable, so a public
-demo cannot carry one. The NYGC segments loaded above carry theirs inline, each
-one listing the census genes inside it. Every copy-number figure below also
-draws one MANE Select transcript under the lanes, so the event and the gene it
-covers are read off the same axis.
+The benchmark BED states copy number and haplotype; consequence comes from a
+driver catalogue, and the somatic ones (COSMIC's Cancer Gene Census among them)
+are licensed, so a public demo cannot carry one as a lane. The NYGC segments
+loaded above carry theirs inline, each one listing the census genes inside it.
+Every copy-number figure below also draws one MANE Select transcript under the
+lanes, so the event and the gene it covers are read off the same axis.
 
 ### Walkthrough: a small deletion in CUZD1
 
@@ -701,10 +677,9 @@ _CUZD1_.
 
 _CUZD1_ is a passenger here: a pancreatic acinar protein predicted to act in
 trypsinogen activation
-([NCBI Gene 50624](https://www.ncbi.nlm.nih.gov/gene/50624)), not one of the
-four PDAC genes above, with one heterozygous copy remaining. It makes a good
-first example because a ~1.8 kb deletion over two exons is small enough to read
-base by base and large enough to see in a pileup.
+([NCBI Gene 50624](https://www.ncbi.nlm.nih.gov/gene/50624)), with one
+heterozygous copy remaining. A ~1.8 kb deletion over two exons reads base by
+base and shows in a pileup.
 
 A public catalogue puts that in a lane. **ClinVar CNVs** carries the submitted
 copy-number variants with their clinical significance. Add it from UCSC:
@@ -726,13 +701,12 @@ copy-number variants with their clinical significance. Add it from UCSC:
 }
 ```
 
-The size filter is what makes the lane readable: ClinVar holds chromosome-scale
-records that merely contain a 1.8 kb event, so unfiltered the lane is one bar
-edge to edge. `_varLen` is the catalogue's own length field, and filtering on it
-keeps the records at this event's scale.
+ClinVar holds chromosome-scale records alongside focal ones, so the size filter
+keeps the lane at this event's scale. `_varLen` is the catalogue's own length
+field.
 
-The lane is then empty over this locus, which is the reading: no submitted
-ClinVar CNV at anything like this deletion's size covers it.
+The lane is then empty over this locus: no submitted ClinVar CNV near this
+deletion's size covers it.
 
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion, and the linear genome view its location link opens: the <DEL> ALT allele over the ClinVar CNV and NCBI RefSeq gene lanes." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
@@ -752,22 +726,21 @@ multi-bigwig track, which is fast at any zoom level:
 
 - **Show all regions in assembly** on the linear genome view start screen opens
   every chromosome at once.
-- A manual **min/max score** cap from the track menu keeps a few centromere and
-  repeat spikes from compressing the copy-number signal.
+- A manual **min/max score** cap from the track menu holds the scale off the
+  centromere and repeat spikes.
 - **Overlapping scatter** plots the two samples as points in one band, tumor red
   and normal blue.
 
 Zoom to a region and open the benchmark CNV BED to check the coverage changes
-against the called intervals. Coverage says a level changed but not what
-changed, so put the BAF track in the same window: chromosome 5 carries three
-different answers, each a different shape in that lane.
+against the called intervals. Coverage says a level changed; the BAF track in
+the same window says what changed, and chromosome 5 carries three different
+answers, each a different shape in that lane.
 
 <Figure caption="The linear genome view start screen: click Show all regions in assembly to lay out every chromosome across the view." src="/img/sv_cgiab/cnv_show_all_regions.png" />
 
 <Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane says what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
-Raw coverage is only a sanity check on existing calls. For a signal that reads
-directly as copy number, use the depth, BAF, and copy-number tracks built above.
+The depth, BAF and copy-number tracks built above read directly as copy number.
 Four loci in HG008-T each carry a different copy-number state:
 
 | Locus  | State in HG008-T                 | Signature on the tracks             |
@@ -781,47 +754,42 @@ All four are among the genes most commonly mutated in PDAC, and all four carry
 clonal somatic variants in HG008
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
 
-Keep the BAF track unfolded: folding onto 0 to 0.5 collapses each of those band
-pairs onto one line.
+Arm-level loss is widespread in this hypodiploid genome, so a single band at 0.5
+is the exception. Where a whole chromosome is LOH end to end, as chr17 is below,
+the balanced band has to come from another chromosome.
 
-Arm-level loss is widespread in this hypodiploid genome, so the single band at
-0.5 is the exception rather than the backdrop. When a whole chromosome is LOH
-end to end, as chr17 is below, nothing in that view is balanced and the
-reference band has to come from another chromosome.
-
-#### CDKN2A: a homozygous deletion vs a single-copy loss
+#### CDKN2A: a homozygous deletion inside a single-copy loss
 
 Navigate to `CDKN2A` on chr9. The benchmark calls a focal ~20 kb homozygous
 deletion (`SV_75`, total copy number 0) over the gene. A homozygous deletion
 removes both parental copies, so depth goes to ~0 and HiFiCNV's copy number
-drops to 0; a single-copy loss only halves depth. This deletion sits within a
-larger single-copy-loss arm (`CNA_14`, 0+1), so it reads as a deeper notch in an
-already-reduced baseline: the focal event removes the one copy the arm-level
-loss had left
+drops to 0. This deletion sits within a larger single-copy-loss arm (`CNA_14`,
+0+1), where depth is already halved, so the focal event removes the one copy the
+arm-level loss had left
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
 
 Load the tumor and matched normal per-base coverage as one
 [multi-quantitative track](/docs/user_guides/multiquantitative_track), one row
-per sample. Set an explicit score range from the track menu rather than
-autoscaling, so both rows are drawn on the same scale.
+per sample. Set an explicit score range from the track menu so both rows are
+drawn on the same scale.
 
 HiFiCNV's depth is binned, so these coverage tracks are per-base. For the exact
 breakpoints, open the PacBio HiFi read pileup below them.
 
 The benchmark's `total_copy_number` is absolute, so CN 2 is a diploid segment.
-Nothing in this window is diploid: the whole of 9p has lost a copy in this
-tumor, so CN 1 is the local background and the deletion is punched into it.
-Widen the view several hundred kilobases to the right to find the first CN 2
-segment and read the CN 1 lane against it.
+The whole of 9p has lost a copy in this tumor, so CN 1 is the local background
+here and the deletion is punched into it. Widen the view several hundred
+kilobases to the right to reach the first CN 2 segment and read the CN 1 lane
+against it.
 
 The thin lines crossing the gap in the pileup are single reads carrying the
 deletion as one gap in their alignment.
 
 <Figure caption="The CDKN2A deletion at 60 kb: coverage drops out in the tumor row and not in the normal, the read pileup drops out with it, and the CNV call under them reads CN 0." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
-#### chr17: loss-with-LOH vs copy-neutral LOH
+#### chr17: loss with LOH, and copy-neutral LOH
 
-Chromosome 17 shows why the BAF track is read alongside depth. Open the whole
+Chromosome 17 carries a different LOH state on each arm. Open the whole
 chromosome with the depth track above the BAF:
 
 - the p-arm (covering _TP53_) is a single-copy loss with LOH (`CNA_20`, CN 1,
@@ -830,13 +798,10 @@ chromosome with the depth track above the BAF:
   was lost and the other duplicated, so total copy number is still 2 and depth
   stays flat, yet the BAF still splits away from 0.5.
 
-The q-arm event is invisible to depth alone, which is why the two tracks are
-read together.
-
 The copy-ratio lane in the figure fills from a pivot at zero, and on this
 hypodiploid genome the balanced level sits above zero, so the q-arm's
 copy-neutral state fills upward in the gain color. Read that lane for where its
-steps are, not for which side of the midline they land on.
+steps are.
 
 <Figure caption="Chromosome 17: the segmented copy ratio, the HiFiCNV depth, the BAF and the benchmark CNV calls. The p-arm is a single-copy loss with LOH; the q-arm is copy-neutral LOH, flat in both copy-number lanes and still split in the BAF." src="/img/sv_cgiab/cnv_chr17_loh.png" />
 
@@ -863,8 +828,7 @@ The same reading covers the other two loci. _KRAS_ on chr12 sits in a gain
 carrying the G12V-mutated copy, an event associated with advanced disease
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Depth is
 raised over the duplicated span and the BAF moves to 1/3 and 2/3, the partial
-imbalance of a 2+1 gain rather than the full drop of a complete haplotype loss.
-Because the event is a couple of megabases rather than an arm, zoom to it: at
+imbalance of a 2+1 gain. The event is a couple of megabases, so zoom to it: at
 whole-chromosome scale it is a handful of pixels wide.
 
 <Figure caption="KRAS on chr12: its MANE Select transcript over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication the copy-ratio edges land on the called boundaries and the BAF separates into two bands." src="/img/sv_cgiab/driver_kras_gain.png" />
@@ -885,10 +849,9 @@ comparing tumor and normal coverage.
 
 ### Walkthrough: synteny and dotplot views of the tumor assembly
 
-Showing the tumor assembly side-by-side with the reference can make complex SVs
-easier to read than the alignment track alone. **Add → Dotplot view**, set the
-de novo assembly as one axis and GRCh38 as the other, and pick the matching
-synteny track.
+Side by side with the reference, the tumor assembly draws a complex SV as a
+break in a diagonal. **Add → Dotplot view**, set the de novo assembly as one
+axis and GRCh38 as the other, and pick the matching synteny track.
 
 <Figure caption="The dotplot import form, with the HG008-T v3.2 assembly on one axis and GRCh38 on the other." src="/img/sv_cgiab/dotplot_import_form.png" />
 
@@ -915,10 +878,9 @@ syntenic blocks read clearly.
 The chr3/chr13 fusion is one of 16 truncal interchromosomal rearrangements here.
 Seven of the 16 hybrid chromosomes break in or near a centromere and nine
 involve non-reciprocal foldback inversions
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)), which is
-exactly what reference-based callers leave unresolved when the sequence either
-side is satellite repeat. A scaffold named for two GRCh38 chromosomes is the
-cue, so the names on the dotplot's y axis are a worklist.
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). A scaffold
+named for two GRCh38 chromosomes is the cue, so the names on the dotplot's y
+axis are a worklist.
 
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
@@ -943,8 +905,7 @@ context, which is what the figure below is set to.
 Where the marks thin out to scattered ticks, that is CpG density: the fill draws
 a cytosine only where the reference puts one in context. Inside either block
 every read carries some of both colors and all of them lean the same way, so
-each block reads as one state across the whole pileup. The track is the one the
-SV walkthroughs opened, recolored.
+each block reads as one state across the whole pileup.
 
 Most somatic LINE insertions in HG008 come from two hypomethylated non-reference
 germline LINE insertions, so the methylation state of a source element explains
@@ -963,8 +924,8 @@ benchmark call sets are available from the
 
 ## Where to go next
 
-Nothing above is specific to C-GIAB. Swap the VCF, the CRAMs, the caller output
-and the assembly for your own and the same tracks and walkthroughs apply. The
+Swap the VCF, the CRAMs, the caller output and the assembly for your own, and
+the same tracks and walkthroughs apply. The
 [SV visualization guide](/docs/user_guides/sv_visualization) covers the display
 options the walkthroughs reach for: the color schemes (pair orientation, insert
 size), the read filters (discordant pairs, soft-clipped), and the display modes
@@ -974,11 +935,10 @@ Within C-GIAB itself there is more on the same FTP than this tutorial loads:
 
 - a **somatic small-variant draft benchmark**, published alongside the SV/CNV
   one used here, which loads as a variant track the same way
-- the **matched normal assembly** (`HG008N`), which can be loaded as a second
-  JBrowse assembly and used as the synteny target instead of GRCh38. Comparing
-  the tumor assembly to the donor's own normal assembly rather than to the
-  reference is what separates somatic change from germline difference, and it is
-  the approach the C-GIAB assembly paper is built on
+- the **matched normal assembly** (`HG008N`), which loads as a second JBrowse
+  assembly and serves as the synteny target. Comparing the tumor assembly to the
+  donor's own normal separates somatic change from germline difference, and it
+  is the approach the C-GIAB assembly paper is built on
 - **HG009**, a second matched pair (PDAC liver metastasis with matched CD4+ T
   cells) on the
   [NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
@@ -1000,9 +960,9 @@ number with HiFiCNV, builds the BAF bigWig, and loads the published Wakhan
 haplotype-specific segments. It also aligns the T2T tumor assembly to GRCh38
 with minimap2 for the synteny and dotplot views, then downloads JBrowse and
 writes a `config.json` with everything loaded. The BAF and Wakhan tracks go in
-with `add-track-json` rather than `add-track`, since the settings that make them
-readable (`resolutionMultiplier` on one, `partitionField` on the other) are
-track config rather than command-line flags.
+with `add-track-json`: the settings that make them readable
+(`resolutionMultiplier` on one, `partitionField` on the other) are track config,
+with no command-line flag.
 
 It needs the tools listed under [Prerequisites](#prerequisites), plus `bcftools`
 and `bedGraphToBigWig`. Be warned that it pulls down more than 200 GB, wants

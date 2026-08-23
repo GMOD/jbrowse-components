@@ -31,8 +31,8 @@ related (strains or accessions of one species), the most convenient source is a
 single all-vs-all PAF, with every genome aligned to every other. This tutorial
 builds a five-strain _E. coli_ pangenome view from one such file.
 
-For cross-species comparisons built from gene-level ortholog tables instead, see
-[Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao).
+[Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao)
+stacks cross-species comparisons from gene-level ortholog tables.
 
 ## Producing an all-vs-all PAF
 
@@ -57,14 +57,13 @@ apiece by dropping the plasmids and renaming the chromosome:
 | NCTC86 | GCF_002007705.1  |
 | IAI39  | GCF_000026345.1  |
 
-Naming every chromosome `chr` is what makes each strain row read `chr` rather
-than an accession, and the annotations that come down in the same call are what
+Naming every chromosome `chr` is what each strain row reads in the view, and the
+annotations that come down in the same call are what
 [gene tracks](#adding-gene-tracks) use further below.
 
 Those five FASTAs become the JBrowse assemblies as-is. The PanSN names exist
-only inside the PAF, so make a separate concatenated copy for minimap2 rather
-than renaming the originals. The haplotype is always `1` here, since these are
-haploid bacterial assemblies:
+only inside the PAF, so the concatenated copy for minimap2 is its own file. The
+haplotype is always `1` here, since these are haploid bacterial assemblies:
 
 <!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
@@ -79,12 +78,10 @@ minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 
 `-c` emits the base-level CIGAR the linear synteny view needs.
 
-`-X` is required. Without it each sequence's best hit is its own diagonal and
-the cross-strain alignments come back as secondaries, so the synteny view opens
-empty. `-X` skips those diagonals and the reciprocal copy of each pair, leaving
-every cross-strain pair once. Paralogy is untouched, which the
-[one-vs-all](#one-strain-against-all-the-others) mode below reads as a strain's
-own repeats (rRNA operons, IS elements).
+`-X` is required: it skips each sequence's own diagonal and the reciprocal copy
+of each pair, leaving every cross-strain pair once. Paralogy is untouched, which
+the [one-vs-all](#one-strain-against-all-the-others) mode below reads as a
+strain's own repeats (rRNA operons, IS elements).
 
 ## Setting up the five assemblies
 
@@ -102,10 +99,10 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-Each assembly's reference sequence name is the plain `chr` from its FASTA rather
-than the PanSN name: the adapter strips the prefix before matching, so
-`K12#1#chr` in the PAF resolves to `chr` in the `K12` assembly. An assembly
-whose refNames still carry the prefix draws an empty view. The
+Each assembly's reference sequence name is the plain `chr` from its FASTA: the
+adapter strips the PanSN prefix before matching, so `K12#1#chr` in the PAF
+resolves to `chr` in the `K12` assembly. An assembly whose refNames still carry
+the prefix draws an empty view. The
 [assemblies configuration guide](/docs/config_guides/assemblies) has the
 equivalent JSON.
 
@@ -140,16 +137,16 @@ mapping can be written from what the error reports.
 The CLI tab on the block above adds the same track. It spells the adapter out
 with `--adapterType`, because a `.paf` extension on its own is inferred as the
 pairwise `PAFAdapter`, which reads only the first two assembly names. One
-`--assemblyNames` fills in both the track's and the adapter's, and order does
-not matter here: it is simply the full set of assemblies the file covers.
+`--assemblyNames` fills in both the track's and the adapter's, in any order: it
+is the full set of assemblies the file covers.
 
 ### Haplotype-resolved genomes
 
 These five strains are haploid, so each PanSN prefix is a whole sample and `K12`
-covers everything named `K12#1#...`. A haplotype-resolved pangenome can instead
-load each haplotype as its own assembly and map it to a `sample#haplotype`
-prefix, which turns hap1 against hap2 into a synteny band in its own right. Both
-depths work and you pick one per track: the
+covers everything named `K12#1#...`. A haplotype-resolved pangenome can load
+each haplotype as its own assembly and map it to a `sample#haplotype` prefix,
+which turns hap1 against hap2 into a synteny band in its own right. The depth is
+a per-track choice: the
 [synteny track config guide](/docs/config_guides/synteny_track#pansn-depth-sample-or-haplotype)
 has the mapping and what changes between them.
 
@@ -159,7 +156,7 @@ has the mapping and what changes between them.
 of one species but does not scale to a whole-genome pangenome of many samples.
 For those, index the file once with `jbrowse make-pif` and switch the adapter to
 `AllVsAllIndexedPAFAdapter`. A tabix range query then fetches only the records
-overlapping the region in view instead of loading the entire file:
+overlapping the region in view:
 
 ```bash
 # produces all_vs_all.pif.gz and all_vs_all.pif.gz.tbi
@@ -195,9 +192,10 @@ from the un-indexed version above:
 The `.pif.gz` keeps its PanSN sequence names, and `make-pif` emits a coarse
 zoomed-out tier by default so whole-genome views stay responsive. `--coarse`
 tunes that tier and `--csi` swaps the TBI index for sequences longer than ~512
-Mb (not an issue for _E. coli_). Raising `--coarse` means raising the adapter's
+Mb. Raising `--coarse` means raising the adapter's
 [`coarseBpPerPxThreshold`](/docs/config/allvsallindexedpafadapter#slot-coarsebpperpxthreshold)
-with it, or the coarse ribbons draw straight across indels wide enough to see.
+with it, which keeps the coarse ribbons at the zooms where the indels they draw
+straight across are too small to see.
 
 ## Stacking the genomes
 
@@ -214,10 +212,9 @@ The import form is one pass, whatever the row count:
    per strain, and that one track backs every band.
 3. Click **Launch**.
 
-**Manual** mode builds the stack by hand instead (**Add row** per strain, the
-connector button between each pair to pick its track), starting from whatever
-Quick start had selected. For an all-vs-all track it is worth reaching for only
-to adjust the rows Quick start already filled in.
+**Manual** mode builds the stack by hand (**Add row** per strain, the connector
+button between each pair to pick its track), starting from whatever Quick start
+had selected.
 
 <Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its five assemblies in as rows, and Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
@@ -258,28 +255,25 @@ means four bands, so `tracks` has four entries, all served by the same track:
 ```
 
 The CLI tab writes the same session into an existing `config.json`. It carries
-the value of `defaultSession` rather than the block as shown, since
-`set-default-session` takes the session itself. The URL tab opens it against the
-hosted copy of this dataset, so you can see the stack before building anything.
+the value of `defaultSession`, which is what `set-default-session` takes. The
+URL tab opens it against the hosted copy of this dataset.
 
 Three keys there are worth reading, and each is a one-time load setting that
 goes under `init`:
 
 - `tracks` is one entry per band: `tracks[0]` connects rows 0-1, `tracks[1]`
   rows 1-2, and so on to `tracks[3]` for rows 3-4, all served by `ecoli_ava`.
-- `minAlignmentLength` hides minimap2's many short alignments, which would
-  otherwise bury the shared backbone under a dense noise band. Tune it to taste.
-- `collapseEmptyRows` matters because none of these five rows carries a track of
-  its own, so without it each opens with a "No tracks active" block where a
-  ribbon-only row wants a bare scalebar.
+- `minAlignmentLength` hides minimap2's many short alignments, leaving the
+  shared backbone. Tune it to taste.
+- `collapseEmptyRows` gives a ribbon-only row a bare scalebar, which is every
+  row here, since none of the five carries a track of its own.
 
 See the
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 for a fuller walk-through of the `defaultSession` structure.
 
-The row order here is a free choice. Unlike a reference-anchored `.blocks`
-table, an all-vs-all file is a complete graph, so every adjacent pair you happen
-to stack is a direct alignment rather than a transitive link.
+The row order here is a free choice: an all-vs-all file is a complete graph, so
+every adjacent pair is a direct alignment.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 is inverted against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
@@ -292,9 +286,7 @@ A gap says the strains differ without saying what by, and the annotations
 downloaded alongside each genome answer that. Each GFF needs the same two
 adjustments the FASTA got, both done by the [script](#reproduce-it-end-to-end):
 its seqid becomes `chr` to match the assembly, and its plasmid features are
-dropped rather than renamed, since the assembly kept only the chromosome.
-Skipping that second filter lands Sakai's two plasmids on `chr` at coordinates
-that mean nothing.
+dropped, since the assembly kept only the chromosome.
 
 <!-- from: scripts/build_ecoli_pangenome_synteny.sh -->
 
@@ -315,33 +307,29 @@ subunits, in a region with no alignment to K-12.
 
 <Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The synteny ribbon runs out at the shared-backbone boundary, and everything right of it, stx2B included, has no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
-The K-12 window is placed where that shared block ends, so the ribbon
-terminating mid-figure marks the island boundary.
-
 ## One strain against all the others
 
 The same track also works in a plain linear genome view. With no second row and
 so no target assembly, it draws the strain you are looking at against every
 other sample in the file at once.
 
-This mode is looser about `assemblyNames` than the stacked view. A mate the
-track does not list still draws, labelled by its bare PanSN prefix, so a plain
-view of K12 shows all four other strains without loading them as assemblies. A
-strain's own paralogy draws as well. Clicking a feature offers to launch a
-synteny view against its mate, but only for mates the track lists, since that
-view needs a real assembly to open a row for.
+A mate the track does not list still draws, labelled by its bare PanSN prefix,
+so a plain view of K12 shows all four other strains without loading them as
+assemblies. A strain's own paralogy draws as well. Clicking a feature offers to
+launch a synteny view against its mate, for the mates the track lists, since
+that view needs a real assembly to open a row for.
 
 Every alignment lands in one pileup, so nothing says which strain a block came
 from. Three items on the track menu sort that out:
 
 1. **Group by... → Mate assembly** gives one labelled lane per sample. A lane is
-   a single row, shading darker where several alignments cover the same base
-   rather than growing a row per hit. Untick **Show... → Collapse groups to one
-   row** to stack every lane instead, or expand one from its label.
+   a single row, shading darker where several alignments cover the same base.
+   Untick **Show... → Collapse groups to one row** to stack every lane instead,
+   or expand one from its label.
 2. **Group by... → Hide self-alignment lane** drops the lane for the strain you
-   are viewing, which is this run's built-in control: `minimap2 -X` skipped each
-   genome's own diagonal, so a K-12 lane filling up with K-12 would mean the PAF
-   was built wrong. The figures below have it ticked.
+   are viewing. It is this run's built-in control: `minimap2 -X` skipped each
+   genome's own diagonal, so a K-12 lane filling with K-12 says the PAF was
+   built wrong. The figures below have it ticked.
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base. A synteny track in a plain view renders through the same display
    as a read pileup, so the rest of that menu is the one you already know from
@@ -364,22 +352,20 @@ pangenome, index it first with [make-pif](#large-files-index-with-make-pif):
 
 ### The same gap, drawn as a graph
 
-A PAF says where a lane stops; it cannot say what the strains that stop there
-carry instead, because sequence absent from the alignment is absent from the
-file. A pangenome graph does say it: the island is a segment, and each strain's
-walk either goes through that segment or takes a detour around it.
+Sequence absent from the alignment is absent from the PAF, so what the strains
+that stop there carry is in the graph: the island is a segment, and each
+strain's walk either goes through that segment or takes a detour around it.
 
 The E. coli tutorials build that minigraph graph of the same five strains, and
 the [graph genome view](/docs/user_guides/graph_genome_view) plugin opens a
 window of it beside the alignment. The ringed segment, `s502`, is a block in
 K-12's segments lane and the long node carrying the island.
 
-The lower band is blank across the island, and what is behind that is a
-substitution rather than an absence. Sakai's alignment to K-12 stops before the
-island and resumes past it, and its own window over the same flanks comes out
-longer rather than shorter: each strain carries an island of its own there, the
-phenylacetate operon and a prophage on K-12 against a set of nleG effector genes
-on Sakai.
+The lower band is blank across the island, which is a substitution: Sakai's
+alignment to K-12 stops before the island and resumes past it, and its own
+window over the same flanks comes out longer. Each strain carries an island of
+its own there, the phenylacetate operon and a prophage on K-12, a set of nleG
+effector genes on Sakai.
 
 <Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Each strain's own island is shaded in its own row and the band between them is blank across both, which is what a substitution looks like from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
 
@@ -400,7 +386,7 @@ show. That is why IAI39 sits directly below K-12 in the figure above.
 
 Clicking a single alignment instead of selecting a region still offers **Launch
 synteny view for this position**, which opens the one pair that alignment
-describes rather than every assembly at the locus.
+describes.
 
 A launched view is a few kilobases wide, which is where the alignment's own
 CIGAR starts to matter. `minimap2 -c` wrote one for every record in this PAF, so
@@ -436,7 +422,7 @@ awk -F'\t' -v OFS='\t' '
 The block on the second line is the shared backbone the ribbon in the figure
 draws, and it ends at 1,246,166. Past a short scrap nothing aligns again until
 1,274,685, so _stx2A_ and _stx2B_ fall in a stretch of Sakai with no K-12
-counterpart at all. The gap in the figure is the gap in the file.
+counterpart.
 
 ## Reproduce it end to end
 

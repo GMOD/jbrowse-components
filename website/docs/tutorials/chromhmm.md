@@ -30,11 +30,10 @@ state colors.
 
 ChromHMM's output is a stack of separate BED files (`Gm12878.bed`, `K562.bed`,
 ...). Each is a BED9 whose `name` column holds the state (e.g.
-`1_Active_Promoter`) and whose `itemRgb` column carries the state color. Adding
-one JBrowse track per file is impractical at 9 cell types and worse at 127, so
-instead we merge them into a single file with an extra `cellType` column and let
-the multi-row feature display split that one track back into a labeled sub-row
-per cell type. Every row shares one config, one adapter, and one fetch.
+`1_Active_Promoter`) and whose `itemRgb` column carries the state color. Merging
+them into a single file with an extra `cellType` column lets the multi-row
+feature display split that one track into a labeled sub-row per cell type, so 9
+cell types (or 127) share one config, one adapter, and one fetch.
 
 HOXA is the window the build script opens on. The genes are transcribed in the
 order they sit in, so a cell type opens the stretch matching its own position
@@ -44,8 +43,8 @@ open the cluster at all stop between HOXA7 and HOXA9.
 The two cell types that open the posterior genes are the mesodermal pair, HUVEC
 and HSMM. The keratinocyte, lung-fibroblast and mammary lines stop at HOXA7, and
 GM12878 and K562 are blood and hold the whole cluster shut. H1-hESC is
-pluripotent and is neither: its magenta is `3_Poised_Promoter`, the bivalent
-state HOX clusters are held in before a lineage commits.
+pluripotent, and its magenta is `3_Poised_Promoter`, the bivalent state HOX
+clusters are held in before a lineage commits.
 
 ## What the merged file holds
 
@@ -64,8 +63,7 @@ chr1    10000       10600     15_Repetitive/CNV  0      .       10000       1060
 ```
 
 That `#`-prefixed defline is part of the file, so the adapter takes the column
-names from the data rather than from the config. The merge is one pass over the
-per-cell-type BEDs:
+names from the data. The merge is one pass over the per-cell-type BEDs:
 
 <!-- from: scripts/build_chromhmm_multirow.sh -->
 
@@ -90,8 +88,7 @@ Both merged files are also hosted, as bigBeds, for reading with nothing built:
 cell types and
 `https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb` for the
 127 epigenomes. Those take a [`BigBedAdapter`](/docs/config/bigbedadapter),
-which is why the two track configs below name different adapters: the first
-reads a file you built, the second a file we host.
+which is what the second track config below names.
 
 ## Configure the multi-row feature display
 
@@ -140,51 +137,48 @@ leaves two display settings to write:
   becomes its own labeled sub-row, so a 9-cell-type file draws as 9 stacked
   rows.
 - [`rowOrder`](/docs/config/linearmultirowfeaturedisplay/#slot-roworder) pins
-  the sub-rows to a chosen order, here the ENCODE tier ordering rather than the
-  alphabetical order the display falls back to.
+  the sub-rows to a chosen order, here the ENCODE tier ordering; the display
+  falls back to alphabetical.
 
 [`rowHeight`](/docs/config/linearmultirowfeaturedisplay/#slot-rowheight) is left
 at its auto-fit default, which divides the track height evenly across however
 many rows the file turns out to have, so no row scrolls out of view.
 
-Nothing names the columns and nothing sets a color. The defline handles the
-first, so the adapter's
+The defline names the columns, so the adapter's
 [`columnNames`](/docs/config/bedtabixadapter/#slot-columnnames) is for files
-that don't carry one. And a feature with an `itemRgb` is painted with it
-automatically, so every block gets its ChromHMM state color straight from the
-file; set the [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)
-slot only to override that.
+that don't carry one. A feature with an `itemRgb` is painted with it, so every
+block gets its ChromHMM state color straight from the file; the
+[`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color) slot overrides
+that.
 
 These steps work unchanged on [JBrowse Desktop](/docs/quickstart_desktop), which
 opens `wgEncodeBroadHmm.multirow.bed.gz` straight from local disk with no web
 server; point `uri` at the local path.
 
-## Read it
+## The legend, filtering and row order
 
 The display derives the key from the state colors: one entry per distinct color,
-labeled with the first state name seen in it, so it cannot disagree with what is
-painted. States that share a color collapse into one entry, which in the Broad
-15-state model pairs `4_Strong_Enhancer` with `5_`, `6_Weak_Enhancer` with `7_`,
-and `9_Txn_Transition` with `10_Txn_Elongation`. `13_Heterochrom/lo` and both
-`Repetitive/CNV` states share one grey, so unchecking that entry hides all
-three. Turn the key off with **Show... → Show legend** in the track menu, or
-spell it out with the
+labeled with the first state name seen in it. States that share a color collapse
+into one entry, which in the Broad 15-state model pairs `4_Strong_Enhancer` with
+`5_`, `6_Weak_Enhancer` with `7_`, and `9_Txn_Transition` with
+`10_Txn_Elongation`. `13_Heterochrom/lo` and both `Repetitive/CNV` states share
+one grey, so unchecking that entry hides all three. Turn the key off with
+**Show... → Show legend** in the track menu, or spell it out with the
 [`legend`](/docs/config/linearmultirowfeaturedisplay/#slot-legend) slot.
 
-Most of any segmentation is quiescent or heterochromatic, which is what the pale
-background of the figure is. The track menu's **Categories** submenu has a
-checkbox per legend entry: unchecking the quiescent and repressed states drops
-them everywhere in the painting, leaving only promoters, enhancers, and
-transcription. It applies at render time with no refetch, and because entries
-are keyed by color, one uncheck hides every state sharing that color.
+Most of any segmentation is quiescent or heterochromatic. The track menu's
+**Categories** submenu has a checkbox per legend entry: unchecking the quiescent
+and repressed states drops them everywhere in the painting, leaving only
+promoters, enhancers, and transcription. It applies at render time with no
+refetch, and because entries are keyed by color, one uncheck hides every state
+sharing that color.
 
 Two more track-menu actions turn the painting into a comparison:
 
 - **Clustering → Cluster rows by similarity** reorders the rows by their state
-  colors across the region in view and draws the dendrogram in the sidebar. It
-  earns its keep on the 127-epigenome track below, where related tissues group
-  themselves at whatever locus you're looking at rather than sitting in a
-  hand-written order.
+  colors across the region in view and draws the dendrogram in the sidebar. On
+  the 127-epigenome track below, related tissues group themselves at whatever
+  locus is in view.
 - Right-click a column of the painting and pick **Sort rows by color here** to
   rank the rows by the state each one carries at that base. On a promoter, the
   cell types with an active TSS rise to the top.
@@ -194,14 +188,13 @@ Two more track-menu actions turn the painting into a comparison:
 The same recipe scales to the
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
 15-state model across 127 epigenomes. The only difference upstream is 127 input
-files. Because the multi-row display fetches and lays out one file, 127
-epigenomes is still one track, one adapter, one fetch, not 127 tracks.
+files. The multi-row display fetches and lays out one file, so 127 epigenomes is
+one track, one adapter, one fetch.
 
-This track also fills in the `legend` slot, because the Roadmap file's state
-names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`) and the auto-derived key would
-show them as they are. Fifteen `{label, color}` entries spell them out and fix
-their order at 1 to 15 rather than by how much of each is on screen. The merged
-127-epigenome file is hosted, so the whole track is:
+This track fills in the `legend` slot: the Roadmap file's state names are
+mnemonics (`12_EnhBiv`, `14_ReprPCWk`), and fifteen `{label, color}` entries
+spell them out and fix their order at 1 to 15. The merged 127-epigenome file is
+hosted, so the whole track is:
 
 ```json
 {
@@ -241,38 +234,34 @@ their order at 1 to 15 rather than by how much of each is on screen. The merged
 }
 ```
 
-Those colors are what the two blocks below are read by: red active TSS, yellow
-enhancer and green transcription in the upper one, grey Polycomb in the lower,
-speckled olive where the same bases are bivalent.
+Those colors are how the painting reads: red active TSS, yellow enhancer and
+green transcription, grey Polycomb, speckled olive where the same bases are
+bivalent.
 
 <Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA, one row each, ordered by Cluster rows by similarity. One block of epigenomes opens the cluster; the rest hold it repressed. The stripe left of the painting is each row's Roadmap tissue group."/>
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
 
-That config has no `rowOrder`: it would be 127 lines whose only job is to keep
-related tissues adjacent, and **Cluster rows by similarity** derives that from
-the data at whatever locus is in view.
+That config has no `rowOrder`; **Cluster rows by similarity** derives the row
+order from the data at whatever locus is in view.
 
-Clustering costs the tissue names, which is what the stripe in the figure above
-buys back: at this scale a row is a few pixels tall and carries no text. The
+At this scale a row is a few pixels tall and carries no text, so the tissue
+names live in the stripe beside the painting. The
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) slot
 takes one `{ match, group, color }` per Roadmap tissue group and tints each
 matching row's sidebar swatch. The build script writes those entries from the
 `GROUP` and `COLOR` columns of `EID_metadata.tab`, and the tissue is an axis the
 clustering never saw. The key beside the painting lists the groups in the order
-the stripe runs, so an entry can be found by where its colour sits rather than
-by reading the list.
+the stripe runs, so an entry can be found by where its colour sits.
 
-**ENCODE2012 is a group in that list and is not a tissue**, which is worth
-knowing before reading the stripe. Roadmap folded the ENCODE 2012 reference
+**ENCODE2012 is a group in that list.** Roadmap folded the ENCODE 2012 reference
 epigenomes into the compendium under a group of their own (GM12878, K562,
-HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest), so it is the one entry naming
-where the data came from rather than what it is. It is also the largest group,
-and its members span ten anatomies, from blood to skin to lung, which is why the
-stripe reads as mixed where that colour appears. Roadmap's own vocabulary is
-kept rather than replaced with one of ours: the alternative columns in the same
-file are worse for this, since `ANATOMY` splits 127 epigenomes across 30 values
-with eight singletons, and `TYPE` sorts them by how the sample was collected.
+HeLa-S3, HepG2, A549, HUVEC, NHEK and the rest), so that entry names where the
+data came from. It is the largest group, and its members span ten anatomies,
+from blood to skin to lung, so the stripe reads as mixed where that colour
+appears. The other candidate columns in the same file are `ANATOMY`, which
+splits 127 epigenomes across 30 values with eight singletons, and `TYPE`, which
+sorts them by how the sample was collected.
 
 ## Reproduce it end to end
 

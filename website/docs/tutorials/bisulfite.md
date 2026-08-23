@@ -37,14 +37,12 @@ therefore recoverable from ordinary short Illumina reads by comparing each read
 to the reference: a C→T change at a cytosine means it was unmethylated, a
 retained C means it was methylated.
 
-JBrowse 2 makes that comparison itself, per read, at render time. Nothing in the
-BAM has to carry a methylation call.
+JBrowse 2 makes that comparison itself, per read, at render time.
 
-Plants are the interesting case, and the one this tutorial uses. Mammals
-methylate almost entirely at CpG, but plants methylate in three sequence
-contexts: CpG, CHG, and CHH (H is A, C, or T). JBrowse restricts the coloring to
-any one of them, so all three read off the same pileup. Everything below runs on
-real _Arabidopsis thaliana_ data, from SRA reads to a colored browser view.
+Plants methylate in three sequence contexts: CpG, CHG, and CHH (H is A, C, or
+T). JBrowse restricts the coloring to any one of them, so all three read off the
+same pileup. Everything below runs on real _Arabidopsis thaliana_ data, from SRA
+reads to a colored browser view.
 
 ## Producing the BAM
 
@@ -58,8 +56,7 @@ The aligner is [bwameth](https://github.com/brentp/bwa-meth), which handles
 bisulfite reads by in-silico C→T converting both reads and reference and then
 running `bwa mem`. It emits an ordinary BAM carrying the original read
 sequences, so the C→T signal survives for JBrowse to compare against the
-reference at render time. Bismark is an equally common aligner, especially in
-the plant community, and JBrowse reads its BAMs the same way.
+reference at render time. JBrowse reads Bismark's BAMs the same way.
 
 Trimming and alignment are four commands, on any pair of WGBS or EM-seq FASTQs:
 
@@ -181,9 +178,8 @@ tabix -p gff tair10.gff.gz
 jbrowse add-track tair10.gff.gz --name "TAIR10 genes" --load copy
 ```
 
-Then add the alignments track. The coloring needs no extra files and no tags in
-the BAM. `displayDefaults` decides which context the track opens on, and the
-track menu switches it afterwards:
+Then add the alignments track. `displayDefaults` decides which context the track
+opens on, and the track menu switches it afterwards:
 
 ```json addtrack
 {
@@ -205,15 +201,13 @@ track menu switches it afterwards:
 ```
 
 [`cytosineContext`](/docs/config/linearalignmentsdisplay/#slot-colorby) takes
-`CG`, `CHG`, `CHH` or `all`. Leave `displayDefaults` off and the track opens
-uncolored, with the same choice available from the menu.
+`CG`, `CHG`, `CHH` or `all`.
 
 See the [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent assembly JSON.
 
 The Aggregate methylation row in the figures is the optional MethylDackel track
-from the section above. Load it too if you built the bigWigs, or leave it out.
-The per-read coloring stands on its own.
+from the section above.
 
 Every step here works identically on
 [JBrowse Desktop](/docs/quickstart_desktop), which opens `tair10.fa`, the BAM,
@@ -225,13 +219,11 @@ In the alignments track menu, pick **Color by... → Bisulfite / EM-seq**, then 
 cytosine context: **CpG**, **CHG**, **CHH**, or **All cytosines**. Methylated
 cytosines paint red. Once a context is set, that same submenu carries a **Show
 unmethylated (blue)** checkbox below the contexts, which paints the converted
-sites as well. That is what separates an unmethylated cytosine from no cytosine
-at all: with it off, both are blank. The mode is reference-based, so it only
-means anything on a bisulfite or EM-seq library.
+sites blue, separating an unmethylated cytosine from a position with no cytosine
+in it. The mode is reference-based, and applies to bisulfite and EM-seq
+libraries.
 
-The figure and clip below leave **Show unmethylated** off, so methylation reads
-as presence of red and the three contexts contrast without a red/blue mix on
-every read.
+The figure and clip below leave **Show unmethylated** off.
 
 ## Two methylation regimes
 
@@ -244,23 +236,21 @@ tell them apart:
 | Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG, RdDM and CMT2 maintain CHH          |
 
 So red in the CpG row alone is gene body methylation, and red in all three rows
-is silencing. A mammalian dataset only ever populates the first column, which is
-what makes the CHG and CHH rows a plant-specific readout.
+is silencing.
 
 Type `NC_003070.9:4,398,000-4,412,000` into the location box to reach a window
 on chromosome 1 that carries one of each: the expressed gene AT1G12930 on the
 left, and a transposon on the right. The gene body is methylated in CpG only;
 the transposon is methylated in all three contexts. The
 [reproduce script](#reproduce-it-end-to-end) prints the fraction per context for
-both regions, so the figure can be checked against this run's own numbers.
+both regions.
 
-The RepeatMasker lane is what names the element, and it is worth adding for
-that: the gene track alone shows a pseudogene there (`AT1G12935`), which is a
-different thing. RepeatMasker calls the block `META1_LTR#LTR/Copia`, an LTR
-retrotransposon, and TAIR10's own transposable-element annotation calls the same
-interval `AT1TE14315`, family META1. It comes from UCSC's GenArk hub for TAIR10,
-whose sequence names are the RefSeq accessions this assembly already uses, so it
-loads with no aliasing.
+The RepeatMasker lane names the element: `META1_LTR#LTR/Copia`, an LTR
+retrotransposon, which TAIR10's own transposable-element annotation calls
+`AT1TE14315`, family META1. The gene track carries a pseudogene, `AT1G12935`,
+over the same interval. The lane comes from UCSC's GenArk hub for TAIR10, whose
+sequence names are the RefSeq accessions this assembly already uses, so it loads
+with no aliasing.
 
 <Figure caption="TAIR10 genes, the RepeatMasker lane, the aggregate MethylDackel track, and three copies of the same WGBS pileup colored by CpG, CHG and CHH. AT1G12930 is red in CpG only; the LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 
@@ -284,8 +274,7 @@ pre-colored Bisulfite / CpG, opening on the window above.
 
 With MethylDackel on `PATH` it also prints the conversion rate and the
 per-context fraction over both regions, and skips both with a warning if it is
-not. The aggregate bigWig track is left out either way, so `bedGraphToBigWig` is
-the one prerequisite the script never needs.
+not. The aggregate bigWig track is left out either way.
 
 On Debian/Ubuntu, `apt install wget samtools tabix` covers several of those.
 bwameth, Trim Galore, and the NCBI `datasets` CLI install from their own

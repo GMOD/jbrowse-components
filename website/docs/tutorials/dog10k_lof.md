@@ -28,28 +28,25 @@ callset and CRAMs. The scripts write local files, which
 [JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
 through **Add track**.
 
-## The gene and the question
+## The CYP1A2 nonsense variant
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs carry a nonsense
-variant. This tutorial reproduces the part of the Dog10K paper's figure that the
-published callset supports: the truncating variant and who carries it.
+variant. This tutorial draws one half of the Dog10K paper's figure for the gene:
+the truncating variant and who carries it.
 
-The consequence is recessive, which is why the two shades of blue in the figure
-mean different things: liver microsomes from dogs homozygous for the truncating
-allele carry no CYP1A2 protein and those dogs are poor metabolizers of drugs the
-enzyme clears, while heterozygotes express it normally
+The consequence is recessive: liver microsomes from dogs homozygous for the
+truncating allele carry no CYP1A2 protein and those dogs are poor metabolizers
+of drugs the enzyme clears, while heterozygotes express it normally
 ([Mise et al. 2004](https://pubmed.ncbi.nlm.nih.gov/15564884/)).
 
-For a loss-of-function allele at appreciable frequency, the questions are which
-breeds carry it and whether it is present in wild canids. The wild canids are
-the control: a dog-only allele arose after domestication, while one shared with
-wolves did not.
+The questions are which breeds carry it and whether it is present in wild
+canids, which are the control: an allele shared with wolves predates
+domestication.
 
-## Finding the variant without looking up its coordinate
+## Deriving the variant's coordinate
 
 The literature names this variant by its protein consequence, p.Arg373Ter, which
-is enough to locate it. Deriving the coordinate rather than copying it from a
-paper lets it be re-checked against the assembly in use.
+is enough to locate it against whichever assembly is in use.
 
 The build script rebuilds _CYP1A2_'s coding sequence from the reference and the
 RefSeq exon structure, translates it, and reports codon 373:
@@ -74,7 +71,7 @@ bcftools query -r chr30:38261635-38261636 -f '%POS\t%REF\t%ALT\t%FILTER\t%AC\t%A
 ## Slicing the gene out of the callset
 
 The Dog10K SNV callset is a single 397 GB VCF over 1,987 canids, with a tabix
-index beside it. That size is irrelevant to reading one gene:
+index beside it, so one gene reads straight out of it:
 
 <!-- from: scripts/build_dog10k_cyp1a2.sh -->
 
@@ -91,9 +88,8 @@ Greek gray wolves.
 
 ## Loading it with breed labels
 
-Nothing about the track config is special to this dataset; an SNV VCF goes in as
-an ordinary `VariantTrack`, and the work is all in what gets attached to the
-rows afterwards:
+An SNV VCF goes in as an ordinary `VariantTrack`, and the work is in what gets
+attached to the rows afterwards:
 
 ```json addtrack
 {
@@ -109,15 +105,14 @@ rows afterwards:
 ```
 
 The display draws one row per sample, and the rows keep the Dog10K IDs, which
-say nothing to a reader. Either mechanism relabels them without touching the
-VCF: a `layout` array for named animals ([](/docs/tutorials/dog10k_svs)), or a
+say nothing to a reader. Two mechanisms relabel them without touching the VCF: a
+`layout` array for named animals ([](/docs/tutorials/dog10k_svs)), or a
 `samplesTsvLocation` for a panel too large to write one entry each for
 ([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
 
-Framing matters here. A SNV is one base wide however far you zoom out, so a
-whole-gene view of 490 of them is a field of ticks in which the interesting one
-is invisible. Zoom to the codon instead: at base level each sample's call is a
-block, and the gene track still shows which exon it sits in.
+A SNV is one base wide however far you zoom out, so a whole-gene view of 490 of
+them is a field of ticks. Zoom to the codon: at base level each sample's call is
+a block, and the gene track still shows which exon it sits in.
 
 ## Reading it
 
@@ -152,17 +147,15 @@ Three neighbours sit inside the same 101 bp, and the display filters them out:
 
 Drop the filter to see them. Two are reference in every animal of this panel,
 including the one at the same codon's second base, so each draws an empty
-column. The third sits 15 bp along, and every wolf here carries it: breed
-structure is a property of a particular variant rather than of the locus.
+column. The third sits 15 bp along, and every wolf here carries it.
 
 ## The gene is also copy-number variable
 
 The paper reports half the collection at three or more copies of _CYP1A2_, which
-is the other half of its figure and the reason a genotype at this locus is
-harder to read than it looks. Those copy-number estimates were never published,
-but they do not have to be: the SNV callset already carries a per-sample `DP` at
-every site, so one tabix slice of it, stripped to the depth field, covers every
-canid in the collection:
+is the other half of its figure. Those copy-number estimates were never
+published, and the SNV callset already carries a per-sample `DP` at every site,
+so one tabix slice of it, stripped to the depth field, covers every canid in the
+collection:
 
 <!-- from: scripts/build_dog10k_cyp1a2_cn.sh -->
 
@@ -183,18 +176,16 @@ denominator:
 CN = 2 * depth over the element / depth over the sequence around it
 ```
 
-This needs no copy-number caller, and it carries its own check: that surrounding
+No copy-number caller is involved, and the check is built in: that surrounding
 sequence has to come back out at two.
 
 Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
-evidence and is painted at 1 kb resolution. A narrower window would buy that
-resolution by speckling the baseline, which sliding a wide one avoids.
+evidence and is painted at 1 kb resolution.
 
-Callset depth is a different measurement from read depth, taken only where a
-variant was called, so the build script validates it against the 15 CRAMs the
-Dog10K share publishes: over the shared windows the two agree at r = 0.92 with
-no bias. That painting is in the config as `dog10k_cyp1a2_cn`, but is not shown
-here, since which 15 dogs have CRAMs is an accident of what the share published.
+Callset depth is taken only where a variant was called, so the build script
+validates it against the 15 CRAMs the Dog10K share publishes: over the shared
+windows the two agree at r = 0.92 with no bias. That painting is in the config
+as `dog10k_cyp1a2_cn`.
 
 Two lanes read below, each window colored by its rounded call with grey being
 two copies: named animals above, then all 1,987 canids clustered on their
@@ -202,27 +193,24 @@ profiles.
 
 <Figure caption="Copy number over CYP1A2 and 185 kb around it, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
-The upper lane is whole groups, not picked animals: every Golden Retriever,
-Labrador Retriever and Boxer in the collection, plus the four wolves the figure
-above draws. Every Golden carries the expansion, every Boxer carries two copies,
-and the Labradors split one dog to the next. Row labels come from the sample
-column, the order from `rowOrder`. The wolves rest on callset depth alone, since
-none of the dogs with published reads is a wolf.
+The upper lane is whole groups: every Golden Retriever, Labrador Retriever and
+Boxer in the collection, plus the four wolves the figure above draws. Every
+Golden carries the expansion, every Boxer carries two copies, and the Labradors
+split one dog to the next. Row labels come from the sample column, the order
+from `rowOrder`. The wolves rest on callset depth alone, since none of the dogs
+with published reads is a wolf.
 
-The white stripes through both lanes are windows with no call, not gaps in the
-rendering. A window whose median across the whole collection is not two is
-measuring the reference rather than any dog, so the build script drops it from
-every row instead of painting it grey, which would claim a copy number that was
-never measured. The widest one has its cause on the CpG island lane: high GC
-means low read depth in every canid, and a 5 kb window carries that over the
-blocks around it.
+The white stripes through both lanes are windows with no call. A window whose
+median across the whole collection is not two is measuring the reference, so the
+build script drops it from every row. The widest one has its cause on the CpG
+island lane: high GC means low read depth in every canid, and a 5 kb window
+carries that over the blocks around it.
 
 The lower lane is the same estimate over every canid, clustered on the profile
-each one carries across the window rather than sorted on one column:
-**Clustering → Cluster rows by similarity** in the track menu, or
-`runClustering`. What that groups is extents, so animals whose expansion starts
-and ends in the same place land together, and the blocks either side of the gene
-are the deletion polymorphisms there.
+each one carries across the window: **Clustering → Cluster rows by similarity**
+in the track menu, or `runClustering`. That groups on extents, so animals whose
+expansion starts and ends in the same place land together, and the blocks either
+side of the gene are the deletion polymorphisms there.
 
 One number does not reproduce: this estimate puts far more of the collection at
 three or more copies than the paper reports, and the two depth sources agree too
@@ -257,8 +245,7 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 It reads depth over this gene straight out of each published CRAM, paints the 15
 dogs, then slices the callset's own depth field and paints the other 1,972. It
 prints each dog's copy number over the element beside the spread of the sequence
-around it, and the agreement between the two measurements, so both figures can
-be checked against the numbers that produced them.
+around it, and the agreement between the two measurements.
 
 ## See also
 

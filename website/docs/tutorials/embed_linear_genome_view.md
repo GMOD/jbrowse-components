@@ -5,9 +5,8 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-**TL;DR:** one `<script>` tag, no build step, no `createViewState` call. Drop
-`assembly`, `tracks`, and `init` into `<LinearGenomeView>` and it owns the view
-engine itself.
+**TL;DR:** one `<script>` tag and no build step. Drop `assembly`, `tracks`, and
+`init` into `<LinearGenomeView>` and it owns the view engine itself.
 
 ## Prerequisites
 
@@ -20,10 +19,9 @@ engine itself.
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
-For the full JBrowse app instead of one view, see the
-[web quickstart](/docs/quickstart_web). For other view types (synteny, dotplot,
-circular), a different bundler, or working demo repos, see
-[](/docs/embedded_components). The
+The full JBrowse app is the [web quickstart](/docs/quickstart_web). For other
+view types (synteny, dotplot, circular), a different bundler, or working demo
+repos, see [](/docs/embedded_components). The
 [LGV storybook](https://jbrowse.org/storybook/lgv/) has live, copy-pasteable
 examples for everything beyond a basic view: themes, per-feature colors, text
 search, drawer widgets, reacting to view state, web-worker rendering.
@@ -91,10 +89,9 @@ The unpkg URL always fetches the latest release; pin a version for production
 (e.g. `@jbrowse/react-linear-genome-view2@4.3.0/dist/...`) or download the
 bundle and serve it yourself.
 
-To serve your own data instead of the hosted hg38 example, get each file into
-the indexed, compressed form JBrowse reads (bgzip and index a FASTA,
-sort/bgzip/tabix a GFF3, and so on) using the recipes in the
-[web quickstart](/docs/quickstart_web#adding-tracks).
+To serve your own data, get each file into the indexed, compressed form JBrowse
+reads (bgzip and index a FASTA, sort/bgzip/tabix a GFF3, and so on) using the
+recipes in the [web quickstart](/docs/quickstart_web#adding-tracks).
 
 For more tracks, more track types (alignments, variants, quantitative), or name
 search, see the <a href="#more-complete-example">complete example</a> below,
@@ -103,7 +100,7 @@ search, see the <a href="#more-complete-example">complete example</a> below,
 
 ## Using the component in a React app
 
-Pass the same `assembly`, `tracks`, and `init` as props instead:
+Pass the same `assembly`, `tracks`, and `init` as props:
 
 ```jsx
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
@@ -226,10 +223,9 @@ screenshot at the top of this page.
 
 Notes:
 
-- CRAM tracks need the assembly's sequence to decode reads, but JBrowse supplies
-  it automatically from the enclosing assembly, so no manual `sequenceAdapter`
-  is required (the same applies to BAM tracks that lack an MD tag, e.g. from
-  `samtools calmd`). See the
+- CRAM tracks need the assembly's sequence to decode reads, and JBrowse supplies
+  it from the enclosing assembly (the same applies to BAM tracks that lack an MD
+  tag, e.g. from `samtools calmd`). See the
   [alignments track config guide](/docs/config_guides/alignments_track).
 - These configs use the `uri` shorthand, which assumes each index sits next to
   its data file (e.g. `file.cram.crai`). To place an index elsewhere, use the

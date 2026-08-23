@@ -30,8 +30,8 @@ In **JBrowse Desktop**, choose **File → Session → Open JBrowse Web link...**
 paste that same URL, or **File → Session → Open config.json or .jbrowse
 file...** and give it
 `https://jbrowse.org/code/jb2/main/test_data/volvox/config.json`. Desktop reads
-a config you open and leaves it alone, saving your edits to a session of its own
-instead.
+a config you open and leaves it alone, saving your edits to a session of its
+own.
 
 Either way you get a pileup of short reads, drawn at the default height in the
 default gray.
@@ -56,7 +56,7 @@ of paired rows fits.
 ## Ask JBrowse what you just set
 
 Three menu clicks and a drag changed four settings, and each one has a name you
-can type into a config. JBrowse will tell you what those names are.
+can type into a config.
 
 In **JBrowse Web**, click **Share**, take **Plaintext JSON** from the settings
 icon in the dialog, and tick the **Show readable JSON** box that arrives with
@@ -65,9 +65,9 @@ a `volvox.jbrowse` file, and open it in a text editor.
 
 <Video src="/media/config/settings_to_json.mp4" caption="Three settings taken from the volvox-sv (cram) track menu, then the share dialog's settings icon, Plaintext JSON, and the readable session panel that arrives with it." />
 
-Both hold the same JSON. Each of the four is a write to the track's own config
-rather than to the view's copy of it, so they arrive together under
-`trackConfigDeltas`, keyed by the track id you edited:
+Both hold the same JSON. Each of the four is a write to the track's own config,
+so they arrive together under `trackConfigDeltas`, keyed by the track id you
+edited:
 
 ```json
 "trackConfigDeltas": {
@@ -86,12 +86,11 @@ rather than to the view's copy of it, so they arrive together under
 ```
 
 `height`, `linkedReads`, `colorBy` and `showSoftClipping` are the setting names,
-and they are the only ones you need. Every route below spells them the same way.
+and every route below spells them the same way.
 
-The desktop file is worth watching for a moment. Change one more setting in the
-app, wait a second, and read `volvox.jbrowse` again: it has already updated.
-Desktop autosaves the open session about a second after each edit, and reopening
-that file brings the settings back.
+Change one more setting in the app, wait a second, and read `volvox.jbrowse`
+again: Desktop autosaves the open session about a second after each edit, and
+reopening that file brings the settings back.
 
 The [config schema docs](/docs/config_guide) list the same names per display
 (e.g. [](/docs/config/linearalignmentsdisplay),
@@ -123,11 +122,10 @@ for everyone, every time, put the same keys in its `displayDefaults`:
 }
 ```
 
-You do not have to say which display these belong to. JBrowse routes each key to
-the display that uses it. Spell out the full `displays` array instead when you
-are _selecting_ a non-default display type (`LinearMultiSampleVariantDisplay`,
-`LDDisplay`, and so on); see [configuring tracks](/docs/config_guides/tracks)
-for both forms.
+JBrowse routes each key in `displayDefaults` to the display that uses it. Spell
+out the full `displays` array when you are _selecting_ a non-default display
+type (`LinearMultiSampleVariantDisplay`, `LDDisplay`, and so on); see
+[configuring tracks](/docs/config_guides/tracks) for both forms.
 
 Reload with that config and the track opens paired, colored and soft-clipped,
 with no clicking.
@@ -157,16 +155,14 @@ Now both places are set, so make them disagree. The config above asks for
 ```
 
 The track comes up 100px tall. The session wins, and it wins per setting: a key
-the session does not mention still comes from `displayDefaults`. So
-`config.json` says how the track opens by default, and anything carrying a
-session says how it opens this time.
+the session does not mention still comes from `displayDefaults`.
 
 Each entry in a view's `tracks` array is either a plain `trackId` string or an
 object with `trackId` plus settings written alongside it, as above. The settings
 can equivalently be nested under an explicit `displaySnapshot` key
 (`{ "trackId": "...", "displaySnapshot": { "height": 100 } }`); the inline form
 is shorthand for it. Use the explicit form when you also need `trackSnapshot`
-for track-config rather than display fields.
+for track-config fields.
 
 ## Where each route keeps the value
 
@@ -182,8 +178,8 @@ instance can reach without your help;
 [defaults for all tracks](/docs/user_guides/display_defaults) covers it.
 `?session=` URLs are a JBrowse Web feature, since Desktop has no session-URL
 server; Desktop's nearest equivalent is **File → Session → Export session to
-web...**, which uploads the session and hands you a web link, though the
-settings in it are encoded rather than readable.
+web...**, which uploads the session and hands you a web link with the settings
+encoded in it.
 
 [URL parameters](/docs/urlparams) has the full session-spec format, including
 `trackSnapshot` and multi-view specs.
