@@ -1,6 +1,6 @@
 ---
 name: one-mark-declaration-per-feature
-description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts and two features are converted; what the shape turned out to need, what is left, and the two things it must not do.
+description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, five features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the shape needed, where it stops (insertion, coverage), and the two things it must not do.
 ---
 
 # A feature declares its mark once
@@ -17,7 +17,7 @@ the same walk over the same per-feature arrays three times:
 3,335 lines. What a feature actually contains is one array schema, one selection
 predicate, one visibility gate and one shape — written out three times.
 
-**Two features are converted.** The sections below are the proposal as written;
+**Five features are converted.** The sections below are the proposal as written;
 [what the shape turned out to be](#status-2026-08-23-two-features-converted-featuresmarkts-is-the-shape)
 is the status further down, and `plugins/alignments/src/features/mark.ts` is the
 code.
@@ -86,21 +86,43 @@ per-feature parity suite pin the current behavior. Convert one feature, run them
 unchanged. Most of them should become structurally unnecessary afterwards, which
 is the result rather than a side effect.
 
-## Status, 2026-08-23: two features converted, `features/mark.ts` is the shape
+## Status, 2026-08-23: five features converted, `features/mark.ts` is the shape
 
 `plugins/alignments/src/features/mark.ts` is the generalization — `PileupMark`
 plus `paintMarks`, `findMarkAt` and `countMarks`, with `arcs/mark.ts` left where
 it is (the arc band is a different coordinate frame and a path rather than a
 rect; nothing was gained by forcing them together).
 
-| feature | shape | trio, code lines | after, incl. declaration |
-| --- | --- | --- | --- |
-| `gap` | `span` | 190 | 165 |
-| `mismatch` | `cell` | 133 | 120 |
+| feature | shape | consumers | trio, code lines | after, incl. declaration |
+| --- | --- | --- | --- | --- |
+| `gap` | `span` | pack, draw, hit | 190 | 165 |
+| `mismatch` | `cell` | pack, draw, hit | 133 | 120 |
+| `perBaseQuality` | `cell` | pack, draw | 67 | 77 |
+| `perBaseLetter` | `cell` | pack, draw | 70 | 80 |
+| `softclipBases` | `cell` | pack, draw, hit | 105 | 100 |
 
-Both keep their `.slang` untouched, and both READ the generated scalar twins
+**The three cell walls are roughly LOC-neutral, and that is the honest result.**
+Their packers and painters were already thin; what the conversion buys there is
+the pivot shared with `mismatch` rather than restated three more times, and the
+two gates written down. Read the table as "the walk stopped being copied", not
+as a line count.
+
+Every `.slang` is untouched, and each mark READS the generated scalar twins
 (`intronAlpha`, `sizeAlpha`, `frequencyFadeGate`, `qualityFade`) rather than
 replacing them — adr-051 is not weakened by any of this.
+
+**Writing `alpha` down as a member found a live GPU/Canvas2D bug**, which is the
+strongest argument for the shape so far. `perBaseLetter` borrows mismatch.slang,
+which multiplies a frequency fade by a quality fade over whatever the instance
+carries; its packer set `frequency = 1` and left `qual` at the buffer's zero. To
+that shader a zero is Phred 0 — the worst score a file can hold — so
+`qualityFade` sent it to alpha 0 and `vs_main` discarded the vertex: with the
+advanced "fade by base quality" setting on, the GPU drew NOTHING for that colour
+mode while Canvas2D and the SVG export drew every base opaque. Neither backend
+looks wrong alone, and the cross-backend gate would need a suite that turns on a
+colour mode and an advanced fade together. The mark forces the question, because
+`alpha: () => 1` is a claim each backend then has to meet
+(`perBaseLetter/markParity.test.ts` fails on it before the fix).
 
 **The oracle held.** `coverageParity`, `qualityFadeParity`, `cellPainterParity`,
 `hitTestGateParity` and `hitTestPipeline` all passed unchanged. Two test edits
@@ -111,14 +133,23 @@ and one mismatch test asserted a fill at alpha 0 where `paintMarks` now skips th
 mark — the same pixels, one `fillRect` fewer, and what the gap painter always
 did.
 
-**The draw-against-hit gate now exists**, per feature: `gap/markParity.test.ts`
-and `mismatch/markParity.test.ts` sweep the block a quarter-pixel at a time and
-assert every hit lands inside the rect the painter drew. The claim has to be
+**The draw-against-hit gate now exists**, per feature: `gap`, `mismatch` and
+`softclipBases` each sweep the block half a pixel at a time in both orientations
+and assert every hit lands inside the rect the painter drew. The claim has to be
 **one-directional — everything hittable is drawn** — because the converse is
 false on purpose: a mark below the worker's frequency threshold still paints at
 the fade's floor while being deliberately inert (`passesFrequencyGate`), and
 "fixing" that by keying the hit test off drawn alpha hands clicks back to the
 noise the threshold suppresses.
+
+**A layer with no hit test gets the third pairing instead: pack against draw.**
+`perBaseQuality` maps the drawn cell's centre back through `bpAtPx` — the
+painter's own inverse — and asserts it is the bp the vertex buffer carries, plus
+that the two colour tables are one ramp. `perBaseLetter` goes further and
+assembles mismatch.slang's `vs_main` alpha from its two generated twins, runs it
+over the packed instance and asserts it equals the mark's alpha across both
+settings. That is the direction that found the bug above, and it is cheap
+wherever a shader's fades are already `//! js-export`ed.
 
 ### What the shape needed that this doc did not predict
 
@@ -147,22 +178,59 @@ noise the threshold suppresses.
 
 ### The features that do NOT fit, and why
 
-Worth knowing before the next conversion, because two of them look adjacent:
+`insertion` and `coverage` were both attempted after the cell family and both
+stopped deliberately rather than being forced. Between them they name the two
+edges of what `PileupMark` is.
+
+**`insertion` wants a fourth shape and three other things with it**, which is
+past the point where converting it teaches anything:
+
+- It is a **point on a bp EDGE**, not a span and not a cell. An insertion sits
+  *between* two reference bases, so its genomic extent is zero and
+  `startBp`/`endBp` do not describe it; its on-screen width comes from
+  `insertionBarWidth(length, pxPerBp, featureHeight)`.
+- Its **painter is not a rect**. `drawInsertionMarker` (shared with plugin-maf)
+  draws a labelled box, a short bar or a 1px mark with serif caps depending on
+  size.
+- Its **hit rule is a tolerance derived from that drawn width** — `|genomicPos -
+  pos| < (rectWidthPx / 2 + 2) * bpPerPx`. Which is the RIGHT relationship, and
+  already drift-free; it is simply not containment.
+- It **packs and scans a sub-range**, `[0, numInsertions)` of the merged
+  interbase array, while `rows` would be the whole array. Every walker here
+  bounds its loop by `rows(data).length`.
+
+`clip` wants the same four minus the painter, so **a `point` shape with a width
+rule, a tolerance hit and sub-range bounds is one coherent extension serving two
+features** — worth doing as a piece of work in its own right, and worth NOT doing
+one feature at a time.
+
+**`coverage` is not a pileup mark at all**, and this is the boundary rather than
+a gap:
+
+- There is **nothing to pack**. Its GPU pass is render-core's shared
+  `COVERAGE_BAR_PASS` and the buffer is packed in the worker
+  (`packCoverageBinsForGpu`), uploaded verbatim; the MAF display draws the same
+  shader off the same layout.
+- There are **no rows and no per-instance arrays on the main thread** — one
+  packed buffer, one bar per bin, and the bar's HEIGHT is the datum.
+  `bandTop`/`bandHeight` are functions of a pileup row, which the band has none
+  of.
+- Its **hit test indexes a bin directly** (`basePos - coverageStartPos`) and
+  answers a POSITION, not an instance; there is no row scan to share, and the
+  SNP-snap on top of it searches a neighbouring-bp window.
+
+So the rule the shape has found is: **`PileupMark` covers per-instance marks laid
+out on pileup rows.** A binned histogram over a worker-packed buffer is a
+different mechanism, and giving it a `PileupMark` would mean five members that
+mean nothing.
+
+The others, unchanged from the first pass:
 
 - **`modification`** — its hit test is a Flatbush nearest-neighbour query with a
-  bp tolerance, not containment. Different question, not a different spelling.
-- **`clip`** — a fixed 1px bar centred on a bp EDGE, hit-tested with a
-  `max(0.5, 3 * bpPerPx)` tolerance, packed over a sub-range of the shared
-  interbase array. Wants a `point` shape, a tolerance hit rule, and sub-range
-  scanning: three extensions for one feature.
+  bp tolerance, not containment. It IS a `cell` painter, so it can take the mark
+  for its pack and its paint; only the hit test is a different question.
 - **`indicator`, `arcs`, `read`** — 153 lines of hit test over 26 of paint, a
   band-local path, and a hand-tuned single glyph respectively.
-
-The cheap ones left are the rest of the cell family: `perBaseQuality`,
-`perBaseLetter` and `softclipBases` are `cell` marks with `contiguous: true`, and
-`cellPainterParity.test.ts` already pins all five painters to the one geometry.
-`modification` is a cell painter too and can take the mark for its paint and its
-pack — only its hit test is a different question.
 
 ## Where this sits
 
