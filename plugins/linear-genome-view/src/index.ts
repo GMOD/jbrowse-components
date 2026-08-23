@@ -147,6 +147,7 @@ export type {
   DisplayStatusPhaseFoundation,
   FetchContext,
   GlobalFetchAutorunHost,
+  FetchEachRegionModel,
   GlobalFetchPhases,
   HeightMode,
   HeightModeMenuModel,

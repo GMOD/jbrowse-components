@@ -8,17 +8,12 @@ import {
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
 import type { Region } from '@jbrowse/core/util'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   FetchContext,
-  RegionFetchContext,
+  FetchEachRegionModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-// `IStateTreeNode`, not `IAnyStateTreeNode`: the latter resolves to `any` and
-// would turn off checking for every member below — including `subtreeFilterSet`,
-// whose whole job is to be the one expression the payload and the cache key
-// share. See the root CLAUDE.md.
-interface MafFetchSelf extends IStateTreeNode {
+interface MafFetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
   // The sorted-set form, never the raw `subtreeFilter` node: this is also what
   // `rpcProps()` returns, so the payload and the cache key it is stored under
@@ -30,10 +25,6 @@ interface MafFetchSelf extends IStateTreeNode {
   // same number as everything else on this display — and by the same one the
   // worker enforces, since undefined is how `gateActive` reaches here
   resolvedByteLimit: () => number | undefined
-  fetchRegions: (
-    needed: Needed,
-    work: (ctx: RegionFetchContext) => Promise<void>,
-  ) => Promise<void>
   setRpcData: (regionIndex: number, data: MafWireRegionData) => void
   setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
   setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void

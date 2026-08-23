@@ -5,8 +5,9 @@ import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-interface FetchEachRegionModel {
+export interface FetchEachRegionModel extends IStateTreeNode {
   fetchRegions: (
     needed: IndexedRegion[],
     work: (ctx: RegionFetchContext) => Promise<void>,

@@ -38,6 +38,7 @@ export {
   fetchEachRegion,
   fetchRegionsBatched,
 } from './fetchEachRegion.ts'
+export type { FetchEachRegionModel } from './fetchEachRegion.ts'
 export { isBlockCovered, planRegionFetch } from './planRegionFetch.ts'
 export type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
 

@@ -8,7 +8,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
@@ -34,7 +33,6 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   autorunOnReadyView,
-  fetchEachRegion,
   installGrowExitBake,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -62,6 +60,7 @@ import {
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
+import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
 import {
   findSubfeatureById,
   indexById,
@@ -120,10 +119,8 @@ import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 // from it is enough to make rpcManager.call() resolve to the typed args.
 import type {
   FeatureDataResult,
-  RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -2606,8 +2603,6 @@ export default function baseStateModelFactory(
             // keys.
             const byteLimit = self.resolvedByteLimit()
             const maxFeatureDensity = self.maxFeatureDensity
-            // captured here, not at commit time
-            const issued = self.gateFetchState()
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly
@@ -2617,14 +2612,7 @@ export default function baseStateModelFactory(
                 view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
               ),
             )
-            const regions = new Map(
-              needed.map(n => [n.displayedRegionIndex, n.region]),
-            )
-            // Per-region byte/density estimates keyed by the index `onResult`
-            // reports back, committed to the shared gate once the batch ends. A
-            // region whose fetch was skipped as stale never lands here.
-            const gateResults = new Map<number, RenderFeatureDataResult>()
-            void fetchEachRegion(self, needed, {
+            void fetchGatedRegions(self, needed, {
               call: (region, ctx) => {
                 // Per-region translation table from the assembly's geneticCodes
                 // config (alias-bridged via getGeneticCodeId), so the worker can
@@ -2643,32 +2631,8 @@ export default function baseStateModelFactory(
                   maxFeatureDensity,
                 })
               },
-              // `fetchEachRegion` marks the region loaded for us, and skips a
-              // refused one — same `isRegionRefused` test as here, so what we
-              // store and what `loadedRegions` claims cannot come apart.
-              onResult: (displayedRegionIndex, result) => {
-                gateResults.set(displayedRegionIndex, result)
-                if (!isRegionRefused(result)) {
-                  self.setRpcData(
-                    displayedRegionIndex,
-                    result,
-                    regions.get(displayedRegionIndex)!,
-                  )
-                }
-              },
-              // Byte **max**, not sum, so a multi-region view where each region
-              // fits isn't blanked by the cross-region total. Assembled from
-              // `needed`, which already carries each region's span, so the region
-              // pairs with its result by construction.
-              onComplete: () => {
-                const measurements: RegionGateMeasurement[] = []
-                for (const { region, displayedRegionIndex } of needed) {
-                  const result = gateResults.get(displayedRegionIndex)
-                  if (result) {
-                    measurements.push({ displayedRegionIndex, region, result })
-                  }
-                }
-                self.commitGateMeasurements(measurements, issued)
+              onResult: (displayedRegionIndex, result, region) => {
+                self.setRpcData(displayedRegionIndex, result, region)
               },
             })
           },
