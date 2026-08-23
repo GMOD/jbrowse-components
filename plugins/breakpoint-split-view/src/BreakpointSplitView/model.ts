@@ -7,7 +7,7 @@ import {
   createStatusFanOut,
   createStopTokenRotation,
   getSession,
-  isAbortException,
+  handleFetchError,
   notEmpty,
 } from '@jbrowse/core/util'
 import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
@@ -706,15 +706,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   self.setMatchedTrackFeatures(fetched)
                 }
               } catch (e) {
-                // a superseded run's result is discarded either way, so its
-                // failure isn't the user's problem — an aborted RPC for a
-                // viewport already left would otherwise raise a toast for a
-                // fetch nobody is waiting on. getSession also throws on a dead
-                // node, turning a handled error into an unhandled one.
-                if (isCurrent() && !isAbortException(e)) {
-                  console.error(e)
-                  getSession(self).notifyError(`${e}`, e)
-                }
+                // the shared non-abort fetch-error rule: a superseded run's
+                // result is discarded either way, so its failure isn't the
+                // user's problem — an aborted RPC for a viewport already left
+                // would otherwise raise a toast for a fetch nobody is waiting
+                // on. getSession also throws on a dead node, turning a handled
+                // error into an unhandled one.
+                handleFetchError(e, isCurrent, err => {
+                  getSession(self).notifyError(`${err}`, err)
+                })
               } finally {
                 end()
               }
