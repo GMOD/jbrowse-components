@@ -8,7 +8,7 @@ export { getFileName } from './getFileName.ts'
 // here because `@jbrowse/core/util/tracks` is a plugin ABI module that offers
 // it. `fetchContext.ts` takes it from mstUtils instead, which is what keeps the
 // configuration schemas this file pulls in out of the fetch harness's graph.
-export { getRpcSessionId } from './mstUtils.ts'
+export { getRpcSessionId } from './parentWalk.ts'
 
 import {
   getParent,

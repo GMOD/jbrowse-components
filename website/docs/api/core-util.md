@@ -96,6 +96,23 @@ lands before React re-renders.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
 
+## getAssemblyHost
+
+The host's assembly manager, for a module that resolves names and nothing else.
+
+Unlike the accessors in `sessionServices.ts` this one buys the caller no smaller
+type graph — an `AssemblyManager` is an MST model a `PluginManager` built, so
+naming it costs what naming a session costs. It is here to say which service is
+wanted, and because that cost is the finding: the assembly manager is the one
+thing on `AbstractSessionModel` a third-party host cannot simply implement.
+
+```js
+// type signature
+(node: IAnyStateTreeNode) => AssemblyHost
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
 ## getContainingDisplay
 
 Returns the display model that contains the given node. Throws if the node has
@@ -132,6 +149,17 @@ containing view.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+## getDialogHost
+
+Where a display puts a dialog it cannot mount itself.
+
+```js
+// type signature
+(node: IAnyStateTreeNode) => DialogHost
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
+
 ## getEnv
 
 Returns the MST environment for a node, which carries the `pluginManager`.
@@ -142,6 +170,51 @@ Returns the MST environment for a node, which carries the `pluginManager`.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
+## getNotificationSink
+
+Where a display puts a message it cannot draw itself.
+
+```js
+// type signature
+(node: IAnyStateTreeNode) => NotificationSink
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
+
+## getPaletteHost
+
+The colors to draw with, and the args that rebuild them in a worker.
+
+```js
+// type signature
+(node: IAnyStateTreeNode) => PaletteHost
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
+
+## getRenderingServices
+
+Everything a display needs of its host in order to draw a region: the
+assemblies, the RPC entry point and the colors.
+
+```js
+// type signature
+(node: IAnyStateTreeNode) => RenderingServices
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
+## getRpcHost
+
+The host's RPC entry point, for a module that issues RPCs and nothing else.
+
+```js
+// type signature
+(node: IAnyStateTreeNode) => RpcHost
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
 
 ## getSession
 
@@ -154,6 +227,19 @@ node has no session ancestor.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
+
+## getSessionServices
+
+The services a session offers that cost nothing application-shaped to name.
+Prefer one of the narrower accessors below, which say which of them the calling
+module actually uses.
+
+```js
+// type signature
+(node: IAnyStateTreeNode) => SessionServices
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
 
 ## openPromotableDisplays
 

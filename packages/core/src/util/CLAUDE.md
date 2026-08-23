@@ -18,3 +18,18 @@ relatives, and next to that a `PluginManager` import. `bpUtils.ts` importing
 `Region` from the wrong one of the two is a 6-file type graph becoming a
 367-file one. `types/index.ts` re-exports the data half, so an outside caller
 sees no difference.
+
+**A module that wants one service asks for one service.** `getSession` returns
+`AbstractSessionModel`, so importing it costs what naming the whole application
+costs — `fetchContext.ts` needed `rpcManager.call` and carried 369 type files
+for it. `types/services.ts` declares the slices (`RpcHost`, `PaletteHost`,
+`NotificationSink`, `DialogHost`) and `sessionServices.ts` the accessors that
+return them; `AbstractSessionModel` extends all of them, so a session still
+satisfies every one and nothing that already compiles changes. `parentWalk.ts`
+holds the ancestor walk itself, which is why the accessors do not go through
+`mstUtils.ts`.
+
+`types/renderingServices.ts` is the exception and the finding: an
+`AssemblyManager` is an MST model a `PluginManager` built, so `AssemblyHost` and
+`RenderingServices` cost the whole graph no matter how they are asked for. They
+sit in their own file so the four cheap slices stay cheap.

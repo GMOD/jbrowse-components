@@ -3,7 +3,7 @@ import { checkStopTokenThrottled } from '../util/stopToken.ts'
 
 import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken, StopTokenChecker } from '../util/stopToken.ts'
-import type { AugmentedRegion } from '../util/types/index.ts'
+import type { AugmentedRegion } from '../util/types/data.ts'
 
 // The size gate's shared vocabulary, on both sides of the worker boundary — the
 // byte budget, and the answer a worker gives when either axis refuses a region.

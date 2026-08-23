@@ -1,11 +1,6 @@
-import {
-  getEnv as getEnvMST,
-  getParent,
-  hasParent,
-  isAlive,
-  isRoot,
-} from '@jbrowse/mobx-state-tree'
+import { getEnv as getEnvMST } from '@jbrowse/mobx-state-tree'
 
+import { cachedParent, findParentThatIs } from './parentWalk.ts'
 import {
   isDisplayModel,
   isSessionModel,
@@ -19,26 +14,19 @@ import type {
   AbstractSessionModel,
   AbstractTrackModel,
   AbstractViewModel,
-  TypeTestedByPredicate,
 } from './types/index.ts'
 import type {
-  IAnyStateTreeNode,
-  IStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+  AssemblyHost,
+  RenderingServices,
+} from './types/renderingServices.ts'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// Memoized ancestor lookups, and load-bearing ones: `getSession` alone has 465
-// call sites and is reached from render paths, while the walk it replaces is
-// six `getParent` hops — every MST array between a display and the session is a
-// node of its own. Worth 13.6-17.6x, and 3.2-3.7x even inside a reaction
-// (`packages/core/benches/parentWalkMemo.bench.ts`, which also rules out the
-// obvious alternative: the predicate's `in` checks are ~1% of the walk, so
-// making it cheaper buys nothing).
-//
-// Keying on the node is safe because nothing re-parents one — both `detach`
-// call sites hand the node straight to `scheduleDetachedDestroy` (ADR-069), so
-// a cached ancestor can only go stale by dying, which `cachedParent`'s
-// `isAlive` catches. That is the difference from the three memos REJECTED_IDEAS
-// records removing: each keyed on something its caller had just allocated.
+export {
+  findParentThat,
+  findParentThatIs,
+  getRpcSessionId,
+} from './parentWalk.ts'
+
 const containingDisplayCache = new WeakMap<
   IAnyStateTreeNode,
   AbstractDisplayModel
@@ -49,59 +37,6 @@ const containingTrackCache = new WeakMap<
 >()
 const containingViewCache = new WeakMap<IAnyStateTreeNode, AbstractViewModel>()
 const sessionCache = new WeakMap<IAnyStateTreeNode, AbstractSessionModel>()
-
-export function findParentThat(
-  node: IAnyStateTreeNode,
-  predicate: (thing: IAnyStateTreeNode) => boolean,
-) {
-  if (!hasParent(node)) {
-    const alive = isAlive(node)
-    const nodeType = (node as { type?: unknown }).type
-    console.warn(
-      `[findParentThat] node has no parent: alive=${alive} type=${nodeType}`,
-    )
-    throw new Error('node does not have parent')
-  }
-  let currentNode = getParent(node)
-
-  while (isAlive(currentNode)) {
-    if (predicate(currentNode)) {
-      return currentNode
-    }
-    if (hasParent(currentNode)) {
-      currentNode = getParent<IAnyStateTreeNode>(currentNode)
-    } else {
-      break
-    }
-  }
-  throw new Error('no matching node found')
-}
-
-export function findParentThatIs<T extends (a: IAnyStateTreeNode) => boolean>(
-  node: IAnyStateTreeNode,
-  predicate: T,
-) {
-  return findParentThat(node, predicate) as TypeTestedByPredicate<T>
-}
-
-function cachedParent<T extends IAnyStateTreeNode>(
-  cache: WeakMap<IAnyStateTreeNode, T>,
-  node: IAnyStateTreeNode,
-  finder: () => T,
-  errorMsg: string,
-): T {
-  const cached = cache.get(node)
-  if (cached && isAlive(cached)) {
-    return cached
-  }
-  try {
-    const result = finder()
-    cache.set(node, result)
-    return result
-  } catch (e) {
-    throw new Error(errorMsg, { cause: e })
-  }
-}
 
 /**
  * #api core/util
@@ -161,6 +96,33 @@ export function getContainingDisplay(
     () => findParentThatIs(node, isDisplayModel),
     'no containing display found',
   )
+}
+
+/**
+ * #api core/util
+ * The host's assembly manager, for a module that resolves names and nothing
+ * else.
+ *
+ * Unlike the accessors in `sessionServices.ts` this one buys the caller no
+ * smaller type graph — an `AssemblyManager` is an MST model a `PluginManager`
+ * built, so naming it costs what naming a session costs. It is here to say
+ * which service is wanted, and because that cost is the finding: the assembly
+ * manager is the one thing on `AbstractSessionModel` a third-party host cannot
+ * simply implement.
+ */
+export function getAssemblyHost(node: IAnyStateTreeNode): AssemblyHost {
+  return getSession(node)
+}
+
+/**
+ * #api core/util
+ * Everything a display needs of its host in order to draw a region: the
+ * assemblies, the RPC entry point and the colors.
+ */
+export function getRenderingServices(
+  node: IAnyStateTreeNode,
+): RenderingServices {
+  return getSession(node)
 }
 
 /**
@@ -227,37 +189,4 @@ export function hashCode(str: string) {
 
 export function objectHash(obj: object) {
   return `${hashCode(JSON.stringify(obj))}`
-}
-
-/**
- * The `rpcSessionId` of the highest node at or above `thisNode` that declares
- * one — which webworker its work is routed to.
- *
- * The walk includes the root. It used to stop *before* it (`!isRoot(node)` as
- * the loop condition), which silently made a tree whose only rpcSessionId-
- * bearing node was the root throw "no parent node in the state tree has an
- * `rpcSessionId`". Nothing in the app hit that — the id lives on a track, deep
- * in the tree — but a test building a minimal session had to wrap it in a
- * throwaway root purely to dodge this.
- */
-export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
-  interface NodeWithRpcSessionId extends IStateTreeNode {
-    rpcSessionId: string
-  }
-  let highestRpcSessionId: string | undefined
-
-  for (let node = thisNode; ; node = getParent<IAnyStateTreeNode>(node)) {
-    if ('rpcSessionId' in node) {
-      highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
-    }
-    if (isRoot(node)) {
-      break
-    }
-  }
-  if (!highestRpcSessionId) {
-    throw new Error(
-      'getRpcSessionId failed, no parent node in the state tree has an `rpcSessionId` attribute',
-    )
-  }
-  return highestRpcSessionId
 }

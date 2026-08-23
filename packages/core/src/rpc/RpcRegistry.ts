@@ -2,7 +2,7 @@ import type { StatusCallback } from '../util/progress.ts'
 import type { UnwrapRpcResult } from '../util/rpc.ts'
 import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
-import type { NoAssemblyRegion } from '../util/types/index.ts'
+import type { NoAssemblyRegion } from '../util/types/data.ts'
 import type { RpcResult } from './RpcServer.ts'
 import type { ByteEstimateScope } from './byteBudget.ts'
 

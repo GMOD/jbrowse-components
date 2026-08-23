@@ -1,7 +1,8 @@
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import { isSessionServices } from './services.ts'
+
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
-import type assemblyManager from '../../assemblyManager/index.ts'
 import type {
   AnyConfigurationModel,
   ResolvableDisplay,
@@ -9,19 +10,18 @@ import type {
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
-import type { MenuItem, SerializableThemeArgs } from '../../ui/index.ts'
-import type { JBrowsePalette } from '../../ui/palette.ts'
+import type { MenuItem } from '../../ui/index.ts'
 import type { Feature } from '../simpleFeature.ts'
 import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type { UriLocation } from './data.ts'
+import type { RenderingServices } from './renderingServices.ts'
+import type { DialogHost, NotificationSink } from './services.ts'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
-  Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
 import type { Theme, ThemeOptions } from '@mui/material'
-import type React from 'react'
 
 export type {
   AnyReactComponentType,
@@ -30,6 +30,23 @@ export type {
   TypeTestedByPredicate,
 } from './util.ts'
 export type { IsAny } from './isAny.ts'
+export { isSessionServices } from './services.ts'
+export type {
+  DialogComponentType,
+  DialogHost,
+  NotificationLevel,
+  NotificationSink,
+  PaletteHost,
+  RpcCaller,
+  RpcHost,
+  SessionServices,
+  SnackAction,
+} from './services.ts'
+export type {
+  AssemblyHost,
+  AssemblyManager,
+  RenderingServices,
+} from './renderingServices.ts'
 
 // The plain-data half of this file's former self, kept re-exported here so
 // `@jbrowse/core/util/types` still offers it. A module that only needs a
@@ -82,18 +99,6 @@ export function isViewContainer(
   )
 }
 
-export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
-export interface SnackAction {
-  name: React.ReactElement | string
-  onClick: () => void
-}
-
-export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
-
-export type DialogComponentType =
-  | React.LazyExoticComponent<React.FC<any>>
-  | React.FC<any>
-
 /**
  * the slice of a view that track-action menu items need: opening a track, and
  * (for views that show tracks) reporting which display is active for a given
@@ -112,7 +117,12 @@ export interface TrackActionView {
 export type AnimationMode = 'system' | 'enabled' | 'disabled'
 
 /** minimum interface that all session state models must implement */
-export interface AbstractSessionModel extends AbstractViewContainer {
+export interface AbstractSessionModel
+  extends
+    AbstractViewContainer,
+    RenderingServices,
+    NotificationSink,
+    DialogHost {
   getTrackById: (id: string) => AnyConfigurationModel | undefined
   /** @deprecated prefer the per-id reactive `getTrackById(id)` */
   getTracksById: () => Record<string, AnyConfigurationModel>
@@ -131,13 +141,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
-  // `palette` is what rendering reads: plain color strings, no toolkit, and
-  // serializable. `theme` is the Material UI theme for the components that are
-  // Material UI. Both come from the same `resolvePalette` call, so they cannot
-  // disagree.
-  palette: JBrowsePalette
+  // `palette`, on PaletteHost, is what rendering reads: plain color strings, no
+  // toolkit, and serializable. `theme` is the Material UI theme for the
+  // components that are Material UI. Both come from the same `resolvePalette`
+  // call, so they cannot disagree.
   theme: Theme
-  themeOptions?: SerializableThemeArgs
   animationMode: AnimationMode
   scrollZoom: boolean
   // pacing for the scroll-to-zoom prompt, kept session-wide rather than per
@@ -181,22 +189,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void
   duplicateCurrentSession?: () => void
-  notify: (
-    message: string,
-    level?: NotificationLevel,
-    // `SnackbarModel.notify` has always normalized an array here; this
-    // declaration said singular, so the one caller that needs to offer a
-    // choice (the promoted-default pin's two scopes) could not say so without
-    // a cast. Widening, so every existing single-action caller still fits.
-    action?: SnackAction | SnackAction[],
-  ) => void
-  notifyError: (
-    message: string,
-    error?: unknown,
-    extra?: unknown,
-    action?: SnackAction,
-  ) => void
-  assemblyManager: AssemblyManager
   version: string
   gitCommit?: string
   getTrackActionMenuItems?: (arg: {
@@ -250,23 +242,12 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     configuration?: { type: string },
   ) => Widget
 
-  DialogComponent?: DialogComponentType
-
-  DialogProps: Record<string, unknown> | undefined
-  queueDialog<T extends DialogComponentType>(
-    callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
-  ): void
   name: string
   id?: string
   tracks: AnyConfigurationModel[]
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'rpcManager' in thing &&
-    'configuration' in thing
-  )
+  return isSessionServices(thing)
 }
 
 /** abstract interface for a session allows editing configurations */

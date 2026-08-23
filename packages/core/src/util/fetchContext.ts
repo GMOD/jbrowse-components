@@ -1,4 +1,5 @@
-import { getRpcSessionId, getSession } from './mstUtils.ts'
+import { getRpcSessionId } from './parentWalk.ts'
+import { getRpcHost } from './sessionServices.ts'
 
 import type { RpcCallArgs, RpcCallReturn } from '../rpc/RpcRegistry.ts'
 import type { StatusCallback } from './progress.ts'
@@ -61,7 +62,7 @@ export function makeFetchContext(
   return {
     ...base,
     callRpc(method, args) {
-      return getSession(self).rpcManager.call(getRpcSessionId(self), method, {
+      return getRpcHost(self).rpcManager.call(getRpcSessionId(self), method, {
         ...args,
         stopToken: this.stopToken,
         statusCallback: this.statusCallback,
