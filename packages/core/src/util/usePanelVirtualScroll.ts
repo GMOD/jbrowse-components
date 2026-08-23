@@ -32,16 +32,19 @@ interface PanelScrollTarget {
  * so core needs no view typing and each display keeps naming its own viewport
  * (the pileup's excludes the sticky coverage band; the canvas display's is the
  * whole track).
+ *
+ * `panel` is the element wrapping the canvas AND the DOM overlays drawn over it,
+ * never the canvas alone — see `useVirtualScrollWheel`, which says why.
  */
 export function usePanelVirtualScroll(
-  el: HTMLElement | null,
+  panel: HTMLElement | null,
   model: PanelScrollTarget,
   {
     viewportHeight,
     scrollZoom,
   }: { viewportHeight: number; scrollZoom: boolean },
 ) {
-  useVirtualScrollWheel(el, (e, applyScroll) => {
+  useVirtualScrollWheel(panel, (e, applyScroll) => {
     if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
       return
     }

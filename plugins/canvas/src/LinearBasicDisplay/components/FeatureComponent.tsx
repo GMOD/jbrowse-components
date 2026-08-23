@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId } from 'react'
+import React, { useCallback, useEffect, useId, useState } from 'react'
 
 import {
   ContextMenu,
@@ -64,6 +64,19 @@ const useStyles = makeStyles()({
     // no text cursor / drag-selection over the canvas and its label overlays —
     // selectable text there shows an I-beam and a drag hijacks the mouseover
     userSelect: 'none',
+  },
+  // The scrolled panel: the canvas plus the label / highlight overlays pinned to
+  // the same scrollTop. It exists so the wheel gesture has ONE element covering
+  // all of them — a clickable floating label is a sibling of the canvas, so a
+  // wheel over it never reaches a listener bound to the canvas. See
+  // `useVirtualScrollWheel`. The chrome's own overlays (scrollbar, edge shadow,
+  // legend, corner chips) stay outside it, keeping the gestures they already own.
+  panel: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
   },
   // Fixed viewport canvas: the GPU paints the visible window at
   // `inst.y - scrollY` (scrollY = model.scrollTop). Scroll is virtual (a
@@ -146,9 +159,9 @@ const FeatureComponent = observer(function FeatureComponent({
       className={classes.root}
       style={{ height: model.height }}
     >
-      {({ canvasRef, canvas, mouseTracker }) => (
+      {({ canvasRef, mouseTracker }) => (
         <>
-          <FeatureBody model={model} canvasRef={canvasRef} canvas={canvas} />
+          <FeatureBody model={model} canvasRef={canvasRef} />
           {/* Inside the chrome, which is the `position:relative` box it pins
               itself to. It used to sit in `DisplayContainer` one level up —
               also relative, so the geometry is unchanged. */}
@@ -193,13 +206,12 @@ const FeatureTooltipLayer = observer(function FeatureTooltipLayer({
 const FeatureBody = observer(function FeatureBody({
   model,
   canvasRef,
-  canvas,
 }: LinearBasicDisplayComponentProps & {
   canvasRef: (node: HTMLCanvasElement | null) => void
-  canvas: HTMLCanvasElement | null
 }) {
   const { classes } = useStyles()
   const canvasId = useId()
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
   const view = getContainingView(model) as LGV
 
@@ -222,8 +234,10 @@ const FeatureBody = observer(function FeatureBody({
   // model.scrollTop directly (no native overflow container), so the GPU canvas
   // and the DOM overlays both key off it. The rule is the pileup's, shared as
   // `usePanelVirtualScroll`; the whole track height is the viewport, this
-  // display having no sticky band above its features.
-  usePanelVirtualScroll(canvas, model, {
+  // display having no sticky band above its features. It binds to the panel
+  // wrapper rather than to `canvas`, so that a wheel over a floating label —
+  // which is clickable, so it answers the pointer itself — is still the panel's.
+  usePanelVirtualScroll(panel, model, {
     viewportHeight: model.height,
     scrollZoom: view.scrollZoom,
   })
@@ -398,34 +412,36 @@ const FeatureBody = observer(function FeatureBody({
 
   return (
     <>
-      <canvas
-        id={canvasId}
-        role="img"
-        aria-label={`${capitalizeFirst(model.featureNoun)} track`}
-        ref={canvasRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onClick={e => {
-          handleClick(e)
-        }}
-        onContextMenu={handleContextMenu}
-        className={classes.canvas}
-        style={{
-          width,
-          height,
-          cursor: model.hoveredFeature ? 'pointer' : 'default',
-        }}
-      />
-
-      <OverlayScrollLayer model={model}>
-        <HighlightLayer model={model} view={view} />
-        <FloatingLabelsLayer
-          model={model}
-          view={view}
-          onLabelMouseOver={onLabelMouseOver}
-          onLabelMouseLeave={handleMouseLeave}
+      <div ref={setPanel} className={classes.panel}>
+        <canvas
+          id={canvasId}
+          role="img"
+          aria-label={`${capitalizeFirst(model.featureNoun)} track`}
+          ref={canvasRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onClick={e => {
+            handleClick(e)
+          }}
+          onContextMenu={handleContextMenu}
+          className={classes.canvas}
+          style={{
+            width,
+            height,
+            cursor: model.hoveredFeature ? 'pointer' : 'default',
+          }}
         />
-      </OverlayScrollLayer>
+
+        <OverlayScrollLayer model={model}>
+          <HighlightLayer model={model} view={view} />
+          <FloatingLabelsLayer
+            model={model}
+            view={view}
+            onLabelMouseOver={onLabelMouseOver}
+            onLabelMouseLeave={handleMouseLeave}
+          />
+        </OverlayScrollLayer>
+      </div>
 
       {/* after the overlay layer, so a label clipped at the bottom edge fades
           with the features it names; before the scrollbar, whose z-index keeps

@@ -155,9 +155,9 @@ const AlignmentsDisplayComponent = observer(
         className={classes.display}
       >
         {/* Components only, no inline reads — see AlignmentsCornerControls. */}
-        {({ canvasRef, canvas, mouseTracker }) => (
+        {({ canvasRef, mouseTracker }) => (
           <>
-            <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
+            <PileupBody model={model} canvasRef={canvasRef} />
             <AlignmentsCornerControls model={model} />
             <AlignmentsTooltipLayer model={model} mouseTracker={mouseTracker} />
             <AlignmentsContextMenu model={model} />

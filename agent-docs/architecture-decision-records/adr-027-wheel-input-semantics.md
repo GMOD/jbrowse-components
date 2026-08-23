@@ -45,6 +45,39 @@ consumer supplies only its own viewport height plus `scrollZoom`. That is the
 decision below applied, not an exception to it: unify where there is one true
 rule.
 
+### What each handler is bound to, and where it yields
+
+The rules above say what a gesture *means*. Which element the listener sits on
+is the other half, and it is where two of these handlers were wrong.
+
+A handler binds to the **panel**: the element wrapping the canvas together with
+the DOM overlays drawn over it. Not the `<canvas>` — a canvas takes no DOM
+children, so a display's floating labels, group chips and arcs are its SIBLINGS,
+and the ones that answer the pointer (they are clickable) are what a wheel over
+them targets. Bound to the canvas, such a wheel reached no panel handler at all:
+it left the track mid-gesture and the host page scrolled instead, worst in
+embedded. `trackPointerPresence` keys off the same element and so failed the same
+way, and worse — a label sliding under a *stationary* cursor is a `mouseleave` on
+the canvas, which drops the latch and releases every remaining event in the
+gesture to a page that has by then begun a scroll no `preventDefault` can take
+back. MAF bound its rows container from the start and says why; the pileup and
+the canvas basic display were corrected to match.
+
+A panel that spans its overlays also covers a few that are controls rather than
+content, so it **yields to `[data-gesture-owner]`** — JBrowse's existing marker,
+the one the LGV's click-drag pan and MAF's drag-selection already test for. That
+is what keeps the pileup's band resize handles and a floating legend behaving as
+they did before the panel grew to cover them. Two things the marker deliberately
+does not mean: an owner that IS the panel (`VerticalScrollbar` binds this handler
+to its own marked track — the one control whose job is scrolling the panel), and
+one ABOVE it (`TrackContainer` stamps the marker once for its whole overlay
+layer, which would otherwise disown every wheel any display gets).
+
+One consequence worth stating, since it is not obvious from the rules table: a
+panel handler owns `preventDefault` but never `stopPropagation`, so an overlay
+that wants a wheel entirely to itself has to stop propagation on its own — which
+is what the scrollbar does, and why wheeling it never also zooms the view.
+
 The canvas basic display used to be a third rule of its own (`useScrollSync.ts`:
 a native overflow container, `shift` the only thing that scrolled it). It moved
 to virtual scroll and adopted the pileup's rule exactly, which is what left two

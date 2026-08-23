@@ -12,6 +12,26 @@ export interface VirtualScrollOpts {
   scrollableHeight: number
 }
 
+// Whether the wheel landed inside something within the panel that runs its own
+// gestures — JBrowse's `[data-gesture-owner]` marker, the same one the LGV's
+// click-drag pan and MAF's drag-selection test for. A panel spans its overlays
+// now, and a few of those are controls rather than content: the display's own
+// `VerticalScrollbar` (which scrolls the panel itself, from its own listener),
+// the pileup's band resize handles, a floating legend. Those keep the gesture
+// they already had instead of being absorbed the moment the panel grew to cover
+// them.
+//
+// The marker element ITSELF is a panel at the one call site that is one — the
+// scrollbar binds this hook to its own marked track — so an owner that IS the
+// panel does not count. Nor does one ABOVE it: `TrackContainer` stamps the
+// marker once for its whole overlay layer, and `closest` walking out of the
+// panel into that would otherwise disown every wheel a display gets.
+function claimedInside(panel: HTMLElement, target: EventTarget | null) {
+  const owner =
+    target instanceof Element ? target.closest('[data-gesture-owner]') : null
+  return owner !== null && owner !== panel && panel.contains(owner)
+}
+
 // Feed this wheel event through the shared scroll latch (which owns
 // preventDefault, synchronously) and, when the panel moves, coalesce the new
 // scrollTop into a single per-frame `commit`. Bursts of wheel events (fast
@@ -34,8 +54,23 @@ export type ApplyVirtualScroll = (
 // shift-to-resize) differ per display and so stay in the caller; this
 // centralizes the mechanical latch + listener + rAF boilerplate shared by the
 // alignments pileup, the variant matrix, and the canvas display.
+//
+// **Bind this to the panel, not to the `<canvas>`.** A canvas cannot hold DOM
+// children, so every overlay a display draws over it — floating feature labels,
+// group chips, sashimi arcs — is a positioned SIBLING, and the ones that answer
+// the pointer (`pointerEvents: 'auto'`, because they are clickable) are what a
+// wheel event over them targets. That event bubbles past the canvas entirely, so
+// a listener bound to the canvas never sees it and the gesture falls through to
+// the page mid-scroll. Bound to the element containing both, the wheel is the
+// panel's wherever inside it the cursor happens to be. `trackPointerPresence`
+// below keys off the same element, and `mouseenter`/`mouseleave` ignore
+// descendant transitions — so crossing onto an overlay no longer reads as
+// leaving the panel either.
+//
+// What keeps a panel safe to widen is `claimedInside` above: it covers its
+// overlays, and yields the ones that run gestures of their own.
 export function useVirtualScrollWheel(
-  canvas: HTMLElement | null,
+  panel: HTMLElement | null,
   // `el` is the element the listener is bound to, handed back non-null: a
   // gesture measuring against its own box (the row-resize pin) would otherwise
   // re-assert the nullable it was passed, at the one call site that cannot be
@@ -81,27 +116,27 @@ export function useVirtualScrollWheel(
     onWheel(e, applyScroll, el)
   })
   useEffect(() => {
-    if (!canvas) {
+    if (!panel) {
       return undefined
     }
-    // Ignore wheel events the browser keeps latching to this canvas once the
+    // Ignore wheel events the browser keeps latching to this panel once the
     // pointer has left (see trackPointerPresence): let them chain to the page
     // and reset the latch so the next in-panel gesture starts clean. Without
     // this the panel stays stuck to per-track scroll after the mouse has left —
     // worst in embedded, where the outer page is the thing that should scroll.
-    const presence = trackPointerPresence(canvas, () => {
+    const presence = trackPointerPresence(panel, () => {
       latch.reset()
     })
     const onWheelNative = (e: WheelEvent) => {
-      if (presence.isOver) {
-        handleWheel(e, canvas)
+      if (presence.isOver && !claimedInside(panel, e.target)) {
+        handleWheel(e, panel)
       }
     }
-    canvas.addEventListener('wheel', onWheelNative, { passive: false })
+    panel.addEventListener('wheel', onWheelNative, { passive: false })
     return () => {
-      canvas.removeEventListener('wheel', onWheelNative)
+      panel.removeEventListener('wheel', onWheelNative)
       presence.dispose()
       frame.cancel()
     }
-  }, [canvas, handleWheel, latch, frame])
+  }, [panel, handleWheel, latch, frame])
 }

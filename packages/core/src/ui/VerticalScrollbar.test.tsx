@@ -144,3 +144,29 @@ test('pointer-up flushes the resting position exactly', () => {
   flushRaf()
   expect(setScrollTop).not.toHaveBeenCalled()
 })
+
+// The track carries `data-gesture-owner`, which is how a display's panel wheel
+// handler knows to leave its overlays' own gestures alone. The scrollbar binds
+// that same handler to that same marked element, so the marker has to mean "an
+// owner INSIDE the panel", not "this element" — otherwise the one control whose
+// whole job is scrolling the panel is the one that cannot.
+test('a wheel over the track scrolls the panel and never reaches the view', () => {
+  const { track, setScrollTop } = setup()
+  const e = new WheelEvent('wheel', {
+    deltaY: 50,
+    bubbles: true,
+    cancelable: true,
+  })
+  const bubbled = jest.fn()
+  document.addEventListener('wheel', bubbled)
+  act(() => {
+    track.dispatchEvent(e)
+  })
+  document.removeEventListener('wheel', bubbled)
+
+  expect(e.defaultPrevented).toBe(true)
+  expect(bubbled).not.toHaveBeenCalled()
+
+  flushRaf()
+  expect(setScrollTop).toHaveBeenLastCalledWith(50)
+})

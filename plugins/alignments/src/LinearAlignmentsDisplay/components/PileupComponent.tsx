@@ -1,4 +1,4 @@
-import { Fragment, useId } from 'react'
+import { Fragment, useId, useState } from 'react'
 
 import {
   ResizeHandle,
@@ -73,11 +73,9 @@ const useStyles = makeStyles()(theme => ({
 const PileupBody = observer(function PileupBody({
   model,
   canvasRef,
-  canvas,
 }: {
   model: LinearAlignmentsDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  canvas: HTMLCanvasElement | null
 }) {
   const {
     width,
@@ -92,10 +90,15 @@ const PileupBody = observer(function PileupBody({
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
   const canvasId = useId()
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
   // The pileup's viewport is its own, not the track's: ungrouped, the coverage
-  // band above it is sticky and doesn't scroll.
-  usePanelVirtualScroll(canvas, model, {
+  // band above it is sticky and doesn't scroll. Bound to the panel below rather
+  // than to `canvas`, so the overlays that answer the pointer — group chips,
+  // sashimi and cross-region arcs, the resize handles — don't each punch a hole
+  // in the gesture: they are the canvas's SIBLINGS, so a wheel over one never
+  // reaches a listener on the canvas. See `useVirtualScrollWheel`.
+  usePanelVirtualScroll(panel, model, {
     viewportHeight: model.pileupViewportHeight,
     scrollZoom: !!scrollZoom,
   })
@@ -113,7 +116,10 @@ const PileupBody = observer(function PileupBody({
     <div
       // No testid: `pileup-display[-done]` is DisplayChrome's now, on the same
       // element as `data-display-phase`. This div stays for its layout role (it
-      // sizes the pileup below the sticky coverage band), not as a query target.
+      // sizes the pileup below the sticky coverage band), not as a query target
+      // — and, since it wraps the canvas together with every overlay drawn over
+      // it, as the element the wheel gesture above binds to.
+      ref={setPanel}
       style={{ position: 'relative', width: '100%', height }}
     >
       <PileupCanvas
