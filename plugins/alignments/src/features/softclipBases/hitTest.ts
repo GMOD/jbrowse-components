@@ -1,8 +1,7 @@
-import {
-  findTopmostOnRow,
-  isWithinReadBand,
-} from '../../shared/hitTestTypes.ts'
+import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
+import { findMarkAt } from '../mark.ts'
+import { SOFTCLIP_BASES_MARK } from './mark.ts'
 
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
@@ -22,32 +21,21 @@ import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 //
 // `softclipBasePositions` is empty unless `showSoftClipping` is on (the worker
 // builds it from `showSoftClipping ? softclips : []`), so this needs no gate of
-// its own: with the setting off there is nothing to hit.
+// its own: with the setting off there is nothing to hit. The cell, the row scan
+// and its `basePos` pivot are the mark's; the band guard is not, because it is a
+// question about the pileup rather than about this mark.
 export function hitTestSoftclipBase(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   featureHeight: number,
 ): { id: string; index: number } | undefined {
-  const { basePos, row } = coords
-  if (!isWithinReadBand(coords, featureHeight)) {
-    return undefined
-  }
-  const { softclipBasePositions, softclipBaseYs, softclipBaseReadIndices } =
-    resolved.rpcData
-  // Topmost, not first: see `findTopmostOnRow`. Cells are one bp wide, so the
-  // match indexes a base — `basePos`, not the fractional `genomicPos` (see
-  // canvasXToBasePos).
-  const i = findTopmostOnRow(
-    softclipBaseYs,
-    0,
-    softclipBasePositions.length,
-    row,
-    i => softclipBasePositions[i] === basePos,
-  )
-  if (i === undefined) {
-    return undefined
-  }
-  const readIdx = softclipBaseReadIndices[i]!
-  const id = readIdAt(resolved.rpcData, readIdx)
-  return id === undefined ? undefined : { id, index: readIdx }
+  const data = resolved.rpcData
+  const i = isWithinReadBand(coords, featureHeight)
+    ? findMarkAt(SOFTCLIP_BASES_MARK, data, coords, false)
+    : undefined
+  const readIdx = i === undefined ? undefined : data.softclipBaseReadIndices[i]!
+  const id = readIdx === undefined ? undefined : readIdAt(data, readIdx)
+  return id === undefined || readIdx === undefined
+    ? undefined
+    : { id, index: readIdx }
 }
