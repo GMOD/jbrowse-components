@@ -8,6 +8,7 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
+import { foundationPaintInert } from './foundationPaintInert.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
@@ -66,15 +67,12 @@ export default function GlobalDataDisplayMixin() {
        * #getter
        * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
        * failed fetch has to read as finished to the consumers outside the
-       * display. The per-region family declares the identical override.
-       *
-       * `viewportEmpty` is the second such state: a display parked off content
-       * has painted everything it was ever going to, so a consumer waiting on
-       * `painted` (the on-screen capture gate) must not wait on a canvas no
-       * fetch will ever fill.
+       * display, and `foundationPaintInert` for the second such state and why
+       * both fetch families answer it through one function. Overridable, as the
+       * hook is: a display with a third inert state of its own says so here.
        */
       get paintInert(): boolean {
-        return !!self.error || self.viewportEmpty
+        return foundationPaintInert(self)
       },
     }))
     .views(self => ({

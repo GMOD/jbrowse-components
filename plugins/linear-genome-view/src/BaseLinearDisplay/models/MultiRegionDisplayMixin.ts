@@ -8,6 +8,7 @@ import { untracked } from 'mobx'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
+import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
@@ -171,21 +172,6 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
-         * failed fetch has to read as finished to the consumers outside the
-         * display. The global family declares the identical override.
-         *
-         * `viewportEmpty` is the second such state: a display parked off content
-         * has painted everything it was ever going to, so a consumer waiting on
-         * `painted` (the on-screen capture gate) must not wait on a canvas no
-         * fetch will ever fill.
-         */
-        get paintInert(): boolean {
-          return !!self.error || this.viewportEmpty
-        },
-
-        /**
-         * #getter
          * Overridable hook (default false): whether a searchable feature layout
          * currently exists. Any display defining a feature-lookup method
          * (`searchFeatureByID`, `getFeatureById`) must override it, so callers can
@@ -336,6 +322,19 @@ export default function MultiRegionDisplayMixin() {
          */
         get svgReady(): boolean {
           return foundationSvgReady(self)
+        },
+
+        /**
+         * #getter
+         * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
+         * failed fetch has to read as finished to the consumers outside the
+         * display, and `foundationPaintInert` for the second such state and why
+         * both fetch families answer it through one function. Overridable, as
+         * the hook is: a display with a third inert state of its own says so
+         * here.
+         */
+        get paintInert(): boolean {
+          return foundationPaintInert(self)
         },
 
         /**
