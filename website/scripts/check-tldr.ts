@@ -71,6 +71,32 @@ const BANNED = [
   /\brich set\b/i,
 ]
 
+// A tutorial's opening clause is what a reader who has never used JBrowse meets
+// first, and a display or adapter class name cannot be the thing carrying it
+// (website/docs/tutorials/CLAUDE.md). Ten tutorials opened on one in Aug 2026 —
+// `LDDisplay`, `LinearMultiRowFeatureDisplay`, `MultiQuantitativeTrack` — each
+// naming the mechanism to a reader still working out what the page is about.
+//
+// Scoped to tutorials/, because a config guide's subject genuinely IS the type.
+//
+// Scoped to the clause before the first comma because that is the only part a
+// regex can judge. The rule is really grammatical (is the type the SUBJECT?),
+// and the same name a clause later is the good case: `mcscan_synteny_grape_peach`,
+// `ld_mosquitoes` and `dog10k_svs` all name a type mid-sentence after the plain
+// words have landed, and a first-sentence version of this check called all three
+// wrong. So this catches 5 of those 10 by construction — precision over recall,
+// since the corpus sits at zero and a hard failure that cries wolf gets deleted.
+// The other five are what review and the CLAUDE.md rule are for.
+const TUTORIAL_TYPE_NAME =
+  /`?\b[A-Z][A-Za-z0-9]*(?:Display|Adapter|Track|Renderer)\b`?/
+
+// The opening clause: everything before the first comma, colon or semicolon.
+function openingClause(paragraph: string): string {
+  const prose = paragraph.replace('**TL;DR:**', '').trim()
+  const [clause] = prose.split(/[,:;]/)
+  return clause
+}
+
 // The paragraph runs from the `**TL;DR:**` line to the first blank line. Three
 // TL;DRs end on a colon and hand off to a bulleted list, which is a separate
 // block and deliberately not scanned — the prose is the part that can
@@ -121,6 +147,18 @@ for (const dir of GUIDE_DIRS) {
         )
       }
       continue
+    }
+
+    if (dir === 'tutorials') {
+      const hit = TUTORIAL_TYPE_NAME.exec(openingClause(paragraph))
+      if (hit) {
+        problems.push(
+          `${rel}: TL;DR opens on "${hit[0].replaceAll('`', '')}". Say what ` +
+            `the page looks at in the reader's own terms first; name the type ` +
+            `in a later clause that stands without it ` +
+            `(website/docs/tutorials/CLAUDE.md).`,
+        )
+      }
     }
 
     for (const pattern of BANNED) {

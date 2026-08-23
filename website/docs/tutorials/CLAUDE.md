@@ -58,7 +58,9 @@ reader recognises, where
 `we look at linkage disequilibrium around the lactase gene` does. Naming the
 feature afterwards is worth doing when it tells the reader a capability exists,
 and so is naming the outside tool the page integrates with, because which of the
-two computed the numbers is itself the methodological point.
+two computed the numbers is itself the methodological point. `check-tldr` fails
+the half of this a regex can judge, a type name before the first comma; the same
+name a clause later is the good case and is left to review.
 
 ## Commands
 
