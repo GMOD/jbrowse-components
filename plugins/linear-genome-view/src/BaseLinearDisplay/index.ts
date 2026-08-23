@@ -68,16 +68,16 @@ export {
   onDisplayedRegionsChange,
 } from './models/MultiRegionDisplayMixin.ts'
 export {
-  GlobalFetchMixin,
-  type GlobalFetchAutorunHost,
   type GlobalFetchMixinType,
+  blockKeySignature,
+  default as GlobalFetchMixin,
+} from './models/GlobalFetchMixin.ts'
+export {
+  type GlobalFetchAutorunHost,
   type GlobalFetchPhases,
-  default as GlobalDataDisplayMixin,
   installGlobalFetchAutorun,
   runGlobalFetch,
-} from './models/GlobalDataDisplayMixin.ts'
-export { blockKeySignature } from './models/GlobalFetchMixin.ts'
-export { installPrerequisiteFetch } from './models/installPrerequisiteFetch.ts'
+} from './models/installGlobalFetchAutorun.ts'
 export {
   type FetchMixinType,
   default as FetchMixin,

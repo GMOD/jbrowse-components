@@ -952,10 +952,11 @@ selector, which costs nothing at runtime and nothing to maintain. A state,
 something true only at a particular moment of a run, has to make the order
 report itself at attach, the move `makeSettingsLoopGuard` already applied to the
 `rpcProps` loop trap. `assertDisplayContract` (called from
-`MultiRegionDisplayMixin.afterAttach`, from `installGlobalFetchAutorun` and from
-`installComparativeFetchAutorun`, so all three fetch families are covered — it
-was per-region only until 2026-08, which left HiC and LD, both of which define
-`rpcProps()`, checked by nothing) is that generalization. It
+`MultiRegionDisplayMixin.afterAttach`, from `installGlobalFetchAutorun`, from
+`installComparativeFetchAutorun` and from the shared `installFetch` whenever a
+`contract` name is passed, so every fetch is covered — it was per-region only
+until 2026-08, which left HiC and LD, both of which define `rpcProps()`, checked
+by nothing) is that generalization. It
 `console.error`s rather than throws, deliberately: an error escaping
 `afterAttach` is read by the session loader as an invalid track and the display
 is dropped, which would hide the very violation being reported.

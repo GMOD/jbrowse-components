@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/core/util/jexlFilters'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
-  GlobalDataDisplayMixin,
+  GlobalFetchMixin,
   LegendMixin,
   TrackHeightMixin,
   blockKeySignature,
@@ -62,7 +62,7 @@ function upperBoundFloat32(arr: Float32Array, val: number) {
 
 /**
  * #stateModel SharedLDModel
- * #displayFoundation GlobalDataDisplayMixin
+ * #displayFoundation GlobalFetchMixin
  * #category display
  * Shared state model for LD displays
  */
@@ -74,7 +74,7 @@ export default function sharedModelFactory(
       'SharedLDModel',
       BaseDisplay,
       TrackHeightMixin(),
-      GlobalDataDisplayMixin(),
+      GlobalFetchMixin(),
       LegendMixin(),
       types.model({
         configuration: ConfigurationReference(configSchema),
@@ -254,7 +254,7 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
-       * Override of the `GlobalDataDisplayMixin` hook that gates the initial
+       * Override of the `GlobalFetchMixin` hook that gates the initial
        * pre-first-paint loading scrim (`rendersCanvas && !canvasDrawn`). With
        * the triangle toggled off, `LDDisplayComponent` renders an EmptyState
        * ("Enable LD triangle…") instead of a canvas, so `canvasDrawn` never

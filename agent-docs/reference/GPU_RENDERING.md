@@ -25,7 +25,7 @@ leaf package (deps: `mobx` + `@jbrowse/mobx-state-tree` + `react` peer; **no**
 
 Shader codegen (`packages/shader-tools/src/build-shaders.ts`, plus `slangPass` in
 render-core) and the display-integration layer (`MultiRegionDisplayMixin` /
-`GlobalDataDisplayMixin` / `DisplayChrome`, in the LGV plugin) stay where they
+`GlobalFetchMixin` / `DisplayChrome`, in the LGV plugin) stay where they
 are. Per-display shaders/passes live per-plugin under
 `plugins/<plugin>/src/<display>/{shaders,passes}`. The GPU API is
 **static-import-only** — never exposed via the runtime `ReExports` registry. See
@@ -124,7 +124,7 @@ RenderLifecycleMixin
 
 MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
-    canRender: boolean            view.initialized (see above); GlobalDataDisplayMixin overrides it identically
+    canRender: boolean            view.initialized (see above); GlobalFetchMixin overrides it through the same foundationCanRender
     viewportWithinLoadedData      every visible block ⊆ a loaded region
     displayPhase                  'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
                                   computeDisplayPhase(self, () => computeLoadingTerm({...}, () =>
@@ -713,7 +713,7 @@ render-core's own and a lint rule says so ([ADR-079](../architecture-decision-re
 |---|---|---|---|---|---|---|
 | **Per-region streamed** | `installPerRegionLifecycle` | `PerRegionRenderingBackend` | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, regions, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-wiggle, MAF, manhattan, multi-variant |
 | **Whole-map synced** | `installGlobalLifecycle` | (its own; one consumer) | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently — main-thread cross-region Y layout | alignments, and only alignments |
-| **Monolithic** | `installGlobalLifecycle` | `GlobalRenderingBackend` | `uploadX(data)` | `render(data, state)` (no blocks, no keys) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalDataDisplayMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch) |
+| **Monolithic** | `installGlobalLifecycle` | `GlobalRenderingBackend` | `uploadX(data)` | `render(data, state)` (no blocks, no keys) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalFetchMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch) |
 | **Keyed shared-canvas** | `installKeyedLifecycle` | `KeyedRenderingBackend` | `uploadGeometry(key, data)` + `deleteGeometry(key)` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
 
 Four contracts and three installers, because the whole-map synced payload is one
@@ -1741,9 +1741,9 @@ does the Canvas2D-only version); keep them in step with any change here.
   - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays (brings
     in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the five fetch
     autoruns, and `rpcProps()`→refetch wiring).
-  - Compose `GlobalDataDisplayMixin()` for displays that hold a single
-    non-regional dataset (HiC contact matrix, LD triangle; arc reaches the same
-    autorun over the bare `GlobalFetchMixin`). Same slot mixin + `FetchMixin` +
+  - Compose `GlobalFetchMixin()` for displays that hold a single
+    non-regional dataset (HiC contact matrix, LD triangle, both arc displays).
+    Same slot mixin + `FetchMixin` +
     `RegionTooLargeMixin` plumbing, but **no** fetch autoruns — the display
     installs its own in `afterAttach` via
     `installGlobalFetchAutorun(self, { prepare, run, commit, delay, name })`.

@@ -1,8 +1,8 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { installPrerequisiteFetch } from '@jbrowse/plugin-linear-genome-view'
+import { installFetch } from '@jbrowse/core/util/installFetch'
 
 import type { Source } from './types.ts'
-import type { RpcStatus, StatusWindow } from '@jbrowse/core/util'
+import type { StatusWindow } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -11,27 +11,37 @@ export function getMultiSampleVariantSourcesAutorun(
     adapterConfig: Record<string, unknown>
     isMinimized: boolean
     reloadCounter: number
+    fetchInert: boolean
+    fetchCanceled: boolean
     setError: (error?: unknown) => void
-    setStatusMessage: (status?: RpcStatus) => void
     // This display composes the LGV fetch mixins, so it already owns a status
-    // window; the skeleton lends it to the rotation, which is what keeps this
+    // window; it is lent to the skeleton's rotation, which is what keeps this
     // fetch and the region fetches thinning through ONE of them rather than
     // two writing the same field.
     statusWindow: StatusWindow
     setSources: (sources: Source[]) => void
   },
 ) {
-  // The prerequisite skeleton owns what this fetch used to hand-roll: the
-  // latest-wins rotation, the currency-guarded error rule, the unconditional
-  // reload read, and the slot retirement that keeps a failed scan from leaving
-  // a progress chip up for good. `getSources` has no index to consult and
-  // scans every feature in every region, so all of that is load-bearing here.
-  installPrerequisiteFetch(self, {
-    enabled: () =>
+  // The shared skeleton owns what this fetch used to hand-roll: the latest-wins
+  // rotation, the currency-guarded error rule, the clear at the start, the
+  // unconditional reload read, and the slot retirement that keeps a failed scan
+  // from leaving a progress chip up for good. `getSources` has no index to
+  // consult and scans every feature in every region, so all of that is
+  // load-bearing here.
+  //
+  // No `contract`: this is a SECOND fetch on a display whose per-region
+  // foundation already installed both contract checks.
+  installFetch(self, {
+    report: { statusWindow: self.statusWindow },
+    gate: () =>
+      !self.isMinimized &&
       (getContainingView(self) as LinearGenomeViewModel).initialized,
-    run: async ctx =>
-      await ctx.callRpc('MultiSampleVariantGetSources', {
-        adapterConfig: self.adapterConfig,
+    // tracked, because an adapter edited in the config editor has to rescan —
+    // `run`'s own reads are untracked by contract
+    prepare: () => ({ adapterConfig: self.adapterConfig }),
+    run: (args, ctx) =>
+      ctx.callRpc('MultiSampleVariantGetSources', {
+        adapterConfig: args.adapterConfig,
       }),
     commit: ({ sources, warnings }) => {
       self.setSources(sources)
@@ -50,9 +60,11 @@ export function getMultiSampleVariantSourcesAutorun(
     // `samplesTsvLocation` naming no VCF sample is the case that needs it most:
     // it used to leave `sources` an empty array, which is truthy, so no loading
     // state and no banner showed and the display just drew nothing.
-    onError: e => {
-      self.setError(e)
-      getSession(self).notifyError(`${e}`, e)
+    setError: error => {
+      self.setError(error)
+      if (error !== undefined) {
+        getSession(self).notifyError(`${error}`, error)
+      }
     },
     delay: 1000,
     name: 'GetMultiSampleVariantSources',

@@ -16,7 +16,7 @@
 
 import { flow, types } from '@jbrowse/mobx-state-tree'
 
-import { installGlobalFetchAutorun } from './GlobalDataDisplayMixin.ts'
+import { installGlobalFetchAutorun } from './installGlobalFetchAutorun.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
@@ -36,6 +36,10 @@ const TestView = types
     // read by the skeleton as the viewport trigger; a fresh array per set() is
     // what makes the read observable
     dynamicBlocks: { contentBlocks: [{ key: 'chr1:0-100' }] },
+    // what the cancel lapses on, and a separate observable from the trigger
+    // above deliberately: the durability rule is "a viewport change", not "any
+    // trigger"
+    visibleRegions: [{ key: 'chr1:0-100' }],
   }))
   .actions(self => ({
     setWidth(n: number) {
@@ -43,6 +47,7 @@ const TestView = types
     },
     setBlocks(keys: string[]) {
       self.dynamicBlocks = { contentBlocks: keys.map(key => ({ key })) }
+      self.visibleRegions = keys.map(key => ({ key }))
     },
   }))
 
@@ -67,6 +72,9 @@ const TestDisplay = types
     gateMeasurementStale: true,
     // FetchMixin's, and the retry check's "deliberately not fetching" exemption
     fetchInert: false,
+    // FetchMixin's durable user-cancel flag: the skeleton gates on it and
+    // lapses it on a viewport change
+    fetchCanceled: false,
     // the LGV foundations', and the check's second exemption: a view holding no
     // content block declines every display in it, and none of those Retry
     // buttons is dead for a reason a `reload()` could fix
@@ -178,6 +186,15 @@ const TestDisplay = types
     },
     reload() {
       self.reloadCounter += 1
+    },
+    // `FetchMixin`'s pair, cut down to the flag: the internal reset the
+    // viewport-change autorun runs, and the user gesture the overlay's Cancel
+    // button runs
+    cancelFetch() {
+      self.fetchCanceled = false
+    },
+    cancelFetchByUser() {
+      self.fetchCanceled = true
     },
   }))
 
@@ -395,6 +412,73 @@ describe('installGlobalFetchAutorun', () => {
 // only on re-evaluation ("a gate that stays false is allowed to keep
 // declining"), which is true of every OTHER trigger and false of this one, so
 // the difference is checked here rather than by tightening those.
+// The durability rule this family had no half of: `fetchCanceled` was never
+// read here, so any trigger — a pan, a settings change — walked straight into
+// `runFetch`, which resets the flag, and the load the user stopped came back on
+// its own. It is now the per-region family's rule for both of them: **durable
+// until the viewport changes or Retry**.
+describe('the user cancel', () => {
+  it('is durable: a settings change does not restart the load', async () => {
+    const { display, fetched } = await setup(() => true)
+    await settle()
+    expect(fetched.count).toBe(1)
+
+    display.cancelFetchByUser()
+    display.setSetting('b')
+    await settle()
+
+    expect(fetched.count).toBe(1)
+    expect(display.fetchCanceled).toBe(true)
+  })
+
+  it('lapses when the viewport moves', async () => {
+    const { view, display, fetched } = await setup(() => true)
+    await settle()
+    display.cancelFetchByUser()
+    await settle()
+    expect(fetched.count).toBe(1)
+
+    view.setBlocks(['chr1:100-200'])
+    await settle()
+
+    expect(display.fetchCanceled).toBe(false)
+    expect(fetched.count).toBe(2)
+  })
+
+  // the trap the read order exists for: the gate closes, so a body that
+  // returned before reading `reloadCounter` would drop the one observable that
+  // can reopen it and Cancel would be a one-way door with a Retry button on it
+  it('reload() reopens it', async () => {
+    const { display, fetched } = await setup(() => true)
+    await settle()
+    display.cancelFetchByUser()
+    await settle()
+    expect(fetched.count).toBe(1)
+
+    // what `GlobalFetchMixin.reload()` does, in the two halves this fixture has
+    display.cancelFetch()
+    display.reload()
+    await settle()
+
+    expect(fetched.count).toBe(2)
+  })
+
+  // the skip is a foundation gate, not the display's own decline, so it
+  // consumes an outstanding bump without reporting the dead Retry the check
+  // hunts for
+  it('a run the cancel skipped is not reported as a dead Retry', async () => {
+    const { display } = await setup(() => true)
+    await settle()
+    expect(takeContractReports()).toEqual([])
+
+    display.reload()
+    display.cancelFetchByUser()
+    await settle()
+
+    expect(takeContractReports()).toEqual([])
+  })
+})
+
 describe('the retry contract', () => {
   it('reports a reload() that re-runs the autorun but reaches no fetch', async () => {
     // the arc shape, before its `reload()` override existed

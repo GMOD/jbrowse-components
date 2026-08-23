@@ -3,17 +3,17 @@
  * strand a display when any of them is got wrong are structural rather than
  * remembered.
  *
- * Two of the three fetch families take this shape — the LGV global one
- * (`installGlobalFetchAutorun`, over `FetchMixin.runFetch`) and the comparative
- * one (`installComparativeFetchAutorun`, over its own
- * `createStopTokenRotation`). They were the same contract declared twice, with
- * the same three rules explained twice, which is a drift axis over rules whose
- * whole value is being the same everywhere.
+ * The shared `installFetch` skeleton takes this shape, and so does the LGV
+ * global family (`installGlobalFetchAutorun`, over `FetchMixin.runFetch`). It
+ * was the same contract declared twice, with the same three rules explained
+ * twice, which is a drift axis over rules whose whole value is being the same
+ * everywhere.
  *
- * `TCtx` is what each family hands its `run`: a `FetchContext` on the LGV side,
- * a `ComparativeFetchContext` (that plus adapter config and refName rename) on
- * the other. That is the one thing that genuinely differs, so it is the one
- * parameter.
+ * `TCtx` is what a family hands its `run`: a `FetchContext` for most of them, a
+ * `ComparativeFetchContext` (that plus adapter config and refName rename) for
+ * the comparative displays, which wrap their own `run` rather than the skeleton
+ * growing an option. That is the one thing that genuinely differs, so it is the
+ * one parameter.
  *
  * **The per-region family is deliberately not this shape.** N regions stream and
  * four displays decide something across them mid-fetch, so there is nowhere to

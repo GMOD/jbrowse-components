@@ -5,7 +5,7 @@ import { whenViewSettled } from '../util/whenViewSettled.ts'
 /**
  * The contract every GPU display's `renderSvg` relies on: a `svgReady` gate
  * (the per-display terminal-state getter — see MultiRegionDisplayMixin /
- * GlobalDataDisplayMixin) and the `error` it fails the export on.
+ * GlobalFetchMixin) and the `error` it fails the export on.
  * Duck-typed `renderSvg` model interfaces extend this so the compiler catches a
  * missing field instead of it surfacing as a runtime hang or a silent blank.
  */

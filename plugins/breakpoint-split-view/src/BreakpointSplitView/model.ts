@@ -5,12 +5,11 @@ import {
   avg,
   createStatusChannel,
   createStatusFanOut,
-  createStopTokenRotation,
   getSession,
-  handleFetchError,
   notEmpty,
 } from '@jbrowse/core/util'
 import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { installFetch } from '@jbrowse/core/util/installFetch'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -136,6 +135,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .volatile<{
       width: number
       matchedTrackFeatures: Record<string, Feature[][]>
+      reloadCounter: number
       fetchStatus: StatusChannel
     }>(() => ({
       /**
@@ -147,6 +147,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
 
       matchedTrackFeatures: {},
+      /**
+       * #volatile
+       * The pure "go again" signal the shared fetch skeleton reads above every
+       * gate, bumped by `reload()`: after a failure every other input of the
+       * overlay fetch is unchanged, so nothing else can rewake it. The Retry on
+       * the failure notification is what spends it.
+       */
+      reloadCounter: 0,
       /**
        * #volatile
        * What the overlay-feature fetch is doing, for the corner chip. A
@@ -302,6 +310,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               elt => elt.configuration.trackId,
               ...self.views.map(view => view.tracks as OverlayTrack[]),
             )
+      },
+
+      /**
+       * #getter
+       * Same name and same meaning as `FetchMixin.fetchInert`, on a view rather
+       * than a display: with nothing matched across the rows there is nothing
+       * for the overlay fetch to ask for, so the dev-only retry check the fetch
+       * skeleton installs must not call that decline a dead Retry.
+       */
+      get fetchInert(): boolean {
+        return this.matchedTracks.length === 0
       },
 
       /**
@@ -582,6 +601,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Re-run the overlay-feature fetch with no input change — what the Retry
+       * on its failure notification calls.
+       */
+      reload() {
+        self.reloadCounter += 1
+      },
+      /**
+       * #action
        */
       reverseViewOrder() {
         self.views.reverse()
@@ -647,92 +674,91 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             { name: 'BreakpointSplitViewInit' },
           ),
         )
-        // The same latest-wins rotation the comparative displays use. It was a
+        // The shared fetch skeleton, which this fetch reached last: it was a
         // hand-rolled `fetchGeneration` counter and nothing else, which ordered
-        // the commits and left the losers running: panning away kept both
+        // the commits and left the losers running — panning away kept both
         // views' `BreakpointGetFeatures` calls, and their downloads, going to
-        // completion for a viewport nobody was looking at. The rotation is the
-        // token as well as the guard, and it carries the status channel the
-        // fetch had no way to report through.
-        const fetch = createStopTokenRotation(self, self.fetchStatus)
-        addDisposer(self, () => {
-          fetch.dispose()
+        // completion for a viewport nobody was looking at. What the skeleton
+        // brings beyond the rotation is the leading edge (the first overlay
+        // fetch no longer waits out a full second), the currency-guarded error
+        // rule, the retired status slot, and the two dev-only contract checks.
+        installFetch(self, {
+          name: 'BreakpointFeatureFetcher',
+          delay: 1000,
+          report: self.fetchStatus,
+          contract: "BreakpointSplitView's overlay fetch",
+          // A foundation-level skip rather than a `prepare` decline: the views
+          // being measured is not this fetch's own gate, and `initialized` is
+          // observable, so the body re-runs the moment it flips.
+          gate: () => self.views.every(view => view.initialized),
+          prepare: () => {
+            // Skipped per track, not for the whole view: where the banner has
+            // replaced the features there is nothing to match against, but that
+            // says nothing about the other matched tracks, and dropping the key
+            // also clears any features left from before the track went over its
+            // limit.
+            const tracks = self.matchedTracks.filter(
+              track => !track.displays[0]!.regionTooLarge,
+            )
+            // THE READ THAT MAKES A PAN REFETCH, and it belongs here rather
+            // than in `getBlockFeatures` where it used to sit. Reached from
+            // there it tracked only because the `tracks.map` below runs its
+            // async bodies as far as their first await synchronously, so the
+            // read landed inside the tracked window from two files away — and
+            // one hoisted await anywhere along that chain would have stopped
+            // every refetch on pan with nothing failing. `prepare` is where the
+            // skeleton promises the reads are tracked.
+            //
+            // Guarded on `tracks.length` to keep the dependency exactly as
+            // narrow as it was: with every matched track over its limit there is
+            // nothing to fetch, and a pan should not spin the rotation to fetch
+            // it.
+            const regionsPerView = tracks.length
+              ? self.views.map(view => view.staticBlocks.contentBlocks)
+              : []
+            return { tracks, regionsPerView }
+          },
+          // One fan-out slot per track, so the N of them aggregate into one bar
+          // rather than the first to finish blanking the label.
+          run: async (
+            { tracks, regionsPerView },
+            ctx,
+          ): Promise<Record<string, Feature[][]>> => {
+            const slot = createStatusFanOut(ctx.statusCallback)
+            return Object.fromEntries(
+              await Promise.all(
+                tracks.map(
+                  async track =>
+                    [
+                      track.configuration.trackId,
+                      await getBlockFeatures(self, track, regionsPerView, {
+                        stopToken: ctx.stopToken,
+                        statusCallback: slot(),
+                      }),
+                    ] as const,
+                ),
+              ),
+            )
+          },
+          commit: fetched => {
+            self.setMatchedTrackFeatures(fetched)
+          },
+          // This view holds no error slot, so a failure is a session
+          // notification — carrying the Retry that makes `reload()` the real
+          // thing the skeleton's `reloadCounter` read exists for. `getSession`
+          // also throws on a dead node, which is why only a current run's real
+          // failure reaches here at all.
+          setError: error => {
+            if (error !== undefined) {
+              getSession(self).notifyError(`${error}`, error, undefined, {
+                name: 'Retry',
+                onClick: () => {
+                  self.reload()
+                },
+              })
+            }
+          },
         })
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              if (!self.views.every(view => view.initialized)) {
-                return
-              }
-              const { stopToken, isCurrent, statusCallback, end } =
-                fetch.begin()
-              try {
-                // Skipped per track, not for the whole view: where the banner
-                // has replaced the features there is nothing to match against,
-                // but that says nothing about the other matched tracks, and
-                // dropping the key also clears any features left from before
-                // the track went over its limit.
-                //
-                // One fan-out slot per track, so the N of them aggregate into
-                // one bar rather than the first to finish blanking the label.
-                const tracks = self.matchedTracks.filter(
-                  track => !track.displays[0]!.regionTooLarge,
-                )
-                // THE READ THAT MAKES A PAN REFETCH, and it belongs in the
-                // autorun body rather than in `getBlockFeatures` where it used
-                // to sit. Reached from there it tracked only because the
-                // `tracks.map` below runs its async bodies as far as their first
-                // await synchronously, so the read landed inside the tracked
-                // window from two files away — and one hoisted await anywhere
-                // along that chain would have stopped every refetch on pan with
-                // nothing failing.
-                //
-                // Guarded on `tracks.length` to keep the dependency exactly as
-                // narrow as it was: with every matched track over its limit
-                // there is nothing to fetch, and a pan should not spin the
-                // rotation to fetch it.
-                const regionsPerView = tracks.length
-                  ? self.views.map(view => view.staticBlocks.contentBlocks)
-                  : []
-                const slot = createStatusFanOut(statusCallback)
-                const fetched = Object.fromEntries(
-                  await Promise.all(
-                    tracks.map(
-                      async track =>
-                        [
-                          track.configuration.trackId,
-                          await getBlockFeatures(self, track, regionsPerView, {
-                            stopToken,
-                            statusCallback: slot(),
-                          }),
-                        ] as const,
-                    ),
-                  ),
-                )
-                if (isCurrent()) {
-                  self.setMatchedTrackFeatures(fetched)
-                }
-              } catch (e) {
-                // the shared non-abort fetch-error rule: a superseded run's
-                // result is discarded either way, so its failure isn't the
-                // user's problem — an aborted RPC for a viewport already left
-                // would otherwise raise a toast for a fetch nobody is waiting
-                // on. getSession also throws on a dead node, turning a handled
-                // error into an unhandled one.
-                handleFetchError(e, isCurrent, err => {
-                  getSession(self).notifyError(`${err}`, err)
-                })
-              } finally {
-                end()
-              }
-            },
-            {
-              name: 'BreakpointFeatureFetcher',
-              delay: 1000,
-            },
-          ),
-        )
       },
 
       /**

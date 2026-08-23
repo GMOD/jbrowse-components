@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import GlobalDataDisplayMixin from './GlobalDataDisplayMixin.ts'
+import GlobalFetchMixin from './GlobalFetchMixin.ts'
 
 import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
 
@@ -37,7 +37,7 @@ function testModel() {
   const Display = types
     .compose(
       'TestGlobalDisplay',
-      GlobalDataDisplayMixin(),
+      GlobalFetchMixin(),
       types.model({ type: types.literal('TestGlobalDisplay') }),
     )
     .volatile(() => ({ loaded: false }))
@@ -114,7 +114,7 @@ test('displayPhase is not loading pre-paint when rendersCanvas is false', () => 
   const Display = types
     .compose(
       'TestNoCanvasDisplay',
-      GlobalDataDisplayMixin(),
+      GlobalFetchMixin(),
       types.model({ type: types.literal('TestNoCanvasDisplay') }),
     )
     .views(() => ({
@@ -142,7 +142,7 @@ test('fetchInert silences the scrim over a placeholder, cancel included', () => 
   const Suppressed = types
     .compose(
       'TestSuppressedDisplay',
-      GlobalDataDisplayMixin(),
+      GlobalFetchMixin(),
       types.model({ type: types.literal('TestSuppressedDisplay') }),
     )
     .views(() => ({
@@ -183,7 +183,7 @@ describe('an empty viewport is a resting state, so it is terminal', () => {
   const Display = types
     .compose(
       'TestEmptyViewportDisplay',
-      GlobalDataDisplayMixin(),
+      GlobalFetchMixin(),
       types.model({ type: types.literal('TestEmptyViewportDisplay') }),
     )
     .views(() => ({

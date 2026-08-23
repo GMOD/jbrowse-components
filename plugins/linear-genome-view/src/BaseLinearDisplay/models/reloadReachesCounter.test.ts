@@ -89,7 +89,7 @@ test('the scan finds the reload declarations it is about', () => {
   // exists for; canvas is the one it was written against. (The global family's
   // displays no longer appear: GlobalFetchMixin.reload owns their signature
   // invalidation; and the variants sources fetch reads `reloadCounter`
-  // directly through installPrerequisiteFetch, so its override is gone too.)
+  // directly through the shared fetch skeleton, so its override is gone too.)
   const files = declarations.map(d => d.where.split(':')[0])
   for (const expected of [
     'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',

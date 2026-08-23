@@ -1,12 +1,17 @@
-import { getContainingView, isDataCurrent } from '@jbrowse/core/util'
+import { isDataCurrent } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
+import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
+import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
+import { containingLgv, foundationCanRender } from './foundationView.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
  * The one spelling of "which block set is this" every global display's
@@ -20,29 +25,30 @@ export function blockKeySignature(blocks: { key: string }[]) {
 }
 
 /**
- * Rendering-agnostic foundation for any display holding a single global
- * (non-regional) dataset. Owns the *fetch* concern only — no GPU rendering — so
- * it is shared by GPU global displays (via GlobalDataDisplayMixin) AND
- * main-thread SVG ones (the arc displays), which compose it directly. That's the
- * whole reason it's split out from GlobalDataDisplayMixin: fetch (cancellation,
- * staleness, region-too-large, reload, the svgReady export gate) is orthogonal
- * to how the display paints, so a non-GPU display shouldn't have to drag in
- * RenderLifecycleMixin to get it.
+ * **The** foundation for a display holding a single global (non-regional)
+ * dataset — HiC's contact matrix, the LD triangle, both arc displays. One
+ * foundation rather than the two this family carried until 2026-08-23:
+ * `GlobalDataDisplayMixin` existed only to layer `RenderLifecycleMixin` on top
+ * for the GPU composers, because arc paints main-thread SVG `<path>`s and
+ * declined it — so the fetch foundation was split in two, and the three getters
+ * on the upper half (`canRender`, `paintInert`, `displayPhase`) were reachable
+ * only by whichever displays composed it. A display that composes this now gets
+ * the whole answer, and arc pays five unused volatiles and two autoruns it
+ * never installs (`attachRenderingBackend` is what installs them, and arc never
+ * calls it) for the same table row as everyone else.
  *
  * Composes:
  *   - RegionTooLargeMixin (regionTooLarge, force-load, …)
+ *   - RenderLifecycleMixin (attachRenderingBackend, renderNow, renderError, …)
  *   - FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
  *                 fetchGeneration)
  *
  * Installs no autoruns — each display owns its fetch trigger, sharing the
- * `installGlobalFetchAutorun` skeleton. `displayPhase` lives in
- * GlobalDataDisplayMixin, not here, because it reads `renderError` from
- * RenderLifecycleMixin — the one genuinely GPU-only piece. A non-GPU composer
- * (arc) defines its own one-line `displayPhase` over the same shared
- * `computeDisplayPhase`, passing `renderError: undefined`.
+ * `installGlobalFetchAutorun` skeleton, to which it supplies only its own
+ * `prepare` / `run` / `commit` phases.
  *
  * #stateModel GlobalFetchMixin
- * #displayFoundationDef The same single-global fetch foundation without the render lifecycle, so a non-GPU display that paints main-thread SVG does not drag it in.
+ * #displayFoundationDef One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`.
  * #category display
  */
 export default function GlobalFetchMixin() {
@@ -50,6 +56,7 @@ export default function GlobalFetchMixin() {
     .compose(
       'GlobalFetchMixin',
       RegionTooLargeMixin(),
+      RenderLifecycleMixin(),
       FetchMixin(),
       types.model({}),
     )
@@ -68,16 +75,12 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * The containing LinearGenomeView, typed once so no consumer repeats the
-       * `getContainingView` cast. Same getter, same name, as
-       * `MultiRegionDisplayMixin`'s — declared in both rather than hoisted into
-       * the `RegionTooLargeMixin` they share, because that mixin is named for
-       * the byte gate and a display composes exactly one of these two families,
-       * so the pair can never shadow each other. See the note there for why the
-       * name is `lgv` and not `view`.
+       * The containing LinearGenomeView — see `containingLgv` for the cast it
+       * owns, why the name is `lgv` and not `view`, and why both foundations
+       * still declare the name over one body.
        */
       get lgv(): LinearGenomeViewModel {
-        return getContainingView(self) as LinearGenomeViewModel
+        return containingLgv(self)
       },
       /**
        * #getter
@@ -115,6 +118,14 @@ export default function GlobalFetchMixin() {
       },
       /**
        * #getter
+       * Overrides `RenderLifecycleMixin`'s default-true hook with the LGV
+       * precondition both foundations share — see `foundationCanRender`.
+       */
+      get canRender(): boolean {
+        return foundationCanRender(self)
+      },
+      /**
+       * #getter
        * Signature of the fetch the current view and settings call for — the
        * display's `viewSignature` plus the serialized `rpcProps()` axis. What
        * `runGlobalFetch` gates on, captures at issue, and stamps at commit.
@@ -142,19 +153,55 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
+       * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
+       * failed fetch has to read as finished to the consumers outside the
+       * display, and `foundationPaintInert` for the second such state and why
+       * both fetch families answer it through one function. Overridable, as the
+       * hook is: a display with a third inert state of its own says so here.
+       */
+      get paintInert(): boolean {
+        return foundationPaintInert(self)
+      },
+      /**
+       * #getter
        * Policy single-sourced in `computeSvgReady`; this family supplies only
        * the freshness half, which `foundationSvgReady` reads as `dataCurrent`
        * or the vacuous currency of `viewportEmpty`. Note it requires the dataset
-       * to actually be
-       * current, NOT merely "not currently fetching": the fetch trigger is a
-       * debounced `afterAttach` autorun, so at export time `isLoading` can still
-       * be false with no data yet — a `displayPhase !== 'loading'` test would
-       * then capture an empty render. Never gates on `canvasDrawn`, which an
-       * off-screen export never sets. Off-screen renderers gate on it via
-       * `awaitSvgReady(model)`.
+       * to actually be current, NOT merely "not currently fetching": the fetch
+       * trigger is a debounced `afterAttach` autorun, so at export time
+       * `isLoading` can still be false with no data yet — a
+       * `displayPhase !== 'loading'` test would then capture an empty render.
+       * Never gates on `canvasDrawn`, which an off-screen export never sets.
+       * Off-screen renderers gate on it via `awaitSvgReady(model)`.
        */
       get svgReady(): boolean {
         return foundationSvgReady(self)
+      },
+      /**
+       * #getter
+       * The display's mutually-exclusive visual state, mapped in
+       * `foundationDisplayPhase` — every foundation calls it and supplies only
+       * its staleness argument, so a term added to `computeLoadingTerm` reaches
+       * all of them without being wired twice.
+       *
+       * This family's argument is the constant `true`, deliberately: a global
+       * display keeps the last frame up through a refetch (worker output is
+       * genomic, so the stale frame draws correctly under the live view
+       * transform), so a pan or zoom shows no scrim beyond the `isLoading`
+       * window. The pre-first-paint scrim it *does* want — the gap between mount
+       * and `isLoading` going true, which on HiC is the `CoreGetInfo` round trip
+       * its first fetch waits on — is `computeLoadingTerm`'s shared
+       * `rendersCanvas && !canvasDrawn` term, not anything this family spells
+       * out.
+       *
+       * A display with no rendering backend narrows this to the backend-free
+       * `DisplayStatusPhase` with `foundationDisplayStatusPhase`, which is what
+       * arc does: it cannot reach `renderError`, and the narrower type is what
+       * lets `DisplayStatusChrome` take it with neither a cast nor a dead
+       * branch.
+       */
+      get displayPhase(): DisplayPhase {
+        return foundationDisplayPhase(self, () => true)
       },
     }))
     .actions(self => ({

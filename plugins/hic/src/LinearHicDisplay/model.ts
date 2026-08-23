@@ -4,16 +4,16 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { installFetch } from '@jbrowse/core/util/installFetch'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  GlobalDataDisplayMixin,
+  GlobalFetchMixin,
   LegendMixin,
   TrackHeightMixin,
   blockKeySignature,
   computeTriangleYScalar,
   gradientSvgLegendWidth,
   installGlobalFetchAutorun,
-  installPrerequisiteFetch,
   triangleScreenToData,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
@@ -39,7 +39,7 @@ import type React from 'react'
 
 /**
  * #stateModel LinearHicDisplay
- * #displayFoundation GlobalDataDisplayMixin
+ * #displayFoundation GlobalFetchMixin
  * #category display
  * Hi-C display that renders contact matrix using WebGL
  *
@@ -71,7 +71,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       'LinearHicDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      GlobalDataDisplayMixin(),
+      GlobalFetchMixin(),
       LegendMixin(),
       types.model({
         /**
@@ -652,21 +652,33 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         // degradation — hence `setError` rather than a session snackbar; the
         // chrome's retry button re-runs this through the skeleton's
         // `reloadCounter` read.
-        installPrerequisiteFetch(self, {
-          // The injected status channel matters more here than for most
-          // fetches: this call happens inside the pre-first-paint window,
-          // where the scrim is up because `canvasDrawn` is still false rather
-          // than because `isLoading` is — so `statusMessage` is the only thing
-          // that can say what is happening while a v8 `.hic`'s norm-vector
-          // index is discovered by walking the file. The injected stop token
-          // is held by the skeleton's own rotation, so only a superseding
-          // header read ever aborts one — a user cancel of the contacts fetch
-          // cannot strand the display the way sharing the main fetch's token
-          // would.
-          run: async ctx =>
-            (await ctx.callRpc('CoreGetInfo', {
-              adapterConfig: self.adapterConfig,
-            })) as { norms?: string[]; resolutions?: number[] },
+        installFetch(self, {
+          // The display's own status window, lent so this read takes a slot on
+          // the one status field beside the contacts fetch rather than opening
+          // a second writer over it. It matters more here than for most
+          // fetches: this call happens inside the pre-first-paint window, where
+          // the scrim is up because `canvasDrawn` is still false rather than
+          // because `isLoading` is — so `statusMessage` is the only thing that
+          // can say what is happening while a v8 `.hic`'s norm-vector index is
+          // discovered by walking the file. The stop token is held by this
+          // installation's own rotation, so only a superseding header read ever
+          // aborts one — a user cancel of the contacts fetch cannot strand the
+          // display the way sharing the main fetch's token would.
+          //
+          // No `contract`: this is a SECOND fetch on a display whose global
+          // foundation already installed both contract checks, and a second
+          // `assertDisplayContract` would report the double-attach it exists to
+          // catch.
+          report: { statusWindow: self.statusWindow },
+          gate: () => !self.isMinimized,
+          // tracked, because an adapter edited in the config editor has to
+          // re-read the header — `run`'s own reads are untracked by contract
+          prepare: () => ({ adapterConfig: self.adapterConfig }),
+          run: async ({ adapterConfig }, ctx) =>
+            (await ctx.callRpc('CoreGetInfo', { adapterConfig })) as {
+              norms?: string[]
+              resolutions?: number[]
+            },
           commit: ({ norms, resolutions }) => {
             if (norms) {
               self.setAvailableNormalizations(norms)
@@ -688,6 +700,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
                 ),
               )
             }
+          },
+          setError: error => {
+            self.setError(error)
           },
           // no debounce: the only repeat triggers are a Retry click and an
           // adapter swap, and the first paint waits on this

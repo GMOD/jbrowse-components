@@ -48,3 +48,22 @@ cancellation logic; the display body contains only the fetch-specific work.
 - `MultiRegionDisplayMixin` remains the right base for per-region displays;
   `GlobalDataDisplayMixin` is for displays where the entire viewport maps to one
   fetch
+
+## Since (2026-08-23): merged into `GlobalFetchMixin`
+
+`GlobalDataDisplayMixin` is gone as a name; what it did is `GlobalFetchMixin`,
+which now composes `RenderLifecycleMixin` along with `RegionTooLargeMixin` and
+`FetchMixin`. Nothing in the decision above changes — this is still one fetch
+lifecycle for a display whose whole viewport maps to one dataset — only the
+number of mixins it takes to say so.
+
+The split into two halves came later than this ADR and was for arc, which paints
+main-thread JSX `<path>`s and attaches no rendering backend, so it composed the
+lower half and the three getters on the upper one (`canRender`, `paintInert`,
+`displayPhase`) were unreachable from it. What arc saves by declining the render
+lifecycle is five unused volatiles and two autoruns that are never installed
+(`attachRenderingBackend` installs them, and arc never calls it); what the split
+cost was a foundation row naming a mixin two displays composed, and a display's
+choice of foundation deciding which of those three getters it could express. Arc
+narrows the one genuinely backend-shaped getter itself, through
+`foundationDisplayStatusPhase`. See ARCHITECTURE.md §"Display stacks".

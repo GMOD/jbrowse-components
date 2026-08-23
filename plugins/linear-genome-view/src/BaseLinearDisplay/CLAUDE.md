@@ -4,6 +4,19 @@
 (autoruns, `fetchRegions`, `loadedRegions`, overridable hooks). Status chrome is
 `DisplayChrome.tsx` — `agent-docs/reference/DISPLAYCHROME.md`, adr-026.
 
+**Two foundations, not three.** `GlobalFetchMixin` is the whole global family
+now; `GlobalDataDisplayMixin` was deleted on 2026-08-23 and the reason it
+existed — arc declining `RenderLifecycleMixin` — is in ARCHITECTURE.md's
+"Display stacks". `installGlobalFetchAutorun` lives in its own file beside it.
+
+**The fetch sequence itself is in core**, not here: `runFetchOnce` /
+`installFetch` (`@jbrowse/core/util/installFetch`) own begin → clear the error →
+run → commit-if-current → `handleFetchError` → end, plus the autorun over it.
+`FetchMixin.runFetch` is the MST-flow wrapper that adds this family's observable
+bookkeeping on top, and it is the only site that holds `runFetchOnce` directly —
+it needs the flow (so a fetch autorun's synchronous prefix runs untracked) and a
+rotation `cancelFetch` can reach.
+
 The composition and fetch rules a display must not break are in
 `agent-docs/ARCHITECTURE.md` ("What not to do"): mixin order, `afterAttach`
 super-chaining, `rpcProps`/`regionHasData` in `.actions()`, the `rpcProps()`
@@ -27,20 +40,31 @@ declared inside `.actions()`. `assertDisplayContract` is what stayed a runtime
 check: it reports a fetch foundation whose `afterAttach` ran twice on one
 display, which no spelling in one file predicts. `makeRetryContractCheck` is the
 same idea for retry: it reports when a `reloadCounter` bump re-runs the autorun
-and the gate still declines — the dead Retry button. All three fetch installers
-install it. Opt out with `fetchInert` if the display deliberately isn't fetching
-— the loading scrim and the SVG export read the same hook (ADR-082). A two-stage
-`reload()` says `awaitingPrerequisite` instead (HiC, whose contacts fetch
-declines until the header lands; variants, until `sourcesBase` does), which
-**defers** the verdict to the run after the prerequisite arrives rather than
-waiving it. Reports reach the jest gate through `console.error`, so a harness
-replacing it opts itself out; a test provoking a violation calls
-`takeContractReports()`.
+and the gate still declines — the dead Retry button. Every fetch installer
+installs them, `installFetch` included — a **secondary** fetch on a display
+whose foundation already installed them passes no `contract` and skips both, or
+the double-attach report fires on the fetch that is not the double. Opt out with
+`fetchInert` if the display deliberately isn't fetching — the loading scrim and
+the SVG export read the same hook (ADR-082). A two-stage `reload()` says
+`awaitingPrerequisite` instead (HiC, whose contacts fetch declines until the
+header lands; variants, until `sourcesBase` does), which **defers** the verdict
+to the run after the prerequisite arrives rather than waiving it. Reports reach
+the jest gate through `console.error`, so a harness replacing it opts itself
+out; a test provoking a violation calls `takeContractReports()`.
 
 Both flags are getters on `FetchMixin` — and `fetchInert` on
-`SyntenyFetchStateMixin` too, for the family that composes no mixin in common
-with these — declared once per family and read off the node, not options an
-installer passes in, because they describe the display rather than its autorun.
+`SyntenyFetchStateMixin`, on `ChordVariantDisplay` and on the breakpoint split
+view too, for the fetches that compose no mixin in common with these — declared
+once per family and read off the node, not options an installer passes in,
+because they describe the display rather than its autorun.
+
+**A user cancel is durable, and the skeleton owns how durable.** No fetch
+trigger un-cancels it: every installer reads `fetchCanceled` tracked, under
+`reloadCounter` and above every gate. Both LGV families lapse it on a viewport
+change (`ClearBlockingStateOnViewportChange` for per-region,
+`ClearCancelOnViewportChange` for global); Retry lapses it everywhere. The
+comparative family has the gate and not the lapse, on purpose — see
+ARCHITECTURE.md's fetch-families table.
 
 **A predicate has to be strictly narrower than the gate it explains.** One that
 restates the gate's negation makes every decline a deferred one, so no run is

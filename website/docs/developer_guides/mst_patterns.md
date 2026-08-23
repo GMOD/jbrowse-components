@@ -246,21 +246,52 @@ MST property or a `.volatile()` field.
 
 To make a field a dependency of an autorun without using its value, `void` it —
 for a frozen field that means the autorun fires when the whole value is
-replaced, without enumerating its properties. The prerequisite-fetch skeleton
-(which Hi-C's file-header read runs on) does it to a counter so the retry button
-re-runs the fetch:
+replaced, without enumerating its properties. The shared fetch skeleton (which
+every fetch outside the per-region and global display families runs on, Hi-C's
+file-header read among them) does it to a counter so the retry button re-runs
+the fetch:
 
-<!-- include: plugins/linear-genome-view/src/BaseLinearDisplay/models/installPrerequisiteFetch.ts#voidTracking -->
+<!-- include: packages/core/src/util/installFetch.ts#voidTracking -->
 
 ```ts
 () => {
-  // the pure "go again" signal, read unconditionally above the gates so a
+  // the pure "go again" signal, read unconditionally above every gate so a
   // Retry click re-runs the body even when nothing else moved
   void self.reloadCounter
-  if (self.isMinimized || opts.enabled?.() === false) {
+  // Tracked in the same breath and for the same reason, but the mirror
+  // image: this one CLOSES the gate below, so a run that returned before
+  // the counter read would drop the one observable that can reopen it and
+  // Cancel would be a one-way door with a Retry button on it. Order, not
+  // just position: counter first, then this, then the gates.
+  const canceled = self.fetchCanceled === true
+  if (canceled || gate?.() === false) {
+    noteFetchAutorunRun?.('gated')
     return false
   }
-  void runOne(rotation.begin())
+  // Teardown mutates observables `prepare` reads before the disposers run,
+  // and getContainingView on a detached node warns then throws.
+  const args = isAlive(self) ? prepare() : undefined
+  if (args === undefined) {
+    noteFetchAutorunRun?.('declined')
+    return false
+  }
+  noteFetchAutorunRun?.('fetched')
+  // `run` is called synchronously, so its prefix down to its first await
+  // executes in this derivation; `FetchPhases.run` promises those reads are
+  // untracked, and unlike the MST flow the LGV side hides behind, nothing
+  // here makes it so. Whatever the run needs tracked belongs in `prepare`.
+  untracked(() => {
+    void runFetchOnce(self, rotation.begin(), args, {
+      run,
+      commit,
+      setError,
+      onBegin,
+      onEnd,
+    })
+  })
+  // arms the debounce; the runs that bail above return false and stay on
+  // the leading edge, so the first real fetch is immediate while a
+  // zoom/pan refetch debounces
   return true
 },
 ```

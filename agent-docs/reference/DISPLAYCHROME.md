@@ -512,8 +512,8 @@ here, because the autorun does reach a fetch.
 **A display rendering its own banner** (dotplot, synteny) is covered too.
 `installComparativeFetchAutorun` installs the check, classifying off the same
 gate the other two do — `prepare()` returning `undefined` is the decline — and
-exempting on the same `fetchInert`, which is one name across all three families
-rather than this one's private spelling. Its own test provokes the dead button
+exempting on the same `fetchInert`, which is one name across every fetch in the
+tree rather than this one's private spelling. Its own test provokes the dead button
 and asserts the report.
 
 What that gate still cannot say is *which* decline it meant: `prepare()`

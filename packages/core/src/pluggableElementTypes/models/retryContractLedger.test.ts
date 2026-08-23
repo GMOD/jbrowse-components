@@ -6,8 +6,8 @@
 // reads it reads off the host object, so the host can be a plain object and the
 // whole machine runs in microseconds — which is what makes it worth covering
 // exhaustively here rather than through a real display. It sits beside the
-// checker, which moved down to `@jbrowse/core` so all three fetch families
-// could reach it; the wiring tests (which early return emits which outcome)
+// checker, which moved down to `@jbrowse/core` so every fetch installer could
+// reach it; the wiring tests (which early return emits which outcome)
 // stay where a real autorun runs, in
 // `plugin-linear-genome-view`'s `installGlobalFetchAutorun.test.ts` for the
 // global family and `gwas/LinearManhattanDisplay/retryContract.test.ts` for the

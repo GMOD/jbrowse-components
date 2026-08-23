@@ -13,8 +13,7 @@ writing a non-GPU display, and for debugging unexpected refetches in any
 display.
 
 The exceptions are displays whose data isn't partitioned by region at all; they
-compose `GlobalDataDisplayMixin` or `GlobalFetchMixin` and install their own
-fetch autorun. See
+compose `GlobalFetchMixin` and install their own fetch autorun. See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)
 for which foundation each in-tree display uses.
 

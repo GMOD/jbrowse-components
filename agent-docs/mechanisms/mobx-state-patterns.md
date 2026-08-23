@@ -38,10 +38,11 @@ collapsed from seven `noteFetchAutorunRun(...)` calls scattered down the body to
 one mapping over the plan's own reason.
 
 The pattern generalizes past fetching — it applies to any MobX autorun whose
-body has grown a decision. This repo now has three fetch-family installers
-(`installPerRegionFetchAutoruns`, `installComparativeFetchAutorun`,
-`GlobalDataDisplayMixin`'s), which is the evidence that it is a shape rather
-than one refactor.
+body has grown a decision. This repo now has four fetch installers
+(`installPerRegionFetchAutoruns`, `installGlobalFetchAutorun`,
+`installComparativeFetchAutorun`, and the shared `installFetch` the other three
+sites run on), which is the evidence that it is a shape rather than one
+refactor.
 
 ## 2. A lifecycle is one discriminated getter, not N booleans
 

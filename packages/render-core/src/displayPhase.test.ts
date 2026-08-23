@@ -221,7 +221,7 @@ describe('computeLoadingTerm matches the expressions it replaced', () => {
   })
 
   test.each(cases)('global parity %o', c => {
-    // GlobalDataDisplayMixin, before the hoist:
+    // the global foundation, before the hoist:
     //   isLoadingOrCanceled || (rendersCanvas && !canvasDrawn)
     const isLoadingOrCanceled = c.isLoading || c.fetchCanceled
     const before = isLoadingOrCanceled || (c.rendersCanvas && !c.canvasDrawn)

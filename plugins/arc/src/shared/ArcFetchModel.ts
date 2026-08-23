@@ -9,9 +9,10 @@ import type { Feature } from '@jbrowse/core/util'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
- * Shared fetch/gating model for both arc displays. Composes the
- * rendering-agnostic `GlobalFetchMixin` (cancel-safe `runFetch`, region-too-large
- * gate, `reload`/`reloadCounter`, `svgReady`) and adds the arc-specific data
+ * Shared fetch/gating model for both arc displays. Composes `GlobalFetchMixin`
+ * — the one global foundation (cancel-safe `runFetch`, region-too-large gate,
+ * `reload`/`reloadCounter`, `svgReady`, `displayPhase`) — and adds the
+ * arc-specific data
  * state (`features` + its region signature) plus a **derived** `regionTooLarge`
  * — the exact byte-only pattern LD and multi-sample variant use, so arc has no
  * special region-too-large handling: the banner is a pure function of the last
@@ -91,11 +92,12 @@ export function ArcFetchModel() {
         },
         /**
          * #getter
-         * The same mutually-exclusive visual state every GPU display exposes,
-         * over the same shared ranking — arc just has no `renderError` phase,
-         * having no GPU backend, which is what the `Status` variant expresses:
-         * the type cannot name that phase, so `DisplayStatusChrome` (whose
-         * banners have no backend `retry()` to offer) accepts this display with
+         * Narrows the foundation's `displayPhase` to the backend-free variant.
+         * Arc composes the render lifecycle with the rest of the foundation but
+         * never calls `attachRenderingBackend` — it paints JSX `<path>`s, on
+         * screen and in SVG export alike — so `renderError` is a phase it cannot
+         * reach, and the narrower type is what lets `DisplayStatusChrome` (whose
+         * banners have no backend `retry()` to offer) accept this display with
          * neither a cast nor a dead branch. On the model rather than derived
          * inside `BaseDisplayComponent` so the component can't disagree with the
          * model, and so arc publishes `data-display-phase` for tests like every
@@ -115,8 +117,9 @@ export function ArcFetchModel() {
 
         /**
          * #getter
-         * Arc's first-paint signal — the `canvasDrawn` analogue for a display
-         * that paints main-thread SVG and composes no `RenderLifecycleMixin`.
+         * Arc's first-paint signal, overriding `RenderLifecycleMixin`'s
+         * `painted`: nothing ever flips `canvasDrawn` here, because arc attaches
+         * no rendering backend, so the data arriving is the signal.
          * Stays true across a refetch so `data-display-drawn` and the loading
          * anti-flash don't churn on pan; the stricter, staleness-aware
          * `svgReady` is the export gate.

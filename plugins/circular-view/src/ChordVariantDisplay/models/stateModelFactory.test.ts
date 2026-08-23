@@ -87,9 +87,12 @@ test('a region change re-requests the refName map, not just the features', async
 
   view.setDisplayedRegions([view.displayedRegions[0]!])
 
-  // synchronous: the autorun runs to its first await as the action ends
+  // the refetch is debounced now that this fetch runs on the shared skeleton,
+  // so the blank arrives with the run rather than with the action — and it is
+  // both halves, which is the point: `ready` is this display's whole freshness
+  // answer, so a stale map left in place would wave a render through
+  await when(() => display.refNameMap === undefined)
   expect(display.features).toBeUndefined()
-  expect(display.refNameMap).toBeUndefined()
 
   await when(() => display.ready)
   expect(display.refNameMap).toEqual({ ctgA: 'ctgA' })
@@ -104,9 +107,9 @@ test('reload() rewakes the fetch after an error', async () => {
   display.setError(new Error('adapter fell over'))
   display.reload()
 
-  // synchronous: the rewoken autorun cleared the stale halves (which also
-  // clears the error) on its way to the first await
-  expect(display.error).toBeUndefined()
+  // the rewoken run clears the error at its start — the skeleton's rule, not
+  // this display's — and blanks the stale halves on its way to the first await
+  await when(() => display.error === undefined)
   expect(display.features).toBeUndefined()
 
   await when(() => display.ready)

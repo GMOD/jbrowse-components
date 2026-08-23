@@ -1,17 +1,19 @@
-import { createStatusWindow, statusMessageText } from '@jbrowse/core/util'
-import { makeAbortError } from '@jbrowse/core/util/aborting'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
-import { installPrerequisiteFetch } from './installPrerequisiteFetch.ts'
+import { makeAbortError } from './aborting.ts'
+import { installFetch } from './installFetch.ts'
+import { createStatusWindow, statusMessageText } from './progress.ts'
 
-import type { FetchContext } from './FetchMixin.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
+import type { FetchContext } from './fetchContext.ts'
+import type { RpcStatus } from './progress.ts'
 
-// Direct tests for the skeleton HiC's header read and the multi-sample sources
-// scan both run on. Each display used to hand-roll these rules and each copy was
-// missing a different one, so what is pinned here is the rules — latest-wins,
-// the currency-guarded error, the unconditional reload read, the leading edge,
-// the retired status slot — rather than either display's use of them.
+// Direct tests for the one fetch skeleton every fetch in the tree runs on,
+// driven here in the shape a *secondary* fetch uses it — HiC's header read and
+// the multi-sample sources scan. Each site used to hand-roll these rules and
+// each copy was missing a different one, so what is pinned here is the rules —
+// latest-wins, the currency-guarded error, the clear at the start, the
+// unconditional reload read, the leading edge, the retired status slot —
+// rather than any one display's use of them.
 
 const DELAY = 40
 
@@ -49,7 +51,7 @@ function writeStatus(self: unknown) {
 }
 
 /**
- * A host carrying exactly the members `PrerequisiteFetchHost` declares, plus the
+ * A host carrying exactly the members `FetchSkeletonHost` declares, plus the
  * knobs a test drives it with. Deliberately not a real display: the skeleton
  * takes a duck-typed node, and booting one would put two plugins between each
  * rule and its assertion.
@@ -60,6 +62,7 @@ function makeHost(opts?: { enabled?: boolean }) {
     .volatile(self => ({
       isMinimized: false,
       reloadCounter: 0,
+      fetchInert: false,
       enabled: opts?.enabled ?? true,
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
@@ -105,12 +108,16 @@ function makeHost(opts?: { enabled?: boolean }) {
       // `afterCreate`, not `afterAttach`: MST fires the latter on attachment to
       // a parent and this host is a root, which a display never is.
       afterCreate() {
-        installPrerequisiteFetch<string>(self, {
-          enabled: () => {
+        installFetch(self, {
+          report: { statusWindow: self.statusWindow },
+          gate: () => {
             self.probe.bodyRuns += 1
-            return self.enabled
+            return !self.isMinimized && self.enabled
           },
-          run: ctx => {
+          // this fetch's inputs are the host's alone, so its args are empty —
+          // `undefined` is reserved for the decline
+          prepare: () => ({}),
+          run: (_args, ctx) => {
             const d = deferred()
             self.runs.push(d)
             self.contexts.push(ctx)
@@ -119,8 +126,11 @@ function makeHost(opts?: { enabled?: boolean }) {
           commit: value => {
             self.committed.push(value)
           },
+          setError: e => {
+            self.setError(e)
+          },
           delay: DELAY,
-          name: 'TestPrerequisiteFetch',
+          name: 'TestSecondaryFetch',
         })
       },
     }))

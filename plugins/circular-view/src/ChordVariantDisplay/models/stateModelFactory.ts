@@ -5,19 +5,17 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   createStatusFanOut,
-  createStopTokenRotation,
   getContainingView,
   getEnv,
   getSession,
-  handleFetchError,
   isFeature,
 } from '@jbrowse/core/util'
+import { installFetch } from '@jbrowse/core/util/installFetch'
 import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import type {
   CircularViewModel,
@@ -111,6 +109,22 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
+       * Same name and same meaning as `FetchMixin.fetchInert` and
+       * `SyntenyFetchStateMixin.fetchInert`, on a display that composes
+       * neither: the fetch autorun deliberately never runs while the view holds
+       * no displayed regions, and the view menu offers its track selector from
+       * the import form — so a track opened there rests forever in "fetch not
+       * started". Two readers, which is why it is one name: the SVG export
+       * (`awaitSvgReady` is an unbounded `when`, so it would hang with the
+       * dialog's spinner up and nothing said) and the dev-only retry check the
+       * fetch skeleton installs, which would otherwise call that decline a dead
+       * Retry button.
+       */
+      get fetchInert() {
+        return !this.view.displayedRegions.length
+      },
+      /**
+       * #getter
        * both halves of a chord render: the features, and the refName map that
        * translates the assembly's names to the adapter's. `blocksForRefs` falls
        * back to untranslated names while the map is in flight, so a render that
@@ -139,12 +153,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           {
             error: self.error,
             regionTooLarge: false,
-            // the feature fetch below never runs while the view has no
-            // displayed regions, and the view menu offers its track selector
-            // from the import form — so a track opened there rests forever in
-            // "fetch not started", and an export awaiting `ready` would hang
-            // with the dialog's spinner up and nothing said
-            extraTerminal: !this.view.displayedRegions.length,
+            extraTerminal: this.fetchInert,
             // chord has no cancel affordance, so there is no such resting state
             fetchCanceled: false,
           },
@@ -243,98 +252,84 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         },
       }
     })
-    .actions(self => {
-      // the shared latest-wins rotation rather than a hand-rolled pair of
-      // locals: it also owns the disposer that stops the *last* token, which a
-      // rotation written by hand always misses — every fetch but the final one
-      // is released by its successor, and that one is left holding a blob URL
-      // and its AbortControllers for the life of the document
-      const rotation = createStopTokenRotation(self, self)
-
-      return {
-        afterAttach() {
-          addDisposer(self, () => {
-            rotation.dispose()
-          })
-          addDisposer(
-            self,
-            autorun(
-              // One fetch, not two: the features and the refName map are both
-              // prerequisites for drawing a single chord (`ready` waits on
-              // both), and they shared one `error` slot. Split across two
-              // autoruns with different dependencies, a refName map that failed
-              // to load never got asked for again — while the next
-              // displayedRegions change re-ran the *feature* fetch, whose
-              // `setFeatures(undefined)` cleared the error out from under it.
-              // The display then sat on the loading hatch forever with nothing
-              // said. Fetched together, any retrigger retries both, and
-              // `getRefNameMapForAdapter` is memoized per adapter config (and
-              // evicts on failure), so asking again alongside every feature
-              // fetch costs a resolved promise.
-              async function chordVariantFetch() {
-                // read above every gate so `reload()` rewakes the autorun even
-                // when no other input changed (a read under a gate drops out of
-                // the dependency set on the run that declines)
-                void self.reloadCounter
-                const { view } = self
-                if (!view.displayedRegions.length) {
-                  return
+    .actions(self => ({
+      afterAttach() {
+        // One fetch, not two: the features and the refName map are both
+        // prerequisites for drawing a single chord (`ready` waits on both), and
+        // they shared one `error` slot. Split across two autoruns with
+        // different dependencies, a refName map that failed to load never got
+        // asked for again — while the next displayedRegions change re-ran the
+        // *feature* fetch, whose `setFeatures(undefined)` cleared the error out
+        // from under it. The display then sat on the loading hatch forever with
+        // nothing said. Fetched together, any retrigger retries both, and
+        // `getRefNameMapForAdapter` is memoized per adapter config (and evicts
+        // on failure), so asking again alongside every feature fetch costs a
+        // resolved promise.
+        //
+        // The shared skeleton owns the rest — the latest-wins rotation and the
+        // disposer that stops the LAST token (which a rotation written by hand
+        // always misses), the unconditional `reloadCounter` read, the
+        // currency-guarded error rule, the retired status slot, the leading
+        // edge, and the two dev-only contract checks this fetch went without.
+        installFetch(self, {
+          name: 'ChordVariantDisplayFetch',
+          delay: 300,
+          report: self,
+          contract: "ChordVariantDisplay's chord fetch",
+          prepare: () => {
+            const { view } = self
+            return view.displayedRegions.length
+              ? {
+                  sessionId: getRpcSessionId(self),
+                  adapterConfig: structuredClone(self.adapterConfig),
+                  regions: structuredClone(view.displayedRegions),
+                  assemblyName: getTrackAssemblyNames(self.parentTrack)[0]!,
+                  adapter: getConf(self.parentTrack, 'adapter'),
                 }
-                const sessionId = getRpcSessionId(self)
-                const adapterConfig = structuredClone(self.adapterConfig)
-                const regions = structuredClone(view.displayedRegions)
-                const assemblyNames = getTrackAssemblyNames(self.parentTrack)
-                const adapter = getConf(self.parentTrack, 'adapter')
-                const { rpcManager, assemblyManager } = getSession(self)
-
-                const { stopToken, isCurrent, statusCallback, end } =
-                  rotation.begin()
-                // the two below run concurrently and would otherwise fight over
-                // the one status field, so each gets its own slot
-                const slot = createStatusFanOut(statusCallback)
-
-                // the old map named the old assembly's refs; keeping it while
-                // the new one loads would let `ready` wave through a render
-                // keyed on names this adapter no longer has
-                self.setRefNameMap(undefined)
-                self.setFeatures(undefined)
-
-                try {
-                  const [feats, refNameMap] = await Promise.all([
-                    rpcManager.call(sessionId, 'CoreGetFeatures', {
-                      adapterConfig,
-                      regions,
-                      stopToken,
-                      statusCallback: slot(),
-                    }),
-                    assemblyManager.getRefNameMapForAdapter(
-                      adapter,
-                      assemblyNames[0],
-                      { stopToken, sessionId, statusCallback: slot() },
-                    ),
-                  ])
-                  if (isCurrent()) {
-                    self.setRefNameMap(refNameMap)
-                    self.setFeatures(feats)
-                  }
-                } catch (e) {
-                  handleFetchError(e, isCurrent, err => {
-                    self.setError(err)
-                  })
-                } finally {
-                  // the clear this fetch never had. Its phases close onto `''`,
-                  // which no aggregate rewrites into a blank (ADR-080), so
-                  // without this the last label stayed up for good — and the
-                  // slot behind it went on voting for a phase that was over.
-                  end()
-                }
-              },
-              { name: 'ChordVariantDisplayFetch' },
-            ),
-          )
-        },
-      }
-    })
+              : undefined
+          },
+          // The two halves run concurrently and would otherwise fight over the
+          // one status field, so each gets its own fan-out slot.
+          run: async (
+            { sessionId, adapterConfig, regions, assemblyName, adapter },
+            ctx,
+          ) => {
+            const { rpcManager, assemblyManager } = getSession(self)
+            const slot = createStatusFanOut(ctx.statusCallback)
+            const [features, refNameMap] = await Promise.all([
+              rpcManager.call(sessionId, 'CoreGetFeatures', {
+                adapterConfig,
+                regions,
+                stopToken: ctx.stopToken,
+                statusCallback: slot(),
+              }),
+              assemblyManager.getRefNameMapForAdapter(adapter, assemblyName, {
+                stopToken: ctx.stopToken,
+                sessionId,
+                statusCallback: slot(),
+              }),
+            ])
+            return { features, refNameMap }
+          },
+          commit: ({ features, refNameMap }) => {
+            self.setRefNameMap(refNameMap)
+            self.setFeatures(features)
+          },
+          // The blank stays, and is not an artefact of the hand-rolled shape it
+          // came from: this display answers freshness with `ready` alone — no
+          // signature, no spatial map — so stale halves left in place read as
+          // ready, and the old map names the previous assembly's refs, which
+          // would let a render key itself on names this adapter no longer has.
+          onBegin: () => {
+            self.setRefNameMap(undefined)
+            self.setFeatures(undefined)
+          },
+          setError: error => {
+            self.setError(error)
+          },
+        })
+      },
+    }))
     .views(self => ({
       /**
        * #method

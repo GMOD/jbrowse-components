@@ -2,13 +2,13 @@ import { noteFetchStarted } from '@jbrowse/core/pluggableElementTypes/models/ass
 import {
   createStatusWindow,
   createStopTokenRotation,
-  handleFetchError,
   localStorageGetBoolean,
   progressLabel,
   statusFraction,
   statusMessageText,
 } from '@jbrowse/core/util'
 import { makeFetchContext } from '@jbrowse/core/util/fetchContext'
+import { runFetchOnce } from '@jbrowse/core/util/installFetch'
 import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { flow, isAlive, types } from '@jbrowse/mobx-state-tree'
 
@@ -84,7 +84,7 @@ function writeStatus(self: unknown) {
 // so a cancelFetch() bump makes isStale() return true in the in-flight flow.
 //
 // Composed by both per-region (MultiRegionDisplayMixin) and single-data
-// (GlobalDataDisplayMixin) families.
+// (GlobalFetchMixin) families.
 /**
  * #stateModel FetchMixin
  * #category display
@@ -442,10 +442,39 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * The `finally` half of `runFetch`'s bookkeeping, an action of its own
+       * because `runFetchOnce`'s `finally` resumes on a microtask the flow does
+       * not own — a direct volatile write there is outside the action context,
+       * which is the one thing hoisting the sequence into a shared function
+       * costs. The stale branch is a superseded fetch: whoever superseded it —
+       * a newer `begin`, or `cancel` — already released this token.
+       */
+      endFetch(current: boolean, stopToken: StopToken) {
+        if (current) {
+          // Release this fetch's stop token now that it has ended, which drops
+          // the AbortSignal controllers taken against it.
+          stopStopToken(stopToken)
+          self.activeStopToken = undefined
+          self.fetchGeneration++
+          debugStatus(self.fetchGeneration, 'fetch-end')
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * Run a cancel-safe fetch (cancels any prior). The work callback gets a
        * FetchContext with a stopToken to forward to the RPC and an isStale()
-       * check to short-circuit commits once the user has moved on. Abort
-       * errors are swallowed; others are stored in `error` if not stale.
+       * check to short-circuit commits once the user has moved on.
+       *
+       * **The MST-flow wrapper over the shared `runFetchOnce` sequence**, and
+       * only the wrapper: the begin/clear/run/commit/error/end order, and the
+       * rules that keep a superseded run from writing back, are the same
+       * function every other fetch in the tree runs. What this adds is the
+       * observable bookkeeping a display needs — `isLoading` through
+       * `activeStopToken`, `fetchGeneration`, the user-cancel clear — and the
+       * flow itself, which is an action, so `work`'s synchronous prefix runs
+       * untracked wherever a fetch autorun calls this.
        */
       runFetch: flow(function* (work: (ctx: FetchContext) => Promise<void>) {
         // Dev-only, and the one place every family's fetches pass through, which
@@ -462,44 +491,27 @@ export default function FetchMixin() {
         // handover. The guard it hands back closes on a newer fetch, on
         // `cancel`, on teardown, and on this fetch's own `end` — the four ways a
         // fetch stops being the answer.
-        const { stopToken, isCurrent, statusCallback, end } =
-          self.fetchRotation.begin()
-        debugStatus(self.fetchGeneration, 'fetch-start')
-        self.activeStopToken = stopToken
-        self.error = undefined
-        // a load is starting, so the display is no longer in a user-canceled
-        // state — this is the single clear point that covers every retrigger
-        // path (reload, viewport change, settings invalidate)
-        self.fetchCanceled = false
-
-        try {
-          yield work(
-            makeFetchContext(self, {
-              stopToken,
-              isStale: () => !isCurrent(),
-              statusCallback,
-            }),
-          )
-        } catch (e) {
-          handleFetchError(e, isCurrent, err => {
-            self.error = err
-          })
-        } finally {
-          if (isCurrent()) {
-            // Release this fetch's stop token now that it has ended, which drops
-            // the AbortSignal controllers taken against it. The stale branch is
-            // a superseded fetch: whoever superseded it — a newer `begin`, or
-            // `cancel` — already released this token, so skip it.
-            stopStopToken(stopToken)
-            self.activeStopToken = undefined
-            self.fetchGeneration++
-            debugStatus(self.fetchGeneration, 'fetch-end')
-          }
-          // Unconditional, unlike everything above it: a superseded fetch has to
-          // retire its slot too, or it goes on voting for the phase it stopped
-          // in for as long as the display lives.
-          end()
-        }
+        const active = self.fetchRotation.begin()
+        yield runFetchOnce<void, void>(self, active, undefined, {
+          run: (_args, ctx) => work(ctx),
+          // the work callback commits through `ctx` as each region's payload
+          // lands, so this family has no single payload to hand a commit phase
+          commit: () => {},
+          setError: e => {
+            self.setError(e)
+          },
+          onBegin: ({ stopToken }) => {
+            debugStatus(self.fetchGeneration, 'fetch-start')
+            self.activeStopToken = stopToken
+            // a load is starting, so the display is no longer in a user-canceled
+            // state — this is the single clear point that covers every retrigger
+            // path (reload, viewport change, settings invalidate)
+            self.fetchCanceled = false
+          },
+          onEnd: current => {
+            self.endFetch(current, active.stopToken)
+          },
+        })
       }),
     }))
 }

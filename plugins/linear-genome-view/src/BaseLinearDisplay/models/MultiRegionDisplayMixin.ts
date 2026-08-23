@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
@@ -10,6 +10,7 @@ import FetchMixin from './FetchMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
+import { containingLgv, foundationCanRender } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks } from './regionCommit.ts'
@@ -75,24 +76,11 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #getter
          * The containing LinearGenomeView, typed once for every display in this
-         * family so no consumer repeats the `getContainingView` cast — the cast
-         * `getContainingView` needs (it is view-type-agnostic) but which this
-         * mixin has already committed to, since everything below reads
-         * `visibleRegions` / `bufferedVisibleRegions` / `bpPerPx` off it.
-         *
-         * Three displays had each invented this getter under two names before it
-         * was hoisted (`view` on HiC and Manhattan, `lgv` on MAF) while ~35 other
-         * sites repeated the cast inline. `lgv` rather than `view` because a
-         * display's containing view is not always an LGV — the comparative
-         * displays' `view` is a synteny or dotplot view — so the name says which
-         * one this is.
-         *
-         * Components and structural helpers keep calling `getContainingView`:
-         * they take duck-typed model shapes that deliberately don't carry the
-         * whole MST instance type, so there is no `lgv` on them to read.
+         * family — see `containingLgv` for the cast it owns and why both
+         * foundations still declare the name.
          */
         get lgv(): LinearGenomeViewModel {
-          return getContainingView(self) as LinearGenomeViewModel
+          return containingLgv(self)
         },
 
         /**
@@ -126,17 +114,11 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * The render-lifecycle precondition for every LGV display (overrides
-         * `RenderLifecycleMixin`'s default-true hook): don't run the upload/render
-         * callbacks until the view is measured. Before that, `renderBlocks` →
-         * `visibleRegions` → `view.width` throws by design, and the render
-         * autorun's catch would show that as a GPU render-error banner. Gating here
-         * — once, for all of them — is what lets a display's `renderState` be a
-         * plain resolved getter and its render callback gate only on its own data.
-         * The render-lifecycle twin of `autorunOnReadyView`.
+         * Overrides `RenderLifecycleMixin`'s default-true hook with the LGV
+         * precondition both foundations share — see `foundationCanRender`.
          */
         get canRender() {
-          return this.lgv.initialized
+          return foundationCanRender(this)
         },
 
         /**

@@ -3,111 +3,15 @@ import {
   makeRetryContractCheck,
 } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
-import { types } from '@jbrowse/mobx-state-tree'
-import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
+import { untracked } from 'mobx'
 
-import GlobalFetchMixin from './GlobalFetchMixin.ts'
-import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
-import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
-import { foundationPaintInert } from './foundationPaintInert.ts'
+import { autorunOnReadyView } from './displayAutoruns.ts'
 
 import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
-
-export type { FetchContext } from './FetchMixin.ts'
-export {
-  type GlobalFetchMixinType,
-  default as GlobalFetchMixin,
-} from './GlobalFetchMixin.ts'
-
-/**
- * Mixin for GPU displays that hold a single global (non-regional) dataset —
- * HiC contact matrix, LD triangle, variant matrix, etc.
- *
- * `GlobalFetchMixin` (the rendering-agnostic fetch foundation) + RenderLifecycleMixin
- * (attachRenderingBackend, renderNow, renderError, …) + the GPU `displayPhase`.
- *
- * Unlike MultiRegionDisplayMixin, it owns no per-region state and installs no
- * autoruns. Fetch triggering is left to the display's own afterAttach autorun so
- * each display can express its own trigger conditions (HiC: viewport change; LD:
- * viewport + showLDTriangle + etc). The shared skeleton of that autorun lives in
- * `installGlobalFetchAutorun` (below) — a display supplies only its own
- * `prepare` / `run` / `commit` phases.
- *
- * #stateModel GlobalDataDisplayMixin
- * #displayFoundationDef One non-regional dataset with no per-region partitioning, plus the GPU render lifecycle. Installs no fetch autoruns; the display adds its own via `installGlobalFetchAutorun`.
- * #category display
- */
-export default function GlobalDataDisplayMixin() {
-  return types
-    .compose(
-      'GlobalDataDisplayMixin',
-      GlobalFetchMixin(),
-      RenderLifecycleMixin(),
-      types.model({}),
-    )
-    .views(self => ({
-      /**
-       * #getter
-       * Same render-lifecycle precondition as MultiRegionDisplayMixin (overrides
-       * `RenderLifecycleMixin`'s default-true hook): a global display's
-       * `renderState` is still sized off view geometry (`totalWidthPx`,
-       * `dynamicBlocks`), which throws before the view is measured. Gating the
-       * autorun pair here keeps that out of every display's callbacks.
-       */
-      get canRender() {
-        // `self.lgv`, not a second `getContainingView` cast: GlobalFetchMixin
-        // already owns that walk for this family, which is the whole point of
-        // hoisting it there.
-        return self.lgv.initialized
-      },
-
-      /**
-       * #getter
-       * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
-       * failed fetch has to read as finished to the consumers outside the
-       * display, and `foundationPaintInert` for the second such state and why
-       * both fetch families answer it through one function. Overridable, as the
-       * hook is: a display with a third inert state of its own says so here.
-       */
-      get paintInert(): boolean {
-        return foundationPaintInert(self)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The display's mutually-exclusive visual state, mapped in
-       * `foundationDisplayPhase` — every foundation calls it and supplies only
-       * its staleness argument, so a term added to `computeLoadingTerm` reaches
-       * all three without being wired three times.
-       *
-       * This family's argument is the constant `true`, deliberately: a global
-       * display keeps the last frame up through a refetch (worker output is
-       * genomic, so the stale frame draws correctly under the live view
-       * transform), so a pan or zoom shows no scrim
-       * beyond the `isLoading` window. The pre-first-paint scrim it *does* want
-       * — the gap between mount and `isLoading` going true, which on HiC is the
-       * `CoreGetInfo` round-trip its first fetch waits on — is
-       * `computeLoadingTerm`'s shared `rendersCanvas && !canvasDrawn` term, not
-       * anything this family spells out.
-       *
-       * It lives here rather than in `GlobalFetchMixin` because the phase reads
-       * `renderError`, which is `RenderLifecycleMixin`'s.
-       */
-      get displayPhase(): DisplayPhase {
-        return foundationDisplayPhase(self, () => true)
-      },
-    }))
-}
-
-export type GlobalDataDisplayMixinType = ReturnType<
-  typeof GlobalDataDisplayMixin
->
 
 /**
  * This family's spelling of the shared three-phase contract, over
@@ -157,6 +61,10 @@ export interface GlobalFetchHost extends IStateTreeNode {
 
 export interface GlobalFetchAutorunHost extends GlobalFetchHost {
   reloadCounter: number
+  // `FetchMixin`'s durable user-cancel flag and the internal reset that clears
+  // it: the gate in the autorun body and the viewport-change clear beside it.
+  fetchCanceled: boolean
+  cancelFetch: () => void
   // Both `FetchMixin`'s, which `GlobalFetchMixin` composes, and both read only
   // by the dev-only retry check below: the "deliberately not fetching"
   // exemption, and the "a prerequisite fetch has not landed" deferral.
@@ -225,10 +133,10 @@ export function runGlobalFetch<TArgs, TResult>(
 }
 
 /**
- * Install the fetch-trigger autorun for a `GlobalDataDisplayMixin` display.
+ * Install the fetch-trigger autorun for a `GlobalFetchMixin` display.
  *
  * Unlike `MultiRegionDisplayMixin` (which installs its five fetch autoruns for
- * you), this mixin installs none — each global display owns its trigger. But
+ * you), that mixin installs none — each global display owns its trigger. But
  * every global trigger shares the same skeleton: track the viewport,
  * minimize/expand, the `rpcProps()` cache key and `reloadCounter` so any of them
  * refires the fetch, then debounce. This helper owns that skeleton so a display
@@ -298,6 +206,21 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
       // family's `SettingsInvalidate` watches — one name, one axis.
       void self.rpcPropsCacheKey
       void self.reloadCounter
+      // Tracked in the same breath as the counter and for the mirror reason:
+      // this one CLOSES the gate. **A cancel is durable — no fetch trigger
+      // un-cancels it** — so the only two things that reopen it are Retry
+      // (`reload()`, which clears the flag) and the viewport-change clear
+      // installed below, and both have to be in the dependency set of the run
+      // they were declined by. Until 2026-08 this family read the flag nowhere,
+      // so a pan silently un-cancelled through `runFetch`'s own reset and the
+      // load the user stopped came straight back.
+      if (self.fetchCanceled) {
+        // 'gated', not 'declined': the skeleton skipped this run before the
+        // display's own `prepare` was consulted, and the overlay standing over
+        // it is offering Retry rather than pretending to load.
+        noteFetchAutorunRun('gated')
+        return false
+      }
 
       // The too-large skip lives here rather than in each composer's
       // `prepare`, because it is not "don't fetch" — it is "don't fetch a
@@ -329,5 +252,21 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
       return started
     },
     { name: opts.name, delay: opts.delay },
+  )
+
+  // The other half of the durability rule, and the per-region family's twin
+  // (`ClearBlockingStateOnViewportChange`): a cancel lapses when the user moves
+  // the view, because the thing they stopped is no longer the thing they are
+  // looking at. Undelayed, and the flag is read `untracked` so setting it
+  // cannot fire this autorun and wipe it — only the viewport read may.
+  autorunOnReadyView(
+    self,
+    view => {
+      void view.visibleRegions
+      if (untracked(() => self.fetchCanceled)) {
+        self.cancelFetch()
+      }
+    },
+    { name: 'ClearCancelOnViewportChange' },
   )
 }

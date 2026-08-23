@@ -22,7 +22,7 @@ export async function renderSvg(
   self: SharedLDModel,
   opts: ExportSvgDisplayOptions,
 ) {
-  // renderDisplaySvg's awaitSvgReady (GlobalDataDisplayMixin) waits out an
+  // renderDisplaySvg's awaitSvgReady (GlobalFetchMixin) waits out an
   // in-place refetch — which holds stale rpcData until the new result commits —
   // so exports never capture a partial or stale viewport.
   return renderDisplaySvg(self, opts, LdSvgBody)
