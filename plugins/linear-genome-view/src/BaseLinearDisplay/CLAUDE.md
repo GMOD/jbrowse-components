@@ -114,6 +114,26 @@ supplies only `viewportWithinLoadedData`; `computeLoadingTerm` reads every other
 term off the model. Routing it through a display-local getter means
 re-remembering the cancel term — one edit from the dead-Retry bug.
 
+## A fetch input derived from the fetched data needs `dataSuperseded`
+
+This family answers `dataCurrent` with SPATIAL coverage, so it cannot see a
+settings-driven invalidation coming. The signature-compare families
+(`GlobalFetchMixin`, synteny, dotplot, arc) can: any fetch input is in the
+signature, so writing one makes `dataCurrent` false in the same tick.
+
+That gap only bites when a fetch input is written from the data it fetched.
+GWAS's LD auto-index is the case in the tree: the autorun adopts the loaded top
+hit as `indexSnp`, which is in `rpcProps`, so the load that produced the value
+is the load the write clears. `dataCurrent` still said "current" for the doomed
+data, `awaitSvgReady` samples once, and the export painted the emptied map — a
+Manhattan lane with the LD legend and no points, exit 0.
+
+So a display that derives a fetch input from its own data fills `dataSuperseded`
+(default `false`) with the condition its autorun writes under. Gate it on the
+WRITE, not on whether the feature is visibly doing anything: `colorBy: 'ld'`
+with no `ldAdapter` draws no colours but still writes the index, and gating on
+the visible half left exactly the same empty export behind.
+
 ## Fetching
 
 - **Don't hand-roll the fetch loop, and no display does any more.**
