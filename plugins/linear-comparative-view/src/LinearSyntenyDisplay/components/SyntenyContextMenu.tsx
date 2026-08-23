@@ -29,6 +29,7 @@ export default function SyntenyContextMenu({
   // either of them was showing. Which items those are, and what each one needs,
   // is `bandMoveTargets` — the decision is worth testing without a render.
   const targets = bandMoveTargets({
+    level: model.level,
     topView,
     bottomView,
     feat: feature,
@@ -42,21 +43,24 @@ export default function SyntenyContextMenu({
         onClose()
       }}
       menuItems={[
-        ...targets.map(({ label, toMate, movingView, window }) => ({
-          label,
-          icon: SyncAltIcon,
-          onClick: () => {
-            moveMatchingPanel({
-              model,
-              feat: feature,
-              window,
-              movingView,
-              toMate,
-            }).catch((e: unknown) => {
-              getSession(model).notifyError(`${e}`, e)
-            })
-          },
-        })),
+        ...targets.map(
+          ({ label, toMate, movingView, stayingIndex, window }) => ({
+            label,
+            icon: SyncAltIcon,
+            onClick: () => {
+              moveMatchingPanel({
+                model,
+                feat: feature,
+                window,
+                movingView,
+                stayingIndex,
+                toMate,
+              }).catch((e: unknown) => {
+                getSession(model).notifyError(`${e}`, e)
+              })
+            },
+          }),
+        ),
         {
           label: 'Center on feature',
           onClick: () => {

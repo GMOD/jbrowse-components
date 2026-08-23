@@ -36,11 +36,14 @@ const onQuery = panel({ refName: 'chr8_MATERNAL', start: 2e6, end: 2.1e6 })
 const onMate = panel({ refName: 'chr8_PATERNAL', start: 2e6, end: 2.1e6 })
 const elsewhere = panel({ refName: 'chr1', start: 0, end: 1e6 })
 
+// Level 1 throughout, so the staying index this reports cannot be read off the
+// toMate flag alone: the band between views[1] and views[2] stays on 2 when the
+// top panel moves and on 1 when the bottom one does.
 const targets = (
   topView: LinearGenomeViewModel | undefined,
   bottomView: LinearGenomeViewModel | undefined,
   hasCigar = true,
-) => bandMoveTargets({ topView, bottomView, feat, hasCigar })
+) => bandMoveTargets({ level: 1, topView, bottomView, feat, hasCigar })
 
 test('both panels showing the alignment get both items, top first', () => {
   // top first, matching the rows on screen and the order the user guide names
@@ -104,4 +107,16 @@ test('a contig split across blocks yields its whole visible stretch', () => {
     start: 2e6,
     end: 2.1e6,
   })
+})
+
+// The panel that STAYS is where the move points the follow's anchor, and the
+// item's whole promise is that this panel does not move — so without the take,
+// "move the top panel" was undone by the follow and "move the bottom panel"
+// dragged the top one along. Named by position rather than re-derived from
+// `toMate` at the call site, which is the second spelling that would drift.
+test('each item names the panel that stays by its position in the stack', () => {
+  expect(targets(onQuery, onMate).map(t => [t.label, t.stayingIndex])).toEqual([
+    ['Move top panel to the matching region', 2],
+    ['Move bottom panel to the matching region', 1],
+  ])
 })

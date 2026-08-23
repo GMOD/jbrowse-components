@@ -2,6 +2,8 @@ import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
 
+import { takeFollowAnchor } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
+
 import type {
   ResolvedSpan,
   SpanOfInterest,
@@ -200,12 +202,24 @@ export async function resolveMatchingSpan({
  * answers `undefined` from a menu this session opened: the other way is an id
  * the worker cannot find, and `setRpcData` closes the menu on every refetch
  * precisely so a click cannot outlive the fetch its feature came from.
+ *
+ * IT TAKES THE FOLLOW ANCHOR, onto the panel that STAYS. A panel the follow
+ * moves is re-asserted onto the anchor's mapping the moment it settles, and this
+ * navigation is what wakes that pass — so with the follow on, "move the top
+ * panel" ran and the follow put it back, while "move the bottom panel" moved the
+ * anchor and dragged the top one along with it. Either way the item did
+ * something other than what it says. Anchoring the staying panel is what the
+ * item MEANS, and it makes the follow keep the correspondence the move just
+ * established rather than overwrite it. `takeFollowAnchor` is the same take
+ * `showOffscreenMateContig` makes, minus the undo: this moves a panel inside its
+ * own regions wherever it can, so there is no discarded region list to restore.
  */
 export async function moveMatchingPanel({
   model,
   feat,
   window,
   movingView,
+  stayingIndex,
   toMate,
 }: {
   model: LinearSyntenyDisplayModel
@@ -213,6 +227,9 @@ export async function moveMatchingPanel({
   // the staying panel's visible span on this alignment's axis
   window: SpanOfInterest
   movingView: LinearGenomeViewModel
+  // where the staying panel sits in the stack, which is where the follow's
+  // anchor goes
+  stayingIndex: number
   toMate: boolean
 }) {
   const span = await resolveMatchingSpan({
@@ -228,5 +245,8 @@ export async function moveMatchingPanel({
     )
     return
   }
+  // after the resolve, so an alignment that turns out to have no answer leaves
+  // the anchor where the user had it
+  takeFollowAnchor(model.view, stayingIndex)
   await navToResolvedSpan(movingView, span)
 }

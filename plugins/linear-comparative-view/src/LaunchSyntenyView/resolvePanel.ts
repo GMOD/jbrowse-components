@@ -161,35 +161,56 @@ export function resolvePanel(
     bpByRefName.set(mate.refName, (bpByRefName.get(mate.refName) ?? 0) + bp)
   }
   const refName = [...bpByRefName].sort((a, b) => b[1] - a[1])[0]?.[0]
-  const kept = resolved.filter(r => r.mate.refName === refName)
-  const first = kept[0]
-  if (refName === undefined || !first) {
-    return undefined
+  // ONE LOOP, AND NO SPREAD INTO Math.min. `Math.min(...blocks)` throws
+  // `RangeError: Maximum call stack size exceeded` past ~125k arguments, and the
+  // mate ends alone are two per block — so ~62k blocks on the winning contig
+  // took the discovery worker out with a stack overflow reported as a failed RPC.
+  // That is inside the range this function is written for: the fetch behind
+  // `executeDiscoverMates` is uncapped, a whole-chromosome launch is what the
+  // visible-region entry exists for, and an HSP or gene-anchor table is one row
+  // per hit.
+  let assemblyName: string | undefined
+  let anchorLo = Number.POSITIVE_INFINITY
+  let anchorHi = Number.NEGATIVE_INFINITY
+  let mateLo = Number.POSITIVE_INFINITY
+  let mateHi = Number.NEGATIVE_INFINITY
+  let minusBp = 0
+  let totalBp = 0
+  for (const { feature, mate, spans } of resolved) {
+    if (mate.refName === refName) {
+      const { featStart, featEnd, mateStart, mateEnd } = spans
+      assemblyName ??= mate.assemblyName
+      anchorLo = Math.min(anchorLo, featStart)
+      anchorHi = Math.max(anchorHi, featEnd)
+      // a reverse-strand walk counts down, so one block's two ends arrive
+      // swapped
+      mateLo = Math.min(mateLo, mateStart, mateEnd)
+      mateHi = Math.max(mateHi, mateStart, mateEnd)
+      const bp = featEnd - featStart
+      totalBp += bp
+      if (feature.get('strand') === -1) {
+        minusBp += bp
+      }
+    }
   }
-  const spanBp = (r: (typeof kept)[number]) =>
-    r.spans.featEnd - r.spans.featStart
-  const minusBp = kept
-    .filter(r => r.feature.get('strand') === -1)
-    .reduce((a, r) => a + spanBp(r), 0)
-  const totalBp = kept.reduce((a, r) => a + spanBp(r), 0)
-  // a reverse-strand walk counts down, so one block's two ends arrive swapped
-  const mateEnds = kept.flatMap(r => [r.spans.mateStart, r.spans.mateEnd])
   // Whole bases, rounded OUTWARD, and here rather than at either of the two
   // places that read these: interpolating across a block lands on a fraction of
   // a base, and so does walking a CIGAR from a viewport edge. Rounding in only
   // meant the dialog previewed a span the launched view then opened a base short
   // of, and the dialog and the launch each rounded for themselves.
-  return {
-    assemblyName: first.mate.assemblyName,
-    refName,
-    anchorStart: Math.floor(Math.min(...kept.map(r => r.spans.featStart))),
-    anchorEnd: Math.ceil(Math.max(...kept.map(r => r.spans.featEnd))),
-    mateStart: Math.floor(Math.min(...mateEnds)),
-    mateEnd: Math.ceil(Math.max(...mateEnds)),
-    // ties (a single zero-length block, an even split) read as forward, which
-    // is what an unflipped panel already was
-    reversed: minusBp * 2 > totalBp,
-  }
+  return refName === undefined || assemblyName === undefined
+    ? undefined
+    : {
+        assemblyName,
+        refName,
+        anchorStart: Math.floor(anchorLo),
+        anchorEnd: Math.ceil(anchorHi),
+        mateStart: Math.floor(mateLo),
+        mateEnd: Math.ceil(mateHi),
+        // ties (a single zero-length block, an even split) read as forward,
+        // which is what an unflipped panel already was
+        reversed: minusBp * 2 > totalBp,
+      }
 }
 
 /**
@@ -225,8 +246,30 @@ export function resolveFeaturePanels(
 }
 
 /**
+ * The slice of the ANCHOR axis a set of panels covers, or `undefined` for none.
+ *
+ * Every panel is clipped to the same region of interest, so the anchor row spans
+ * the union of what the panels resolved to — one mate's CIGAR can stop short of
+ * the region where another's covers it, which is why this is not just the region.
+ *
+ * Shared because the launch and its dialog both need exactly this and have to
+ * agree: `buildSyntenyViewSpec` frames the anchor panel on it and the dialog's
+ * panel list previews it, so two spellings meant the row said one span and the
+ * launched view opened another. The agreement used to be a comment in both.
+ */
+export function anchorSpanOfPanels(panels: ResolvedPanel[]) {
+  let start = Number.POSITIVE_INFINITY
+  let end = Number.NEGATIVE_INFINITY
+  for (const panel of panels) {
+    start = Math.min(start, panel.anchorStart)
+    end = Math.max(end, panel.anchorEnd)
+  }
+  return panels.length ? { start, end } : undefined
+}
+
+/**
  * The mate side of a single alignment, for the callers that follow one block
- * rather than build a panel out of several — see `matePanelLocString`.
+ * rather than build a panel out of several — see `matePanelSpan`.
  */
 export function resolvedMateSpan(
   feature: Feature,

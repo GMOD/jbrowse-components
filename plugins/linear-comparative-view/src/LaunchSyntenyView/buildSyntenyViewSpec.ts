@@ -1,7 +1,7 @@
 import { assembleLocString } from '@jbrowse/core/util'
 import { launchSyntenyView } from '@jbrowse/synteny-core'
 
-import { resolveFeaturePanels } from './resolvePanel.ts'
+import { anchorSpanOfPanels, resolveFeaturePanels } from './resolvePanel.ts'
 
 import type { LinearSyntenyViewInit } from '../LinearSyntenyView/types.ts'
 import type { RegionOfInterest, ResolvedPanel } from './resolvePanel.ts'
@@ -94,15 +94,14 @@ export function buildSyntenyViewSpec({
   if (!panels.length) {
     throw new Error('No alignments to launch a synteny view on')
   }
+  // non-null because `panels` is non-empty above, which is the same thing
+  // `anchorSpanOfPanels` answers `undefined` for
+  const anchorSpan = anchorSpanOfPanels(panels)!
   const anchorView = {
     assembly: anchorAssembly,
     loc: paddedLocString({
       refName: anchorRefName,
-      // Every panel is clipped to the same region of interest, so the anchor row
-      // spans the union of what the panels resolved to — one mate's CIGAR can
-      // stop short of the region where another's covers it.
-      start: Math.min(...panels.map(p => p.anchorStart)),
-      end: Math.max(...panels.map(p => p.anchorEnd)),
+      ...anchorSpan,
       windowSize,
     }),
     // omitted rather than empty when there is nothing to carry over, so the

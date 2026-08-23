@@ -1,12 +1,13 @@
-import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { isViewModel } from '@jbrowse/core/util/types'
 import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 
 import { resolvedMateSpan } from '../LaunchSyntenyView/resolvePanel.ts'
+import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
 import { getCigar } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
+import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -18,6 +19,14 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // panels and a panel has no idea which kind of stack it is in.
 export interface PanelStack {
   views: LinearGenomeViewModel[]
+  // The follow state, OPTIONAL because only two of the three stacks have it: a
+  // LinearSyntenyView and a LinearComparativeView can be following,
+  // BreakpointSplitView has no such mode. Declared here rather than tested for
+  // with a type guard — a stack without the mode simply reads `undefined`, which
+  // is the same answer "not following" and needs no special case.
+  followSynteny?: boolean
+  followAnchorIndex?: number
+  setFollowAnchorIndex?: (idx: number) => void
 }
 
 /**
@@ -122,53 +131,78 @@ export function matePanelIndexes({
  * otherwise. The refusal lives here rather than only in the menu so that every
  * caller inherits it; the menu gates on the same thing so the item is absent
  * rather than inert.
+ *
+ * A SPAN AND NOT A LOCSTRING, which is what lets the caller reach
+ * `navToResolvedSpan`. Stringifying here forced `navToLocString`, and that
+ * REPLACES the moved panel's `displayedRegions` with the one contig it landed on
+ * — so a panel showing a whole genome was narrowed by its own first move, and
+ * the synteny fetch keeps a block only when both ends are in view, which is the
+ * ribbons it was moved to line up.
  */
-export function matePanelLocString(
+export function matePanelSpan(
   feature: Feature,
   region: RegionOfInterest,
-): string | undefined {
-  if (!getCigar(feature)) {
-    return undefined
-  }
-  const span = resolvedMateSpan(feature, region)
+): ResolvedSpan | undefined {
+  const span = getCigar(feature) ? resolvedMateSpan(feature, region) : undefined
   return span
-    ? assembleLocStringRaw({
-        refName: span.refName,
-        start: span.start,
-        end: span.end,
-      })
+    ? { refName: span.refName, start: span.start, end: span.end }
     : undefined
 }
 
 /**
- * Send each named panel to the region this alignment matches. `navToLocString`
- * rather than `navTo`, so a neighbour showing some other contig switches
- * displayed regions instead of throwing, and it is awaited only to report the
- * failure — an assembly still loading is the ordinary reason one takes a tick.
+ * Send each named panel to the region this alignment matches.
+ *
+ * `navToResolvedSpan` rather than a bare `navToLocString`: it tries `navTo`
+ * first, which moves WITHIN the panel's existing regions, and falls back to the
+ * locstring only for a span the panel genuinely cannot reach. The bare call
+ * replaced `displayedRegions` whether or not it needed to, which narrows a
+ * whole-genome panel to one contig permanently — see `matePanelSpan`. Awaited
+ * only to report the failure; an assembly still loading is the ordinary reason
+ * one takes a tick.
+ *
+ * IT TAKES THE FOLLOW ANCHOR FIRST, when the stack is following and the clicked
+ * panel is not already the anchor. A panel the follow MOVES is re-asserted onto
+ * the anchor's mapping the moment it settles, and the navigation below is what
+ * wakes that pass — so without the take this ran, moved the neighbour, and the
+ * follow pulled it straight back. Anchoring the clicked panel is what the click
+ * MEANS: this panel stays, the others come to it, which is the item's own label.
+ * `showOffscreenMateContig` states the rule at length.
+ *
+ * No undo here, unlike that one: this moves a panel within its own regions
+ * wherever it can, so there is no discarded region list to hand back, and the
+ * anchor it takes is the panel the user clicked in rather than one a mark named
+ * for them.
  */
 export function moveMatePanels({
   stack,
+  anchorIndex,
   indexes,
   feature,
   region,
   session,
 }: {
   stack: PanelStack
+  // the clicked panel, which stays put — and becomes the follow's anchor
+  anchorIndex: number
   indexes: number[]
   feature: Feature
   region: RegionOfInterest
   session: AbstractSessionModel
 }) {
-  const locString = matePanelLocString(feature, region)
-  if (!locString) {
-    return
-  }
-  for (const i of indexes) {
-    const panel = stack.views[i]
-    if (panel) {
-      panel.navToLocString(locString).catch((e: unknown) => {
-        session.notifyError(`${e}`, e)
-      })
+  const span = matePanelSpan(feature, region)
+  if (span) {
+    // the same two conditions `takeFollowAnchor` applies: only while following,
+    // and only when it is a change
+    if (stack.followSynteny && stack.followAnchorIndex !== anchorIndex) {
+      stack.setFollowAnchorIndex?.(anchorIndex)
+    }
+    for (const i of indexes) {
+      const panel = stack.views[i]
+      if (panel) {
+        navToResolvedSpan(panel, span).catch((e: unknown) => {
+          session.notifyError(`${e}`, e)
+        })
+      }
     }
   }
 }

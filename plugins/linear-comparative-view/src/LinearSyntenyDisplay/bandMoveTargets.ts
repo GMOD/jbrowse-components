@@ -9,6 +9,12 @@ export interface BandMoveTarget {
   label: string
   toMate: boolean
   movingView: LinearGenomeViewModel
+  // Where the panel that STAYS sits in the stack, which is what the move points
+  // the follow at. Named here rather than re-derived from `toMate` and the
+  // level: the two items differ in exactly this, and a second spelling of
+  // "which one stays" is how the item and the action come to disagree about it —
+  // the same reason `window` is read here.
+  stayingIndex: number
   // The staying panel's visible window on this alignment's axis — read HERE, at
   // the moment of the right-click, rather than again inside the move. It is
   // both what decides the item is offerable and what the move maps across, so
@@ -45,11 +51,16 @@ export interface BandMoveTarget {
  * that have drifted apart. Offered or absent, never inert.
  */
 export function bandMoveTargets({
+  level,
   topView,
   bottomView,
   feat,
   hasCigar,
 }: {
+  // the band's own level, so the two items can name the panel that stays by its
+  // position in the stack: this band sits between `views[level]` and
+  // `views[level + 1]`
+  level: number
   topView: LinearGenomeViewModel | undefined
   bottomView: LinearGenomeViewModel | undefined
   feat: FeatPos
@@ -66,6 +77,7 @@ export function bandMoveTargets({
       label: 'Move top panel to the matching region',
       toMate: false,
       stayingView: bottomView,
+      stayingIndex: level + 1,
       movingView: topView,
       refName: feat.mate.refName,
     },
@@ -73,6 +85,7 @@ export function bandMoveTargets({
       label: 'Move bottom panel to the matching region',
       toMate: true,
       stayingView: topView,
+      stayingIndex: level,
       movingView: bottomView,
       refName: feat.refName,
     },

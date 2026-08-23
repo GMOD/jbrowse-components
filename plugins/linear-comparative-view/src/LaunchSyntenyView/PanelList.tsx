@@ -11,6 +11,7 @@ import {
   setAllPanelsChecked,
   setPanelChecked,
 } from './panelOrder.ts'
+import { anchorSpanOfPanels } from './resolvePanel.ts'
 
 import type { PanelRow } from './panelOrder.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -78,10 +79,10 @@ function resolvedAnchorSpan(rows: PanelRow[], region: Region) {
   const panels = rows.filter(row => row.kind === 'mate').filter(r => r.checked)
   return {
     refName: region.refName,
-    start: panels.length
-      ? Math.min(...panels.map(p => p.anchorStart))
-      : region.start,
-    end: panels.length ? Math.max(...panels.map(p => p.anchorEnd)) : region.end,
+    ...(anchorSpanOfPanels(panels) ?? {
+      start: region.start,
+      end: region.end,
+    }),
     reversed: false,
   }
 }

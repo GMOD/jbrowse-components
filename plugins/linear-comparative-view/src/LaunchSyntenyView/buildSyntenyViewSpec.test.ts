@@ -546,3 +546,24 @@ test('no anchor tracks leaves the panel without a tracks key', () => {
     buildFrom({ ...args, anchorTracks: [] }).init.views[0],
   ).not.toHaveProperty('tracks')
 })
+
+// A whole-chromosome launch against an HSP or gene-anchor table is one row per
+// hit, and the discovery fetch behind it is uncapped — so the union over a
+// panel's blocks has to be a loop. `Math.min(...blocks)` throws `RangeError:
+// Maximum call stack size exceeded` past ~125k arguments, and the mate ends
+// alone are two per block, so this used to take the worker out at ~62k blocks
+// and report it as a failed RPC.
+test('a panel of tens of thousands of blocks unions without overflowing', () => {
+  const features = Array.from({ length: 80_000 }, (_, i) =>
+    makeFeature({
+      CIGAR: '10=',
+      start: 1000 + i * 10,
+      end: 1010 + i * 10,
+      mateStart: 5000 + i * 10,
+      mateEnd: 5010 + i * 10,
+    }),
+  )
+  const panel = resolvePanel(features, undefined)!
+  expect([panel.anchorStart, panel.anchorEnd]).toEqual([1000, 801_000])
+  expect([panel.mateStart, panel.mateEnd]).toEqual([5000, 805_000])
+})

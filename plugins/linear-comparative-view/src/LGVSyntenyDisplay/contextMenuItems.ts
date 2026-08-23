@@ -186,9 +186,10 @@ function movePanelItem(
   if (!stack || !region || !getCigar(feature)) {
     return []
   }
+  const anchorIndex = stack.views.indexOf(view)
   const indexes = matePanelIndexes({
     panelAssemblies: stack.views.map(v => v.assemblyNames[0]),
-    anchorIndex: stack.views.indexOf(view),
+    anchorIndex,
     mateAssemblyName: getMate(feature)?.assemblyName,
     assemblyManager: getSession(self).assemblyManager,
   })
@@ -203,6 +204,7 @@ function movePanelItem(
           onClick: () => {
             moveMatePanels({
               stack,
+              anchorIndex,
               indexes,
               feature,
               region,
