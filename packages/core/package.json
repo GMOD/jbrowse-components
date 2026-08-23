@@ -194,6 +194,7 @@
     "./util/makeAssembly": "./src/util/makeAssembly.ts",
     "./util/mstUtils": "./src/util/mstUtils.ts",
     "./util/nanoid": "./src/util/nanoid.ts",
+    "./util/numericUtils": "./src/util/numericUtils.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
@@ -977,6 +978,10 @@
         "types": "./esm/util/nanoid.d.ts",
         "import": "./esm/util/nanoid.js"
       },
+      "./util/numericUtils": {
+        "types": "./esm/util/numericUtils.d.ts",
+        "import": "./esm/util/numericUtils.js"
+      },
       "./util/offscreenCanvasPonyfill": {
         "types": "./esm/util/offscreenCanvasPonyfill.d.ts",
         "import": "./esm/util/offscreenCanvasPonyfill.js"
@@ -1641,6 +1646,9 @@
         ],
         "util/nanoid": [
           "esm/util/nanoid.d.ts"
+        ],
+        "util/numericUtils": [
+          "esm/util/numericUtils.d.ts"
         ],
         "util/offscreenCanvasPonyfill": [
           "esm/util/offscreenCanvasPonyfill.d.ts"

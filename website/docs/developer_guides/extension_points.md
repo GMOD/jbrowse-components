@@ -59,7 +59,7 @@ export interface LaunchSpreadsheetViewArgs extends Omit<
   SnapshotIn<SpreadsheetViewStateModel>,
   'type' | 'init' | 'spreadsheet' | 'importWizard'
 > {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // the assembly the sheet's rows are read against. With only this and no
   // `uri`, the view opens on its import form with that assembly already
   // selected rather than the first one in the config
@@ -1116,7 +1116,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
       ? {
           label: 'Create multi-wiggle track...',
           onClick: (model: TrackSelectorSelf) => {
-            getSession(model).queueDialog(handleClose => [
+            getDialogHost(model).queueDialog(handleClose => [
               ConfirmDialog,
               {
                 tracks: model.selection,
@@ -1273,7 +1273,7 @@ Registered contract:
   args: undefined
   result: undefined | Promise<void>
   props: {
-    session: AbstractSessionModel
+    session: AssemblyHost & NotificationSink & TrackCatalog
     /** the search result that was selected */
     result: BaseResult
     model: LinearGenomeViewModel

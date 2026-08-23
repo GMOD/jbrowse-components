@@ -108,6 +108,15 @@ splits, which is [lightweight-toolkit.md](lightweight-toolkit.md) §2 and not
 this. The barrel was never the only edge; it was the one that was there by
 accident.
 
+*Since taken*: §2 landed later the same day and the type column moved with it —
+`fetchContext.ts` 369 → 35, `installFetch.ts` 373 → 40, `FetchMixin.ts` 375 →
+44, `fetchEachRegion.ts` 379 → 48. Two barrel edges the session split did not
+cause turned up in the way and are also gone: `RpcRegistry.ts` took
+`NoAssemblyRegion` from `util/types/index.ts` rather than `data.ts`, and
+`regionTooLargeUtils.ts` reached one byte formatter through
+`@jbrowse/core/util`. `moduleClosure.test.ts` now holds type ceilings on these
+entries too.
+
 **What is left in the runtime column is real.**
 `installPerRegionFetchAutoruns` keeps 42 because it reads a track's assembly
 names out of a config, and `MultiRegionDisplayMixin` keeps 150 because it

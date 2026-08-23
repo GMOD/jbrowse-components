@@ -110,6 +110,71 @@ working unchanged. The measurable goal is that **no plugin names
 `AbstractSessionModel`**, at which point "what does a display require of its
 host" has an answer a third party can implement.
 
+### Done, 2026-08-23: the split landed, and the cost is where the guess said it wasn't
+
+Six interfaces in `packages/core/src/util/types/`, and `AbstractSessionModel`
+extends all of them, so nothing that already compiled changed type:
+
+| slice | members | file |
+| --- | --- | --- |
+| `RpcHost` | `rpcManager: RpcCaller` | `types/services.ts` |
+| `PaletteHost` | `palette`, `themeOptions` | `types/services.ts` |
+| `NotificationSink` | `notify`, `notifyError` | `types/services.ts` |
+| `DialogHost` | `queueDialog`, `DialogComponent`, `DialogProps` | `types/services.ts` |
+| `AssemblyHost` | `assemblyManager`, `assemblyNames` | `types/renderingServices.ts` |
+| `TrackCatalog` | `tracks`, `assemblies`, `connectionInstances`, `getTrackById` | `types/index.ts` |
+
+`getRpcHost`, `getNotificationSink`, `getDialogHost` and `getPaletteHost` in
+`util/sessionServices.ts` return them off the same cached ancestor walk
+`getSession` uses; `getAssemblyHost` and `getRenderingServices` sit in
+`mstUtils.ts` with `getSession`, for the reason below.
+
+**Three of the six cost nothing to name, and three cost the whole application.**
+That split is the finding, and it is not the one the guess above makes. An
+`RpcCaller`, a `JBrowsePalette` and a notification signature are ordinary types.
+An `AssemblyManager` is an MST model a `PluginManager` built, and a
+`TrackCatalog` is `AnyConfigurationModel`, which is the configuration schema
+machinery — so those two put ~370 files in any caller's type graph however
+narrowly they are asked for. Keeping them in separate files from the cheap four
+is the whole reason the numbers below move.
+
+Type closure, files, before → after (`scripts/moduleClosure.ts`; ceilings in
+`moduleClosure.test.ts`):
+
+| entry | before | after |
+| --- | --- | --- |
+| `util/fetchContext.ts` | 369 | 35 |
+| `util/installFetch.ts` | 373 | 40 |
+| `util/installInitAutorun.ts` | 373 | 35 |
+| `BaseLinearDisplay/models/FetchMixin.ts` | 375 | 44 |
+| `BaseLinearDisplay/models/fetchEachRegion.ts` | 379 | 48 |
+
+Two edges outside the split were in the way and are gone: `RpcRegistry.ts` took
+`NoAssemblyRegion` from the session barrel rather than `types/data.ts`, which
+was 368 of its 368 type files, and `regionTooLargeUtils.ts` reached one byte
+formatter through `@jbrowse/core/util`.
+
+**Plugin files naming `AbstractSessionModel`: 53 → 7.** One is a comment. The
+six real ones are the administration UI — the assembly manager
+(`AssemblyAddForm`, `AssemblyManager`, `AssemblyTable`), the connection manager
+(`ManageConnectionsDialog`), the plugin store (`PluginStoreWidget/util`) and the
+session manager (`SessionManager/util`) — and each wants `adminMode`,
+`addAssembly`/`removeAssembly`, `sessionConnections` or `sessionPlugins`. Those
+are the application, and asking for it there is correct. **No display, no
+launcher and no menu names it any more.**
+
+Where a plugin needed several services, the intersection is named once rather
+than repeated: `UcscHost` (BLAT), `BreakpointSplitViewHost` (sv-core),
+`SyntenyLaunchHost` (synteny-from-region).
+
+**Not done, and the next thing in the way**: the `SessionWithX` family —
+`SessionWithWidgets`, `SessionWithDrawerWidgets`, `SessionWithConnections` and
+eleven others — still `extends AbstractSessionModel`. Naming one is therefore
+still naming the application, and a plugin retyped to `SessionWithWidgets` reads
+better without weighing less. Cutting that base was tried: 44 errors, all in
+`packages/app-core`, because the app shell uses `SessionWithDrawerWidgets` as
+its name for the whole session. The fix belongs there, not in plugins.
+
 ### 3. `queueDialog`, at 49 sites, is the application leaking downward
 
 A dialog is the most app-shaped concept there is: it assumes a modal layer, a
@@ -122,6 +187,21 @@ gets JBrowse's Material dialogs or gets nothing, with no error either way. That
 is the same hole the Loading-and-error-states page exists to document for
 notifications, one level further down, and it is where "bring your own UI"
 currently stops being true.
+
+**Partly addressed, 2026-08-23**: `queueDialog` now has a slice of its own, so a
+host that draws its own UI has exactly one named member — `DialogHost` — to
+implement rather than an 81-member session, and every one of the 50 call sites
+asks for it by name through `getDialogHost(self)`.
+
+That is the seam, not the redesign. A dialog is still a component the display
+hands over, so the host that implements `DialogHost` still has to mount JBrowse's
+React tree. Making it a *request* instead — the display names the settings it
+wants edited and the host renders them however it likes — is a real design and is
+not started. The shape to look at first, noted here rather than built: nearly all
+50 callbacks return `[SomeDialog, { model: self, handleClose }]`, i.e. the
+payload is already just "this model, edited". A `requestSettings(self, schema)`
+whose default implementation is today's `queueDialog` would cover the majority
+without touching the minority that pass real arguments.
 
 ### 4. The view has a lifecycle and publishes it as nine unrelated getters
 
@@ -210,7 +290,9 @@ coordinate-system concepts. That is the differentiator.
    The repo's own "publish the block" rule has fired six times; the 14-of-15
    evidence says this is the seventh, and it is the one case where every copy
    agreed and every copy was wrong.
-5. **Narrow the session at the display boundary** — finding 2. This is what
+5. ~~**Narrow the session at the display boundary**~~ — finding 2. **Done**,
+   2026-08-23; see the status under that finding for the numbers and for the
+   `SessionWithX` family, which is what is left. This is what
    makes a small host possible rather than merely tidy.
    [barrels-block-extraction](barrels-block-extraction.md) reaches the same
    `util/types/index.ts` split from the packaging side, where the blocker is

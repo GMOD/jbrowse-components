@@ -1,5 +1,5 @@
 import { adapterByteLimit, overByteBudget } from '@jbrowse/core/rpc/byteBudget'
-import { getDisplayStr } from '@jbrowse/core/util'
+import { getDisplayStr } from '@jbrowse/core/util/numericUtils'
 
 /**
  * The span below which the **density** axis stops gating. `aboveForceLoadFloor`

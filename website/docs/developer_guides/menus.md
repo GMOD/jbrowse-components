@@ -43,7 +43,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
       rootModel.appendToMenu('Add', {
         label: 'Spreadsheet view',
         icon: ViewComfyIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('SpreadsheetView', {})
         },
       })

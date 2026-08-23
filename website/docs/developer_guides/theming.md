@@ -167,7 +167,7 @@ worked case:
 
 ```ts
 get colorPalette(): MafColorPalette {
-  return getMafColorPalette(getSession(self).palette)
+  return getMafColorPalette(getPaletteHost(self).palette)
 },
 ```
 

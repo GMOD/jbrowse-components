@@ -47,7 +47,7 @@ cannot be found.
 
 ```js
 // type signature
-({ feature, session, assemblyName, }: { feature: Feature; session: AbstractSessionModel; assemblyName: string; }) => Promise<…>
+({ feature, session, assemblyName, }: { feature: Feature; session: AssemblyHost; assemblyName: string; }) => Promise<…>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
