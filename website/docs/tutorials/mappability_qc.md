@@ -20,7 +20,7 @@ all of them for hg38, so this page is a click-path.
 - to re-measure the numbers on this page, the tools listed under
   [Reproduce it end to end](#reproduce-it-end-to-end)
 
-## The locus
+## The SMN1 and SMN2 duplication
 
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
 identical across their ~28 kb. Which of the two a read came from is the

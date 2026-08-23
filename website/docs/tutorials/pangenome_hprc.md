@@ -48,7 +48,7 @@ your own graph walks the same route on it.
 
 <Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph moved onto the reference axis, and one allele's GRCh38 interval marked in the linear view above it." />
 
-## The dataset
+## HPRC release 2
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
 fivefold expansion over release 1. This tutorial opens three of its products:
@@ -342,8 +342,8 @@ segment: an off-reference allele is highlighted across the reference it
 replaces.
 
 Taking the dropdown from one to the other says which node in the tangle is which
-node on the axis, and the video under [The dataset](#the-dataset) makes that
-move on this subgraph.
+node on the axis, and the video under [HPRC release 2](#hprc-release-2) makes
+that move on this subgraph.
 
 Each locus below is a window small enough to draw:
 

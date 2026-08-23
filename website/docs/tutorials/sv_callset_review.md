@@ -22,7 +22,7 @@ normal, rendered the same way, is the control.
 npm install -g @jbrowse/img
 ```
 
-## The dataset
+## COLO829 and its matched normal
 
 **COLO829** is a melanoma cell line with a matched normal, COLO829BL, and a
 community reference for somatic structural-variant calling
@@ -118,7 +118,7 @@ in which orientation, which takes a reconstruction step. The
 same reads, and rendering it is another `jb2export` run with a different
 `--assembly`, since a derivative allele is an assembly like any other.
 
-## The control
+## The same export over the normal
 
 The whole callset gets the same treatment, one directory per track:
 

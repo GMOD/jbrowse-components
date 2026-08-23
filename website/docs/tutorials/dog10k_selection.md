@@ -101,7 +101,7 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
   bash build_dog10k_size_fst.sh
 ```
 
-## The locus
+## The IGF1 body-size locus
 
 The rest of this tutorial takes the _IGF1_ peak. _IGF1_ is a major determinant
 of body size in dogs: small breeds share a haplotype at the locus that large

@@ -24,12 +24,12 @@ the two parental alleles pulled apart.
 - [modkit](https://github.com/nanoporetech/modkit/releases) for the aggregate
   section only, a single-binary download from its releases page
 
-## The locus
+## The SNRPN imprinting center
 
-The locus is the SNRPN / Prader-Willi imprinting center on chr15, where one
-parental allele is methylated and the other is not. That makes it a dataset with
-its own control: the views have to come out as two populations, and the reads
-and the aggregate profile have to agree on which allele is which.
+At this locus on chr15, one parental allele is methylated and the other is not.
+That makes it a dataset with its own control: the views have to come out as two
+populations, and the reads and the aggregate profile have to agree on which
+allele is which.
 
 ## Per-read methylation from the alignments
 

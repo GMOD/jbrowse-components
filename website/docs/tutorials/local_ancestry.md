@@ -32,7 +32,7 @@ the build writes is a local file, so [JBrowse Desktop](/docs/quickstart_desktop)
 opens it by path with no web server, and on JBrowse Web it goes in through **Add
 track** or a `config.json`.
 
-## The dataset and the question
+## Two wolfdog breeds and their wolf blocks
 
 The Saarloos Wolfdog and the Czechoslovakian Wolfdog are both 20th-century
 crosses between German Shepherd Dogs and captive gray wolves, bred back to dogs
@@ -63,7 +63,7 @@ is a per-segment statistical estimate of which reference panel a stretch of
 chromosome most resembles, which is exactly what "wolf-derived block" means when
 the panels are wolves and dogs.
 
-## The pipeline
+## The files between the panel and the painting
 
 Every artifact between the published panel and the painted track is a plain
 text, VCF or BED file you can open and check:

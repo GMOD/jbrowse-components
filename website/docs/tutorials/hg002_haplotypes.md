@@ -24,7 +24,7 @@ the chain between them, so there is nothing to align.
   [JBrowse CLI](/docs/cli) if you take the CLI tab under each config below
   rather than editing `config.json` by hand
 
-## The config
+## Loading the assembly and the alignment
 
 The Q100 project serves both the assembly and the alignment between the
 haplotypes, and JBrowse reads each from its published URL.

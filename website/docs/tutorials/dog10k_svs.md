@@ -30,7 +30,7 @@ covers the rest. The scripts write local files, which
 [JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
 through **Add track**.
 
-## The variant
+## A 7.8 kb deletion in NHEJ1
 
 Schall and Kidd genotyped long-read-discovered structural variants across the
 Dog10K collection and flagged those whose allele frequencies track breed clades.

@@ -33,7 +33,7 @@ comes from [nodejs.org](https://nodejs.org/). `sv_multihop.py` is one file:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/sv_multihop.py
 ```
 
-## The datasets
+## COLO829 and K562
 
 **COLO829** is a melanoma cell line with a matched normal, COLO829BL, and is a
 community reference for somatic structural-variant calling

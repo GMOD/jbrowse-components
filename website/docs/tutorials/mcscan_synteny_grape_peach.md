@@ -43,7 +43,7 @@ For three or more genomes from one MCScan run, see
 [ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao), which
 loads a `.blocks` table with one track backing every band.
 
-## The two files
+## What `.anchors` and `.anchors.simple` hold
 
 `.anchors` is the gene-pair level. Each line is one orthologous pair and its
 alignment score, with `###` separating synteny blocks:

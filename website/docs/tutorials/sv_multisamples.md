@@ -18,7 +18,7 @@ reads and watch the coverage go to zero, halve, and stay flat.
 - nothing to install: the demo instance already carries the callset and the
   alignments
 
-## The dataset and the call
+## The 1000 Genomes SV callset
 
 The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced
 genomes from 2,504 individuals across 26 populations. The 2022 high-coverage
