@@ -33,7 +33,7 @@ import {
   LegendMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  callEachRegion,
+  fetchEachRegion,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
@@ -187,7 +187,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   HeightMode,
-  RegionFetchContext,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
@@ -3724,29 +3723,12 @@ export default function stateModelFactory(
           async fetchNeeded(
             needed: { region: Region; displayedRegionIndex: number }[],
           ) {
-            await self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
-              // `callEachRegion` rather than `fetchEachRegion`: the tag-map
-              // union below is a cross-region decision, so this guards once
-              // around the whole batch instead of per region.
-              const results = await callEachRegion(needed, ctx, (region, c) =>
-                fetchFeaturesForRegion(self, self.adapterConfig, region, c),
-              )
-              if (ctx.isStale()) {
-                return
-              }
-
-              const newDataMap = new Map<number, GroupedAlignmentsResult>()
-              for (const r of results) {
-                newDataMap.set(r.displayedRegionIndex, r.result)
-              }
-              for (const { displayedRegionIndex } of needed) {
-                const data = newDataMap.get(displayedRegionIndex)
-                if (data) {
-                  // beside the store — see RegionFetchContext
-                  self.setRpcData(displayedRegionIndex, data)
-                  ctx.commitRegion(displayedRegionIndex)
-                }
-              }
+            await fetchEachRegion(self, needed, {
+              call: (region, ctx) =>
+                fetchFeaturesForRegion(self, self.adapterConfig, region, ctx),
+              onResult: (displayedRegionIndex, result) => {
+                self.setRpcData(displayedRegionIndex, result)
+              },
             })
           },
         }
