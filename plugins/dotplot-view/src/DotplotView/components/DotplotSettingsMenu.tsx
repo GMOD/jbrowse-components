@@ -5,6 +5,7 @@ import { toLocale } from '@jbrowse/core/util'
 import {
   MAX_MIN_LENGTH_BP,
   MIN_LENGTH_HELP,
+  SETTINGS_SURFACE_LABELS,
   lodMenuItems,
 } from '@jbrowse/synteny-core'
 import TuneIcon from '@mui/icons-material/Tune'
@@ -62,7 +63,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
 }) {
   return (
     <CascadingMenuButton
-      tooltip="Dotplot display settings"
+      tooltip={SETTINGS_SURFACE_LABELS.DotplotView}
       menuItems={() =>
         [
           toggleItem(

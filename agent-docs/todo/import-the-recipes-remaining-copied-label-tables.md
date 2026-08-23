@@ -32,14 +32,16 @@ more went with them for free: `SHOW_LABELS_OPTION_LABELS` into the leaf
 `showLabelsMode.ts` already beside it, and the synteny view's `CIGAR_MODES` into
 `LinearSyntenyView/cigarModes.ts`.
 
+**`SETTINGS_SURFACES` is done too**, and it went the way the criterion predicts:
+both menus import MUI, so the two tooltips became
+`packages/synteny-core/src/settingsSurfaces.ts`'s `SETTINGS_SURFACE_LABELS`,
+which both menus and the recipe now read. One table keyed by view type rather
+than a constant beside each menu, because "the two menus are the same widget and
+only the button is named per view" is the fact the recipe depends on.
+
 The rest of the ~20 tables have no cited registry at all, and several are not
 convertible in principle — the `GRAPH_*` tables name controls in a plugin this
 repo does not build, and the config-slot names under `Track menu → Settings` are
-generated form fields rather than labels. `SETTINGS_POPOVERS` is not one of them:
-it is `SETTINGS_SURFACES` since `d2b71b3a48`
-(`website/src/lib/spec-recipe/fields.ts:1465`) and both its labels are in this
-repo — `'Synteny display settings'` at `SyntenySettingsMenu.tsx:91`,
-`'Dotplot display settings'` at `DotplotSettingsMenu.tsx:54` — so it is
-convertible under the criterion above, as an extraction rather than an export,
-since both modules import MUI. Read the comment above each table before assuming
-one is available; the ones worth doing say where their labels came from.
+generated form fields rather than labels. Read the comment above each table
+before assuming one is available; the ones worth doing say where their labels
+came from.

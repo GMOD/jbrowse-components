@@ -22,6 +22,7 @@ import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/
 import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
+import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
 import {
@@ -1462,10 +1463,7 @@ const DIAGONALIZE_MENUS: Record<string, string> = {
 // for is named per view while the row inside is the same setting. The two menus
 // are the same widget and their shared rows are worded identically, which is
 // what lets one field recipe serve both.
-const SETTINGS_SURFACES: Record<string, string> = {
-  LinearSyntenyView: 'Synteny display settings',
-  DotplotView: 'Dotplot display settings',
-}
+const SETTINGS_SURFACES: Record<string, string> = SETTINGS_SURFACE_LABELS
 
 function settingsPath(viewType: string | undefined, row: string) {
   const surface = viewType ? SETTINGS_SURFACES[viewType] : undefined

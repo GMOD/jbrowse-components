@@ -182,6 +182,7 @@ export { default as TrackWarningsDialog } from './TrackWarningsDialog.tsx'
 export { default as ComparativeFetchStatus } from './ComparativeFetchStatus.tsx'
 export type { ComparativeStatusModel } from './ComparativeFetchStatus.tsx'
 export { MAX_MIN_LENGTH_BP, MIN_LENGTH_HELP } from './minLengthHelp.ts'
+export { SETTINGS_SURFACE_LABELS } from './settingsSurfaces.ts'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 export {
   connectedEndpoints,

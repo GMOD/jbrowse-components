@@ -10,6 +10,7 @@ import {
   MAX_MIN_LENGTH_BP,
   MIN_LENGTH_HELP,
   PAN_BUFFER_PX,
+  SETTINGS_SURFACE_LABELS,
   lodMenuItems,
 } from '@jbrowse/synteny-core'
 import TuneIcon from '@mui/icons-material/Tune'
@@ -88,7 +89,7 @@ const SyntenySettingsMenu = observer(function SyntenySettingsMenu({
   const { cigarMode, hasCigarData } = model
   return (
     <CascadingMenuButton
-      tooltip="Synteny display settings"
+      tooltip={SETTINGS_SURFACE_LABELS.LinearSyntenyView}
       menuItems={() =>
         [
           { type: 'subHeader', label: 'Ribbons' },
