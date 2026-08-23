@@ -333,10 +333,12 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
       /**
        * #getter
        * First load: no data has arrived yet. Excludes error so error UI and
-       * loading UI never show simultaneously. Drives the centered overlay.
+       * loading UI never show simultaneously, and `fetchInert` (the mixin
+       * default is false today) so an inert state added later rests instead of
+       * spinning — same shape as synteny's. Drives the centered overlay.
        */
       get loading() {
-        return !this.ready && !self.error
+        return !this.ready && !self.error && !self.fetchInert
       },
       /**
        * #getter

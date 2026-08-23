@@ -33,12 +33,11 @@ order — the hazard `FetchMixin` documents against ADR-041 and the thing this
 mixin exists to avoid, not reproduce.
 
 Note what is _not_ the reason, since an earlier version of this comment said it
-was: `loading` is **not** genuinely different between the two. Synteny's
-subtracts `fetchInert` and dotplot's doesn't, but the hook's default is `false`,
-so the two expressions have the same value — as do the two `svgReady`s, which
-differ only by passing that same getter as `extraTerminal`. If `error` ever
-becomes visible here, all four move up together and dotplot loses nothing by
-inheriting the `fetchInert` term.
+was: none of the four is genuinely different between the two displays. Both
+`loading`s subtract `fetchInert` and both `svgReady`s pass it as `extraTerminal`
+(with `fetchCanceled` beside it), so the pairs differ only in which field holds
+the data (`ready` vs `instanceData`) and in the view-specific fetch key. If
+`error` ever becomes visible here, all four move up together.
 
 ## Volatiles
 
