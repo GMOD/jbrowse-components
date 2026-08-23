@@ -71,26 +71,60 @@ function declaredLimit(file: string) {
   }
 }
 
+// A class declaration with a named parent, so the scan can walk `extends`
+// chains: an adapter that only INHERITS a live `getRegionByteSize` is gated at
+// a budget somebody has to have decided, exactly like one declaring its own.
+const classDecl =
+  /(?:^|\n)\s*(?:export\s+(?:default\s+)?)?(?:abstract\s+)?class\s+(\w+)(?:<[^>]*>)?\s+extends\s+(\w+)/g
+
 /**
  * Adapter name -> `own:<bytes>` when it declares a `fetchSizeLimit`, else
  * `display` when it inherits whichever display it lands under. The shape the
  * baseline JSON is written in, so the check can diff it directly.
+ *
+ * Declarations AND inheritors: matching only the method declaration missed
+ * `GWASAdapter`, which extends `BedTabixAdapter` and so ships BedTabix's live
+ * index estimate while appearing in no baseline — byte-gated at a budget
+ * nobody ever decided, the exact decision this check exists to force. So the
+ * scan also walks `class X extends Y` chains from every declaring class.
  */
 export function collectGatedAdapterBudgets(): Record<string, string> {
-  const found: Record<string, string> = {}
+  const declaringFiles: string[] = []
+  const classes: { name: string; parent: string; file: string }[] = []
   for (const workspaceDir of workspaceDirs) {
     for (const file of sourceFiles(join(root, workspaceDir))) {
-      if (relative(root, file) === baseDefault) {
-        continue
+      const text = readFileSync(file, 'utf8')
+      if (relative(root, file) !== baseDefault && declaration.test(text)) {
+        declaringFiles.push(file)
       }
-      if (!declaration.test(readFileSync(file, 'utf8'))) {
-        continue
+      for (const m of text.matchAll(classDecl)) {
+        classes.push({ name: m[1]!, parent: m[2]!, file })
       }
-      // Adapters live in a directory named for them, alongside their configSchema
-      const dir = dirname(file)
-      const limit = declaredLimit(join(dir, 'configSchema.ts'))
-      found[basename(dir)] = limit === undefined ? 'display' : `own:${limit}`
     }
+  }
+  const declaringNames = new Set(
+    classes.filter(c => declaringFiles.includes(c.file)).map(c => c.name),
+  )
+  // transitive closure over the parent links, to a fixpoint: a grandchild of a
+  // declaring class inherits the estimate the same way a child does
+  const liveFiles = new Set(declaringFiles)
+  let grew = true
+  while (grew) {
+    grew = false
+    for (const c of classes) {
+      if (declaringNames.has(c.parent) && !declaringNames.has(c.name)) {
+        declaringNames.add(c.name)
+        liveFiles.add(c.file)
+        grew = true
+      }
+    }
+  }
+  const found: Record<string, string> = {}
+  for (const file of liveFiles) {
+    // Adapters live in a directory named for them, alongside their configSchema
+    const dir = dirname(file)
+    const limit = declaredLimit(join(dir, 'configSchema.ts'))
+    found[basename(dir)] = limit === undefined ? 'display' : `own:${limit}`
   }
   return Object.fromEntries(Object.entries(found).sort())
 }

@@ -30,6 +30,7 @@ export interface GateHost {
   configuration: BaseLinearDisplayConfigModel
   gateActive: boolean
   densityGateActive: boolean
+  byteGateAdapterKey: string
   commitByteMeasurement: (measurement: {
     viewport: GateViewport
     gated: boolean
@@ -235,8 +236,16 @@ export default function CanvasFeatureGateMixin() {
         measurements: RegionGateMeasurement[],
         issued: GateFetchState,
       ) {
-        const { viewport, gated } = issued
-        if (measurements.length === 0 || !viewport) {
+        const { viewport, gated, tierKey } = issued
+        if (
+          measurements.length === 0 ||
+          !viewport ||
+          // the tier guard `nextGateState` applies to the byte half, applied
+          // to the density half too: a fetch issued against a previous adapter
+          // config must not gate the new file against the old file's feature
+          // counts. Same rule, both axes, one commit.
+          (tierKey !== undefined && tierKey !== host(self).byteGateAdapterKey)
+        ) {
           return
         }
         for (const { displayedRegionIndex, region, result } of measurements) {

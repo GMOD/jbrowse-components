@@ -6,8 +6,10 @@
   "BigBedAdapter": "display",
   "BigMafAdapter": "display",
   "CramAdapter": "own:5000000",
+  "GWASAdapter": "display",
   "Gff3TabixAdapter": "display",
   "GtfTabixAdapter": "display",
+  "HtsgetBamAdapter": "display",
   "MafTabixAdapter": "display",
   "SplitVcfTabixAdapter": "own:5000000",
   "VcfTabixAdapter": "own:5000000"

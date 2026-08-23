@@ -823,7 +823,7 @@ paths can't drift apart.
 | display slot | 5 Mb | `LinearMafDisplay` — every MAF adapter, none of which declares its own, so this is the whole budget |
 | display slot | 1 Mb | `baseLinearDisplayConfigSchema` — every inheriting adapter under every other display |
 
-Adapters with no `fetchSizeLimit` of their own, which therefore take whichever display row applies: `BedTabixAdapter`, `BgzipMafAdapter`, `BgzipTaffyAdapter`, `BigBedAdapter`, `BigMafAdapter`, `Gff3TabixAdapter`, `GtfTabixAdapter`, `MafTabixAdapter`.
+Adapters with no `fetchSizeLimit` of their own, which therefore take whichever display row applies: `BedTabixAdapter`, `BgzipMafAdapter`, `BgzipTaffyAdapter`, `BigBedAdapter`, `BigMafAdapter`, `GWASAdapter`, `Gff3TabixAdapter`, `GtfTabixAdapter`, `HtsgetBamAdapter`, `MafTabixAdapter`.
 
 <!-- GATED_BUDGETS END -->
 
@@ -890,3 +890,28 @@ only thing that would carry it is an estimate these adapters never produce.
 BigMaf deliberately *does* implement it, since it returns full alignment rows
 rather than a screen-reduced summary, and a whole-chromosome view can pull enough
 packed MAF stanzas to hang the tab.
+
+## Two ungated shapes that are decisions, not omissions
+
+The hook table's default row ("no byte gate: the track downloads whatever it is
+pointed at") covers most displays because their adapters self-summarize. Two
+cases sit on that default with a measurable or potentially-measurable adapter
+underneath, and each is recorded here so the next audit reads a decision rather
+than re-deriving a finding:
+
+- **`LinearManhattanDisplay` is ungated on purpose.** `GWASAdapter` inherits
+  BedTabix's live index estimate (which is why it appears in the gated-adapter
+  baseline as `display`), but the display never opts in: its design case is a
+  genome-wide summary-stats view of hundreds of thousands of points, which is
+  exactly the fetch a byte gate would banner. The cost is real — a multi-GB
+  summary file downloads in full with no banner — and accepted; a user opening
+  one has asked for the genome-wide picture. Revisit only with a budget derived
+  from what the display can actually draw, not the base 1 Mb.
+- **`LGVSyntenyDisplay`'s inherited gate is inert.** It extends
+  `LinearAlignmentsDisplay` wholesale, `measuresBytesPreFlight` included, but no
+  comparative adapter implements `getRegionByteSize`, so every pre-flight
+  returns no estimate and the gate never fires — a fine-tier PIF over a whole
+  chromosome downloads unbounded. Making it live is one `bytesForRegions` call
+  on the indexed PAF adapters plus a budget decision that has to be taken from
+  SYNTENY_LOD's measured wire sizes (the base 1 Mb would banner legitimate
+  whole-genome synteny): [ideas/synteny-byte-gate.md](../ideas/synteny-byte-gate.md).
