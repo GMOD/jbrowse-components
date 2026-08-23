@@ -30,12 +30,19 @@ Most sessions and configs migrate through `preProcessSnapshot`:
   height slot
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 - the alignments `insertSizeGradient` color scheme resolves to `insertSize`
+- a v4 session's per-view `highlightsVisible` (and grid-bookmark's per-view
+  `bookmarkHighlightsVisible`) fold into the one session-wide
+  `highlightsVisible`
 
 The gradient is gone rather than migrated because it duplicated the scheme it
 now maps to: same thresholds, same classifier, same buckets, and two endpoint
 hues close enough that a half-ramped read on either side of the band came out
 the same faint grey. The `heightOverride` shadow-prop that existed during
 development is gone, and there is no `<name>Override` shadow-property system.
+
+Highlight visibility is session-wide in v5 rather than per view, so a v4 session
+that had the band dismissed on any one view opens with it off everywhere; the
+"Bookmarks/highlights" toggle turns it back on for all views at once.
 
 ## The renderer registry is gone
 

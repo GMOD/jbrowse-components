@@ -11,7 +11,10 @@
  *   LinearReadCloudDisplay → LinearAlignmentsDisplay
  *   LinearFeatureDisplay → LinearBasicDisplay
  *
- * Also lifts the per-instance alignments settings a v4.3.0 session persisted
+ * Also folds a v4.3.0 session's per-view highlight-band dismissal into the
+ * session-wide `highlightsVisible` that replaced it — see
+ * `liftDismissedHighlights` — and lifts the per-instance alignments settings a
+ * v4.3.0 session persisted
  * (`colorBySetting`, `filterBySetting`, `jexlFilters`, `trackMaxHeight`,
  * `hideMismatchesSetting`) into the config where they now live as slots — off
  * the nested `LinearAlignmentsDisplay` container's `PileupDisplay` /
@@ -354,12 +357,39 @@ function migrateTrackSnapshot(
   return changed ? result : track
 }
 
+// v4.3.0 persisted highlight-band visibility per view, in two keys written out
+// only when the user had turned the band off: LinearGenomeView's own
+// `highlightsVisible` and grid-bookmark's `bookmarkHighlightsVisible`. Both are
+// now the single session-wide `highlightsVisible` (BaseSession), which MST fills
+// from its default while ignoring the view keys it no longer declares — so the
+// band the user dismissed comes back on every view at once. Lift the dismissal
+// to the session flag and strip the dead keys.
+//
+// Any one view having it off turns it off globally, because the two ways to be
+// wrong are not symmetric: a band that stays hidden across a session's other
+// views is one toggle away, where a band the user dismissed reappearing is the
+// bug being fixed.
+function liftDismissedHighlights(
+  view: Record<string, unknown>,
+  dismissed: { highlights: boolean },
+) {
+  const { highlightsVisible, bookmarkHighlightsVisible, ...rest } = view
+  if (highlightsVisible === false || bookmarkHighlightsVisible === false) {
+    dismissed.highlights = true
+  }
+  return 'highlightsVisible' in view || 'bookmarkHighlightsVisible' in view
+    ? rest
+    : view
+}
+
 function migrateViewSnapshot(
   view: Record<string, unknown>,
   collected: ExtractedDisplaySettings[],
+  dismissed: { highlights: boolean },
 ): Record<string, unknown> {
-  let changed = false
-  const result = { ...view }
+  const lifted = liftDismissedHighlights(view, dismissed)
+  let changed = lifted !== view
+  const result = { ...lifted }
 
   const tracks = view.tracks as unknown[] | undefined
   if (Array.isArray(tracks)) {
@@ -374,7 +404,7 @@ function migrateViewSnapshot(
   const subViews = view.views as unknown[] | undefined
   if (Array.isArray(subViews)) {
     const newSubViews = subViews.map(sv =>
-      isObject(sv) ? migrateViewSnapshot(sv, collected) : sv,
+      isObject(sv) ? migrateViewSnapshot(sv, collected, dismissed) : sv,
     )
     if (newSubViews.some((v, i) => v !== subViews[i])) {
       changed = true
@@ -481,16 +511,24 @@ export function migrateSessionSnapshot(
   // Per-instance alignments settings lifted off old nested displays in views,
   // routed into the config after the walk (they can't stay on the instance).
   const collected: ExtractedDisplaySettings[] = []
+  const dismissed = { highlights: false }
 
   const views = snapshot.views as unknown[] | undefined
   if (Array.isArray(views)) {
     const newViews = views.map(view =>
-      isObject(view) ? migrateViewSnapshot(view, collected) : view,
+      isObject(view) ? migrateViewSnapshot(view, collected, dismissed) : view,
     )
     if (newViews.some((v, i) => v !== views[i])) {
       changed = true
       result.views = newViews
     }
+  }
+
+  // a session that already carries the flag has been saved since the lift, and
+  // says what it means
+  if (dismissed.highlights && !('highlightsVisible' in snapshot)) {
+    changed = true
+    result.highlightsVisible = false
   }
 
   const sessionTracks = snapshot.sessionTracks as unknown[] | undefined
