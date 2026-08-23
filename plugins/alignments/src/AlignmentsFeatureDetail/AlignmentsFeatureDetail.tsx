@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
+import { FeatureWash } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
 import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { Paper, Typography } from '@mui/material'
@@ -74,7 +75,9 @@ const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
 }) {
   const { featureData } = model
   return featureData ? (
-    <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
+    <FeatureWash uniqueId={featureData.uniqueId}>
+      <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
+    </FeatureWash>
   ) : (
     <Paper sx={{ p: 2 }}>
       <Typography>

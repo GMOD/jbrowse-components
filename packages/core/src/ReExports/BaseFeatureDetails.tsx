@@ -10,6 +10,9 @@ export const BaseFeatureDetail = lazyMap(
     FeatureDetails: lazy(
       () => import('../BaseFeatureWidget/BaseFeatureDetail/FeatureDetails.tsx'),
     ),
+    FeatureWash: lazy(
+      () => import('../BaseFeatureWidget/BaseFeatureDetail/FeatureWash.tsx'),
+    ),
     BaseCard: lazy(
       () => import('../BaseFeatureWidget/BaseFeatureDetail/BaseCard.tsx'),
     ),

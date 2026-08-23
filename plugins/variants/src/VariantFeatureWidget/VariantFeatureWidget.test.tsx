@@ -3,7 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render } from '@testing-library/react'
 
 import VariantFeatureDetails from './VariantFeatureWidget.tsx'
 import { stateModelFactory } from './stateModelFactory.ts'
@@ -172,4 +172,31 @@ test('a breakend whose ALTs name no mate offers no navigation', async () => {
   await findByText('ALT')
   expect(container.textContent).not.toContain('Breakends')
   expect(container.querySelectorAll('li')).toHaveLength(0)
+})
+
+// The widget is a singleton the drawer reuses, and its body is keyed on
+// uniqueId to reset the sample grid -- so the swap cue has to be mounted
+// outside that key, or it remounts along with the body and never plays.
+test('swapping to another variant washes the panel', () => {
+  const { queryByTestId, widget } = renderWidget({
+    uniqueId: 'one',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    REF: 'A',
+    ALT: ['T'],
+  })
+  expect(queryByTestId('feature-details-wash')).toBeNull()
+
+  act(() => {
+    widget.setFeatureData({
+      uniqueId: 'two',
+      refName: 'ctgA',
+      start: 300,
+      end: 301,
+      REF: 'C',
+      ALT: ['G'],
+    })
+  })
+  expect(queryByTestId('feature-details-wash')).toBeTruthy()
 })
