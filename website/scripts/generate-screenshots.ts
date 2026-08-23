@@ -546,6 +546,27 @@ async function captureSpec(
   return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
 }
 
+// jb2export runs from source but resolves every @jbrowse/* import to that
+// package's built `esm/` (products/jbrowse-img/src/resolve.ts), and nothing
+// else in this pipeline reads that output — so a sweep following a source
+// change renders whatever commit esm/ was last built from. Stale it draws old
+// code and looks right; inconsistent it dies on ERR_MODULE_NOT_FOUND naming a
+// module the current source deleted, which is what took out the three
+// sv_review specs. The browser path already refuses to start without its build;
+// this is the same precondition for the CLI path, and `tsc --build` is
+// incremental — ~1.5s when there is nothing to do.
+function buildWorkspaceEsm() {
+  console.log('Building workspace esm/ that jb2export specs render from')
+  try {
+    execFileSync('pnpm', ['build:esm'], { cwd: repoRoot, stdio: 'inherit' })
+  } catch {
+    console.error(
+      'pnpm build:esm failed — jb2export specs would render from a stale esm/',
+    )
+    process.exit(1)
+  }
+}
+
 // jb2export renders the products/jbrowse-img/README example images straight
 // to PNG via React SSR (see CliSpec in screenshot-specs.ts) — no browser
 // involved, so this bypasses the puppeteer pipeline entirely. `suffix` keeps
@@ -808,6 +829,10 @@ async function main() {
   const filteredSpecs = await selectSpecsToRender()
   if (!filteredSpecs) {
     return
+  }
+
+  if (filteredSpecs.some(s => s.mode === 'cli')) {
+    buildWorkspaceEsm()
   }
 
   // Only url-mode specs pointing at a relative path need the jbrowse-web server.

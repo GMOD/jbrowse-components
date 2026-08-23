@@ -86,12 +86,37 @@ export function builtUrl(url: string) {
   return built
 }
 
+// The stale case arriving as a hard failure: one built module importing another
+// that its own esm/ does not have, which means the two were emitted from
+// different commits. Node reports that as a missing path nobody wrote, two hops
+// from its cause, so name it.
+//
+// `--force`, not a plain rebuild, because this is the state an incremental one
+// cannot leave: tsc's up-to-date check reads .tsbuildinfo rather than the output
+// tree, so it calls a project with a deleted output up to date and emits
+// nothing. A forced whole-workspace esm build is ~25s.
+const ESM_PATH =
+  /^file:\/\/(?!.*\/node_modules\/).*\/(?:packages|plugins|products)\/[^/]+\/esm\//
+
+export function staleEsmImport(specifier: string, parentURL?: string) {
+  return parentURL && ESM_PATH.test(parentURL)
+    ? new Error(
+        `jb2export: ${parentURL} imports ${specifier}, which is not in that package's esm/ — that esm/ is inconsistent with its source, run \`pnpm build:esm --force\` at the repo root`,
+      )
+    : undefined
+}
+
 export const resolve: Module.ResolveHookSync = (
   specifier,
   context,
   nextResolve,
 ) => {
-  const resolved = nextResolve(transitionGroup(specifier), context)
+  let resolved
+  try {
+    resolved = nextResolve(transitionGroup(specifier), context)
+  } catch (e) {
+    throw staleEsmImport(specifier, context.parentURL) ?? e
+  }
   const built = builtUrl(resolved.url)
   return built ? { ...resolved, url: built } : resolved
 }

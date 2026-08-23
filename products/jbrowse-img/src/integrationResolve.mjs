@@ -6,10 +6,15 @@
 // it cannot be a `.ts` that something else has to strip first), which is why it
 // reads the helpers out of esm/ rather than src/. `pnpm build` at the repo root
 // is a prerequisite of these tests regardless — builtUrl throws without it.
-import { builtUrl, transitionGroup } from '../esm/resolve.js'
+import { builtUrl, staleEsmImport, transitionGroup } from '../esm/resolve.js'
 
 export async function resolve(specifier, context, nextResolve) {
-  const resolved = await nextResolve(transitionGroup(specifier), context)
+  let resolved
+  try {
+    resolved = await nextResolve(transitionGroup(specifier), context)
+  } catch (e) {
+    throw staleEsmImport(specifier, context.parentURL) ?? e
+  }
   const built = builtUrl(resolved.url)
   return built ? { ...resolved, url: built } : resolved
 }
