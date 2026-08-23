@@ -983,10 +983,10 @@ a given bubble: its rows and the graph's alleles are the same objects.
 }
 ```
 
-It ships its own index, so nothing is downloaded but the slice in view: the C4
-window is a couple of seconds over HTTP. It carries 231 sample columns rather
-than the wave file's 232, CHM13 not being among them, so phased mode draws 462
-rows and `AN` tops out there too.
+The snarl file ships its own index, so nothing is downloaded but the slice in
+view: the C4 window is a couple of seconds over HTTP. It carries 231 sample
+columns rather than the wave file's 232, CHM13 not being among them, so phased
+mode draws 462 rows and `AN` tops out there too.
 
 `AT` is what this file adds: it states each allele as the **traversal** it takes
 through the graph, the same statement the `AT` in a pggb VCF makes, which the

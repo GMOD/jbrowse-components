@@ -63,8 +63,9 @@ columns back to their genomic positions.
 
 The matrix has a "phased" rendering mode under the track menu's "Rendering
 mode". It splits each sample into its two haplotypes, so the three trio members
-become six rows. It needs genotypes written with the `0|1` separator rather than
-`0/1`. Getting there from unphased calls takes a phasing program like SHAPEIT.
+become six rows. Phased mode needs genotypes written with the `0|1` separator
+rather than `0/1`. Getting there from unphased calls takes a phasing program
+like SHAPEIT.
 
 <Figure caption="The phased rendering mode, and the 'Rendering mode' → 'Phased' menu item that turns it on." src="/img/trio-matrix-phased.png"/>
 
@@ -87,8 +88,8 @@ painted track.
 ## Finding the matching blocks programmatically
 
 [hap-ibd](https://github.com/browning-lab/hap-ibd) computes that matching, as
-"identical by descent" blocks. It is built for population-scale cohorts and runs
-on a single trio VCF. It needs two things:
+"identical by descent" blocks. hap-ibd is built for population-scale cohorts and
+runs on a single trio VCF, and the run needs two things:
 
 - a phased VCF, like the
   [trio dataset](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
