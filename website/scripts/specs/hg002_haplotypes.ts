@@ -288,6 +288,12 @@ function haplotypeSession(
   patLoc: string,
   matTracks: PanelTracks = [],
   patTracks: PanelTracks = matTracks,
+  // The view's own props, for the two frames that open ALREADY FOLLOWING.
+  // `followSynteny` and `followAnchorIndex` are model props the view restores
+  // natively (urlparams.md lists both), so a frame of a follow's steady state
+  // needs no clicks to reach — which also means it needs no wait on a click's
+  // RPC to have landed before the shot.
+  follow: Record<string, unknown> = {},
 ) {
   return sessionSpec(HG002_CONFIG, {
     sessionTracks: [
@@ -304,6 +310,7 @@ function haplotypeSession(
         colorBy: 'strand',
         drawCurves: true,
         tracks: [['hg002v1.2_mat_vs_pat']],
+        ...follow,
         views: [
           { assembly: 'hg002v1.2', loc: matLoc, tracks: matTracks },
           { assembly: 'hg002v1.2', loc: patLoc, tracks: patTracks },
@@ -369,6 +376,29 @@ const DRIFTED_PANELS = haplotypeSession(
 // plus its own 143,362 offset) -- so the walk stays exact and the paternal
 // panel lands on sequence rather than holding where it was.
 const FOLLOW_PAN_MAT = 'chr8_MATERNAL:7,735,000-7,805,000'
+
+// WHERE THE FOLLOW HAS NOTHING TO DO, which is a state the linear synteny view
+// guide asserts and nothing pictures: the toggle changes to a warning form
+// wherever nothing aligns to the anchor's window, and the other rows hold.
+// FollowSyntenyToggle's own comment is that a row which stops tracking with
+// nothing said "looks exactly like a broken follow", so the unsaid version is
+// the one a reader meets first.
+//
+// IT IS THE GAP BETWEEN TWO CHAINS, ANCHORED ON THE PATERNAL ROW, and the
+// window is one the page already relies on: DRIFT_WINDOW_PAT_BEFORE sits past
+// this block's paternal end (7,681,207) and before the inversion's (7,774,085),
+// which is why the figure above opens with that panel's chain lane empty. An
+// anchor there has nothing under it to walk, which is the guide's general case
+// -- a haplotype-specific insertion is a gap in the chain, not a missing
+// contig.
+//
+// NOT chrX. HG002 is male, so chrX is maternal and chrY paternal and neither
+// has a counterpart to chain to, which reads like the obvious unaligned window
+// and cost a capture to reject: a SyntenyTrack lane in a plain LGV never
+// finishes loading on a refName the alignment file has no records for. The
+// frame is then of a track stuck at "Loading...", which is a picture of that
+// bug rather than of this mode (agent-docs/todo/a-synteny-lane-never-finishes-loading-on-a-refname-the-file-has-no-records-for.md).
+const UNALIGNED_ANCHOR_PAT = DRIFT_WINDOW_PAT_BEFORE
 
 // THE MARKERS FIGURE MOVED TO THE PERICENTROMERE (reviewer: 'the show location
 // markers mostly shines when there are lots of indels interrupting it, so then
@@ -704,6 +734,103 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
             // The recovery, stated as the thing that changed, plus the half
             // that a one-shot move does not have: the panel keeps tracking.
             text: '(2) Follow moves the paternal panel to the matching sequence, and holds it there as you pan',
+          },
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
+            strokeWidth: 4,
+          },
+        ],
+      },
+    ],
+  },
+
+  // THE WARNING FORM, which the linear synteny view guide asserts in a sentence
+  // and nothing in the corpus shows. It goes on that guide rather than on the
+  // tutorial: the tutorial's subject is one pair of haplotypes, and this is a
+  // property of the mode.
+  //
+  // TWO FRAMES, because the claim is a CHANGE of form. One frame of a warning
+  // icon says nothing -- a reader who has never seen the other icon cannot tell
+  // a warning from the control's normal look, which is the whole failure the
+  // wording exists to prevent.
+  //
+  // BOTH FRAMES OPEN ALREADY FOLLOWING, through the view's own props, rather
+  // than clicking the toggle and then navigating. The state being photographed
+  // is a steady one either way, and a clicked route would have to wait out a
+  // resolve per frame to be sure the shot is of the answer rather than of the
+  // question.
+  {
+    ...CAPTURE,
+    name: 'synteny_follow_unaligned',
+    url: haplotypeSession(
+      DRIFT_WINDOW_MAT,
+      DRIFT_WINDOW_PAT_BEFORE,
+      [CHAIN_BLOCKS],
+      [CHAIN_BLOCKS],
+      { followSynteny: true },
+    ),
+    // the follow figure's height, which is the same session with the same one
+    // lane per panel
+    viewportHeight: 445,
+    stageColumns: 2,
+    hideTooltip: true,
+    stages: [
+      {
+        // The maternal row anchors, so the paternal row is placed from it and
+        // the ribbon closes -- the same move the figure above films, arrived at
+        // by loading rather than by clicking.
+        actions: [{ type: 'waitForAppSettled', timeout: 120000 }],
+        annotations: [
+          {
+            type: 'text',
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 30,
+            },
+            maxWidth: 640,
+            fontSize: 22,
+            text: '(1) Following: the row below is placed from the anchor row above it',
+          },
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
+            strokeWidth: 4,
+          },
+        ],
+      },
+      {
+        // THE ANCHOR IS THE OTHER ROW HERE, sitting in the gap between two
+        // chains. Both rows keep the windows the session names, because the
+        // anchor's window resolves to nothing to place the other one from.
+        url: haplotypeSession(
+          DRIFT_WINDOW_MAT,
+          UNALIGNED_ANCHOR_PAT,
+          [CHAIN_BLOCKS],
+          [CHAIN_BLOCKS],
+          { followSynteny: true, followAnchorIndex: 1 },
+        ),
+        readySelector: displayPainted('synteny_canvas'),
+        actions: [{ type: 'waitForAppSettled', timeout: 120000 }],
+        annotations: [
+          {
+            type: 'text',
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 30,
+            },
+            maxWidth: 640,
+            fontSize: 22,
+            // WHAT THE PICTURE CANNOT SAY. Two rows with nothing between them
+            // is what a follow that had broken would look like too; the
+            // difference is that this one is holding on purpose.
+            text: '(2) Nothing aligns to the anchor row here, so the other row holds and the button says so',
           },
           {
             type: 'circle',

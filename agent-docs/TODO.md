@@ -92,6 +92,7 @@ the half that rots is the half it covers.
 | Item | Area | First move |
 | --- | --- | --- |
 | [The swapped track resolves to a point](todo/the-swapped-assembly-track-resolves-to-a-point.md) | synteny | the hang is fixed; what is left is the swap, still not isolated |
+| [A synteny lane loads forever on an unmatched refName](todo/a-synteny-lane-never-finishes-loading-on-a-refname-the-file-has-no-records-for.md) | synteny, comparative | find where the fetch stops — adapter, rename, or the display's own gate |
 | [Observer reactions leak from discarded renders](todo/destroying-an-mst-tree-that-something-still-observes.md) | app-core, drawer | the boundary audit is done and came back clean; weigh preloading a child chunk against the bundle graph |
 | [Cut WebGL2 contexts per display](todo/cut-webgl2-contexts-per-display.md) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Split the arc band's uniforms off the pileup struct](todo/split-the-arc-bands-uniforms-off-the-pileup-struct.md) | alignments, GPU, limits | the 4 -> 2 MiB was arithmetic on a slot that is not arc-only; it is 4 -> 3, so measure the ring before spending the regen |

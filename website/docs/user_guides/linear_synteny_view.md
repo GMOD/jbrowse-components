@@ -124,6 +124,8 @@ nothing aligns to the anchor's window at all — a haplotype-specific insertion,
 centromere, a panel off the end of the alignments — where the other panels hold
 their position.
 
+<Figure caption="The follow button in both of its forms, on the two haplotypes of T2T-HG002 with the chain blocks drawn on each panel's own coordinates. Left, the row below is placed from the row above. Right, the anchor row sits in a gap between two chains, so it has nothing to place the other row from and the other row keeps the window it had." src="/img/synteny_follow_unaligned.png" />
+
 A followed panel can still be panned by hand; it returns to the matching region
 once it settles. Turn following off to keep it where you put it.
 
