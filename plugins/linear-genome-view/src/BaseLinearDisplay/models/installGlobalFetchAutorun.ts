@@ -263,6 +263,7 @@ export function installGlobalFetchAutorun<TArgs, TResult>(
     self,
     view => {
       void view.visibleRegions
+      // eslint-disable-next-line no-restricted-syntax -- self-write: cancelFetch clears the flag this reads
       if (untracked(() => self.fetchCanceled)) {
         self.cancelFetch()
       }

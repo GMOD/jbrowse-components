@@ -254,8 +254,10 @@ export function makeRetryContractCheck(
   if (process.env.NODE_ENV === 'production') {
     return () => {}
   }
+  // eslint-disable-next-line no-restricted-syntax -- instrumentation
   let lastCounter = untracked(() => self.reloadCounter)
   function noteRetryContractOutcome(outcome: FetchAutorunOutcome) {
+    // eslint-disable-next-line no-restricted-syntax -- instrumentation
     untracked(() => {
       // A decline while a prerequisite is still in flight is a stage of the
       // retry, so the bump stays OUTSTANDING rather than being either reported

@@ -487,6 +487,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
           autorun(
             () => {
               const assemblyConfs = self.assemblyList
+              // eslint-disable-next-line no-restricted-syntax -- self-write: removes from the assemblies it reads
               untracked(() => {
                 // filter() returns a new plain array, so removing from
                 // self.assemblies in the loop below does not skip elements

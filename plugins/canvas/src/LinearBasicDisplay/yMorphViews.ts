@@ -248,6 +248,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       // morphFromTops/morphProgress/morphFromMaxY advance every rAF
       // frame — read all untracked so neither writing scrollTop back
       // below nor the morph clock can re-trigger this layout autorun.
+      // eslint-disable-next-line no-restricted-syntax -- self-write: scrollTop is written back below, and the morph clock is this layout's own effect
       const { scrollTop, height, fromTops, fromMaxY } = untracked(() => {
         // A morph still in flight means a second, non-debounced
         // layout change (a pin toggle or region flip — unlike zoom)

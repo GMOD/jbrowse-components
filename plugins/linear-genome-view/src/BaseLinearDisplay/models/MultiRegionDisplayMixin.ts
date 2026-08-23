@@ -3,7 +3,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { untracked } from 'mobx'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
@@ -484,16 +483,12 @@ export default function MultiRegionDisplayMixin() {
          * redundant fetch rather than a cached answer for a zoom the data was
          * never fetched at.
          *
-         * The stamp is read `untracked` for the reason `FetchVisibleRegions`
-         * reads `loadedRegions` untracked: that autorun is what writes it, and
-         * the `fetchGeneration` bump at fetch end is the re-trigger.
          */
         isCacheValid(displayedRegionIndex: number): boolean {
           return (
             self.regionHasData(displayedRegionIndex) &&
-            untracked(
-              () => self.loadedRegions.get(displayedRegionIndex)?.fetchKey,
-            ) === self.regionFetchKey
+            self.loadedRegions.get(displayedRegionIndex)?.fetchKey ===
+              self.regionFetchKey
           )
         },
       }))

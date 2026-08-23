@@ -267,6 +267,7 @@ export function installFetch<TArgs, TResult>(
       // executes in this derivation; `FetchPhases.run` promises those reads are
       // untracked, and unlike the MST flow the LGV side hides behind, nothing
       // here makes it so. Whatever the run needs tracked belongs in `prepare`.
+      // eslint-disable-next-line no-restricted-syntax -- effect input: run's prefix reads are the fetch's, prepare is the trigger list
       untracked(() => {
         void runFetchOnce(self, rotation.begin(), args, {
           run,

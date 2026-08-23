@@ -384,6 +384,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             // UNTRACKED, the one read this rung makes of its moving row: the
             // rung does not otherwise depend on it, and a dependency registered
             // here would wake the pass on the placement it is about to make
+            // eslint-disable-next-line no-restricted-syntax -- self-write: the placement this pass is about to make
             movingRegions: untracked(() => movingView.displayedRegions),
             windows,
             spans,
@@ -539,6 +540,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // frame. That made one settled resolve register the moving row's zoom
         // as a dependency of the debounced pass, costing an extra full plan
         // (the envelope scan included) per settle.
+        // eslint-disable-next-line no-restricted-syntax -- effect input: execute consumes the display's adapterConfig and lodTier, the plans are the decision
         untracked(() => {
           for (const { work, spread } of plans) {
             if (spread) {
@@ -597,7 +599,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             carried ??
             followAnchorWindows(
               written.has(stayingView)
-                ? untracked(() => stayingView.dynamicBlocks.contentBlocks)
+                ? // eslint-disable-next-line no-restricted-syntax -- self-write: this pass wrote that row
+                  untracked(() => stayingView.dynamicBlocks.contentBlocks)
                 : stayingView.dynamicBlocks.contentBlocks,
             )
           // The multi-contig rung's ANSWER is recomputed here rather than

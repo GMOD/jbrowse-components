@@ -228,6 +228,7 @@ export function clearFileFromCache(handleId: string) {
 export function hasFileHandlesInCache() {
   // read in RpcMethodType.serializeArguments, which an RPC-fetch autorun can
   // reach; untracked so populating the cache never re-triggers that autorun
+  // eslint-disable-next-line no-restricted-syntax -- self-write: the fetch this is reached from populates the cache
   return untracked(() => fileHandleCache.size > 0)
 }
 

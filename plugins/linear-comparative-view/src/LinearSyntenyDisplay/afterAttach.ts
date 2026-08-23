@@ -46,6 +46,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // width; the target axis (v1) supplies its cumBp index + cull geometry,
         // and its own fetch window only when the view asked for the second
         // query (`targetFetchRegions` is [] otherwise).
+        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the geometry, fetchKey is the decision
         return untracked(() => {
           const { view } = self
           return {

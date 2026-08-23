@@ -135,6 +135,7 @@ export function observeSession(
         layoutSignal(session.views)
         onLocationChange?.(session.views.map(viewLocation))
         // untracked, so reading the snapshot adds no dependencies of its own
+        // eslint-disable-next-line no-restricted-syntax -- effect input: the callback consumes the snapshot, the views are the trigger
         onSessionChange?.(untracked(() => getSessionSnapshot(session)))
       }),
     )

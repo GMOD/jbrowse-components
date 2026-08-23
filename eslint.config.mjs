@@ -271,6 +271,18 @@ const noHeightModeComposedFirst = {
     'HeightModeMixin() must be composed AFTER TrackHeightMixin(), and this types.compose has them the other way round. HeightModeMixin overrides that mixin’s `height` getter and `resizeHeight` action, and types.compose resolves a member collision to the LATER argument, so composing it first hands both straight back to the base: the track height stops following the laid-out content in grow mode, a drag-resize no longer leaves grow before writing the slot, and nothing errors anywhere. No value gives it away either — the two `height` getters agree in fixed mode, which is the state most fixtures start in. Move HeightModeMixin() below TrackHeightMixin() in the same call. See agent-docs/ARCHITECTURE.md §"What not to do".',
 }
 
+// An `untracked` read is a claim about an autorun's dependency set, and only
+// three claims are true. The per-region fetch autorun carried two "perf guards"
+// (`isLoading`, `loadedRegions`, "would re-fire mid-fetch") that were measured
+// on 2026-08-23 at one idle run of a pure plan and deleted; a read the decision
+// branches on is tracked, whatever it costs. Each site says which ground it
+// stands on, so the next reader does not have to re-derive it.
+const noUnexplainedUntracked = {
+  selector: "CallExpression[callee.name='untracked']",
+  message:
+    'Say which ground this `untracked` stands on, as `// eslint-disable-next-line no-restricted-syntax -- <ground>`. There are three: SELF-WRITE (the body writes what it reads, so tracking it re-fires the body off its own write), EFFECT INPUT (no decision branches on the read; only the work the body launches consumes it, and the decision is keyed elsewhere — the values behind a tracked fetch key), INSTRUMENTATION (a dev-only check must not alter the production dependency set). A read the decision branches on is tracked, whatever it costs: the per-region fetch autorun\'s two "perf guards" measured at one idle run and were deleted. See agent-docs/ARCHITECTURE.md §"`untracked` has three grounds".',
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
   noSessionAddTrackConf,
@@ -285,6 +297,7 @@ const sourceRestrictedSyntax = [
   noFetchHookInActions,
   noGateMixinComposedFirst,
   noHeightModeComposedFirst,
+  noUnexplainedUntracked,
 ]
 
 export default defineConfig(

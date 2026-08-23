@@ -19,6 +19,7 @@ export function installAutoFadeLatch(self: LinearSyntenyViewModel) {
     autorun(
       () => {
         const widthPx = self.autoFadeWidthPx
+        // eslint-disable-next-line no-restricted-syntax -- self-write: the latch is what this writes
         const previous = untracked(() => self.fadeThinLatch)
         const next = fadesThinAt(widthPx, previous)
         if (next !== previous) {

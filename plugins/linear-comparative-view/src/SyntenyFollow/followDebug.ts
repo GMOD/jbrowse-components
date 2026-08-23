@@ -103,9 +103,11 @@ export function logFollowSpread({
   if (!on()) {
     return
   }
+  // eslint-disable-next-line no-restricted-syntax -- instrumentation
   const after = untracked(() => shown(movingView))
   const mapped = bp(spans)
   console.log(
+    // eslint-disable-next-line no-restricted-syntax -- instrumentation
     `${untracked(
       () =>
         `[follow] SPREAD ${stayingView.assemblyNames[0]} -> ${movingView.assemblyNames[0]}`,
@@ -113,6 +115,7 @@ export function logFollowSpread({
       `  anchor panel: ${panel(stayingView)}\n` +
       `  windows (${carried ? 'carried' : 'off blocks'}) x${windows.length}: ${windows.map(w => span(w)).join(', ')}\n` +
       `  kept by the floor: ${followAnchorWindows(stayingView.coarseDynamicBlocks).length}\n` +
+      // eslint-disable-next-line no-restricted-syntax -- instrumentation
       `  wholeness: ${untracked(() => wholeness(stayingView, windows))}\n` +
       `  spans x${spans.length}: ${spans.map(s => span(s)).join(', ')}\n` +
       `  placed on ${after.contigs.length} contigs, ${(after.bp / 1e6).toFixed(1)}Mb: ${after.contigs.join(', ')}\n` +
@@ -140,6 +143,7 @@ export function logFollowStep({
     return
   }
   console.log(
+    // eslint-disable-next-line no-restricted-syntax -- instrumentation
     `${untracked(
       () =>
         `[follow] ${rung} ${stayingView.assemblyNames[0]} -> ${movingView.assemblyNames[0]}`,

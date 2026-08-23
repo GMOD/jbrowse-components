@@ -80,6 +80,7 @@ export function doAfterAttach(
         // Untracked: the values behind that key. Reading them here rather than
         // as deps keeps raw offsetPx/width changes from refiring the fetch,
         // while the worker still sees the current axes.
+        // eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, fetchKey is the decision
         return untracked(() => ({
           fetchKey,
           // the resolved tier, which is what `currentFetchKey` above carries —
@@ -181,6 +182,7 @@ export function doAfterAttach(
         // Read offsetPx untracked so panning alone doesn't rebuild geometry
         // (pan is a uniform-only update on the GPU); a zoom changes bpPerPx,
         // which IS tracked, so the base is recaptured near the view on zoom.
+        // eslint-disable-next-line no-restricted-syntax -- effect input: the geometry build consumes the pan offset, zoom is the decision
         const { baseH, baseV } = untracked(() => ({
           baseH: hview.offsetPx * hview.bpPerPx,
           baseV: vview.offsetPx * vview.bpPerPx,

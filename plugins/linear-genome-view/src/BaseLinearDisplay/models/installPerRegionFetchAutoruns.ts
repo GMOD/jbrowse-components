@@ -147,6 +147,7 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
     self,
     view => {
       void view.visibleRegions
+      // eslint-disable-next-line no-restricted-syntax -- self-write: clearAllRpcData clears the flags this reads
       if (untracked(() => self.fetchCanceled || self.error)) {
         self.clearAllRpcData()
       }
