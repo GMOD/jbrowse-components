@@ -7,6 +7,11 @@
 // through `add-track`; anything else round-trips through the `add-track-json`
 // fallback, which every valid track config satisfies.
 //
+// The same two commands are emitted from every figure's `sessionTracks`, for the
+// CLI tab of its recipe dialog, so the bottom of this file runs that corpus too
+// — including the fallback command's shell quoting, which is the recipes' own
+// exposure (see jsonArgsAsShellSees).
+//
 // The comparison is semantic, not textual, and has to be: `add-track` writes
 // the *legacy* adapter format, so the config it produces never matches the
 // modern shorthand the docs show even when both describe the same track. A BAM
@@ -54,8 +59,13 @@ import {
   isAddtrack,
   isSession,
 } from '../src/lib/remark-config-cli-tabs.ts'
+import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
+import { deriveCliRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
+import { screenshotLiveUrls } from './screenshot-specs.ts'
+
+import type { RawTrack } from '../src/lib/spec-recipe/configs.ts'
 
 const cli = join(repoRoot, 'products', 'jbrowse-cli', 'dist', 'bin.js')
 
@@ -481,6 +491,71 @@ for (const [label, config] of UNDERIVABLE_SESSIONS) {
   }
 }
 
+// The same two commands, derived from a figure's `sessionTracks` for the CLI
+// tab of its recipe dialog (src/lib/spec-recipe/recipe.ts). Nothing above
+// reaches them: a tagged doc fence is hand-written and CLI-clean, where a
+// session track is read off a live link and mostly isn't, so the recipes are
+// where the add-track-json fallback actually ships. Checked once per DISTINCT
+// track — the corpus is ~100 tracks over ~90 figures, and a figure reusing one
+// would otherwise pay for it again.
+const recipeTracks = new Map<string, RawTrack>()
+for (const url of Object.values(screenshotLiveUrls)) {
+  const spec = decodeSpecUrl(url)?.spec
+  for (const track of (spec?.sessionTracks as RawTrack[] | undefined) ?? []) {
+    recipeTracks.set(JSON.stringify(track), track)
+  }
+}
+
+// A recipe's own risk, and not the fences': its command carries the whole
+// config as one single-quoted shell word, and a dozen of these tracks hold a
+// jexl filter with single quotes of their own. So the emitted text is run in a
+// real shell, with `jbrowse` shadowed by a function that prints the argument the
+// CLI would have received — what a reader pastes, checked as pasted. One shell
+// for the whole corpus, since the cost here is the process, not the command.
+function jsonArgsAsShellSees(commands: string): string[] | string {
+  const script = `jbrowse() { printf '%s\\0' "$2"; }\n${commands}`
+  try {
+    return execFileSync('sh', ['-c', script], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).split('\0')
+  } catch (e) {
+    // quoting broken badly enough that the shell won't parse the script at all,
+    // which is the loudest version of the bug and still has to name itself
+    return `the emitted add-track-json commands don't parse in a shell: ${firstLine(e)}`
+  }
+}
+
+// the tracks whose command is the verbatim-JSON fallback, taken together
+// because that is also how a multi-track figure's own tab emits them
+const quoted: RawTrack[] = []
+for (const track of recipeTracks.values()) {
+  const args = deriveAddTrackArgs(track)
+  if (args === null) {
+    quoted.push(track)
+  } else {
+    // the flag derivation, through the real CLI, exactly as a fence gets it
+    const reason = roundTrip(asRecord(track), args)
+    if (reason) {
+      errorLines.push(`  recipe track (${track.trackId})`, `    → ${reason}\n`)
+    }
+  }
+}
+const emitted = deriveCliRecipe(quoted)
+const asShellSees = emitted ? jsonArgsAsShellSees(emitted.commands) : []
+if (typeof asShellSees === 'string') {
+  errorLines.push('  figure recipe CLI tab', `    → ${asShellSees}\n`)
+} else {
+  for (const [i, track] of quoted.entries()) {
+    if (asShellSees[i] !== JSON.stringify(track, null, 2)) {
+      errorLines.push(
+        `  recipe track (${track.trackId})`,
+        `    → the shell reads a different config out of the emitted add-track-json command\n`,
+      )
+    }
+  }
+}
+
 if (errorLines.length) {
   errorLines.unshift(
     `Found addtrack/addassembly/session blocks whose derived command doesn't round-trip:\n`,
@@ -489,5 +564,5 @@ if (errorLines.length) {
 const fixtures = FALLBACK_FIXTURES.length + 1 + UNDERIVABLE_SESSIONS.length
 reportProblems(
   errorLines,
-  `All ${checked} addtrack/addassembly/session block(s) + ${fixtures} fixture(s) round-trip through jbrowse add-track / add-track-json / add-assembly / set-default-session.`,
+  `All ${checked} addtrack/addassembly/session block(s) + ${fixtures} fixture(s) + ${recipeTracks.size} figure-recipe session track(s) round-trip through jbrowse add-track / add-track-json / add-assembly / set-default-session.`,
 )

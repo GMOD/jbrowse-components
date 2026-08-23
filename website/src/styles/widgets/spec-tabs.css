@@ -36,7 +36,8 @@
   .spec-tabs > .spec-tab-input:nth-of-type(2):checked ~ .spec-panel-2,
   .spec-tabs > .spec-tab-input:nth-of-type(3):checked ~ .spec-panel-3,
   .spec-tabs > .spec-tab-input:nth-of-type(4):checked ~ .spec-panel-4,
-  .spec-tabs > .spec-tab-input:nth-of-type(5):checked ~ .spec-panel-5 {
+  .spec-tabs > .spec-tab-input:nth-of-type(5):checked ~ .spec-panel-5,
+  .spec-tabs > .spec-tab-input:nth-of-type(6):checked ~ .spec-panel-6 {
     display: block;
   }
 

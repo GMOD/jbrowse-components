@@ -54,6 +54,15 @@ interface Panel {
   body: string
 }
 
+// add-track only WARNS about an assembly its target config has no entry for, so
+// the track lands and the instance opens it against nothing. Naming the
+// assemblies here is the difference between that and a config that works.
+function assembliesNote(assemblies: string[]): string {
+  return assemblies.length
+    ? ` The config needs ${assemblies.map(name => `<code>${escapeAttr(name)}</code>`).join(', ')} already — <a href="/docs/cli/#jbrowse-add-assembly"><code>jbrowse add-assembly</code></a> adds yours.`
+    : ''
+}
+
 // One panel per way of reproducing the figure. Built as a list so a panel that
 // doesn't apply (a notebook snippet for a synteny view) simply isn't in it —
 // tab and panel positions stay in step with each other automatically, which
@@ -79,6 +88,18 @@ function panels(recipe: Recipe): Panel[] {
         copyableBlock(recipe.desktopWebUrl, 'spec-json'),
       ].join(''),
     },
+    ...(recipe.cli
+      ? [
+          {
+            label: 'With the CLI',
+            body: [
+              note('A figure adds its tracks to one session. The <a href="/docs/cli/">jbrowse CLI</a> writes the same tracks into a <code>config.json</code> instead, where every session that opens it has them: <a href="/docs/cli/#jbrowse-add-track"><code>add-track</code></a> where flags cover the whole track, <a href="/docs/cli/#jbrowse-add-track-json"><code>add-track-json</code></a> where they do not.'),
+              copyableBlock(recipe.cli.commands, 'spec-json'),
+              note(`Run these where the <code>config.json</code> is, or add <code>--out &lt;dir&gt;</code>, and point each <code>uri</code> at your own file.${assembliesNote(recipe.cli.assemblies)} The location and the settings the steps carry are session state rather than track config — that half is the <strong>Session spec</strong> tab, or <a href="/docs/cli/#jbrowse-set-default-session"><code>jbrowse set-default-session</code></a>.`),
+            ].join(''),
+          },
+        ]
+      : []),
     {
       label: 'Session spec',
       body: [

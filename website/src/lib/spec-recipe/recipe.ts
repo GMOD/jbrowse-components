@@ -1,3 +1,4 @@
+import { deriveAddTrack, deriveAddTrackJson } from '../derive-add-track.ts'
 import { fileKind, lookupAssembly, lookupTrack } from './configs.ts'
 
 import type { RawTrack, TrackInfo  } from './configs.ts'
@@ -50,6 +51,10 @@ export interface Recipe {
   // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
   // agent asked to make one like it
   agentCommand: string
+  // the figure's own tracks as jbrowse CLI commands, for a reader putting them
+  // in a config.json instead of in one session. Absent when the figure adds no
+  // track of its own (every track comes from the config it loads).
+  cli?: CliRecipe
   // spec fields with no verified click-path yet (surfaced by check-spec-recipes)
   unmapped: string[]
 }
@@ -463,6 +468,38 @@ function viewSteps(
   return { steps, unmapped }
 }
 
+export interface CliRecipe {
+  // one `jbrowse` command per session track, blank-line separated
+  commands: string
+  // the assemblies those tracks name, which the target config has to declare
+  // already — add-track only warns about one it cannot find
+  assemblies: string[]
+}
+
+// A session track is a whole track config, so the CLI can write the same track
+// into a config.json rather than into one session: `add-track` where the config
+// is CLI-clean, and `add-track-json` verbatim for the rest, which is most of
+// them here — a figure's track usually carries the `displays` array that is the
+// point of the figure. Both derivations are the ones behind the Config/CLI tabs
+// on a docs fence, and check-config-cli round-trips what they emit through the
+// real CLI.
+export function deriveCliRecipe(sessionTracks: RawTrack[] | undefined) {
+  return sessionTracks?.length
+    ? {
+        commands: sessionTracks
+          .map(
+            track =>
+              deriveAddTrack(track) ??
+              deriveAddTrackJson(JSON.stringify(track, null, 2)),
+          )
+          .join('\n\n'),
+        assemblies: [
+          ...new Set(sessionTracks.flatMap(track => track.assemblyNames ?? [])),
+        ],
+      }
+    : undefined
+}
+
 // The shell command that rebuilds this figure headlessly.
 //
 // A figure's `config=` is written as the live link needs it — usually relative
@@ -556,6 +593,7 @@ export function buildRecipe(
       ? pythonSnippet(firstView, config, sessionTracks)
       : undefined,
     agentCommand: agentCommandFor(base, config, specJson),
+    cli: deriveCliRecipe(sessionTracks),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }
 }

@@ -103,7 +103,7 @@ function urlTab(url: string): Tab {
 // picking a tab in the second unchecks both of its inputs.
 //
 // Every input precedes every panel, which the stylesheet's `~` selectors
-// require. It pairs the nth input with `.spec-panel-n` and stops at 5, so a
+// require. It pairs the nth input with `.spec-panel-n` and stops at 6, so a
 // widget cannot grow past that without a rule there.
 function tabWidget(gid: string, tabs: Tab[]) {
   const inputs = tabs.map(
