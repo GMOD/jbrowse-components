@@ -1,4 +1,4 @@
-import { measureRegionBytes } from './byteGate.ts'
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 

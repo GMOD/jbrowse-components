@@ -156,16 +156,16 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-19 registered displays declare 174 config slots, 40 MST properties and 53 volatiles between them — counting what each display's own directory declares.
+19 registered displays declare 176 config slots, 40 MST properties and 52 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
 | --- | --- | --- | --- | --- |
 | `LinearAlignmentsDisplay` | `plugins/alignments` | 47 | 2 | 17 |
-| `LinearBasicDisplay` | `plugins/canvas` | 25 | 8 | 13 |
+| `LinearBasicDisplay` | `plugins/canvas` | 26 | 8 | 12 |
 | `LinearMafDisplay` | `plugins/maf` | 18 | 2 | 8 |
 | `LDDisplay` | `plugins/variants` | 15 | 1 | 2 |
-| `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 11 | 4 | 2 |
+| `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 12 | 4 | 2 |
 | `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 3 |
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
 | `LinearArcDisplay` | `plugins/arc` | 6 | 2 | 0 |
@@ -513,7 +513,7 @@ column reports what actually composes what.
 | Mixin | The display supplies | Composed by |
 | --- | --- | --- |
 | `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
-| `LegendMixin()` | A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend` | `LinearAlignmentsDisplay`, `LinearHicDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
+| `LegendMixin()` | A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
 | `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
 | `RowHeightMixin()` | The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiSampleVariantBaseModel` |
 | `HeightModeMixin()` | Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay` |
@@ -556,7 +556,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 <!-- BEGIN GENERATED DISPLAY_HOOK_OVERRIDES -->
 
 
-18 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
+19 overridable hooks. **Sitting on the default** is what a display that does not override one gets.
 
 <!-- prettier-ignore -->
 | Hook | Sitting on the default | Declared by |
@@ -568,13 +568,14 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `viewSignature` | undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census) | `arc/shared`, `hic/LinearHicDisplay`, `variants/LDDisplay` |
 | `layoutReady` | overlays are dropped rather than pinned to a stale layout | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
 | `fetchInert` | false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled` | `linear-comparative-view/LinearSyntenyDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
+| `awaitingPrerequisite` | every decline is judged on the spot by the dev-only retry check, which is right for a display whose fetch answers off its own state — a two-stage one (HiC waits on `CoreGetInfo`, variants on `sourcesBase`) is reported as a dead Retry it does not have, since the run that will fetch is the one after the prerequisite lands. Overriding it DEFERS that verdict, never waives it, so the override has to be strictly narrower than the gate it explains | `hic/LinearHicDisplay`, `variants/shared` |
 | `rendersCanvas` | `painted` waits on a canvas that is never mounted, so `data-display-drawn` stays false for the display’s whole life and every `waitForDisplaysDone` on the page burns its timeout | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
 | `paintInert` | same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own | `linear-genome-view/BaseLinearDisplay` |
-| `measuresBytesPreFlight` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
-| `measuresBytesInFetch` | the same, for the in-RPC half canvas uses | `canvas/shared` |
+| `gateEnabled` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `canvas/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
 | `densityTooLarge` | byte-only gating, no feature-density axis | `canvas/shared` |
 | `densityGateEnabled` | no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off | `canvas/LinearMultiRowFeatureDisplay`, `canvas/shared` |
-| `byteGateAdapterConfig` | the estimate measures the display’s own adapter — wrong for a display that reads a different file at different zooms | `maf/LinearMafDisplay` |
+| `byteGateAdapterPath` | the estimate and the budget both describe the track’s own `adapter` — wrong for a display that reads a different file at different zooms, and the one hook such a display overrides, since `byteGateAdapterConfig` is the config at this path | `maf/LinearMafDisplay` |
+| `byteGateAdapterConfig` | the config sitting at `byteGateAdapterPath`, which a tier swap already moves — so this one is for a display whose adapter config is SYNTHESIZED rather than read off the track (GC content folds `windowSize` / `gcMode` in), where no path names what it fetches | — |
 | `scrollableHeight` | `Infinity` — the display does not scroll internally | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `maf/LinearMafDisplay`, `variants/shared` |
 | `growTargetHeight` | grow mode targets the raw `height` slot | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
 | `featureNoun` | `feature`, which is right wherever the generic word already fits — an override changes what CONTENT is called ("Showing 3 variants"), never what a control is called, since "Variant height" reads as a different setting from "Feature height" | `alignments/LinearAlignmentsDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `variants/LinearVariantDisplay` |
@@ -669,16 +670,16 @@ than in that action. This is one of **two** places it is dropped; the other is
 `RegionTooLargeMixin`'s own `ClearByteEstimateOnTierSwap`, for a display that
 reads a different file at different zooms.
 
-Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`.
-`fetchRegions` runs an optional pre-flight byte estimate before invoking the work
-callback: `RegionTooLargeMixin.byteGateBlocksFetch` → the
-`CoreGetRegionByteEstimate` RPC, active when the display sets `measuresBytesPreFlight`
-and the shared `gateActive` says something could act on the answer. A blocked
-display keeps running that fetch, once per settled viewport, because the
-measurement is the only thing that releases the banner and a blocked fetch stops
-at it. Oversize regions surface a banner:
-`DisplayChrome` renders `TooLargeMessage` from the model's
-`regionTooLargeReason`.
+Subclasses override `fetchNeeded` to call one of the fan-out helpers
+(`fetchEachRegion`, `fetchAllRegions`, `fetchRegionsBatched`). A gated display
+passes `byteLimit: self.resolvedByteLimit()` in its RPC args; the worker
+measures the region's index bytes as the feature RPC's first await and answers
+a `RegionTooLargeResult` instead of a payload when over, which the helper
+commits through `commitFetchBytes` and skips the store for. A blocked display
+keeps running that fetch, once per settled viewport, because the measurement is
+the only thing that releases the banner and a blocked fetch stops at it.
+Oversize regions surface a banner: `DisplayChrome` renders `TooLargeMessage`
+from the model's `regionTooLargeReason`.
 
 The `error`/`fetchCanceled` reads in `ClearBlockingStateOnViewportChange` are
 `untracked` for correctness — tracking either would let `set…` re-fire the
@@ -871,23 +872,16 @@ It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the la
 byte measurement — and what keeps that measurement describing what is on screen
 is that a blocked display keeps fetching, once per settled viewport, with the
 fetch stopping at the measurement rather than downloading. So the banner releases
-on a fresh index read, with no imperative clear and no flicker on pan. Displays
-opt in by overriding hooks — `measuresBytesPreFlight` for a pre-flight estimate,
-`measuresBytesInFetch` for a byte check inside the display's own feature RPC,
-plus `byteGateAdapterConfig` / `densityTooLarge` — rather than shadowing the
-getter (`configuredFetchSizeLimit` / `configForceLoad` are plain slot reads,
-not part of the overridable hook surface). **Never override
-`gateEnabled`**: it is the OR of the two opt-ins, additive
-precisely so a gate mixin can contribute one without racing the base on
-composition order, and `no-restricted-syntax` fails both the shadow and a
-`CanvasFeatureGateMixin()` written before `MultiRegionDisplayMixin()`, because
-either disables the whole gate silently. Canvas folds
-its byte check into the feature-fetch RPC instead of a separate pre-flight
-estimate, and adds the density axis, via `CanvasFeatureGateMixin`
-(`plugins/canvas/src/shared/`), which both canvas feature displays compose; the
-shared verdict/threshold/banner-text primitives live in
-`plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts` so the two paths
-can't drift.
+on a fresh index read, with no imperative clear and no flicker on pan. There is
+one measurement path (since 2026-08-23): the feature RPC itself measures, so a
+display opts in with `gateEnabled` and by passing `byteLimit` in its call, plus
+`byteGateAdapterPath` / `densityTooLarge` where a tier or a density axis
+applies (`configuredFetchSizeLimit` / `configForceLoad` are plain slot reads,
+not part of the overridable hook surface). Canvas adds the density axis via
+`CanvasFeatureGateMixin` (`plugins/canvas/src/shared/`), which both canvas
+feature displays compose and which `no-restricted-syntax` requires after
+`MultiRegionDisplayMixin()`; the shared verdict/threshold/banner-text
+primitives live in `plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts`.
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
 shared decision primitives: [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).
@@ -1372,10 +1366,12 @@ residue an exclusion list happened not to mention.
 multi-wiggle and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
 multi-LGV synteny fill the same role without the method: HiC's upload callback
 reads `self.colorScheme` straight into `generateColorRamp`, and synteny's
-`computedColors` getter is its re-upload-without-refetch half. Canvas's worker
-pre-builds the buffer, so canvas has only `rpcProps()`. This splits refetch from re-upload: wiggle color change →
-re-encode only; `bicolorPivot` change → worker output differs → `rpcProps()` →
-refetch.
+`computedColors` getter is its re-upload-without-refetch half. Canvas joined
+the method on 2026-08-23: its worker emits a color *class* per themed lane and
+the main-thread encode resolves classes against `session.palette`, so the
+worker holds no palette and a theme change re-encodes. This splits refetch from
+re-upload: wiggle color change → re-encode only; `bicolorPivot` change → worker
+output differs → `rpcProps()` → refetch.
 
 **Opacity is a render parameter, never a packed color.** Both comparative
 displays own a `computedColors` getter — the gpuProps half — and both keep the
@@ -1456,10 +1452,9 @@ render input:
 - `theme` is the resolved MUI `Theme`, for the components that are MUI.
 
 Embedded products without `ThemeManagerSessionMixin` supply both off a
-`themeOptions` getter (`EmbeddedSessionThemeMixin`), which is also what the
-canvas display puts in `rpcProps()` so worker-baked colors honor the config
-`theme` slot. SVG export still overrides the palette with the *export* theme —
-`resolvePalette({ configTheme: opts?.theme })`.
+`themeOptions` getter (`EmbeddedSessionThemeMixin`). No display sends a theme
+to the worker any more; SVG export still overrides the palette with the
+*export* theme — `resolvePalette({ configTheme: opts?.theme })`.
 
 ## Per-region zoom-staleness
 
@@ -1605,12 +1600,10 @@ and 12 lines — and both have since been given the sections they wanted.
   something `FetchVisibleRegions` already tracks will wake it. A fetch bumps
   `fetchGeneration`; an early return that skips the fetch breaks that chain and
   must supply its own wake path.
-- Don't override `gateEnabled`. It is the OR of the two byte-gate opt-ins,
-  additive so a gate mixin can contribute one without racing the base on
-  composition order; shadowing it disables the whole gate in silence. Override
-  `measuresBytesPreFlight` / `measuresBytesInFetch` instead —
-  `no-restricted-syntax` fails a second `get gateEnabled()` in source and says
-  why. See [the gate summary](#the-region-too-large-gate-summary).
+- Don't measure bytes anywhere but in the feature RPC. `gateEnabled` is the
+  one opt-in and `byteLimit` in the call is the whole display-side contract;
+  a separate estimate round trip is the pre-flight path that was deleted. See
+  [the gate summary](#the-region-too-large-gate-summary).
 - Don't pass `sessionId` twice. `RpcManager.call` injects the first argument
   into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
   reason. See [the pattern](#rpcprops--gpuprops-pattern).

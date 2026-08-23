@@ -2760,6 +2760,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "showLegend",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
           "name": "showLabels",
           "type": "(JexlString | (showLabels | undefined))"
         },
@@ -3619,6 +3623,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "growMaxHeight",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "showLabels",
