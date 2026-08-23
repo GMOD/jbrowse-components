@@ -2394,6 +2394,16 @@ export default function stateModelFactory(
             : undefined
           return summary ?? self.adapterConfig
         },
+        /**
+         * #getter
+         * Where the tier above came from, so `adapterFetchSizeLimit` reads the
+         * budget of the file the estimate measured rather than the alignment's.
+         * `showSummary` already implies `summaryAdapterConfig` exists, so this
+         * and the snapshot above cannot pick different tiers.
+         */
+        get byteGateAdapterPath(): string[] {
+          return self.showSummary ? ['adapter', 'summaryAdapter'] : ['adapter']
+        },
       }))
       .actions(self => ({
         // #region renderSvgAction

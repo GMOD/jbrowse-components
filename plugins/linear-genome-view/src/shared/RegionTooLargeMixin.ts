@@ -385,12 +385,32 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * The adapter's own `fetchSizeLimit` slot (undefined when the adapter type
-       * declares none); `resolveByteLimit` prefers it over the display config.
-       * Read on the main thread, and only here — the estimate that crosses the
-       * worker boundary carries bytes and nothing else, so the banner and the
-       * worker budget have no second spelling of "the adapter's limit" to
-       * disagree about.
+       * Where on the track config the adapter `byteGateAdapterConfig` names
+       * lives. The track's own `adapter` by default; a display that swaps tiers
+       * overrides **both**, so the budget and the measurement describe one file.
+       *
+       * A path rather than the node or the budget itself because
+       * `byteGateAdapterConfig` is a resolved snapshot, and a snapshot cannot
+       * answer this: it omits every slot sitting at its schema default, so a
+       * sub-adapter's declared limit is absent from it in any config that does
+       * not restate the number. Pointing `adapterFetchSizeLimit` at the same
+       * path is what makes a sub-adapter's own `fetchSizeLimit` reachable at
+       * all. Inert in the tree today — the four adapters declaring the slot are
+       * Bam/Cram/VcfTabix/SplitVcfTabix and MAF's summary tier is a BigBed — and
+       * a static check cannot close it, because which adapter type sits behind
+       * an override is a config-time fact.
+       */
+      get byteGateAdapterPath(): string[] {
+        return ['adapter']
+      },
+      /**
+       * #getter
+       * The measured adapter's own `fetchSizeLimit` slot (undefined when its
+       * type declares none); `resolveByteLimit` prefers it over the display
+       * config. Read on the main thread, and only here — the estimate that
+       * crosses the worker boundary carries bytes and nothing else, so the
+       * banner and the worker budget have no second spelling of "the adapter's
+       * limit" to disagree about.
        *
        * A slot **path off the live config**, not a read off `self.adapterConfig`:
        * that getter is a snapshot, which by design omits slots sitting at their
@@ -400,7 +420,7 @@ export default function RegionTooLargeMixin() {
        */
       get adapterFetchSizeLimit(): number | undefined {
         return readConfObject(getContainingTrack(self).configuration, [
-          'adapter',
+          ...this.byteGateAdapterPath,
           'fetchSizeLimit',
         ])
       },

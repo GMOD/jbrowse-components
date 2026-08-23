@@ -451,13 +451,23 @@ the swap. Overriding it is the whole opt-in: the cached estimate is dropped when
 this getter's value changes, so a measurement can't outlive the tier it measured
 (§ How the verdict is built).
 
-One thing it does **not** move is the budget. `adapterFetchSizeLimit` reads
-`['adapter','fetchSizeLimit']` off the containing track, so a swapped-in
-sub-adapter is measured against the *parent* adapter's declared limit. Inert
-today — no MAF adapter declares the slot, so both tiers land on the display
-config — but a tiered display whose sub-adapter declared one would gate against
-the wrong number, and the fix is to override `adapterFetchSizeLimit` alongside
-this getter rather than to teach the slot path about tiers.
+**`byteGateAdapterPath`** moves the budget with it, and a tiered display
+overrides both. `adapterFetchSizeLimit` reads
+`[...byteGateAdapterPath, 'fetchSizeLimit']` off the containing track —
+`['adapter']` in the base mixin, `['adapter','summaryAdapter']` in MAF while
+`showSummary` — so a swapped-in sub-adapter is sized against its own declared
+limit rather than the parent adapter's. A path rather than the node or the
+resolved number, because the snapshot `byteGateAdapterConfig` hands back cannot
+answer it: slots sitting at their schema default are absent from a snapshot, so
+a sub-adapter's limit is unreadable there in any config that does not restate
+the number.
+
+Inert in the tree: the four adapters declaring `fetchSizeLimit` are
+Bam/Cram/VcfTabix/SplitVcfTabix, and MAF's summary tier is a BedTabix or a
+BigBed. A static check cannot close it either — which adapter type sits behind
+an override is a config-time fact — so what pins it is
+`derivedRegionTooLarge.test.ts`'s "reads the budget off the tier it measured",
+against a `summaryAdapter` carrying a limit no in-tree config writes.
 
 That getter lets a tiered display keep `measuresBytesPreFlight` on for **both**
 tiers. Spelling the swap as `measuresBytesPreFlight = !showSummary` instead —
@@ -801,10 +811,12 @@ paths can't drift apart.
   the limit does not ride back on the estimate.
 
   Read it as a slot **path off the live track config**
-  (`readConfObject(track.configuration, ['adapter','fetchSizeLimit'])`), never off
-  the display's `adapterConfig`: that is a snapshot, and a snapshot omits any slot
-  at its default, so a BAM's declared 5 Mb reads back as `undefined` and the 1 Mb
-  display default gates instead. See
+  (`readConfObject(track.configuration, [...byteGateAdapterPath, 'fetchSizeLimit'])`),
+  never off the display's `adapterConfig`: that is a snapshot, and a snapshot
+  omits any slot at its default, so a BAM's declared 5 Mb reads back as
+  `undefined` and the 1 Mb display default gates instead. `byteGateAdapterPath`
+  is `['adapter']` unless a tiered display moved it — see the tier-swap section
+  above. See
   [CONFIG_PATTERN.md §"Reading a slot: node, not snapshot"](CONFIG_PATTERN.md).
 
   An adapter-declared limit **outranks** the display config, so a display-level

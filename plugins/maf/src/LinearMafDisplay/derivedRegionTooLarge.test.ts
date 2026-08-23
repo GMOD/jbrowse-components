@@ -304,6 +304,26 @@ describe('MAF measures the tier it is about to fetch', () => {
     })
   })
 
+  // The budget has to follow the swap as well as the measurement, or the summary
+  // tier is sized against the alignment's declared limit. Inert for the two
+  // adapters in the tree — a MafTabixAdapter declares no `fetchSizeLimit` and a
+  // BigBed has no slot to declare one — so this pins the path rather than a
+  // number a real config produces today.
+  it('reads the budget off the tier it measured', () => {
+    const { display, view } = createMafTestEnvironment({
+      summaryAdapter: { type: 'BigBedAdapter', fetchSizeLimit: 4242 },
+    }).createDisplay()
+
+    view.zoomTo(100)
+    expect(display.byteGateAdapterPath).toEqual(['adapter', 'summaryAdapter'])
+    expect(display.adapterFetchSizeLimit).toBe(4242)
+    expect(display.gateByteLimit).toBe(4242)
+
+    view.zoomTo(20)
+    expect(display.byteGateAdapterPath).toEqual(['adapter'])
+    expect(display.adapterFetchSizeLimit).toBeUndefined()
+  })
+
   it('measures the MAF adapter at every zoom when no summary is configured', () => {
     const { display, view } = createMafTestEnvironment().createDisplay()
 
