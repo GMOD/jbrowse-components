@@ -14,15 +14,17 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  SimpleFeature,
   canonicalizeViewRefName,
   getContainingTrack,
   getContainingView,
+  getNotificationSink,
+  getPaletteHost,
   getSession,
   isFeature,
   measureText,
   notifyFeatureDetailsMiss,
   openFeatureWidget,
+  SimpleFeature,
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
@@ -1130,7 +1132,7 @@ export default function stateModelFactory(
         // Derived from the session theme so it's always available — including
         // headless SVG export and RPC, where no component mounts to seed it.
         get colorPalette(): ColorPalette {
-          return buildColorPaletteFromPalette(getSession(self).palette)
+          return buildColorPaletteFromPalette(getPaletteHost(self).palette)
         },
 
         /**
@@ -2949,7 +2951,7 @@ export default function stateModelFactory(
               // Reveal the center line the warning asks the user to reposition —
               // it's the thing they need to see to comply.
               view.setShowCenterLine(true)
-              getSession(self).notify(
+              getNotificationSink(self).notify(
                 'Cannot sort: the view center line is not over a valid position. Scroll so the center line is within a region and try again.',
                 'warning',
               )
@@ -3005,7 +3007,7 @@ export default function stateModelFactory(
             if (assemblyName) {
               this.setSortSlot({ type, pos, refName, assemblyName, tag })
             } else {
-              getSession(self).notify(
+              getNotificationSink(self).notify(
                 'Cannot sort: no assembly loaded in this view.',
                 'warning',
               )

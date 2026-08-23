@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
-import { getSession } from '@jbrowse/core/util'
+import { getPaletteHost } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getEnv, types } from '@jbrowse/mobx-state-tree'
@@ -361,7 +361,7 @@ export function stateModelFactory(
         /**
          * #getter
          * Overrides the base's `undefined`: this display draws the markers, so
-         * it is the one that puts them in the legend. `getSession(self).palette`
+         * it is the one that puts them in the legend. `getPaletteHost(self).palette`
          * rather than a React theme, because this is a model getter — and it is
          * the same `palette.insertion` the on-screen overlay paints with (via
          * `usePalette`), so the swatch cannot drift from the glyph there. The
@@ -396,7 +396,7 @@ export function stateModelFactory(
               markersForBlock(region, block, drawnRowHeight, canvasWidth)
                 .anyMarker
             ) {
-              return getSession(self).palette.insertion
+              return getPaletteHost(self).palette.insertion
             }
           }
           return undefined

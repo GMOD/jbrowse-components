@@ -1,7 +1,7 @@
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import { getSession } from './mstUtils.ts'
 import { notifyFeatureDetailsMiss } from './openFeatureWidget.ts'
+import { getNotificationSink } from './sessionServices.ts'
 
 import type { Feature } from './simpleFeature.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -61,7 +61,7 @@ export async function withFeatureDetails(
     // track the user has already closed is noise they cannot act on.
     console.error(e)
     if (isAlive(self)) {
-      getSession(self).notifyError(`${e}`, e)
+      getNotificationSink(self).notifyError(`${e}`, e)
     }
   }
 }

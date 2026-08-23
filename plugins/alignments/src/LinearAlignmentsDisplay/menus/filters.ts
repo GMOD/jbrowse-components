@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 
 import { defaultFilterFlags } from '../../shared/util.ts'
 
@@ -52,7 +52,7 @@ export function getFiltersMenuItems(model: FiltersModel) {
   return filterMenuItems({
     activeCount: activeFilterCount(model.filterBy),
     onEdit: () => {
-      getSession(model).queueDialog(handleClose => [
+      getDialogHost(model).queueDialog(handleClose => [
         FilterByTagDialog,
         { model, handleClose },
       ])

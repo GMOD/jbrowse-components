@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { getSession, stringify } from '@jbrowse/core/util'
+import { getNotificationSink, stringify } from '@jbrowse/core/util'
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -72,7 +72,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
           if (click.refName) {
             model.centerAt(click.coord0, click.refName, click.index)
           } else {
-            getSession(model).notify('unknown position clicked')
+            getNotificationSink(model).notify('unknown position clicked')
             console.error('unknown position clicked', click)
           }
         }

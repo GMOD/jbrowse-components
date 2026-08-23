@@ -1,7 +1,7 @@
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
@@ -195,7 +195,7 @@ function ldFilterMenuItems(self: LDMenuSelf): MenuItem[] {
             label: 'LD-specific filters...',
             icon: ClearAllIcon,
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 LDFilterDialog,
                 { model: self, handleClose },
               ])
@@ -204,7 +204,7 @@ function ldFilterMenuItems(self: LDMenuSelf): MenuItem[] {
           {
             label: 'General JEXL filters...',
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 JexlFilterDialog,
                 {
                   model: self,

@@ -6,6 +6,8 @@ import type { Region } from '@jbrowse/core/util/types'
 jest.mock('@jbrowse/core/util', () => ({
   ...jest.requireActual('@jbrowse/core/util'),
   getSession: (node: { session: unknown }) => node.session,
+  getNotificationSink: (node: { session: unknown }) => node.session,
+  getDialogHost: (node: { session: unknown }) => node.session,
 }))
 
 const CTG_A = { assemblyName: 'volvox', refName: 'ctgA' }

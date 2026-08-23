@@ -1,4 +1,8 @@
-import { getSession, resolveNamedRegions } from '@jbrowse/core/util'
+import {
+  getNotificationSink,
+  getSession,
+  resolveNamedRegions,
+} from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -246,7 +250,7 @@ async function applyInit(
     return
   }
   if (named.length < init.views.length) {
-    getSession(self).notifyError(
+    getNotificationSink(self).notifyError(
       'LinearSyntenyView init needs an assembly on every one of its views',
     )
     return

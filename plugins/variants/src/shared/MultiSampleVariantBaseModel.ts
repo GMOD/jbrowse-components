@@ -6,10 +6,11 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
-  SimpleFeature,
   getContainingTrack,
+  getNotificationSink,
   getSession,
   openFeatureWidget,
+  SimpleFeature,
 } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
@@ -746,7 +747,7 @@ export default function MultiSampleVariantBaseModelF(
               })
               .catch((e: unknown) => {
                 console.error(e)
-                getSession(self).notifyError(`${e}`, e)
+                getNotificationSink(self).notifyError(`${e}`, e)
               })
           },
           /**
@@ -1676,7 +1677,7 @@ export default function MultiSampleVariantBaseModelF(
             } catch (e) {
               if (isAlive(self)) {
                 console.error(e)
-                getSession(self).notifyError(`${e}`, e)
+                getNotificationSink(self).notifyError(`${e}`, e)
               }
             }
           })()

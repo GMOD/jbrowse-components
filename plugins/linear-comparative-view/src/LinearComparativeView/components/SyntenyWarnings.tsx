@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getSession, pluralize } from '@jbrowse/core/util'
+import { getDialogHost, pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ReportProblemIcon from '@mui/icons-material/ReportProblemOutlined'
 import { IconButton, Tooltip } from '@mui/material'
@@ -33,7 +33,7 @@ const SyntenyWarnings = observer(function SyntenyWarnings({
         color="warning"
         className={classes.endOfBar}
         onClick={() => {
-          getSession(model).queueDialog(handleClose => [
+          getDialogHost(model).queueDialog(handleClose => [
             SyntenyWarningsDialog,
             { model, handleClose },
           ])

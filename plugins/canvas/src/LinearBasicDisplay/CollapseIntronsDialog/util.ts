@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   clampToContig,
+  getNotificationSink,
   getSession,
   mergeIntervals,
   notEmpty,
@@ -348,7 +349,7 @@ export function runIntronAction(
     action(args)
     handleClose()
   } catch (e) {
-    getSession(args.view).notifyError(`${e}`, e)
+    getNotificationSink(args.view).notifyError(`${e}`, e)
     console.error(e)
   }
 }

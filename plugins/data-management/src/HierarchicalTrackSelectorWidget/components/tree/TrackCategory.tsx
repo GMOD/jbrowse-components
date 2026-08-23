@@ -5,7 +5,7 @@ import {
   PluggableComponent,
   SanitizedHTML,
 } from '@jbrowse/core/ui'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getDialogHost, getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
@@ -184,7 +184,7 @@ function openFolderDialog(
   item: TreeCategoryNode,
 ) {
   const subtracks = getAllTrackNodes(item)
-  getSession(model).queueDialog(handleClose => [
+  getDialogHost(model).queueDialog(handleClose => [
     FolderDialog,
     {
       model,

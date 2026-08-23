@@ -1,7 +1,12 @@
 import { lazy } from 'react'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  avg,
+  getDialogHost,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
@@ -810,7 +815,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Return to import form',
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
                 {
                   model: self,

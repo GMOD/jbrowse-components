@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 
@@ -207,7 +207,7 @@ export default function stateModelFactory(
       // than parameterized on the base because the two multi-sample displays
       // and LD want the same list and none of them descends from it.
       openFilterDialog() {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           JexlFilterDialog,
           {
             model: self,

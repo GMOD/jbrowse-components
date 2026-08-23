@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getRpcHost } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ClusterDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -45,7 +45,7 @@ const MultiSampleVariantClusterDialog = observer(
           }
           await runGenotypeClustering({
             model,
-            rpcManager: getSession(model).rpcManager,
+            rpcManager: getRpcHost(model).rpcManager,
             sessionId: getRpcSessionId(model),
             regions: view.dynamicBlocks.contentBlocks,
             stopToken,
@@ -56,7 +56,7 @@ const MultiSampleVariantClusterDialog = observer(
         // to agree, or the order pasted back would be indexed against a different
         // sample set than "Run clustering" would have produced.
         fetchMatrix={({ stopToken, statusCallback }) =>
-          getSession(model).rpcManager.call(
+          getRpcHost(model).rpcManager.call(
             getRpcSessionId(model),
             'MultiSampleVariantGetGenotypeMatrix',
             {

@@ -12,6 +12,9 @@ import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
   getContainingView,
+  getDialogHost,
+  getNotificationSink,
+  getPaletteHost,
   getSession,
   isFeature,
   openFeatureWidget,
@@ -758,7 +761,7 @@ export default function baseStateModelFactory(
          * getters").
          */
         gpuProps() {
-          return { colorTable: themedColorTable(getSession(self).palette) }
+          return { colorTable: themedColorTable(getPaletteHost(self).palette) }
         },
       }))
       // Laid-out data derived from the raw per-region fetch results. MobX
@@ -1360,7 +1363,7 @@ export default function baseStateModelFactory(
               })
               .catch((e: unknown) => {
                 console.error(e)
-                getSession(self).notifyError(`${e}`, e)
+                getNotificationSink(self).notifyError(`${e}`, e)
               })
           },
 
@@ -1459,7 +1462,7 @@ export default function baseStateModelFactory(
         // Opens the solid-color picker. UTR row hidden for displays without UTRs
         // (e.g. variants).
         openSetColorDialog(showUtrColor = true) {
-          getSession(self).queueDialog(handleClose => [
+          getDialogHost(self).queueDialog(handleClose => [
             SetColorDialog,
             { model: self, handleClose, showUtrColor },
           ])
@@ -1469,7 +1472,7 @@ export default function baseStateModelFactory(
          * #action
          */
         openColorByAttributeDialog() {
-          getSession(self).queueDialog(handleClose => [
+          getDialogHost(self).queueDialog(handleClose => [
             ColorByAttributeDialog,
             {
               model: self,
@@ -1483,7 +1486,7 @@ export default function baseStateModelFactory(
          * #action
          */
         openFilterDialog() {
-          getSession(self).queueDialog(handleClose => [
+          getDialogHost(self).queueDialog(handleClose => [
             JexlFilterDialog,
             { model: self, handleClose },
           ])

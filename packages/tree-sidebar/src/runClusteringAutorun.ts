@@ -1,5 +1,7 @@
 import {
   getContainingView,
+  getNotificationSink,
+  getRpcHost,
   getSession,
   locStringsToRegions,
 } from '@jbrowse/core/util'
@@ -9,7 +11,12 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { Region, RpcStatus, StatusStream } from '@jbrowse/core/util'
+import type {
+  Region,
+  RpcCaller,
+  RpcStatus,
+  StatusStream,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -63,13 +70,13 @@ export function setupRunClusteringAutorun(
     // for, and two of the three already ignored it.
     //
     // `rpcManager` / `sessionId` are here for the same reason one step later:
-    // all three flavors opened with the identical `getSession(self).rpcManager`
+    // all three flavors opened with the identical `getRpcHost(self).rpcManager`
     // + `getRpcSessionId(self)` pair, which was the bulk of what each wrapper
     // module contained. Resolving them once also means a flavor cannot reach
     // for a *different* session id and silently land its RPC on another
     // worker's adapter cache.
     run: (args: {
-      rpcManager: ReturnType<typeof getSession>['rpcManager']
+      rpcManager: RpcCaller
       sessionId: string
       regions: Region[]
       stopToken: StopToken
@@ -102,7 +109,7 @@ export function setupRunClusteringAutorun(
         try {
           const regions = await clusterRegions(self, view)
           await opts.run({
-            rpcManager: getSession(self).rpcManager,
+            rpcManager: getRpcHost(self).rpcManager,
             sessionId: getRpcSessionId(self),
             regions,
             stopToken,
@@ -116,7 +123,7 @@ export function setupRunClusteringAutorun(
             // of a failure is the progress chip disappearing and nothing
             // happening. A `clusterRegion` with a typo in it lands here, and it
             // is a setting the session author can fix.
-            getSession(self).notifyError(`${e}`, e)
+            getNotificationSink(self).notifyError(`${e}`, e)
           }
         } finally {
           stopStopToken(stopToken)

@@ -4,7 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
+import { getNotificationSink, getSession } from '@jbrowse/core/util'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -737,7 +737,7 @@ export default function sharedModelFactory(
             doAfterAttach(self)
           } catch (e) {
             console.error(e)
-            getSession(self).notifyError(`${e}`, e)
+            getNotificationSink(self).notifyError(`${e}`, e)
           }
         })()
       },

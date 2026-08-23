@@ -6,6 +6,7 @@ import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
   createStatusFanOut,
   getContainingView,
+  getDialogHost,
   getEnv,
   getSession,
   isFeature,
@@ -223,7 +224,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
          * #action
          */
         openErrorDialog() {
-          getSession(self).queueDialog(onClose => [
+          getDialogHost(self).queueDialog(onClose => [
             ErrorMessageStackTraceDialog,
             { onClose, error: self.error },
           ])

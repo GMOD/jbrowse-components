@@ -7,7 +7,7 @@ import {
   showLegendCheckboxItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -249,7 +249,7 @@ export function buildMultiRowTrackMenuItems(
     rowArrangementMenuItem({
       ready: !!self.editableSources.length,
       onOpen: () => {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           SetRowArrangementDialog,
           { model: self, handleClose },
         ])

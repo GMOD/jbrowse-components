@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { addViewMenuItems } from '@jbrowse/core/pluggableElementTypes'
 import { launchTargetsMenuItem } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import NotesIcon from '@mui/icons-material/Notes'
 
 import type { ConsensusDisplay } from './ConsensusSequenceDialog.tsx'
@@ -64,7 +64,7 @@ export default function ConsensusSequenceF(pluginManager: PluginManager) {
               self.rightOffset,
             )
             if (regions.length) {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 ConsensusSequenceDialog,
                 {
                   model: self,

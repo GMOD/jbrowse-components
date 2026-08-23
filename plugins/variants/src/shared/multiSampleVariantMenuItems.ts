@@ -2,7 +2,7 @@ import { makeSizeMenu } from '@jbrowse/core/ui'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import { assembleLocString, getDialogHost } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
 import {
@@ -253,7 +253,7 @@ export function variantTrackMenuItems(
         jexlFilters: jexlFilterNarrowing(self),
       },
       onEdit: () => {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           JexlFilterDialog,
           {
             model: self,
@@ -319,7 +319,7 @@ export function variantTrackMenuItems(
         ? 'Needs at least two samples to cluster'
         : 'Loading samples...',
       onClick: () => {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           ClusterDialog,
           {
             model: self,
@@ -331,7 +331,7 @@ export function variantTrackMenuItems(
     rowArrangementMenuItem({
       ready: !!self.sourcesVolatile?.length,
       onOpen: () => {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           SetColorDialog,
           {
             model: self,

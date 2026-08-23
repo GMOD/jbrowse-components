@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getNotificationSink } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
@@ -338,7 +338,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const message = `${e}`
     if (message !== state.lastErrorMessage) {
       state.lastErrorMessage = message
-      getSession(self).notifyError(message, e)
+      getNotificationSink(self).notifyError(message, e)
     }
   }
 

@@ -5,6 +5,8 @@ import {
   avg,
   createStatusChannel,
   createStatusFanOut,
+  getDialogHost,
+  getNotificationSink,
   getSession,
   notEmpty,
 } from '@jbrowse/core/util'
@@ -750,12 +752,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // failure reaches here at all.
           setError: error => {
             if (error !== undefined) {
-              getSession(self).notifyError(`${error}`, error, undefined, {
-                name: 'Retry',
-                onClick: () => {
-                  self.reload()
+              getNotificationSink(self).notifyError(
+                `${error}`,
+                error,
+                undefined,
+                {
+                  name: 'Retry',
+                  onClick: () => {
+                    self.reload()
+                  },
                 },
-              })
+              )
             }
           },
         })
@@ -828,7 +835,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             label: 'Export SVG',
             icon: PhotoCamera,
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 ExportSvgDialog,
                 {
                   model: self,

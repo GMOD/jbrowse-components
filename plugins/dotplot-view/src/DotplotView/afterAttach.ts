@@ -1,4 +1,5 @@
 import {
+  getNotificationSink,
   getSession,
   localStorageSetItem,
   minmax,
@@ -351,7 +352,7 @@ async function applyInit(
   if (!target && !query) {
     // the import form, deliberately
   } else if (!target || !query) {
-    getSession(self).notifyError(
+    getNotificationSink(self).notifyError(
       'DotplotView init needs an assembly on each of its two views',
     )
   } else {

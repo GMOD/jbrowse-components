@@ -7,6 +7,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   addAndShowTrack,
   getContainingTrack,
+  getPaletteHost,
   getSession,
   isSessionWithAddSessionTrack,
   makeTrackId,
@@ -143,7 +144,10 @@ export function modelFactory(
        * headless SVG export and RPC, where no component mounts to seed it.
        */
       get colorPalette(): ColorPalette {
-        return buildColorPalette(getSession(self).palette, self.lgv.colorByCDS)
+        return buildColorPalette(
+          getPaletteHost(self).palette,
+          self.lgv.colorByCDS,
+        )
       },
     }))
     .views(self => ({

@@ -4,6 +4,7 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   clamp,
+  getDialogHost,
   getSession,
   isSessionModelWithWidgets,
   resolveNamedRegions,
@@ -937,7 +938,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       openExportDialog() {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           ExportSvgDialog,
           { model: self as CircularViewModel, handleClose },
         ])

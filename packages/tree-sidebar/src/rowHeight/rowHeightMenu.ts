@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import HeightIcon from '@mui/icons-material/Height'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -97,7 +97,7 @@ export function rowHeightMenuItem(
         // default
         keepMenuOpen: false,
         onClick: () => {
-          getSession(model).queueDialog(handleClose => [
+          getDialogHost(model).queueDialog(handleClose => [
             SetRowHeightDialog,
             { model, handleClose },
           ])

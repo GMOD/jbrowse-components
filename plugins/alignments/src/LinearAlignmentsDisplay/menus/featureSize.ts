@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { makePin } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
-import { capitalizeFirst, getSession } from '@jbrowse/core/util'
+import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 
@@ -33,7 +33,7 @@ export function getMaxHeightMenuItem(model: MaxHeightModel) {
   return {
     label: 'Set max layout height...',
     onClick: () => {
-      getSession(model).queueDialog(handleClose => [
+      getDialogHost(model).queueDialog(handleClose => [
         SetMaxHeightDialog,
         { model, handleClose },
       ])
@@ -141,7 +141,7 @@ export function getFeatureHeightMenuItem(
           checked: sizeActive && !PRESETS.some(matchesPreset),
           keepMenuOpen: false,
           onClick: () => {
-            getSession(model).queueDialog(handleClose => [
+            getDialogHost(model).queueDialog(handleClose => [
               SetFeatureHeightDialog,
               {
                 model,

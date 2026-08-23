@@ -6,6 +6,7 @@ import HighlightsMixin from '@jbrowse/core/pluggableElementTypes/models/Highligh
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   clamp,
+  getDialogHost,
   getSession,
   isSessionModelWithWidgets,
   localStorageGetItem,
@@ -1661,7 +1662,7 @@ export default function stateModelFactory(pm: PluginManager) {
               label: 'Return to import form',
               icon: FolderOpenIcon,
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
+                getDialogHost(self).queueDialog(handleClose => [
                   ReturnToImportFormDialog,
                   {
                     model: self,
@@ -1674,7 +1675,7 @@ export default function stateModelFactory(pm: PluginManager) {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
+                getDialogHost(self).queueDialog(handleClose => [
                   ExportSvgDialog,
                   {
                     model: self,

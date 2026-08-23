@@ -6,7 +6,7 @@ import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocString,
   getContainingView,
-  getSession,
+  getDialogHost,
   pluralize,
   withFeatureDetails,
 } from '@jbrowse/core/util'
@@ -245,7 +245,7 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
       onClick: () => {
         const region = self.loadedRegions.get(displayedRegionIndex)
         if (region) {
-          getSession(self).queueDialog(handleClose => [
+          getDialogHost(self).queueDialog(handleClose => [
             FeatureSequenceDialog,
             {
               model: self,

@@ -1,7 +1,7 @@
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { getSession } from './mstUtils.ts'
+import { getNotificationSink } from './sessionServices.ts'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -71,7 +71,7 @@ async function applyInitOnce<T>(
     if (isAlive(self)) {
       if (materialized()) {
         clearIfUnchanged(self, init)
-        getSession(self).notifyError(`${e}`, e)
+        getNotificationSink(self).notifyError(`${e}`, e)
       } else {
         self.setError(e)
       }

@@ -9,7 +9,11 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getPaletteHost,
+  getSession,
+} from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -1207,7 +1211,7 @@ export default function stateModelFactory(
          */
         // #region colorPalette
         get colorPalette(): MafColorPalette {
-          return getMafColorPalette(getSession(self).palette)
+          return getMafColorPalette(getPaletteHost(self).palette)
         },
         // #endregion
         /**
@@ -1349,7 +1353,7 @@ export default function stateModelFactory(
          * `renderState`, which every scroll frame invalidates.
          */
         get coverageBandColors() {
-          const colors = getMafCoverageColors(getSession(self).palette)
+          const colors = getMafCoverageColors(getPaletteHost(self).palette)
           return { colors, gpuColors: packMafCoverageColors(colors) }
         },
       }))

@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getNotificationSink } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 
 import type { Source } from './types.ts'
@@ -52,7 +52,7 @@ export function getMultiSampleVariantSourcesAutorun(
       // doesn't stack them.
       for (const warning of warnings) {
         console.warn(warning)
-        getSession(self).notify(warning, 'warning')
+        getNotificationSink(self).notify(warning, 'warning')
       }
     },
     // The sample list is a prerequisite for everything this display draws, so a
@@ -63,7 +63,7 @@ export function getMultiSampleVariantSourcesAutorun(
     setError: error => {
       self.setError(error)
       if (error !== undefined) {
-        getSession(self).notifyError(`${error}`, error)
+        getNotificationSink(self).notifyError(`${error}`, error)
       }
     },
     delay: 1000,

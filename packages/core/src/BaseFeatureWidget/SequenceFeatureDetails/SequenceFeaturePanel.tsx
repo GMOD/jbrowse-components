@@ -5,7 +5,7 @@ import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { LoadingEllipses } from '../../ui/index.ts'
-import { getSession } from '../../util/index.ts'
+import { getDialogHost, getSession } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 import { panelAssemblyName } from './panelAssemblyName.ts'
 
@@ -57,7 +57,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
 
       <IconButton
         onClick={() => {
-          getSession(model).queueDialog(handleClose => [
+          getDialogHost(model).queueDialog(handleClose => [
             HelpDialog,
             {
               handleClose,

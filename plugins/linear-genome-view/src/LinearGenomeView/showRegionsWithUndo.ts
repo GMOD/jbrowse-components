@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getNotificationSink } from '@jbrowse/core/util'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { Region } from '@jbrowse/core/util/types'
@@ -47,7 +47,7 @@ export function showRegionsWithUndo({
     windowStartBp: view.windowStartBp,
   }
   view.showRegions(regions)
-  getSession(view).notify(message, 'info', {
+  getNotificationSink(view).notify(message, 'info', {
     name: 'Undo',
     onClick: () => {
       view.setDisplayedRegions(previous.displayedRegions)

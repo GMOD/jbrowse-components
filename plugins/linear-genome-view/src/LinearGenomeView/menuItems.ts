@@ -5,6 +5,7 @@ import {
   SCROLL_ZOOM_LABEL,
 } from '@jbrowse/core/ui/scrollZoomLabels'
 import {
+  getDialogHost,
   getSession,
   isSessionWithAddSessionTrack,
   toLocale,
@@ -328,7 +329,7 @@ export function buildRubberBandMenuItems(
           self.leftOffset,
           self.rightOffset,
         )
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           GetSequenceDialog,
           {
             model: self,

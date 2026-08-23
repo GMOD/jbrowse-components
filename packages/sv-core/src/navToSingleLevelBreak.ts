@@ -1,4 +1,8 @@
-import { gatherOverlaps, getSession, stripTrackIds } from '@jbrowse/core/util'
+import {
+  gatherOverlaps,
+  getNotificationSink,
+  stripTrackIds,
+} from '@jbrowse/core/util'
 import { bpToOffset, compareBpOffsets } from '@jbrowse/core/util/Base1DUtils'
 import { whenViewSettled } from '@jbrowse/core/util/whenViewSettled'
 
@@ -169,7 +173,7 @@ function moveToEncompass({
     const [a, b] = compareBpOffsets(l0, r0) <= 0 ? [l0, r0] : [r0, l0]
     lgv.moveTo(a, b)
   } else {
-    getSession(lgv).notify('Unable to navigate to breakpoint')
+    getNotificationSink(lgv).notify('Unable to navigate to breakpoint')
   }
 }
 
@@ -254,7 +258,7 @@ export async function navToSingleLevelBreak({
       // that deliberately leaves the coarse blocks where they were
       lgv.setNewView(lgv.bpPerPx, Math.round(midPx - lgv.width / 2))
     } else {
-      getSession(lgv).notify('Unable to navigate to breakpoint')
+      getNotificationSink(lgv).notify('Unable to navigate to breakpoint')
     }
   } else {
     // for encompassing view, fit the whole range

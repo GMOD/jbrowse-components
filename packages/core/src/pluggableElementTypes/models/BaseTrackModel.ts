@@ -11,7 +11,12 @@ import {
 } from '../../data_adapters/adapterSessionRefcount.ts'
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
 import { adapterByteLimit } from '../../rpc/byteBudget.ts'
-import { getContainingView, getEnv, getSession } from '../../util/index.ts'
+import {
+  getContainingView,
+  getDialogHost,
+  getEnv,
+  getSession,
+} from '../../util/index.ts'
 import { viewDisplayNames } from '../../util/tracks.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
@@ -443,7 +448,7 @@ export function createBaseTrackModel(
           icon: Save,
           priority: 998,
           onClick: () => {
-            getSession(self).queueDialog(handleClose => [
+            getDialogHost(self).queueDialog(handleClose => [
               SaveTrackDataDlg,
               {
                 model: self,

@@ -1,13 +1,14 @@
 import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
 import {
-  MAX_GLOB_REGIONS,
-  UnknownRefNameError,
   assembleLocString,
   dedupe,
   getEnv,
+  getNotificationSink,
   getSession,
   matchRefNames,
+  MAX_GLOB_REGIONS,
   parseLocString,
+  UnknownRefNameError,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -344,7 +345,7 @@ export async function handleSelectedRegion({
       // Refused rather than truncated, and said out loud. Opening the first
       // thousand of a wider match is the one outcome that would look like it
       // worked.
-      getSession(model).notify(
+      getNotificationSink(model).notify(
         `"${input}" matches more than ${MAX_GLOB_REGIONS} regions — narrow the pattern`,
         'warning',
       )

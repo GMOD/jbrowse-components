@@ -1,4 +1,4 @@
-import { getSession, pluralize } from '@jbrowse/core/util'
+import { getNotificationSink, pluralize } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -35,7 +35,7 @@ const SubmitTracksButton = observer(function SubmitTracksButton({
         try {
           submitBulkTracks({ model, named: okNamed, assembly })
         } catch (e) {
-          getSession(model).notifyError(`${e}`, e)
+          getNotificationSink(model).notifyError(`${e}`, e)
         }
       }}
     >

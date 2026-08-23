@@ -5,7 +5,7 @@ import {
   radioItems,
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
 import { ARC_COLOR_OPTIONS } from '../../shared/arcColorOptions.ts'
@@ -136,7 +136,7 @@ function tagItem(
     // staying open
     keepMenuOpen: false,
     onClick: () => {
-      getSession(model).queueDialog((onClose: () => void) => [
+      getDialogHost(model).queueDialog((onClose: () => void) => [
         ColorByTagDialog,
         { model, handleClose: onClose },
       ])

@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import GetApp from '@mui/icons-material/GetApp'
 import Menu from '@mui/icons-material/Menu'
 import Publish from '@mui/icons-material/Publish'
@@ -40,7 +40,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               label: 'Export',
               icon: GetApp,
               onClick: () => {
-                getSession(model).queueDialog(onClose => [
+                getDialogHost(model).queueDialog(onClose => [
                   ExportBookmarksDialog,
                   { onClose, model },
                 ])
@@ -50,7 +50,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               label: 'Import',
               icon: Publish,
               onClick: () => {
-                getSession(model).queueDialog(onClose => [
+                getDialogHost(model).queueDialog(onClose => [
                   ImportBookmarksDialog,
                   { model, onClose },
                 ])
@@ -60,7 +60,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               label: 'Settings',
               icon: Settings,
               onClick: () => {
-                getSession(model).queueDialog(onClose => [
+                getDialogHost(model).queueDialog(onClose => [
                   HighlightSettingsDialog,
                   { model, onClose },
                 ])

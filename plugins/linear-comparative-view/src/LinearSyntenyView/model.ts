@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost, getSession } from '@jbrowse/core/util'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -763,7 +763,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         label: 'Export SVG',
         icon: PhotoCameraIcon,
         onClick: () => {
-          getSession(self).queueDialog(handleClose => [
+          getDialogHost(self).queueDialog(handleClose => [
             ExportSvgDialog,
             {
               model: self,
@@ -813,7 +813,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                         label: 'Add assembly row...',
                         icon: AddIcon,
                         onClick: () => {
-                          getSession(self).queueDialog(handleClose => [
+                          getDialogHost(self).queueDialog(handleClose => [
                             AddRowDialog,
                             {
                               handleClose,
@@ -827,7 +827,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 {
                   label: 'Re-order chromosomes',
                   onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
+                    getDialogHost(self).queueDialog(handleClose => [
                       ReorderChromosomesDialog,
                       {
                         handleClose,

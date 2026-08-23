@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getRpcHost } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ClusterDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
@@ -47,7 +47,7 @@ const MafClusterDialog = observer(function MafClusterDialog({
         }
         await runMafClustering({
           model,
-          rpcManager: getSession(model).rpcManager,
+          rpcManager: getRpcHost(model).rpcManager,
           sessionId: getRpcSessionId(model),
           regions: view.dynamicBlocks.contentBlocks,
           stopToken,
@@ -58,7 +58,7 @@ const MafClusterDialog = observer(function MafClusterDialog({
       // pasted back would be indexed against a different row set than
       // "Run clustering" would have produced.
       fetchMatrix={({ stopToken, statusCallback }) =>
-        getSession(model).rpcManager.call(
+        getRpcHost(model).rpcManager.call(
           getRpcSessionId(model),
           'LinearMafGetIdentityMatrix',
           {

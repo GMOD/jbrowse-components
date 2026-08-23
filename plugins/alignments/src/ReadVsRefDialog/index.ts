@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 
 import type {
   AbstractTrackModel,
@@ -42,7 +42,7 @@ export function queueReadVsRefDialog({
   feature: Feature
   onSubmit: (args: ReadVsRefLaunchArgs) => void | Promise<void>
 }) {
-  getSession(node).queueDialog(handleClose => [
+  getDialogHost(node).queueDialog(handleClose => [
     ReadVsRefDialog,
     { track, feature, handleClose, onSubmit },
   ])

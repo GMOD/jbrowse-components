@@ -2,7 +2,7 @@ import { lazy, useState } from 'react'
 
 import { SingleSlider } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
+import { getBpDisplayStr, getDialogHost } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { observer } from 'mobx-react'
@@ -55,7 +55,7 @@ function getZoomMenuItems(model: LinearGenomeViewModel) {
     {
       label: 'Custom zoom',
       onClick: () => {
-        getSession(model).queueDialog(handleClose => [
+        getDialogHost(model).queueDialog(handleClose => [
           RegionWidthEditorDialog,
           {
             model,

@@ -1,7 +1,12 @@
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
+import {
+  getContainingTrack,
+  getDialogHost,
+  getNotificationSink,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   copyFeatureInfo,
   withContextMenuFeature,
@@ -125,7 +130,7 @@ function launchSyntenyItem(
       label: 'Launch synteny view for this position',
       icon: CompareArrowsIcon,
       onClick: () => {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           LaunchSyntenyViewDialog,
           {
             region,
@@ -210,7 +215,7 @@ function movePanelItem(
               region,
               session: getSession(self),
             }).catch((e: unknown) => {
-              getSession(self).notifyError(`${e}`, e)
+              getNotificationSink(self).notifyError(`${e}`, e)
             })
           },
         },

@@ -6,7 +6,7 @@ import {
   withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
@@ -281,7 +281,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     rowArrangementMenuItem({
       ready: !!self.editableSources?.length,
       onOpen: () => {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           SetRowArrangementDialog,
           { model: self, handleClose },
         ])
@@ -305,7 +305,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         disabled: self.sources.length < 2,
         disabledHelpText: 'Loading rows...',
         onClick: () => {
-          getSession(self).queueDialog(handleClose => [
+          getDialogHost(self).queueDialog(handleClose => [
             MafClusterDialog,
             { model: self, handleClose },
           ])

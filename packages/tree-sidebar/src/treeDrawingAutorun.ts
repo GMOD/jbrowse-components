@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getPaletteHost } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
@@ -47,9 +47,9 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         ctx.translate(0, -scrollTop)
-        // `getSession(self).palette`, not a React theme: this is a model
+        // `getPaletteHost(self).palette`, not a React theme: this is a model
         // autorun, and the read makes a theme switch repaint the tree
-        ctx.strokeStyle = treeStroke(getSession(self).palette)
+        ctx.strokeStyle = treeStroke(getPaletteHost(self).palette)
         ctx.lineWidth = 1
 
         ctx.beginPath()
@@ -102,7 +102,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         if (hierarchy && hoveredTreeNode && sources) {
-          const colors = treeHoverColors(getSession(self).palette)
+          const colors = treeHoverColors(getPaletteHost(self).palette)
           ctx.save()
           ctx.translate(0, -scrollTop)
 

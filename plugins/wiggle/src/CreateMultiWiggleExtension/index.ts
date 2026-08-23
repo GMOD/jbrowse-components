@@ -2,7 +2,11 @@ import { lazy } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { addMultiTrackMenuItems } from '@jbrowse/core/ui/multiTrackMenuItems'
-import { getSession, isSessionWithAddSessionTrack } from '@jbrowse/core/util'
+import {
+  getDialogHost,
+  getSession,
+  isSessionWithAddSessionTrack,
+} from '@jbrowse/core/util'
 
 import { addMultiWiggleTrack } from '../MultiWiggleAddTrackWorkflow/util.ts'
 
@@ -65,7 +69,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
       ? {
           label: 'Create multi-wiggle track...',
           onClick: (model: TrackSelectorSelf) => {
-            getSession(model).queueDialog(handleClose => [
+            getDialogHost(model).queueDialog(handleClose => [
               ConfirmDialog,
               {
                 tracks: model.selection,

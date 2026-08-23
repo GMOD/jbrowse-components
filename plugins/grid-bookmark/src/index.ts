@@ -1,7 +1,11 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
-import { getSession, isAbstractMenuManager } from '@jbrowse/core/util'
+import {
+  getNotificationSink,
+  getSession,
+  isAbstractMenuManager,
+} from '@jbrowse/core/util'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import LabelIcon from '@mui/icons-material/Label'
@@ -196,7 +200,7 @@ export default class GridBookmarkPlugin extends Plugin {
                 e.preventDefault()
                 self.activateBookmarkWidget()
                 self.bookmarkCurrentRegion()
-                getSession(self).notify('Bookmark created.', 'success')
+                getNotificationSink(self).notify('Bookmark created.', 'success')
               }
               // ctrl+shift+m or cmd+shift+m
               if (e.code === 'KeyM') {

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AssemblySelector, SanitizedHTML } from '@jbrowse/core/ui'
 import {
   addTrackFromWidget,
+  getNotificationSink,
   getSession,
   resolveSelectedIds,
 } from '@jbrowse/core/util'
@@ -203,7 +204,7 @@ const MultiWiggleAddTrackWorkflow = observer(
                   return newRow
                 }}
                 onProcessRowUpdateError={e => {
-                  getSession(model).notifyError(`${e}`, e)
+                  getNotificationSink(model).notifyError(`${e}`, e)
                 }}
                 rowSelectionModel={selection}
                 onRowSelectionModelChange={setSelection}
@@ -235,7 +236,7 @@ const MultiWiggleAddTrackWorkflow = observer(
             try {
               doSubmit({ trackName, tracks, model })
             } catch (e) {
-              getSession(model).notifyError(`${e}`, e)
+              getNotificationSink(model).notifyError(`${e}`, e)
             }
           }}
         >

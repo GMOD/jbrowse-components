@@ -51,6 +51,8 @@ function makeView() {
 jest.mock('@jbrowse/core/util', () => ({
   ...jest.requireActual('@jbrowse/core/util'),
   getSession: (node: { session: unknown }) => node.session,
+  getNotificationSink: (node: { session: unknown }) => node.session,
+  getDialogHost: (node: { session: unknown }) => node.session,
 }))
 
 function mate(over: Partial<MateFields> = {}): MateFields {

@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
 import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import EqualizerIcon from '@mui/icons-material/Equalizer'
 
 import { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
@@ -90,7 +90,7 @@ export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
       ? `Set min/max score (${min ?? 'auto'} – ${max ?? 'auto'})...`
       : 'Set min/max score...',
     onClick: () => {
-      getSession(self).queueDialog(handleClose => [
+      getDialogHost(self).queueDialog(handleClose => [
         SetMinMaxDialog,
         { model: self, handleClose },
       ])

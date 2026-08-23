@@ -2,7 +2,7 @@ import { lazy } from 'react'
 
 import { addDisplayMenuItems } from '@jbrowse/core/pluggableElementTypes'
 import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
-import { getContainingTrack, getSession } from '@jbrowse/core/util'
+import { getContainingTrack, getDialogHost } from '@jbrowse/core/util'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -32,7 +32,7 @@ export default function LinearDerivativeVsRefMenuItemF(pm: PluginManager) {
       // reads reads as broken rather than as an answer. The empty case explains
       // itself there.
       onClick: () => {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           DerivativeVsRefDialog,
           {
             model: self,

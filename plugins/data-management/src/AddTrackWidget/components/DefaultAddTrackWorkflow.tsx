@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { getSession } from '@jbrowse/core/util'
+import { getNotificationSink } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -71,7 +71,7 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
       try {
         doSubmit({ model })
       } catch (e) {
-        getSession(model).notifyError(`${e}`, e)
+        getNotificationSink(model).notifyError(`${e}`, e)
       }
     } else {
       setActiveStep(activeStep + 1)

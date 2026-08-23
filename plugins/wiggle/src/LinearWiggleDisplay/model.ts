@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -334,7 +334,7 @@ export default function stateModelFactory(
             // without opening the dialog
             endAdornment: wiggleColorAdornment(self),
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 SetColorDialog,
                 {
                   model: self,

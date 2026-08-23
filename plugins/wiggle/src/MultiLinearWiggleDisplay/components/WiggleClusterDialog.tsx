@@ -1,4 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView, getRpcHost } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   ClusterDialog,
@@ -54,7 +54,7 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
         }
         await runWiggleClustering({
           model,
-          rpcManager: getSession(model).rpcManager,
+          rpcManager: getRpcHost(model).rpcManager,
           sessionId: getRpcSessionId(model),
           samplesPerPixel,
           stopToken,
@@ -62,7 +62,7 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
         })
       }}
       fetchMatrix={({ stopToken, statusCallback }) =>
-        getSession(model).rpcManager.call(
+        getRpcHost(model).rpcManager.call(
           getRpcSessionId(model),
           'MultiWiggleGetScoreMatrix',
           {

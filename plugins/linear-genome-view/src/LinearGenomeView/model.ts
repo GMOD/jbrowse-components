@@ -10,6 +10,7 @@ import {
   assembleLocString,
   clamp,
   getBpDisplayStr,
+  getDialogHost,
   getSession,
   getTickDisplayStr,
   isSessionModelWithWidgets,
@@ -1429,7 +1430,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         searchQuery: string,
         assemblyName: string,
       ) {
-        getSession(self).queueDialog(handleClose => [
+        getDialogHost(self).queueDialog(handleClose => [
           SearchResultsDialog,
           {
             model: self as LinearGenomeViewModel,

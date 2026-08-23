@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { capitalizeFirst, getSession } from '@jbrowse/core/util'
+import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import {
@@ -125,7 +125,7 @@ export function getSortByMenuItem(
       'tag',
       sortTag ? `Tag (${sortTag})...` : 'Tag...',
       () => {
-        getSession(model).queueDialog(handleClose => [
+        getDialogHost(model).queueDialog(handleClose => [
           SortByTagDialog,
           {
             handleClose,
@@ -192,7 +192,7 @@ export function getGroupByMenuItem(model: GroupByMenuModel) {
         type: 'tag',
         label: groupTag ? `Tag (${groupTag})...` : 'Tag...',
         onClick: () => {
-          getSession(model).queueDialog(handleClose => [
+          getDialogHost(model).queueDialog(handleClose => [
             GroupByDialog,
             { model, handleClose },
           ])

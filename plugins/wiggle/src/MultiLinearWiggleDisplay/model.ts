@@ -9,7 +9,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getSession } from '@jbrowse/core/util'
+import { getDialogHost } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   LegendMixin,
@@ -626,7 +626,7 @@ export default function stateModelFactory(
                 ? 'Only available for multi-row rendering types'
                 : 'Needs at least two subtracks to cluster',
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
+                getDialogHost(self).queueDialog(handleClose => [
                   WiggleClusterDialog,
                   {
                     model: self,
@@ -654,7 +654,7 @@ export default function stateModelFactory(
           rowArrangementMenuItem({
             ready: !!self.sourcesWithoutLayout.length,
             onOpen: () => {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 SetColorDialog,
                 {
                   model: self,

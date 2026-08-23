@@ -7,6 +7,7 @@ import {
   getContainingView,
   getSession,
 } from './mstUtils.ts'
+import { getNotificationSink } from './sessionServices.ts'
 import SimpleFeature from './simpleFeature.ts'
 import { isSessionModelWithWidgets } from './types/index.ts'
 
@@ -98,5 +99,8 @@ export function openFeatureWidget(
  * doesn't grow its feature items.
  */
 export function notifyFeatureDetailsMiss(node: IAnyStateTreeNode) {
-  getSession(node).notify('Could not load details for this feature', 'warning')
+  getNotificationSink(node).notify(
+    'Could not load details for this feature',
+    'warning',
+  )
 }

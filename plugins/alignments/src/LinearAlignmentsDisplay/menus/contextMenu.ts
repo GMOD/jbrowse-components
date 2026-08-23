@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   assembleLocString,
   getContainingView,
+  getDialogHost,
   getSession,
 } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
@@ -490,7 +491,7 @@ export function getContextMenuItems(
           {
             label: 'Tag...',
             onClick: () => {
-              getSession(self).queueDialog(handleClose => [
+              getDialogHost(self).queueDialog(handleClose => [
                 SortByTagDialog,
                 {
                   handleClose,
