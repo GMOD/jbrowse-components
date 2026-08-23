@@ -16,6 +16,7 @@ import antialias;
 import hpmath;
 import colorPack;
 import pointGlyph;
+import scoreScale;
 import wiggleCommon;
 
 

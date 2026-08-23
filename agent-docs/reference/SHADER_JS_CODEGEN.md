@@ -24,7 +24,7 @@ exists to prevent:
 | `extendToMinWidthPx` | still the shared rule. Its direct importer went away when `rectSpanPx` subsumed the call site, but `rectSpanPx`'s own twin calls it as a private helper, and the shader uses it |
 | `frequencyAlpha` | production moved to `frequencyFadeGate`; the rule is unchanged and still lifted |
 | `normalizeDepthScalar` | a test oracle by construction: production reads the coverage depth scale through `makeScoreNormalizer`, and this pins the GPU's copy of it to that one. Three independent normalizers with three independent floors is the bug it was split out of (`9d70e37bd9`) |
-| `normalizeScore` | wiggle's normalizer, still the shared half of the deliberately-divergent `scoreToY` |
+| `normalizeScore` | the one score normalizer, in `scoreScale.slang`: the wiggle plot and the coverage band both place marks through it, and it is the shared half of `scoreToY` |
 | `sBlend`, `yCurve` | the deliberate test oracles ADR-051 describes. The report agreeing with the ADR here is a check on both |
 
 **This table was stale by one row for a day**, saying "all five" while the

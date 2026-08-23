@@ -1,3 +1,4 @@
+import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
@@ -7,9 +8,13 @@ import {
   resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 
-import { normalizeScore } from './shaders/wiggleCommon.js.generated.ts'
-
 // The two backends' score normalizers, swept against each other.
+//
+// The shader half is `scoreScale.slang`'s, in render-core: the wiggle renderer
+// and the coverage band both normalize through it, and this is the sweep for
+// both. The domains come from wiggle-core's `getNiceDomain`, which is what
+// actually reaches a display, so the test lives beside the consumer that
+// produces them.
 //
 // Unlike the rest of the `//! js-export` set (adr-051), this one does NOT retire
 // its hand-written twin: `makeScoreNormalizer` is a factory that hoists the log
@@ -75,10 +80,9 @@ describe.each(LINEAR_DOMAINS)('linear domain %j', (min, max) => {
 describe.each(LOG_DOMAINS)('log domain %j', (min, max) => {
   const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LOG)
   test.each(samples([min, max]))('score %p', score => {
-    // 6 places, not bit equality: slangc emits the 1e-6 divide-by-zero floor as
-    // its f32 value. It is never the max on a non-degenerate domain, so this is
-    // exact in practice; the tolerance is the standing rule for generated
-    // float32 literals.
+    // 6 places, not bit equality: the shader's log2 is float32 and JS's is
+    // float64, so the two agree to about 1e-15 and the tolerance is the
+    // standing rule for generated float32 arithmetic.
     expect(normalizeScore(score, min, max, SCALE_TYPE_LOG, 1)).toBeCloseTo(
       normalize(score),
       6,
@@ -112,13 +116,17 @@ describe.each(SYMLOG_DOMAINS)('symlog domain %j', (min, max) => {
   })
 })
 
-// The one place the two are allowed to disagree, and the reason normalizeScore
-// can't simply replace makeScoreNormalizer. Pinned rather than left implicit:
-// anyone who unifies them has to come here and say so.
-describe('a degenerate domain is the documented divergence', () => {
-  test('JS answers 0, the shader saturates', () => {
+// A degenerate domain used to be the one place the two disagreed — the shader
+// divided by a 1e-6 floor and saturated where JS answered 0. Returning 0 avoids
+// the NaN that floor was there for just as well, so both now answer 0 and the
+// exception is gone. Pinned because it is the kind of agreement that is only
+// visible at an input nothing reaches in production.
+describe('a degenerate domain', () => {
+  test('both answer 0', () => {
     expect(makeScoreNormalizer(5, 5, SCALE_TYPE_LINEAR)(9)).toBe(0)
-    expect(normalizeScore(9, 5, 5, SCALE_TYPE_LINEAR, 1)).toBe(1)
+    expect(normalizeScore(9, 5, 5, SCALE_TYPE_LINEAR, 1)).toBe(0)
+    expect(normalizeScore(9, 5, 5, SCALE_TYPE_LOG, 1)).toBe(0)
+    expect(normalizeScore(9, 5, 5, SCALE_TYPE_SYMLOG, 1)).toBe(0)
   })
 
   test('getNiceDomain never hands a log display one', () => {

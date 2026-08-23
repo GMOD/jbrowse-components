@@ -25,10 +25,10 @@ export function makeDensityRgbStringFn(
     symlogConstant,
   )
   const zeroNorm = normalize(origin)
-  // The ramp position is wiggle.slang's own `densityGradientT`, generated into
-  // TS (adr-051). Only the *normalizers* differ between the backends, and they
-  // do so on purpose on a degenerate domain, so both sides feed this the
-  // already-normalized scores.
+  // The ramp position is wiggleCommon.slang's own `densityGradientT`, generated
+  // into TS (adr-051). Both sides feed it already-normalized scores: the
+  // normalizer is the other decision, and it is shared too (scoreScale.slang,
+  // whose twin `makeScoreNormalizer` is swept against).
   const rDelta = r - 255
   const gDelta = g - 255
   const bDelta = b - 255

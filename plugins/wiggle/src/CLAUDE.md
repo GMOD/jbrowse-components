@@ -100,9 +100,15 @@ is unresolved — not a precedent.
 It hoists log arithmetic out of a per-feature loop; the generated
 `normalizeScore` is per-call scalar and kept as an **oracle**
 (`normalizeScoreParity.test.ts`). Both floored the log domain at 1 once,
-flattening any domain under 1 — the floor is the domain's own min. `scoreToY` is
-`js-skip`ed for the one allowed disagreement, a degenerate (`min === max`)
-domain.
+flattening any domain under 1 — the floor is the domain's own min.
+
+**The shader half lives in `packages/render-core/src/shaders/scoreScale.slang`,
+not here**: the coverage band normalizes through the same three branches, and
+`wiggleCommon.slang` had a copy that disagreed with it on a degenerate
+(`min === max`) domain. Both answer 0 there now, which is what
+`makeScoreNormalizer` has always answered. `wiggleCommon` keeps `scoreToY`, the
+plot-box wrapper, and `js-skip`s it — the Canvas2D side composes the normalizer
+with its own box.
 
 ## `rowIndex` is the position in the display's own `sources`
 

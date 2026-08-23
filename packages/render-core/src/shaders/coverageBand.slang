@@ -29,6 +29,7 @@ module coverageBand;
 
 import colorPack;
 import hpmath;
+import scoreScale;
 
 public struct CoverageBandUniforms {
   // HP-split bp range: hi = base-pair offset (high 20 bits), lo = fractional
@@ -191,39 +192,17 @@ public float covBottom(CoverageBandUniforms u) {
 }
 
 // Normalize a raw coverage depth to [0,1] over the domain [min, max], on the
-// current scale type. The scalar twin of makeScoreNormalizer in
-// packages/wiggle-core/src/normalize.ts, which is what the Canvas2D coverage
-// draws and the y-axis ticks go through — `coverageNormalizeParity.test.ts`
-// pins the two against each other, so keep them the same function.
+// current scale type — `scoreScale.slang`'s normalizer under the coverage
+// band's name for it.
 //
-// The log branch floors at the domain's own min, not at 1, and falls back to 1
-// only where that min is non-positive; see makeScoreNormalizer for why
-// (a domain sitting entirely under 1 otherwise collapses to a flat baseline).
-// The symlog branch floors nothing — that is the whole reason it exists on a
-// coverage track, where 0 is a real, common and meaningful depth that the log
-// branch cannot separate from 1.
+// The name is what the alignments coverage reads it by: it is the scalar twin
+// of makeScoreNormalizer in packages/wiggle-core/src/normalize.ts, which is
+// what the Canvas2D coverage draws and the y-axis ticks go through, and
+// `coverageNormalizeParity.test.ts` pins all of those against each other. The
+// three branches themselves are no longer here — this band and the wiggle
+// renderer had a copy each and they had drifted (see scoreScale.slang).
 public float normalizeDepthScalar(float rawDepth, float domainMin, float domainMax, int scaleType, float symlogConstant) {
-  if (scaleType == 2) {
-    // symlog: defined at 0, so nothing is floored and a zero-depth base keeps
-    // its own height instead of sharing the baseline with a depth of 1.
-    float tMin = sign(domainMin) * log(1.0 + abs(domainMin / symlogConstant));
-    float tMax = sign(domainMax) * log(1.0 + abs(domainMax / symlogConstant));
-    float t = sign(rawDepth) * log(1.0 + abs(rawDepth / symlogConstant));
-    float tRange = tMax - tMin;
-    if (tRange <= 0.0) { return 0.0; }
-    return clamp((t - tMin) / tRange, 0.0, 1.0);
-  }
-  if (scaleType == 1) {
-    float floorV = domainMin > 0.0 ? domainMin : 1.0;
-    float logMin = log2(floorV);
-    float logMax = log2(max(domainMax, floorV));
-    float logRange = logMax - logMin;
-    if (logRange <= 0.0) { return 0.0; }
-    return clamp((log2(max(rawDepth, floorV)) - logMin) / logRange, 0.0, 1.0);
-  }
-  float range = domainMax - domainMin;
-  if (range <= 0.0) { return 0.0; }
-  return clamp((rawDepth - domainMin) / range, 0.0, 1.0);
+  return normalizeScore(rawDepth, domainMin, domainMax, scaleType, symlogConstant);
 }
 
 // The uniform-block wrapper every pass calls. Recovers the raw depth from the

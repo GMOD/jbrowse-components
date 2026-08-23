@@ -19,7 +19,7 @@
     "directory": "packages/render-core"
   },
   "author": "JBrowse Team",
-  "//files": "src/shaders ships the shared .slang modules (hpmath, antialias, colorPack, coverageBand, diagonalGrid, pointGlyph, rowRect) that any shader imports, plus the coverage-band entry-point passes drawn by two plugins. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
+  "//files": "src/shaders ships the shared .slang modules (hpmath, antialias, colorPack, coverageBand, diagonalGrid, pointGlyph, rowRect, scoreScale) that any shader imports, plus the coverage-band entry-point passes drawn by two plugins. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
   "files": [
     "esm",
     "src/shaders"
@@ -58,6 +58,7 @@
     "./shaders/pointGlyphConsts": "./src/shaders/pointGlyph.generated.ts",
     "./shaders/rowRect": "./src/shaders/rowRect.js.generated.ts",
     "./shaders/rowRectConsts": "./src/shaders/rowRect.generated.ts",
+    "./shaders/scoreScale": "./src/shaders/scoreScale.js.generated.ts",
     "./slangPass": "./src/slangPass.ts",
     "./useGraphicsCapabilities": "./src/useGraphicsCapabilities.ts",
     "./useRenderingBackend": "./src/useRenderingBackend.ts",
@@ -214,6 +215,10 @@
         "types": "./esm/shaders/rowRect.generated.d.ts",
         "import": "./esm/shaders/rowRect.generated.js"
       },
+      "./shaders/scoreScale": {
+        "types": "./esm/shaders/scoreScale.js.generated.d.ts",
+        "import": "./esm/shaders/scoreScale.js.generated.js"
+      },
       "./slangPass": {
         "types": "./esm/slangPass.d.ts",
         "import": "./esm/slangPass.js"
@@ -331,6 +336,9 @@
         ],
         "shaders/rowRectConsts": [
           "esm/shaders/rowRect.generated.d.ts"
+        ],
+        "shaders/scoreScale": [
+          "esm/shaders/scoreScale.js.generated.d.ts"
         ],
         "slangPass": [
           "esm/slangPass.d.ts"

@@ -232,7 +232,7 @@ the part a scanner cannot know and the part that says whether the bar was met.
 | `mismatch.slang` | `qualityFade` | `features/mismatch/drawCanvas.ts` — "Mirrors the GPU mismatch.slang path"; the whole `mismatchAlpha` setting is this one three-way conditional, and it was stated twice |
 | `wiggle.slang` | `densityGradientT` | `getDensityColor.ts` — the density ramp position, carrying a `max(maxDist, 0.0001)` floor that cannot fire, kept only so the two backends read identically |
 | `manhattan.slang` | `scoreToYPx` | `manhattanRenderingBackendTypes.ts` — Manhattan's whole Y mapping, read by the Canvas2D draw *and* the hover hit test |
-| `coverageBand.slang` | `covEffectiveHeightPx`, `covBottomOffsetPx`, `normalizeDepthScalar` | `@jbrowse/alignments-core` `coverageLayout` — the band's drawable height and baseline, which the coverage bars, SNP segments and modification segments all measure from, plus the depth normalizer `coverageNormalizeParity.test.ts` pins against `makeScoreNormalizer` |
+| `coverageBand.slang` | `covEffectiveHeightPx`, `covBottomOffsetPx`, `normalizeDepthScalar` | `@jbrowse/alignments-core` `coverageLayout` — the band's drawable height and baseline, which the coverage bars, SNP segments and modification segments all measure from, plus the depth normalizer `coverageNormalizeParity.test.ts` pins against `makeScoreNormalizer`. That last one is the band's name for `scoreScale.slang`'s `normalizeScore`, which is where the branches live |
 | `wiggle.slang` | `RENDERING_TYPE_*` (5), `SCALE_TYPE_LOG`, `NO_PREV_START` via `export-consts` | `@jbrowse/wiggle-core` — the `renderingType` / `scaleType` uniform vocabulary and the instance-buffer sentinel, all re-typed by hand where `WiggleRenderingType` is declared |
 | `manhattan.slang` | `GLYPH_POINT`, `GLYPH_INSERTION`, `GLYPH_INDEX` via `export-consts` | `ManhattanRPC/rpcTypes.ts` — restated there, and pinned to the shader only by a test that string-matched its branches out of the `.slang` source |
 | `ldUniforms.slang` | `dprimeFinalize` | `@jbrowse/ld-core` `calculateDprime` — a line-for-line twin, and the only export so far where the two backends must agree on a **number the user reads** rather than on pixels |
@@ -475,14 +475,14 @@ implementations have to be *meant* to agree:
 
 - **`discExpand` (pointGlyph)** — expands a quad so a fragment AA ramp isn't
   clipped. Canvas2D draws `ctx.arc` and has no quad; there is nothing to share.
-- **`normalizeScore` / `scoreToY` (wiggle)** — the shader's own comment records a
-  deliberate divergence from JS `makeScoreNormalizer` on a degenerate
-  (`min == max`) domain: JS returns 0, the shader avoids NaN. Unifying them is a
-  product decision, not a codegen one. That divergence is also what fixes the
-  split point for `densityGradientT`, which takes *normalized* scores: the ramp
-  is the only part of the density branch both backends must agree on.
-  `scoreToY`'s own remaining content, once the normalizer is set aside, is
-  `(1 - norm) * h` — a multiply, in the `computeCorners` class.
+- **`scoreToY` (wiggle)** — the normalizer moved out to
+  `render-core/src/shaders/scoreScale.slang`, where the coverage band reads it
+  too, and the degenerate (`min == max`) domain it used to diverge on now
+  answers 0 on both sides. What is left of `scoreToY` once the normalizer is set
+  aside is `(1 - norm) * h` — a multiply, in the `computeCorners` class — and
+  the Canvas2D side composes the same normalizer with its own plot box.
+  `densityGradientT` still takes *normalized* scores, which is the right split
+  whether or not the two normalizers agree.
 - **`snpColor` / `baseColor` (snpCoverage, mismatch)** — a `switch` from a base
   code to a `float3` out of `Uniforms`. The Canvas2D twins (`snpColorForType`,
   `buildBaseCssMap`) switch over the same codes, but what each returns is a

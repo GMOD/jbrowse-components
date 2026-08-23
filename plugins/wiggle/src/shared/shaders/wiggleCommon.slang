@@ -1,5 +1,5 @@
-// Uniform block, score math and mode enums shared by the wiggle renderer's two
-// entry-point shaders. Split out because the two draw disjoint things off
+// Uniform block, plot-box math and mode enums shared by the wiggle renderer's
+// two entry-point shaders. Split out because the two draw disjoint things off
 // different per-instance layouts — `wiggle.slang` fills (xyplot, density,
 // scatter) and `wiggleLine.slang` strokes (line, linecenter) — while agreeing
 // exactly on where a score lands vertically and where a bp lands horizontally.
@@ -12,32 +12,32 @@
 // the binding is not — and re-imports `colorPack`/`hpmath` for itself, since
 // Slang does not re-export through an import.
 //
-// The rendering-mode and scale enums are the numeric contract between the
-// `renderingType` / `scaleType` uniforms and every TS path that sets them or
-// branches on them, and the sentinel is the same contract inside the instance
-// buffer. They live here, in the one module both entry points import, so there
-// is a single declaration of each rather than one per shader — the evaluator
-// resolves through imports, so a constant declared here still reaches both.
-// Generated into @jbrowse/wiggle-core (see consts-out) because that is where
-// `WiggleRenderingType` and `WiggleScaleType` are declared, and the plugin reads
-// them back from there.
+// The rendering-mode enum is the numeric contract between the `renderingType`
+// uniform and every TS path that sets it or branches on it, and the sentinel is
+// the same contract inside the instance buffer. They live here, in the one
+// module both entry points import, so there is a single declaration of each
+// rather than one per shader — the evaluator resolves through imports, so a
+// constant declared here still reaches both. `SCALE_TYPE_LOG` / `SCALE_TYPE_
+// SYMLOG` are that same contract for `scaleType` but are declared by the shared
+// `scoreScale` module, which is what branches on them; the evaluator resolves
+// them through the import, so the `export-consts` list below still emits all of
+// it as one file. Generated into @jbrowse/wiggle-core (see consts-out) because
+// that is where `WiggleRenderingType` and `WiggleScaleType` are declared, and
+// the plugin reads them back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG, NO_PREV_START, MIN_FILL_WIDTH_PX
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
-//! js-export: densityGradientT, normalizeScore
-//! js-skip: symlogTransform — the JS twin (wiggle-core normalize.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
-//! js-skip: scoreToY — diverges from JS makeScoreNormalizer on a degenerate (min == max) domain on purpose — JS returns 0, the shader avoids NaN. Unifying them is a product decision, not a codegen one; the part both backends must share is normalizeScore, which is exported
+//! js-export: densityGradientT
+//! js-skip: scoreToY — a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller
 module wiggleCommon;
 
 import hpmath;
+import scoreScale;
 
 public static const int RENDERING_TYPE_XYPLOT = 0;
 public static const int RENDERING_TYPE_DENSITY = 1;
 public static const int RENDERING_TYPE_LINE = 2;
 public static const int RENDERING_TYPE_SCATTER = 3;
 public static const int RENDERING_TYPE_LINE_CENTER = 4;
-public static const int SCALE_TYPE_LOG = 1;
-public static const int SCALE_TYPE_SYMLOG = 2;
-
 // prevStartEnd.x sentinel: no previous feature (source start). Larger than any
 // genomic coordinate, so it never collides with a real start. Only
 // wiggleLine.slang reads it, but it is declared here with the other numeric
@@ -82,40 +82,6 @@ public float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
-public float symlogTransform(float x, float c) {
-  return sign(x) * log(1.0 + abs(x / c));
-}
-
-public float normalizeScore(float score, float domainMin, float domainMax, int scaleType, float symlogConstant) {
-  if (scaleType == SCALE_TYPE_SYMLOG) {
-    // Defined at and either side of zero, so unlike the log branch there is
-    // nothing to floor: the domain arrives as-is and 0 lands where it belongs
-    // instead of on the baseline with everything else below the floor.
-    float tMin = symlogTransform(domainMin, symlogConstant);
-    float tMax = symlogTransform(domainMax, symlogConstant);
-    float t = symlogTransform(score, symlogConstant);
-    return clamp((t - tMin) / max(tMax - tMin, 1e-6), 0.0, 1.0);
-  }
-  // `max(range, 1e-6)` guards a degenerate (min==max) domain from dividing by
-  // zero — the JS makeScoreNormalizer returns 0 in that case; here we just
-  // avoid NaN propagating into the vertex position.
-  if (scaleType == SCALE_TYPE_LOG) {
-    // Floor at the domain's own min, not at 1, so a domain sitting entirely
-    // below 1 (mappability, a methylation fraction, any normalized ratio) still
-    // has a range to spread over instead of collapsing to a flat baseline. Same
-    // rule and same reasoning as JS `makeScoreNormalizer`, which keeps its own
-    // hand-written copy because it hoists this arithmetic out of a per-feature
-    // loop — so this one is `//! js-export`ed as the ORACLE the two are swept
-    // against (`normalizeScoreParity.test.ts`), not to retire it.
-    float lo = domainMin > 0.0 ? domainMin : 1.0;
-    float logMin = log2(lo);
-    float logMax = log2(max(domainMax, lo));
-    float logScore = log2(max(score, lo));
-    return clamp((logScore - logMin) / max(logMax - logMin, 1e-6), 0.0, 1.0);
-  }
-  return clamp((score - domainMin) / max(domainMax - domainMin, 1e-6), 0.0, 1.0);
-}
-
 public float scoreToY(float score, float domainMin, float domainMax, float h, int scaleType, float symlogConstant) {
   return (1.0 - normalizeScore(score, domainMin, domainMax, scaleType, symlogConstant)) * h;
 }
@@ -124,10 +90,9 @@ public float scoreToY(float score, float domainMin, float domainMax, float h, in
 // as a fraction of the pivot's distance to the further end of the normalized
 // domain. 0 paints white, 1 paints the track color.
 //
-// Takes normalized scores rather than raw ones because the two backends
-// normalize deliberately differently — normalizeScore() above avoids NaN on a
-// degenerate (min == max) domain where JS `makeScoreNormalizer` returns 0 (see
-// adr-051) — so the ramp is the only part they must agree on. `//! js-export`ed:
+// Takes normalized scores rather than raw ones so the ramp is one decision and
+// the normalizer another — `scoreScale.slang` owns the second and exports its
+// own twin. `//! js-export`ed:
 // getDensityColor.ts carried it verbatim, keeping a `max(maxDist, 0.0001)` floor
 // that can never fire (maxDist >= 0.5 always) purely so a reader comparing the
 // two backends saw identical arithmetic.
