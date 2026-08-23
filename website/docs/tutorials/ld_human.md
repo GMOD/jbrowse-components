@@ -24,8 +24,8 @@ a large cohort takes.
   [JBrowse CLI](/docs/cli)
 - [vcftools](https://vcftools.github.io/) and
   [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the Fst
-  lane, plus [PLINK 1.9](https://www.cog-genomics.org/plink/1.9/) for the r²
-  tables[^plink]
+  lane, plus [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the r²
+  tables[^plink19]
 
 ## Where the data comes from
 
@@ -43,8 +43,11 @@ coordinates the figures use.
 - populations and superpopulations, narrowed to that unrelated set for
   `panel.samples` (EUR) and `rest.samples` (everything else):
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
-- the region slices, rehosted so the figures and their live links load without
-  the EBI round trip: https://jbrowse.org/demos/popgen/
+- the EUR slice the triangle is drawn from, rehosted so the figures and their
+  live links load without the EBI round trip:
+  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur_wide.vcf.gz
+- the six-population slice the haplotype matrix reads:
+  https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz
 
 The gene, ClinVar and recombination lanes beside them are tracks of the hosted
 UCSC hg38 [hub](/docs/user_guides/hub_url).
@@ -95,6 +98,12 @@ embed, a notebook. `forceLoad` speaks for the one display that declares it,
 while [`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) sets
 the ceiling for the whole track, at every locus.
 
+JBrowse also draws a triangle from r² PLINK has already computed. An
+[`LDTrack`](/docs/config/ldtrack) over a `plink --r2` file, PLINK 1.9's `.ld`
+rather than the `.vcor` below, needs no genotypes in the browser, which is what
+a cohort too large to correlate live wants, and
+[](/docs/tutorials/ld_mosquitoes) takes that route over a 22 Mb inversion.
+
 ## Selection at the lactase locus
 
 A haplotype is a run of neighbouring variants sitting on the same copy of a
@@ -129,24 +138,25 @@ tabix -p vcf pooled.vcf.gz
 ```
 
 How wide is wide enough is a question for the file rather than for the picture.
-Running `plink --r2` against the causal variant[^plink] gives r² to every other
-variant in the slice, and binning that by position says where the correlation
-falls away, which is where the window above comes from.
+Running `plink2 --r2-phased` against the causal variant[^phased] gives r² to
+every other variant in the slice, and binning that by position says where the
+correlation falls away, which is where the window above comes from.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
 ```bash
 # plink names a variant by position, and --set-missing-var-ids fills blanks
 # only, so strip the release's own chr:pos:ref:alt IDs or --ld-snp matches
-# nothing. One biallelic record per position is what r² is defined on anyway.
+# nothing. --output-chr chrM keeps @ expanding to chr2 rather than to 2. One
+# biallelic record per position is what r² is defined on anyway.
 bcftools view -m2 -M2 -v snps pooled.vcf.gz | bcftools norm -d both |
   bcftools annotate -x ID -Oz -o pooled.snvs.vcf.gz
 
 # --maf is the figure's own floor; --ld-window-r2 0 keeps the weak pairs, which
-# at the edges are the answer. Bin anchor.ld by position afterwards.
-plink --vcf pooled.snvs.vcf.gz --double-id --allow-extra-chr \
+# at the edges are the answer. Bin anchor.vcor by position afterwards.
+plink2 --vcf pooled.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
   --set-missing-var-ids @:# --maf 0.35 \
-  --r2 --ld-window 999999 --ld-window-r2 0 \
+  --r2-phased --ld-window 999999 --ld-window-r2 0 \
   --ld-snp chr2:135851076 --ld-window-kb 4000 --out anchor
 ```
 
@@ -164,16 +174,17 @@ tabix -p vcf panel.vcf.gz
 ```
 
 The same run over a window instead of an anchor gives the mean pairwise r²
-inside the block. Run it on both files and average each `block.ld`'s r² column:
+inside the block. Run it on both files and average each `block.vcor`'s r²
+column:
 
 <!-- from: scripts/build_lct_ld.sh -->
 
 ```bash
 # no --ld-snp, so every pair inside the window rather than every pair sharing
 # one variant. Same window and floor both ways, so only the samples differ.
-plink --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr \
+plink2 --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
   --set-missing-var-ids @:# --maf 0.35 \
-  --r2 --ld-window 999999 --ld-window-r2 0 \
+  --r2-phased --ld-window 999999 --ld-window-r2 0 \
   --chr chr2 --from-bp 135000000 --to-bp 136150000 \
   --ld-window-kb 1200 --out block
 ```
@@ -328,22 +339,14 @@ which panel the r² came from. See [](/docs/user_guides/gwas_track).
 [`build_lct_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_ld.sh)
 cuts the region out of the 1000 Genomes 30x callset without downloading it, then
 writes a ready-to-serve config carrying both LD lanes, the Fst lane, the genetic
-map and the haplotype matrix:
+map and the haplotype matrix. The VCFs it writes hold genotypes only, and
+JBrowse computes the r² from them as it draws the triangle.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_ld.sh
 bash build_lct_ld.sh                  # builds ./lct_ld_build/jbrowse2
 npx --yes serve lct_ld_build/jbrowse2 # then open the printed URL
 ```
-
-The assembly is the hosted UCSC hg38 hub's own entry copied in, so the reference
-is never downloaded. The files the script writes are genotypes; the display does
-the r². It prints r² against rs4988235 in bins along the slice, which is where
-the block's edges come from, mean pairwise r² inside the block for one panel and
-for the pooled release, and where rs4988235 ranks on per-site Fst.
-
-It reads the release's 2504 unrelated samples, since relatives share long
-haplotypes for reasons that have nothing to do with a sweep.
 
 The wide Fst lane is a second file, from
 [`build_lct_fst_scan.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh),
@@ -354,21 +357,17 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_lct_fst_scan.sh            # builds ./lct_fst_scan_build
 ```
 
-Same panels, same estimator and the same tool, over forty megabases instead of
-three. It prints where rs4988235 ranks across the whole span, and the
-million-site slice it needs to get there takes a few minutes to come down.
+The million-site slice it reads takes a few minutes to come down.
 
 The [subsampled haplotype matrix](#rows-have-to-be-worth-a-pixel) is a third
-file, since the whole release draws a flat wash at that lane height:
+file, from
+[`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh),
+since the whole release draws a flat wash at that lane height:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_haploblock.sh
 bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
 ```
-
-[`build_lct_haploblock.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_haploblock.sh)
-prints the rows-per-pixel arithmetic against the lane, and the per-population
-frequencies the six populations were chosen for.
 
 ## See also
 
@@ -390,17 +389,11 @@ frequencies the six populations were chosen for.
 - Halldorsson et al. (2019).
   [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
 
-[^plink]:
-    The commands here are PLINK 1.9's, whose binary is `plink`; Debian and
-    Ubuntu package that build as plink1.9. PLINK 2.0 installs a separate
-    `plink2` binary, which asks which r² is meant, so running the same command
-    there is one flag different:
+[^phased]:
+    `--r2-phased` is the haplotypic r² an `LDDisplay` computes, so a cell in
+    these tables and a cell in the triangle are the same quantity. plink2's
+    other r², `--r2-unphased`, is between genotype allele counts.
 
-    - `plink --r2` → `plink2 --r2-unphased` prints what 1.9 prints, r² between
-      genotype allele counts.
-    - `plink --r2` → `plink2 --r2-phased` prints the haplotypic r² an
-      `LDDisplay` computes, which is the one that can be read against the
-      triangle cell by cell.
-
-    Every flag around it is spelled the same in 2.0, `--ld-snp`, `--maf`,
-    `--set-missing-var-ids` and the `--ld-window` trio included.
+[^plink19]:
+    PLINK 1.9 does the same work: `--r2 dprime` for the phased statistic and a
+    bare `--r2` for the unphased one, writing `.ld` where plink2 writes `.vcor`.

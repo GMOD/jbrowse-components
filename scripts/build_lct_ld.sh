@@ -49,8 +49,7 @@
 #
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix), curl, awk,
 #           vcftools + bedGraphToBigWig (UCSC), for the Fst track.
-#           plink (1.9, for the printed r² tables only. Debian/Ubuntu ship it as
-#           `plink1.9`, so there: PLINK=plink1.9 bash scripts/...)
+#           plink2 (for the printed r² tables only)
 # Usage:    bash scripts/build_lct_ld.sh [outdir]
 set -euo pipefail
 
@@ -64,9 +63,7 @@ for h in "${HELPERS[@]}"; do
 done
 
 OUTDIR="${1:-lct_ld_build}"
-# A 1.9 binary: the r2 calls below use --r2, which PLINK 2.0 replaced with
-# --r2-unphased / --r2-phased, so PLINK=plink2 fails on the first table.
-PLINK="${PLINK:-plink}"
+PLINK="${PLINK:-plink2}"
 COLLECTION=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage
 CHR2=$COLLECTION/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 # Populations and superpopulations for all 3202; the 2504-row index is what says
@@ -188,16 +185,17 @@ if [ -f fst_site.weir.fst ]; then
 fi
 
 # ── Evidence ─────────────────────────────────────────────────────────────────
-# plink --r2 for both tables, on the same MAF floor the figure uses. This is
-# plink's genotypic r², while the display computes the exact haplotypic one off
-# the phase; the two agree closely here and the tables are for choosing the
-# window, not for reproducing the picture cell by cell.
+# --r2-phased for both tables, on the same MAF floor the figure uses. That is
+# the haplotypic r² the display computes off the same phase, so a cell here and
+# a cell in the triangle are the same quantity; --r2-unphased is the other
+# statistic plink2 offers, correlation between genotype allele counts.
 #
 # The anchor is given as a position, so every variant has to be NAMED chr:pos —
 # and --set-missing-var-ids only fills blanks. This release names every variant
 # chr:pos:ref:alt, so the IDs are STRIPPED first; leaving them in makes plink
-# report "No valid variants specified by --ld-snp" and nothing else, which reads
-# like a bad coordinate rather than an unmatched ID.
+# report "--ld-snps variant not found" and nothing else, which reads like a bad
+# coordinate rather than an unmatched ID. --output-chr chrM is what keeps @ in
+# that template expanding to chr2 rather than to plink2's bare 2.
 #
 # That naming also needs one record per position, so each slice is first reduced
 # to biallelic SNVs with duplicate positions dropped, which is the only thing an
@@ -215,8 +213,9 @@ snvs() {
 snvs "$OUT" > /dev/null
 snvs "$POOLED" > /dev/null
 
-PLINK_ARGS=(--double-id --allow-extra-chr --set-missing-var-ids @:#
-  --maf "$MAF" --r2 --ld-window 999999 --ld-window-r2 0)
+PLINK_ARGS=(--double-id --allow-extra-chr --output-chr chrM
+  --set-missing-var-ids @:# --maf "$MAF" --r2-phased
+  --ld-window 999999 --ld-window-r2 0)
 
 # WHERE THE BLOCK ENDS: r² of every common variant against the causal one,
 # averaged in 100 kb bins. The slice has to show near-zero bins at BOTH ends or
@@ -229,7 +228,7 @@ echo
 echo "mean r² against $CAUSAL (rs4988235), 100 kb bins:"
 awk 'NR > 1 {b = int($5 / 100000) * 100000; s[b] += $7; n[b]++}
      END {for (b in s) printf "  %7.2f Mb  n=%4d  %.3f\n", b/1e6, n[b], s[b]/n[b]}' \
-  anchor.ld | sort -n
+  anchor.vcor | sort -n
 
 # WHY ONE PANEL: mean pairwise r² inside the block, this panel against the whole
 # release, on an identical window and MAF floor.
@@ -240,7 +239,7 @@ for vcf in "$OUT" "$POOLED"; do
     --from-bp "${BLOCK%-*}" --to-bp "${BLOCK#*-}" \
     --ld-window-kb 1200 --out block > /dev/null
   awk -v f="$vcf" 'NR > 1 {s += $7; n++}
-       END {printf "  %-32s %.3f  (%d pairs)\n", f, s/n, n}' block.ld
+       END {printf "  %-32s %.3f  (%d pairs)\n", f, s/n, n}' block.vcor
 done
 
 # ── JBrowse app ──────────────────────────────────────────────────────────────

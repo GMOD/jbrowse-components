@@ -61,10 +61,11 @@ The LD triangle is a separate feature: it draws r² between every pair of nearby
 variants as a heatmap, and can compute it live from phased genotypes. See the
 [linkage disequilibrium tutorial](/docs/tutorials/ld_human).
 
-LD data must be in PLINK `--r2` output format (`.ld` or `.ld.gz`). Generate it
-from:
+LD data must be in PLINK LD table format, either 1.9's `.ld` or 2.0's `.vcor`,
+bgzipped or not. Generate it from:
 
-- Your own cohort - `plink --r2 --ld-window-kb 1000 --ld-window-r2 0`
+- Your own cohort - `plink2 --r2-unphased --ld-window-kb 1000 --ld-window-r2 0`,
+  or 1.9's `plink --r2 --ld-window-kb 1000 --ld-window-r2 0`
 - Reference panel - 1000 Genomes phase 3 VCFs at
   `ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/` (choose EUR, AFR, EAS,
   AMR, or SAS by population)

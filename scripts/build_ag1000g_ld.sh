@@ -46,10 +46,8 @@
 #    release rather than a fallback.
 #    https://www.malariagen.net/data/our-approach-sharing-data/ag1000g-terms-of-use/
 #
-# Requires: plink (1.9, NOT plink2 - see below), htslib (bgzip, tabix),
-#           samtools, curl, awk, python3.
-#           Debian/Ubuntu ship 1.9 as the `plink1.9` binary (the `plink`
-#           package is 1.07), so there: PLINK=plink1.9 bash scripts/...
+# Requires: plink2, htslib (bgzip, tabix), samtools, curl, awk, python3.
+#           PLINK 1.9 also works, with LD_FLAGS=(--r2 dprime ...) instead.
 # Usage:    bash scripts/build_ag1000g_ld.sh [outdir]
 set -euo pipefail
 
@@ -63,17 +61,19 @@ CHROM=2L
 PROBE_FROM=20524058
 PROBE_TO=42165532
 
-# plink 1.9 is required rather than plink2, for two reasons worth knowing:
-#   * plink2 removed --r2. It splits into --r2-phased / --r2-unphased and
-#     refuses to guess which you meant.
-#   * plink 1.9's `--r2 dprime` does not just add a column. The modifier
-#     switches r2 itself from a dosage correlation to the haplotype-frequency
-#     estimate (this is documented only in plink2's help text, describing 1.9).
-#     That is the statistic we want, and it is what the DP column pairs with.
-# The .ld column layout below is also what PlinkLDTabixAdapter parses.
-LD_FLAGS=(--r2 dprime --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0)
+# --r2-phased is the haplotype-frequency estimate rather than a correlation
+# between dosages, which is the statistic the display draws and the one D'
+# pairs with; PLINK 1.9 spelled this pair `--r2 dprime`, one flag for both.
+# dprimeabs rather than dprime: the pre-computed path reads every cell as a
+# magnitude, having no genotypes to recover a sign against.
+#
+# The column layout that comes out, #CHROM_A POS_A ID_A CHROM_B POS_B ID_B
+# PHASED_R2 ABS_DPRIME, is what PlinkLDTabixAdapter parses, and sits at the same
+# eight offsets 1.9 used, so every awk below counts columns the same way.
+LD_FLAGS=(--r2-phased cols=chrom,pos,id,dprimeabs
+  --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0)
 
-PLINK="${PLINK:-plink}"
+PLINK="${PLINK:-plink2}"
 
 # The CLI, used for `sort-bed` in build_track below as well as for the instance
 # at the end, so it is resolved before either.
@@ -82,8 +82,8 @@ else jb() { npx -y @jbrowse/cli "$@"; }; fi
 for tool in "$PLINK" bgzip tabix samtools curl python3; do
   command -v "$tool" >/dev/null || { echo "missing required tool: $tool" >&2; exit 1; }
 done
-if "$PLINK" --version 2>&1 | grep -q "PLINK v2"; then
-  echo "error: '$PLINK' resolves to plink2, which has no --r2. Need plink 1.9." >&2
+if ! "$PLINK" --version 2>&1 | grep -q "PLINK v2"; then
+  echo "error: '$PLINK' is not plink2, which LD_FLAGS above is written for." >&2
   exit 1
 fi
 
@@ -169,7 +169,7 @@ if [ ! -f common.bim ]; then
   echo "building common-variant grid over $CHROM (one pass, a few minutes)..."
   cols_for <(awk 'NR>2{print $1}' "samples.$CHROM.txt") > cols.all
   emit_vcf cols.all 1 300000000 4000 0.1 common.vcf
-  "$PLINK" --vcf common.vcf --double-id --allow-extra-chr --keep-allele-order \
+  "$PLINK" --vcf common.vcf --double-id --allow-extra-chr \
     --make-bed --out common >/dev/null
   rm -f common.vcf
 fi
@@ -188,7 +188,7 @@ probe() { # pop from to tag -> "meanDp n"
   # which under `set -e` would kill the script after the first panel
   awk 'NR>1{d=($5>$2?$5-$2:$2-$5); if(d>5e6){s+=$8; r+=$7; n++}}
        END{if(n) printf "%.3f %.3f %d\n", s/n, r/n, n; else print "na na 0"}' \
-    "probe.$1.$4.ld"
+    "probe.$1.$4.vcor"
 }
 
 echo
@@ -224,20 +224,24 @@ build_track() { # pop minmaf grid tag
   awk -v g="$3" -F'_' '{p=$2+0; if (p >= nxt) {print $0; nxt = p + g}}' \
     "sel.$4.snplist" > "grid.$4.snplist"
   "$PLINK" --bfile common --allow-extra-chr --keep "keep.$1.txt" \
-    --extract "grid.$4.snplist" --keep-allele-order "${LD_FLAGS[@]}" \
+    --extract "grid.$4.snplist" "${LD_FLAGS[@]}" \
     --out "$4" >/dev/null 2>&1
-  # awk retabs plink's space-padded columns and comments the header; `sort-bed`
-  # then does what it does for a BED, which a .ld needs too — the `#` line on
-  # top and the rest sorted on the same first two columns, under LC_ALL=C.
+  # plink2 writes tabs and comments its own header, so the table goes straight
+  # into `sort-bed`, which does what it does for a BED and a .ld alike — the `#`
+  # line on top and the rest sorted on the same first two columns, under LC_ALL=C.
+  # (1.9 needed an `awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t'` first, for a
+  # space-padded table with a bare header.)
   #
-  # The header is COMMENTED rather than counted with -S 1: both keep it out of
-  # the data, but only a commented header is what `tabix -H` prints and what
-  # readers ask for first, so an -S 1 header is easy to miss — and missing it
-  # drops the DP column, which is what makes D' available rather than only r².
+  # A COMMENTED header rather than one counted with -S 1: both keep it out of the
+  # data, but only a commented header is what `tabix -H` prints and what readers
+  # ask for first, so an -S 1 header is easy to miss — and missing it drops the
+  # ABS_DPRIME column, which is what makes D' available rather than only r².
   # Not -c C, which would make C the meta character and read every chr-prefixed
   # data row as a comment.
-  awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' "$4.ld" |
-    jb sort-bed | bgzip > "$4.ld.gz"
+  #
+  # The .gz keeps the .ld name it has always had, and that the hosted demo files
+  # are published under; plink2 calls its own output .vcor.
+  jb sort-bed < "$4.vcor" | bgzip > "$4.ld.gz"
   tabix -s 1 -b 2 -e 2 -f "$4.ld.gz"
   echo "  $4: $(wc -l < "grid.$4.snplist") SNPs, $(( $(zcat "$4.ld.gz" | wc -l) - 1 )) pairs, $(du -h "$4.ld.gz" | cut -f1)"
 }

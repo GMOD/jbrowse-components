@@ -16,10 +16,10 @@ export const DEFAULT_PLINK_LD_HEADER: PlinkLDHeader = {
   mafBIdx: -1,
 }
 
-// A header line names at least one of the position columns; a data row never
-// does. Used to tell a real header apart from a first data row.
+// A header line names at least one of the chromosome or position columns; a
+// data row never does. Used to tell a real header apart from a first data row.
 function looksLikePlinkLDHeader(line: string) {
-  return /\b(CHR_A|CHR1|BP_A|BP1|POS_A|POS1)\b/.test(line)
+  return /\b(CHR_A|CHROM_A|CHR1|CHROM1|BP_A|BP1|POS_A|POS1)\b/.test(line)
 }
 
 // Resolve a file's column layout from its first line. A recognizable header is
@@ -35,8 +35,13 @@ export function resolvePlinkLDHeader(firstLine: string): {
     : { header: DEFAULT_PLINK_LD_HEADER, isHeaderLine: false }
 }
 
-// PLINK header looks like: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
+// PLINK 1.9 header looks like: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
 // With optional: DP, MAF_A, MAF_B, PHASE
+//
+// PLINK 2.0 writes a .vcor whose every column is spelled differently:
+// #CHROM_A POS_A ID_A CHROM_B POS_B ID_B PHASED_R2, with ABS_DPRIME/DPRIME and
+// NONMAJ_FREQ_A/_B under `cols=`. Same file otherwise, so the aliases below are
+// what let one adapter read either.
 export function parsePlinkLDHeader(headerLine: string): PlinkLDHeader {
   // A header row kept for tabix is commonly commented out (`#CHR_A …`) so that
   // the index's meta character covers it. The `#` is the comment marker, not
@@ -54,16 +59,16 @@ export function parsePlinkLDHeader(headerLine: string): PlinkLDHeader {
     return -1
   }
 
-  const chrAIdx = findIdx(['CHR_A', 'CHR1'])
+  const chrAIdx = findIdx(['CHR_A', 'CHR1', 'CHROM_A', 'CHROM1'])
   const bpAIdx = findIdx(['BP_A', 'BP1', 'POS_A', 'POS1'])
   const snpAIdx = findIdx(['SNP_A', 'SNP1', 'ID_A', 'ID1'])
-  const chrBIdx = findIdx(['CHR_B', 'CHR2'])
+  const chrBIdx = findIdx(['CHR_B', 'CHR2', 'CHROM_B', 'CHROM2'])
   const bpBIdx = findIdx(['BP_B', 'BP2', 'POS_B', 'POS2'])
   const snpBIdx = findIdx(['SNP_B', 'SNP2', 'ID_B', 'ID2'])
-  const r2Idx = findIdx(['R2', 'R^2', 'RSQ'])
-  const dprimeIdx = findIdx(['DP', 'DPRIME', "D'"])
-  const mafAIdx = findIdx(['MAF_A', 'MAF1'])
-  const mafBIdx = findIdx(['MAF_B', 'MAF2'])
+  const r2Idx = findIdx(['R2', 'R^2', 'RSQ', 'PHASED_R2', 'UNPHASED_R2'])
+  const dprimeIdx = findIdx(['DP', "D'", 'ABS_DPRIME', 'DPRIME'])
+  const mafAIdx = findIdx(['MAF_A', 'MAF1', 'NONMAJ_FREQ_A'])
+  const mafBIdx = findIdx(['MAF_B', 'MAF2', 'NONMAJ_FREQ_B'])
 
   if (chrAIdx === -1 || bpAIdx === -1 || chrBIdx === -1 || bpBIdx === -1) {
     throw new Error(
@@ -117,9 +122,13 @@ export function parsePlinkLDLine(
     header.r2Idx >= 0
       ? Number.parseFloat(fields[header.r2Idx] ?? '')
       : undefined
+  // 1.9's DP and plink2's ABS_DPRIME are already magnitudes, but plink2's
+  // DPRIME is signed, and the pre-computed path has no genotypes to recover a
+  // sign against, so it reads every cell as a magnitude. Taking |D'| here is
+  // what stops a signed column rendering as a hole in the triangle.
   const dprime =
     header.dprimeIdx >= 0
-      ? Number.parseFloat(fields[header.dprimeIdx] ?? '')
+      ? Math.abs(Number.parseFloat(fields[header.dprimeIdx] ?? ''))
       : undefined
   const mafA =
     header.mafAIdx >= 0

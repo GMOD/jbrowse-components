@@ -365,7 +365,7 @@ See [GWAS track configuration](/docs/config_guides/gwas_track).
 | Format | Adapter | Track type | Notes |
 | --- | --- | --- | --- |
 | GWAS results (bgzipped, tabix-indexed BED-like) | [](/docs/config/gwasadapter) | [](/docs/config/gwastrack) |  |
-| PLINK LD (plain .ld) | [](/docs/config/plinkldadapter) | [](/docs/config/ldtrack) | PLINK `--r2` output; for regional analyses |
+| PLINK LD (plain .ld) | [](/docs/config/plinkldadapter) | [](/docs/config/ldtrack) | PLINK LD table; for regional analyses |
 | PLINK LD (tabix-indexed .ld.gz) | [](/docs/config/plinkldtabixadapter) | [](/docs/config/ldtrack) | For chromosome-scale or genome-wide LD |
 
 <!-- FILE_TYPES gwas END -->

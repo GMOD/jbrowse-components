@@ -8,15 +8,15 @@ tutorial_category: Population genomics
 data: hosted
 ---
 
-**TL;DR:** a 22 Mb inversion reads as one block, from `plink --r2` output
-through an [`LDTrack`](/docs/config/ldtrack). The same inversion also loads as a
-structural variant genotyped per mosquito.
+**TL;DR:** a 22 Mb inversion reads as one block, from `plink2 --r2-phased`
+output through an [`LDTrack`](/docs/config/ldtrack). The same inversion also
+loads as a structural variant genotyped per mosquito.
 
 ## Prerequisites
 
 - nothing to read the figures, which load hosted data
-- `plink` (1.9, not plink2), htslib (`bgzip`, `tabix`), `samtools`, `curl`,
-  `python3`, and `node` for the [JBrowse CLI](/docs/cli)
+- `plink2`, htslib (`bgzip`, `tabix`), `samtools`, `curl`, `python3`, and `node`
+  for the [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 
@@ -36,8 +36,12 @@ or a data-access agreement.
 - the 2La tag SNPs each mosquito's karyotype is scored from
   ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
   https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
-- the finished LD tables and karyotype VCFs, rehosted so the track blocks on
-  this page load without the build: https://jbrowse.org/demos/popgen/
+- the finished `CMgam` LD table, rehosted so the track blocks on this page load
+  without the build: https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.ld.gz
+- the 2La genotypes per mosquito:
+  https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz
+- the karyotype table the sample lane is grouped by:
+  https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv
 
 ## The 2La inversion as one LD block
 
@@ -51,35 +55,38 @@ the two together.
 
 ## Precompute the LD with PLINK
 
-The LD is a file that `plink --r2` writes in three steps: thin the variants,
-correlate them, index the table. `keep.CMgam.txt` is the population, two
-tab-separated columns of the same sample id, the family/individual pair plink
-asks for.
+The LD is a file that `plink2 --r2-phased` writes in three steps: thin the
+variants, correlate them, index the table. `keep.CMgam.txt` is the population,
+two tab-separated columns of the same sample id, the family/individual pair
+plink asks for.
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
 
 ```bash
 # the display uploads n(n-1)/2 cells, and ~800 SNPs across an arm is already at
 # screen resolution, so thin to a grid rather than to the callset's density
-plink --bfile common --allow-extra-chr --keep keep.CMgam.txt --maf 0.2 \
+plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt --maf 0.2 \
   --chr 2L --write-snplist --out sel
 awk -F'_' -v g=50000 '{p=$2+0; if (p >= nxt) {print $0; nxt = p + g}}' \
   sel.snplist > grid.snplist
 
-# plink 1.9: plink2 splits --r2 into --r2-phased/--r2-unphased. `--r2 dprime`
-# switches r² itself from a dosage correlation to the haplotype-frequency
-# estimate, which is what the display draws. --ld-window-r2 0 keeps the
-# uncorrelated pairs.
-plink --bfile common --allow-extra-chr --keep keep.CMgam.txt \
-  --extract grid.snplist --keep-allele-order \
-  --r2 dprime --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0 \
+# --r2-phased is the haplotype-frequency estimate rather than a correlation
+# between dosages, which is what the display draws; dprimeabs adds D' beside it
+# as a magnitude, which is how the display reads a precomputed cell.
+# --ld-window-r2 0 keeps the uncorrelated pairs. On PLINK 1.9 the pair is one
+# flag, `--r2 dprime`, and the columns come out at the same offsets.
+plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt \
+  --extract grid.snplist \
+  --r2-phased cols=chrom,pos,id,dprimeabs \
+  --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0 \
   --out ag1000g_2L_CMgam
 
-# awk retabs plink's space-padded columns and comments the header, which is what
-# `tabix -H` returns. `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C with that
-# `#` line kept on top, which is what a .ld wants too: same first two columns.
-awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' ag1000g_2L_CMgam.ld |
-  jbrowse sort-bed | bgzip > ag1000g_2L_CMgam.ld.gz
+# plink2 writes tabs and comments its own header, which is what `tabix -H`
+# returns. `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C with that `#` line
+# kept on top, which is what this table wants too: same first two columns. The
+# .gz keeps the .ld name the hosted files are published under.
+jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
+  bgzip > ag1000g_2L_CMgam.ld.gz
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.ld.gz
 ```
 
