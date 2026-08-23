@@ -219,11 +219,12 @@ describe('computeDerivativePaths', () => {
   })
 
   it('keeps two junctions further apart than the tolerance apart', () => {
-    // The converse, and the reason the clustering is a leader sweep rather than
-    // single linkage: linking each endpoint to the PREVIOUS one lets a run of
-    // jittered reads chain two distinct junctions into one cluster. COLO829's
-    // chr9 fold-back has exactly that shape, two junctions 28 bp apart, and
-    // single linkage merged its two alleles into one candidate.
+    // The converse, and the reason a cluster claims only what lies within the
+    // tolerance of its own seed rather than single-linking: linking each
+    // endpoint to the PREVIOUS one lets a run of jittered reads chain two
+    // distinct junctions into one cluster. COLO829's chr9 fold-back has exactly
+    // that shape, two junctions 28 bp apart, and single linkage merged its two
+    // alleles into one candidate.
     const chains = []
     for (const at of [58_717_662, 58_717_690]) {
       for (let jitter = 0; jitter < 12; jitter += 4) {
@@ -233,6 +234,32 @@ describe('computeDerivativePaths', () => {
       }
     }
     expect(computeDerivativePaths({ chains })).toHaveLength(2)
+  })
+
+  it('does not let one stray endpoint split a stacked junction, wherever it lands', () => {
+    // Most reads stack a junction's endpoint on one exact coordinate, one read
+    // places it a few bp higher, and an unrelated 1-read chain drops a jittered
+    // endpoint just below the stack. The old leader sweep anchored the cluster
+    // on that lowest endpoint, so whenever the stray landed more than the
+    // tolerance below the HIGHEST placement it cut the upper one off into its
+    // own cluster — one allele as two candidates, its support divided by a
+    // chain the minReads floor was about to discard anyway. Swept across the
+    // whole tolerance because that is the property: where the stray lands must
+    // not move the answer.
+    for (let strayOffset = 0; strayOffset <= 20; strayOffset++) {
+      const stacked = [0, 0, 0].map(() => der3Chain())
+      const higher = der3Chain()
+      higher[1] = seg('chr10', 58_717_463, 58_717_672, 1, 32_732)
+      const stray = [
+        seg('chr10', 58_717_400, 58_717_662 - strayOffset, 1, 0),
+        seg('chr5', 1_000_000, 1_000_400, 1, 246),
+      ]
+      const candidates = computeDerivativePaths({
+        chains: [...stacked, higher, stray],
+      })
+      expect(candidates).toHaveLength(1)
+      expect(candidates[0]!.readCount).toBe(4)
+    }
   })
 
   it('returns every supported path, so a caller can say how many there were', () => {

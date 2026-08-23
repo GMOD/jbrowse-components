@@ -117,29 +117,41 @@ function exitBp(seg: SegAln) {
 // spurious second candidate at 14 of them, purely from where the locus sits
 // relative to a multiple of 20.
 //
-// So the endpoints are collected up front and clustered per refName: sorted,
-// then swept, opening a new cluster whenever the endpoint is further than the
-// tolerance from the one that OPENED the current cluster. The cut points are
-// then decided by the data's own gaps, so the answer no longer moves when the
-// whole locus does.
+// So the endpoints are collected up front and clustered per refName, seeded at
+// the coordinates MOST reads placed a junction at, ties to the lower: each
+// seed, taken in descending-count order, claims every unclaimed endpoint
+// within the tolerance of it, and unclaimed endpoints seed in their turn.
+// Reads stack exactly on an unambiguous breakpoint, so the modes ARE the
+// junctions and the jitter joins whichever junction it lies within tolerance
+// of. The cut points are decided by the data's own weight, so the answer moves
+// neither when the whole locus does nor when a stray endpoint lands beside it.
 //
-// Measured against the alternative, and this is why it is a leader sweep rather
-// than single linkage: linking on the PREVIOUS endpoint instead of the
-// cluster's first lets clusters chain, and COLO829's chr9 fold-back is a real
-// case where they do. Two distinct junctions sit 28 bp apart there (the
-// breakage-fusion-bridge re-break `realReads.foldback` is about), and
-// read-placement jitter between them bridges the two into one cluster, merging
-// two alleles into one candidate. Capping a cluster's width at the tolerance
-// keeps them apart, which is what the tolerance is being asked for.
+// The stray endpoint is why this is mode-seeded rather than the leader sweep it
+// replaces (sorted ascending, a new cluster opened when an endpoint is further
+// than the tolerance from the one that OPENED the current one). A leader sweep
+// anchors each cluster on the LOWEST endpoint anybody supplied, so one
+// jittered read landing just left of a stacked junction re-anchored the whole
+// cluster and cut the junction's own upper placements off into a second one —
+// one allele reported as two candidates with its support divided, caused by a
+// single 1-read chain the `minReads` floor was about to discard anyway.
 //
-// WHICH endpoint labels a cluster is a separate question from which endpoints
-// are in it, and the reads answer it: the label is the coordinate MOST of them
-// placed the junction at, ties to the lower. The sweep's own leader is the
-// lowest coordinate ANYBODY placed it at, so labelling by that moves the label
-// whenever a read lands left of the whole cluster — and the label is what
-// `pathSignature` spells, i.e. what `pathId` is, i.e. what the picker holds a
-// user's chosen route by over a streaming pileup. Membership is untouched,
-// which is why no `realReads.*` count moves. SV_MULTIHOP.md has the measurement.
+// And it is mode-seeded rather than single linkage for the reason the leader
+// sweep was: linking each endpoint to its nearest neighbour lets clusters
+// chain, and COLO829's chr9 fold-back is a real case where they do. Two
+// distinct junctions sit 28 bp apart there (the breakage-fusion-bridge
+// re-break `realReads.foldback` is about), and read-placement jitter between
+// them bridges the two into one cluster, merging two alleles into one
+// candidate. A seed claims only what lies within the tolerance of the seed
+// itself, and two junctions further apart than the tolerance are two modes, so
+// each seeds its own cluster and the jitter between them joins one or the
+// other rather than fusing them.
+//
+// The seed doubles as the cluster's label — what `pathSignature` spells, i.e.
+// what `pathId` is, i.e. what the picker holds a user's chosen route by over a
+// streaming pileup. The mode is the stable choice for that too: labelled by
+// the sweep's own leader, the real COLO829 chains renamed the der(3) route a
+// mean of 2.98 times per run over 40 arrival orders; labelled by the mode,
+// 0.10. SV_MULTIHOP.md has the measurement.
 type ClusterOf = (refName: string, bp: number) => number
 
 function junctionEndpoints(chain: SegAln[]) {
@@ -151,6 +163,20 @@ function junctionEndpoints(chain: SegAln[]) {
     out.push({ refName: b.refName, bp: entryBp(b) })
   }
   return out
+}
+
+function lowestIndexAtOrAbove(sorted: number[], value: number) {
+  let lo = 0
+  let hi = sorted.length
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (sorted[mid]! < value) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
 }
 
 function buildClusterOf(chains: SegAln[][], tolerance: number): ClusterOf {
@@ -168,23 +194,21 @@ function buildClusterOf(chains: SegAln[][], tolerance: number): ClusterOf {
   const ids = new Map<string, number>()
   for (const [refName, counts] of byRef) {
     const sorted = [...counts.keys()].sort((a, b) => a - b)
-    let anchor = sorted[0]!
-    let members: number[] = []
-    const clusters = [members]
-    for (const bp of sorted) {
-      if (bp - anchor > tolerance) {
-        anchor = bp
-        members = []
-        clusters.push(members)
-      }
-      members.push(bp)
-    }
-    for (const cluster of clusters) {
-      const label = cluster.reduce((best, bp) =>
-        counts.get(bp)! > counts.get(best)! ? bp : best,
-      )
-      for (const bp of cluster) {
-        ids.set(`${refName}:${bp}`, label)
+    const seeds = [...counts.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0] - b[0],
+    )
+    for (const [seedBp] of seeds) {
+      if (!ids.has(`${refName}:${seedBp}`)) {
+        for (
+          let i = lowestIndexAtOrAbove(sorted, seedBp - tolerance);
+          i < sorted.length && sorted[i]! <= seedBp + tolerance;
+          i++
+        ) {
+          const key = `${refName}:${sorted[i]!}`
+          if (!ids.has(key)) {
+            ids.set(key, seedBp)
+          }
+        }
       }
     }
   }

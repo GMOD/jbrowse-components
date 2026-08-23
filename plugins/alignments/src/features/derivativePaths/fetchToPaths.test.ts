@@ -86,6 +86,54 @@ test('a fetch carries the SA tags the chain builder needs', () => {
   expect(chains[0]![1]!.onScreen).toBe(false)
 })
 
+// A read that traverses a circular amplicon twice: two alignments at ONE locus,
+// distinguishable only by where each pass sits in the read (ecDNA / double
+// minute reads look exactly like this). The segment dedup that collapses a
+// fetched record with its SA-tag twin therefore keys on the read position too —
+// keyed on the locus alone it folded the two passes into one segment, deleting
+// the circle-closing junction while still counting the read as support for a
+// linear allele it does not describe, and dropping this read's chain outright.
+function circlePassRead(name: string, pass: number) {
+  const firstPass = pass === 0
+  return new SimpleFeature({
+    uniqueId: `${name}/${pass}`,
+    name,
+    refName: 'chr1',
+    start: 1000,
+    end: 1100,
+    strand: 1,
+    CIGAR: firstPass ? '100M100S' : '100S100M',
+    flags: firstPass ? 0 : 2048,
+    tags: {
+      SA: firstPass
+        ? 'chr1,1001,+,100S100M,60,0;'
+        : 'chr1,1001,+,100M100S,60,0;',
+    },
+  })
+}
+
+test('a read circling one locus keeps both passes and the junction between them', () => {
+  const data = fetchResult([
+    circlePassRead('r1', 0),
+    circlePassRead('r1', 1),
+    circlePassRead('r2', 0),
+    circlePassRead('r2', 1),
+  ])
+  const chains = computeReadChains(new Map([[0, data]]), regions)
+  expect(chains).toHaveLength(2)
+  // Two passes at one locus, separated only by where each sits in the read —
+  // while each fetched record still collapses with the SA twin its sibling
+  // carries, or this chain would be four segments rather than two.
+  expect(
+    chains[0]!.map(s => `${s.refName}:${s.start}:${s.clipAtStart}`),
+  ).toEqual(['chr1:1000:0', 'chr1:1000:100'])
+
+  const candidates = computeDerivativePaths({ chains })
+  expect(candidates).toHaveLength(1)
+  expect(candidates[0]!.readCount).toBe(2)
+  expect(candidates[0]!.segments).toHaveLength(2)
+})
+
 test('the two reads rank as one off-screen derivative path', () => {
   const data = fetchResult([splitRead('r1', 1000), splitRead('r2', 1003)])
   const candidates = computeDerivativePaths({

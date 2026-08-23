@@ -1784,13 +1784,17 @@ describe('computeArcsFromPileupData', () => {
   //
   // Both cases below carry the flank's TRUE start (100), which is what
   // buildBaseReadArrays now emits; a start clipped to the region (900) would
-  // not match the SA twin's 100 and would resurrect the spurious arc.
+  // not match the SA twin's 100 and would resurrect the spurious arc. The SA
+  // CIGARs are reference-orientation, like an aligner's: the reverse middle's
+  // read-start clip (1000) is its TRAILING clip, so its strand-corrected clip
+  // matches the fetched record's — which the fusion also keys on, or a read
+  // circling one locus would fold its passes together (segLocusKey).
   test.each([
     // clip 38: the flank is preceded by a 38bp soft clip
     { name: 'clipped flank', clip: 38, flankCigar: '38S1900M' },
     // clip 0: the flank IS the read's first segment — the common case for a
-    // forward read hanging off the left edge, and the one a clipAtStart-keyed
-    // dedup cannot fuse (every first segment shares clip 0)
+    // forward read hanging off the left edge, where the twin pair shares the
+    // clip every first segment has
     { name: 'first-segment flank', clip: 0, flankCigar: '1900M' },
   ])(
     'fuses an off-region-edge segment with its SA twin ($name)',
@@ -1806,7 +1810,7 @@ describe('computeArcsFromPileupData', () => {
         readClipAtStart: new Uint32Array([clip, 1000]),
         readSuppAlignments: [
           // flank's SA names the reverse middle segment
-          'chr1,2002,-,1000S200M,60,0;',
+          'chr1,2002,-,200M1000S,60,0;',
           // middle's SA names the flank at its true start 100
           `chr1,101,+,${flankCigar},60,0;`,
         ],
@@ -1846,7 +1850,9 @@ describe('computeArcsFromPileupData', () => {
       ...namesToBlock(['readY', 'readY']),
       readClipAtStart: new Uint32Array([1000, 0]),
       readSuppAlignments: [
-        'chr1,2002,-,200M1000S,60,0;',
+        // reference-orientation: the reverse middle's read-start clip of 0 is a
+        // trailing clip of 0, its read-END clip is the leading 1000S
+        'chr1,2002,-,1000S200M,60,0;',
         'chr1,101,+,1000S1900M,60,0;',
       ],
     })

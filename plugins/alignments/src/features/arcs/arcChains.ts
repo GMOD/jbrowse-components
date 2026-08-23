@@ -132,16 +132,26 @@ function entrySeg(entry: ReadEntry): SegAln {
   }
 }
 
-// Locus identity of a segment — the dedup key that collapses a fetched segment
-// and its SA-tag twin. Two records naming the same refName + start are the same
-// alignment, whichever side described it. Sound only because every SegAln's
-// refName is canonical (entries already are; SA segments are normalized in
-// `saSegments`) and because `readPositions` carries the read's TRUE start
-// (buildBaseReadArrays): a start clipped to the region would never match its SA
-// twin's un-clipped one, leaving both copies in the chain to be joined as a
-// spurious same-strand "deletion".
+// Identity of a segment WITHIN ONE READ — the dedup key that collapses a
+// fetched segment and its SA-tag twin. The locus alone (refName + start) is not
+// that: a read that traverses a circular amplicon or a tandem repeat more than
+// once aligns at one locus repeatedly, and a locus key collapsed the passes —
+// deleting the circle-closing junction while still counting the read as support
+// for a linear allele it does not describe, or dropping a one-segment circle
+// read's chain outright. `clipAtStart` is where the segment sits in the read,
+// which no two segments of one read can share, so it separates the passes; a
+// record and its SA twin agree on it because both sides derive the same
+// strand-corrected clip from the same alignment's CIGAR, S and H alike
+// (`getClip` / `clipLengthAtStartOfRead` against `featurizeSA`'s
+// `clipLengthAtStartOfReadNumeric`).
+//
+// Sound only because every SegAln's refName is canonical (entries already are;
+// SA segments are normalized in `saSegments`) and because `readPositions`
+// carries the read's TRUE start (buildBaseReadArrays): a start clipped to the
+// region would never match its SA twin's un-clipped one, leaving both copies in
+// the chain to be joined as a spurious same-strand "deletion".
 function segLocusKey(seg: SegAln) {
-  return `${seg.refName}:${seg.start}`
+  return `${seg.refName}:${seg.start}:${seg.clipAtStart}`
 }
 
 // The off-screen segments one entry's SA tag names, canonical-refName'd.
@@ -171,7 +181,8 @@ function saSegments(
 
 // The read's complete segment chain: every on-screen segment (a fetched entry)
 // plus any segment named in a sibling's SA tag that no view currently shows,
-// deduplicated by locus and sorted into read order by clip-at-start-of-read.
+// deduplicated by segment identity (segLocusKey) and sorted into read order by
+// clip-at-start-of-read.
 // That single canonical chain is what lets a connector step through an
 // off-screen segment and keeps a same-chr split junction from reading as
 // inter-chromosomal. `entries` arrives already deduped by readId and stripped of
