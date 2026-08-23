@@ -1,4 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
@@ -6,7 +7,6 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { measureRegionBytes } from '../RenderFeatureDataRPC/byteGate.ts'
 import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
