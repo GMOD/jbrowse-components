@@ -1,12 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  drawFeatureBlocks,
-  forEachDisplayLabel,
-  labelCullBand,
-  paintLabels,
-} from '@jbrowse/plugin-canvas'
+import { paintFeatureBand } from '@jbrowse/plugin-canvas'
 import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
@@ -102,28 +97,22 @@ function VariantSvgBody({
             height={topBands.laneHeight}
             opts={opts}
             paint={ctx => {
-              // The band the screen drew, off the same laid-out stack and the
-              // same two plugin-canvas passes — so an export cannot pack, letter
-              // or order the marks differently from what the reader saw. The
-              // colors are baked per record (`itemRgb`), which is why this pass
-              // takes no palette where the markers below do.
-              drawFeatureBlocks(ctx, laneLaidOutDataMap, renderBlocks, {
-                scrollY: 0,
-                canvasWidth,
-                canvasHeight: topBands.laneHeight,
-              })
-              forEachDisplayLabel(
-                model.visibleRegions,
+              // The band the screen drew: the same laid-out stack through the
+              // same plugin-canvas call, so an export cannot pack, letter or
+              // order the marks differently from what the reader saw. The colors
+              // are baked per record, which is why this pass takes no palette
+              // where the markers below do.
+              paintFeatureBand(
+                ctx,
                 laneLaidOutDataMap,
+                renderBlocks,
+                model.visibleRegions,
                 {
+                  canvasWidth,
+                  bandHeight: topBands.laneHeight,
                   ...laneRenderedLabels,
-                  showSubfeatureLabels: false,
                   fontSize: laneFontSize,
                 },
-                (_, labels) => {
-                  paintLabels(ctx, labels, laneFontSize)
-                },
-                labelCullBand(0, topBands.laneHeight),
               )
             }}
           />

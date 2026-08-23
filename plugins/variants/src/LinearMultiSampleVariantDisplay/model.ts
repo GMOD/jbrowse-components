@@ -10,6 +10,8 @@ import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
+  HEIGHT_MULTIPLIERS,
+  MIN_FIT_BOX_PX,
   buildFeatureFlatbushIndex,
   computeLaidOutData,
   createContentHeightProbe,
@@ -74,14 +76,6 @@ const LANE_DISPLAY_MODE = 'compact' as const
 
 /** No pins in a band: the feature there is the display's, not the lane's. */
 const NO_PINNED_FEATURES: ReadonlySet<string> = new Set()
-
-/**
- * Floor for the fit squeeze, as plugin-canvas spells it: the deepest scale that
- * still leaves the shortest box readable. Its own constant there
- * (`MIN_FIT_BOX_PX`) is not exported, and 2 is the floor every variant painter in
- * this plugin already draws to — see `variantCellSpanPx`.
- */
-const MIN_LANE_BOX_PX = 2
 
 /**
  * #stateModel LinearMultiSampleVariantDisplay
@@ -618,10 +612,13 @@ export function stateModelFactory(
               { level: 'bodies', layout: bodies },
             ],
             self.topBands.laneHeight,
-            squeezeFloorScale(shortestBox, MIN_LANE_BOX_PX),
-            // the grow ceiling is the compact ratio's inverse — a sparse band
-            // fills up to normal feature height and no further
-            1 / 0.6,
+            // the same floor a track's squeeze bottoms out at, and the same one
+            // every variant painter here already draws to (`variantCellSpanPx`)
+            squeezeFloorScale(shortestBox, MIN_FIT_BOX_PX),
+            // the grow ceiling is the display mode's compact ratio inverted, as
+            // `fitMaxScale` spells it — a sparse band fills up to normal feature
+            // height and no further
+            1 / HEIGHT_MULTIPLIERS[LANE_DISPLAY_MODE],
           )
         },
       }))

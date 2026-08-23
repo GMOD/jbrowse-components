@@ -150,17 +150,24 @@ export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
 // track renders one display, and a second one would parse the same VCF again.
 // What it can do is hold the same payload: its worker has already parsed the
 // records, so it runs `buildFeatureRenderData` over them, packs with
-// `computeLaidOutData`, fits with `resolveFitLadder`, draws with
-// `drawFeatureBlocks`, letters with `forEachDisplayLabel` + `paintLabels`, and
-// picks with `performMultiRegionHitDetection`. Every one of those is the function
-// `LinearBasicDisplay` itself calls, which is the point: overlap packing, paint
-// order, label collision, outlines and the click target are decided once, here,
-// and a lane cannot drift from the display it stands in for.
+// `computeLaidOutData`, fits with `resolveFitLadder`, paints with
+// `paintFeatureBand` and picks with `performMultiRegionHitDetection`. Every one of
+// those is the function `LinearBasicDisplay` itself calls, which is the point:
+// overlap packing, paint order, label collision, outlines and the click target
+// are decided once, here, and a lane cannot drift from the display it stands in
+// for.
 //
 // The seam is deliberately the DATA and not the model. Everything below takes
 // plain arrays, plain config and plain numbers — no MST, no React, no adapter —
 // so the caller supplies its own reactivity (the lane's are MobX computeds on its
 // own model) and its own height budget.
+//
+// What is NOT here is the pieces `paintFeatureBand` composes — the block painter,
+// the label walk, the label painter, the cull band. A band consumer wants the
+// composition, in the order and with the shared arguments stated there; a
+// consumer welding its own would be free to letter at a font size the packer
+// never measured, or to cull against a scroll window a band does not have.
+// `agent-docs/mechanisms/feature-band-consumers.md` is the contract.
 export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRenderData.ts'
 export {
   computeLaidOutData,
@@ -170,38 +177,23 @@ export {
   scaleLaidOutData,
 } from './LinearBasicDisplay/layout.ts'
 export {
-  fitScaleToFill,
+  MIN_FIT_BOX_PX,
   resolveFitLadder,
-  snapFittedContentHeight,
   solveLabelRoomFactor,
   squeezeFloorScale,
 } from './LinearBasicDisplay/fitLadder.ts'
-export { drawFeatureBlocks } from './LinearBasicDisplay/components/Canvas2DFeatureRenderer.ts'
+export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export {
   buildFeatureFlatbushIndex,
   isHitFeature,
   performMultiRegionHitDetection,
 } from './LinearBasicDisplay/components/hitTesting.ts'
 export {
-  LABEL_CULL_BUCKET_PX,
-  forEachDisplayLabel,
-  labelCullBand,
-} from './LinearBasicDisplay/components/labelPositioning.ts'
-export { paintLabels } from './LinearBasicDisplay/components/paintLabels.ts'
-export { hoverTooltipRows } from './LinearBasicDisplay/components/hoverReadout.ts'
-export {
   HEIGHT_MULTIPLIERS,
   labelFontSize,
 } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-export type { FitRung } from './LinearBasicDisplay/fitLadder.ts'
-export type {
-  LabelCullBand,
-  LabelRenderContext,
-  RegionWithData,
-  ResolvedLabel,
-} from './LinearBasicDisplay/components/labelPositioning.ts'
+export type { FeatureBandPaint } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export type {
   HitFeatureResult,
   VisibleRegion,
 } from './LinearBasicDisplay/components/hitTesting.ts'
-export type { RegionRenderData } from './RenderFeatureDataRPC/rpcTypes.ts'

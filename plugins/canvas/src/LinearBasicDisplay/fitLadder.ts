@@ -114,6 +114,16 @@ export function fitScaleToFill(
     : 1
 }
 
+// Smallest feature-body height (px) a squeeze may leave. Once bodies would pack
+// tighter than this the squeeze stops and the surplus scrolls, rather than
+// shrinking boxes to invisibility.
+//
+// Here rather than in the display that reads it, because it is the promise
+// `squeezeFloorScale` below makes and every caller of that owes the same one — a
+// band fitting a stack into 40px is squeezing the same boxes a track squeezing
+// into 400px is.
+export const MIN_FIT_BOX_PX = 2
+
 // Floor for the squeeze, as a scale in (0, 1]: the deepest reduction leaving the
 // shortest body `minBoxPx` tall. Below that the surplus scrolls rather than
 // shrinking boxes to invisibility.

@@ -2,11 +2,8 @@ import { useState } from 'react'
 
 import { hoverBoxStyle } from '@jbrowse/core/ui'
 import {
-  drawFeatureBlocks,
-  forEachDisplayLabel,
   isHitFeature,
-  labelCullBand,
-  paintLabels,
+  paintFeatureBand,
   performMultiRegionHitDetection,
 } from '@jbrowse/plugin-canvas'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
@@ -182,13 +179,13 @@ const VariantLaneInteraction = observer(function VariantLaneInteraction({
  * so the two are separate scroll surfaces. Sitting outside the offset container
  * that holds the rows is what puts it in the band `topBands` reserved.
  *
- * The band is `drawFeatureBlocks` — that plugin's own painter — over a stack its
- * packer laid out and its fit ladder compacted into `laneHeight` (see
- * `laneFitStage`). So overlapping SVs stack onto rows instead of overdrawing,
- * paint order is what the hit test resolves by, and a label is placed by the
- * layout that reserved room for it rather than culled left to right by a rule of
- * the lane's own. `scrollY: 0` because a band does not scroll — the fit is what
- * makes the stack fit instead.
+ * The band is `paintFeatureBand` — that plugin's own band composition, geometry
+ * then labels — over a stack its packer laid out and its fit ladder compacted
+ * into `laneHeight` (see `laneFitStage`). So overlapping SVs stack onto rows
+ * instead of overdrawing, paint order is what the hit test resolves by, and a
+ * label is placed by the layout that reserved room for it rather than culled left
+ * to right by a rule of the lane's own. The export runs the same call, which is
+ * what stops the two from lettering the same records differently.
  *
  * Every observable the draw needs is read here in the render body rather than
  * inside the closure, because `OverlayCanvas` calls `draw` from an effect where
@@ -219,29 +216,17 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
         width={canvasWidthPx}
         height={laneHeight}
         draw={ctx => {
-          drawFeatureBlocks(ctx, laneLaidOutDataMap, renderBlocks, {
-            scrollY: 0,
-            canvasWidth: canvasWidthPx,
-            canvasHeight: laneHeight,
-          })
-          // Labels are a second pass because plugin-canvas draws them as DOM
-          // overlays on screen and bakes them into its SVG export — a band this
-          // short has no room for a label layer's chrome, so it takes the
-          // export's route (`forEachDisplayLabel` + `paintLabels`), which is the
-          // same resolved text at the same positions.
-          forEachDisplayLabel(
-            visibleRegions,
+          paintFeatureBand(
+            ctx,
             laneLaidOutDataMap,
+            renderBlocks,
+            visibleRegions,
             {
+              canvasWidth: canvasWidthPx,
+              bandHeight: laneHeight,
               ...laneRenderedLabels,
-              showSubfeatureLabels: false,
               fontSize: laneFontSize,
             },
-            (_, labels) => {
-              paintLabels(ctx, labels, laneFontSize)
-            },
-            // The band never scrolls, so its cull band is the band itself.
-            labelCullBand(0, laneHeight),
           )
         }}
       />

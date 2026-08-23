@@ -79,6 +79,7 @@ import {
   warnUnresolvedHighlights,
 } from './featureHighlight.ts'
 import {
+  MIN_FIT_BOX_PX,
   resolveFitLadder,
   snapFittedContentHeight,
   solveLabelRoomFactor,
@@ -223,11 +224,6 @@ const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 // resizes the track at all — `growTargetHeight` is its only reader, and the
 // `maxHeight` config slot is the ceiling at the other end of the same clamp.
 const MIN_GROW_HEIGHT = 50
-
-// Smallest feature-body height (px) the fit squeeze may leave. Once bodies would
-// pack tighter than this the squeeze stops and the surplus scrolls, rather than
-// shrinking boxes to invisibility. See `fitMinScale`.
-const MIN_FIT_BOX_PX = 2
 
 /**
  * #stateModel LinearCanvasBaseDisplay
