@@ -86,3 +86,55 @@ test('session-level formatDetails applies with no track', async () => {
   expect(await findByText('sessionField')).toBeTruthy()
   expect(await findByText('from the session config')).toBeTruthy()
 })
+
+// The panel is reused rather than remounted when another feature is clicked
+// (see SequenceFeatureDetailsRemount.test.tsx), so nothing about the drawer
+// itself says the click landed. Note the swap has to happen on a mounted tree:
+// re-rendering a fresh one would restart the cue for free.
+test('a feature swap washes the panel, and a re-format of the same feature does not', async () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        type: 'BaseFeatureWidget',
+        featureData: { uniqueId: 'one', refName: 'ctgA', start: 2, end: 102 },
+      },
+    },
+    { pluginManager },
+  )
+  const { queryByTestId, findByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <BaseFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(await findByText('ctgA:3..102')).toBeTruthy()
+  expect(queryByTestId('feature-details-wash')).toBeNull()
+
+  act(() => {
+    model.widget.setFeatureData({
+      uniqueId: 'one',
+      refName: 'ctgA',
+      start: 2,
+      end: 102,
+      extra: 'reformatted',
+    })
+  })
+  expect(await findByText('reformatted')).toBeTruthy()
+  expect(queryByTestId('feature-details-wash')).toBeNull()
+
+  act(() => {
+    model.widget.setFeatureData({
+      uniqueId: 'two',
+      refName: 'ctgA',
+      start: 200,
+      end: 300,
+    })
+  })
+  expect(await findByText('ctgA:201..300')).toBeTruthy()
+  expect(queryByTestId('feature-details-wash')).toBeTruthy()
+})

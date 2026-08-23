@@ -3,151 +3,155 @@
 exports[`open up a widget 1`] = `
 <div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-9g9pc9-MuiPaper-root-MuiAccordion-root"
-    data-testid="BaseCard-"
-    style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
+    class="css-79elbk"
   >
-    <h3
-      class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
+    <div
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-9g9pc9-MuiPaper-root-MuiAccordion-root"
+      data-testid="BaseCard-"
+      style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
     >
-      <button
-        aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
-        tabindex="0"
-        type="button"
+      <h3
+        class="MuiAccordion-heading css-cy7rkm-MuiAccordion-heading"
       >
-        <span
-          class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
+        <button
+          aria-expanded="true"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+          tabindex="0"
+          type="button"
         >
           <span
-            class="MuiTypography-root MuiTypography-button css-l5w3u1-MuiTypography-root"
-          />
-        </span>
-        <span
-          class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
-            data-testid="ExpandMoreIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
+            class="MuiAccordionSummary-content Mui-expanded css-q3pzzg-MuiAccordionSummary-content"
           >
-            <path
-              d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+            <span
+              class="MuiTypography-root MuiTypography-button css-l5w3u1-MuiTypography-root"
             />
-          </svg>
-        </span>
-      </button>
-    </h3>
-    <div
-      class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
-      style="min-height: 0px;"
-    >
+          </span>
+          <span
+            class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-1wqf3nl-MuiAccordionSummary-expandIconWrapper"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
+              data-testid="ExpandMoreIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </span>
+        </button>
+      </h3>
       <div
-        class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
+        class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-qr6njo-MuiCollapse-root"
+        style="min-height: 0px;"
       >
         <div
-          class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
+          class="MuiCollapse-wrapper MuiCollapse-vertical css-1x6hinx-MuiCollapse-wrapper"
         >
           <div
-            class="MuiAccordion-region css-at4ued-MuiAccordion-region"
-            role="region"
+            class="MuiCollapse-wrapperInner MuiCollapse-vertical css-1i4ywhz-MuiCollapse-wrapperInner"
           >
             <div
-              class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
+              class="MuiAccordion-region css-at4ued-MuiAccordion-region"
+              role="region"
             >
-              <span
-                class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
-              >
-                Core details
-              </span>
               <div
-                class="css-2imjyh"
+                class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
               >
-                <div
-                  class="css-c392m0"
+                <span
+                  class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
                 >
-                  Position
+                  Core details
+                </span>
+                <div
+                  class="css-2imjyh"
+                >
+                  <div
+                    class="css-c392m0"
+                  >
+                    Position
+                  </div>
+                  <div
+                    class="css-1rdet1e"
+                  >
+                    ctgA:3..102 (+)
+                  </div>
                 </div>
                 <div
-                  class="css-1rdet1e"
+                  class="css-2imjyh"
                 >
-                  ctgA:3..102 (+)
+                  <div
+                    class="css-c392m0"
+                  >
+                    Length
+                  </div>
+                  <div
+                    class="css-1rdet1e"
+                  >
+                    <span>
+                      100
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div
-                class="css-2imjyh"
-              >
-                <div
-                  class="css-c392m0"
+                <hr
+                  class="MuiDivider-root MuiDivider-fullWidth css-1jpc804-MuiDivider-root"
+                />
+                <span
+                  class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
                 >
-                  Length
+                  Attributes
+                </span>
+                <div
+                  class="css-2imjyh"
+                >
+                  <div
+                    class="css-c392m0"
+                    style="width: 40px;"
+                  >
+                    score
+                  </div>
+                  <div
+                    class="css-1rdet1e"
+                  >
+                    <span>
+                      37
+                    </span>
+                  </div>
                 </div>
                 <div
-                  class="css-1rdet1e"
+                  class="css-1ebprri"
                 >
-                  <span>
-                    100
-                  </span>
-                </div>
-              </div>
-              <hr
-                class="MuiDivider-root MuiDivider-fullWidth css-1jpc804-MuiDivider-root"
-              />
-              <span
-                class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
-              >
-                Attributes
-              </span>
-              <div
-                class="css-2imjyh"
-              >
-                <div
-                  class="css-c392m0"
-                  style="width: 40px;"
-                >
-                  score
-                </div>
-                <div
-                  class="css-1rdet1e"
-                >
-                  <span>
-                    37
-                  </span>
-                </div>
-              </div>
-              <div
-                class="css-1ebprri"
-              >
-                <div
-                  class="MuiFormControl-root MuiFormControl-marginDense css-1uvyb5m-MuiFormControl-root"
-                >
+                  <div
+                    class="MuiFormControl-root MuiFormControl-marginDense css-1uvyb5m-MuiFormControl-root"
+                  >
+                    <button
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      Show feature sequence
+                    </button>
+                  </div>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"
                   >
-                    Show feature sequence
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
+                      data-testid="HelpIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
+                      />
+                    </svg>
                   </button>
                 </div>
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
-                  tabindex="0"
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
-                    data-testid="HelpIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 17h-2v-2h2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25"
-                    />
-                  </svg>
-                </button>
               </div>
             </div>
           </div>
