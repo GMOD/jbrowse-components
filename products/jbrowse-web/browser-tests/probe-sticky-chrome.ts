@@ -19,10 +19,14 @@
 //   - a chrome box pinned to the constant the offsets sum. `VIEW_HEADER_HEIGHT`
 //     and the LGV header bar's height were written into the CSS by #4237 so
 //     that the sums would be true, and a box that cannot grow clips its own
-//     content: at a 24px root font the view header overflowed by 2px, with its
-//     title row squeezed from the 35.7px it wanted into 28. Both are minimums
-//     now and publish what they measure, so the sweep below walks the root font
-//     size and asks that the scalebar still land flush.
+//     content. Measured: the view header overflows by 2px at a 24px root font,
+//     its title row squeezed from the 35.7px it wants into 28; the LGV controls
+//     row has more headroom and reaches 48 at a 28px root, which a JBrowse theme
+//     raising `typography.fontSize` gets to as readily as a browser setting.
+//     Both are minimums now and publish what they measure, so the sweep below
+//     walks the root font size and asks two things of every size: that the
+//     scalebar still lands flush, and that neither box is holding its content
+//     smaller than the content wants to be.
 //
 //     node browser-tests/probe-sticky-chrome.ts
 //     PORT=3001 CPU=6 node browser-tests/probe-sticky-chrome.ts
@@ -102,9 +106,21 @@ function readChromeStack() {
   const rb = document.querySelector('[data-testid="rubberband_controls"]')!
   const viewHeader = tc.closest('[data-testid^="view-container-"]')!
     .firstElementChild as HTMLElement
+  // the flex row of controls, inside the band the overview polygon is drawn on
+  const controlsRow = header.firstElementChild!.lastElementChild!
+    .lastElementChild as HTMLElement
+  // scrollHeight only reports the overflow it can see; a flex row centring
+  // children taller than itself reports none, so ask the children directly
+  const overhang = (el: HTMLElement) =>
+    +(
+      Math.max(...[...el.children].map(c => c.getBoundingClientRect().height)) -
+      el.getBoundingClientRect().height
+    ).toFixed(2)
   return {
     viewHeaderHeight: +viewHeader.getBoundingClientRect().height.toFixed(2),
-    viewHeaderOverflow: viewHeader.scrollHeight - viewHeader.clientHeight,
+    viewHeaderOverhang: overhang(viewHeader),
+    controlsRowHeight: +controlsRow.getBoundingClientRect().height.toFixed(2),
+    controlsRowOverhang: overhang(controlsRow),
     gap: +(
       rb.getBoundingClientRect().top - header.getBoundingClientRect().bottom
     ).toFixed(2),
@@ -187,19 +203,30 @@ async function main() {
   })
   let fontFailures = 0
   console.log('chrome stack across root font sizes:')
-  for (const fontSize of [16, 18, 20, 24]) {
+  for (const fontSize of [16, 20, 24, 28, 32]) {
     await page.evaluate(f => {
       document.documentElement.style.fontSize = `${f}px`
     }, fontSize)
-    await delay(600)
+    await delay(1000)
+    // a taller chrome stack can scroll the view out of its lazy-mount window
+    await page.evaluate(() => {
+      window.scrollTo(0, 0)
+    })
+    await delay(400)
     const s = await page.evaluate(readChromeStack)
-    // sub-pixel: the var is published from offsetHeight, which is rounded
-    const ok = Math.abs(s.gap) <= 1 && s.viewHeaderOverflow === 0
+    // the gap gets half a pixel of slack, since it subtracts two independently
+    // rounded rects. An overhang does not: it is a child measured against its
+    // own parent in one layout pass, and the first spelling of this check gave
+    // it 0.5px and so passed a box overhanging by 0.13
+    const ok =
+      Math.abs(s.gap) <= 0.5 &&
+      s.viewHeaderOverhang <= 0.05 &&
+      s.controlsRowOverhang <= 0.05
     if (!ok) {
       fontFailures++
     }
     console.log(
-      `  ${ok ? 'PASS' : 'FAIL'} ${String(fontSize).padStart(2)}px root: view header ${s.viewHeaderHeight}px (overflow ${s.viewHeaderOverflow}), scalebar ${s.gap}px below the header`,
+      `  ${ok ? 'PASS' : 'FAIL'} ${String(fontSize).padStart(2)}px root: view header ${s.viewHeaderHeight}px (overhang ${s.viewHeaderOverhang}), controls row ${s.controlsRowHeight}px (overhang ${s.controlsRowOverhang}), scalebar ${s.gap}px below the header`,
     )
   }
 

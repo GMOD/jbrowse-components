@@ -344,9 +344,15 @@ export function useScrollPortHeightVar() {
  * own content once the root font size grows — measured on the stock theme, the
  * view header overflows at a 18px root and the LGV controls row at 24px.
  *
- * So the CSS heights are minimums and these carry the truth. The fallbacks keep
- * the nominal answer for the frame before the first measurement, and for a host
- * that mounts no publisher.
+ * So those CSS heights are minimums and these carry the truth. The fallbacks
+ * keep the nominal answer for the frame before the first measurement, and for a
+ * host that mounts no publisher. A box that stays fixed still publishes — see
+ * the embedded `ViewTitle`, which is a density choice rather than a constraint
+ * now that nothing below it re-derives its height.
+ *
+ * Cheap enough to put on every view: measured across a jbrowse-web session, the
+ * observers behind these fired 0 times over 60 pan frames and 10 zooms, and ~5
+ * times per window resize.
  */
 export const VIEW_HEADER_HEIGHT_VAR = '--jbrowse-view-header-height'
 export const LGV_HEADER_HEIGHT_VAR = '--jbrowse-lgv-header-height'
