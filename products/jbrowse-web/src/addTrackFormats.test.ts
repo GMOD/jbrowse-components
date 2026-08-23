@@ -31,8 +31,13 @@ const samples: Record<string, string[]> = {
   GtfAdapter: ['volvox.gtf'],
   VcfTabixAdapter: ['volvox.vcf.gz', 'volvox.vcf.bgz'],
   VcfAdapter: ['volvox.vcf'],
-  PlinkLDTabixAdapter: ['volvox.ld.gz', 'volvox.ld.bgz'],
-  PlinkLDAdapter: ['volvox.ld'],
+  PlinkLDTabixAdapter: [
+    'volvox.ld.gz',
+    'volvox.ld.bgz',
+    'volvox.vcor.gz',
+    'volvox.vcor.bgz',
+  ],
+  PlinkLDAdapter: ['volvox.ld', 'volvox.vcor'],
   BedpeAdapter: ['volvox.bedpe', 'volvox.bedpe.gz'],
   StarFusionAdapter: [
     'volvox.star-fusion.tsv',

@@ -149,7 +149,7 @@ export const formats: FormatEntry[] = [
     },
   },
   {
-    regex: /\.ld\.b?gz$/i,
+    regex: /\.(ld|vcor)\.b?gz$/i,
     spec: {
       kind: 'indexed',
       adapterType: 'PlinkLDTabixAdapter',
@@ -159,7 +159,7 @@ export const formats: FormatEntry[] = [
     },
   },
   {
-    regex: /\.ld$/i,
+    regex: /\.(ld|vcor)$/i,
     spec: {
       kind: 'single',
       adapterType: 'PlinkLDAdapter',

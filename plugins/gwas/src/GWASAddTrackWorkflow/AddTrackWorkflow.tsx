@@ -132,7 +132,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           LD coloring (optional, LocusZoom-style)
         </Typography>
         <FileSelector
-          name="PLINK LD file (--r2 output, .ld or bgzipped .ld.gz)"
+          name="PLINK LD table (.ld or .vcor, bgzipped or not)"
           location={ldLocation}
           rootModel={rootModel}
           setLocation={loc => {
