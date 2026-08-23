@@ -389,8 +389,8 @@ importers:
         specifier: ^6.6.0
         version: 6.6.0
       '@gmod/range-cache-filehandle':
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.4.0
+        version: 1.4.0
       '@gmod/shared-read-cache':
         specifier: ^1.7.2
         version: 1.7.2
@@ -4438,8 +4438,8 @@ packages:
   '@gmod/newick@1.0.2':
     resolution: {integrity: sha512-Jfn0SRnSmwECuV6Rk1B61k34/kWcghXXlsu8KeP8BsZ8G04kvKF2U47yUs/mkkmzwglVfSDdA/isy18I1OXDxA==}
 
-  '@gmod/range-cache-filehandle@1.3.0':
-    resolution: {integrity: sha512-s7UGdQ7LBQMbVjTfScsA7E/7I/Haik8yB6GYnCS+K3mLuHKRo3gV9r09dBO6VI76drw31N+/opZiYoeNKN8BwA==}
+  '@gmod/range-cache-filehandle@1.4.0':
+    resolution: {integrity: sha512-JSyUdyjkRKIXWANNfpwBkoITAhU2n8b4Kb1/2swq17xcyO2Ux5mxzW6WgaM+DKBptiFsuraGYXI1aiZUgeOcrA==}
 
   '@gmod/shared-read-cache@1.7.2':
     resolution: {integrity: sha512-N71dzJHYYSEAZYQCl38QGZ8cx468lFZE9VdS29N2DhRbKMf/X7Qb+cJsuIt1MeVDmpvKui5wDiNILgkQREpwlw==}
@@ -12282,7 +12282,7 @@ snapshots:
 
   '@gmod/newick@1.0.2': {}
 
-  '@gmod/range-cache-filehandle@1.3.0':
+  '@gmod/range-cache-filehandle@1.4.0':
     dependencies:
       generic-filehandle2: 2.4.0
 
