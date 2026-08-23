@@ -14,6 +14,8 @@ import {
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 
+import { repoRoot } from './paths.ts'
+
 // True when invoked with `--check` (CI parity mode); false for a local rewrite.
 export const check = process.argv.includes('--check')
 
@@ -321,7 +323,7 @@ export function assertBaseMatches(distDir: string, base: string) {
 export function oxfmtBin(): string {
   return join(
     dirname(
-      createRequire(join(process.cwd(), 'package.json')).resolve(
+      createRequire(join(repoRoot, 'package.json')).resolve(
         'oxfmt/package.json',
       ),
     ),
@@ -341,10 +343,21 @@ export function oxfmtBin(): string {
 // construction. `--stdin-filepath` is how oxfmt picks its parser, so the path
 // matters even though nothing is read from it.
 export function formatMarkdown(text: string, filepath: string): string {
+  // `cwd: repoRoot`, and the binary resolved from there too, because oxfmt
+  // reads its config from the directory it is SPAWNED in: the same text
+  // formatted from website/ and from the repo root came out differently (a
+  // frontmatter line wrapped in one and not the other), so `pnpm autogen` and a
+  // generator run by hand from website/ disagreed and cli.md oscillated between
+  // them. `pnpm format` runs from the root, so the root is the answer.
   const { status, stdout, stderr } = spawnSync(
     process.execPath,
     [oxfmtBin(), `--stdin-filepath=${filepath}`],
-    { input: text, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+    {
+      input: text,
+      encoding: 'utf8',
+      cwd: repoRoot,
+      maxBuffer: 64 * 1024 * 1024,
+    },
   )
   if (status !== 0) {
     throw new Error(`oxfmt failed on ${filepath}: ${stderr}`)
