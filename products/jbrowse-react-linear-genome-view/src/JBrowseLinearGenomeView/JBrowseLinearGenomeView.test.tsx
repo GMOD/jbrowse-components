@@ -201,6 +201,11 @@ test('the menu bar takes a row of the bounded height, and none of it when off', 
   const box = await findByTestId('embedded-view-box')
   expect(box.parentElement?.style.gridTemplateRows).toBe('auto minmax(0, 1fr)')
 
+  // and the row goes with the bar, rather than being declared and left empty:
+  // grid auto-placement fills an empty first row with the next children in DOM
+  // order, which are the view box and the drawer. That row is `auto`, so a view
+  // with no tracks in it sized the drawer beside it to about 180px and left the
+  // bounded row below the two of them empty.
   const bare = createViewState({
     assembly,
     tracks: [],
@@ -208,7 +213,24 @@ test('the menu bar takes a row of the bounded height, and none of it when off', 
     height: '400px',
   })
   const bareRender = render(<JBrowseLinearGenomeView viewState={bare} />)
+  const bareRoot = () =>
+    bareRender.container.querySelector<HTMLElement>(
+      '[data-testid="embedded-view-box"]',
+    )?.parentElement
   expect(bareRender.container.querySelector('header')).toBeNull()
+  expect(bareRoot()?.style.gridTemplateRows).toBe('minmax(0, 1fr)')
+
+  bare.session.view.activateTrackSelector()
+
+  await waitFor(
+    () => {
+      expect(
+        bareRender.container.querySelector('[data-testid="drawer-widget"]'),
+      ).toBeTruthy()
+    },
+    { timeout },
+  )
+  expect(bareRoot()?.style.gridTemplateRows).toBe('minmax(0, 1fr)')
 }, 40000)
 
 test('a height bounds the view with no drawer, and outranks drawerViewHeight', async () => {

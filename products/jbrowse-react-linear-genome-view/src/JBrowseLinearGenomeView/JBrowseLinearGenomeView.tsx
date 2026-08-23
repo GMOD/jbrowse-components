@@ -60,15 +60,21 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   })
 
   const { effectiveHeight: height } = viewState
+  const menuBarVisible = viewState.menus().length > 0
   const scrollPortRef = useScrollPortHeightVar()
   // The menu bar takes a row of its own, spanning the drawer's column as well
   // as the view's, and `minmax(0, 1fr)` gives the row below it a definite size
   // that can shrink -- a bare `1fr` floors at the content and the box it holds
-  // stops being the thing that scrolls. Rows unconditionally, since the bar is
-  // there or it isn't and `auto` costs an unbounded view nothing.
+  // stops being the thing that scrolls.
+  //
+  // The bar's row exists only when the bar does. Declared unconditionally, an
+  // empty first row is what auto-placement fills instead: the view box and the
+  // drawer land in the `auto` row, which is content-height, so a view with no
+  // tracks clamps the drawer beside it to a couple of hundred pixels and leaves
+  // the bounded row below them empty.
   const style = {
     gridTemplateColumns,
-    gridTemplateRows: 'auto minmax(0, 1fr)',
+    gridTemplateRows: menuBarVisible ? 'auto minmax(0, 1fr)' : 'minmax(0, 1fr)',
     ...(height ? { height } : {}),
   }
 
