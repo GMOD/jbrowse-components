@@ -143,8 +143,7 @@ two, under a header naming the columns, is the whole difference between the
 
 ```bash
 # the header names the columns, which is what lets `partitionField: "repClass"`
-# name one the BED spec has never heard of; it prints outside the sort to stay
-# first, where tabix expects it
+# name one the BED spec has never heard of
 {
   printf '#genoName\tgenoStart\tgenoEnd\tname\tstrand\trepFamily\trepClass\tswScore\tmilliDiv\n'
   awk 'BEGIN { OFS = "\t" }
@@ -155,10 +154,12 @@ two, under a header naming the columns, is the whole difference between the
       # and the strand column spells minus "C".
       n = split($11, cf, "/")
       print $5, $6 - 1, $7, $10, ($9 == "C") ? "-" : "+", (n > 1) ? cf[2] : cf[1], cf[1], $1, int($2 * 10 + 0.5)
-    }' repeats.out | sort -k1,1 -k2,2n
+    }' repeats.out
 } > rmsk.bed
-bgzip -f rmsk.bed
-tabix -f -p bed rmsk.bed.gz
+
+# `sort-bed` puts the #-header on top and sorts the rest under LC_ALL=C
+jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
+tabix -p bed rmsk.bed.gz
 ```
 
 Those are UCSC's first seven columns in UCSC's order, so the `tabix | awk` check

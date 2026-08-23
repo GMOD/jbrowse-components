@@ -186,8 +186,8 @@ PY
 #
 # The `#`-prefixed defline names the columns, so the adapter reads them from the
 # file and the track needs no `columnNames`. That one line does the job the
-# bigBed route needs an autoSql file for. It is written outside the sort so it
-# stays first, the same way the nine-cell-type script does it.
+# bigBed route needs an autoSql file for. `jb sort-bed` keeps it on top and
+# sorts the rest under LC_ALL=C, the same way the nine-cell-type script does it.
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
   while IFS=$'\t' read -r eid celltype; do
@@ -204,11 +204,8 @@ PY
             }
             print $1, $2, $3, $4, 0, ".", $2, $3, rgb[s[1]], c
           }' colors.tsv -
-  done < labels.tsv | sort -k1,1 -k2,2n
+  done < labels.tsv
 } > roadmap.multirow.bed
-
-bgzip -@ 4 -f roadmap.multirow.bed
-tabix -f -p bed roadmap.multirow.bed.gz
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
 if command -v jbrowse >/dev/null 2>&1; then
@@ -216,6 +213,9 @@ if command -v jbrowse >/dev/null 2>&1; then
 else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
+
+jb sort-bed roadmap.multirow.bed | bgzip -@ 4 > roadmap.multirow.bed.gz
+tabix -f -p bed roadmap.multirow.bed.gz
 [ -f "$APP/index.html" ] || jb create "$APP"
 cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.tbi "$APP"/
 

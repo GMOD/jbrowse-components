@@ -16,8 +16,8 @@ inversion also loads as a structural variant genotyped per mosquito.
 ## Prerequisites
 
 - nothing to read the figures, which load hosted data
-- `plink` (1.9, not plink2), htslib (`bgzip`, `tabix`), `samtools`, `curl` and
-  `python3` for the [reproduce script](#reproduce-it-end-to-end)
+- `plink` (1.9, not plink2), htslib (`bgzip`, `tabix`), `samtools`, `curl`,
+  `python3`, and `node` for the [JBrowse CLI](/docs/cli)
 
 ## An inversion is one block
 
@@ -184,11 +184,12 @@ plink --bfile common --allow-extra-chr --keep keep.CMgam.txt \
   --r2 dprime --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0 \
   --out ag1000g_2L_CMgam
 
-# awk retabs plink's space-padded columns. The header is commented rather than
-# skipped with `tabix -S 1`, since only a commented one comes back from -H.
-{ head -1 ag1000g_2L_CMgam.ld | awk '{$1="#"$1}1' OFS='\t'
-  tail -n +2 ag1000g_2L_CMgam.ld | awk '{$1=$1}1' OFS='\t' | sort -k1,1 -k2,2n
-} | bgzip > ag1000g_2L_CMgam.ld.gz
+# awk retabs plink's space-padded columns and comments the header — commented
+# rather than skipped with `tabix -S 1`, since only a commented one comes back
+# from -H. `jbrowse sort-bed` then does for the .ld what it does for a BED: the
+# `#` line on top, the rest sorted on those same two columns under LC_ALL=C.
+awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' ag1000g_2L_CMgam.ld |
+  jbrowse sort-bed | bgzip > ag1000g_2L_CMgam.ld.gz
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.ld.gz
 ```
 

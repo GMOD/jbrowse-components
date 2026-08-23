@@ -51,28 +51,30 @@ for entry in "${CELL_TYPES[@]}"; do
   [ -f "$f" ] || wget -q -O "$f" "$UCSC/$f"
 done
 
-# ── Concatenate into one BED9 + a trailing `cellType` column, coordinate-sorted
-# The `#`-prefixed defline names the columns, so the adapter reads them from the
-# file and the track config needs no `columnNames`. It is written outside the
-# sort so it stays the first line.
-{
-  printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
-  for entry in "${CELL_TYPES[@]}"; do
-    zcat "$(bed_file "$entry")" \
-      | awk -v c="${entry##*:}" 'BEGIN{OFS="\t"} {print $0, c}'
-  done | sort -k1,1 -k2,2n
-} > wgEncodeBroadHmm.multirow.bed
-
-# already coordinate-sorted, so just compress + index (no bigBed conversion)
-bgzip -f wgEncodeBroadHmm.multirow.bed
-tabix -f -p bed wgEncodeBroadHmm.multirow.bed.gz
-
-# ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
+# ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
+# Defined before the conversion below, which uses `jb sort-bed`.
 if command -v jbrowse >/dev/null 2>&1; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
+
+# ── Concatenate into one BED9 + a trailing `cellType` column ─────────────────
+# The `#`-prefixed defline names the columns, so the adapter reads them from the
+# file and the track config needs no `columnNames`. `sort-bed` is what keeps it
+# on top: it moves every `#` line there and sorts the rest under LC_ALL=C, which
+# is the order tabix wants and the one a hand-rolled `sort` gets wrong in any
+# other locale.
+{
+  printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
+  for entry in "${CELL_TYPES[@]}"; do
+    zcat "$(bed_file "$entry")" \
+      | awk -v c="${entry##*:}" 'BEGIN{OFS="\t"} {print $0, c}'
+  done
+} > wgEncodeBroadHmm.multirow.bed
+jb sort-bed wgEncodeBroadHmm.multirow.bed | bgzip > wgEncodeBroadHmm.multirow.bed.gz
+tabix -f -p bed wgEncodeBroadHmm.multirow.bed.gz
+
 [ -f "$APP/index.html" ] || jb create "$APP"
 cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 

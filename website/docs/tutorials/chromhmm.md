@@ -71,16 +71,18 @@ per-cell-type BEDs:
 
 ```bash
 # awk appends each file's own name as the row label, so Gm12878.bed.gz labels
-# its segments Gm12878. The defline prints outside the sort to stay first,
-# which is what makes `tabix -p bed` read it as the header.
+# its segments Gm12878
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
   for f in *.bed.gz; do
     zcat "$f" | awk -v c="${f%%.*}" 'BEGIN{OFS="\t"} {print $0, c}'
-  done | sort -k1,1 -k2,2n
+  done
 } > multirow.bed
-bgzip -f multirow.bed
-tabix -f -p bed multirow.bed.gz
+
+# `sort-bed` moves the #-defline to the top and sorts the rest under LC_ALL=C,
+# which is the order tabix wants and the one a bare `sort` gets wrong elsewhere
+jbrowse sort-bed multirow.bed | bgzip > multirow.bed.gz
+tabix -p bed multirow.bed.gz
 ```
 
 Both merged files are also hosted, as bigBeds, for reading with nothing built:

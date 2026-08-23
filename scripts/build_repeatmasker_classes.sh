@@ -75,11 +75,21 @@ case "$GENOME" in
 esac
 samtools faidx "$FA"
 
+# ── JBrowse (uses an installed `jbrowse`, else the CLI via npx) ──────────────
+# Defined before the conversion below, which uses `jb sort-bed`.
+if command -v jbrowse >/dev/null 2>&1; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli "$@"; }
+fi
+
 # ── .out to a UCSC-shaped BED ────────────────────────────────────────────────
 # The header line is what names the columns: BedTabixAdapter reads them off it,
 # which is why `partitionField: "repClass"` in the track config below can name a
-# column that is not part of the BED spec at all. Only the header row is printed
-# outside the sort, so it stays first in the file where tabix expects it.
+# column that is not part of the BED spec at all. `sort-bed` is what keeps it
+# first, where tabix expects it: it moves every `#` line to the top and sorts
+# the rest under LC_ALL=C, which a hand-rolled `sort` gets wrong in any other
+# locale.
 {
   printf '#genoName\tgenoStart\tgenoEnd\tname\tstrand\trepFamily\trepClass\tswScore\tmilliDiv\n'
   case "$REPEATS" in
@@ -99,20 +109,14 @@ samtools faidx "$FA"
       strand = ($9 == "C") ? "-" : "+"
       # .out positions are 1-based and inclusive; BED starts are 0-based.
       print $5, $6 - 1, $7, $10, strand, fam, cls, $1, int($2 * 10 + 0.5)
-    }' | sort -k1,1 -k2,2n
+    }'
 } >rmsk.bed
-bgzip -f rmsk.bed
+jb sort-bed rmsk.bed | bgzip >rmsk.bed.gz
 tabix -f -p bed rmsk.bed.gz
 
 CLASSES=$(gzip -dc rmsk.bed.gz | awk -F'\t' '!/^#/ { c[$7]++ } END { print length(c) }')
 echo "converted $(basename "$REPEATS") to rmsk.bed.gz, $CLASSES repeat classes"
 
-# ── JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────────────
-if command -v jbrowse >/dev/null 2>&1; then
-  jb() { jbrowse "$@"; }
-else
-  jb() { npx -y @jbrowse/cli "$@"; }
-fi
 [ -f "$APP/index.html" ] || jb create "$APP"
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 cp -f rmsk.bed.gz rmsk.bed.gz.tbi "$APP"/

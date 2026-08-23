@@ -74,6 +74,11 @@ PROBE_TO=42165532
 LD_FLAGS=(--r2 dprime --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0)
 
 PLINK="${PLINK:-plink}"
+
+# The CLI, used for `sort-bed` in build_track below as well as for the instance
+# at the end, so it is resolved before either.
+if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
+else jb() { npx -y @jbrowse/cli "$@"; }; fi
 for tool in "$PLINK" bgzip tabix samtools curl python3; do
   command -v "$tool" >/dev/null || { echo "missing required tool: $tool" >&2; exit 1; }
 done
@@ -221,15 +226,18 @@ build_track() { # pop minmaf grid tag
   "$PLINK" --bfile common --allow-extra-chr --keep "keep.$1.txt" \
     --extract "grid.$4.snplist" --keep-allele-order "${LD_FLAGS[@]}" \
     --out "$4" >/dev/null 2>&1
-  # tabix needs the A-side sorted. The header is COMMENTED rather than counted
-  # with -S 1: both keep it out of the data, but only a commented header is what
-  # `tabix -H` prints and what readers ask for first, so an -S 1 header is easy
-  # to miss — and missing it drops the DP column, which is what makes D'
-  # available rather than only r². Not -c C, which would make C the meta
-  # character and read every chr-prefixed data row as a comment.
-  { head -1 "$4.ld" | awk '{$1="#"$1}1' OFS='\t'
-    tail -n +2 "$4.ld" | awk '{$1=$1}1' OFS='\t' | sort -k1,1 -k2,2n
-  } | bgzip > "$4.ld.gz"
+  # awk retabs plink's space-padded columns and comments the header; `sort-bed`
+  # then does what it does for a BED, which a .ld needs too — the `#` line on
+  # top and the rest sorted on the same first two columns, under LC_ALL=C.
+  #
+  # The header is COMMENTED rather than counted with -S 1: both keep it out of
+  # the data, but only a commented header is what `tabix -H` prints and what
+  # readers ask for first, so an -S 1 header is easy to miss — and missing it
+  # drops the DP column, which is what makes D' available rather than only r².
+  # Not -c C, which would make C the meta character and read every chr-prefixed
+  # data row as a comment.
+  awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' "$4.ld" |
+    jb sort-bed | bgzip > "$4.ld.gz"
   tabix -s 1 -b 2 -e 2 -f "$4.ld.gz"
   echo "  $4: $(wc -l < "grid.$4.snplist") SNPs, $(( $(zcat "$4.ld.gz" | wc -l) - 1 )) pairs, $(du -h "$4.ld.gz" | cut -f1)"
 }
@@ -383,8 +391,6 @@ for pop in $PANEL_POPS; do emit_karyotype_track "$pop"; done
 zcat AgamP4.fa.gz | bgzip > AgamP4.fa.bgz
 samtools faidx AgamP4.fa.bgz
 
-if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
-else jb() { npx -y @jbrowse/cli "$@"; }; fi
 [ -f jbrowse2/index.html ] || jb create jbrowse2
 
 # --type is required: the CLI infers the sequence type from the extension, and
