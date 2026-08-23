@@ -369,3 +369,27 @@ implementation detail of the navigation.
 `LinearSyntenyOffscreenMateFollow.test.tsx` holds it, on a PAF and both clocks —
 a model-level test cannot see it, since with no alignments there is nothing to
 re-assert.
+
+**Three call sites, and a move anchors the row it does NOT navigate.** The
+band's two items and the LGV display's "move other panel" take it as well, and
+which row is not the same answer a mark gives: a mark anchors the row it sends
+somewhere, a move anchors the row it leaves alone, because that is what the
+label promises — this one stays, the others come to it. Untaken, "move the top
+panel" ran and the follow put the top panel back, while "move the bottom panel"
+moved the anchor itself and dragged the top one along.
+`LinearSyntenyMoveFollow.test.tsx` measures the second as row 1 pulled 998bp by
+a later pan of row 0, which is the half a model-level test cannot reach.
+`bandMoveTargets` carries the staying row's index rather than letting the item
+re-derive it from `toMate` and the level — that is the only thing the two items
+differ in, and a second spelling of it is how the item and the action come to
+disagree.
+
+**A take is not earned until the navigation lands, so `movePanelsToSpan` gives
+it back when nothing moved.** Not only the throwing case: `navToLocString`
+resolves WITHOUT navigating when the contig is not a refName here and the text
+search raises a picker over the hits instead — ordinary for a PAF naming contigs
+`1`,`2` against an assembly spelling them `chr1`,`chr2` — and counted as a move
+it left the follow pointed at a row for a navigation that never happened. The
+moves offer no undo for a navigation that stayed inside the row's own regions,
+since nothing was discarded; only for the fallback that replaced them, and for
+the take itself, which moved rows the click never named.

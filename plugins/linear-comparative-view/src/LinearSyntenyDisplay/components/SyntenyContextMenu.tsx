@@ -18,6 +18,9 @@ export default function SyntenyContextMenu({
   anchorEl: ClickCoord
 }) {
   const { view } = model
+  // read at render, so the last-resort reporter below cannot itself throw on a
+  // display destroyed while its move was in flight
+  const session = getSession(model)
   const { clientX, clientY, feature } = anchorEl
   const topView = view.views[model.level]
   const bottomView = view.views[model.level + 1]
@@ -56,7 +59,7 @@ export default function SyntenyContextMenu({
                 stayingIndex,
                 toMate,
               }).catch((e: unknown) => {
-                getSession(model).notifyError(`${e}`, e)
+                session.notifyError(`${e}`, e)
               })
             },
           }),

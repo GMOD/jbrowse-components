@@ -1,5 +1,6 @@
 import { assembleLocStringRaw, getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { getCanonicalRefNameFn } from '@jbrowse/synteny-core'
 import { runInAction } from 'mobx'
 
@@ -333,6 +334,14 @@ export async function resolveMatchingSpan({
  * `showOffscreenMateContig` makes; `movePanelsToSpan` gives it back when the
  * navigation does not land, and offers the Undo when it lands by replacing the
  * panel's regions.
+ *
+ * NOTHING IS TOUCHED ACROSS THE RESOLVE WITHOUT ASKING FIRST. The menu closes
+ * on a refetch, not on the view being closed under it, so the stack and the
+ * moved panel can both be gone by the time an RPC answers. The two reads that
+ * WALK the tree are hoisted above the await for the reason `resolveMatchingSpan`
+ * hoists its assembly name — `getContainingView` and `getSession` throw on a
+ * node that has left it — and the writes below are gated on liveness, since the
+ * viewport capture reads MST regions off every panel in the stack.
  */
 export async function moveMatchingPanel({
   model,
@@ -352,30 +361,34 @@ export async function moveMatchingPanel({
   stayingIndex: number
   toMate: boolean
 }) {
+  const stack = model.view
+  const session = getSession(model)
   const span = await resolveMatchingSpan({
     model,
     feat,
     window,
     toMate,
   })
-  if (!span) {
-    getSession(model).notify(
-      'This alignment carries no CIGAR, so there is no matching region to resolve',
-      'info',
-    )
-    return
+  if (isAlive(stack) && isAlive(movingView)) {
+    if (span) {
+      // Captured before the take, which already re-places the other panels.
+      // After the resolve too, so an alignment that turns out to have no answer
+      // leaves the anchor where the user had it.
+      const restore = captureStackViewports([...stack.views])
+      const anchor = takeFollowAnchor(stack, stayingIndex)
+      await movePanelsToSpan({
+        panels: [movingView],
+        span,
+        anchor,
+        restore,
+        session,
+        followNote: 'and following the panel that stayed',
+      })
+    } else {
+      session.notify(
+        'This alignment carries no CIGAR, so there is no matching region to resolve',
+        'info',
+      )
+    }
   }
-  // Captured before the take, which already re-places the other panels. After
-  // the resolve too, so an alignment that turns out to have no answer leaves the
-  // anchor where the user had it.
-  const restore = captureStackViewports([...model.view.views])
-  const anchor = takeFollowAnchor(model.view, stayingIndex)
-  await movePanelsToSpan({
-    panels: [movingView],
-    span,
-    anchor,
-    restore,
-    session: getSession(model),
-    followNote: 'and following the panel that stayed',
-  })
 }
