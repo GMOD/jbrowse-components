@@ -440,23 +440,31 @@ table).
 
 <!-- DISPLAY_FOUNDATION_STACKS END -->
 
-Read the three rows as: per-region fetch + GPU render; one global dataset +
-GPU render; the same global fetch with **no** `RenderLifecycleMixin`, because a
-non-GPU display shouldn't drag in the render lifecycle to get
-fetch/cancel/too-large/reload. The third is arc, which reaches it through its
-own `ArcFetchModel` and paints main-thread SVG. The first row installs its
-autoruns for every display that composes it — one
-`installPerRegionFetchAutoruns(self)` from the mixin's `afterAttach` — while on
-the other two each display installs its own via `installGlobalFetchAutorun`.
-
-`GlobalFetchMixin` is the rendering-agnostic fetch foundation shared by the last
-two rows: GPU global displays layer `RenderLifecycleMixin` on top of it
-(`GlobalDataDisplayMixin`), while arc composes it bare and paints main-thread SVG.
-`displayPhase` lives in `GlobalDataDisplayMixin`, not `GlobalFetchMixin`, because
-it reads `renderError` — the one genuinely GPU-only piece. `RegionTooLargeMixin`'s
-gate is derived and opt-in; arc's `ArcFetchModel` enables it like every other
-byte-gated display (see [the region-too-large
+Read the two rows as: per-region fetch, and one global dataset. Both bring the
+render lifecycle. The first installs its autoruns for every display that
+composes it — one `installPerRegionFetchAutoruns(self)` from the mixin's
+`afterAttach` — while on the second each display installs its own via
+`installGlobalFetchAutorun`. `RegionTooLargeMixin`'s gate is derived and opt-in
+on both (see [the region-too-large
 gate](#the-region-too-large-gate-summary)).
+
+**The global family was two rows until 2026-08-23**, and the split is worth
+knowing about because the argument for it reads well and did not survive
+contact. `GlobalFetchMixin` was the rendering-agnostic half and
+`GlobalDataDisplayMixin` layered `RenderLifecycleMixin` on it, on the reasoning
+that arc — which paints main-thread JSX `<path>`s and attaches no rendering
+backend — shouldn't drag the render lifecycle in to get
+fetch/cancel/too-large/reload. What that bought arc was five unused volatiles
+and two autoruns it never installs (`attachRenderingBackend` is what installs
+them). What it cost every *other* global display was that three getters —
+`canRender`, `paintInert`, `displayPhase` — lived on the upper half, so the
+foundation a display composed decided which of them it could express; and it
+cost the tables a row that named a mixin composed by exactly two displays. One
+foundation now, and arc narrows the one genuinely backend-shaped getter itself:
+its `displayPhase` maps through `foundationDisplayStatusPhase`, whose narrower
+`DisplayStatusPhase` return type is what lets `DisplayStatusChrome` take it with
+neither a cast nor a dead branch, and its `painted` override says that data
+arriving — not a canvas that will never be drawn — is its first-paint signal.
 
 **The non-LGV views are a third shape, not a row in that table** — deliberately,
 and not a migration nobody finished; folding them onto `FetchMixin` was proposed
@@ -484,9 +492,13 @@ Circular view's `ChordVariantDisplay` is a fourth shape, off this axis
 entirely: it paints main-thread JSX SVG (radial, so on screen it keeps a bespoke
 `<DisplayError>` instead of `SvgChrome`), composes none of the fetch
 foundations, and answers freshness with its own `ready` getter — one chord fetch
-covers the whole view, so there is no spatial or signature axis to compare. It
-still runs the shared `computeSvgReady` / `awaitSvgReady` export gate
-([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md)).
+covers the whole view, so there is no spatial or signature axis to compare.
+Blanking both halves at fetch start is what that costs it: with `ready` as the
+whole freshness answer, a stale refName map left in place would wave a render
+through on names the adapter no longer has. It still runs the shared
+`computeSvgReady` / `awaitSvgReady` export gate
+([reference/SVG_EXPORT.md](reference/SVG_EXPORT.md)), and its fetch is the
+shared `installFetch` skeleton like every other one.
 
 ### Cross-cutting mixins, orthogonal to the fetch foundation
 
@@ -669,16 +681,16 @@ than in that action. This is one of **two** places it is dropped; the other is
 `RegionTooLargeMixin`'s own `ClearByteEstimateOnTierSwap`, for a display that
 reads a different file at different zooms.
 
-Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`.
-`fetchRegions` runs an optional pre-flight byte estimate before invoking the work
-callback: `RegionTooLargeMixin.byteGateBlocksFetch` → the
-`CoreGetRegionByteEstimate` RPC, active when the display sets `measuresBytesPreFlight`
-and the shared `gateActive` says something could act on the answer. A blocked
-display keeps running that fetch, once per settled viewport, because the
-measurement is the only thing that releases the banner and a blocked fetch stops
-at it. Oversize regions surface a banner:
-`DisplayChrome` renders `TooLargeMessage` from the model's
-`regionTooLargeReason`.
+Subclasses override `fetchNeeded` to call one of the fan-out helpers
+(`fetchEachRegion`, `fetchAllRegions`, `fetchRegionsBatched`). A gated display
+passes `byteLimit: self.resolvedByteLimit()` in its RPC args; the worker
+measures the region's index bytes as the feature RPC's first await and answers
+a `RegionTooLargeResult` instead of a payload when over, which the helper
+commits through `commitFetchBytes` and skips the store for. A blocked display
+keeps running that fetch, once per settled viewport, because the measurement is
+the only thing that releases the banner and a blocked fetch stops at it.
+Oversize regions surface a banner: `DisplayChrome` renders `TooLargeMessage`
+from the model's `regionTooLargeReason`.
 
 The `error`/`fetchCanceled` reads in `ClearBlockingStateOnViewportChange` are
 `untracked` for correctness — tracking either would let `set…` re-fire the
@@ -696,7 +708,7 @@ connector to an off-screen position.
 
 ### Every fetch autorun runs on the leading edge
 
-All three fetch installers schedule through `leadingEdgeAutorun`
+Every fetch installer schedules through `leadingEdgeAutorun`
 (`@jbrowse/core/util/leadingEdgeAutorun`), and so does the dotplot view's region
 autorun. MobX's own `autorun(fn, { delay })` is trailing-edge only — it schedules
 the *first* run through `setTimeout` too — so a cold open spent the whole delay
@@ -816,40 +828,64 @@ quirk.** `installComparativeFetchAutorun` reads `reloadCounter` above its
 `prepare()` bail-outs for exactly the reason arc does, and it was added the same
 way — by finding both non-LGV views unable to recover from a fetch error,
 because after a failure every fetch input is unchanged and clearing the error
-alone refires nothing. So all three fetch families now carry the same pure
+alone refires nothing. So every fetch in the tree now carries the same pure
 signal, read unconditionally, each pinned by its installer's test:
 
-| family | installer | the pure signal | pinned by |
-| --- | --- | --- | --- |
-| per-region | `installPerRegionFetchAutoruns` | `fetchGeneration` | `installPerRegionFetchAutoruns.test.ts` |
-| global | `installGlobalFetchAutorun` | `reloadCounter` | `installGlobalFetchAutorun.test.ts` |
-| comparative | `installComparativeFetchAutorun` | `SyntenyFetchStateMixin.reloadCounter` | `installComparativeFetchAutorun.test.ts` |
+| family | installer | the pure signal | a user cancel lapses on | pinned by |
+| --- | --- | --- | --- | --- |
+| per-region | `installPerRegionFetchAutoruns` | `fetchGeneration` | a viewport change, or Retry | `installPerRegionFetchAutoruns.test.ts` |
+| global | `installGlobalFetchAutorun` | `reloadCounter` | a viewport change, or Retry | `installGlobalFetchAutorun.test.ts` |
+| comparative | `installComparativeFetchAutorun` | `SyntenyFetchStateMixin.reloadCounter` | Retry | `installComparativeFetchAutorun.test.ts` |
+| everything else | `installFetch` (`@jbrowse/core/util/installFetch`) | `reloadCounter` | Retry, where the host has a cancel at all | `installFetch.test.ts` |
 
-Read the table as the checklist for a fourth: if you add a fetch skeleton with a
+Read the table as the checklist for a fifth: if you add a fetch skeleton with a
 gate, it needs a signal the gate never consults, read above the gate, and a test
-that fails when the read is deleted. The circular view's `ChordVariantDisplay` —
-a bare-autorun fetch outside all three families — carries the same
-`reloadCounter` signal for the same reason (after an error every other input is
-unchanged), pinned by its `stateModelFactory.test.ts`.
+that fails when the read is deleted. The fourth row is the general one — the
+prerequisite reads (HiC's header, the multi-sample sample list), the circular
+view's chord fetch and the breakpoint split view's overlay fetch all run on it,
+and it reads the signal for them.
+
+**A cancel is durable, and one rule now says how durable.** No fetch trigger
+un-cancels it — the skeleton reads `fetchCanceled` tracked, under the counter
+and above every gate, so the two gestures that reopen it are in the dependency
+set of the run they closed. Those two are Retry and, on the LGV families, the
+viewport moving: the thing the user stopped is no longer the thing they are
+looking at. The global family had no half of this — it read the flag nowhere, so
+a pan walked straight into `runFetch`, which resets it, and the load came back on
+its own. The comparative family has the gate and not the lapse, because its
+viewport **is** its fetch input: the same clear there would un-cancel on every
+trigger, which is exactly the durability this rule rejects.
 
 **`reloadCounter` is one declaration for both LGV families.** It lives on
 `FetchMixin`, the one mixin `MultiRegionDisplayMixin` and `GlobalFetchMixin`
 both compose — the argument that already put `fetchInert` there, applied to two
 identical volatiles that had nothing keeping them identical. The comparative
-family keeps its own on `SyntenyFetchStateMixin` (ADR-054) and chord declares
-its own, because neither composes `FetchMixin` at all.
+family keeps its own on `SyntenyFetchStateMixin` (ADR-054); chord and the
+breakpoint view declare their own, because none of them composes `FetchMixin`.
 
-### One latest-wins machine, one phase contract
+### One latest-wins machine, one phase contract, one skeleton
 
-What the three families share is now shared as named things rather than as three
-copies:
+**begin → clear the error → run → commit if still current → `handleFetchError`
+→ end.** That sequence was written five times — `FetchMixin.runFetch`, the
+prerequisite skeleton, the comparative installer, chord's fetch, the breakpoint
+overlay fetch — and each copy was missing a different rule: no rotation at all,
+an error publish guarded on liveness but not currency, no clear at the start, a
+`finally` that stranded the loading flag on an abort. It is
+`runFetchOnce` (`@jbrowse/core/util/installFetch`) now, and `installFetch` is
+that plus the autorun over it: the rotation, the leading edge, the unconditional
+`reloadCounter` read, the durable cancel gate, and the two dev-only contract
+checks (`assertDisplayContract`, `makeRetryContractCheck`), which chord and the
+breakpoint fetch had never had.
+
+The pieces underneath it, and who reaches them directly:
 
 | what | where | who runs on it |
 | --- | --- | --- |
-| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them — `FetchMixin.runFetch` wraps it and adds the observable bookkeeping (`isLoading`, `error`, `fetchGeneration`, `fetchCanceled`); `installPrerequisiteFetch` (which the variants sources scan and HiC's header read run on), the comparative installer, the breakpoint overlay fetch, chord's fetch and `withDiagonalizeProgress` hold one directly |
-| the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the global and comparative families; per-region is deliberately not this shape, see `RegionFetchContext` |
-| the leading-edge scheduler | `leadingEdgeAutorun` | all three installers, plus the dotplot view's region autorun |
-| the non-abort fetch-error rule: an abort is the ordinary end of a superseded fetch and is swallowed, so is any failure of a fetch that is no longer current, and only a current fetch's real failure is logged and published | `handleFetchError` (`@jbrowse/core/util`) | `FetchMixin.runFetch`, `installPrerequisiteFetch`, the comparative installer, the breakpoint overlay fetch, chord's fetch |
+| the whole sequence above, plus the autorun over it | `installFetch` / `runFetchOnce` | every fetch — `FetchMixin.runFetch` holds `runFetchOnce` (it needs the MST flow and a rotation `cancelFetch` can reach), and everything else takes the installer |
+| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them, through the skeleton — `FetchMixin` holds one as a member, `installFetch` one per installation, and `withDiagonalizeProgress` one directly |
+| the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the skeleton and the global family; per-region is deliberately not this shape, see `RegionFetchContext` |
+| the leading-edge scheduler | `leadingEdgeAutorun` | every installer, plus the dotplot view's region autorun |
+| the non-abort fetch-error rule: an abort is the ordinary end of a superseded fetch and is swallowed, so is any failure of a fetch that is no longer current, and only a current fetch's real failure is logged and published | `handleFetchError` (`@jbrowse/core/util`) | `runFetchOnce`, so all of them |
 
 `FetchMixin` reimplemented the rotation rather than wrapping it until
 2026-08-20, and the two copies had drifted over whether a completed fetch
@@ -860,9 +896,15 @@ drifted on whether the `console.error` was currency-guarded — the comparative
 family's pin ("does not let a superseded fetch raise its error") is the
 semantic `handleFetchError` now holds for all of them.
 
-What is left per family is the part that genuinely differs: the trigger list
-(which reads wake it), the commit shape (one payload versus N streaming
-regions), and the context a `run` is handed.
+What is left per site is the part that genuinely differs, and it is exactly the
+parameter list: the trigger list (which reads wake it, i.e. `prepare` plus
+`gate`), the commit shape (one payload versus N streaming regions), where the
+loading flag lives (`FetchMixin`'s `activeStopToken` versus the comparative
+family's `fetching` — ADR-054 keeps that split), where the status goes
+(`report`), and the context a `run` is handed. A family wanting a richer context
+than `FetchContext` wraps its own `run` rather than the skeleton growing an
+option for it, which is how the comparative family adds `adapterConfig` /
+`rename` / `assemblyManager`.
 
 ### The region-too-large gate (summary)
 
@@ -871,23 +913,16 @@ It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the la
 byte measurement — and what keeps that measurement describing what is on screen
 is that a blocked display keeps fetching, once per settled viewport, with the
 fetch stopping at the measurement rather than downloading. So the banner releases
-on a fresh index read, with no imperative clear and no flicker on pan. Displays
-opt in by overriding hooks — `measuresBytesPreFlight` for a pre-flight estimate,
-`measuresBytesInFetch` for a byte check inside the display's own feature RPC,
-plus `byteGateAdapterConfig` / `densityTooLarge` — rather than shadowing the
-getter (`configuredFetchSizeLimit` / `configForceLoad` are plain slot reads,
-not part of the overridable hook surface). **Never override
-`gateEnabled`**: it is the OR of the two opt-ins, additive
-precisely so a gate mixin can contribute one without racing the base on
-composition order, and `no-restricted-syntax` fails both the shadow and a
-`CanvasFeatureGateMixin()` written before `MultiRegionDisplayMixin()`, because
-either disables the whole gate silently. Canvas folds
-its byte check into the feature-fetch RPC instead of a separate pre-flight
-estimate, and adds the density axis, via `CanvasFeatureGateMixin`
-(`plugins/canvas/src/shared/`), which both canvas feature displays compose; the
-shared verdict/threshold/banner-text primitives live in
-`plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts` so the two paths
-can't drift.
+on a fresh index read, with no imperative clear and no flicker on pan. There is
+one measurement path (since 2026-08-23): the feature RPC itself measures, so a
+display opts in with `gateEnabled` and by passing `byteLimit` in its call, plus
+`byteGateAdapterPath` / `densityTooLarge` where a tier or a density axis
+applies (`configuredFetchSizeLimit` / `configForceLoad` are plain slot reads,
+not part of the overridable hook surface). Canvas adds the density axis via
+`CanvasFeatureGateMixin` (`plugins/canvas/src/shared/`), which both canvas
+feature displays compose and which `no-restricted-syntax` requires after
+`MultiRegionDisplayMixin()`; the shared verdict/threshold/banner-text
+primitives live in `plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts`.
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
 shared decision primitives: [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).
@@ -1141,7 +1176,7 @@ fetch there, so it was every one of them hanging the export at once rather than
 one.
 
 **Enumerate every way the prerequisite fails, not just the throw.** HiC's
-header read (`installPrerequisiteFetch`) `setError`s on a thrown `CoreGetInfo`
+header read (a secondary `installFetch`) `setError`s on a thrown `CoreGetInfo`
 — but one that *resolves* carrying no binsize list leaves
 `effectiveResolution` undefined just as thoroughly, with no exception to
 catch, so the empty list needs its own `setError` in the commit. A gate on a
@@ -1191,11 +1226,16 @@ a spelling. Dev-only, and `console.error` rather than `throw` (an error escaping
 `afterAttach` reads as an invalid track and the display is dropped, hiding the
 very violation it reports).
 
-**All three fetch families call it**, once per display, from whichever installed
-that display's autoruns: `installPerRegionFetchAutoruns` for the per-region
-family, `installGlobalFetchAutorun` for the global one,
-`installComparativeFetchAutorun` for the comparative one. So a fourth skeleton
-owes the same call, beside the pure "go again" signal [the trigger
+**Every installer calls it**, once per display, from whichever installed that
+display's autoruns: `installPerRegionFetchAutoruns` for the per-region family,
+`installGlobalFetchAutorun` for the global one, `installComparativeFetchAutorun`
+for the comparative one, and the shared `installFetch` for everything else —
+which is what finally got it onto chord and the breakpoint overlay fetch. A
+**secondary** fetch on a display whose foundation already installed the checks
+passes no `contract` and skips both: a second `assertDisplayContract` would
+report the double-attach it exists to catch, and a second retry check would eat
+the same `reloadCounter` bumps as the first. So a new skeleton owes the same
+call, beside the pure "go again" signal [the trigger
 list](#the-global-fetch-trigger-list-must-be-read-unconditionally) asks it for.
 
 It lives in `@jbrowse/core` rather than beside the mixin that first needed it,
@@ -1283,7 +1323,7 @@ re-spread named fields. The mixin's `SettingsInvalidate` autorun looks up
 `rpcProps` dynamically and is installed only when the method exists, so a
 per-region display with no settings-driven refetch (e.g.
 `LinearReferenceSequenceDisplay`) can simply not define it. HiC and LD compose
-`GlobalDataDisplayMixin` rather than MultiRegion, and both *do* define
+`GlobalFetchMixin` rather than MultiRegion, and both *do* define
 `rpcProps()`.
 
 ### The cache key is the return value, not the reads
@@ -1372,10 +1412,12 @@ residue an exclusion list happened not to mention.
 multi-wiggle and MAF (and GC-content, which inherits wiggle's wholesale). HiC and
 multi-LGV synteny fill the same role without the method: HiC's upload callback
 reads `self.colorScheme` straight into `generateColorRamp`, and synteny's
-`computedColors` getter is its re-upload-without-refetch half. Canvas's worker
-pre-builds the buffer, so canvas has only `rpcProps()`. This splits refetch from re-upload: wiggle color change →
-re-encode only; `bicolorPivot` change → worker output differs → `rpcProps()` →
-refetch.
+`computedColors` getter is its re-upload-without-refetch half. Canvas joined
+the method on 2026-08-23: its worker emits a color *class* per themed lane and
+the main-thread encode resolves classes against `session.palette`, so the
+worker holds no palette and a theme change re-encodes. This splits refetch from
+re-upload: wiggle color change → re-encode only; `bicolorPivot` change → worker
+output differs → `rpcProps()` → refetch.
 
 **Opacity is a render parameter, never a packed color.** Both comparative
 displays own a `computedColors` getter — the gpuProps half — and both keep the
@@ -1456,10 +1498,9 @@ render input:
 - `theme` is the resolved MUI `Theme`, for the components that are MUI.
 
 Embedded products without `ThemeManagerSessionMixin` supply both off a
-`themeOptions` getter (`EmbeddedSessionThemeMixin`), which is also what the
-canvas display puts in `rpcProps()` so worker-baked colors honor the config
-`theme` slot. SVG export still overrides the palette with the *export* theme —
-`resolvePalette({ configTheme: opts?.theme })`.
+`themeOptions` getter (`EmbeddedSessionThemeMixin`). No display sends a theme
+to the worker any more; SVG export still overrides the palette with the
+*export* theme — `resolvePalette({ configTheme: opts?.theme })`.
 
 ## Per-region zoom-staleness
 
@@ -1583,7 +1624,8 @@ and 12 lines — and both have since been given the sections they wanted.
   [ordering is the contract](reference/ARCHITECTURAL_LIMITS.md#ordering-is-the-contract).
 - Don't chain to `super` in a display's own `afterAttach`. Our MST fork
   auto-chains lifecycle hooks, so calling it installs every fetch autorun twice;
-  `assertDisplayContract` reports it in dev, on all three fetch families.
+  `assertDisplayContract` reports it in dev, from whichever installer put the
+  display's autoruns in.
   Regular actions still use super-capture.
 
 ### Fetch
@@ -1599,18 +1641,16 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't put a pure "go again" signal under a fetch gate. `reloadCounter` and
   friends must be read unconditionally, above the bail-outs — a read inside the
   gate drops out of the dependency set on the run that declines, and nothing
-  ever wakes the autorun again. All three fetch families carry one; see [the
+  ever wakes the autorun again. Every fetch carries one; see [the
   trigger list](#the-global-fetch-trigger-list-must-be-read-unconditionally).
 - Don't override `fetchNeeded` to return early *without* fetching unless
   something `FetchVisibleRegions` already tracks will wake it. A fetch bumps
   `fetchGeneration`; an early return that skips the fetch breaks that chain and
   must supply its own wake path.
-- Don't override `gateEnabled`. It is the OR of the two byte-gate opt-ins,
-  additive so a gate mixin can contribute one without racing the base on
-  composition order; shadowing it disables the whole gate in silence. Override
-  `measuresBytesPreFlight` / `measuresBytesInFetch` instead —
-  `no-restricted-syntax` fails a second `get gateEnabled()` in source and says
-  why. See [the gate summary](#the-region-too-large-gate-summary).
+- Don't measure bytes anywhere but in the feature RPC. `gateEnabled` is the
+  one opt-in and `byteLimit` in the call is the whole display-side contract;
+  a separate estimate round trip is the pre-flight path that was deleted. See
+  [the gate summary](#the-region-too-large-gate-summary).
 - Don't pass `sessionId` twice. `RpcManager.call` injects the first argument
   into the payload, and `RpcCallArgs` `Omit`s it from the typed args for that
   reason. See [the pattern](#rpcprops--gpuprops-pattern).

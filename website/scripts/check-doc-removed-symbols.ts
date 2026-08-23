@@ -65,6 +65,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'readCachedConfig',
     'CONFIG_PATTERN lists it under what the pattern dropped',
   ],
+  [
+    'stopIndex',
+    'BAM_STACK_INTEGRATION names a monotone chunk index as a concept, not a symbol',
+  ],
   ['regionStatuses', 'PROGRESS_REPORTING names the implementation it replaced'],
   ['setRegionStatus', 'PROGRESS_REPORTING, the same sentence'],
   [
