@@ -222,6 +222,34 @@ export function devicePxSpan(cssStart: number, cssEnd: number, dpr: number) {
   return { start, width: Math.round(cssEnd * dpr) - start }
 }
 
+/**
+ * One horizontal band of a stacked canvas as a device-px scissor rect, clamped
+ * to the backing store: `top`/`height` in CSS px, `bufH` the backing store's
+ * height in device px.
+ *
+ * The clamp is the part that matters. A band scrolled past either edge — a
+ * grouped alignments section, a MAF rows viewport under a resized band — yields
+ * a rect the backing store does not contain, and WebGPU REJECTS an
+ * out-of-bounds scissor and blanks the whole frame rather than clipping it. A
+ * band clamped to zero height is the caller's cue to skip its passes.
+ *
+ * `dpr` is the scale the canvas ACTUALLY got (`hal.resize`'s return), not
+ * `getDpr()`: the two part company once the backing store clamps at
+ * `MAX_CANVAS_DIM_PX`, and past that a band built from the true ratio is taller
+ * than the target.
+ */
+export function devicePxBand(
+  top: number,
+  height: number,
+  dpr: number,
+  bufH: number,
+) {
+  const span = devicePxSpan(top, top + height, dpr)
+  const t = Math.max(0, span.start)
+  const b = Math.min(bufH, span.start + span.width)
+  return { top: t, height: Math.max(0, b - t) }
+}
+
 // Integer scissor rect (CSS px) for a block clamped to the canvas. Shared by
 // the GPU (`clipBlock`) and Canvas2D (`clipBlockForCanvas`) clip paths so both
 // backends clip to the exact same pixel columns — the rounding lives in one

@@ -1,17 +1,21 @@
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import MafBand from './MafBand.tsx'
-import { drawMafCoverage } from './drawMafCoverage.ts'
+import MafBandResizeHandle from './MafBandResizeHandle.tsx'
+import MafYScaleGutter from './MafYScaleGutter.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 /**
- * Depth + SNP coverage band at the top of the display, delegating to the shared
- * `drawMafCoverage` per-block loop (alignments-core `drawCoverageBins` +
- * `drawSnpSegments`). The worker pre-packs both buffers in the layout alignments
- * uses, so this does no per-frame data massaging. Its axis is data-driven
- * (`coverageTicks`) and absent until the domain resolves.
+ * The coverage band's chrome: its Y-axis gutter and the resize handle straddling
+ * its bottom seam. Not its pixels — those are drawn by the display's rendering
+ * backend, into the top of the same canvas the rows are drawn into, so the band
+ * gets the GPU path (render-core's shared coverage passes, the same ones the
+ * alignments pileup's band draws) with Canvas2D as the fallback.
+ *
+ * Which is why this is not a `MafBand` like the conservation band beside it: the
+ * two differ now in where their marks come from, and `MafBand`'s whole job is
+ * owning a `TrackBandCanvas`. `ticks` absent means the domain has not resolved
+ * yet, and then there is nothing in the band to label either.
  */
 const MafCoverageBand = observer(function MafCoverageBand({
   model,
@@ -20,28 +24,27 @@ const MafCoverageBand = observer(function MafCoverageBand({
   model: LinearMafDisplayModel
   onResizeActiveChange: (active: boolean) => void
 }) {
-  const theme = useTheme()
   const { coverageBandActive, coverageHeight, coverageTicks } = model
   return (
-    <MafBand
-      model={model}
-      show={coverageBandActive}
-      top={0}
-      height={coverageHeight}
-      ticks={coverageTicks}
-      resize={n => {
-        model.resizeCoverageHeight(n)
-      }}
-      onResizeActiveChange={onResizeActiveChange}
-      draw={ctx => {
-        drawMafCoverage(ctx, model.renderBlocks, model.rpcDataMap, {
-          coverageHeight,
-          canvasWidth: model.canvasWidthPx,
-          domainMax: model.coverageDomain?.[1] ?? 0,
-          theme,
-        })
-      }}
-    />
+    <>
+      {coverageBandActive && coverageTicks ? (
+        <MafYScaleGutter
+          top={0}
+          height={coverageHeight}
+          ticks={coverageTicks}
+        />
+      ) : null}
+      <MafBandResizeHandle
+        model={model}
+        show={coverageBandActive}
+        resize={n => {
+          model.resizeCoverageHeight(n)
+        }}
+        // straddles the band/rows seam
+        top={coverageHeight - 4}
+        onActiveChange={onResizeActiveChange}
+      />
+    </>
   )
 })
 

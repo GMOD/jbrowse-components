@@ -6,18 +6,10 @@
 // shaders read them with `unpackRGBA(u.colorX).xyz` (see colorPack.slang).
 // See hic/canvas/multi-synteny for the same pattern on the CPU side
 // (cssColorToABGR).
-//! export-consts: TRIANGLE_HW, TRIANGLE_H
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar, distToWideCirclePx
-// consts-out takes the WHOLE export-consts list, so this path names what that
-// list currently is rather than a category it will keep meaning. Anything added
-// above lands in a file called indicatorTriangle.generated.ts; put a constant
-// with a different subject on the pass that consumes it instead (arc.slang
-// carries ARC_HEIGHT_MARGIN and ARC_COLOR_SHORT_INSERT this way — the evaluator
-// resolves through imports, so a constant declared here still reaches it).
-//! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcAvailH, arcColorSlot, linkedReadColorSlot, distToWideCirclePx
 //! js-skip: expandMinWidthX — this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded
 //! js-skip: dashCoverageAt — same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already
 module alignmentsUniforms;
@@ -60,28 +52,10 @@ public struct Uniforms {
   public float featHeight;
   public float featSpacing;
 
-  // Coverage strip (above pileup)
-  public float covHeight;
-  public float covYOffset;
-  // Screen-pixel Y of the coverage area's top edge. 0 for the single-section
-  // (ungrouped) path, where coverage is sticky at the canvas top. For stacked
-  // grouped sections it is the section's scrolled coverage top, so the band
-  // scrolls with its section. covAreaTop() folds it into the clip-space anchor
-  // every coverage pass shares.
-  public float covTop;
-  public float depthScale;
-  public float binSize;
-  public float interbaseHeight;
-  // The coverage domain both ends. `depthDomainMin` is normally 0 (an
-  // autoscaled depth domain starts at no reads) and non-zero when the track
-  // carries a `minScore` bound, which moves the depth the bars draw flat at.
-  public float depthDomainMax;
-  public float depthDomainMin;
-  // Allele-fraction floor for the band's SNP segments: a segment whose
-  // `segHeight` (its share of THIS position's depth) is below this is folded
-  // away. 0 draws every mismatch. The grey depth bar is drawn underneath and is
-  // not gated, so a hidden segment reads as reference rather than as a gap.
-  public float snpMinFreq;
+  // The coverage band's own geometry, depth axis and colours are NOT here: the
+  // band is drawn by render-core's shared coverage passes off
+  // `CoverageBandUniforms` (coverageBand.slang), which the MAF display writes
+  // too. This struct carries only what the pileup, arc and overlay passes read.
 
   // Arc pass
   public float blockStartPx;
@@ -101,10 +75,6 @@ public struct Uniforms {
   public int colorScheme;
   public int chainMode;
   public int showStroke;
-  public int coverageScaleType; // 0 = linear, 1 = log2, 2 = symlog
-  // symlog's linear-region width, already resolved from the domain on the JS
-  // side (see resolveSymlogConstant). Unread by the other two scales.
-  public float coverageSymlogConstant;
   // 1 = filter low-freq mismatches/insertions/gaps by coverage depth (default);
   // 0 = show all at full alpha (user has disabled frequency filtering)
   public int filterMismatchesByFrequency;
@@ -139,11 +109,6 @@ public struct Uniforms {
   public uint colorSkip;
   public uint colorSoftclip;
   public uint colorHardclip;
-  // Coverage-track indicator variants (lightened in dark mode); see clipKindColor.
-  public uint colorInsertionIndicator;
-  public uint colorSoftclipIndicator;
-  public uint colorHardclipIndicator;
-  public uint colorCoverage;
   // The read cloud's flat connector line (arcFlat.slang). The theme's
   // `text.primary`: the line carries no category — its two endpoint squares do —
   // so it wants the foreground colour, and both renderers hard-coded that as
@@ -216,15 +181,6 @@ public struct Uniforms {
   // ramp in DEVICE pixels. Appended at the tail for offset stability.
   public float dpr;
 };
-
-// Coverage-strip clip indicator triangle, in CSS px: half-width and height.
-// Four consumers depend on this one number: indicator.slang draws the triangle,
-// interbaseHistogram.slang hangs its bars directly below one, and the Canvas2D
-// painter + hit test read it from `@jbrowse/alignments-core` — which the
-// `consts-out` directive above generates from these declarations, so the
-// cross-package copy can't drift either.
-public static const float TRIANGLE_HW = 3.5;
-public static const float TRIANGLE_H  = 4.5;
 
 // Antialiased-stroke ramp for the arc band's passes (arc, arcLine), in DEVICE
 // pixels — one device pixel is the box-filter width Canvas2D rasterizes with,
@@ -675,24 +631,6 @@ public float4 arcBandClipPos(float2 bandPx, Uniforms u) {
 }
 
 
-// Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
-// 3=hardclip (anything else falls through to insertion). Uses the *Indicator
-// colors — coverage-track marks sit on the dark track background, where the
-// saturated on-read colors (insertion.slang / clip.slang) would wash out.
-//
-// INSERTION is the fallback because that is what the Canvas2D twin does —
-// `colorLut[colorType - 1] ?? colorLut[0]` in drawInterbaseSegments and
-// drawIndicators, whose lut is [insertion, softclip, hardclip]. Nothing reaches
-// it today (computeInterbaseCoverage only ever emits 1..3), so the two spellings
-// disagreeing was invisible; the tested branches are checked against each other
-// and the untested one is exactly where a twin goes quietly wrong.
-public float3 clipKindColor(float ct, Uniforms u) {
-  int ci = int(ct);
-  if (ci == 2) { return unpackRGBA(u.colorSoftclipIndicator).xyz; }
-  if (ci == 3) { return unpackRGBA(u.colorHardclipIndicator).xyz; }
-  return unpackRGBA(u.colorInsertionIndicator).xyz;
-}
-
 // Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so
 // sub-pixel-narrow features (coverage bins, gaps, insertion bars zoomed out)
 // stay visible. For a span with an anchored edge — every 1bp pileup cell — the
@@ -746,100 +684,6 @@ public float3 hueRampHalfSat(float hueDeg) {
   else if (hp < 5.0) { hue = float3(x, 0.0, c); }
   else               { hue = float3(c, 0.0, x); }
   return hue + m;
-}
-
-// The coverage band's two px-space numbers, factored out of the clip-space
-// conversions below so `//! js-export` can lift them (coverage.slang carries
-// the directive, since a module has no draw path of its own to keep them
-// alive). `covYOffset` is the scalebar-label inset, reserved at BOTH ends —
-// hence the drawable height losing two of them while the baseline loses one.
-//
-// rendererUtils.ts's `coverageLayout` was the hand-written twin, read by the
-// coverage bars, the SNP segments and the modification segments. Both backends
-// measure every coverage mark from these, so disagreeing shifts the whole band
-// rather than one glyph — visible only against the other backend.
-//
-// Floored at 0 here, at the declaration, because a band shorter than its two
-// insets otherwise INVERTS rather than degrades: every mark in the band is
-// `baseline - fraction * effectiveH`, so a negative height grows the depth
-// bars, the SNP segments stacked in them and the interbase bars DOWNWARD from a
-// baseline sitting near the band's top edge. `coverageHeight` reaches here
-// unclamped — the resize handles floor at 20 but a config slot declaring less
-// is left where it is (bandHeight.test.ts) — and 2 * covYOffset is 10, so any
-// band under 10px drew upside down on both backends.
-public float covEffectiveHeightPx(float covHeight, float covYOffset) {
-  return max(covHeight - 2.0 * covYOffset, 0.0);
-}
-
-// Distance from the coverage area's top edge down to the bars' baseline.
-public float covBottomOffsetPx(float covHeight, float covYOffset) {
-  return covHeight - covYOffset;
-}
-
-public float effHeight(Uniforms u) {
-  return covEffectiveHeightPx(u.covHeight, u.covYOffset);
-}
-
-// Clip-space Y of the coverage area's top edge. Single source for where every
-// band-top-anchored coverage mark (bars, SNP/mod segments, indicators,
-// interbase histogram) starts. covTop == 0 → clip-top (1.0), the ungrouped
-// sticky-coverage behavior; grouped sections pass their scrolled top.
-public float covAreaTop(Uniforms u) {
-  return yPxToClipY(u.covTop, u.canvasH);
-}
-
-public float covBottom(Uniforms u) {
-  return covAreaTop(u)
-    - (covBottomOffsetPx(u.covHeight, u.covYOffset) / u.canvasH) * 2.0;
-}
-
-// Normalize a raw coverage depth to [0,1] over the domain [min, max], on the
-// current scale type. The scalar twin of makeScoreNormalizer in
-// packages/wiggle-core/src/normalize.ts, which is what the Canvas2D coverage
-// draws and the y-axis ticks go through — `coverageNormalizeParity.test.ts`
-// pins the two against each other, so keep them the same function.
-//
-// The log branch floors at the domain's own min, not at 1, and falls back to 1
-// only where that min is non-positive; see makeScoreNormalizer for why
-// (a domain sitting entirely under 1 otherwise collapses to a flat baseline).
-// The symlog branch floors nothing — that is the whole reason it exists on a
-// coverage track, where 0 is a real, common and meaningful depth that the log
-// branch cannot separate from 1.
-public float normalizeDepthScalar(float rawDepth, float domainMin, float domainMax, int scaleType, float symlogConstant) {
-  if (scaleType == 2) {
-    // symlog: defined at 0, so nothing is floored and a zero-depth base keeps
-    // its own height instead of sharing the baseline with a depth of 1.
-    float tMin = sign(domainMin) * log(1.0 + abs(domainMin / symlogConstant));
-    float tMax = sign(domainMax) * log(1.0 + abs(domainMax / symlogConstant));
-    float t = sign(rawDepth) * log(1.0 + abs(rawDepth / symlogConstant));
-    float tRange = tMax - tMin;
-    if (tRange <= 0.0) { return 0.0; }
-    return clamp((t - tMin) / tRange, 0.0, 1.0);
-  }
-  if (scaleType == 1) {
-    float floorV = domainMin > 0.0 ? domainMin : 1.0;
-    float logMin = log2(floorV);
-    float logMax = log2(max(domainMax, floorV));
-    float logRange = logMax - logMin;
-    if (logRange <= 0.0) { return 0.0; }
-    return clamp((log2(max(rawDepth, floorV)) - logMin) / logRange, 0.0, 1.0);
-  }
-  float range = domainMax - domainMin;
-  if (range <= 0.0) { return 0.0; }
-  return clamp((rawDepth - domainMin) / range, 0.0, 1.0);
-}
-
-// The uniform-block wrapper every coverage pass calls. Recovers the raw depth
-// from the packed `relDepth` (= rawDepth / regionMaxDepth, with
-// depthScale = regionMaxDepth / domainMax) and hands it to the scalar above.
-// Split in two so the scalar half can be `//! js-export`ed — the same shape
-// frequencyFadeGate takes, and for the same reason: the twin emitter cannot
-// carry a Uniforms struct across.
-public float normalizeDepth(float relDepth, Uniforms u) {
-  float rawDepth = relDepth * u.depthScale * u.depthDomainMax;
-  return normalizeDepthScalar(
-    rawDepth, u.depthDomainMin, u.depthDomainMax, u.coverageScaleType,
-    u.coverageSymlogConstant);
 }
 
 // Below one 8-bit alpha step a mark is not representable, so sizeAlpha() snaps
@@ -928,34 +772,6 @@ public ColorVsOut discardVertex() {
   o.position = float4(0.0);
   o.color = float4(0.0);
   return o;
-}
-
-// Coverage bar height scale: maps relDepth to a clip-space height multiplier.
-// Shared by snpCoverage and modCoverage so the formula can't drift between them.
-public float covBarScale(float relDepth, Uniforms u) {
-  return normalizeDepth(relDepth, u) * effHeight(u) / u.canvasH * 2.0;
-}
-
-// Coverage-strip stacked-segment quad — the geometry of EVERY bar in the band.
-// A `widthBp`-wide rect whose bottom/top are the yOffset / yOffset+segHeight
-// fractions of this position's coverage bar (covBarScale(relDepth)).
-//
-// The three passes differ only in what they put in those parameters. The SNP and
-// modification segments are 1bp slices of a bar (widthBp 1, a partial y span);
-// the depth bar itself is the whole bar (widthBp = u.binSize, y span 0..1), and
-// coverage.slang open-coded it — the same four calls in the same order, so the
-// band could shift under its own segments without anything catching it. Passing
-// `0.0, 1.0` is not a special case here, it is what "the whole bar" spells.
-public float4 covSegQuad(uint position, uint widthBp, float yOffset,
-                         float segHeight, float relDepth, float2 local,
-                         Uniforms u) {
-  float2 xx = expandMinWidthX(
-    bpToClipX(position, u), bpToClipX(position + widthBp, u), u.canvasW);
-  float bottom = covBottom(u);
-  float k = covBarScale(relDepth, u);
-  float segBot = bottom + yOffset * k;
-  float segTop = segBot + segHeight * k;
-  return flippedQuadPos(xx.x, xx.y, segBot, segTop, local, u);
 }
 
 // Clip-space position of one corner of a box mark: interpolate the

@@ -1,19 +1,13 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
-import * as coverageShader from '../../shaders/slang/coverage.generated.ts'
+import { COVERAGE_BAR_PASS } from '@jbrowse/render-core/coverageBand'
 
-import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
-
-// Coverage depth bins are pre-packed in the worker (see
-// shared/runCoveragePipeline + alignments-core's packCoverageBinsForGpu), so
-// this pass's "packer" is the field the worker filled — uploaded verbatim, no
-// repack. `coverageGpuBinCount` is that buffer's record count said a second
-// time, for the region metadata that has no buffer to ask; the upload asks the
-// buffer.
-export const COVERAGE_PASS = {
-  ...slangPass({
-  id: 'coverage',
-    mod: coverageShader,
-  }),
-  pack: (data: Pick<CoverageUploadData, 'coveragePackedBuffer'>) =>
-    data.coveragePackedBuffer,
-}
+// The coverage band's five passes are render-core's — the MAF display draws the
+// same shaders off the same layouts (see coverageBand.slang), so the pass, its
+// shader and its packer live where both plugins can reach them. This file stays
+// as the `features/coverage` entry point the pass-per-directory convention reads
+// as the pass list, and because `COVERAGE_PASS` is the name the renderer's
+// `GPU_COVERAGE_PASS` registry maps a layer id to.
+//
+// Depth bins are pre-packed in the worker (shared/runCoveragePipeline +
+// alignments-core's packCoverageBinsForGpu), so the shared pass's "packer" is
+// the field the worker filled, uploaded verbatim.
+export const COVERAGE_PASS = COVERAGE_BAR_PASS

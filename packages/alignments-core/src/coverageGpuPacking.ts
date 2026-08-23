@@ -85,7 +85,7 @@ export function packCoverageBinsForGpu(
 }
 
 // Position is absolute uint32; `colors` is pre-packed ABGR u32. relDepth =
-// totalDepthAtPos / regionMaxDepth (see snpCoverage.slang for details).
+// totalDepthAtPos / regionMaxDepth (see coverageSnp.slang for details).
 //
 // This used to spell `relDepths[i] ?? 1`. That default was unreachable — the
 // producer allocates `relDepths` at exactly `count`, and an in-range read of a

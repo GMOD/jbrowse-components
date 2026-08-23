@@ -1,16 +1,16 @@
-// Interbase histogram: slim 1px-wide bars indicating insertion /
-// softclip / hardclip density across the coverage strip.
+// Interbase histogram: slim 1px-wide bars indicating insertion / softclip /
+// hardclip density across the coverage band, hanging from just below the
+// indicator triangles. See coverageBand.slang.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/interbaseHistogramLayout.generated.ts
 //! js-export: interbaseEdgePx
 //! js-export-out: packages/alignments-core/src/interbaseEdge.generated.ts
 
-import alignmentsUniforms;
+import coverageBand;
 import hpmath;
 
-
 public static const uint VERTS_PER_INSTANCE = 6u;
-[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(1, 0)]] ConstantBuffer<CoverageBandUniforms> u;
 
 struct Instance {
   uint  position  : ATTR0;
@@ -37,27 +37,27 @@ float interbaseEdgePx(float offset, float interbaseHeight) {
 }
 
 [shader("vertex")]
-ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
-  ColorVsOut o;
+CoverageVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  CoverageVsOut o;
   float2 local = quadLocal(vid);
 
-  float cx = bpToClipX(inst.position, u);
+  float cx = covBpToClipX(inst.position, u);
   float barW = pxToClipLen(1.0, u.canvasW);
 
   // Hang from the coverage-area top, starting just below the indicator
-  // triangle row (TRIANGLE_H is the same const indicator.slang draws with).
-  // Both edges snap to whole pixels BEFORE the clip-space conversion.
+  // triangle row (TRIANGLE_H is the same const coverageIndicator.slang draws
+  // with). Both edges snap to whole pixels BEFORE the clip-space conversion.
   float topPx = interbaseEdgePx(inst.yOffset, u.interbaseHeight);
   float botPx = interbaseEdgePx(inst.yOffset + inst.segHeight, u.interbaseHeight);
   float sTop = covAreaTop(u) - pxToClipLen(topPx, u.canvasH);
   float sBot = covAreaTop(u) - pxToClipLen(botPx, u.canvasH);
 
-  o.position = flippedQuadPos(cx - barW * 0.5, cx + barW * 0.5, sBot, sTop, local, u);
-  o.color = float4(clipKindColor(inst.colorType, u), 1.0);
+  o.position = covFlippedQuad(cx - barW * 0.5, cx + barW * 0.5, sBot, sTop, local, u);
+  o.color = float4(covClipKindColor(inst.colorType, u), 1.0);
   return o;
 }
 
 [shader("fragment")]
-float4 fs_main(ColorVsOut fragIn) : SV_Target {
+float4 fs_main(CoverageVsOut fragIn) : SV_Target {
   return fragIn.color;
 }

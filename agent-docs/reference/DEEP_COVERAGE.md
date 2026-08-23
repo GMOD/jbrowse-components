@@ -137,7 +137,7 @@ keeps its own floor at 0.
 
 **On a log axis the coloured fraction is the allele proportion, not a count off
 the y-axis.** The segments are linear slices of a log-scaled bar
-(`snpCoverage.slang`): a 50% allele is half the bar's height whatever the
+(`coverageSnp.slang`): a 50% allele is half the bar's height whatever the
 scale, so its top edge does not land on the depth the axis would read there.
 That is deliberate — the alternative bakes the axis into the buffer and needs a
 repack on every autoscale change — but the two readings differ and only one of

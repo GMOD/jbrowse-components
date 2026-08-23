@@ -173,6 +173,22 @@ const MafBody = observer(function MafBody({
 
   return (
     <>
+      {/* The rendering backend's canvas, spanning the band stack AND the rows:
+          the coverage band is drawn into its top by the same backend that draws
+          the rows, scissored to its own strip. It sits outside the rows
+          container — which is offset to `rowsTopOffset` and owns the wheel
+          listener — because it is no longer the rows' canvas alone. */}
+      <canvas
+        id={canvasId}
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width,
+          height: rowsTopOffset + rowsHeight,
+        }}
+      />
       <MafCoverageBand
         model={model}
         onResizeActiveChange={setCoverageResizeActive}
@@ -184,6 +200,7 @@ const MafBody = observer(function MafBody({
       <MafBandLabels model={model} />
       <div
         ref={setRowsEl}
+        data-testid="maf-rows"
         style={{
           position: 'absolute',
           top: rowsTopOffset,
@@ -193,17 +210,6 @@ const MafBody = observer(function MafBody({
           cursor: overInsertion ? 'pointer' : undefined,
         }}
       >
-        <canvas
-          id={canvasId}
-          ref={canvasRef}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width,
-            height: rowsHeight,
-          }}
-        />
         <MafRowsCanvas model={model} />
         <MafLegends model={model} />
         <EmptyLinesOverlay

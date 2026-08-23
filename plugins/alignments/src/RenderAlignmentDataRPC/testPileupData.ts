@@ -170,7 +170,7 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
  * segments at one position must be listed consecutively and in ascending
  * position order, which is the contract the hit test's run walk reads.
  *
- * Interleaved by interbaseHistogram.slang's own generated `packInstances`, so a
+ * Interleaved by coverageInterbase.slang's own generated `packInstances`, so a
  * fixture cannot encode a record the shader would decode differently.
  */
 export function packedInterbaseSegments(

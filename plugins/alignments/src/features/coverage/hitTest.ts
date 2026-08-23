@@ -53,7 +53,7 @@ export function hitTestCoverage(
       from + width,
       SNP_TOOLTIP_SNAP_FLOOR,
       // The band's own floor, applied per allele the way `drawSnpSegments` and
-      // snpCoverage.slang apply it, so the snap cannot name a segment neither
+      // coverageSnp.slang apply it, so the snap cannot name a segment neither
       // backend drew. Passing it as a second pooled threshold — `max(floor,
       // setting)` — was the same fix aimed one level too coarse: four alt
       // alleles at 10% each on depth 100 pool to 40% and clear a 30% setting

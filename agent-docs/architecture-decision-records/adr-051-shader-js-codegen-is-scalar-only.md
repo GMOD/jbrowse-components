@@ -182,8 +182,11 @@ redirecting `alignmentsUniforms.slang` would drag `frequencyAlpha` and the arc
 scale out of the plugin that owns them. Naming the function on the *pass* that
 draws with it puts the twin wherever that pass wants, and leaves the decision
 authored next to the clip-space conversions built on it: the coverage band's px
-layout lives in `alignmentsUniforms.slang` and is lifted by `coverage.slang`
-into `@jbrowse/alignments-core`. Offered only to a shader with entry points,
+layout lived in `alignmentsUniforms.slang` and was lifted by `coverage.slang`
+into `@jbrowse/alignments-core`. (That band has since moved to render-core's own
+`coverageBand.slang`, a shared module whose `js-export-out` was free — so it
+exports its own. The mechanism stands; reach for it when the owning module's one
+redirect is already spoken for.) Offered only to a shader with entry points,
 where the twin comes from that shader's own compile and the draw path is what
 keeps the function alive. A module gets its own source only, because its export
 path compiles a synthesized wrapper that `import`s exactly one module and Slang
@@ -229,7 +232,7 @@ the part a scanner cannot know and the part that says whether the bar was met.
 | `mismatch.slang` | `qualityFade` | `features/mismatch/drawCanvas.ts` — "Mirrors the GPU mismatch.slang path"; the whole `mismatchAlpha` setting is this one three-way conditional, and it was stated twice |
 | `wiggle.slang` | `densityGradientT` | `getDensityColor.ts` — the density ramp position, carrying a `max(maxDist, 0.0001)` floor that cannot fire, kept only so the two backends read identically |
 | `manhattan.slang` | `scoreToYPx` | `manhattanRenderingBackendTypes.ts` — Manhattan's whole Y mapping, read by the Canvas2D draw *and* the hover hit test |
-| `coverage.slang` | `covEffectiveHeightPx`, `covBottomOffsetPx` (authored in `alignmentsUniforms.slang`) | `@jbrowse/alignments-core` `coverageLayout` — the band's drawable height and baseline, which the coverage bars, SNP segments and modification segments all measure from |
+| `coverageBand.slang` | `covEffectiveHeightPx`, `covBottomOffsetPx`, `normalizeDepthScalar` | `@jbrowse/alignments-core` `coverageLayout` — the band's drawable height and baseline, which the coverage bars, SNP segments and modification segments all measure from, plus the depth normalizer `coverageNormalizeParity.test.ts` pins against `makeScoreNormalizer` |
 | `wiggle.slang` | `RENDERING_TYPE_*` (5), `SCALE_TYPE_LOG`, `NO_PREV_START` via `export-consts` | `@jbrowse/wiggle-core` — the `renderingType` / `scaleType` uniform vocabulary and the instance-buffer sentinel, all re-typed by hand where `WiggleRenderingType` is declared |
 | `manhattan.slang` | `GLYPH_POINT`, `GLYPH_INSERTION`, `GLYPH_INDEX` via `export-consts` | `ManhattanRPC/rpcTypes.ts` — restated there, and pinned to the shader only by a test that string-matched its branches out of the `.slang` source |
 | `ldUniforms.slang` | `dprimeFinalize` | `@jbrowse/ld-core` `calculateDprime` — a line-for-line twin, and the only export so far where the two backends must agree on a **number the user reads** rather than on pixels |
@@ -492,7 +495,10 @@ implementations have to be *meant* to agree:
   shape: `alignmentsUniforms.slang`'s twin lands in plugin-alignments, which
   `@jbrowse/alignments-core` cannot import. Letting `coverage.slang` export a
   function it imports solved that without a new module, and is the general fix
-  for "authored in the shared module, needed in a specific package".
+  for "authored in the shared module, needed in a specific package". The band
+  later moved into render-core's `coverageBand.slang` (two plugins draw it now),
+  which redirects its own exports there instead — the general fix is still the
+  one to reach for when the owning module's redirect is taken.
 - **`sBlend` / `yCurve` (synteny)** — exported as a **test oracle**, not as
   production code. The Canvas2D path deliberately draws one `bezierCurveTo`
   rather than tessellating, and `syntenyRibbonPath.ts` carries an algebraic proof

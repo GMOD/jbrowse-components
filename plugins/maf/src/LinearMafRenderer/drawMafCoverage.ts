@@ -4,6 +4,7 @@ import {
   drawIndicators,
   drawInterbaseSegments,
   drawSnpSegments,
+  packCoverageBinsCanvas2D,
 } from '@jbrowse/alignments-core'
 import {
   forEachClippedBlock,
@@ -11,23 +12,32 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { SCALE_TYPE_LINEAR, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
-import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafCoverageColors } from './coverageBandColors.ts'
+import type { MafRegionData } from './mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { Theme } from '@mui/material'
 
 interface DrawMafCoverageState {
   coverageHeight: number
   canvasWidth: number
   domainMax: number
-  theme: Theme
+  colors: MafCoverageColors
 }
 
 /**
- * Draws the depth-bar + SNP layers of the MAF coverage band into a 2D
- * context. Shared by the on-screen `MafCoverageBand` and the SVG export
- * `renderSvg` paths so both call the same per-block loop over
- * alignments-core's `drawCoverageBins` + `drawSnpSegments`.
+ * Draws the depth-bar + SNP + interbase layers of the MAF coverage band into a
+ * 2D context. The band's Canvas2D path: the fallback backend when no GPU is
+ * available, and the SVG export, which draws once and has no backend to pick.
+ * The GPU path is render-core's shared coverage passes, drawn from
+ * `GpuMafRenderer` off the very buffers this reads.
+ *
+ * `coveragePackedBuffer` is NOT one of them: the worker ships the GPU depth-bar
+ * layout (relDepth), and `drawCoverageBins` reads raw depths, so the raw-depth
+ * buffer is built here from `coverageDepths` at draw time. One linear pass per
+ * region per draw, which is what the alignments display's Canvas2D backend also
+ * does — memoized there per region, un-memoized here because this path already
+ * walks every cell of every visible block and one pass over the depths does not
+ * register beside it.
  */
 export function drawMafCoverage(
   ctx: Ctx2D,
@@ -35,23 +45,22 @@ export function drawMafCoverage(
   regions: ReadonlyMap<number, MafRegionData>,
   state: DrawMafCoverageState,
 ) {
-  const { coverageHeight, canvasWidth, domainMax, theme } = state
+  const { coverageHeight, canvasWidth, domainMax, colors } = state
   if (!domainMax) {
     return
   }
   const normalize = makeScoreNormalizer(0, domainMax, SCALE_TYPE_LINEAR)
-  const coverageColor = theme.palette.coverage
   const snpColors = {
-    baseA: theme.palette.bases.A.main,
-    baseC: theme.palette.bases.C.main,
-    baseG: theme.palette.bases.G.main,
-    baseT: theme.palette.bases.T.main,
-    baseN: theme.palette.bases.N.main,
+    baseA: colors.baseA,
+    baseC: colors.baseC,
+    baseG: colors.baseG,
+    baseT: colors.baseT,
+    baseN: colors.baseN,
   }
   const interbaseColors = {
-    insertion: theme.palette.insertion,
-    softclip: theme.palette.insertion,
-    hardclip: theme.palette.insertion,
+    insertion: colors.insertion,
+    softclip: colors.insertion,
+    hardclip: colors.insertion,
   }
   forEachClippedBlock(
     ctx,
@@ -63,10 +72,13 @@ export function drawMafCoverage(
       const bpToX = makeBpMapper(block)
       drawCoverageBins(
         ctx,
-        coverage.coveragePackedBuffer,
+        packCoverageBinsCanvas2D(
+          coverage.coverageDepths,
+          coverage.coverageStartPos,
+        ),
         normalize,
         coverageHeight,
-        coverageColor,
+        colors.coverage,
         bpToX,
         canvasWidth,
         COVERAGE_BAR_SEAM_FUDGE_PX,

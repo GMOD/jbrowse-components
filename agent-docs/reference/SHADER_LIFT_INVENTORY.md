@@ -13,7 +13,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 94 functions
+Scanned 42 shaders with entry points. 95 functions
 are inside the emitter's subset, of which **67 are exported**.
 
 ## Candidates
@@ -38,6 +38,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
 | `clipLenToPx` | `(f32, f32) -> f32` | the inverse of pxToClipLen, same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
+| `covExpandMinWidthX` | `(f32, f32, f32) -> vec2f` | a 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
 | `dashCoverageAt` | `(f32, f32, f32, f32) -> f32` | same, one axis along: the other two backends dash through setLineDash and stroke-dasharray, which take the period rather than a coverage. What they must agree on is ARC_FLAT_DASH_PX / ARC_FLAT_GAP_PX, and those are export-consts already |
 | `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | this plugin's 1 CSS px floor over hpmath's expandToMinWidthX, which is where the rule and the reason it has no Canvas2D twin are recorded |
@@ -71,11 +72,11 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 23 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
-| type 'vec2' is outside the supported scalar subset | 21 | `arcBandClipPos`, `covSegQuad`, `crispSquareCornerClip`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, … |
-| type 'ptr' is outside the supported scalar subset | 9 | `bpToClipX`, `curveGeometry`, `curveParamAtY`, `fillVsEmit`, `flipX`, `ldRampColor`, … |
-| type 'vec3' is outside the supported scalar subset | 9 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, `hueRampHalfSat`, … |
+| type 'vec2' is outside the supported scalar subset | 22 | `arcBandClipPos`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, `crispSquareCornerPx`, `diagonalCellToClip`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 18 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
+| type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBarScale`, `covBottom`, `covBpToClipX`, `covClipKindColor`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
+| type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, `linkedReadColorByIndex`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | indexing is outside the supported scalar subset | 2 | `getGeno`, `getWord` |
@@ -86,6 +87,7 @@ noticing in a diff.
 | //! js-export: 'strokeCoverage' reaches strokeAaRamp(), which is outside the supported scalar subset | 1 | `strokeCoverage` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
+| type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectInstance' is outside the supported scalar subset | 1 | `rowRectVertex` |

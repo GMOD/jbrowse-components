@@ -1,14 +1,4 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
+import { COVERAGE_INDICATOR_PASS } from '@jbrowse/render-core/coverageBand'
 
-import * as indicatorShader from '../../shaders/slang/indicator.generated.ts'
-
-import type { CoverageUploadData } from '../../shared/uploadTypes.ts'
-
-export const INDICATOR_PASS = {
-  ...slangPass({
-    id: 'indicator',
-    mod: indicatorShader,
-  }),
-  pack: (data: Pick<CoverageUploadData, 'indicatorPackedBuffer'>) =>
-    data.indicatorPackedBuffer,
-}
+// Shared with the MAF band — see features/coverage/packGpu.ts.
+export const INDICATOR_PASS = COVERAGE_INDICATOR_PASS

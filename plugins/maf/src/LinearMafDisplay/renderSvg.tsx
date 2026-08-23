@@ -15,7 +15,9 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
+import { getMafCoverageColors } from '../LinearMafRenderer/coverageBandColors.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
+import { drawMafCoverage } from '../LinearMafRenderer/drawMafCoverage.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
 import { drawMafDeletionLabels } from '../LinearMafRenderer/rendering/deletions.ts'
@@ -37,7 +39,6 @@ import {
   drawCodonConservation,
   drawConservation,
 } from './components/drawConservation.ts'
-import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawMafRowsCanvas2d } from './components/drawMafRowsCanvas2d.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
@@ -90,10 +91,15 @@ function MafSvgBody({
   } = model
   // SVG export builds its palette from the user-selected export theme, not
   // the live on-screen palette, so light/dark export choices stay consistent.
+  // The export draws each band into its own `PaintLayer`, translated to that
+  // band's own origin — so the rows painter gets a rows-sized canvas at offset
+  // 0, not the display's stacked one.
   const svgState = {
     ...state,
     canvasWidth: width,
     canvasHeight: rowsHeight,
+    rowsTop: 0,
+    rowsHeight,
     palette: getMafColorPalette(palette),
   }
   const contrast = getContrastBaseMap(palette)
@@ -114,7 +120,10 @@ function MafSvgBody({
               coverageHeight: model.coverageHeight,
               canvasWidth: width,
               domainMax: coverageDomain?.[1] ?? 0,
-              theme,
+              // The export-chosen palette, not the live one — the band's colours
+              // come through the render state on screen and have to follow the
+              // same theme here as the cells under them.
+              colors: getMafCoverageColors(palette),
             })
           }}
         />

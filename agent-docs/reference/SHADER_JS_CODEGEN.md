@@ -145,12 +145,12 @@ move on. The reason to generate a twin is that a hand-written one drifts
    pattern.
 2. Add the name to `//! js-export:`. Cross-package consumer? Add
    `//! js-export-out: <repo-relative path>` — it redirects, so there is exactly
-   one generated file. If the decision belongs in a shared *module* but the twin
-   has to land somewhere that module's own package can't reach, put both
-   directives on a **pass that imports it** instead: the name resolves through
-   imports for a shader with entry points. `coverage.slang` exporting
-   `alignmentsUniforms`'s band layout into `@jbrowse/alignments-core` is the
-   worked example.
+   one generated file, and a *module* may carry both (`coverageBand.slang`
+   redirects the coverage band's px layout into `@jbrowse/alignments-core`). Put
+   them on a **pass that imports it** instead only when the module's own
+   `js-export-out` is already spoken for by other exports: the name resolves
+   through imports for a shader with entry points, which is how the band layout
+   reached that package while it still lived in `alignmentsUniforms.slang`.
 3. `pnpm gen:shaders` — **not `pnpm autogen`**, which has no shader generator. A
    typo names the candidates; a non-scalar signature names the function and the
    offending type; a dead function says so.
@@ -469,11 +469,11 @@ Three structural findings from that sweep, so it need not be redone:
 
 - **`maf.slang` and `multiRow.slang` are entry points over `rowRect`** and hold no
   math of their own. Their decisions were already exported via `rowRect`.
-- **The thin alignments passes** (`clip`, `indicator`, `coverage`,
-  `interbaseHistogram`, `arcMarker`, `linkedReadLine`) are `vs_main` over
-  `alignmentsUniforms` helpers. Anything shared in them is in that module, so
-  that is where to look — and `coverage.slang` is the worked example of lifting
-  from it.
+- **The thin alignments passes** (`clip`, `arcMarker`, `linkedReadLine`) are
+  `vs_main` over `alignmentsUniforms` helpers. Anything shared in them is in that
+  module, so that is where to look. The coverage band's four were the same shape
+  over the same module and are now render-core's `coverageBand.slang` — a shared
+  module with its own `js-export-out`, which is the simpler arrangement to copy.
 - **A `[shader("compute")]` pass is the highest-stakes case in the whole
   inventory** — its twin computes a number the user reads, not a pixel — so check
   compute shaders *first*, not last. The first sweep ranked shaders by "does it

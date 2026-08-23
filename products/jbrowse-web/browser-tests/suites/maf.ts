@@ -10,9 +10,15 @@ import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
 const DISPLAY = '[data-display-id^="volvox_maf-LinearMafDisplay"]'
-// the rows canvas is the one inside the rows container; the coverage band has
-// its own canvas above it
-const ROWS = `${DISPLAY} > div:has(> canvas + canvas)`
+// The rows container: offset to `rowsTopOffset`, and the element the wheel
+// listener is bound to. Addressed by test id rather than by shape — it used to
+// be "the div with two canvases in it", which stopped being true when the
+// backend's canvas moved out of it to carry the coverage band as well.
+const ROWS = `${DISPLAY} > [data-testid="maf-rows"]`
+// The backend's canvas, spanning the band stack AND the rows viewport. One
+// canvas because a display gets one rendering backend: the coverage band is
+// scissored out of its top, the rows out of the rest.
+const CANVAS = `${DISPLAY} > canvas`
 
 // volvox_maf is 10 species. Pinned at 15px they need 150px of rows, and the
 // track is 120px tall (45 of which is the coverage band) — so the rows overflow
@@ -56,12 +62,18 @@ interface Geometry {
   rowsContentHeight: number
   scrollableHeight: number
   scrollTop: number
-  /** the rows canvas backing store in CSS px, i.e. what the scroll is meant to bound */
+  /** where the rows band starts inside the canvas: the stacked bands above it */
+  rowsTopOffset: number
+  /**
+   * The backend canvas's backing store in CSS px. What the scroll is meant to
+   * bound is the ROWS half of it, so the assertion is against
+   * `rowsTopOffset + rowsHeight` rather than against `rowsHeight` alone.
+   */
   canvasCssHeight: number
 }
 
 function readGeometry(page: Page) {
-  return page.evaluate((rowsSel: string): Geometry => {
+  return page.evaluate((canvasSel: string): Geometry => {
     const display = (
       window as unknown as {
         JBrowseSession: {
@@ -69,18 +81,19 @@ function readGeometry(page: Page) {
         }
       }
     ).JBrowseSession.views[0]!.tracks[0]!.displays[0]!
-    const canvas = document.querySelector(`${rowsSel} > canvas`)
+    const canvas = document.querySelector(canvasSel)
     return {
       effectiveRowHeight: display.effectiveRowHeight!,
       rowsHeight: display.rowsHeight!,
       rowsContentHeight: display.rowsContentHeight!,
       scrollableHeight: display.scrollableHeight!,
       scrollTop: display.scrollTop!,
+      rowsTopOffset: display.rowsTopOffset!,
       canvasCssHeight: canvas
         ? Number.parseFloat(getComputedStyle(canvas).height)
         : Number.NaN,
     }
-  }, ROWS)
+  }, CANVAS)
 }
 
 // The species names drawn beside the rows — culled to the viewport, so this is
@@ -173,10 +186,13 @@ const suite: TestSuite = {
             `expected the rows to overflow: content ${g.rowsContentHeight}, viewport ${g.rowsHeight}`,
           )
         }
-        // the canvas is the viewport, never the content
-        if (Math.abs(g.canvasCssHeight - g.rowsHeight) > 1) {
+        // the canvas is the band stack plus the rows VIEWPORT, never the rows
+        // content — which is the whole regression: content-sized, a deep
+        // alignment allocated a canvas several screens tall.
+        const expected = g.rowsTopOffset + g.rowsHeight
+        if (Math.abs(g.canvasCssHeight - expected) > 1) {
           throw new Error(
-            `rows canvas is ${g.canvasCssHeight}px, expected the ${g.rowsHeight}px viewport`,
+            `canvas is ${g.canvasCssHeight}px, expected the ${expected}px band stack + rows viewport`,
           )
         }
         // scrollbar first: `assertVirtualScrollStructure` also measures that the
@@ -184,7 +200,7 @@ const suite: TestSuite = {
         // is no thumb in the DOM yet — so asserting before it mounts quietly
         // dropped the geometry check rather than failing.
         await findByTestId(page, 'vertical-scrollbar', 5000)
-        await assertVirtualScrollStructure(page, `${ROWS} > canvas`)
+        await assertVirtualScrollStructure(page, CANVAS)
       },
     },
 
@@ -209,8 +225,10 @@ const suite: TestSuite = {
           )
         }
         const g = await readGeometry(page)
-        if (Math.abs(g.canvasCssHeight - g.rowsHeight) > 1) {
-          throw new Error('rows canvas grew while scrolled')
+        if (
+          Math.abs(g.canvasCssHeight - (g.rowsTopOffset + g.rowsHeight)) > 1
+        ) {
+          throw new Error('canvas grew while scrolled')
         }
       },
     },

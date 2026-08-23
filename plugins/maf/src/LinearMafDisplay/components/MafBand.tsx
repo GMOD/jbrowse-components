@@ -8,16 +8,19 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 /**
- * One stacked band above the per-sample rows: its Canvas2D layer, its Y-axis
- * gutter, and the resize handle straddling its bottom seam. The coverage and
- * conservation bands differ only in what they draw and what their axis reads,
- * so everything positional — the seam the handle sits on, the axis offset, the
- * hidden-when-off behavior — is decided once here rather than re-derived per
- * band (where the two had already drifted to spelling the same seam two
- * different ways).
+ * One stacked Canvas2D band above the per-sample rows: its canvas layer, its
+ * Y-axis gutter, and the resize handle straddling its bottom seam. Everything
+ * positional — the seam the handle sits on, the axis offset, the hidden-when-off
+ * behavior — is decided once here rather than per band.
  *
- * `ticks` undefined means the band has no axis yet (coverage before its domain
- * resolves); the canvas still draws.
+ * The conservation band is the only one left: the coverage band moved onto the
+ * display's rendering backend (render-core's shared coverage passes, GPU with
+ * Canvas2D as the fallback) and so has no canvas of its own to own — see
+ * `MafCoverageBand`, which is now the axis and the handle alone. What kept the
+ * two together here was the positional geometry, and that is what
+ * `rowsTopOffset` and the band's own `top` already state.
+ *
+ * `ticks` undefined means the band has no axis yet; the canvas still draws.
  */
 const MafBand = observer(function MafBand({
   model,

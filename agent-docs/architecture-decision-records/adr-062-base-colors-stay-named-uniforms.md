@@ -37,7 +37,7 @@ missed.
 They live in the shared `alignmentsUniforms` block and two shaders read them
 differently:
 
-- `snpCoverage.slang` switches on `colorType` 1–5.
+- `coverageSnp.slang` switches on `colorType` 1–5.
 - `mismatch.slang` switches on the **ASCII base code** — `case 65u: case 97u:`
   for A, and so on, with `default:` covering N and everything else.
 
@@ -82,7 +82,7 @@ the drift risk removed is small against the regression risk added.
 ## Decision
 
 **Keep `colorBaseA/C/G/T/N` as five named uniforms in `alignmentsUniforms`, read
-by `snpCoverage.slang` under `colorType` and by `mismatch.slang` under the ASCII
+by `coverageSnp.slang` under `colorType` and by `mismatch.slang` under the ASCII
 base code.** Do not give either shader a `float4[5]` of them, and do not
 undertake the slot-indexed rework.
 

@@ -163,7 +163,7 @@ const writePacked = (buf: ArrayBuffer, c: Cols, count: number) => {
 // ONE CALL PER RECORD, all four fields written inline at a hoisted offset
 // inside it — the codegen's `InstanceWriter`, for an encoder that cannot size
 // the buffer up front. Transcribed here rather than imported: it is emitted
-// only under `//! instance-writer`, which interbaseHistogram.slang does not
+// only under `//! instance-writer`, which coverageInterbase.slang does not
 // declare BECAUSE of this row, so an import would be circular reasoning.
 class Writer {
   private buf: ArrayBuffer

@@ -78,6 +78,11 @@ function state(binBp = 1): MafGPURenderState {
     binBp,
     canvasWidth: BLOCK_WIDTH,
     canvasHeight: 100,
+    // No band above the rows here: this paints in the rows band's own space, so
+    // the two heights coincide and `rowsHeight` is what it culls against.
+    rowsTop: 0,
+    rowsHeight: 100,
+    coverage: undefined,
     rowHeight: 10,
     rowProportion: 1,
     scrollTop: 0,

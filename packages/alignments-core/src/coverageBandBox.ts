@@ -8,7 +8,8 @@ import {
 // Where the coverage bars live inside the band: the drawable height, and how
 // far the baseline sits below the band's top edge. Every coverage mark on both
 // backends measures from these two, and they are the shader's own — generated
-// from alignmentsUniforms via coverage.slang (adr-051). The label inset is
+// from render-core's shared `coverageBand.slang`, which both the alignments
+// pileup's band and the MAF display's draw from (adr-051). The label inset is
 // reserved at both ends, which is the whole reason the two differ.
 //
 // Its own module rather than a member of `rendererUtils.ts`, because the axis
@@ -51,7 +52,7 @@ export function coverageLayout(coverageHeight: number) {
  *
  * Shared because there are three readings of it and they had drifted into two
  * formulas: the Canvas2D draw, the hit test that must match the drawn rectangle,
- * and the `interbaseHeight` uniform `interbaseHistogram.slang` hangs its bars
+ * and the `interbaseHeight` uniform `coverageInterbase.slang` hangs its bars
  * from. The uniform used to spell the ratio `region.maxDepth / domainMax`, which
  * agrees with `interbaseMaxCount / domainMax` only while the region has any read
  * depth at all — at depth 0 the worker's `Math.max(maxDepth, 1)` floor means the

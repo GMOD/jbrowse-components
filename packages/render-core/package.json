@@ -19,7 +19,7 @@
     "directory": "packages/render-core"
   },
   "author": "JBrowse Team",
-  "//files": "src/shaders ships the shared .slang modules (hpmath, antialias, colorPack, diagonalGrid, pointGlyph, rowRect) that any shader imports. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
+  "//files": "src/shaders ships the shared .slang modules (hpmath, antialias, colorPack, coverageBand, diagonalGrid, pointGlyph, rowRect) that any shader imports, plus the coverage-band entry-point passes drawn by two plugins. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
   "files": [
     "esm",
     "src/shaders"
@@ -30,6 +30,7 @@
     "./blockClipUtils": "./src/blockClipUtils.ts",
     "./canvas2dUtils": "./src/canvas2dUtils.ts",
     "./canvasContext": "./src/canvasContext.ts",
+    "./coverageBand": "./src/coverageBand.ts",
     "./createRenderingBackend": "./src/createRenderingBackend.ts",
     "./displayPhase": "./src/displayPhase.ts",
     "./globalRenderingBackend": "./src/globalRenderingBackend.ts",
@@ -47,6 +48,11 @@
     "./renderBlock": "./src/renderBlock.ts",
     "./renderingBackendBase": "./src/renderingBackendBase.ts",
     "./ScrollLockedOverlay": "./src/ScrollLockedOverlay.tsx",
+    "./shaders/coverageBar": "./src/shaders/coverageBar.generated.ts",
+    "./shaders/coverageIndicator": "./src/shaders/coverageIndicator.generated.ts",
+    "./shaders/coverageInterbase": "./src/shaders/coverageInterbase.generated.ts",
+    "./shaders/coverageMod": "./src/shaders/coverageMod.generated.ts",
+    "./shaders/coverageSnp": "./src/shaders/coverageSnp.generated.ts",
     "./shaders/hpmath": "./src/shaders/hpmath.js.generated.ts",
     "./shaders/pointGlyph": "./src/shaders/pointGlyph.js.generated.ts",
     "./shaders/pointGlyphConsts": "./src/shaders/pointGlyph.generated.ts",
@@ -95,6 +101,10 @@
       "./canvasContext": {
         "types": "./esm/canvasContext.d.ts",
         "import": "./esm/canvasContext.js"
+      },
+      "./coverageBand": {
+        "types": "./esm/coverageBand.d.ts",
+        "import": "./esm/coverageBand.js"
       },
       "./createRenderingBackend": {
         "types": "./esm/createRenderingBackend.d.ts",
@@ -164,6 +174,26 @@
         "types": "./esm/ScrollLockedOverlay.d.ts",
         "import": "./esm/ScrollLockedOverlay.js"
       },
+      "./shaders/coverageBar": {
+        "types": "./esm/shaders/coverageBar.generated.d.ts",
+        "import": "./esm/shaders/coverageBar.generated.js"
+      },
+      "./shaders/coverageIndicator": {
+        "types": "./esm/shaders/coverageIndicator.generated.d.ts",
+        "import": "./esm/shaders/coverageIndicator.generated.js"
+      },
+      "./shaders/coverageInterbase": {
+        "types": "./esm/shaders/coverageInterbase.generated.d.ts",
+        "import": "./esm/shaders/coverageInterbase.generated.js"
+      },
+      "./shaders/coverageMod": {
+        "types": "./esm/shaders/coverageMod.generated.d.ts",
+        "import": "./esm/shaders/coverageMod.generated.js"
+      },
+      "./shaders/coverageSnp": {
+        "types": "./esm/shaders/coverageSnp.generated.d.ts",
+        "import": "./esm/shaders/coverageSnp.generated.js"
+      },
       "./shaders/hpmath": {
         "types": "./esm/shaders/hpmath.js.generated.d.ts",
         "import": "./esm/shaders/hpmath.js.generated.js"
@@ -218,6 +248,9 @@
         "canvasContext": [
           "esm/canvasContext.d.ts"
         ],
+        "coverageBand": [
+          "esm/coverageBand.d.ts"
+        ],
         "createRenderingBackend": [
           "esm/createRenderingBackend.d.ts"
         ],
@@ -268,6 +301,21 @@
         ],
         "ScrollLockedOverlay": [
           "esm/ScrollLockedOverlay.d.ts"
+        ],
+        "shaders/coverageBar": [
+          "esm/shaders/coverageBar.generated.d.ts"
+        ],
+        "shaders/coverageIndicator": [
+          "esm/shaders/coverageIndicator.generated.d.ts"
+        ],
+        "shaders/coverageInterbase": [
+          "esm/shaders/coverageInterbase.generated.d.ts"
+        ],
+        "shaders/coverageMod": [
+          "esm/shaders/coverageMod.generated.d.ts"
+        ],
+        "shaders/coverageSnp": [
+          "esm/shaders/coverageSnp.generated.d.ts"
         ],
         "shaders/hpmath": [
           "esm/shaders/hpmath.js.generated.d.ts"

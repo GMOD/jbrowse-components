@@ -13,7 +13,7 @@ interbaseMaxCount`, where the denominator is the region's PEAK READ DEPTH. At a
 clean breakend the events at one boundary can exceed that peak, because neither
 group of reads covers the other's base: N reads end at P and M start at P, so
 the peak is `max(N, M)` while the events at P total `N + M`. Nothing clamps the
-sum — not `interbaseHistogram.slang`, not `drawInterbaseSegments` — so the bar
+sum — not `coverageInterbase.slang`, not `drawInterbaseSegments` — so the bar
 runs past the half-band it is scaled against and into the coverage bars.
 
 Measured with the real functions, N = M = 40 and no spanning depth:

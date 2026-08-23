@@ -28,6 +28,14 @@ export interface BlockClipResult {
   pxX: number
   pxW: number
   pxH: number
+  /**
+   * The vertical scale the backing store ACTUALLY got — `hal.resize`'s answer,
+   * not `getDpr()`. Carried through so a renderer scissoring bands out of one
+   * canvas (`devicePxBand`) has the ratio the clip was built with rather than
+   * reconstructing it as `pxH / canvasHeight`, which is a division by a height
+   * that can be 0.
+   */
+  scaleY: number
   // HP-split of the visible block's start/end bp. `clipBlock` computes both
   // so renderers handling reversed blocks can pivot on bpEnd without
   // reconstructing + re-splitting at render time.
@@ -136,6 +144,7 @@ export function clipBlock(
     pxX,
     pxW,
     pxH,
+    scaleY: scale.y,
     bpStartHi,
     bpStartLo,
     bpEndHi,

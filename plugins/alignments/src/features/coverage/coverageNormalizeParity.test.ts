@@ -10,13 +10,13 @@ import {
 import {
   computeCoverageTicks,
   coverageDepthDomain,
+  normalizeDepthScalar,
 } from '@jbrowse/alignments-core'
 
-import { normalizeDepthScalar } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { makeCoverageScale } from './coverageScale.ts'
 
 // The coverage band's depth scale, checked across the three places it is
-// applied: the GPU (alignmentsUniforms.slang's normalizeDepthScalar, imported
+// applied: the GPU (coverageBand.slang's normalizeDepthScalar, imported
 // here as the emitted scalar twin — adr-051), the Canvas2D draws
 // (makeCoverageScale), and the y-axis ticks (computeCoverageTicks).
 //

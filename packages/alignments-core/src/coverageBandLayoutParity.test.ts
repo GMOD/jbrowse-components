@@ -8,11 +8,10 @@ import {
   computeCoverageTicks,
 } from './coverageDownsampling.ts'
 
-// The retirement gate for coverage.slang's `//! js-export` (adr-051), and the
-// first export lifted from a function the exporting shader only *imports* —
-// the band geometry is authored in alignmentsUniforms.slang, where the
-// clip-space conversions that use it live, and coverage.slang is the pass that
-// reaches both off its draw path.
+// The retirement gate for `coverageBand.slang`'s `//! js-export` (adr-051). The
+// band geometry lives in that shared render-core module — the clip-space
+// conversions that use it are there too, and two plugins' bands draw from it —
+// so the twin below is what this package open-coded before the lift.
 //
 // `retiredCoverageLayout` is what rendererUtils.ts open-coded. The asymmetry is
 // the whole content: the scalebar-label inset is reserved at BOTH ends of the

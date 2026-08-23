@@ -18,6 +18,7 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
+import { coverageBandBuffers } from '@jbrowse/render-core/coverageBand'
 import {
   installPerRegionLifecycle,
   regionDataMap,
@@ -36,6 +37,10 @@ import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
+import {
+  getMafCoverageColors,
+  packMafCoverageColors,
+} from '../LinearMafRenderer/coverageBandColors.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import {
   getCodonLegendItems,
@@ -77,6 +82,7 @@ import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 
 import type {
+  MafCoverageBandState,
   MafGPURenderState,
   MafGpuProps,
   MafRegionData,
@@ -1228,34 +1234,6 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         /**
-         * #getter
-         * Render state passed to GPU/Canvas2D backend each frame. Uses the rows-
-         * only height so the GPU canvas only paints the per-sample band; the
-         * coverage band is drawn on a separate Canvas2D overlay above.
-         */
-        get renderState(): MafGPURenderState {
-          // Resolved geometry, never undefined — every field is view/settings
-          // derived and safe with zero sources (nrow floors at 1). "No fetch has
-          // landed" is the render callback's first-paint gate (`hasFetched`), not
-          // a nullable state: a sample-discovery track — no configured `samples`,
-          // so rows come from whichever genomes appear in the region's blocks —
-          // yields zero sources over a region with no alignment blocks, and
-          // withholding a state there once the fetch completed kept the render
-          // callback returning false, so `canvasDrawn` never flipped and the
-          // loading overlay spun forever.
-          return {
-            canvasWidth: self.canvasWidthPx,
-            canvasHeight: self.rowsHeight,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-            scrollTop: self.scrollTop,
-            showAllLetters: self.showAllLetters,
-            mismatchRendering: self.mismatchRendering,
-            palette: self.colorPalette,
-            binBp: self.encodeBinBp,
-          }
-        },
-        /**
          * #method
          * Where the rows sit on screen: the resolved row height, plus the scroll
          * offset and viewport that every rows layer places and culls against.
@@ -1375,6 +1353,77 @@ export default function stateModelFactory(
                 'linear',
               )
             : undefined
+        },
+        /**
+         * #getter
+         * The coverage band's colours, in both representations the two backends
+         * need: CSS strings for the Canvas2D painters, packed ABGR for the GPU
+         * passes. Its own getter so the pack — which parses nine CSS colours —
+         * is memoized against the palette rather than re-run inside
+         * `renderState`, which every scroll frame invalidates.
+         */
+        get coverageBandColors() {
+          const colors = getMafCoverageColors(getSession(self).palette)
+          return { colors, gpuColors: packMafCoverageColors(colors) }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The coverage band as the renderers take it, or undefined for "draw no
+         * band": the setting is off, the summary tier owns the view, or the
+         * autoscaled domain has not resolved yet. Every mark in the band is a
+         * fraction of the domain max, so the third case is not a shorter band —
+         * it is bars of arbitrary height, which is why one nullable object
+         * carries the height and the domain together.
+         */
+        get coverageBandState(): MafCoverageBandState | undefined {
+          const domainMax = self.coverageDomain?.[1]
+          return self.coverageBandActive && domainMax
+            ? {
+                height: self.coverageHeight,
+                domainMax,
+                ...self.coverageBandColors,
+              }
+            : undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Render state passed to GPU/Canvas2D backend each frame.
+         *
+         * `canvasHeight` is the WHOLE canvas — the stacked bands plus the rows
+         * viewport — because the coverage band draws on the same canvas as the
+         * rows, scissored out of it, the way the alignments display draws its
+         * coverage band above its pileup. A display gets one rendering backend,
+         * so a second GPU band cannot mean a second canvas. `rowsTop` /
+         * `rowsHeight` are the rows band inside it.
+         */
+        get renderState(): MafGPURenderState {
+          // Resolved geometry, never undefined — every field is view/settings
+          // derived and safe with zero sources (nrow floors at 1). "No fetch has
+          // landed" is the render callback's first-paint gate (`hasFetched`), not
+          // a nullable state: a sample-discovery track — no configured `samples`,
+          // so rows come from whichever genomes appear in the region's blocks —
+          // yields zero sources over a region with no alignment blocks, and
+          // withholding a state there once the fetch completed kept the render
+          // callback returning false, so `canvasDrawn` never flipped and the
+          // loading overlay spun forever.
+          return {
+            canvasWidth: self.canvasWidthPx,
+            canvasHeight: self.rowsTopOffset + self.rowsHeight,
+            rowsTop: self.rowsTopOffset,
+            rowsHeight: self.rowsHeight,
+            coverage: self.coverageBandState,
+            rowHeight: self.effectiveRowHeight,
+            rowProportion: self.rowProportion,
+            scrollTop: self.scrollTop,
+            showAllLetters: self.showAllLetters,
+            mismatchRendering: self.mismatchRendering,
+            palette: self.colorPalette,
+            binBp: self.encodeBinBp,
+          }
         },
       }))
       .views(self => ({
@@ -2204,22 +2253,26 @@ export default function stateModelFactory(
               gpu: self.gpuProps(),
             }),
             encode: (regionData, { basesActive, gpu }) => {
-              // The render callback below draws no blocks unless the rows area
-              // is in `bases` mode — the identity plot, codon view and
-              // color-by-chromosome all paint the rows on sibling canvases.
-              // Encoding anyway built and uploaded a buffer (tens of MB on a
-              // wide region) that never reached a pixel. An empty payload skips
-              // the encode *and* releases the GPU buffer (an empty pack deletes
-              // the pass's buffer); flipping back to `bases` re-encodes
-              // immediately.
+              // The coverage band's four buffers are the worker's own, carried
+              // through by reference — nothing to encode, and they upload
+              // whatever the rows are doing, since the band is drawn from the
+              // same canvas and gated only by its own setting.
+              const coverage = coverageBandBuffers(regionData.coverage)
+              // The rows pass draws nothing unless the rows area is in `bases`
+              // mode — the identity plot, codon view and color-by-chromosome all
+              // paint the rows on sibling canvases. Encoding anyway built and
+              // uploaded a buffer (tens of MB on a wide region) that never
+              // reached a pixel. An empty payload skips the encode *and*
+              // releases the GPU buffer (an empty pack deletes the pass's
+              // buffer); flipping back to `bases` re-encodes immediately.
               if (!basesActive) {
-                return { instanceBuffer: new Uint32Array(0) }
+                return { instanceBuffer: new Uint32Array(0), ...coverage }
               }
               const { buffer } = buildInstanceBuffer({
                 blocks: regionData.blocks,
                 ...gpu,
               })
-              return { instanceBuffer: buffer }
+              return { instanceBuffer: buffer, ...coverage }
             },
             render: b => {
               // First-paint gate: no fetch has landed yet, so skip the tick
@@ -2227,28 +2280,26 @@ export default function stateModelFactory(
               // over a loaded region is NOT this state — see renderState.
               const hasFetched =
                 self.sourcesKnown || self.loadedRegions.size > 0
-              if (hasFetched) {
-                if (self.basesRenderingActive) {
-                  return b.renderBlocks(
+              // One call whatever the rows are doing, because this canvas now
+              // carries the coverage band too. Out of `bases` mode the rows are
+              // owned by a sibling canvas (the identity plot, the codon view,
+              // color-by-chromosome, or the summary bars) and the rows pass has
+              // an empty buffer, so it paints nothing — but the band above still
+              // has to draw, and this used to pass no blocks at all to make the
+              // rows canvas clear. It still counts as a real paint for
+              // `canvasDrawn`: returning false instead is what left summary mode
+              // scrimmed forever; see `basesRenderingActive`.
+              // The `|| !basesRenderingActive` is the sibling-canvas case: past
+              // the summary threshold `rpcDataMap` is cleared on purpose, so
+              // this backend draws nothing and reports nothing painted while
+              // the rows the user sees are on a sibling canvas.
+              return hasFetched
+                ? b.renderBlocks(
                     self.renderBlocks,
                     self.rpcDataMap,
                     self.renderState,
-                  )
-                } else {
-                  // Zoomed out the identity plot — or, past the summary
-                  // threshold, the summary bars — owns the visible rows, on a
-                  // sibling canvas. Render no blocks so this canvas clears to
-                  // transparent and the sibling shows through — a cleared frame
-                  // nothing painted into, but still a real paint for
-                  // canvasDrawn, since the rows the user sees did get drawn.
-                  // Returning false here instead is what left summary mode
-                  // scrimmed forever; see `basesRenderingActive`.
-                  b.renderBlocks([], self.rpcDataMap, self.renderState)
-                  return true
-                }
-              } else {
-                return false
-              }
+                  ) || !self.basesRenderingActive
+                : false
             },
           })
         },

@@ -3,9 +3,14 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
 import {
   clampBlockScissor,
+  devicePxBand,
   devicePxSpan,
   getDpr,
 } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
+  writeCoverageBandUniforms,
+} from '@jbrowse/render-core/coverageBand'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
@@ -105,7 +110,6 @@ function fillFrameUniforms(
   state: RenderState,
   frame: BlockFrame,
 ) {
-  const { region } = frame
   // Set on every frame, not just the arc passes: a zero here would divide by
   // zero in strokeCoverage for anything else that antialiases a stroke.
   f[U.dpr] = getDpr()
@@ -127,38 +131,11 @@ function fillFrameUniforms(
   f[U.covOffset] = state.pileupTopOffset
   f[U.featHeight] = state.featureHeight
   f[U.featSpacing] = state.featureSpacing
-  f[U.covHeight] = state.coverageHeight
-  f[U.covYOffset] = state.coverageYOffset
-  // Coverage band top in screen px. 0 = sticky (ungrouped); grouped sections
-  // pass their scrolled top so the band scrolls with its section.
-  f[U.covTop] = state.coverageTopOffset
-  const domainMax = state.coverageMaxDepth
-  f[U.depthScale] =
-    domainMax !== undefined && region.maxDepth > 0
-      ? region.maxDepth / domainMax
-      : 1
-  f[U.depthDomainMax] = domainMax ?? 0
-  // Both ends of the domain, so `normalizeDepthScalar` can be the twin of
-  // `makeScoreNormalizer` rather than a max-only approximation of it. 0 unless
-  // the track carries a `minScore` bound.
-  f[U.depthDomainMin] = state.coverageMinDepth ?? 0
-  // The band's allele-fraction floor, tested against each segment's own
-  // `segHeight` in snpCoverage.slang and in `drawSnpSegments`.
-  f[U.snpMinFreq] = state.coverageSnpMinFrequency
-  i[UI.coverageScaleType] = state.coverageScaleType
-  f[U.coverageSymlogConstant] = state.coverageSymlogConstant
+  // The coverage band's own slots are NOT here: it draws off render-core's
+  // shared `CoverageBandUniforms` (see `fillCoverageBandUniforms`), written into
+  // its own buffer immediately before its passes.
   i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
-  f[U.binSize] = region.binSize
-  // The same rule drawInterbaseSegments and hitTestInterbase read — see
-  // `interbaseBarHeightPx`. This used to spell the ratio `region.maxDepth /
-  // domainMax` by reusing `depthScale`, which is the interbase bars' scale only
-  // while `interbaseMaxCount === region.maxDepth`.
-  f[U.interbaseHeight] = interbaseBarHeightPx(
-    state.coverageHeight,
-    region.interbaseMaxCount,
-    domainMax,
-  )
   i[UI.colorScheme] = state.colorScheme
   // Chevron gating only — chain mode's effect on read COLOR is now resolved on
   // the CPU into `readColorCategories`, so the shader no longer branches on it
@@ -180,6 +157,71 @@ function fillFrameUniforms(
 // any of them packs.
 // ---------------------------------------------------------------------------
 
+// The coverage band's whole UBO, into its own buffer. A total write through
+// render-core's generated packer rather than offset pokes into `uData`, because
+// the band's uniform struct is not this plugin's: the MAF display writes the
+// same one for the same five passes (see coverageBand.slang), so the fields and
+// the two derived slots live there.
+//
+// Base colours come from `effectiveBaseColors`, not raw palette slots — the
+// modifications-mode mute is decided there for both backends, and the SNP
+// segments are one of the layers it mutes.
+function fillCoverageBandUniforms(
+  buf: ArrayBuffer,
+  state: RenderState,
+  frame: BlockFrame,
+) {
+  const { region } = frame
+  const domainMax = state.coverageMaxDepth
+  const base = effectiveBaseColors(state)
+  const c = state.colors
+  writeCoverageBandUniforms(buf, {
+    bpHi: frame.bpHi,
+    bpLo: frame.bpLo,
+    // POSITIVE for a reversed block, flipped via `reversed` — the same rule
+    // `fillFrameUniforms` states at length.
+    bpLen: frame.clippedBpEnd - frame.clippedBpStart,
+    canvasW: frame.canvasW,
+    canvasH: state.canvasHeight,
+    reversed: frame.reversed,
+    covHeight: state.coverageHeight,
+    covYOffset: state.coverageYOffset,
+    // 0 = sticky (ungrouped); a grouped section passes its scrolled top so the
+    // band scrolls with its section.
+    covTop: state.coverageTopOffset,
+    regionMaxDepth: region.maxDepth,
+    // Both ends of the domain, so `normalizeDepthScalar` can be the twin of
+    // `makeScoreNormalizer` rather than a max-only approximation of it. 0 unless
+    // the track carries a `minScore` bound.
+    domainMin: state.coverageMinDepth ?? 0,
+    domainMax,
+    scaleType: state.coverageScaleType,
+    symlogConstant: state.coverageSymlogConstant,
+    binSize: region.binSize,
+    // The same rule drawInterbaseSegments and hitTestInterbase read — see
+    // `interbaseBarHeightPx`. This used to spell the ratio `region.maxDepth /
+    // domainMax` by reusing `depthScale`, which is the interbase bars' scale only
+    // while `interbaseMaxCount === region.maxDepth`.
+    interbaseHeight: interbaseBarHeightPx(
+      state.coverageHeight,
+      region.interbaseMaxCount,
+      domainMax,
+    ),
+    snpMinFrequency: state.coverageSnpMinFrequency,
+    colors: {
+      coverage: packRgb(c.colorCoverage),
+      baseA: packRgb(base.A),
+      baseC: packRgb(base.C),
+      baseG: packRgb(base.G),
+      baseT: packRgb(base.T),
+      baseN: packRgb(base.N),
+      insertionIndicator: packRgb(c.colorInsertionIndicator),
+      softclipIndicator: packRgb(c.colorSoftclipIndicator),
+      hardclipIndicator: packRgb(c.colorHardclipIndicator),
+    },
+  })
+}
+
 // Arc-pass UBO patch. The arc shaders read the same UBO as the read pass but
 // place Y in absolute canvas px against the arc band, so we overwrite the
 // band-sensitive slots before the draw. Pure — mutates only the views.
@@ -190,7 +232,7 @@ function fillFrameUniforms(
 // the extent the dome/flat Y-scale maps into. Keeping the band out of the
 // viewport (it stays full-canvas) means a grouped section's band can scroll
 // partly off-screen without an out-of-bounds viewport (WebGPU rejects those
-// pre-Chrome-135); the devBand scissor does the real band clip.
+// pre-Chrome-135); the devicePxBand scissor does the real band clip.
 interface ArcFrame {
   block: RenderBlock
   state: RenderState
@@ -263,10 +305,6 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorSkip: 'colorSkip',
   colorSoftclip: 'colorSoftclip',
   colorHardclip: 'colorHardclip',
-  colorInsertionIndicator: 'colorInsertionIndicator',
-  colorSoftclipIndicator: 'colorSoftclipIndicator',
-  colorHardclipIndicator: 'colorHardclipIndicator',
-  colorCoverage: 'colorCoverage',
   colorFlatConnector: 'colorFlatConnector',
   colorConnectingLine: 'colorConnectingLine',
   colorOverlap: 'colorOverlap',
@@ -466,28 +504,10 @@ interface LocalRegion extends ChainBoundsRegion {
 
 const OVERLAY_REGION = 999999
 
-// A device-px vertical span: scissor/viewport top + height in backing-store px.
-interface DevBand {
-  top: number
-  height: number
-}
-
-// Convert a CSS-px vertical band [top, top+height] to a device-px scissor band,
-// clamped to the backing store. `devicePxSpan` rounds the top and bottom edges
-// separately (keeping the single-section case bit-exact with the prior
-// `bufH - round(top*dpr)` math); the clamp keeps a band that scrolled partly
-// off-screen inside [0, bufH].
-function devBand(
-  top: number,
-  height: number,
-  dpr: number,
-  bufH: number,
-): DevBand {
-  const span = devicePxSpan(top, top + height, dpr)
-  const t = Math.max(0, span.start)
-  const b = Math.min(bufH, span.start + span.width)
-  return { top: t, height: Math.max(0, b - t) }
-}
+// A device-px vertical span: scissor/viewport top + height in backing-store px,
+// as `devicePxBand` returns it. Named locally because three method signatures
+// below take one.
+type DevBand = ReturnType<typeof devicePxBand>
 
 // Per-block screen geometry shared by every section: the on-screen scissor span
 // (CSS px), the genomic window that span maps to, and the device-px viewport.
@@ -704,6 +724,12 @@ export class GpuAlignmentsRenderer
   // has no window to get wrong.
   private uArc = new ArrayBuffer(UNIFORMS_SIZE_BYTES)
   private uArcF32 = new Float32Array(this.uArc)
+  // The coverage band's UBO, which is a DIFFERENT struct rather than a patched
+  // copy of this one: its five passes are render-core's, shared with the MAF
+  // display, and they read `CoverageBandUniforms`. Sized from that struct, so
+  // the write covers exactly it — the HAL's ring slot is aligned to the largest
+  // struct any pass here declares, which is still this plugin's `Uniforms`.
+  private uCoverage = new ArrayBuffer(COVERAGE_BAND_UNIFORMS_SIZE_BYTES)
   private regions = new Map<number, LocalRegion>()
   // Upload memo, written only by `sync`. Lives on the renderer rather than in a
   // model-side `createRegionUploadSync` because this backend is whole-map synced
@@ -958,12 +984,18 @@ export class GpuAlignmentsRenderer
       reversed: block.reversed,
     }
     const sectionState = sectionRenderState(state, sec)
-    this.writeUniforms(sectionState, frame)
     this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
 
-    const cov = devBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
+    // The coverage band goes FIRST, and that ordering is now load-bearing: it
+    // draws against its own uniform struct, so the pileup's write has to be the
+    // later of the two. `hal.writeUniforms` stages one ring slot and every
+    // `drawPass` after it reads that slot, which is exactly the handoff the arc
+    // band below relies on as well.
+    const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
     const drewCoverage = state.showCoverage && cov.height > 0
     if (drewCoverage) {
+      fillCoverageBandUniforms(this.uCoverage, sectionState, frame)
+      this.hal.writeUniforms(this.uCoverage)
       this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
       for (const layer of COVERAGE_LAYERS) {
         if (layer.enabled(state)) {
@@ -972,10 +1004,12 @@ export class GpuAlignmentsRenderer
       }
     }
 
+    this.writeUniforms(sectionState, frame)
+
     // Pileup passes are skipped when the band collapses to zero height
     // (read-cloud draws no stacked pileup); the arc band below is
     // decoupled and still draws.
-    const pileup = devBand(
+    const pileup = devicePxBand(
       sec.pileupClipTop,
       sec.pileupClipHeight,
       scaleY,
@@ -1024,10 +1058,10 @@ export class GpuAlignmentsRenderer
   ) {
     // Arcs render in the full-canvas viewport and place Y in absolute canvas px,
     // so a grouped section's band can scroll partly off-screen without an
-    // out-of-bounds viewport (WebGPU rejects those pre-Chrome-135); the devBand
+    // out-of-bounds viewport (WebGPU rejects those pre-Chrome-135); the devicePxBand
     // scissor does the real band clip. Ungrouped bands sit on-screen, so the
     // scissored output is byte-identical to the pre-grouping single pass.
-    const scissor = devBand(band.top, band.height, dpr, bufH)
+    const scissor = devicePxBand(band.top, band.height, dpr, bufH)
     if (scissor.height > 0) {
       // The frame's uniforms, then the band's differences on top, in a buffer of
       // this pass's own — so `uData` still holds what every other pass needs and

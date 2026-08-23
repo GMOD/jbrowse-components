@@ -1234,6 +1234,18 @@ plugins draw identically (`pointGlyph.slang` disc/square markers,
 the MAF / multi-row colored-row rectangle). A shape module earns its place on the `pointGlyph` bar —
 two real consumers with a live drift hazard — not on surface similarity; see
 [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md).
+
+**The coverage band is the one shared *pass set* rather than a shape module**:
+`coverageBand.slang` there declares the band's uniform struct, its geometry and
+its depth normalizer, and the five entry points beside it (`coverageBar`,
+`coverageSnp`, `coverageMod`, `coverageInterbase`, `coverageIndicator`) are the
+only copy of each draw. The alignments pileup band and the MAF display band both
+register them, from the same worker-packed layouts — which is what makes it a
+whole band rather than a primitive: a mark's height rule is shared with the
+buffer layout it reads and the Canvas2D painter it must land on, and those three
+had no way to travel together while the shaders lived in one plugin. A plugin's
+own renderer still owns the UBO write (`writeCoverageBandUniforms`) and the
+scissor, because where the band sits on the canvas is the display's business.
 `slangPass()` turns a generated module into a `PipelineDescriptor`, with overrides for
 `topology`, `blendState`, `textures`, and buffer sharing. Authoring conventions
 and gotchas: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
@@ -1577,18 +1589,18 @@ above is WebGPU on a retina panel. Two backends, two instruments, one verdict.
 **The same change does not go on the alignments coverage band, and the reason is
 structural.** Every mark there shares a horizontal edge with another mark:
 
-- `snpCoverage` / `modCoverage` segments **stack**. Each accumulates `yOffset`,
+- `coverageSnp` / `coverageMod` segments **stack**. Each accumulates `yOffset`,
   so segment *i*'s top is segment *i+1*'s bottom exactly. Per-fragment alpha on
   both sides of that edge composites to less than full ink and leaks the grey
   depth bar through — Kilgard & Bolz's conflation, the case MSAA sidesteps by
   keeping coverage exclusive per sample.
-- The topmost segment's top **coincides** with `coverage.slang`'s depth-bar top
+- The topmost segment's top **coincides** with `coverageBar.slang`'s depth-bar top
   whenever a position is fully mismatched, which is what a homozygous SNP is. Two
   primitives drawn one over the other with the same edge and the same fractional
   alpha `a` composite to `a·segment + a(1−a)·grey`, so ramping either one alone
   puts a grey fringe above the column and ramping both puts up to 0.25 of one
   there. Hard edges tile exactly at any sample count; that is why they are hard.
-- `interbaseHistogram` is already `floor(… + 0.5)` on both y edges, deliberately
+- `coverageInterbase` is already `floor(… + 0.5)` on both y edges, deliberately
   — its own comment records the cross-backend divergence that produced the snap.
 
 `Canvas2DHicRenderer.ts` and §"Tiled cells" above are the two earlier findings

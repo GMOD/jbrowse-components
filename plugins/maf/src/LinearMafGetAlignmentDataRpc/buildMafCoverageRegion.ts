@@ -2,7 +2,7 @@ import {
   computeInterbaseCoverage,
   computeSNPCoverage,
   coverageSegmentBuffers,
-  packCoverageBinsCanvas2D,
+  packCoverageBinsForGpu,
   positionOrder,
 } from '@jbrowse/alignments-core'
 
@@ -82,9 +82,15 @@ export function buildMafCoverageRegion(
     mismatchBases,
     insertionPositions,
     insertionLengths,
-    coveragePackedBuffer: packCoverageBinsCanvas2D(
+    // The GPU layout (relDepth against the region's own peak), which is what
+    // render-core's shared depth-bar pass uploads. Per-bp — `binSize` 1 — since
+    // MAF's region is already bounded by `derivedRegionTooLarge` and never
+    // downsampled the way the pileup's bin cap does.
+    coveragePackedBuffer: packCoverageBinsForGpu(
       mafCov.depths,
+      mafCov.maxDepth,
       mafCov.startPos,
+      mafCov.depths.length,
     ),
     interbaseMaxCount: interbaseCoverage.maxCount,
     ...coverageSegmentBuffers(snpCoverage, interbaseCoverage),

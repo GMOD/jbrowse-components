@@ -31,7 +31,7 @@ import { observer } from 'mobx-react'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 /**
- * Shared absolutely-positioned band canvas for the MAF coverage / conservation /
+ * Shared absolutely-positioned band canvas for the MAF conservation and
  * row-identity bands. Runs `draw` inside an `autorun` so observable map
  * mutations (`rpcDataMap`/`renderBlocks`) redraw without `useEffect` deps —
  * `observable.map` keeps a stable outer reference. Hidden and not drawn when

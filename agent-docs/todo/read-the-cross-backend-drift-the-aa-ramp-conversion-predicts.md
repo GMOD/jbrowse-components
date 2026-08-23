@@ -53,7 +53,7 @@ unchanged.
 
 - `plugins/variants/.../shaders/variant.slang:184` — `smoothstep(-0.5, 0.5, d)`
   on the inversion triangle's SDF. Watched suite: `Variants Track`.
-- `plugins/alignments/src/shaders/slang/indicator.slang:59` —
+- `packages/render-core/src/shaders/coverageIndicator.slang:59` —
   `smoothstep(0.0, 1.0, min(dLeft, dRight))`, and the variable is called `aa`.
 - `plugins/canvas/.../passes/shaders/continuation.slang:235` —
   `1.0 - smoothstep(0.5, 1.5, edgePx)` off `fwidth`. **Read the comment above it

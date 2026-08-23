@@ -35,7 +35,7 @@ export function drawMafBlocks(
 ) {
   const {
     canvasWidth,
-    canvasHeight,
+    rowsHeight,
     rowHeight,
     rowProportion,
     scrollTop,
@@ -45,14 +45,14 @@ export function drawMafBlocks(
     binBp,
   } = state
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
-  // Rows scrolled off the canvas cost nothing: skipping them here is what keeps
+  // `rowsHeight`, not the canvas: the canvas also carries the coverage band
+  // above the rows, and this paints in the rows band's own space — its caller
+  // has translated to `rowsTop` and clipped there.
+  //
+  // Rows scrolled off the band cost nothing: skipping them here is what keeps
   // a pinned row height affordable on an alignment hundreds of species deep,
   // where the per-base walk below is the expensive part.
-  const { firstRow, endRow } = visibleRowRange(
-    rowHeight,
-    scrollTop,
-    canvasHeight,
-  )
+  const { firstRow, endRow } = visibleRowRange(rowHeight, scrollTop, rowsHeight)
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
   // One buffer for the whole paint, not one per block — see `ColumnMapper`.
   const columnMapper = new ColumnMapper()
@@ -61,7 +61,7 @@ export function drawMafBlocks(
     ctx,
     renderBlocks,
     canvasWidth,
-    canvasHeight,
+    rowsHeight,
     block => regions.get(block.displayedRegionIndex),
     (regionData, renderBlock, clip) => {
       const renderingContext = {

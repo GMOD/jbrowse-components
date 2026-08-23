@@ -1,5 +1,3 @@
-import { emptyCanvas2DCoverageBuffer } from '@jbrowse/alignments-core'
-
 import type {
   MafCoverageRegion,
   MafWireRegionData,
@@ -20,7 +18,7 @@ export function emptyMafCoverage(coverageStartPos = 0): MafCoverageRegion {
     mismatchBases: new Uint8Array(0),
     insertionPositions: new Uint32Array(0),
     insertionLengths: new Uint32Array(0),
-    coveragePackedBuffer: emptyCanvas2DCoverageBuffer(),
+    coveragePackedBuffer: new ArrayBuffer(0),
     snpPackedBuffer: new ArrayBuffer(0),
     interbasePackedBuffer: new ArrayBuffer(0),
     interbaseMaxCount: 0,

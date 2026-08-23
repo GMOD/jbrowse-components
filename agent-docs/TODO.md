@@ -41,7 +41,6 @@ the half that rots is the half it covers.
 | [A config slot for `bezierRadiusRatio`](todo/decide-whether-bezierradiusratio-becomes-a-config-slot.md) | circular view, config | decide whether the state-model property stays beside the slot |
 | [A fixed tick pool for the coordinate ruler](todo/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md) | LGV, perf | the key half landed; what is left is the count delta |
 | [Read the drift the AA ramp conversion predicts](todo/read-the-cross-backend-drift-the-aa-ramp-conversion-predicts.md) | shaders, GPU | all four converted; run the gate with the MSAA sample count held fixed |
-| [Convert MAF drawCoverageBins to GPU](todo/convert-maf-drawcoveragebins-to-gpu.md) | MAF, GPU | alignments' coverage band already has a GPU path; MAF's is a consumer swap onto it |
 | [Extra large text SVG mode](todo/extra-large-text-svg-mode-for-pub-ready-figures.md) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](todo/alignments--canvas.md) | alignments, canvas | seven independent small items |
 | [Group the methylation path's CIGAR walk](todo/group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is.md) | alignments, perf | decide whether the exported callback's order is a contract |

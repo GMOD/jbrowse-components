@@ -233,7 +233,7 @@ describe('drawSnpSegments', () => {
     insertion: '',
   }
 
-  // 5-float SNP record matching snpCoverage.slang layout.
+  // 5-float SNP record matching coverageSnp.slang layout.
   function makeSnpBuf(
     pos: number,
     yOffset: number,
@@ -367,7 +367,7 @@ describe('drawModCovSegments', () => {
   const effectiveH = 40
   const bottom = 45
 
-  // 5-float modCov record matching modCoverage.slang layout.
+  // 5-float modCov record matching coverageMod.slang layout.
   function makeModCovBuf(
     pos: number,
     yOffset: number,
@@ -585,7 +585,7 @@ describe('drawIndicators', () => {
   })
 
   // The mark is a 7px-wide triangle CENTERED on its bp, so one whose center sits
-  // just past an edge still shows several pixels inside it. indicator.slang does
+  // just past an edge still shows several pixels inside it. coverageIndicator.slang does
   // no x-cull at all — it emits the triangle and lets the scissor clip it — so
   // culling on the center alone dropped, in Canvas2D and therefore in the SVG
   // export, a sliver the GPU draws. Every block boundary in a multi-region view
@@ -663,7 +663,7 @@ describe('drawInterbaseSegments', () => {
   })
 
   // The mark is 1px wide and CENTERED on `bpToX(pos)`, so half of it still shows
-  // when the boundary itself is half a pixel outside. interbaseHistogram.slang
+  // when the boundary itself is half a pixel outside. coverageInterbase.slang
   // emits the quad and lets the scissor clip it, so culling the bp CELL
   // (bpToX(pos)..bpToX(pos + 1)) dropped a sliver the GPU draws — at every block
   // boundary of a multi-region view, not just the two ends of the canvas.

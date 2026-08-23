@@ -1,15 +1,51 @@
 import type { AlignmentContext, MafStatus } from '../types.ts'
+import type { MafCoverageColors } from './coverageBandColors.ts'
 import type { MafColorPalette } from './util.ts'
-import type { Canvas2DCoverageBuffer } from '@jbrowse/alignments-core'
+import type {
+  CoverageBandBuffers,
+  CoverageBandColors,
+} from '@jbrowse/render-core/coverageBand'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type MafRenderBlock = RenderBlock
 
+/**
+ * The coverage band, when it has both a reason and an axis to draw against.
+ * Absent means "draw no band": the setting is off, the summary tier owns the
+ * view, or the autoscaled domain has not resolved yet — and the last of those is
+ * why this is one nullable object rather than a height beside a nullable domain.
+ * Every mark in the band is a fraction of `domainMax`, so a band drawn without
+ * one is not a shorter band, it is bars of arbitrary height.
+ */
+export interface MafCoverageBandState {
+  height: number
+  domainMax: number
+  /** CSS strings, for the Canvas2D fallback and the SVG export. */
+  colors: MafCoverageColors
+  /**
+   * The same colours packed ABGR for the GPU passes. Carried rather than packed
+   * in the renderer because `cssColorToABGR` parses, and the renderer would
+   * run it nine times per block per frame — this is memoized off the palette.
+   */
+  gpuColors: CoverageBandColors
+}
+
 export interface MafGPURenderState {
   canvasWidth: number
-  /** the rows *viewport*: rows past it are scrolled to, not grown into */
+  /**
+   * The WHOLE canvas: the stacked bands above the rows plus the rows viewport.
+   * The band stack and the rows are scissored out of one canvas, the way the
+   * alignments display draws its coverage band and pileup — a display gets one
+   * rendering backend, so a second GPU band cannot mean a second canvas.
+   */
   canvasHeight: number
+  /** Where the rows viewport starts inside the canvas (= `rowsTopOffset`). */
+  rowsTop: number
+  /** The rows *viewport*: rows past it are scrolled to, not grown into. */
+  rowsHeight: number
+  /** Absent when the band is not drawn — see `MafCoverageBandState`. */
+  coverage: MafCoverageBandState | undefined
   rowHeight: number
   rowProportion: number
   /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
@@ -195,10 +231,15 @@ export interface MafBlock {
 // `[coverageStartPos + i, coverageStartPos + i + 1)` as an absolute genomic
 // uint32; `coverageMaxDepth` is the per-region max used to scale the SNP bar
 // height. The packed buffers are produced in the worker via the alignments-core
-// packers and consumed by alignments-core `drawCoverageBins` / `drawSnpSegments`
-// on the main thread — no per-region re-pack on theme/zoom changes. The MAF
-// coverage band is Canvas2D-only, so `coveragePackedBuffer` carries the Canvas2D
-// layout brand (raw depth), not the GPU `relDepth` layout.
+// packers and uploaded verbatim to render-core's shared coverage-band passes —
+// no per-region re-pack on theme/zoom changes.
+//
+// All four are the GPU layouts, including `coveragePackedBuffer`: the band draws
+// on the GPU now, and the Canvas2D fallback + SVG export build their own
+// raw-depth buffer from `coverageDepths` at draw time (the same split the
+// alignments display makes, minus its per-region memo — MAF's fallback also
+// walks every cell of every visible block, next to which one linear pass over
+// the depths is noise).
 //
 // `mismatchPositions` / `mismatchBases` mirror the alignments worker's
 // MismatchArrays shape so alignments-core's `buildCoverageTooltipBin` /
@@ -221,7 +262,7 @@ export interface MafCoverageRegion {
   mismatchBases: Uint8Array
   insertionPositions: Uint32Array
   insertionLengths: Uint32Array
-  coveragePackedBuffer: Canvas2DCoverageBuffer
+  coveragePackedBuffer: ArrayBuffer
   snpPackedBuffer: ArrayBuffer
   interbasePackedBuffer: ArrayBuffer
   interbaseMaxCount: number
@@ -253,9 +294,11 @@ export interface MafGpuProps {
 }
 
 // Payload the per-region autorun ships to the backend each time `gpuProps`
-// or the underlying `regionData` changes. Pre-encoded on the main thread
-// because encoding depends on theme + user toggles (`MafGpuProps`).
-export interface MafUploadPayload {
+// or the underlying `regionData` changes. The rows half is pre-encoded on the
+// main thread because encoding depends on theme + user toggles (`MafGpuProps`);
+// the coverage half is the worker's own packed buffers, carried through by
+// reference so render-core's shared band passes can upload them verbatim.
+export interface MafUploadPayload extends CoverageBandBuffers {
   // A typed array rather than a bare ArrayBuffer, so both HAL backends upload
   // exactly the encoded byte range. `InstanceWriter.finish` right-sizes it with
   // a copy rather than handing back a subarray of its over-allocation — the

@@ -1,16 +1,9 @@
-import { slangPass } from '@jbrowse/render-core/slangPass'
+import { COVERAGE_MOD_PASS } from '@jbrowse/render-core/coverageBand'
 
-import * as modCoverageShader from '../../shaders/slang/modCoverage.generated.ts'
-
-import type { ModCoverageUploadData } from '../../shared/uploadTypes.ts'
-
-export const MOD_COVERAGE_PASS = {
-  ...slangPass({
-    id: 'modCov',
-    mod: modCoverageShader,
-  }),
-  pack: (data: Pick<ModCoverageUploadData, 'modCovPackedBuffer'>) =>
-    data.modCovPackedBuffer,
-}
+// The one coverage-band pass with a single producer: a MAF alignment carries no
+// modification calls, so MAF's band draws the other four. The shader still lives
+// in render-core beside them, because it stacks in the same bars off the same
+// band geometry. See features/coverage/packGpu.ts.
+export const MOD_COVERAGE_PASS = COVERAGE_MOD_PASS
 
 export { packModCovSegmentsForGpu } from '@jbrowse/alignments-core'

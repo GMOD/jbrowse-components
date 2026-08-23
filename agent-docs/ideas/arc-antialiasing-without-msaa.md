@@ -141,8 +141,8 @@ deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
 - `wiggleLine.slang` — the step-line's quads. Also now a refusal: a feature draws
   three square-capped quads that deliberately overlap at the joints, so
   per-fragment coverage would double-blend a lattice of darker joints.
-- `read.slang`, `coverage.slang`, `snpCoverage.slang`, `mismatch.slang`,
-  `gap.slang`, `insertion.slang`, `interbaseHistogram.slang`, `modCoverage.slang`
+- `read.slang`, `coverageBar.slang`, `coverageSnp.slang`, `mismatch.slang`,
+  `gap.slang`, `insertion.slang`, `coverageInterbase.slang`, `coverageMod.slang`
   — flat fills with **no** pixel snap. Read ends are pointed, so those quads
   have diagonal silhouettes.
 - `arrow.slang` — the strand arrowhead is a 5x7 CSS px triangle, flat-filled.
@@ -544,10 +544,10 @@ tree:
   - **Density, and the whole alignments coverage family, cannot take it.**
     Density's quad spans the row, so its cuts are row boundaries that tile, and
     its datum is the colour rather than the edge. In the coverage band every mark
-    shares a horizontal edge with another: `snpCoverage`/`modCoverage` segments
+    shares a horizontal edge with another: `coverageSnp`/`coverageMod` segments
     stack (`yOffset` accumulates, so each segment's top IS its neighbour's
-    bottom), the topmost segment's top coincides with `coverage.slang`'s depth
-    bar top at any fully-mismatched position, and `interbaseHistogram` already
+    bottom), the topmost segment's top coincides with `coverageBar.slang`'s depth
+    bar top at any fully-mismatched position, and `coverageInterbase` already
     snaps both y edges to whole pixels on purpose. That is the same refusal §5
     makes for hi-C, arrived at from a third direction, and it means **turning
     MSAA off costs the coverage band its edges no matter what a shader does** —

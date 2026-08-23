@@ -4,6 +4,7 @@ import {
   readSnpSegments,
 } from '@jbrowse/alignments-core'
 import { MockHal } from '@jbrowse/render-core/hal'
+import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageSnp'
 
 import {
   ALIGNMENTS_PASSES,
@@ -14,7 +15,6 @@ import {
   makeTestRenderState,
 } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { UNIFORM_OFFSET_F32 } from '../../shaders/slang/snpCoverage.iface.generated.ts'
 
 import type { AlignmentsSources } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -26,7 +26,7 @@ import type { AlignmentsSources } from '../../LinearAlignmentsDisplay/renderers/
  *
  * The rule is per SEGMENT and tests `segHeight`, which IS that allele's share
  * of the position's depth, so the setting needs no conversion. Both backends
- * have to run it: snpCoverage.slang folds the vertex, `drawSnpSegments` skips
+ * have to run it: coverageSnp.slang folds the vertex, `drawSnpSegments` skips
  * the fill, and a backend that forgot would differ only in the noise floor of a
  * deep pileup — the hardest kind of divergence to notice.
  */
@@ -132,9 +132,29 @@ test('the GPU carries the floor as its own uniform', () => {
     makeTestRenderState({
       colors: makeTestPalette(),
       coverageSnpMinFrequency: 0.05,
+      // The band has to actually draw for its uniforms to be written at all:
+      // they go into their own buffer, staged immediately before the coverage
+      // passes and only when the band has a clip band to draw into.
+      showCoverage: true,
+      coverageHeight: 50,
+      coverageMaxDepth: 100,
+      sections: [
+        {
+          pileupTopOffset: 50,
+          coverageTopOffset: 0,
+          covClipTop: 0,
+          covClipHeight: 50,
+          pileupClipTop: 50,
+          pileupClipHeight: 50,
+        },
+      ],
     }),
   )
-  expect(hal.getLastUniformsF32()![UNIFORM_OFFSET_F32.snpMinFreq]).toBeCloseTo(
+  // Off the SNP pass's OWN draw, not the frame's last write: the coverage band
+  // draws against render-core's `CoverageBandUniforms` and the pileup's write
+  // lands after it, so `getLastUniformsF32` is a different struct entirely.
+  const snpDraw = hal.draws().find(d => d.passId === 'snpCov')!
+  expect(hal.uniformsOf(snpDraw)![UNIFORM_OFFSET_F32.snpMinFreq]).toBeCloseTo(
     0.05,
   )
 })

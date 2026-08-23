@@ -76,37 +76,6 @@ export function linkedReadColorSlot(idx: number): number {
   return _min(idx, 7)
 }
 
-export function normalizeDepthScalar(rawDepth: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
-  if ((scaleType == 2)) {
-    let tMin = ((((Math.sign(domainMin)) | 0)) * Math.log((1.0 + Math.abs((domainMin / symlogConstant)))))
-    let t = ((((Math.sign(rawDepth)) | 0)) * Math.log((1.0 + Math.abs((rawDepth / symlogConstant)))))
-    let tRange = (((((Math.sign(domainMax)) | 0)) * Math.log((1.0 + Math.abs((domainMax / symlogConstant))))) - tMin)
-    if ((tRange <= 0.0)) {
-      return 0.0
-    }
-    return _clamp(((t - tMin) / tRange), 0.0, 1.0)
-  }
-  if ((scaleType == 1)) {
-    let floorV: number
-    if ((domainMin > 0.0)) {
-      floorV = domainMin
-    } else {
-      floorV = 1.0
-    }
-    let logMin = Math.log2(floorV)
-    let logRange = (Math.log2(_max(domainMax, floorV)) - logMin)
-    if ((logRange <= 0.0)) {
-      return 0.0
-    }
-    return _clamp(((Math.log2(_max(rawDepth, floorV)) - logMin) / logRange), 0.0, 1.0)
-  }
-  let range = (domainMax - domainMin)
-  if ((range <= 0.0)) {
-    return 0.0
-  }
-  return _clamp(((rawDepth - domainMin) / range), 0.0, 1.0)
-}
-
 export function distToWideCirclePx(x: number, y: number, r: number): number {
   let rk = ((2.0 * x) + (((x * x) + (y * y)) / r))
   return Math.abs((rk / (Math.sqrt(_max((1.0 + (rk / r)), 0.0)) + 1.0)))
