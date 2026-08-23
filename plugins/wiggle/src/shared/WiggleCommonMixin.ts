@@ -10,7 +10,7 @@ import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   autoscaleDomainFromStats,
   computeScoreStats,
-  getNiceDomain,
+  visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 
@@ -28,7 +28,6 @@ import type {
   ConfigModelForFields,
   ResolvableDisplay,
 } from '@jbrowse/core/configuration'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
@@ -61,39 +60,6 @@ type WiggleCommonConfigModel = ConfigModelForFields<
 export type WiggleCommonHost = ResolvableDisplay<WiggleCommonConfigModel>
 
 const confNode = (self: object) => self as WiggleCommonHost
-
-// The visible per-source feature arrays that feed autoscale, clipped to the
-// coarse (500ms debounced) blocks so the domain doesn't recompute on every
-// animation frame during zoom. `undefined` until the view + data are ready.
-// A free function rather than a getter to keep the mixin's `.views` layering
-// shallow enough for MST's compose type inference.
-//
-// `settledDynamicBlocks`, not `coarseDynamicBlocks`: empty coarse blocks yield
-// no entries, and no entries is not a stale domain but the fallback one. See
-// that getter.
-function visibleEntries(
-  self: IStateTreeNode & {
-    rpcDataMap: ReadonlyMap<number, WiggleDataResult>
-    autoscaleSourceNames: Set<string> | undefined
-  },
-) {
-  const view = getContainingView(self) as LinearGenomeViewModel
-  if (!view.initialized || self.rpcDataMap.size === 0) {
-    return undefined
-  }
-  const names = self.autoscaleSourceNames
-  return view.settledDynamicBlocks.flatMap(block => {
-    const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
-    if (!regionData) {
-      return []
-    }
-    const visStart = Math.floor(block.start)
-    const visEnd = Math.ceil(block.end)
-    return regionData.sources
-      .filter(source => !names || names.has(source.name))
-      .map(source => ({ visStart, visEnd, data: source }))
-  })
-}
 
 /**
  * #stateModel WiggleCommonMixin
@@ -253,23 +219,7 @@ export function WiggleCommonMixin() {
         return undefined
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The visible feature arrays plus their min/max/mean/stddev, walked once
-       * per domain recompute rather than once per autoscale input.
-       */
-      get visibleScoreStats() {
-        const entries = visibleEntries(self)
-        return entries
-          ? {
-              entries,
-              stats: computeScoreStats(self.effectiveSummaryScoreMode, entries),
-            }
-          : undefined
-      },
-    }))
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
        * Scores the axis must reach whatever the data does, so a rule drawn at
@@ -280,34 +230,38 @@ export function WiggleCommonMixin() {
       get scoreRuleValues(): number[] {
         return []
       },
-      /**
-       * #getter
-       */
-      get visibleScoreRange() {
-        const visible = self.visibleScoreStats
-        return visible?.stats
-          ? autoscaleDomainFromStats({
-              stats: visible.stats,
-              autoscaleType: self.autoscaleType,
-              summaryScoreMode: self.effectiveSummaryScoreMode,
-              numStdDev: self.numStdDev,
-              numQuantile: self.numQuantile,
-              visibleEntries: visible.entries,
-            })
-          : undefined
-      },
     }))
     .views(self => ({
       /**
        * #getter
+       * The autoscaled domain over the sources visible in the settled blocks.
+       * `undefined` until the view and the data are ready, which is not the
+       * `[0, 1]` a caller falls back to — see `visibleStatsDomain`.
        */
       get domain() {
-        const range = self.visibleScoreRange
-        if (!range) {
-          return undefined
-        }
-        return getNiceDomain({
-          domain: widenRangeToRules(range, self.scoreRuleValues),
+        const names = self.autoscaleSourceNames
+        return visibleStatsDomain({
+          active: true,
+          view: getContainingView(self) as LinearGenomeViewModel,
+          payloadFor: index => self.rpcDataMap.get(index),
+          itemsFor: regionData =>
+            regionData.sources.filter(
+              source => names === undefined || names.has(source.name),
+            ),
+          accumulate: entries =>
+            computeScoreStats(self.effectiveSummaryScoreMode, entries),
+          range: (stats, entries) =>
+            widenRangeToRules(
+              autoscaleDomainFromStats({
+                stats,
+                autoscaleType: self.autoscaleType,
+                summaryScoreMode: self.effectiveSummaryScoreMode,
+                numStdDev: self.numStdDev,
+                numQuantile: self.numQuantile,
+                visibleEntries: entries,
+              }),
+              self.scoreRuleValues,
+            ),
           bounds: [self.minScoreBound, self.maxScoreBound],
           scaleType: self.scaleType,
         })

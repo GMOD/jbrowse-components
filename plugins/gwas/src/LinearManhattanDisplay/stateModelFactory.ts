@@ -27,13 +27,13 @@ import {
   SCALE_TYPE_LINEAR,
   axisPlotBox,
   computeYTicks,
-  getNiceDomain,
   makeCrossHatchItem,
   makeScatterPointSizeMenuItem,
   makeScoreNormalizer,
   makeScoreSubMenu,
   resolveRenderState,
   scoreRuleMarks,
+  visibleStatsDomain,
 } from '@jbrowse/wiggle-core'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -58,6 +58,23 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { VisibleEntry } from '@jbrowse/wiggle-core'
+
+// The Manhattan walker: the worker ships each region's score extremes already
+// reduced, so the domain is their min/max rather than a scan of the scores.
+function shippedExtremes(entries: VisibleEntry<ManhattanRpcResult>[]) {
+  let scoreMin = Infinity
+  let scoreMax = -Infinity
+  for (const { data } of entries) {
+    if (data.scoreMin < scoreMin) {
+      scoreMin = data.scoreMin
+    }
+    if (data.scoreMax > scoreMax) {
+      scoreMax = data.scoreMax
+    }
+  }
+  return Number.isFinite(scoreMin) ? { scoreMin, scoreMax } : undefined
+}
 
 const SetSignificanceLineDialog = lazy(
   () => import('./components/SetSignificanceLineDialog.tsx'),
@@ -230,28 +247,20 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * nice-rounded [min, max] -log10 p domain across loaded regions, or
-         * undefined before any data loads
+         * nice-rounded [min, max] -log10 p domain across the visible regions,
+         * or undefined before any data loads. The only walker of the four that
+         * reads shipped per-region extremes rather than scanning scores: the
+         * worker already reduced them, so a block contributes its whole
+         * region's extremes rather than the part it shows.
          */
-        get domain(): [number, number] | undefined {
-          let scoreMin = Infinity
-          let scoreMax = -Infinity
-          for (const d of self.rpcDataMap.values()) {
-            if (d.numFeatures === 0) {
-              continue
-            }
-            if (d.scoreMin < scoreMin) {
-              scoreMin = d.scoreMin
-            }
-            if (d.scoreMax > scoreMax) {
-              scoreMax = d.scoreMax
-            }
-          }
-          if (!Number.isFinite(scoreMin)) {
-            return undefined
-          }
-          return getNiceDomain({
-            domain: [scoreMin, scoreMax],
+        get domain() {
+          return visibleStatsDomain({
+            active: true,
+            view: self.lgv,
+            payloadFor: index => self.rpcDataMap.get(index),
+            itemsFor: data => (data.numFeatures === 0 ? [] : [data]),
+            accumulate: shippedExtremes,
+            range: ({ scoreMin, scoreMax }) => [scoreMin, scoreMax],
             bounds: [self.minScoreBound, self.maxScoreBound],
             scaleType: 'linear',
           })

@@ -30,6 +30,13 @@ export { computeYTicks } from './computeYTicks.ts'
 
 export { resolveRenderState } from './resolveRenderState.ts'
 
+export { visibleStatsDomain } from './visibleStatsDomain.ts'
+export type {
+  SettledBlocksView,
+  VisibleEntry,
+  VisibleStatsDomainSpec,
+} from './visibleStatsDomain.ts'
+
 export {
   AXIS_GUTTER_WIDTH_PX,
   axisPlotBox,

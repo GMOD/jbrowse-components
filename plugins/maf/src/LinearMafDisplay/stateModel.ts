@@ -33,7 +33,7 @@ import {
   setupRunClusteringAutorun,
   setupTreeDrawingAutorun,
 } from '@jbrowse/tree-sidebar'
-import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
+import { visibleStatsDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
@@ -1306,39 +1306,24 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Per-position depth stats across the currently visible content blocks,
-         * derived from the worker-shipped `coverage.coverageDepths` arrays (which
-         * already reflect the active subtree — see `rpcProps`). Feeds
-         * `coverageDomain` → `coverageTicks`.
-         */
-        get coverageStats() {
-          if (!self.coverageBandActive) {
-            return undefined
-          }
-          const view = self.lgv
-          if (!view.initialized) {
-            return undefined
-          }
-          return computeVisibleCoverageStats(
-            view.settledDynamicBlocks,
-            b => self.rpcDataMap.get(b.displayedRegionIndex!)?.coverage,
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * [min, max] coverage domain for the visible blocks. Linear scale only
-         * for MAF — sample counts are already bounded and well-distributed.
+         * [min, max] coverage domain over the currently visible content blocks,
+         * derived from the worker-shipped `coverage.coverageDepths` arrays
+         * (which already reflect the active subtree — see `rpcProps`). Linear
+         * and unbounded: sample counts are already bounded and
+         * well-distributed, so this display composes no score axis to
+         * configure. Feeds `coverageTicks`.
          */
         get coverageDomain() {
-          return self.coverageStats
-            ? getNiceDomain({
-                domain: domainFromStats(self.coverageStats, 'global', 3),
-                bounds: [undefined, undefined],
-                scaleType: 'linear',
-              })
-            : undefined
+          return visibleStatsDomain({
+            active: self.coverageBandActive,
+            view: self.lgv,
+            payloadFor: index => self.rpcDataMap.get(index)?.coverage,
+            itemsFor: coverage => [coverage],
+            accumulate: entries => computeVisibleCoverageStats(entries),
+            range: ({ scoreMin, scoreMax }) => [scoreMin, scoreMax],
+            bounds: [undefined, undefined],
+            scaleType: 'linear',
+          })
         },
       }))
       .views(self => ({

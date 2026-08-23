@@ -15,7 +15,11 @@ import { coverageLayout } from './coverageBandBox.ts'
 import { forEachAtPosition, lowerBound } from './positionIndex.ts'
 import { snpLaneOf } from './snpCoverage.ts'
 
-import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
+import type {
+  ScoreStats,
+  VisibleEntry,
+  YScaleTicks,
+} from '@jbrowse/wiggle-core'
 
 function niceStep(maxDepth: number) {
   const rough = maxDepth / 3
@@ -338,11 +342,8 @@ function accumulateBlockStats(
   }
 }
 
-export function computeVisibleCoverageStats<
-  B extends { start: number; end: number },
->(
-  visibleBlocks: B[],
-  getCoverageForBlock: (block: B) => CoverageRegion | undefined,
+export function computeVisibleCoverageStats(
+  entries: VisibleEntry<CoverageRegion>[],
 ): ScoreStats | undefined {
   const acc: StatsAcc = {
     min: Infinity,
@@ -351,11 +352,8 @@ export function computeVisibleCoverageStats<
     sumSq: 0,
     count: 0,
   }
-  for (const block of visibleBlocks) {
-    const cov = getCoverageForBlock(block)
-    if (cov) {
-      accumulateBlockStats(acc, cov, block.start, block.end)
-    }
+  for (const { visStart, visEnd, data } of entries) {
+    accumulateBlockStats(acc, data, visStart, visEnd)
   }
   if (acc.count === 0 || !Number.isFinite(acc.max)) {
     return undefined

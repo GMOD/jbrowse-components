@@ -41,9 +41,9 @@ import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   ScoreScaleMixin,
   domainFromStats,
-  getNiceDomain,
   resolveSymlogConstant,
   scaleTypeFromString,
+  visibleStatsDomain,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, observable, reaction } from 'mobx'
@@ -980,63 +980,29 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         */
-        get coverageStats() {
-          if (!self.showCoverage) {
-            return undefined
-          }
-          const view = self.lgv
-          if (!view.initialized) {
-            return undefined
-          }
-          // settledDynamicBlocks (the 500ms-debounced coarse ones, or the live
-          // ones before the view has settled once) instead of dynamicBlocks, so
-          // the per-bp depth scan doesn't recompute on every animation frame
-          // during pan/zoom — same approach, and the same getter, as wiggle's
-          // visibleScoreRange.
-          //
-          // The domain spans every SHOWN group (expand each block into one entry
-          // per group's coverage): a shared scale is what makes stacked sections
-          // visually comparable. Ungrouped is the one-group case. Hidden lanes
-          // are excluded — sizing the visible lanes' axis against a lane the
-          // user hid is exactly the comparability this scale exists to give.
-          const hidden = self.hiddenGroupKeys
-          const covBlocks: {
-            start: number
-            end: number
-            cov: WorkerPileupData
-          }[] = []
-          for (const b of view.settledDynamicBlocks) {
-            const grouped =
-              b.displayedRegionIndex === undefined
-                ? undefined
-                : self.rpcDataMap.get(b.displayedRegionIndex)
-            if (grouped) {
-              for (const { key, data } of grouped.groups) {
-                if (!hidden.has(key)) {
-                  covBlocks.push({ start: b.start, end: b.end, cov: data })
-                }
-              }
-            }
-          }
-          return computeVisibleCoverageStats(covBlocks, cb => cb.cov)
-        },
-
-        /**
-         * #getter
+         * The autoscaled depth domain, spanning every SHOWN group (each block
+         * contributes one entry per group's coverage): a shared scale is what
+         * makes stacked sections visually comparable, and ungrouped is the
+         * one-group case. Hidden lanes are excluded — sizing the visible lanes'
+         * axis against a lane the user hid is exactly the comparability this
+         * scale exists to give.
          */
         get coverageDomain() {
-          return this.coverageStats
-            ? getNiceDomain({
-                domain: domainFromStats(
-                  this.coverageStats,
-                  self.autoscaleType,
-                  self.numStdDev,
-                ),
-                bounds: [self.minScoreBound, self.maxScoreBound],
-                scaleType: self.scaleType,
-              })
-            : undefined
+          const hidden = self.hiddenGroupKeys
+          return visibleStatsDomain({
+            active: self.showCoverage,
+            view: self.lgv,
+            payloadFor: index => self.rpcDataMap.get(index),
+            itemsFor: grouped =>
+              grouped.groups
+                .filter(({ key }) => !hidden.has(key))
+                .map(({ data }) => data),
+            accumulate: entries => computeVisibleCoverageStats(entries),
+            range: stats =>
+              domainFromStats(stats, self.autoscaleType, self.numStdDev),
+            bounds: [self.minScoreBound, self.maxScoreBound],
+            scaleType: self.scaleType,
+          })
         },
 
         /**

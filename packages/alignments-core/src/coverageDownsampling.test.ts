@@ -254,10 +254,9 @@ describe('computeVisibleCoverageStats', () => {
 
   test('per-bp path: min/max/mean over the visible clip', () => {
     const cov = perBpRegion([2, 8, 4, 10, 6], 100)
-    const stats = computeVisibleCoverageStats(
-      [{ start: 100, end: 105 }],
-      () => cov,
-    )
+    const stats = computeVisibleCoverageStats([
+      { visStart: 100, visEnd: 105, data: cov },
+    ])
     expect(stats!.scoreMin).toBe(2)
     expect(stats!.scoreMax).toBe(10)
     expect(stats!.scoreMean).toBeCloseTo(6)
@@ -266,17 +265,16 @@ describe('computeVisibleCoverageStats', () => {
   test('per-bp path clips to the visible block range', () => {
     // depth 100 sits at genomic 102, outside the [103,105) visible window
     const cov = perBpRegion([1, 1, 100, 2, 3], 100)
-    const stats = computeVisibleCoverageStats(
-      [{ start: 103, end: 105 }],
-      () => cov,
-    )
+    const stats = computeVisibleCoverageStats([
+      { visStart: 103, visEnd: 105, data: cov },
+    ])
     expect(stats!.scoreMax).toBe(3) // the spike is clipped out
   })
 
   test('returns undefined when nothing is covered', () => {
     const cov = perBpRegion([], 100)
     expect(
-      computeVisibleCoverageStats([{ start: 100, end: 105 }], () => cov),
+      computeVisibleCoverageStats([{ visStart: 100, visEnd: 105, data: cov }]),
     ).toBeUndefined()
   })
 
@@ -295,9 +293,9 @@ describe('computeVisibleCoverageStats', () => {
       coverageStatsSums: bins.sums,
       coverageStatsSumSqs: bins.sumSqs,
     }
-    const block = { start: 1000, end: 2000 }
-    const viaScan = computeVisibleCoverageStats([block], () => perBp)!
-    const viaBins = computeVisibleCoverageStats([block], () => binned)!
+    const block = { visStart: 1000, visEnd: 2000 }
+    const viaScan = computeVisibleCoverageStats([{ ...block, data: perBp }])!
+    const viaBins = computeVisibleCoverageStats([{ ...block, data: binned }])!
     // Whole block covered → bin-granular clipping introduces no edge error, so
     // the aggregate is exact.
     expect(viaBins.scoreMin).toBe(viaScan.scoreMin)
@@ -309,13 +307,10 @@ describe('computeVisibleCoverageStats', () => {
   test('combines stats across multiple blocks/groups', () => {
     const covA = perBpRegion([5, 5, 5], 100)
     const covB = perBpRegion([1, 9], 200)
-    const stats = computeVisibleCoverageStats(
-      [
-        { start: 100, end: 103, cov: covA },
-        { start: 200, end: 202, cov: covB },
-      ],
-      b => b.cov,
-    )
+    const stats = computeVisibleCoverageStats([
+      { visStart: 100, visEnd: 103, data: covA },
+      { visStart: 200, visEnd: 202, data: covB },
+    ])
     expect(stats!.scoreMin).toBe(1)
     expect(stats!.scoreMax).toBe(9)
     expect(stats!.scoreMean).toBeCloseTo((5 + 5 + 5 + 1 + 9) / 5)
