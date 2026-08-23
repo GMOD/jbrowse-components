@@ -357,7 +357,7 @@ jexl.
 }
 ```
 
-<Figure caption="The same RepeatMasker track and window as above, partitioned on repClass instead of colored by it. SINE fills the window, LINE comes in clusters, and the sparse classes are visible as classes rather than as stray blocks. The LTR? and Unknown lanes are values in the file that the lookup table does not name, which is the same list the awk above prints." src="/img/cookbook_color_by_type_rows.png"/>
+<Figure caption="The same RepeatMasker track and window as above, now partitioned on repClass. SINE fills the window, LINE comes in clusters, and each sparse class gets a lane of its own. The LTR? and Unknown lanes are values in the file that the lookup table does not name, the same list the awk above prints." src="/img/cookbook_color_by_type_rows.png"/>
 
 ## Labels, tooltips & details {#labels-tooltips-details}
 

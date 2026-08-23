@@ -291,7 +291,7 @@ Point an LD track at a single population panel: r² is a correlation across the
 samples in the file, so a pooled multi-population callset averages the block
 away.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), over the haplotypes it summarises. Red means a pair of SNPs is almost always inherited together, so the block over the highlighted gene is one long haplotype, with LD decaying into the paler flanks; the matrix below is one row per chromosome, and the pale slab is what the clustering gathers: every rs4988235-A carrier, alongside a few dozen chromosomes sharing the same background."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle of pairwise r² at the human lactase locus (LCT/MCM6), over the haplotype matrix it summarises. Red is a pair of SNPs almost always inherited together, and the block over the highlighted gene is one long haplotype."/>
 
 **Computed from a VCF.** Add an `LDDisplay` to a normal `VariantTrack`. No extra
 files are needed, and because the raw genotypes are present, the filtering
