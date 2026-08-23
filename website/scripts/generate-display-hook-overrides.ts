@@ -116,6 +116,13 @@ const HOOKS: Hook[] = [
       'false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled`',
   },
   {
+    name: 'awaitingPrerequisite',
+    owner:
+      'plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts',
+    ifNotOverridden:
+      'every decline is judged on the spot by the dev-only retry check, which is right for a display whose fetch answers off its own state — a two-stage one (HiC waits on `CoreGetInfo`, variants on `sourcesBase`) is reported as a dead Retry it does not have, since the run that will fetch is the one after the prerequisite lands. Overriding it DEFERS that verdict, never waives it, so the override has to be strictly narrower than the gate it explains',
+  },
+  {
     name: 'rendersCanvas',
     owner: 'packages/render-core/src/RenderLifecycleMixin.ts',
     ifNotOverridden:
