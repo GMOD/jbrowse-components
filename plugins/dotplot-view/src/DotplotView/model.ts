@@ -638,6 +638,16 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * The URL the assembly load is currently fetching, when the phase named
+         * one. Only the stalled-load notice reads it — see `ViewLoadingScreen`.
+         */
+        get loadingSource() {
+          return this.showLoading
+            ? this.loadingAssembly?.statusSource
+            : undefined
+        },
+        /**
+         * #getter
          * Plot area width. Floored at 0: the axis borders have their own
          * MIN_BORDER floor, so a container narrower than that would otherwise
          * yield a negative canvas dimension and a negative maxBpPerPx.

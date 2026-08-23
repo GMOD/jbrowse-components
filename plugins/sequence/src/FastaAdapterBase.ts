@@ -1,5 +1,5 @@
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { updateStatus } from '@jbrowse/core/util'
+import { downloadPhase, updateStatus } from '@jbrowse/core/util'
 
 import { readOptionalMetadata, refSizesToRegions } from './chromSizesUtils.ts'
 import { sequenceFeatures } from './sequenceFeatures.ts'
@@ -34,12 +34,21 @@ export abstract class FastaAdapterBase<
     return this.setupP
   }
 
+  // @gmod/indexedfasta does its own reads, so the phase can't be handed the URL
+  // by the fetch: it comes off the config the filehandle was opened from. Path
+  // form because CONF is unresolved here — see getHeader below; both schemas
+  // declare the slot
+  private sizesPhase() {
+    return downloadPhase(
+      'Downloading chromosome sizes',
+      this.getConf(['faiLocation']),
+    )
+  }
+
   public async getRefNames(opts?: BaseOptions) {
     const { fasta } = await this.setup()
-    return updateStatus(
-      'Downloading chromosome sizes',
-      opts?.statusCallback,
-      () => fasta.getSequenceNames(),
+    return updateStatus(this.sizesPhase(), opts?.statusCallback, () =>
+      fasta.getSequenceNames(),
     )
   }
 
@@ -49,10 +58,8 @@ export abstract class FastaAdapterBase<
     // assembly load spends here is that download. It exposes no byte callback,
     // so this is an indeterminate phase label rather than a bar
     return refSizesToRegions(
-      await updateStatus(
-        'Downloading chromosome sizes',
-        opts?.statusCallback,
-        () => fasta.getSequenceSizes(),
+      await updateStatus(this.sizesPhase(), opts?.statusCallback, () =>
+        fasta.getSequenceSizes(),
       ),
     )
   }

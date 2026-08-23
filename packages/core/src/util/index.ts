@@ -128,6 +128,7 @@ export {
   type ProgressReporter,
   type RpcStatus,
   type StatusCallback,
+  type StatusPhase,
   type StatusStream,
   type StatusWindow,
   type StatusWithProgress,
@@ -140,6 +141,7 @@ export {
   statusMessageText,
   statusProgressLabel,
   statusReading,
+  statusSource,
   throttleStatusEmits,
   updateStatus,
   withProgress,
@@ -269,6 +271,7 @@ export {
   reorderWithin,
 } from './reorder.ts'
 export { getStr } from './getStr.ts'
+export { downloadPhase, getLocationUri, resolveUri } from './getLocationUri.ts'
 export { measureGridWidth, resolveSelectedIds } from './dataGridUtils.ts'
 export { isRpcResult } from './rpc.ts'
 export {

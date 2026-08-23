@@ -114,6 +114,7 @@ const CircularView = observer(function CircularView({
       <ViewLoadingScreen
         message={loadingMessage}
         fraction={model.loadingProgress}
+        source={model.loadingSource}
       />
     )
   } else if (showImportForm) {

@@ -1,6 +1,10 @@
 import { TwoBitFile } from '@gmod/twobit'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
+import {
+  downloadPhase,
+  fetchAndMaybeUnzipText,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import {
@@ -20,6 +24,15 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
     chromSizesData: Record<string, number> | undefined
   }>
 
+  // @gmod/twobit does its own reads, so the phase can't be handed the URL by
+  // the fetch: it comes off the config the filehandle was opened from
+  private sizesPhase() {
+    return downloadPhase(
+      'Downloading chromosome sizes',
+      this.getConf('twoBitLocation'),
+    )
+  }
+
   private async initChromSizes(opts?: BaseOptions) {
     const conf = this.getConf('chromSizesLocation')
     if (!isPlaceholderLocation(conf, '/path/to/default.chrom.sizes')) {
@@ -29,7 +42,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
         await fetchAndMaybeUnzipText(
           openLocation(conf, this.pluginManager),
           opts,
-          'Downloading chromosome sizes',
+          downloadPhase('Downloading chromosome sizes', conf),
         ),
       )
     }
@@ -59,7 +72,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
     const { chromSizesData, twobit } = await this.setup(opts)
     return chromSizesData
       ? Object.keys(chromSizesData)
-      : updateStatus('Downloading chromosome sizes', opts?.statusCallback, () =>
+      : updateStatus(this.sizesPhase(), opts?.statusCallback, () =>
           twobit.getSequenceNames(),
         )
   }
@@ -70,10 +83,8 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
     // per-sequence records, which is the wait an assembly load sits in here
     return refSizesToRegions(
       chromSizesData ??
-        (await updateStatus(
-          'Downloading chromosome sizes',
-          opts?.statusCallback,
-          () => twobit.getSequenceSizes(),
+        (await updateStatus(this.sizesPhase(), opts?.statusCallback, () =>
+          twobit.getSequenceSizes(),
         )),
     )
   }

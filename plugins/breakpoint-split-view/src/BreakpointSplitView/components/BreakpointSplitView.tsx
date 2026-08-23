@@ -93,7 +93,11 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   // exactly what showImportForm negates), so the order is legibility, not logic.
   if (showLoading) {
     return (
-      <ViewLoadingScreen message={loadingMessage} fraction={loadingProgress} />
+      <ViewLoadingScreen
+        message={loadingMessage}
+        fraction={loadingProgress}
+        source={model.loadingSource}
+      />
     )
   } else if (showImportForm) {
     return <BreakpointSplitViewImportForm model={model} />

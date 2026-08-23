@@ -1,3 +1,5 @@
+import { statusMessageText, statusSource } from '@jbrowse/core/util'
+
 import Adapter from './ChromSizesAdapter.ts'
 import configSchema from './configSchema.ts'
 
@@ -40,7 +42,9 @@ test('names what it is downloading on the status channel', async () => {
     },
   })
   // what an assembly load's spinner shows instead of a bare "Loading", then the
-  // '' every phase helper clears with
-  expect(statuses[0]).toBe('Downloading chromosome sizes')
+  // '' every phase helper clears with. The phase names the file as well as the
+  // work, which is what a load that then stops reporting has to show
+  expect(statusMessageText(statuses[0])).toBe('Downloading chromosome sizes')
+  expect(statusSource(statuses[0])).toMatch(/volvox\.chrom\.sizes$/)
   expect(statuses.at(-1)).toBe('')
 })

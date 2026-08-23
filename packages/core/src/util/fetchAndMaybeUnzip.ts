@@ -2,6 +2,7 @@ import { downloadStatus, updateStatus } from './progress.ts'
 import { withStopTokenSignal } from './stopToken.ts'
 
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
+import type { StatusPhase } from './progress.ts'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export function isGzip(buf: Uint8Array) {
@@ -15,8 +16,9 @@ export async function fetchAndMaybeUnzip(
   // required because most callers are a track's one data file, where the track
   // name is already on screen; name it wherever several files load at once
   // behind a single indicator and "Downloading file" can't say which (the four
-  // parallel assembly loads, say)
-  label = 'Downloading file',
+  // parallel assembly loads, say). `downloadPhase(label, location)` builds the
+  // form that also carries the URL, which is what a stalled load shows
+  label: string | StatusPhase = 'Downloading file',
 ) {
   // statusCallback is passed through as-is rather than defaulted to a no-op, so
   // that "nobody is listening" reaches the reader: downloadStatus then hands it
@@ -62,7 +64,7 @@ export async function fetchAndMaybeUnzip(
 export async function fetchAndMaybeUnzipText(
   loc: GenericFilehandle,
   opts?: BaseOptions,
-  label?: string,
+  label?: string | StatusPhase,
 ) {
   const buffer = await fetchAndMaybeUnzip(loc, opts, label)
   // 512MB  max chrome string length is 512MB

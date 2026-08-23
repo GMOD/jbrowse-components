@@ -1,4 +1,4 @@
-import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
+import { downloadPhase, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { isUriLocation } from '@jbrowse/core/util/types'
 
@@ -31,7 +31,7 @@ export async function readAliasRows(
   const text = await fetchAndMaybeUnzipText(
     openLocation(loc, pluginManager),
     opts,
-    'Downloading chromosome aliases',
+    downloadPhase('Downloading chromosome aliases', loc),
   )
   return text
     .split(/\n|\r\n|\r/)

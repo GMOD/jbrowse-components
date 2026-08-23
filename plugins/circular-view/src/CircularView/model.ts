@@ -620,6 +620,14 @@ function stateModelFactory(pluginManager: PluginManager) {
           ? this.loadingAssembly?.statusProgress
           : undefined
       },
+      /**
+       * #getter
+       * The URL the assembly load is currently fetching, when the phase named
+       * one. Only the stalled-load notice reads it — see `ViewLoadingScreen`.
+       */
+      get loadingSource() {
+        return this.showLoading ? this.loadingAssembly?.statusSource : undefined
+      },
 
       /**
        * #getter

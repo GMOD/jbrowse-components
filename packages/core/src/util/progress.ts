@@ -21,7 +21,9 @@ declare const process: { env: { NODE_ENV?: string } }
 //
 // `''` is the phase-over sentinel throughout, and nothing may rewrite it into a
 // label — see {@link statusMessageText}. A retire that carries the `failed` flag
-// as well is a phase that stopped short — see {@link PhaseFailure}.
+// as well is a phase that stopped short — see {@link PhaseFailure}. A label that
+// also names the file it is fetching is a {@link StatusPhase}, which is what a
+// load that stops reporting shows instead of the label alone.
 
 // The phases currently open on one status channel, keyed by the callback that
 // *is* that channel. Entries are objects rather than strings so a phase removes
@@ -32,7 +34,7 @@ declare const process: { env: { NODE_ENV?: string } }
 // A WeakMap, so a channel that goes away takes its stack with it, and a caller
 // that builds a fresh callback per call gets a fresh stack.
 interface OpenPhase {
-  label: string
+  label: string | StatusPhase
 }
 const openPhases = new WeakMap<StatusCallback, OpenPhase[]>()
 
@@ -50,7 +52,10 @@ const openPhases = new WeakMap<StatusCallback, OpenPhase[]>()
  * knows it — a phase that finished and a phase that threw retire the same label,
  * and only the `finally` around the work can tell them apart.
  */
-function openPhase(cb: StatusCallback | undefined, label: string) {
+function openPhase(
+  cb: StatusCallback | undefined,
+  label: string | StatusPhase,
+) {
   if (cb === undefined) {
     return (_outcome: PhaseOutcome) => {}
   }
@@ -66,8 +71,14 @@ function openPhase(cb: StatusCallback | undefined, label: string) {
     if (index !== -1) {
       stack.splice(index, 1)
     }
-    const message = stack.at(-1)?.label ?? ''
-    cb(outcome === 'failed' ? { message, failed: true } : message)
+    // the enclosing phase is restored whole, its source included: a nested
+    // phase ending does not stop the outer one waiting on the file it named
+    const restored = stack.at(-1)?.label ?? ''
+    cb(
+      outcome === 'failed'
+        ? { message: phaseOf(restored), failed: true }
+        : restored,
+    )
   }
 }
 
@@ -82,9 +93,13 @@ function openPhase(cb: StatusCallback | undefined, label: string) {
  * Nests — see {@link openPhase}. An inner phase's close restores the enclosing
  * label and not its bar; the enclosing phase's next `report()` re-establishes
  * it, and one with none to send was indeterminate anyway.
+ *
+ * `msg` is a {@link StatusPhase} where the caller knows which file the phase is
+ * fetching — `downloadPhase(label, location)` builds one — and a plain string
+ * everywhere else. It nests and retires identically either way.
  */
 export async function updateStatus<U>(
-  msg: string,
+  msg: string | StatusPhase,
   cb: StatusCallback | undefined,
   fn: () => U | Promise<U>,
   stopToken?: StopToken,
@@ -114,6 +129,31 @@ export interface StatusWithProgress {
   message: string
   current: number
   total: number
+  /** see {@link StatusPhase} */
+  source?: string
+}
+
+/**
+ * A phase label that also names what it is waiting on — the URL of the file
+ * being fetched, so a load that hangs can say which server stopped answering
+ * rather than leaving "Downloading chromosome aliases" on screen forever.
+ *
+ * A shape of its own rather than a `source` on a bare string, and deliberately
+ * NOT a {@link StatusWithProgress} with a zero total: the aggregate's tie-break
+ * turns on whether a phase has anything to measure (see `measurable`), and a
+ * label that carries a URL has no more measurement than a plain label does.
+ * Given its own shape it votes exactly as the bare string it replaces —
+ * {@link statusReading} skips it, so `live` stays 0 — and a phase downloading
+ * with a real bar still wins the label over one that is only waiting.
+ *
+ * The field is additive on the wire: {@link statusMessageText} and
+ * {@link statusFraction} answer for it exactly as they do for the plain label,
+ * so every existing indicator renders it unchanged and only a consumer that
+ * asks for {@link statusSource} sees the difference.
+ */
+export interface StatusPhase {
+  message: string
+  source: string
 }
 
 /**
@@ -151,7 +191,7 @@ export interface PhaseFailure {
   failed: true
 }
 
-export type RpcStatus = string | StatusWithProgress | PhaseFailure
+export type RpcStatus = string | StatusWithProgress | StatusPhase | PhaseFailure
 
 /**
  * The single out-of-band status transport carried across the RPC boundary. A
@@ -167,13 +207,25 @@ function isPhaseFailure(status: RpcStatus): status is PhaseFailure {
 
 /**
  * The determinate reading in `status`, or undefined when there is none — a bare
- * label, or the last word of a phase that threw. The one place the transport's
- * union is narrowed to a `current`/`total`, so a consumer reading the numbers
- * cannot mistake a {@link PhaseFailure} for a measurement.
+ * label, a {@link StatusPhase}, or the last word of a phase that threw. The one
+ * place the transport's union is narrowed to a `current`/`total`, so a consumer
+ * reading the numbers cannot mistake a label or a {@link PhaseFailure} for a
+ * measurement. It tests for the numbers themselves rather than excluding the
+ * shapes that lack them, so a shape added later is out until it opts in.
  */
 export function statusReading(status: RpcStatus | undefined) {
-  return typeof status === 'object' && !isPhaseFailure(status)
-    ? status
+  return typeof status === 'object' && 'current' in status ? status : undefined
+}
+
+/**
+ * What `status` says it is waiting on, or undefined when it names nothing — a
+ * label with no {@link StatusPhase} source, and every reading that arrived
+ * before one was attached. The URL is what a stalled phase has to show; see
+ * {@link StatusPhase}.
+ */
+export function statusSource(status: RpcStatus | undefined) {
+  return typeof status === 'object' && 'source' in status
+    ? status.source
     : undefined
 }
 
@@ -678,12 +730,14 @@ export function statusProgressLabel(status: RpcStatus | undefined) {
  */
 function downloadStatusReporter(
   statusCallback: StatusCallback | undefined,
-  message: string,
+  label: string | StatusPhase,
 ) {
+  const message = phaseOf(label)
+  const source = statusSource(label)
   return statusCallback
     ? (current: number, total?: number) => {
         statusCallback(
-          total === undefined ? message : { message, current, total },
+          total === undefined ? label : { message, current, total, source },
         )
       }
     : undefined
@@ -703,9 +757,12 @@ function downloadStatusReporter(
  *
  * `stopToken` makes the phase a cancellation boundary, exactly as it does on
  * {@link updateStatus} — `fn` is checked on both sides of its await.
+ *
+ * A {@link StatusPhase} `label` carries its source onto the readings too, so a
+ * download that stalls part-way through still names the file it was reading.
  */
 export async function downloadStatus<T>(
-  label: string,
+  label: string | StatusPhase,
   statusCallback: StatusCallback | undefined,
   fn: (onProgress: ReturnType<typeof downloadStatusReporter>) => T | Promise<T>,
   stopToken?: StopToken,
@@ -751,6 +808,8 @@ interface PhaseVote {
   rank: number
   /** some slot has already finished part of it */
   anyFinished: boolean
+  /** what the first slot to name one says this phase is waiting on */
+  source?: string
 }
 
 /**
@@ -838,6 +897,7 @@ export function aggregateStatus(
       }
       votes.set(message, vote)
     }
+    vote.source ??= statusSource(slot.status)
     const reading = statusReading(slot.status)
     if (reading !== undefined) {
       vote.live++
@@ -852,11 +912,11 @@ export function aggregateStatus(
   const best = [...votes.values()].reduce((winner, vote) =>
     better(vote, winner) ? vote : winner,
   )
-  const { message } = best
+  const { message, source } = best
   // nothing is measuring the winner, so its label alone goes out: summing what
   // its slots retired at reads 100% for a batch that is still going
   if (best.live === 0) {
-    return message
+    return source === undefined ? message : { message, source }
   }
   const mean = best.liveTotal / best.live
 
@@ -880,7 +940,7 @@ export function aggregateStatus(
       total += mean
     }
   }
-  return { message, current, total }
+  return { message, current, total, source }
 }
 
 /**

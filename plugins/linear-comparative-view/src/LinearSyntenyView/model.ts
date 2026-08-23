@@ -561,6 +561,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * The URL the assembly load is currently fetching, when the phase named
+       * one. Only the stalled-load notice reads it — see `ViewLoadingScreen`.
+       */
+      get loadingSource() {
+        return this.showLoading ? this.loadingAssembly?.statusSource : undefined
+      },
+      /**
+       * #getter
        * Whether to show the import form. A failed `init` counts: `init` is kept
        * so a reload can retry it, but in this session there is nothing to show
        * and no second attempt coming, so the form (with the error banner) is the

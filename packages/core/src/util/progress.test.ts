@@ -9,6 +9,7 @@ import {
   statusMessageText,
   statusProgressLabel,
   statusReading,
+  statusSource,
   throttleStatusEmits,
   updateStatus,
   withProgress,
@@ -1626,5 +1627,114 @@ describe('createStatusFanOut: the shape of any stream it can emit', () => {
       // exists to cancel: the last thing out is always the label alone
       expect(typeof seen.at(-1)).toBe('string')
     }
+  })
+})
+
+// A phase that names the file it is fetching, so a load that stops reporting can
+// say which server stopped answering. The field is additive: everything that
+// read the plain label before has to keep reading it, and the one thing that
+// must NOT change is how the phase votes — a label with a URL is still a label.
+describe('a phase that names its source', () => {
+  const aggOf = (statuses: (RpcStatus | undefined)[]) =>
+    aggregateStatus(statuses.map(status => ({ status, completed: new Map() })))
+
+  it('is a label to everything that only wanted the label', () => {
+    const status = {
+      message: 'Downloading cytobands',
+      source: 'https://x/c.gz',
+    }
+    expect(statusMessageText(status)).toBe('Downloading cytobands')
+    expect(statusFraction(status)).toBeUndefined()
+    expect(statusReading(status)).toBeUndefined()
+    expect(statusSource(status)).toBe('https://x/c.gz')
+  })
+
+  it('rides updateStatus and comes back off the channel', async () => {
+    const seen: RpcStatus[] = []
+    await updateStatus(
+      { message: 'Downloading cytobands', source: 'https://x/c.gz' },
+      s => seen.push(s),
+      () => 1,
+    )
+    expect(seen).toEqual([
+      { message: 'Downloading cytobands', source: 'https://x/c.gz' },
+      '',
+    ])
+  })
+
+  it('stays on the enclosing phase when a nested one ends', async () => {
+    const seen: RpcStatus[] = []
+    const outer = { message: 'Downloading index', source: 'https://x/i.tbi' }
+    const cb = (s: RpcStatus) => {
+      seen.push(s)
+    }
+    await updateStatus(outer, cb, async () => {
+      await updateStatus('Unzipping', cb, () => 1)
+    })
+    expect(seen).toEqual([outer, 'Unzipping', outer, ''])
+  })
+
+  it('upgrades to a bar that still knows the source', async () => {
+    const seen: RpcStatus[] = []
+    await downloadStatus(
+      { message: 'Downloading cytobands', source: 'https://x/c.gz' },
+      s => seen.push(s),
+      onProgress => {
+        onProgress?.(50, 100)
+      },
+    )
+    expect(seen[1]).toEqual({
+      message: 'Downloading cytobands',
+      current: 50,
+      total: 100,
+      source: 'https://x/c.gz',
+    })
+    expect(statusFraction(seen[1])).toBeCloseTo(0.5)
+  })
+
+  // The reason it is its own shape rather than a reading with a zero total: the
+  // aggregate's tie-break asks whether a phase has anything to measure, and a
+  // label that carries a URL has no more measurement than a bare one. Given a
+  // zero-total reading instead, the phase that is only WAITING would take the
+  // label off the phase that is actually downloading, hiding a live bar.
+  it('votes exactly as the bare label it replaces', () => {
+    const downloading = {
+      message: 'Downloading cytobands',
+      current: 30,
+      total: 100,
+    }
+    const agg = aggOf([
+      { message: 'Downloading chromosome aliases', source: 'https://x/a.txt' },
+      downloading,
+    ])
+    expect(statusMessageText(agg)).toBe('Downloading cytobands')
+    expect(statusFraction(agg)).toBe(
+      statusFraction(aggOf(['Downloading chromosome aliases', downloading])),
+    )
+  })
+
+  // and the case the notice exists for: the fast three have cleared their slots
+  // and the one left standing is the one that hung
+  it('carries the source out once it is the only phase left', () => {
+    const agg = aggOf([
+      '',
+      '',
+      { message: 'Downloading chromosome aliases', source: 'https://x/a.txt' },
+    ])
+    expect(statusMessageText(agg)).toBe('Downloading chromosome aliases')
+    expect(statusSource(agg)).toBe('https://x/a.txt')
+  })
+
+  it('carries it through a fan-out to the shared callback', () => {
+    const seen: RpcStatus[] = []
+    const fanOut = createStatusFanOut(s => seen.push(s))
+    const [a, b] = [fanOut(), fanOut()]
+    a({ message: 'Downloading cytobands', current: 10, total: 100 })
+    b({ message: 'Downloading chromosome aliases', source: 'https://x/a.txt' })
+    a('')
+    expect(statusMessageText(seen.at(-1))).toBe(
+      'Downloading chromosome aliases',
+    )
+    expect(statusSource(seen.at(-1))).toBe('https://x/a.txt')
   })
 })

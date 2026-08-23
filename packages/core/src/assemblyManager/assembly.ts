@@ -14,6 +14,7 @@ import {
   createStatusWindow,
   statusFraction,
   statusMessageText,
+  statusSource,
 } from '../util/progress.ts'
 import {
   getAssemblyRegions,
@@ -142,6 +143,14 @@ export default function assemblyFactory(
         statusProgress: undefined as number | undefined,
         /**
          * #volatile
+         * The URL the in-flight phase is fetching, when it named one. A load
+         * that hangs shows this and not the label: "Downloading chromosome
+         * aliases" forever says nothing a user can act on, and the address of
+         * the server that stopped answering does.
+         */
+        statusSource: undefined as string | undefined,
+        /**
+         * #volatile
          * adapter cache key -> the empty-intersection verdict `loadRefNameMap`
          * reached for that adapter under this assembly. Sits beside
          * `adapterLoads` and is keyed the same way, so it inherits that cache's
@@ -218,6 +227,7 @@ export default function assemblyFactory(
       setStatus(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
         self.statusProgress = statusFraction(status)
+        self.statusSource = statusSource(status)
       },
       /**
        * #action

@@ -192,7 +192,11 @@ const DotplotView = observer(function DotplotView({
     )
   } else if (showLoading) {
     return (
-      <ViewLoadingScreen message={loadingMessage} fraction={loadingProgress} />
+      <ViewLoadingScreen
+        message={loadingMessage}
+        fraction={loadingProgress}
+        source={model.loadingSource}
+      />
     )
   } else if (showImportForm) {
     return <ImportForm model={model} />
