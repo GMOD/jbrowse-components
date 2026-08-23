@@ -48,7 +48,7 @@
 # rather than failing: trim before use.
 #
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix), curl, awk,
-#           vcftools + bedGraphToBigWig (UCSC), for the Fst track.
+#           bedGraphToBigWig (UCSC), for the Fst track.
 #           plink2 (for the printed r² tables only)
 # Usage:    bash scripts/build_lct_ld.sh [outdir]
 set -euo pipefail
@@ -140,7 +140,7 @@ echo "wrote $OUT ($(bcftools index -n "$OUT") records, $(du -h "$OUT" | cut -f1)
 # The other half of the sweep signature, and the one an LD triangle cannot draw:
 # linkage says the haplotype is long, Fst says its variants are the ones whose
 # frequency separates this panel from everyone else. Weir and Cockerham, by
-# vcftools, over the same slice the LD lanes use.
+# plink2 --fst, over the same slice the LD lanes use.
 #
 # PER VARIANT, not windowed. A 10 kb windowed run was built first and says much
 # less: the block's windows average barely above the flanks, because a window
@@ -148,12 +148,21 @@ echo "wrote $OUT ($(bcftools index -n "$OUT") records, $(du -h "$OUT" | cut -f1)
 # rs4988235 comes out the single most differentiated variant in the frame.
 FST_BW=lct_1kg38_chr2_fst_${PANEL_CODE,,}_vs_rest.bw
 if [ ! -f "$FST_BW" ]; then
-  vcftools --gzvcf "$POOLED" --weir-fst-pop panel.samples --weir-fst-pop rest.samples \
-    --out fst_site
-  # 1-based site -> bedGraph interval; drop the sites vcftools reports as nan.
-  # The contigs are chr-named already in this release, so nothing is prefixed.
-  awk 'NR>1 && $3!="-nan" && $3!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$3}' \
-    fst_site.weir.fst | sort -k1,1 -k2,2n | awk '!seen[$2]++' > fst_site.bedgraph
+  # The two panels go in as one categorical phenotype rather than two sample
+  # lists, and FID has to be beside IID: a #IID-only header is refused with "No
+  # entries correspond to loaded sample IDs" even when every ID matches.
+  # method=wc is Weir and Cockerham, which is what the figure's caption names;
+  # plink2 defaults to Hudson and the two differ. Identical per site to
+  # `vcftools --weir-fst-pop`, which this replaced.
+  { printf '#FID\tIID\tPOP\n'
+    awk '{print $1"\t"$1"\tPANEL"}' panel.samples
+    awk '{print $1"\t"$1"\tREST"}' rest.samples; } > fst_pops.txt
+  "$PLINK" --vcf "$POOLED" --double-id --output-chr chrM --pheno fst_pops.txt \
+    --fst POP method=wc report-variants vcols=chrom,pos,fst --out fst_site
+  # 1-based site -> bedGraph interval; drop the sites reported as nan.
+  # --output-chr chrM is what keeps CHROM spelled chr2 rather than plink2's 2.
+  awk 'NR>1 && $4!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$4}' \
+    fst_site.PANEL.REST.fst.var | sort -k1,1 -k2,2n | awk '!seen[$2]++' > fst_site.bedgraph
   printf 'chr2\t%s\n' "$CHR2_LEN" > hg38.chrom.sizes
   bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes "$FST_BW"
 fi
@@ -163,11 +172,11 @@ echo "wrote $FST_BW"
 # The RANK is the claim, so the rank is what prints beside the table: the page
 # says rs4988235 is the most differentiated variant in the frame, and a run that
 # no longer put it first would be the thing to notice.
-if [ -f fst_site.weir.fst ]; then
+if [ -f fst_site.PANEL.REST.fst.var ]; then
   echo
   echo "top per-site Fst ($PANEL_CODE vs rest); rs4988235 is $CAUSAL:"
-  # The header is stripped BEFORE the sort, not after: `sort -k3,3gr` puts the
-  # non-numeric `WEIR_AND_COCKERHAM_FST` cell last, so an `NR>1` guard on the
+  # The header is stripped BEFORE the sort, not after: `sort -k4,4gr` puts the
+  # non-numeric `WC_FST` cell last, so an `NR>1` guard on the
   # sorted stream drops the top HIT instead of the header — and the top hit is
   # the row this table exists to show.
   #
@@ -175,9 +184,9 @@ if [ -f fst_site.weir.fst ]; then
   # closes the pipe, sort dies of SIGPIPE, and the script exits 141 right here,
   # after printing a table that looks like the run finished. That is what
   # silently cut this script off before its plink tables and its jbrowse2 app.
-  awk 'NR>1 && $3!="-nan" && $3!="nan"' fst_site.weir.fst | sort -k3,3gr |
+  awk 'NR>1 && $4!="nan"' fst_site.PANEL.REST.fst.var | sort -k4,4gr |
     tee fst_ranked.txt |
-    awk 'NR<=5 {printf "  %s:%s  %.3f\n",$1,$2,$3}'
+    awk 'NR<=5 {printf "  %s:%s  %.3f\n",$1,$2,$4}'
   awk -v pos="${CAUSAL#*:}" '$2==pos {r=NR} END {
       if (r) printf "  rs4988235 ranks %d of %d scored sites\n", r, NR
       else print "  rs4988235 is not among the scored sites"

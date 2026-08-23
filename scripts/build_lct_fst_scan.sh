@@ -36,11 +36,12 @@
 # Same release, same panels, same estimator and same tool as build_lct_ld.sh, so
 # the two lanes are one analysis at two scales rather than two datasets.
 #
-# Requires: bcftools (with libcurl), tabix, vcftools, bedGraphToBigWig, curl, awk
+# Requires: bcftools (with libcurl), tabix, plink2, bedGraphToBigWig, curl, awk
 # Usage:    bash scripts/build_lct_fst_scan.sh [outdir]
 set -euo pipefail
 
 OUTDIR="${1:-lct_fst_scan_build}"
+PLINK="${PLINK:-plink2}"
 COLLECTION=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage
 CHR2=$COLLECTION/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 PED=$COLLECTION/20130606_g1k_3202_samples_ped_population.txt
@@ -88,16 +89,29 @@ tabix -f -p vcf "$SLICE"
 echo "sliced $REGION: $(bcftools index -n "$SLICE") records, $(du -h "$SLICE" | cut -f1)"
 
 # ── Fst ──────────────────────────────────────────────────────────────────────
-[ -f fst_site.weir.fst ] || vcftools --gzvcf "$SLICE" \
-  --weir-fst-pop panel.samples --weir-fst-pop rest.samples --out fst_site
+# plink2 wants the two panels as one categorical phenotype rather than as two
+# sample lists, and wants FID beside IID: a #IID-only header is refused with
+# "No entries correspond to loaded sample IDs" even when every ID matches.
+# method=wc is Weir and Cockerham, which is what the caption names; plink2
+# defaults to Hudson, and the two differ (0.165 against 0.183 over this slice).
+# Verified against `vcftools --weir-fst-pop`: identical per site, 24480 of them.
+{ printf '#FID\tIID\tPOP\n'
+  awk '{print $1"\t"$1"\tPANEL"}' panel.samples
+  awk '{print $1"\t"$1"\tREST"}' rest.samples; } > fst_pops.txt
 
-# 1-based site -> bedGraph interval; drop the sites vcftools reports as nan, and
+# --output-chr chrM keeps the CHROM column spelled chr2 rather than plink2's
+# bare 2, which is what the bedGraph and the bigWig need.
+[ -f fst_site.PANEL.REST.fst.var ] || "$PLINK" --vcf "$SLICE" --double-id \
+  --output-chr chrM --pheno fst_pops.txt \
+  --fst POP method=wc report-variants vcols=chrom,pos,fst --out fst_site
+
+# 1-based site -> bedGraph interval; drop the sites reported as nan, and
 # floor the negative estimates at 0. Weir & Cockerham's is unbiased and goes
 # below zero wherever the between-panel term is under the within-panel one,
 # which over 40 Mb is most of the background; the lane is drawn on a 0.1.. axis
 # and a negative would only widen the domain under its own floor.
-awk 'NR>1 && $3!="-nan" && $3!="nan" {v=$3<0?0:$3; printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,v}' \
-  fst_site.weir.fst | sort -k1,1 -k2,2n | awk '!seen[$2]++' > fst_site.bedgraph
+awk 'NR>1 && $4!="nan" {v=$4<0?0:$4; printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,v}' \
+  fst_site.PANEL.REST.fst.var | sort -k1,1 -k2,2n | awk '!seen[$2]++' > fst_site.bedgraph
 printf 'chr2\t%s\n' "$CHR2_LEN" > hg38.chrom.sizes
 bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes "$OUT"
 echo "wrote $OUT ($(du -h "$OUT" | cut -f1))"
@@ -106,20 +120,20 @@ echo "wrote $OUT ($(du -h "$OUT" | cut -f1))"
 # The figure's claim is that this locus is the peak of the span, so the RANK is
 # what prints. A run that stopped putting it first would make the figure wrong
 # rather than merely different.
-awk 'NR>1 && $3!="-nan" && $3!="nan"' fst_site.weir.fst | sort -k3,3gr > fst_ranked.txt
+awk 'NR>1 && $4!="nan"' fst_site.PANEL.REST.fst.var | sort -k4,4gr > fst_ranked.txt
 echo
 echo "top per-site Fst over $REGION:"
-awk 'NR<=10 {printf "  %s:%s  %.4f\n",$1,$2,$3}' fst_ranked.txt
+awk 'NR<=10 {printf "  %s:%s  %.4f\n",$1,$2,$4}' fst_ranked.txt
 awk -v pos="$CAUSAL_POS" '$2==pos {r=NR} END {
        if (r) printf "  rs4988235 ranks %d of %d scored sites\n", r, NR
        else print "  rs4988235 is not among the scored sites"
      }' fst_ranked.txt
 echo
 # NR>1 is load-bearing, not defensive: awk compares a string field against a
-# number as a STRING, so the header's WEIR_AND_COCKERHAM_FST passes `> 0.35` and
-# lands in a bin at position 0. Same trap as the sort in build_lct_ld.sh.
+# number as a STRING, so the header's WC_FST passes `> 0.35` and lands in a bin
+# at position 0. Same trap as the sort in build_lct_ld.sh.
 echo "how far the top of the axis reaches, in 1 Mb bins (sites over 0.35):"
-awk 'NR>1 && $3!="-nan" && $3!="nan" && $3>0.35 {printf "%d\n", int($2/1000000)}' fst_site.weir.fst |
+awk 'NR>1 && $4!="nan" && $4>0.35 {printf "%d\n", int($2/1000000)}' fst_site.PANEL.REST.fst.var |
   sort -n | uniq -c | awk '{printf "  %s Mb: %s sites\n",$2,$1}'
 
 cat <<EOF

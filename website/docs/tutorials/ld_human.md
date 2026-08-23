@@ -22,10 +22,9 @@ a large cohort takes.
   [reproduce script](#reproduce-it-end-to-end): `bcftools` built with libcurl,
   htslib (`tabix`), `curl`, `python3`, and `node` for the
   [JBrowse CLI](/docs/cli)
-- [vcftools](https://vcftools.github.io/) and
-  [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the Fst
+- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the Fst
   lane, plus [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the r²
-  tables[^plink19]
+  tables and the Fst itself[^plink19]
 
 ## Where the data comes from
 
@@ -208,20 +207,29 @@ file and falls below it in the pooled one.
 
 ## Compute Fst per variant
 
-The Fst lane is [vcftools](https://vcftools.github.io/man_latest.html) over
-`panel.samples` and `rest.samples`, written out as a bigWig for a
+The Fst lane is `plink2 --fst` over `panel.samples` and `rest.samples`, written
+out as a bigWig for a
 [quantitative track](/docs/user_guides/quantitative_track):
 
 <!-- from: scripts/build_lct_fst_scan.sh -->
 
 ```bash
-# two sample lists, one name per line, and no --fst-window-size: Fst per variant
-vcftools --gzvcf pooled.vcf.gz \
-  --weir-fst-pop panel.samples --weir-fst-pop rest.samples --out fst_site
+# plink2 takes the two panels as one categorical phenotype rather than as two
+# sample lists, and wants FID beside IID: a #IID-only header is refused as "No
+# entries correspond to loaded sample IDs" even when every ID matches
+{ printf '#FID\tIID\tPOP\n'
+  awk '{print $1"\t"$1"\tPANEL"}' panel.samples
+  awk '{print $1"\t"$1"\tREST"}' rest.samples; } > fst_pops.txt
+
+# method=wc is Weir and Cockerham; plink2 defaults to Hudson, which is a
+# different number. report-variants is per variant rather than windowed, and
+# --output-chr chrM keeps CHROM spelled chr2 rather than plink2's bare 2
+plink2 --vcf pooled.vcf.gz --double-id --output-chr chrM --pheno fst_pops.txt \
+  --fst POP method=wc report-variants vcols=chrom,pos,fst --out fst_site
 
 # 1-based site to bedGraph interval, dropping the sites scored nan
-awk 'NR>1 && $3!="-nan" && $3!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$3}' \
-  fst_site.weir.fst | sort -k1,1 -k2,2n > fst_site.bedgraph
+awk 'NR>1 && $4!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$4}' \
+  fst_site.PANEL.REST.fst.var | sort -k1,1 -k2,2n > fst_site.bedgraph
 printf 'chr2\t242193529\n' > hg38.chrom.sizes
 bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 ```
