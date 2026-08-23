@@ -15,8 +15,9 @@ loads as a structural variant genotyped per mosquito.
 ## Prerequisites
 
 - nothing to read the figures, which load hosted data
-- `plink2`, htslib (`bgzip`, `tabix`), `samtools`, `curl`, `python3`, and `node`
-  for the [JBrowse CLI](/docs/cli)
+- `plink2` (labelled alpha, and has been for years while being the version in
+  general use), htslib (`bgzip`, `tabix`), `samtools`, `curl`, `python3`, and
+  `node` for the [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 
@@ -37,7 +38,7 @@ or a data-access agreement.
   ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
   https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
 - the finished `CMgam` LD table, rehosted so the track blocks on this page load
-  without the build: https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.ld.gz
+  without the build: https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz
 - the 2La genotypes per mosquito:
   https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz
 - the karyotype table the sample lane is grouped by:
@@ -83,11 +84,10 @@ plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt \
 
 # plink2 writes tabs and comments its own header, which is what `tabix -H`
 # returns. `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C with that `#` line
-# kept on top, which is what this table wants too: same first two columns. The
-# .gz keeps the .ld name the hosted files are published under.
+# kept on top, which is what this table wants too: same first two columns.
 jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
-  bgzip > ag1000g_2L_CMgam.ld.gz
-tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.ld.gz
+  bgzip > ag1000g_2L_CMgam.vcor.gz
+tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
 The track over that file is an `LDTrack`, and the display reads one of its two
@@ -101,7 +101,7 @@ metric columns:
   "assemblyNames": ["anoGam3"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.ld.gz"
+    "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz"
   },
   "displays": [
     {
@@ -244,7 +244,7 @@ reaches the tagging variants themselves and the block fades.
 
 [`build_ag1000g_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ag1000g_ld.sh)
 downloads the phased haplotypes, runs each check above and prints the result,
-builds the tabix-indexed `.ld.gz` tracks and the per-mosquito karyotype calls,
+builds the tabix-indexed `.vcor.gz` tracks and the per-mosquito karyotype calls,
 and writes a `config.json` opening on the inversion:
 
 ```bash

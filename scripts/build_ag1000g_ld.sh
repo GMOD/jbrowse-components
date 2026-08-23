@@ -46,7 +46,10 @@
 #    release rather than a fallback.
 #    https://www.malariagen.net/data/our-approach-sharing-data/ag1000g-terms-of-use/
 #
-# Requires: plink2, htslib (bgzip, tabix), samtools, curl, awk, python3.
+# Requires: plink2 (2.0 is labelled alpha, and has been for years while being
+#           the version in general use), htslib (bgzip, tabix), samtools, curl,
+#           awk, python3. gzip rather than zcat throughout: macOS zcat looks
+#           only for a .Z and fails on every .gz here.
 #           PLINK 1.9 also works, with LD_FLAGS=(--r2 dprime ...) instead.
 # Usage:    bash scripts/build_ag1000g_ld.sh [outdir]
 set -euo pipefail
@@ -103,7 +106,7 @@ fetch "$AR1/haplotypes/main/shapeit/ag1000g.phase2.ar1.haplotypes.$CHROM.gz" "ha
 fetch "$GENOME/Anopheles-gambiae-PEST_CHROMOSOMES_AgamP4.fa.gz" AgamP4.fa.gz
 fetch "$GENOME/Anopheles-gambiae-PEST_BASEFEATURES_AgamP4.12.gff3.gz" AgamP4.gff3.gz
 
-zcat "samples.$CHROM.gz" > "samples.$CHROM.txt"
+gzip -dc "samples.$CHROM.gz" > "samples.$CHROM.txt"
 NHAP=$(( $(wc -l < "samples.$CHROM.txt") - 2 ))
 echo "$NHAP phased individuals ($(( NHAP * 2 )) haplotypes)"
 
@@ -158,7 +161,7 @@ emit_vcf() { # ids-file from to step minmaf out
   local cols names
   cols=$(awk '{printf "%s%d,%d", (NR>1 ? "," : ""), 2*$1-1, 2*$1} END{print ""}' "$1")
   names=$(awk '{printf "%s%s", (NR>1 ? "," : ""), $2} END{print ""}' "$1")
-  zcat "haplotypes.$CHROM.gz" | awk -v COLS="$cols" -v NAMES="$names" \
+  gzip -dc "haplotypes.$CHROM.gz" | awk -v COLS="$cols" -v NAMES="$names" \
     -v CHROM=$CHROM -v STEP="$4" -v MINMAF="$5" -v FROM="$2" -v TO="$3" \
     -f haps2vcf.awk > "$6"
 }
@@ -239,11 +242,9 @@ build_track() { # pop minmaf grid tag
   # Not -c C, which would make C the meta character and read every chr-prefixed
   # data row as a comment.
   #
-  # The .gz keeps the .ld name it has always had, and that the hosted demo files
-  # are published under; plink2 calls its own output .vcor.
-  jb sort-bed < "$4.vcor" | bgzip > "$4.ld.gz"
-  tabix -s 1 -b 2 -e 2 -f "$4.ld.gz"
-  echo "  $4: $(wc -l < "grid.$4.snplist") SNPs, $(( $(zcat "$4.ld.gz" | wc -l) - 1 )) pairs, $(du -h "$4.ld.gz" | cut -f1)"
+  jb sort-bed < "$4.vcor" | bgzip > "$4.vcor.gz"
+  tabix -s 1 -b 2 -e 2 -f "$4.vcor.gz"
+  echo "  $4: $(wc -l < "grid.$4.snplist") SNPs, $(( $(gzip -dc "$4.vcor.gz" | wc -l) - 1 )) pairs, $(du -h "$4.vcor.gz" | cut -f1)"
 }
 
 echo
@@ -260,7 +261,7 @@ build_track GAgam 0.2 50000 ld_gagam
 # are the inversion breakpoints, recovered without being told them.
 echo
 echo "long-range D' along $CHROM in CMgam (the block edges are the breakpoints):"
-zcat ld_cmgam.ld.gz | awk 'NR>1{d=($5>$2?$5-$2:$2-$5); if(d<5e6) next;
+gzip -dc ld_cmgam.vcor.gz | awk 'NR>1{d=($5>$2?$5-$2:$2-$5); if(d<5e6) next;
     b=int($2/1000000); s[b]+=$8; n[b]++; c=int($5/1000000); s[c]+=$8; n[c]++}
   END{for(i=0;i<=60;i++) if(n[i]>50){v=s[i]/n[i]; bar="";
     for(j=0;j<int(v*50);j++) bar=bar"#"; printf "  %2d Mb  %.3f  %s\n", i, v, bar}}'
@@ -302,7 +303,7 @@ fetch "$COMPKARYO/2La_targets.txt" 2La_targets.txt
 # well under one. The .haps chromosome column is a bare '2' for arm 2L (the same
 # quirk haps2vcf.awk handles above), which is what the pattern matches.
 awk -v C=2 '{print C " . " $1 " "}' 2La_targets.txt > tagpat.txt
-zcat "haplotypes.$CHROM.gz" | grep -F -f tagpat.txt > tagrows.txt
+gzip -dc "haplotypes.$CHROM.gz" | grep -F -f tagpat.txt > tagrows.txt
 awk -v SAMP="samples.$CHROM.txt" -v NTAG="$(wc -l < 2La_targets.txt)" '
 BEGIN { while ((getline l < SAMP) > 0) { if (++nl > 2) { split(l, f, " "); name[++ns] = f[1] } } }
 { sites++; for (s = 1; s <= ns; s++) sum[s] += $(4 + 2 * s) + $(5 + 2 * s) }
@@ -392,7 +393,7 @@ echo "building per-mosquito karyotype tracks..."
 for pop in $PANEL_POPS; do emit_karyotype_track "$pop"; done
 
 # ── Assembly and JBrowse ────────────────────────────────────────────────────
-zcat AgamP4.fa.gz | bgzip > AgamP4.fa.bgz
+gzip -dc AgamP4.fa.gz | bgzip > AgamP4.fa.bgz
 samtools faidx AgamP4.fa.bgz
 
 [ -f jbrowse2/index.html ] || jb create jbrowse2
@@ -401,18 +402,18 @@ samtools faidx AgamP4.fa.bgz
 # does not recognize .bgz (it wants .fa.gz), so it cannot guess this one
 jb add-assembly AgamP4.fa.bgz --type bgzipFasta --name AgamP4 \
   --load copy --force --out jbrowse2
-zcat AgamP4.gff3.gz > AgamP4.gff3
+gzip -dc AgamP4.gff3.gz > AgamP4.gff3
 jb sort-gff AgamP4.gff3 | bgzip > AgamP4.sorted.gff3.gz
 tabix -f -p gff AgamP4.sorted.gff3.gz
 jb add-track AgamP4.sorted.gff3.gz --name "AgamP4.12 genes" --trackId agamp4_genes \
   --load copy --force --out jbrowse2
-cp ld_cmgam.ld.gz ld_cmgam.ld.gz.tbi ld_gagam.ld.gz ld_gagam.ld.gz.tbi jbrowse2/
+cp ld_cmgam.vcor.gz ld_cmgam.vcor.gz.tbi ld_gagam.vcor.gz ld_gagam.vcor.gz.tbi jbrowse2/
 for pop in $PANEL_POPS; do
   cp "ag1000g_2La_$pop.vcf.gz" "ag1000g_2La_$pop.vcf.gz.tbi" \
      "ag1000g_2La_${pop}_samples.tsv" jbrowse2/
 done
 
-# The CLI has no LDTrack workflow (and would not recognize a .ld.gz), so the LD
+# The CLI has no LDTrack workflow (and would not recognize a .vcor.gz), so the LD
 # tracks are written straight into the config. D' rather than r2 is the whole
 # reason this figure is legible - see the probe table above.
 python3 - jbrowse2/config.json "$PANEL_POPS" <<'PY'
@@ -443,7 +444,7 @@ for trackId, name in names.items():
         'assemblyNames': ['AgamP4'],
         'adapter': {
             'type': 'PlinkLDTabixAdapter',
-            'uri': f'{trackId}.ld.gz',
+            'uri': f'{trackId}.vcor.gz',
         },
         'displays': [{
             'type': 'LDTrackDisplay',

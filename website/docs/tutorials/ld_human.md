@@ -395,5 +395,7 @@ bash build_lct_haploblock.sh          # builds ./lct_haploblock_build
     other r², `--r2-unphased`, is between genotype allele counts.
 
 [^plink19]:
-    PLINK 1.9 does the same work: `--r2 dprime` for the phased statistic and a
-    bare `--r2` for the unphased one, writing `.ld` where plink2 writes `.vcor`.
+    PLINK 2.0 is labelled alpha, and has been for years while being the version
+    in general use. PLINK 1.9 does the same work: `--r2 dprime` for the phased
+    statistic and a bare `--r2` for the unphased one, writing `.ld` where plink2
+    writes `.vcor`.
