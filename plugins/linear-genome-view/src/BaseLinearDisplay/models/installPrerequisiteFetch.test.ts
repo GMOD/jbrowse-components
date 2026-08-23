@@ -294,7 +294,7 @@ test('a retriggered run clears the previous failure at its start', async () => {
   host.setMinimized(true)
   await flush()
   host.setMinimized(false)
-  await flush()
+  await settleDebounce()
   expect(host.runs).toHaveLength(2)
   expect(host.error).toBeUndefined()
 
