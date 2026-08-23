@@ -334,6 +334,42 @@ function haplotypeSession(
 const DRIFT_WINDOW_MAT = 'chr8_MATERNAL:7,700,000-7,770,000'
 const DRIFT_WINDOW_PAT_BEFORE = 'chr8_PATERNAL:7,700,000-7,770,000'
 
+// The session both the figure and the tour open on.
+//
+// THE CHAIN LANE ALONE, no gene lanes (review: "way too much stuff on the
+// screen"), and dropping them fixes a claim as well as the clutter. A round
+// that predates this one added a gene lane per panel on the grounds that the
+// same genes would sit at different offsets before the move and under each
+// other after it. They do not: Liftoff names each haplotype's copies after
+// whichever hg38 paralog it matched, so the after-frame put FAM85B / ENPP7P1
+// over LOC729732 / ENPP7P3 -- two lanes of different names under a caption
+// saying they correspond, which is the comparison a reader would make and get
+// wrong. (It is the same naming that sank hg002_haplotypes_hetsites, noted
+// above.)
+//
+// What records the move is the chain lane, on both panels. Before: the maternal
+// panel carries the block and the paternal panel's lane is EMPTY, because those
+// coordinates land in the gap past this block's end. After: both lanes carry it
+// and the ribbon closes between them. Empty-to-populated is a difference at a
+// glance, in the one lane the figure is about.
+const DRIFTED_PANELS = haplotypeSession(
+  DRIFT_WINDOW_MAT,
+  DRIFT_WINDOW_PAT_BEFORE,
+  [CHAIN_BLOCKS],
+  [CHAIN_BLOCKS],
+)
+
+// WHERE THE TOUR PANS TO ONCE THE FOLLOW IS ON, which is the half of the
+// setting no still can carry: the figure above is a before and an after, and
+// what separates this mode from the right-click's one-shot move is that the
+// second navigation is followed too, with nothing clicked in between.
+//
+// Half a window right of DRIFT_WINDOW_MAT and still inside the same collinear
+// block, whose maternal end is 7,824,569 (the block's paternal end 7,681,207
+// plus its own 143,362 offset) -- so the walk stays exact and the paternal
+// panel lands on sequence rather than holding where it was.
+const FOLLOW_PAN_MAT = 'chr8_MATERNAL:7,735,000-7,805,000'
+
 // THE MARKERS FIGURE MOVED TO THE PERICENTROMERE (reviewer: 'the show location
 // markers mostly shines when there are lots of indels interrupting it, so then
 // you can see, the matches amongst the indels'). Right, and 8p23.1 could not
@@ -396,8 +432,15 @@ const WHOLE_GENOME_AXES = [
 // view` is in the clip: `views: []` opens the app on the view launcher, which is
 // the state the page's first instruction is given from. The import-form figure
 // opens the form directly instead, because a still of a menu is a second figure.
+//
+// `driftedPanels` is hg002_haplotypes_follow_panel's own session, shared rather
+// than written again: the follow tour is that figure's two frames plus the pan
+// between and after them, so a session of its own would be the one place the
+// two could disagree about which windows "drifted" means.
 export const hg002VideoFixtures = {
   noViews: sessionSpec(HG002_CONFIG, { views: [] }),
+  driftedPanels: DRIFTED_PANELS,
+  followPanLoc: FOLLOW_PAN_MAT,
   maternalGlob: MATERNAL_GLOB,
   paternalGlob: PATERNAL_GLOB,
 }
@@ -560,29 +603,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
   {
     ...CAPTURE,
     name: 'hg002_haplotypes_follow_panel',
-    url: haplotypeSession(
-      DRIFT_WINDOW_MAT,
-      DRIFT_WINDOW_PAT_BEFORE,
-      // THE CHAIN LANE ALONE, no gene lanes (review: "way too much stuff on
-      // the screen"), and dropping them fixes a claim as well as the clutter.
-      // A round that predates this one added a gene lane per panel on the
-      // grounds that the same genes would sit at different offsets before the
-      // move and under each other after it. They do not: Liftoff names each
-      // haplotype's copies after whichever hg38 paralog it matched, so the
-      // after-frame put FAM85B / ENPP7P1 over LOC729732 / ENPP7P3 -- two lanes
-      // of different names under a caption saying they correspond, which is
-      // the comparison a reader would make and get wrong. (It is the same
-      // naming that sank hg002_haplotypes_hetsites, noted above.)
-      //
-      // What records the move is the chain lane, on both panels. Before: the
-      // maternal panel carries the block and the paternal panel's lane is
-      // EMPTY, because those coordinates land in the gap past this block's
-      // end. After: both lanes carry it and the ribbon closes between them.
-      // Empty-to-populated is a difference at a glance, in the one lane the
-      // figure is about.
-      [CHAIN_BLOCKS],
-      [CHAIN_BLOCKS],
-    ),
+    url: DRIFTED_PANELS,
     // 640 until the two gene lanes came out, then measured back to where the
     // app frame ends. The right-click that used to open a context menu into
     // this height is gone; the header toggle needs none.

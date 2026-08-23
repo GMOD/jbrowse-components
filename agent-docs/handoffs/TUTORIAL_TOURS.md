@@ -32,6 +32,12 @@ stops the next session re-deriving it. One of them closed without a shoot:
 `sv_callset_review` took the `sv/derivative_allele_route` embed its entry
 prescribed, which is why the coverage number moved without a tour being filmed.
 
+**A seventeenth clip landed off the list** (2026-08-23):
+`synteny/hg002_follow_panels`, a second tour on `hg002_haplotypes` and the first
+`<Video>` on `user_guides/linear_synteny_view.md`. Coverage of the tutorials is
+unchanged, since that page already carried one. It came from a request rather
+than from the ranking, and the candidates file records what it cost.
+
 **The swiftshader warning was retired at both ends, and it is about VOLUME.**
 `website/CLAUDE.md` says the tours stay off pileups and graph fetches; both of
 the candidates that carried that risk filmed headless with nothing starved. 5 is

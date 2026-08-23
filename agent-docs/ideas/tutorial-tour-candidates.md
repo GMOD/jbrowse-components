@@ -97,6 +97,18 @@ filming: the linear synteny form also opens on Quick start, where
 page's "pick the assembly in both rows" was describing a panel the reader never
 lands on. `Launch` is the only click there.
 
+**A second hg002 tour, off the ranking.** `synteny/hg002_follow_panels`, filmed
+2026-08-23 on the same page and embedded in `user_guides/linear_synteny_view.md`
+as well: 520px frame, 36s, the follow figure's own session. Follow is a MODE,
+and its before-and-after still is equally true of the right-click item beside
+it — the evidence that separates them is a second navigation the reader makes
+and a panel below that moves on its own, which is a state no still holds. Two
+things it cost: the exact pass lands about two seconds after the anchor settles,
+so the 9s beats the first take gave it were reported as steps nothing happened
+in; and the toggle's tooltip names the mode and the anchor row, which is worth a
+beat and sits over the maternal panel's title for the whole state if the pointer
+is left on the button.
+
 **3. `sv/derivative_allele_route` — two pages at once**
 
 `Track menu → Launch view → Reconstruct derivative allele...` → pick a route →

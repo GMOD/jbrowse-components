@@ -1,13 +1,15 @@
 // The tours through the two comparative import forms -- the three-strain
 // H. pylori stack and the T2T-HG002 self-alignment dotplot -- the reorder that
-// re-sorts a dotplot axis once the plot is already up, the two launches that
-// rebuild a whole stack around one locus -- a reference-anchored .blocks table
-// and an all-vs-all PAF -- and the pairwise launch off one UCSC chain block.
+// re-sorts a dotplot axis once the plot is already up, the follow mode holding
+// one haplotype's panel on whatever the other's window aligns to, the two
+// launches that rebuild a whole stack around one locus -- a reference-anchored
+// .blocks table and an all-vs-all PAF -- and the pairwise launch off one UCSC
+// chain block.
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { hg002VideoFixtures } from '../specs/hg002_haplotypes.ts'
 import { syntenyVideoFixtures } from '../specs/synteny.ts'
-import { RUBBERBAND } from './shared.ts'
+import { LOCATION_BOX, RUBBERBAND } from './shared.ts'
 
 import type { VideoSpec } from '../video-spec-types.ts'
 
@@ -24,7 +26,8 @@ const {
   strains,
   unorderedDotplot,
 } = syntenyVideoFixtures
-const { maternalGlob, noViews, paternalGlob } = hg002VideoFixtures
+const { driftedPanels, followPanLoc, maternalGlob, noViews, paternalGlob } =
+  hg002VideoFixtures
 
 // The form's assembly dropdowns carry no test id, but each is labelled, so the
 // accessible name is the handle -- the same string the page's own numbered steps
@@ -340,6 +343,104 @@ export const syntenyVideos: VideoSpec[] = [
       // Red collinear, blue inverted, and the two empty lanes chrX and chrY
       // leave.
       { type: 'delay', ms: 4000 },
+    ],
+    tailMs: 4500,
+  },
+
+  // A MODE, WHICH IS THE ONE THING A BEFORE-AND-AFTER CANNOT SHOW.
+  // hg002_haplotypes.md's follow figure is two frames, the panels drifted and
+  // the panels together, and both of those are equally true of the right-click
+  // item beside it -- "Move other panel to the matching region" produces the
+  // second frame from the first in one click. What separates the toggle from it
+  // is the third state: the reader navigates AGAIN, touches nothing else, and
+  // the panel below arrives at the matching sequence on its own. There is no
+  // still of that, because the evidence is a move nobody made.
+  //
+  // The two panels open on the same numbers, which is what a reader does first
+  // on a self-alignment and is the state the whole section is about: the same
+  // coordinate is not the same sequence, so the paternal panel's chain lane is
+  // empty and the ribbon leaves the frame.
+  //
+  // The pan is typed into the maternal panel's location box rather than dragged.
+  // Both are followed -- the frame pass tracks a drag and the exact pass lands
+  // it -- but a locstring is what the page's own instructions use, and it puts
+  // the two windows' numbers on screen where the reader can read the offset the
+  // follow resolved instead of taking it from the ribbon's slant.
+  {
+    name: 'synteny/hg002_follow_panels',
+    description:
+      "One genome's two haplotypes drifting apart and being pulled back: the header's follow toggle, the paternal panel moving to the matching sequence, and a second navigation followed with nothing else clicked",
+    url: driftedPanels,
+    // The figure of the same session measured 445 at the figures' width, which
+    // is the app exactly; the caption chip sits 20px off the frame's bottom
+    // rather than the app's, so a frame that tight puts every line of the
+    // caption track over the paternal chain lane -- the one lane that goes from
+    // empty to populated here.
+    viewportHeight: 520,
+    readySelector: displayPainted('synteny_canvas'),
+    // A whole-genome chain read in one go, which is the figures' own budget for
+    // this session.
+    readyTimeout: 120000,
+    settleMs: 10000,
+    steps: [
+      // The camera opens with the pointer at the top middle, which in a synteny
+      // view is the maternal panel's own ruler -- and the view writes what is
+      // under the pointer into its title bar.
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      // The state the toggle exists for, held long enough to read both location
+      // boxes: the same numbers in each, one chain lane drawn and one empty.
+      { type: 'delay', ms: 4500, say: 'Both panels on the same coordinates' },
+      {
+        type: 'click',
+        selector: '[data-testid="follow-synteny-toggle"]',
+        say: 'Follow the matching region',
+        hold: 600,
+      },
+      // ON CAMERA, and this is the payoff of the first half: the follow's exact
+      // pass is an RPC per level off the anchor's SETTLED window, so the move
+      // arrives a beat after the click rather than with it, and a
+      // `waitForAppSettled` on its own can return before the settle debounce
+      // has even asked. Filmed at 9s the move landed inside the first two and
+      // the run reported the rest as a step nothing happened in.
+      { type: 'delay', ms: 3000 },
+      // The toggle's own tooltip names the mode and the anchor row, which is
+      // worth a beat and not worth twelve seconds -- the pointer stays on the
+      // button otherwise, and the tooltip sits over the maternal panel's title
+      // for the whole of the next state.
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      {
+        type: 'delay',
+        ms: 3000,
+        say: 'The paternal panel is on the matching sequence',
+      },
+      // The half that is the mode rather than the move. `clear: true` because
+      // the box already holds the window the session opened at, and only the
+      // MATERNAL box is typed into -- the first location box on the page is the
+      // top panel's, and the point of the beat is that nothing touches the one
+      // below it.
+      {
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: followPanLoc,
+        clear: true,
+        say: followPanLoc,
+        hold: 1600,
+      },
+      { type: 'press', key: 'Enter' },
+      // Left on camera for the same reason as the toggle: the maternal panel
+      // moves on the keypress and the paternal one follows a beat later, and
+      // that gap between the two moves IS the thing being demonstrated.
+      { type: 'delay', ms: 4500 },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      // Ends on the followed pair, which is also the tallest state -- nothing
+      // in this tour grows the app -- so the poster is the state the section
+      // describes.
+      {
+        type: 'delay',
+        ms: 3500,
+        say: 'The panel below was never touched',
+      },
     ],
     tailMs: 4500,
   },

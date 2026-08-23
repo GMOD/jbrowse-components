@@ -127,6 +127,8 @@ their position.
 A followed panel can still be panned by hand; it returns to the matching region
 once it settles. Turn following off to keep it where you put it.
 
+<Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002, which carry the same coordinates and different sequence: the panels as they open, the header's toggle, and a second window typed into the anchor panel's search box alone." />
+
 ## Interacting with the ribbons
 
 - Hover a ribbon to see a tooltip with the alignment's coordinates on both
