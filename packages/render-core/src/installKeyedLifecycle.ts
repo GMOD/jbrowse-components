@@ -58,9 +58,7 @@ export function installKeyedLifecycle<T, B extends KeyedRenderingBackend<T>>(
   self.attachRenderingBackend<B>(backend, () => {
     const syncKeys = createKeyedUploadSync<T, B>()
     return {
-      upload: b => {
-        syncKeys(b, entries())
-      },
+      upload: b => syncKeys(b, entries()),
       render,
     }
   })

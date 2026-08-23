@@ -347,7 +347,10 @@ export function installPerRegionLifecycle<
           if (process.env.NODE_ENV !== 'production') {
             checkRegionPayloads(self, regions)
           }
-          syncIdentity(b, regions as unknown as ReadonlyMap<number, Encoded>)
+          return syncIdentity(
+            b,
+            regions as unknown as ReadonlyMap<number, Encoded>,
+          )
         },
         render: b =>
           render(b, data() as unknown as ReadonlyMap<number, Encoded>),
@@ -386,7 +389,7 @@ export function installPerRegionLifecycle<
             encodedFrom.delete(key)
           }
         }
-        syncRegions(b, encoded)
+        return syncRegions(b, encoded)
       },
       render: b => render(b, encoded),
     }

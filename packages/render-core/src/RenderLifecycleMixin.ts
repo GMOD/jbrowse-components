@@ -17,7 +17,13 @@ export interface LifecycleHost extends IStateTreeNode {
 }
 
 export interface RenderingBackendCallbacks<B> {
-  upload: (backend: B) => void
+  /**
+   * Push bytes for the current data and say whether anything reached the
+   * backend. `true` forces a redraw, which a first arrival needs when the
+   * render callback's own dependencies are identity-stable across it; the
+   * map-diffing installers answer `false` for a run that uploaded nothing.
+   */
+  upload: (backend: B) => boolean
   /**
    * Issue draw calls for the current frame. Return `true` if something was
    * actually drawn (flips `canvasDrawn`), `false` to skip this tick
@@ -286,15 +292,9 @@ export function RenderLifecycleMixin() {
               // deterministically-throwing callback re-throws once per change,
               // each landing on `setRenderError`'s identity guard.
               try {
-                cbs.upload(b)
-                // Force the render autorun to re-fire after each upload.
-                // Needed when the render callback's observable dependencies
-                // stay identity-stable across an upload (e.g. renderState
-                // returning undefined before and after the first data
-                // arrives because autoscale hasn't resolved). Without this,
-                // first paint can be delayed until a user interaction
-                // shifts a render dep.
-                self.renderNow()
+                if (cbs.upload(b)) {
+                  self.renderNow()
+                }
               } catch (e) {
                 self.setRenderError(e)
               }

@@ -332,7 +332,7 @@ test('backend swap (context-loss recovery) re-uploads without re-encoding', () =
   expect(encodes).toBe(2)
 
   model.attachRenderingBackend<FakeRenderingBackend>(b.backend, () => ({
-    upload: () => {},
+    upload: () => true,
     render: () => false,
   }))
 

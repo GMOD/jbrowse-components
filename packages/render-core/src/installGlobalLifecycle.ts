@@ -57,6 +57,7 @@ export function installGlobalLifecycle<B>(
         upload(b, (key, value, uploadOne) => {
           syncUpload(b, key, value, uploadOne)
         })
+        return true
       },
       render,
     }

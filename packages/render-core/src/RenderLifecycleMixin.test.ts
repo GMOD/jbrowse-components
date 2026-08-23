@@ -27,6 +27,7 @@ test('attachRenderingBackend spawns one upload + render autorun and marks drawn'
       for (const k of data.keys()) {
         b.uploads.push(k)
       }
+      return true
     },
     render: b => {
       if (data.size === 0) {
@@ -53,12 +54,37 @@ test('attachRenderingBackend spawns one upload + render autorun and marks drawn'
   expect(model.canvasDrawn).toBe(true)
 })
 
+test('an upload that changed nothing does not force a redraw', () => {
+  const model = TestModel.create()
+  const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
+  const tick = observable.box(0)
+
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
+    upload: () => tick.get() % 2 === 0,
+    render: b => {
+      b.renders += 1
+      return true
+    },
+  }))
+  expect(backend.renders).toBe(1)
+
+  runInAction(() => {
+    tick.set(1)
+  })
+  expect(backend.renders).toBe(1)
+
+  runInAction(() => {
+    tick.set(2)
+  })
+  expect(backend.renders).toBe(2)
+})
+
 test('renderNow bumps renderTick so render autorun re-fires', () => {
   const model = TestModel.create()
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
 
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
-    upload: () => {},
+    upload: () => true,
     render: b => {
       b.renders += 1
       return true
@@ -82,6 +108,7 @@ test('stopRenderingBackend clears backend — autoruns idle', () => {
       for (const k of data.keys()) {
         b.uploads.push(k)
       }
+      return true
     },
     render: b => {
       b.renders += 1
@@ -121,6 +148,7 @@ test('re-calling attachRenderingBackend swaps backend without re-installing auto
         for (const k of data.keys()) {
           b.uploads.push(k)
         }
+        return true
       },
       render: (b: FakeRenderingBackend) => {
         b.renders += 1
@@ -158,7 +186,7 @@ test('a throw in the render callback sets renderError instead of escaping (no in
 
   const err = new Error('Unknown wiggle rendering type: ')
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
-    upload: () => {},
+    upload: () => true,
     render: () => {
       throw err
     },
@@ -197,7 +225,7 @@ test('canvasDrawn resets to false when directly cleared (clearAllRpcData contrac
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
 
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
-    upload: () => {},
+    upload: () => true,
     render: b => {
       b.renders += 1
       return true
@@ -272,7 +300,7 @@ test('painted tracks canvasDrawn for a display that does render one', () => {
   expect(model.painted).toBe(false)
 
   model.attachRenderingBackend<FakeRenderingBackend>(backend, () => ({
-    upload: () => {},
+    upload: () => true,
     render: () => true,
   }))
 
