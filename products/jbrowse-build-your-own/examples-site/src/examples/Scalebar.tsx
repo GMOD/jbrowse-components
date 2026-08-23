@@ -603,9 +603,6 @@ const viewport: React.CSSProperties = {
 const Scalebar = observer(function Scalebar() {
   const { view, session } = useCreateOnce(makeView)
   const ref = useWidthSetter(view)
-  // `usePanZoom` also returns `showZoomHint`, unused here: it is raised only
-  // when a wheel was ignored for want of ctrl, which cannot happen with
-  // scroll-to-zoom on. The Pan and zoom example has the toggle, and draws it.
   const { containerProps } = usePanZoom(ref, view)
   const rubberband = useRubberband(view)
   const mode = useSiteMode()

@@ -149,23 +149,6 @@ export interface WheelZoomControllerOptions {
   releaseOnPointerLeave?: boolean
   // observe every event this element receives, before any gate
   onEvent?: (event: WheelEvent) => void
-  /**
-   * A wheel that meant "zoom" and got nothing: vertical, no ctrl/meta,
-   * scroll-to-zoom off, and nothing nested inside having already claimed it.
-   * The gesture leaves no trace on any view, so this callback is the only way
-   * to see it happened — which is what the scroll-to-zoom prompt is built on
-   * (`useScrollZoomHint`).
-   *
-   * Fires from inside the target branch, so a gesture the controller released
-   * (`releaseOnPointerLeave`, or a `resolveTarget` that declined) is not
-   * reported: the view did nothing because it was not being asked, which is a
-   * different thing from doing nothing when it was.
-   *
-   * It does *not* say the page scrolled instead. With `swallowUnhandled` it
-   * certainly didn't, and without it that is up to the browser — a caller that
-   * cares has to watch for the scroll itself.
-   */
-  onUnhandled?: (event: WheelEvent) => void
 }
 
 interface WheelState {
@@ -218,7 +201,6 @@ export function createWheelZoomController({
   swallowUnhandled = false,
   releaseOnPointerLeave = false,
   onEvent,
-  onUnhandled,
 }: WheelZoomControllerOptions) {
   const frame = createFrameCoalescer()
   const s: WheelState = {
@@ -277,13 +259,6 @@ export function createWheelZoomController({
 
   function onWheel(event: WheelEvent) {
     onEvent?.(event)
-    // Read before this handler does any preventDefault of its own. Wheel events
-    // bubble, so a truthy value here means something nested inside already
-    // claimed the gesture — a display scrolling its own reads or rows off
-    // useVirtualScrollWheel. Those scrolls are virtual, painted from a model
-    // offset rather than a DOM scroller, so this flag is the only trace they
-    // leave.
-    const claimed = event.defaultPrevented
     const gated = presence !== undefined && !presence.isOver
     const target = gated ? undefined : resolveTarget(event)
     if (target && !(event.shiftKey && target.scrollZoom)) {
@@ -343,12 +318,6 @@ export function createWheelZoomController({
           Math.abs(deltaX) > Math.abs(2 * deltaY)
         ) {
           event.preventDefault()
-        }
-        // A vertical gesture that got here is one the user meant as a zoom and
-        // that nothing acted on — see onUnhandled. Everything else reaching
-        // this branch is a pan, which is an action.
-        if (Math.abs(deltaY) > Math.abs(deltaX) && !claimed) {
-          onUnhandled?.(event)
         }
         s.scrollDelta = accumulateScroll(s.scrollDelta, deltaX)
       }

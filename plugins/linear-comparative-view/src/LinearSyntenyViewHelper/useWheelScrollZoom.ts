@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 
-import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { createWheelZoomController } from '@jbrowse/core/util/wheelZoom'
 
 import type { ParentViewDuck } from './parentViewDuck.ts'
@@ -19,23 +18,15 @@ const SCROLL_IDLE_MS = 150
 // step, and the canvas swallows gestures it doesn't act on rather than letting
 // the page jump out from under a connector.
 //
-// `onUnhandled` is the scroll-to-zoom prompt's signal, and it matters more here
-// than over a track. Because of `swallowUnhandled` above, a plain vertical wheel
-// with scroll-to-zoom off doesn't even fall through to the page — it does
-// nothing at all, every time. Wheel over the ribbons and get silence, wheel
-// twenty pixels higher over a track and get told how to zoom, was the state of
-// things before this was wired.
+// `swallowUnhandled` is why a plain vertical wheel with scroll-to-zoom off does
+// nothing at all here rather than scrolling the page: the band is a few dozen
+// pixels of ribbon between two views, and a page that jumps mid-gesture takes
+// the connector the user was following with it.
 export function useWheelScrollZoom(
   canvas: HTMLCanvasElement | null,
   parentView: ParentViewDuck,
-  onUnhandled?: (event: WheelEvent) => void,
 ): UseWheelScrollZoomResult {
   const scrollingRef = useRef(false)
-  // stable, so a caller passing an inline closure doesn't rebind the listener
-  // every render
-  const notify = useEventCallback((event: WheelEvent) => {
-    onUnhandled?.(event)
-  })
 
   useEffect(() => {
     if (!canvas) {
@@ -52,7 +43,6 @@ export function useWheelScrollZoom(
           scrollingRef.current = false
         }, SCROLL_IDLE_MS)
       },
-      onUnhandled: notify,
       resolveTarget: () => ({
         views: parentView.views,
         scrollZoom: parentView.scrollZoom,
@@ -63,7 +53,7 @@ export function useWheelScrollZoom(
       dispose()
       clearTimeout(scrollTimer)
     }
-  }, [canvas, parentView, notify])
+  }, [canvas, parentView])
 
   return { scrollingRef }
 }

@@ -5,7 +5,7 @@ layer JBrowse's own view runs) turns events into those two calls:
 
 ```tsx
 const ref = useWidthSetter(view)
-const { containerProps, showZoomHint } = usePanZoom(ref, view)
+const { containerProps } = usePanZoom(ref, view)
 ```
 
 Spread `containerProps` on the element you measured. `touch-action: none` comes
@@ -18,11 +18,12 @@ still scroll.
 ## A bare wheel is a session preference
 
 `view.scrollZoom` decides it: on, the wheel zooms the way a map does. Off, it
-scrolls the page and only ctrl/cmd+wheel zooms, and `showZoomHint` says so when
-someone wheels and nothing moves. **Read it off the view rather than keeping
-your own copy**: displays that scroll vertically inside themselves consult the
-same flag to see whether the plain wheel is spoken for, so a private copy that
-disagrees gets you both at once.
+scrolls the page and only ctrl/cmd+wheel zooms — which is undiscoverable on its
+own, so give the preference a visible control the way JBrowse's own header does
+(`@jbrowse/core/ui/ScrollZoomToggle`, or the checkbox in the example above).
+**Read it off the view rather than keeping your own copy**: displays that scroll
+vertically inside themselves consult the same flag to see whether the plain
+wheel is spoken for, so a private copy that disagrees gets you both at once.
 
 ## What the hook handles
 

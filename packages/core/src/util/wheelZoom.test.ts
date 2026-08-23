@@ -217,19 +217,16 @@ describe('createWheelZoomController', () => {
     scrollZoom,
     swallowUnhandled = false,
     releaseOnPointerLeave = false,
-    onUnhandled,
   }: {
     views: ReturnType<typeof makeView>[]
     scrollZoom: boolean
     swallowUnhandled?: boolean
     releaseOnPointerLeave?: boolean
-    onUnhandled?: (event: WheelEvent) => void
   }) {
     dispose = createWheelZoomController({
       element,
       swallowUnhandled,
       releaseOnPointerLeave,
-      onUnhandled,
       resolveTarget: () => ({
         views,
         scrollZoom,
@@ -298,76 +295,6 @@ describe('createWheelZoomController', () => {
     expect(event.defaultPrevented).toBe(false)
     expect(view.zoomTo).not.toHaveBeenCalled()
     expect(view.horizontalScroll).not.toHaveBeenCalled()
-  })
-
-  // onUnhandled is the whole signal behind the scroll-to-zoom prompt, and it
-  // reports a *non*-event, so nothing downstream can second-guess it
-  describe('onUnhandled', () => {
-    test('reports a vertical wheel that no view acted on', () => {
-      const onUnhandled = jest.fn()
-      setup({ views: [makeView()], scrollZoom: false, onUnhandled })
-      wheel({ deltaY: 100 })
-
-      expect(onUnhandled).toHaveBeenCalledTimes(1)
-    })
-
-    test('still reports it when the gesture was swallowed', () => {
-      const onUnhandled = jest.fn()
-      setup({
-        views: [makeView()],
-        scrollZoom: false,
-        swallowUnhandled: true,
-        onUnhandled,
-      })
-      // the synteny band's case: the page can't have it either, so this is the
-      // deadest a wheel gets
-      wheel({ deltaY: 100 })
-
-      expect(onUnhandled).toHaveBeenCalledTimes(1)
-    })
-
-    test.each([
-      ['a zoom', { deltaY: 100, ctrlKey: true }, false],
-      ['a pan', { deltaX: 100 }, false],
-      ['a scroll-zoom', { deltaY: 100 }, true],
-    ])('stays quiet for %s', (_name, init, scrollZoom) => {
-      const onUnhandled = jest.fn()
-      setup({ views: [makeView()], scrollZoom, onUnhandled })
-      wheel(init)
-
-      expect(onUnhandled).not.toHaveBeenCalled()
-    })
-
-    test('stays quiet for a wheel something nested already claimed', () => {
-      const onUnhandled = jest.fn()
-      setup({ views: [makeView()], scrollZoom: false, onUnhandled })
-      const inner = document.createElement('div')
-      element.append(inner)
-      // a pileup scrolling its reads paints from a model offset, not a DOM
-      // scroller, so preventDefault is the only trace it leaves
-      inner.addEventListener('wheel', e => {
-        e.preventDefault()
-      })
-      wheel({ deltaY: 100 }, inner)
-
-      expect(onUnhandled).not.toHaveBeenCalled()
-    })
-
-    test('stays quiet for a gesture the controller released', () => {
-      const onUnhandled = jest.fn()
-      setup({
-        views: [makeView()],
-        scrollZoom: false,
-        releaseOnPointerLeave: true,
-        onUnhandled,
-      })
-      element.dispatchEvent(new MouseEvent('mouseleave'))
-      // the view did nothing because it was not being asked, which is not the
-      // same as doing nothing when it was
-      wheel({ deltaY: 100 })
-
-      expect(onUnhandled).not.toHaveBeenCalled()
-    })
   })
 
   test('swallowUnhandled consumes a gesture it takes no action on', () => {

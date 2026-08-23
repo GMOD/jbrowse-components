@@ -9,8 +9,7 @@ import { alpha } from './palette.ts'
 import { SCROLL_ZOOM_HELP, SCROLL_ZOOM_LABEL } from './scrollZoomLabels.ts'
 
 // Two beats: one is a blink that a peripheral eye can miss, three outstays a
-// confirmation. Fast enough to still be running when the prompt that wrote the
-// preference has faded.
+// confirmation.
 const PULSE_MS = 550
 const PULSE_COUNT = 2
 
@@ -65,18 +64,17 @@ export interface ScrollZoomToggleModel {
 /**
  * The persistent control for scroll-to-zoom, shared by every view that has one.
  *
- * **Carries its own label.** The prompt that teaches this gesture is transient
- * — it lingers seconds, and then not again for minutes — so this button is the
- * only durable thing a user has to find the preference again, or turn it back
- * off.
- * An icon alone is not findable, whichever icon: the glyph says "zoom" at best
- * and nothing at all about the wheel.
+ * **Carries its own label.** Scroll-to-zoom is off by default, so a wheel over
+ * the tracks does nothing until someone finds this — and the words in the header
+ * are the whole of how they find it. An icon alone is not findable, whichever
+ * icon: the glyph says "zoom" at best and nothing at all about the wheel. The
+ * tooltip is where ctrl/⌘+scroll, which zooms whatever the preference says, is
+ * named.
  *
- * **And it pulses when the preference changes.** Every other way to write it is
- * somewhere else on the screen — the prompt at the cursor over the tracks, a
- * view menu, the Preferences dialog — so the moment the setting is learned is
- * also the moment this button is not being looked at, and the prompt then fades
- * within seconds. The ring is what connects the two: it says the thing you just
+ * **And it pulses when the preference changes.** The other ways to write it are
+ * somewhere else on the screen — a view menu, the Preferences dialog — so the
+ * moment the setting is learned is also the moment this button is not being
+ * looked at. The ring is what connects the two: it says the thing you just
  * turned on lives *here*, which is what a user who wants it back off has to
  * know. Its own click pulses too — the answer to "where is this" should not
  * depend on which of the several places wrote it, and the other views' copies

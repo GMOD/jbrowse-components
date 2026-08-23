@@ -10,7 +10,7 @@ import {
   useFocusOnInteraction,
 } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useScrollZoomHint } from '@jbrowse/core/util/usePanZoom'
+import { useWheelZoom } from '@jbrowse/core/util/usePanZoom'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
@@ -27,12 +27,6 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 // lazies
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton.tsx'))
-const ScrollZoomHint = lazy(() => import('@jbrowse/core/ui/ScrollZoomHint'))
-
-// Core's default is sized for the bare caption an embedder draws. This prompt
-// carries a button, so it has to outlast the trip from "I read it" to "my
-// cursor is on it".
-const HINT_LINGER_MS = 5000
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -93,33 +87,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   // a point that shows none of it. `browser-tests/probe-scroll-gutter.ts`
   // measures the band.
   const tracksRef = useRef<HTMLDivElement>(null)
-  // Binds the gestures and reports the wheel that meant "zoom" and moved
-  // nothing, which is what the hint below is for.
-  const {
-    showZoomHint,
-    zoomHintAt,
-    zoomHintMounted,
-    dismissZoomHint,
-    setZoomHintHeld,
-  } = useScrollZoomHint(tracksRef, model, {
-    lingerMs: HINT_LINGER_MS,
-    // The gesture is the tracks area's; the *prompt* is the whole view's. The
-    // chrome is a gutter only where there is page to scroll, and where there
-    // isn't — an empty view, a short page — a wheel over it does nothing at
-    // all, which on a view with no tracks open is most of its surface.
-    outerRef: ref,
-    // one pacing for the whole session, not one per view: a synteny view is
-    // three of these side by side
-    enabled: session.canShowScrollZoomHint,
-    onShow: () => {
-      session.noteScrollZoomHintShown()
-    },
-    // they replied, so the next raise is the long way off rather than the
-    // backoff's next step
-    onAnswered: () => {
-      session.snoozeScrollZoomHints()
-    },
-  })
+  useWheelZoom(tracksRef, model)
   useEffect(() => {
     const curr = ref.current
     if (!curr) {
@@ -230,24 +198,6 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           )}
         </div>
       </div>
-      {/* Portals itself to the body and positions in viewport coordinates, so
-      it sits outside the tracks rather than inside them — see ScrollZoomHint.
-      Kept a sibling of the view rather than a child: a portal's events still
-      bubble along the *React* tree, so nested here it would drive the hover
-      handler above from wherever on screen it happens to be drawn. */}
-      {zoomHintMounted ? (
-        <Suspense fallback={null}>
-          <ScrollZoomHint
-            show={showZoomHint}
-            at={zoomHintAt}
-            onEnable={() => {
-              model.setScrollZoom(true)
-              dismissZoomHint()
-            }}
-            onHeldChange={setZoomHintHeld}
-          />
-        </Suspense>
-      ) : null}
     </>
   )
 })

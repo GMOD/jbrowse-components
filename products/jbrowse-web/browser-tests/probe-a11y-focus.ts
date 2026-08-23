@@ -239,8 +239,8 @@ async function main() {
     ),
   )
 
-  // the views scroll inside a container, not the document, so find the port the
-  // way probe-scrollzoom does rather than assuming document.scrollingElement
+  // the views scroll inside a container, not the document, so walk up for the
+  // port rather than assuming document.scrollingElement
   const scrolled = await page.evaluate(() => {
     const w = window as unknown as { __port?: Element }
     const start = document.querySelector('[data-testid^="view-container-"]')

@@ -1,9 +1,8 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ErrorBanner, GpuFallbackButton } from '@jbrowse/core/ui'
-import { getSession, openFeatureWidget } from '@jbrowse/core/util'
+import { openFeatureWidget } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useScrollZoomHintState } from '@jbrowse/core/util/usePanZoom'
 import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { transaction } from 'mobx'
@@ -20,12 +19,6 @@ import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts
 import type { OffscreenMateHover } from './OffscreenMateTooltip.tsx'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type React from 'react'
-
-const ScrollZoomHint = lazy(() => import('@jbrowse/core/ui/ScrollZoomHint'))
-
-// The band's prompt carries a button, so it has to outlast the trip from "I
-// read it" to "my cursor is on it" — same reason the genome view passes this.
-const HINT_LINGER_MS = 5000
 
 const useStyles = makeStyles()({
   root: {
@@ -151,31 +144,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
     canvasKey,
   } = useRenderingBackend(SyntenyRendererFactory, model)
 
-  // The prompt for a wheel the band ate and did nothing with — see
-  // useWheelScrollZoom, where that is a guaranteed outcome rather than a
-  // conditional one. Same session-wide pacing the genome views keep, so a
-  // synteny view's three wheel surfaces can't interrupt three times over.
-  const session = getSession(model)
-  const {
-    showZoomHint,
-    zoomHintAt,
-    zoomHintMounted,
-    dismissZoomHint,
-    setZoomHintHeld,
-    noteDeadWheel,
-  } = useScrollZoomHintState({
-    lingerMs: HINT_LINGER_MS,
-    enabled: session.canShowScrollZoomHint,
-    onShow: () => {
-      session.noteScrollZoomHintShown()
-    },
-    // they replied, so the next raise is the long way off rather than the
-    // backoff's next step
-    onAnswered: () => {
-      session.snoozeScrollZoomHints()
-    },
-  })
-  const { scrollingRef } = useWheelScrollZoom(canvas, parentView, noteDeadWheel)
+  const { scrollingRef } = useWheelScrollZoom(canvas, parentView)
 
   // One banner per level so GPU lifecycle errors and per-display fetch errors
   // (e.g. PAF 404) never stack visually. The fetch half is the level's own
@@ -429,22 +398,6 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
             }
           }}
         />
-      ) : null}
-      {/* portals itself to the body and positions in viewport coordinates —
-      the band is a few dozen pixels tall, so nothing drawn inside it could be
-      read anyway */}
-      {zoomHintMounted ? (
-        <Suspense fallback={null}>
-          <ScrollZoomHint
-            show={showZoomHint}
-            at={zoomHintAt}
-            onEnable={() => {
-              session.setScrollZoom(true)
-              dismissZoomHint()
-            }}
-            onHeldChange={setZoomHintHeld}
-          />
-        </Suspense>
       ) : null}
     </div>
   )

@@ -153,47 +153,6 @@ const TrackRow = observer(function TrackRow({
   )
 })
 
-/**
- * The prompt that makes ctrl-to-zoom discoverable, and the reason that mode is
- * usable at all: without it a wheel over the browser just does nothing visible.
- * `showZoomHint` is raised for exactly that -- a wheel the view ignored for want
- * of the modifier, *and* that the page did not scroll either, so it moved
- * nothing at all -- and clears itself. The scroll half of that gate is why this
- * doesn't flash on every wheel while a reader scrolls down the page.
- *
- * Stays mounted and fades rather than mounting on demand, so it can't flash a
- * layout change into the middle of a gesture. Needs a `position: relative`
- * container, and does not take pointer events -- it is a label, not a shield,
- * and the gesture that summoned it must keep reaching whatever is underneath.
- */
-function ZoomHint({ show }: { show: boolean }) {
-  return (
-    <div
-      aria-hidden={!show}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        // over the track's own overlay layer, which `TrackRow` mounts at 3 --
-        // the prompt is a caption over the whole box, so nothing the display
-        // floats in its corner should sit on top of it
-        zIndex: 5,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none',
-        // CSS system colours, so this reads on whatever the host page is
-        background: 'color-mix(in srgb, Canvas 62%, transparent)',
-        color: 'CanvasText',
-        fontSize: '0.95rem',
-        opacity: show ? 1 : 0,
-        transition: 'opacity 150ms ease',
-      }}
-    >
-      Use ctrl + scroll to zoom
-    </div>
-  )
-}
-
 // A display paints no background of its own -- its labels are drawn straight
 // onto whatever is behind them, so light-theme text on a dark page is near-black
 // on near-black. This is the page's own answer to "which mode am I in".
@@ -280,7 +239,7 @@ const PanAndZoom = observer(function PanAndZoom({
 }) {
   const { view, session } = useCreateOnce(() => makeView(scrollZoom))
   const ref = useWidthSetter(view)
-  const { containerProps, showZoomHint } = usePanZoom(ref, view)
+  const { containerProps } = usePanZoom(ref, view)
   const mode = useSiteMode()
 
   return (
@@ -315,7 +274,6 @@ const PanAndZoom = observer(function PanAndZoom({
             minHeight: wiggleTrack.displayDefaults.height,
           }}
         >
-          <ZoomHint show={showZoomHint} />
           {view.status.type === 'ready' ? (
             <TrackRow view={view} trackId="volvox_microarray" />
           ) : (

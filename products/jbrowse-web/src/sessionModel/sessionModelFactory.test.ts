@@ -668,55 +668,6 @@ describe('JBrowseWebSessionModel', () => {
     })
   })
 
-  describe('scroll-to-zoom hint pacing', () => {
-    beforeEach(() => {
-      localStorage.clear()
-      jest.useFakeTimers()
-    })
-    afterEach(() => {
-      jest.useRealTimers()
-    })
-
-    it('goes quiet on a raise and speaks again on its own', () => {
-      const session = createTestSession()
-      expect(session.canShowScrollZoomHint).toBe(true)
-      session.noteScrollZoomHintShown()
-      expect(session.canShowScrollZoomHint).toBe(false)
-      jest.advanceTimersByTime(30_000)
-      expect(session.canShowScrollZoomHint).toBe(true)
-    })
-
-    it('each raise buys a longer quiet than the last', () => {
-      const session = createTestSession()
-      session.noteScrollZoomHintShown()
-      jest.advanceTimersByTime(30_000)
-      session.noteScrollZoomHintShown()
-      jest.advanceTimersByTime(30_000)
-      // the second pause is twice the first, so half of it is not enough
-      expect(session.canShowScrollZoomHint).toBe(false)
-      jest.advanceTimersByTime(30_000)
-      expect(session.canShowScrollZoomHint).toBe(true)
-    })
-
-    it('an answer buys the longest quiet there is, and still not silence', () => {
-      const session = createTestSession()
-      session.snoozeScrollZoomHints()
-      jest.advanceTimersByTime(9 * 60_000)
-      expect(session.canShowScrollZoomHint).toBe(false)
-      jest.advanceTimersByTime(60_000)
-      expect(session.canShowScrollZoomHint).toBe(true)
-    })
-
-    it('setting the preference leaves the prompt free to speak', () => {
-      // it can't fire while scroll-to-zoom is on — the wheel zooms, so no wheel
-      // is dead — but turning it back off is the user who most needs the reply
-      const session = createTestSession()
-      session.setScrollZoom(true)
-      session.setScrollZoom(false)
-      expect(session.canShowScrollZoomHint).toBe(true)
-    })
-  })
-
   describe('getPreferenceChanges (reset-to-defaults diff)', () => {
     // PreferencesSessionMixin persists preferencesOverrides to localStorage and
     // reloads them on attach, so a prior test's overrides would otherwise leak

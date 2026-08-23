@@ -162,13 +162,6 @@ export interface AbstractSessionModel
   theme: Theme
   animationMode: AnimationMode
   scrollZoom: boolean
-  // pacing for the scroll-to-zoom prompt, kept session-wide rather than per
-  // view so a synteny view's three wheel surfaces can't interrupt three times
-  // over — see BaseSessionModel's `canShowScrollZoomHint`
-  canShowScrollZoomHint: boolean
-  scrollZoomHintCount: number
-  noteScrollZoomHintShown: () => void
-  snoozeScrollZoomHints: () => void
   // whether region highlight bands (URL/view highlights and bookmark overlays)
   // are drawn; one session-wide toggle shared by all views
   highlightsVisible: boolean

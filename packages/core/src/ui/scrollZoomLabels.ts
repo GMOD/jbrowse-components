@@ -13,8 +13,8 @@ export const SCROLL_ZOOM_LABEL = 'Zoom on scroll'
 
 /**
  * One paragraph doing two jobs: the control's tooltip and the menu item's help
- * text. Short enough to hover, because it is also the only explanation the
- * icon-only variants carry.
+ * text. Short enough to hover, because it is the only explanation there is —
+ * nothing else on screen names the gesture.
  *
  * It names where the page still scrolls, which is the part users cannot guess:
  * with this on, the wheel over a track is the view's, and no modifier takes it
