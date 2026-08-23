@@ -82,9 +82,9 @@ types a plugin can register (adapters, displays, views, widgets) and
 ### What is special about JBrowse 2
 
 JBrowse 2's plugin system supports custom view types (e.g. circular, dotplot)
-alongside the built-in ones, making it a platform for genomic visualization
-rather than just a genome browser. The [gallery](/gallery/) shows what that
-looks like in practice, and each figure there opens live in the app.
+alongside the built-in ones, making it a platform for genomic visualization. The
+[gallery](/gallery/) shows what that looks like in practice, and each figure
+there opens live in the app.
 
 ### What is the difference between JBrowse Web and JBrowse Desktop
 
@@ -115,14 +115,16 @@ No. Your browser reads your data files directly from wherever they are hosted,
 so reads, variants and annotations never pass through a JBrowse server. JBrowse
 Desktop works entirely offline against local files.
 
-Two things do use the network. JBrowse Web and JBrowse Desktop send a usage
-report on load: the JBrowse version, counts of tracks, assemblies and open
-views, track type names, plugin names, screen size, and which renderer was
-selected. No file URLs, track names or data are included, and
-[`disableAnalytics: true`](/docs/config_guides/disable_analytics) turns it off
-entirely (the embedded components never report anything). Separately, the Share
-button uploads a session, which is
-[encrypted in your browser before it is sent](#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web).
+Two things do use the network:
+
+- **A usage report**, sent on load by JBrowse Web and JBrowse Desktop: the
+  JBrowse version, counts of tracks, assemblies and open views, track type
+  names, plugin names, screen size, and which renderer was selected. No file
+  URLs, track names or data are included, and
+  [`disableAnalytics: true`](/docs/config_guides/disable_analytics) turns it off
+  entirely (the embedded components never report anything).
+- **The Share button**, which uploads a session
+  [encrypted in your browser before it is sent](#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web).
 
 ### How do I make an image for a publication
 
@@ -142,9 +144,9 @@ after some interaction - drive JBrowse Web with puppeteer or Playwright:
 navigate to a URL that already carries the state you want (see
 [URL parameters](/docs/urlparams)), wait for it to settle, then capture.
 [](/docs/automating#headless--puppeteer) has a worked example along with the two
-things that usually go wrong, namely that headless Chrome needs
-`--enable-unsafe-swiftshader` before GPU-rendered tracks appear, and that a
-capture taken before the displays report done comes out blank.
+things that usually go wrong: headless Chrome needs
+`--enable-unsafe-swiftshader` before GPU-rendered tracks appear, and a capture
+taken before the displays report done comes out blank.
 
 Nearly every figure on this site is generated that way, from a declarative spec
 per image in
@@ -169,9 +171,8 @@ can help extract track definitions from a JBrowse 1 config.
 
 JBrowse 2 also has a built-in **JBrowse 1 connection** feature that can connect
 directly to a running JBrowse 1 data directory and read its `trackList.json`,
-letting you browse your existing JBrowse 1 tracks without a full migration. This
-is not recommended for most purposes. It is limited in functionality and is
-mainly useful as a temporary bridge.
+letting you browse your existing JBrowse 1 tracks without a full migration. It
+is limited in functionality and mainly useful as a temporary bridge.
 
 ### How do I cite JBrowse 2
 
@@ -201,9 +202,8 @@ jbrowse upgrade /var/www/html/jb2    # replace the app files with the latest rel
 
 The release contains no config.json, so `upgrade` leaves yours in place.
 
-The CLI is optional, though it is the easiest way to add data, since `add-track`
-works out the track type, finds the index and writes the config entry for you.
-Without it, download a zip from the
+The CLI is optional. `add-track` works out the track type, finds the index and
+writes the config entry for you. Without it, download a zip from the
 [releases page](https://github.com/GMOD/jbrowse-components/releases), unzip it
 into your web directory, and edit `config.json` in a text editor. See
 [config basics](/docs/config_guides/intro) for the shape of the file, the
@@ -315,7 +315,7 @@ To check, open dev tools' Network tab, request the file, and confirm no
 `Content-Encoding: gzip` header on the response.
 
 Compressing `config.json` with `Content-Encoding: gzip` is fine, that's just a
-text file. The rule only applies to BGZF binary files. See also
+text file. The rule applies to the BGZF binary files above. See also
 [Should I configure gzip on my web server?](#should-i-configure-gzip-on-my-web-server).
 
 ### How do I put my data behind a login
@@ -542,9 +542,8 @@ levels:
   it does not know (which is expected if a plugin registers it), or a legacy key
   a migration rewrites.
 
-Types your plugins register are not known to it, so those come through as
-warnings. Add `--json` for machine-readable output; it exits non-zero when there
-are errors, so it can gate a deploy. See [](/docs/agents) if an AI assistant is
+Add `--json` for machine-readable output; it exits non-zero when there are
+errors, so it can gate a deploy. See [](/docs/agents) if an AI assistant is
 writing the config.
 
 ## Behavior and design
@@ -600,10 +599,8 @@ On alignments and MAF tracks the message can appear at any zoom, and there it
 offers only **Force load**. Those two formats cost bytes per reference base
 times something zooming does not reduce — read depth, and the number of aligned
 species — so a gene-sized window over a deep pileup or a 470-way alignment is
-still tens of megabytes. Other tracks stop being guarded below about 20 kb, on
-the assumption that a small region is a small download; for these two that
-assumption is wrong, so the guard stays on and the banner drops the "zoom in"
-suggestion rather than sending you after a download that will not get smaller.
+still tens of megabytes. Other tracks stop being guarded below about 20 kb,
+where a small region is a small download.
 
 #### Raising the feature limit
 
@@ -611,8 +608,8 @@ suggestion rather than sending you after a download that will not get smaller.
 is **features per pixel of track width**, and it defaults to `1`. So the feature
 count a track will draw is roughly the width of your browser window in pixels:
 about 1,500 features on a 1,500px-wide window. Doubling the slot to `2` allows
-about 3,000, and so on. It is a density rather than a count because the same
-region drawn in a wider window has more room, so the budget should grow with it.
+about 3,000, and so on. It is a density because the same region drawn in a wider
+window has more room, so the budget grows with the window.
 
 ```json addtrack
 {
@@ -701,8 +698,7 @@ signa000000435
 ```
 
 JBrowse also extends the standard trix format: the `.ix` file includes each
-feature's name and genomic location in an encoded format, not just the gene
-name.
+feature's name and genomic location in an encoded format.
 
 ## URL params
 
@@ -719,9 +715,8 @@ Pasting the URL bar into another tab on the same computer restores the session
 from sessionStorage (same tab) or IndexedDB (new tab), but those sessions are
 not accessible to other users.
 
-If you would rather build the link yourself than click Share, the
-[URL parameters](/docs/urlparams) page documents every form, from a plain
-`&loc=` to a full session spec.
+To build the link yourself, the [URL parameters](/docs/urlparams) page documents
+every form, from a plain `&loc=` to a full session spec.
 
 ### How does session sharing with shortened URLs work in JBrowse Web
 
@@ -741,7 +736,7 @@ The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 ### Are my share links reproducible
 
 It depends which link you mean. The gear icon in the Share dialog offers three
-formats, and the first behaves differently from the other two:
+formats:
 
 - The short link (`&session=share-<ID>&password=<KEY>`) is _not_ reproducible.
   Each click of the Share button mints a new random encryption key and uploads a
@@ -757,11 +752,10 @@ formats, and the first behaves differently from the other two:
   [into the URL fragment](/docs/urlparams#query-string-or-hash-fragment) rather
   than the query string.
 
-The one thing that can break reproducibility is your **config**, not the link. A
-restored session references tracks by `trackId`, so if a redeploy regenerates
-`config.json` with different `trackId`s, the link can no longer find those
-tracks. Keep `trackId`s deterministic across builds and shared links stay
-stable. See
+Reproducibility can still break through your **config**. A restored session
+references tracks by `trackId`, so if a redeploy regenerates `config.json` with
+different `trackId`s, the link can no longer find those tracks. Keep `trackId`s
+deterministic across builds and shared links stay stable. See
 [keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)
 and
 [why a saved session fails to load](#why-does-my-saved-session-fail-to-load).
@@ -802,32 +796,35 @@ A few other things worth checking:
   [the stats-estimation question](#how-does-jbrowse-know-when-to-display-the-zoom-in-to-see-more-features-message))
 
 (A file that's bgzip compressed or tabix/CSI indexed incorrectly usually throws
-an error rather than rendering blank, so that shows up differently.)
+an error rather than rendering blank.)
 
 ### My tracks are blank or render incorrectly
 
 If the menus and track names look fine but the features themselves are missing,
-smeared, or the wrong color, the drawing path is the more likely cause than the
-data. [`&renderer=`](/docs/urlparams#renderer) pins which one is used, so you
-can try each in turn: no parameter for the usual WebGPU-first detection,
-`?renderer=webgpu` to require WebGPU, `?renderer=webgl` for WebGL2, and
-`?renderer=canvas2d` for software drawing. On JBrowse Desktop the same choice is
-the
+smeared, or the wrong color, the drawing path is the likely cause.
+[`&renderer=`](/docs/urlparams#renderer) pins which one is used, so you can try
+each in turn:
+
+- no parameter - the usual WebGPU-first detection
+- `?renderer=webgpu` - require WebGPU
+- `?renderer=webgl` - WebGL2
+- `?renderer=canvas2d` - software drawing
+
+On JBrowse Desktop the same choice is the
 [`--renderer` flag](/docs/quickstart_desktop#launching-from-the-command-line).
 
-That identifies where the problem is rather than fixing it, so please
+That identifies where the problem is, so please
 [open an issue](https://github.com/GMOD/jbrowse-components/issues) noting which
 of the three worked, along with your browser, operating system and graphics
 card. Graphics errors are printed to the browser's developer console, so include
 anything there.
 
-One case has a real fix. With many views open, the browser can hit its limit on
-live WebGL contexts (Chrome allows about 16) and take one back from a track,
-which shows as a "WebGL context lost" banner there. Retry gets it back if
-another view has since freed capacity, and the banner's **Use Canvas2D** button
-switches drawing to software for the rest of the session: slower on dense data,
-unaffected by how many views are open. Closing views you aren't using also frees
-contexts.
+With many views open, the browser can hit its limit on live WebGL contexts
+(Chrome allows about 16) and take one back from a track, which shows as a "WebGL
+context lost" banner there. Retry gets it back if another view has since freed
+capacity, and the banner's **Use Canvas2D** button switches drawing to software
+for the rest of the session: slower on dense data, unaffected by how many views
+are open. Closing views you aren't using also frees contexts.
 
 ### Why is my track slow
 
@@ -840,12 +837,11 @@ is what keeps a wide view from attempting this by accident.
 
 Some adapters read a plain text file with no index (`Gff3Adapter`, `VcfAdapter`,
 `BedAdapter`, `PAFAdapter`). These parse the whole file each time the track
-loads, which is reasonable for a small file and the wrong choice for a large
-one. Converting to the bgzip and tabix indexed equivalent, or to
-[PIF](/docs/developer_guides/pif_format) (`jbrowse make-pif`) for PAF, changes
-the cost from whole-file to per-region. The cookbook's
-[large alignments](/docs/cookbook#synteny-large-alignments) recipe covers the
-synteny case.
+loads, which is reasonable for a small file. Converting to the bgzip and tabix
+indexed equivalent, or to [PIF](/docs/developer_guides/pif_format)
+(`jbrowse make-pif`) for PAF, changes the cost from whole-file to per-region.
+The cookbook's [large alignments](/docs/cookbook#synteny-large-alignments)
+recipe covers the synteny case.
 
 Server behavior matters as well. Reads are many small range requests, so latency
 counts for more than bandwidth, and a server that ignores `Range` and returns
@@ -866,11 +862,11 @@ At minimum the data server must:
   bytes (not `200` with the whole file).
 
 You do **not** need to expose `Content-Range`. JBrowse detects end-of-file from
-short/`416` range responses rather than needing a `stat()`/file-size call, so
-range reads work even when `Content-Range` is hidden by CORS. Exposing it is
-optional polish (it lets JBrowse report the true file size in a few places like
-the spreadsheet importer). `Content-Length` is a CORS-safelisted response header
-and is always readable, so download progress works regardless.
+short/`416` range responses, so range reads work even when `Content-Range` is
+hidden by CORS. Exposing it is optional polish (it lets JBrowse report the true
+file size in a few places like the spreadsheet importer). `Content-Length` is a
+CORS-safelisted response header and is always readable, so download progress
+works regardless.
 
 For local development only, launching Chrome with `--disable-web-security` is a
 temporary workaround.
@@ -899,10 +895,9 @@ aws s3api put-bucket-cors --bucket YOUR_BUCKET --cors-configuration \
   '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["Range"],"ExposeHeaders":["Content-Range","Content-Length","Accept-Ranges"]}]}'
 ```
 
-`ExposeHeaders` is included above for completeness but isn't required for range
-reads (see above). To verify, open dev tools' Network tab and confirm the file
-request returns `206 Partial Content` with an `Access-Control-Allow-Origin`
-header.
+`ExposeHeaders` above is optional for range reads (see above). To verify, open
+dev tools' Network tab and confirm the file request returns
+`206 Partial Content` with an `Access-Control-Allow-Origin` header.
 
 For **MinIO**, per-bucket CORS (`mc cors set` / the `put-bucket-cors` S3 API) is
 only available in MinIO AIStor (the commercial edition). The community server
@@ -917,7 +912,7 @@ export MINIO_API_CORS_ALLOW_ORIGIN="https://your-jbrowse-host.example.com"
 ### Why does my saved session fail to load
 
 Changing or deleting a track's ID breaks any saved session that references it.
-The whole session fails, not just that track. Make these changes carefully.
+The whole session fails, not just that track.
 
 ### What should I do if the Share system isn't working
 
@@ -933,11 +928,10 @@ your server.
 Embedded views are designed for genome browsing within an existing webpage. For
 a standalone browser, run JBrowse Web instead.
 
-There are three options rather than two, because `@jbrowse/react-app2` is the
-whole JBrowse app as a React component, in between a single embedded view and a
-deployed instance. See [embedded components](/docs/embedded_components) for
-picking a package, and [automating JBrowse](/docs/automating) for driving any of
-them from code.
+`@jbrowse/react-app2` sits between an embedded view and a deployed instance: the
+whole JBrowse app as a React component. See
+[embedded components](/docs/embedded_components) for picking a package, and
+[automating JBrowse](/docs/automating) for driving any of them from code.
 
 |                | Single-view components (LGV, CGV) | `@jbrowse/react-app2`                      | JBrowse Web                                                      |
 | -------------- | --------------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |

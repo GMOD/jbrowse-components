@@ -198,8 +198,8 @@ off: the color and the row label carry the same four categories.
 
 ## Reading the painted crossovers
 
-The painting comes straight from the data. The four rows are each parent's two
-copies, blues for father HG02026 and reds for mother HG02025:
+The four rows are each parent's two copies, blues for father HG02026 and reds
+for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display. Blue rows are father HG02026's two haplotypes, red rows are mother HG02025's. Each crossover is a spot where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 

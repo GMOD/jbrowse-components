@@ -214,7 +214,7 @@ natural-log p-value column would need. See the
 }
 ```
 
-## Reading the result
+## Reading the coat-color peak
 
 The coat-color scan puts a plateau of tied markers on chr4, whose interval
 contains _Tyrp1_. To line the painting up with it, right-click the painting at

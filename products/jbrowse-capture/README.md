@@ -8,12 +8,11 @@ npx @jbrowse/capture --hub hg38 --loc BRCA1 \
   --track hg38-ncbiRefSeqCurated --track hg38-phyloP100way -o brca1.png
 ```
 
-No config to write and no server to run: `--hub` names an assembly on
-[genomes.jbrowse.org](https://genomes.jbrowse.org), which hosts a ready-made
-JBrowse config per UCSC and GenArk genome, and `--loc` takes a gene name because
-those configs ship a text index.
+`--hub` names an assembly on [genomes.jbrowse.org](https://genomes.jbrowse.org),
+which hosts a ready-made JBrowse config per UCSC and GenArk genome, and `--loc`
+takes a gene name because those configs ship a text index.
 
-## Why this exists rather than a `page.screenshot()`
+## Knowing when JBrowse has finished rendering
 
 Knowing when a genome browser is done is the entire problem. JBrowse loads its
 config, builds a session, resolves an assembly, fetches each track, and then
@@ -23,17 +22,21 @@ a picture of an empty browser that looks like a successful run.
 Every readiness signal JBrowse publishes is **negative**: no loading overlay, no
 display in its loading phase, no unpainted canvas. All of them therefore pass on
 a page whose JavaScript has not started yet. Measured against
-`jbrowse.org/code/jb2/latest`: `networkidle2` resolves at ~350ms, the session
-appears at ~880ms, the assembly and tracks land at ~2500ms, and the loading
-overlay only goes up _after that_. A wait chain built from those signals alone
-finishes in under a second and reports success.
+`jbrowse.org/code/jb2/latest`:
+
+- `networkidle2` resolves at ~350ms
+- the session appears at ~880ms
+- the assembly and tracks land at ~2500ms
+- the loading overlay only goes up _after that_
+
+A wait chain built from those signals alone finishes in under a second and
+reports success.
 
 So this package puts a **positive gate** in front of them, read off the live MST
 session model that jbrowse-web publishes as `window.JBrowseSession`: the session
 exists, its views are initialized, and the assembly and trackIds you asked for
 are the ones actually open. A config URL that 404s, a trackId the config does
-not define, and an assembly name that does not match all fail there, loudly,
-instead of producing a beautiful photograph of nothing.
+not define, and an assembly name that does not match all fail there, loudly.
 
 ## Library
 
@@ -56,23 +59,24 @@ const tracks = await page.evaluate(
 await browser.close()
 ```
 
-`waitForJBrowseReady(page)` is the wait on its own, for a page you navigated
-yourself. The individual stages (`waitForSession`, `waitForLoadingComplete`,
-`waitForDisplaysDone`, `waitForQuiescent`, ...) are exported too, and each one
-documents what it can and cannot tell you.
+Two waits, depending on what you did:
 
-After you CLICK something, the wait is `waitForAppSettled(page)` instead. A page
-that is loading starts out `loading` and the transition into `ready` is it
-finishing; a page you just clicked is already `ready` and stays that way until
-the click's work registers, so waiting for `ready` there returns on the
-pre-click frame. `waitForAppSettled` requires it to hold.
+- **`waitForJBrowseReady(page)`** is the wait on its own, for a page you
+  navigated yourself. The individual stages (`waitForSession`,
+  `waitForLoadingComplete`, `waitForDisplaysDone`, `waitForQuiescent`, ...) are
+  exported too, and each one documents what it can and cannot tell you.
+- **`waitForAppSettled(page)`** is the wait after you CLICK something. A page
+  that is loading starts out `loading` and the transition into `ready` is it
+  finishing; a page you just clicked is already `ready` and stays that way until
+  the click's work registers, so waiting for `ready` there returns on the
+  pre-click frame. `waitForAppSettled` requires it to hold.
 
-## No silent best-effort waits
+## Timeouts and unsettled waits
 
 Puppeteer waits are usually written `.catch(() => {})` so a slow page is not
 failed for being slow. The cost is that "everything settled" and "we gave up"
 become the same `void` — the run ends with an image and an exit code of 0 either
-way. That is the vacuous-gate problem again, one step later.
+way, which is the vacuous-gate problem again, one step later.
 
 Here every stage reports its outcome, and an unsettled one throws by default,
 naming the gate:
@@ -89,7 +93,7 @@ still tells you what did not settle.
 
 ## Reading the result
 
-Three fields on a successful capture, all about honesty rather than success:
+Three fields on a successful capture:
 
 - **`unsettled`** — stages that hit their timeout. Empty unless you asked to
   proceed anyway.

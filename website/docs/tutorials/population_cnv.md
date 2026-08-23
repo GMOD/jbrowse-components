@@ -21,8 +21,7 @@ values into one Zarr store.
   [desktop quickstart](/docs/quickstart_desktop): every file here is a URL, so
   Desktop needs nothing hosted)
 - `node` 24 or newer, to [build a Zarr store](#build-the-store); the converter
-  is one downloadable file and pulls its own two npm packages, so nothing is
-  cloned
+  is one downloadable file and pulls its own two npm packages
 - QuicK-mer2 and a 30x alignment, to add
   [samples of your own](#your-own-samples)
 
@@ -262,8 +261,7 @@ own 1 kb, so a whole-genome pyramid starts coarse. The converter prints the size
 of that level before it allocates, and refuses when it will not fit.
 
 The output is an ordinary folder of files. Copy it to any static host with CORS
-enabled and point a track at it, the same way you would host a BigWig. Nothing
-runs on the server.
+enabled and point a track at it, the same way you would host a BigWig.
 
 If you would rather write a store from something other than BigWigs, the
 plugin's

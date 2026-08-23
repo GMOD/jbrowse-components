@@ -34,18 +34,23 @@ for which foundation each in-tree display uses.
 
 <!-- FETCH_AUTORUNS END -->
 
-`clearAllRpcData()` cancels the in-flight fetch, clears `error` and
-`loadedRegions`, resets the canvas-drawn flag, and calls
-`clearDisplaySpecificData()` — the hook your display overrides to drop its own
-`rpcDataMap`. Cancelling bumps `fetchGeneration`, which re-fires
-`FetchVisibleRegions` to start fresh fetches.
+`clearAllRpcData()`:
+
+- cancels the in-flight fetch
+- clears `error` and `loadedRegions`
+- resets the canvas-drawn flag
+- calls `clearDisplaySpecificData()`, the hook your display overrides to drop
+  its own `rpcDataMap`
+
+Cancelling bumps `fetchGeneration`, which re-fires `FetchVisibleRegions` to
+start fresh fetches.
 
 It deliberately leaves the too-large gate alone. `regionTooLarge` is derived
 from the cached byte estimate, which a blocked display re-takes once per settled
 viewport, so it releases itself and needs no imperative clear; keeping the
 estimate is what stops the banner flickering on an ordinary clear.
 
-## The whole chain
+## The whole fetch chain
 
 <Figure caption="The too-large gate is self-releasing: nothing clears the banner, and a blocked display re-measures at each settled viewport until the window is small enough to fetch. That is the second of the two returns the dashed edge carries." src="/img/fetch_chain.png" />
 
@@ -60,8 +65,8 @@ whose data goes stale for reasons the bounds can't see.
 `fetchEachRegion`, which runs one RPC per region in parallel over the
 `fetchRegions(needed, work)` primitive and applies both `ctx.isStale()` guards
 for you — forgetting either is a stale-data write, so it is a correctness
-primitive rather than a convenience. `LinearScoreDisplay`'s is a whole one,
-sitting in an `.actions(self => ({ ... }))` block:
+primitive. `LinearScoreDisplay`'s is a whole one, sitting in an
+`.actions(self => ({ ... }))` block:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
 
@@ -97,23 +102,26 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 `call` reaches the worker through **`ctx.callRpc`**, not `rpcManager.call`: the
 context injects this fetch's stop token and its status callback, so a fetch
 cannot issue an RPC that the cancel and the progress bar do not know about.
-Hand-threading them was silent when you forgot — no cancellation for that
-display, or no progress — which is the whole reason the envelope exists. It
-keeps the literal method name at the call site so the registry's typed args and
-return survive, and the `ctx` it receives is that region's own, so every
-region's progress aggregates into one bar. A batched counterpart,
-`fetchAllRegions`, hands all regions to a single RPC call (use it when the
-adapter serves the whole set in one pass more efficiently, e.g. BigWig
-coalescing adjacent blocks).
+Hand-threading them is silent when you forget — no cancellation for that
+display, or no progress. The envelope keeps the literal method name at the call
+site so the registry's typed args and return survive, and the `ctx` it receives
+is that region's own, so every region's progress aggregates into one bar. A
+batched counterpart, `fetchAllRegions`, hands all regions to a single RPC call
+(use it when the adapter serves the whole set in one pass more efficiently, e.g.
+BigWig coalescing adjacent blocks).
 
 ### The raw `fetchRegions` primitive
 
 Drop to `fetchRegions` directly only when a display's fetch genuinely diverges
-from one-call-per-region: canvas prunes and folds a too-large result, MAF
-fetches summary vs detail, alignments builds a chain payload. You then own both
-`ctx.isStale()` guards by hand. MAF's is a worked case — it runs a second RPC
-concurrently under the same stop token, and takes one staleness guard around the
-whole batch rather than per region:
+from one-call-per-region:
+
+- **canvas** prunes and folds a too-large result
+- **MAF** fetches summary vs detail
+- **alignments** builds a chain payload
+
+You then own both `ctx.isStale()` guards by hand. MAF's is a worked case — it
+runs a second RPC concurrently under the same stop token, and takes one
+staleness guard around the whole batch rather than per region:
 
 <!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
@@ -166,10 +174,10 @@ of `rpcProps()`. When that string changes it calls `clearAllRpcData()` and
 restarts the fetch cycle. This is how config changes (color scheme, filter
 settings, etc.) trigger a full refetch.
 
-Watching what the method returns rather than the call itself is deliberate:
-building the payload usually reads far more observables than it returns — a
-whole config snapshot, or a value that was itself fetched — and tracking the
-call would refetch on every one of them. Two consequences to design around:
+What is watched is the method's return value: building the payload usually reads
+far more observables than it returns — a whole config snapshot, or a value that
+was itself fetched — and tracking the call would refetch on every one of them.
+Two consequences to design around:
 
 - Only fields that reach the **return** are cache keys. A value merely consulted
   while building the payload invalidates nothing.
@@ -229,7 +237,7 @@ When the estimate for the visible span exceeds the byte limit (the adapter's own
 `fetchSizeLimit`, else the display config's), the fetch is skipped and
 `DisplayChrome` shows the too-large banner with a "Force load" button.
 
-Two things fall out of that for free:
+Two things fall out of that:
 
 - `regionTooLarge` is **derived**, not a flag: it is a pure comparison of the
   last measurement against the budget. What keeps that measurement describing
@@ -238,12 +246,11 @@ Two things fall out of that for free:
   index read and downloads nothing. So the banner releases itself on a fresh
   measurement, with no imperative clear and no flicker while you pan.
 - "Force load" sets one volatile boolean for the whole track (`forceLoadTrack`),
-  so the user approves a track once, with its size quoted in front of them,
-  rather than re-approving each locus. The declarative equivalent is the
+  so the user approves a track once, with its size quoted in front of them, and
+  that approval covers every locus. The declarative equivalent is the
   `forceLoad` config slot.
 
-The verdict has two axes and they stop gating for different reasons, which is
-worth keeping straight:
+The verdict has two axes, and they stop gating for different reasons:
 
 - The **byte** axis drops out when the adapter offers no index estimate, which
   is how adapters that summarize at screen resolution (BigWig, HiC, sequence)
@@ -276,9 +283,12 @@ which owns the stop-token lifecycle. Each `fetchRegions()` mints a fresh
 and captures `fetchGeneration` as its staleness epoch.
 
 That counter bumps once at every fetch **end** — success, error, or cancel — and
-does two jobs with the one bump: `isStale()` compares it against the epoch, so
-the superseded flow returns true and drops its results, and
-`FetchVisibleRegions` reads it to re-evaluate once the fetch is over.
+does two jobs with the one bump:
+
+- `isStale()` compares it against the epoch, so the superseded flow returns true
+  and drops its results.
+- `FetchVisibleRegions` reads it to re-evaluate once the fetch is over.
+
 `isLoading` is `true` while `activeStopToken` is set, and the fetch autorun
 reads it through `untracked(() => self.isLoading)` so guarding on it doesn't
 make it a trigger.

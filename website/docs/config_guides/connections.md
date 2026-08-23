@@ -112,9 +112,9 @@ session small even against a very large hub.
 
 <!-- GOTCHA BaseConnection END -->
 
-The hub's track list is fetched when the connection loads, in the app when its
-category is expanded. An opened track reopens instantly on reload without
-re-fetching the whole hub, and editing it saves the change to the session too.
+In the app the list is fetched when the connection's category is expanded. An
+opened track reopens on reload without re-fetching the whole hub, and editing it
+saves the change to the session.
 
 ## See also
 

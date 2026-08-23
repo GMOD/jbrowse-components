@@ -18,8 +18,6 @@ Click and drag on the top of any LGV and select "Bookmark region."
 
 <Figure caption="Create a bookmark by clicking and dragging the top of any LGV and selecting 'Bookmark region.'" src="/img/bookmark_widget_create.png"/>
 
-The whole loop, from the drag to the trip back, runs through the view menu:
-
 <Video src="/media/ui/bookmark_region.mp4" caption="A span of PTEN selected on the scalebar and bookmarked, the widget opened from the view menu, the row named, and the view sent elsewhere on chr10 before the row's link brings it back to the bookmarked span." />
 
 ### Keyboard shortcuts
@@ -42,9 +40,9 @@ and displayed on the LGV via highlights.
 
 ### Highlights
 
-New bookmarks are assigned a highlight color by default. You can change it
-directly in the Highlight field, or change multiple bookmarks in bulk via the
-"Edit colors" option in the bookmark widget's menu.
+New bookmarks are assigned a highlight color by default. Change it in the
+Highlight field, or change several at once via "Edit colors" in the bookmark
+widget's menu.
 
 Highlights and labels can be toggled app-wide (via the "Edit colors" dialog) or
 per-view (via a view's "Bookmarks" menu).

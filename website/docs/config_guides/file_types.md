@@ -36,10 +36,10 @@ tabix `.gz`, and so on).
 ```
 
 Spell out the full slot form (e.g. `bamLocation` plus `index.location`) only
-when the index is named differently or lives elsewhere. Not every adapter has a
-shorthand — one that takes an endpoint, a set of files, or another adapter
-generally has none — so each adapter's config page states which keys it accepts,
-or that it accepts none, above its slot table.
+when the index is named differently or lives elsewhere. An adapter that takes an
+endpoint, a set of files, or another adapter generally has no shorthand. Each
+adapter's config page states which keys it accepts, or that it accepts none,
+above its slot table.
 
 Use CSI over TBI/BAI for chromosomes longer than 512 Mb (some plant and animal
 genomes exceed it; CRAM's `.crai` has no such limit). BAM and the tabix-indexed
@@ -80,8 +80,8 @@ definition, not a track.
 
 <!-- FILE_TYPES sequence END -->
 
-You usually don't name one of these adapters at all: give the assembly a `name`
-and a sequence-file `uri`, and JBrowse picks the adapter from the extension and
+Most configs name no sequence adapter: give the assembly a `name` and a
+sequence-file `uri`, and JBrowse picks the adapter from the extension and
 derives the index siblings.
 
 ```json addassembly
@@ -125,9 +125,8 @@ coverage/pileup display options.
 }
 ```
 
-CRAM decodes against the reference sequence, but you do not configure that: the
-`sequenceAdapter` is supplied automatically from the enclosing assembly. The
-same is true of `BamAdapter`. See the
+CRAM decodes against the reference sequence; the `sequenceAdapter` is supplied
+automatically from the enclosing assembly, as it is for `BamAdapter`. See the
 [CramAdapter config docs](/docs/config/cramadapter).
 
 ## Feature / annotation
@@ -194,10 +193,10 @@ attribute holds your display name:
 }
 ```
 
-Grouping keys on `gene_id` rather than the label because gene names are not
-unique within a reference sequence — a GENCODE chromosome holds hundreds of
-separate genes named `U6` or `Y_RNA`, and merging them by name would produce one
-gene feature spanning the chromosome.
+Grouping keys on `gene_id` because gene names are not unique within a reference
+sequence: a GENCODE chromosome holds hundreds of separate genes named `U6` or
+`Y_RNA`, and grouping by name merges each set of them into one gene feature
+spanning the chromosome.
 
 To use the tabix form, sort and index the file first. `jbrowse sort-gff` works
 on GTF too (GTF shares GFF's refName/start column layout):
@@ -404,13 +403,15 @@ FromConfig adapter. See [](/docs/config_guides/from_config).
 
 ## Computed from the reference
 
-Three adapters read no file of their own. They scan the sequence of whatever
-assembly the track is displayed against and emit the hits as features, so the
-track config names neither a file nor a sequence:
-[](/docs/config/motiflistadapter) for a named motif list (restriction enzymes),
-[](/docs/config/crisprguideadapter) for CRISPR guide RNAs, and
-[](/docs/config/sequencesearchadapter) for a single regex. All three are
-[`FeatureTrack`](/docs/config/featuretrack)s.
+Three adapters scan the sequence of whatever assembly the track is displayed
+against and emit the hits as features, so the track config names neither a file
+nor a sequence:
+
+- [](/docs/config/motiflistadapter) — a named motif list (restriction enzymes)
+- [](/docs/config/crisprguideadapter) — CRISPR guide RNAs
+- [](/docs/config/sequencesearchadapter) — a single regex
+
+All three are [`FeatureTrack`](/docs/config/featuretrack)s.
 
 The [sequence search guide](/docs/user_guides/sequence_search) drives them from
 the view menu; the [cookbook](/docs/cookbook#reference-scan) has a whole track

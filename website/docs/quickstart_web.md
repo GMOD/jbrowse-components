@@ -7,8 +7,7 @@ data: download
 
 This guide sets up a self-hosted JBrowse web instance: you'll use the
 `@jbrowse/cli` command-line tool to download JBrowse, add an assembly and
-tracks, and serve the result as a folder of files on a web server. It's the
-right path if you want a genome browser you host and share via a URL.
+tracks, and serve the result as a folder of files on a web server.
 
 Other ways to run JBrowse:
 
@@ -16,9 +15,8 @@ Other ways to run JBrowse:
   server
 - [](/docs/embedded_components) - embed a view in your own web app
 
-The `config.json` directory you build in this guide isn't web-only: the same
-folder opens directly in JBrowse Desktop, so you don't have to choose up front.
-See [](/docs/tutorials/cli_desktop).
+The `config.json` directory you build in this guide opens directly in JBrowse
+Desktop as well. See [](/docs/tutorials/cli_desktop).
 
 ## TLDR
 
@@ -34,9 +32,9 @@ See [](/docs/tutorials/cli_desktop).
 ## Reproduce it end to end
 
 The TLDR above uses placeholder filenames (`genome.fa`, `file.bam`, `file.vcf`)
-that you supply. To see the exact same flow run against real data,
+that you supply.
 [`build_quickstart_web.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_quickstart_web.sh)
-fills those in with the volvox sample data JBrowse ships:
+runs the same flow against the volvox sample data JBrowse ships:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_quickstart_web.sh
@@ -96,8 +94,8 @@ cd jbrowse2/
 npx serve -S .
 ```
 
-The `-S` flag tells `serve` to resolve symlinks rather than return a 404,
-relevant if you later add tracks with `--load symlink`.
+The `-S` flag tells `serve` to resolve symlinks, relevant if you later add
+tracks with `--load symlink`.
 
 Navigate to `http://localhost:3000`. Click the sample config to confirm the
 install works.
@@ -120,10 +118,9 @@ For the full list of supported formats and the adapter each maps to, see
 [](/docs/config_guides/file_types).
 
 Every example below uses `--load copy`, which puts the data file next to
-`config.json` so one server serves both. That is the simplest arrangement and
-the one to start with. Data your lab already hosts somewhere else does not need
-copying: pass the URL instead of a path and the track records that URL, which is
-what the [hosting section](#hosting-your-own-data) below is about.
+`config.json` so one server serves both. For data your lab already hosts
+somewhere else, pass the URL in place of a path and the track records that URL;
+see the [hosting section](#hosting-your-own-data) below.
 
 ```bash
 jbrowse add-track https://data.myuniversity.edu/rnaseq/sample1.bam
@@ -216,13 +213,13 @@ jbrowse add-track yourfile.sorted.gtf.gz --load copy
 A plain `.gtf` loads without any of this, but the whole file is read at once, so
 sort and index anything genome-scale.
 
-GTF has no `Name` or `ID` attribute the way GFF3 does, so two things follow.
-Transcripts are grouped into a gene by `gene_id`, and which attribute labels
-that gene is
-[`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield). And
-`jbrowse text-index` matches the GTF spellings — `gene_name`, `transcript_name`,
-`gene_id`, `transcript_id` — alongside its GFF3 defaults, so searching by gene
-name works on a GTF track without passing `--attributes`.
+GTF has no `Name` or `ID` attribute, so transcripts are grouped into a gene by
+`gene_id`, and
+[`aggregateField`](/docs/config/gtftabixadapter/#slot-aggregatefield) names the
+attribute that labels the gene. `jbrowse text-index` matches the GTF spellings —
+`gene_name`, `transcript_name`, `gene_id`, `transcript_id` — alongside its GFF3
+defaults, so searching by gene name works on a GTF track without passing
+`--attributes`.
 
 See the [gene track guide](/docs/user_guides/gene_track).
 
@@ -246,19 +243,29 @@ so load with `--assemblyNames peach,grape`:
 jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy
 ```
 
-To sidestep the ordering question, you can instead set the named `queryAssembly`
-and `targetAssembly` fields on the adapter in `config.json` (see the
+Setting the named `queryAssembly` and `targetAssembly` fields on the adapter in
+`config.json` avoids the ordering question (see the
 [synteny track config guide](/docs/config_guides/synteny_track)).
 
-The `-cx asm20` preset suits divergent / cross-species comparisons (up to ~20%
-divergence). Use `asm5` for closely related assemblies (up to ~5%) or `asm10`
-for moderately diverged ones. See the
-[minimap2 docs](https://github.com/lh3/minimap2) for details.
+Pick the `-cx` preset by how far apart the two assemblies are:
 
-Other supported synteny formats: `.delta` (MUMmer/NUCmer), `.chain` (UCSC),
-`.anchors` and `.anchors.simple` (MCScan), and `.out` (MashMap). Add them the
-same way: `jbrowse add-track alignment.delta --assemblyNames query,target ...`.
-For large alignments, convert to indexed PIF first with `jbrowse make-pif`.
+- `asm5` - closely related assemblies, up to ~5% divergence
+- `asm10` - moderately diverged assemblies
+- `asm20` - divergent / cross-species comparisons, up to ~20% divergence, used
+  above
+
+See the [minimap2 docs](https://github.com/lh3/minimap2) for details.
+
+Other supported synteny formats:
+
+- `.delta` (MUMmer/NUCmer)
+- `.chain` (UCSC)
+- `.anchors` and `.anchors.simple` (MCScan)
+- `.out` (MashMap)
+
+Add them the same way:
+`jbrowse add-track alignment.delta --assemblyNames query,target ...`. For large
+alignments, convert to indexed PIF first with `jbrowse make-pif`.
 
 See also the [linear synteny view](/docs/user_guides/linear_synteny_view),
 [dotplot view](/docs/user_guides/dotplot_view),
@@ -269,18 +276,15 @@ See also the [linear synteny view](/docs/user_guides/linear_synteny_view),
 ## Hosting your own data
 
 The folder you just built is a **static site**: plain files that a web server
-hands out unchanged, the same way it would serve a folder of images. There is no
-JBrowse program running on the server, no database, and nothing to install
-there. All the work happens in the visitor's browser, which fetches the pieces
-of your data files it needs.
+hands out unchanged, with no server-side program or database. All the work
+happens in the visitor's browser, which fetches the pieces of your data files it
+needs.
 
-That means a lab with somewhere to put files already has most of what it needs:
-a web server, an S3 or GCS bucket, or an institutional file host. See
+Any web server, S3 or GCS bucket, or institutional file host can serve it. See
 [](/docs/config_guides/deploying) for the full picture, including generating
 `config.json` from a samplesheet.
 
-Two properties decide whether a host works, and both fail quietly rather than
-with an obvious error:
+Two properties decide whether a host works, and both fail quietly:
 
 - **Byte-range requests.** JBrowse reads slices of a BAM, CRAM, BigWig, or tabix
   file rather than downloading it, so the host has to answer a `Range` header
@@ -298,8 +302,7 @@ different domain than the app needs a
 [CORS policy](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files) as
 well.
 
-For data that cannot be public, JBrowse can authenticate per file host rather
-than proxying through a server of its own. See
+For data that cannot be public, JBrowse authenticates per file host. See
 [](/docs/config_guides/authentication) and
 [putting data behind a login](/docs/faq#how-do-i-put-my-data-behind-a-login).
 

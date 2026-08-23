@@ -17,9 +17,9 @@ Colab, with two-way sync of the visible region between Python and the view: set
 can also hold a linear synteny view or a dotplot (`synteny_view`, `dotplot_view`
 build the specs). See the E. coli example below.
 
-It is the modern replacement for the older Dash-based `jbrowse-jupyter` +
-`dash_jbrowse` stack: no Dash server, no component-generation step, just a
-prebuilt ESM bundle loaded by anywidget.
+It replaces the older Dash-based `jbrowse-jupyter` + `dash_jbrowse` stack with a
+prebuilt ESM bundle loaded by anywidget, so there is no Dash server to run and
+no component-generation step.
 
 Install from GitHub for now (below). A PyPI release is planned, after which
 `pip install jbrowse-anywidget` will work directly. The example notebooks each
@@ -38,7 +38,7 @@ from google.colab import output
 output.enable_custom_widget_manager()
 ```
 
-## The interface is JBrowse's own config
+## The config the widget takes
 
 Assemblies, tracks, and sessions are the same
 [JSON-like config](/docs/config_guide) JBrowse uses everywhere, handed straight

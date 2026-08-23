@@ -18,7 +18,7 @@ structural variant genotyped per mosquito.
 - `plink` (1.9, not plink2), htslib (`bgzip`, `tabix`), `samtools`, `curl`,
   `python3`, and `node` for the [JBrowse CLI](/docs/cli)
 
-## An inversion is one block
+## The 2La inversion as one LD block
 
 Inverted and standard arrangements cannot recombine in a heterozygote, so
 wherever both are present the whole segment stays correlated. The 2La inversion

@@ -29,13 +29,12 @@ duplicated gene becomes several rows.
 
 OrthoFinder bundles its own DIAMOND, so one install covers the first bullet:
 [bioconda](https://bioconda.github.io/) has `orthofinder`, and the project
-publishes a `davidemms/orthofinder` container with the same bundle. Nothing here
-calls it by any path other than `orthofinder` on `PATH`, so without root that
-container works too, wrapped as a shim; the
-[build script](#reproduce-it-end-to-end) header has the
-[Apptainer](https://apptainer.org/) version.
+publishes a `davidemms/orthofinder` container with the same bundle. Everything
+here calls it as `orthofinder` on `PATH`, so without root that container works
+too, wrapped as a shim; the [build script](#reproduce-it-end-to-end) header has
+the [Apptainer](https://apptainer.org/) version.
 
-## Orthology where alignment runs out
+## Orthogroups as a synteny source
 
 OrthoFinder clusters proteins into orthogroups without reference to where those
 genes sit, so a table of orthogroups is a synteny track for a human against a
@@ -63,12 +62,17 @@ script prints that share for each adjacent pair.
 
 The rest of this page follows one set, which the
 [script](#reproduce-it-end-to-end) builds under the name `wheat`: wheat's own
-polyploidy history. Aegilops tauschii (the diploid D-genome donor), bread wheat
-(hexaploid, genomes A+B+D), durum (domesticated tetraploid, A+B), wild emmer
-(durum's wild tetraploid ancestor), Triticum urartu (the diploid A-genome donor)
-and T. timopheevii (a second, independent tetraploid that also traces to the
-A-genome donor). Stacked in that order, each adjacent pair is an evolutionary
-step.
+polyploidy history.
+
+- **Aegilops tauschii**, the diploid D-genome donor
+- **bread wheat**, hexaploid, genomes A+B+D
+- **durum**, the domesticated tetraploid, A+B
+- **wild emmer**, durum's wild tetraploid ancestor
+- **Triticum urartu**, the diploid A-genome donor
+- **T. timopheevii**, a second, independent tetraploid that also traces to the
+  A-genome donor
+
+Stacked in that order, each adjacent pair is an evolutionary step.
 
 Diagonalizing this stack lands on the layout wheat figures are conventionally
 drawn in: each homoeologous group's chromosomes come together, so the hexaploid
@@ -102,7 +106,7 @@ shared across the three subgenomes, so the 5D and 7D bundles in the frame are
 the D-genome counterparts of the 5A and 7B they refer to. The input is
 orthogroup membership and each gene's position.
 
-## The same locus against the other donor
+## Bread wheat 4A against Triticum urartu
 
 Bread wheat 4A is an A-genome chromosome, and the row over it so far has been
 Aegilops tauschii, the D-genome donor. Triticum urartu, the A-genome donor, is
@@ -114,7 +118,7 @@ Urartu's chromosome 4 covers both of the first two blocks, and the distal block
 is on its chromosome 7. Any of the other four assemblies in the track opens the
 same way.
 
-## The conversion
+## Producing the blocks table
 
 OrthoFinder takes a directory of proteomes, one FASTA per genome, and `-og`
 stops it after the orthogroups, which is all this table needs:
@@ -206,7 +210,7 @@ mismatch, and one placing none of them stops the conversion. A column given no
 `--bed` is reported as unchecked. The same output reports how many orthogroups
 held a duplicated gene and became several rows.
 
-## Loading it
+## Loading the orthogroups in JBrowse
 
 One track backs every band of the stack, the same as the
 [MCScan blocks track](/docs/tutorials/multiway_synteny_grape_peach_cacao#loading-it-in-jbrowse-with-mcscanblocksadapter):
@@ -315,7 +319,7 @@ The sets it knows, and what each costs to build:
 <!-- ORTHOFINDER_SETS END -->
 
 The two cuts it makes are environment variables, so a set with a different
-karyotype or ploidy needs no edit.
+karyotype or ploidy is handled from the command line.
 
 <!-- ORTHOFINDER_CUTS START -->
 

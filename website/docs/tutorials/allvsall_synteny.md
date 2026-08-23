@@ -23,7 +23,7 @@ On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
 these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
 from [nodejs.org](https://nodejs.org/).
 
-## One file, N genome rows
+## Many genome rows from one PAF file
 
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
@@ -350,7 +350,7 @@ pangenome, index it first with [make-pif](#large-files-index-with-make-pif):
 
 <Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
-### The same gap, drawn as a graph
+### The gap in the graph genome view {#the-same-gap-drawn-as-a-graph}
 
 Sequence absent from the alignment is absent from the PAF, so what the strains
 that stop there carry is in the graph: the island is a segment, and each
@@ -369,7 +369,7 @@ effector genes on Sakai.
 
 <Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Each strain's own island is shaded in its own row and the band between them is blank across both, which is what a substitution looks like from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
 
-### From a lane to a stack, for one locus
+### Launching a stacked view at one locus
 
 The lanes say where a strain breaks from the backbone. The stacked view says
 what the break looks like on both sides of it. To go from one to the other,

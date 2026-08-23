@@ -21,9 +21,8 @@ See the [BaseTrack config docs](/docs/config/basetrack) for every slot common to
 all track types.
 
 File locations in adapter configs use a `{ "uri": "..." }` object. The
-`"locationType": "UriLocation"` field is optional for URI locations and can be
-omitted. It is only needed when the type cannot be inferred (e.g. local file
-paths on desktop).
+`"locationType": "UriLocation"` field is optional for URI locations, and needed
+only where the type cannot be inferred (e.g. local file paths on desktop).
 
 A complete `config.json` with one assembly and one BigBed track, showing where a
 track config sits:
@@ -52,9 +51,8 @@ track config sits:
 }
 ```
 
-That is a complete, working config. Two shorthands keep it short: the assembly
-is written as just `{ name, uri }` (see
-[assemblies](/docs/config_guides/assemblies)), and the adapter uses the
+Two shorthands keep it short: the assembly is written as just `{ name, uri }`
+(see [assemblies](/docs/config_guides/assemblies)), and the adapter uses the
 [`uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand), whose
 longhand equivalent here is `"bigBedLocation": { "uri": "..." }`. The track's
 `assemblyNames` is what ties it to the `hg19` assembly above.
@@ -68,8 +66,8 @@ case, or the full `displays` array when you need precise control.
 
 ### Shorthand object
 
-Put your settings in a `displayDefaults` object and JBrowse applies each one for
-you. You don't have to know or write the display's name:
+Put your settings in a `displayDefaults` object and JBrowse applies each one to
+the display that defines it:
 
 ```json addtrack
 {
@@ -85,11 +83,11 @@ you. You don't have to know or write the display's name:
 }
 ```
 
-A setting goes to every display whose config schema has a slot by that name. Two
-displays drawn differently usually name their slots differently, so in practice
-each setting lands on the display it belongs to: a `VariantTrack` colors its
-linear display with `color` and its circular (chord) display with `strokeColor`,
-both in the same object.
+A setting goes to every display whose config schema has a slot by that name.
+Displays drawn differently usually name their slots differently, so each setting
+lands on the display it belongs to: a `VariantTrack` colors its linear display
+with `color` and its circular (chord) display with `strokeColor`, both in the
+same object.
 
 ```json addtrack
 {
@@ -105,7 +103,7 @@ both in the same object.
 }
 ```
 
-Where a name is shared, though, the setting reaches all of them: `height` in
+Where a name is shared, the setting reaches all of them: `height` in
 `displayDefaults` sets the height of every display the track has. A setting no
 display defines is ignored, with a console warning so typos show up.
 
@@ -138,8 +136,7 @@ an explicit entry wins over `displayDefaults` for any setting it names itself.
 ```
 
 The display types available, grouped by the track type they attach to. Most
-tracks can be drawn more than one way, and the `displays` array is where you
-pick which:
+tracks can be drawn more than one way, and the `displays` array picks which:
 
 <!-- DISPLAY_TYPES START -->
 
@@ -165,27 +162,25 @@ See the [config guides](/docs/config_guide) for per-track display options.
 
 ## Copying a track's config out of the app
 
-If you have configured a track the way you like it in the app and want the raw
-JSON to reuse elsewhere, you don't have to reconstruct it by hand:
+To get the raw JSON of a track you configured in the app:
 
 - **Copy track**: in the track menu (the dropdown on the track label), choose
   "Copy track" to copy the track's full config JSON. "Copy and open track" does
   the same and immediately opens the copy in the current view.
 - **Settings**: also in the track menu, "Settings" opens the configuration
   editor for that track, where you can review and copy every slot's current
-  value. Any user can do this, not just admins. A non-admin's edits become a
-  per-session override rather than changes to the shared `config.json`, and
-  "Reset track settings" clears it.
+  value. Any user can do this: a non-admin's edits become a per-session override
+  rather than changes to the shared `config.json`, and "Reset track settings"
+  clears it.
 
-This is the easiest way to turn a tweaked-in-the-UI track into a JSON snippet
-you can paste into `config.json` or into a
+Either way the result pastes into `config.json` or into a
 [generation script](/docs/config_guides/deploying/#generating-configjson-from-a-script).
 
 ## Finding every option for a track or adapter type
 
 The config guides cover common settings. Every slot for every track, display,
 and adapter type is in the auto-generated **config reference**, built from
-source so it never drifts. For example:
+source. For example:
 
 - [](/docs/config/bamadapter), [](/docs/config/vcftabixadapter),
   [](/docs/config/bigwigadapter)

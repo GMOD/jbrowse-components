@@ -38,8 +38,8 @@ pluginManager.addToExtensionPoint(
 ```
 
 Callbacks are chained: each receives the previous one's return value, so with
-two such callbacks registered `ret` is `{value:3}` — which is asserted by the
-test both snippets come from, not just claimed here.
+two such callbacks registered `ret` is `{value:3}`, as the test both snippets
+come from asserts.
 
 ## TypeScript types for extension points
 
@@ -84,21 +84,23 @@ declare module '@jbrowse/core/PluginManager' {
 }
 ```
 
-Three things generalize from it. `args` and `result` are the same type on a
-point that threads one payload through, and a callback returns what it was
-given; a point that accumulates declares an array for both. A third optional
-key, `props`, declares the context object passed unchanged to every callback —
-see [`Core-replaceWidget`](#core-replacewidget) for one that has it. And the
-`declare module` block goes in any file that is part of your plugin's
-compilation; putting it beside the registration keeps the two from drifting.
+Three things generalize from it:
+
+- **`args` and `result` are the same type** on a point that threads one payload
+  through, and a callback returns what it was given. A point that accumulates
+  declares an array for both.
+- **`props`**, the third and optional key, declares the context object passed
+  unchanged to every callback — see [`Core-replaceWidget`](#core-replacewidget)
+  for one that has it.
+- **The `declare module` block** goes in any file that is part of your plugin's
+  compilation; putting it beside the registration keeps the two from drifting.
 
 ### Points that resolve to UI
 
-A point whose value is a component or an element names one of three shapes
-instead of spelling the triple out, so a seam is one line —
-`'Core-extraFeaturePanel': ComponentList<FeaturePanelProps>` is the whole
-declaration. The shape is also what decides which producer renders the point and
-which helper registers on it:
+A point whose value is a component or an element names one of three shapes, so a
+seam is one line: `'Core-extraFeaturePanel': ComponentList<FeaturePanelProps>`
+is the whole declaration. The shape is also what decides which producer renders
+the point and which helper registers on it:
 
 <!-- include: packages/core/src/PluginManager.ts#uiShapes -->
 
@@ -150,14 +152,13 @@ export interface ElementList<P> {
 }
 ```
 
-Say the shape rather than leaving it to be read off `args`, because it cannot be
-read off `args` reliably: a `TrackTypeGuesser` takes an argument and returns a
-string, which is what a function component does too, so a structural test admits
-it as a wrappable slot. `kind` exists only in the type — nothing sets it at
-runtime, and nothing reads it. `extensionPointShapes.test.ts` pins each seam
-against the points of the other shapes, and fails a new `ComponentList` or
-`ElementList` declared the long way, which would otherwise be a point no
-producer accepts.
+`args` alone cannot say which shape a point has: a `TrackTypeGuesser` takes an
+argument and returns a string, which is what a function component does too, so a
+structural test admits it as a wrappable slot. `kind` exists only in the type —
+nothing sets it at runtime, and nothing reads it. `extensionPointShapes.test.ts`
+pins each seam against the points of the other shapes, and fails a new
+`ComponentList` or `ElementList` declared the long way, which would otherwise be
+a point no producer accepts.
 
 ## API
 
@@ -203,9 +204,8 @@ point is fired that way, so a launcher that throws surfaces as an error to the
 user rather than as an empty session. Producers of accumulating points want the
 plain runner, where one plugin failing does not cost the others their entries.
 
-These are the only signatures on this page that are not generated from source —
-they name placeholder arguments so the seven read side by side, which the real
-generic signatures do not.
+These are the only signatures on this page that are not generated from source;
+they name placeholder arguments so the seven read side by side.
 
 ## Registering on a point
 
@@ -259,14 +259,13 @@ export default function GCContentExtraTrackMenuItemsF(
 }
 ```
 
-Withholding the array is the point: the concatenation happens once inside the
-plugin manager, so no plugin can write the `[MyEntry]` that drops every other
-plugin's entries. `addToExtensionPoint` covers the points that thread a single
-value, and type-errors on a `list` point.
+The concatenation happens once inside the plugin manager, and a callback never
+sees the accumulated array, so no plugin can drop another plugin's entries.
+`addToExtensionPoint` covers the points that thread a single value, and
+type-errors on a `list` point.
 
 For `list` points that accumulate rendered elements, register with
-`addExtensionElement` rather than by hand, so the React `key` isn't yours to get
-right:
+`addExtensionElement`, which fixes the React `key` for you:
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx -->
 
@@ -288,15 +287,14 @@ export default function SequenceFeatureHoverHighlightExtensionF(
 }
 ```
 
-### wrapComponent: the one way to fill a slot
+### wrapComponent: filling a component slot {#wrapcomponent-the-one-way-to-fill-a-slot}
 
 A point declared [`ComponentSlot`](#points-that-resolve-to-ui) resolves to one
 component, and `wrapComponent`, from `@jbrowse/core/ui`, is how a plugin fills
 it. Your component is handed whatever fills the slot so far as
 `DefaultComponent`: render it and you have added to the default, leave it out
-and you have replaced it. There is no separate "replace" call, because replacing
-is this with the default dropped — and writing it this way is what lets the next
-plugin still wrap yours.
+and you have replaced it. There is no separate "replace" call, and writing it
+this way lets the next plugin still wrap yours.
 
 <!-- include: packages/core/src/ui/PluggableComponent.test.tsx#wrapComponent -->
 
@@ -322,9 +320,11 @@ Every track-scoped point fires for every track, so a contribution that does not
 say which tracks it wants applies to all of them — a wrapper takes over every
 widget that opens, a panel appears on every feature. `matchesTrackSelector`,
 also from `@jbrowse/core/ui`, answers whether the props you were handed belong
-to a track `select` names. What you do with the answer depends on the point: a
-wrapper renders the component it was handed, a panel renders `null`, and a data
-transform returns its argument unchanged.
+to a track `select` names. What you do with the answer depends on the point:
+
+- a **wrapper** renders the component it was handed
+- a **panel** renders `null`
+- a **data transform** returns its argument unchanged
 
 <!-- include: packages/core/src/ui/PluggableComponent.test.tsx#replaceWidget -->
 
@@ -368,12 +368,12 @@ About points carry, so one call scopes a contribution to any of them — includi
 renders nothing. Anything the fields cannot express joins the same condition;
 the panel below adds `depth` to it.
 
-Don't reach for `matchTrackId` from `@jbrowse/core/util` instead — that one
-tests an id against patterns you supply, so the copy-track normalization is back
-to being yours to remember.
+Don't reach for `matchTrackId` from `@jbrowse/core/util` — that one tests an id
+against patterns you supply, so the copy-track normalization is back to being
+yours to remember.
 
-We match on the model rather than on the config because the config that produced
-a feature details widget isn't always retrievable.
+Matching is on the model because the config that produced a feature details
+widget isn't always retrievable.
 
 :::caution Declare the wrapper outside the callback, or use `wrapComponent`
 
@@ -405,9 +405,8 @@ position, any text typed into it, and any panel the user had expanded.
 
 ### Firing a point that renders
 
-A producer whose point resolves to UI fires it as JSX from `@jbrowse/core/ui`,
-rather than calling `evaluateExtensionPoint` and rendering the result. One
-component per shape, all three shown in the API block above:
+A producer whose point resolves to UI fires it as JSX from `@jbrowse/core/ui`.
+One component per shape, all three shown in the API block above:
 
 - `PluggableComponent` for a `single` point, where `component` is the default
   the slot resolves to when no plugin claims it.
@@ -419,9 +418,9 @@ component per shape, all three shown in the API block above:
 
 All three are observers, so a contributor that scopes itself on an observable is
 re-evaluated when that observable changes. Which one a point takes is decided by
-its registry entry rather than by the call site: each accepts only the points of
-its own shape, so pointing one at another's point is a compile error rather than
-a component that renders nothing.
+its registry entry: each accepts only the points of its own shape, so pointing
+one at another's point is a compile error rather than a component that renders
+nothing.
 
 A point fired this way has no string-literal call site, so its `#extensionPoint`
 docs tag goes on its `ExtensionPointRegistry` entry instead.
@@ -445,22 +444,19 @@ pluginManager.listenToExtensionPoint(
 
 Every callback registered on a notification point runs — there is no value for a
 later one to overwrite. That is what the `notify` shape in the listing below
-means, and it is the opposite of `single`, where only the last plugin to
-register is visible.
+means.
 
-`addToExtensionPoint` rejects these names, and the reason is the promise
-handling rather than the shorter callback. An `async` callback's promise is the
-point's completion signal, and two of them are **joined** rather than the later
-one replacing the earlier — so a producer waiting on the folded value learns
-when every handler has finished, not when the last-registered one has. A
-hand-written callback that returns its own promise gets that wrong, and gets it
-wrong invisibly: the symptom is a producer that stops waiting early, which reads
-as a race rather than as the wrong registration method.
+`addToExtensionPoint` rejects these names because of the promise handling. An
+`async` callback's promise is the point's completion signal, and two of them are
+**joined**, so a producer waiting on the folded value learns when every handler
+has finished. A hand-written callback that returns its own promise gets that
+wrong, and gets it wrong invisibly: the symptom is a producer that stops waiting
+early, which reads as a race rather than as the wrong registration method.
 
 That is how `Core-handleUnrecognizedAssembly` works — a handler supplies the
 assembly out of band, and its promise is what lets `waitForAssembly` stop
-waiting on an event rather than on a clock. Note the producer there fires the
-point with the **sync** runner and awaits the folded value itself; only
+waiting on an event rather than on a clock. The producer there fires the point
+with the **sync** runner and awaits the folded value itself; only
 `evaluateAsyncExtensionPoint` awaits each callback in turn.
 
 ## Extension point listing
@@ -469,13 +465,17 @@ Generated from the `#extensionPoint` tags at each point's fire/registration
 site. The detailed sections that follow are hand-written.
 
 **Shape** says what happens when a second plugin registers on the same point,
-and is derived from the point's `args`. A `list` point accumulates, so every
-plugin's contribution survives; register with `contributeToExtensionPoint`. A
-`notify` point carries no value at all, so every plugin's callback runs;
-register with `listenToExtensionPoint`. A `single` point threads one value
-along, so each callback overwrites what the one before it returned and only the
-last plugin to register is visible; register with `addToExtensionPoint`. The
-names don't carry this: `Desktop-StartScreenMenuItems` accumulates and
+and is derived from the point's `args`:
+
+- **`list`** accumulates, so every plugin's contribution survives; register with
+  `contributeToExtensionPoint`.
+- **`notify`** carries no value at all, so every plugin's callback runs;
+  register with `listenToExtensionPoint`.
+- **`single`** threads one value along, so each callback overwrites what the one
+  before it returned and only the last plugin to register is visible; register
+  with `addToExtensionPoint`.
+
+The names don't carry this: `Desktop-StartScreenMenuItems` accumulates and
 `Desktop-StartScreenLaunchPanel` does not. Check the Shape column before
 registering — a `single` point is a slot, and taking it hides whatever the
 plugin before you put there.
@@ -539,9 +539,8 @@ Add functionality to pluggable elements, e.g. extra right-click context menus.
 Your callback receives **every** pluggable element registered to the system, so
 it must select the one it means.
 
-For the two common cases, don't register on this point yourself — use
-`extendViewType` / `extendDisplayType`, which check the `group` and look the
-name up in a registry:
+For the two common cases use `extendViewType` / `extendDisplayType`, which check
+the `group` and look the name up in a registry:
 
 <!-- include: products/jbrowse-react-linear-genome-view/examples-site/src/examples/WithDisableZoomAndSideScroll.tsx#extend -->
 
@@ -591,14 +590,13 @@ type: synchronous
 Infer an adapter type from a location in the "Add track" workflow. See the
 [add track workflow guide](/docs/developer_guides/creating_addtrack_workflow).
 
-The formats JBrowse ships with are not registered here one plugin at a time.
-They are rows in `@jbrowse/add-track-core`'s table — filename regex, adapter
-type, location field, index layout, track type — which `CorePlugin` guesses from
-and `@jbrowse/cli`'s `add-track` reads too, so a file resolves to the same
-adapter config in the app and on the command line. Core guesses a row only when
-`pluginManager.hasAdapterType` says the build has that adapter, so a build
-without the alignments plugin still guesses nothing for a `.bam`. Register on
-this point to add a format the table does not describe.
+The formats JBrowse ships with are rows in `@jbrowse/add-track-core`'s table —
+filename regex, adapter type, location field, index layout, track type — which
+`CorePlugin` guesses from and `@jbrowse/cli`'s `add-track` reads too, so a file
+resolves to the same adapter config in the app and on the command line. Core
+guesses a row only when `pluginManager.hasAdapterType` says the build has that
+adapter, so a build without the alignments plugin still guesses nothing for a
+`.bam`. Register on this point to add a format the table does not describe.
 
 Use `addAdapterGuesser` rather than calling `addToExtensionPoint` directly:
 these two points are chains of responsibility, where each callback wraps the
@@ -610,8 +608,8 @@ hides it from every guesser registered before yours.
 
 The chain is first-match-wins, so it returns exactly one adapter and cannot
 express "or this other one". Where two adapters genuinely read the same
-extension, the one the chain does not pick declares that on its own registration
-instead, and the "Add track" form offers it alongside the guess:
+extension, the one the chain does not pick declares that on its own
+registration, and the "Add track" form offers it alongside the guess:
 
 <!-- include: plugins/comparative-adapters/src/AllVsAllPAFAdapter/index.ts#alsoReads -->
 
@@ -711,9 +709,8 @@ No in-tree plugin registers on any of the three: a track that wants to change
 its own About dialog sets the `formatAbout` config slot. These are the
 programmatic equivalent, for tracks you do not own.
 
-All three are declared together, and the differences between them are worth
-reading side by side — one accumulates an array, the other two thread a single
-value:
+All three are declared together — one accumulates an array, the other two thread
+a single value:
 
 <!-- include: packages/product-core/src/ui/util.ts#aboutRegistry -->
 
@@ -854,10 +851,9 @@ type: synchronous
 
 Provide a different component for a given widget, drawer, or modal. This is a
 `single` point, since one widget renders: a callback returns its own component
-to take the slot, or the accumulated one to opt out. Contrast
-[`Core-extraFeaturePanel`](#core-extrafeaturepanel), which accumulates additive
-panels and is the right point when you want to _add_ to a feature details widget
-rather than take it over.
+to take the slot, or the accumulated one to opt out.
+[`Core-extraFeaturePanel`](#core-extrafeaturepanel) is the point for _adding_ a
+panel to a feature details widget.
 
 - `args` - a `ReactComponent`
 - `props` - an object of the type below
@@ -886,7 +882,7 @@ scope itself takes over the drawer, the modal, and every feature details panel.
 Fill it with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot) and
 scope it with
 [`matchesTrackSelector`](#matchestrackselector-which-tracks-a-contribution-is-for),
-which are how every component slot is filled and scoped, not just this one.
+which are how every component slot is filled and scoped.
 
 ### Core-extraFeaturePanel
 
@@ -894,7 +890,7 @@ type: synchronous
 
 Adds panels to the feature details widget, below the built-in Attributes and
 Sequence sections. This is a `list` point: every plugin's panel is kept, in
-registration order, so panels compose rather than overwrite.
+registration order, so panels compose.
 
 Register with `contributeToExtensionPoint`, returning your component. The
 score-example plugin's panel, which reports the value its display draws:
@@ -1005,11 +1001,10 @@ declare module '../../PluginManager.ts' {
 }
 ```
 
-The snapshot is an open record rather than a typed config model — the point
-fires before anything validates it, which is the whole reason it is useful.
-Return a new snapshot (or the mutated one; both fire sites clone first). This
-declaration lives inside core, so it augments the module by relative path; a
-plugin writes `declare module '@jbrowse/core/PluginManager'` for the same
+The snapshot is an open record because the point fires before anything validates
+it. Return a new snapshot (or the mutated one; both fire sites clone first).
+This declaration lives inside core, so it augments the module by relative path;
+a plugin writes `declare module '@jbrowse/core/PluginManager'` for the same
 effect.
 
 For the common case — migrating a _display's_ config across a format change —
@@ -1065,10 +1060,9 @@ otherwise.
 Register with `addAddTrackComponent` (from `@jbrowse/core/util`) rather than
 with [`wrapComponent`](#wrapcomponent-the-one-way-to-fill-a-slot), which is the
 general way to fill a slot. This is the one slot with its own entry point, and
-it earns it by writing two points at once: the fold here, and
-`Core-addTrackComponentAdapterTypes`, a plain list of the same claims for
-callers that have an adapter name and no model. Stating your adapters once is
-the point.
+it earns it by writing two points from one declaration of your adapter types:
+the fold here, and `Core-addTrackComponentAdapterTypes`, a plain list of the
+same claims for callers that have an adapter name and no model.
 
 <!-- include: plugins/gwas/src/GWASAddTrackComponent/index.tsx#register -->
 
@@ -1141,8 +1135,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
 }
 ```
 
-A plugin whose item does not apply returns `undefined`. With no accumulated
-array in scope, that branch has nothing it can get wrong.
+A plugin whose item does not apply returns `undefined`.
 
 ### TrackSelector-folderDialog
 
@@ -1179,8 +1172,7 @@ export interface FolderDialogProps {
 The `categoryId` format is `Tracks-{categoryPath}`, where `categoryPath` is the
 comma-joined path of category names from the track's `category` config field, so
 `"category": ["Wiggle", "My Subcategory"]` produces
-`categoryId = "Tracks-Wiggle,My Subcategory"`. Return the default component
-unchanged for categories you don't handle.
+`categoryId = "Tracks-Wiggle,My Subcategory"`.
 
 ### LaunchView points
 
@@ -1193,9 +1185,9 @@ type with no registered point cannot be launched from a spec, and
 `loadSessionSpec` reports that by name rather than failing silently.
 
 Register one to make your own view type launchable — see
-[](/docs/developer_guides/creating_view). Registering a second callback on a
-built-in one is unusual: the chain passes the launch args along, so a later
-callback sees what the view was asked for, not the view the first one created.
+[](/docs/developer_guides/creating_view). A second callback on a built-in one
+sees the launch args the chain passes along, rather than the view the first
+callback created.
 
 Each launcher's args are that view type's spec fields, documented once in the
 URL parameter guide and typed by the `Launch*Args` interface exported beside the
@@ -1216,9 +1208,13 @@ registration:
 
 <!-- LAUNCH_VIEW_POINTS END -->
 
-Two spec keys never reach a launcher: `type` is the dispatch key, and
-`displayName` is applied by `loadSessionSpec` to whatever view the launch
-created, so it works for plugin-provided types whose launcher never heard of it.
+Two spec keys never reach a launcher:
+
+- **`type`** is the dispatch key.
+- **`displayName`** is applied by `loadSessionSpec` to whatever view the launch
+  created, so it works for plugin-provided types whose launcher never heard of
+  it.
+
 `id` is each launcher's own job, and every one above honors it.
 
 ### LinearGenomeView-TracksContainerComponent
@@ -1292,9 +1288,8 @@ action, e.g. selecting a corresponding feature. It's a
 [notification point](#notification-points): the payload lives in `props` (passed
 unchanged to every callback) rather than `args`, so callbacks can't alter what
 later callbacks see, and every plugin registered on it runs. Register with
-`listenToExtensionPoint` — the canvas plugin's registration, which highlights
-the feature the result names rather than only the region the search navigated
-to, is the worked example in that section.
+`listenToExtensionPoint`; the canvas plugin's registration, which highlights the
+feature the result names, is the worked example in that section.
 
 ### DotplotView-ImportFormSyntenyOptions
 
@@ -1451,12 +1446,14 @@ function makeSimpleFormat(
 }
 ```
 
-Two things to copy from it. The component owns the file-location state and calls
-`onAdapterChange` on _every_ change, including the swap toggle after a file is
-already chosen — reporting only on the file pick leaves the form holding an
-adapter with the assemblies the wrong way round. And `StandardFormatSelector` is
-exported from `@jbrowse/synteny-core`, so a plugin format gets the same
-file/swap UI as the built-ins rather than reimplementing it.
+Two things to copy from it:
+
+- **The component owns the file-location state** and calls `onAdapterChange` on
+  _every_ change, including the swap toggle after a file is already chosen —
+  reporting only on the file pick leaves the form holding an adapter with the
+  assemblies the wrong way round.
+- **`StandardFormatSelector` is exported from `@jbrowse/synteny-core`**, so a
+  plugin format gets the same file/swap UI as the built-ins.
 
 Register it with
 `pluginManager.contributeToExtensionPoint('DotplotView-SyntenyFileFormats', () => myFormat)`.
@@ -1572,8 +1569,7 @@ function addStartScreenMenuItem(
 
 A callback that throws here costs the plugin its menu items only: the fold
 reports it and carries on, so the other plugins' items still appear and the
-dialog that can uninstall the misbehaving one stays reachable. That is asserted
-alongside the registration above.
+dialog that can uninstall the misbehaving one stays reachable.
 
 ### Desktop-StartScreenLaunchPanel
 

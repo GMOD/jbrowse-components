@@ -46,25 +46,27 @@ export default function HelpWidgetF(pluginManager: PluginManager) {
 ```
 
 `id` and `type` are what every widget state model carries. `ElementId` is
-`types.optional(types.identifier, …)`, so it generates a nanoid when a snapshot
-arrives without one — but a widget opened through `addWidget` is always given
-its id explicitly, so the generator is really there for the restore path. The
-`types.literal` is what tells MST which model to rehydrate a saved session into.
-`ReactComponent` is `lazy`-loaded, so a widget's UI code is only fetched the
-first time it opens.
+`types.optional(types.identifier, …)`, generating a nanoid on the restore path
+when a snapshot arrives without one; `addWidget` always passes the id
+explicitly. The `types.literal` tells MST which model to rehydrate a saved
+session into. `ReactComponent` is `lazy`-loaded, so a widget's UI code is only
+fetched the first time it opens.
 
 `heading` is the static drawer title. Two more `WidgetType` options replace or
-extend it: **`HeadingComponent`** takes over the title entirely, receiving the
-widget model as `model` (the configuration editor uses one, to name the track
-being edited), and **`helpText`** puts a help button beside it that opens what
-you pass in a dialog.
+extend it:
 
-A widget that displays something declares those fields on the state model
-alongside those two, and receives them as `addWidget`'s third argument —
+- **`HeadingComponent`** takes over the title entirely, receiving the widget
+  model as `model` — the configuration editor uses one, to name the track being
+  edited.
+- **`helpText`** puts a help button beside the title that opens what you pass in
+  a dialog.
+
+A widget that displays something declares its own fields on the state model
+alongside `id` and `type`, and receives them as `addWidget`'s third argument —
 `UcscResultsWidget` in the BLAT plugin is that shape, holding the hits its table
 renders.
 
-## Opening one
+## Opening a widget
 
 A widget is opened by the `name` its `WidgetType` was registered under. BLAT
 opens its results table that way when a search returns hits:
@@ -92,9 +94,8 @@ if (isSessionModelWithWidgets(session)) {
 **That second argument is the widget's identity, not a label.**
 `session.widgets` is a map keyed by it, so `addWidget` with an id already in the
 map replaces what was there. BLAT's fixed `'ucscResults'` therefore means every
-search reuses one results widget rather than stacking up a drawer full of them;
-pass a fresh id (`createElementId()`, from the same module as `ElementId`) where
-you want instances to coexist.
+search reuses one results widget; pass a fresh id (`createElementId()`, from the
+same module as `ElementId`) where you want instances to coexist.
 
 See [](/docs/developer_guides/drawer_widgets) for the rest of the drawer:
 position, width, minimizing, and closing a widget again.

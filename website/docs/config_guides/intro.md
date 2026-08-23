@@ -43,11 +43,10 @@ Every other top-level field is optional:
 | `preConfiguredSessions`       | [](/docs/config_guides/default_session) |
 | `configuration`               | [](/docs/config/jbrowseconfiguration)   |
 
-These hand-written guides explain the common cases. For the exhaustive list of
-options for a specific track or adapter type, the auto-generated
-[config reference](/docs/config_guide) has one page per type, generated from
-source so it never goes stale, e.g. [](/docs/config/bamadapter) or
-[](/docs/config/linearwiggledisplay).
+These hand-written guides explain the common cases. Every option for a specific
+track or adapter type is in the auto-generated
+[config reference](/docs/config_guide), one page per type generated from source,
+e.g. [](/docs/config/bamadapter) or [](/docs/config/linearwiggledisplay).
 
 For repetitive data, [](/docs/config_guides/deploying) covers generating
 `config.json` from a script, end to end.
@@ -56,7 +55,7 @@ On jbrowse-desktop, saved sessions use this same config format, stored in a file
 with a `.jbrowse` extension.
 
 Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take a config
-object at runtime rather than a config file (see
+object at runtime (see
 [embedding a linear genome view](/docs/tutorials/embed_linear_genome_view)). To
 fetch one on the fly:
 

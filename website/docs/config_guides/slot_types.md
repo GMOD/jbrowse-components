@@ -9,7 +9,7 @@ guide_category: Core configuration
 **TL;DR:** every field on a [config schema page](/docs/config_guide) lists a
 **Type**. This page says what each one accepts, so a `Type: fileLocation` or
 `Type: frozen` on a slot tells you what to actually write. The `maybe*` types
-are the ordinary ones plus a third "unset" state, described
+are the ordinary ones plus an "unset" state, described
 [in one section below](#the-maybe-types).
 
 ## string
@@ -65,9 +65,9 @@ Many color slots also accept a [`jexl:` callback](/docs/config_guides/jexl) for
 ## frozen
 
 An arbitrary JSON value (object or array) stored as-is, for structured settings
-that are not broken out into individual slots, for example a `colorBy` of
-`{ "type": "methylation" }` or a `groupBy` of `{ "type": "strand" }`. The shape
-a given `frozen` slot expects is described in that slot's own text.
+such as a `colorBy` of `{ "type": "methylation" }` or a `groupBy` of
+`{ "type": "strand" }`. The shape a given `frozen` slot expects is described in
+that slot's own text.
 
 ## text
 
@@ -78,15 +78,14 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 `maybeNumber`, `maybeBoolean`, `maybeStringEnum`, and `maybeFrozen` each accept
 everything the type without the prefix accepts, plus one more state: **unset**.
 
-Unset is not the same as a default value. A slot left unset follows the
-display-type default (see
+A slot left unset follows the display-type default (see
 [defaults for all tracks](/docs/user_guides/display_defaults)) and keeps
 following it as that default changes; writing a value, even the one the default
-happens to hold, customizes the track to that value for good. So these types are
-used wherever "follow the default" has to stay distinguishable from an explicit
-choice that looks identical — a display's `heightMode` or `displayMode`, or an
-alignments track's `colorBy`, where every scheme including `normal` is something
-a user might deliberately pin.
+happens to hold, pins the track to that value. These types are used wherever
+"follow the default" has to stay distinguishable from an identical-looking
+explicit choice — a display's `heightMode` or `displayMode`, or an alignments
+track's `colorBy`, where every scheme including `normal` is something a user
+might deliberately pin.
 
 ## See also
 

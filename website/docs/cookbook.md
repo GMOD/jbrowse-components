@@ -157,9 +157,9 @@ config** on a track, or **File → Export session** for the whole view.
 
 ## Applying a recipe from the CLI
 
-The CLI is a convenience, not a requirement. `config.json` is plain JSON, so
-once you have more than a handful of similar tracks, generating the `tracks`
-array from your samplesheet is easier than one CLI call per file.
+`config.json` is plain JSON, so once you have more than a handful of similar
+tracks, generating the `tracks` array from your samplesheet is easier than one
+CLI call per file.
 
 The [web quickstart](/docs/quickstart_web) covers `create`, `add-assembly`, and
 `add-track`. Four `add-track` flags cover every recipe on this page:
@@ -229,8 +229,8 @@ color, or a `jexl:` expression that runs once per feature.
 
 Those are the colors **Color by... → Strand** writes, so a config that ships
 this recipe and a reader who picks it from the track menu get the same picture,
-and forward stays red everywhere in the app, synteny ribbons included. Pick your
-own by all means; keep the direction, or a red block will mean "forward" in one
+and forward stays red everywhere in the app, synteny ribbons included. Keep the
+direction if you pick your own colors, or a red block will mean "forward" in one
 track and "inverted" in the one under it.
 
 <Figure caption="NCBI RefSeq genes on hg38 with this recipe applied: forward-strand genes red, reverse-strand blue." src="/img/cookbook_color_by_strand.png"/>
@@ -276,11 +276,9 @@ a BED9). Write a callback only when you want to override those.
 moving an outgrown callback into a plugin.
 
 The lookup table can key on any field the track exposes — UCSC RepeatMasker, for
-instance, carries a `repClass` column. And a lookup table is only readable to
-whoever wrote it: the drawn feature carries the color, but nothing on screen
-carries what the color means. The `legend` slot declares that vocabulary beside
-the expression that paints it, and the display draws it as a dismissable key
-over the track (and into an SVG export).
+instance, carries a `repClass` column. The `legend` slot names what each color
+stands for, beside the expression that paints it, and the display draws it as a
+dismissable key over the track (and into an SVG export).
 
 ```json addtrack
 {
@@ -306,10 +304,8 @@ over the track (and into an SVG export).
 
 <Figure caption="UCSC RepeatMasker over a 17q21 window with the lookup table above: every repeat takes the color of its repClass, and classes not in the table fall through to gray. The key over the track is the legend slot, spelling out what each color stands for." src="/img/cookbook_color_by_type.png"/>
 
-A lookup table is only as good as its keys, and an annotation pipeline's own
-documentation is not always an accurate list of what it emits, since a pipeline
-can rename a type between releases. Read the types out of the file itself before
-writing the table:
+A pipeline can rename a type between releases, so read the types out of the file
+itself before writing the table:
 
 ```bash
 awk -F'\t' '/^##FASTA/{exit} !/^#/{print $3}' annotations.gff |
@@ -325,14 +321,12 @@ signal to go back and check that list.
 [Reading the type list off the file](/docs/config_guides/customizing_feature_colors#reading-the-type-list-off-the-file)
 works one of these through end to end.
 
-### The same category as a row instead of a color
+### One row per category
 
-A color puts every category in one packed lane, which answers "what is this
-block" but not "how much of the window is each class, and does any of them
-cluster". Give
 [`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
-the same attribute the lookup table keys on and the display assigns each feature
-to the row named by that value, one lane per category.
+takes the same attribute the lookup table keys on, and the display assigns each
+feature to the row named by that value, one lane per category, which shows how
+much of the window each class takes and whether it clusters.
 [`sampleColorMap`](/docs/config/linearmultirowfeaturedisplay/#slot-samplecolormap)
 is the row-keyed form of the same table, so the colors carry over without the
 jexl.
@@ -368,10 +362,10 @@ jexl.
 ## Labels, tooltips & details {#labels-tooltips-details}
 
 Labels go in `displayDefaults` the same way `color` does.
-[`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels) is not a
-boolean but a choice of which text is drawn: `auto` drops descriptions and then
-names as the view gets denser, while `nameAndDescription`, `name`,
-`description`, and `none` pin one choice at every zoom.
+[`showLabels`](/docs/config/linearcanvasbasedisplay/#slot-showlabels) chooses
+which text is drawn: `auto` drops descriptions and then names as the view gets
+denser, while `nameAndDescription`, `name`, `description`, and `none` pin one
+choice at every zoom.
 
 ```json addtrack
 {
@@ -588,8 +582,7 @@ can encode span or score. See
 ### Showing only some features (filtering)
 
 `jexlFilters` draws only the features that pass every expression in the list.
-Every entry is an expression already, so unlike `color`, the `jexl:` prefix is
-optional here:
+Every entry is an expression already, so the `jexl:` prefix is optional here:
 
 ```json addtrack
 {
@@ -612,10 +605,9 @@ The same slot works on variant and alignments tracks.
 ## Tracks computed from the reference {#reference-scan}
 
 Three adapters take no data file at all: they scan the assembly's own sequence
-and emit the hits as features. Nothing names a file, and nothing names a
-sequence either — the adapter is handed the sequence of whatever assembly the
-track is displayed against, so the same track config works on any assembly that
-has one.
+and emit the hits as features. The adapter is handed the sequence of whatever
+assembly the track is displayed against, so the same track config works on any
+assembly.
 
 The [sequence search guide](/docs/user_guides/sequence_search) drives all three
 from the view's menu, which is the right tool for a one-off question. Write them
@@ -669,18 +661,21 @@ annotated with its GC% and a poly-T flag. The defaults are SpCas9:
 ```
 
 A PAM occurs roughly every 8bp, so an unfiltered scan is far denser than a
-display can draw. The adapter keeps everything by default and leaves the choice
-to you, which is why the GC window and `excludePolyT` (which drops guides
-containing `TTTT`, a terminator for the pol III promoters guides are usually
-expressed from) are set above rather than relied on.
+display can draw. The adapter keeps everything by default, which is why the GC
+window and `excludePolyT` (which drops guides containing `TTTT`, a terminator
+for the pol III promoters guides are usually expressed from) are set above.
 
-Other enzymes are the same track with different numbers — SaCas9 is `NNGRRT`
-with `guideLength` 21, and Cas12a is `"pam": "TTTV"`, `"pamLocation": "5prime"`,
-`"guideLength": 23`, `"cutOffset": 18`, `"cutOffsetBottom": 23`. Cas12a needs
-that last slot because it is a staggered cutter: the two strands are cut at
-different offsets, leaving an overhang. For a blunt cutter the two are equal.
+Other enzymes are the same track with different numbers:
 
-### One pattern across the reference
+- **SaCas9** is `NNGRRT` with `guideLength` 21
+- **Cas12a** is `"pam": "TTTV"`, `"pamLocation": "5prime"`, `"guideLength": 23`,
+  `"cutOffset": 18`, `"cutOffsetBottom": 23`
+
+Cas12a needs that last slot because it is a staggered cutter: the two strands
+are cut at different offsets, leaving an overhang. For a blunt cutter the two
+are equal.
+
+### A regex motif across the reference
 
 `SequenceSearchAdapter` takes a single regex, so `TATA[AT]A[AT]` finds either
 TATA-box variant:
@@ -724,17 +719,22 @@ motif list rather than here.
 }
 ```
 
-`colorBy` also takes `strand`, `pairOrientation`, `insertSize`, and
-`modifications` (methylation); `groupBy` also takes `strand`,
-`firstOfPairStrand`, `pairOrientation`, `supplementary`, and `mapq`. CRAM uses
-`CramAdapter` in place of `BamAdapter`.
+- `colorBy` also takes `strand`, `pairOrientation`, `insertSize`, and
+  `modifications` (methylation)
+- `groupBy` also takes `strand`, `firstOfPairStrand`, `pairOrientation`,
+  `supplementary`, and `mapq`
+
+CRAM uses `CramAdapter` in place of `BamAdapter`.
 
 ### Filter reads by SAM flag or tag
 
-`flagExclude` hides reads with any of its bits set, and `flagInclude` keeps only
-reads with all of its bits set. The 1540 below hides unmapped, vendor-failed,
-and duplicate reads; 3844 also hides secondary and supplementary. `tagFilters`
-restricts by tag value. A read has to pass every filter to be drawn:
+- `flagExclude` hides reads with any of its bits set. The 1540 below hides
+  unmapped, vendor-failed, and duplicate reads; 3844 also hides secondary and
+  supplementary
+- `flagInclude` keeps only reads with all of its bits set
+- `tagFilters` restricts by tag value
+
+A read has to pass every filter to be drawn:
 
 ```json addtrack
 {
@@ -773,8 +773,8 @@ fetched. See [alignments tracks](/docs/config_guides/alignments_track).
 Setting `color` puts the track in single-color mode. Left alone, a wiggle is
 bicolor: scores above `bicolorPivot` draw upward in `posColor`, and scores below
 it draw downward in `negColor`. Set `color` or `posColor`/`negColor`, never
-both. A wiggle colors per signal rather than per feature, so the color callbacks
-above don't apply here.
+both. A wiggle colors per signal, so the per-feature callbacks above don't apply
+here.
 
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 picks the plot: `xyplot`, `line`, `scatter` (good for BAF or CN points), or
@@ -877,12 +877,15 @@ See [variant tracks](/docs/config_guides/variant_track).
 ## Synteny and dotplot tracks
 
 A `SyntenyTrack` lines up two assemblies and feeds both the dotplot and
-linear-synteny views. Pick the adapter matching your aligner: `PAFAdapter` for
-minimap2/wfmash, `DeltaAdapter` for MUMmer, `ChainAdapter` for liftOver/lastz.
+linear-synteny views. Pick the adapter matching your aligner:
+
+- `PAFAdapter` for minimap2 and wfmash
+- `DeltaAdapter` for MUMmer
+- `ChainAdapter` for liftOver and lastz
 
 Getting the two assemblies backwards is the most common mistake here. minimap2
 takes its inputs target first (`minimap2 grape.fa peach.fa` makes grape the
-target), so name them explicitly instead of tracking the order yourself:
+target), so name them explicitly:
 
 ```json
 {

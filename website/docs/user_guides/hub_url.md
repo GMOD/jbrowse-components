@@ -11,9 +11,6 @@ guide_category: General usage
 straight from a link, with no config file to set up first. Whoever opens the
 link lands in JBrowse with the hub's assemblies and tracks already available.
 
-The [UCSC GenArk hub import](/gallery/#hubs) on the gallery page is exactly
-this: a single URL that opens a hub.
-
 ## Basic usage
 
 ```
@@ -65,7 +62,7 @@ Pass a comma-separated list to open more than one hub at once:
 
 Each hub becomes its own category in the track selector.
 
-## How it behaves once loaded
+## How a loaded hub behaves
 
 Each hub URL becomes a UCSC track hub
 [connection](/docs/user_guides/connections) in the session, and from there it
@@ -73,8 +70,7 @@ behaves exactly like a connection you added by hand: lazily loaded, its own
 category in the track selector, and only the tracks you open stored in the
 session.
 
-The one thing to watch when launching from a link is assembly matching. Hub
-tracks match to assemblies by genome ID, and the assemblies available are
+Hub tracks match to assemblies by genome ID, and the assemblies available are
 whatever the hub carries plus whatever a combined `?config=` defines, so a hub
 opened with `config=none` shows only the tracks its own assemblies cover.
 

@@ -8,21 +8,19 @@ description:
 You can open JBrowse directly into a specific assembly, location, and set of
 tracks from a URL link, an embedded app, a config file, or a saved session spec.
 Each of these populates the same `init` object on a view, which sets the
-assembly, location, tracks, and highlights it shows. This page describes those
-fields and links to the reference for each one.
+assembly, location, tracks, and highlights it shows.
 
-This page covers launching and presetting views. For headless static-image
-export see [@jbrowse/img](/docs/jbrowse-img); for screenshotting a real running
-instance see [](/docs/agents_capture); for the Python/notebook API see
-[](/docs/jbrowse_anywidget). If a coding agent is doing the automating, start at
-[](/docs/agents).
+For headless static-image export see [@jbrowse/img](/docs/jbrowse-img); for
+screenshotting a real running instance see [](/docs/agents_capture); for the
+Python/notebook API see [](/docs/jbrowse_anywidget). If a coding agent is doing
+the automating, start at [](/docs/agents).
 
 ## The `init` fields
 
 `InitState` is the set below. Beneath it is `LinearGenomeViewLaunchProps`, the
 other half of what a launch may set: every plain view property, derived from the
-model rather than listed, which is why a setting you can reach from a menu is
-generally settable at launch too.
+model, so a setting you can reach from a menu is generally settable at launch
+too.
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/types.ts#initState -->
 
@@ -80,9 +78,8 @@ export type LinearGenomeViewLaunchProps = Partial<
 
 `loc` takes several whitespace-separated locstrings
 (`'chr3:25,325,000-25,361,000 chr10:58,716,500-58,718,500'`) to open a
-discontinuous view of all of them, which is how a spec frames something spread
-across loci; `displayedRegionNames` takes whole chromosomes rather than
-intervals, and is ignored when `loc` is set. `grow` needs a `loc` to expand.
+discontinuous view of all of them; `displayedRegionNames` takes whole
+chromosomes, and is ignored when `loc` is set. `grow` needs a `loc` to expand.
 
 A `TrackInit` is either a track id string, or an object that also sets initial
 display options:
@@ -109,8 +106,8 @@ export type TrackInit =
 Any other key on that object is folded into the display snapshot, so
 `{ trackId, height: 250 }` is the shorthand for the nested form above.
 
-`init` is applied once when the view attaches, then cleared. It is a launch
-instruction rather than persistent state, so a saved session never retains it.
+`init` is applied once when the view attaches, then cleared, so a saved session
+never retains it.
 
 ## Ways to automate a view
 
@@ -125,9 +122,6 @@ instruction rather than persistent state, so a saved session never retains it.
   same fields flat on each view, see
   [URL params → session spec](/docs/urlparams).
 
-All of these set the same `init` fields, so navigation, track opening, and
-highlighting behave the same way whichever one you use.
-
 ## URL parameters
 
 JBrowse Web maps query parameters straight onto `init`:
@@ -140,14 +134,13 @@ See [](/docs/urlparams) for every parameter, session specs for all view types,
 and shareable/encoded sessions.
 
 Embedded components (`@jbrowse/react-linear-genome-view2`,
-`@jbrowse/react-app2`) make no assumptions about URL parameters. That logic is
+`@jbrowse/react-app2`) make no assumptions about URL parameters; that logic is
 up to the host application.
 
 ## Embedded components (`createViewState`)
 
 `createViewState` accepts `location` and `highlight` and routes them through
-`init`, so an embedded view shows the loading spinner (not the import form)
-while the assembly loads:
+`init`, so an embedded view shows the loading spinner while the assembly loads:
 
 ```js
 const state = createViewState({
@@ -185,13 +178,18 @@ A `defaultSession` in config.json (or any session snapshot) can give a view an
 ```
 
 Here `init` is required: a `defaultSession` view is a saved state snapshot, and
-`init` is the property holding the keys that need resolving on load (`loc`,
-`tracks`, `highlight`, `tracklist`, `nav`, `displayedRegionNames`, `grow`).
-Plain view settings (`colorByCDS`, `showAminoAcids`, `showCenterLine`,
-`trackLabels`, `showHighlightChips`) are properties in their own right, so they
-sit beside `init`, not inside it. A [session spec](/docs/urlparams#session-spec)
-lists the same keys flat instead, since there they are arguments to the view's
-launcher, so a view moved between the two has to be reshaped.
+`init` is the property holding the keys that need resolving on load. Which key
+goes where:
+
+- **Inside `init`** — `loc`, `tracks`, `highlight`, `tracklist`, `nav`,
+  `displayedRegionNames`, `grow`.
+- **Beside `init`** — plain view settings, which are properties in their own
+  right: `colorByCDS`, `showAminoAcids`, `showCenterLine`, `trackLabels`,
+  `showHighlightChips`.
+
+A [session spec](/docs/urlparams#session-spec) lists the same keys flat instead,
+since there they are arguments to the view's launcher, so a view moved between
+the two has to be reshaped.
 
 See [](/docs/config_guides/default_session).
 
@@ -222,33 +220,32 @@ When you want a static image of a view, reach for
 [@jbrowse/img](/docs/jbrowse-img) first, as it renders SVG/PNG/PDF from the
 command line without a browser.
 
-Drive the full JBrowse Web app with puppeteer (or Playwright) when you need
-something `img` can't produce: a real screenshot of the running UI, a transient
-state (an open menu, a hover popover, a loaded track after user interaction), or
-scraped DOM. Since the URL parameters above set the initial state, the pattern
-is to navigate to a URL carrying that state, wait for it to settle, then act.
+Drive the full JBrowse Web app with puppeteer (or Playwright) for a real
+screenshot of the running UI, a transient state (an open menu, a hover popover,
+a loaded track after user interaction), or scraped DOM. The URL parameters above
+set the initial state, so the pattern is to navigate to a URL carrying that
+state, wait for it to settle, then act.
 
 Three things commonly trip people up when driving JBrowse headlessly.
 
-The first is GPU rendering. JBrowse renders tracks on the GPU, and headless
-Chrome has no GPU, so canvases come up blank without a software renderer. Launch
-with `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
-
-The second is knowing when a view has finished loading. JBrowse publishes its
-own state onto the DOM for exactly this: a view carries
-`data-view-phase="loading"` while it is still waiting on its assembly (or on
-`init`'s navigation) and has mounted no displays yet, and each track display
-carries `data-display-phase="loading"` for the whole of its fetch. Waiting until
-neither is present reads the app's own state, rather than inferring it from
-paint flags or from status text that a hidden element may still contain.
-
-The third is `screenshot({ fullPage: true })`. Puppeteer implements it by
-resizing the viewport to the scroll size and restoring it afterwards, and that
-resize invalidates the page raster, so on a loaded machine the capture can come
-back before the content has redrawn: app chrome around a white, empty content
-area. JBrowse fills the window and does not scroll the page, so a plain
-`page.screenshot()` already captures the whole app. Set a taller viewport if you
-want a taller image.
+- **GPU rendering.** JBrowse renders tracks on the GPU, and headless Chrome has
+  no GPU, so canvases come up blank without a software renderer. Launch with
+  `args: ['--no-sandbox', '--enable-unsafe-swiftshader']`.
+- **Knowing when a view has finished loading.** JBrowse publishes its own state
+  onto the DOM for exactly this: a view carries `data-view-phase="loading"`
+  while it is still waiting on its assembly (or on `init`'s navigation) and has
+  mounted no displays yet, and each track display carries
+  `data-display-phase="loading"` for the whole of its fetch. Waiting until
+  neither is present reads the app's own state. Key the wait on those
+  attributes: the loading overlay keeps the literal `Loading…` in the DOM behind
+  `opacity: 0`, so a text scan needs a computed-style check on top.
+- **`screenshot({ fullPage: true })`.** Puppeteer implements it by resizing the
+  viewport to the scroll size and restoring it afterwards, and that resize
+  invalidates the page raster, so on a loaded machine the capture can come back
+  before the content has redrawn: app chrome around a white, empty content area.
+  JBrowse fills the window and does not scroll the page, so a plain
+  `page.screenshot()` already captures the whole app. Set a taller viewport if
+  you want a taller image.
 
 ```js
 import puppeteer from 'puppeteer'
@@ -280,9 +277,9 @@ await page.screenshot({ path: 'view.png' })
 await browser.close()
 ```
 
-Either way the waits return as soon as a display is finished rather than
-pending, so they will not tell you a capture came out empty: check the frame, or
-assert on something the data itself produces.
+The waits return as soon as a display is finished rather than pending, so they
+will not tell you a capture came out empty: check the frame, or assert on
+something the data itself produces.
 
 Two of the terminal states replace the display's whole subtree rather than
 overlaying it, and so publish no `data-display-phase` at all: "too large", and a

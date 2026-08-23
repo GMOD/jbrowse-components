@@ -92,9 +92,8 @@ or a different alias adapter entirely:
   the primary column by its header name instead of by index, read from the
   **last** `#`-prefixed line in the file (the one immediately above the data, so
   a file with a comment block still resolves against the real header). The
-  adapter throws if the named column is not in that header, rather than silently
-  producing no aliases — but note it only looks when a `#` line exists at all: a
-  file with no header row falls back to `refNameColumn` without complaint.
+  adapter throws if the named column is not in that header. It only looks when a
+  `#` line exists: a file with no header row falls back to `refNameColumn`.
 
 ```
 #name	alias1	alias2
@@ -139,8 +138,8 @@ Three column headers are required, matched by name rather than position:
 `GenBank seq accession`, `RefSeq seq accession` and `UCSC style name`. A fourth,
 `Sequence name`, is optional. The primary refName is taken from
 `UCSC style name`, falling back to `Sequence name` where that column exists and
-the UCSC one is blank — so a row with neither is skipped rather than mapping an
-empty name. Whichever of the four columns a row does fill become aliases for it.
+the UCSC one is blank; a row with neither is skipped. Whichever of the four
+columns a row does fill become aliases for it.
 
 **Options:**
 

@@ -53,10 +53,10 @@ export interface BaseTextSearchArgs {
 **Prefer tagging exactness over filtering on it.** Set `exact: true` on the
 results that matched precisely and one unrestricted search answers both "what
 matches?" and "what matches exactly?". Only the adapter can make that judgement
-— trix calls a hit exact when _any_ indexed attribute equals the query — which
-is why it travels on the result rather than being recomputed by the caller.
-Filtering on `searchType === 'exact'` still works, and the built-ins also do it,
-but on its own it costs the search box two reads of one index.
+— trix calls a hit exact when _any_ indexed attribute equals the query — so it
+travels on the result. Filtering on `searchType === 'exact'` works, and the
+built-ins also do it, but filtering on its own costs the search box two reads of
+one index.
 
 ## Implementing the adapter
 
@@ -164,7 +164,7 @@ of the config and map each hit to a `BaseResult`.
 
 A `searchIndex` that can be slow should honor `args.stopToken`: every keystroke
 supersedes the previous query, and `TextSearchManager` treats an abort as a
-normal outcome rather than a failure.
+normal outcome.
 
 ## BaseResult fields
 
@@ -260,8 +260,8 @@ to query for a given assembly. The `explicitIdentifier` is what a config's
 adapters sharing an id are one cache entry. (`TrixTextSearchAdapter` uses
 `implicitIdentifier` instead, so its id is optional in a config.)
 
-The `#config` / `#slot` JSDoc tags are what generate the published config page
-for the adapter; they are optional but free.
+The `#config` / `#slot` JSDoc tags generate the published config page for the
+adapter; they are optional.
 
 ## Plugin registration
 

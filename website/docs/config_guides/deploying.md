@@ -12,42 +12,47 @@ share links stay [reproducible](/docs/faq/#are-my-share-links-reproducible)
 across rebuilds.
 
 JBrowse Web is a **static web application**, a folder of HTML, JS, and CSS plus
-your `config.json`. There is no JBrowse-specific server: any static file host
-(Nginx, Apache, S3, GitHub Pages, a Docker image behind an ingress) can serve
-it. Data files (BAM, BigWig, VCF, ...) are read directly from wherever they live
-via HTTP range requests, so the only server-side requirement is that your data
-host supports range requests and CORS (see
+your `config.json`. Any static file host (Nginx, Apache, S3, GitHub Pages, a
+Docker image behind an ingress) can serve it. Data files (BAM, BigWig, VCF, ...)
+are read directly from wherever they live via HTTP range requests, so the only
+server-side requirement is that your data host supports range requests and CORS
+(see
 [the CORS FAQ](/docs/faq/#why-do-i-get-a-cors-error-when-loading-remote-files)).
 
 ## The minimal deployment
 
-```bash
-# 1. lay down the static app into a folder
-npx @jbrowse/cli create jbrowse-web
+- Lay down the static app into a folder:
 
-# 2. add an assembly and tracks (writes config.json for you)
-cd jbrowse-web
-npx @jbrowse/cli add-assembly https://example.com/hg38.fa.gz --name hg38
-npx @jbrowse/cli add-track https://example.com/sample.bam --trackId ngs-reads --name "NGS reads" --assemblyNames hg38
+  ```bash
+  npx @jbrowse/cli create jbrowse-web
+  ```
 
-# 3. serve the folder with any static host
-npx serve .         # or copy it into your Nginx image
-```
+- Add an assembly and tracks, which writes `config.json` for you:
 
-`jbrowse add-track` just writes a JSON entry into the `tracks` array of
-`config.json`, so you never hand-edit it, and you can do the same from a script
-(next section).
+  ```bash
+  cd jbrowse-web
+  npx @jbrowse/cli add-assembly https://example.com/hg38.fa.gz --name hg38
+  npx @jbrowse/cli add-track https://example.com/sample.bam --trackId ngs-reads --name "NGS reads" --assemblyNames hg38
+  ```
 
-Docker/Kubernetes are usually overkill for JBrowse itself, since it is just
-static files. They make sense if you are bundling JBrowse alongside other
+- Serve the folder with any static host:
+
+  ```bash
+  npx serve .         # or copy it into your Nginx image
+  ```
+
+`jbrowse add-track` writes a JSON entry into the `tracks` array of
+`config.json`, and a script can do the same (next section).
+
+Docker/Kubernetes make sense where you are bundling JBrowse alongside other
 server-side code you operate. The static folder above drops into whatever image
 or bucket your pipeline already uses.
 
 ## Generating config.json from a script
 
-For repetitive data, **generate** `config.json` rather than maintain it by hand.
-A track is just an object in the `tracks` array, so any language that can write
-JSON works. For example, turning a samplesheet into a config:
+For repetitive data, **generate** `config.json`. A track is an object in the
+`tracks` array, so any language that can write JSON works. For example, turning
+a samplesheet into a config:
 
 ```js
 // samplesheet rows: { sample, assembly, bigwig }
@@ -77,10 +82,8 @@ triplicate), emit a single
 `subadapters` array is built from the same rows. See that guide for a templated
 `subadapters` example.
 
-This is also where tools like [Jsonnet](https://jsonnet.org/) fit well, if you
-prefer a templating language to a script. JBrowse does not require Jsonnet (the
-output is still ordinary `config.json`), but it can be a clean way to express
-repeated track shapes.
+Tools like [Jsonnet](https://jsonnet.org/) fit here too, if you prefer a
+templating language to a script; the output is still ordinary `config.json`.
 
 ## Keep trackIds stable for reproducible links
 
@@ -89,16 +92,16 @@ If your pipeline regenerates `config.json` with **different** `trackId`s each
 build (an ID embedding a timestamp or random suffix), previously shared links
 fail to restore those tracks. Derive each `trackId` deterministically from
 stable inputs, as in the script above, where the ID comes from the assembly and
-sample name rather than anything that changes per build. See
+sample name. See
 [why a saved session fails to load](/docs/faq/#why-does-my-saved-session-fail-to-load).
 
-## The one thing that lives in index.html: cache-busting
+## Cache-busting in index.html
 
 Assemblies, tracks, plugins, and the default session are all `config.json`, so
-all of it can be scripted. The one exception is the
-[cache-buster](/docs/config_guides/avoiding_stale_config), a one-line
-`<script>`, which has to be in `index.html` because `config.json` is fetched
-before it can configure anything.
+all of it can be scripted. The
+[cache-buster](/docs/config_guides/avoiding_stale_config) is a one-line
+`<script>` in `index.html`, since `config.json` is fetched before it can
+configure anything.
 
 ## See also
 

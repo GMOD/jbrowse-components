@@ -28,7 +28,7 @@ jcvi builds C extensions and will not install against every python. If
 `uv pip install jcvi biopython` gets an interpreter it does build on. DIAMOND
 ships a static binary in its GitHub releases.
 
-## A genome that holds more than one copy of itself
+## Oat's three subgenomes and their homoeologs
 
 Oat (_Avena sativa_) is an allohexaploid: three diploid grasses hybridized and
 the result kept all three genomes. Its 21 chromosomes are seven homoeologous
@@ -145,7 +145,7 @@ pair with one or two of them can return any ratio at all, and those pairs top an
 unfiltered table. dS is per site, so the same rate is weaker evidence in a short
 gene than in a long one.
 
-## Loading it in JBrowse
+## Loading the blocks table in JBrowse
 
 The output is a two-column pair table with the two rates after it, which is the
 `.blocks` shape [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track)
@@ -196,7 +196,7 @@ The wheat panel comes from Ensembl Compara's own homoeolog calls
 so the two sides differ in assembly and in how the pairs were called as well as
 in species.
 
-## Checking it against the raw data
+## Checking the rates against the raw data
 
 The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture.
 

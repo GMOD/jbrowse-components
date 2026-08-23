@@ -139,7 +139,7 @@ The second `bcftools view` keeps sites that are common within the panel. Most
 sites in a callset this size are rare, and a site that is reference in all 167
 animals draws an empty column.
 
-## Loading it with sample metadata
+## Loading the slice with sample metadata
 
 The display draws one row per sample. For a panel this size, point the adapter
 at a TSV whose first column is the sample name and whose other columns are
@@ -201,7 +201,7 @@ sample name. A session can state it directly, since the display takes
 
 <Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens back out. The size swatch starts as three breed blocks and ends interleaved." />
 
-## Reading it
+## Reading the IGF1 haplotype block
 
 <Figure caption="SNVs across 320 kb at IGF1 as a matrix, one row per canid and one column per variant, size class as the sidebar swatch, under per-site Fst between the same two panels. Fst is near zero at both window edges and high across the gene." src="/img/dog10k-igf1-haplotype.png" />
 

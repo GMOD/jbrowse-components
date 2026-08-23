@@ -68,21 +68,20 @@ that cut _downstream_ of their site — BsaI, BsmBI, BbsI, SapI, AarI, the Golde
 Gate workhorses — where `n` and `m` count from the site's 3' end to the top- and
 bottom-strand cuts (negative numbers count back into the site).
 
-The panel is prefilled with common cloning enzymes, but nothing is built in:
-wipe it and paste your own set from REBASE or anywhere else. Sites may use
+The panel is prefilled with common cloning enzymes; wipe it and paste your own
+set from REBASE or anywhere else. Sites may use
 [IUPAC ambiguity codes](https://www.bioinformatics.org/sms/iupac.html) (e.g.
 `GGTNACC`), blank lines and `#` comments are ignored, and a bare site with no
-name simply names itself.
+name names itself.
 
-The cut notation is what makes this more than a motif search. `(n/m)` pins both
-strands' cuts outright; a `^` pins the top-strand cut, and for a palindromic
-site the bottom-strand cut mirrors it. So each hit reports both cut positions
-and whether the enzyme leaves a 5' overhang, a 3' overhang, or a blunt end. The
-strand checkboxes only appear when the list contains a motif that is actually
-stranded.
+The cut notation carries the cuts themselves. `(n/m)` pins both strands' cuts
+outright; a `^` pins the top-strand cut, and for a palindromic site the
+bottom-strand cut mirrors it. So each hit reports both cut positions and whether
+the enzyme leaves a 5' overhang, a 3' overhang, or a blunt end. The strand
+checkboxes only appear when the list contains a motif that is actually stranded.
 
 Because the list is just text, the same mode works for primers, adapters,
-polylinker sites, or any other named motif set, not only enzymes.
+polylinker sites, or any other named motif set.
 
 With more than one motif in the list, **Launch as one track** puts every motif's
 matches in one track, distinguishable only by name, and **Launch one track per
@@ -90,7 +89,7 @@ motif** gives each its own lane.
 
 <Video src="/media/ui/sequence_search_motifs.mp4" caption="The route on a view with no tracks open: the view menu's Sequence search, the Motif list mode and the enzymes it arrives prefilled with, three of them kept, and a lane per enzyme scanned out of the reference." />
 
-## Ship one in config.json
+## Ship a search in config.json
 
 A search launched from the menu lives in your session. To put one in front of
 everyone who opens the instance, write the same adapter into `config.json` as an

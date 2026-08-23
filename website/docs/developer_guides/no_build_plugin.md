@@ -175,7 +175,7 @@ export default class MyPlugin {
 }
 ```
 
-Then in your config you can reference it using the "esmLoc" function
+Reference it from your config with `esmLoc`:
 
 ```json
 {
@@ -191,10 +191,9 @@ Then in your config you can reference it using the "esmLoc" function
 }
 ```
 
-## Result
+## The finished plugin
 
-With JBrowse running and the "Citation" plugin from above added to your config,
-your JBrowse session should look like the following:
+With the "Citation" plugin above in your config, the session looks like this:
 
 <Figure caption="Screenshot of a running JBrowse instance with the simple no build plugin added. Note our top level menu item has been added, and upon clicking it our widget opens." src="/img/no_build_final.png"/>
 

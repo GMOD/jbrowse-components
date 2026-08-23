@@ -85,23 +85,22 @@ them generically as `field6`, `field7`, ... and a jexl callback reading
 
 <!-- GOTCHA BedAdapter END -->
 
-For color this rarely matters: a BED that carries its own colors needs no
-callback, since an unset
+For color this rarely matters: an unset
 [`color`](/docs/config/linearcanvasbasedisplay/#slot-color) slot paints each
-feature from them under whichever of those names they land. Write a callback to
-override that, or to read a color from some other column.
+feature from the colors a BED carries, under whichever of those names they land.
+Write a callback to override that, or to read a color from some other column.
 
-`myplugin.js` doesn't need the jbrowse-plugin-template if it's self-contained
-and has no external imports. If it does import other modules, use the template.
-For embedded components, see the
+`myplugin.js` works as-is when it is self-contained; use the
+jbrowse-plugin-template if it imports other modules. For embedded components,
+see the
 [inline plugins example](https://jbrowse.org/storybook/lgv/plugins/#with-inline-plugins).
 
 ## Reading the type list off the file
 
-A lookup-table callback keyed on `feature.type` is only as good as its keys, and
-a pipeline's own documentation is not always an accurate list of what it emits.
-The [cookbook](/docs/cookbook#colors) has the `awk` one-liner that counts the
-types in a GFF3; this section works one file through end to end.
+A lookup-table callback keyed on `feature.type` is only as good as its keys, so
+read the types off the file. The [cookbook](/docs/cookbook#colors) has the `awk`
+one-liner that counts the types in a GFF3; this section works one file through
+end to end.
 
 The
 [EBI mobilome annotation pipeline](https://github.com/EBI-Metagenomics/mobilome-annotation-pipeline)
@@ -121,14 +120,13 @@ greys the passenger CDSs back so the elements read first:
 
 The repeat flanks appear under two names because that pipeline renamed the type
 across releases, and a file carries whichever name the release that produced it
-used. That is the usual reason a key is missing, and the reason to read the
-types off the file you have rather than off the pipeline's current docs.
+used. That is the usual reason a key is missing.
 
 These GFFs carry their sequence inline after a `##FASTA` marker, which is most
 of their size. `Gff3Adapter` reads them as-is and stops at the sequence, so a
-whole-file track needs no preparation. Cut the file at that marker for a
-`bgzip`/`tabix` indexed track instead, since the sequence lines are not
-tab-delimited and tabix has no way to skip them.
+whole-file track loads directly. For a `bgzip`/`tabix` indexed track, cut the
+file at that marker first: the sequence lines are not tab-delimited and tabix
+has no way to skip them.
 
 ## See also
 

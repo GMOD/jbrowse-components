@@ -7,8 +7,8 @@ guide_category: Plugins
 sidebar_label: Tracks and displays
 ---
 
-**TL;DR:** to add a new way to visualize data in an existing view, write a
-display type, not a track type.
+**TL;DR:** a new way to visualize data in an existing view is a display type; a
+track type is a new conceptual category of track.
 
 A track owns the high-level identity (an ID, a name, a default set of displays);
 a display shows that track inside a particular view and owns the drawing.
@@ -17,9 +17,9 @@ a display shows that track inside a particular view and owns the drawing.
 Track  ─owns→  Display(s)  ─draw→  canvas
 ```
 
-Tracks are deliberately thin. Every in-tree registration, with the axis that
-makes them thin in the last column — `SyntenyTrack` and `VariantTrack` are the
-two that reach past `LinearGenomeView`:
+Tracks are deliberately thin. Every in-tree registration, with the view each
+display renders in — `SyntenyTrack` and `VariantTrack` are the two that reach
+past `LinearGenomeView`:
 
 <!-- DISPLAY_VIEW_TYPES START -->
 
@@ -66,13 +66,14 @@ config schema.
 - Wiring a [custom widget](/docs/developer_guides/creating_widget) into feature
   clicks (e.g. `VariantFeatureWidget`)
 - Bundling a specific adapter with drawing code tuned for it, so users get the
-  right combination by default instead of relying on the generic `FeatureTrack`
-  / `LinearBasicDisplay`
+  right combination by default. The generic pairing a plugin skips here is
+  `FeatureTrack` with `LinearBasicDisplay`.
 
 The display owns view-specific state, menu items, overlays, and the drawing
-itself. Its rendering backend is not a pluggable element: the display builds one
-with `createRenderingBackend`, which walks the WebGPU → WebGL2 → Canvas2D
-ladder, or with `createCanvas2DBackend` when it ships no shader path.
+itself. A rendering backend is built, never registered: the plugin ABI has no
+rendering-backend element type, so the display calls `createRenderingBackend`,
+which walks the WebGPU → WebGL2 → Canvas2D ladder, or `createCanvas2DBackend`
+when it ships no shader path.
 
 ## Display foundations
 
@@ -91,8 +92,7 @@ _fetches_; how it _renders_ is a separate axis on top.
 
 <!-- DISPLAY_FOUNDATIONS END -->
 
-Both walkthroughs use `MultiRegionDisplayMixin`, the common case. Compose one of
-these rather than emitting SVG per feature. The
+Both walkthroughs use `MultiRegionDisplayMixin`, the common case. The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
 goes further into why fetch and render are split.
 
@@ -101,8 +101,7 @@ goes further into why fetch and render are split.
 Orthogonal to the foundation — compose any of them on top of whichever one you
 picked. Each is one mixin with one overridable hook, and composing it **is** the
 opt-in: a display that never overrides the hook gets the default and pays
-nothing. Reach for one before writing the behavior yourself; each replaced
-several hand-written copies that had already drifted, and **Composed by** is
+nothing. Reach for one before writing the behavior yourself; **Composed by** is
 read off the `types.compose(...)` calls, so it also answers "does anything else
 already do this?"
 
@@ -122,8 +121,7 @@ already do this?"
 
 Order matters in one place: `types.compose` gives a collision to the later
 argument, so composing `HeightModeMixin()` before `TrackHeightMixin()` silently
-leaves grow mode inert. The mixin reports that at attach rather than letting you
-find it visually.
+leaves grow mode inert. The mixin reports that at attach.
 
 ## Walkthroughs
 
@@ -131,7 +129,7 @@ Two end-to-end guides build the same display, differing only in the renderer.
 Start with the first:
 
 - [](/docs/developer_guides/plotting_features) - fetch in a worker, draw with
-  Canvas2D. Right for gene-scale tracks, and no shaders involved.
+  Canvas2D. Right for gene-scale tracks.
 - [](/docs/developer_guides/creating_gpu_display) - the same display with a
   `.slang` shader behind it, for roughly ≳100K features per frame.
 

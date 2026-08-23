@@ -58,8 +58,8 @@ and a row carrying both — what `minimap2 -c --cs` emits — keeps the one fold
 from the `cs`, since that spells out mismatches where minimap2's own `cg` says
 `M`. The substituted base letters are what the fold drops; mismatch positions
 survive as `X`. Reorienting a `cs` for the q-line would mean reversing its op
-order and reverse-complementing those bases, so carrying one alongside a flipped
-CIGAR is a standing invitation for the two to disagree.
+order and reverse-complementing those bases, so only the folded CIGAR is
+carried.
 
 ### Identity
 
@@ -131,9 +131,9 @@ By default `make-pif` also writes a no-CIGAR "coarse" tier of the same
 alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom the view
 serves this tier automatically, drawing clean ribbons without parsing
 megabyte-scale CIGAR strings; zooming in switches back to the fine `t`/`q` tier.
-No configuration is needed: the "Level of detail" control defaults to `auto`,
-and `fine`/`coarse` pin a tier. It is a submenu of the settings menu on both
-comparative views, and of the track menu on the LGV synteny track.
+The "Level of detail" control defaults to `auto`, and `fine`/`coarse` pin a
+tier. It is a submenu of the settings menu on both comparative views, and of the
+track menu on the LGV synteny track.
 
 A coarse row has no CIGAR, so it is drawn as a straight ribbon between its
 endpoints. To keep that honest, a row is split wherever its CIGAR contains an
@@ -190,13 +190,12 @@ The rustybam tags pass through to both tiers, but `make-pif` alone is
 sufficient. The [SafFire](https://github.com/mrvollger/SafFire) viewer documents
 the rationale for each rustybam step.
 
-`rb break-paf --max-size N` is worth calling out: it splits the input alignments
-themselves at large indels, so **both** tiers inherit the same pieces. That is
-different from `--coarse`, which splits only the coarse tier: the fine tier
-keeps whole alignments and draws each large indel as a colored wedge. Break the
-PAF upstream if you would rather see those indels as genuine breaks between
-separate alignments, and have feature identity stay the same across a tier
-switch.
+`rb break-paf --max-size N` splits the input alignments themselves at large
+indels, so **both** tiers inherit the same pieces. `--coarse` splits only the
+coarse tier: the fine tier keeps whole alignments and draws each large indel as
+a colored wedge. Break the PAF upstream to see those indels as genuine breaks
+between separate alignments, with feature identity staying the same across a
+tier switch.
 
 ## JBrowse configuration
 

@@ -6,17 +6,16 @@ description:
   and how to check what it produced
 ---
 
-JBrowse's automation interface is a **file format**, not an API. A session is
-described as JSON and opened; there is no plugin to install and no running
-instance to drive. That makes it a good target for an AI coding agent, which is
+JBrowse's automation interface is a **file format**: a session is described as
+JSON and opened. That makes it a good target for an AI coding agent, which is
 already good at writing JSON against a schema and running shell commands.
 
 Two more things make it a good target, and they are the subject of the two pages
-next to this one. There is a large body of **hosted, ready-to-use genomic data**
-an agent can reach with no setup at all, so the first useful picture does not
-wait on a download — see [](/docs/agents_hosted_data). And a finished view can
-be **captured and looked at**, which is what closes the loop between "the agent
-wrote a config" and "the config shows the thing" — see [](/docs/agents_capture).
+next to this one. A large body of **hosted, ready-to-use genomic data** is
+reachable with no setup at all, so the first useful picture does not wait on a
+download — see [](/docs/agents_hosted_data). And a finished view can be
+**captured and looked at**, which closes the loop between "the agent wrote a
+config" and "the config shows the thing" — see [](/docs/agents_capture).
 
 Every tutorial on this site was written with an agent in the loop: fetching and
 subsetting the data, authoring the config, rendering the figure, then reading
@@ -25,7 +24,7 @@ the figure back to check the claim in the prose. The pages under
 are of the biology, and their `## Reproduce it end to end` sections are the
 scripts it produced.
 
-## The loop
+## The agent loop
 
 An agent with a shell can do the whole job, not just the last step:
 
@@ -38,10 +37,10 @@ An agent with a shell can do the whole job, not just the last step:
 6. look           screenshot it, and read the picture
 ```
 
-Steps 1 and 2 are the reason this belongs in a shell rather than in the browser:
-fetching a file, slicing a region out of a BAM, and building an index are not
-things a web page can do. Step 3 is a JSON file — see [](/docs/automating) for
-the fields, and [](/docs/config_guide) for the model.
+Steps 1 and 2 belong in a shell: fetching a file, slicing a region out of a BAM,
+and building an index are not things a web page can do. Step 3 is a JSON file —
+see [](/docs/automating) for the fields, and [](/docs/config_guide) for the
+model.
 
 Steps 1 to 3 are also the ones you can often skip entirely. If the assembly is
 one of the hosted ones, and the annotation you want is already published against
@@ -49,8 +48,7 @@ it, the whole job is a URL.
 
 ## Let the CLI write the track
 
-`@jbrowse/cli` knows the slot names, which is the thing an agent authoring JSON
-from memory does not:
+`@jbrowse/cli` knows the slot names:
 
 ```bash
 jbrowse add-assembly hg38.fa.gz --load copy
@@ -61,15 +59,19 @@ jbrowse text-index --tracks genes    ## makes a gene name work as a location
 
 The track type, the adapter and the index path all come from the file itself: a
 `.bw` becomes a `QuantitativeTrack` over a `BigWigAdapter`, a `.vcf.gz` a
-`VariantTrack` over a `VcfTabixAdapter`. `--color`, `--height` and
-`--displayDefaults` are written into the track's `displayDefaults`, which is
-where per-track appearance belongs. `--load` says how a local file is placed
-next to the config and is omitted for a URL; `--config` takes inline JSON for
-anything the flags do not cover. Full reference in [](/docs/cli).
+`VariantTrack` over a `VcfTabixAdapter`. The flags:
+
+- `--color`, `--height` and `--displayDefaults` are written into the track's
+  `displayDefaults`, which is where per-track appearance belongs.
+- `--load` says how a local file is placed next to the config, and is omitted
+  for a URL.
+- `--config` takes inline JSON for anything the flags do not cover.
+
+Full reference in [](/docs/cli).
 
 What the CLI does not write is what the view opens onto — `defaultSession` and
 the `init` fields under it, which are [](/docs/automating), and which
-`jbrowse set-default-session` will take once composed.
+`jbrowse set-default-session` takes once composed.
 
 ## Check the result
 
@@ -79,9 +81,9 @@ The one thing to insist on is step 4, because of how JBrowse fails:
 > misspelled slot leaves the track loading normally with the setting doing
 > nothing.
 
-That failure is invisible to the agent — it wrote a config, the config loaded,
-the track appeared. Nothing anywhere says the color it set is being dropped. So
-give it a way to find out:
+That failure is invisible to the agent: it wrote a config, the config loaded,
+the track appeared, and nothing says the color it set is being dropped. So give
+it a way to find out:
 
 ```bash
 jbrowse validate config.json
@@ -99,8 +101,8 @@ agent can loop on it. Errors are things JBrowse accepts and silently gets wrong;
 warnings are things it will complain about itself. Full description in
 [](/docs/faq#my-track-loads-but-my-setting-has-no-effect).
 
-A validator beats a manual here. An agent that has read every page can still
-invent a slot name; one that can check its work recovers from having done so.
+An agent that has read every page can still invent a slot name; one that can
+check its work recovers from having done so.
 
 One warning is worth recognizing rather than acting on: a type a **plugin**
 registers is not in the manifest the validator checks against, so it is reported
@@ -111,7 +113,7 @@ working track into a core type that cannot show its data.
 ## Where the browser comes from
 
 Step 5 assumes an application, and which one to reach for is decided by where
-the data is rather than by what the picture should look like:
+the data is:
 
 |                       | to run it                          | the data it can read              |
 | --------------------- | ---------------------------------- | --------------------------------- |
@@ -125,10 +127,10 @@ a config whose locations are `localPath` produces a figure from files on disk
 with nothing served and nothing installed; Desktop opens a config path directly
 and keeps local paths in the session, which is the one to hand a human.
 
-`@jbrowse/capture` is different in a way worth knowing before it fails: it
-drives the **public** build at `jbrowse.org/code/jb2/latest/`, so every file the
-view names is fetched by a page on jbrowse.org and has to be a URL that permits
-it. A path on your disk is not one.
+`@jbrowse/capture` drives the **public** build at
+`jbrowse.org/code/jb2/latest/`, so every file the view names is fetched by a
+page on jbrowse.org and has to be a URL that permits it. A path on your disk is
+not one.
 
 For data that is not public, serve the app and the data together:
 
@@ -144,8 +146,8 @@ npx @jbrowse/capture --instance http://localhost:3000 \
 ```
 
 `--load copy` puts the files inside the directory being served, so the app and
-its data come off one origin and CORS never enters into it. `--instance` is what
-points capture at that build instead of the public one.
+its data come off one origin and CORS never enters into it. `--instance` points
+capture at that build.
 
 **The static server has to honor `Range`.** `npx serve` answers a range request
 with `206 Partial Content`; `python3 -m http.server` ignores the header and
@@ -153,7 +155,7 @@ returns the whole file with `200`, which is the difference between a track that
 reads a slice and one that downloads the file again for every read. Full setup,
 including the prerequisites, is [](/docs/quickstart_web).
 
-## Then look at it
+## Look at the picture
 
 The validator reads the config. It cannot tell you the file was unindexed, the
 refNames did not match, or the region has no data — all of which produce a track
@@ -173,8 +175,8 @@ track is obvious in a picture and invisible in an exit code.
 
 ### When the track is empty
 
-The picture says a track has nothing in it. What it does not say is which of
-three things is true, and each has a shell answer:
+The picture says a track has nothing in it. Each of the three reasons for that
+has a shell answer:
 
 ```bash
 ## 1. what the file calls its contigs, against what the assembly calls them
@@ -193,28 +195,27 @@ curl -sI -H 'Range: bytes=0-99' https://example.org/sample.bam
 The first is the usual one. JBrowse matches reference names exactly, so a file
 naming its first chromosome `1` shows nothing on an assembly that calls it
 `chr1`, with no error anywhere. The fix is an alias table on the assembly —
-`jbrowse add-assembly --refNameAliases`, or a hosted hub, which ships one — and
-not a rewrite of the file.
+`jbrowse add-assembly --refNameAliases`, or a hosted hub, which ships one.
 
 The third has to come back `206 Partial Content` with an
 `Access-Control-Allow-Origin` the browser will accept. A `200` carrying the
 whole file is a server ignoring the range, which turns every read into a full
-download rather than showing an error. The FAQ covers the same two for someone
-with the app in front of them:
+download with no error shown. The FAQ covers the same two for someone with the
+app in front of them:
 [an empty track](/docs/faq#my-track-loads-but-shows-no-features) and
 [a CORS error](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
 
 ## Handing the result back
 
-The picture is the check, not usually the deliverable. Three things are:
+The picture is the check. The deliverable is usually one of three things:
 
 - **A link**, which is what someone asking to "see it" wants.
   `npx @jbrowse/capture url --hub hg38 --loc BRCA1 --track hg38-ncbiRefSeqCurated`
   prints one, encoded, without launching anything, and [](/docs/urlparams) is
   every form it can take. Do not read a link out of a browser's address bar
   instead: a session too large for a URL is kept in the browser's own storage
-  with only an id in the bar, so that link opens the view on the machine that
-  made it and nothing anywhere else.
+  with only an id in the bar, so that link opens the view only on the machine
+  that made it.
 - **The config or session file**, for someone who will keep working on it.
   `jbrowse-desktop config.json` opens one directly.
 - **The figure**, when the answer is the picture rather than the browser.
@@ -227,11 +228,10 @@ the `assembly`, `tracks` and `init` an agent already knows how to write, as
 props rather than as a file. [](/docs/embedded_components) covers which package
 fits which goal.
 
-The thing that surprises an agent there is that **the props are initial
-values**. The view engine is built on first render and later prop changes are
-ignored, so code that swaps `assembly` on a mounted component compiles, runs,
-and changes nothing. A React `key` that changes with the assembly is what
-remounts it.
+**The props are initial values.** The view engine is built on first render and
+later prop changes are ignored, so code that swaps `assembly` on a mounted
+component compiles, runs, and changes nothing. A React `key` that changes with
+the assembly remounts it.
 
 ## What to give an agent to read
 
@@ -241,19 +241,18 @@ them — small enough to read whole, with a link per page to fetch on demand.
 
 For config authoring specifically, the useful path is:
 
-1. [](/docs/config_guides/file_types) to go from the file in hand to the pair of
-   names that describes it. Every format is a row of format, adapter and track
-   type, with the notes that decide between two adapters for one format, and the
-   tables are generated from the adapters themselves.
-2. `https://jbrowse.org/jb2/docs/config/<lowercased type name>.md` for the slots
-   that type accepts — one page per adapter, track, and display type, generated
-   from the schemas, a few hundred words each.
-3. [](/docs/automating) for the `init` fields that decide what a view opens
-   onto.
-4. [](/docs/cookbook) when the request is about how something should look rather
-   than which type it is — color callbacks, filters, arcs, several signals on
-   one track — each recipe a whole track config rather than the slot on its own.
-5. `llms.txt` for anything else: concepts, guides, the pages above in raw form.
+- [](/docs/config_guides/file_types) to go from the file in hand to the pair of
+  names that describes it. Every format is a row of format, adapter and track
+  type, with the notes that decide between two adapters for one format, and the
+  tables are generated from the adapters themselves.
+- `https://jbrowse.org/jb2/docs/config/<lowercased type name>.md` for the slots
+  that type accepts — one page per adapter, track, and display type, generated
+  from the schemas, a few hundred words each.
+- [](/docs/automating) for the `init` fields that decide what a view opens onto.
+- [](/docs/cookbook) when the request is about how something should look rather
+  than which type it is — color callbacks, filters, arcs, several signals on one
+  track — each recipe a whole track config rather than the slot on its own.
+- `llms.txt` for anything else: concepts, guides, the pages above in raw form.
 
 ## Ready-made skills
 
@@ -279,10 +278,9 @@ narrowed to a single skill.
 | `.claude/skills/jbrowse-hosted-data/` | finding and using the hosted assemblies and tracks, and adding your own file alongside them                                               |
 | `.claude/skills/jbrowse-capture/`     | driving a real instance and screenshotting it, including what "finished rendering" means                                                  |
 
-Nothing in them is Claude-specific except the file layout — the reference files
-are plain Markdown and work as context for any assistant. `AGENTS.md` files in
-the source tree cover the same ground for agents working _on_ JBrowse rather
-than _with_ it.
+Only the file layout is Claude-specific; the reference files are plain Markdown
+and work as context for any assistant. `AGENTS.md` files in the source tree
+cover the same ground for agents working _on_ JBrowse rather than _with_ it.
 
 The mirror is generated, so edit the skills in jbrowse-components. The authoring
 skill's type index in particular is built from the live config schemas by
@@ -301,9 +299,9 @@ In rough order of frequency:
   result, not just at the exit code.
 - **Screenshotting before the browser has finished.** Every readiness signal
   JBrowse publishes is the _absence_ of something, so all of them pass on a page
-  that has not started yet, and a naive script reports success in under a
-  second. [](/docs/agents_capture#knowing-when-it-is-done) is about exactly
-  this.
+  that has not started yet, and a script built from them reports success in
+  under a second. [](/docs/agents_capture#knowing-when-it-is-done) is about
+  exactly this.
 - **Building an assembly that already exists.** Downloading and indexing a
   reference genome is a slow way to arrive at something already hosted and
   CORS-enabled — see [](/docs/agents_hosted_data).
@@ -312,5 +310,5 @@ In rough order of frequency:
   routes them there without naming a display type.
 - **Handing a web page a path.** A track is fetched by the browser, so a local
   file reaches jbrowse-web as a failed fetch whether it arrives as a bare path
-  or a `file://` uri. Which application removes the problem rather than working
-  around it is the [section above](#where-the-browser-comes-from).
+  or a `file://` uri. Which application to reach for instead is the
+  [section above](#where-the-browser-comes-from).

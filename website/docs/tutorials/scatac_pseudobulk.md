@@ -83,7 +83,7 @@ out. Two workers fit this dataset.
 
 `groupby` is the whole decision: pass the cluster column (`"leiden"`) to get one
 row per cluster, or the annotated column (`"cell_type"`) to get one row per cell
-type. Nothing else in the workflow changes.
+type.
 
 ### Other starting points
 

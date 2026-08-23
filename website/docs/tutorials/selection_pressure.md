@@ -25,7 +25,7 @@ jcvi builds C extensions and will not install against every python. If
 `pip install jcvi` fails compiling them, `uv venv --python 3.12` followed by
 `uv pip install jcvi biopython` gets an interpreter it does build on.
 
-## What the ratio says
+## What dN/dS says
 
 Every coding substitution between two orthologs is either synonymous, changing
 the codon but not the amino acid, or non-synonymous. Synonymous changes are
@@ -111,7 +111,7 @@ prescribes when the numbers of substitutions are small, where the large-sample
 Z-test over-rejects. They are `attributeColumns` like the rates, so clicking a
 link shows how much evidence is under its colour.
 
-## Loading it in JBrowse
+## Loading the blocks table in JBrowse
 
 The output is a pair table with the two rates after the two gene columns, which
 is the `.blocks` shape
@@ -168,7 +168,7 @@ enough synonymous change to measure while holding non-synonymous change near
 zero. Across the whole table the great majority of pairs sit significantly
 _below_ 1 and almost none significantly above.
 
-## Checking it against the raw data
+## Checking the rates against the raw data
 
 The figure carries its own control. _YEATS4_ begins just past where _LYZ_ ends,
 so the two share a locus, a divergence time and a neighbourhood, and they land

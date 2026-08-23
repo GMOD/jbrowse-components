@@ -12,9 +12,8 @@ data: hosted
 **TL;DR:** a RepeatMasker track is one packed lane of colored blocks. The same
 file opened as a
 [multi-row feature display](/docs/user_guides/multirow_feature_track) is one
-labelled lane per class, whose height is that class's share of the window. No
-new files: the class is already in the file, and the display discovers the lanes
-from it.
+labelled lane per class, whose height is that class's share of the window. The
+class is already in the file, and the display discovers the lanes from it.
 
 ## Prerequisites
 
@@ -26,7 +25,7 @@ from it.
   [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
   only
 
-## The class is already in the file
+## Where the class lives in the file
 
 The two hub pipelines store it differently:
 
@@ -38,9 +37,8 @@ The two hub pipelines store it differently:
   has to be derived. That case is worked in
   [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column).
 
-Either way nothing lists the classes anywhere. Rows are discovered from the
-values the loaded region holds, so a window with no satellite simply has no
-satellite lane.
+Either way the rows are discovered from the values the loaded region holds, so a
+window with no satellite has no satellite lane.
 
 ## Switching the track over
 
@@ -58,7 +56,7 @@ fetch:
 
 <Figure caption="Top: UCSC RepeatMasker over a 17q21 window, colored by repClass through a jexl lookup table, with the display's legend slot as the key. Every class shares one packed lane. Bottom: the same track and window partitioned on repClass instead. SINE fills the window and LINE comes in clusters, and the LTR? and Unknown lanes are values in the file that the lookup table does not name." src="/img/cookbook_color_by_type_two_ways.png"/>
 
-## Pinning it in a config
+## Pinning the lanes in a track config
 
 Set it in the track config to have it open that way. `sampleColorMap` is keyed
 by the class, so a lane keeps its color as the window's class list changes, and

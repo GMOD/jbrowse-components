@@ -92,10 +92,9 @@ output. Nothing breaks from having more than one copy, so these aren't shared.
 
 ## Standalone helper packages
 
-JBrowse publishes several helper packages to npm alongside `@jbrowse/core`. None
-of them is re-exported, so reach for one instead of re-implementing the parsing
-or scale math yourself — but read the third column before you do, since they
-don't all cost the same to depend on.
+JBrowse publishes several helper packages to npm alongside `@jbrowse/core`, so
+the parsing and scale math is already written. None of them is re-exported, and
+the third column says what each costs to depend on.
 
 <!-- HELPER_PACKAGES START -->
 
@@ -198,7 +197,7 @@ inline it into your single file, or switch to a build-step plugin.
 | `@jbrowse/core` APIs (in the list above) | `import` from `@jbrowse/core/...`         | `pluginManager.jbrequire('@jbrowse/core/...')` |
 | Any other npm package                    | `import` normally (gets bundled)          | inline it, or use a build-step plugin          |
 
-## `@jbrowse/core` paths not in the list
+## Importing an unlisted `@jbrowse/core` path {#jbrowsecore-paths-not-in-the-list}
 
 `@jbrowse/core` exports far more than the re-exported subset. With a build step
 you _can_ import a core path that isn't re-exported, but the bundler copies that

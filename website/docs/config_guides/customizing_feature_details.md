@@ -73,7 +73,7 @@ the feature: name it and your value is shown, set it null and the row is gone.
 
 If the callback returns something that is not an object, the tier is dropped
 rather than merged. `"jexl:feature.name"` where `"jexl:{name:feature.name}"` was
-meant produces no rows, not a row per character.
+meant produces no rows.
 
 ### Values are HTML, and bare URLs become links {#bare-urls}
 
@@ -82,8 +82,7 @@ Every value is run through an HTML sanitizer before it is shown, so `<b>`,
 HTML is escaped instead, which is why a VCF `<TRA>` allele still reads as
 `<TRA>`.
 
-**A value that is just a URL is turned into a link for you.** Most link-out
-recipes need no `<a>` markup at all:
+**A value that is just a URL is turned into a link for you**:
 
 ```json addtrack
 {
@@ -103,7 +102,7 @@ recipes need no `<a>` markup at all:
 
 Write the anchor by hand only when the link text has to differ from the URL.
 
-### A plain object works too, with no jexl
+### Static fields as a plain object
 
 The slot holds any JSON value, and only a string starting with `jexl:` is
 evaluated. For fields that are the same on every feature, write the object
@@ -129,7 +128,7 @@ directly:
 }
 ```
 
-## The track and the session both apply
+## Session-wide `formatDetails`
 
 The same four slots exist session-wide under
 [`configuration.formatDetails`](/docs/config/formatdetails/), which applies to
@@ -160,8 +159,8 @@ overridden, so a session-wide `true` cannot be turned back on by a track.
 
 ### depth and maxDepth
 
-The two are easy to confuse. Take a GFF3 gene, which nests three levels deep:
-gene, then mRNA, then exon and CDS.
+Take a GFF3 gene, which nests three levels deep: gene, then mRNA, then exon and
+CDS.
 
 - `depth` bounds the **callback**. It defaults to 2, so `subfeatures` runs on
   the mRNAs and their exons and CDSs, but not deeper. Set it to 1 to reformat
@@ -246,9 +245,8 @@ The remaining examples are all bodies for `pluginManager.jexl.addFunction(...)`
 in the same plugin file above. Only the function changes.
 
 **Rename many attributes at once.** A jexl function can return a whole object
-rather than one field, which scales better than inline jexl when a GFF3 has
-several attributes to relabel. New keys with spaces or custom capitalization are
-added as-is:
+rather than one field, which suits a GFF3 with several attributes to relabel.
+New keys with spaces or custom capitalization are added as-is:
 
 ```js
 pluginManager.jexl.addFunction('formatFeature', feature => {
@@ -363,7 +361,7 @@ The callback's variable is `config`, not `feature`:
 so a generated config can set it without a post-processing step; see
 [](/docs/cli#jbrowse-add-assembly).
 
-## Going beyond field formatting
+## Adding a panel or replacing the widget
 
 `formatDetails` callbacks reshape the fields of an existing feature. To add an
 entirely new section, or to replace the widget wholesale, use a plugin with

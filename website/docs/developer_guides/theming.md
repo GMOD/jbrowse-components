@@ -102,12 +102,12 @@ methylation colors are the worked case: the RPC worker packs them to ABGR per
 modified base and returns them inside its vertex data, and the legend on the
 main thread labels those same pixels.
 
-The line between the two mechanisms is where the color is applied, not what it
-means. `modificationFwd` and `modificationRev` sit right beside these and are
-palette members, because the renderer sets them as shader uniforms, so a theme
-switch recomputes a getter and redraws. A color the worker has already baked
-into vertex data cannot follow a theme without a theme switch invalidating the
-alignments fetch, so it is fixed instead.
+Where the color is applied is what decides which mechanism it uses.
+`modificationFwd` and `modificationRev` sit right beside these and are palette
+members, because the renderer sets them as shader uniforms, so a theme switch
+recomputes a getter and redraws. A color the worker has already baked into
+vertex data would need a theme switch to invalidate the alignments fetch, so it
+is fixed instead.
 
 Import them from `@jbrowse/core/ui/palette`, which has no toolkit in its module
 graph, or from `@jbrowse/core/ui/theme`, which re-exports the same values
@@ -124,9 +124,8 @@ alongside Material UI.
 
 <!-- COLOR_TABLE theme-methylation END -->
 
-The palette carries no such key, so there is nothing on `theme.palette` to
-re-derive one from and no way for the worker, the legend and an SVG export to
-disagree about what a methylated base looks like.
+The palette carries no such key, so the worker, the legend and an SVG export all
+read the same constant.
 
 ## Example config
 
@@ -149,11 +148,11 @@ disagree about what a methylated base looks like.
 MUI `PaletteColorOptions` object or just `{ "main": "<hex>" }`. Light/dark
 variants are derived automatically.
 
-## Reading colors from a display: `session.palette`, not `session.theme`
+## Reading colors from a display
 
-Both are on the session and both resolve from the same `resolvePalette` call, so
-they can't disagree — but they are for different consumers, and only one of them
-is a rendering input:
+`session.palette` and `session.theme` are both on the session and both resolve
+from the same `resolvePalette` call, so they can't disagree. They are for
+different consumers, and one of them is the rendering input:
 
 - **`session.palette`** (`JBrowsePalette`) is what rendering reads. Plain color
   strings, no toolkit, serializable — so it crosses the RPC boundary as itself
@@ -176,8 +175,7 @@ Do **not** stage them in a volatile that a React `useEffect` pushes in with a
 `setColorPalette` action. The effect only runs on mount, and two consumers have
 no component at all — SVG export and the RPC worker — so both would see a null
 palette and render blank. As a getter the value is always present, and MobX
-recomputes it only when the theme changes, so you get the same re-render
-invalidation with no mount dependency.
+recomputes it only when the theme changes.
 
 SVG export deliberately overrides the palette with the _export_ theme, which is
 why the export path resolves its own rather than reading the session's.
@@ -187,12 +185,13 @@ why the export path resolves its own rather than reading the session's.
 Colors the main thread applies, whether in a React component or as a shader
 uniform the renderer sets, belong in the `Palette` / `PaletteOptions` module
 augmentation. Follow the existing `modificationFwd` / `modificationRev` pattern:
-declare the field on `StringColors` in `palette.ts`, tag it with
-`#color <group> | <label> | <description>` so it surfaces as a swatch row in
-these guides, and give it a value in `lightStringColors` — plus
-`darkStringColors` if dark mode needs a different one, which is a
-`Partial<StringColors>` overlay on the light set rather than a second full
-table.
+
+- Declare the field on `StringColors` in `palette.ts`.
+- Tag it with `#color <group> | <label> | <description>` so it surfaces as a
+  swatch row in these guides.
+- Give it a value in `lightStringColors`, plus `darkStringColors` if dark mode
+  needs a different one — a `Partial<StringColors>` overlay on the light set
+  rather than a second full table.
 
 A color a worker bakes into its output goes the other way: declare it as a plain
 `const` in `palette.ts` and leave it off `StringColors`, for the reason in

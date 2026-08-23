@@ -4,7 +4,7 @@ Static exports of JBrowse 2 rendering.
 
 ## Prerequisites
 
-You don't need JBrowse 2 installed: the tool renders from local or remote files.
+The tool renders from local or remote files and needs no JBrowse 2 installation.
 Requirements:
 
 - NodeJS v23+
@@ -52,9 +52,8 @@ gene/transcript features.
 
 ### Local files
 
-We can call this script on local files, and it doesn't require a web browser,
-not even a headless webbrowser, it just runs a node script and React SSR is used
-to create the SVG
+This runs on local files as a plain node script with no browser involved, using
+React SSR to create the SVG
 
 ```bash
 ## generate an indexed fasta e.g. fai file
@@ -72,10 +71,9 @@ If `--out` is not specified it writes SVG to stdout
 
 ### Remote files
 
-This example shows using remote files, e.g. with human hg19 and several tracks
-
-Note the use of --aliases, which smoothes over refname differences e.g. fasta
-contains 1 for chr1, and bigbed contains chr1, gff contains NC_000001.10
+An example with remote files, human hg19 and several tracks. Note the use of
+--aliases, which smoothes over refname differences e.g. fasta contains 1 for
+chr1, and bigbed contains chr1, gff contains NC_000001.10
 
 <!-- jb2export: remote_files -->
 
@@ -93,11 +91,10 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 ### Hosted assemblies (genomes.jbrowse.org)
 
 `--hub <name>` pulls a whole assembly config from
-[genomes.jbrowse.org](https://genomes.jbrowse.org), so you don't have to wire up
-`--fasta`/`--aliases`/`--cytobands` by hand. `<name>` is either a UCSC database
-name (`hg19`, `hg38`, `mm10`, ...) or a GenArk accession (`GCA_...`/`GCF_...`).
-This gives you the sequence, cytobands (shown in the overview ideogram), and
-refName aliasing for free:
+[genomes.jbrowse.org](https://genomes.jbrowse.org), supplying the sequence,
+cytobands (shown in the overview ideogram), and refName aliasing in place of
+`--fasta`/`--aliases`/`--cytobands`. `<name>` is either a UCSC database name
+(`hg19`, `hg38`, `mm10`, ...) or a GenArk accession (`GCA_...`/`GCF_...`):
 
 ```bash
 ## refName aliasing comes from the hosted config: "1" resolves to chr1
@@ -133,7 +130,7 @@ hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
 ```
 
 Hosted configs also carry a gene text-search index, so `--loc` accepts a **gene
-name** and jumps to it, no need to look up coordinates:
+name** and jumps to it:
 
 <!-- jb2export: gene_name_search -->
 
@@ -148,8 +145,7 @@ jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --width 1200 \
 `1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
 in the index and the view jumps to the top hit.
 
-You don't have to leave the terminal to find hub names and trackIds. The `list`
-subcommand prints them:
+The `list` subcommand prints hub names and trackIds:
 
 ```bash
 ## every assembly on genomes.jbrowse.org (name — organism — description)
@@ -213,10 +209,9 @@ convert -size 2048x out.svg out.png
 
 ## Track gallery
 
-Each track type renders as you'd expect from JBrowse 2. The examples below are
-reproducible with the bundled volvox data (and a couple of public remote files);
-see [Track modifiers](#track-modifiers) for the full list of per-track options
-used here.
+The examples below are reproducible with the bundled volvox data (and a couple
+of public remote files); see [Track modifiers](#track-modifiers) for the full
+list of per-track options used here.
 
 ### Alignments tracks
 
@@ -269,9 +264,8 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 nanopore CRAM (hg38, streamed from the ONT open-data S3) with the UCSC
 CpG-island BED on top shows the methylated flanks giving way to the unmethylated
 island cores, read against the annotated island boundaries. `legend` draws the
-color key, which is worth adding to any export whose coloring is not the default
-one: the app leaves it off because a reader can open the track menu, and that is
-the one thing a PNG cannot offer:
+color key, worth adding to any export whose coloring is not the default one: the
+app leaves it off, where a reader can open the track menu instead.
 
 <!-- jb2export: methylation -->
 
@@ -305,16 +299,19 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
 
 ![RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup](https://jbrowse.org/jb2-figures/jbrowse-img/sashimi_junctions.42adbc12cc98.png)
 
-`arcs:up` / `arcs:down` draws a read-connection arc for every split
-(supplementary) read, linking its two alignment segments; the arc color encodes
-the junction's orientation. This 1000 Genomes ONT sample (HG00151, long reads
-streamed from the 1000G-ONT S3) over a ~1.2 kb inversion on chr1 shows the two
-breakpoints joined by **purple inversion-junction arcs**, where a read's two
-halves map in opposite orientations. `linkedReads:normal` chains each read's
-split segments, so the same inversion reads in the pileup itself: a **blue
-reverse-strand core between red forward-strand flanks**, spanning breakpoint to
-breakpoint. `group:splitRead` puts those reads in their own labelled section
-above the flat background pileup.
+This 1000 Genomes ONT sample (HG00151, long reads streamed from the 1000G-ONT
+S3) over a ~1.2 kb inversion on chr1 draws the same event three ways:
+
+- **`arcs:up` / `arcs:down`** draws a read-connection arc for every split
+  (supplementary) read, linking its two alignment segments, the arc color
+  encoding the junction's orientation: here the two breakpoints joined by
+  **purple inversion-junction arcs**, where a read's two halves map in opposite
+  orientations.
+- **`linkedReads:normal`** chains each read's split segments, so the same
+  inversion reads in the pileup itself: a **blue reverse-strand core between red
+  forward-strand flanks**, spanning breakpoint to breakpoint.
+- **`group:splitRead`** puts those reads in their own labelled section above the
+  flat background pileup.
 
 <!-- jb2export: sv_read_arcs -->
 
@@ -334,15 +331,15 @@ coordinates; this draws the two loci it joins.
 
 **Repeating `--loc` stacks a panel; whitespace inside one `--loc` adds a window
 to that panel** — the meaning a space already has for a linear view. So the
-two-breakend case needs no shell quoting, and a panel that wants two windows
-still can have them.
+two-breakend case is two bare `--loc` flags with no shell quoting, and a quoted
+`--loc` is how a panel takes two windows.
 
 A connector is drawn dashed when the read carrying it has a supplementary
-alignment at a locus that is not on screen. That is the view reporting an
-incomplete picture rather than a style, and the fix is to give it the missing
-panel. COLO829's der(3) is a closed cycle over three chromosomes, so the
-junction below needs a chr10 panel between the two it appears to join, and with
-it every connector in the figure is solid.
+alignment at a locus that is not on screen: the view is reporting an incomplete
+picture, and the fix is to give it the missing panel. COLO829's der(3) is a
+closed cycle over three chromosomes, so the junction below needs a chr10 panel
+between the two it appears to join, and with it every connector in the figure is
+solid.
 
 **One render per sample, and the control is the other render.** A somatic call
 is the difference between the tumour and its matched normal, so the figure that
@@ -376,16 +373,18 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
 
 ![The same three loci in the matched normal, with no connecting curves in any panel](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_normal.593787f22ddb.png)
 
-`force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
-is over the byte gate; without it that panel draws the gate's message instead of
-reads. `featureHeight:super-compact` draws each read 1 px tall, which is what
-keeps six pileups on one screen.
+Both commands carry these two modifiers:
 
-**A reconstructed allele is an assembly, so it is a third render and not a
-special mode.** Once the junctions have been resolved into a derivative contig,
-the three loci above stop needing three panels: they are one axis, in order.
-That contig is an assembly in the same config, so the only thing that changes is
-which `--assembly` is named.
+- **`force:true`** is there because the chr3 panel is 1.2 kb of 200x nanopore,
+  which is over the byte gate; without it that panel draws the gate's message
+  instead of reads.
+- **`featureHeight:super-compact`** draws each read 1 px tall, which is what
+  keeps six pileups on one screen.
+
+**A reconstructed allele is an assembly, so it is a third render.** Once the
+junctions have been resolved into a derivative contig, the three loci above stop
+needing three panels: they are one axis, in order. That contig is an assembly in
+the same config, so the only thing that changes is which `--assembly` is named.
 
 <!-- jb2export: sv_review_derivative -->
 
@@ -436,8 +435,8 @@ jb2export --fasta ref.fa --bam linked.bam linkedReads:normal --loc chr1:1-50000
 
 ### BigWig / quantitative tracks
 
-The special flag `--loc all` shows the full assembly, and there are a number of
-custom bigwig plotting options that can help draw the bigwig genome wide.
+`--loc all` shows the full assembly, and several bigwig plotting options help
+draw a bigwig genome-wide.
 
 This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's
 read coverage genome-wide (hg19, public bigwig), where the amplifications and
@@ -590,13 +589,13 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:100 \
 
 ## Track modifiers
 
-Instead of extra `--flags`, per-track settings use a colon-based syntax that
-follows the track file argument, e.g. `--bam reads.bam color:tag:RG height:400`.
-This is the full list of available modifiers.
+Per-track settings use a colon-based syntax that follows the track file
+argument, e.g. `--bam reads.bam color:tag:RG height:400`. This is the full list
+of available modifiers.
 
 Modifiers are grouped below by the track types they apply to. Passing one to a
 track type it does not apply to (say `sashimi:up` on a BigWig) prints a warning
-naming the types it does work on, rather than doing nothing quietly.
+naming the types it does work on.
 
 A modifier **value** the modifier can't use — `arcs:upp`, `height:8o`,
 `coverage:ture` — is an error, not a warning: the tool writes one figure and
@@ -757,7 +756,7 @@ YJM1447 strain) and reproduce as-is with network access.
 
 A whole-genome dotplot: every query contig on x, every target contig on y.
 `--autoDiagonalize` reorders the target contigs so the main alignment forms a
-clean diagonal instead of a staircase:
+clean diagonal:
 
 <!-- jb2export: yeast_dotplot -->
 
@@ -926,23 +925,22 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
 
 ![Three-level synteny stack: hg38, hs1, and mm39](https://jbrowse.org/jb2-figures/jbrowse-img/hg38_hs1_mm39_synteny.ea2fd8d2a5d4.png)
 
-### All-vs-all alignments: one track, every band
+### All-vs-all alignments (PGGB, minimap2 -X)
 
 The stacks above take one alignment file per gap. An all-vs-all PAF — every
 genome aligned against every other, from
 [PGGB](https://github.com/pangenome/pggb) or from `minimap2 -X` over
 [PanSN](https://github.com/pangenome/PanSN-spec)-named contigs — already holds
-every pair, so it is instead **one track that backs every band**. It is not
-applied per gap: the file is read once, and each band asks the adapter for its
-own pair of assemblies.
+every pair, so it is instead **one track that backs every band**: the file is
+read once, and each band asks the adapter for its own pair of assemblies.
 
-That makes it a `--config` case rather than a flags case. `--paf` builds a
-pairwise `PAFAdapter`, which reads the whole file as a single query-vs-target
-comparison, so repeating the same all-vs-all file across the gaps draws an empty
-view and prints `<assembly> not found in this adapter` — the PanSN prefixes that
-say which genome each record belongs to mean nothing to that adapter. The
-adapter that reads them is `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter`
-for a `make-pif` index), named in a config:
+That makes it a `--config` case. `--paf` builds a pairwise `PAFAdapter`, which
+reads the whole file as a single query-vs-target comparison, so repeating the
+same all-vs-all file across the gaps draws an empty view and prints
+`<assembly> not found in this adapter` — the PanSN prefixes that say which
+genome each record belongs to mean nothing to that adapter. The adapter that
+reads them is `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for a
+`make-pif` index), named in a config:
 
 ```json addtrack
 {
@@ -967,7 +965,7 @@ builds this track and the five strain assemblies it names.
 Where a config holds more than one such track, `--spec` says which one each band
 uses. The hosted demo below is that case — it carries the same five strains
 aligned four ways (minimap2, pggb/wfmash, cactus, and untangle) — and its spec
-is where the repetition is, one entry per band rather than one per file:
+is where the repetition is, one entry per band:
 
 ```json
 {
@@ -1067,8 +1065,6 @@ default, but you replace them with localPath like this
   }
 ```
 
-Then you can call it like above
-
 <!-- jb2export: volvox_config -->
 
 ```bash
@@ -1078,18 +1074,18 @@ jb2export --config data/volvox/config.json --assembly volvox --track volvox_sv \
 
 ![Structural-variant calls over 50 kb of volvox ctgA, read from a config whose VCF is a localPath rather than a URL](https://jbrowse.org/jb2-figures/jbrowse-img/volvox_config.744ba8204bcd.png)
 
-The localPaths will be resolved relative to the file that is supplied so in this
-example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath":
-"volvox.dup.vcf.gz" is used, and `--config data/volvox/config.json` is passed
+localPaths resolve relative to the config file supplied, so with
+`--config data/volvox/config.json` and `"localPath": "volvox.dup.vcf.gz"` this
+example resolves data/volvox/volvox.dup.vcf.gz
 
 See data/volvox/config.json for a config that contains localPaths, or
 data/config.json for a config that just contains URLs
 
 ### Use a session file exported from jbrowse
 
-If you use jbrowse-web, you can select File->Export session which produces a
-session.json file, and then use the --session parameter. Make sure to specify
-the assembly also, it currently does not infer the assembly from the session
+In jbrowse-web, File->Export session produces a session.json file for the
+--session parameter. Specify the assembly as well, it currently does not infer
+the assembly from the session
 
 <!-- jb2export: skbr3_session -->
 
@@ -1135,7 +1131,7 @@ Omitting `loc` shows the whole genome. Those inline track keys are the same
 vocabulary as the track's config — anything the track menu can set, a session
 can ask for here.
 
-### Respects the order of the files you input
+### Track order on the command line
 
 Example:
 
@@ -1144,10 +1140,9 @@ jb2export --bam file1.bam --bigwig file.bw --bam file2.bam
 ```
 
 This will respect the order of the tracks and list file1.bam, file.bw, and
-file2.bam in that order. This requires us to use a custom command line parser
-instead of an off-the-shelf one like yargs
+file2.bam in that order, which is why the command line parser is a custom one
 
-## Advanced
+## Overriding render defaults
 
 ### Force render a large region
 
@@ -1242,7 +1237,7 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 - `--showGridlines` — draw genomic coordinate gridlines
 - `--trackLabels` — label position: `offset`, `overlay`, `left`, or `none`
 
-## Use --help
+## Full command-line help
 
 Run `jb2export --help` for the full option list, or
 `jb2export <subcommand> --help` (e.g. `jb2export dotplot --help`) for a
@@ -1488,7 +1483,6 @@ limit. Add `force:true` after the track to override it. See
 - [@jbrowse/capture](https://www.npmjs.com/package/@jbrowse/capture) drives a
   real browser instead of rendering server-side. Slower, and it downloads
   Chromium, but it photographs the whole application — canvas and WebGPU
-  displays, menus, dialogs — and can click through it. Use it when this tool's
-  static rendering path does not cover what you need to see.
+  displays, menus, dialogs — and can click through it.
 - [Using JBrowse with AI agents](https://jbrowse.org/jb2/docs/agents/) for the
   loop these tools fit into.

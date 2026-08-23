@@ -133,7 +133,7 @@ jbrowse set-default-session --session session.json --out myproject
 `session.json` itself stays outside the folder; the CLI copies its contents into
 `config.json`.
 
-## Open it in JBrowse Desktop
+## Open the folder in JBrowse Desktop
 
 In JBrowse Desktop, choose **File → Session → Open config.json or .jbrowse
 file...** (or the **Open .jbrowse or config.json or link** button on the start
@@ -158,7 +158,7 @@ session of its own and autosaves there, so the folder you built stays portable
 and still serves on the web. A `.jbrowse` file, which is one Desktop itself
 wrote, does save in place.
 
-## Also use it on the web
+## Serve the same folder on the web
 
 The same config and data work on the web too, with the relative paths resolving
 against the served config's URL. JBrowse Web is a separate app, so a served

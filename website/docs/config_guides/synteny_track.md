@@ -96,18 +96,27 @@ PAF.
 minimap2 -cx asm5 target.fa query.fa > alignment.paf
 ```
 
-**Step 2. Add the track with the CLI:**
+**Step 2. Add the track:**
 
-```bash
-jbrowse add-track alignment.paf \
-  --assemblyNames query,target \
-  --load copy \
-  --out /var/www/html/jbrowse2
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "alignment",
+  "assemblyNames": ["query", "target"],
+  "name": "alignment",
+  "adapter": {
+    "type": "PAFAdapter",
+    "uri": "alignment.paf",
+    "assemblyNames": ["query", "target"]
+  }
+}
 ```
 
-The first assembly name is the **query**, drawn on the horizontal axis of the
-dotplot (top row in linear synteny); the second is the **target**, on the
-vertical axis (bottom row).
+The two assembly names carry the direction:
+
+- the first is the **query**, drawn on the horizontal axis of the dotplot (top
+  row in linear synteny)
+- the second is the **target**, on the vertical axis (bottom row)
 
 <!-- GOTCHA PAFAdapter START -->
 
@@ -123,22 +132,6 @@ and the ordering can't be misread.
 
 <!-- GOTCHA PAFAdapter END -->
 
-This produces a config entry like:
-
-```json
-{
-  "type": "SyntenyTrack",
-  "trackId": "alignment",
-  "assemblyNames": ["query", "target"],
-  "name": "alignment",
-  "adapter": {
-    "type": "PAFAdapter",
-    "pafLocation": { "uri": "alignment.paf" },
-    "assemblyNames": ["query", "target"]
-  }
-}
-```
-
 Or set the adapter's named `queryAssembly`/`targetAssembly` fields, which spell
 out the direction so it can't be read in the wrong order:
 
@@ -150,7 +143,7 @@ out the direction so it can't be read in the wrong order:
   "name": "alignment",
   "adapter": {
     "type": "PAFAdapter",
-    "pafLocation": { "uri": "alignment.paf" },
+    "uri": "alignment.paf",
     "queryAssembly": "query",
     "targetAssembly": "target"
   }
@@ -188,11 +181,11 @@ of them:
   `bed2`), which are intermediate outputs of the
   [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
 
-### Gene ids are the join, in the MCScan adapters
+### Gene id matching in the MCScan adapters {#gene-ids-are-the-join-in-the-mcscan-adapters}
 
 These three place a feature by looking its gene id up in a BED rather than by
-reading a coordinate out of the alignment file, so the two files agreeing on
-those ids is a precondition, not a detail.
+reading a coordinate out of the alignment file, so the two files have to agree
+on those ids.
 
 <!-- GOTCHA MCScanAnchorsAdapter START -->
 

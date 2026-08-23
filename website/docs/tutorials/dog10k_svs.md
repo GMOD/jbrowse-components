@@ -75,7 +75,7 @@ Eleven of the thirteen Collies carry it, four of them homozygous, along with two
 of four Shetland Sheepdogs and one of two Silken Windhounds. Nothing else in the
 set carries a copy.
 
-## Loading it with breed labels
+## Loading the slice with breed labels
 
 An SV VCF loads as an ordinary `VariantTrack`. The multi-sample variant display
 draws one row per sample across the variant's real genomic span, so a 7.8 kb
@@ -141,7 +141,7 @@ ignored with no error:
 Add the assembly's gene annotation above it, since calling the deletion intronic
 means reading it against _NHEJ1_'s exons.
 
-## Reading it
+## Reading the NHEJ1 deletion
 
 <Figure caption="A 7.8 kb deletion inside an NHEJ1 intron, genotyped across breeds from the Dog10K structural-variant callset. Every carrier is a Collie-clade breed; the other breeds and the four wolves are homozygous reference. The lane between the genes and the genotypes is OMIA's curated record of the same variant." src="/img/dog10k-nhej1-cea-deletion.png" />
 
@@ -327,7 +327,7 @@ pileup as a deletion of each intron.
 The retrocopy interpretation comes from Parker et al.; the callset cannot tell a
 retrocopy's footprint from a real deletion.
 
-### The records are the introns
+### Checking the records against the FGF4 introns
 
 _FGF4_ has two introns, so a retrocopy should leave two records, each spanning
 one intron end to end.
@@ -392,7 +392,7 @@ blocks sit where they fall against the exons.
 Every carrier is heterozygous: the parent gene's introns are still on both
 chromosomes, so a carrier's pileup is always a mixture.
 
-### Two retrocopies, one footprint
+### The two known FGF4 retrocopies
 
 Two _FGF4_ retrocopies are known in dogs. Parker et al. tied one to short legs;
 [Brown et al. (2017)](https://doi.org/10.1073/pnas.1709082114) tied a second, on
@@ -468,7 +468,7 @@ two retrocopies took the same coding sequence and different amounts of UTR.
 Neither places the insertion: the deposited sequence ends at the poly(A) tail,
 so none of the landing site comes with it.
 
-### Across the collection
+### Genotypes across the collection
 
 The same two records genotyped over every canid the callset carries, printed by
 the build script:

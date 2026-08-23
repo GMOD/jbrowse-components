@@ -32,8 +32,6 @@ JBrowse GPU displays follow a three-layer model:
 
 <Figure caption="The whole idea, before any of the machinery. The worker sends the data to the GPU when the region changes, and it stays there; every frame after that just redraws what the GPU already holds. Panning, zooming and recoloring never refetch or reparse — that is what makes a GPU display different from a Canvas2D one, and everything named in the next figure exists to keep it true." src="/img/gpu_display_tldr.png" />
 
-The rest of this section is that same picture with the mechanisms in it.
-
 <Figure caption="Two autoruns, each with its own trigger: one upload autorun on any rpcDataMap entry changing, which diffs the map and uploads what moved, and a render autorun on renderTick or a frame-level change like scroll. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted also flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
@@ -219,9 +217,10 @@ eager consumer of a module wants, the always-loaded chunk pays for all of it.
 | `score.consts.generated.ts` | the `//! export-consts` values, and nothing else                  | a state model, a hit test, a Canvas2D twin — anything that wants a number |
 
 So a display model reading one threshold reaches for the `.consts.` module, not
-the shader module that re-exports it. The table below is the union of the three.
+the shader module that re-exports it.
 
-What lands in `score.generated.ts`, and what a plugin imports from it:
+What lands in `score.generated.ts`, and what a plugin imports from it. It
+re-exports the other two modules, so the table below is the union of all three:
 
 <!-- SHADER_EXPORTS START -->
 
@@ -364,7 +363,7 @@ Implement the same interface using `ctx.fillRect` etc. Canvas2D is
 accelerator layered on top. This renderer also runs when WebGPU and WebGL2 are
 both unavailable.
 
-It is not a GPU-specific artifact, so it is written once and unchanged here:
+It is written once and unchanged here:
 [Plotting features, Step 4](/docs/developer_guides/plotting_features#step-4-the-renderer)
 builds `drawScore.ts` and `Canvas2DScoreRenderer.ts` in full. The only
 difference on this path is the factory in Step 5 below, which now has a GPU
@@ -406,7 +405,7 @@ upload pattern from the
 the right shape when each region's data is independent (no cross-region layout
 coupling).
 
-The model is **identical** to the Canvas2D one, not merely similar:
+The model is **identical** to the Canvas2D one:
 [Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model)
 builds it in full (`rpcDataMap`, `rpcProps`, `renderState`, `fetchNeeded`), and
 none of it changes when a shader appears. The one action worth reading again
@@ -433,13 +432,17 @@ startRenderingBackend(backend: ScoreRenderingBackend) {
 },
 ```
 
-`installPerRegionLifecycle` is one of three installers that wire the
+Three installers wire the
 [render lifecycle](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
-for you — the other two are `installKeyedLifecycle`, for a canvas shared by
-sibling displays, and `installGlobalLifecycle`, for a display with one
-whole-view payload. This one remembers what it last sent for each region and
-uploads only what changed, so N regions streaming in cost N uploads rather than
-N². Only displays that lay features into Y-rows _across_ regions
+for you:
+
+- **`installPerRegionLifecycle`** remembers what it last sent for each region
+  and uploads only what changed, so N regions streaming in cost N uploads rather
+  than N².
+- **`installKeyedLifecycle`** for a canvas shared by sibling displays.
+- **`installGlobalLifecycle`** for a display with one whole-view payload.
+
+Only displays that lay features into Y-rows _across_ regions
 (`LinearBasicDisplay`, alignments) need the whole-map `laidOutDataMap` form
 instead.
 
@@ -448,12 +451,14 @@ declares it as `inputs`, and a change there re-encodes every loaded region.
 Reading it inside `encode` instead does not work: the helper invalidates on
 `inputs` and on the region's own data, and on nothing else.
 
-Three settings buckets, and putting one in the wrong place is the common
-mistake: `rpcProps()` refetches in the worker, so scroll and zoom must stay out
-of it; `renderState` is recomputed per frame and refetches nothing; and a
-setting that needs a main-thread buffer _re-encode_ but no refetch (a color, a
-scale) goes in `gpuProps()` (see the
-[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)).
+Three settings buckets (see the
+[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)):
+
+- **`rpcProps()`** refetches in the worker, so scroll and zoom must stay out of
+  it.
+- **`renderState`** is recomputed per frame and refetches nothing.
+- **`gpuProps()`** takes a setting that needs a main-thread buffer _re-encode_
+  but no refetch — a color, a scale.
 
 ## Step 7: React component
 
@@ -482,9 +487,9 @@ one linear genome view. So budget contexts as one per open GPU track.
 Chromosomes are free on this axis — a whole-genome view of one track is still
 one canvas, with one GPU buffer per `displayedRegionIndex`.
 
-View-level lazy mount and bounded auto-recovery in `useRenderingBackend` both
-bound the problem rather than fixing it; tracks inside a mounted view are not
-virtualized, so the ceiling stays reachable.
+View-level lazy mount and bounded auto-recovery in `useRenderingBackend` bound
+the problem; tracks inside a mounted view are not virtualized, so the ceiling
+stays reachable.
 
 WebGPU has no per-canvas cap, because `gpuDevice.ts` shares one device across
 displays. The trade is its mirror image: one `device.lost` takes down every

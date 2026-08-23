@@ -7,17 +7,15 @@ description:
   anything
 ---
 
-An agent asked to "show me BRCA1 in human" has two ways to get there. It can
-download a reference genome, index it, write an assembly config, find a gene
-annotation, bgzip and tabix it, write a track config, and open the result. Or it
-can use one already published.
+An agent asked to "show me BRCA1 in human" can point at an assembly someone has
+already published.
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a self-contained
 JBrowse `config.json` per assembly, covering the UCSC genome browser databases
 and the UCSC GenArk assemblies. Each one is CORS-enabled and needs no setup at
 all. This page is about reaching them from a script.
 
-## What one hub gives you
+## What a hosted config contains
 
 Fetch `https://jbrowse.org/ucsc/hg38/config.json` and you have, in one document:
 
@@ -141,10 +139,9 @@ curl -s https://jbrowse.org/ucsc/hg38/config.json |
 
 Hosted trackIds are prefixed with the assembly name (`hg38-clinvarMain`).
 `@jbrowse/img`'s `--track` fills the prefix in for you and, on a miss, errors
-with the closest ids rather than rendering a view with the track silently
-absent.
+with the closest ids.
 
-## Opening one
+## Opening a hosted assembly
 
 ### As a link
 
@@ -155,8 +152,7 @@ absent.
 https://jbrowse.org/code/jb2/latest/?config=https://jbrowse.org/ucsc/hg38/config.json&assembly=hg38&loc=BRCA1&tracks=hg38-ncbiRefSeqCurated,hg38-clinvarMain
 ```
 
-Two things worth knowing about that URL, both of which an agent will otherwise
-find out the confusing way:
+Two things worth knowing about that URL:
 
 - **`&loc=` accepts a gene name** because the hosted config carries a text
   index. `&loc=BRCA1` navigates to it. The equivalent field inside a
@@ -195,10 +191,10 @@ view
 
 See [](/docs/jbrowse_anywidget).
 
-## Your own data on top of theirs
+## Adding your own file to a hub
 
 This is the pattern worth learning, because it removes the slowest step in the
-loop. A hosted config supplies the assembly and the annotation context; a
+loop: a hosted config supplies the assembly and the annotation context, and a
 session spec's `sessionTracks` supplies your file. Nothing is authored to disk
 and no assembly is built.
 
@@ -244,7 +240,7 @@ local server. Its refNames must match the assembly, which is where the hub's
 alias table earns its place — a VCF using `1` works against a config whose
 contigs are `chr1`.
 
-## When a hub is the wrong answer
+## Limits of the hosted hubs
 
 - **The assembly is not there.** Non-model organisms outside GenArk, an
   unpublished assembly, a patched or custom reference. Build it —

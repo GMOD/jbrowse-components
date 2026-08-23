@@ -38,8 +38,8 @@ Keyboard shortcuts (when the view is focused):
 The scroll-to-zoom toggle button in the LGV header lets the mouse wheel zoom the
 view directly, without holding `Ctrl`/`Cmd`. It zooms wherever the pointer is
 over the tracks; to scroll the page while it is on, put the pointer on the view
-header above the tracks, or use the scrollbar. `Shift` is not an escape hatch —
-every browser turns `Shift`+wheel into horizontal scrolling.
+header above the tracks, or use the scrollbar. `Shift`+wheel stays horizontal
+scrolling, which is what every browser does with it.
 
 <Figure caption="The scroll-to-zoom toggle in the LGV header. With it on, the wheel zooms wherever it is over the tracks, and the header the toggle sits in still scrolls the page." src="/img/scroll_zoom_toggle.png" />
 
@@ -52,8 +52,8 @@ six vertical dots) to reorder tracks.
 
 ### Reordering views
 
-Unlike tracks, views cannot be reordered by drag-and-drop. Instead, use the view
-menu (hamburger icon) and select "Move up"/"Move down".
+Views have no drag handle: reorder them from the view menu (hamburger icon) with
+"Move up"/"Move down".
 
 ### Using the location search box
 
@@ -78,9 +78,9 @@ setup.
 
 When you pick a gene or feature from the search results (rather than a plain
 region), JBrowse navigates to it and highlights the matched feature, pinning it
-toward the top of its track so it isn't buried in a dense layout. The highlight
-follows the feature as you pan and zoom. Search again to move it, or click the
-"Clear search highlight" button in the header bar to remove it.
+toward the top of its track. The highlight follows the feature as you pan and
+zoom. Search again to move it, or click the "Clear search highlight" button in
+the header bar to remove it.
 
 <Figure caption="Selecting a feature from the search results pins it to the top of its track and boxes and tints that specific feature, not just the surrounding region." src="/img/search_feature_highlight.png" />
 
@@ -105,8 +105,13 @@ A circular plus (+) icon button in the "Available tracks" widget also opens the
 <Figure caption="(1) The 'Available tracks' widget, opened from the button on the far left of the linear genome view. (2) The plus (+) button at its bottom right launches the 'Add a track' form." src="/img/add_track_tracklist.png" />
 
 In the "Add a track" form, you can provide a URL or open a file from your local
-machine. Some formats require an index: BAM (BAI or CSI), CRAM (CRAI), and
-tabix-indexed files like VCF/GFF/BED (TBI or CSI) all do; BigWig/BigBed do not.
+machine. Which formats need an index:
+
+- **BAM** - BAI or CSI
+- **CRAM** - CRAI
+- **Tabix-indexed VCF/GFF/BED** - TBI or CSI
+- **BigWig/BigBed** - no index
+
 For remote files, the index is inferred automatically when the filename follows
 standard conventions (e.g. `file.bam` → `file.bam.bai`), but must be supplied
 manually for local files or non-standard names.
@@ -131,8 +136,8 @@ BedGraph, BEDPE, `.hic`, MAF/BigMaf/TAF, PLINK LD, and the whole-genome
 alignment formats (PAF, MUMmer `.delta`, UCSC `.chain`, MCScan `.anchors`,
 MashMap, BLAST tabular), on assemblies stored as indexed FASTA, bgzip-indexed
 FASTA, or 2bit. The [supported file types](/docs/config_guides/file_types) table
-is the full list, with the adapter and track type each format maps to; it is
-generated from the adapters themselves, so it never goes stale.
+is the full list, with the adapter and track type each format maps to, and it is
+generated from the adapters themselves.
 
 Additional data formats can be supported via plugins; check out the
 [plugin store](/docs/user_guides/plugin_store).
@@ -246,9 +251,9 @@ your edits and revert to the underlying config.
 
 Many track-menu settings (color-by scheme, read and feature height,
 soft-clipping, and more) carry a small **pin** next to them. Clicking the pin
-makes that value the default for every track of the same type, not just the one
-track, and clicking it again clears the default. Every open track a default
-affects is badged in the track selector. See
+makes that value the default for every track of the same type, and clicking it
+again clears the default. Every open track a default affects is badged in the
+track selector. See
 [defaults for all tracks](/docs/user_guides/display_defaults) for the whole
 system: what follows a default, what keeps its own value, and where the defaults
 are kept.

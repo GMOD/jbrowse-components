@@ -97,7 +97,7 @@ The [config schema docs](/docs/config_guide) list the same names per display
 [](/docs/config/linearwiggledisplay)) with what each one accepts, which is where
 to go for a setting you have not clicked yet.
 
-## Put them in config.json
+## Put the settings in config.json
 
 A session remembers settings for one session. To have the track open this way
 for everyone, every time, put the same keys in its `displayDefaults`:
@@ -130,7 +130,7 @@ type (`LinearMultiSampleVariantDisplay`, `LDDisplay`, and so on); see
 Reload with that config and the track opens paired, colored and soft-clipped,
 with no clicking.
 
-## Which value wins
+## Precedence when config and session disagree
 
 Now both places are set, so make them disagree. The config above asks for
 `height: 250`. Load a session that asks for 100 on the same track:

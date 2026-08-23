@@ -40,15 +40,13 @@ the order the plugin manager creates them:
 
 <!-- ELEMENT_PHASES END -->
 
-The order is a real dependency, not a listing convention: your `install` runs
-before any of them are built, and the plugin manager then creates each group in
-turn, so a track type registered in the fourth phase can look up a display type
-registered in the third by name. Look up only what an earlier phase has already
-built.
+The order is a real dependency: your `install` runs before any of them are
+built, and the plugin manager then creates each group in turn, so a track type
+registered in the fourth phase can look up a display type registered in the
+third by name. Look up only what an earlier phase has already built.
 
 Extension points are the eleventh way a plugin extends the app: named callbacks
-the host fires, rather than elements the plugin manager instantiates. See
-[](/docs/developer_guides/extension_points).
+the host fires. See [](/docs/developer_guides/extension_points).
 
 Elements are composable: adapters can wrap other adapters (`MultiWiggleAdapter`
 takes a `subadapters` array), and views can contain sub-views (`SvInspectorView`
@@ -141,16 +139,14 @@ Drawing is implemented by the **display types**:
 - The arc displays take a third route: their components emit JSX `<path>`
   elements, on screen and in SVG export alike.
 
-What surrounds the drawing is unified even where the drawing differs.
 `DisplayChrome` is the wrapper every canvas-backed display renders, and it owns
 the loading scrim, the error banner, the "region too large" message and the
 render-error retry. It picks between them from a single getter,
 [`displayPhase`](/docs/models/multiregiondisplaymixin#getter-displayphase),
 which each display answers with one of `loading` / `error` / `tooLarge` /
 `renderError` / `ready`. So a new display gets every terminal state by composing
-the foundation mixins and answering that getter, and the arc displays — which
-render `DisplayStatusChrome`, the backend-free half — get the same chrome rather
-than a copy of it.
+the foundation mixins and answering that getter, and the arc displays get the
+same chrome through `DisplayStatusChrome`, the backend-free half.
 
 See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)

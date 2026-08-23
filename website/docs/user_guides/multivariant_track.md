@@ -12,7 +12,7 @@ one of two displays, switchable from the track menu:
 - Multi-sample variant display (matrix) - variants laid out as a heatmap, one
   row per sample and one column per variant
 
-## Regular: best for full SV detail
+## Regular display: structural variants at their real span {#regular-best-for-full-sv-detail}
 
 Each variant is drawn at its real genomic position. This is the only
 multi-sample display that renders structural variants at the right scale, and
@@ -23,14 +23,14 @@ variants by size, name, or any Jexl expression.
 
 <Figure caption="1000 Genomes SV ensemble callset (3202 samples) across 5 Mb of chr19, one row per sample, sorted by genotype at a 1.1 Mb inversion. Each call is drawn at its real span, so the sort collects the inversion's carriers into a block against the rest of the cohort." src="/img/multisv.png" />
 
-## Matrix: best for SNP/indel patterns
+## Matrix display: SNP and indel patterns {#matrix-best-for-snpindel-patterns}
 
 Each visible variant gets one column and each sample gets one row, regardless of
 how far apart the variants are on the genome. A thin black line connects each
 column to its real genomic position.
 
 Sparse small variants that would be only 1–2px wide at their true positions each
-get a full readable column instead. Patterns like shared haplotypes, runs of
+get a full readable column. Patterns like shared haplotypes, runs of
 homozygosity, and population structure become visible at a glance.
 
 <Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype, each cell shaded reference against alt. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
@@ -38,8 +38,8 @@ homozygosity, and population structure become visible at a glance.
 ## Filtering by allele frequency and missingness
 
 Two inline sliders in the track menu thin a dense callset down to the variants
-worth looking at, with no Jexl expression to write. Both live under **Track menu
-→ Filter by...** and re-fetch as you release the slider:
+worth looking at. Both live under **Track menu → Filter by...** and re-fetch as
+you release the slider:
 
 - **Minor allele frequency** hides variants whose minor allele frequency falls
   below the threshold, so singletons and near-monomorphic sites drop out and the
@@ -78,9 +78,8 @@ shaded by how many alternate alleles the call carries:
 
 so the cell color reads directly as allele dosage (0, 1, or 2 alt alleles) and
 runs of homozygous-alt samples stand out as the darkest blocks. Genotypes mixing
-two _different_ non-reference alleles (e.g. `1/2`) get a distinct color so they
-aren't confused with a simple homozygous-alt call, and uncalled genotypes
-(`./.`) are left blank.
+two _different_ non-reference alleles (e.g. `1/2`) get a distinct color from a
+simple homozygous-alt call, and uncalled genotypes (`./.`) are left blank.
 
 In **phased** mode (`renderingMode: 'phased'`), each sample is split into one
 row per haplotype and every haplotype cell is colored reference vs alt on its
@@ -136,9 +135,9 @@ alleles span more than one class is flagged **Mixed** (grey). The legend lists
 only the classes actually present in the loaded region.
 
 Copy-number alleles written as `<CN0>`, `<CN1>`, `<CN3>`, ... are colored on an
-absolute rainbow by copy number (low copy blue, ascending to red) rather than a
-single flat color, so different copy states read apart. It is a plain ascending
-spectrum, not centered on any assumed baseline copy number.
+absolute rainbow by copy number (low copy blue, ascending to red), so different
+copy states read apart. The spectrum ascends plainly, with no assumed baseline
+copy number.
 
 The class is read from the ALT allele (`<DEL>`, `<CN3>`, breakend notation),
 falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
@@ -152,11 +151,13 @@ so a track can load already colored by SV type.
 ## Coloring and grouping by sample metadata
 
 Samples can be grouped and colored by metadata: population, phenotype, sex, or
-any attribute you supply. Add a samples TSV to the adapter with
-`samplesTsvLocation`: its first column is the sample name (matching the VCF
-header) and each remaining column is a metadata attribute. Set `colorBy` on the
-display to one of those columns to group and color the per-sample rows by that
-attribute the first time the track loads.
+any attribute you supply. Two slots wire it up:
+
+- `samplesTsvLocation` on the adapter takes a samples TSV whose first column is
+  the sample name (matching the VCF header) and whose every remaining column is
+  a metadata attribute.
+- `colorBy` on the display names one of those columns, and the per-sample rows
+  are grouped and colored by that attribute the first time the track loads.
 
 The JBrowse demo wires up the 1000 Genomes phase 3 chr1 callset (2,504 samples
 across 26 population codes) this way. For the TSV layout and the adapter and
@@ -177,7 +178,7 @@ modes, the dendrogram, and how to share a result in a session URL.
 <Figure caption="Clustering a multi-sample variant track. Top: the 'Cluster rows by genotype' dialog. Bottom: the rows reordered by genotype similarity, with a dendrogram on the left." src="/img/variants/cluster_dialog.png" />
 
 In phased mode, clustering treats each haplotype as a separate row, so the
-dendrogram shows haplotype-level relationships rather than sample-level ones.
+dendrogram shows haplotype-level relationships.
 
 ## See also
 

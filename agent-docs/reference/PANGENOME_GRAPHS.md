@@ -407,7 +407,7 @@ file:
 - **The arcs are anonymous.** A backbone-to-backbone skip has GRCh38 at both
   ends, so it names no donor (Carriage, above). A row in a linear track is read
   as carriage, which is the misreading that retired `hprc_allele_inventory`'s
-  sample rows and that "The graph and the callset at two resolutions" in
+  sample rows and that "Comparing the graph with the callset" in
   `pangenome_hprc.md` exists to head off.
 - **`wave.vcf.gz` already does it, better.** It is not symbolic, it is
   tabix-indexed, it carries explicit ALTs to 65 kb and a genotype per haplotype,

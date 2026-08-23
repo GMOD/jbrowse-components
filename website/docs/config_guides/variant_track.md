@@ -57,8 +57,7 @@ field via `feature.INFO.SVTYPE` and maps it to a color:
 
 The
 [`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays)
-applies the `color` to the variant display for you, so you don't have to name
-`LinearVariantDisplay` or write the array.
+applies the `color` to the variant display for you.
 
 The `|| 'gray'` fallback colors any SVTYPE not in the map (or variants without
 an SVTYPE field) gray. INFO fields are parsed as arrays, so index the first
@@ -126,9 +125,9 @@ genotypes across many samples as a heatmap.
 Preset these slots so the options are on when the track loads. The most commonly
 preset ones:
 
-- `showReferenceAlleles` - draw reference alleles in color instead of a solid
-  gray background (useful when coloring the background like a homozygous
-  reference allele would mislead)
+- `showReferenceAlleles` - draw reference alleles in color. Off by default,
+  where the row background is filled solid gray and only ALT alleles are painted
+  on top, which makes overlapping variants easier to see
 - `renderingMode` - `alleleCount` (dosage, darker for homozygous) or `phased`
   (one row per haplotype)
 - `minorAlleleFrequencyFilter` - hide variants below a minor-allele-frequency
@@ -230,8 +229,8 @@ SV type, via the literal value `svType`, on the same track:
 }
 ```
 
-`featureColor` accepts any per-feature jexl expression, not just these presets:
-a plain CSS color, or an expression over `feature` attributes and the
+`featureColor` accepts any per-feature jexl expression: a plain CSS color, or an
+expression over `feature` attributes and the
 [helper functions](#helper-functions-for-jexl-color-expressions) above, the same
 as the single-sample `color` slot.
 
@@ -292,7 +291,7 @@ Point an LD track at a single population panel: r² is a correlation across the
 samples in the file, so a pooled multi-population callset averages the block
 away.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), over the haplotypes it summarises. Red means a pair of SNPs is almost always inherited together, so the block over the highlighted gene is one long haplotype, with LD decaying into the paler flanks; the matrix below is one row per chromosome, and the pale slab is the clade the clustering gathers: every rs4988235-A carrier, alongside a few dozen chromosomes sharing the same background."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle at the human lactase locus (LCT/MCM6), over the haplotypes it summarises. Red means a pair of SNPs is almost always inherited together, so the block over the highlighted gene is one long haplotype, with LD decaying into the paler flanks; the matrix below is one row per chromosome, and the pale slab is what the clustering gathers: every rs4988235-A carrier, alongside a few dozen chromosomes sharing the same background."/>
 
 **Computed from a VCF.** Add an `LDDisplay` to a normal `VariantTrack`. No extra
 files are needed, and because the raw genotypes are present, the filtering

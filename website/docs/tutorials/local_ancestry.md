@@ -197,12 +197,12 @@ The last two columns are the ones the display needs: the row this block belongs
 to, and the ancestry it was called. The `#`-header line names them for the
 adapter, so the track config below carries no `columnNames`.
 
-## Loading it as a multi-row track
+## Loading the blocks as a multi-row track
 
 `LinearMultiRowFeatureDisplay` draws one row per distinct value of
 `partitionField`, so pointing it at the `sample` column gives one row per
-haplotype, and `rowOrder` sets their top-to-bottom order. There is no color
-config: a BED carrying `itemRgb` is painted with it automatically.
+haplotype, and `rowOrder` sets their top-to-bottom order. A BED carrying
+`itemRgb` is painted with it automatically.
 
 ```json
 {

@@ -56,10 +56,10 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 - Mapping quality shades each read by its MAPQ, so poorly-mapped reads (often in
   repeats or segmental duplications) fade out and confidently-placed reads stay
   solid. The [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)
-  defines MAPQ as `-10 log10 Pr{mapping position is wrong}`, so MAPQ 0 does not
-  mean a read failed to align: it is aligned, and drawn where it aligned, but
-  the aligner puts no better than even odds on that being the right copy.
-  Aligners assign it when the best alignment score is tied across positions
+  defines MAPQ as `-10 log10 Pr{mapping position is wrong}`, so a MAPQ 0 read is
+  aligned, and drawn where it aligned, with the aligner putting no better than
+  even odds on that being the right copy. Aligners assign it when the best
+  alignment score is tied across positions
   ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108), which
   introduced the estimator). That is separate from a **secondary** alignment
   (FLAG `0x100`), which is one of the competing placements recorded as its own
@@ -89,19 +89,19 @@ data), **Color by → Modifications** paints them. It offers two modes:
   keep their per-type color, while low-probability and unmodified sites turn
   blue. For methylation (cytosine) data it fills every CpG in context, including
   the ones the basecaller left implicit, which JBrowse infers from the reference
-  CpG context rather than reading from the MM tag. The cytosine context
-  (CpG/CHG/CHH) is a **Cytosine context** submenu in the same list.
+  CpG context. The cytosine context (CpG/CHG/CHH) is a **Cytosine context**
+  submenu in the same list.
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
 
 <Figure caption="COLO829 tumor nanopore reads over a hypomethylated CpG island on chr20, colored by type (top) and 2-color (bottom): by-type leaves the island near-empty, 2-color fills it solid blue." src="/img/alignments/modifications2.png" />
 
-Modifications mode is not limited to 5mC. Any type in the MM tag paints, so
-fiber-seq's N6-methyladenine (`A+a`) draws like any other modification, and
-because the assay adds 6mA to accessible DNA the density of those calls doubles
-as a chromatin-accessibility readout. Use **Modification types** to restrict the
-track to one code when the basecaller emitted several.
+Any type in the MM tag paints, so fiber-seq's N6-methyladenine (`A+a`) draws
+like any other modification, and because the assay adds 6mA to accessible DNA
+the density of those calls doubles as a chromatin-accessibility readout. Use
+**Modification types** to restrict the track to one code when the basecaller
+emitted several.
 
 <Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode, where purple marks are 6mA calls left on accessible DNA. The treated sample (top) piles them over the promoter; the no-enzyme control (bottom) carries only scattered background." src="/img/methylation/chromatin_accessibility_6ma.png" />
 
@@ -132,8 +132,8 @@ breakpoint.
 ### By tag
 
 You can color, sort, or filter by any BAM tag. The common case is the `HP`
-(haplotype) tag to see phased reads; grouping by `HP` (below) usually reads even
-more clearly than coloring alone. The
+(haplotype) tag to see phased reads; grouping by `HP` (below) usually reads more
+clearly than coloring alone. The
 [phased trio tutorial](/docs/tutorials/analyze_trio) walks through working with
 `HP`-tagged reads alongside a phased VCF.
 
@@ -145,8 +145,8 @@ carries an `SA` tag, which separates the reads crossing a breakpoint from the
 ones spanning it intact), read group (RG), or any tag such as `HP`. Each group
 gets a divider label and the groups share one coverage scale, so they read
 independently, and reads missing the chosen tag collect in a trailing "none"
-section rather than disappearing. Grouping costs no extra fetching, and each
-divider has a control to collapse its section down to just its coverage.
+section. Grouping costs no extra fetching, and each divider has a control to
+collapse its section down to just its coverage.
 
 <Figure caption="Group by... opens a dialog where you pick the dimension (here the HP haplotype tag) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
 
@@ -171,11 +171,10 @@ so a gene's coverage lands in one band and its neighbour's in the other.
 
 <Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the viral genome, grouped by strand and colored by it. UL21 and UL22 are transcribed in opposite directions, so each band carries the coverage over its own gene and the switch falls between them." src="/img/alignments/strand_split_depth.png" />
 
-The same split read the other way is a check on the reads rather than on the
-transcripts. Each band's mismatch coloring is computed from only its own
-strand's reads, so a position colored in one band and not the other is carried
-by one strand alone, which is the signature of a systematic basecalling error
-rather than a variant.
+The same split read the other way is a check on the reads. Each band's mismatch
+coloring is computed from only its own strand's reads, so a position colored in
+one band and not the other is carried by one strand alone, the signature of a
+systematic basecalling error rather than a variant.
 
 <Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. At the left boxed column only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
 
@@ -211,12 +210,11 @@ what happens to the track height.
 
 <Figure src="/img/alignments/height_mode_fit.png" caption="The Track sizing options inside the Read height submenu, with Fit read height to track height selected. Because the size is computed while fitting, none of the presets above it read as selected." />
 
-Fit mode is the one to reach for when you care about the shape of a pileup
-rather than individual bases: drag the track taller or shorter and the reads
-re-fit to whatever height you gave it. It never draws reads taller than the
-Normal preset, so a shallow pileup in a tall track doesn't balloon, and it never
-goes below 1px per read, so an extremely deep pileup still overflows the display
-rather than vanishing. Grouping interacts with it directly: each group's
+Fit mode is the one to reach for when you care about the shape of a pileup: drag
+the track taller or shorter and the reads re-fit to whatever height you gave it.
+It draws reads no taller than the Normal preset, so a shallow pileup in a tall
+track doesn't balloon, and no smaller than 1px per read, so an extremely deep
+pileup overflows the display. Grouping interacts with it directly: each group's
 coverage row is reserved first and only the expanded groups' rows share what's
 left, so collapsing a group gives the rest more height.
 
@@ -280,10 +278,15 @@ the transcript strand directly, while minimap2's `ts` gives the orientation
 relative to the read and is combined with the read's own strand. A read carrying
 none of the three (default STAR output without `--outSAMstrandField`, for one)
 contributes to the junction without a strand, so tagged and untagged reads mix
-freely on the same arc. The track menu's **Sashimi arcs** submenu controls them:
-_Show labels_ prints each junction's supporting-read count on its arc, _Arc
-placement_ splits the arcs above/below the coverage row, and _Filter by score_
-drops low-support junctions. Turn the arcs off from the same submenu. See the
+freely on the same arc.
+
+The track menu's **Sashimi arcs** submenu controls them:
+
+- **Show labels** prints each junction's supporting-read count on its arc
+- **Arc placement** splits the arcs above/below the coverage row
+- **Filter by score** drops low-support junctions
+
+Turn the arcs off from the same submenu. See the
 [RNA-seq tutorial](/docs/tutorials/rnaseq) for a worked splice-junction example.
 
 When one exon-junction peak dominates the coverage histogram behind the arcs,
@@ -309,14 +312,14 @@ toggled off. Dragging the track taller re-fits the arcs into the available
 height.
 
 An arc whose two ends are in different displayed regions spans them, so opening
-a second region either side of a breakpoint shows the connection as one curve
-rather than as two marks. Interchromosomal arcs are drawn in one colour, since
-insert size and pair orientation mean nothing across chromosomes.
+a second region either side of a breakpoint shows the connection as one curve.
+Interchromosomal arcs are drawn in one colour, since insert size and pair
+orientation mean nothing across chromosomes.
 
 Reads describing the same connection draw as **one arc, thickened by how many of
 them there are**, the way a sashimi arc is sized by its junction's read count,
-so the arcs rank the evidence instead of only locating it. Thickness is on a log
-scale, and a connection supported by a single read draws at the width
+so the arcs rank the evidence. Thickness is on a log scale, and a connection
+supported by a single read draws at the width
 [`readConnectionsLineWidth`](/docs/config/linearalignmentsdisplay/#slot-readconnectionslinewidth)
 sets. Arcs coalesce only on exactly equal endpoints, so junctions a few bases
 apart stay separate curves.
@@ -349,23 +352,22 @@ Right-click a read and open the **View mate** submenu:
   back, so this is cheap to try and reverse.
 - **Open breakpoint split view** puts the two loci in
   [their own stacked panels](/docs/user_guides/sv_visualization#breakpoint-split-view)
-  instead, which is the heavier option that draws the connecting splines.
+  instead, which draws the connecting splines.
 
 The submenu appears only for a read whose mate is mapped.
 
 ## One read against the reference
 
-A long read that crosses a structural variant does not align in one piece. The
-aligner splits it into a primary alignment plus one supplementary alignment per
+A long read that crosses a structural variant aligns in pieces: the aligner
+splits it into a primary alignment plus one supplementary alignment per
 additional locus, records the whole set in each record's `SA` tag, and the
 pileup draws them as separate rows, often far apart or on different chromosomes.
 
 Right-click any of them and choose **Launch view → Linear read vs ref** to put
-them back together. The `SA` tag is what makes this possible from one record, so
-no search of the rest of the genome is needed. The read becomes its own assembly
-along one lane, every reference locus it touches is laid out along the other,
-and each alignment segment is drawn as a ribbon between them, in the order the
-read visits them rather than in reference order.
+them back together, which the `SA` tag makes possible from one record. The read
+becomes its own assembly along one lane, every reference locus it touches is
+laid out along the other, and each alignment segment is drawn as a ribbon
+between them, in the order the read visits them rather than in reference order.
 
 An insertion shows as a gap in the diagonal, since those bases are in the read
 and not in the reference. Dragging over a region in the read lane extracts that

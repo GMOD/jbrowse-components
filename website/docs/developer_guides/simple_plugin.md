@@ -25,20 +25,23 @@ tests against a nightly JBrowse build. Pick esbuild for faster builds; rollup is
 older and more widely referenced in existing examples.
 
 Both ship a custom **view** (`src/HelloView`) as their worked example. For a
-custom track/display, which is the more common case, scaffold from a template
-and then follow [](/docs/developer_guides/plotting_features). Its complete
-plugin lives in `example-plugins/score-example/`, and every code block in that
-guide is generated from that source.
+custom track/display, scaffold from a template and then follow
+[](/docs/developer_guides/plotting_features). Its complete plugin lives in
+`example-plugins/score-example/`, and every code block in that guide is
+generated from that source.
 
 ## What's in a plugin
 
 A plugin is a class extending `Plugin`. `name` is the only required member; the
-rest are hooks you implement as needed. `install()` registers pluggable elements
-against the `pluginManager` and `configure()` runs afterwards, typically to set
-up mobx autoruns over application state. `version` is what the plugin store
-shows beside the name. There is also an `uninstall()` hook, which nothing in
-JBrowse calls — don't put teardown in it. The element-specific guides walk
-through each type:
+rest you implement as needed:
+
+- **`install()`** — registers pluggable elements against the `pluginManager`.
+- **`configure()`** — runs afterwards, typically to set up mobx autoruns over
+  application state.
+- **`version`** — what the plugin store shows beside the name.
+- **`uninstall()`** — a hook nothing in JBrowse calls; don't put teardown in it.
+
+The element-specific guides walk through each type:
 
 <!-- doclist:developer_guides category="Plugins" -->
 
@@ -46,8 +49,8 @@ A plugin can also add its own **configuration slots**, through one of three
 class members that differ only in where the slots land:
 
 - `configurationSchema` nests them under the plugin's own `name`, so a slot
-  reads as `configuration.MyPlugin.mySlot`. This is the one to reach for — a
-  namespace nobody else writes into.
+  reads as `configuration.MyPlugin.mySlot`. This is the one to reach for: the
+  slots live in the plugin's own namespace.
 - `configurationSchemaUnnamespaced` merges them into `configuration` directly.
 - `rootConfigurationSchema` is a function of the plugin manager whose result is
   spread into the root config, for a schema that has to be built against what is

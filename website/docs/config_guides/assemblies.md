@@ -34,12 +34,12 @@ JBrowse infers the adapter from the extension (`.2bit` → `TwoBitAdapter`,
 ```
 
 `refNameAliases` and `cytobands` take an object with a `uri` key, not a bare
-path string, so that a relative uri resolves against the config's own location.
+path string, so a relative uri resolves against the config's own location.
 
 ### Named adapter: `sequence.adapter`
 
-To name the adapter or set a slot on it, write only `sequence.adapter`;
-`sequence.type`/`sequence.trackId` stay boilerplate and can be omitted:
+To name the adapter or set a slot on it, write `sequence.adapter`;
+`sequence.type` and `sequence.trackId` can be omitted:
 
 ```json addassembly
 {
@@ -122,8 +122,8 @@ plastids/bacteria often use table 11; full list on the
 Unlisted sequences use the standard code; keys are matched through refname
 aliasing, so `chrM` still applies if your FASTA calls it `MT`. A sidecar TSV
 ([`geneticCodesLocation`](/docs/config/baseassembly/#slot-geneticcodeslocation),
-`refName<TAB>geneticCodeId`, `#` comment lines allowed) can supply the same map
-instead of inlining it; an inline entry wins if both are present.
+`refName<TAB>geneticCodeId`, `#` comment lines allowed) can supply the same map;
+an inline entry wins if both are present.
 
 ## Adding an assembly with the CLI
 
@@ -159,7 +159,7 @@ samtools faidx sequence.fa.gz  # -> sequence.fa.gz.fai
   synteny, or whole-genome view without loading a FASTA.
 - `metadataLocation` attaches free-form metadata to an indexed/bgzipped FASTA.
   [FFRGS](https://github.com/FFRGS/FFRGS-Specification) is one documented
-  convention, but JBrowse does not enforce a format.
+  convention; JBrowse does not enforce a format.
 
 ## Configuring cytoband ideograms
 

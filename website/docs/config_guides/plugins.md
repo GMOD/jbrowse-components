@@ -8,7 +8,7 @@ guide_category: Core configuration
 `name` (which must match the name the plugin registers itself under) and bundle
 `url` in the top-level `plugins` array.
 
-Embedded components use a different approach. See the
+Embedded components load plugins inline; see the
 [inline plugins example](https://jbrowse.org/storybook/lgv/plugins/#with-inline-plugins).
 
 ```json
@@ -40,10 +40,12 @@ different situations:
 | `esmLoc` | ESM           | config.json               |
 | `cjsUrl` | CJS           | index.html (desktop only) |
 
-Use `umdLoc` or `esmLoc` when your plugin file lives alongside your config.json
-rather than at the app root. Use `esmUrl`/`esmLoc` for a pure ESM module. Use
-`cjsUrl` for jbrowse-desktop, since Electron does not support ESM and the
-jbrowse-plugin-template outputs CJS-specific code for desktop.
+Which one to reach for:
+
+- `umdLoc` or `esmLoc` when your plugin file lives alongside your config.json
+- `esmUrl`/`esmLoc` for a pure ESM module
+- `cjsUrl` for jbrowse-desktop, since Electron does not support ESM and the
+  jbrowse-plugin-template outputs CJS-specific code for desktop
 
 ## umdLoc example
 
@@ -80,9 +82,8 @@ You can verify the plugin is installed properly by checking the Plugin Store:
 
 <Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, indicating they cannot be removed through the GUI. The Available plugins list below offers one-click installs."/>
 
-See our [developer guide](/docs/developer_guide/) for more information on
-developing plugins, or our [plugins page](/plugin_store) to browse currently
-published plugins.
+See our [developer guide](/docs/developer_guide/) for developing plugins, or the
+[plugins page](/plugin_store) for published plugins.
 
 ## See also
 

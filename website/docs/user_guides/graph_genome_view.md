@@ -10,7 +10,7 @@ description:
 a linear view of the same window, and moves between the two. The reference's own
 path through the graph is its **backbone**; every segment off that path is an
 alternate allele another assembly carries. Most other pangenome tracks are
-**projections** instead: the graph flattened onto one reference's coordinates as
+**projections**: the graph flattened onto one reference's coordinates as
 synteny, variants, alignment, or depth.
 
 **Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
@@ -25,9 +25,8 @@ The **Graph genome view** is a separate plugin,
 not bundled in JBrowse Web, because its force-directed layout uses the
 GPL-licensed [Bandage](https://github.com/rrwick/Bandage) engine (its
 [OGDF](https://ogdf.github.io/) FMMM layout). It is in **beta** and not in the
-[plugin store](/docs/user_guides/plugin_store) yet, but it is a native ES module
-and loads from any config today (see
-[configuring plugins](/docs/config_guides/plugins)):
+[plugin store](/docs/user_guides/plugin_store) yet; it is a native ES module and
+loads from any config (see [configuring plugins](/docs/config_guides/plugins)):
 
 <!-- GRAPH_PLUGIN_CONFIG START -->
 
@@ -85,7 +84,7 @@ layout here, was built for those graphs. Use Bandage for one.
 
 Index the graph once and it becomes an ordinary `FeatureTrack`, with the graph a
 menu item away from whatever is on screen. Which script builds the index depends
-on the format, and nothing after that does. Both live in the repo's
+on the format; everything after it is the same. Both live in the repo's
 [`scripts/`](https://github.com/GMOD/jbrowse-components/tree/main/scripts)
 directory and need `bgzip` and `tabix`, plus
 [`gfatools`](https://github.com/lh3/gfatools) for the rGFA route or `python3`
@@ -121,9 +120,8 @@ The plain-GFA walk makes four choices worth knowing:
 - The walk also records **who carries each segment**, as `SM:Z:` in the index,
   which is the one thing rGFA cannot state. That is what fills `carriedBy` in
   the node popup on this route.
-- When a path reaches a segment twice, **the first visit wins**. A node draws as
-  one tube at one x, so recording both would claim reference the segment does
-  not occupy. The repeat stays visible as depth.
+- When a path reaches a segment twice, **the first visit wins**: a node draws as
+  one tube at one x. The repeat stays visible as depth.
 - A segment the reference never visits is placed on **its own carrier's
   coordinates**. That is the same asymmetry rGFA has, and why a reference query
   reaches such a segment through the links file.
@@ -154,17 +152,17 @@ because that graph calls the reference `GRCh38` while the assembly is `hg38`.
 Then **Track menu → Launch view → Graph genome view (this region)** cuts a
 subgraph from the index. The item is offered only for a track whose adapter can
 cut one, and past the size the view will draw it greys out and names its own
-limit rather than disappearing.
+limit.
 
-How wide a window that is depends on the graph rather than on the index. A
-minigraph graph records structural variation and collapses everything smaller,
-so a legible window is hundreds of kb; a pggb graph puts a node at every SNP,
-and a legible window is hundreds of bp.
+How wide a window that is depends on the graph. A minigraph graph records
+structural variation and collapses everything smaller, so a legible window is
+hundreds of kb; a pggb graph puts a node at every SNP, and a legible window is
+hundreds of bp.
 
-Right-clicking one segment cuts the graph around that segment instead, padded by
-half its length on each side so it opens with context rather than clipped to its
-own ends. Dragging across the ruler and picking **Graph genome view (this
-selection)** does the same for a window you choose, with no track menu involved.
+Right-clicking one segment cuts the graph around that segment, padded by half
+its length on each side so it opens with context. Dragging across the ruler and
+picking **Graph genome view (this selection)** does the same for a window you
+choose, with no track menu involved.
 
 Each line in the launched graph is one graph link, drawn when both of its
 endpoints are inside the cut, so an allele near the window's edge draws only the
@@ -196,14 +194,13 @@ segment to.
 
 Route 1 gets the same answer without the file, as long as the index came from a
 plain GFA: `build_pggb_tabix.sh` does the traversal walk offline and writes each
-segment's carriers into the index as `SM:Z:`. So the split is by format rather
-than by route, and only a minigraph rGFA is without it.
+segment's carriers into the index as `SM:Z:`. So the split is by format: only a
+minigraph rGFA is without it.
 
-**Sample rows** is a row per contributing assembly rather than a drawing of that
-whole set: a node is drawn once, on the row of the first path that reaches it,
-and the other carriers stay in `carriedBy`. Reading across a row still says what
-one assembly does to the reference, which is what the layout is for, but a
-segment several haplotypes share appears on one of their rows and not the rest.
+**Sample rows** draws a row per contributing assembly: a node is drawn once, on
+the row of the first path that reaches it, and the other carriers stay in
+`carriedBy`. Reading across a row says what one assembly does to the reference,
+and a segment several haplotypes share appears on one of their rows only.
 
 ## On JBrowse Desktop
 
@@ -216,8 +213,7 @@ Graph genome view** offers **Choose file**.
 
 Desktop only starts a session by opening a genome, so you have to pick one
 before there is an **Add** menu at all. It can be any genome: a GFA opened this
-way is laid out from its own P/W lines, and nothing in the graph pane reads the
-assembly you happened to start with.
+way is laid out from its own P/W lines.
 
 ## Three layouts
 
@@ -232,12 +228,12 @@ the axes mean:
 
 Force-directed is the default: an anchored drawing flattens both routes through
 a locus onto the reference axis, so an allele reads as a stub hanging under a
-line rather than as the other side of a bubble.
+line.
 
 Both reference-anchored modes need a backbone, from rGFA tags or from a
 reference path, and a graph with neither leaves them greyed out. There
 force-directed is the only picture available: the classic Bandage one, where
-alternate alleles fall out as bubbles rather than as rows (the
+alternate alleles fall out as bubbles (the
 [MHC figure](/docs/tutorials/pangenome_hprc#open-a-locus-as-a-graph) shows it
 beside a linear view).
 
@@ -247,12 +243,11 @@ on. A high-rank segment is sequence none of the earlier assemblies had, and only
 rank 0 has reference coordinates, which is why it is the only rank a linear view
 of the reference can show.
 
-Rank is a property of how the graph was built rather than of any genome: at a
-dense locus one rank holds alleles from many haplotypes, so a rank row means
-nothing biological. **Sample rows** rows by the assembly each allele came from
-instead, so reading across a row says what that strain does to the reference,
-with the backbone on top and each strain's charcoal marks under it, tied by grey
-threads to where they attach.
+Rank is a property of how the graph was built: at a dense locus one rank holds
+alleles from many haplotypes, so a rank row means nothing biological. **Sample
+rows** rows by the assembly each allele came from, so reading across a row says
+what that strain does to the reference, with the backbone on top and each
+strain's charcoal marks under it, tied by grey threads to where they attach.
 
 <Figure caption="460 bp of the pggb graph drawn twice, under the genes, MAF and segments lanes for the same window. Left, Sample rows. Right, the same nodes force-directed, where the locus reads as a shape rather than as rows." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
@@ -261,11 +256,11 @@ _first contributed_ the sequence, because `SR` is build order and nothing in the
 file records who else carries it. On a path GFA every path that visits a segment
 is stated outright, so a row is carriage and the node popup lists the rest.
 
-Both anchored layouts draw an allele across **the reference it replaces, never
-its own sequence length**: an insertion consumes no reference, so it draws as a
-mark where it attaches, with its size in the tooltip.
+Both anchored layouts draw an allele across **the reference it replaces**: an
+insertion consumes no reference, so it draws as a mark where it attaches, with
+its size in the tooltip.
 
-## Two settings that decide what is drawn
+## Bubble spread and graph context {#two-settings-that-decide-what-is-drawn}
 
 **View menu → Settings → Bubble spread** decides how a node's bp becomes its
 drawn length in the force layout (the anchored layouts place a node from its
@@ -273,7 +268,7 @@ coordinates, so it does nothing there). The engine comes from Bandage, whose
 graphs are assembled contigs of kb to Mb, so it maps length linearly with a tiny
 floor and a pangenome allele of a few bases clamps to a stub.
 
-Two instruments fix that, and they are alternatives rather than a stack:
+Two instruments fix that, and they are alternatives:
 
 - **Open bubbles** and **Wide bubbles** raise the floor, so every allele gets a
   drawn length while everything above the floor stays proportional. Take one of
@@ -286,16 +281,15 @@ Two instruments fix that, and they are alternatives rather than a stack:
   It costs the top end: a node that should read as long no longer does.
 
 **Proportional** is the untouched Bandage map, and what to keep when a figure is
-about relative length rather than about bubble shape.
+about relative length.
 
 **View menu → Settings → Graph context** is how far the cut follows links past
 the region, defaulting to **1 hop**. It is the in-app counterpart of
 `odgi extract -c N`. An allele's interior segments are indexed under their own
 haplotype's sequence, so a reference query never reaches them: a detour that
-leaves the backbone before the window and rejoins after it arrives as two stubs
-rather than as the one event it is. A hop closes those, costing a query per
-off-reference segment already reached. **None** shows what the region query
-alone reaches.
+leaves the backbone before the window and rejoins after it arrives as two stubs.
+A hop closes those, costing a query per off-reference segment already reached.
+**None** shows what the region query alone reaches.
 
 Both halves below share their genes and segments lane and colour each node the
 same way, so a segment can be found in either. A hop is one step, so the right
@@ -306,17 +300,15 @@ segments, so it does not drag in the backbone either side of the window.
 
 A **2 hops** setting handles a graph whose alleles have alleles of their own. On
 this window 1 hop already closes the cut; HPRC's amylase window keeps growing
-at 2. It stops at two because a frontier is not a bubble decomposition and never
-converges on an exact slice. For an exact slice, cut one with
-`gfatools view -R <region> -r 1` and open it as a [file](#route-2-a-gfa-file).
+at 2. It stops at two, since hops grow a neighbourhood and an exact slice comes
+from a bubble decomposition: cut one with `gfatools view -R <region> -r 1` and
+open it as a [file](#route-2-a-gfa-file).
 
-## Colors that mean the same thing in both panels
+## Color schemes and matching a linear track {#colors-that-mean-the-same-thing-in-both-panels}
 
-A graph panel and a linear panel show the same segments, so the useful question
-is which coloring survives the trip between them. The **Color** dropdown opens
-on **Auto**, which is Reference position on any graph carrying reference
-coordinates and Uniform on one carrying none. Three of its schemes are worth
-knowing:
+The **Color** dropdown opens on **Auto**, which is Reference position on any
+graph carrying reference coordinates and Uniform on one carrying none. Three of
+its schemes are worth knowing:
 
 - **Reference position** ramps hue over the window the subgraph was cut from,
   red at its start to magenta at its end, with a key in the top right naming the
@@ -360,27 +352,25 @@ Same track, different `color`:
 jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'
 ```
 
-## Hovering one panel highlights the other
+## Hover sync between the panels {#hovering-one-panel-highlights-the-other}
 
 Hover a node and the reference interval it occupies is highlighted in every
 linear view beside it; hover the linear view and the segment under the cursor
 lights up in the graph. Nothing to configure, and it is what makes a rank>0
 allele locatable at all, since those have no reference coordinates.
 
-The reverse works from any track, not just the graph's own segments. A gene
-gives only a coordinate, and that is enough: rGFA segments do not overlap on a
-stable sequence, so one backbone segment covers it.
+The reverse works from any track. A gene gives a coordinate, which is enough:
+rGFA segments do not overlap on a stable sequence, so one backbone segment
+covers it.
 
 The alignment lane below says the same event from the other side: CFT073 has no
 aligned bases across the band, and neither do IAI39 or Sakai, while NCTC86
 aligns straight through it.
 
-That absence is all a whole-genome alignment lane can say here, and it is worth
-knowing why before reading it as a disagreement. The lane is a projection onto
-K12's coordinates, so it has a column for every base K12 has and none for a base
-it does not; 65 kb that exists only in CFT073 has nowhere in it to be drawn. The
-graph is the representation that can hold both, which is what the node in the
-lower panel is.
+The lane is a projection onto K12's coordinates, so it has a column for every
+base K12 has and none for a base it does not; 65 kb that exists only in CFT073
+has nowhere in it to be drawn. The graph holds both, which is what the node in
+the lower panel is.
 
 <Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The ringed node is 65.4 kb carried only by CFT073, and it attaches to K12 across a 2.1 kb band — the interval between the segments the allele leaves and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
 
@@ -406,16 +396,14 @@ assemblies loaded, the graph's **Launch view** menu gains two ways out:
 
 - **one linear view per contributing strain**, framed on that strain's own
   coordinates for this locus. Right-clicking a single allele does it for that
-  segment alone: a CFT073 allele opens CFT073 at the offset its own tags state,
-  not a projection onto K12.
+  segment alone: a CFT073 allele opens CFT073 at the offset its own tags state.
 - **a synteny view of all of them**, one panel per strain, each already at its
-  own locus. Those panel coordinates come from the graph, so nothing is looked
-  up in a PAF first; the alignment track only draws the ribbons between panels.
+  own locus. Those panel coordinates come from the graph, and the alignment
+  track draws the ribbons between panels.
 
-Only loaded assemblies are offered, so the menu never lists a view that cannot
-open, and a location goes into the linear view already beside the graph rather
-than stacking a pane. A launched view carries the session's annotation for the
-assembly it opens on, so a strain arrives with its own genes rather than empty.
+Only loaded assemblies are offered, and a location goes into the linear view
+already beside the graph. A launched view carries the session's annotation for
+the assembly it opens on, so a strain arrives with its own genes.
 
 <Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus." src="/img/pangenome/rgfa_launch_out_menu.png" />
 
@@ -423,9 +411,8 @@ Taking the other entry answers a different question. K12's `asnW`/`asnU`/`asnV`
 tRNA genes are the sites E. coli pathogenicity islands integrate at, and in that
 window the graph gives CFT073 tens of kilobases the reference does not have.
 Clicking that strain's entry opens the sequence on CFT073's own coordinates,
-where its gene track names it: `clbA` to `clbS`, the colibactin island. No
-alignment is consulted; the launched coordinates come from the segments' own
-`SN`/`SO` tags.
+where its gene track names it: `clbA` to `clbS`, the colibactin island. The
+launched coordinates come from the segments' own `SN`/`SO` tags.
 
 The two halves of the figure are the same journey in opposite directions: left,
 a graph launching a linear view; right, a linear view launching a graph, the
@@ -477,16 +464,17 @@ allele the others are scored against. Load the result with one row per strain:
 }
 ```
 
-`partitionField` gives each strain its own row. `lengthField` is the length
-channel: without it a large insertion and a 1 bp one draw the same box. Pointed
-at the BED's signed `delta` column, it draws the insertion and deletion marks
-the [alignments track](/docs/user_guides/alignments_track) uses.
+- `partitionField` gives each strain its own row
+- `lengthField` is the length channel: without it a large insertion and a 1 bp
+  one draw the same box. Pointed at the BED's signed `delta` column, it draws
+  the insertion and deletion marks the
+  [alignments track](/docs/user_guides/alignments_track) uses
 
 A row is only as continuous as the bubble decomposition under it: `--call` emits
 a record per bubble and nothing between them, so over 200 kb of this graph the
 bubbles cover about a tenth of the frame and a row is mostly blank. Read it as
-marks at the sites that vary, not as a per-base lane like the
-[](/docs/user_guides/maf_track).
+marks at the sites that vary; the [](/docs/user_guides/maf_track) is the
+per-base lane.
 
 Each row also carries what that bubble looks like across all the strains. Those
 columns are in the popup, and a jexl expression over them narrows the track to
@@ -507,13 +495,12 @@ by which alleles each strain carries; on five strains that is a sanity check, on
 a few hundred haplotypes it is the analysis.
 
 `gfatools bubble` reports **top-level** bubbles only, and on this graph they
-never overlap, which is what makes one flat lane per strain complete rather than
-lossy. Variation nested _inside_ a bubble is the cost: a 113 kb allele is one
-block, not the SNPs and small indels within it. The
+never overlap, so one flat lane per strain is complete. Variation nested
+_inside_ a bubble is the cost: a 113 kb allele is one block. The
 [variants projection](/docs/tutorials/pangenome_ecoli#pangenome-variants-projection)
-carries that nested tier instead.
+carries that nested tier.
 
-## When all you have is the graph
+## Alleles from the rGFA alone {#when-all-you-have-is-the-graph}
 
 Someone else's rGFA usually arrives without the assemblies it was built from,
 which rules out the re-mapping above. The two indexes still state every allele
@@ -545,15 +532,14 @@ alignment, so the BED carries a `CIGAR` column (`2062M63348I`) and an
 }
 ```
 
-`AlignmentsTrack` over a BED is deliberate: the display draws whatever carries a
+`AlignmentsTrack` over a BED works because the display draws whatever carries a
 CIGAR, so the alleles pack into rows and each draws the same insertion marker
 and deletion bar a read does, at its real size. Without the CIGAR a 63 kb allele
 is a 1 bp feature with the number hidden in its label.
 
 The size is measured; the position inside the anchor span is not. A bubble does
 not state where in the span its indel sits, so the CIGAR puts it at the end by
-convention: invisible over a 2 kb anchor, placed rather than located over a 100
-kb one.
+convention: invisible over a 2 kb anchor, approximate over a 100 kb one.
 
 `altLen`, `nested`, `discoveryRank` and the traversed `segments` are in the
 popup. Two filters matter, both from **Edit filters** on the same file loaded as
@@ -568,7 +554,7 @@ a `FeatureTrack`, whose default display has one:
 The real limit is whose allele it is. `discoveryRank` and `firstSeenIn` name the
 **first** assembly to contribute a segment, because minigraph collapses: an
 allele four strains share is credited to whichever was added first. That is
-build order, not carriage, and a high rank does not mean the earlier assemblies
+build order, not carriage: a high rank does not mean the earlier assemblies
 lacked the sequence. Use the per-strain route when you have the assemblies.
 
 ## See also

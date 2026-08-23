@@ -255,14 +255,14 @@ four exceptions. `actions`, `views`, `extend` and `preProcessSnapshot`
 three chain through separate MST calls, so the base's members are on `self`
 inside your function and you override one by redeclaring its name;
 `preProcessSnapshot` folds to `child(base(snapshot))`, so the base normalizes
-before you see the snapshot. Without this, `createBaseTrackConfig` declaring two
-of them would be a ceiling no track config schema could reach past.
+before you see the snapshot. `createBaseTrackConfig` declares two of the four —
+`actions` and `preProcessSnapshot` — so a track config schema that declares its
+own composes on top of the base's.
 
 Pass the type `ConfigurationSchema()` returned, and nothing else. The slot table
 lives in a registry keyed by that exact type, so a `types.late` wrapper or a
-union from `pluginManager.pluggableConfigSchemaType(…)` carries none of it —
-both type-check, and both used to hand back a schema missing every inherited
-slot with nothing thrown anywhere. They now throw at construction.
+union from `pluginManager.pluggableConfigSchemaType(…)` carries none of it: both
+type-check, and both throw at construction.
 
 :::note Changed behavior
 
@@ -390,8 +390,7 @@ Use [`resolveConf`](/docs/api/core-configuration#resolveconf) on a
 to a consumer expecting a real setting, which is how the compiler points at the
 read that should have been `resolveConf`. Never silence that with
 `?? someDefault`: it bypasses the cascade rather than walking it. `resolveConf`
-throws on a plain slot for the mirror-image reason — there is no cascade to
-walk.
+throws on a plain slot, which has no cascade to walk.
 
 Writes go through [`setConf`](/docs/api/core-configuration#setconf), not a bare
 `self.configuration.setSlot('x', v)`. `setConf` constrains the slot name against
@@ -444,10 +443,9 @@ same move as `BaseAdapter<CONF>`.
 `jbrowse.tracks` is stored as `types.frozen` (plain JS objects) for performance
 with thousands of tracks. Track configs become MST nodes lazily, only when a
 track is opened and `TrackConfigurationReference.get()` is called. The hydrated
-node is cached, on the `PluginManager`, and that cache is load-bearing rather
-than an optimization: MST's custom-reference `get()` memoizes nothing, so
-without it every read of `track.configuration` would fabricate a fresh
-non-identical node.
+node is cached on the `PluginManager`: MST's custom-reference `get()` memoizes
+nothing, so without that cache every read of `track.configuration` would
+fabricate a fresh non-identical node.
 
 This is why `session.getTrackById(id)` hands back a plain object for a track
 nobody has opened: access it with `readConfObject`, not `getConf`. (There is a

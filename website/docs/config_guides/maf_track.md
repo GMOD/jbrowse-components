@@ -31,9 +31,13 @@ For what the track looks like once loaded, see the
 
 <!-- FILE_TYPES maf END -->
 
-Provide the aligned species as a `samples` array (in track order), as an
-`nhLocation` Newick tree, which both supplies the species and orders/labels the
-rows as a dendrogram, or as both — see [below](#the-samples-array).
+Provide the aligned species as one of the following (see
+[below](#the-samples-array)):
+
+- a `samples` array, in track order
+- an `nhLocation` Newick tree, which both supplies the species and orders/labels
+  the rows as a dendrogram
+- both
 
 Example using the tabix-indexed BED form (the UCSC ce11 26-way, ordered by its
 phylogenetic tree). `MafTabixAdapter` takes the
@@ -70,25 +74,23 @@ column, haplotype suffix included, so a `hg38.chr1` row matches the sample
 - **`assemblyName`** — the assembly this species' own genome is loaded as, which
   makes its rows navigable: right-clicking a drag selection then offers
   [that row's locus in the species' own coordinates](/docs/user_guides/maf_track#jumping-to-a-species-own-genome).
-  Rows of a sample that leaves it unset are not offered. It is deliberately not
-  derived from the id — ids are UCSC db names in some alignments, scientific
-  names in others (which map to several assemblies) and lab-internal ids in
-  others still, so a name lookup can land on the wrong genome and report
-  coordinates that are silently wrong.
+  Rows of a sample that leaves it unset are not offered. It has to be written
+  out: ids are UCSC db names in some alignments, scientific names in others
+  (which map to several assemblies) and lab-internal ids in others still, so a
+  name lookup can land on the wrong genome and report coordinates that are
+  silently wrong.
 - **`assemblyConfigLocation`** — the config to load `assemblyName` out of when
   the session does not already have it. Omit it when the assembly is already in
   the config the user opened. A site hosting many genomes keeps one config per
   genome, so an alignment's species usually are not present in that config;
-  JBrowse fetches just the named assembly from here at click time, which is what
-  lets a 26-way or 470-way stay navigable without inlining hundreds of genomes.
-  It is a `UriLocation` rather than a bare url so a relative uri resolves
+  JBrowse fetches just the named assembly from here at click time, which keeps a
+  26-way or 470-way navigable. It is a `UriLocation`, so a relative uri resolves
   against the declaring config rather than against the page.
 
-**A tree and a `samples` array compose**, and combining them is how a
-tree-ordered alignment also gets navigable rows. With an `nhLocation`/`nhUri`
-the tree's leaf names are the sample set and the row order, and `samples`
-becomes an override table matched by id; a leaf with no matching entry keeps its
-own name as its label.
+**A tree and a `samples` array compose**, which is how a tree-ordered alignment
+also gets navigable rows. With an `nhLocation`/`nhUri` the tree's leaf names are
+the sample set and the row order, and `samples` becomes an override table
+matched by id; a leaf with no matching entry keeps its own name as its label.
 
 This track has one row pointing at an assembly the config already holds, one
 loading its assembly from a sibling config on click, and one plain row that is
@@ -242,11 +244,11 @@ and needs no file.
 
 `BgzipMafAdapter` and `BgzipTaffyAdapter` take the same slot, and the same
 `maf2bed --summary` BED serves them. Their `.tai` index seeks within an
-alignment, so a read already costs what is on screen rather than what the blocks
-happen to span. That bounds the span a read covers, not the number of rows it
-covers it with, and a read costs both. On a deep alignment an index moves the
-zoom-out ceiling; the summary file is what removes it. Each slot doc quotes the
-bytes per base measured for that format on HPRC's published alignment:
+alignment, so a read costs what is on screen rather than what the blocks happen
+to span. That bounds the span a read covers, not the number of rows, and a read
+costs both. On a deep alignment an index moves the zoom-out ceiling; the summary
+file removes it. Each slot doc quotes the bytes per base measured for that
+format on HPRC's published alignment:
 [`BgzipMafAdapter`](/docs/config/bgzipmafadapter/#slot-summaryadapter),
 [`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter/#slot-summaryadapter).
 
@@ -259,11 +261,11 @@ menu. The [user guide](/docs/user_guides/maf_track) covers what each one shows.
 
 ## A larger example: the human 470-way
 
-These features scale to genome-scale alignments. The UCSC hg38 **470-way
-multiz** (the Zoonomia mammals and more) is a `BigMafAdapter` over
-`multiz470way.bigMaf`, with its `multiz470waySummary.bb` (zoom-out) and
-`multiz470wayFrames.bb` (CDS frames / codon view): the same three pieces as the
-smaller examples, pointed at the UCSC downloads.
+These features work at genome scale. The UCSC hg38 **470-way multiz** (the
+Zoonomia mammals and more) is a `BigMafAdapter` over `multiz470way.bigMaf`, with
+its `multiz470waySummary.bb` (zoom-out) and `multiz470wayFrames.bb` (CDS frames
+/ codon view): the same three pieces as the smaller examples, pointed at the
+UCSC downloads.
 
 ```json
 {

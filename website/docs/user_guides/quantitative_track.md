@@ -60,7 +60,7 @@ A narrow peak that is obvious at full resolution can fade out across a whole
 chromosome, because averaging it over a wide bin flattens it. **Maximum** keeps
 it visible.
 
-### Other options
+### Other score options
 
 - Scale type - switch the Y axis between linear and log scaling; log is useful
   when signal spans several orders of magnitude
@@ -87,10 +87,9 @@ For tumor vs normal comparisons using two BigWig tracks on the same Y-axis, see
 this up to a whole cohort, one row per tumor, see the
 [TCGA cohort copy number tutorial](/docs/tutorials/tcga_cohort_cnv).
 
-Not every dip or spike is a true copy-number change. Coverage is shaped by GC
-content, mappability, repeats, PCR bias, and (when mapping a divergent strain)
-hyper-divergent regions, so it is often uneven even without any true copy-number
-change.
+Coverage is shaped by GC content, mappability, repeats, PCR bias, and (when
+mapping a divergent strain) hyper-divergent regions, so not every dip or spike
+is a true copy-number change.
 
 ## See also
 

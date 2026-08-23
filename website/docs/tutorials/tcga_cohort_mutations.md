@@ -37,10 +37,14 @@ multi-sample file, one column per tumor:
 chr3   179234297 .   A   G    GENE=PIK3CA;HGVSP=p.H1047R... GT:AD:DP  0/1:81,29:110     0/0
 ```
 
-Two conventions bear on any figure read off that matrix. `0/0` marks a site the
-caller did not call, since a MAF carries no coverage record for one. And every
-somatic call is written het, because a MAF gives no ploidy. The read counts are
-kept in `AD`/`DP`, so the variant popup shows what the caller saw.
+Two conventions bear on any figure read off that matrix:
+
+- `0/0` marks a site the caller did not call, since a MAF carries no coverage
+  record for one.
+- Every somatic call is written het, because a MAF gives no ploidy.
+
+The read counts are kept in `AD`/`DP`, so the variant popup shows what the
+caller saw.
 
 `INFO/CSQ` re-encodes the MAF's own VEP columns (`Consequence`, `IMPACT`,
 `HGVSp_Short`, SIFT, PolyPhen), which is what lets the track color cells by
@@ -67,7 +71,7 @@ The table is built per project, so it names more tumors than either track
 carries: a case with no mutation calls still has receptor status. JBrowse
 reports the tumors it could not match when the track loads.
 
-## Load it into JBrowse
+## Load the cohort VCF into JBrowse
 
 Two commands set the whole thing up, an assembly and a track. Start with hg38,
 where the one thing to watch is naming: the hosted FASTA calls its contigs bare

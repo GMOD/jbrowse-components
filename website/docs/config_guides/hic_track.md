@@ -31,15 +31,18 @@ shorthand. The longhand form uses a `hicLocation` slot. See the
 
 ## Color scheme
 
-[`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) takes
-`juicebox`, `fall`, or `viridis`. Log scaling
-([`useLogScale`](/docs/config/linearhicdisplay/#slot-uselogscale)) and
-percentile clipping
-([`useColorPercentile`](/docs/config/linearhicdisplay/#slot-usecolorpercentile))
-are slots too, as are the overlay's legend
-([`showLegend`](/docs/config/linearhicdisplay/#slot-showlegend)) and binsize
-dropdown
-([`showResolutionControls`](/docs/config/linearhicdisplay/#slot-showresolutioncontrols)).
+The display's slots for the coloring and its controls:
+
+- [`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) — `juicebox`,
+  `fall`, or `viridis`
+- [`useLogScale`](/docs/config/linearhicdisplay/#slot-uselogscale) — log scaling
+- [`useColorPercentile`](/docs/config/linearhicdisplay/#slot-usecolorpercentile)
+  — percentile clipping
+- [`showLegend`](/docs/config/linearhicdisplay/#slot-showlegend) — the overlay's
+  legend
+- [`showResolutionControls`](/docs/config/linearhicdisplay/#slot-showresolutioncontrols)
+  — the binsize dropdown
+
 See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for the
 full list, and
 [adjusting the color scale](/docs/user_guides/hic_track#adjusting-the-color-scale)
@@ -54,9 +57,8 @@ config naming a scheme the file lacks falls back rather than erroring — see
 [normalization](/docs/user_guides/hic_track#normalization).
 
 [`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) is a
-signed offset from the zoom-derived binsize rather than an absolute binsize, so
-the choice stays meaningful as the view zooms: negative is finer, positive
-coarser.
+signed offset from the zoom-derived binsize, so the choice stays meaningful as
+the view zooms: negative is finer, positive coarser.
 
 ```json addtrack
 {
@@ -164,15 +166,14 @@ hundred kilobytes here:
 ```
 
 [`columnNames`](/docs/config/bedadapter/#slot-columnnames) is doing two jobs
-here, and without it this file is misread twice over. It has twelve columns
-whose last three are not BED12's block fields, so left to the positional BED
-layout the cluster count is taken for a `blockCount` and every feature grows a
-row of nonexistent subfeatures. And naming column nine `itemRgb` is what makes
-the classes paint their own colors: the file's own header spells it `itemRGB`,
-which is not the name JBrowse looks for, and the header would not be consulted
-anyway because a second comment line follows the column line — the parser takes
-the last header line as the definition, and that one has no tab-separated
-fields. Neither failure raises an error.
+here. The file has twelve columns whose last three are not BED12's block fields,
+so under the positional BED layout the cluster count is taken for a `blockCount`
+and every feature grows a row of nonexistent subfeatures. Naming column nine
+`itemRgb` is what makes the classes paint their own colors: the file's own
+header spells it `itemRGB`, which is not the name JBrowse looks for, and the
+header would not be consulted anyway because a second comment line follows the
+column line — the parser takes the last header line as the definition, and that
+one has no tab-separated fields. Neither failure raises an error.
 
 ## See also
 

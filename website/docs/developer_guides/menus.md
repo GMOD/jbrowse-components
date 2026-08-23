@@ -14,16 +14,15 @@ carry the same `MenuItem[]`.
 
 ## Adding a top-level menu
 
-JBrowse Web, Desktop and React App define `File`, `Add` and `Tools`. `Help` is
-not a fourth default — the `menus` plugin creates it with `appendToMenu`, which
-adds the menu when it is absent. The embeddable single-view components have no
-menu bar at all, so guard with `isAbstractMenuManager`.
+JBrowse Web, Desktop and React App define `File`, `Add` and `Tools`. The `menus`
+plugin adds `Help` with `appendToMenu`, which creates the menu when it is
+absent. The embeddable single-view components have no menu bar at all, so guard
+with `isAbstractMenuManager`.
 
 <Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
 
-Contribute from `configure`, not `install`: the spreadsheet-view plugin
-registers its view type in `install` and offers the way to open one in
-`configure`.
+Contribute from `configure`: the spreadsheet-view plugin registers its view type
+in `install` and offers the way to open one in `configure`.
 
 <!-- include: plugins/spreadsheet-view/src/index.ts#plugin -->
 
@@ -61,7 +60,7 @@ capture the super version first — the same
 [super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
 as any extended MST view. This is the shape for a display's **own** menu, built
 where the display is defined; to add to one belonging to another plugin, use
-`addDisplayMenuItems` below rather than writing this out.
+`addDisplayMenuItems` below.
 
 <!-- include: plugins/maf/src/LinearMafDisplay/stateModel.ts#superMethod -->
 
@@ -87,10 +86,14 @@ whether the click hit a feature and by which one.
 <Figure src="/img/linear_align_ctx_menu.png" caption="A screenshot of a context menu available on a linear genome view track. Here, we see the context menu of a feature right-clicked on a LinearAlignmentsDisplay."/>
 
 To add items to a menu on a display you do not own, use `addDisplayMenuItems`
-(`addViewMenuItems` for a view). It resolves the type by name, appends what your
-callback returns to what is already there, and — with `group` — collects several
-plugins' entries into one submenu instead of a top-level row each. Return
-`undefined` to add nothing, which is how an item scoped to some state opts out:
+(`addViewMenuItems` for a view):
+
+- **Resolves the display type by name**, and appends what your callback returns
+  to what is already there.
+- **`group`** collects several plugins' entries into one submenu. Without it,
+  each contribution becomes its own top-level row.
+- **`undefined`** from the callback adds nothing, which is how an item scoped to
+  some state opts out.
 
 <!-- include: plugins/dotplot-view/src/DotplotReadVsRef/index.ts#contextMenu -->
 
@@ -171,14 +174,13 @@ Every variant except `divider` and `subHeader` also takes these:
 
 Clicking a row dismisses the menu unless it is a `checkbox` or `radio`, which
 are settings and stay open. `staysOpenOnClick` is that rule, exported so a test
-asserts the behavior rather than re-deriving it from the flag.
+can assert the behavior.
 
 ## Builders
 
-Build rows with these rather than writing the objects out. Import them from
-`@jbrowse/core/ui/menuItems`, a React-free entry, so a state model or plugin
-`menuItems` module does not pull the Material UI barrel into every host that
-installs the plugin.
+Build rows with these. Import them from `@jbrowse/core/ui/menuItems`, a
+React-free entry, so a state model or plugin `menuItems` module does not pull
+the Material UI barrel into every host that installs the plugin.
 
 <!-- MENU_ITEM_BUILDERS START -->
 
@@ -206,9 +208,9 @@ short.
 ## Root model menu API
 
 Called from `configure()`, guarded by `isAbstractMenuManager`. A contribution is
-recorded rather than applied, and merged in each time the menu opens, so none of
-these return anything and one that throws costs your item rather than the app. A
-negative `position` counts from the end.
+recorded and merged in each time the menu opens, so none of these return
+anything and one that throws costs your item rather than the app. A negative
+`position` counts from the end.
 
 <!-- MENU_ACTIONS START -->
 

@@ -14,12 +14,13 @@ off-diagonal blocks.
 **Add → Dotplot view** opens the import form. It is the same one the linear
 synteny view uses, so see
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
-for its Quick start / Manual modes and the file types it accepts. The only
-dotplot-specific thing to know is that both axes come from the chosen track's
-`assemblyNames` - the
-[query](/docs/user_guides/linear_synteny_view#query-target-and-cigar)
-horizontally and the target vertically - and that **Swap** transposes the plot
-rather than reordering panels.
+for its Quick start / Manual modes and the file types it accepts. Two things are
+dotplot-specific:
+
+- Both axes come from the chosen track's `assemblyNames`: the
+  [query](/docs/user_guides/linear_synteny_view#query-target-and-cigar)
+  horizontally and the target vertically.
+- **Swap** transposes the plot.
 
 <Figure caption="Launching a dotplot view from the Add menu (top), then the import form's Manual mode, where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 
@@ -35,12 +36,11 @@ below uses the second:
   instead. Each option carries a description of what it colors. With more than
   one alignment file plotted together, **Distinct color per track** gives each
   its own color, and **Customize per track** below it overrides the mode or pins
-  the color for one track at a time. A plot whose blocks are all a single pixel
-  wide reads no better in color than in black, so reach for **Min length**
-  first.
+  the color for one track at a time. On a plot whose blocks are all a single
+  pixel wide, reach for **Min length** first.
 - **Min length**, in the settings menu, drops alignments shorter than the slider
   value. Divergent genomes align in many short fragments, and hiding them is
-  usually what makes the syntenic blocks visible at all.
+  usually what makes the syntenic blocks visible.
 
 The settings menu, the sliders button in the header, holds the rest of what the
 plot looks like: **Opacity** and **Line width** for how each alignment draws,
@@ -53,8 +53,7 @@ says **none at this zoom** while it stays ticked.
 <Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
 
 When a plot still reads as specks after Min length, the pair is too divergent
-for a whole-genome view to say anything; the next move is a smaller window
-rather than another setting.
+for a whole-genome view to say anything; the next move is a smaller window.
 
 ## A genome against itself
 
@@ -70,11 +69,10 @@ Both structures are described in the T2T-CHM13 Y chromosome paper
 ([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)), which
 is where the coordinates the boxes use come from.
 
-The plot says where the palindromes are and not what one is. Zooming it to the
-boxed 4.8 Mb separates the family into four crossings, and for what one of them
-is the same track opens in a
-[linear synteny view](/docs/user_guides/linear_synteny_view) instead, both
-panels framing one palindrome and colored by strand: the arms draw as a single
+The plot says where the palindromes are. Zooming it to the boxed 4.8 Mb
+separates the family into four crossings, and the same track opens one of them
+in a [linear synteny view](/docs/user_guides/linear_synteny_view), both panels
+framing one palindrome and colored by strand: the arms draw as a single
 minus-strand ribbon over the plus-strand match of the sequence to itself.
 
 The gene lanes say the same thing from the annotation. Each arm carries its own
@@ -97,11 +95,10 @@ minimap2 -x asm20 -P chrY.fa chrY.fa > chrY_self.paf
 jbrowse make-pif chrY_self.paf --csi
 ```
 
-`-P` is not optional here. Without it minimap2 keeps one primary chain per query
-and marks the rest secondary, so a sequence aligned to itself returns its own
-diagonal and almost nothing else, which reads as the repeats not being there.
-With `-P` every dispersed repeat is kept too, so set **Min length** afterwards
-or the plot fills in solid at whole-chromosome zoom.
+`-P` is required here: without it minimap2 keeps one primary chain per query and
+marks the rest secondary, so a sequence aligned to itself returns its own
+diagonal and little else. With `-P` every dispersed repeat is kept too, so set
+**Min length** afterwards or the plot fills in solid at whole-chromosome zoom.
 
 The two axes come from a synteny track's two `assemblyNames`, so a self
 comparison needs two assembly entries pointing at the same sequence under

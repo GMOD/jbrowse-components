@@ -27,7 +27,7 @@ remotes::install_github("GMOD/JBrowseR")
 ## A declarative API
 
 You describe the browser with plain values; helper constructors build the
-config. There are no JSON strings to assemble and nothing imperative to wire up.
+config.
 
 Name a hosted genome and the assembly, reference-name aliases, cytobands, and
 gene-name search all come preconfigured, and `location` can be a gene symbol:
@@ -61,11 +61,11 @@ JBrowse `config.json` to `JBrowseR(config = ...)`.
 
 ## Comparing genomes
 
-Where `JBrowseR()` shows a single linear genome view, `JBrowseRApp()` drives the
-full app from a declarative `views` list, where each entry can be a
-`linear_view()`, a `synteny_view()`, or a `dotplot_view()`. So a comparative
-figure (several genomes stacked with the blocks each pair shares drawn between
-the rows, or a whole-genome dotplot) is one call:
+`JBrowseR()` shows a single linear genome view. `JBrowseRApp()` drives the full
+app from a declarative `views` list, where each entry can be a `linear_view()`,
+a `synteny_view()`, or a `dotplot_view()`, so a comparative figure (several
+genomes stacked with the blocks each pair shares drawn between the rows, or a
+whole-genome dotplot) is one call:
 
 ```r
 JBrowseRApp(
@@ -87,7 +87,7 @@ Rendered inside Shiny, clicking a feature sets `input$selectedFeature` to the
 feature's data, so tables, plots, and links can follow the current selection.
 Use `JBrowseROutput()` in the UI and `renderJBrowseR()` on the server.
 
-## Run it in Colab
+## Run in Colab
 
 A runnable
 [R-runtime Colab notebook](https://colab.research.google.com/github/GMOD/JBrowseR/blob/main/examples/JBrowseR_colab.ipynb)

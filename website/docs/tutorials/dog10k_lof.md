@@ -86,7 +86,7 @@ That is 490 SNVs across the gene for the chosen samples, in a few seconds.
 `cyp.samples` holds breeds that carry the allele, two that do not, and four
 Greek gray wolves.
 
-## Loading it with breed labels
+## Loading the slice with breed labels
 
 An SNV VCF goes in as an ordinary `VariantTrack`, and the work is in what gets
 attached to the rows afterwards:
@@ -114,7 +114,7 @@ A SNV is one base wide however far you zoom out, so a whole-gene view of 490 of
 them is a field of ticks. Zoom to the codon: at base level each sample's call is
 a block, and the gene track still shows which exon it sits in.
 
-## Reading it
+## Reading the CYP1A2 genotypes
 
 <Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site as an ordinary variant lane, then one row per dog. Five breeds carry it; the Labrador Retrievers, Boxers and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
@@ -149,7 +149,7 @@ Drop the filter to see them. Two are reference in every animal of this panel,
 including the one at the same codon's second base, so each draws an empty
 column. The third sits 15 bp along, and every wolf here carries it.
 
-## The gene is also copy-number variable
+## Copy number at CYP1A2
 
 The paper reports half the collection at three or more copies of _CYP1A2_, which
 is the other half of its figure. Those copy-number estimates were never

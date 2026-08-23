@@ -17,17 +17,14 @@ A display that implements no `renderSvg` is dropped from the export the same way
 a minimized track is, and dropped at the same point — before the legend is
 measured and before the height is reserved, so it leaves no labelled gap where
 the track would have been. The export notifies the session once, naming the
-tracks it left out and why.
-
-So a display type that never implements one costs itself a place in people's
-figures, and costs the rest of the session nothing. Write one if you want your
-display in the picture.
+tracks it left out and why. The rest of the export proceeds normally, so a
+display type that never implements one is absent from the figure.
 
 ## PaintLayer
 
 `PaintLayer` from `@jbrowse/core/util/paintLayer` drives both on-screen and
-export drawing from one callback. It is a **component**, not a function — it
-renders either an `<image>` or a `<g>`, and callers don't branch on which:
+export drawing from one callback. It is a **component** rendering either an
+`<image>` or a `<g>`, and callers don't branch on which:
 
 <!-- include: packages/core/src/util/paintLayer.tsx -->
 
@@ -98,10 +95,13 @@ export function PaintLayer({
 }
 ```
 
-With `opts.rasterizeLayers` set it draws to an offscreen 2x canvas and embeds a
-PNG; otherwise it draws to `SvgCanvas`, a `CanvasRenderingContext2D` duck-type
-emitting `<rect>`, `<text>`, `<path>`. Pass `undefined` for `opts` to force
-vector output; do that for text and labels so they stay crisp.
+The surface comes from `opts`:
+
+- With `opts.rasterizeLayers` set it draws to an offscreen 2x canvas and embeds
+  a PNG.
+- Otherwise it draws to `SvgCanvas`, a `CanvasRenderingContext2D` duck-type
+  emitting `<rect>`, `<text>`, `<path>`. Pass `undefined` for `opts` to force
+  this vector output; do that for text and labels so they stay crisp.
 
 Anything draw-shaped should go through it. Hand-rolled
 `<rect>`/`<path>`/`<line>` is a red flag, the exceptions being trivial chrome
@@ -115,13 +115,12 @@ Every LGV `renderSvg` is the same shape, and the shape is a function call:
 `renderDisplaySvg(model, opts, YourSvgBody)`. The shell awaits readiness,
 resolves the view geometry once, and mounts the terminal-state gate around your
 body — so **do not** write `when(() => ...)`, an `if (model.error) return`, or
-an `SvgChrome` of your own. `Body` is a component rather than a callback
-precisely so it never runs in a terminal state.
+an `SvgChrome` of your own. `Body` is a component so that it never runs in a
+terminal state.
 
 A display whose data failed to load fails the whole export: the export dialog
-shows the error and saves nothing, rather than writing a figure with the error
-drawn into it. The one terminal an export does draw is "region too large", which
-is a state the user navigated to on purpose.
+shows the error and saves nothing. The one terminal an export does draw is
+"region too large", which is a state the user navigated to on purpose.
 
 `LinearReferenceSequenceDisplay` is the whole pattern in one file:
 
@@ -244,20 +243,19 @@ body above does.
 
 The Y axis runs 0 (top) to `model.height` (bottom), same as on-screen.
 Horizontal placement comes from `renderBlocks`, which gives `{ startPx, endPx }`
-per region: take it off the body's props — `renderDisplaySvg` resolves
+per region: take it off the body's props, where `renderDisplaySvg` has resolved
 `buildRenderBlocks(view.visibleRegions)` once, for the same reason it resolves
-`canvasWidth` — rather than calling `buildRenderBlocks` again yourself.
-(`MultiRegionDisplayMixin` exposes a `renderBlocks` getter of the same
-expression, for the on-screen path.)
+`canvasWidth`. (`MultiRegionDisplayMixin` exposes a `renderBlocks` getter of the
+same expression, for the on-screen path.)
 
 Clip-path ids must be scoped by the owning model's `.id` — SVG ids are
 document-global, and a duplicate renders the second group unclipped.
 
 ## Reusing on-screen drawing code
 
-This is the rule the whole pipeline rests on: **the GPU shader path is an
-accelerator, the Canvas2D draw function is the source of truth, and SVG export
-runs it.** A shader-only tweak therefore cannot silently diverge the export.
+**The GPU shader path is an accelerator, the Canvas2D draw function is the
+source of truth, and SVG export runs it.** A shader-only tweak therefore leaves
+the export unchanged.
 
 Write drawing functions against `Ctx2D` and call them from both the on-screen
 renderer and `renderSvg` — the sequence body above calls the same

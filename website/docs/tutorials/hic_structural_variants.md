@@ -200,7 +200,7 @@ The
 covers both, along with why the subcompartment class numbers cannot be compared
 between files on their own.
 
-## Configure it yourself
+## Configuring the Hi-C tracks
 
 The `.hic` files are 20 GB and 55 GB, and only the bins on screen are requested.
 

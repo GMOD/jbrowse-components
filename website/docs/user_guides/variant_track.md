@@ -13,10 +13,9 @@ expression (e.g. minor allele frequency).
 
 <Figure caption="Variant track indicating an SNV alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
-## Pick the right display
+## Display types
 
-One VCF, several ways to draw it. In a linear genome view, switch between them
-from the track menu's **Display types**:
+In a linear genome view, the track menu's **Display types** switches between:
 
 - **Variant display**, the default, and what the rest of this page covers.
 - **Multi-sample variant display (regular)** draws one row per sample at each
@@ -34,9 +33,6 @@ from the track menu's **Display types**:
 Adding the same track to a [circular view](/docs/user_guides/circular_view)
 instead gives a chord display, which draws long-range breakends as chords across
 the ring.
-
-If your VCF has many samples, go straight to the multi-sample displays. If it
-has one, the coloring below is where the leverage is.
 
 ## Variant widget
 
@@ -57,23 +53,22 @@ call is inherited.
 ## Coloring variants
 
 **Color by...** in the track menu has two one-click presets that read the VCF's
-own annotations, plus two escape hatches.
+own annotations, plus two escape hatches:
 
-**Consequence impact** buckets each variant by the severity of its most severe
-predicted consequence, read from SnpEff `ANN` or VEP `CSQ` in the INFO field:
-HIGH red, MODERATE orange, LOW yellow, MODIFIER grey. **SV type** colors by
-structural-variant class instead, with fixed colors per class and an ascending
-rainbow for copy-number alleles (`<CN0>`, `<CN1>`, ...). Both draw a floating
-color key naming only the classes present, which you can dismiss. The same two
-presets work on the multi-sample displays, where
+- **Consequence impact** buckets each variant by the severity of its most severe
+  predicted consequence, read from SnpEff `ANN` or VEP `CSQ` in the INFO field:
+  HIGH red, MODERATE orange, LOW yellow, MODIFIER grey
+- **SV type** colors by structural-variant class, with fixed colors per class
+  and an ascending rainbow for copy-number alleles (`<CN0>`, `<CN1>`, ...)
+- **Attribute...** takes any attribute name and colors by its value, generating
+  a `jexl:randomColor(get(feature,'<attr>'))` expression. Distinct values get
+  distinct, stable colors, so it works on any categorical INFO field
+
+Both presets draw a floating color key naming only the classes present, which
+you can dismiss, and both work on the multi-sample displays, where
 [consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations)
 and [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type) are
 covered in full, with the terms in each tier and the color per SV class.
-
-**Attribute...** takes any attribute name and colors by its value, generating a
-`jexl:randomColor(get(feature,'<attr>'))` expression for you. Distinct values
-get distinct, stable colors, so it works on any categorical INFO field without
-you picking a palette.
 
 For anything else, set the display's `color` slot to a
 [jexl](/docs/config_guides/jexl) expression. The variants plugin registers

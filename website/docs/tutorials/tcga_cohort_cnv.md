@@ -51,7 +51,7 @@ of samples.
 
 <Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
 
-## Load it into JBrowse
+## Load the segments into JBrowse
 
 Two commands set the whole thing up, an assembly and a track. Start with hg38,
 where the one thing to watch is naming: the hosted FASTA calls its contigs bare

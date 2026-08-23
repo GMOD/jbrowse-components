@@ -7,10 +7,9 @@ description:
 
 A JBrowse session is a JSON document: the genomes loaded, the tracks and where
 their data lives, and the views that are open, at what locus, with which
-settings. You write or generate it and open it. There is no setup API to call.
+settings. You write or generate it and open it.
 
-The same document is what every surface takes, so a config written for one of
-them is not rewritten for the next:
+The same document is what every surface takes:
 
 | Surface                                            | How it takes the document                                       |
 | -------------------------------------------------- | --------------------------------------------------------------- |
@@ -21,7 +20,7 @@ them is not rewritten for the next:
 | [](/docs/jbrowser) and [](/docs/jbrowse_anywidget) | what the helper functions assemble for you                      |
 | [@jbrowse/img](/docs/jbrowse-img)                  | `--config`, and `--spec` for a whole session                    |
 
-## What is in it
+## What a session document contains
 
 The genome, a track, and the view to open on:
 
@@ -71,24 +70,22 @@ fields beside them — `plugins`, `connections`, `internetAccounts`,
 
 ## How the config and the session fit together
 
-They are two halves of one document, and most of what is confusing about JBrowse
-configuration is really about which half a thing belongs in.
+They are two halves of one document, and each thing belongs in one half or the
+other.
 
-**The config is the catalog. The session says what is open.** A session does not
-repeat a track definition — it names one, by the `trackId` the config gave it.
-In the example above the whole join is one string: the `"ncbi_genes"` in the
-view's `init.tracks` is the `trackId` of the track defined above it. Delete that
-track from `tracks` and the session is left naming something that does not
-exist, which is one of the things [`jbrowse validate`](#checking-a-document)
-reports.
+**The config is the catalog. The session says what is open.** A session names a
+track by the `trackId` the config gave it. In the example above the whole join
+is one string: the `"ncbi_genes"` in the view's `init.tracks` is the `trackId`
+of the track defined above it. Delete that track from `tracks` and the session
+is left naming something that does not exist, which is one of the things
+[`jbrowse validate`](#checking-a-document) reports.
 
 **Write the `init` form.** The app's export-session option writes the other one:
 a raw state snapshot with every view, track and display spelled out, the same
-track named as `"configuration": "ncbi_genes"` and an `id` on everything. It
-pastes in and works, which is why it is easy to end up with, but it is dozens of
-lines for what `init` says in four, and it is far harder to edit afterwards.
+track named as `"configuration": "ncbi_genes"` and an `id` on everything —
+dozens of lines for what `init` says in four, and harder to edit afterwards.
 Prefer `init` for anything you write or generate yourself, and reach for the
-exported snapshot only to recover a view you built by clicking.
+exported snapshot to recover a view you built by clicking.
 
 **The config holds the settings; the session holds the state.** Color, height,
 display mode, color-by and filters are
@@ -107,8 +104,7 @@ A snapshot node is instantiated by the display's **state model**, so it takes
 that model's properties — `id`, `type`, `configuration` — and drops everything
 else, and `height` is a config slot rather than a property. Nothing warns you;
 the track just opens at its default height. `jbrowse validate` reports the key
-by name and says which of the two places it belonged in. It is the sharpest
-reason to prefer `init`: the strict form is the one that fails silently.
+by name and says which of the two places it belonged in.
 
 **A session can carry tracks of its own.** `sessionTracks` takes the same track
 configs the top-level `tracks` array takes, but they belong to that session:
@@ -124,7 +120,7 @@ tracks and the view together.
 track menu writes, so a setting you find by clicking around has a name you can
 write into the config — see [](/docs/config_guides/default_session).
 
-## Where one comes from
+## Where the document comes from
 
 It is a small enough format to write, and to generate — a track is five keys, a
 view is an `init` block. Several things will also write parts of it for you:
@@ -137,21 +133,22 @@ view is an `init` block. Several things will also write parts of it for you:
   block needs, and the URL bar is already showing them.
   `jbrowse set-default-session` installs a session file into a config. See
   [](/docs/config_guides/default_session).
-- **A track hub needs no config at all.** `&hubURL=` loads a
-  [UCSC track hub](/docs/user_guides/hub_url) straight from a link, and
-  [](/docs/config_guides/connections) makes that permanent in a file.
+- **A track hub needs no config file at all.** `&hubURL=` loads a
+  [UCSC track hub](/docs/user_guides/hub_url) straight from a link, supplying
+  its own assemblies and tracks, and [](/docs/config_guides/connections) makes
+  that permanent in a file.
 - **For a lot of tracks, generate it.** [](/docs/config_guides/deploying) covers
   building `config.json` from a script.
 
-## Opening it, from a file or a link
+## Opening the document, from a file or a link
 
 Save that as `hg38.json` next to jbrowse-web and it opens on it: the
 `defaultSession` is the view you land on.
 
-That fixes the view in the file. To send someone a different gene, or a
-different set of tracks, without editing the file, the same fields go on the URL
-instead — `init` names an assembly, a location and a list of tracks, and
-jbrowse-web reads all three as query parameters.
+That fixes the view in the file. The same fields also go on the URL, to send
+someone a different gene or a different set of tracks — `init` names an
+assembly, a location and a list of tracks, and jbrowse-web reads all three as
+query parameters.
 
 ```
 ?config=hg38.json&assembly=hg38&loc=chr17:43,044,295-43,170,245&tracks=ncbi_genes
@@ -163,19 +160,18 @@ which of them to open, and where. [](/docs/urlparams) lists every parameter and
 
 For a view those parameters cannot describe — several views at once, a dotplot,
 tracks that exist only in that link — the URL carries a whole session as JSON, a
-[session spec](/docs/urlparams#session-spec). A spec is not the `defaultSession`
-shape: it lists a view's launch keys flat, because there they are arguments to
-the view's launcher, whereas a `defaultSession` view is a saved state snapshot
-and those keys sit under `init`. Moving a view between the two means reshaping
-it.
+[session spec](/docs/urlparams#session-spec). A spec lists a view's launch keys
+flat, because there they are arguments to the view's launcher; a
+`defaultSession` view is a saved state snapshot and those keys sit under `init`.
+Moving a view between the two means reshaping it.
 
-## The reference is generated from the source
+## The generated slot and model reference
 
 Every configuration type — each adapter, track, display, connection, and
 internet account — has a page under [](/docs/config) listing its slots, their
 types and their defaults, and every state model has one under [](/docs/models).
 Both are generated from the definitions in the source on every build, so they
-describe the release you are running rather than the release someone documented.
+describe the release you are running.
 
 Two pages sit between those and a file you are writing:
 
@@ -213,11 +209,11 @@ Nearly every figure on this site is rendered from one of these documents, which
 is why most carry an "Open this view in JBrowse" link: the image and the live
 session come from the same spec.
 
-## Drawing one as a static image
+## Drawing the document as a static image
 
 The same document renders headlessly. `jb2export`, the command installed by
 [@jbrowse/img](/docs/jbrowse-img), takes the same config and the same assembly,
-location and tracks, and writes SVG, PNG or PDF with no browser in the loop:
+location and tracks, and writes SVG, PNG or PDF:
 
 ```bash
 jb2export --config hg38.json --assembly hg38 \

@@ -13,8 +13,8 @@ default to those.
 
 This is the in-app counterpart to the `displayDefaults` an administrator can
 bake into `config.json` (see
-[display settings](/docs/tutorials/display_settings)). Anyone can set these,
-nothing has to be reconfigured, and they last beyond the current session.
+[display settings](/docs/tutorials/display_settings)). Anyone can set these, and
+they last beyond the current session.
 
 ## Setting a default
 

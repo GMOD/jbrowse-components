@@ -104,7 +104,7 @@ genome view.
 
 <Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq and ClinVar beside the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from across both genome tracks." src="/img/protein/connected.png" />
 
-### Other views from the same dialog
+### Other views the Launch menu builds
 
 The arrow beside **Launch** lists everything the dialog can build.
 
@@ -183,7 +183,7 @@ sequences. For a protein NCBI has no calls for, **File → Annotations → Open
 InterProScan results...** reads them from a file and **File → Annotations →
 Query InterProScan...** computes them.
 
-### Checking it against the raw alignment
+### Checking the overlay against the residues
 
 A whole-protein view cannot tell "no domain annotated" from "no sequence", so
 read the residues. The zoom the view opened at is already the right one: scroll

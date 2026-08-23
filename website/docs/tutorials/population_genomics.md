@@ -167,7 +167,7 @@ variant-sites-only callset of inbred lines lifts the whole baseline, since
 filtering takes the rare alleles D is most sensitive to and vcftools counts two
 chromosomes where a line contributes one.
 
-## Loading it in JBrowse
+## Loading the scans in JBrowse
 
 You need a dm6 assembly loaded, ideally with a FlyBase or RefSeq gene track so
 gene-name search works. See

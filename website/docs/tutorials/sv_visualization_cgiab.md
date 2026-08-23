@@ -651,7 +651,7 @@ walkthroughs visit, so the reads reach one of `cluster_3`'s junctions where the
 assembly contig carries both. Rebuilding from the full BAM with
 [the build script](#reproduce-it-end-to-end) lifts that limit.
 
-### Which of these calls are drivers
+### Which calls are drivers
 
 Most somatic calls in a tumor genome are passengers: real events, carried along
 by the cell lineage, with no role in the cancer. A handful are drivers. In
@@ -894,11 +894,13 @@ and JBrowse renders those with no extra files: open the tumor reads and set
 conversion to CRAM above, so the reads loaded for the SV walkthroughs already
 carry them.
 
-Two modes sit under that item. **One color per modification type** marks the
-cytosines the basecaller called modified and leaves the rest blank, so an
-unmethylated stretch and a stretch with no CpGs in it look alike. **One color
-per type, plus low-probability & unmodified in blue** paints every CpG in
-context, which is what the figure below is set to.
+Two modes sit under that item:
+
+- **One color per modification type** marks the cytosines the basecaller called
+  modified and leaves the rest blank, so an unmethylated stretch and a stretch
+  with no CpGs in it look alike.
+- **One color per type, plus low-probability & unmodified in blue** paints every
+  CpG in context, which is what the figure below is set to.
 
 <Figure caption="Tumor PacBio HiFi reads at the CDKN2B-AS1 end of the CDKN2A locus, over the NCBI RefSeq gene lane, colored by base modification with unmodified cytosines filled in. Neighboring CpG-dense blocks come out in opposite states, one of them at the CDKN2B-AS1 transcription start." src="/img/sv_cgiab/methylation_cdkn2b.png" />
 

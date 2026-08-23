@@ -76,17 +76,19 @@ find the one you are looking at, and the caller's own ID last so you can go back
 to the VCF row it came from. A file with no ID column falls back to
 `junction_<n>`.
 
-`--flank` is the setting that decides the picture. A caller's breakend is one
-base, and a panel drawn on one base is zoomed past anything readable, so the
-flank is what frames it. `--dryRun` prints the file and loci of every row and
-renders nothing, and `--limit 20` renders the first few, so you can check the
-framing before committing to the whole callset.
+`--flank` is the setting that decides the picture: a caller's breakend is one
+base, so the flank is what frames the panel. `--dryRun` prints the file and loci
+of every row and renders nothing, and `--limit 20` renders the first few, so you
+can check the framing before committing to the whole callset.
 
-Two flags for a long run. `--resume` skips a row whose image is already in
-`--outDir`, so an interrupted callset continues from where it stopped.
-`--manifest` writes `manifest.tsv` beside the images: one row per junction with
-its file, both loci, its name, and whether it rendered. The status column is
-where the failed rows stay readable after the run's output has scrolled past.
+Two flags for a long run:
+
+- `--resume` skips a row whose image is already in `--outDir`, so an interrupted
+  callset continues from where it stopped.
+- `--manifest` writes `manifest.tsv` beside the images: one row per junction
+  with its file, both loci, its name, and whether it rendered. The status column
+  is where the failed rows stay readable after the run's output has scrolled
+  past.
 
 `--passOnly` drops the records the caller has already filtered out. `--limit`
 takes the first N in _file_ order, so on an unfiltered callset the two go
@@ -143,13 +145,12 @@ What each picture says:
   connectors are drawn from what the aligner said, so a read mismapped into a
   repeat contributes a confident-looking curve
 
-## Opening one in the browser
+## Opening a call in the browser
 
-Triage ends where the browser starts. Take the coordinates from an image's
-filename, open the [SV inspector](/docs/user_guides/sv_inspector_view) on the
-same VCF, and click through to the breakpoint split view for the interactive
-version of the picture you just looked at, with the gene track and the read
-details attached.
+Take the coordinates from an image's filename, open the
+[SV inspector](/docs/user_guides/sv_inspector_view) on the same VCF, and click
+through to the breakpoint split view for the interactive version of the picture
+you just looked at, with the gene track and the read details attached.
 
 For a junction that turns out to be one hop of something larger, the alignments
 track menu's **Reconstruct derivative allele...** groups the reads in view by

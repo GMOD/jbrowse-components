@@ -6,12 +6,12 @@ description:
 guide_category: Advanced topics
 ---
 
-**TL;DR:** Every ceiling on what JBrowse retains is scoped to a JS context, not
-to a file, because a per-file ceiling multiplies by the open track count and
-bounds nothing. Those ceilings bound retained bytes; a tab's peak is made of
-things they do not reach.
+**TL;DR:** Every ceiling on what JBrowse retains is scoped to a JS context,
+since a per-file ceiling multiplies by the open track count and bounds nothing.
+Those ceilings bound retained bytes; a tab's peak is made of things they do not
+reach.
 
-[](/docs/developer_guides/optimizations) is where a track's _time_ goes. This
+[](/docs/developer_guides/optimizations) is where a track's _time_ goes; this
 page is what stays resident afterwards.
 
 ## What retains
@@ -26,7 +26,7 @@ page is what stays resident afterwards.
 
 The two named budgets live in `packages/core/src/util/cacheBudgets.ts`.
 
-## A per-file ceiling is not a bound
+## Cache budget scope
 
 `@gmod/bam`, `@gmod/tabix` and `@gmod/cram` each take a per-file budget, and
 `dataAdapterCache` holds one adapter per open track, so those ceilings multiply
@@ -43,12 +43,11 @@ windows, every cache still well under its own 1 GB ceiling throughout:
 
 <!-- END GENERATED MEASUREMENT cache-budget-retention-climb -->
 
-The idle timeouts cannot cover this: they reclaim what has gone quiet, and
-nothing is quiet while the reader browses. So both budgets are **one
-`SharedBudget` per JS context** — one per RPC worker plus one on the main
-thread.
+The idle timeouts reclaim what has gone quiet, and nothing is quiet while the
+reader browses. So both budgets are **one `SharedBudget` per JS context** — one
+per RPC worker plus one on the main thread.
 
-### Dividing by the track count is worse than doing nothing
+### Splitting a budget by track count
 
 Same three tracks, browsing then panning back, counting refills on the revisit:
 
@@ -68,8 +67,8 @@ all: the divisor makes each share too small to hold one working set. A shared
 budget yields only what is globally least-recently-used, so idle tracks hand
 their space to the one being panned.
 
-Two budgets rather than one, because `SharedBudget.total` sums over its members
-and cram weighs decoded records where bam and tabix weigh bytes.
+Two budgets, because `SharedBudget.total` sums over its members and cram weighs
+decoded records where bam and tabix weigh bytes.
 
 ## What no budget bounds
 
@@ -83,7 +82,7 @@ and cram weighs decoded records where bam and tabix weigh bytes.
 Across six tracks, bounding retention moved held bytes 31% and RSS 12%. Bound
 total memory somewhere that can see the whole process.
 
-## GPU memory is guarded per object, not per session
+## GPU memory guards {#gpu-memory-is-guarded-per-object-not-per-session}
 
 Nothing sums uploaded bytes across displays, so OOM there is reportable rather
 than preventable; both backends route through `OomReporter` to a
@@ -91,7 +90,7 @@ zoom-in-or-reduce-height message. WebGPU refuses past the adapter's own
 `maxBufferSize`, WebGL2 past a fixed 256 MiB, so a region can banner on WebGL2
 while rendering on WebGPU.
 
-The largest allocation is not the data: `WebGPUHal` holds one 4x MSAA color
+The largest allocation is the render target: `WebGPUHal` holds one 4x MSAA color
 attachment per display, sized from canvas area, so an empty tall track costs
 what a full one does — 79.2 MiB for one, counted nowhere. How many GPU displays
 a page can open at all is a separate ceiling,

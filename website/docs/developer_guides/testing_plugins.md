@@ -244,12 +244,14 @@ test('single grid renders for bookmarks/highlights, two for both', () => {
 })
 ```
 
-Wrap in a `ThemeProvider` as that does — JBrowse components read the theme, and
-MUI's default is not the one the app runs.
+Wrap in a `ThemeProvider` built by `createJBrowseTheme` as that does: JBrowse
+components read the JBrowse theme, not MUI's default.
 
-Two jsdom gotchas: `Blob` has no `text()` method (use `FileReader.readAsText`),
-and virtualized trees/grids need a mocked measured height to render any rows
-(mock `useMeasure` to return a large height).
+Two jsdom gotchas:
+
+- `Blob` has no `text()` method — use `FileReader.readAsText`.
+- Virtualized trees/grids need a mocked measured height to render any rows —
+  mock `useMeasure` to return a large height.
 
 ## Browser (end-to-end) tests
 
@@ -260,8 +262,7 @@ assert on a fixed timeout; wait on a signal:
 - `data-testid="loading-overlay"` count reaching `0` means all tracks in a view
   finished loading.
 - The `data-display-drawn` attribute (e.g. on `synteny_canvas`) gates on a
-  display's `settled` getter (drawn and not refetching), not a bare "drawn"
-  flag.
+  display's `settled` getter: drawn and not refetching.
 
 Run with `pnpm test:browser` (builds `@jbrowse/web` first) or
 `pnpm test:browser:update` to refresh snapshots. See

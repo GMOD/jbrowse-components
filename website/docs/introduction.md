@@ -20,7 +20,7 @@ See the [visualization gallery](/gallery/), or hosted genomes at
 - [JBrowse desktop](/docs/quickstart_desktop)
 - [](/docs/embedded_components)
 
-## Use it
+## Use JBrowse
 
 - [](/docs/user_guide)
 - [Tutorials](/docs/tutorials)
@@ -44,7 +44,7 @@ See the [visualization gallery](/gallery/), or hosted genomes at
 - [](/docs/jbrowse_anywidget)
 - [@jbrowse/img](/docs/jbrowse-img)
 
-## Extend it
+## Extend JBrowse
 
 - [](/docs/developer_guide)
 - [](/docs/developer_guides/simple_plugin/)

@@ -122,13 +122,15 @@ in_cactus cactus-pangenome /data/js /data/seqfile.txt \
   --vcf --gfa --gbz --odgi --viz --draw --giraffe --consCores 8
 ```
 
-`/data/js` is the [Toil](https://toil.readthedocs.io/) job store, and must not
-already exist on a fresh run. `--outName ecoli` prefixes every output file.
-`--vcf` deconstructs the graph into the variant projection's input, `--odgi`
-writes the `.og` that the depth and presence projections read, `--viz` writes
-the odgi raster shown at the end, and `--giraffe` writes the indexes the
-read-mapping section needs. Pinning the image to a dated version tag keeps the
-graph reproducible.
+- `/data/js` is the [Toil](https://toil.readthedocs.io/) job store, and must not
+  already exist on a fresh run.
+- `--outName ecoli` prefixes every output file.
+- `--vcf` deconstructs the graph into the variant projection's input.
+- `--odgi` writes the `.og` that the depth and presence projections read.
+- `--viz` writes the odgi raster shown at the end.
+- `--giraffe` writes the indexes the read-mapping section needs.
+
+Pinning the image to a dated version tag keeps the graph reproducible.
 
 One run produces everything the sections below use:
 
@@ -402,7 +404,7 @@ sorting the pileup.
 `.min` and `.zipcodes` built from it, so a second run refuses to start on an
 index that only looks stale. `touch` the two derived files before re-mapping.
 
-## Drawing this graph as a graph
+## Opening the graph in the graph genome view
 
 Every projection above flattens the graph onto K12. JBrowse can also draw it as
 a graph, through the

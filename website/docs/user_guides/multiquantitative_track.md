@@ -11,8 +11,7 @@ guide_category: Track types
 - **Multi-row** (`XY plot`, `Density`, `Line (step)`, `Line (interpolated)`,
   `Scatter`) draws one plot per subtrack, stacked
 - **Overlapping** (`XY plot`, `Line (step)`, `Line (interpolated)`, `Scatter`)
-  draws all subtracks together. Density is deliberately absent here, since
-  overlapping filled densities are unreadable
+  draws all subtracks together
 
 <Figure caption="The track menu lists the available plot types." src="/img/multiwig/multi_renderer_types.png" />
 
@@ -23,9 +22,6 @@ menu.
 An outlier on one subtrack can blow out the shared Y axis. The "Local ± 3σ"
 autoscale type clips to three standard deviations of the visible data for a more
 readable view, or pin the min and max from the track menu.
-
-The shared axis is what makes many rows readable at once: a signal restricted to
-one row reads as such only because every other row is drawn to the same scale.
 
 <Figure caption="Twelve per-cell-type BigWigs from a 5k PBMC scATAC dataset as one multi-quantitative track, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows and MS4A1 by the two B rows, on one shared scale." src="/img/scatac/pbmc5k_marker_swap.png" />
 

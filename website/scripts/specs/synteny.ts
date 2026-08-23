@@ -2509,7 +2509,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The website/docs/tutorials/allvsall_synteny.md §"From a lane to a stack, for one locus" section:
+  // The website/docs/tutorials/allvsall_synteny.md §"Launching a stacked view at one locus" section:
   // going from the one-vs-all lanes above to the stacked view of one locus,
   // which is the launch this figure documents. Three parts, each its own spec
   // and its own capture height, stacked by the `compose` below: the selection

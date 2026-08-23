@@ -45,9 +45,12 @@ auto-selected level, so resolution still tracks your zoom, just shifted.
 
 ## Adjusting the color scale
 
-Pick the ramp from the track menu's **Color scheme**: Juicebox (white to red),
-Fall (white through yellow and red to black), or Viridis, which is perceptually
-uniform and the safer choice for readers with color vision deficiency.
+Pick the ramp from the track menu's **Color scheme**:
+
+- **Juicebox** - white to red
+- **Fall** - white through yellow and red to black
+- **Viridis** - perceptually uniform, and the safer choice for readers with
+  color vision deficiency
 
 **Show → Show faint contacts (95th percentile)** decides what the ramp spans.
 Off, the diagonal owns the scale and everything below it washes out; on (the
@@ -64,9 +67,12 @@ diagonal further still.
 Raw contact counts carry coverage biases from restriction-site density,
 mappability, and GC content. `.hic` files ship precomputed matrix-balancing
 vectors, and the track menu's **Normalization** submenu lists only the schemes
-the file actually contains — KR (Knight-Ruiz, the recommended default), SCALE (a
-faster approximation to KR), VC and VC_SQRT (vanilla coverage), and NONE (raw
-observed counts).
+the file actually contains:
+
+- **KR** - Knight-Ruiz, the recommended default
+- **SCALE** - a faster approximation to KR
+- **VC** and **VC_SQRT** - vanilla coverage
+- **NONE** - raw observed counts
 
 Vectors are stored per chromosome and binsize, so a file can list a scheme that
 is missing at the binsize on screen. The menu ticks the normalization the loaded
@@ -76,10 +82,10 @@ resolves it.
 
 ## Comparing two regions
 
-The matrix is fetched for every _pair_ of displayed regions, not just each
-region against itself. Open a second region in the same view and the contacts
-between the two fill the space between their triangles — the same geometry that
-puts a bright off-diagonal block at a translocation's partner loci. The
+The matrix is fetched for every _pair_ of displayed regions. Open a second
+region in the same view and the contacts between the two fill the space between
+their triangles — the same geometry that puts a bright off-diagonal block at a
+translocation's partner loci. The
 [Hi-C structural variants tutorial](/docs/tutorials/hic_structural_variants)
 shows that block on a real one, chr9 against chr22 in K562.
 
@@ -141,13 +147,12 @@ this reads as a checkerboard, but that picture is drawn from an
 _observed/expected_ matrix, where each bin has been divided by the average
 contact at its separation and then correlated. JBrowse draws raw or
 matrix-balanced counts, and against the steep decay of contact with distance the
-compartment signal stays a faint texture rather than a checkerboard. Balanced
-counts on a linear ramp show the most of it; `Log scale` on a deeply sequenced
-file returns solid red.
+compartment signal stays a faint texture. Balanced counts on a linear ramp show
+the most of it; `Log scale` on a deeply sequenced file returns solid red.
 
-What is worth loading instead is the compartment call itself, which the
-processing pipeline has already made. ENCODE publishes two such files per Hi-C
-experiment, both derived from the matrix in the same track:
+The compartment call itself is what to load, and the processing pipeline has
+already made it. ENCODE publishes two such files per Hi-C experiment, both
+derived from the matrix in the same track:
 
 - The **compartment eigenvector**, a BigWig. Its sign is the compartment
   assignment and its magnitude is how strongly a bin belongs, so it loads as an
@@ -160,8 +165,7 @@ experiment, both derived from the matrix in the same track:
 <Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree. No contact matrix here, since the eigenvector is that computation over one, published." links="Open this view=hic/compartment_switch" />
 
 Two things about that figure are worth copying whenever you compare compartments
-between samples, because getting either wrong produces a difference that is not
-there.
+between samples, since getting either wrong invents a difference.
 
 **Pin both eigenvector tracks to the same scale.** Left to autoscale, each track
 fills its own lane from its own extremes and the two stop being comparable. Set
@@ -169,13 +173,12 @@ the min and max score by hand, from the track menu or in config.
 
 **An eigenvector identifies A only up to a sign.** The decomposition that
 produces it is equally valid negated, so which sign means "active" is a property
-of the file, not a convention you can assume — and comparing two files means
-their orientations have to agree as well. Both are checkable against the gene
-track: A is the gene-rich compartment by definition, so the sign that coincides
-with the dense stretches of the gene track is A. Do that check over a whole
-chromosome rather than in one frame, since a few megabases can be gene-poor in
-both samples and settle nothing. In both files above, positive is the gene-rich
-side.
+of the file, and comparing two files means their orientations have to agree as
+well. Both are checkable against the gene track: A is the gene-rich compartment
+by definition, so the sign that coincides with the dense stretches of the gene
+track is A. Do that check over a whole chromosome rather than in one frame,
+since a few megabases can be gene-poor in both samples and settle nothing. In
+both files above, positive is the gene-rich side.
 
 The subcompartment classes need the same caution in a different place. The
 cluster numbers a caller emits are arbitrary labels rather than the published
@@ -183,7 +186,7 @@ A1/A2/B1/B2/B3 naming, so a class number means nothing on its own and two files
 only compare because the same pipeline assigned the same colors. That is also
 why the figure requires _both_ signals to change before calling a region
 switched: a class number can move without the eigenvector moving at all, which
-is a relabelling and not a change in compartment.
+is a relabelling.
 
 ## See also
 

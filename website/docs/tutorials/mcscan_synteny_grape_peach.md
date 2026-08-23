@@ -158,7 +158,7 @@ all three into the config's directory.
 Both adapters read the whole file into memory, which suits MCScan's scale. PAF's
 indexed [PIF](/docs/config_guides/synteny_track) has no MCScan equivalent.
 
-## Using both at once
+## Both tracks in one synteny view
 
 The two tracks describe the same run at different granularity. Add a linear
 synteny view (**Add → Linear synteny view**), pick peach and grape, and turn on

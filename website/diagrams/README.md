@@ -19,18 +19,18 @@ reader:
 
 <!-- BEGIN GENERATED DIAGRAM USAGE -->
 
-| Source                           | Used in                                                                                                                     |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `dataflow.dot`                   | [`docs/developer_guides/dataflow.md`](../docs/developer_guides/dataflow.md)                                                 |
-| `feature_plotting_threads.dot`   | [`docs/developer_guides/plotting_features.md`](../docs/developer_guides/plotting_features.md) — The mental model            |
-| `fetch_chain.dot`                | [`docs/developer_guides/data_fetching.md`](../docs/developer_guides/data_fetching.md) — The whole chain                     |
-| `gpu_display_lifecycle.dot`      | [`docs/developer_guides/creating_gpu_display.md`](../docs/developer_guides/creating_gpu_display.md) — Architecture overview |
-| `gpu_display_tldr.dot`           | [`docs/developer_guides/creating_gpu_display.md`](../docs/developer_guides/creating_gpu_display.md) — Architecture overview |
-| `inversion_pair_orientation.svg` | [`docs/user_guides/sv_visualization.md`](../docs/user_guides/sv_visualization.md) — Pair orientation color scheme           |
-| `product_architecture.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                              |
-| `products_and_plugins.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                              |
-| `rpc_lifecycle.dot`              | [`docs/developer_guides/rpc_workers.md`](../docs/developer_guides/rpc_workers.md) — The RPC lifecycle                       |
-| `wolfdog_ancestry_pipeline.dot`  | [`docs/tutorials/local_ancestry.md`](../docs/tutorials/local_ancestry.md) — The pipeline                                    |
+| Source                           | Used in                                                                                                                      |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `dataflow.dot`                   | [`docs/developer_guides/dataflow.md`](../docs/developer_guides/dataflow.md)                                                  |
+| `feature_plotting_threads.dot`   | [`docs/developer_guides/plotting_features.md`](../docs/developer_guides/plotting_features.md) — Rendering across two threads |
+| `fetch_chain.dot`                | [`docs/developer_guides/data_fetching.md`](../docs/developer_guides/data_fetching.md) — The whole fetch chain                |
+| `gpu_display_lifecycle.dot`      | [`docs/developer_guides/creating_gpu_display.md`](../docs/developer_guides/creating_gpu_display.md) — Architecture overview  |
+| `gpu_display_tldr.dot`           | [`docs/developer_guides/creating_gpu_display.md`](../docs/developer_guides/creating_gpu_display.md) — Architecture overview  |
+| `inversion_pair_orientation.svg` | [`docs/user_guides/sv_visualization.md`](../docs/user_guides/sv_visualization.md) — Pair orientation color scheme            |
+| `product_architecture.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                               |
+| `products_and_plugins.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                               |
+| `rpc_lifecycle.dot`              | [`docs/developer_guides/rpc_workers.md`](../docs/developer_guides/rpc_workers.md) — The RPC lifecycle                        |
+| `wolfdog_ancestry_pipeline.dot`  | [`docs/tutorials/local_ancestry.md`](../docs/tutorials/local_ancestry.md) — The pipeline                                     |
 
 <!-- END GENERATED DIAGRAM USAGE -->
 

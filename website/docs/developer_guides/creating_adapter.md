@@ -10,12 +10,10 @@ guide_category: Plugins
 your plugin.
 
 An adapter is a class that fetches and parses your data and returns it in a
-format JBrowse understands.
-
-To display data from a new source with JBrowse's existing gene displays, write a
-custom adapter. For custom rendering, you'll also need a
-[custom display](/docs/developer_guides/creating_display), which owns the
-drawing, state, and menus.
+format JBrowse understands. To display data from a new source with JBrowse's
+existing gene displays, write a custom adapter. For custom rendering, you'll
+also need a [custom display](/docs/developer_guides/creating_display), which
+owns the drawing, state, and menus.
 
 ## Adapter types
 
@@ -40,12 +38,15 @@ the adapter that reads it, which is the place to check before writing one.
 
 ## What a feature adapter implements
 
-Extend `BaseFeatureDataAdapter` and supply two methods: `getRefNames`, used for
-refName renaming, and `getFeatures`, an rxjs observable stream of the features
-overlapping a region, positions 0-based half-open. The base class already holds
-the config, `getSubAdapter` and the plugin manager and exposes
-`this.getConf('slotName')`, so no constructor is needed unless the adapter sets
-up state of its own. Type it on your config schema
+Extend `BaseFeatureDataAdapter` and supply two methods:
+
+- **`getRefNames`** — the refNames in the file, used for refName renaming.
+- **`getFeatures`** — an rxjs observable stream of the features overlapping a
+  region, positions 0-based half-open.
+
+The base class already holds the config, `getSubAdapter` and the plugin manager
+and exposes `this.getConf('slotName')`, so no constructor is needed unless the
+adapter sets up state of its own. Type it on your config schema
 (`BaseFeatureDataAdapter<MyAdapterConfig>`, where `MyAdapterConfig` comes from
 your [config schema](/docs/developer_guides/configuration_schema)) so those
 `getConf` reads are typed.
@@ -163,9 +164,7 @@ To wrap another adapter, resolve it lazily with `this.getSubAdapter` — it is
 specifically, don't ask the config for it: JBrowse primes every feature
 adapter's `sequenceAdapterConfig` from the assembly the track is displayed
 against, and `getSequenceSubAdapter` reads that, falling back to a configured
-slot only when one is set. A track then needs no `sequenceAdapter` of its own,
-which is the point — configs that wrote one were copying their own assembly's
-FASTA locations into a track:
+slot only when one is set. A track then needs no `sequenceAdapter` of its own:
 
 <!-- include: plugins/gccontent/src/GCContentAdapter/GCContentAdapter.ts#subAdapter -->
 
@@ -176,11 +175,10 @@ public async configure() {
 }
 ```
 
-Resolve it in one `configure()` the other methods await rather than in each of
-them. Reaching for `getSubAdapter` directly is what you want for any subadapter
-that is genuinely part of the track's own configuration — there `getSubAdapter`
-is optional on the base class, so it needs the `?.` and a check, and
-`dataAdapter` is the base union, so cast it.
+Resolve it in one `configure()` the other methods await. Use `getSubAdapter`
+directly for a subadapter that is genuinely part of the track's own
+configuration; it is optional on the base class, so it needs the `?.` and a
+check, and `dataAdapter` is the base union, so cast it.
 
 Larger example:
 [`MCScanAnchorsAdapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/MCScanAnchorsAdapter.ts).

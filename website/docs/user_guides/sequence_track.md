@@ -6,9 +6,9 @@ guide_category: Track types
 
 **TL;DR:** The sequence track appears automatically when an assembly is loaded,
 showing the reference sequence and a six-frame translation (three frames per
-strand), visible only at base resolution and hidden when zoomed further out. If
-the view is horizontally flipped, the sequence is shown reverse-complemented and
-the forward/reverse strand rows swap places accordingly.
+strand), visible only at base resolution. If the view is horizontally flipped,
+the sequence is shown reverse-complemented and the forward/reverse strand rows
+swap places.
 
 By default the translation uses the standard genetic code (NCBI table 1). If the
 assembly config maps a reference sequence to a different genetic code (for
@@ -23,8 +23,7 @@ You can also extract or copy the sequence underlying selected features; see the
 <Figure caption="The sequence track showing the reference sequence (top row) and six-frame translation (three frames per strand) at single-base resolution." src="/img/sequence_track.png" />
 
 Searching the reference sequence for a pattern, CRISPR guide, or restriction
-site (or any other named motif) is a separate, view-level feature; see
-[](/docs/user_guides/sequence_search).
+site is a view-level feature; see [](/docs/user_guides/sequence_search).
 
 ## See also
 

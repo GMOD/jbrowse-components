@@ -95,7 +95,7 @@ an exon as wide as any coding one and present in every transcript. The track
 follows the protein, and the 3' UTR is where the protein and the transcript come
 apart.
 
-## Checking it against the raw data
+## Checking the score against the raw data
 
 At gene zoom a per-base score and a smoothed band are the same picture, so zoom
 in until the sequence appears. The exon below is exon 7, one of the four shaded
@@ -189,7 +189,7 @@ carries are what there is to filter and colour on, and the same dialog takes
 them for any track. ClinVar's clinical classification is `feature.clinSign`, so
 `jexl:feature.clinSign == 'Pathogenic'` cuts that catalog down the same way.
 
-## Tracks in the other categories
+## Other tracks in the hg38 catalog
 
 The same two clicks reach the rest of the catalog. A few that come up often:
 

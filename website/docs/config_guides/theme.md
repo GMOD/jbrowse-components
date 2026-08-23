@@ -77,8 +77,8 @@ documents.
 
 ## Extra themes and dark mode
 
-You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
-these show up in a "Preferences" dialog that the user can select from.
+Extra themes added via the config show up in a "Preferences" dialog in
+jbrowse-web and jbrowse-desktop for the user to select.
 
 Dark mode is enabled by adding `"mode": "dark"` inside a theme's `palette`,
 which switches it to
@@ -117,8 +117,8 @@ Example:
 
 ## Logo
 
-You can supply a custom logo shown in the top right corner instead of the
-JBrowse 2 logo. Store an SVG file on your server and specify its path:
+A custom logo replaces the JBrowse 2 logo in the top right corner. Store an SVG
+file on your server and specify its path:
 
 ```json
 {
@@ -131,9 +131,9 @@ JBrowse 2 logo. Store an SVG file on your server and specify its path:
 ```
 
 The logo is auto-fitted to the toolbar: full bar height, automatic width to
-preserve the aspect ratio, capped at 150px wide. You do not need to size your
-SVG to particular pixel dimensions, but a wide, short logo (roughly 3:1) fills
-the space best; a tall one will be capped by the width limit and end up small.
+preserve the aspect ratio, capped at 150px wide. A wide, short logo (roughly
+3:1) fills the space best; a tall one is capped by the width limit and ends up
+small.
 
 ## Sizing
 

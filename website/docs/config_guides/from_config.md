@@ -6,18 +6,18 @@ guide_category: Core configuration
 ---
 
 **TL;DR:** the FromConfig adapters take their data from an array written into
-`config.json` instead of reading a file, for small datasets or for features an
-API handed you. There are three: `FromConfigAdapter` for features,
-`FromConfigSequenceAdapter` for sequence, and `FromConfigRegionsAdapter` for
-refNames and lengths with no sequence.
+`config.json`, for small datasets or for features an API handed you. There are
+three: `FromConfigAdapter` for features, `FromConfigSequenceAdapter` for
+sequence, and `FromConfigRegionsAdapter` for refNames and lengths with no
+sequence.
 
 ## FromConfigAdapter
 
 Each entry in `features` is a feature object. `refName`, `start`, `end`, and a
 unique `uniqueId` are required. `type`, `name`, and any other attributes are
 optional, and any extra attribute is readable from a
-[jexl callback](/docs/config_guides/jexl) like one read off a file. Use it with
-any feature track type, such as a `FeatureTrack`:
+[jexl callback](/docs/config_guides/jexl). Use it with any feature track type,
+such as a `FeatureTrack`:
 
 ```json
 {
@@ -51,9 +51,10 @@ any feature track type, such as a `FeatureTrack`:
 
 ## FromConfigSequenceAdapter
 
-Like `FromConfigAdapter`, but optimized for sequence features (used by reference
-sequence tracks; see [configuring assemblies](/docs/config_guides/assemblies)).
-Each feature's `seq` holds the bases for its region:
+A `FromConfigAdapter` optimized for sequence features, as the adapter of a
+reference sequence track (see
+[configuring assemblies](/docs/config_guides/assemblies)); each feature's `seq`
+holds the bases for its region:
 
 ```json
 {
@@ -84,10 +85,10 @@ Each feature's `seq` holds the bases for its region:
 
 ## FromConfigRegionsAdapter
 
-Supplies refNames and their lengths with no sequence at all, so a view can be
-navigated and tracks drawn against an assembly whose FASTA you don't have or
-don't want to load. Same place in the config as `FromConfigSequenceAdapter`, and
-each feature is just an interval:
+Supplies refNames and their lengths with no sequence, so a view can be navigated
+and tracks drawn against an assembly whose FASTA you don't have or don't want to
+load. Same place in the config as `FromConfigSequenceAdapter`, and each feature
+is just an interval:
 
 ```json
 {
@@ -104,7 +105,7 @@ each feature is just an interval:
 }
 ```
 
-For the same thing from a file rather than inline, use a
+For the same thing from a file, use a
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes`.
 
 ## See also

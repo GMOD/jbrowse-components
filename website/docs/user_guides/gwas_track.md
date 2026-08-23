@@ -57,9 +57,8 @@ The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld)
 shows this r² coloring running live in a React app.
 
-This is not the same feature as the LD triangle, which draws r² between every
-pair of nearby variants as a heatmap rather than coloring GWAS points against
-one index SNP, and can compute it live from phased genotypes. See the
+The LD triangle is a separate feature: it draws r² between every pair of nearby
+variants as a heatmap, and can compute it live from phased genotypes. See the
 [linkage disequilibrium tutorial](/docs/tutorials/ld_human).
 
 LD data must be in PLINK `--r2` output format (`.ld` or `.ld.gz`). Generate it

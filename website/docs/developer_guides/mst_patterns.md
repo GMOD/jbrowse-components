@@ -91,11 +91,11 @@ const TrackBandCanvas = observer(function TrackBandCanvas({
 export default TrackBandCanvas
 ```
 
-Note what is _not_ in the dep array. The `draw` callbacks read
-`model.rpcDataMap` from inside the autorun, so a mutation there redraws the
-canvas without React re-running the effect; the deps carry only what changes the
-canvas's size or identity. Sizing goes through `getPreparedCanvas2D`, which
-handles device pixel ratio — don't set `width`/`height` by hand.
+The `draw` callbacks read `model.rpcDataMap` from inside the autorun, so a
+mutation there redraws the canvas without React re-running the effect; the deps
+carry only what changes the canvas's size or identity. Sizing goes through
+`getPreparedCanvas2D`, which handles device pixel ratio — don't set
+`width`/`height` by hand.
 
 Prefer `autorun` over `reaction` for drawing: it runs immediately and tracks
 dependencies automatically. Use `reaction` only to separate the tracked
@@ -125,9 +125,8 @@ return untracked(() => ({
 
 That is the shape to copy for any expensive effect: fold every input that should
 trigger it into one computed, track only that, and read the raw values inside
-`untracked`. Tracking the underlying observables individually is strictly
-noisier — here an `offsetPx` change on every pan frame would refire a worker
-fetch whose result would be identical.
+`untracked`. Tracking the underlying observables individually would refire the
+worker fetch on every pan frame for an identical result.
 
 :::warning An autorun must do its own reads — an MST action is an untracked one
 

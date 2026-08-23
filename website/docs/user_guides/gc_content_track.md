@@ -13,7 +13,7 @@ skew instead and its sign flips at a bacterial replication origin.
 ## Launching a GC content track from the sequence
 
 Because the signal is derived from the reference sequence, you launch the track
-straight off the reference sequence track rather than adding a file:
+straight off the reference sequence track:
 
 - From the track selector, open the track menu (vertical "...") on the reference
   sequence track and choose **Add GC content track**.
@@ -21,9 +21,9 @@ straight off the reference sequence track rather than adding a file:
   **Add GC content track** item.
 
 Either route creates a `GCContentTrack` that wraps the assembly's existing
-sequence adapter in a `GCContentAdapter`, so it works for any assembly
-regardless of whether its sequence is a 2bit, indexed FASTA, or bgzip-indexed
-FASTA. No new data is fetched beyond the sequence the browser already reads.
+sequence adapter in a `GCContentAdapter`, so it works for any assembly, whether
+its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA. No new data is
+fetched beyond the sequence the browser already reads.
 
 <Figure caption="GC content (top, XY plot) and GC skew (bottom) computed on the fly across the whole H. pylori 26695 chromosome. The skew flips sign at the two points the Replication origin / terminus track marks." src="/img/gc_content.png" />
 

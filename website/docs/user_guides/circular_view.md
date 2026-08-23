@@ -33,7 +33,7 @@ deletions and duplications load but don't produce an informative chord.
   [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
   centered on the event's two breakpoints
 
-To triage many variants at once rather than plot a single track, use the
+To triage many variants at once, use the
 [SV inspector](/docs/user_guides/sv_inspector_view), which pairs this same
 circular overview with a filterable variant table and cross-filters the two
 together.

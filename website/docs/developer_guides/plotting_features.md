@@ -12,7 +12,7 @@ with Canvas2D, no shaders required. Right for gene-scale tracks (hundreds to
 thousands of features per frame); move to
 [](/docs/developer_guides/creating_gpu_display) only when a profile shows
 Canvas2D can't hold 60fps (roughly ≳100K features per frame). Both paths share
-the same model, fetch chain, and lifecycle, so starting here never boxes you in.
+the same model, fetch chain, and lifecycle.
 
 A [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build](/docs/developer_guides/no_build_plugin) one: it bundles
@@ -24,7 +24,7 @@ release; until then, build against a `jbrowse-components` checkout.
 
 <Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
-## The mental model
+## Rendering across two threads
 
 Rendering splits across two threads:
 
@@ -400,8 +400,8 @@ export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
 ```
 
 Export the factory `DisplayChrome` will call from the same file. A Canvas2D-only
-display skips `createRenderingBackend`'s WebGPU→WebGL2→Canvas2D ladder entirely
-and returns its backend through `createCanvas2DBackend`, which is the whole
+display returns its backend through `createCanvas2DBackend`, skipping
+`createRenderingBackend`'s WebGPU→WebGL2→Canvas2D ladder, which is the whole
 difference from the GPU path's factory. `plugins/sequence` does exactly this:
 
 <!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/Canvas2DSequenceRenderer.ts#factory -->
@@ -519,7 +519,7 @@ how displays attach to a track type.
 
 ## Hit-testing (clicks and hovers)
 
-Hit-testing is plugin-owned and runs on the main thread. It is not part of
+Hit-testing is plugin-owned and runs on the main thread, separately from
 rendering. Build a spatial index (e.g.
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
 from `rpcDataMap` in a cached view, and query it from your React mouse handlers

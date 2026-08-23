@@ -54,9 +54,8 @@ export default function JB2TrackHubConnectionF(pluginManager: PluginManager) {
 
 ### Optional items
 
-The first three furnish the "Add connection" dialog. A connection is something a
-user picks out of a list of them, so all three are worth setting even though
-none is enforced; every connection in the tree passes all three.
+The first three furnish the "Add connection" dialog. None is enforced, and every
+connection in the tree sets all three.
 
 - `displayName`: what the connection-type dropdown lists, falling back to `name`
   as it does on every pluggable element. Worth setting to something readable,
@@ -74,8 +73,8 @@ none is enforced; every connection in the tree passes all three.
 ## State model
 
 The state model composes `BaseConnectionModelFactory` and implements
-`connect()`. Keep the model itself thin — `connect()` hands off to a lazily
-imported module rather than doing the work inline:
+`connect()`. Keep the model itself thin: `connect()` hands off to a lazily
+imported module:
 
 <!-- include: plugins/data-management/src/JB2TrackHubConnection/model.ts -->
 

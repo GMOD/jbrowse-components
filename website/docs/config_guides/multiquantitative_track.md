@@ -99,7 +99,7 @@ all options.
 
 Because `subadapters` is just an array of objects, it templates cleanly from
 repetitive data like an RNA-seq timecourse. Given rows of
-`{ timepoint, bigwig }`, build the track in a script rather than by hand:
+`{ timepoint, bigwig }`, build the track in a script:
 
 ```js
 // rows: [{ timepoint: '0h', bigwig: 's3://.../t0.bw' }, ...]
@@ -128,8 +128,8 @@ See [](/docs/config_guides/deploying) for the full pattern of generating
 [bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file, a
 tab-separated BED format where each row reports the methylation fraction at a
 single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
-`BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
-subtrack per modification type:
+`BedTabixAdapter` and maps to `MultiQuantitativeTrack`, with one subtrack per
+modification type:
 
 ```bash
 modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
@@ -153,11 +153,14 @@ fraction). Omit it for separate 5mC and 5hmC rows.
 }
 ```
 
-JBrowse reads the `score` column (column 11 in bedMethyl, the percent
-methylation 0–100) and uses the `name` column (column 4, the modification code
-such as `m` for 5mC or `h` for 5hmC) as the subtrack source label. In the "Add a
-track" form, pasting the URL to a `.bedmethyl.gz` file auto-detects
-`BedTabixAdapter` and `MultiQuantitativeTrack`.
+JBrowse reads two of the columns:
+
+- `score` (column 11) — the percent methylation, 0–100
+- `name` (column 4) — the modification code, such as `m` for 5mC or `h` for
+  5hmC, used as the subtrack source label
+
+In the "Add a track" form, pasting the URL to a `.bedmethyl.gz` file
+auto-detects `BedTabixAdapter` and `MultiQuantitativeTrack`.
 
 ## See also
 

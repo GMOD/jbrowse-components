@@ -14,12 +14,12 @@ whose `domains` matches a URL wins, so order specific ones first. If you control
 the server holding the data, read the next section before configuring any of
 this.
 
-## If you control the data server, you probably do not need this
+## Serving JBrowse and its data behind one login
 
 JBrowse has no server and no user accounts of its own. It is static files
 running in a browser, reading your data files over HTTP, so it cannot decide who
 is allowed to see a track. Whatever serves the files has to do that. Two
-consequences that catch people out:
+consequences:
 
 - Leaving a track out of config.json does not protect it. The browser downloads
   config.json, so every URL in it is visible to anyone who can open the app.
@@ -31,7 +31,7 @@ cookie, an SSO proxy, nginx `auth_request`). The browser then sends the cookie
 with every data request by itself: no `internetAccounts` entry, and no
 credential material in your config or in a shared session.
 
-### What "same origin" means here
+### What counts as the same origin
 
 The app and the data have to be on the same **origin**: the same `https://host`
 and port. Browsers only send cookies to the origin that set them.
@@ -49,9 +49,9 @@ config.json.
 ### The login-page failure mode
 
 When a data request arrives without a valid login, most auth setups answer with
-the HTML of a login page. JBrowse asked for bytes of a BAM file, so instead of a
-message about logging in you get a parse error, often
-`HTTP 200 ... (should be 206 for range requests)`. Check a file directly:
+the HTML of a login page. JBrowse asked for bytes of a BAM file, so what you get
+is a parse error, often `HTTP 200 ... (should be 206 for range requests)`. Check
+a file directly:
 
 ```bash
 curl -s -o /dev/null -D - -H 'Range: bytes=0-100' https://mysite.org/data/file.bam
@@ -61,7 +61,7 @@ A logged-in request should answer `206 Partial Content`. A `200` with
 `content-type: text/html`, or a redirect, is the login page. A session expiring
 while a view is open produces the same errors mid-use, which a reload resolves.
 
-### If the cookie setup does not fit
+### Alternatives to a shared login
 
 In rough order of simplicity:
 
@@ -73,9 +73,8 @@ In rough order of simplicity:
 - `internetAccounts` (the rest of this page), for data you do not control:
   Dropbox, Google Drive, an OAuth-protected API, a portal that issues tokens.
   JBrowse prompts for the credential and attaches it to requests for the domains
-  you list. It only forwards a credential the user already has, it is not an
-  access-control system, and it is more moving parts than a cookie in front of a
-  folder, so it is worth exhausting the options above first.
+  you list. It only forwards a credential the user already has; it is not an
+  access-control system.
 
 Any setup where the data is on a different origin than the app also needs
 [CORS](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files), including
@@ -116,9 +115,11 @@ on the track config changes.
 | [](/docs/config/externaltokeninternetaccount)    | A token the user pastes in, or that your portal hands over |
 
 Every type shares the slots on [](/docs/config/baseinternetaccount):
-`internetAccountId` (the unique id), `name` and `description` (shown in the UI),
-`domains` (below), and `authHeader`/`tokenType`, which control the request
-header the token is sent in.
+
+- **`internetAccountId`** — the unique id
+- **`name`** and **`description`** — shown in the UI
+- **`domains`** — which URLs the token is attached to (below)
+- **`authHeader`** and **`tokenType`** — the request header the token is sent in
 
 ## How an account is matched to a URL
 
@@ -206,8 +207,7 @@ of two shapes, told apart by whether it contains a `/`:
   }
   ```
 
-Order still matters: put the most specific accounts first, since the first match
-wins.
+Order matters: put the most specific accounts first.
 
 The query string and the fragment are never consulted under either shape, so a
 URL that merely mentions one of your domains in a parameter does not match it.
@@ -390,10 +390,13 @@ signs, so S3 answers them as usual. Three things to know before relying on this:
 A signed URL written into a config expires there, so the way to get access that
 lasts is to keep the **permanent unsigned URL** in the config and derive the
 signature per request. That is an internet account, and it refreshes on the same
-mechanics OAuth uses: `getFetcher` obtains the credential through
-`getValidatedToken`, `validateToken` is where an expiring credential is renewed,
-and `removeToken` drops the cached one so the next request re-derives it. No
-built-in account type covers S3, so this is a plugin. It has two shapes.
+mechanics OAuth uses:
+
+- `getFetcher` obtains the credential through `getValidatedToken`
+- `validateToken` renews an expiring credential
+- `removeToken` drops the cached one, so the next request re-derives it
+
+No built-in account type covers S3, so this is a plugin. It has two shapes.
 
 **Sign in the browser.** A state model extending `BaseInternetAccountModel`
 overrides `getFetcher` and computes a SigV4 signature there, over the URL, the
@@ -413,9 +416,9 @@ is what authorizes the presign call. Signed URLs can be short-lived here, a few
 minutes, because nothing persists them. Cache them per object with their expiry
 rather than presigning every 256 KB chunk, and swap the URL **inside** the
 fetcher rather than rewriting the location: the range cache keys on the URL the
-filehandle was constructed with, so a stable unsigned URL keeps the cache intact
-while a rotating signed one would fragment it. `GoogleDriveOAuthModel` is the
-in-tree precedent for rewriting the URL per request this way.
+filehandle was constructed with, so a stable unsigned URL keeps the cache
+intact. `GoogleDriveOAuthModel` is the in-tree precedent for rewriting the URL
+per request this way.
 
 Either shape works in the RPC workers with no extra plumbing, because the
 credential travels there over the existing pre-authorization path as an opaque
@@ -453,9 +456,6 @@ send the CORS headers that allow them, including the `Authorization` header (or
 whatever `authHeader` names) in `Access-Control-Allow-Headers`, and it must
 allow credentials rather than responding with a wildcard origin. See
 [the CORS FAQ](/docs/faq#why-do-i-get-a-cors-error-when-loading-remote-files).
-
-This is another reason the same-origin cookie setup above is easier where it is
-available: there is no cross-origin request to configure.
 
 ## See also
 

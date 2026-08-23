@@ -21,23 +21,28 @@ set of packed columns. The result crosses back as transferable typed arrays in
 absolute genomic coordinates, and the main thread uploads it once.
 
 Three other pages draw one segment of this path in full, and the figure names
-each one on the edge it details.
-[Data fetching](/docs/developer_guides/data_fetching) owns the decision the top
-edge carries (`fetch_chain`), with its debounce, byte gate, staleness check and
-generation counter. [RPC workers](/docs/developer_guides/rpc_workers) owns the
-crossing (`rpc_lifecycle`), with the serialize and deserialize hooks on it.
-[Creating a GPU display](/docs/developer_guides/creating_gpu_display) owns the
-two autoruns at the bottom (`gpu_display_lifecycle`).
+each one on the edge it details:
+
+- [Data fetching](/docs/developer_guides/data_fetching) owns the decision the
+  top edge carries (`fetch_chain`), with its debounce, byte gate, staleness
+  check and generation counter
+- [RPC workers](/docs/developer_guides/rpc_workers) owns the crossing
+  (`rpc_lifecycle`), with the serialize and deserialize hooks on it
+- [Creating a GPU display](/docs/developer_guides/creating_gpu_display) owns the
+  two autoruns at the bottom (`gpu_display_lifecycle`)
 
 Why each step looks the way it does, and what measured it, is
 [](/docs/developer_guides/optimizations).
 
-The figure is the main path only. It leaves out the assembly and refName
-aliases, which load before any track does; the text-search index, which answers
-the location box; and the non-linear views — synteny and dotplot own their fetch
-and share one canvas between displays, so they compose neither of the
-[fetch foundations](/docs/developer_guides/creating_display#display-foundations)
-this path is built on.
+The figure is the main path only. It leaves out:
+
+- the assembly and refName aliases, which load before any track does
+- the text-search index, which answers the location box
+- the non-linear views — synteny and dotplot own their fetch and share one
+  canvas between displays, so they compose neither of the
+  [fetch foundations](/docs/developer_guides/creating_display#display-foundations)
+  this path is built on
+
 [SHARED_CANVAS_VIEWS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHARED_CANVAS_VIEWS.md)
 draws that third shape, and its rules generalize to any container laying out one
 canvas its children draw on.
@@ -52,14 +57,13 @@ track queues behind the first. That stickiness is what makes the inflate pool
 inside the worker worth having, and it is also a ceiling: one track's parse is
 single-threaded however many cores the machine has.
 
-The main thread does no parsing. It holds the result, uploads it, and draws it.
+The main thread holds the result, uploads it, and draws it.
 
 **Which hosts spawn that pool is the host's decision.** jbrowse-web and desktop
 always do. An embedded component runs the same pool once the page hands it a
 `makeWorkerInstance` factory; without one it runs every step in the box on the
 UI thread, so a deep BAM stalls whatever else the page is drawing. Constructing
-a worker is bundler-specific, which is the only reason the factory is the host's
-to write —
+a worker is bundler-specific, so the factory is the host's to write —
 [embedded components](/docs/embedded_components#move-the-data-work-off-the-main-thread)
 has the Vite and the webpack spelling, and passing one is the whole switch, with
 no config slot to set.
@@ -77,10 +81,9 @@ The dashed branch beside the inflate step is a further pool of
 [four workers](https://github.com/GMOD/bgzf-filehandle/blob/main/docs/worker-pool.md#four-workers-is-not-the-ceiling),
 one pool per JS context — so a full RPC pool nests twenty inflate workers under
 its five. Where nested workers are unavailable the pool resolves to `undefined`
-and the same code inflates in process, which is what makes the option safe to
-pass unconditionally, and is also a degradation with no error attached. How
-large that share is, what the pool is worth per format, and how to check it
-engaged are
+and the same code inflates in process, so the option is safe to pass
+unconditionally and the degradation carries no error. How large that share is,
+what the pool is worth per format, and how to check it engaged are
 [the fetch clock](/docs/developer_guides/optimizations#decompression-is-where-a-cold-querys-time-goes).
 
 ## Where the caches sit
@@ -109,11 +112,10 @@ says what may go in it.
 
 ## Where the GPU sits
 
-The two edges out of `rpcDataMap` run at different rates, and that difference is
-what the whole path is arranged around. Data crosses to the GPU when the region
-changes. Frames after that redraw buffers that are already there, and all a
-frame writes is a shader parameter — a pan, a zoom, a recolor, a re-sort, a
-resize.
+The two edges out of `rpcDataMap` run at different rates. Data crosses to the
+GPU when the region changes. Frames after that redraw buffers that are already
+there, and all a frame writes is a shader parameter — a pan, a zoom, a recolor,
+a re-sort, a resize.
 
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that

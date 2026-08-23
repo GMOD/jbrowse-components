@@ -29,10 +29,10 @@ The `uri` shorthand above resolves the index for you (`<uri>.bai` for a BAM,
 `<uri>.crai` for a CRAM), so most tracks need nothing else. Add `"csi": true`
 alongside `uri` for a CSI-indexed BAM. See
 [the `uri` shorthand](/docs/config_guides/file_types#the-uri-shorthand) for when
-to spell out the location slots instead, and when CSI is required.
+to spell out the location slots, and when CSI is required.
 
-CRAM decodes against the reference sequence, but you do not configure that. Both
-adapters take their `sequenceAdapter` from the enclosing assembly automatically.
+CRAM decodes against the reference sequence; both adapters take their
+`sequenceAdapter` from the enclosing assembly automatically.
 
 See the [](/docs/config/bamadapter) and [](/docs/config/cramadapter) config docs
 for all options.
@@ -41,11 +41,11 @@ for all options.
 
 Display settings (`colorBy`, `height`, `featureHeight`, `filterBy`, and the
 coverage `autoscale`/`minScore`/`maxScore`) are slots on the
-`LinearAlignmentsDisplay`, not on the track. By default every read is drawn the
-same gray with its mismatches marked;
-[`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) is what colors
-the reads themselves by strand, pair orientation, insert size, a tag, and so on.
-To change a default, set it with the track's
+`LinearAlignmentsDisplay`. By default every read is drawn the same gray with its
+mismatches marked;
+[`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) colors the reads
+by strand, pair orientation, insert size, a tag, and so on. Set one with the
+track's
 [`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays):
 
 ```json addtrack
@@ -62,7 +62,7 @@ To change a default, set it with the track's
 See the
 [LinearAlignmentsDisplay config docs](/docs/config/linearalignmentsdisplay) for
 the full list of slots. To open a track in a particular state from a link or
-embedded view instead of changing the default, see
+embedded view, see
 [applying display settings](/docs/tutorials/display_settings).
 
 ## See also

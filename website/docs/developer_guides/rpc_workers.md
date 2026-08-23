@@ -16,8 +16,7 @@ Only structured-clone-safe values cross the boundary.
 
 Both hooks are yours to override. The serialize step is where refNames are
 renamed and functions are stripped, which is why a method taking regions extends
-a rename base rather than overriding it — see
-[Renaming regions](#renaming-regions) below.
+a rename base — see [Renaming regions](#renaming-regions) below.
 
 Sessions are sticky: a `sessionId` is pinned to one worker, so adapter caches
 stay warm across calls from the same session.
@@ -89,9 +88,8 @@ transport concerns; read the args off its result, not off the raw `args`.
 ### Renaming regions
 
 If your method receives `Region` objects, their refNames are in the _assembly's_
-naming scheme and the data adapter may use another (`chr1` vs `1`). Don't write
-the `serializeArguments` override yourself — extend
-`RpcMethodTypeWithRenameRegions`, which is that override:
+naming scheme and the data adapter may use another (`chr1` vs `1`). Extend
+`RpcMethodTypeWithRenameRegions`, which is that `serializeArguments` override:
 
 <!-- include: packages/core/src/pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts -->
 
@@ -113,12 +111,15 @@ export default abstract class RpcMethodTypeWithRenameRegions<
 }
 ```
 
-There are two siblings for the shapes that differ:
-`RpcMethodTypeWithRenameRegion` for a method taking a single `region` rather
-than a `regions` array, and `RpcMethodTypeWithFiltersAndRenameRegions`, which
-additionally deserializes a serialized filter chain. `CoreGetFeatures`,
-`CoreGetRegionByteEstimate` and `CoreGetExportData` all use the plural one; the
-MAF methods use the filtered one.
+Two siblings cover the shapes that differ:
+
+- **`RpcMethodTypeWithRenameRegion`** for a method taking a single `region`
+  rather than a `regions` array.
+- **`RpcMethodTypeWithFiltersAndRenameRegions`**, which additionally
+  deserializes a serialized filter chain; the MAF methods use it.
+
+`CoreGetFeatures`, `CoreGetRegionByteEstimate` and `CoreGetExportData` all use
+the plural base.
 
 ### Returning ArrayBuffers zero-copy
 
@@ -199,9 +200,7 @@ Two fields work that way, and neither belongs in a registry entry: `sessionId`
 (`RpcSession`) and the `stopToken`/`statusCallback` pair (`RpcHandles`). They
 are properties of the _call_, so every method accepts them and no entry gets to
 require or refuse one. `EntriesDeclaringCallLevelFields` in `RpcRegistry.ts`
-fails compilation, naming the entry, if one declares either — both had spread
-through the registry before it existed, and the handles reached production that
-way: `CoreGetExportData` shipped with a Cancel button that did nothing.
+fails compilation, naming the entry, if one declares either.
 
 A per-region display does not `await` the call itself. `fetchEachRegion` owns
 cancellation, stop tokens and staleness, so `LinearScoreDisplay` hands it the
@@ -268,12 +267,11 @@ the function never actually goes; a side-channel does. The main-thread half is
 the `statusCallback` in the call above, which a display reads off its
 `FetchContext`. In a per-region fan-out that context is the region's own, so its
 callback is that region's slot in the loading UI and the N of them aggregate
-into one bar rather than clobbering each other.
+into one bar.
 
 In the worker it arrives deserialized and is called normally. Hand it down to
-whatever does the slow work rather than only bracketing that work, so the
-message tracks the download — `GetScoreData` above passes it into
-`getFeaturesArray` for exactly that reason.
+whatever does the slow work so the message tracks the download — `GetScoreData`
+above passes it into `getFeaturesArray`.
 
 ## Type-registering your method
 

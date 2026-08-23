@@ -151,17 +151,17 @@ where real variation lives as well as where artifacts do.
 At this locus, in this sample, the reads carry no information about which copy
 they came from, so a short-read call over it cannot be checked against them.
 
-## Applying it to your own locus
+## Checking your own locus
 
 The same three tracks and a control work anywhere in hg38:
 
-1. Open the hosted hg38 config and turn on **Umap M100**, **gnomAD v3 Genome
-   Coverage - Mean Coverage**, and the **GIAB Problematic Regions** and
-   **Problematic Regions** annotation tracks.
-2. Add your reads and set **Color by...** → **Mapping quality** from the track
-   menu. Turn on **Show legend** in the same menu.
-3. Take a second window of the same width, from the same sample, outside every
-   flagged interval, and put the two side by side.
+- Open the hosted hg38 config and turn on **Umap M100**, **gnomAD v3 Genome
+  Coverage - Mean Coverage**, and the **GIAB Problematic Regions** and
+  **Problematic Regions** annotation tracks.
+- Add your reads and set **Color by...** → **Mapping quality** from the track
+  menu. Turn on **Show legend** in the same menu.
+- Take a second window of the same width, from the same sample, outside every
+  flagged interval, and put the two side by side.
 
 The same comparison is three counts per window, `-q` being a minimum MAPQ:
 

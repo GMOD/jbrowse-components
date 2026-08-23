@@ -10,7 +10,7 @@ An agent that can see what it built recovers from mistakes a validator cannot
 catch: an empty track, a refName mismatch, a region with no data. This page is
 about producing that image.
 
-## Which tool
+## Choosing a capture tool
 
 |        | [`@jbrowse/img`](/docs/jbrowse-img) | `@jbrowse/capture`                                       |
 | ------ | ----------------------------------- | -------------------------------------------------------- |
@@ -36,9 +36,13 @@ npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --out brc
 npx @jbrowse/capture --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o brca1.png
 ```
 
-Both take `--hub` for a [hosted assembly](/docs/agents_hosted_data), `--config`
-for any config URL, and `--loc` as either a locstring or — on a config with a
-text index — a gene name. `jb2capture --help` lists the rest.
+Both take the same three flags:
+
+- `--hub` for a [hosted assembly](/docs/agents_hosted_data)
+- `--config` for any config URL
+- `--loc` as either a locstring or — on a config with a text index — a gene name
+
+`jb2capture --help` lists the rest.
 
 The page `@jbrowse/capture` drives is the public JBrowse Web build at
 `jbrowse.org/code/jb2/latest/`, which is why a config and its data have to be
@@ -55,10 +59,9 @@ npx @jbrowse/capture --config https://example.org/config.json --assembly mygenom
 npx @jbrowse/capture --hub hg38 --session spec.json -o out.png
 ```
 
-## Knowing when it is done {#knowing-when-it-is-done}
+## Knowing when the render is done {#knowing-when-it-is-done}
 
-This is the entire problem, and the reason a helper library exists rather than a
-paragraph telling you to call `page.screenshot()`.
+This is the entire problem, and the reason a helper library exists.
 
 JBrowse loads a config, builds a session, resolves an assembly, fetches each
 track, and then draws to a canvas. A screenshot taken at any point before the
@@ -73,8 +76,7 @@ await page.waitForSelector('[data-app-phase="ready"]')
 
 The session renders that itself — `ready` when no view is resolving an assembly
 and no display is fetching, `loading` whenever one is. It is **positive**, so it
-cannot be true before the app exists, and it is one element rather than a census
-of every display.
+cannot be true before the app exists, and it is a single element.
 
 That is the answer for a page that is LOADING. After you click something it is
 not, and the wait is `waitForAppSettled(page)` instead — see
@@ -85,9 +87,7 @@ finishing. An app you have just clicked is already `ready` — it finished a
 moment ago — and stays that way until the click's work registers, which for
 anything that dirties the viewport is up to a debounce later. A wait for `ready`
 posted in that gap returns immediately, on the pre-click frame.
-`waitForAppSettled` requires `ready` to hold for a beat, which covers the gap; a
-fixed sleep in its place is a number that is too short on a loaded machine and
-dead time on every other run.
+`waitForAppSettled` requires `ready` to hold for a beat, which covers the gap.
 
 The rest of this section is why the older signals need more care, and what
 `@jbrowse/capture` does against a deployment that predates the marker.
@@ -160,14 +160,14 @@ await page.waitForFunction(
 ```
 
 `tracks` and `configuration` are guarded because a view can exist before either
-does, which the hand-written version of this snippet used to get wrong.
+does.
 
 A config URL that 404s, a `trackId` the config does not define, and an assembly
 name that does not match all fail there — and only there. Each of them otherwise
 produces a browser that loads, paints its chrome, and photographs perfectly with
 nothing in it.
 
-### The DOM signals, after the gate
+### The DOM readiness signals
 
 Once the session holds what you asked for, these are meaningful. Each says
 something the others do not, so waiting on one is not waiting on the rest:
@@ -183,9 +183,9 @@ something the others do not, so waiting on one is not waiting on the rest:
 **Targeting one display rather than all of them.** `data-testid` names the
 display _type_ (`pileup-display`, `wiggle-display`, `synteny_canvas`, …) and is
 stable for the element's whole life; `data-display-id` names the individual
-display. Neither carries readiness, so "this display, painted" is a conjunction
-— and `@jbrowse/capture` exports the builders so you do not write it out. The
-selector each one produces, spliced from the test that asserts it:
+display. Neither carries readiness, so "this display, painted" is a conjunction,
+and `@jbrowse/capture` exports the builders for it. The selector each one
+produces, spliced from the test that asserts it:
 
 <!-- include: products/jbrowse-capture/src/waits.test.ts#display-selectors -->
 
@@ -213,11 +213,10 @@ selector written against it keeps matching after the display paints.
 
 Plus `data-busy="true"`, which `LoadingEllipses` sets — the component the app
 renders wherever it tells a user it is working, including the banners no
-display-level attribute covers. It is an attribute rather than the label's text
-on purpose: a wait that scans for `Loading…` is a wait that a reworded message
-or a translation can break, and it then needs a computed-style check on top,
-because the loading overlay keeps the literal word in the DOM behind
-`opacity: 0`. `BUSY_SELECTOR` is all four of these together.
+display-level attribute covers. Match the attribute: the loading overlay keeps
+the literal `Loading…` in the DOM behind `opacity: 0`, so a text scan needs a
+computed-style check on top and breaks on a reworded message or a translation.
+`BUSY_SELECTOR` is all four of these together.
 
 **None of these are on every build**, which is the whole reason
 `waitForJBrowseReady` is more than one line. `[data-app-phase]` and the
@@ -225,12 +224,12 @@ per-element attributes come from current code; a deployment predating them
 publishes only the loading overlay, and the display-level waits are then
 unfalsifiable rather than satisfied.
 
-That matters more than a missing measurement, because absence answers "is it
-working now" and a capture needs "has it finished". Measured on
-`jbrowse.org/code/jb2/latest` with two remote tracks: the session reports both
-tracks open at ~2.5s, and the loading overlay does not go up until ~3.5s. In
-that second every absence-based gate passes over an app that has drawn nothing —
-the old chain returned at 3.9s with `Downloading features.` still on screen.
+Absence answers "is it working now" where a capture needs "has it finished".
+Measured on `jbrowse.org/code/jb2/latest` with two remote tracks: the session
+reports both tracks open at ~2.5s, and the loading overlay does not go up until
+~3.5s. In that second every absence-based gate passes over an app that has drawn
+nothing — the old chain returned at 3.9s with `Downloading features.` still on
+screen.
 
 So against such a build the wait watches the app WORK instead: it has to be seen
 busy and then idle for an unbroken stretch, read from the published attributes
@@ -283,13 +282,12 @@ await browser.close()
 yourself, and each stage is exported separately. `captureJBrowse()` is the
 one-call form that launches, waits, shoots and closes.
 
-### A stage that times out fails the run
+### Timeouts and unsettled stages
 
 Puppeteer waits are usually written best-effort — `.catch(() => {})` — so a slow
 page is not failed for being slow. The cost is that "everything settled" and "we
 gave up" become the same `void`, and the run ends with an image and an exit code
-of 0 either way. That is the same ambiguity as the vacuous gate above, arriving
-one step later.
+of 0 either way.
 
 So each stage reports its outcome, and an unsettled one throws by default,
 naming which gate and what to do:
@@ -301,12 +299,14 @@ finishes, open the same URL in a browser — this gate has no content to fall
 through to.
 ```
 
-Three fields come back with a successful capture, all about honesty rather than
-success. `unsettled` lists stages that timed out (empty unless you asked to
-proceed anyway). `pending` lists displays still unpainted at the moment of
-capture — a display can go back to pending after its stage passed, so this is a
-separate question from `unsettled`. `paintContract` says whether the build could
-report that at all.
+Three fields come back with a successful capture:
+
+- **`unsettled`** lists stages that timed out (empty unless you asked to proceed
+  anyway).
+- **`pending`** lists displays still unpainted at the moment of capture — a
+  display can go back to pending after its stage passed, so this is a separate
+  question from `unsettled`.
+- **`paintContract`** says whether the build could report that at all.
 
 Pass `allowUnsettled` (`--allowUnsettled`) to get the frame as it stands
 instead; the stages are still listed, and the CLI prints them as warnings.

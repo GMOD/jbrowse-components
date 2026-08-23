@@ -13,7 +13,7 @@ says what dominates each, what we changed, and what each change measured.
 
 Everything here is measured, and every measurement names where to reproduce it.
 Several of the obvious next steps measured as losses, and those are on the page
-too: a reader deciding what to try needs them more than the wins.
+too.
 
 ## Three clocks
 
@@ -43,9 +43,8 @@ BAM, CRAM and every tabix-indexed format store their data as a long run of
 independently compressed blocks (BGZF), and a query fetches the blocks its index
 named and decompresses them. That decompression is 70-90% of the query's wall
 clock, against a fraction of a millisecond to a few milliseconds building
-records out of the bytes. Two things follow, and nothing else at this layer
-matters: the decompressor is WebAssembly, and the blocks go to a pool of
-workers.
+records out of the bytes. Two things follow: the decompressor is WebAssembly,
+and the blocks go to a pool of workers.
 
 [`@gmod/bgzf-filehandle`](https://github.com/GMOD/bgzf-filehandle/blob/main/docs/optimizations.md#the-codec)
 inflates through libdeflate compiled to wasm, at parity with native `zlib` and
@@ -79,10 +78,9 @@ decompressed chunk cache and so decompresses nothing, which measures the two
 halves apart: the line scan alone is 28% of the cold query, and the pool reaches
 the rest at 1.83x. Amdahl's law puts the end-to-end figure at 1.49x against
 1.45x measured. A 1000 Genomes line carries a genotype field per sample, so that
-28% is byte scanning on enormous lines — more than 1.5x on multi-sample VCF
+28% is byte scanning on enormous lines, so more than 1.5x on multi-sample VCF
 means attacking
-[the scan](https://github.com/GMOD/tabix-js/blob/main/docs/optimizations.md#scanning-lines),
-not the decompression.
+[the scan](https://github.com/GMOD/tabix-js/blob/main/docs/optimizations.md#scanning-lines).
 
 **The pool degrades silently, so verify it engages.** jbrowse-web runs adapters
 under `WebWorkerRpcDriver`, so the pool is a worker spawning workers. Where
@@ -95,7 +93,7 @@ it fell back, and a bigwig track is the control that spawns none.
 has the harness and the three benchmark traps, two of which produce numbers that
 look real.
 
-### Ask for less before asking faster
+### Byte forecasts and multi-region reads
 
 An index says how big a region's data is before anything downloads it.
 [`getRegionByteSize`](https://github.com/GMOD/bbi-js/blob/main/docs/optimizations.md#forecasting-a-query-costs-no-data-blocks)
@@ -132,7 +130,7 @@ carrying the per-base alignment string (its CIGAR), and a coarse copy without
 it, cut wherever an insertion or deletion is large enough that one bounding box
 would misrepresent the alignment. A one-letter prefix on the sequence name
 separates the two, so asking for a zoom level is asking for a different region
-name, and a zoom becomes a request for different data.
+name.
 
 How much the coarse copy saves depends entirely on how many CIGAR bytes a row
 carries, since it keeps every other field:
@@ -163,18 +161,17 @@ actually sent for one whole-genome pass:
 
 <!-- END GENERATED MEASUREMENT pif-tier-wire-bytes -->
 
-Both arms read every row of their own tier out of the same file, so this is not
-a comparison of two differently-built files. The `bytes/row` column is the one
-to read: the coarse copy does not return far fewer alignments, it returns
-alignments that are far smaller, and what separates them is the CIGAR.
+Both arms read every row of their own tier out of the same file. The `bytes/row`
+column is the one to read: the coarse copy returns alignments that are far
+smaller, and what separates them is the CIGAR.
 
-Back to the file-size table: the last column is what carrying both copies costs
-the file; the `coarse/fine bytes` column beside it is what reading the coarse
-one saves. With 1.5 kb alignment blocks it gives up indel detail for almost
-nothing; at 5 Mb it is the difference between reading the CIGARs and not. **The
-coarse copy makes each alignment cheaper and does not make them fewer**, so it
-suits a few huge alignments with megabase CIGARs, and does little for a dense
-all-vs-all comparison, where the cost is the number of alignments.
+Back in the file-size table, the last column is what carrying both copies costs
+the file, and the `coarse/fine bytes` column beside it is what reading the
+coarse copy saves. With 1.5 kb alignment blocks it gives up indel detail for
+almost nothing; at 5 Mb it is the difference between reading the CIGARs and not.
+**The coarse copy makes each alignment cheaper and does not make them fewer**,
+so it suits a few huge alignments with megabase CIGARs, and does little for a
+dense all-vs-all comparison, where the cost is the number of alignments.
 
 Binning alignments together as they are read is the obvious answer to that, and
 it is capped. Profiling a whole-genome fetch of a human-vs-mouse-scale PIF puts
@@ -185,7 +182,7 @@ alignments cuts the larger half.
 [SYNTENY_LOD.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_LOD.md)
 carries the phase table and the recommended scheme.
 
-### Cancel what the user has already left
+### Cancelling in-flight reads
 
 A user who pans faster than the data arrives leaves reads in flight for regions
 already off screen, and those reads are big:
@@ -205,7 +202,7 @@ records which adapters are wired to a stop token, the two that cannot be, and
 what goes wrong when the read being cancelled is one
 [two callers are sharing](https://github.com/GMOD/range-cache-filehandle/blob/main/docs/sharing.md#giving-up).
 
-### Don't cut a genotype string out of the line for every sample
+### Genotype codes in a multi-sample VCF
 
 A row of a multi-sample VCF carries one genotype per sample, and drawing that
 row used to mean cutting one substring out of the line per sample.
@@ -248,9 +245,10 @@ reads that field alone:
 
 <!-- END GENERATED MEASUREMENT format-fields-vs-samples -->
 
-### Two kernels that look like wins and are not
+### The MAF column-counting kernel {#two-kernels-that-look-like-wins-and-are-not}
 
-Both live as comments on the function a reader would try them in.
+Two rewrites of the kernel measure flat or worse, and both live as comments on
+the function a reader would try them in.
 
 A multiple-alignment display counts, for each screen column, how many species
 have a base there and how many match the reference. The kernel is a loop over a
@@ -289,9 +287,9 @@ million, and they are the buffers the graphics card takes, so the main thread
 uploads them without reading them. The decoder writes the arrays the shader
 reads, and no step in between converts between representations.
 
-That is the largest single win here, and everything else on this page compounds
-on top of it. The MAF worker is where it was measured: sending typed arrays
-instead of objects took its `postMessage` from 3.3 s to 0.03 ms on one region.
+That is the largest single win here. The MAF worker is where it was measured:
+sending typed arrays instead of objects took its `postMessage` from 3.3 s to
+0.03 ms on one region.
 
 ## The frame clock
 
@@ -366,21 +364,19 @@ changes.
 
 <!-- END GENERATED MEASUREMENT scalebar-zoom-churn -->
 
-Read the trade rather than the total. Creating and destroying nodes is the
-expensive class, since each new node pays styling, layout and paint, and the
-rise in attribute patches is that same work done the cheap way, on nodes that
-survived.
+Read the trade in the table. Creating and destroying nodes is the expensive
+class, since each new node pays styling, layout and paint, and the rise in
+attribute patches is that same work done the cheap way, on nodes that survived.
 [INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md)
 has the mutation-attribution harness this came off.
 
-### A long list costs per row
+### The track selector's per-row cost
 
-The hierarchical track selector looks model-bound — it rebuilds on every filter
-keystroke, re-reads configs, re-sorts, re-flattens. A keystroke over 2000 tracks
-costs well under a millisecond of model work; mounting the rows costs about 1.4
-ms each. So dropping one MUI wrapper per row pays, and caching the tree does
-not. Two alternating A/B rounds, min and median agreeing, one DOM node per row
-removed:
+The hierarchical track selector rebuilds on every filter keystroke, re-reads
+configs, re-sorts and re-flattens. A keystroke over 2000 tracks costs well under
+a millisecond of model work; mounting the rows costs about 1.4 ms each. So
+dropping one MUI wrapper per row pays, and caching the tree does not. Two
+alternating A/B rounds, min and median agreeing, one DOM node per row removed:
 
 <!-- BEGIN GENERATED MEASUREMENT track-selector-row-cost -->
 
@@ -399,7 +395,7 @@ hierarchy and pruning per keystroke, preserving node identity so memoized items
 bail out, and resolving each track's name and categories once instead of per
 keystroke.
 
-### An index helps a hover only when the alignments are short
+### Hover picking in a synteny view
 
 Hovering a synteny view has to find which alignment sits under the pointer. It
 asks a `flatbush` interval index which alignments' horizontal extents cover that
@@ -486,7 +482,7 @@ once a bgzip-backed track is opened.
 
 ## What the data provider controls
 
-Some of the largest wins are decisions about the files, not about the code.
+Some of the largest wins are decisions about the files.
 
 - **Bgzip and index.** Everything above rests on range requests against a block
   index. A plain `.vcf` or `.gff` is read whole.
@@ -541,7 +537,7 @@ worker assignment has a retire condition, and
 [ARCHITECTURAL_LIMITS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/ARCHITECTURAL_LIMITS.md)
 carries it beside the GPU and scoping ceilings [](/docs/developer_guides/memory)
 sends you to. The rest are measured costs of the current design with nothing yet
-proposed to retire them, which is why they are on this page instead.
+proposed to retire them.
 
 ## Why not an existing engine, why not Rust
 
@@ -550,7 +546,7 @@ evaluated, and
 [why not deck.gl, Pixi, Rust or wgpu](/docs/developer_guides/why_not_x) takes
 them one at a time — including the three places Rust already is.
 
-## Reproducing any of this
+## Reproducing a measurement
 
 Every number on this page names the fixture and the method in the reference doc
 it links to. Before adding one of your own, read
@@ -572,8 +568,7 @@ Taking a first measurement at all is a different problem from not faking one,
 and
 [PERF_INSTRUMENTATION.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PERF_INSTRUMENTATION.md)
 carries the patterns for the frame clock — what to instrument for a render or a
-scroll that feels slow, validated against a real jank report rather than
-invented for the doc.
+scroll that feels slow, validated against a real jank report.
 
 The parser libraries each keep their own equivalent of this page, and the fetch
 half of the path is theirs. Each ends with a "what the consumer has to do"

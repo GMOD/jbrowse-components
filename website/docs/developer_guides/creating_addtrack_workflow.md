@@ -33,22 +33,20 @@ export default function MultiWiggleAddTrackWorkflowF(pm: PluginManager) {
 }
 ```
 
-`ReactComponent` is the form rendered inside the "Add track" widget, and it is
-lazily imported so the form's code only loads when a user picks this workflow.
-`stateModel` is the workflow's own state; an empty `types.model({})` is fine
-when the form holds everything it needs in React state.
+- **`ReactComponent`** is the form rendered inside the "Add track" widget,
+  lazily imported so the form's code only loads when a user picks this workflow
+- **`stateModel`** is the workflow's own state; an empty `types.model({})` is
+  fine when the form holds everything it needs in React state
+- **`category`** groups the workflow in the dropdown under "General" or
+  "Specialized track types". An omitted `category` means `'specialized'`, which
+  fits a workflow targeting one data type, as the multi-wiggle one does; pass
+  `category: 'general'` for a workflow that accepts any track
 
-The component is rendered with two props, not one. `model` is the add-track
-widget's model, and **`switchWorkflow(name)`** moves the user to another
-workflow by name — what the built-in file/URL form uses to hand off to the bulk
-one. A component typed for `model` alone still compiles, since the extra prop is
-assignable, so nothing points this out at the call site.
-
-`category` is the fourth option, and the only one with a default you may not
-want: workflows are grouped in the dropdown under "General" and "Specialized
-track types", and an omitted `category` means `'specialized'`. That is right for
-a workflow targeting one data type, as the multi-wiggle one does; pass
-`category: 'general'` for a workflow that accepts any track.
+The component is rendered with two props. `model` is the add-track widget's
+model, and **`switchWorkflow(name)`** moves the user to another workflow by name
+— what the built-in file/URL form uses to hand off to the bulk one. A component
+typed for `model` alone still compiles, since the extra prop is assignable, so
+nothing points this out at the call site.
 
 Call `MultiWiggleAddTrackWorkflowF(pm)` from your plugin's `install()`, the same
 as any other pluggable element.

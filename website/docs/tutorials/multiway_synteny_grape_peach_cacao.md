@@ -338,7 +338,7 @@ names must match the chromosome names in the corresponding `.bed` file. See the
 [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent JSON.
 
-## Loading it in JBrowse with MCScanBlocksAdapter
+## Loading the blocks file with MCScanBlocksAdapter {#loading-it-in-jbrowse-with-mcscanblocksadapter}
 
 A synteny band draws one pair, but a `.blocks` file describes N, so one track
 backs every band of the stack: list all the genomes in `assemblyNames`, and the

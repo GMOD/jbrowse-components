@@ -130,8 +130,8 @@ top-level key:
 }
 ```
 
-With the config above, the faceted selector gains **origin**, **tissue**, and
-**date_added** columns that can be used to filter or sort tracks.
+The faceted selector gains **origin**, **tissue**, and **date_added** columns to
+filter or sort on.
 
 The left-hand filter panel shows checkboxes for each distinct value in a column.
 You can combine filters across multiple columns, and use the search box at the

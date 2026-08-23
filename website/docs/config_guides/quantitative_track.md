@@ -26,8 +26,7 @@ Example QuantitativeTrack config:
 ## Display options
 
 Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
-`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are appearance
-settings, so they go in the
+`maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) go in the
 [`displayDefaults` shorthand](/docs/config_guides/tracks/#configuring-displays).
 `defaultRendering` picks the plot style and accepts `xyplot`, `density`, `line`,
 or `scatter`:
@@ -51,12 +50,13 @@ the full list of display slots and their defaults.
 
 ## Adapters
 
-BigWig (`BigWigAdapter`) and bedGraph are both supported. For bedGraph, use
-`BedGraphTabixAdapter` (a bgzip+tabix-indexed file) for large data, or
-`BedGraphAdapter` for a small plain `.bedGraph`. The example above uses the
-reduced `uri` form. See the [](/docs/config/bigwigadapter),
-[](/docs/config/bedgraphtabixadapter), and [](/docs/config/bedgraphadapter)
-config docs for all options.
+- `BigWigAdapter` - a BigWig file
+- `BedGraphTabixAdapter` - a bgzip+tabix-indexed bedGraph, for large data
+- `BedGraphAdapter` - a small plain `.bedGraph`
+
+The examples above use the reduced `uri` form. See the
+[](/docs/config/bigwigadapter), [](/docs/config/bedgraphtabixadapter), and
+[](/docs/config/bedgraphadapter) config docs for all options.
 
 ## See also
 

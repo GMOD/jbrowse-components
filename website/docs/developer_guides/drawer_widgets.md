@@ -9,9 +9,9 @@ call `session.addWidget(...)` + `session.showWidget(...)` for any widget. Drawer
 position and width are controlled via session actions.
 
 In the embedded `@jbrowse/react-linear-genome-view2` component, widgets can show
-as resizable side panels (drawers) instead of modal dialogs. Drawers resize by
-dragging the edge, sit on the left or right, minimize while keeping widget
-state, and switch between open widgets.
+as resizable side panels (drawers). Drawers resize by dragging the edge, sit on
+the left or right, minimize while keeping widget state, and switch between open
+widgets.
 
 ## Showing the track selector
 
@@ -66,31 +66,30 @@ export default function WithInitAdvanced() {
 
 ## Managing widgets programmatically
 
-Opening a widget from your own code means holding the engine, so this needs the
-`useCreateViewState` form rather than the props form above — same object either
-way, see
+Opening a widget from your own code means holding the engine, so it needs the
+`useCreateViewState` form — the same object either way, see
 [driving the view from your own code](/docs/embedded_components#driving-the-view-from-your-own-code).
 
 Every drawer action is on the session, so they read
 `state.session.setDrawerPosition('left')` and so on:
-[`showWidget`](/docs/models/drawerwidgetsessionmixin#action-showwidget) and
-[`hideWidget`](/docs/models/drawerwidgetsessionmixin#action-hidewidget) for one
-widget,
-[`minimizeWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-minimizewidgetdrawer)
-and
-[`showWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-showwidgetdrawer)
-for the drawer itself, and
-[`setDrawerPosition`](/docs/models/drawerwidgetsessionmixin#action-setdrawerposition)
-for which side it sits on. Showing a widget un-minimizes the drawer, so a
-minimized drawer does not swallow the widget you just opened.
+
+- [`showWidget`](/docs/models/drawerwidgetsessionmixin#action-showwidget) and
+  [`hideWidget`](/docs/models/drawerwidgetsessionmixin#action-hidewidget) — one
+  widget at a time. Showing a widget un-minimizes the drawer.
+- [`minimizeWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-minimizewidgetdrawer)
+  and
+  [`showWidgetDrawer`](/docs/models/drawerwidgetsessionmixin#action-showwidgetdrawer)
+  — the drawer itself.
+- [`setDrawerPosition`](/docs/models/drawerwidgetsessionmixin#action-setdrawerposition)
+  — which side it sits on.
 
 ## Init state options
 
-The `init` prop accepts two sets of keys, and the split is worth knowing:
-`InitState` keys need resolving on load (a locstring has to become regions, a
-track id has to become an open track), which is why they live in a one-shot
-blob. `LinearGenomeViewLaunchProps` are plain view props forwarded straight onto
-the snapshot, so they round-trip on save like any other setting:
+The `init` prop accepts two sets of keys. `InitState` keys need resolving on
+load (a locstring has to become regions, a track id has to become an open
+track), which is why they live in a one-shot blob. `LinearGenomeViewLaunchProps`
+are plain view props forwarded straight onto the snapshot, so they round-trip on
+save like any other setting:
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/types.ts#initState -->
 
@@ -148,22 +147,21 @@ export type LinearGenomeViewLaunchProps = Partial<
 
 ## Drawer position and width
 
-Width (CSS pixels, default 384) is set with `updateDrawerWidth(500)`, clamped so
-the drawer cannot take the whole viewport (minimum drawer width 128px, minimum
-main view width 150px). It returns the width actually applied, so a caller can
-tell it asked for more than it got. `resizeDrawer(distance)` is the edge drag's
-action and moves the width by a delta instead, flipping the sign for a
-left-positioned drawer and returning the delta that fitted. `drawerPosition`
-(default `'right'`, set with `setDrawerPosition`) persists to localStorage and
-restores on the next page load.
+- **`updateDrawerWidth(500)`** sets the width in CSS pixels (default 384),
+  clamped so the drawer cannot take the whole viewport (minimum drawer width
+  128px, minimum main view width 150px). It returns the width actually applied,
+  so a caller can tell it asked for more than it got.
+- **`resizeDrawer(distance)`** is the edge drag's action, moving the width by a
+  delta, flipping the sign for a left-positioned drawer and returning the delta
+  that fitted.
+- **`drawerPosition`** (default `'right'`, set with `setDrawerPosition`)
+  persists to localStorage and restores on the next page load.
 
 The two do **not** travel together. `drawerWidth` is an ordinary session
 property, so it round-trips through a saved or shared session; `drawerPosition`
 is stripped out of the snapshot on the way out and lives only in that browser's
-localStorage, on the grounds that which side your drawer sits on is a personal
-layout preference rather than something to hand to whoever opens your link. So a
-session cannot carry a drawer position, and a host that wants one sets it after
-load.
+localStorage, as a personal layout preference. A session cannot carry a drawer
+position, so a host that wants one sets it after load.
 
 ## Showing a custom widget
 

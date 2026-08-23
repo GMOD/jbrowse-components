@@ -21,8 +21,7 @@ glyph** option in the track menu controls how a gene's transcripts are drawn:
 - Auto (default) - stacks every transcript when you are zoomed in, but collapses
   each gene to a single transcript when you are zoomed out, so dense regions
   stay legible. Zoomed in it also keeps only as many isoforms per gene as the
-  track's height has rows for, rather than hiding the last ones inside the
-  track's own scrollbar.
+  track's height has rows for.
 - All transcripts - always draws every transcript on its own row.
 - Representative transcript - collapses each gene to one isoform.
 
@@ -36,15 +35,13 @@ genomic span. The attribute read and the tags that count are the
 
 A gene left short by the track's height says so on its own label: a small **+N
 more** beside the gene name, counting the isoforms that gene is missing.
-Clicking it opens that one gene without stacking every other gene on screen, and
-the badge then reads **show fewer** and closes it again. The count sits on the
-gene because that is the only place it means anything — one gene in a window can
-be missing twenty isoforms and its neighbour one, which no single number for the
-view can say. The **Gene glyph** submenu grows a row to re-collapse every gene
-opened this way. Representative transcript puts no badge on a gene you have not
-opened: that mode is a choice you made, and the chip below already names it. A
-gene you did open keeps its badge in every mode, because the badge is the only
-way back to a collapsed one.
+Clicking it opens that one gene, and the badge then reads **show fewer** and
+closes it again. The count sits on the gene, since one gene in a window can be
+missing twenty isoforms and its neighbour one. The **Gene glyph** submenu grows
+a row to re-collapse every gene opened this way. Representative transcript puts
+no badge on a gene you have not opened, since that mode is a choice you made and
+the chip below already names it. A gene you did open keeps its badge in every
+mode, which is the way back to a collapsed one.
 
 While transcripts are being left out, the track's bottom-right corner says so
 with a chip naming the rule that did it: `Isoforms trimmed to fit` where the
@@ -58,14 +55,15 @@ and its (×) shrinks it to the small icon that stays in that corner.
 ## Collapsing introns
 
 Genes often span far more intronic than exonic sequence, so the coding parts are
-spread thinly across the view. Right-click a gene and choose **Collapse
-introns** to replace the view's displayed regions with just the gene's exons
-placed side by side. A window-size setting controls how many base pairs of
-flanking sequence to keep around each splice boundary. Right-clicking a specific
-transcript offers that isoform as well as the whole gene, whose exons are
-unioned; the dialog also has a transcript dropdown, which is how to reach an
-isoform that isn't drawn. This makes it easy to read a gene's coding sequence
-(or inspect reads spanning it) without scrolling past large introns.
+spread thinly across the view.
+
+- **Collapse introns**, from a gene's right-click menu, replaces the view's
+  displayed regions with just that gene's exons placed side by side.
+- A window-size setting controls how many base pairs of flanking sequence to
+  keep around each splice boundary.
+- Right-clicking a specific transcript offers that isoform as well as the whole
+  gene, whose exons are unioned; the dialog also has a transcript dropdown,
+  which is how to reach an isoform that isn't drawn.
 
 This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
 spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and
@@ -88,8 +86,8 @@ Several track-menu toggles tune how gene glyphs are drawn:
 ## Color by CDS
 
 By default CDS segments use the track's feature color. Turning on **Color CDS by
-reading frame** instead tints each CDS segment by the frame it is read in, so
-one colour is one frame across the whole view.
+reading frame** tints each CDS segment by the frame it is read in, so one colour
+is one frame across the whole view.
 
 Frame is constant within a CDS segment, so the colour changes at a junction
 rather than inside an exon: two consecutive coding exons in the same colour are
@@ -147,9 +145,9 @@ with the codons in the reference sequence track, so you can read the genomic
 sequence, the codons, and the resulting peptide in register. The translation
 uses the standard genetic code (NCBI table 1).
 
-Translating needs the reference sequence, so if you would rather the view not
-fetch it, turn off **Show amino acids when zoomed in** from the view menu's
-**Show...** submenu.
+Translating needs the reference sequence. Turn off **Show amino acids when
+zoomed in**, in the view menu's **Show...** submenu, to keep the view from
+fetching it.
 
 The translation follows the transcript's strand and CDS phase, and codons that
 straddle an exon boundary are split across the two exons. When a CDS carries a

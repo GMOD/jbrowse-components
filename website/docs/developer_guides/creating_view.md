@@ -6,8 +6,8 @@ guide_category: Plugins
 
 **TL;DR:** View types are top-level "panels" the session can contain alongside
 built-ins like `LinearGenomeView`, `DotplotView`, and `CircularView`. A view
-defines its own state model and React component, and need not display genomic
-tracks (though most do).
+defines its own state model and React component; displaying genomic tracks is
+optional.
 
 ## When to add a custom view type
 
@@ -19,9 +19,8 @@ that does not fit inside an existing view. Examples:
 - `DotplotView` and `LinearSyntenyView` host synteny tracks but with their own
   axis and layout logic
 
-If you only need to render features differently inside the linear genome view,
-[a custom display type](/docs/developer_guides/creating_display) is the right
-abstraction instead.
+To render features differently inside the linear genome view, use
+[a custom display type](/docs/developer_guides/creating_display).
 
 ## Minimal walkthrough
 
@@ -52,23 +51,23 @@ export default function DotplotViewF(pluginManager: PluginManager) {
 }
 ```
 
-`name` is what a session snapshot and a URL spec store; `displayName` is what
-the view launcher's dropdown shows. The state model is a
-[mobx-state-tree](https://mobx-state-tree.js.org/) model (see
-[](/docs/developer_guides/mst_patterns)) and the React component receives
-`{ model }` as a prop.
+`ViewType` takes four core options:
 
-Wrap the component in `React.lazy` as every built-in view does — the view's
-whole component tree then stays out of the initial bundle until a session
-actually opens one.
+- **`name`** — what a session snapshot and a URL spec store.
+- **`displayName`** — what the view launcher's dropdown shows.
+- **`stateModel`** — a [mobx-state-tree](https://mobx-state-tree.js.org/) model,
+  see [](/docs/developer_guides/mst_patterns).
+- **`ReactComponent`** — receives `{ model }` as a prop. Wrap it in `React.lazy`
+  as every built-in view does, so the view's whole component tree stays out of
+  the initial bundle until a session opens one.
 
-`ViewType` takes two more options, neither of which any built-in view needs:
+`ViewType` takes two more options:
 
 - **`extendedName`** names another view type whose displays yours should also
   accept. Display types register against exactly one view type, so a subtype of
-  `LinearGenomeView` otherwise starts with none of the displays every track
-  already has. `addViewType` collects the displays matching your `name` _or_
-  your `extendedName`.
+  `LinearGenomeView` needs this to pick up the displays every track already has:
+  `addViewType` collects the displays matching your `name` _or_ your
+  `extendedName`.
 - **`viewMetadata: { hiddenFromGUI: true }`** keeps the type out of the view
   launcher's dropdown, for a view that only ever arrives from a spec, a
   connection, or another view's action.
@@ -78,7 +77,7 @@ actually opens one.
 Registering the view type is what lets a session snapshot _restore_ one. Opening
 one from a URL is separate: `loadSessionSpec` dispatches on the spec's `type` to
 a `LaunchView-<name>` extension point, and a view type with no registered point
-cannot be launched from a spec — reported by name rather than failing silently.
+cannot be launched from a spec; the error names the view type.
 
 Register one to make yours launchable, exporting the args interface and
 augmenting `ExtensionPointRegistry` beside it. The spreadsheet view's launcher

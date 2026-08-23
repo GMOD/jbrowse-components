@@ -75,9 +75,9 @@ Positions where a base and a deletion are both well supported have no IUPAC
 code, since the notation only covers bases. These are written as a lowercase
 base, following the same convention samtools uses.
 
-Note that a genuine four-way split is also written N, because that is what IUPAC
-spells for all four bases. A tetraploid site with four real alleles and a
-position with no usable signal are indistinguishable in this notation.
+A genuine four-way split is also written N, because that is what IUPAC spells
+for all four bases. A tetraploid site with four real alleles and a position with
+no usable signal are indistinguishable in this notation.
 
 ## Exporting
 
@@ -97,8 +97,7 @@ A deletion running from the very first position of the selection is also left
 out. A VCF deletion record is anchored on the reference base in front of it, and
 that base is outside the selection, so the deletion cannot be written without
 misstating which bases it covers. It is still reflected in the FASTA, which
-simply omits the deleted bases. Extend the selection to the left to get the
-record.
+omits the deleted bases. Extend the selection to the left to get the record.
 
 ## Relationship to samtools
 
@@ -112,8 +111,7 @@ truncated to two alleles.
 
 This is quality-independent calling: it counts and weights reads without using
 base quality scores or a genotype likelihood model. It answers "what do these
-reads say is here", which is not variant calling. For genotypes and confidence
-scores, use a dedicated caller.
+reads say is here"; for genotypes and confidence scores, use a dedicated caller.
 
 ## See also
 

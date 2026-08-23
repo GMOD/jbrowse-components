@@ -6,7 +6,7 @@ guide_category: General usage
 
 **TL;DR:** A **connection** is a reusable pointer to an external track hub or
 data directory. Point JBrowse at a hub once and its tracks become available in
-the track selector, instead of configuring each track by hand.
+the track selector.
 
 JBrowse supports three built-in connection types:
 
@@ -33,8 +33,10 @@ Expand the one you want; leave the rest collapsed.
 
 ## Opening a connection
 
-Use the menu bar: `File` → `Open connection...`, or the track selector's
-hamburger menu → `Connections...` → `Add connection...`
+Open the form from either route:
+
+- Menu bar: `File` → `Open connection...`
+- Track selector's hamburger menu → `Connections...` → `Add connection...`
 
 Paste the hub URL (see below for the format), choose the connection type, and
 submit. A newly added connection loads right away, so its tracks appear

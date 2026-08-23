@@ -15,7 +15,7 @@ tutorial_category: Configuration & embedding
   it served. `npx serve -S` in the folder works (`-S` resolves symlinks, so a
   data file you symlink in still loads)
 
-## What this builds
+## The finished embedded view
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 

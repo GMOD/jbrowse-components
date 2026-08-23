@@ -12,9 +12,12 @@ do.
 
 ## For everyone
 
-`jbrowse upgrade` updates a web installation in place; Desktop updates itself;
-embedded users bump `@jbrowse/react-linear-genome-view` and friends to their v5
-line. A config from v4 loads as it is, and
+- **Web** — `jbrowse upgrade` updates an installation in place.
+- **Desktop** — updates itself.
+- **Embedded** — bump `@jbrowse/react-linear-genome-view` and friends to their
+  v5 line.
+
+A config from v4 loads as it is, and
 [`jbrowse validate`](/docs/cli#jbrowse-validate) will tell you if it does not.
 
 ## Migrations that happen automatically
@@ -28,12 +31,11 @@ Most sessions and configs migrate through `preProcessSnapshot`:
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 - the alignments `insertSizeGradient` color scheme resolves to `insertSize`
 
-The gradient is gone rather than migrated because it was a worse spelling of the
-scheme it now maps to: same thresholds, same classifier, same buckets, and two
-endpoint hues close enough that a half-ramped read on either side of the band
-came out the same faint grey. The `heightOverride` shadow-prop that existed
-during development is gone, and there is no `<name>Override` shadow-property
-system.
+The gradient is gone rather than migrated because it duplicated the scheme it
+now maps to: same thresholds, same classifier, same buckets, and two endpoint
+hues close enough that a half-ramped read on either side of the band came out
+the same faint grey. The `heightOverride` shadow-prop that existed during
+development is gone, and there is no `<name>Override` shadow-property system.
 
 ## The renderer registry is gone
 
@@ -42,8 +44,7 @@ classes were removed — core no longer renders on the server. A plugin that
 registered a custom `RendererType` or hooked into that pipeline has to be
 rewritten against [](/docs/developer_guides/creating_gpu_display)
 (`RenderLifecycleMixin` and `DisplayChrome`), and there is no compatibility
-shim. This is the most painful part of the upgrade for plugin authors with
-custom renderers.
+shim.
 
 In practice the affected set is small: the significant custom renderers were
 ones we wrote ourselves, now vendored into core plugins, plus two known external
@@ -220,12 +221,11 @@ A point whose `args` are an array is now registered through
 its own entries — `undefined` meaning "nothing from me" — instead of being
 handed everyone else's array and trusted to hand it back. The old form let a
 callback return a bare entry, or its own single-element array, and silently drop
-every other plugin's contribution; both look correct in the only install their
-author can easily check, because theirs is the only plugin registered. Passing
-such a point to `addToExtensionPoint` is now a type error that names the method
-to use — unless the call pins its own type argument, which keeps the older arity
-compiling and skips the check with it. `addExtensionElement` and
-`addExtraTrackMenuItems` moved with it.
+every other plugin's contribution; both look correct in an install where theirs
+is the only plugin registered. Passing such a point to `addToExtensionPoint` is
+now a type error that names the method to use — unless the call pins its own
+type argument, which keeps the older arity compiling and skips the check with
+it. `addExtensionElement` and `addExtraTrackMenuItems` moved with it.
 
 The UI points went the other way, from one helper per point to one mechanism per
 shape. A single-component slot — `Core-replaceWidget`, `Core-replaceAbout`, the
@@ -263,9 +263,8 @@ declares, so a session holding `dockviewLayout` or `panelViewAssignments` loads
 without error and every view survives — only the arrangement does not.
 
 **The LD display's `showRecombination` lane was removed.** It plotted `1 - r2`
-between adjacent SNPs and called it a recombination rate, which is the triangle
-drawn under it restating its own first off-diagonal on an axis that is allele
-frequency rather than recombination.
+between adjacent SNPs and called it a recombination rate, which restated the
+triangle's own first off-diagonal on an axis of allele frequency.
 
 **The `lollipop` plugin was removed.** A `LinearLollipopDisplay` track in a v4
 config no longer resolves.

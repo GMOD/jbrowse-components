@@ -36,14 +36,12 @@ jexl: feature.parent // parent feature, e.g. the gene of an mRNA (undefined if n
 ### Property access vs `get()` {#property-access-vs-get}
 
 `feature.start` (property access) and `get(feature,'start')` (function form) are
-equivalent, and existing configs need no changes. The `get()` form works on
-every JBrowse release, while property access was added more recently. If your
-config must run on older versions, prefer `get()`. Otherwise use whichever reads
-more clearly, since property access is usually shorter. The examples in this
+equivalent. The `get()` form works on every JBrowse release, while property
+access was added more recently, so prefer `get()` if your config must run on
+older versions. Otherwise use whichever reads more clearly. The examples in this
 guide use property access.
 
-There is one place the choice is not free. What `feature` actually is depends on
-which callback you are in:
+What `feature` actually is depends on which callback you are in:
 
 | Callback                                                                 | `feature` is                    | Property form | `get()` form |
 | ------------------------------------------------------------------------ | ------------------------------- | ------------- | ------------ |
@@ -52,7 +50,7 @@ which callback you are in:
 
 `formatDetails` runs against the serialized feature the detail panel holds, not
 a `SimpleFeature`, so `feature.get('start')` fails there. Property form works
-everywhere, which is the other reason to prefer it.
+everywhere.
 
 In JavaScript plugin code the rule is different again: a `SimpleFeature` handed
 to your own function is the real object, so use `feature.get('start')`.
@@ -83,7 +81,7 @@ Label with a fallback. The first non-empty attribute wins:
 Add a row to the click-details panel. `formatDetails` is the one slot family
 whose callback returns an **object** rather than a single value: each key
 becomes a field, and a key set to `undefined` hides one. Returning a bare value
-here does nothing, so the missing braces are the mistake to watch for:
+here produces no rows:
 
 ```json
 "formatDetails": {
@@ -205,23 +203,22 @@ jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, 
 
 The catalog above is generated from the registrations themselves — core's in
 [`packages/core/src/util/jexl.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/jexl.ts),
-and each plugin's alongside the display it serves — so it never drifts from the
-available functions. A plugin you install can add more; those are documented by
-the plugin.
+and each plugin's alongside the display it serves. A plugin you install can add
+more; those are documented by the plugin.
 
-The last two groups come from plugins that ship with JBrowse. The variant ones
-are the same functions the variant track's filter and color menus write for you,
-so a menu choice can be copied into a config and then edited (see
-[](/docs/config_guides/variant_track)). The slot defaults are what those slots
-already evaluate to when you leave them alone, listed so you can compose with
-one instead of replacing it.
+The last two groups come from plugins that ship with JBrowse:
+
+- **the variant functions** are the same ones the variant track's filter and
+  color menus write for you, so a menu choice can be copied into a config and
+  then edited (see [](/docs/config_guides/variant_track))
+- **the slot defaults** are what those slots already evaluate to unconfigured,
+  listed so you can compose with one
 
 **Template strings**
 
 Our jexl fork supports JavaScript-style template literals with backticks and
-`${...}` interpolation, which is often clearer than string concatenation. This
-is handy for building colors, for example an HSL color derived from a feature
-value:
+`${...}` interpolation, handy for building colors, for example an HSL color
+derived from a feature value:
 
 ```json
 "color": "jexl:`hsl(${feature.start/100000},50%,50%)`"
@@ -233,7 +230,7 @@ The equivalent with concatenation:
 "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
 ```
 
-## When a callback outgrows one line
+## Adding your own jexl function
 
 Jexl has no way to define a variable or a branchy helper, so past a certain
 point an expression stops being readable. The escape hatch is to add your own
