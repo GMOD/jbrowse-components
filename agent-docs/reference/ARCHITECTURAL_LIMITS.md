@@ -820,15 +820,33 @@ knowing it exists — which is what keeps them here rather than in
 
 ## Coupling
 
-### Canvas feature tracks bake appearance into worker output, so a color or theme change refetches
+### Canvas feature tracks bake per-feature color into worker output, so a color-slot edit refetches
 
-**Status:** Open.
+**Status:** Half closed (2026-08). The theme is out; the color slots are not.
 
-`LinearBasicDisplay`'s `rpcProps()` returns the slots the worker reads plus
-`theme: getSession(self).themeOptions`. Every returned field is an RPC cache key,
-so `SettingsInvalidate` fires `clearAllRpcData()` and every visible region
-refetches. **A light/dark toggle, or one color slot edit, re-downloads and
-re-parses every region of every canvas feature track.**
+`LinearBasicDisplay`'s `rpcProps()` returns the slots the worker reads. Every
+returned field is an RPC cache key, so `SettingsInvalidate` fires
+`clearAllRpcData()` and every visible region refetches. **One `color` /
+`utrColor` / `connectorColor` slot edit re-downloads and re-parses every region
+of every canvas feature track**, because those slots are per-feature jexl
+callback slots and only the worker has the feature to evaluate them against.
+
+**The theme is no longer one of those fields.** It used to be — `theme:
+getSession(self).themeOptions`, so worker-baked CDS-frame, connector and outline
+colors followed the palette — which made a light/dark toggle a full refetch of
+data that had not changed. The worker now holds no palette at all: where it
+would bake a theme color it emits a **color class** in a `*ColorClasses` lane
+beside the color lane (`RenderFeatureDataRPC/colorClasses.ts`), and the display's
+`gpuProps()` feeds a main-thread `encode` that resolves the classes against
+`session.palette`. Six roles cover it — the connector stroke, the theme-derived
+outline, and the six CDS reading frames, each with the two codon tints
+`emitCodonRects` lightens out of it. A region with none of them re-encodes to
+the same arrays by reference, so the upload diff skips it.
+
+Label text colors needed no class: a label's color is a function of its KIND and
+the theme, so `LabelItem` carries no color and `labelColors` resolves it beside
+the position. That also fixed the SVG export, which resolves the *export*
+theme's palette and had been printing worker-baked labels in the session's.
 
 **The payload is picked, not filtered, and that half is closed.** It used to be
 the whole `getConfigSnapshotWithPromotables` snapshot minus a hand-kept exclusion
@@ -867,16 +885,14 @@ the `SettingsInvalidate keys on the payload, not the reads` suite in
 This is the one place the codebase inverts its own split (worker returns data,
 main thread owns pixels), and for a real reason: the canvas worker bakes
 per-feature colors, including jexl callbacks that need feature context, into the
-instance buffer. It is also why canvas is the only per-region display with no
-`gpuProps()` (ARCHITECTURE.md §"`rpcProps()` / `gpuProps()` pattern").
+instance buffer.
 
-**Retire when** canvas splits its payload into fetch-affecting and
-appearance-affecting halves and grows a `gpuProps()`. The consistent fix has the
-worker emit a per-feature color *class index* plus the attributes jexl needs, and
-resolve the palette in the main-thread encoder, as synteny's `computedColors`
-already does. The cheap intermediate is a worker-side parsed-feature cache keyed
-by adapter + region + the non-visual payload, so a color change re-encodes
-without re-parsing.
+**Retire the rest when** the per-feature color leaves the worker too. Unlike the
+theme, it cannot become a class: the value is per feature, so it would have to
+be a full RGBA lane the worker still evaluates jexl to fill — which is a fetch,
+which is where it already is. The cheap intermediate is a worker-side
+parsed-feature cache keyed by adapter + region + the non-visual payload, so a
+color-slot change re-evaluates without re-downloading and re-parsing.
 
 The pick above is what makes that split tractable rather than a prerequisite for
 it: `WORKER_READS` is already the list of what the worker actually consumes, so
@@ -964,10 +980,12 @@ file rather than being attributed wrongly.
 **Now checked** (dev-only; every one but the retry contract at the end reports
 only on a real violation):
 
-- **A renamed gate hook must not be left overridden under its old name.**
-  `RegionTooLargeMixin`'s `afterAttach` reads `getMembers(self).views` against a
-  map of the names renamed in 2026-08 (`byteGateEnabled` → `measuresBytesPreFlight`
-  and the rest) and reports any it finds. Same failure as the compose-order case
+- **A renamed or removed gate hook must not be left overridden.**
+  `RegionTooLargeMixin`'s `afterAttach` reads `getMembers(self)` against three
+  maps — the names renamed in 2026-08 (`byteGateEnabled` → `gateEnabled` and the
+  rest), and the pre-flight members deleted when the gate collapsed onto one
+  measurement path (`measuresBytesPreFlight`, `byteGateBlocksFetch`) — and
+  reports any it finds. Same failure as the compose-order case
   and reached a different way: an out-of-tree display's override lands on a
   getter nothing reads, so the gate stays off and the track downloads unguarded.
   **The general move: a rename of an opt-in is only safe if it is louder than the
@@ -1035,7 +1053,7 @@ only on a real violation):
 **Checked without a runtime check:**
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
-  Both define `measuresBytesInFetch` and `densityGateEnabled` and the later
+  Both define `gateEnabled` and `densityGateEnabled` and the later
   argument wins, so swapping them switches the whole size gate off with no error
   ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)). **An argument order is a
   declaration**, and esquery's sibling combinator reads it directly: the rule is
@@ -1091,23 +1109,6 @@ only on a real violation):
   neither our lint nor our tests, and which the production strip already left
   with nothing
   ([ideas/contract-checks-out-of-tree.md](../ideas/contract-checks-out-of-tree.md)).
-
-- **`gateEnabled` must not be overridden.** It is `measuresBytesPreFlight ||
-  measuresBytesInFetch` by construction, so a second `get gateEnabled()`
-  anywhere in source is an eslint error (`no-restricted-syntax` in
-  `eslint.config.mjs`, which carries the reason; `RegionTooLargeMixin.ts` is
-  exempted as the declaration, and tests are outside the source-only block). The
-  additive OR and the compose-order check above guard the *contributed* opt-ins,
-  and neither guards the OR itself — which is what a literal shadow replaces:
-  false over a live opt-in is the whole size gate off with no banner and no
-  error. **The general move: where the violation is a declaration rather than a
-  state, a selector is the whole check** — it costs nothing at runtime and
-  nothing to maintain, where the dev-time read it was written as first
-  (2026-08-22, dropped in review before it landed) had to be installed per
-  display, fired only for a shadow that disagreed at the moment of attach, and
-  gave the jest gate a fixture to keep.
-  What it does not cover is an out-of-tree display, which runs neither our lint
-  nor our tests; the prose in REGION_TOO_LARGE.md is the whole answer there.
 
 **Still silent:**
 

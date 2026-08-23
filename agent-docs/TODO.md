@@ -101,7 +101,7 @@ the half that rots is the half it covers.
 | [Does a quality floor still buy anything on the band](todo/does-a-base-quality-floor-still-buy-anything-on-the-coverage-band.md) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](todo/walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group.md) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
 | [Alignments main-thread repack](todo/alignments-still-repacks-every-row-instanced-pass-on-the-main-thread.md) | alignments, GPU | profile the pack/upload/clone split first |
-| [Stop rewriting the worker's arrays](todo/stop-rewriting-the-workers-arrays-to-lay-out-features.md) | canvas | count the consumers — they decide if it is worth it |
+| [Stop rewriting the worker's arrays](todo/stop-rewriting-the-workers-arrays-to-lay-out-features.md) | canvas | measured: skip the row offset, convert the two object arrays to SoA |
 | [The SV inspector rebuilds its chord track per filter](todo/the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter.md) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [One inflate pool and byte cache per session](todo/give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them.md) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
 | [Sweep the unused exports, or close the question](todo/sweep-the-unused-exports-with-a-real-tool-or-close-the-question.md) | tooling, CI | configure knip per package; a grep returns hundreds of names and almost none are dead |

@@ -1,6 +1,6 @@
 ---
 name: stop-rewriting-the-workers-arrays-to-lay-out-features
-description: count the consumers — they decide if it is worth it
+description: the lanes are not the cost — the objects are, on both sides of the hop
 metadata:
   area: canvas
   category: measure-first
@@ -8,83 +8,100 @@ metadata:
 
 # Stop rewriting the worker's arrays to lay out features
 
-`cloneMutableFields` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`) is **~78%
-of a full layout** — 116ms of 148ms at 4k features, per-phase instrumented, against
-8.8ms for the actual packing. It is pure allocation: a fresh `Float32Array` per
-geometry channel plus an object spread per `flatbushItems` entry, per
-`subfeatureInfos` entry and per `floatingLabelsData` entry, all so
-`computeLaidOutData` can add each feature's row offset into the copy in place.
+`computeLaidOutData` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`) clones
+each region before it can add the per-feature row offset into it, because
+`applyHeightScale` and `applyLayoutToRegion` both mutate. This entry used to
+propose keeping the row offset in a `Float32Array` beside the raw result and
+adding it where Y is consumed, so the clone could go.
 
-**That 78% is a 4k-feature number and does not survive density.** A DevTools trace
-of a dense VCF plus a RepeatMasker track (~60k features in view, everything
-density-collapsed to row 0) puts `cloneMutableFields` at 73ms of a 724ms committed
-layout — **15%, not 78%** — behind `prepareRefPack` (82ms) and
-`applyLayoutToRegion` (82ms), with `pileupFadeIds` (47ms) and `applyHeightScale`
-(51ms) close behind. The clone is no longer the thing to attack first at that
-density; the shared cause underneath all of them is below.
+**That was measured and it is the wrong lever.** Numbers below are one region,
+node/jest on an M-series laptop (so absolute values run high; the ratios are the
+point), a labeled fixture where every feature carries a name.
+
+| | 4k features | 60k features |
+| --- | --- | --- |
+| `computeLaidOutData` total | 35.0ms | 686ms |
+| the pack alone (`createContentHeightProbe`, no clone) | 30.6ms | 474ms |
+| clone + `applyHeightScale` + `applyLayoutToRegion` | **4.4ms (12%)** | **213ms (31%)** |
+
+The 78%-at-4k figure this entry used to lead with does not reproduce; at that
+size the pack — label reservation plus `GranularRectLayout` — is nearly all of
+it.
+
+Inside that 213ms, at N=60k:
+
+| | |
+| --- | --- |
+| `floatingLabelsData` Map clone (an object spread per entry) | 128.5ms |
+| `flatbushItems.map({...})` | 30.2ms |
+| `subfeatureInfos.map({...})` | 28.1ms |
+| `layoutMap.get(featureId)` per feature | 23.7ms |
+| the label walk's own `.get` per entry | 18.5ms |
+| **every Float32Array lane, cloned AND rewritten** | **~0.6ms each** |
+
+So the typed-array lanes the row-offset spike targets are about **2% of the
+clone**. Standalone, over 60k elements: clone-and-bake `y*m + rows*f + off[idx]`
+is 0.64ms; resolving the same expression in a consumer's own loop is 0.44ms.
+Moving 0.6ms out of layout and into eight consumers — the GPU packer, the
+Canvas2D painter, `hitTesting`, `overlayElements`, `yMorph`, `maxBottom`,
+`minDrawnBoxHeight`, `renderSvg` — is not a trade worth making, and it is the
+trade this entry always warned would come straight back. **Don't build the row
+offset.**
+
+## What the numbers do say to build
+
+**Struct-of-arrays for `flatbushItems` / `subfeatureInfos`.** The measurement
+that decides it is the worker→main hop, not the clone:
+
+| structured clone of, at N=60k | |
+| --- | --- |
+| `{flatbushItems, subfeatureInfos}` — 120k objects | **365ms** |
+| the same content as parallel typed arrays + two `string[]` | **~30ms** |
+
+Structured clone charges by object count; the strings are cheap (60k of them
+clone in 28ms) and the typed arrays are transferable. That is a 12x cut on a
+cost every fetch pays, half of it on the main thread. It also removes the 58ms
+of per-object spreads above and makes the layout gathers index-keyed for free —
+`rectFeatureIndices` already indexes `flatbushItems`, so no `Feature` ABI change
+is involved (the numeric-feature-id idea was and remains the wrong lever: at
+N=60k `Set<number>.has` is 20.7ms against `Set<string>.has`'s 31.8ms, while
+`Uint8Array[idx]` is 1.05ms).
+
+The cost is the churn: `FlatbushItem` and `SubfeatureInfo` are read by the hover
+readout, the context menu, the highlight resolver, the label layer, `renderSvg`,
+`featureItemMap`, `hitTesting`, `layout`, and the LD display — about 30 source
+files and 25 test files — and `FlatbushItem` is exported from
+`plugins/canvas/src/index.ts`, so it is a plugin-ABI change too
+(`reference/PLUGIN_ABI_STABILITY.md`). A half-landed conversion is worse than
+either end, so this wants a session of its own.
+
+**A cheaper first move, if that is too wide:** keep the object shape in memory
+and make only the WIRE format SoA — pack in `executeRenderFeatureData`, rehydrate
+in `setRpcData`. Rehydration costs about what the spread costs (~30ms at 60k), so
+365ms becomes ~60ms with no consumer touched at all. It is a shim by the
+"delete rather than shim" rule, but it buys 6x for two files.
+
+**`floatingLabelsData`'s 128ms is a labeled-60k number and is mostly not real.**
+At that density labels are decimated or off, so the map is small — which is why
+a DevTools trace of a dense VCF + RepeatMasker put the whole clone at 15% rather
+than 31%. Attack it only behind a trace that shows it.
+
+## Still open, unchanged by the above
 
 `createContentHeightProbe` packs straight from the raw worker data and never
-clones, so the fit solve's height probes escape the cost. Every *committed*
+clones, so the fit solve's height probes escape all of this. Every *committed*
 layout pays it: each settled zoom, each pan into new data, each label or
 display-mode toggle.
 
-The shape of the fix is to not rewrite the arrays at all — keep the per-feature row
-offset in its own `Float32Array` beside the raw result and add it where Y is
-consumed. Layout then becomes "compute a row map", i.e. the 8.8ms part.
+### The consumers are their own cost
 
-**Measure the consumers before building it**, because they are the cost, not the
-layout. `GpuCanvasFeatureRenderer` already takes per-instance Y so an offset
-attribute is cheap there, but `components/hitTesting.ts`,
-`components/overlayElements.tsx` (`useOverlayElements.tsx` until `e148172a5e`
-made its pseudo-hooks the observer components `FloatingLabelsLayer` and
-`HighlightLayer`), `yMorph.ts` (`interpolateYData`, `captureFeatureTops`) and
-`scaleLaidOutData` all read absolute `topPx`/`bottomPx`/`rectYs` today.
-`renderSvg.tsx` no longer does — it hands `laidOutDataMap` to the Canvas2D
-helpers — so the census is one consumer shorter than this entry counted. Count
-those call sites first and decide whether they can share one "resolve Y"
-accessor, or whether enough of them need the offset folded in that the clone
-comes straight back — that answer decides whether the spike is worth it at all.
-
-Two cheaper fallbacks if that is too invasive. `flatbushItems` and
-`subfeatureInfos` are arrays of objects cloned by spread, so parallel typed
-arrays would remove most of the allocation without touching the render contract.
-And `rectDensityFade` is worker-allocated but layout-valued, with
-`applyLayoutToRegion` writing every element, so `computeLaidOutData` could
-allocate it rather than copy it — the catch being that `cloneMutableFields` is
-shared with `scaleLaidOutData`, which does not rewrite the array and still needs
-the copy, so that split costs a per-caller flag or a second clone helper.
-
-## The shared cause is that per-feature identity is a string
-
-Every function in that list associates data per feature through a
-`Map<string, _>`, a `Set<string>` or a `Record<string, _>`, and at ~60k features
-the keying is most of the cost rather than the work. Measured standalone at
-N=60k, against the index-keyed equivalent:
-
-| site | now | index-keyed | |
-| --- | --- | --- | --- |
-| `applyLayoutToRegion`'s `densityFadeIds.has(featureId)` per rect | 12.1ms | 0.10ms | 121x |
-| `prepareRefPack`'s two `Map<string, object>` | 90.7ms | 8.2ms | 11x |
-| `layoutMap.get(featureId)` offset/height gathers | 6.6ms | 0.22ms | 30x |
-
-Numeric feature ids were floated as the fix and are the wrong lever: at the same
-N, `Set<number>.has` is 20.7ms against `Set<string>.has`'s 31.8ms, while
-`Uint8Array[idx]` is 1.05ms. Numeric ids buy ~35% of a 30x win and cost a change
-to `feature.id()` across every plugin surface. **The index already exists** —
-`rectFeatureIndices` / `lineFeatureIndices` / `arrowFeatureIndices` index into
-`flatbushItems` — so the per-feature arrays can be keyed by it without touching
-the `Feature` ABI at all.
-
-`plugins/alignments` already works this way and is the pattern to copy:
-`readChainIndices`, `segmentReadIndices` and `overlapPositions` are `Uint32Array`
-indices into parallel arrays, with no string id in the layout path
-(`collapsedLayout.ts`, `computeChainLayout.ts`).
-
-Landed so far (commit "perf(canvas): the label map is a Map"): `floatingLabelsData`
-is a `Map`, and the label overlay skips its walk outright via a worker-baked
-`labelKinds`. Still open, in value order: `prepareRefPack`'s two maps, then
-`applyLayoutToRegion`'s fade/offset/height gathers, which need
-`packPreparedRef`'s `CollapsedMark` to carry an index rather than an id.
+Measured over the same fixture at N=60k, per committed layout:
+`buildFeatureFlatbushIndex` 168ms, `buildSubfeatureFlatbushIndex` 169ms,
+`interpolateYData` 41ms. Each is comparable to the entire clone, and the two
+Flatbush builds run on every layout because `CanvasHitIndexes` keeps them
+observed. Whether a region's subfeature index can be built lazily — nothing
+reads it until a hover — is a separate and probably larger win than anything
+above.
 
 ### `pileupFadeIds` is fast to fix and needs a figure re-checked first
 
@@ -102,26 +119,23 @@ calibrated against `website/scripts/specs/graph-hprc.ts`'s `repeatLane`, where t
 recorded result is "at 3 nothing on screen fades, at any pane width the figure is
 captured at". Re-capture that figure before taking the 7.5x.
 
-## `featureItemMap` is the same allocation, in the same file
+### `featureItemMap` is the same allocation, in the same file
 
-Take it in the same pass; it was a separate entry until 2026-08-13 and each one
-said to pair it with the other, which is the tell. `baseModel.ts`'s
-`featureItemMap` allocates one entry object per feature AND per subfeature across
-every visible region, on every layout change, pan or zoom. Its consumers ask very
-little of it: `HighlightLayer` does a handful of `.get()`s (and genuinely needs
-`entry.vr` / `entry.data`), while `FloatingLabelsLayer` asks twice — the
-`?.kind === 'feature'` check at `components/overlayElements.tsx:467`, which
-decides whether a label is clickable, and `resolveTarget` at `:521-531`.
+Take it in the same pass as the SoA conversion; it is the same shape of problem.
+`baseModel.ts`'s `featureItemMap` allocates one entry object per feature AND per
+subfeature across every visible region, on every layout change, pan or zoom. Its
+consumers ask very little of it: `HighlightLayer` does a handful of `.get()`s
+(and genuinely needs `entry.vr` / `entry.data`), while `FloatingLabelsLayer` asks
+twice — the `?.kind === 'feature'` check at `components/overlayElements.tsx`,
+which decides whether a label is clickable, and `resolveTarget`.
 
 Only the first of the two is removable. `emitSubfeatureLabel` always sets
 `parentFeatureId` and `processFeatureRecord` never does, so
 `clickable === (labelData.parentFeatureId === undefined)` with no map at all.
 `resolveTarget` is not that: it returns `entry.item` to the click, context-menu
-and mousemove handlers, which a `parentFeatureId` cannot supply, and it predates
-this entry (`8a3a06cbb8`) — the claim that the second consumer went outright was
-wrong on arrival.
+and mousemove handlers, which a `parentFeatureId` cannot supply.
 
 So the map stays and what is open is what it costs: replace it with an on-demand
 region scan or a lazily-populated per-id cache, and fold in `baseModel.ts`'s
-`featureIdIndex` / `subfeatureIdIndex` (`:1678-1687`), which build two
-neighbouring id indexes the same way.
+`featureIdIndex` / `subfeatureIdIndex`, which build two neighbouring id indexes
+the same way.
