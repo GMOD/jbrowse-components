@@ -2,7 +2,10 @@ import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { useFocusOnInteraction } from '@jbrowse/core/util/hooks'
+import {
+  SCROLL_PORT_HEIGHT_VAR,
+  useFocusOnInteraction,
+} from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useScrollZoomHint } from '@jbrowse/core/util/usePanZoom'
 import Paper from '@mui/material/Paper'
@@ -36,9 +39,9 @@ const useStyles = makeStyles()(theme => ({
   pinnedTracks: {
     position: 'sticky',
     zIndex: 3,
-    // cap the sticky block at the viewport space below its top offset so
-    // pinning many/tall tracks scrolls within the block instead of burying
-    // the unpinned tracks underneath it
+    // cap the sticky block at the space below its top offset so pinning
+    // many/tall tracks scrolls within the block instead of burying the
+    // unpinned tracks underneath it — see the maxHeight below for which space
     overflowY: 'auto',
   },
   rel: {
@@ -186,7 +189,12 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
                       className={classes.pinnedTracks}
                       style={{
                         top: pinnedTracksTop,
-                        maxHeight: `calc(100vh - ${pinnedTracksTop}px)`,
+                        // the scroll port this sticks in, not the window: it is
+                        // under the app bar in the classic stack, a dockview
+                        // cell in a workspace, and the host's box when embedded.
+                        // The fallback is what an unbounded embed gets, where
+                        // the page itself is the scroller
+                        maxHeight: `calc(var(${SCROLL_PORT_HEIGHT_VAR}, 100vh) - ${pinnedTracksTop}px)`,
                       }}
                     >
                       {pinnedTracks.map(track => (

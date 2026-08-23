@@ -289,3 +289,48 @@ export function useLocalStorage<T>(
 
   return [storedValue, setValue] as const
 }
+
+/**
+ * The CSS custom property a scroll port publishes its own visible height as, for
+ * descendants that have to size against the surface they actually scroll in.
+ *
+ * `100vh` is the wrong answer for all three of JBrowse's scroll ports and looks
+ * right in the one place it is least wrong: the classic view stack sits under a
+ * 48px AppBar (measured 852 against a 900px window), a workspace panel is an
+ * arbitrary dockview cell, and a bounded embedded view is whatever box the host
+ * gave it. A sticky element's offsets are relative to its scroll port, so a
+ * `max-height` that bounds one has to be too.
+ */
+export const SCROLL_PORT_HEIGHT_VAR = '--jbrowse-scrollport-height'
+
+/**
+ * Publishes {@link SCROLL_PORT_HEIGHT_VAR} on the element the returned ref is
+ * attached to. Put it on the element that actually scrolls; the property
+ * inherits, so anything inside can read it with a `100vh` fallback for hosts
+ * that never mount one.
+ *
+ * Written straight to the node instead of through state on purpose. This sits on
+ * a container wrapping every view, so a re-render per resize frame would
+ * re-render all of them to produce a number only CSS reads.
+ */
+export function useScrollPortHeightVar() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || !('ResizeObserver' in window)) {
+      return
+    }
+    // clientHeight, not the border box: it is the visible content area net of a
+    // horizontal scrollbar, which is the box a sticky child is bounded by
+    const publish = () => {
+      el.style.setProperty(SCROLL_PORT_HEIGHT_VAR, `${el.clientHeight}px`)
+    }
+    publish()
+    const observer = new ResizeObserver(publish)
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+  return ref
+}

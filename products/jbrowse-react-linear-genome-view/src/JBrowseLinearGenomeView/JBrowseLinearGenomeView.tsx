@@ -4,6 +4,7 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { getEnv } from '@jbrowse/core/util'
+import { useScrollPortHeightVar } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
 import { drawerGridTemplateColumns } from '@jbrowse/product-core'
@@ -59,6 +60,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   })
 
   const { effectiveHeight: height } = viewState
+  const scrollPortRef = useScrollPortHeightVar()
   // The menu bar takes a row of its own, spanning the drawer's column as well
   // as the view's, and `minmax(0, 1fr)` gives the row below it a definite size
   // that can shrink -- a bare `1fr` floors at the content and the box it holds
@@ -89,6 +91,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                   vertical axis: the LGV owns horizontal scrolling. Unbounded,
                   there is nothing to overflow and the host's box scrolls. */}
               <div
+                ref={scrollPortRef}
                 className={classes.container}
                 style={height ? { overflowY: 'auto' } : undefined}
                 data-testid="embedded-view-box"

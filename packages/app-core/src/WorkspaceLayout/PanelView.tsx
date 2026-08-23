@@ -1,3 +1,4 @@
+import { useScrollPortHeightVar } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -86,6 +87,7 @@ export const PanelView = observer(function PanelView({
 }: PanelViewProps) {
   const { classes } = useStyles()
   const active = activeTabIn(panel)
+  const contentRef = useScrollPortHeightVar()
 
   return (
     <div
@@ -116,6 +118,7 @@ export const PanelView = observer(function PanelView({
         // empty one holds the launcher's buttons)
         aria-labelledby={active ? tabDomId(active.id) : undefined}
         className={classes.content}
+        ref={contentRef}
       >
         {active ? chrome.renderTabContent(active) : null}
       </div>

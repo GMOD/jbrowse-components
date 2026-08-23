@@ -1,3 +1,4 @@
+import { useScrollPortHeightVar } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -23,9 +24,10 @@ const ClassicViewsContainer = observer(function ClassicViewsContainer({
 }: Props) {
   const { classes } = useStyles()
   const { views } = session
+  const ref = useScrollPortHeightVar()
 
   return (
-    <div className={classes.container}>
+    <div ref={ref} className={classes.container}>
       <ViewStack views={views} session={session} />
     </div>
   )
