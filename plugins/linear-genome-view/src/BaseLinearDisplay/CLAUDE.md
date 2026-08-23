@@ -37,11 +37,6 @@ waiving it. Reports reach the jest gate through `console.error`, so a harness
 replacing it opts itself out; a test provoking a violation calls
 `takeContractReports()`.
 
-`serializeRpcProps` reports, once per display, an `rpcProps()` value
-`JSON.stringify` would flatten — a `Map`, a typed array, a class without
-`toJSON` — which is a cache axis that never refetches; the `undefined`-drops-
-its-key case is not detectable from one payload and stays a rule.
-
 Both flags are getters on `FetchMixin` — and `fetchInert` on
 `SyntenyFetchStateMixin` too, for the family that composes no mixin in common
 with these — declared once per family and read off the node, not options an
