@@ -17,6 +17,16 @@ abbreviations of theirs (`connLine`, `linkedReadLine`, `mod`, `perBaseQual`),
 `skip` and `deletion` are both `features/gap/`, and `GPU_PILEUP_PASS` is where
 the mapping is written down.
 
+**`mark.ts` is the seventh, and where a converted pass keeps its geometry.** The
+arrays, the selection predicate, the drawn-alpha and click-significance gates
+and the genomic span are declared once (`features/mark.ts`, `PileupMark`); the
+packer, the painter and the hit test derive from it, and `paintMarks` /
+`findMarkAt` own the projection and the row scan. `gap` and `mismatch` are
+converted; `arcs` has its own, for a band-local path rather than a pileup span.
+A pass with all three consumers and no `mark.ts` states its geometry three times
+— `agent-docs/ideas/one-mark-declaration-per-feature.md` says which of the rest
+fit the shape and which deliberately do not.
+
 Two directories are **not** passes and say so by having no `packGpu.ts` —
 `sashimi/` and `derivativePaths/` compute geometry for React SVG overlays, which
 are a separate draw mechanism with no registry. `alignedBaseWalk.ts` is a bare

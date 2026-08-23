@@ -25,6 +25,7 @@ import { fillSpanRect } from '@jbrowse/alignments-core'
 
 import {
   bpToScreenX,
+  makePileupCellMapper,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -56,6 +57,12 @@ export interface MarkFrame {
 // named group: an AA fudge factor belongs to a SHAPE on one backend, and
 // ARCHITECTURE.md instructs not to port one into a `.slang`.
 export interface MarkCanvas2D<Data> {
+  // Half a pixel of overdraw for the layers that paint an unbroken wall of
+  // abutting cells: Canvas2D anti-aliases each cell's fractional edges and two
+  // abutting AA'd edges do not sum to full opacity, leaving a hairline seam. The
+  // GPU tiles pixel-snapped quads seamlessly and needs none of it, which is why
+  // it lives here and not in a `.slang`. Sparse marks never abut and set false.
+  contiguous: boolean
   bandTop: (
     data: Data,
     index: number,
@@ -65,11 +72,29 @@ export interface MarkCanvas2D<Data> {
   bandHeight: (data: Data, index: number, featureHeight: number) => number
 }
 
+/**
+ * Which pivot a mark's shape uses, and it decides TWO things that have to agree:
+ * how Canvas2D widens a sub-pixel mark, and which cursor coordinate contains it.
+ *
+ * - `span` widens about the mark's midpoint (`fillSpanRect`, the twin of the
+ *   shader's `expandMinWidthX`) and contains the FRACTIONAL `genomicPos`.
+ * - `cell` floors one-sidedly into the base's own cell (`makePileupCellMapper`,
+ *   matching mismatch.slang's snapped left edge) and contains the INTEGER
+ *   `basePos`.
+ *
+ * Pairing them wrong is a reversed-block bug, not a rounding one: on a reversed
+ * block bp runs leftward, so `genomicPos` inside base b's leftmost pixel column
+ * is b+1 exactly. `bpAtPx` owns that pivot and `bpAtPxExact` does not, and the
+ * two coordinates are on `CigarCoords` side by side for this reason.
+ */
+export type MarkShape = 'span' | 'cell'
+
 // One feature's mark, as its three consumers need it. Every member takes
 // `(data, index)` rather than an instance object: these loops run per mark per
 // frame and per covered bp, and `fillSpanRect`'s own note sets the bar — sharing
 // anything out of them has to allocate nothing.
 export interface PileupMark<Data> {
+  shape: MarkShape
   // The pileup row of every instance, one entry per instance. Both the array
   // `findTopmostOnRow` scans and the length every consumer's loop is bounded by,
   // so the count is not a second expression free to disagree.
@@ -140,39 +165,45 @@ export function paintMarks<Data>(
   style: (alpha: number, data: Data, index: number) => string,
 ) {
   const { block, bpLength, fullBlockWidth } = frame
-  const { bandTop, bandHeight } = mark.canvas2d
+  const { bandTop, bandHeight, contiguous } = mark.canvas2d
   const rows = mark.rows(data)
   const fH = state.featureHeight
+  const pxPerBp = fullBlockWidth / bpLength
+  // Two closures per draw call rather than per mark, and only for the shape that
+  // wants them — `makeCellLeftMapper` owns the reversed-block pivot every one of
+  // the five cell painters had wrong at once.
+  const cell =
+    mark.shape === 'cell'
+      ? makePileupCellMapper(block, bpLength, fullBlockWidth, contiguous)
+      : undefined
   for (let i = 0; i < rows.length; i++) {
     if (mark.selects(data, i)) {
       const rowY = pileupRowY(rows[i]!, state)
       if (!pileupRowOffCanvas(rowY, state)) {
-        const x1 = bpToScreenX(
-          mark.startBp(data, i),
-          block,
-          bpLength,
-          fullBlockWidth,
-        )
-        const x2 = bpToScreenX(
-          mark.endBp(data, i),
-          block,
-          bpLength,
-          fullBlockWidth,
-        )
-        // A reversed (flipped) region maps startBp to the larger screen x, so
-        // the edges are ordered here and the span is the absolute width.
-        const px = Math.min(x1, x2)
-        const px2 = Math.max(x1, x2)
-        const alpha = mark.alpha(data, i, state, px2 - px)
+        const startBp = mark.startBp(data, i)
+        // The mark's TRUE on-screen span, which is what the shader's fades test
+        // — gap.slang spells this same product, and a drawn width that has been
+        // clamped or seam-fudged is deliberately not it.
+        const widthPx = (mark.endBp(data, i) - startBp) * pxPerBp
+        const alpha = mark.alpha(data, i, state, widthPx)
         if (alpha > 0) {
           ctx.fillStyle = style(alpha, data, i)
-          fillSpanRect(
-            ctx,
-            px,
-            px2,
-            bandTop(data, i, rowY, fH),
-            bandHeight(data, i, fH),
-          )
+          const top = bandTop(data, i, rowY, fH)
+          const height = bandHeight(data, i, fH)
+          if (cell) {
+            ctx.fillRect(cell.cellX(startBp), top, cell.w, height)
+          } else {
+            const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+            const x2 = bpToScreenX(
+              mark.endBp(data, i),
+              block,
+              bpLength,
+              fullBlockWidth,
+            )
+            // A reversed (flipped) region maps startBp to the larger screen x,
+            // so the edges are ordered here rather than by each consumer.
+            fillSpanRect(ctx, Math.min(x1, x2), Math.max(x1, x2), top, height)
+          }
         }
       }
     }
@@ -186,9 +217,10 @@ export function paintMarks<Data>(
  * sits on row 0, so scanning forwards answers with the mark of a read painted
  * under the one `hitTestFeature` names alongside it.
  *
- * The containment test is the same half-open span the painter projects, so the
- * two cannot disagree about which bases a mark occupies — the drift that has no
- * cross-backend gate, because every gate this repo has is GPU vs Canvas2D.
+ * The containment test is the painter's own pivot read back — see `MarkShape`,
+ * which is where the two are one decision — so the two cannot disagree about
+ * which bases a mark occupies. That is the drift with no cross-backend gate,
+ * because every gate this repo has is GPU vs Canvas2D.
  */
 export function findMarkAt<Data>(
   mark: PileupMark<Data>,
@@ -197,7 +229,13 @@ export function findMarkAt<Data>(
   filterByFrequency: boolean,
 ) {
   const rows = mark.rows(data)
-  const { genomicPos } = coords
+  const { basePos, genomicPos } = coords
+  const contains =
+    mark.shape === 'cell'
+      ? (i: number) => basePos === mark.startBp(data, i)
+      : (i: number) =>
+          genomicPos >= mark.startBp(data, i) &&
+          genomicPos < mark.endBp(data, i)
   return findTopmostOnRow(
     rows,
     0,
@@ -206,7 +244,6 @@ export function findMarkAt<Data>(
     i =>
       mark.selects(data, i) &&
       mark.hittable(data, i, coords, filterByFrequency) &&
-      genomicPos >= mark.startBp(data, i) &&
-      genomicPos < mark.endBp(data, i),
+      contains(i),
   )
 }

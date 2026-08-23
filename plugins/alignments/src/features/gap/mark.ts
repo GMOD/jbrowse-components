@@ -42,6 +42,7 @@ export interface GapKinds {
 // two reasons — the band it fills and the fade it applies.
 export function gapMark(kinds: GapKinds): PileupMark<GapUploadData> {
   return {
+    shape: 'span',
     rows: data => data.gapYs,
     // gapPositions stores [start, end] pairs, and stores the TRUE absolute start
     // rather than one clamped to the region (see `buildGapArrays`): both
@@ -91,6 +92,8 @@ export function gapMark(kinds: GapKinds): PileupMark<GapUploadData> {
       )
     },
     canvas2d: {
+      // Nothing abuts: a gap is a sparse mark over a read body.
+      contiguous: false,
       // An intron collapses to a 1px centerline on the row's midpoint, which is
       // the band gap.slang builds from `mid ± 1/canvasH`. No clearRect under it:
       // `drawReads` splits a spliced read into per-exon segments, so the intron

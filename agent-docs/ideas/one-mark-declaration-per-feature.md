@@ -1,6 +1,6 @@
 ---
 name: one-mark-declaration-per-feature
-description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gates draw against hit test the way CI gates GPU against Canvas2D. arcs/mark.ts is the abstraction for exactly one feature; what generalizing it looks like, and the two things it must not do.
+description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts and two features are converted; what the shape turned out to need, what is left, and the two things it must not do.
 ---
 
 # A feature declares its mark once
@@ -16,6 +16,11 @@ the same walk over the same per-feature arrays three times:
 
 3,335 lines. What a feature actually contains is one array schema, one selection
 predicate, one visibility gate and one shape — written out three times.
+
+**Two features are converted.** The sections below are the proposal as written;
+[what the shape turned out to be](#status-2026-08-23-two-features-converted-featuresmarkts-is-the-shape)
+is the status further down, and `plugins/alignments/src/features/mark.ts` is the
+code.
 
 **The abstraction already exists, for exactly one feature.**
 `plugins/alignments/src/features/arcs/mark.ts` is it. Read its header before
@@ -80,6 +85,84 @@ Both are settled, and both are easy to get wrong on a first attempt.
 per-feature parity suite pin the current behavior. Convert one feature, run them
 unchanged. Most of them should become structurally unnecessary afterwards, which
 is the result rather than a side effect.
+
+## Status, 2026-08-23: two features converted, `features/mark.ts` is the shape
+
+`plugins/alignments/src/features/mark.ts` is the generalization — `PileupMark`
+plus `paintMarks`, `findMarkAt` and `countMarks`, with `arcs/mark.ts` left where
+it is (the arc band is a different coordinate frame and a path rather than a
+rect; nothing was gained by forcing them together).
+
+| feature | shape | trio, code lines | after, incl. declaration |
+| --- | --- | --- | --- |
+| `gap` | `span` | 190 | 165 |
+| `mismatch` | `cell` | 133 | 120 |
+
+Both keep their `.slang` untouched, and both READ the generated scalar twins
+(`intronAlpha`, `sizeAlpha`, `frequencyFadeGate`, `qualityFade`) rather than
+replacing them — adr-051 is not weakened by any of this.
+
+**The oracle held.** `coverageParity`, `qualityFadeParity`, `cellPainterParity`,
+`hitTestGateParity` and `hitTestPipeline` all passed unchanged. Two test edits
+were needed and both were the tests being wrong: `hitTestPipeline`'s shared
+fixture omitted `mismatchYs` (the old hit test read the count off
+`mismatchPositions`, so a missing rows array went unnoticed while it was empty),
+and one mismatch test asserted a fill at alpha 0 where `paintMarks` now skips the
+mark — the same pixels, one `fillRect` fewer, and what the gap painter always
+did.
+
+**The draw-against-hit gate now exists**, per feature: `gap/markParity.test.ts`
+and `mismatch/markParity.test.ts` sweep the block a quarter-pixel at a time and
+assert every hit lands inside the rect the painter drew. The claim has to be
+**one-directional — everything hittable is drawn** — because the converse is
+false on purpose: a mark below the worker's frequency threshold still paints at
+the fade's floor while being deliberately inert (`passesFrequencyGate`), and
+"fixing" that by keying the hit test off drawn alpha hands clicks back to the
+noise the threshold suppresses.
+
+### What the shape needed that this doc did not predict
+
+- **The pivot is one decision spanning two consumers, not two.** `MarkShape` is
+  `span | cell`, and it settles the Canvas2D widening AND the cursor coordinate
+  together: `span` widens about the midpoint (`fillSpanRect`, twin of
+  `expandMinWidthX`) and contains the fractional `genomicPos`; `cell` floors
+  one-sidedly (`makeCellLeftMapper`, matching mismatch.slang's snapped left edge)
+  and contains the integer `basePos`. Pairing them wrong is a reversed-block bug
+  on exactly one pixel column per base, which is why `bpAtPx` and `bpAtPxExact`
+  both exist. The doc's "shape library" is real, but its entries are pivots plus
+  bands, not ten painters.
+- **Two gates, never one.** Drawn alpha and click significance are separate
+  members (`alpha`, `hittable`) and must stay separate — see above.
+- **The band is per-instance, not per mark.** A gap is a full-height bar as a
+  deletion and a 1px centerline as an intron, off one array and one shader, so
+  `bandTop`/`bandHeight` take `(data, index)`.
+- **Allocation-free is a hard constraint, so there is no instance object.**
+  Every member takes `(data, index)`; `fillSpanRect`'s own note sets that bar and
+  these loops run per mark per frame.
+- **The selection predicate replaced a kind ARGUMENT, and that was a win.**
+  `packGapsOfType(data, 7)` compiled, allocated a zero-length buffer and drew
+  nothing. A mark reads the byte instead of being handed one to compare against
+  it, so that state is unspellable; the property it guarded (a third gap type is
+  packed by neither pass) moved into `selects` and is now a test.
+
+### The features that do NOT fit, and why
+
+Worth knowing before the next conversion, because two of them look adjacent:
+
+- **`modification`** — its hit test is a Flatbush nearest-neighbour query with a
+  bp tolerance, not containment. Different question, not a different spelling.
+- **`clip`** — a fixed 1px bar centred on a bp EDGE, hit-tested with a
+  `max(0.5, 3 * bpPerPx)` tolerance, packed over a sub-range of the shared
+  interbase array. Wants a `point` shape, a tolerance hit rule, and sub-range
+  scanning: three extensions for one feature.
+- **`indicator`, `arcs`, `read`** — 153 lines of hit test over 26 of paint, a
+  band-local path, and a hand-tuned single glyph respectively.
+
+The cheap ones left are the rest of the cell family: `perBaseQuality`,
+`perBaseLetter` and `softclipBases` are `cell` marks with `contiguous: true`, and
+`cellPainterParity.test.ts` already pins all five painters to the one geometry.
+`modification` is a cell painter too and can take the mark for its paint and its
+pack — only its hit test is a different question.
 
 ## Where this sits
 

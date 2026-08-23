@@ -35,6 +35,7 @@ function makeRpcData(
 ): PileupDataResult {
   const data = {
     mismatchPositions: new Uint32Array(),
+    mismatchYs: new Uint16Array(),
     mismatchFrequencies: new Uint8Array(),
     mismatchQuals: new Uint8Array(),
     interbaseFrequencies: new Uint8Array(),

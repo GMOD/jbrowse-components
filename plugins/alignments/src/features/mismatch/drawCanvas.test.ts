@@ -169,11 +169,12 @@ describe('drawMismatches quality fade', () => {
   })
 
   test('mismatchAlpha on: Phred 0 fades all the way out', () => {
-    // The worst score the file can carry, drawn as such. It used to share the
-    // sentinel's value and so came out fully opaque — see qualityFadeParity.
-    expect(drawOne(baseState({ mismatchAlpha: true }), 0)).toBe(
-      'rgba(255,0,0,0)',
-    )
+    // The worst score the file can carry, faded to nothing — and skipped rather
+    // than filled at alpha 0, which is the same pixels for one fillStyle set and
+    // one fillRect fewer. `paintMarks` drops a zero-alpha mark for every feature,
+    // as the gap painter always did. It used to share the sentinel's value and so
+    // came out fully opaque — see qualityFadeParity.
+    expect(drawOne(baseState({ mismatchAlpha: true }), 0)).toBeUndefined()
   })
 })
 
