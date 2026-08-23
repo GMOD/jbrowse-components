@@ -22,7 +22,39 @@ window you cut and on which samples went in.
   [JBrowse CLI](/docs/cli)
 - [vcftools](https://vcftools.github.io/) and
   [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the Fst
-  lane, plus `plink` (1.9, not plink2) for the r² tables
+  lane, plus [PLINK 1.9](https://www.cog-genomics.org/plink/1.9/) for the r²
+  tables, which installs as `plink`. PLINK 2.0 is a separate program with its
+  own plink2 binary, and it splits `--r2` into `--r2-unphased` and
+  `--r2-phased`, so the commands here are written for 1.9. Debian and Ubuntu
+  package that build as plink1.9.
+
+## Where the data comes from
+
+Every genotype on this page is the 1000 Genomes 30x high-coverage release from
+NYGC ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),
+called natively on GRCh38, so no liftover sits between the calls and the hg38
+coordinates the figures use. The file the commands read is that release's phased
+chromosome 2 panel, in
+[its data collection at the EBI](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/),
+and they take a 3.4 Mb region of it rather than the 2.5 GB chromosome. The
+commands below call that file `$CALLSET`.
+
+The three sample lists the commands pass to `-S` come out of two tables in that
+same collection, so no cohort here is hand-assembled:
+
+- `unrelated.samples` is the release's own unrelated set, the SAMPLE_NAME column
+  of `1000G_2504_high_coverage.sequence.index`. Relatives share long haplotypes
+  for reasons that have nothing to do with a sweep, so the relatives the release
+  adds are left out.
+- `panel.samples` is the EUR superpopulation of
+  `20130606_g1k_3202_samples_ped_population.txt` narrowed to that unrelated set,
+  and `rest.samples` is the unrelated samples it leaves.
+
+The region slices are
+[rehosted on jbrowse.org](https://jbrowse.org/demos/popgen/) so the figures and
+their live links load without the EBI round trip, and the gene, ClinVar and
+recombination lanes beside them are tracks of the hosted UCSC hg38
+[hub](/docs/user_guides/hub_url).
 
 ## Reading the triangle
 
@@ -70,7 +102,7 @@ notebook. It applies to the one view that declares it;
 [`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) sets a
 ceiling for the whole track at every locus.
 
-## Where the block comes from
+## Selection at the lactase locus
 
 A haplotype is a run of neighbouring variants sitting on the same copy of a
 chromosome, passed on together as a unit. Selection favouring one of them, here
@@ -85,44 +117,7 @@ The allele itself is `rs4988235`, and its
 is known about it: the ClinVar records for lactase persistence hang off it, and
 the frequency table gives it population by population.
 
-<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across 40 Mb of chr2. Under the wedge, the same locus, window and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
-
-The lower frame is all block, so it cannot tell you the locus is unusual:
-everything in it sits on the swept haplotype, which makes the sweep the frame's
-own background. The lanes around it are where that comparison comes from.
-
-- **Fst, top.** Fst scores how differently two sets of samples carry a variant,
-  so a variant one panel carries and the other mostly lacks scores high. Widened
-  to forty megabases, rs4988235 is the most differentiated variant in the span
-  and the ten highest-scoring sites are all inside the block with it. Read it
-  per variant, which is what the
-  [build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
-  scores: a sweep differentiates the variants on its own haplotype and leaves
-  the rest of a bin on the background, so averaging a bin averages the signal
-  away.
-- **Genetic map.** The block fills the span where the deCODE map
-  ([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) reads
-  flat, with a recombination hotspot at each end, where crossovers are frequent
-  enough to break a haplotype up. It counts crossovers in sequenced families, so
-  it carries no LD of its own. It loads as an ordinary
-  [quantitative track](/docs/user_guides/quantitative_track) from the same hg38
-  hub as the gene lane.
-- **The two triangles.** Remember that r² is a correlation across the samples
-  you hand it, and this haplotype swept in Europe. Pool that panel with
-  populations the haplotype never reached and their chromosomes go into the same
-  correlation, where they carry a different background: every pair of variants
-  then looks less correlated than it is inside either group, which is why the
-  upper triangle is the paler and patchier of the two.
-
-The 2019 sequence-level map is why this page is on hg38: it was built natively
-on GRCh38, resolves to under a kilobase, and comes from Icelandic meioses.
-Broad-scale recombination rates are close to identical between human
-populations, and fine-scale hotspot positions follow PRDM9 allele frequencies
-([Hinch et al. 2011](https://doi.org/10.1038/nature10336)), so the European
-panel in the lane below is matched to it. The HapMap and 1000 Genomes maps in
-the same hub are estimated from LD.
-
-### Cut the region out of the VCF
+## Cut the region out of the VCF
 
 The triangle is drawn from what the file holds, so the slice has to reach past
 both edges of the block for those edges to be in frame. One region query cuts
@@ -160,11 +155,11 @@ plink --vcf pooled.snvs.vcf.gz --double-id --allow-extra-chr \
   --ld-snp chr2:135851076 --ld-window-kb 4000 --out anchor
 ```
 
-### Subset the VCF to one panel
+## Subset the VCF to one panel
 
 r² is computed across every sample in the file, so pooling panels that carry the
-haplotype at different frequencies averages the correlation down, which is the
-upper lane above.
+haplotype at different frequencies averages the correlation down, which is what
+the pooled lane in the figure below is showing.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -196,10 +191,10 @@ file and falls below it in the pooled one.
 The same applies to species, and more sharply: a panel mixing two species
 invents LD that neither species has.
 
-### Score the sweep per variant
+## Compute Fst per variant
 
-The Fst lane is [vcftools](https://vcftools.github.io/man_latest.html) over the
-same two sample lists, as a bigWig for a
+The Fst lane is [vcftools](https://vcftools.github.io/man_latest.html) over
+`panel.samples` and `rest.samples`, written out as a bigWig for a
 [quantitative track](/docs/user_guides/quantitative_track):
 
 <!-- from: scripts/build_lct_fst_scan.sh -->
@@ -215,6 +210,39 @@ awk 'NR>1 && $3!="-nan" && $3!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$3}
 printf 'chr2\t242193529\n' > hg38.chrom.sizes
 bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
 ```
+
+## The block at two scales
+
+<Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across 40 Mb of chr2. Under the wedge, the same locus, window and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
+
+The lower frame is all block, so it cannot tell you the locus is unusual:
+everything in it sits on the swept haplotype, which makes the sweep the frame's
+own background. The lanes around it are where that comparison comes from.
+
+- **Fst, top.** Fst scores how differently two sets of samples carry a variant,
+  so a variant one panel carries and the other mostly lacks scores high. Widened
+  to forty megabases, rs4988235 is the most differentiated variant in the span
+  and the ten highest-scoring sites are all inside the block with it. Read it
+  per variant, which is what the
+  [build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
+  scores: a sweep differentiates the variants on its own haplotype and leaves
+  the rest of a bin on the background, so averaging a bin averages the signal
+  away.
+- **Genetic map.** The block fills the span where the deCODE map
+  ([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) reads
+  flat, with a recombination hotspot at each end, where crossovers are frequent
+  enough to break a haplotype up. The map counts crossovers in sequenced
+  families, so it carries no LD of its own, and it draws as an ordinary
+  [quantitative track](/docs/user_guides/quantitative_track) on UCSC's bigWig.
+  If you reach for a different recombination track in that hub, check how it was
+  made: the HapMap and 1000 Genomes maps there are estimated from LD, so they
+  cannot check a triangle independently.
+- **The two triangles.** Remember that r² is a correlation across the samples
+  you hand it, and this haplotype swept in Europe. Pool that panel with
+  populations the haplotype never reached and their chromosomes go into the same
+  correlation, where they carry a different background: every pair of variants
+  then looks less correlated than it is inside either group, which is why the
+  upper triangle is the paler and patchier of the two.
 
 ## The haplotypes behind the triangle
 
@@ -366,5 +394,3 @@ frequencies the six populations were chosen for.
   [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004)
 - Halldorsson et al. (2019).
   [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
-- Hinch et al. (2011).
-  [The landscape of recombination in African Americans](https://doi.org/10.1038/nature10336)
