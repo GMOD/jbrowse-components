@@ -8,11 +8,11 @@ tutorial_category: Population genomics
 data: pipeline
 ---
 
-**TL;DR:** run [FLARE](https://github.com/browning-lab/flare) on the public
-Dog10K phased panel with a gray wolf panel and a breed-dog panel, collapse its
-per-marker `AN1`/`AN2` calls into BED9 runs with `itemRgb`, and point a
-`LinearMultiRowFeatureDisplay`'s `partitionField` at the haplotype column to
-paint one row per haplotype.
+**TL;DR:** two of these dog breeds are wolf hybrids, so parts of their genome
+trace back to a gray wolf ancestor rather than a domestic dog.
+[FLARE](https://github.com/browning-lab/flare) calls which of the two sources
+each stretch of DNA came from, against a wolf panel and 219 other breeds, and we
+paint the result as one colored row per haplotype.
 
 ## Prerequisites
 

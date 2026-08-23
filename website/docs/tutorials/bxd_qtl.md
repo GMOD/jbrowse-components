@@ -8,10 +8,10 @@ tutorial_category: Population genomics
 data: download
 ---
 
-**TL;DR:** build a strain chromosome-painting `LinearMultiRowFeatureDisplay`
-from the BXD genotype matrix and a `GWASTrack` from GeneNetwork's own GEMMA
-scan, then stack them so a trait peak sits directly over the B/D haplotype
-blocks that drive it.
+**TL;DR:** the BXD mice are inbred strains bred down from two parents, B6 and
+DBA/2, so each strain's genome is a mosaic of blocks from one or the other. We
+paint each strain by which parent gave it each block and stack that under a
+GeneNetwork QTL scan, so a trait peak sits over the blocks that drive it.
 
 ## Prerequisites
 

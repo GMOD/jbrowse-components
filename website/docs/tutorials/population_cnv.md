@@ -8,11 +8,11 @@ tutorial_category: Structural variation
 data: download
 ---
 
-**TL;DR:** point a `MultiQuantitativeTrack` at per-sample copy-number BigWigs
-and render it as a `multirowdensity` heatmap, with the color pivot at the
-diploid baseline of 2, one row per individual. Past a few hundred samples the
-per-file requests become the bottleneck, so the second half packs the same
-values into one Zarr store.
+**TL;DR:** copy number varies from person to person, and we show the whole 1000
+Genomes panel at once: one heatmap row per individual, colored by how far that
+person strays from the diploid baseline of 2. JBrowse renders that live from
+per-sample BigWigs, and past a few hundred samples the per-file requests
+dominate, so the second half packs the values into one Zarr store.
 
 ## Prerequisites
 

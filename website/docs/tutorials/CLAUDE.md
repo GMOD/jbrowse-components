@@ -50,6 +50,16 @@ trusted").
 orientation saying what a step produces, then the mechanics. The TL;DR primes
 the page, not each section.
 
+**A TL;DR reads to someone who has never used JBrowse.** Say what the page looks
+at and why anyone would want to, in the reader's own terms, before any JBrowse
+noun. A display or adapter class name cannot be the thing carrying the meaning:
+`an LDDisplay computes pairwise r2 live from a phased VCF` names nothing the
+reader recognises, where
+`we look at linkage disequilibrium around the lactase gene` does. Naming the
+feature afterwards is worth doing when it tells the reader a capability exists,
+and so is naming the outside tool the page integrates with, because which of the
+two computed the numbers is itself the methodological point.
+
 ## Commands
 
 These pages are about _using JBrowse_, not bioinformatics scripting, with one

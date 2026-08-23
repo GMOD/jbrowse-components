@@ -9,9 +9,11 @@ tutorial_category: Population genomics
 data: hosted
 ---
 
-**TL;DR:** an `LDDisplay` computes pairwise r² live from a phased VCF. At the
-lactase locus the swept haplotype draws one block, whose edges depend on the
-window you cut and on which samples went in.
+**TL;DR:** we look at linkage disequilibrium around the lactase gene, where
+selection for lactase persistence left one long block of correlated variants.
+JBrowse computes the r² triangle in the browser straight from a phased VCF, and
+can also draw one from a table PLINK computed ahead of time, which is the route
+a large cohort takes.
 
 ## Prerequisites
 

@@ -8,10 +8,10 @@ tutorial_category: Cancer genomics
 data: download
 ---
 
-**TL;DR:** turn a TCGA project's open-access somatic MAFs into one multi-sample
-VCF and open it as a `LinearMultiSampleVariantMatrixDisplay`, so each distinct
-mutation is a column, each tumor is a row, and the rows group by whichever
-clinical column you point `groupBy` at.
+**TL;DR:** we turn a TCGA project's somatic mutation calls into one matrix, each
+column a distinct mutation and each row a tumor. JBrowse groups the rows by
+whichever clinical field you point it at, receptor status or stage, so the
+mutations a subtype shares line up.
 
 ## Prerequisites
 

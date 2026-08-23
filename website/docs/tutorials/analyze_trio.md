@@ -9,10 +9,10 @@ tutorial_category: Population genomics
 data: pipeline
 ---
 
-**TL;DR:** turn a phased trio's hap-ibd IBD blocks into a BED9 with `itemRgb`
-and a category column, then point a `LinearMultiRowFeatureDisplay`'s
-`partitionField` at that column to paint one colored row per parental haplotype
-and read crossovers straight off the track.
+**TL;DR:** hap-ibd tells which stretches of a phased child's genome came down
+from the mother and which from the father. We paint those as one colored row per
+parental haplotype, so a meiotic crossover reads as a color change along the
+row.
 
 ## Prerequisites
 

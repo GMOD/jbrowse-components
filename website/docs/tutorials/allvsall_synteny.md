@@ -7,9 +7,10 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** stack N genome rows in one linear synteny view from a single
-all-vs-all PAF, using `AllVsAllPAFAdapter` (or `AllVsAllIndexedPAFAdapter` for
-large files).
+**TL;DR:** a synteny track shows which stretches of DNA correspond between
+genomes. We stack five _E. coli_ strains in one linear view, built from a single
+all-vs-all PAF, the file minimap2 writes when every genome is aligned against
+every other.
 
 ## Prerequisites
 

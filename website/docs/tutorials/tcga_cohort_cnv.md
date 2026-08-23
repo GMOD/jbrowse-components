@@ -7,10 +7,10 @@ tutorial_category: Cancer genomics
 data: download
 ---
 
-**TL;DR:** stack every tumor in a TCGA cohort as its own row of a
-`LinearMultiRowFeatureDisplay`, partitioned by sample and colored by a jexl
-expression on the segment log2 ratio, so recurrent copy-number events read as
-vertical stripes down the stack.
+**TL;DR:** tumors from different patients tend to gain and lose the same
+regions, because those regions carry a gene driving the cancer. We stack
+copy-number segment calls for 1104 TCGA breast tumors, one row per tumor colored
+by gain or loss, so a recurrent event reads as a vertical stripe down the stack.
 
 ## Prerequisites
 

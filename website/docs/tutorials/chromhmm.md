@@ -6,9 +6,10 @@ tutorial_category: Epigenomics & single cell
 data: download
 ---
 
-**TL;DR:** merge many per-cell-type ChromHMM segmentation BEDs into one file
-with a `cellType` column, then a `LinearMultiRowFeatureDisplay` partitions it
-into one color-coded row per cell type from a single track, adapter, and fetch.
+**TL;DR:** ChromHMM labels each region of the genome with a chromatin state,
+promoter, enhancer, heterochromatin and so on, once per cell type. We merge many
+per-cell-type segmentation BEDs into one file, which JBrowse draws as a single
+track with one color-coded row per cell type.
 
 ## Prerequisites
 

@@ -7,9 +7,9 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** stack N genomes in one linear synteny view from a single wide
-ortholog table, using `MCScanBlocksAdapter` with one BED per column. The adapter
-pairs any two columns, so the table can be all-vs-all.
+**TL;DR:** jcvi's MCScan lines up orthologous genes across more than two genomes
+at once, into one wide table with a column per species. We load that table
+directly and draw grape, peach and cacao as rows of a single synteny view.
 
 ## Prerequisites
 
