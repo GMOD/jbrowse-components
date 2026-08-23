@@ -1,4 +1,5 @@
 import { waitFor } from '@testing-library/react'
+import { when } from 'mobx'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -136,5 +137,37 @@ describe('LinearManhattanDisplay LD auto-index', () => {
     second.setRpcData(1, tied(500))
     second.setRpcData(0, tied(100))
     expect(second.topSnp).toBe('ctgA:101')
+  })
+
+  // Regression (empty SVG/PNG export): `awaitSvgReady` samples `svgReady` once
+  // and then renders. The first load lands with no index SNP, so the export
+  // gate opened over data the auto-pick was about to invalidate — by paint time
+  // the map was cleared and the debounced refetch had not landed, so the lane
+  // exported with the LD legend and not a single point. The gate has to stay
+  // shut until the index the data was colored under is the one being kept.
+  it('opens the export gate only on data colored under the adopted index', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment({
+      colorBy: 'ld',
+    })
+    mockRpcCall.mockImplementation(
+      (_sessionId: string, _method: string, args: { region: Region }) =>
+        Promise.resolve(makeResult(args.region)),
+    )
+    const { display } = createDisplay()
+
+    let atGate: { indexSnp: string | undefined; regions: number } | undefined
+    const disposer = when(
+      () => display.svgReady,
+      () => {
+        atGate = {
+          indexSnp: display.indexSnp,
+          regions: display.rpcDataMap.size,
+        }
+      },
+    )
+    await settle(8)
+    disposer()
+
+    expect(atGate).toEqual({ indexSnp: TOP_SNP, regions: 2 })
   })
 })

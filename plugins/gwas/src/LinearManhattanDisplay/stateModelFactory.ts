@@ -432,6 +432,24 @@ export function stateModelFactory(
         get indexSnpOffscreen(): boolean {
           return isIndexSnpOffscreen(self.indexSnp, self.lgv.visibleRegions)
         },
+        /**
+         * #getter
+         * Fills MultiRegionDisplayMixin's supersession hook: the loaded data was
+         * colored under an index SNP the auto-pick is about to replace with the
+         * top hit, so `setIndexSnp` — an `rpcProps` field — will clear it and
+         * refetch. On screen that is one invisible tick; an export samples
+         * `svgReady` once, and sampling it here captured the doomed load and
+         * painted the emptied map, which is a Manhattan lane with no points in
+         * it and the LD legend beside it.
+         */
+        get dataSuperseded(): boolean {
+          return (
+            self.ldColoringActive &&
+            !self.indexSnpPinned &&
+            this.topSnp !== undefined &&
+            this.topSnp !== self.indexSnp
+          )
+        },
       }))
       .actions(self => ({
         /**
