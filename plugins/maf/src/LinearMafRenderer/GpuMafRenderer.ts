@@ -7,6 +7,7 @@ import {
   COVERAGE_INDICATOR_PASS,
   COVERAGE_INTERBASE_PASS,
   COVERAGE_SNP_PASS,
+  orderCoverageBandLayers,
   writeCoverageBandUniforms,
 } from '@jbrowse/render-core/coverageBand'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -38,20 +39,25 @@ const ROW_PASS: InstancePass<MafUploadPayload> = {
   pack: data => data.instanceBuffer,
 }
 
-// The coverage band's four passes, in paint order: the depth bars, the SNP
-// slices stacked inside them, the interbase histogram hanging from the band top,
-// and its indicator triangles on top of that.
+// The coverage band's passes, in render-core's paint order — the same order the
+// Canvas2D fallback's painters are resolved into (`MAF_CANVAS_COVERAGE_DRAW`),
+// because both come out of `COVERAGE_BAND_LAYER_ORDER`.
 //
-// render-core's, not this plugin's — the alignments pileup draws the same four
-// (plus a modification layer MAF has no data for) off the same worker-packed
-// layouts, so the shaders, the uniform struct and these packers live where both
-// can reach them. See packages/render-core/src/shaders/coverageBand.slang.
-const MAF_COVERAGE_PASSES: InstancePass<MafUploadPayload>[] = [
-  COVERAGE_BAR_PASS,
-  COVERAGE_SNP_PASS,
-  COVERAGE_INTERBASE_PASS,
-  COVERAGE_INDICATOR_PASS,
-]
+// render-core's passes, not this plugin's — the alignments pileup draws the same
+// band off the same worker-packed layouts, so the shaders, the uniform struct
+// and these packers live where both can reach them. See
+// packages/render-core/src/shaders/coverageBand.slang.
+export const MAF_COVERAGE_PASSES = orderCoverageBandLayers<
+  InstancePass<MafUploadPayload>
+>({
+  coverage: COVERAGE_BAR_PASS,
+  snpCov: COVERAGE_SNP_PASS,
+  // A MAF alignment carries no base-modification calls, so there is no fifth
+  // buffer to upload and nothing for the layer to draw.
+  modCov: undefined,
+  interbase: COVERAGE_INTERBASE_PASS,
+  indicator: COVERAGE_INDICATOR_PASS,
+})
 
 // Everything the HAL compiles and `uploadRegion` fills. Two feeds, not one: the
 // rows instances are encoded on the main thread from theme + toggles, the band's

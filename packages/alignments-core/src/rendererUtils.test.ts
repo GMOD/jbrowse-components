@@ -1,16 +1,27 @@
 import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
+import { packCoverageBinsForGpu } from './coverageGpuPacking.ts'
 import { INDICATOR_TRIANGLE_HW } from './labelConstants.ts'
 import {
-  CANVAS2D_COVERAGE,
   drawCoverageBins,
   drawIndicators,
   drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
-  emptyCanvas2DCoverageBuffer,
-  packCoverageBinsCanvas2D,
   snpColorForType,
 } from './rendererUtils.ts'
+
+// The depth bars have ONE buffer layout, the GPU pass's, and this is how the
+// worker fills it. `maxDepth` 1 makes `relDepth` the raw depth, so the identity
+// normalizer below reads back what was packed.
+function packBins(depths: number[], startPos: number, binSize = 1) {
+  return packCoverageBinsForGpu(
+    new Float32Array(depths),
+    1,
+    startPos,
+    depths.length,
+    binSize,
+  )
+}
 
 function makeCtx() {
   const calls: { method: string; args: unknown[] }[] = []
@@ -70,39 +81,64 @@ describe('snpColorForType', () => {
   })
 })
 
-describe('packCoverageBinsCanvas2D', () => {
-  // Guards the pack/read contract that broke MAF's grey histogram: the buffer
-  // must be the 3-float CANVAS2D_COVERAGE layout (raw depth in `bandTop`), the
-  // format `drawCoverageBins` reads — NOT the 2-float GPU `relDepth` layout.
-  it('packs raw depths in the CANVAS2D_COVERAGE layout', () => {
-    const buf = packCoverageBinsCanvas2D(new Float32Array([7, 0, 3]), 100)
-    const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
-    expect(buf.byteLength).toBe(3 * STRIDE_F32 * 4)
-
-    const u32 = new Uint32Array(buf)
-    const f32 = new Float32Array(buf)
-    for (let i = 0; i < 3; i++) {
-      const off = i * STRIDE_F32
-      expect(u32[off + FIELD.position]).toBe(100 + i)
-      expect(f32[off + FIELD.bandBottom]).toBe(0)
-    }
-    // eslint-disable-next-line unicorn/no-constant-zero-expression -- row 0, kept parallel to row 2 below
-    expect(f32[0 * STRIDE_F32 + FIELD.bandTop]).toBe(7)
-    expect(f32[2 * STRIDE_F32 + FIELD.bandTop]).toBe(3)
-  })
-})
-
 describe('drawCoverageBins', () => {
   const identity = (d: number) => d
+
+  // The pack/read contract, and the reason there is only one of it: this reads
+  // the buffer the GPU depth-bar pass uploads, un-baking `relDepth` against the
+  // region peak the way `drawSnpSegments` does. There used to be a second,
+  // Canvas2D-only raw-depth layout here, and the failure it was guarding — MAF's
+  // grey histogram, drawn off a buffer in the other format — cannot be spelled
+  // any more.
+  it('un-bakes relDepth against the region peak', () => {
+    // relDepth 0.5 of a peak of 8 is depth 4: effectiveH 40, bottom 45, so the
+    // bar spans y=[45 - (4/10)*40, 45] = [29, 45] on a 0..10 domain.
+    const { ctx, calls } = makeCtx()
+    drawCoverageBins(
+      ctx,
+      packCoverageBinsForGpu(new Float32Array([4]), 8, 100, 1),
+      d => d / 10,
+      8,
+      50,
+      'blue',
+      (bp: number) => (bp - 100) * 10,
+      200,
+      1,
+    )
+    const [, y, , h] = calls.find(c => c.method === 'fillRect')!
+      .args as number[]
+    expect(y).toBeCloseTo(29)
+    expect(h).toBeCloseTo(16)
+  })
+
+  // A downsampled region packs one record per BIN, and the bar has to span the
+  // whole bin — the same `binSize` the shader's uniform gets. Drawing bp-wide
+  // bars off a binned buffer left the band as a comb of gaps.
+  it('spans binSize bp, not one', () => {
+    const { ctx, calls } = makeCtx()
+    drawCoverageBins(
+      ctx,
+      packBins([0.5], 100, 4),
+      identity,
+      1,
+      50,
+      'blue',
+      (bp: number) => (bp - 100) * 10,
+      200,
+      4,
+    )
+    const [x, , w] = calls.find(c => c.method === 'fillRect')!.args as number[]
+    expect({ x, w }).toEqual({ x: 0, w: 40 })
+  })
 
   it('draws a packed bin to the right height + width', () => {
     // depth 0.8: coverageHeight 50 → effectiveH 40, bottom 45, so the bar spans
     // y=[45-0.8*40, 45] = [13, 45], height 32. Round-trips pack → draw.
-    const buf = packCoverageBinsCanvas2D(new Float32Array([0.8, 0.5]), 100)
+    const buf = packBins([0.8, 0.5], 100)
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 100) * 10
 
-    drawCoverageBins(ctx, buf, identity, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, identity, 1, 50, 'blue', bpToX, 200, 1)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(2)
@@ -114,22 +150,22 @@ describe('drawCoverageBins', () => {
   })
 
   it('applies width compensation so adjacent bars overlap', () => {
-    const buf = packCoverageBinsCanvas2D(new Float32Array([0.5]), 100)
+    const buf = packBins([0.5], 100)
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 100) * 10
 
-    drawCoverageBins(ctx, buf, identity, 50, 'blue', bpToX, 200, 0.8)
+    drawCoverageBins(ctx, buf, identity, 1, 50, 'blue', bpToX, 200, 1, 0.8)
 
     const fillCall = calls.find(c => c.method === 'fillRect')
     expect(fillCall!.args[2]).toBe(10.8)
   })
 
   it('skips bins outside viewport', () => {
-    const buf = packCoverageBinsCanvas2D(new Float32Array([0.5]), 1000)
+    const buf = packBins([0.5], 1000)
     const { ctx, calls } = makeCtx()
     const bpToX = (bp: number) => (bp - 1000) * 10 + 500
 
-    drawCoverageBins(ctx, buf, identity, 50, 'blue', bpToX, 200)
+    drawCoverageBins(ctx, buf, identity, 1, 50, 'blue', bpToX, 200, 1)
 
     const fillCalls = calls.filter(c => c.method === 'fillRect')
     expect(fillCalls.length).toBe(0)
@@ -139,12 +175,14 @@ describe('drawCoverageBins', () => {
     const { ctx, calls } = makeCtx()
     drawCoverageBins(
       ctx,
-      emptyCanvas2DCoverageBuffer(),
+      new ArrayBuffer(0),
       identity,
+      1,
       50,
       'blue',
       () => 0,
       200,
+      1,
     )
     expect(calls.length).toBe(0)
   })
@@ -162,12 +200,14 @@ describe('drawCoverageBins', () => {
       const { ctx, calls } = makeCtx()
       drawCoverageBins(
         ctx,
-        packCoverageBinsCanvas2D(new Float32Array([0.5]), 100),
+        packBins([0.5], 100),
         identity,
+        1,
         50,
         'blue',
         bpToX,
         200,
+        1,
         compensation,
       )
       return (calls.find(c => c.method === 'fillRect')!.args as number[])[0]!
@@ -182,12 +222,14 @@ describe('drawCoverageBins', () => {
     const bar = makeCtx()
     drawCoverageBins(
       bar.ctx,
-      packCoverageBinsCanvas2D(new Float32Array([1]), 100),
+      packBins([1], 100),
       identity,
+      1,
       50,
       'blue',
       bpToX,
       200,
+      1,
       0.8,
     )
     const snp = makeCtx()
@@ -723,12 +765,14 @@ describe('reversed blocks', () => {
     const { ctx, calls } = makeCtx()
     drawCoverageBins(
       ctx,
-      packCoverageBinsCanvas2D(new Float32Array([0.5]), 100),
+      packBins([0.5], 100),
       identity,
+      1,
       50,
       'blue',
       bpToX,
       VIEW,
+      1,
     )
     const [x, , w] = calls.find(c => c.method === 'fillRect')!.args as number[]
     return { x: x!, w: w! }
@@ -776,12 +820,14 @@ describe('reversed blocks', () => {
     const { ctx, calls } = makeCtx()
     drawCoverageBins(
       ctx,
-      packCoverageBinsCanvas2D(new Float32Array([0.5]), 119),
+      packBins([0.5], 119),
       identity,
+      1,
       50,
       'blue',
       rev,
       VIEW,
+      1,
     )
     expect(calls.filter(c => c.method === 'fillRect').length).toBe(1)
   })

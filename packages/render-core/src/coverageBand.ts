@@ -56,6 +56,60 @@ export interface CoverageBandModBuffer {
   modCovPackedBuffer: ArrayBuffer
 }
 
+/**
+ * One draw layer of the coverage band, and the id of the GPU pass that draws it.
+ *
+ * The band is the same five marks wherever it appears — a display either has a
+ * layer's data or does not, and no display reorders them.
+ */
+export type CoverageLayerId =
+  | 'coverage'
+  | 'snpCov'
+  | 'modCov'
+  | 'interbase'
+  | 'indicator'
+
+/**
+ * The band's z-order, back to front: the depth bars, the SNP slices stacked
+ * inside them, the modification slices stacked on those, the interbase histogram
+ * hanging from the band top, and its indicator triangles above that.
+ *
+ * The order is load-bearing rather than cosmetic — the interbase bars hang down
+ * over the lower half the depth bars grow up into, so the two overlap at any
+ * real depth — and it is one fact, so it is stated once here and every backend
+ * of every display iterates it. It was stated per backend per display, which is
+ * how "MAF drew its band in a different order on the fallback" was a screenshot
+ * to catch rather than a compile error.
+ *
+ * What stays per display is the GATING, which genuinely differs: MAF has no
+ * `showInterbaseIndicators` setting and no modification data at all.
+ */
+export const COVERAGE_BAND_LAYER_ORDER: readonly CoverageLayerId[] = [
+  'coverage',
+  'snpCov',
+  'modCov',
+  'interbase',
+  'indicator',
+]
+
+/**
+ * Whatever a display attaches to each band layer — a GPU pass, a Canvas2D
+ * painter, a gate — resolved into paint order.
+ *
+ * The argument is exhaustive over `CoverageLayerId`, so a layer added to the
+ * order above is a compile error in every display until it is wired. `undefined`
+ * is how a display says it has no such layer (MAF carries no modification
+ * calls); it is dropped rather than drawn empty, which keeps a display that has
+ * no data for a layer from having to ship an empty buffer to satisfy the shape.
+ */
+export function orderCoverageBandLayers<T>(
+  byId: Record<CoverageLayerId, T | undefined>,
+) {
+  return COVERAGE_BAND_LAYER_ORDER.map(id => byId[id]).filter(
+    layer => layer !== undefined,
+  )
+}
+
 // Each pass's instances are packed by the WORKER (or, for MAF, by the RPC that
 // stands in for one) in the shader's own layout, so every "packer" here is the
 // field the producer filled, uploaded verbatim. The layouts are generated from

@@ -39,10 +39,8 @@ const START = 10_000
 
 // Every coverage feed populated, sized so each layer has exactly one mark to
 // paint — and run through the real `buildAlignmentsRegionMap`, so the packing a
-// layer reads is the packing production hands it. The Canvas2D depth bars take
-// their own `coverageBuffer`, not the GPU's `coveragePackedBuffer`; assembling
-// the region by hand is how a fixture comes to omit one of those and prove
-// nothing.
+// layer reads is the packing production hands it. Assembling the region by hand
+// is how a fixture comes to omit a feed and prove nothing.
 function fullyPopulated(): Canvas2DRegionData {
   const data = makePileupDataResult({
     coverageDepths: new Float32Array([30]),

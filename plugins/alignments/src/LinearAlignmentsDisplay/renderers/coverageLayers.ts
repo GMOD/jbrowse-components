@@ -1,17 +1,9 @@
+import { COVERAGE_BAND_LAYER_ORDER } from '@jbrowse/render-core/coverageBand'
+
 import { hasCoverageScale } from '../../features/coverage/coverageScale.ts'
 
 import type { RenderState } from './rendererTypes.ts'
-
-// One coverage-band draw layer. The band's answer to `PileupLayerId`, and
-// separate from it because these are position-aggregate marks packed in the
-// WORKER rather than row-instanced ones packed at upload — a different feed, a
-// different draw signature, and no share in the pileup band's z-order.
-export type CoverageLayerId =
-  | 'coverage'
-  | 'snpCov'
-  | 'modCov'
-  | 'interbase'
-  | 'indicator'
+import type { CoverageLayerId } from '@jbrowse/render-core/coverageBand'
 
 export interface CoverageLayer {
   id: CoverageLayerId
@@ -19,21 +11,10 @@ export interface CoverageLayer {
 }
 
 /**
- * Single source of truth for the coverage-band layer set, its z-order (back to
- * front) and its gating — the same job `PILEUP_LAYERS` does for the band below
- * it, and now for the same reason: both renderers iterate this list and map each
- * id through an exhaustive `Record<CoverageLayerId, …>`, so adding a layer is a
- * compile error in either backend until it is wired.
- *
- * **This list stood on the GPU renderer alone until 2026-08**, with the Canvas2D
- * band hand-listing the same five draws in the same order under a copy of the
- * same two gates. A unified manifest had been declined (REJECTED_IDEAS.md,
- * 2026-06) partly on this band: "coverage is individual passes vs one
- * `drawCoverage` wrapper". The wrapper turned out to hold five calls mapping 1:1
- * to the five passes, under gates that already agreed — so what the decline
- * described was two statements of one list, which is the thing a registry is
- * for. What it got right is the asymmetry below; erasing that would have cost
- * more than the duplication did.
+ * This display's gate on each coverage-band layer. The z-order is NOT here — it
+ * is `COVERAGE_BAND_LAYER_ORDER` in render-core, because the MAF display draws
+ * the same band and the order is one fact. What is per-display is exactly this
+ * table: MAF has no `showInterbaseIndicators` setting and no modification calls.
  *
  * The band as a whole is gated by `showCoverage` at the call site.
  *
@@ -52,13 +33,34 @@ export interface CoverageLayer {
  *   marks — the count bars and the triangles alike, which is why the one setting
  *   appears twice.
  */
-export const COVERAGE_LAYERS: CoverageLayer[] = [
-  { id: 'coverage', enabled: hasCoverageScale },
-  { id: 'snpCov', enabled: hasCoverageScale },
-  { id: 'modCov', enabled: hasCoverageScale },
-  {
-    id: 'interbase',
-    enabled: s => hasCoverageScale(s) && s.showInterbaseIndicators,
-  },
-  { id: 'indicator', enabled: s => s.showInterbaseIndicators },
-]
+const COVERAGE_LAYER_ENABLED: Record<
+  CoverageLayerId,
+  (state: RenderState) => boolean
+> = {
+  coverage: hasCoverageScale,
+  snpCov: hasCoverageScale,
+  modCov: hasCoverageScale,
+  interbase: s => hasCoverageScale(s) && s.showInterbaseIndicators,
+  indicator: s => s.showInterbaseIndicators,
+}
+
+/**
+ * The coverage-band layer set for this display, in the shared paint order — the
+ * same job `PILEUP_LAYERS` does for the band below it, and now for the same
+ * reason: both renderers iterate this list and map each id through an exhaustive
+ * `Record<CoverageLayerId, …>`, so adding a layer is a compile error in either
+ * backend until it is wired.
+ *
+ * **This list stood on the GPU renderer alone until 2026-08**, with the Canvas2D
+ * band hand-listing the same five draws in the same order under a copy of the
+ * same two gates. A unified manifest had been declined (REJECTED_IDEAS.md,
+ * 2026-06) partly on this band: "coverage is individual passes vs one
+ * `drawCoverage` wrapper". The wrapper turned out to hold five calls mapping 1:1
+ * to the five passes, under gates that already agreed — so what the decline
+ * described was two statements of one list, which is the thing a registry is
+ * for. What it got right is the asymmetry above; erasing that would have cost
+ * more than the duplication did.
+ */
+export const COVERAGE_LAYERS: CoverageLayer[] = COVERAGE_BAND_LAYER_ORDER.map(
+  id => ({ id, enabled: COVERAGE_LAYER_ENABLED[id] }),
+)

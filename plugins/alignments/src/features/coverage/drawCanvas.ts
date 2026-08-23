@@ -5,8 +5,8 @@ import {
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 
-import type { CoverageRegionFields } from './buildRegion.ts'
 import type { CoverageScale } from './coverageScale.ts'
+import type { CoverageRegionFields } from './types.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -23,12 +23,14 @@ export function drawCoverageBars(
 ) {
   drawCoverageBins(
     ctx,
-    region.coverageBuffer,
+    region.coveragePackedBuffer,
     normalizeDepth,
+    region.coverageMaxDepth,
     state.coverageHeight,
     rgb255(state.colors.colorCoverage),
     bpToX,
     viewWidth,
+    region.coverageBinSize,
     COVERAGE_BAR_SEAM_FUDGE_PX,
   )
 }

@@ -10,10 +10,6 @@ import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { drawHardclips, drawSoftclips } from '../../features/clip/drawCanvas.ts'
 import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
 import { emptyConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
-import {
-  buildCoverageFields,
-  emptyCoverageFields,
-} from '../../features/coverage/buildRegion.ts'
 import { makeCoverageScale } from '../../features/coverage/coverageScale.ts'
 import { drawCoverageBars } from '../../features/coverage/drawCanvas.ts'
 import { drawDeletions, drawSkips } from '../../features/gap/drawCanvas.ts'
@@ -50,8 +46,8 @@ import {
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
-import type { CoverageRegionFields } from '../../features/coverage/buildRegion.ts'
 import type { CoverageScale } from '../../features/coverage/coverageScale.ts'
+import type { CoverageRegionFields } from '../../features/coverage/types.ts'
 import type { GapUploadData } from '../../features/gap/types.ts'
 import type { LinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
 import type { MismatchUploadData } from '../../features/mismatch/types.ts'
@@ -60,7 +56,7 @@ import type { OverlapsUploadData } from '../../features/overlap/types.ts'
 import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types.ts'
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
-import type { CoverageLayer, CoverageLayerId } from './coverageLayers.ts'
+import type { CoverageLayer } from './coverageLayers.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -72,6 +68,7 @@ import type {
   SectionRender,
 } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { CoverageLayerId } from '@jbrowse/render-core/coverageBand'
 
 export interface Canvas2DRegionData
   extends
@@ -171,7 +168,9 @@ const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
   perBaseLetterPositions: new Uint32Array(0),
   perBaseLetterYs: new Uint16Array(0),
   perBaseLetterBases: new Uint8Array(0),
-  ...emptyCoverageFields(),
+  coveragePackedBuffer: new ArrayBuffer(0),
+  coverageMaxDepth: 0,
+  coverageBinSize: 1,
   snpPackedBuffer: new ArrayBuffer(0),
   modCovPackedBuffer: new ArrayBuffer(0),
   interbasePackedBuffer: new ArrayBuffer(0),
@@ -199,7 +198,9 @@ function buildPileupRegion(
     perBaseLetterPositions: data.perBaseLetterPositions,
     perBaseLetterYs: data.perBaseLetterYs,
     perBaseLetterBases: data.perBaseLetterBases,
-    ...buildCoverageFields(data),
+    coveragePackedBuffer: data.coveragePackedBuffer,
+    coverageMaxDepth: data.coverageMaxDepth,
+    coverageBinSize: data.coverageBinSize,
     snpPackedBuffer: data.snpPackedBuffer,
     modCovPackedBuffer: data.modCovPackedBuffer,
     interbasePackedBuffer: data.interbasePackedBuffer,

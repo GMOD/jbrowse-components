@@ -65,19 +65,15 @@ export { normalizeDepthScalar } from './coverageBandLayout.generated.ts'
 // Exported because the hit test places its rectangle with it too — see adr-051.
 export { interbaseEdgePx } from './interbaseEdge.generated.ts'
 export {
-  CANVAS2D_COVERAGE,
   COVERAGE_BAR_SEAM_FUDGE_PX,
   drawCoverageBins,
   drawIndicators,
   drawInterbaseSegments,
   drawModCovSegments,
   drawSnpSegments,
-  emptyCanvas2DCoverageBuffer,
   fillSpanRect,
   minWidthLeft,
-  packCoverageBinsCanvas2D,
 } from './rendererUtils.ts'
-export type { Canvas2DCoverageBuffer } from './rendererUtils.ts'
 export {
   coverageSegmentBuffers,
   packCoverageBinsForGpu,

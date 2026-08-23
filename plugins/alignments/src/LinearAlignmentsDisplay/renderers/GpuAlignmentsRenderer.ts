@@ -66,7 +66,6 @@ import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
-import type { CoverageLayerId } from './coverageLayers.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -79,6 +78,7 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
+import type { CoverageLayerId } from '@jbrowse/render-core/coverageBand'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 

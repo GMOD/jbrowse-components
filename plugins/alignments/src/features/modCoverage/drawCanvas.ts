@@ -1,8 +1,8 @@
 import { drawModCovSegments } from '@jbrowse/alignments-core'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { CoverageRegionFields } from '../coverage/buildRegion.ts'
 import type { CoverageScale } from '../coverage/coverageScale.ts'
+import type { CoverageRegionFields } from '../coverage/types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawModCoverageCanvas(

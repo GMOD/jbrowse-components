@@ -145,7 +145,9 @@ async function run(backend: 'webgl' | 'canvas2d') {
 const webgl = await run('webgl')
 const canvas2d = await run('canvas2d')
 await new Promise<void>(r => {
-  server.close(() => r())
+  server.close(() => {
+    r()
+  })
 })
 
 console.log('geometry:', JSON.stringify(webgl.geom))

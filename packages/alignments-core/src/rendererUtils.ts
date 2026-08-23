@@ -1,5 +1,11 @@
 import { coverageLayout, interbaseBarHeightPx } from './coverageBandBox.ts'
 import {
+  INSTANCE_OFFSET_F32 as COVERAGE_F32,
+  INSTANCE_OFFSET_U32 as COVERAGE_U32,
+  INSTANCE_STRIDE_BYTES as COVERAGE_STRIDE_BYTES,
+  INSTANCE_STRIDE_WORDS as COVERAGE_STRIDE,
+} from './coverageLayout.generated.ts'
+import {
   INSTANCE_OFFSET_F32 as INDICATOR_F32,
   INSTANCE_OFFSET_U32 as INDICATOR_U32,
   INSTANCE_STRIDE_BYTES as INDICATOR_STRIDE_BYTES,
@@ -122,58 +128,6 @@ export function snpColorForType(colorType: number, colors: SnpBaseColors) {
   }
 }
 
-// Canvas2D coverage buffer defers normalization to draw time to support log
-// scaling without repacking. The GPU path pre-normalizes to 2 floats.
-// Position is stored as uint32 (exact integer genomic coord) in the position
-// slot; bandBottom and bandTop are raw depth values stored as float32.
-export const CANVAS2D_COVERAGE = {
-  STRIDE_F32: 3,
-  FIELD: { position: 0, bandBottom: 1, bandTop: 2 },
-} as const
-
-// A coverage buffer in the CANVAS2D_COVERAGE layout (raw depth, 3-float). The
-// nominal brand stops a GPU coverage buffer (relDepth, 2-float, from
-// `packCoverageBinsForGpu`) being handed to `drawCoverageBins`, which reads them
-// at incompatible offsets — a silent mis-render with no runtime error. The two
-// casts below are the only ones: the layout boundary is enforced here so every
-// consumer stays cast-free. The brand is erased at the worker transfer boundary.
-declare const canvas2dCoverageBrand: unique symbol
-export type Canvas2DCoverageBuffer = ArrayBuffer & {
-  readonly [canvas2dCoverageBrand]: true
-}
-
-// Empty placeholder (no bins) carrying the Canvas2D coverage brand. A fresh
-// buffer per call: the worker transfers these, which detaches them, so a shared
-// singleton would throw DataCloneError on the second RPC reply.
-export function emptyCanvas2DCoverageBuffer(): Canvas2DCoverageBuffer {
-  return new ArrayBuffer(0) as Canvas2DCoverageBuffer
-}
-
-// Pack per-position depths into the Canvas2D coverage buffer that
-// `drawCoverageBins` reads. Stores raw depth (not pre-normalized) so the
-// normalizer — linear or log — is chosen at draw time. Co-located with the
-// format constant + draw function so the layout has a single source of truth;
-// `bandBottom`/`bandTop` make each bin a band, with `bandBottom` 0 for a plain
-// depth bar. Distinct from the GPU `packCoverageBinsForGpu` (relDepth + 2-float
-// shader layout) — don't feed a GPU coverage buffer to `drawCoverageBins`.
-export function packCoverageBinsCanvas2D(
-  depths: Float32Array,
-  startPos: number,
-): Canvas2DCoverageBuffer {
-  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
-  const n = depths.length
-  const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
-  const u32 = new Uint32Array(buf)
-  const f32 = new Float32Array(buf)
-  for (let i = 0; i < n; i++) {
-    const off = i * STRIDE_F32
-    u32[off + FIELD.position] = startPos + i
-    f32[off + FIELD.bandBottom] = 0
-    f32[off + FIELD.bandTop] = depths[i]!
-  }
-  return buf as Canvas2DCoverageBuffer
-}
-
 /**
  * How much wider than its true span a Canvas2D coverage bar is drawn, so that
  * adjacent bars overlap instead of showing a seam.
@@ -194,18 +148,37 @@ export function packCoverageBinsCanvas2D(
  */
 export const COVERAGE_BAR_SEAM_FUDGE_PX = 0.8
 
+/**
+ * The coverage band's depth bars. Reads the SAME buffer the GPU depth-bar pass
+ * uploads (`packCoverageBinsForGpu`, coverageBar.slang's layout) — one buffer
+ * per region, produced once in the worker and read in place here.
+ *
+ * There used to be a second, Canvas2D-only layout beside it: raw depth in three
+ * floats, packed per-bp on the main thread, held apart from this one by a
+ * nominal brand and two casts. The two were the same bars off the same depths,
+ * and this backend can un-bake `relDepth` exactly the way `drawSnpSegments`
+ * already does — which the MAF band proved by drawing both backends off this
+ * buffer from the day it shipped. The one behaviour that changes is at
+ * whole-chromosome scale, where the GPU buffer is downsampled to a bin cap
+ * (`packCoverageArea`) and the per-bp one was not: the fallback now draws the
+ * same downsampled bars the GPU does, which is a backend-parity gap closed, not
+ * a resolution lost — the cap bins only depth that was already sub-pixel.
+ *
+ * `binSize` is the bin's width in bp, matching the shader's `binSize` uniform.
+ */
 export function drawCoverageBins(
   ctx: Ctx,
-  buffer: Canvas2DCoverageBuffer,
-  normalizeDepth: (depth: number) => number,
+  buffer: ArrayBuffer,
+  normalizeDepth: (rawDepth: number) => number,
+  regionMaxDepth: number,
   coverageHeight: number,
   coverageColor: string,
   bpToX: (bp: number) => number,
   viewWidth: number,
+  binSize: number,
   widthCompensation = 0,
 ) {
-  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
-  const binCount = buffer.byteLength / (STRIDE_F32 * 4)
+  const binCount = buffer.byteLength / COVERAGE_STRIDE_BYTES
   if (binCount === 0) {
     return
   }
@@ -214,8 +187,8 @@ export function drawCoverageBins(
   const f32 = new Float32Array(buffer)
   ctx.fillStyle = coverageColor
   for (let i = 0; i < binCount; i++) {
-    const off = i * STRIDE_F32
-    const pos = u32[off + FIELD.position]!
+    const off = i * COVERAGE_STRIDE
+    const pos = u32[off + COVERAGE_U32.position]!
     // bpToX(pos) is the bin's left edge on a forward block but its RIGHT edge
     // on a reversed one, so resolve both edges and order them. Anchoring at
     // bpToX(pos) with width px2-px put the bar a full bin off AND drove the
@@ -223,20 +196,28 @@ export function drawCoverageBins(
     // the coverage histogram all but vanished on flipped regions past 1bp/px.
     // Ordering the edges also fixes the cull, which assumed px < px2 and so
     // dropped bins straddling either viewport edge when reversed.
-    // The edge resolution stays inline — this loop runs per covered bp, and
+    // The edge resolution stays inline — this loop runs per covered bin, and
     // returning a {left,right} would allocate per bin. `minWidthLeft` is shared
     // because it returns a number and so allocates nothing.
     const pxA = bpToX(pos)
-    const pxB = bpToX(pos + 1)
+    const pxB = bpToX(pos + binSize)
     const px = Math.min(pxA, pxB)
     const px2 = Math.max(pxA, pxB)
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const bandBottom =
-      bottom - normalizeDepth(f32[off + FIELD.bandBottom]!) * effectiveH
-    const bandTop =
-      bottom - normalizeDepth(f32[off + FIELD.bandTop]!) * effectiveH
+    // The bar runs from the band's baseline to its own height, and the baseline
+    // is the baseline — `covSegQuad(…, 0.0, 1.0, …)` puts the GPU's bottom edge
+    // exactly there. The buffer this replaced carried a `bandBottom` field
+    // beside the depth, always written 0 and always run back through
+    // `normalizeDepth`, which is a no-op on every depth domain that reaches here
+    // (they start at 0 and the normalizer clamps below) and NOT one on a symlog
+    // domain with a negative min — the one case where it lifted the Canvas2D
+    // bars off a baseline the shader left them on.
+    const barTop =
+      bottom -
+      normalizeDepth(f32[off + COVERAGE_F32.relDepth]! * regionMaxDepth) *
+        effectiveH
     // The seam fudge widens the bar; it must not also decide whether the bar is
     // sub-pixel. `minWidthLeft` mirrors `expandMinWidthX`, which centers at a
     // TRUE span under 1 CSS px — feeding it the fudged width moved that switch
@@ -248,7 +229,7 @@ export function drawCoverageBins(
     // WIDTH at every zoom: sub-pixel bars tile at ~1px pitch, and two opaque
     // fills whose antialiased coverage of one pixel sums to 1 composite to
     // 1-(1-a)(1-b) < 1, i.e. a visible seam.
-    fillSpanRect(ctx, px, px2, bandTop, bandBottom - bandTop, widthCompensation)
+    fillSpanRect(ctx, px, px2, barTop, bottom - barTop, widthCompensation)
   }
 }
 

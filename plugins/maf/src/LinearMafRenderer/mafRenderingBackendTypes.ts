@@ -234,12 +234,10 @@ export interface MafBlock {
 // packers and uploaded verbatim to render-core's shared coverage-band passes —
 // no per-region re-pack on theme/zoom changes.
 //
-// All four are the GPU layouts, including `coveragePackedBuffer`: the band draws
-// on the GPU now, and the Canvas2D fallback + SVG export build their own
-// raw-depth buffer from `coverageDepths` at draw time (the same split the
-// alignments display makes, minus its per-region memo — MAF's fallback also
-// walks every cell of every visible block, next to which one linear pass over
-// the depths is noise).
+// All four are the GPU layouts, and both backends draw off them: the depth bars
+// have one buffer, not a GPU one beside a raw-depth Canvas2D one (see
+// `drawCoverageBins`). `coverageDepths` stays for the hit test, the tooltip and
+// the autoscale, which read a depth rather than draw a bar.
 //
 // `mismatchPositions` / `mismatchBases` mirror the alignments worker's
 // MismatchArrays shape so alignments-core's `buildCoverageTooltipBin` /
