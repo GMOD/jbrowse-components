@@ -9,6 +9,7 @@ import {
   followAnchorWindows,
   followPlacedWindows,
 } from './followAnchorWindow.ts'
+import { logFollowSpread, logFollowStep } from './followDebug.ts'
 import { followFrameSpan } from './followFrameSpan.ts'
 import { createFollowLevelStates } from './followLevelStates.ts'
 import { followSpreadSpans } from './followSpreadSpans.ts'
@@ -19,6 +20,7 @@ import {
   positionViewOnSpans,
 } from './positionViewOnSpan.ts'
 import { requestCigarMap } from './requestCigarMap.ts'
+import { decideSpread } from './spreadDecision.ts'
 
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
@@ -45,6 +47,7 @@ export interface SyntenyFollowHost extends IStateTreeNode {
   followPairs: FollowPair[]
   setFollowUnaligned: (arg: boolean) => void
   setFollowApproximate: (arg: boolean) => void
+  setFollowPartial: (arg: boolean) => void
 }
 
 // One level's placement, with the observables the async half needs already read
@@ -105,6 +108,9 @@ interface FollowPlan {
   spread?: SpreadWork
   unaligned: boolean
   approximate: boolean
+  // the multi-contig rung had an answer and refused it as mostly filler, so the
+  // row is on the widest of the anchor's regions and the rest is off screen
+  partial: boolean
 }
 
 // One navigation, as "from where" and "to where". Both halves matter: the same
@@ -320,6 +326,82 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     }
   }
 
+  /**
+   * The multi-contig rung: its answer, and whether that answer is worth the
+   * screen it costs.
+   *
+   * Returns the plan when the row spreads, and the window to fall through to the
+   * rung below with when it does not. `decideSpread` carries the reasoning; what
+   * lives here is the two things only this pass knows — that a CARRIED spread is
+   * not re-judged, since it came from a level that already judged it and its
+   * windows are spans, partial by construction, so an honest whole-genome
+   * overview would demote its second row and every row after it — and that the
+   * decision has to run UPSTREAM OF THE CARRY, or `placed` hands the next level
+   * the union this one just refused.
+   */
+  function planSpread({
+    pair,
+    windows,
+    carried,
+    state,
+    placed,
+  }: {
+    pair: FollowPair
+    windows: FollowWindow[]
+    carried: boolean
+    state: FollowLevelState
+    placed: PlacedWindows
+  }) {
+    const { level, stayingView, movingView, toMate, mateAssembly } = pair
+    const spans = followSpreadSpans({
+      displays: level.linearSyntenyDisplays,
+      windows,
+      toMate,
+      mateAssembly,
+    })
+    const decision =
+      carried || !spans.length
+        ? { spreading: true }
+        : decideSpread({
+            blocks: stayingView.coarseDynamicBlocks,
+            stayingRegions: stayingView.displayedRegions,
+            // UNTRACKED, the one read this rung makes of its moving row: the
+            // rung does not otherwise depend on it, and a dependency registered
+            // here would wake the pass on the placement it is about to make
+            movingRegions: untracked(() => movingView.displayedRegions),
+            windows,
+            spans,
+            previous: state.spread,
+          })
+    state.spread = decision
+    logFollowSpread({
+      stayingView,
+      movingView,
+      windows,
+      carried,
+      spans,
+      decision,
+    })
+    if (!decision.spreading) {
+      return {
+        window: windows.find(w => w.refName === decision.onto),
+      }
+    }
+    if (spans.length) {
+      placed.set(movingView, followPlacedWindows(spans))
+    }
+    return {
+      plan: {
+        spread: spans.length ? { level, movingView, spans } : undefined,
+        unaligned:
+          !spans.length && level.linearSyntenyDisplays.some(d => d.featureData),
+        // an interpolation over several alignments at once, never a walk
+        approximate: spans.length > 0,
+        partial: false,
+      } satisfies FollowPlan,
+    }
+  }
+
   // Every observable one level's placement needs, read off the tree HERE:
   // `execute` is async and MobX stops tracking at its first `await`, so a field
   // missing from `FollowStep` can only be read untracked, producing a follow
@@ -342,11 +424,12 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const carried = placed.get(stayingView)
     const windows =
       carried ?? followAnchorWindows(stayingView.coarseDynamicBlocks)
-    const window = windows[0]
-    if (!window) {
+    const widest = windows[0]
+    if (!widest) {
       // an anchor with no window says nothing about alignment either way
-      return { unaligned: false, approximate: false }
+      return { unaligned: false, approximate: false, partial: false }
     }
+
     // THE THIRD RUNG. Inside one alignment the answer is a CIGAR walk, wider
     // than one it is the envelope of what lies under the window — and wider
     // than one CONTIG there is no single matching region at all, so the answer
@@ -354,24 +437,19 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     // overview placed every other row on whichever single contig aligned to the
     // anchor's widest, which is what "show all regions" then only did to the
     // anchor row.
-    if (windows.length > 1) {
-      const spans = followSpreadSpans({
-        displays: level.linearSyntenyDisplays,
-        windows,
-        toMate,
-        mateAssembly,
-      })
-      if (spans.length) {
-        placed.set(movingView, followPlacedWindows(spans))
-      }
-      return {
-        spread: spans.length ? { level, movingView, spans } : undefined,
-        unaligned:
-          !spans.length && level.linearSyntenyDisplays.some(d => d.featureData),
-        // an interpolation over several alignments at once, never a walk
-        approximate: spans.length > 0,
-      }
+    const spread =
+      windows.length > 1
+        ? planSpread({ pair, windows, carried: !!carried, state, placed })
+        : undefined
+    if (spread?.plan) {
+      return spread.plan
     }
+    // DEMOTED: the rung above had an answer and refused it, so this level is
+    // placed by the rung below from the one window the reader is mostly looking
+    // at. Everything past here is that rung, unchanged — which is the point of
+    // demoting rather than trimming the union: the block pick, the CIGAR map,
+    // the settled resolve and `alreadyShowing` all already work.
+    const window = spread?.window ?? widest
     // reading the moving row makes it a dependency, which is what re-asserts
     // the follow over a row nudged by hand
     const movingWindow = followAnchorWindow(movingView.coarseDynamicBlocks)
@@ -382,6 +460,18 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       mateAssembly,
       incumbentId: state.pick?.feat.id,
       incumbentTarget: state.pick?.target,
+    })
+    logFollowStep({
+      stayingView,
+      movingView,
+      window,
+      carried: !!carried,
+      rung: step
+        ? step.windowInsideFeat
+          ? 'RUNG1 walk'
+          : 'RUNG2 envelope'
+        : 'HOLD',
+      target: state.pick?.target,
     })
     return {
       work: step && {
@@ -396,6 +486,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       // a level still fetching has no answer YET rather than no answer
       unaligned: !step && level.linearSyntenyDisplays.some(d => d.featureData),
       approximate: !!step && (!step.windowInsideFeat || !step.hasCigar),
+      partial: !!spread && !spread.plan,
     }
   }
 
@@ -406,6 +497,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         if (!self.followSynteny) {
           self.setFollowUnaligned(false)
           self.setFollowApproximate(false)
+          self.setFollowPartial(false)
           levelStates.clear()
           return
         }
@@ -415,6 +507,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
         // dependency of its own write
         self.setFollowUnaligned(plans.some(p => p.unaligned))
         self.setFollowApproximate(plans.some(p => p.approximate))
+        self.setFollowPartial(plans.some(p => p.partial))
         // UNTRACKED, because `execute` runs synchronously up to its first
         // `await` and so still inside this reaction. `FollowStep` is meant to
         // be everything it needs, but the resolve reaches the display for
@@ -484,12 +577,15 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
                 ? untracked(() => stayingView.dynamicBlocks.contentBlocks)
                 : stayingView.dynamicBlocks.contentBlocks,
             )
-          const window = windows[0]
-          // The multi-contig rung, recomputed here rather than steered by the
-          // settle: it chooses no block, so there is nothing cached to steer by
-          // and the whole answer is this pass's own arithmetic over the live
-          // window.
-          if (windows.length > 1) {
+          // The multi-contig rung's ANSWER is recomputed here rather than
+          // steered by the settle — it chooses no block, so there is nothing
+          // cached to steer by. Whether to take the rung at all is the settle's
+          // to decide: the two placements are the furthest apart this subsystem
+          // can put a row, and a per-frame re-decision flips between them across
+          // a threshold the user is panning along.
+          const spread =
+            windows.length > 1 ? levelStates.spreadFor(level) : undefined
+          if (windows.length > 1 && spread?.spreading !== false) {
             const spans = followSpreadSpans({
               displays: level.linearSyntenyDisplays,
               windows,
@@ -502,6 +598,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             }
             continue
           }
+          const window = spread
+            ? windows.find(w => w.refName === spread.onto)
+            : windows[0]
           // the block the last settle chose, rather than re-picking one per
           // frame. Its direction has to match, since it was picked on whichever
           // axis `toMate` was then, and its display has to be alive, since

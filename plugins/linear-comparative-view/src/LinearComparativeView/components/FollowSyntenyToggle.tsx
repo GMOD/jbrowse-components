@@ -37,11 +37,13 @@ export function followToggleTitle({
   followSynteny,
   unaligned,
   approximate,
+  partial,
   anchorAssembly,
 }: {
   followSynteny: boolean
   unaligned?: boolean
   approximate?: boolean
+  partial?: boolean
   anchorAssembly?: string
 }) {
   if (!followSynteny) {
@@ -50,6 +52,12 @@ export function followToggleTitle({
   const anchor = anchorAssembly ?? 'the anchor row'
   if (unaligned) {
     return `Following ${anchor} — nothing aligns here, so the other rows are holding`
+  }
+  // Ahead of `approximate`, which is the normal condition of a zoomed-out view
+  // and so says less: this one is the reader's question about a row that is not
+  // showing everything the anchor aligns to.
+  if (partial) {
+    return `Following ${anchor} — its regions align far apart, so the rows follow the widest one and the rest are off screen`
   }
   if (approximate) {
     return `Following ${anchor} — no per-base alignment at this zoom, so positions are approximate`
@@ -84,6 +92,7 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
     followSynteny,
     followUnaligned,
     followApproximate,
+    followPartial,
     views,
     followAnchorIndex,
   } = model
@@ -96,6 +105,7 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
         // wording, not a second icon state: approximate is the normal condition
         // of a zoomed-out view, and an icon lit most of the time reports nothing
         approximate: followApproximate,
+        partial: followPartial,
         anchorAssembly: views[followAnchorIndex]?.assemblyNames[0],
       })}
     >

@@ -158,6 +158,16 @@ function stateModelFactory(pluginManager: PluginManager) {
        * view distinguishes the two.
        */
       followApproximate: false,
+      /**
+       * #volatile
+       * The follow had a multi-contig answer and refused it: placing a row on
+       * two regions that are not neighbours in its layout puts every contig
+       * between them on screen too, and past a point that is nearly all of what
+       * the reader is looking at. The row is on the widest of the anchor's
+       * regions instead and the other answers are off screen. Read only by the
+       * header's follow tooltip.
+       */
+      followPartial: false,
     }))
     .views(self => ({
       /**
@@ -347,6 +357,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setFollowApproximate(arg: boolean) {
         self.followApproximate = arg
+      },
+      /**
+       * #action
+       * Same terms again: written by the autorun, read only by the header.
+       */
+      setFollowPartial(arg: boolean) {
+        self.followPartial = arg
       },
       /**
        * #action

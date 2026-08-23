@@ -95,6 +95,34 @@ The tell is the same everywhere: two consecutive steps, the second reading state
 the first had to inflate, and a symptom that gets worse the longer the chain is
 rather than the further the inputs move.
 
+## When the padding cannot be avoided, refuse the answer
+
+Carrying the decision stops the padding spreading. It does not stop the padding,
+and the step that has to apply an answer still owes the reader a judgement about
+it: **an answer whose applied form is mostly padding is not an answer that
+medium can express.** Measure the applied form — the same bounds the applied
+form will use, not an estimate of them — and when the padding dominates, refuse
+it and fall back to the narrower answer the system already knows how to produce.
+
+Two things make this work rather than become a tuned constant, and both are
+transferable:
+
+- **The threshold needs a gate, and the gate is structural.** Here the ratio
+  alone was measured to be useless: the legitimate wide case scored 26–40%
+  where the illegitimate one scored 10%, interleaving. What separated them was
+  a property neither ratio could see — whether the inputs were whole units or
+  cut ones. Find that property first; a threshold applied to an ungated
+  population is a coin toss with a decimal point.
+- **The fallback should be an existing mode, not a new one.** Trimming the
+  answer until the ratio improves is the intuitive fix and invents a third
+  behavior to test, tune and explain. Falling back to what the system does when
+  it only ever had one input reuses everything already built for that path — and
+  it tends to *remove* a discontinuity, because the two regimes now meet at the
+  boundary instead of teleporting across it.
+
+Then say so. A fallback the reader cannot see is indistinguishable from the
+system being wrong in a quieter way.
+
 ## The other half of the same change
 
 The same file re-decides which region a window corresponds to on every frame,

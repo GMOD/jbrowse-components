@@ -1,3 +1,4 @@
+import { bpToOffset, moveTo } from '@jbrowse/core/util/Base1DUtils'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -30,6 +31,26 @@ const WIDTH = 800
 const Row = Base1DView.views(self => ({
   get coarseDynamicBlocks() {
     return self.dynamicBlocks.contentBlocks
+  },
+})).actions(self => ({
+  // the one LGV action the settled pass reaches, since the rung below the
+  // spread navigates rather than positions
+  navTo({
+    refName,
+    start,
+    end,
+  }: {
+    refName: string
+    start: number
+    end: number
+  }) {
+    const { displayedRegions } = self
+    const lo = bpToOffset({ refName, coord: start, displayedRegions })
+    const hi = bpToOffset({ refName, coord: end, displayedRegions })
+    if (!lo || !hi) {
+      throw new Error('not in this row')
+    }
+    moveTo(self, lo, hi)
   },
 }))
 
@@ -71,6 +92,7 @@ const Host = types
     followSynteny: true,
     followUnaligned: false,
     followApproximate: false,
+    followPartial: false,
     followPairs: [] as FollowPair[],
   }))
   .actions(self => ({
@@ -83,7 +105,16 @@ const Host = types
     setFollowApproximate(arg: boolean) {
       self.followApproximate = arg
     },
+    setFollowPartial(arg: boolean) {
+      self.followPartial = arg
+    },
   }))
+
+// put the row on an interval of its own layout, in bp
+function place(view: ReturnType<typeof row>, start: number, end: number) {
+  view.setBpPerPx((end - start) / WIDTH)
+  view.scrollTo(Math.round(start / view.bpPerPx))
+}
 
 const shown = (view: ReturnType<typeof row>) => [
   ...new Set(view.dynamicBlocks.contentBlocks.map(b => b.refName)),
@@ -148,5 +179,54 @@ describe('a spread carried up a three-row stack', () => {
   test('the anchor is left where it was', () => {
     const [anchor] = stack()
     expect(shown(anchor!)).toEqual(['chr1', 'chr2'])
+  })
+})
+
+// The grape/peach/cacao report. A window that runs off the end of one contig
+// into the next is an ordinary navigation, and its two answers can be anywhere
+// in the moving row — measured live at 13.9Mb of answer inside a 137.6Mb row,
+// with two whole chromosomes on screen that nothing reaches. The reader's words
+// were "there is nothing that row 1 connects to from there".
+describe('a straddle whose answers are far apart', () => {
+  function stack(mateOfSecond: string) {
+    const rows = [row('a'), row('b')]
+    // most of chr1 and the head of chr2, the shape a navigation near a contig
+    // end produces on its own
+    place(rows[0]!, 200_000, 1_100_000)
+    const host = Host.create()
+    host.setFollowPairs([
+      {
+        level: {
+          linearSyntenyDisplays: [
+            display([pairing('chr1', 'chr1'), pairing('chr2', mateOfSecond)]),
+          ],
+        },
+        stayingView: rows[0] as unknown as LinearGenomeViewModel,
+        movingView: rows[1] as unknown as LinearGenomeViewModel,
+        toMate: true,
+      },
+    ])
+    installSyntenyFollow(host)
+    return { rows, host }
+  }
+
+  test('the anchor is reading as two contigs, which is what starts this', () => {
+    const { rows } = stack('chr9')
+    expect(followAnchorWindows(rows[0]!.coarseDynamicBlocks)).toHaveLength(2)
+  })
+
+  test('the row is placed on the contig the reader is on, not across the gap', async () => {
+    const { rows, host } = stack('chr9')
+    // the settled pass resolves through a promise before it navigates
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(shown(rows[1]!)).toEqual(['chr1'])
+    expect(host.followPartial).toBe(true)
+  })
+
+  test('and it spreads as before when the two answers are neighbours', async () => {
+    const { rows, host } = stack('chr2')
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(shown(rows[1]!)).toEqual(['chr1', 'chr2'])
+    expect(host.followPartial).toBe(false)
   })
 })

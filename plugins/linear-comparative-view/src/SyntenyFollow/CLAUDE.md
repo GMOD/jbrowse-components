@@ -93,6 +93,53 @@ pick — a rung-3 pass or a held row clears it and the next window chooses freel
 — and an incumbent no block under the window reaches totals zero, so it cannot
 hold the answer on the bias alone.
 
+## The third rung is offered, not taken automatically
+
+**A union is refused when it is mostly filler.** `positionViewOnSpans` places an
+interval, and a row lays its regions end to end, so two answers that are not
+neighbours in the moving row's layout put every contig between them on screen —
+measured on grape/peach/cacao at **13.9Mb of answer inside a 137.6Mb row**, two
+whole chromosomes of which nothing reaches. `decideSpread` measures that as
+coverage against the very bounds `positionViewOnSpans` will use, and under half
+the row hands the level back to the rung below, on the widest window by pixel.
+
+**Demotion, not trimming.** Dropping the smaller span and re-placing was the
+obvious spelling and is a new placement mode with none of the machinery: falling
+through to rung 2 inherits the block pick, the CIGAR map, the settled resolve,
+`alreadyShowing` and the hysteresis. It also **removes a cliff** — a tail at
+4.9% of the widest window is placed by that rung today and at 5.1% teleported
+into a union ten times the size — where a trim would add one.
+
+**Coverage cannot decide this alone, and that is measured too.** An honest
+whole-genome overview on the same data covers **26–40%** of what it places,
+below anything that would catch the straddle above. What separates them is
+structural: an overview's windows are WHOLE contigs, a straddle's are cut on
+both sides of a junction, so `partialShare` gates the coverage test and the
+overview never reaches it. The tolerance in that test is load-bearing — block
+edges come off pixels, so five of eight contigs on a `showAllRegions` panel
+report an end a hair short of their region's, and without it the gate opens on
+the case it exists to exempt.
+
+**A carried spread is never re-judged.** Its windows are spans, partial by
+construction, so the gate would open on every one — and the second row of an
+honest overview would demote, then the third. The level that decided it already
+judged it.
+
+**The decision is the settle's, and the frame pass follows it.** The rung's
+_answer_ is still recomputed per frame; whether to take the rung is not. These
+are the two furthest-apart placements this subsystem can produce, and a
+per-frame re-decision flips between them across a threshold the user is panning
+along. `FollowLevelState.spread` carries it, with a band on the way back up and
+`preferIncumbent` on the window kept — 100% against 49% of the panel is one pan
+from a coin toss.
+
+**`followPartial` is the third header flag**, on the terms the other two keep:
+written in `planLevel`, read only by the header. A row that is not showing
+everything the anchor aligns to has to say so, or the demotion is a silent loss.
+`followDebug` prints the whole decision per settle under
+`localStorage.debugSyntenyFollow`, and `browser-tests/follow-spread-probe.ts`
+drives a live session with it.
+
 **Every visible contig is asked, not the two outer edges.** Mapping the leftmost
 and rightmost visible bp is the obvious cheaper spelling and is wrong whenever
 the two assemblies order their contigs differently — which the multiway demo

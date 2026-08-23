@@ -7,6 +7,7 @@ import type {
 import type { SyntenyCigarMapResult } from '../LinearSyntenyRPC/SyntenyGetCigarMap.ts'
 import type { FollowAnswerCache } from './followAnswerCache.ts'
 import type { FollowTransform } from './followTransform.ts'
+import type { SpreadDecision } from './spreadDecision.ts'
 
 // What one settle decided: which block places this level, which axis it was
 // picked on, and the affine shortcut the frame pass may take until the next
@@ -61,6 +62,13 @@ export interface FollowLevelState {
   // re-reported every settle, its message having been cleared by a level that
   // resolves fine.
   lastErrorMessage?: string
+  // The multi-contig rung's own decision, made by the exact pass and FOLLOWED
+  // by the frame pass rather than re-made there. The two placements it chooses
+  // between are the furthest apart this subsystem can put a row, so a frame pass
+  // free to re-decide would flip between them across a threshold the user is
+  // panning along — and it also carries the hysteresis, which needs a previous
+  // answer to be hysteresis at all.
+  spread?: SpreadDecision
   // Where the row was and where the last navigation sent it, so a repeat of the
   // same pair can be recognised as a navigation that achieved nothing. Cleared
   // the moment the row arrives — see `navSignature`.
@@ -101,6 +109,13 @@ export function createFollowLevelStates<Level extends object>() {
     // its own for a level that pass has never reached.
     pickFor(level: Level) {
       return states.get(level)?.pick
+    },
+    // What the exact pass decided about the multi-contig rung, for the frame
+    // pass to follow. Like `pickFor`, it does not mint: a level that pass has
+    // never reached has made no decision, and the frame pass spreads, which is
+    // what this rung did before the decision existed.
+    spreadFor(level: Level) {
+      return states.get(level)?.spread
     },
     // The map only if it is THIS block's. `cigarMapSpan` re-checks the block's
     // coordinates, which is the check that matters, but a map is per block and
