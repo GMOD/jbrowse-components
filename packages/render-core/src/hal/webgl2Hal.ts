@@ -267,6 +267,10 @@ export class WebGL2Hal implements GpuHal {
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, uniformByteSize, gl.DYNAMIC_DRAW)
 
+    // No mid-frame deferral, unlike `WebGPUHal`'s hook: GL is immediate-mode, so
+    // a draw already issued has consumed the buffer and deleting it between
+    // beginFrame and endFrame is defined. The parity that matters is the
+    // caller's — the same upload sequence is legal on both.
     this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
       if (!this.contextWasLost && !gl.isContextLost()) {
         gl.deleteBuffer(buf.vbo)

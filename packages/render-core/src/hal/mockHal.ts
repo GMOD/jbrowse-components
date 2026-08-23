@@ -91,6 +91,21 @@ export class MockHal implements GpuHal {
   private viewport: MockRect | null = null
   private drawLog: MockDraw[] = []
 
+  /**
+   * `${regionKey}:${passId}` for every buffer the open frame has drawn from,
+   * and the ones that were then replaced or deleted before `endFrame`.
+   *
+   * That sequence is legal — `WebGPUHal` defers the `destroy()` past its submit
+   * precisely so it is — but it is the sequence that used to blank a frame, and
+   * it stays worth pinning per renderer: alignments re-uploads `OVERLAY_REGION`
+   * once per section inside its block loop, so a chain selection spanning two
+   * sections lands here, while synteny's mid-frame delete of an undrawn pass
+   * does not. A renderer test asserts on which of the two shapes it has.
+   */
+  private frameOpen = false
+  private drawnThisFrame = new Map<number, Set<string>>()
+  private replacedWhileDrawnLog: string[] = []
+
   // The pass list is here for parity with the WebGL2Hal / WebGPUHal
   // constructors, and it validates for the same reason `createRenderingBackend`
   // does: a duplicate pass id is a silent GPU-only mis-render, so the check
@@ -129,6 +144,7 @@ export class MockHal implements GpuHal {
     count: number,
   ) {
     this.record('uploadBuffer', regionKey, passId, data.byteLength, count)
+    this.noteReplaced(regionKey, passId)
     // Both real HALs delete the prior buffer up front and leave nothing behind
     // on an empty upload; mirroring that here keeps `getBuffer` bookkeeping
     // honest instead of leaving a count-0 entry the GPU never has.
@@ -147,18 +163,40 @@ export class MockHal implements GpuHal {
 
   deleteBuffer(regionKey: number, passId: string) {
     this.record('deleteBuffer', regionKey, passId)
+    this.noteReplaced(regionKey, passId)
     this.regions.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {
     this.record('deleteRegion', regionKey)
+    this.noteRegionReplaced(regionKey)
     this.regions.deleteRegion(regionKey)
   }
 
   pruneRegions(active: Iterable<number>) {
     const activeSet = new Set(active)
     this.record('pruneRegions', [...activeSet])
+    for (const regionKey of this.drawnThisFrame.keys()) {
+      if (!activeSet.has(regionKey)) {
+        this.noteRegionReplaced(regionKey)
+      }
+    }
     this.regions.prune(activeSet)
+  }
+
+  private noteReplaced(regionKey: number, passId: string) {
+    if (this.frameOpen && this.drawnThisFrame.get(regionKey)?.has(passId)) {
+      this.replacedWhileDrawnLog.push(`${regionKey}:${passId}`)
+    }
+  }
+
+  private noteRegionReplaced(regionKey: number) {
+    const drawn = this.drawnThisFrame.get(regionKey)
+    if (drawn) {
+      for (const passId of drawn) {
+        this.noteReplaced(regionKey, passId)
+      }
+    }
   }
 
   uploadTexture(
@@ -182,6 +220,8 @@ export class MockHal implements GpuHal {
     // initial state is the whole attachment.
     this.scissor = null
     this.viewport = null
+    this.frameOpen = true
+    this.drawnThisFrame.clear()
   }
 
   // Throws on an id the display never registered, where both real HALs return
@@ -202,6 +242,15 @@ export class MockHal implements GpuHal {
       this.assertRegistered(bufferPassId, 'bufferPassId')
     }
     this.record('drawPass', passId, regionKey, bufferPassId)
+    // The buffer the draw reads, which `bufferPassId` renames — that is the
+    // resource a later upload in this frame would be replacing under it.
+    const bufferKey = bufferPassId ?? passId
+    let drawn = this.drawnThisFrame.get(regionKey)
+    if (!drawn) {
+      drawn = new Set()
+      this.drawnThisFrame.set(regionKey, drawn)
+    }
+    drawn.add(bufferKey)
     this.drawLog.push({
       passId,
       regionKey,
@@ -225,6 +274,7 @@ export class MockHal implements GpuHal {
 
   endFrame() {
     this.record('endFrame')
+    this.frameOpen = false
   }
 
   setScissor(x: number, y: number, w: number, h: number) {
@@ -308,6 +358,16 @@ export class MockHal implements GpuHal {
    * to ring slot 0 and WebGL2 leaves the previous frame's UBO bound, so the two
    * backends disagree about what it even means.
    */
+  /**
+   * `${regionKey}:${passId}` for each buffer this run replaced or deleted while
+   * the open frame had already drawn from it, in order — empty when a renderer
+   * never does that. See the field for why the sequence is worth asserting on
+   * either way.
+   */
+  replacedWhileDrawn() {
+    return [...this.replacedWhileDrawnLog]
+  }
+
   uniformsOf(draw: MockDraw) {
     const buf = this.uniformWrites[draw.uniformWrite]
     return buf ? new Float32Array(buf) : null
@@ -320,5 +380,8 @@ export class MockHal implements GpuHal {
     this.drawLog = []
     this.scissor = null
     this.viewport = null
+    this.frameOpen = false
+    this.drawnThisFrame.clear()
+    this.replacedWhileDrawnLog = []
   }
 }

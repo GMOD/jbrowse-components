@@ -75,6 +75,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'joinChunk',
     'NETWORK_ABORT — the retry lives in @gmod/range-cache-filehandle',
   ],
+  [
+    'warnIfMidFrame',
+    "GPU_RENDERING names the warning WebGPUHal's deferred destroy replaced",
+  ],
   ['cacheIdleTimeoutMs', 'an upstream option deliberately not plumbed'],
   ['Client', 'BAM_STACK_INTEGRATION names @gmod/bam types'],
   ['DiagonalizeRpcBase', 'a base class that left the plugin ABI'],

@@ -127,6 +127,12 @@ export interface GpuHal {
    */
   resize(width: number, height: number): CanvasScale
 
+  // Replacing or deleting a buffer between `beginFrame` and `endFrame` is legal
+  // on every HAL, including one the open frame has already drawn from. WebGL2
+  // is immediate-mode so the old contents are already consumed; WebGPU holds
+  // the `destroy()` until after the frame's submit, because destroying a buffer
+  // an encoded draw references fails validation for the WHOLE command buffer
+  // and drops every other track's draws in that frame with it.
   uploadBuffer(
     regionKey: number,
     passId: string,

@@ -1023,6 +1023,28 @@ that *deletes* first and returns is merely the same instruction spelled twice �
 `GpuHicRenderer` carried one until 2026-08-21, harmless and a second place to
 state the release.
 
+**Replacing a buffer mid-frame is legal, because WebGPU defers the release.**
+A `destroy()` is validated against `queue.submit`, not against the moment the
+draw was encoded, so freeing a vertex buffer an open render pass already drew
+from fails validation for the **whole** command buffer — one region's re-upload
+blanks every track drawn in that frame, and the only symptom is a console
+validation error after the submit. `WebGPUHal` therefore pushes every release
+onto `pendingDestroy` while `currentEncoder` is non-null and drains it after the
+submit in `endFrame` (and on that method's throwing path, and in `dispose`).
+It runs through the `RegionRegistry` destroy hook, so `uploadBuffer`,
+`deleteBuffer`, `deleteRegion`, `pruneRegions` and `dispose` all get it without
+a per-call-site guard, and `uploadTexture`'s replacement goes the same way.
+WebGL2 needs none of this: it is immediate-mode, and the driver has already
+consumed the bytes by the time `deleteBuffer` runs.
+
+This replaced a `warnIfMidFrame` console warning, which had it backwards on both
+sides — it fired for synteny's `ensureUploaded` deleting a pass the open frame
+never referenced (safe), and it did not fire at all for the case that actually
+dropped frames, alignments' `drawOverlayQuads` re-uploading `OVERLAY_REGION`
+once per section inside the block loop, because that release comes from
+`uploadBuffer` rather than from `deleteBuffer`. `MockHal.replacedWhileDrawn()`
+is where a renderer test says which of the two shapes it has.
+
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery), `WebGL2Hal`
 (`antialias: true`, VAO + UBO, context-loss recovery), `MockHal` (tests).
 

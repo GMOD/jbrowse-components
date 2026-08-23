@@ -233,6 +233,24 @@ export class WebGPUHal implements GpuHal {
   private currentEncoder: GPUCommandEncoder | null = null
   private currentPass: GPURenderPassEncoder | null = null
 
+  /**
+   * Buffers and textures whose destroy landed while the frame's render pass was
+   * open, held until the frame has been submitted.
+   *
+   * WebGPU validates `destroy()` against the submitted command buffer, not
+   * against when the draw was encoded: destroying a vertex buffer an already
+   * encoded draw references makes `queue.submit` reject the whole frame, so one
+   * region re-uploading a pass it drew earlier in the same frame blanks
+   * everything else drawn with it. Alignments does exactly that — a chain
+   * selection spanning two sections re-uploads `OVERLAY_REGION` once per
+   * section, inside the block loop.
+   *
+   * Deferring is what makes mid-frame replacement legal instead of merely
+   * warned about; synteny's `ensureUploaded` has always deleted a pass mid-frame
+   * that the open pass never referenced, and that case was never the bug.
+   */
+  private pendingDestroy: { destroy: () => void }[] = []
+
   // Scissor/viewport state (physical pixels, top-left origin). `null` means the
   // full attachment, which is both the caller's "cleared" state and a render
   // pass's own initial one.
@@ -292,7 +310,7 @@ export class WebGPUHal implements GpuHal {
       this.alignedUniformSize,
     )
     this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
-      buf.dataBuffer.destroy()
+      this.destroyWhenIdle(buf.dataBuffer)
     })
     this.configureContext()
   }
@@ -465,28 +483,38 @@ export class WebGPUHal implements GpuHal {
     return this.regions.get(regionKey, passId)?.count ?? 0
   }
 
-  // Mid-frame destroy of buffers referenced by an in-flight render pass is a
-  // bug — warn but proceed (the registry destroy lands either way).
-  private warnIfMidFrame(label: string) {
+  /**
+   * The one place a GPU resource this HAL owns is released — see
+   * {@link pendingDestroy} for why the frame decides when.
+   *
+   * Every buffer release routes here through the `RegionRegistry` destroy hook,
+   * so `uploadBuffer`, `deleteBuffer`, `deleteRegion`, `pruneRegions` and
+   * `dispose` are all covered without any of them knowing a frame is open.
+   */
+  private destroyWhenIdle(resource: { destroy: () => void }) {
     if (this.currentEncoder) {
-      console.warn(
-        `[WebGPUHal] ${label} called mid-frame — in-flight render passes may reference these buffers`,
-      )
+      this.pendingDestroy.push(resource)
+    } else {
+      resource.destroy()
     }
   }
 
+  private drainPendingDestroy() {
+    for (const resource of this.pendingDestroy) {
+      resource.destroy()
+    }
+    this.pendingDestroy.length = 0
+  }
+
   deleteBuffer(regionKey: number, passId: string) {
-    this.warnIfMidFrame(`deleteBuffer(${regionKey}, ${passId})`)
     this.regions.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {
-    this.warnIfMidFrame(`deleteRegion(${regionKey})`)
     this.regions.deleteRegion(regionKey)
   }
 
   pruneRegions(active: Iterable<number>) {
-    this.warnIfMidFrame('pruneRegions')
     this.regions.prune(active)
   }
 
@@ -510,7 +538,13 @@ export class WebGPUHal implements GpuHal {
     }
     const existing = this.passTextures.get(passId)
     if (existing) {
-      existing.texture.destroy()
+      // Same hazard as a buffer, one step further from a live caller: every
+      // `uploadTexture` in tree is a colour ramp written from an upload autorun
+      // (hic's `LinearHicDisplay/model.ts`, variants' `LDDisplay/shared.ts`),
+      // which never runs inside a frame. Routing it through the same deferral
+      // costs nothing and keeps "replaced mid-frame" from being a hazard again
+      // the first time a renderer builds a texture from render state.
+      this.destroyWhenIdle(existing.texture)
     }
     const texture = this.device.createTexture({
       size: [width, height],
@@ -715,36 +749,15 @@ export class WebGPUHal implements GpuHal {
     this.currentPass.draw(desc.verticesPerInstance, regionBuf.count)
   }
 
-  endFrame() {
-    if (!this.currentEncoder) {
-      return
-    }
-
-    if (this.currentPass) {
-      this.currentPass.end()
-      this.currentPass = null
-    }
-
-    if (this.uniformSlot > 0) {
-      const uploadSize = this.uniformSlot * this.alignedUniformSize
-      this.device.queue.writeBuffer(
-        this.uniformRingBuffer,
-        0,
-        this.uniformStaging,
-        0,
-        uploadSize,
-      )
-    }
-    if (this.uniformSlot >= UNIFORM_SLOT_WARN_AT && !this.warnedUniformSlots) {
-      this.warnedUniformSlots = true
-      console.warn(
-        `[WebGPUHal] this frame used ${this.uniformSlot} of ${MAX_UNIFORM_SLOTS} uniform ring slots. At the cap, writes are dropped and their draws render against another batch's uniforms — wrong pixels, no error. A count this high usually means a per-frame write inside a loop that has grown a dimension (stacked sections, displayed regions), or a write nothing draws with. Check the renderer before raising the cap.`,
-      )
-    }
-    const slotAtSubmit = this.uniformSlot
-    this.device.queue.submit([this.currentEncoder.finish()])
-
-    // Pop the error scopes pushed in beginFrame (after the early-return guard).
+  /**
+   * Close the frame's state whether the submit landed or threw.
+   *
+   * The scopes pushed in `beginFrame` have to be popped either way — leaving a
+   * pair pushed makes every later frame's pop read an older frame's errors —
+   * and the deferred destroys have to be drained either way, since a frame that
+   * threw is a frame no later `endFrame` will run for.
+   */
+  private closeFrame(slotAtSubmit: number) {
     void this.device
       .popErrorScope()
       .then(err => {
@@ -770,8 +783,43 @@ export class WebGPUHal implements GpuHal {
         }
       })
       .catch(() => {})
+    this.currentPass = null
     this.currentEncoder = null
     this.currentTextureView = null
+    this.drainPendingDestroy()
+  }
+
+  endFrame() {
+    const encoder = this.currentEncoder
+    if (!encoder) {
+      return
+    }
+    const slotAtSubmit = this.uniformSlot
+    try {
+      if (this.currentPass) {
+        this.currentPass.end()
+      }
+
+      if (slotAtSubmit > 0) {
+        const uploadSize = slotAtSubmit * this.alignedUniformSize
+        this.device.queue.writeBuffer(
+          this.uniformRingBuffer,
+          0,
+          this.uniformStaging,
+          0,
+          uploadSize,
+        )
+      }
+      if (slotAtSubmit >= UNIFORM_SLOT_WARN_AT && !this.warnedUniformSlots) {
+        this.warnedUniformSlots = true
+        console.warn(
+          `[WebGPUHal] this frame used ${slotAtSubmit} of ${MAX_UNIFORM_SLOTS} uniform ring slots. At the cap, writes are dropped and their draws render against another batch's uniforms — wrong pixels, no error. A count this high usually means a per-frame write inside a loop that has grown a dimension (stacked sections, displayed regions), or a write nothing draws with. Check the renderer before raising the cap.`,
+        )
+      }
+      this.device.queue.submit([encoder.finish()])
+    } finally {
+      this.closeFrame(slotAtSubmit)
+    }
   }
 
   /**
@@ -859,7 +907,14 @@ export class WebGPUHal implements GpuHal {
       return
     }
     this.disposed = true
-    this.warnIfMidFrame('dispose')
+    // Abandon an open frame before releasing anything, so the releases below
+    // are immediate: its encoded draws never reach the queue, and a deferral
+    // here would have no `endFrame` left to drain it. The error scopes it
+    // pushed are popped by `closeFrame` on the way out — the device outlives
+    // this HAL, so a pair left pushed would report into a sibling's frame.
+    if (this.currentEncoder) {
+      this.closeFrame(this.uniformSlot)
+    }
     this.regions.deleteAll()
     this.uniformRingBuffer.destroy()
     for (const ts of this.passTextures.values()) {

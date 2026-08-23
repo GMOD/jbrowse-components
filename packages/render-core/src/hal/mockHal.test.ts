@@ -185,3 +185,64 @@ describe('MockHal uniforms per draw', () => {
     expect(hal.uniformsOf(hal.draws()[0]!)).toBeNull()
   })
 })
+
+describe('MockHal mid-frame buffer replacement', () => {
+  it('records the upload that replaced a buffer the open frame had drawn from', () => {
+    // Alignments' shape: one region, one overlay pass, re-uploaded per section
+    // inside the block loop. On WebGPU the release is deferred past the submit
+    // so this paints; the point of the log is that a renderer test can say which
+    // of the two shapes its renderer has.
+    const hal = new MockHal([pass('overlay')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.uploadBuffer(0, 'overlay', new Float32Array([1]), 1)
+    hal.drawPass('overlay', 0)
+    hal.uploadBuffer(0, 'overlay', new Float32Array([2]), 1)
+    hal.drawPass('overlay', 0)
+    hal.endFrame()
+
+    expect(hal.replacedWhileDrawn()).toEqual(['0:overlay'])
+  })
+
+  it('leaves a mid-frame delete of an undrawn pass out of it', () => {
+    // Synteny's shape: `ensureUploaded` deletes a pass mid-frame that nothing in
+    // the open frame referenced, which was never the hazard.
+    const hal = new MockHal([pass('a'), pass('b')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.uploadBuffer(0, 'a', new Float32Array([1]), 1)
+    hal.drawPass('a', 0)
+    hal.deleteBuffer(0, 'b')
+    hal.endFrame()
+
+    expect(hal.replacedWhileDrawn()).toEqual([])
+  })
+
+  it('counts a deleteRegion and a prune over a drawn region, and only the open frame', () => {
+    const hal = new MockHal([pass('a')])
+    hal.uploadBuffer(0, 'a', new Float32Array([1]), 1)
+    hal.uploadBuffer(1, 'a', new Float32Array([1]), 1)
+    hal.beginFrame(0, 0, 0, 0)
+    hal.drawPass('a', 0)
+    hal.drawPass('a', 1)
+    hal.deleteRegion(0)
+    hal.pruneRegions([0])
+    hal.endFrame()
+    // after endFrame the frame is closed, so the same calls are unremarkable
+    hal.uploadBuffer(2, 'a', new Float32Array([1]), 1)
+    hal.deleteRegion(2)
+
+    expect(hal.replacedWhileDrawn()).toEqual(['0:a', '1:a'])
+  })
+
+  it('draws through a bufferPassId name the buffer it actually reads', () => {
+    // `drawPass(a, key, b)` runs pass a's pipeline over pass b's buffer, so it
+    // is b that a later upload would be pulling out from under it.
+    const hal = new MockHal([pass('chevron'), pass('line')])
+    hal.beginFrame(0, 0, 0, 0)
+    hal.uploadBuffer(0, 'line', new Float32Array([1]), 1)
+    hal.drawPass('chevron', 0, 'line')
+    hal.uploadBuffer(0, 'line', new Float32Array([2]), 1)
+    hal.endFrame()
+
+    expect(hal.replacedWhileDrawn()).toEqual(['0:line'])
+  })
+})
