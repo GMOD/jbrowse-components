@@ -15,6 +15,7 @@ import {
   getSession,
   statusFraction,
   statusMessageText,
+  statusSource,
 } from '@jbrowse/core/util'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
@@ -97,9 +98,12 @@ function initialize() {
       regions: volvoxDisplayedRegions,
       initialized: true,
       // mirrors the real model's load-status fields, which the view's
-      // loadingMessage/loadingProgress read
+      // loadingMessage/loadingProgress/loadingSource read. A field missed here
+      // does not fail — the view's getter simply reads undefined off a stub that
+      // never had it — so keep this in step with `assembly.ts`
       statusMessage: undefined as string | undefined,
       statusProgress: undefined as number | undefined,
+      statusSource: undefined as string | undefined,
     }))
     .views(() => ({
       // mirrors the real model: resolves an alias or any casing to the
@@ -132,6 +136,7 @@ function initialize() {
       setStatus(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
         self.statusProgress = statusFraction(status)
+        self.statusSource = statusSource(status)
       },
     }))
 
@@ -1935,6 +1940,21 @@ test('loadingMessage reports what the assembly load is downloading', () => {
 
   asm.setStatus(undefined)
   expect(model.loadingMessage).toBe('Loading')
+
+  // and the address the stalled-load notice shows, which rides the same status
+  // rather than a channel of its own
+  asm.setStatus({
+    message: 'Downloading chromosome aliases',
+    source: 'https://hgdownload.soe.ucsc.edu/hg38.chromAlias.txt',
+  })
+  expect(model.loadingMessage).toBe('Downloading chromosome aliases')
+  expect(model.loadingProgress).toBeUndefined()
+  expect(model.loadingSource).toBe(
+    'https://hgdownload.soe.ucsc.edu/hg38.chromAlias.txt',
+  )
+
+  asm.setStatus('Downloading cytobands')
+  expect(model.loadingSource).toBeUndefined()
 })
 
 test('showAllRegions centers correctly with multiple regions', () => {
