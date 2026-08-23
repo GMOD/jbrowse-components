@@ -1,7 +1,9 @@
 import { overByteBudget } from '@jbrowse/core/rpc/byteBudget'
-import { createStatusFanOut, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { callEachRegion } from '@jbrowse/plugin-linear-genome-view'
+import { createStatusFanOut } from '@jbrowse/core/util'
+import {
+  callEachRegion,
+  fetchRegionsBatched,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
@@ -89,8 +91,13 @@ export function unionSampleSets(
  * Shared per-region fetch skeleton for both the detail and summary paths: call
  * one RPC per buffered region, bail on staleness, push the (config-derived)
  * `samples` + tree once, then hand the per-region results to `commit`.
- * `fetchRegions` (from `MultiRegionDisplayMixin`) owns stop-token rotation,
- * stale-fetch detection, and `loadedRegions` book-keeping.
+ *
+ * `fetchRegionsBatched` rather than `fetchEachRegion` because `setSamples` is a
+ * cross-region decision over the whole result set, so the batch is what the
+ * staleness guard has to wrap: a partial commit would publish a sample set
+ * derived from a superseded viewport. Every region is marked loaded together,
+ * which is honest here — MAF's size gate is the pre-flight kind, so a refusal
+ * returns before `call` runs at all and nothing below can arrive empty-handed.
  *
  * The RPC payload carries no color/style settings — worker output is purely
  * data-dependent and the main thread encodes from it plus `gpuProps()`, so
@@ -111,37 +118,30 @@ async function fetchMafRegions<R extends SampleSet>(
   commit: (results: { displayedRegionIndex: number; result: R }[]) => void,
 ) {
   // #region rawFetchRegions
-  await self.fetchRegions(needed, async (ctx: RegionFetchContext) => {
-    // The CDS-frame annotation overlay (when configured) fetches in the same
-    // stop-token-guarded pass as the main data so the two share staleness +
-    // loadedRegions book-keeping; the two RPCs run concurrently.
-    //
-    // Concurrently, and each is itself a per-region fan-out, so they get a slot
-    // apiece rather than the shared callback: two fan-outs writing one status
-    // field directly is last-writer-wins between them, and the annotation
-    // branch's rows are a small fraction of the alignment's.
-    const slot = createStatusFanOut(ctx.statusCallback)
-    const [results] = await Promise.all([
-      callEachRegion(needed, { ...ctx, statusCallback: slot() }, call),
-      fetchAnnotationData(self, needed, { ...ctx, statusCallback: slot() }),
-    ])
-    // One guard around the whole batch, not per region as in `fetchEachRegion`:
-    // `setSamples` is a cross-region decision over `results`, so a partial
-    // commit would publish a sample set derived from a superseded viewport.
-    if (ctx.isStale()) {
-      return
-    }
-    const sampleSet = unionSampleSets(results)
-    if (sampleSet) {
-      self.setSamples(sampleSet)
-    }
-    commit(results)
-    // beside the store, and every region gets one: MAF's size gate is the
-    // pre-flight kind, so a refusal returns from `fetchRegions` before this
-    // callback runs at all and nothing here can arrive empty-handed.
-    for (const { displayedRegionIndex } of needed) {
-      ctx.commitRegion(displayedRegionIndex)
-    }
+  await fetchRegionsBatched(self, needed, {
+    call: async (regions, ctx) => {
+      // The CDS-frame annotation overlay (when configured) fetches in the same
+      // stop-token-guarded pass as the main data so the two share staleness +
+      // loadedRegions book-keeping; the two RPCs run concurrently.
+      //
+      // Concurrently, and each is itself a per-region fan-out, so they get a
+      // slot apiece rather than the shared callback: two fan-outs writing one
+      // status field directly is last-writer-wins between them, and the
+      // annotation branch's rows are a small fraction of the alignment's.
+      const slot = createStatusFanOut(ctx.statusCallback)
+      const [results] = await Promise.all([
+        callEachRegion(regions, { ...ctx, statusCallback: slot() }, call),
+        fetchAnnotationData(self, regions, { ...ctx, statusCallback: slot() }),
+      ])
+      return results
+    },
+    commit: results => {
+      const sampleSet = unionSampleSets(results)
+      if (sampleSet) {
+        self.setSamples(sampleSet)
+      }
+      commit(results)
+    },
   })
   // #endregion
 }
@@ -182,24 +182,21 @@ async function framesReadOverBudget(
   if (limit === undefined) {
     return false
   }
-  const bytes = await getSession(self).rpcManager.call(
-    getRpcSessionId(self),
-    'CoreGetRegionByteEstimate',
-    // eslint-disable-next-line no-restricted-syntax
-    {
-      regions: needed.map(n => n.region),
-      adapterConfig,
-      // same budget as the main gate, so the same scope
-      scope: 'largestRegion',
-      // An estimate off a tabix index is a set of range reads, and this one runs
-      // on the fetch's critical path — the frames read waits on it. Without the
-      // token a cancelled fetch goes on measuring a file it will not download.
-      stopToken: ctx.stopToken,
-      // no statusCallback: it reports nothing on purpose, for the same reason it
-      // does not stamp `byteEstimate` — the phase belongs to an auxiliary
-      // overlay and would be narrating over the alignment's own progress
-    },
-  )
+  // Through the envelope, which carries the stop token: an estimate off a tabix
+  // index is a set of range reads, and this one runs on the fetch's critical
+  // path — the frames read waits on it — so a cancelled fetch must not go on
+  // measuring a file it will not download.
+  //
+  // A silent context, though: this reports nothing on purpose, for the same
+  // reason it does not stamp `byteEstimate` — the phase belongs to an auxiliary
+  // overlay and would be narrating over the alignment's own progress.
+  const silent = { ...ctx, statusCallback: () => {} }
+  const bytes = await silent.callRpc('CoreGetRegionByteEstimate', {
+    regions: needed.map(n => n.region),
+    adapterConfig,
+    // same budget as the main gate, so the same scope
+    scope: 'largestRegion',
+  })
   return !ctx.isStale() && overByteBudget(bytes, limit)
 }
 
