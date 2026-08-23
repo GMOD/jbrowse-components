@@ -30,7 +30,7 @@ reader:
 | `product_architecture.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                               |
 | `products_and_plugins.dot`       | [`docs/developer_guide.md`](../docs/developer_guide.md) — Products and plugins                                               |
 | `rpc_lifecycle.dot`              | [`docs/developer_guides/rpc_workers.md`](../docs/developer_guides/rpc_workers.md) — The RPC lifecycle                        |
-| `wolfdog_ancestry_pipeline.dot`  | [`docs/tutorials/local_ancestry.md`](../docs/tutorials/local_ancestry.md) — The pipeline                                     |
+| `wolfdog_ancestry_pipeline.dot`  | [`docs/tutorials/local_ancestry.md`](../docs/tutorials/local_ancestry.md) — The files between the panel and the painting     |
 
 <!-- END GENERATED DIAGRAM USAGE -->
 
