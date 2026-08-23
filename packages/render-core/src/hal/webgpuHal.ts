@@ -745,25 +745,31 @@ export class WebGPUHal implements GpuHal {
     this.device.queue.submit([this.currentEncoder.finish()])
 
     // Pop the error scopes pushed in beginFrame (after the early-return guard).
-    void this.device.popErrorScope().then(err => {
-      if (err) {
-        // Genuine VRAM exhaustion during the frame (distinct from the proactive
-        // over-limit checks in uploadBuffer/uploadTexture). Surface to the
-        // display, not just the console — the view is too large for this GPU.
-        this.oom.report(
-          `This view exhausted GPU memory — zoom in or reduce the track height. (out-of-memory after submit, slot ${slotAtSubmit}: ${err.message})`,
-        )
-      }
-    })
-    void this.device.popErrorScope().then(err => {
-      if (err) {
-        console.error(
-          '[WebGPUHal] endFrame: VALIDATION error after submit, slot=',
-          slotAtSubmit,
-          err.message,
-        )
-      }
-    })
+    void this.device
+      .popErrorScope()
+      .then(err => {
+        if (err) {
+          // Genuine VRAM exhaustion during the frame (distinct from the proactive
+          // over-limit checks in uploadBuffer/uploadTexture). Surface to the
+          // display, not just the console — the view is too large for this GPU.
+          this.oom.report(
+            `This view exhausted GPU memory — zoom in or reduce the track height. (out-of-memory after submit, slot ${slotAtSubmit}: ${err.message})`,
+          )
+        }
+      })
+      .catch(() => {})
+    void this.device
+      .popErrorScope()
+      .then(err => {
+        if (err) {
+          console.error(
+            '[WebGPUHal] endFrame: VALIDATION error after submit, slot=',
+            slotAtSubmit,
+            err.message,
+          )
+        }
+      })
+      .catch(() => {})
     this.currentEncoder = null
     this.currentTextureView = null
   }
