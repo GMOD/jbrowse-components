@@ -89,7 +89,21 @@ the BAM to disk, split N ways.
 takes the other route: it reads the BAM by region straight over HTTPS,
 accumulating each cell type's coverage in one pass, so nothing is downloaded and
 nothing is split. On a BAM the size this one is, that is the difference between
-needing scratch space and needing none.
+needing scratch space and needing none. Either way the last step is where the
+normalization lands:
+
+<!-- from: scripts/build_scrna_pseudobulk.sh -->
+
+```bash
+# CPM: scale by 1e6 / this cell type's own read total, so a row from 200 cells
+# compares with one from 2,000
+awk -v total="$reads" -v OFS='\t' \
+  '{print $1, $2, $3, $4 * 1e6 / total}' celltype.bg > celltype.cpm.bg
+
+# chromosomes in the chrom.sizes' own order, which for UCSC names is
+# lexicographic (chr1, chr10, ... chr2) and not the order reads stream in
+bedGraphToBigWig celltype.cpm.bg hg38.chrom.sizes celltype.bw
+```
 
 ## Loading the BigWigs
 

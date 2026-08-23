@@ -431,10 +431,17 @@ insertion and [MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221) for the
 CFA12 one. Most candidate retrocopies have no sequenced insert, so the callset
 footprint above is the method that generalizes.
 
-Align with `minimap2 -x splice -c`: `-c` writes the base-level CIGAR, and
-`splice` chains across the introns and lands both gaps on the annotated ones.
-The build script rewrites the `N` operations a splice preset emits to `D`, since
-those bases really are absent from the retrocopy.
+One alignment per retrocopy, against the parent locus cut out as its own FASTA:
+
+<!-- from: scripts/build_dog10k_fgf4_synteny.sh -->
+
+```bash
+# `splice` chains across the parent's introns so both gaps land on the annotated
+# ones; -c writes the base-level CIGAR the ribbons are drawn from. Rewrite the
+# N operations it emits to D afterwards: those bases really are absent here.
+samtools faidx parent.fa
+minimap2 -x splice -c parent.fa FGF4retro-CFA12.fa > FGF4retro-CFA12.paf
+```
 
 Load each retrocopy as a one-contig assembly and its alignment as a
 `SyntenyTrack`:

@@ -36,13 +36,34 @@ counts feed the model, TPM feeds the effect size.
 
 **Test usage.** [satuRn](https://doi.org/10.12688/f1000research.51749.1) fits a
 quasi-binomial model to each transcript's share of its gene's reads and tests
-that share between the two tissues. Transcripts are filtered with
-`edgeR::filterByExpr` first, and any gene left with one isoform is dropped,
-since a lone isoform is always the whole proportion.
+that share between the two tissues, over a counts matrix and a `tissue` column:
+
+```r
+# after filterByExpr, any gene left with one isoform goes too: usage is a
+# within-gene proportion, so a lone isoform is always 100%
+keep <- edgeR::filterByExpr(cnt, group = coldata$tissue)
+cnt <- cnt[keep, ]
+multi <- names(which(table(txinfo$gene_id) > 1))
+cnt <- cnt[txinfo$isoform_id[txinfo$gene_id %in% multi], ]
+
+se <- SummarizedExperiment(assays = list(counts = cnt),
+                           colData = coldata, rowData = txinfo)
+se <- satuRn::fitDTU(object = se, formula = ~ 0 + tissue)
+L <- limma::makeContrasts(muscle_vs_liver = muscle - liver,
+                          levels = model.matrix(~ 0 + tissue, data = coldata))
+se <- satuRn::testDTU(object = se, contrasts = L, sort = FALSE)
+```
 
 **Write the statistics into GENCODE.** The called genes are subset out of the
 GENCODE v29 GFF3 and each transcript's numbers are appended to its attribute
-column, then `bgzip` and `tabix` make it loadable.
+column. The rows come out in coordinate order, so indexing is the ordinary pair:
+
+<!-- from: scripts/build_dtu_demo.sh -->
+
+```bash
+bgzip -f dtu_muscle_vs_liver.gff3
+tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
+```
 
 ### The attribute column
 

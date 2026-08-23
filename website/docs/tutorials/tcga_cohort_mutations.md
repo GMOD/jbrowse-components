@@ -245,6 +245,8 @@ It takes the same `SAMPLES.tsv:COLUMN` group spec, so a tumor falls in the same
 group in every track on both pages, and writes one interval per gene valued in
 percent of the cohort:
 
+<!-- from: scripts/build_tcga_cohort_mutations.sh -->
+
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/mutation_recurrence.py
 python3 mutation_recurrence.py tcga_brca_mutations.vcf.gz by_subtype.bedGraph \

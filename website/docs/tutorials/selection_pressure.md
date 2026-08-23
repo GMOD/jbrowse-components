@@ -59,6 +59,8 @@ The [end-to-end script](#reproduce-it-end-to-end) turns each GFF3 into the BED
 the adapter reads, translates each CDS to a proteome keyed the same way, and
 runs jcvi:
 
+<!-- from: scripts/build_primate_selection.sh -->
+
 ```bash
 diamond makedb --in rhesus.pep -d rhesus.pep
 diamond blastp --threads 14 --query human.pep --db rhesus.pep \
@@ -80,6 +82,8 @@ proteome ends up naming `ENST00000641515.7` where the BED names
 version; `kaks_from_pairs.py` takes `--strip-version` for the same reason.
 
 ### dN and dS
+
+<!-- from: scripts/build_primate_selection.sh -->
 
 ```bash
 python3 kaks_from_pairs.py pairs.tsv both.cds.fa.gz \

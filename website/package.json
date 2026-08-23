@@ -45,6 +45,7 @@
     "check-paste-configs": "node scripts/check-paste-configs.ts",
     "check-config-cli": "node scripts/check-config-cli.ts",
     "check-config-blocks": "node scripts/check-config-blocks.ts",
+    "check-prereq-tools": "node scripts/check-prereq-tools.ts",
     "check-session-urls": "node scripts/check-session-urls.ts",
     "check-script-commands": "node scripts/check-script-commands.ts",
     "check-doc-slots": "node scripts/check-doc-slots.ts",

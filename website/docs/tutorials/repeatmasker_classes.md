@@ -137,7 +137,32 @@ column the display partitions on. RepeatMasker's own `.out` does not have one:
 it writes a single `class/family` field, `LINE/L1` for a repeat with both and a
 bare `Simple_repeat` for one whose family is its class. Splitting that field in
 two, under a header naming the columns, is the whole difference between the
-`.out` and the file the track above is reading.
+`.out` and the file the track above is reading:
+
+<!-- from: scripts/build_repeatmasker_classes.sh -->
+
+```bash
+# the header names the columns, which is what lets `partitionField: "repClass"`
+# name one the BED spec has never heard of; it prints outside the sort to stay
+# first, where tabix expects it
+{
+  printf '#genoName\tgenoStart\tgenoEnd\tname\tstrand\trepFamily\trepClass\tswScore\tmilliDiv\n'
+  awk 'BEGIN { OFS = "\t" }
+    # a data row is the one starting with a bare integer, its SW score
+    $1 ~ /^[0-9]+$/ {
+      # "LINE/L1" splits; "Simple_repeat" does not, and UCSC repeats the class
+      # as the family for exactly those rows. Positions are 1-based inclusive
+      # and the strand column spells minus "C".
+      n = split($11, cf, "/")
+      print $5, $6 - 1, $7, $10, ($9 == "C") ? "-" : "+", (n > 1) ? cf[2] : cf[1], cf[1], $1, int($2 * 10 + 0.5)
+    }' repeats.out | sort -k1,1 -k2,2n
+} > rmsk.bed
+bgzip -f rmsk.bed
+tabix -f -p bed rmsk.bed.gz
+```
+
+Those are UCSC's first seven columns in UCSC's order, so the `tabix | awk` check
+above reads the result unchanged.
 
 ## Reproduce it end to end
 
@@ -153,8 +178,8 @@ npx --yes serve repeatmasker_build/jbrowse2               # then open the printe
 
 `genome.fa` is the FASTA RepeatMasker was run against and `repeats.out` is its
 `.out`; either may be gzipped. Tools are under [Prerequisites](#prerequisites).
-The BED it writes carries UCSC's first seven columns in UCSC's order, so the
-`tabix | awk` check above reads it with no change.
+It runs the conversion above, `samtools faidx` over the FASTA for the assembly,
+and `jbrowse add-track` with the display already set.
 
 That ordering is also what makes the conversion checkable. Run the script on a
 genome UCSC masks too, and its output can be compared against UCSC's own:

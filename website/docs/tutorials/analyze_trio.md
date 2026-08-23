@@ -105,6 +105,8 @@ those maps.
 The trio VCF calls its chromosome `1`, with no `chr` prefix, so reach for the
 `no_chr_in_chrom_field` variant of the GRCh38 PLINK map:
 
+<!-- from: scripts/build_khv_trio_hapibd.sh -->
+
 ```bash
 java -jar hap-ibd.jar \
   gt=HG02024_VN049_KHVTrio.chr1.vcf.gz \
@@ -150,6 +152,8 @@ Out comes one BED9 line per block plus a `parenthap` label, with the father's
 two copies in blues and the mother's in reds via `itemRgb`. Feed it
 `trio.ibd.gz` plus the child, father, and mother sample IDs, then `bgzip` and
 `tabix -p bed` so the `BedTabixAdapter` can read it:
+
+<!-- from: scripts/build_khv_trio_hapibd.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/hapibd_to_bed.py

@@ -17,12 +17,13 @@ which samples went in.
 ## Prerequisites
 
 - nothing to read the figures, which load hosted data
-- for the [reproduce script](#reproduce-it-end-to-end): `bcftools` built with
-  libcurl, htslib (`tabix`), `curl`, `python3`, and `node` for the
+- for the commands on this page and the
+  [reproduce script](#reproduce-it-end-to-end): `bcftools` built with libcurl,
+  htslib (`tabix`), `curl`, `python3`, and `node` for the
   [JBrowse CLI](/docs/cli)
 - [vcftools](https://vcftools.github.io/) and
   [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the Fst
-  lane, plus `plink` (1.9, not plink2) for the r² tables the script prints
+  lane, plus `plink` (1.9, not plink2) for the r² tables
 
 ## Reading the triangle
 
@@ -34,7 +35,7 @@ construction: r² is a correlation across whatever samples you hand it.
 An `LDDisplay` on an ordinary `VariantTrack` is the whole setup, with no
 precomputed LD file beside it:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "kgp_lct_ld",
@@ -77,82 +78,110 @@ ceiling for the whole track at every locus.
 Selection driving one haplotype to high frequency carries every variant on it
 along, leaving a stretch of correlated variants. That stretch is the signal
 [Bersaglieri et al. 2004](https://doi.org/10.1086/421051) read at this locus.
-Two things decide whether it shows as a block: the window you cut, and which
-samples went into the file.
+Whether it shows as a block depends on the window you cut and on which samples
+went into the file.
 
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, Weir and Cockerham Fst per variant across 40 Mb of chr2. Under the wedge, the same locus, window and MAF floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
-The upper frame is what says the locus is unusual, and it is the one thing the
-lower frame cannot say about itself: every site down there sits on the same
-swept haplotype, so the frame's own background is the sweep. Widened to forty
-megabases, the most differentiated variant in the span is rs4988235 and the ten
-highest-scoring sites are all inside the block with it.
+The triangle cannot say the locus is unusual, because every site in the frame
+sits on the swept haplotype: the frame's own background is the sweep. The lanes
+around it are the outside evidence.
 
-Read it per variant rather than in windows. The
-[build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
-was written windowed first and the block came out unremarkable, ranked behind
-runs elsewhere on the arm: a sweep differentiates the variants on its own
-haplotype and leaves the rest of a bin on the background, so averaging a bin
-averages the signal away.
+- **Fst, top.** Widened to forty megabases, rs4988235 is the most differentiated
+  variant in the span and the ten highest-scoring sites are all inside the block
+  with it. Read it per variant, not in windows: a sweep differentiates the
+  variants on its own haplotype and leaves the rest of a bin on the background,
+  so averaging a bin averages the signal away. The
+  [build script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_fst_scan.sh)
+  was written windowed first and the block came out unremarkable.
+- **Genetic map.** The block fills the span where the deCODE map
+  ([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) reads
+  flat, with a hotspot at each end. It counts crossovers in sequenced families,
+  so it has no LD in it, where a map estimated from LD would confirm the
+  triangle with itself. It loads as an ordinary
+  [quantitative track](/docs/user_guides/quantitative_track) from the same hg38
+  hub as the gene lane.
+- **The two triangles.** Nothing about the display changed between them. Lactase
+  persistence swept in Europe, so the block is a property of that panel: pooling
+  it with populations the haplotype never reached mixes in their backgrounds and
+  the correlations average down.
 
-Nothing about the display changed between the two triangles. Lactase persistence
-swept in Europe, so the block is a property of that panel: pooling it with
-populations the haplotype never reached mixes in their backgrounds and the
-correlations average down.
-
-Where the block ends is a question the triangle cannot answer about itself, so
-the lane above it is a genetic map. The deCODE map
-([Halldorsson et al. 2019](https://doi.org/10.1126/science.aau1043)) counts
-crossovers in sequenced families, so it is measured in cM/Mb and has no LD in
-it, where a map estimated from LD would confirm the triangle with itself. It
-loads as an ordinary [quantitative track](/docs/user_guides/quantitative_track)
-from the hg38 hub the gene lane comes from. Read the two together: the block
-fills the span where that map reads flat, and a hotspot stands at each end of
-it.
-
-Which deCODE map matters, and it is the reason this page is on hg38 rather than
-hg19. The sequence-level 2019 map was built natively on GRCh38 and resolves to
-under a kilobase; what hg19 carries is the earlier map in 10 kb bins. Neither is
-the same thing as the HapMap or 1000 Genomes maps sitting beside them in either
-hub, which are estimated from LD.
-
-The map is built from Icelandic meioses, which is worth knowing rather than
-working around. Broad-scale recombination rates are close to identical between
-human populations; what varies between them is the fine-scale hotspots, whose
-positions follow PRDM9 allele frequencies
-([Hinch et al. 2011](https://doi.org/10.1038/nature10336)). The panel in the
-lane below is European, so the map and the samples are matched, which is what
-makes reading one against the other fair. On an African or East Asian panel the
-same lane would still place the desert and would be a weaker guide to where
-exactly each shoulder sits.
-
-The Fst lane on top is the half an LD triangle cannot draw. Linkage says the
-haplotype is long; Fst says its variants are the ones whose frequency differs
-between this panel and everyone else, which is what a sweep leaves behind. The
-reproduce script computes it with
-[vcftools](https://vcftools.github.io/man_latest.html) over the same slice, per
-variant rather than in windows, and prints where `rs4988235` ranks: it comes out
-first of every site in the frame. A windowed version loses that, because a
-window mixes the swept haplotype with every rare variant sharing it.
+Two things about that map. The 2019 sequence-level map is the reason this page
+is on hg38 — it was built natively on GRCh38 and resolves to under a kilobase,
+where hg19 carries the earlier map in 10 kb bins, and the HapMap and 1000
+Genomes maps sitting beside it in either hub are estimated from LD. And it is
+built from Icelandic meioses: broad-scale recombination rates are close to
+identical between human populations, but fine-scale hotspot positions follow
+PRDM9 allele frequencies
+([Hinch et al. 2011](https://doi.org/10.1038/nature10336)), so the European
+panel in the lane below is matched to it. On an African or East Asian panel the
+same lane would still place the desert and would be a weaker guide to where each
+shoulder sits.
 
 ### Cut the slice wider than the block
 
 A slice that begins where the block begins cannot show that it ends, and renders
-as a triangle filling the frame. The reproduce script prints r² against the
-causal variant along the slice, which is how to pick the edges. The constraint
-is the file rather than the view, so zooming out past the end of the file only
-adds white.
+as a triangle filling the frame. The constraint is the file rather than the
+view, so zooming out past its end only adds white. One region query cuts it:
+
+<!-- from: scripts/build_lct_ld.sh -->
+
+```bash
+# -r is a range request, so 3.4 Mb costs 3.4 Mb and not the 2.5 GB chromosome.
+# -S is one sample name per line; -e drops the symbolic SV records, which are
+# spans rather than the allele indicators the display correlates.
+bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
+  -e 'ALT[0]~"<"' -Oz -o pooled.vcf.gz "$CALLSET"
+tabix -p vcf pooled.vcf.gz
+```
+
+Where the edges go is `plink --r2` against the causal variant. plink correlates
+the genotypes and the display the phase, so the two disagree cell by cell; the
+profile settles the window off the file rather than off the picture.
+
+<!-- from: scripts/build_lct_ld.sh -->
+
+```bash
+# plink names a variant by position, and --set-missing-var-ids fills blanks
+# only, so strip the release's own chr:pos:ref:alt IDs or --ld-snp matches
+# nothing. One biallelic record per position is what r² is defined on anyway.
+bcftools view -m2 -M2 -v snps pooled.vcf.gz | bcftools norm -d both |
+  bcftools annotate -x ID -Oz -o pooled.snvs.vcf.gz
+
+# --maf is the figure's own floor; --ld-window-r2 0 keeps the weak pairs, which
+# at the edges are the answer. Bin anchor.ld by position afterwards.
+plink --vcf pooled.snvs.vcf.gz --double-id --allow-extra-chr \
+  --set-missing-var-ids @:# --maf 0.35 \
+  --r2 --ld-window 999999 --ld-window-r2 0 \
+  --ld-snp chr2:135851076 --ld-window-kb 4000 --out anchor
+```
 
 ### Subset the VCF to one panel
 
 r² is computed across every sample in the file, so pooling panels that carry the
 haplotype at different frequencies averages the correlation down, which is the
-upper lane above. The reproduce script prints mean pairwise r² inside the block
-both ways.
+upper lane above.
+
+<!-- from: scripts/build_lct_ld.sh -->
 
 ```bash
-bcftools view -S panel.samples --force-samples -Oz -o panel.vcf.gz all.vcf.gz
+bcftools view -S panel.samples -Oz -o panel.vcf.gz pooled.vcf.gz
 tabix -p vcf panel.vcf.gz
+```
+
+The same run over a window instead of an anchor gives the mean pairwise r²
+inside the block. Run it on both files and average each `block.ld`'s r² column:
+
+<!-- from: scripts/build_lct_ld.sh -->
+
+```bash
+# no --ld-snp, so every pair inside the window rather than every pair sharing
+# one variant. Same window and floor both ways, so only the samples differ.
+plink --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr \
+  --set-missing-var-ids @:# --maf 0.35 \
+  --r2 --ld-window 999999 --ld-window-r2 0 \
+  --chr chr2 --from-bp 135000000 --to-bp 136150000 \
+  --ld-window-kb 1200 --out block
 ```
 
 The two lanes also end up drawing different variants, because
@@ -162,6 +191,27 @@ file and falls below it in the pooled one.
 
 The same applies to species, and more sharply: a panel mixing two species
 invents LD that neither species has.
+
+### Score the sweep per variant
+
+The Fst lane is [vcftools](https://vcftools.github.io/man_latest.html) over the
+same two sample lists, as a bigWig for a
+[quantitative track](/docs/user_guides/quantitative_track):
+
+<!-- from: scripts/build_lct_fst_scan.sh -->
+
+```bash
+# two sample lists, one name per line, and no --fst-window-size: per variant,
+# for the reason the bullets above give
+vcftools --gzvcf pooled.vcf.gz \
+  --weir-fst-pop panel.samples --weir-fst-pop rest.samples --out fst_site
+
+# 1-based site to bedGraph interval, dropping the sites scored nan
+awk 'NR>1 && $3!="-nan" && $3!="nan" {printf "%s\t%d\t%d\t%.5f\n",$1,$2-1,$2,$3}' \
+  fst_site.weir.fst | sort -k1,1 -k2,2n > fst_site.bedgraph
+printf 'chr2\t242193529\n' > hg38.chrom.sizes
+bedGraphToBigWig fst_site.bedgraph hg38.chrom.sizes fst.bw
+```
 
 ## What the triangle is a picture of
 
@@ -178,7 +228,7 @@ gives one row per chromosome and one column per variant. Its sidebar stripe is
 population, and above both lanes sit RefSeq genes and the ClinVar
 lactase-persistence records.
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "kgp_lct_haplotypes",
@@ -211,6 +261,12 @@ it into a session with the
 and
 [`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
 model properties, which is what the figure below does.
+
+Both work unchanged on [JBrowse Desktop](/docs/quickstart_desktop), which opens
+the VCF from local disk with no web server: the track menu is the same menu and
+the config the same file, with `uri` pointed at a local path. That block's CLI
+tab is how the same track goes into a `config.json` for good rather than into
+one session.
 
 <Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The shaded stripe is the 89 kb of LCT/MCM6 selection acted on, and the block it left behind fills the triangle above. The pale slab is one clade, uniform across that block, and the rs4988235-A haplotypes sit inside it."/>
 

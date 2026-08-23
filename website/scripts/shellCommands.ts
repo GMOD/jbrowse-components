@@ -12,6 +12,11 @@
 // Shell builtins and control words, plus the plumbing whose flags belong to
 // quickstart_web rather than to any build script.
 const IGNORED = new Set([
+  // the closing word of a brace group — `{ head -1 x; tail -n +2 x; } | bgzip`
+  // is one command's input built from several, and `}` lands where a tool name
+  // goes. The opening `{` is stepped over in toolsAndFlags instead, since the
+  // command it groups follows it on the same line.
+  '}',
   'cd',
   'echo',
   'export',
@@ -98,6 +103,15 @@ export function invocations(body: string) {
   return out.filter(s => s.trim())
 }
 
+// A command word can arrive wrapped in a substitution — `n=$(samtools view -c
+// x)`, `diff <(gzip -dc a | sort) b` — and the wrapper is punctuation, not the
+// tool. The closing paren comes off only when the word is not itself a
+// `name()` function definition, which is a line the page really does show.
+function commandWord(word: string) {
+  const opened = word.replace(/^[<$]?\(+/, '')
+  return opened.includes('(') ? opened : opened.replace(/\)+$/, '')
+}
+
 /**
  * The tool each invocation runs and the flags it passes, skipping shell
  * builtins, `VAR=value` prefixes and anything that is not a command word.
@@ -106,12 +120,21 @@ export function toolsAndFlags(body: string) {
   const found: { tool: string; flags: string[] }[] = []
   for (const invocation of invocations(body)) {
     const words = invocation.trim().split(/\s+/).filter(Boolean)
-    // Leading `VAR=value` assignments are not the command.
+    // Leading `VAR=value` assignments are not the command, and neither is a
+    // brace group's opening `{`: skipping the word rather than the invocation
+    // keeps the first command INSIDE the group — `{ head -1 x` is a `head` the
+    // page shows and the check should be reading. An assignment FROM a command
+    // substitution is the exception: the tool is inside the same word.
     let at = 0
-    while (words[at] && /^[A-Za-z_]\w*=/.test(words[at]!)) {
+    while (words[at] && /^([A-Za-z_]\w*=|\{$)/.test(words[at]!)) {
+      const substituted = /^[A-Za-z_]\w*=(\$\(.+)$/.exec(words[at]!)
+      if (substituted) {
+        words[at] = substituted[1]!
+        break
+      }
       at++
     }
-    const tool = words[at]
+    const tool = words[at] === undefined ? undefined : commandWord(words[at]!)
     if (!tool || IGNORED.has(tool) || /^[-$"'({]/.test(tool)) {
       continue
     }

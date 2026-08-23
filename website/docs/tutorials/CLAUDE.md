@@ -79,9 +79,15 @@ The test is whether a reader with their own data would run the line as written �
 anything naming an accession, sample list or locus is script. Filenames are not
 the axis.
 
+**A tool in `## Prerequisites` that no fence on the page runs fails
+`check-prereq-tools`**, which is the same rule read backwards: a reader who
+installs what the page asked for has to find it used. Runtimes and the
+bgzip/tabix prep are exempt (PLUMBING there); a tool another tool drives — LAST
+under jcvi, minimap2 inside a python helper — goes in that script's ALLOWED with
+the reason.
+
 **A display setting the figure depends on goes in the track config on the page**
-too, not only in the script's config patch. Watch for a tool in
-`## Prerequisites` that no fence on the page ever invokes.
+too, not only in the script's config patch.
 
 ## Page structure
 

@@ -25,68 +25,55 @@ Inverted and standard arrangements cannot recombine in a heterozygote, so
 wherever both are present the whole segment stays correlated. The 2La inversion
 in _Anopheles gambiae_ spans roughly 22 Mb of chromosome arm 2L, far past what
 can be computed live from a VCF, so this LD is precomputed with PLINK and read
-through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter).
-
-Four lanes stack below: each population's r² heatmap over its own karyotype
-lane, one row per mosquito, 297 from Cameroon and 69 from Gabon. Both panels
-also carry a separate block at the low-coordinate end of the arm, which the
-paragraphs under the figure return to.
+through [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter). Four lanes
+stack below: each population's r² heatmap over its own karyotype lane, one row
+per mosquito, 297 from Cameroon and 69 from Gabon.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G chromosome arm 2L, the same window and settings throughout. Top: the published extents of 2La and of Vgsc, the two loci the blocks below sit on. r² fills the 2La extent in the Cameroon panel, which segregates both arrangements, and is empty over that span in Gabon, which is near-fixed for the standard one."/>
 
-The heatmap's block comes out at the published breakpoint coordinates, so its
-edges can be checked against them by eye, and against the karyotype lane below
-it, whose cells are drawn at those same coordinates from a different file.
+The block comes out at the published breakpoint coordinates, so its edges check
+against them by eye, and against the karyotype lane below it, whose cells are
+drawn at those same coordinates from a different file. Three readings sit in the
+frame:
 
-What marks the span as recombination-suppressed, rather than merely dense in
-common variants, is that the correlation does not fall off with distance inside
-it: markers at opposite ends of the block are about as correlated as
-neighbouring ones. A block that faded with distance would be a region of low
-recombination rather than one of none.
-
-Run that test on the other block in the frame, the one at the low-coordinate end
-of the arm that both panels carry: it is reddest along the diagonal and pales
-away below it, so its correlation does fall off with distance, which is the
-other case. The top lane marks what it sits on, _Vgsc_, the sodium channel whose
-codon-995 substitutions confer pyrethroid resistance and which this release was
-used to survey ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
-
-The Gabon panel is a control rather than a second example. It is not
-inversion-free: 5 of its 69 mosquitoes are heterozygous, but the other 64
-recombine across the span freely, so there is nothing to correlate over it. The
-low-coordinate block is still there, which says the 2La span is genuinely
-uncorrelated rather than unread.
-
-Both files were built with a minor allele frequency floor, and in Gabon the
-inverted arrangement sits far below it, so the variants tagging those five
-carriers are not in the file at all. The empty panel says the arrangement is too
-rare there to structure the common variation around it, not that no correlated
-carrier haplotype exists.
+- **Correlation that does not fall off with distance.** That is what marks the
+  span as recombination-suppressed rather than merely dense in common variants:
+  markers at opposite ends of the block are about as correlated as neighbouring
+  ones. A block that faded with distance would be a region of low recombination
+  rather than one of none.
+- **The other block is that other case.** At the low-coordinate end of the arm,
+  in both panels, it is reddest along the diagonal and pales away below it. The
+  top lane marks what it sits on, _Vgsc_, the sodium channel whose codon-995
+  substitutions confer pyrethroid resistance and which this release was used to
+  survey ([Clarkson et al. 2021](https://doi.org/10.1111/mec.15845)).
+- **Gabon is a control, not a second example.** 5 of its 69 mosquitoes are
+  heterozygous, but the other 64 recombine across the span freely, so there is
+  nothing to correlate over — and the MAF floor both files carry drops the
+  variants tagging those five. The low-coordinate block is still there, which
+  says the 2La span is genuinely uncorrelated rather than unread.
 
 ## The rearrangement itself, per mosquito
 
-What the heatmap draws is linkage, not the rearrangement. The two are worth
-keeping apart, so the same inversion can also be loaded as what it is: a
-structural variant, one `<INV>` record spanning the breakpoints, genotyped
-across every mosquito in the two panels and loaded in the
-[regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail),
-which draws each genotype at the call's true span so the carrier rows begin and
-end at the breakpoints. A per-SNP view cannot hold a 22 Mb feature on screen,
-and one SV call sidesteps that, because the call is a single feature no matter
-how wide it is. [](/docs/tutorials/population_genomics) builds the same
+What the heatmap draws is linkage, not the rearrangement, and the same inversion
+also loads as what it is: one `<INV>` record spanning the breakpoints, genotyped
+across every mosquito. The
+[regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail)
+draws each genotype at the call's true span, so a carrier's row begins and ends
+at the breakpoints — a per-SNP view cannot hold a 22 Mb feature, and one SV call
+sidesteps that. [](/docs/tutorials/population_genomics) builds the same
 one-record karyotype track for an 11 Mb Drosophila inversion.
 
 That is what the karyotype lanes in the figure above are: cells shaded by allele
 dosage, each lane sorted into standard, heterozygous and homozygous-inverted
-blocks. The `karyotype` column, and so the legend, names those three classes by
-genotype: `2L+a/2L+a` (standard/standard, the `+` marking the non-inverted
-arrangement), `2La/2L+a` (heterozygous), `2La/2La` (inverted/inverted).
+blocks. The `karyotype` column names the three classes by genotype, and so does
+the legend: `2L+a/2L+a`, `2La/2L+a`, `2La/2La`, the `+` marking the non-inverted
+arrangement.
 
 Load each population as a `VariantTrack` whose adapter carries the samples TSV,
 with a `LinearMultiSampleVariantDisplay` that orders (`groupBy`) and colors
 (`colorBy`) its rows by the `karyotype` column:
 
-```json
+```json addtrack
 {
   "type": "VariantTrack",
   "trackId": "ag1000g_2la_karyotype_cmgam",
@@ -119,11 +106,9 @@ Two settings there are doing real work:
   is left on its default, `skip`, which colors the whole lane with the reference
   color and paints only alt cells on top. The lane is then a solid grey field
   with the carriers' blocks on it, and a standard-arrangement mosquito is grey
-  rather than blank.
-
-The alternative, `draw`, paints a grey cell per row at the call's span instead.
-That is the same information, but as a rectangle striped by the gaps between
-rows, which reads as a texture rather than as background.
+  rather than blank. `draw` carries the same information as a grey cell per row
+  at the call's span, striped by the gaps between rows, which reads as a texture
+  rather than as background.
 
 There is no `rowHeight` here, because it is a display model property rather than
 a config slot: rows divide the lane's height between them, so 297 mosquitoes in
@@ -172,6 +157,65 @@ of these:
   all. A soft sweep can therefore leave a weaker and patchier block than its
   strength suggests, which is a reason to read a faint block carefully rather
   than to conclude nothing happened.
+
+## Precompute the LD with PLINK
+
+22 Mb is past what the display can correlate live, so the LD is a file that
+`plink --r2` writes: thin the variants, correlate them, index the table.
+`keep.CMgam.txt` is the population, two tab-separated columns of the same sample
+id, the family/individual pair plink asks for.
+
+<!-- from: scripts/build_ag1000g_ld.sh -->
+
+```bash
+# the display uploads n(n-1)/2 cells, and ~800 SNPs across an arm is already at
+# screen resolution, so thin to a grid rather than to the callset's density
+plink --bfile common --allow-extra-chr --keep keep.CMgam.txt --maf 0.2 \
+  --chr 2L --write-snplist --out sel
+awk -F'_' -v g=50000 '{p=$2+0; if (p >= nxt) {print $0; nxt = p + g}}' \
+  sel.snplist > grid.snplist
+
+# plink 1.9, not plink2, which split --r2 into --r2-phased/--r2-unphased. And
+# `--r2 dprime` is not an extra column: it switches r² itself from a dosage
+# correlation to the haplotype-frequency estimate, which is what the display
+# draws. --ld-window-r2 0 keeps the uncorrelated pairs.
+plink --bfile common --allow-extra-chr --keep keep.CMgam.txt \
+  --extract grid.snplist --keep-allele-order \
+  --r2 dprime --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0 \
+  --out ag1000g_2L_CMgam
+
+# awk retabs plink's space-padded columns. The header is commented rather than
+# skipped with `tabix -S 1`, since only a commented one comes back from -H.
+{ head -1 ag1000g_2L_CMgam.ld | awk '{$1="#"$1}1' OFS='\t'
+  tail -n +2 ag1000g_2L_CMgam.ld | awk '{$1=$1}1' OFS='\t' | sort -k1,1 -k2,2n
+} | bgzip > ag1000g_2L_CMgam.ld.gz
+tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.ld.gz
+```
+
+The track over that file is an `LDTrack`. The display reads one of its two
+metric columns, and which one is the section below.
+
+```json addtrack
+{
+  "type": "LDTrack",
+  "trackId": "ag1000g_2l_cmgam",
+  "name": "Cameroon, both arrangements segregating (r²)",
+  "assemblyNames": ["anoGam3"],
+  "adapter": {
+    "type": "PlinkLDTabixAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.ld.gz"
+  },
+  "displays": [
+    {
+      "type": "LDTrackDisplay",
+      "ldMetric": "r2",
+      "useGenomicPositions": true,
+      "showLegend": true,
+      "height": 340
+    }
+  ]
+}
+```
 
 ## Metric and allele-frequency floor
 

@@ -552,7 +552,27 @@ The lane above says the inserted sequence is tiled by L1, but not whether that
 is unusual, since a subtelomere is repeat-dense either way. That takes the same
 measurement on both assemblies at the same scale: the fraction of each 5 kb bin
 covered by one RepeatMasker class, one lane per class, on GRCh38 and CHM13
-alike.
+alike. `bedtools` measures it, one lane at a time, from a RepeatMasker BED of
+`chrom start end class`:
+
+<!-- from: scripts/build_repeat_density.sh -->
+
+```bash
+# CHM13's rmsk ships as a bigBed where UCSC's hg38 is a table
+bigBedToBed chm13v2.0_rmsk.bb rmsk.raw.bed
+
+# only the chroms the rmsk BED covers, so no lane carries empty scaffold bins
+bedtools makewindows -g hs1.main.sizes -w 5000 | sort -k1,1 -k2,2n > windows.bed
+
+# merge first: one fragmented L1 is several overlapping records, and unmerged
+# coverage counts the shared bases twice and reports over 100%
+awk -F'\t' '$4=="LINE"' rmsk.bed | bedtools merge -i - > line.bed
+
+# -a windows -b class puts the covered fraction of each window in the last column
+bedtools coverage -a windows.bed -b line.bed -sorted -g hs1.main.sizes |
+  awk -F'\t' '{printf "%s\t%s\t%s\t%.5f\n", $1, $2, $3, $NF}' > line.bg
+bedGraphToBigWig line.bg hs1.main.sizes hs1_repeat_density_LINE.bw
+```
 
 ```json addtrack
 {

@@ -42,6 +42,19 @@ tracks here are Oxford Nanopore R10 reads for tumor and normal from the
 [ONT open-data release](https://registry.opendata.aws/ont-open-data/), with the
 somatic SV calls from its `wf-somatic-variation` run.
 
+The coverage lanes beside those reads are the same run's `mosdepth` output in 50
+kb windows, repacked as bigWig:
+
+<!-- from: scripts/build_cancer_sv_demo.sh -->
+
+```bash
+# awk drops the alt and decoy contigs: bedGraphToBigWig rejects a contig absent
+# from the chrom.sizes outright, so one leftover row fails the conversion.
+zcat COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
+  awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > cov.bg
+bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
+```
+
 **K562** is a chronic myeloid leukemia line carrying the Philadelphia
 chromosome. It covers the transcript side: PacBio Iso-Seq from
 [ENCODE](https://www.encodeproject.org/), plus STAR-Fusion calls and copy-number

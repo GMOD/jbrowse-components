@@ -63,14 +63,25 @@ chr1    10000       10600     15_Repetitive/CNV  0      .       10000       1060
 chr1    10000       10600     15_Repetitive/CNV  0      .       10000       10600     245,245,245  K562
 ```
 
-And that `#`-prefixed defline is part of the file, so the adapter takes the
-column names from the data rather than from the config. `tabix -p bed` keeps `#`
-lines as the header, and the script writes the defline outside the coordinate
-sort so it stays first.
+That `#`-prefixed defline is part of the file, so the adapter takes the column
+names from the data rather than from the config. The merge is one pass over the
+per-cell-type BEDs:
 
-The merged output is coordinate-sorted, so indexing it is `bgzip` plus
-`tabix -p bed`. That is what the build scripts write, and what a
-`BedTabixAdapter` reads.
+<!-- from: scripts/build_chromhmm_multirow.sh -->
+
+```bash
+# awk appends each file's own name as the row label, so Gm12878.bed.gz labels
+# its segments Gm12878. The defline prints outside the sort to stay first,
+# which is what makes `tabix -p bed` read it as the header.
+{
+  printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
+  for f in *.bed.gz; do
+    zcat "$f" | awk -v c="${f%%.*}" 'BEGIN{OFS="\t"} {print $0, c}'
+  done | sort -k1,1 -k2,2n
+} > multirow.bed
+bgzip -f multirow.bed
+tabix -f -p bed multirow.bed.gz
+```
 
 Both merged files are also hosted, as bigBeds, for reading with nothing built:
 `https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb` for the nine

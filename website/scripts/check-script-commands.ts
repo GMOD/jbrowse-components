@@ -84,14 +84,17 @@ export function checkPage(mdPath: string) {
 
     for (const { tool, flags } of toolsAndFlags(body)) {
       const bare = tool.replace(/\.(py|sh)$/, '')
-      if (!new RegExp(`(^|[\\s|(/"'])${escape(bare)}\\b`, 'm').test(script)) {
+      if (!runsTool(script, bare)) {
         problems.push(
           `${page}:${i + 1}: fence runs \`${tool}\`, which ${spec} does not`,
         )
         continue
       }
       for (const flag of flags) {
-        if (!new RegExp(`(^|\\s)${escape(flag)}(\\b|=)`, 'm').test(script)) {
+        // `(` counts as leading whitespace here: a script collecting its shared
+        // flags in an array (`PLINK_ARGS=(--double-id ...)`) passes the first of
+        // them on the same word as the paren.
+        if (!new RegExp(`(^|[\\s(])${escape(flag)}(\\b|=)`, 'm').test(script)) {
           problems.push(
             `${page}:${i + 1}: \`${tool} ${flag}\` is not in ${spec} — ` +
               `the script changed, or the page invented a flag`,
@@ -104,6 +107,17 @@ export function checkPage(mdPath: string) {
 
 function escape(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// A build script may run a tool through an overridable variable — plink is
+// `PLINK="${PLINK:-plink}"` because Debian ships it as plink1.9 — and the name
+// is then never a command word for the first pattern to find. The tool the
+// script runs is the tool it runs, so a variable defaulting to it counts.
+function runsTool(script: string, bare: string) {
+  return (
+    new RegExp(`(^|[\\s|(/"'])${escape(bare)}\\b`, 'm').test(script) ||
+    new RegExp(`\\$\\{\\w+:?-${escape(bare)}\\}`, 'm').test(script)
+  )
 }
 
 const tutorials = join(repoRoot, 'website/docs/tutorials')

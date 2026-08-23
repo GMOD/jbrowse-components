@@ -178,6 +178,19 @@ own is a matter of swapping the window:
    flagged interval, and put the two side by side. A red pileup on its own has
    nothing to be red against.
 
+The same comparison is three counts per window, `-q` being a minimum MAPQ:
+
+<!-- from: scripts/scan_mappability_qc.sh -->
+
+```bash
+samtools view -c "$CRAM" chr5:70,900,000-71,000,000            # every read
+samtools view -c -q 1 "$CRAM" chr5:70,900,000-71,000,000       # placed at all
+samtools view -c -q 60 "$CRAM" chr5:70,900,000-71,000,000      # placed uniquely
+```
+
+Run it on the control window too: same width, same sample, or the counts mean
+nothing against each other.
+
 ## Reproduce it end to end
 
 Every number on this page comes from

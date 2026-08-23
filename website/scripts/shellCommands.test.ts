@@ -82,6 +82,46 @@ test('shell builtins and quickstart plumbing are skipped', () => {
   )
 })
 
+test('a brace group is its commands, not a tool called }', () => {
+  // Regression: `}` parsed as a tool the build script "does not run", on a
+  // fence whose commands all came straight out of it.
+  const found = toolsAndFlags(
+    [
+      "{ head -1 x.ld | awk '{$1=\"#\"$1}1' OFS='\t'",
+      '  tail -n +2 x.ld | sort -k1,1 -k2,2n',
+      '} | bgzip > x.ld.gz',
+    ].join('\n'),
+  )
+  expect(found.map(t => t.tool)).toEqual([
+    'head',
+    'awk',
+    'tail',
+    'sort',
+    'bgzip',
+  ])
+})
+
+test('a tool inside a substitution is the tool', () => {
+  // `view`, not `samtools`, was what the assignment form used to yield, and
+  // `sort)` what a process substitution's last stage did.
+  expect(
+    toolsAndFlags('reads=$(samtools view -c -q 1 x.cram chr1:100-200)').map(
+      t => t.tool,
+    ),
+  ).toEqual(['samtools'])
+  // the second stage of each substitution leads its own invocation; the `gzip`
+  // that opens them does not, which is the limit of splitting on `|`
+  expect(
+    toolsAndFlags('diff <(gzip -dc a.gz | sort) <(gzip -dc b.gz | sort)').map(
+      t => t.tool,
+    ),
+  ).toEqual(['diff', 'sort', 'sort'])
+  // a function definition keeps its parens: it is a line the page shows
+  expect(toolsAndFlags('in_cactus() { docker run x "$@"; }')[0]!.tool).toBe(
+    'in_cactus()',
+  )
+})
+
 test('invocations never silently swallows a snippet', () => {
   // The guard on the guard: whatever the parsing details, a snippet holding
   // commands must not come back empty.

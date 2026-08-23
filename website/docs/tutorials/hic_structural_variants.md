@@ -152,13 +152,29 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash scan_hic_translocation.sh
 ```
 
-It needs `java` and `curl` and downloads `juicer_tools` itself; `CASE`, `CTRL`,
-`CHR1`, `CHR2`, `RES` and `NORM` are all overridable, so the same scan applies
-to any two `.hic` files that hold inter-chromosomal blocks. The top row it
-prints pairs _ABL1_ intron 1 with the 5' end of _BCR_, which is the pair of bins
-the canonical CML fusion joins rather than the junction itself. Drop `RES` to
-`10000` and the top row lands on the junction, _ABL1_ intron 1 against the _BCR_
-major breakpoint cluster region.
+Underneath it, that is one dump per file and a sort:
+
+<!-- from: scripts/scan_hic_translocation.sh -->
+
+```bash
+# one inter-chromosomal block at one bin size. An empty output file means this
+# .hic stores neither the pair nor a KR vector at that resolution — read its
+# footer — rather than that the two chromosomes never touch.
+java -Xmx4g -jar juicer_tools.jar dump observed KR \
+  case.hic chr9 chr22 BP 25000 case.txt
+
+# bin1, bin2, contacts. awk and not `| head`, which closes the pipe and kills
+# sort with SIGPIPE mid-table under `set -o pipefail`.
+sort -k3,3 -rn case.txt | awk 'NR <= 10'
+```
+
+The script needs `java` and `curl` and downloads `juicer_tools` itself; `CASE`,
+`CTRL`, `CHR1`, `CHR2`, `RES` and `NORM` are all overridable, so the same scan
+applies to any two `.hic` files that hold inter-chromosomal blocks. The top row
+it prints pairs _ABL1_ intron 1 with the 5' end of _BCR_, which is the pair of
+bins the canonical CML fusion joins rather than the junction itself. Drop `RES`
+to `10000` and the top row lands on the junction, _ABL1_ intron 1 against the
+_BCR_ major breakpoint cluster region.
 
 Further down its list the scan reports a second partner for chr9 elsewhere on
 chr22, well clear of the control. K562's karyotype is complex and BCR-ABL1 is

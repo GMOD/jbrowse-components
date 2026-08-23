@@ -114,6 +114,14 @@ const VALIDATORS: Validator[] = [
     name: 'tutorial commands still run in their build script',
     argv: web('check-script-commands.ts'),
   },
+  {
+    // The other direction: check-script-commands asks whether a command shown
+    // is still real, this asks whether a tool a page tells the reader to
+    // install is shown at all. A prerequisite nothing on the page uses is a
+    // page that stopped teaching the analysis it prepared for.
+    name: 'prerequisite tools are invoked on their own page',
+    argv: web('check-prereq-tools.ts'),
+  },
   // The figure recipes' round-trip lives in `pnpm autogen` instead, because the
   // other half of that script WRITES spec-recipe-unmapped.txt. Reporting the
   // list stale here only sent people to run the regeneration by hand.
