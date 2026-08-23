@@ -100,7 +100,7 @@ RenderLifecycleMixin
   .volatile
     canvasDrawn: boolean          set true only after render() returns true with real data
     currentRenderingBackend       stored backend; autoruns read it each tick
-    renderTick: number            bumped by renderNow() and after every upload
+    renderTick: number            bumped by renderNow() and after an upload that changed a buffer
     autorunsInstalled: boolean    guards attachRenderingBackend (idempotent)
     renderError: unknown          render-backend init / context-loss error; single source for the 'renderError' terminal phase
   .views
@@ -719,6 +719,14 @@ render-core's own and a lint rule says so ([ADR-079](../architecture-decision-re
 Four contracts and three installers, because the whole-map synced payload is one
 global slot: what separates it from monolithic is the backend's shape, not how
 the upload is driven.
+
+The per-region and keyed installers diff through one primitive,
+`createMapUploadSync`, configured with how a departed key is released — the
+HAL's active-set `pruneRegions` for a display's own map, a per-key
+`deleteGeometry` for a shared canvas whose keys belong to siblings. The diff
+also answers whether anything reached the backend, and only then does the
+upload autorun force a redraw; the global installer always forces one, since
+three of its four consumers upload outside its slot memo.
 
 The last row keeps getting misfiled, and this table had it wrong in both
 directions: dotplot was listed as Monolithic — whose base class it does not
