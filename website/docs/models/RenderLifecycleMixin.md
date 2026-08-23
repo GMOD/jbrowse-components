@@ -12,7 +12,7 @@ JBrowse core.
 Owns the GPU draw lifecycle for any display that paints to a canvas.
 
 Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
-`GlobalDataDisplayMixin`) and call
+`GlobalFetchMixin`) and call
 `self.attachRenderingBackend(backend, () => ({ upload, render }))` from their
 own `startRenderingBackend(backend)` action. **The second argument is a thunk
 because it runs exactly once**, on the first attach: `startRenderingBackend`

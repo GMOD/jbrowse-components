@@ -55,6 +55,7 @@ the whole surface.
 | --- | --- |
 | <span id="volatile-width">**width**</span><br><code>width: 800</code> |  |
 | <span id="volatile-matchedtrackfeatures">**matchedTrackFeatures**</span><br><code>matchedTrackFeatures: {}</code> |  |
+| <span id="volatile-reloadcounter">**reloadCounter**</span><br><code>reloadCounter: 0</code> | The pure "go again" signal the shared fetch skeleton reads above every gate, bumped by `reload()`: after a failure every other input of the overlay fetch is unchanged, so nothing else can rewake it. The Retry on the failure notification is what spends it. |
 | <span id="volatile-fetchstatus">**fetchStatus**</span><br><code>fetchStatus: createStatusChannel()</code> | What the overlay-feature fetch is doing, for the corner chip. A `StatusChannel` rather than the `statusMessage`/`statusProgress`/ `setStatusMessage` trio a display declares: this is a view with one operation to narrate, and the trio is a status vocabulary it has no other use for. |
 
 ## Getters
@@ -74,6 +75,7 @@ the whole surface.
 | <span id="getter-showimportform">**showImportForm**</span><br><code>boolean</code> | A failed assembly counts: the views it left behind never initialize, so there is nothing to show and no second attempt coming in this session. The form — which reports `error` in its banner — is then the only way forward, matching LGV/synteny/dotplot/circular rather than spinning on a `showLoading` that can never resolve. |
 | <span id="getter-assembly">**assembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promis…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promise&lt;…&gt; &#124; undefined; ... 10 more ...; refNameMismatches: Map&lt;…&gt;; } &amp; ... 13 more ... &amp; IStateTreeNode&lt;...&gt;) &#124; undefined</code></pre></dialog></span> |  |
 | <span id="getter-matchedtracks">**matchedTracks**</span><br><code>OverlayTrack[]</code> | Find all track ids that match across multiple views, or return just the single view's track if only a single row is used |
+| <span id="getter-fetchinert">**fetchInert**</span><br><code>boolean</code> | Same name and same meaning as `FetchMixin.fetchInert`, on a view rather than a display: with nothing matched across the rows there is nothing for the overlay fetch to ask for, so the dev-only retry check the fetch skeleton installs must not call that decline a dead Retry. |
 | <span id="getter-matchedtrackchunks">**matchedTrackChunks**</span><br><code>Map&lt;string, MatchedChunks&gt;</code> | Classifies each matched track and pairs its features, keyed by trackId. Everything here is a function of the fetched features alone, so it is deliberately kept out of `overlayMatches`, which additionally reads each track's layout: the layout reads invalidate on a track resize or a compactness change, and fusing the two would re-run this whole pass — including the SA-chain parse, the expensive part — on every drag frame. |
 | <span id="getter-overlaymatches">**overlayMatches**</span><br><code>Map&lt;string, OverlayMatch&gt;</code> | Zero-arg cached getter: resolves each matched chunk's features to layout rectangles, returning a Map keyed by trackId. Mobx caches this across renders and only invalidates when the underlying feature or layout reads change — so scrolling within already-loaded data does NOT trigger a re-lookup. |
 
@@ -101,6 +103,7 @@ the whole surface.
 | <span id="action-setscrollzoom">**setScrollZoom**</span><br><code>(arg: boolean) =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-setshowheader">**setShowHeader**</span><br><code>(arg: boolean) =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-setmatchedtrackfeatures">**setMatchedTrackFeatures**</span><br><code>(obj: Record&lt;string, Feature[][]&gt;) =&gt; void</code> |  | BreakpointSplitView |
+| <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | Re-run the overlay-feature fetch with no input change — what the Retry on its failure notification calls. | BreakpointSplitView |
 | <span id="action-reversevieworder">**reverseViewOrder**</span><br><code>() =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-squareview">**squareView**</span><br><code>() =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-setinit">**setInit**</span><br><code>(init?: BreakpointSplitViewInitView[] &#124; undefined) =&gt; void</code> |  | BreakpointSplitView |
