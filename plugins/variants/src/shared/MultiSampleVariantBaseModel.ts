@@ -625,9 +625,10 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * Whether the variant lane letters its marks. Overridden alongside the
-         * two above by the display that paints one; `topBands.labelsFit` is the
-         * resolved answer, which also folds in whether the lane is tall enough.
+         * Which label kinds the variant lane asks for. Overridden alongside the
+         * two above by the display that paints one; whether the band has ROOM
+         * for them is plugin-canvas's fit ladder's answer, not this slot's —
+         * `laneRenderedLabels` is what actually gets drawn.
          */
         get variantLaneLabels(): ShowLabelsMode {
           return 'none'
@@ -1309,6 +1310,16 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * The hovered thing as the tooltip table reads it: the record's fields,
+         * with the hovered sample row's metadata attributes merged underneath
+         * them so a cohort colored by a `samplesTsv` column reports that column
+         * too.
+         *
+         * A hover naming no row falls through to the record's fields alone, and
+         * that is the variant lane's whole tooltip: its marks are records, so
+         * `buildVariantLaneHit` leaves `name` empty precisely so there is no
+         * source to find here. A *cell* hover always finds one — both hit tests
+         * take the name off `sources`, which is what `sourceMap` is built from.
          */
         get hoveredTooltipSource() {
           const { hoveredGenotype, sourceMap } = self
@@ -1316,7 +1327,7 @@ export default function MultiSampleVariantBaseModelF(
             return undefined
           }
           const source = sourceMap.get(hoveredGenotype.name)
-          return source ? { ...source, ...hoveredGenotype } : undefined
+          return source ? { ...source, ...hoveredGenotype } : hoveredGenotype
         },
       }))
       .actions(self => ({

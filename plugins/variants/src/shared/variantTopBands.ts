@@ -21,13 +21,15 @@
  * separately. A painter that thinks the band is taller than the layout reserved
  * paints over the first row of the plot, and nothing fails — it just looks
  * wrong, in the direction a screenshot review reads as a rendering bug.
+ *
+ * What this file used to also do — split the lane into a mark strip and a label
+ * strip, from a font size and a line count — is gone. The lane is laid out by
+ * plugin-canvas's packer and compacted by its fit ladder now (`laneFitStage`),
+ * so the band's internal geometry is that plugin's answer and this file's job
+ * stops at how many pixels the band gets.
  */
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
-import {
-  LABEL_FONT_SIZE,
-  modeCanShowDescription,
-  modeCanShowName,
-} from '@jbrowse/plugin-canvas'
+import { modeCanShowDescription, modeCanShowName } from '@jbrowse/plugin-canvas'
 
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
@@ -53,27 +55,22 @@ export interface VariantTopBands {
   /** Drawn height of the variant lane; **0 when the lane is off**. */
   laneHeight: number
   /**
-   * Height of the marks within the lane. Equals `laneHeight` when nothing is
-   * lettered, and is the lane minus the label strip when something is.
+   * Whether the label MODE asks for each record's name / its description.
+   *
+   * The mode's want, not the band's answer — this file used to compute a label
+   * strip, a mark height and a "do the labels fit" from a font size and a line
+   * count, because the lane lettered its own marks. It does not any more: the
+   * band is laid out by plugin-canvas's packer and fitted by its ladder (see
+   * `laneFitStage`), which reserves a label's room per row, drops the
+   * description before the name, decimates names that have nowhere to go, and
+   * scales what survives to fill the band. That is a strictly better answer to
+   * the same question, and it is the answer a `LinearVariantDisplay` gives.
+   *
+   * So what is left here is what plugin-canvas cannot know: which kinds this
+   * display's slot asked for.
    */
-  markHeight: number
-  /**
-   * Top of the label strip inside the lane, or **0 when the lane letters
-   * nothing** — which is both "labels are off" and "the lane is too short to
-   * letter", since a label strip taller than the marks it annotates is not
-   * worth the height it costs the rows.
-   */
-  labelTop: number
-  /** Whether a record's name is drawn, at `labelTop`. */
-  showName: boolean
-  /**
-   * Whether a record's description is drawn, one line below the name when both
-   * are on and at `labelTop` when it is alone. Same order plugin-canvas stacks
-   * them in.
-   */
-  showDescription: boolean
-  /** Whether the lane letters its marks at all. `labelTop` is only meaningful when true. */
-  labelsFit: boolean
+  wantsName: boolean
+  wantsDescription: boolean
   /** Top of the connector-line zone, i.e. the bottom of the lane. */
   lineZoneTop: number
   /**
@@ -85,61 +82,35 @@ export interface VariantTopBands {
 
 // Floor/ceiling for a resized lane, and the ceiling is also the size menu's —
 // the menu is the only way to set this, so a slider that stopped short of the
-// clamp would be two different answers to "how tall can it get". 120 is roughly
-// three times what the lane needs at its default (a 14px mark over two lines of
-// text); past that it is spending the rows' height on empty band. The floor is
-// where a record stops reading as more than a hairline.
+// clamp would be two different answers to "how tall can it get". 120 holds
+// roughly six labeled rows of the band's compact layout; past that it is
+// spending the rows' height on empty band. The floor is where a record stops
+// reading as more than a hairline.
 export const MIN_VARIANT_LANE_HEIGHT = 8
 export const MAX_VARIANT_LANE_HEIGHT = 120
 
 /**
  * The `variantLaneHeight` slot's default, stated here so the slot and the
- * menu's "is this the default" / reset both read one number. Sized to hold a
- * readable mark AND both label lines at the shared label font, since the
- * default mode admits both — a lane that had to drop a line at its own default
- * would teach the reader that line does not exist. 40 = 14px mark + 2 x 11px
- * text + the 2px gap above them + the 2px descender allowance below.
+ * menu's "is this the default" / reset both read one number. 40px is two labeled
+ * rows of the band's compact layout, so the default shows both what stacking
+ * looks like and both label kinds the default mode admits — a band that could
+ * only ever draw one row at its own default would teach the reader that
+ * overlapping records do not stack.
  */
 export const DEFAULT_VARIANT_LANE_HEIGHT = 40
 
 /**
- * Vertical gap between the marks and the text under them. Not the *horizontal*
- * one between two adjacent labels — that is plugin-canvas's `LABEL_PADDING_PX`,
- * which is sized to absorb measureText's disagreement with the rendered font and
- * is what `drawVariantLane`'s collision cull clears by.
- */
-const LABEL_GAP_PX = 2
-
-/**
- * What the *last* text line needs below its line box, so its descenders land
- * inside the lane instead of against the canvas edge.
- *
- * A label's line box is `LABEL_FONT_SIZE` tall and its baseline sits
- * `LABEL_BASELINE_RATIO` (0.84) of the way down it — plugin-canvas's number, for
- * the faces in play. The descender then runs to `0.84 + 0.244 = 1.084` of the
- * box for Roboto, the deepest of them: ~0.9px past the bottom at 11px. Earlier
- * lines are fine, because the next line's own box absorbs it (which is why this
- * is added once, not per line); the last line has only the canvas edge, and was
- * having the tails of `g`, `p`, `y` sliced off — visible on the ID line of every
- * lettered mark whose ID carries one.
- *
- * 2 rather than 1: a whole pixel of margin over the ~0.9 the documented faces
- * want, so a slightly deeper descender does not quietly bring the clip back.
- */
-const LABEL_DESCENDER_PX = 2
-
-/**
  * The label-mode radio rows, wording the five shared modes for a lane. The
  * values are plugin-canvas's enum; only the prose is ours, because "auto" means
- * something narrower here — the lane has no density thresholds, so what adapts
- * is its collision cull.
+ * something narrower here — the band cannot grow, so what adapts is how much of
+ * each record it spends its height on (see the fit ladder in `laneFitStage`).
  */
 export const VARIANT_LANE_LABEL_OPTIONS = [
   {
     value: 'auto' as const,
     label: 'Auto',
     helpText:
-      'Draw the ID and the description wherever they clear the previous mark’s text',
+      'Draw the ID and the description, dropping the description and then thinning the IDs as the band runs out of room',
   },
   {
     value: 'nameAndDescription' as const,
@@ -165,12 +136,6 @@ function boundVariantLaneHeight(n: number) {
   return boundBandHeight(n, VARIANT_LANE_BOUNDS)
 }
 
-// The shortest a mark can be drawn and still read as a mark rather than as an
-// underline for its own text. Below this the lane declines to letter and gives
-// the whole band back to the marks — a label strip that leaves 2px of glyph has
-// spent the rows' height on text describing something no longer visible.
-const MIN_MARK_HEIGHT_WITH_LABELS = 6
-
 export function variantTopBandsGeometry({
   showVariantLane,
   variantLaneHeight,
@@ -183,40 +148,11 @@ export function variantTopBandsGeometry({
   const laneHeight = showVariantLane
     ? boundVariantLaneHeight(variantLaneHeight)
     : 0
-  // One text line per kind the mode admits, plus the gap above the first and
-  // the descender allowance below the last. The font and both spacings are
-  // plugin-canvas's, because the lane letters with plugin-canvas's font at
-  // plugin-canvas's measured widths — reserving a different amount than the
-  // text occupies is how a strip clips its own descenders, which is exactly
-  // what `LABEL_DESCENDER_PX` was added to stop.
-  const wantsName = modeCanShowName(variantLaneLabels)
-  const wantsDescription = modeCanShowDescription(variantLaneLabels)
-  const lines = (wantsName ? 1 : 0) + (wantsDescription ? 1 : 0)
-  const stripFor = (n: number) =>
-    n ? n * LABEL_FONT_SIZE + LABEL_GAP_PX + LABEL_DESCENDER_PX : 0
-  const labelStrip = stripFor(lines)
-  // Both kinds or neither: a lane tall enough for one line but not two draws
-  // the name and drops the description rather than refusing to letter, since
-  // the name is the one plugin-canvas drops last.
-  const roomForBoth =
-    laneHeight - labelStrip >= MIN_MARK_HEIGHT_WITH_LABELS && lines > 0
-  const roomForOne = laneHeight - stripFor(1) >= MIN_MARK_HEIGHT_WITH_LABELS
-  const drawnLines = roomForBoth ? lines : roomForOne && lines ? 1 : 0
-  // With room for one line and both kinds asked for, the name wins — except
-  // where the mode asked for a description alone, which then IS the one line.
-  const showName = drawnLines > 0 && wantsName
-  const showDescription =
-    drawnLines === 2 || (drawnLines === 1 && wantsDescription && !wantsName)
-  const strip = stripFor(drawnLines)
-  const markHeight = laneHeight - strip
   return {
     laneTop: 0,
     laneHeight,
-    markHeight,
-    labelTop: drawnLines ? markHeight + LABEL_GAP_PX : 0,
-    showName,
-    showDescription,
-    labelsFit: drawnLines > 0,
+    wantsName: modeCanShowName(variantLaneLabels),
+    wantsDescription: modeCanShowDescription(variantLaneLabels),
     lineZoneTop: laneHeight,
     bottom: laneHeight + lineZoneHeight,
   }

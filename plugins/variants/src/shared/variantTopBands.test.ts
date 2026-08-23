@@ -45,11 +45,8 @@ describe('the band stack', () => {
     ).toEqual({
       laneTop: 0,
       laneHeight: 20,
-      markHeight: 20,
-      labelTop: 0,
-      showName: false,
-      showDescription: false,
-      labelsFit: false,
+      wantsName: false,
+      wantsDescription: false,
       lineZoneTop: 20,
       bottom: 50,
     })
@@ -69,11 +66,8 @@ describe('the band stack', () => {
     ).toEqual({
       laneTop: 0,
       laneHeight: 0,
-      markHeight: 0,
-      labelTop: 0,
-      showName: false,
-      showDescription: false,
-      labelsFit: false,
+      wantsName: false,
+      wantsDescription: false,
       lineZoneTop: 0,
       bottom: 30,
     })

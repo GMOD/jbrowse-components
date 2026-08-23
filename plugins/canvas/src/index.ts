@@ -49,10 +49,17 @@ export {
   attributeColorJexl,
 } from './RenderFeatureDataRPC/featureColors.ts'
 // Feature-label text and geometry, for a display outside this plugin that draws
-// labels beside features and must draw them the same way. The multi-sample
-// variant display's lane is the one that does: its marks are the same records a
-// LinearVariantDisplay would draw, so the text, its color, its measured width,
-// the font size and the left-edge clamps have to be these and not a second set.
+// labels beside features and must draw them the same way.
+//
+// These are the pieces, and a caller reaching for them should first ask whether
+// it wants the whole band instead — see the feature-band exports at the bottom of
+// this file. The multi-sample variant display's lane used to letter its marks
+// with `createFeatureFloatingLabels` and cull collisions itself, having no second
+// row to push a colliding neighbour onto; it now takes this plugin's layout,
+// which HAS rows, so its labels are placed by the packer that reserved room for
+// them and its overlap is resolved by stacking like everywhere else. The pieces
+// stay exported because a caller that genuinely draws one label beside one mark
+// still owes the same text, the same measured width and the same two colors.
 //
 // `createFeatureFloatingLabels` is the whole text half in one call — it is what
 // truncates a name by length and a description by *rendered width*, drops one
@@ -60,16 +67,11 @@ export {
 // label colors. Re-spelling any part of that outside this plugin is how the same
 // record ends up lettered differently in two displays.
 //
-// What is deliberately NOT shared is the *collision* rule. This plugin resolves
-// label overlap by layout — `computeLabelExtraWidth` widens each feature's
-// packed box so the packer pushes a colliding neighbour onto another row. A
-// single-row lane has no other row, so it culls horizontally instead. That is a
-// different answer to a different question, not drift. `LABEL_PADDING_PX` is
-// shared even so: it is the horizontal breathing room two labels need whatever
-// resolves their overlap, and it is sized to absorb measureText's disagreement
-// with the rendered font. `LABEL_BASELINE_RATIO` is the vertical counterpart —
-// where a label's baseline sits inside its line box — and any canvas drawing a
-// label into a box owes that conversion, this plugin's SVG export included.
+// `LABEL_PADDING_PX` is the horizontal breathing room two labels need whatever
+// resolves their overlap, sized to absorb measureText's disagreement with the
+// rendered font. `LABEL_BASELINE_RATIO` is the vertical counterpart — where a
+// label's baseline sits inside its line box — and any canvas drawing a label into
+// a box owes that conversion, this plugin's own SVG export included.
 export {
   LABEL_BASELINE_RATIO,
   LABEL_FONT_SIZE,
@@ -79,7 +81,8 @@ export { createFeatureFloatingLabels } from './RenderFeatureDataRPC/floatingLabe
 // The label-content vocabulary, so a display outside this plugin offers the
 // same five choices under the same names rather than a second spelling of the
 // same setting. The variant lane admits both kinds under 'auto' and leaves the
-// adaptivity to its own collision cull, having no density thresholds of its own.
+// adapting to the fit ladder, which is what decides how much of each record a
+// band that cannot grow spends its pixels on.
 export {
   SHOW_LABELS_MODES,
   modeCanShowDescription,
@@ -138,3 +141,67 @@ export type {
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
+
+// The feature band, as pure functions, so a display outside this plugin can draw
+// this plugin's data instead of growing its own layout, hit test and labels.
+//
+// The multi-sample variant display's lane is that caller. Its band is one strip
+// of a genotype-matrix display, so it cannot host a `LinearVariantDisplay` — a
+// track renders one display, and a second one would parse the same VCF again.
+// What it can do is hold the same payload: its worker has already parsed the
+// records, so it runs `buildFeatureRenderData` over them, packs with
+// `computeLaidOutData`, fits with `resolveFitLadder`, draws with
+// `drawFeatureBlocks`, letters with `forEachDisplayLabel` + `paintLabels`, and
+// picks with `performMultiRegionHitDetection`. Every one of those is the function
+// `LinearBasicDisplay` itself calls, which is the point: overlap packing, paint
+// order, label collision, outlines and the click target are decided once, here,
+// and a lane cannot drift from the display it stands in for.
+//
+// The seam is deliberately the DATA and not the model. Everything below takes
+// plain arrays, plain config and plain numbers — no MST, no React, no adapter —
+// so the caller supplies its own reactivity (the lane's are MobX computeds on its
+// own model) and its own height budget.
+export { buildFeatureRenderData } from './RenderFeatureDataRPC/buildFeatureRenderData.ts'
+export {
+  computeLaidOutData,
+  createContentHeightProbe,
+  maxBottom,
+  minDrawnBoxHeight,
+  scaleLaidOutData,
+} from './LinearBasicDisplay/layout.ts'
+export {
+  fitScaleToFill,
+  resolveFitLadder,
+  snapFittedContentHeight,
+  solveLabelRoomFactor,
+  squeezeFloorScale,
+} from './LinearBasicDisplay/fitLadder.ts'
+export { drawFeatureBlocks } from './LinearBasicDisplay/components/Canvas2DFeatureRenderer.ts'
+export {
+  buildFeatureFlatbushIndex,
+  isHitFeature,
+  performMultiRegionHitDetection,
+} from './LinearBasicDisplay/components/hitTesting.ts'
+export {
+  LABEL_CULL_BUCKET_PX,
+  forEachDisplayLabel,
+  labelCullBand,
+} from './LinearBasicDisplay/components/labelPositioning.ts'
+export { paintLabels } from './LinearBasicDisplay/components/paintLabels.ts'
+export { hoverTooltipRows } from './LinearBasicDisplay/components/hoverReadout.ts'
+export {
+  HEIGHT_MULTIPLIERS,
+  labelFontSize,
+} from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+export type { FitRung } from './LinearBasicDisplay/fitLadder.ts'
+export type {
+  LabelCullBand,
+  LabelRenderContext,
+  RegionWithData,
+  ResolvedLabel,
+} from './LinearBasicDisplay/components/labelPositioning.ts'
+export type {
+  HitFeatureResult,
+  VisibleRegion,
+} from './LinearBasicDisplay/components/hitTesting.ts'
+export type { RegionRenderData } from './RenderFeatureDataRPC/rpcTypes.ts'

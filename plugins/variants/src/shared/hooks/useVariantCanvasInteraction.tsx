@@ -23,6 +23,12 @@ interface InteractionModel {
  * (enriched-feature select), and onContextMenu (enriched-feature + Menu),
  * and renders the popup Menu itself.
  *
+ * The handlers are typed to `HTMLElement`, not to the canvas: the genotype rows
+ * put them on their canvas because it is the element with the pointer over it,
+ * while the variant lane's canvas is an `OverlayCanvas` (`pointerEvents: none`
+ * by construction, so a paint layer never eats a gesture) and puts them on a
+ * transparent div over it instead.
+ *
  * The hit is opaque to the hook: the caller supplies `getHit` (hit-test the
  * canvas), `getKey` (hover-dedup identity), `getTooltip` (the subset of hit data
  * passed to setHoveredGenotype), and `enrich` (turn a hit into the SimpleFeature
@@ -54,13 +60,13 @@ export function useVariantCanvasInteraction<H>(opts: {
     applyHoverChange(undefined)
   }
 
-  function resolveFeature(e: MouseEvent<HTMLCanvasElement>) {
+  function resolveFeature(e: MouseEvent<HTMLElement>) {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = getHit(rect, e.clientX, e.clientY)
     return hit ? enrich(hit) : undefined
   }
 
-  const onMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
+  const onMouseMove = (e: MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = getHit(rect, e.clientX, e.clientY)
     const key = hit ? getKey(hit) : undefined
@@ -76,7 +82,7 @@ export function useVariantCanvasInteraction<H>(opts: {
     }
   }
 
-  const onClick = (e: MouseEvent<HTMLCanvasElement>) => {
+  const onClick = (e: MouseEvent<HTMLElement>) => {
     const enriched = resolveFeature(e)
     if (enriched) {
       // clear the hover tooltip so it doesn't linger after the widget opens
@@ -85,7 +91,7 @@ export function useVariantCanvasInteraction<H>(opts: {
     }
   }
 
-  const onContextMenu = (e: MouseEvent<HTMLCanvasElement>) => {
+  const onContextMenu = (e: MouseEvent<HTMLElement>) => {
     const enriched = resolveFeature(e)
     if (enriched) {
       e.preventDefault()

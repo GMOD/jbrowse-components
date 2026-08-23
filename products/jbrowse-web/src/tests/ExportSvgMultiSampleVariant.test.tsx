@@ -123,7 +123,7 @@ test('the variant lane is painted, and takes its height from the rows', async ()
   await view.exportSvg({ rasterizeLayers: false })
 
   display.setShowVariantLane(true)
-  const { laneHeight, markHeight, labelsFit } = display.topBands
+  const { laneHeight } = display.topBands
   await view.exportSvg({ rasterizeLayers: false })
 
   // two exports in one test, so index rather than getSavedSvg()
@@ -138,19 +138,27 @@ test('the variant lane is painted, and takes its height from the rows', async ()
   // rows, labels and dendrogram all move into one group below the band
   expect(svg).toContain(`transform="translate(0 ${laneHeight})"`)
 
-  // and the band is actually painted: marks at y=0, above that translate, which
-  // the lane-less export had none of. `markHeight`, not `laneHeight` — labels
-  // are on by default and the marks give up the text strip's height to them.
-  const laneMarks = [
-    ...svg.matchAll(/<rect[^>]*\by="0"[^>]*\bheight="([\d.]+)"/g),
-  ].filter(m => Number(m[1]) === markHeight)
-  expect(laneMarks.length).toBeGreaterThan(0)
+  // and the band is actually painted. Everything the lane draws sits ahead of
+  // that translate in the document (`SvgVariantOverlay` puts the band above the
+  // group the rows, labels and dendrogram share), so the marks are the rects in
+  // front of it — of which a lane-less export has none.
+  const bandSvg = svg.slice(
+    0,
+    svg.indexOf(`transform="translate(0 ${laneHeight})"`),
+  )
+  expect([...bandSvg.matchAll(/<rect/g)].length).toBeGreaterThan(0)
   expect(cellRowYs(svg).rectCount).toBeGreaterThan(before.rectCount)
+
+  // The band holds a laid-out stack that fits the height it was given — the fit
+  // ladder's whole job, and the reason overlapping records stack onto rows here
+  // instead of overdrawing one another.
+  expect(display.laneLaidOutDataMap.size).toBeGreaterThan(0)
+  expect(display.laneContentHeight).toBeGreaterThan(0)
+  expect(display.laneContentHeight).toBeLessThanOrEqual(laneHeight)
 
   // the labels are exported too, and are the records' own IDs — this VCF's are
   // rs-numbers, so a lettered lane is one that found real names rather than
   // drawing empty strings
-  expect(labelsFit).toBe(true)
-  expect(markHeight).toBeLessThan(laneHeight)
+  expect(display.laneRenderedLabels.showLabels).toBe(true)
   expect(svg).toMatch(/<text[^>]*>rs\d+</)
 }, 60000)

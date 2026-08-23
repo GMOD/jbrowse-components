@@ -133,6 +133,18 @@ export default function configSchemaFactory() {
        * second track, the relationship the coverage band has to a pileup —
        * `shared/variantTopBands.ts` holds the band stack.
        *
+       * It *is* that display's band, drawn by the same code: overlapping records
+       * stack onto rows rather than overdrawing one another, and the band
+       * compacts to fit the height it is given — dropping descriptions, then
+       * thinning IDs, then packing bodies alone. Hovering a mark reports the
+       * record (its ID, alleles, length and description), clicking opens its
+       * details, and right-clicking opens the same menu a genotype cell does,
+       * including the split view for a breakend.
+       *
+       * One thing it does NOT do that the cells below it do: widen an insertion
+       * to its inserted length. A box is its reference span there, so the length
+       * of a large `<INS>` is carried by `showInsertionGlyphs` on the rows.
+       *
        * Off by default: on, it takes `variantLaneHeight` px away from the rows,
        * so defaulting it on would resize every existing display and every
        * committed figure.
@@ -169,12 +181,12 @@ export default function configSchemaFactory() {
        * in its two colors — the same text a `LinearVariantDisplay` puts under
        * the same record, under the same enum it spells the choice with.
        *
-       * A label is drawn only where it clears the previous one: the lane is one
-       * row, so it has nowhere to push a collision (that display resolves
-       * overlap by stacking features onto more rows). So labels appear as you
-       * zoom in and thin out as you zoom out, which is the honest behavior for
-       * a single strip. Lines are also dropped when the lane is too short to
-       * hold a mark and the text — see `variantTopBands.ts`.
+       * What the band has room for is decided by the same fit ladder that display
+       * uses in fit mode, so asking for both kinds is a preference and not a
+       * promise: descriptions go first, then IDs are thinned to the records with
+       * room for them, then dropped entirely so the boxes can keep their height.
+       * Zooming in therefore letters more, and a taller band letters more, both
+       * continuously.
        */
       variantLaneLabels: {
         type: 'stringEnum',

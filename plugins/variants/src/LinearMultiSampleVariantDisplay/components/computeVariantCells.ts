@@ -70,12 +70,6 @@ export interface VariantCellData {
   // fill is one array write per variant inside a loop that already resolved the
   // color.
   featureColors: Uint32Array
-  // The glyph each record draws, per feature, from the same `getShapeType` its
-  // cells took. Shipped so the lane can hand it to `drawVariantShape` — the
-  // painter the cells and the SVG export already share — and an inversion
-  // therefore reads as the same left-pointing triangle in the lane and in every
-  // genotype row under it.
-  featureShapeTypes: Uint8Array
 }
 
 function getShapeType(featureType: string) {
@@ -157,7 +151,6 @@ export function computeVariantCells({
   const insertedBp = new Int32Array(filteredVariants.length)
   const featurePositions = new Uint32Array(filteredVariants.length * 2)
   const featureColors = new Uint32Array(filteredVariants.length)
-  const featureShapeTypes = new Uint8Array(filteredVariants.length)
   // Packed once — a callset with no `featureColor` override reuses it for every
   // record instead of re-packing the same string per variant.
   const defaultFeatureAbgr = getCachedABGR(featureDefaultColor)
@@ -408,7 +401,6 @@ export function computeVariantCells({
       overrideColor === undefined
         ? defaultFeatureAbgr
         : getCachedABGR(overrideColor)
-    featureShapeTypes[featureIdx] = shape
     featureIdList.push(featureId)
     featureIdx++
   }
@@ -493,6 +485,5 @@ export function computeVariantCells({
     featureIndexData: featureIndex.data,
     featureInsertedBp: insertedBp,
     featureColors,
-    featureShapeTypes,
   }
 }

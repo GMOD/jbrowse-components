@@ -20,11 +20,12 @@ import type { MouseTracker } from '@jbrowse/core/ui'
 // re-render `DisplayChrome` and every overlay on each mousemove — see
 // `useMouseTracking`.
 //
-// `rowsTopOffset` gates it to the rows, the way the matrix gates its crosshair
-// to the matrix rather than the connector zone: a crosshair drawn while the
-// pointer is over the variant lane names a genotype row the pointer isn't on.
-// It arrives as a prop because this is a plain component and the observer below
-// already tracks it.
+// `rowsTopOffset` gates the CROSSHAIRS to the rows, the way the matrix gates
+// its crosshair to the matrix rather than the connector zone: a crosshair drawn
+// while the pointer is over the variant lane names a genotype row the pointer
+// isn't on. The tooltip is not gated with them — the lane's marks are hoverable
+// too, and what they report is the record itself. It arrives as a prop because
+// this is a plain component and the observer below already tracks it.
 function CrosshairLayer({
   model,
   mouseTracker,
@@ -35,8 +36,12 @@ function CrosshairLayer({
   rowsTopOffset: number
 }) {
   const mouseState = useMouseState(mouseTracker)
-  return mouseState && mouseState.y > rowsTopOffset ? (
-    <Crosshair mouseState={mouseState} model={model} />
+  return mouseState ? (
+    <Crosshair
+      mouseState={mouseState}
+      model={model}
+      crosshairs={mouseState.y > rowsTopOffset}
+    />
   ) : null
 }
 

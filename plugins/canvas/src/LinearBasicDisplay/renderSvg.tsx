@@ -8,12 +8,6 @@ import {
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import {
-  LABEL_BASELINE_RATIO,
-  LABEL_OVERLAY_BACKGROUND,
-  MORE_ISOFORMS_FONT_SCALE,
-  renderedTextWidth,
-} from '../RenderFeatureDataRPC/constants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import {
   drawFeatureBlocks,
@@ -25,13 +19,12 @@ import {
   forEachDisplayLabel,
   labelCullBand,
 } from './components/labelPositioning.ts'
+import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { CanvasColorLegend } from './baseModel.ts'
-import type { ResolvedLabel } from './components/labelPositioning.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
@@ -51,61 +44,6 @@ export interface RenderSvgModel extends SvgExportable {
   renderedShowSubfeatureLabels: boolean
   labelFontSize: number
   colorLegend: CanvasColorLegend | undefined
-}
-
-// Labels and amino-acid overlays are rendered as DOM/React overlays
-// on-screen, so the on-screen renderer doesn't draw them. SVG export must
-// bake them into the output, so they live here as a vector-only post-pass
-// that runs after drawFeatureBlocks paints the geometry.
-//
-// Owns `ctx.font` rather than taking it set: the isoform badge draws smaller
-// and italic (floatingLabelMore is the DOM half of the same choice), so the pass
-// has two fonts in it and neither caller nor callee can hold just one. Free to
-// reassign per label here — the export's ctx is an SvgCanvas, which stores the
-// shorthand and parses it at serialize time.
-function paintLabels(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
-  for (const resolved of labels) {
-    const { label, labelX, labelY } = resolved
-    if (resolved.kind === 'more') {
-      // "+20 more" is a fact about the picture and belongs in it. Its expanded
-      // form reads "show fewer", an instruction to a control the export does not
-      // carry, over a gene the export has already drawn in full.
-      if (resolved.label.expanded) {
-        continue
-      }
-      ctx.font = `italic ${fontSize * MORE_ISOFORMS_FONT_SCALE}px sans-serif`
-    } else {
-      ctx.font = `${fontSize}px sans-serif`
-      if (resolved.label.isOverlay) {
-        ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
-        // The baked textWidth is measured at the base font size; scale it to
-        // what this mode draws so the backing rect hugs the text like the
-        // on-screen DOM version (a CSS background on the label div) does.
-        ctx.fillRect(
-          labelX - 1,
-          labelY,
-          renderedTextWidth(label.textWidth, fontSize) + 2,
-          fontSize + 1,
-        )
-      }
-    }
-    ctx.fillStyle = label.color
-    // labelY is the label's TOP (the DOM overlay positions the div by it), so
-    // convert to the baseline fillText wants. Alphabetic baseline rather than
-    // ctx.textBaseline = 'top': SvgCanvas maps that to dominant-baseline
-    // "hanging", which downstream SVG consumers (Inkscape, librsvg) place
-    // inconsistently, while an explicit y is portable everywhere. Rounded
-    // because SvgCanvas interpolates coordinates raw — the unrounded product
-    // serializes as y="21.240000000000002" for no visible gain.
-    //
-    // Off the shared line's size rather than each label's own, so the smaller
-    // badge sits on the name's baseline instead of a lower one of its own.
-    ctx.fillText(
-      label.text,
-      labelX,
-      Math.round(labelY + fontSize * LABEL_BASELINE_RATIO),
-    )
-  }
 }
 
 export async function renderSvg(

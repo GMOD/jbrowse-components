@@ -1,22 +1,27 @@
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import {
+  drawFeatureBlocks,
+  forEachDisplayLabel,
+  labelCullBand,
+  paintLabels,
+} from '@jbrowse/plugin-canvas'
 import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 import { drawVariantInsertionGlyphs } from './components/drawVariantInsertionGlyphs.ts'
-import { drawVariantLane } from './components/drawVariantLane.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type { VariantInsertionGlyphData } from './components/drawVariantInsertionGlyphs.ts'
-import type { VariantLaneData } from './components/drawVariantLane.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
+import type { FeatureDataResult, VisibleRegion } from '@jbrowse/plugin-canvas'
 import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
@@ -31,8 +36,14 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   insertionGlyphRegions:
     | ReadonlyMap<number, VariantInsertionGlyphData>
     | undefined
-  // undefined when the variant lane band is off
-  variantLaneRegions: ReadonlyMap<number, VariantLaneData> | undefined
+  // The lane's laid-out band, empty when it is off. plugin-canvas's own render
+  // data — see `laneFitStage`.
+  laneLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
+  laneRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
+  laneFontSize: number
+  // The lane's labels are placed per region, so the export needs the same region
+  // list the on-screen pass letters against.
+  visibleRegions: VisibleRegion[]
   showInsertionGlyphs: boolean
 }
 
@@ -60,9 +71,10 @@ function VariantSvgBody({
     perRegionCellMap,
     renderState,
     insertionGlyphRegions,
-    variantLaneRegions,
+    laneLaidOutDataMap,
+    laneRenderedLabels,
+    laneFontSize,
     topBands,
-    showInsertionGlyphs,
   } = model
   // canvasWidth is the block scissor bound and the cell pixel-snapping origin,
   // so it has to be the width this layer is actually painted at — see
@@ -84,20 +96,35 @@ function VariantSvgBody({
       // same split the screen takes (a separate canvas outside the offset
       // container), so the lane cannot pick up the rows' scroll.
       variantLane={
-        variantLaneRegions ? (
+        topBands.laneHeight > 0 ? (
           <PaintLayer
             width={canvasWidth}
             height={topBands.laneHeight}
             opts={opts}
             paint={ctx => {
-              drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
+              // The band the screen drew, off the same laid-out stack and the
+              // same two plugin-canvas passes — so an export cannot pack, letter
+              // or order the marks differently from what the reader saw. The
+              // colors are baked per record (`itemRgb`), which is why this pass
+              // takes no palette where the markers below do.
+              drawFeatureBlocks(ctx, laneLaidOutDataMap, renderBlocks, {
+                scrollY: 0,
                 canvasWidth,
-                bands: topBands,
-                insertionsWiden: showInsertionGlyphs,
-                // the export theme's palette, not the live session's, the same
-                // rule the insertion markers beside it follow
-                palette: exportPalette,
+                canvasHeight: topBands.laneHeight,
               })
+              forEachDisplayLabel(
+                model.visibleRegions,
+                laneLaidOutDataMap,
+                {
+                  ...laneRenderedLabels,
+                  showSubfeatureLabels: false,
+                  fontSize: laneFontSize,
+                },
+                (_, labels) => {
+                  paintLabels(ctx, labels, laneFontSize)
+                },
+                labelCullBand(0, topBands.laneHeight),
+              )
             }}
           />
         ) : null

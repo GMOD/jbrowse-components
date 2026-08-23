@@ -128,17 +128,45 @@ it, and gave the edge fade zero width. Anything anchored to the right edge, or
 that applies `rowsTopOffset` itself, goes on the display's own box beside
 `VariantOverlay`.
 
-The lane is deliberately **not** a hosted `LinearVariantDisplay` — a track
-renders one display and a combo would buy a second parse of the same VCF. It
-shares `forEachFeatureSpan` (one per-record walk, so a lane mark cannot sit a
-pixel off its column), `drawVariantShape`, `featureColor`,
-`featureDefaultColor`, `createFeatureFloatingLabels` and
-`breakendSplitViewMenuItem` instead.
+The lane **is** a plugin-canvas feature band, not a painter of ours. It is not a
+_hosted_ `LinearVariantDisplay` — a track renders one display, and a second one
+would parse the same VCF again — but it holds that display's payload and runs
+that display's functions:
 
-## How wide a record draws: `variantCellSpanPx`
+`buildLaneRenderData` rebuilds `SimpleFeature`s from the cell payload (the span,
+ID, description and SO type are all already on the wire) and hands them to
+plugin-canvas's `buildFeatureRenderData`; `computeLaidOutData` packs them;
+`resolveFitLadder` compacts the stack into `laneHeight`; `drawFeatureBlocks`
+paints it; `forEachDisplayLabel` + `paintLabels` letter it;
+`performMultiRegionHitDetection` picks. So overlap packing, paint order, label
+placement, outlines and the click target are decided once — there, for both
+displays — and the band cannot drift from the display it stands in for.
 
-Four geometries must agree — marker overlay, lane mark, hover box, click target
-— and all four go through it.
+- **Main thread, and no second fetch.** Everything a variant _record_ is already
+  rides in the payload, so the band costs no RPC change and no extra bytes, and
+  `showVariantLane` stays a render-tier setting a toggle must not refetch. The
+  pass is per record (thousands), not per cell (millions), and plugin-canvas
+  packs main-thread anyway.
+- **The color crosses over as `itemRgb`.** With `config.color` unset,
+  `getBoxColor` lets a feature's own BED color speak — which is how a lane mark
+  stays the color of the alt cells in the column under it.
+- **`variantTopBands` no longer splits the band.** Mark strip, label strip and
+  "do the labels fit" were ours and are now the fit ladder's; that file answers
+  only how many pixels the band gets, plus which label kinds the slot asked for
+  (`wantsName` / `wantsDescription`). What is drawn is `laneRenderedLabels`.
+- **What is still ours** is what plugin-canvas has no opinion on: the record
+  tooltip table (`buildVariantLaneHit`, sample fields left empty so one
+  `hoveredGenotype` slot serves both bands), the gestures
+  (`useVariantCanvasInteraction`, on a div because `OverlayCanvas` is
+  `pointerEvents: none`), and `breakendSplitViewMenuItem`.
+
+## How wide a cell draws: `variantCellSpanPx`
+
+Three geometries must agree — the insertion-marker overlay, the cells' hover box
+and their click target — and all three go through it. The **lane** is no longer
+one of them: its marks, their hover box and their click target are
+plugin-canvas's layout (see the band section above), which is why they can
+stack.
 
 **Edges go in in RECORD order, `toX(start)` then `toX(end)`** — never sorted,
 never pre-snapped. `snappedCellLeftPx` hangs the 2px floor off the record's
@@ -150,6 +178,12 @@ case it exists for.
 **`insertionsWiden` has no default on purpose** — implicitly defaulted, cells
 drew a 2px SNP while the lane drew a 40px bar. Only `markersForBlock` passes a
 literal.
+
+**The band does not widen an insertion at all.** A plugin-canvas box is its
+reference span, and that plugin has no insertion-length glyph — its own
+`LinearVariantDisplay` draws a 65 kb `<INS>` as a 2px box too. So in this
+display the length lives in the cells' marker only. Fixing it belongs there, in
+a glyph both displays would get, not in a second painter here.
 
 ## Connectors and allele counting
 

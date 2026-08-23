@@ -245,7 +245,7 @@ export type ResolvedLabel = PlainResolvedLabel | MoreResolvedLabel
 // show, plus the display mode's resolved font size. fontSize is the single knob
 // that keeps the reserved row height, the name→description gap, and the drawn
 // text in agreement as compact modes shrink the text.
-interface LabelRenderContext {
+export interface LabelRenderContext {
   showLabels: boolean
   showDescriptions: boolean
   // `model.renderedShowSubfeatureLabels` — off only while a fit squeeze is

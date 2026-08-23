@@ -45,10 +45,9 @@ export interface VariantInsertionGlyphData {
  * (thousands) rather than the cells (features × samples). Records that insert
  * nothing are every SNP and every deletion and can't produce a marker;
  * `variantCellSpanPx` short-circuits them to their plain span, which is false
- * for `drawsMarker`. (They used to be skipped before the bp→px mapping too. The
- * walk is shared with the variant lane now, which needs every record, and two
- * multiplies per skipped feature is not worth two copies of the geometry that
- * decides where a marker goes.)
+ * for `drawsMarker`. (They used to be skipped before the bp→px mapping too, back
+ * when this walk was its own; two multiplies per skipped feature is not worth a
+ * second copy of the geometry that decides where a marker goes.)
  *
  * Split out of the draw so the legend can ask the painter's own question instead
  * of approximating it. Both cheaper approximations are wrong on real figures:
@@ -69,9 +68,8 @@ export function markersForBlock(
   const drawsMarker = new Uint8Array(numFeatures)
   const markerXCenter = new Float64Array(numFeatures)
   let anyMarker = false
-  // `forEachFeatureSpan` is the shared walk — the same one the variant lane
-  // paints from — so a marker cannot be sized against a different span than the
-  // lane mark above it or the cell below it.
+  // `forEachFeatureSpan` is the walk `variantCellSpanPx` backs, so a marker
+  // cannot be sized against a different span than the cell it widens.
   const pxPerBp = forEachFeatureSpan(
     region,
     block,

@@ -7,21 +7,19 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
+import { buildFeatureRenderData } from './buildFeatureRenderData.ts'
 import { measureRegionBytes } from './byteGate.ts'
-import { collectRenderData } from './collectRenderData.ts'
 import { dedupeFeaturesById } from './dedupeFeatures.ts'
 import {
   exactDensityTooLargeResult,
   samplePreFetchDensity,
 } from './densityGate.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
-import { findGlyph } from './glyphs/findGlyph.ts'
-import { summarizeIsoformPicks } from './isoformPicks.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
 import type { FeatureDataResult } from './rpcTypes.ts'
-import type { FeatureLayout, PeptideData } from './types.ts'
+import type { PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
@@ -162,35 +160,6 @@ export async function executeRenderFeatureData({
   // every container feature it lays out.
   const expandedGenes = expandedGeneIds && new Set(expandedGeneIds)
 
-  const layouts = await withProgress(
-    {
-      label: 'Computing layout',
-      total: features.size,
-      statusCallback,
-      stopToken,
-    },
-    report => {
-      const records: FeatureLayout[] = []
-      for (const feature of features.values()) {
-        report()
-        records.push(
-          findGlyph(
-            feature,
-            displayConfig,
-          )({
-            feature,
-            config: displayConfig,
-            // for the one layout-time per-feature callback slot, `featureHeight`
-            jexl: pluginManager.jexl,
-            expandedGeneIds: expandedGenes,
-          }),
-        )
-      }
-      return records
-    },
-  )
-  checkStopTokenThrottled(stopTokenCheck)
-
   let peptideDataMap: Map<string, PeptideData> | undefined
   if (
     showAminoAcids &&
@@ -216,31 +185,36 @@ export async function executeRenderFeatureData({
 
   checkStopTokenThrottled(stopTokenCheck)
 
-  const packed = await updateStatus(
-    'Collecting render data',
-    statusCallback,
-    () =>
-      collectRenderData({
-        layouts,
-        regionStart: region.start,
-        regionEnd: region.end,
+  // One `withProgress` over the whole layout+collect pass, where the layout half
+  // used to have its own: `buildFeatureRenderData` reports per feature and the
+  // collect that follows is the same walk again, so a second determinate bar for
+  // it only made the first one lie about being finished.
+  const packed = await withProgress(
+    {
+      label: 'Computing layout',
+      total: features.size,
+      statusCallback,
+      stopToken,
+    },
+    report =>
+      buildFeatureRenderData({
+        features: features.values(),
+        featureCount: features.size,
         config: displayConfig,
         palette,
-        colorByCDS: !!colorByCDS,
-        peptideDataMap,
         jexl: pluginManager.jexl,
+        regionStart: region.start,
+        regionEnd: region.end,
+        colorByCDS: !!colorByCDS,
+        expandedGeneIds: expandedGenes,
+        peptideDataMap,
+        report,
       }),
   )
 
   checkStopTokenThrottled(stopTokenCheck)
 
-  const result: FeatureDataResult = {
-    ...packed,
-    featureCount: features.size,
-    hasMultiIsoformGenes: layouts.some(layout => layout.hasMultipleIsoforms),
-    isoformPicks: summarizeIsoformPicks(layouts),
-    bytes,
-  }
+  const result: FeatureDataResult = { ...packed, bytes }
 
   // rpcResultWithArrayBuffers wraps value + auto-derived transferables; the RPC
   // framework unwraps it before returning to the caller. The caller-facing type
