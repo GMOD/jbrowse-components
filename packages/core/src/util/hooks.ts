@@ -375,10 +375,13 @@ export function useChromeHeightVar(
     if (!el || !parent || !('ResizeObserver' in window)) {
       return
     }
-    // the border box: this is a distance a sibling below has to clear, not a
-    // content area
+    // the border box, since this is a distance a sibling below has to clear
+    // rather than a content area — and read off the rect, not `offsetHeight`,
+    // which rounds to whole pixels and so left the box below up to half a pixel
+    // off a header that had grown to 29.28
     const publish = () => {
-      parent.style.setProperty(varName, `${el.offsetHeight}px`)
+      const { height } = el.getBoundingClientRect()
+      parent.style.setProperty(varName, `${height}px`)
     }
     publish()
     const observer = new ResizeObserver(publish)

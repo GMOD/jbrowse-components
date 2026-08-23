@@ -33,13 +33,14 @@ const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',
     alignItems: 'center',
-    // A floor rather than a height, and the same one the web app's view header
-    // has: the LGV header below sticks past this bar, so a title box of some
-    // other size has to *move* the boxes below it rather than be clipped to fit
-    // them. `useChromeHeightVar` publishes what this measures and they read it;
-    // the constant is only what they fall back to. This bar's own content wants
-    // 32px, so it is the floor that gives way, not the content.
-    minHeight: VIEW_HEADER_HEIGHT,
+    // A fixed height, unlike the web app's view header, which is a floor. Both
+    // publish what they measure through `useChromeHeightVar`, so what sticks
+    // below follows either — this is a density choice and no longer a
+    // load-bearing constant. It stays fixed because the content that would
+    // widen the box is the logomark button, whose 22px icon and 5px padding
+    // want 32: a floor here spends 4px of an embedder's box to stop that button
+    // painting 2px outside a bar nothing clips.
+    height: VIEW_HEADER_HEIGHT,
     top: 0,
     zIndex: 900,
     // a sticky element does not carry its parent's background, and what would
