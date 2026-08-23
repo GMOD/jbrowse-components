@@ -170,6 +170,11 @@ export type {
   ComparativeDisplayFetchState,
   ComparativeSurface,
 } from './comparativeReadiness.ts'
+export { comparativeFetchFlags } from './comparativeFetchFlags.ts'
+export type {
+  ComparativeFetchFlags,
+  ComparativeFetchInputs,
+} from './comparativeFetchFlags.ts'
 export type { ComparativeWarning } from './SyntenyFetchStateMixin.ts'
 // Warning rows named by the track that raised them, and the one report both
 // views open over them — shared so a report cannot say different things

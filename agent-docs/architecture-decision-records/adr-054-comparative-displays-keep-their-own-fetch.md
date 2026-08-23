@@ -108,6 +108,20 @@ already-shared policy, differing between the callers in exactly the terms a
 hoisted version would have to take as hooks. ADR-042 rejected an extraction for
 this same pair on this same bar.
 
+**2026-08-23: the three are one function now, and that is this section's own
+conclusion rather than a departure from it.** The reason they stayed local was
+that `loading` differed — "dotplot has no inert state" — and it has one:
+`fetchInert` reached `SyntenyFetchStateMixin` for `displaysSettled`, and the
+dotplot's `loading` subtracts it exactly as synteny's does. With the last
+differing term gone the six getters were character-identical in pairs, which is
+duplication with nothing left to parameterize, and the two comments describing
+`loading` had already drifted over whether the `fetchInert` subtraction was
+hypothetical. `comparativeFetchFlags` (`packages/synteny-core/src`) takes the
+display's fetch state and returns the three, beside `displaysSettled` and
+`comparativeDisplayPhase` — **a plain function, which is what §4 says shared
+policy at this level is.** Nothing moved onto a mixin, no member gained a second
+declaration site, and each display still declares and publishes its own three.
+
 ### The stated payoff is inverted
 
 "Three rows instead of two rows and a footnote" changes the code to simplify a

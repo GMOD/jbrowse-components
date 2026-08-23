@@ -8,8 +8,8 @@ import { sharedBackendKey } from '@jbrowse/render-core/installKeyedLifecycle'
 import {
   SyntenyFetchStateMixin,
   comparativeDisplayPhase,
+  comparativeFetchFlags,
   getCoarseBpPerPxThreshold,
-  isDataCurrent,
   resolveLodTier,
   swappedAssembliesWarning,
   syntenyFetchRegions,
@@ -330,15 +330,26 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
         }
         return { path, color: abgrToCssRgba(colors[start]!) }
       },
+      // The three flags below, built once from this display's fetch state.
+      // Shared with `LinearSyntenyDisplay`, which publishes the same three off
+      // the same terms — see `comparativeFetchFlags` for what each means and
+      // for the ADR-054 note on why a plain function is the shape.
+      get fetchFlags() {
+        return comparativeFetchFlags({
+          ready: this.ready,
+          fetching: self.fetching,
+          error: self.error,
+          fetchInert: self.fetchInert,
+          loadedFetchKey: self.loadedFetchKey,
+          currentFetchKey: this.currentFetchKey,
+        })
+      },
       /**
        * #getter
-       * First load: no data has arrived yet. Excludes error so error UI and
-       * loading UI never show simultaneously, and `fetchInert` (the mixin
-       * default is false today) so an inert state added later rests instead of
-       * spinning — same shape as synteny's. Drives the centered overlay.
+       * First load: no data has arrived yet. Drives the centered overlay.
        */
       get loading() {
-        return !this.ready && !self.error && !self.fetchInert
+        return this.fetchFlags.loading
       },
       /**
        * #getter
@@ -348,7 +359,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * plot isn't masked on every viewport change.
        */
       get refetching() {
-        return self.fetching && this.ready && !self.error
+        return this.fetchFlags.refetching
       },
       /**
        * #getter
@@ -416,7 +427,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * dotplot analog of LGV's `viewportWithinLoadedData`.
        */
       get dataCurrent(): boolean {
-        return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
+        return this.fetchFlags.dataCurrent
       },
       /**
        * #getter

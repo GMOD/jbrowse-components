@@ -13,9 +13,9 @@ import {
   SyntenyFetchStateMixin,
   bucketBpPerPx,
   comparativeDisplayPhase,
+  comparativeFetchFlags,
   featureAttributes,
   getCoarseBpPerPxThreshold,
-  isDataCurrent,
   regionSignature,
   resolveLodTier,
   swappedAssembliesWarning,
@@ -455,17 +455,27 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       get fetchInert() {
         return self.isMinimized || !this.connectedViews
       },
+      // The three flags below, built once from this display's fetch state.
+      // Shared with `DotplotDisplay`, which publishes the same three off the
+      // same terms — see `comparativeFetchFlags` for what each means and for
+      // the ADR-054 note on why a plain function is the shape.
+      get fetchFlags() {
+        return comparativeFetchFlags({
+          ready: this.ready,
+          fetching: self.fetching,
+          error: self.error,
+          fetchInert: this.fetchInert,
+          loadedFetchKey: self.loadedFetchKey,
+          currentFetchKey: this.currentFetchKey,
+        })
+      },
       /**
        * #getter
-       * First load: no data has arrived yet. Deliberately not `&& fetching` —
-       * that would blink the overlay off during the pre-fetch debounce gap.
-       * Excludes error so error UI and loading UI never show simultaneously,
-       * and `fetchInert` so a display that will never fetch shows no overlay
-       * instead of spinning on data that is not coming.
-       * Drives the full striped LoadingOverlay.
+       * First load: no data has arrived yet. Drives the full striped
+       * LoadingOverlay.
        */
       get loading() {
-        return !this.ready && !self.error && !this.fetchInert
+        return this.fetchFlags.loading
       },
       /**
        * #getter
@@ -475,7 +485,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * ribbons aren't masked on every viewport change.
        */
       get refetching() {
-        return self.fetching && this.ready && !self.error
+        return this.fetchFlags.refetching
       },
       /**
        * #getter
@@ -546,7 +556,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * per-region families answer it with spatial coverage instead.
        */
       get dataCurrent(): boolean {
-        return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
+        return this.fetchFlags.dataCurrent
       },
       /**
        * #getter
