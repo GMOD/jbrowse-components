@@ -197,8 +197,7 @@ per-locus re-prompting it exists to avoid. See § Force-load.
 **The banner also drops a stored hover, and that is the hover installer's job
 rather than the gate's.** `installClearHoverOnViewportChange` reads
 `regionTooLarge` alongside its three viewport axes; see ARCHITECTURE.md §"A
-stored hover". An out-of-tree display still overriding the hook this replaced is
-reported through `REMOVED_ACTION_HOOKS`, beside `RENAMED_HOOKS`.
+stored hover".
 
 **The `AUTO_FORCE_LOAD_BP` comparison lives in `aboveForceLoadFloor`, and only
 there** — three readers wanting three different things, listed under § Shared
@@ -429,21 +428,14 @@ rule that forbade a second `get gateEnabled()` are all gone.
 member collision to the LATER argument: a mixin *contributing* this — only
 `CanvasFeatureGateMixin` does — composed before the mixin that declares it hands
 the opt-in back to the default, with no banner, no error and nothing the type
-system objects to. `no-restricted-syntax` fails that order and says why. Out of
-tree it does not, which is what `RENAMED_HOOKS` below is for.
+system objects to. `no-restricted-syntax` fails that order and says why.
 
-**Renaming a gate hook is itself a hazard**, and `RegionTooLargeMixin`'s
-`afterAttach` carries a dev-time check for it (`RENAMED_HOOKS`, plus
-`REMOVED_VIEW_HOOKS` / `REMOVED_ACTION_HOOKS` for the ones with no new name —
-`measuresBytesPreFlight` and `byteGateBlocksFetch` are both there). An
-out-of-tree display overriding a dead name lands on a getter nothing reads: the
-gate stays off and the display downloads whatever it is pointed at with no
-banner and no error — the same silent-disable the compose-order lint rule exists
-to prevent. Add to those maps before renaming another one. **This
-one stays a runtime check on purpose**: the population it exists for is
-out-of-tree displays, which never run our lint, and in tree there is nothing for
-a selector to find, since a rename that left an old name behind would have been
-the rename's own diff.
+**Renaming a gate hook is itself a hazard**: a display overriding the old
+name lands on a getter nothing reads, and the gate stays off in silence. In
+tree the hook table's generator catches it (`generate-display-hook-overrides.ts`
+asserts every hook is still declared by the file that owns its default); out
+of tree nothing does, and nothing is kept around to — a renamed hook is a
+breaking change and is released as one.
 
 **`configuredFetchSizeLimit`** and **`configForceLoad`** read the
 `fetchSizeLimit` and `forceLoad` slots from `baseLinearDisplayConfigSchema`,

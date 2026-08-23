@@ -1,7 +1,7 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
-import { addDisposer, getMembers, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import {
@@ -20,12 +20,6 @@ import type {
   GateState,
   GateViewport,
 } from './regionTooLargeUtils.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
-
-// This ESM package builds without @types/node, but consuming bundlers still
-// string-replace `process.env.NODE_ENV`, so keep the reference and give it a
-// minimal module-scoped type for tsc.
-declare const process: { env: { NODE_ENV?: string } }
 
 /**
  * Move the gate's three volatiles through {@link nextGateState}, which is where
@@ -45,77 +39,6 @@ function applyGateEvent(self: GateState, event: GateEvent) {
   self.byteEstimate = next.byteEstimate
   self.gateMeasuredViewportKey = next.gateMeasuredViewportKey
   self.forceLoadTrack = next.forceLoadTrack
-}
-
-// The gate members renamed in 2026-08, and what they are called now. An
-// out-of-tree display overriding an old name is the exact failure this mixin
-// spends `gateEnabled`'s additive-OR and the compose-order lint rule guarding
-// against: the override lands on a getter nothing reads, the gate quietly stays
-// off, and the display downloads whatever it is pointed at with no banner and
-// no error. This one stays a runtime check because the population it is for is
-// out of tree, where a lint rule reaches nothing; a rename is only safe if it is
-// louder than the thing it renamed, so this says so at attach.
-export const RENAMED_HOOKS: Record<string, string> = {
-  byteGateEnabled: 'gateEnabled',
-  gateFoldedIntoFetch: 'gateEnabled',
-  measuresBytesInFetch: 'gateEnabled',
-  derivedRegionTooLargeEnabled: 'gateEnabled',
-  byteGateExempt: 'gateExempt',
-  byteGateActive: 'gateActive',
-  gateVisibleBp: 'gateViewport?.spanBp',
-}
-
-// The same failure for a hook that is gone rather than renamed: there is no new
-// name to point at, only a different shape to write the display in.
-const REMOVED_VIEW_HOOKS: Record<string, string> = {
-  measuresBytesPreFlight:
-    'the measurement folded into the fetch: set `gateEnabled`, pass ' +
-    '`byteLimit: self.resolvedByteLimit()` in the fetch RPC, and answer a ' +
-    '`RegionTooLargeResult` from the worker when the region is over budget',
-}
-
-// The same failure again, over ACTIONS because that is what these were.
-const REMOVED_ACTION_HOOKS: Record<string, string> = {
-  onRegionTooLarge:
-    'installClearHoverOnViewportChange, which clears on the `regionTooLarge` ' +
-    'flip as well as on the three viewport axes',
-  byteGateBlocksFetch:
-    'the fetch RPC itself, which measures before it downloads — nothing ' +
-    'calls a pre-flight any more',
-}
-
-// Dev-only, from `afterAttach`, so it fires once for every display composing
-// this mixin — the only place that sees them all. `console.error` rather than
-// `throw` for the reason `assertDisplayContract` gives: an error escaping
-// `afterAttach` reads to the session loader as an invalid track and the display
-// is dropped, hiding the very violation being reported.
-export function reportRenamedHooks(self: IAnyStateTreeNode) {
-  if (process.env.NODE_ENV === 'production') {
-    return
-  }
-  const { views, actions, name } = getMembers(self)
-  for (const [old, current] of Object.entries(RENAMED_HOOKS)) {
-    if (views.includes(old)) {
-      console.error(
-        `[jbrowse display contract] ${name}: \`${old}\` was renamed to ` +
-          `\`${current}\`. Nothing reads the old name any more, so this ` +
-          `override is inert and the region-too-large gate may be off for ` +
-          `this display. See agent-docs/reference/REGION_TOO_LARGE.md.`,
-      )
-    }
-  }
-  for (const [old, replacement] of Object.entries({
-    ...REMOVED_VIEW_HOOKS,
-    ...REMOVED_ACTION_HOOKS,
-  })) {
-    if (views.includes(old) || actions.includes(old)) {
-      console.error(
-        `[jbrowse display contract] ${name}: \`${old}\` was removed. ` +
-          `Nothing calls it, so this override never runs — its job is done by ` +
-          `${replacement}. See agent-docs/reference/REGION_TOO_LARGE.md.`,
-      )
-    }
-  }
 }
 
 // The mixin declares no `configuration`, but every display that composes it has
@@ -1036,8 +959,6 @@ export default function RegionTooLargeMixin() {
       // The fork auto-chains afterAttach, so this runs alongside the composing
       // display's own without either calling super.
       afterAttach() {
-        reportRenamedHooks(self)
-
         // Drop the cached estimate when the tier it measured stops being the
         // tier we would fetch. `clearByteEstimate` on chromosome nav already
         // handles "these bytes are about a different region"; this is the same

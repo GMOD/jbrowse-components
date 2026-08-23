@@ -4,9 +4,8 @@
 // the display, while every hook here has a default that keeps working and does
 // less.
 //
-// It also asserts each hook is still declared by the file owning its default —
-// the static half of the rename hazard REGION_TOO_LARGE.md names, which
-// `RENAMED_HOOKS` catches at runtime and only out-of-tree.
+// It also asserts each hook is still declared by the file owning its default,
+// so a renamed hook cannot leave a consumer reading a name nothing declares.
 //
 // **Attribution is by directory, not by walking the compose graph.** A shared
 // mixin therefore names itself rather than each display composing it, which is
@@ -298,8 +297,7 @@ function main() {
   if (orphaned.length > 0) {
     console.error(
       `display hook table: these hooks are no longer declared by the file that owns their default.\n` +
-        `Either the hook was renamed (update HOOKS, and RegionTooLargeMixin’s RENAMED_HOOKS\n` +
-        `if it is a gate hook) or the default moved (update \`owner\`):\n${orphaned
+        `Either the hook was renamed (update HOOKS) or the default moved (update \`owner\`):\n${orphaned
           .map(h => `  ${h.name} — expected in ${ownersOf(h).join(', ')}`)
           .join('\n')}`,
     )
