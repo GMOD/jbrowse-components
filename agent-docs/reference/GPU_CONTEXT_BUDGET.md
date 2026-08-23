@@ -49,7 +49,8 @@ Three things the lazy mount did **not** fix:
 
 - **One ordinary view with 17 GPU tracks** crosses the ceiling on its own. No
   many-view session, nothing synthetic. Tracks inside a mounted view are not
-  virtualized; see TODO.md §"Cut WebGL2 contexts per display".
+  virtualized; see
+  [Cut WebGL2 contexts per display](../todo/cut-webgl2-contexts-per-display.md).
 - **A multi-panel workspace.** The window is per scroll port, so live views scale
   with panels on screen: a 12-view session at 1/2/4 panels holds 6/12/16 live
   canvases. Four panels sits at the ceiling on arrival. This is the one thing

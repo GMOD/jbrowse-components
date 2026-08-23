@@ -407,8 +407,8 @@ file:
 - **The arcs are anonymous.** A backbone-to-backbone skip has GRCh38 at both
   ends, so it names no donor (Carriage, above). A row in a linear track is read
   as carriage, which is the misreading that retired `hprc_allele_inventory`'s
-  sample rows and that "Structure, not sequence" in `pangenome_hprc.md` exists to
-  head off.
+  sample rows and that "The graph and the callset at two resolutions" in
+  `pangenome_hprc.md` exists to head off.
 - **`wave.vcf.gz` already does it, better.** It is not symbolic, it is
   tabix-indexed, it carries explicit ALTs to 65 kb and a genotype per haplotype,
   and it needs no plugin. The CFHR deletion is one of its records with 139 of 464
@@ -721,7 +721,7 @@ what `segs.bed.gz` does with tabix.
 ## Open
 
 The queue, with what each one is blocked on, is
-[TODO.md](../TODO.md#pangenome-graph-view-the-open-queue).
+[Pangenome graph view queue](../todo/pangenome-graph-view-the-open-queue.md).
 
 - ~~**The `samples` column is emitted but not read.**~~ Done 2026-08-02, as the
   general tag column above: `SM:Z:` reaches `GraphNode.tags.SM`. What is still
