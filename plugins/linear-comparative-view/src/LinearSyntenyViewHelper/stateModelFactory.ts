@@ -11,10 +11,10 @@ import { installKeyedLifecycle } from '@jbrowse/render-core/installKeyedLifecycl
 import {
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
+  installClearHoverOnSurfaceMove,
 } from '@jbrowse/synteny-core'
 import { runInAction } from 'mobx'
 
-import { installClearHoverOnBandMove } from './installClearHoverOnBandMove.ts'
 import {
   captureStackViewports,
   navLocString,
@@ -495,7 +495,21 @@ export function linearSyntenyViewHelperModelFactory(
       afterAttach() {
         // No `super`: our MST fork auto-chains lifecycle hooks, so calling it
         // would re-enter RenderLifecycleMixin's own.
-        installClearHoverOnBandMove(self)
+        //
+        // The shared clear for a stored hover over a shared canvas. On the
+        // level rather than the display because the level owns the hover —
+        // `setHoveredFeature` fans one pick hit across every display in the
+        // band. `bandTransformKey` is the one value carrying every number that
+        // moves the band under a stationary cursor (see its getter): a wheel
+        // over the canvas scroll-zooms both rows while `useWheelScrollZoom`
+        // suppresses the hover handler, so the commonest way to move the
+        // picture fires no pointer event, and `setRpcData`'s clear only runs
+        // when a fetch commits — a pan inside the snapped fetch window or a
+        // zoom inside the log2 bucket commits nothing.
+        installClearHoverOnSurfaceMove(self, {
+          transform: () => self.bandTransformKey,
+          name: 'SyntenyClearHoverOnBandMove',
+        })
       },
     }))
 }

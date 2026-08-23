@@ -18,6 +18,7 @@ export {
   syntenyTypes,
 } from './syntenyTypes.ts'
 export { clampBlockToRegions } from './clampBlockToRegions.ts'
+export { installClearHoverOnSurfaceMove } from './installClearHoverOnSurfaceMove.ts'
 export type { ClampedBlock } from './clampBlockToRegions.ts'
 export { makeStringDict } from './stringDict.ts'
 export type { StringDict } from './stringDict.ts'

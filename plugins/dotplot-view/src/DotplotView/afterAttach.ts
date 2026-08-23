@@ -13,8 +13,11 @@ import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
-import { autorun, reaction, when } from 'mobx'
+import {
+  installClearHoverOnSurfaceMove,
+  withDiagonalizeProgress,
+} from '@jbrowse/synteny-core'
+import { autorun, when } from 'mobx'
 
 import { LS_CURSOR_MODE } from './types.ts'
 
@@ -470,38 +473,25 @@ function setupAspectLockAutorun(self: DotplotViewModel) {
 }
 
 // Drop the plot's hover whenever the alignment it names moves out from under a
-// stationary cursor. The canvas has no element travelling with its features, so
-// nothing fires a pointer event and nothing re-picks — the tooltip and the
-// highlight just stay pinned to an alignment sliding away from the pointer.
-//
-// One reaction over `plotTransform`, the numbers that decide where a cumBp
-// lands on screen, covers every way that can happen at once: the wheel, a drag
-// pan, the zoom buttons, `squareView` and the aspect lock, an axis locstring
-// navigation, `showAllRegions`, and — through `viewHeight`, which is in there
-// for this reason — a resize of the plot itself. Listing entry points instead is
-// how this was wrong to begin with — the wheel was the one nobody had written a
-// clear for.
-// Dotplot's twin of `installClearHoverOnViewportChange` on the LGV side, minus
-// the two axes a plot doesn't have: no per-display scroll, no too-large banner.
+// stationary cursor — the shared `installClearHoverOnSurfaceMove` contract,
+// with `plotTransform` as the watched value: the numbers that decide where a
+// cumBp lands on screen, covering every way the plot can move at once — the
+// wheel, a drag pan, the zoom buttons, `squareView` and the aspect lock, an
+// axis locstring navigation, `showAllRegions`, and — through `viewHeight`,
+// which is in there for this reason — a resize of the plot itself. Listing
+// entry points instead is how this was wrong to begin with — the wheel was the
+// one nobody had written a clear for. Minus the two axes a plot doesn't have
+// against the LGV's installer: no per-display scroll, no too-large banner.
 //
 // Data invalidation is a separate question with a separate answer: the stored
 // index addresses `instanceData`, so both of ITS writers clear it (see
 // `DotplotDisplay.setRpcData` / `setInstanceData`). A zoom trips both, which is
 // fine — the second clear writes -1 over -1.
-//
-// A `reaction`, not an `autorun`: the effect writes the hover, and an autorun
-// body that both read and wrote it would re-fire itself.
 function setupClearHoverOnPlotMove(self: DotplotViewModel) {
-  addDisposer(
-    self,
-    reaction(
-      () => self.plotTransform,
-      () => {
-        self.setHoveredFeature(undefined)
-      },
-      { name: 'DotplotClearHoverOnPlotMove' },
-    ),
-  )
+  installClearHoverOnSurfaceMove(self, {
+    transform: () => self.plotTransform,
+    name: 'DotplotClearHoverOnPlotMove',
+  })
 }
 
 export function doAfterAttach(self: DotplotViewModel) {
