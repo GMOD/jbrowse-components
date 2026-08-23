@@ -1,4 +1,4 @@
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export async function locationLinkClick({
@@ -9,7 +9,7 @@ export async function locationLinkClick({
   trackId,
 }: {
   assemblyName: string
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   locString: string
   spreadsheetViewId: string
   /**

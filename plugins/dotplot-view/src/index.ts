@@ -11,7 +11,7 @@ import DotplotViewF from './DotplotView/index.ts'
 import LaunchDotplotViewF from './LaunchDotplotView.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 export type { DotplotImportFormSyntenyOption } from './DotplotView/components/ImportForm/TrackSelector.tsx'
 export { default as DotplotHighlightBands } from './DotplotView/components/DotplotHighlightBands.tsx'
@@ -45,7 +45,7 @@ export default class DotplotPlugin extends Plugin {
       pluginManager.rootModel.appendToMenu('Add', {
         label: 'Dotplot view',
         icon: TimelineIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('DotplotView', {})
         },
       })

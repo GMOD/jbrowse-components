@@ -7,8 +7,8 @@ import BlatDialog from './BlatDialog.tsx'
 import IsPcrDialog from './IsPcrDialog.tsx'
 import UcscResultsWidgetF from './UcscResultsWidget/index.ts'
 
+import type { UcscHost } from './ucscShared.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default class BlatPlugin extends Plugin {
   name = 'BlatPlugin'
@@ -22,7 +22,7 @@ export default class BlatPlugin extends Plugin {
       pluginManager.rootModel.appendToMenu('Tools', {
         label: 'BLAT search…',
         icon: SearchIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: UcscHost) => {
           session.queueDialog(handleClose => [
             BlatDialog,
             { session, handleClose },
@@ -32,7 +32,7 @@ export default class BlatPlugin extends Plugin {
       pluginManager.rootModel.appendToMenu('Tools', {
         label: 'In-silico PCR…',
         icon: BiotechIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: UcscHost) => {
           session.queueDialog(handleClose => [
             IsPcrDialog,
             { session, handleClose },

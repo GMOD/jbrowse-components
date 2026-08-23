@@ -305,7 +305,7 @@ export function isSessionWithViewReplacement(
  * instead leaves those cases with the one button that tells the truth.
  */
 export function canReplaceView(
-  session: AbstractSessionModel,
+  session: AbstractViewContainer,
   view: AbstractViewModel | undefined,
 ): view is AbstractViewModel {
   return (
@@ -329,7 +329,7 @@ export function addOrReplaceView({
   initialState,
   replacing,
 }: {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   typeName: string
   initialState?: Record<string, unknown>
   replacing?: AbstractViewModel

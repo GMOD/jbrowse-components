@@ -2,7 +2,7 @@ import { canReplaceView } from '../util/types/index.ts'
 import ReplaceCurrentViewButton from './ReplaceCurrentViewButton.tsx'
 
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
   AbstractViewModel,
 } from '../util/types/index.ts'
 import type { SubmitFormProps } from './SubmitForm.tsx'
@@ -36,7 +36,7 @@ export function replaceViewAction({
   disabled,
   onReplace,
 }: {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // the view the launch came out of, or undefined for a launcher with no single
   // view to name
   sourceView: AbstractViewModel | undefined

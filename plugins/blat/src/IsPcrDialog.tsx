@@ -21,7 +21,7 @@ import { ispcrToSam } from './ispcrToSam.ts'
 import { canRenderAlignments } from './ucscShared.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { UcscHost } from './ucscShared.ts'
 
 function cleanPrimer(seq: string) {
   return seq.replaceAll(/\s/g, '').toUpperCase()
@@ -31,7 +31,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
   session,
   handleClose,
 }: {
-  session: AbstractSessionModel
+  session: UcscHost
   handleClose: () => void
 }) {
   const query = useUcscQuery({

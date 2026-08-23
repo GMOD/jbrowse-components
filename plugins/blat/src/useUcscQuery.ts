@@ -14,11 +14,8 @@ import {
 import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
 import { addResultTrack, resolveUcscDb } from './ucscShared.ts'
 
-import type { ResultTrackConf } from './ucscShared.ts'
-import type {
-  AbstractSessionModel,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util'
+import type { ResultTrackConf, UcscHost } from './ucscShared.ts'
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // the apiKey is a per-user UCSC account credential, not session state, so it's
 // persisted across dialog opens
@@ -136,7 +133,7 @@ export function useUcscQuery({
   defaultUrl,
   directUrl,
 }: {
-  session: AbstractSessionModel
+  session: UcscHost
   handleClose: () => void
   defaultUrl: string
   // the UCSC CGI itself, for the desktop paths that bypass the shared proxy

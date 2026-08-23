@@ -7,7 +7,7 @@ import CircularViewF from './CircularView/index.ts'
 import LaunchCircularViewF from './LaunchCircularView/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'
@@ -23,7 +23,7 @@ export default class CircularViewPlugin extends Plugin {
       pluginManager.rootModel.appendToMenu('Add', {
         label: 'Circular view',
         icon: DataUsageIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('CircularView', {})
         },
       })

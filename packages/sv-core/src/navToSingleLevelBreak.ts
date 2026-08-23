@@ -10,7 +10,12 @@ import {
 } from './util.ts'
 
 import type { Track } from './types.ts'
-import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type {
+  AbstractViewContainer,
+  AssemblyHost,
+  Feature,
+  Region,
+} from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 function singleLevelSnap(feature: Feature, regions: Region[]) {
@@ -44,7 +49,7 @@ function singleLevelSnap(feature: Feature, regions: Region[]) {
  */
 async function orderedBreakendEnds(args: {
   feature: Feature
-  session: AbstractSessionModel
+  session: AbstractViewContainer & AssemblyHost
   assemblyName: string
 }) {
   const { coverage, region, mateRegion } =
@@ -68,7 +73,7 @@ export async function singleLevelFocusedSnapshotFromBreakendFeature({
   windowSize = 0,
 }: {
   feature: Feature
-  session: AbstractSessionModel
+  session: AbstractViewContainer & AssemblyHost
   assemblyName: string
   windowSize?: number
 }) {
@@ -100,7 +105,7 @@ export async function singleLevelEncompassingSnapshotFromBreakendFeature({
   assemblyName,
 }: {
   feature: Feature
-  session: AbstractSessionModel
+  session: AbstractViewContainer & AssemblyHost
   assemblyName: string
 }) {
   const { coverage, region, mateRegion } = await orderedBreakendEnds({
@@ -182,7 +187,7 @@ export async function navToSingleLevelBreak({
   feature: Feature
   assemblyName: string
   windowSize?: number
-  session: AbstractSessionModel
+  session: AbstractViewContainer & AssemblyHost
   /**
    * The panel's tracks. `undefined` — a launcher with no source view to copy
    * from — lets a relaunch re-navigate the view it already opened rather than

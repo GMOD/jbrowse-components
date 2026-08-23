@@ -6,7 +6,7 @@ import LaunchSvInspectorViewF from './LaunchSvInspectorView/index.ts'
 import SvInspectorViewF from './SvInspectorView/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type { AbstractViewContainer } from '@jbrowse/core/util/types'
 
 export type { SvInspectorViewModel } from './SvInspectorView/model.ts'
 
@@ -23,7 +23,7 @@ export default class SvInspectorViewPlugin extends Plugin {
       pluginManager.rootModel.appendToMenu('Add', {
         label: 'SV inspector',
         icon: TableChartIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('SvInspectorView', {})
         },
       })

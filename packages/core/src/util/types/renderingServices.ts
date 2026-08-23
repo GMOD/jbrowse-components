@@ -12,6 +12,12 @@ export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
 export interface AssemblyHost {
   assemblyManager: AssemblyManager
+  /**
+   * the assemblies this host offers, which is not the same set the manager can
+   * resolve: an assembly reachable through a track's config is not one a picker
+   * should list.
+   */
+  assemblyNames: string[]
 }
 
 /** what a display needs of its host in order to draw a region */

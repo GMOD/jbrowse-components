@@ -21,8 +21,9 @@ import { navToSingleLevelBreak } from './navToSingleLevelBreak.ts'
 import { junctionFromFeature, walkBreakendChain } from './walkBreakendChain.ts'
 
 import type { Track } from './types.ts'
+import type { BreakpointSplitViewHost } from './util.ts'
 import type { FindJunctionsNear } from './walkBreakendChain.ts'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 function SplitLevelIcon() {
@@ -53,7 +54,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     findJunctionsNear,
     defaultTrackIds,
   }: {
-    session: AbstractSessionModel
+    session: BreakpointSplitViewHost
     handleClose: () => void
     feature: Feature
     view?: LinearGenomeViewModel

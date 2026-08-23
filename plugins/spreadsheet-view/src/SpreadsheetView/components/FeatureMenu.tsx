@@ -9,11 +9,11 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
 import { locationLinkClick } from '../util.ts'
 
+import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type {
-  AbstractSessionModel,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util'
-import type { FindJunctionsNear } from '@jbrowse/sv-core'
+  BreakpointSplitViewHost,
+  FindJunctionsNear,
+} from '@jbrowse/sv-core'
 
 export default function FeatureMenu({
   assemblyName,
@@ -25,7 +25,7 @@ export default function FeatureMenu({
 }: {
   spreadsheetViewId: string
   assemblyName: string
-  session: AbstractSessionModel
+  session: BreakpointSplitViewHost
   feature: SimpleFeatureSerialized
   /** the session track for the loaded file; both launches open it */
   trackId?: string

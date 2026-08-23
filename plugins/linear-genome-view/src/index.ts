@@ -16,7 +16,7 @@ import {
 } from './lazyPluginExports.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -65,7 +65,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
       pluginManager.rootModel.appendToMenu('Add', {
         label: 'Linear genome view',
         icon: LineStyleIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('LinearGenomeView', {})
         },
       })

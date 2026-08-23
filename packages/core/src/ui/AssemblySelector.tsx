@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
-import type { AbstractSessionModel } from '../util/index.ts'
+import type { AssemblyHost } from '../util/index.ts'
 
 const useStyles = makeStyles()({
   importFormEntry: {
@@ -19,7 +19,7 @@ const AssemblySelector = observer(function AssemblySelector({
   fullWidth,
   helperText = 'Select assembly to view',
 }: {
-  session: AbstractSessionModel
+  session: AssemblyHost
   label?: string
   helperText?: string
   onChange: (arg: string) => void

@@ -1,7 +1,7 @@
 import { addOrReplaceView } from '@jbrowse/core/util'
 
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
   AbstractViewModel,
 } from '@jbrowse/core/util'
 
@@ -20,7 +20,7 @@ export function launchSyntenyView<T extends { views: unknown[] }>({
   id,
   replacing,
 }: {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   viewType: string
   init: T
   id?: string

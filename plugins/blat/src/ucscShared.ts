@@ -8,10 +8,23 @@ import {
 import { assemblyToUcscDb } from './ucscDbMap.ts'
 
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
   AbstractViewModel,
+  AssemblyHost,
+  DialogHost,
+  NotificationSink,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util'
+
+/**
+ * What this plugin asks of the host it is installed into: an assembly to
+ * resolve a UCSC db against, views to navigate, somewhere to report a hit it
+ * could not reach, and somewhere to put its two dialogs. Everything else it
+ * needs — adding the result track, opening the results panel — it asks for with
+ * a guard, because a host may not offer it.
+ */
+export interface UcscHost
+  extends AbstractViewContainer, AssemblyHost, NotificationSink, DialogHost {}
 
 interface NavigableView extends AbstractViewModel {
   showTrack: (trackId: string) => void
@@ -34,7 +47,7 @@ function isNavigableView(view: AbstractViewModel): view is NavigableView {
 // jb2hubs stamps the UCSC db on the assembly's sequence.metadata. Its presence
 // is also the one positive proof that UCSC can search the assembly, so the
 // dialogs read it directly to decide whether to warn.
-export function ucscDbStamp(session: AbstractSessionModel, name: string) {
+export function ucscDbStamp(session: UcscHost, name: string) {
   const assembly = session.assemblyManager.get(name)
   const stamped: string | undefined = assembly
     ? getConf(assembly, ['sequence', 'metadata', 'blatDb'])
@@ -44,7 +57,7 @@ export function ucscDbStamp(session: AbstractSessionModel, name: string) {
 
 // Prefers the stamp, falling back to the static alias map for assemblies whose
 // configs predate it. Shared by the BLAT and in-silico PCR dialogs.
-export function resolveUcscDb(session: AbstractSessionModel, name: string) {
+export function resolveUcscDb(session: UcscHost, name: string) {
   const stamped = ucscDbStamp(session, name)
   return stamped ? stamped : assemblyToUcscDb(name)
 }
@@ -60,7 +73,7 @@ export function resolveUcscDb(session: AbstractSessionModel, name: string) {
  * falling back to the block-structure track BLAT results always used to be, and
  * adding a track whose adapter cannot resolve.
  */
-export function canRenderAlignments(session: AbstractSessionModel) {
+export function canRenderAlignments(session: UcscHost) {
   const { pluginManager } = getEnv(session)
   return (
     pluginManager.adapterTypes.has('SamAdapter') &&
@@ -74,7 +87,7 @@ export function featureLocString(feature: SimpleFeatureSerialized) {
   return `${feature.refName}:${feature.start + 1}-${feature.end}`
 }
 
-function findNavigableView(session: AbstractSessionModel, assembly: string) {
+function findNavigableView(session: UcscHost, assembly: string) {
   const view = session.views.find(
     v => v.type === 'LinearGenomeView' && !!v.assemblyNames?.includes(assembly),
   )
@@ -85,7 +98,7 @@ function findNavigableView(session: AbstractSessionModel, assembly: string) {
 // context rather than filling the viewport edge to edge. Shared by the
 // post-query navigation and the results widget's per-hit links.
 export async function navToFeature(
-  session: AbstractSessionModel,
+  session: UcscHost,
   assembly: string,
   feature: SimpleFeatureSerialized,
 ) {
@@ -131,7 +144,7 @@ export async function addResultTrack({
   trackConf,
   resultNoun,
 }: {
-  session: AbstractSessionModel
+  session: UcscHost
   assembly: string
   features: SimpleFeatureSerialized[]
   trackIdPrefix: string

@@ -9,7 +9,11 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafHitTestModel } from './mafHitTest.ts'
 import type { ContextCoord } from './useDragSelection.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type {
+  AbstractViewContainer,
+  AssemblyHost,
+  NotificationSink,
+} from '@jbrowse/core/util'
 
 /**
  * The display slice these items read — the hit-test geometry plus the row
@@ -35,7 +39,7 @@ const MAX_INLINE_ITEMS = 6
  * boundary clips to the region it began in.
  */
 export function sampleNavigationItems(
-  session: AbstractSessionModel,
+  session: AbstractViewContainer & AssemblyHost & NotificationSink,
   model: SampleNavigationModel,
   contextCoord: ContextCoord,
 ): MenuItem[] {

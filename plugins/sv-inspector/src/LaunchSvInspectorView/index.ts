@@ -1,6 +1,6 @@
 import type { SvInspectorViewStateModel } from '../SvInspectorView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // Every SvInspectorView snapshot property minus the ones the launcher controls
@@ -16,7 +16,7 @@ export interface LaunchSvInspectorViewArgs extends Omit<
   SnapshotIn<SvInspectorViewStateModel>,
   'type' | 'init' | 'circularView' | 'spreadsheetView'
 > {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // the assembly both halves are read against. With only this and no `uri`, the
   // view opens on its import form with that assembly already selected rather
   // than the first one in the config

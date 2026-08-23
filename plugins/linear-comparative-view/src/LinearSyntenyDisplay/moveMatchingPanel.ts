@@ -15,7 +15,7 @@ import type {
 } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
 import type { FollowAnchorTake } from '../LinearSyntenyViewHelper/offscreenMateNav.ts'
 import type { FeatPos, LinearSyntenyDisplayModel } from './model.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { NotificationSink } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -135,7 +135,7 @@ export async function movePanelsToSpan({
   // re-places every panel and restoring only the moved one leaves the stack
   // mirrored: the click's arrangement under the pre-click anchor
   restore: () => void
-  session: AbstractSessionModel
+  session: NotificationSink
   // how the snackbar names the panel the anchor went to, which differs by item:
   // the clicked panel for the LGV display, the one that stayed for a band
   followNote: string

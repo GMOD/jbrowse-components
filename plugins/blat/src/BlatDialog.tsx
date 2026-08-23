@@ -25,13 +25,13 @@ import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 import { canRenderAlignments } from './ucscShared.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { UcscHost } from './ucscShared.ts'
 
 const BlatDialog = observer(function BlatDialog({
   session,
   handleClose,
 }: {
-  session: AbstractSessionModel
+  session: UcscHost
   handleClose: () => void
 }) {
   const query = useUcscQuery({

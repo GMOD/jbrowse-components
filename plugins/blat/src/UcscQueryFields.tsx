@@ -9,8 +9,8 @@ import { observer } from 'mobx-react'
 import { looksLikeUcscDb } from './ucscDbMap.ts'
 import { ucscDbStamp } from './ucscShared.ts'
 
+import type { UcscHost } from './ucscShared.ts'
 import type { UcscQuery } from './useUcscQuery.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 // The UCSC connection fields shared by the BLAT and in-silico PCR dialogs. The
 // assembly picker is the only thing most users touch, so it stays visible; the
@@ -20,7 +20,7 @@ const UcscQueryFields = observer(function UcscQueryFields({
   query,
   urlLabel,
 }: {
-  session: AbstractSessionModel
+  session: UcscHost
   query: UcscQuery
   urlLabel: string
 }) {

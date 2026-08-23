@@ -3,8 +3,22 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 
 import type { Breakend } from '@gmod/vcf'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type {
+  AbstractViewContainer,
+  AssemblyHost,
+  DialogHost,
+  Feature,
+  NotificationSink,
+} from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+/**
+ * What launching a breakpoint split view asks of its host. Stated once because
+ * the launch is a chain — dialog, then one of two navigators, then the view
+ * reuse — and each link wants a subset of it.
+ */
+export interface BreakpointSplitViewHost
+  extends AbstractViewContainer, AssemblyHost, NotificationSink, DialogHost {}
 
 export const SV_SYMBOLIC_ALLELES = [
   '<TRA',
@@ -213,7 +227,7 @@ export async function getBreakendAssemblyRegions({
   assemblyName,
 }: {
   feature: Feature
-  session: AbstractSessionModel
+  session: AssemblyHost
   assemblyName: string
 }) {
   const { assemblyManager } = session

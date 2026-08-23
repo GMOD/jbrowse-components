@@ -9,7 +9,7 @@ import type {
   LinearGenomeViewLaunchProps,
 } from '../LinearGenomeView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 // Launch args are flat, like every other LaunchView-<type>'s: the resolution
 // keys and the plain view props side by side, sorted out below. (A snapshot —
@@ -20,7 +20,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 // so another view (e.g. a connected MsaView) can reference it via connectedViewId.
 export type LaunchLinearGenomeViewArgs = Partial<InitState> &
   LinearGenomeViewLaunchProps & {
-    session: AbstractSessionModel
+    session: AbstractViewContainer
     id?: string
   }
 

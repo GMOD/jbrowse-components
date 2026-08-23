@@ -4,7 +4,7 @@ import { normalizeTrackLevels } from './LinearSyntenyView/util/initHelpers.ts'
 
 import type { LinearSyntenyViewInit } from './LinearSyntenyView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 /**
  * The view's own `init` contract plus where to put it. Derived from the view's
@@ -17,7 +17,7 @@ export interface LaunchLinearSyntenyViewArgs extends Omit<
   LinearSyntenyViewInit,
   'views'
 > {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // optional explicit view id, so another view in the same session spec can
   // reference this one
   id?: string

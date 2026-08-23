@@ -5,16 +5,13 @@ import { getRoot, types } from '@jbrowse/mobx-state-tree'
 import { getResponseError } from './util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type {
-  AbstractSessionModel,
-  UriLocation,
-} from '@jbrowse/core/util/types'
+import type { DialogHost, UriLocation } from '@jbrowse/core/util/types'
 import type React from 'react'
 
 // internet accounts live on the root model (a sibling of session), so read
 // session off the root rather than walking up via getSession
 interface RootWithSession {
-  session: AbstractSessionModel
+  session: DialogHost
 }
 
 type TokenEntryForm = React.FC<{

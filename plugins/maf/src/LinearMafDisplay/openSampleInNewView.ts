@@ -2,7 +2,11 @@ import { isSessionWithAddAssembly } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { openLocation, resolveUriLocation } from '@jbrowse/core/util/io'
 
-import type { AbstractSessionModel, UriLocation } from '@jbrowse/core/util'
+import type {
+  AbstractViewContainer,
+  AssemblyHost,
+  UriLocation,
+} from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface SampleNavigationTarget {
@@ -52,7 +56,7 @@ export function findAssemblyConf(configJson: unknown, assemblyName: string) {
  * must resolve against the config, not the page.
  */
 async function ensureAssembly(
-  session: AbstractSessionModel,
+  session: AbstractViewContainer & AssemblyHost,
   target: SampleNavigationTarget,
 ) {
   const { assemblyConfigLocation, assemblyName } = target
@@ -91,7 +95,7 @@ async function ensureAssembly(
  * imperatively — same reasoning as the spreadsheet view's location links.
  */
 export async function openSampleInNewView(
-  session: AbstractSessionModel,
+  session: AbstractViewContainer & AssemblyHost,
   displayId: string,
   target: SampleNavigationTarget,
 ) {

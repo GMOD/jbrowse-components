@@ -17,7 +17,11 @@ export {
   splitRegionAtPosition,
   svMateLocus,
 } from './util.ts'
-export type { Region, ViewWithAssemblyNames } from './util.ts'
+export type {
+  BreakpointSplitViewHost,
+  Region,
+  ViewWithAssemblyNames,
+} from './util.ts'
 export {
   navToSingleLevelBreak,
   singleLevelEncompassingSnapshotFromBreakendFeature,

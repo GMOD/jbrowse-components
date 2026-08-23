@@ -1,4 +1,4 @@
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { AssemblyHost, Feature } from '@jbrowse/core/util'
 
 function qualToPhred(qual: string | undefined): string {
   if (!qual) {
@@ -16,7 +16,7 @@ export function stringifySAM({
   assemblyName,
 }: {
   features: Feature[]
-  session: AbstractSessionModel
+  session: AssemblyHost
   assemblyName: string
 }) {
   const lines: string[] = ['@HD\tVN:1.6\tSO:unsorted']

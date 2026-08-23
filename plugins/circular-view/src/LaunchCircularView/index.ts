@@ -1,6 +1,6 @@
 import type { CircularViewStateModel } from '../CircularView/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
@@ -24,7 +24,7 @@ export interface LaunchCircularViewArgs extends Omit<
   CircularViewSnapshot,
   'type' | 'init' | 'tracks' | 'displayedRegions'
 > {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // the assembly whose chromosomes the circle draws. Optional because a spec
   // view is untyped user input; without one the view opens on its import form
   assembly?: string

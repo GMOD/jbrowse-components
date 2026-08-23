@@ -10,7 +10,11 @@ import {
 } from './util.ts'
 
 import type { Track } from './types.ts'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type {
+  AbstractViewContainer,
+  AssemblyHost,
+  Feature,
+} from '@jbrowse/core/util'
 
 export async function navToMultiLevelBreak({
   stableViewId,
@@ -27,7 +31,7 @@ export async function navToMultiLevelBreak({
   feature: Feature
   assemblyName: string
   windowSize?: number
-  session: AbstractSessionModel
+  session: AbstractViewContainer & AssemblyHost
   mirror?: boolean
   /**
    * The tracks every panel is built from. `undefined` — a launcher with no

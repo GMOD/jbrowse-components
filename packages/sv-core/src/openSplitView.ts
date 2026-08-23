@@ -1,7 +1,7 @@
 import { addOrReplaceView } from '@jbrowse/core/util'
 
 import type { BreakpointSplitView, Track } from './types.ts'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 /**
  * The view a launch should land in: the one `stableViewId` already names, when
@@ -56,7 +56,7 @@ export function openOrReuseSplitView({
   stillFits,
   snapshot,
 }: {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   stableViewId?: string
   tracks?: Track[]
   /**

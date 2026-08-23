@@ -1,7 +1,8 @@
 import { lazy } from 'react'
 
+import type { BreakpointSplitViewHost } from './util.ts'
 import type { FindJunctionsNear } from './walkBreakendChain.ts'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const BreakpointSplitViewChoiceDialog = lazy(
@@ -17,7 +18,7 @@ export function launchBreakpointSplitView({
   findJunctionsNear,
   defaultTrackIds,
 }: {
-  session: AbstractSessionModel
+  session: BreakpointSplitViewHost
   feature: Feature
   assemblyName: string
   view?: LinearGenomeViewModel

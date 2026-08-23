@@ -1,6 +1,6 @@
 import type { SpreadsheetViewStateModel } from '../SpreadsheetView/SpreadsheetViewModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // ABOVE the region marker on purpose: extension_points.md includes the block
@@ -19,7 +19,7 @@ export interface LaunchSpreadsheetViewArgs extends Omit<
   SnapshotIn<SpreadsheetViewStateModel>,
   'type' | 'init' | 'spreadsheet' | 'importWizard'
 > {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // the assembly the sheet's rows are read against. With only this and no
   // `uri`, the view opens on its import form with that assembly already
   // selected rather than the first one in the config

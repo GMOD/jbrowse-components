@@ -6,7 +6,7 @@ import LaunchSpreadsheetViewF from './LaunchSpreadsheetView/index.ts'
 import SpreadsheetViewF from './SpreadsheetView/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 // #region plugin
 export default class SpreadsheetViewPlugin extends Plugin {
@@ -25,7 +25,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
       rootModel.appendToMenu('Add', {
         label: 'Spreadsheet view',
         icon: ViewComfyIcon,
-        onClick: (session: AbstractSessionModel) => {
+        onClick: (session: AbstractViewContainer) => {
           session.addView('SpreadsheetView', {})
         },
       })

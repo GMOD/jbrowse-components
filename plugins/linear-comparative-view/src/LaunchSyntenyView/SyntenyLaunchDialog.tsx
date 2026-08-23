@@ -1,7 +1,8 @@
 import { SubmitDialog, replaceViewAction } from '@jbrowse/core/ui'
 
 import type {
-  AbstractSessionModel,
+  AbstractViewContainer,
+  NotificationSink,
   AbstractViewModel,
 } from '@jbrowse/core/util'
 import type { ReactNode } from 'react'
@@ -37,7 +38,7 @@ export default function SyntenyLaunchDialog<T>({
   handleClose,
   children,
 }: {
-  session: AbstractSessionModel
+  session: AbstractViewContainer & NotificationSink
   // the launching view, which the dialog offers to put the result in place of.
   // Optional for a caller with no single view to name; a caller that has one
   // passes it unconditionally, since replaceViewAction is what decides whether

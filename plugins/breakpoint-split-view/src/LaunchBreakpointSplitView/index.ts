@@ -1,7 +1,7 @@
 import type { BreakpointViewStateModel } from '../BreakpointSplitView/model.ts'
 import type { BreakpointSplitViewInitView } from '../BreakpointSplitView/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // Every BreakpointSplitView snapshot property (showIntraviewLinks,
@@ -17,7 +17,7 @@ export interface LaunchBreakpointSplitViewArgs extends Omit<
   BreakpointSplitViewSnapshot,
   'type' | 'views' | 'init'
 > {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   views: BreakpointSplitViewInitView[]
 }
 

@@ -4,7 +4,8 @@ import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
-  AbstractSessionModel,
+  AssemblyHost,
+  RpcHost,
   Region,
   StatusCallback,
 } from '@jbrowse/core/util'
@@ -45,7 +46,7 @@ export function makeMateDiscovery({
   // passed rather than reached for with getSession: `track` is a track *config*,
   // and a config node is not under the session in the state tree (a connection's
   // configs are not even under the config root), so getSession throws there
-  session: AbstractSessionModel
+  session: AssemblyHost & RpcHost
   track: AnyConfigurationModel
   region: Region
 }): MateDiscovery {

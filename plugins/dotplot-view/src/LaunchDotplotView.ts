@@ -1,11 +1,11 @@
 import { launchSyntenyView } from '@jbrowse/synteny-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AbstractViewContainer } from '@jbrowse/core/util'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 export interface LaunchDotplotViewArgs extends SyntenyViewSharedInit {
-  session: AbstractSessionModel
+  session: AbstractViewContainer
   // optional explicit view id, so another view in the same session spec can
   // reference this one
   id?: string
