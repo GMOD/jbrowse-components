@@ -1,0 +1,26 @@
+{
+  "id": "culled-ribbon-mates",
+  "measured": "2026-08-23",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node plugins/linear-comparative-view/benches/culledRibbonMates.bench.ts - min of 15 rounds, three instances per feature.",
+    "notes": "The class the WORKER cannot see: the mate is on a contig the facing row displays and has scrolled off, so whether it is a mark is a question about the current transform (see agent-docs/ideas/offscreen-synteny-mates.md). 1500px band, 100px tall. Every query span inside one 2Mb window at 2000bp/px, so every mark lands on screen and none is rejected before the walk; mates spread over a 500Mb genome by a coprime stride, which is what a facing row can scroll clear of. The fill is a no-op, so no column here measures rasterization.\n\nWHAT IT SAYS. `repaint` and `control` are the SAME within noise at every size, and control is the identical dataset with the mate lane removed - which is exactly what a class A strip of that mark count costs. So the per-entry band test is free, and the repaint column is the rect-per-mark cost both classes already had (offscreen-mate-overlay.json is the same shape measured on the same code). What this change adds is that the ceiling is now reachable in a state that previously drew nothing at all: query row zoomed out, facing row zoomed in.\n\n`covered` is the state a reader is in most of the time - a facing row whose band spans every mate the fetch holds - and it is the whole justification for carrying the extent on `mateAxis`: two comparisons drop the dataset out of the lane, turning a 19ms walk at 100k into 0.000ms.\n\n`build` is the only genuinely new work, once per fetch, on a setting that is on by default. `hover` is a pointer over the ribbons below the strip, unchanged because the strip height is still tested before any alignment is."
+  },
+  "columns": [
+    { "key": "features", "label": "features", "format": "int", "align": "right" },
+    { "key": "instances", "label": "instances", "format": "int", "align": "right" },
+    { "key": "build", "label": "build, per fetch", "format": "ms", "align": "right" },
+    { "key": "repaint", "label": "one repaint", "format": "ms", "align": "right", "escalate": true },
+    { "key": "control", "label": "control (no mate lane)", "format": "ms", "align": "right" },
+    { "key": "covered", "label": "repaint, band covers", "format": "ms", "align": "right" },
+    { "key": "hover", "label": "hover over ribbons", "format": "ms", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "features": 10000, "instances": 30000, "build": 0.78, "repaint": 1.34, "control": 1.4, "covered": 0.0, "hover": 0.001 } },
+    { "values": { "features": 50000, "instances": 150000, "build": 2.95, "repaint": 8.79, "control": 9.9, "covered": 0.001, "hover": 0.001 } },
+    { "values": { "features": 100000, "instances": 300000, "build": 5.61, "repaint": 18.96, "control": 18.78, "covered": 0.0, "hover": 0.001 } },
+    { "values": { "features": 250000, "instances": 750000, "build": 14.53, "repaint": 54.14, "control": 59.1, "covered": 0.0, "hover": 0.001 } },
+    { "values": { "features": 500000, "instances": 1500000, "build": 28.1, "repaint": 209.99, "control": 213.58, "covered": 0.0, "hover": 0.001 }, "emphasize": ["repaint"] }
+  ]
+}

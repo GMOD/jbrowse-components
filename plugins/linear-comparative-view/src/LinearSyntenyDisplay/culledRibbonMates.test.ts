@@ -48,8 +48,8 @@ test('a feature is placed on both axes, in absolute cumBp', () => {
   )
   expect([...out.starts]).toEqual([1_000_100])
   expect([...out.ends]).toEqual([1_000_400])
-  expect([...out.mateCumBpStarts]).toEqual([12_000])
-  expect([...out.mateCumBpEnds]).toEqual([12_300])
+  expect([...out.mateAxis.starts]).toEqual([12_000])
+  expect([...out.mateAxis.ends]).toEqual([12_300])
 })
 
 // Transparent-CIGAR mode replaces the full-span trapezoid with one tile per
@@ -65,8 +65,8 @@ test('a feature spread over several instances takes their union', () => {
   )
   expect([...out.starts]).toEqual([100])
   expect([...out.ends]).toEqual([400])
-  expect([...out.mateCumBpStarts]).toEqual([7000])
-  expect([...out.mateCumBpEnds]).toEqual([7300])
+  expect([...out.mateAxis.starts]).toEqual([7000])
+  expect([...out.mateAxis.ends]).toEqual([7300])
 })
 
 // A reversed alignment's corners arrive high-to-low, and a span read in that
@@ -77,7 +77,7 @@ test('corner order does not decide the span', () => {
     features(['ctgB']),
   )
   expect([...out.starts]).toEqual([100])
-  expect([...out.mateCumBpEnds]).toEqual([7300])
+  expect([...out.mateAxis.ends]).toEqual([7300])
 })
 
 // What lets a lane drop out of the strip on two comparisons rather than a walk:
@@ -91,8 +91,8 @@ test('the extent is the whole fetch, so a covering band can skip it', () => {
     ]),
     features(['ctgB', 'ctgC']),
   )
-  expect(out.mateCumBpLo).toBe(7000)
-  expect(out.mateCumBpHi).toBe(90_100)
+  expect(out.mateAxis.lo).toBe(7000)
+  expect(out.mateAxis.hi).toBe(90_100)
 })
 
 // The tooltip's number, and the same question the worker's tally answers for

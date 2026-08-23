@@ -88,11 +88,10 @@ function mayHide(
   data: OffscreenMateDataset,
   band: { lo: number; hi: number } | undefined,
 ) {
-  const culled = data as CulledRibbonMateData
-  return data.mateCumBpStarts === undefined
+  const { mateAxis } = data
+  return mateAxis === undefined
     ? true
-    : band !== undefined &&
-        (culled.mateCumBpLo < band.lo || culled.mateCumBpHi > band.hi)
+    : band !== undefined && (mateAxis.lo < band.lo || mateAxis.hi > band.hi)
 }
 
 // One lane across every display on the level: they paint one strip, so the
@@ -273,11 +272,20 @@ function stripHit<T>(
 /**
  * How many alignments on this band go to one contig.
  *
- * The tally's own number, so the hover and the menu item that reports the same
- * contig cannot disagree: it counts every alignment pointed at that contig,
- * INCLUDING the ones with no place on an axis to draw a mark for. Scoped to this
- * band rather than the view, because the band is what the pointer is over — the
- * menu sums the levels instead.
+ * A PROPERTY OF THE BAND'S DATA, NOT OF THE CURRENT TRANSFORM, which is what
+ * lets the two classes of dataset be summed into one number. It counts every
+ * alignment this band holds pointed at that contig — the ones with no place on
+ * the facing axis at all, the ones with a place the row has scrolled off, and
+ * (for a `mateAxis` dataset) the ones whose ribbon is on screen right now. All
+ * three are "alignments here that go there", which is the sentence the tooltip
+ * prints; which of them are drawable is what the mark under the pointer already
+ * says. Counting only the currently-hidden ones would be a full walk of the lane
+ * per pointer move — 19ms at 100k features, see
+ * `agent-docs/measurements/culled-ribbon-mates.json` — to answer a question the
+ * mark's presence answers for free.
+ *
+ * Scoped to this band rather than the view, because the band is what the pointer
+ * is over.
  *
  * ONE LANE, NAMED BY THE CALLER, because the two hold contigs of DIFFERENT
  * assemblies and a refName does not say which. Summing both looks harmless

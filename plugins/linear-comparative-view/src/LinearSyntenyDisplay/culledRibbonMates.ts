@@ -1,5 +1,8 @@
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { OffscreenMateDataset } from './drawOffscreenMates.ts'
+import type {
+  MateAxisPlacement,
+  OffscreenMateDataset,
+} from './drawOffscreenMates.ts'
 
 /**
  * The other half of "this band cannot draw a ribbon for it".
@@ -16,16 +19,13 @@ import type { OffscreenMateDataset } from './drawOffscreenMates.ts'
  * The facing row pans a whole buffer without refetching, so a mark decided when
  * the data landed sits next to the ribbon it claims does not exist.
  *
- * What it costs is one pass over the instances per fetch. `mateCumBpLo/Hi` is
- * what keeps the per-frame half free in the common case: a facing row whose
+ * What it costs is one pass over the instances per fetch. `mateAxis`'s extent
+ * is what keeps the per-frame half free in the common case: a facing row whose
  * band already spans every mate this fetch holds can hide none of them, so the
  * whole dataset drops out of the lane on two comparisons.
  */
 export interface CulledRibbonMateData extends OffscreenMateDataset {
-  mateCumBpStarts: Float64Array
-  mateCumBpEnds: Float64Array
-  mateCumBpLo: number
-  mateCumBpHi: number
+  mateAxis: MateAxisPlacement
 }
 
 export interface CulledMateFeatureLanes {
@@ -110,9 +110,11 @@ export function culledRibbonMateData(
     lengths,
     mateStarts: features.mateStarts,
     mateEnds: features.mateEnds,
-    mateCumBpStarts,
-    mateCumBpEnds,
-    mateCumBpLo,
-    mateCumBpHi,
+    mateAxis: {
+      starts: mateCumBpStarts,
+      ends: mateCumBpEnds,
+      lo: mateCumBpLo,
+      hi: mateCumBpHi,
+    },
   }
 }

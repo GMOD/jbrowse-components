@@ -341,12 +341,32 @@ loop moved, so a reprojected mark sits beside its own ribbon. Min/max over a
 feature's instances also covers transparent-CIGAR mode, where the base trapezoid
 is replaced by one tile per match segment and no single instance spans the block.
 
-**What keeps it off the frame budget is `mateCumBpLo/Hi`.** A facing row whose
-band already spans every mate the fetch holds can hide none of them, so the whole
-dataset leaves the lane on two comparisons — which is two rows zoomed out over
-each other, the common state. The per-repaint walk is paid only where marks are
-actually being drawn, and there it is bounded by the same count the table above
-measures.
+**What keeps it off the frame budget is the extent on `mateAxis`.** A facing row
+whose band already spans every mate the fetch holds can hide none of them, so the
+whole dataset leaves the lane on two comparisons — which is two rows zoomed out
+over each other, the common state.
+
+**Measured, and the surprise is what is NOT in it.** The per-entry band test
+costs nothing: `repaint` and `control` — the identical dataset with the mate lane
+removed, i.e. what a class A strip of that mark count costs — track each other at
+every size. The repaint column is the rect-per-mark cost both classes already
+had, and the table above is the same shape. What this change does to it is make
+the ceiling REACHABLE in a state that previously drew nothing at all: query row
+zoomed out, facing row zoomed in. The `covered` column is the other half — it is
+what the extent buys, turning a 19ms walk at 100k features into nothing — and
+`build` is the only genuinely new work, once per fetch.
+
+<!-- BEGIN GENERATED MEASUREMENT culled-ribbon-mates -->
+
+| features | instances | build, per fetch |  one repaint | control (no mate lane) | repaint, band covers | hover over ribbons |
+| -------: | --------: | ---------------: | -----------: | ---------------------: | -------------------: | -----------------: |
+|   10,000 |    30,000 |           0.78ms |       1.34ms |                  1.4ms |                  0ms |            0.001ms |
+|   50,000 |   150,000 |           2.95ms |       8.79ms |                  9.9ms |              0.001ms |            0.001ms |
+|  100,000 |   300,000 |           5.61ms |      18.96ms |                18.78ms |                  0ms |            0.001ms |
+|  250,000 |   750,000 |          14.53ms |      54.14ms |                 59.1ms |                  0ms |            0.001ms |
+|  500,000 | 1,500,000 |           28.1ms | **209.99ms** |               213.58ms |                  0ms |            0.001ms |
+
+<!-- END GENERATED MEASUREMENT culled-ribbon-mates -->
 
 **The click stops being destructive in this class.** `navToLocString` REPLACES
 the row's displayed regions, which is right for a contig that row does not have

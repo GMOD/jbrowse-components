@@ -118,7 +118,7 @@ export type OffscreenMateSide = 'top' | 'bottom'
 /**
  * A dataset the strip draws from.
  *
- * TWO KINDS, one shape. Without `mateCumBpStarts` every entry is a mark by
+ * TWO KINDS, one shape. Without `mateAxis` every entry is a mark by
  * construction — the worker found no place on the facing axis for it at all.
  * With them the entry HAS a place, and whether it is a mark is a question about
  * where that place currently sits: see `culledRibbonMates`.
@@ -129,8 +129,24 @@ export interface OffscreenMateDataset extends Omit<
 > {
   mateStarts: ArrayLike<number>
   mateEnds: ArrayLike<number>
-  mateCumBpStarts?: Float64Array
-  mateCumBpEnds?: Float64Array
+  mateAxis?: MateAxisPlacement
+}
+
+/**
+ * Where a dataset's entries sit on the FACING axis, in its cumBp.
+ *
+ * ONE OPTIONAL OBJECT rather than optional lanes beside optional bounds: the
+ * four are present together or not at all, so narrowing on the object is what
+ * lets every reader reach the extent without asserting a shape the type does
+ * not carry.
+ */
+export interface MateAxisPlacement {
+  starts: Float64Array
+  ends: Float64Array
+  // The extent over both lanes: a facing row whose band already spans it is
+  // hiding none of these, and the whole dataset then leaves the lane unwalked.
+  lo: number
+  hi: number
 }
 
 // One strip's worth of input: what to mark and the ruler to mark it against.
@@ -144,7 +160,7 @@ export interface OffscreenMateLane {
   // The facing axis's drawable span in ITS cumBp — the overdraw band
   // `isRibbonCulled` keeps a ribbon for, restated in bp so a mark and the
   // ribbon it stands in for cannot disagree about the edge. Read only by
-  // datasets carrying `mateCumBpStarts`, and required by them: a dataset that
+  // datasets carrying `mateAxis`, and required by them: a dataset that
   // knows where its mates are and is handed no band marks nothing, rather than
   // marking alignments the band is drawing.
   mateBand?: { lo: number; hi: number }
@@ -501,12 +517,11 @@ function offscreenMateRectAt(
   // AFTER the span tests, not before: an entry whose instances were all emitted
   // off-screen keeps its sentinel mate span, and reading that as a position
   // would call it hidden. It is the x test above that drops it.
-  const { mateCumBpStarts } = data
-  if (mateCumBpStarts) {
+  const { mateAxis } = data
+  if (mateAxis) {
     const drawn =
       mateBand === undefined ||
-      (data.mateCumBpEnds![i]! >= mateBand.lo &&
-        mateCumBpStarts[i]! <= mateBand.hi)
+      (mateAxis.ends[i]! >= mateBand.lo && mateAxis.starts[i]! <= mateBand.hi)
     if (drawn) {
       return undefined
     }
@@ -630,7 +645,7 @@ export function offscreenMateSpanAt(
       if (rect && pointerOnMark(rect, x)) {
         const refName = offscreenMateRefName(data, i)
         top = refName
-        displayed = data.mateCumBpStarts !== undefined
+        displayed = data.mateAxis !== undefined
         const span = spans.get(refName)
         const start = data.mateStarts[i]!
         const end = data.mateEnds[i]!

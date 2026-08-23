@@ -948,10 +948,16 @@ function placed(
   mateCumBp: [number, number][],
   names?: string[],
 ): OffscreenMateDataset {
+  const starts = Float64Array.from(mateCumBp.map(s => s[0]))
+  const ends = Float64Array.from(mateCumBp.map(s => s[1]))
   return {
     ...data(spans, names),
-    mateCumBpStarts: Float64Array.from(mateCumBp.map(s => s[0])),
-    mateCumBpEnds: Float64Array.from(mateCumBp.map(s => s[1])),
+    mateAxis: {
+      starts,
+      ends,
+      lo: Math.min(...starts),
+      hi: Math.max(...ends),
+    },
   }
 }
 
