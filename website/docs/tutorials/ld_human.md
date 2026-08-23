@@ -60,8 +60,8 @@ recombination lanes beside them are tracks of the hosted UCSC hg38
 
 Red means two variants are almost always inherited together, white means they
 are independent, so the triangle shows where a stretch of chromosome travels as
-a unit. The [`LDDisplay`](/docs/config/lddisplay/) is per-population by
-construction: r² is a correlation across whatever samples you hand it.
+a unit. r² is a correlation across whatever samples you hand it, so an
+[`LDDisplay`](/docs/config/lddisplay/) always describes one set of samples.
 
 An `LDDisplay` on an ordinary `VariantTrack` is the whole setup:
 
@@ -93,14 +93,14 @@ thins a dense callset to the common, block-tagging variants, and
 sizes each cell by genomic distance, so the block's edges land under the
 coordinates they are at.
 
-r² is computed from the genotypes themselves, so a window this wide is more data
-than the size gate lets a track fetch unasked, and the lane arrives as a "too
-much data" banner with a FORCE LOAD button on it.
+r² is computed from the genotypes themselves, so a window this wide asks for
+more data than a track fetches unasked, and the lane arrives as a "too much
+data" banner with a FORCE LOAD button on it. Setting
 [`forceLoad`](/docs/config/sharedlddisplay/#slot-forceload) is that button
-written down, for a view nobody is going to click: a figure, an embed, a
-notebook. It applies to the one view that declares it;
-[`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) sets a
-ceiling for the whole track at every locus.
+pressed in advance, which is what a view nobody will click needs: a figure, an
+embed, a notebook. `forceLoad` speaks for the one display that declares it,
+while [`fetchSizeLimit`](/docs/config/sharedlddisplay/#slot-fetchsizelimit) sets
+the ceiling for the whole track, at every locus.
 
 ## Selection at the lactase locus
 
@@ -134,9 +134,10 @@ bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
 tabix -p vcf pooled.vcf.gz
 ```
 
-Where the edges go is `plink --r2` against the causal variant. plink correlates
-the genotypes and the display the phase, so the two disagree cell by cell; the
-profile settles the window from the file itself.
+How wide is wide enough is a question for the file rather than for the picture.
+Running `plink --r2` against the causal variant gives r² to every other variant
+in the slice, and binning that by position says where the correlation falls
+away, which is where the window above comes from.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -154,6 +155,12 @@ plink --vcf pooled.snvs.vcf.gz --double-id --allow-extra-chr \
   --r2 --ld-window 999999 --ld-window-r2 0 \
   --ld-snp chr2:135851076 --ld-window-kb 4000 --out anchor
 ```
+
+Those tables are 1.9's. PLINK 2.0 runs the same command once `--r2` says which
+statistic it means: `--r2-unphased` is the genotypic correlation 1.9 computed,
+and `--r2-phased` is the haplotypic one the display computes, so on a phased VCF
+that second spelling puts the table and the triangle on the same footing. Every
+other flag above keeps its name in 2.0.
 
 ## Subset the VCF to one panel
 
@@ -295,7 +302,10 @@ Both work unchanged on [JBrowse Desktop](/docs/quickstart_desktop), which opens
 the VCF from local disk with `uri` pointed at a local path. That block's CLI tab
 puts the same track into a `config.json`.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The shaded stripe is the 89 kb of LCT/MCM6 selection acted on, and the block it left behind fills the triangle above. The pale slab is one cluster of near-identical chromosomes, uniform across that block, and the rs4988235-A haplotypes sit inside it."/>
+The highlight across both lanes in the figure is the 89 kb of LCT/MCM6 that
+selection acted on.
+
+<Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises: 1000 Genomes chromosomes at LCT/MCM6, one row each, clustered by genotype. The pale slab is one cluster of near-identical chromosomes, uniform across the block that fills the triangle above."/>
 
 **Ordering is what makes a block visible.** In file order the same matrix is a
 plaid at any size, because a block is a set of alleles travelling together and
@@ -303,8 +313,8 @@ which of them is the non-reference allele varies from site to site. Clustering
 puts near-identical chromosomes next to each other, and a swept haplotype
 carries little variation of its own, so it resolves into one slab.
 
-`rs4988235` falls below the figure's own MAF floor, so the ClinVar lane marks it
-independently of the columns the clustering ran on.
+`rs4988235` falls below the figure's own frequency floor, so the ClinVar lane
+marks it independently of the columns the clustering ran on.
 [`colorBy`](/docs/config/sharedvariantdisplay/#slot-colorby) keeps the
 populations in the sidebar stripe, so which of them carry the block reads off
 the clustered rows.

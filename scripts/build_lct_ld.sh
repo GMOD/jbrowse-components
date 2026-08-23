@@ -64,6 +64,8 @@ for h in "${HELPERS[@]}"; do
 done
 
 OUTDIR="${1:-lct_ld_build}"
+# A 1.9 binary: the r2 calls below use --r2, which PLINK 2.0 replaced with
+# --r2-unphased / --r2-phased, so PLINK=plink2 fails on the first table.
 PLINK="${PLINK:-plink}"
 COLLECTION=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage
 CHR2=$COLLECTION/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
