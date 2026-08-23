@@ -15,6 +15,9 @@ import type { SegAln } from '../arcs/arcTypes.ts'
 // back for a person to look at. A confident-looking path built from reads
 // mismapped into a repeat looks exactly like a true one here, which is why the
 // output is a proposal rather than a call.
+//
+// The rules this grouping arrived at, stated without the alleles, are
+// `agent-docs/mechanisms/derivative-allele-candidates.md`.
 
 export interface DerivativeSegment {
   refName: string

@@ -185,7 +185,9 @@ function saSegments(
 // clip-at-start-of-read.
 // That single canonical chain is what lets a connector step through an
 // off-screen segment and keeps a same-chr split junction from reading as
-// inter-chromosomal. `entries` arrives already deduped by readId and stripped of
+// inter-chromosomal. What every consumer of a chain owes is
+// `agent-docs/mechanisms/split-read-chains.md`.
+// `entries` arrives already deduped by readId and stripped of
 // secondary alignments — resolveReadGroup's partition owns both rules.
 // Takes the normalizer alone, not an `ArcChainContext`: the SA walk is how a
 // read's segments are DISCOVERED, so it always runs, and `drawLongRange` only

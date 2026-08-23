@@ -86,7 +86,9 @@ export function getClipLengthAtStartOfRead(feature: Feature) {
 }
 
 // The read's full alignment chain, derived from the SA tags of its segments
-// (each SA lists the read's other alignments). featurizeSA (normalize=false)
+// (each SA lists the read's other alignments). This file holds all four of the
+// joins `agent-docs/mechanisms/split-read-chains.md` is about.
+// featurizeSA (normalize=false)
 // yields clip positions on the same original-read 5' axis as
 // feature.clipLengthAtStartOfRead, so they're directly comparable — a chain clip
 // strictly between two adjacent visible segments belongs to an alignment that
