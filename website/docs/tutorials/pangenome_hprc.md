@@ -1077,7 +1077,7 @@ ends. The graph states an allele and its length, and cannot say whose it is:
 collapsing is what let it be found at all. The callset never lost the samples,
 so it states whose.
 
-They still do not line up row for row:
+The graph and the callset still do not line up row for row:
 
 - the rows differ because one lane is
   [attribution and the other carriage](#from-a-node-back-to-a-coordinate), so a

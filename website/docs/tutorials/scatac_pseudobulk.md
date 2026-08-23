@@ -36,8 +36,6 @@ the resulting files as rows of one track.
 PBMC markers are the check: at a T-cell marker the T-cell rows carry the signal,
 and at a B-cell marker the B-cell rows light up.
 
-<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
-
 The pseudobulk step runs in the same environment your clustering does, so the
 BigWigs it writes can also be viewed inline through the
 [Python anywidget interface](/docs/jbrowse_anywidget) (or [](/docs/jbrowser))
@@ -217,6 +215,10 @@ lists every mode, and the track menu switches between them live. `multirowxy`
 (the default, and the figures on this page) is best for comparing peak shape;
 `multirowdensity` maps score to color, which fits more rows in the same space.
 [](/docs/user_guides/multiquantitative_track) covers the rest of the menu.
+
+Loaded, the twelve rows put the marker check in one frame:
+
+<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ## Published atlas BigWigs
 

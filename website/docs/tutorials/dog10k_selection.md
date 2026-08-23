@@ -71,6 +71,16 @@ slots.
 Opening the assembly with no location shows all of its regions at once, so the
 display lays the autosomes out side by side.
 
+Rerunning the same script over one region rebins it, which is the lower half of
+the figure below: the same panel and the same estimator at 20 kb over two
+megabases, where the peak resolves into a sweep.
+
+```bash
+WINDOW=20000 REGIONS=chr15:40600000-42600000 \
+  OUTBED=dog10k_size_fst_igf1_20kb.bed \
+  bash build_dog10k_size_fst.sh
+```
+
 <Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the top half's own 200 kb window." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region. A genome-wide scan bins wide
@@ -89,17 +99,6 @@ the size variation across breeds.
 Each group is a set of closed populations, so drift inside one large breed
 scores the same way differentiation across the contrast does. A window has
 fourteen breeds against eleven behind it.
-
-The lower half is the same panel and the same estimator rebinned to 20 kb over
-two megabases, where the peak resolves into a sweep. Rerunning the build script
-from [Reproduce it end to end](#reproduce-it-end-to-end) over one region does
-that:
-
-```bash
-WINDOW=20000 REGIONS=chr15:40600000-42600000 \
-  OUTBED=dog10k_size_fst_igf1_20kb.bed \
-  bash build_dog10k_size_fst.sh
-```
 
 ## The IGF1 body-size locus
 

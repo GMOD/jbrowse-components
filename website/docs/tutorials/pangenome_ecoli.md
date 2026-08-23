@@ -416,11 +416,11 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -p vcf /data/ecoli_pggb_snarls.vcf.gz"
 ```
 
-It is where the graph structure lives: `LV`/`PS` give the snarl tree, and `AT`
-states each allele as the segment ids it traverses (`AT=>2>4>5,>2>3>5`), which
-are the same ids the graph view labels its nodes with. Filter it on `LV` in
-**Edit filters** to pick one level of the tree. The coarse tier below is built
-from its `LV=0` records.
+The snarl VCF is where the graph structure lives: `LV`/`PS` give the snarl tree,
+and `AT` states each allele as the segment ids it traverses
+(`AT=>2>4>5,>2>3>5`), which are the same ids the graph view labels its nodes
+with. Filter it on `LV` in **Edit filters** to pick one level of the tree. The
+coarse tier below is built from its `LV=0` records.
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and
@@ -581,10 +581,11 @@ Zoomed out, the track is the pangenome's core/accessory landscape along K12:
 - **troughs** at 1 over K12's private sequence, mostly cryptic prophages and IS
   elements
 
-It is drawn [at the end of this section](#per-strain-presence), under the
-per-strain rows that say which strain each trough is missing. A `FeatureTrack`
-draws no gene lane at whole-chromosome zoom, so zoom into one trough and the
-lane names it, which is what the figure below does for the widest of them.
+The depth lane is drawn [at the end of this section](#per-strain-presence),
+under the per-strain rows that say which strain each trough is missing. A
+`FeatureTrack` draws no gene lane at whole-chromosome zoom, so zoom into one
+trough and the lane names it, which is what the figure below does for the widest
+of them.
 
 An unrelated isolate's long reads say the same thing without the graph. These
 are nanopore reads from _E. coli_ E146

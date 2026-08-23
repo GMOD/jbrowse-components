@@ -49,8 +49,6 @@ Every primary tumor in the project stacks as its own row, so a copy-number
 change shared across the cohort reads as a vertical stripe running down hundreds
 of samples.
 
-<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
-
 ## Load the segments into JBrowse
 
 Two commands set the whole thing up, an assembly and a track. Start with hg38,
@@ -129,7 +127,7 @@ there.
 The stack starts in barcode order, which encodes nothing, so the sorted state is
 the one every figure below is in.
 
-<Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure above." src="/img/tcga/cohort_cnv_erbb2.png" />
+<Figure caption="chr17:39.0-40.5 Mb, spanning ERBB2, with clustering run on this window alone: the 1104 rows sort into amplified, gained, lost and balanced bands. The same locus is one vertical stripe in the genome-wide figure below." src="/img/tcga/cohort_cnv_erbb2.png" />
 
 At 1104 rows in a few hundred pixels each row is well under one pixel tall, so
 rows alias together and the saturated colors crowd out the neutral ones. The
@@ -182,8 +180,9 @@ the axis to the whole cohort, so a bar means the same fraction wherever you
 navigate. `posColor`/`negColor` reuse the stack's amplification and deep-loss
 colors, so the two tracks agree by eye.
 
-Placed above the stack, as in the figure at the top of this page, each peak sits
-over a stripe and puts a number on it.
+Placed above the stack, each peak sits over a stripe and puts a number on it:
+
+<Figure caption="TCGA-BRCA copy number across all 1104 primary tumors, one 1px row per tumor, clustered by profile, under the cohort's own gain and loss frequency per 100 kb. Recurrent events read as vertical stripes through the stack." src="/img/tcga/cohort_cnv_genome.png" />
 
 Each bar is the fraction of the cohort carrying a call past the cutoff. There is
 no background model, no significance test and no peak calling, and amplitude
@@ -205,7 +204,7 @@ python3 cnv_recurrence.py tcga_brca_cnv.bed.gz by_subtype.bedGraph \
   --groups tcga_brca_clinical.tsv:subtype
 ```
 
-That is the same
+The `--groups` file is the same
 [clinical TSV](/docs/tutorials/tcga_cohort_mutations#what-the-two-files-hold)
 the mutation cohort groups its matrix rows by, so a tumor falls in the same
 group in both tracks.

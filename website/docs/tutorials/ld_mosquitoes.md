@@ -20,20 +20,24 @@ structural variant genotyped per mosquito.
 
 ## Where the data comes from
 
-Every genotype on this page is Ag1000G phase 2 AR1
+Ag1000G phase 2 AR1
 ([Anopheles gambiae 1000 Genomes Consortium 2020](https://doi.org/10.1101/gr.262790.120)),
-whose terms of use were lifted in March 2022, so the phased haplotypes download
-without registration or a data-access agreement. Two populations are used
-throughout: `CMgam`, 297 mosquitoes from Cameroon, which segregates both
-arrangements of 2La, and `GAgam`, 69 from Gabon, which is near-fixed for the
-standard arrangement.
+whose terms of use were lifted in March 2022, so nothing here needs registration
+or a data-access agreement.
 
-Each mosquito's 2La karyotype is scored from the tag SNPs of
-[Love et al. 2019](https://doi.org/10.1534/g3.119.400445), the in-silico method
-MalariaGEN ships for the current Ag3 release. The
-[reproduce script](#reproduce-it-end-to-end) does that scoring, and the tables
-it writes are [rehosted on jbrowse.org](https://jbrowse.org/demos/popgen/) so
-the track blocks on this page load without the download.
+- the phased haplotypes and their sample list for chromosome arm 2L, which the
+  commands subset to one population at a time:
+  https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/haplotypes/main/shapeit/
+- the sample metadata the population lists come from, `CMgam` (Cameroon) and
+  `GAgam` (Gabon):
+  https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt
+- the AgamP4 reference and its gene models, which the gene lane reads:
+  https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/
+- the 2La tag SNPs each mosquito's karyotype is scored from
+  ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
+  https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
+- the finished LD tables and karyotype VCFs, rehosted so the track blocks on
+  this page load without the build: https://jbrowse.org/demos/popgen/
 
 ## The 2La inversion as one LD block
 
@@ -166,10 +170,12 @@ is drawn at that published extent. PCR across the junctions karyotypes single
 mosquitoes, checked against polytene cytology on field specimens
 ([White et al. 2007](https://doi.org/10.4269/ajtmh.2007.76.334)).
 
-The tag-SNP score is the mean number of alternate alleles across the tags,
-rounded into a genotype, and it comes out trimodal with empty space between the
-peaks. The [reproduce script](#reproduce-it-end-to-end) prints that histogram
-and the karyotype breakdown per population.
+Each mosquito's karyotype here is scored from those tag SNPs, the in-silico
+method MalariaGEN ships for the current Ag3 release: the mean number of
+alternate alleles across the tags, rounded into a genotype. That score comes out
+trimodal with empty space between the peaks, and the
+[reproduce script](#reproduce-it-end-to-end) prints the histogram and the
+karyotype breakdown per population.
 
 ## The block on the karyotype lanes
 
