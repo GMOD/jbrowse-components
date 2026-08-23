@@ -22,6 +22,12 @@ findable by anyone who does not already know the subsystem.
 track-type maps: the decision sequence every display runs, and the one table
 saying what a row and a colour mean in each plugin.
 
+The other family here is the **subsystem** a track type sits on top of rather
+than one a display runs — a pipeline several plugins share, stated for someone
+who does not know which plugin owns it. [split-read-chains](split-read-chains.md)
+and [derivative-allele-candidates](derivative-allele-candidates.md) are the pair
+that exists, and they read in that order.
+
 ## What belongs here
 
 Three tests, all of them:
@@ -57,9 +63,12 @@ plugin happens to demonstrate at scale.
   citation and an index row cannot spell the doc differently.
   `generate-doc-indexes.ts` fails on a mismatch — that rule is checked only for
   this directory, since `reference/` predates it.
-- These docs describe the tree as it stands, so `check-doc-imports` holds every
-  path and identifier in them to resolve. `ideas/` is exempt from that and this
-  is not; moving a proposal here means its code references become checked.
+- These docs describe the tree as it stands, so their references are checked:
+  `check-doc-imports` resolves every repo path and cross-doc link, and
+  `check-doc-removed-symbols` fails on a backticked name that used to be ours
+  and is not any more (`reference/` is in that scan too; `ideas/` and the ADRs
+  are deliberately not, since they name proposed and superseded symbols on
+  purpose). Moving a proposal here means its code references become checked.
 - The depth stays where it already is. A mechanism doc points at the
   `reference/` doc or ADR that owns the detail rather than restating it —
   duplicated depth is the drift this repo keeps getting bitten by.
@@ -77,6 +86,7 @@ write the doc's `description:` instead.
 | Doc | The idea it carries |
 | --- | --- |
 | [alignments-decision-tree](alignments-decision-tree.md) | What an alignments track decides — what colour each read takes, how a colour scheme reaches that answer, and the draw sequence from the too-large gate to the overlays — as three rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a colour scheme, a draw layer or a gate. |
+| [derivative-allele-candidates](derivative-allele-candidates.md) | How the reads in view become a ranked list of derivative alleles — the grouping key built from the junctions and never the read edges, why a junction tolerance is a distance rather than a grid, mode-seeded clustering against the two clusterings that divide or merge real alleles, and the discipline that keeps the output a proposal rather than a call. Read before touching the grouping key, the tolerance, the support floor or the rank. |
 | [draw-pass-registries](draw-pass-registries.md) | The layer-registry technique alignments uses for its draw passes — a shared ordered id list plus an exhaustive Record per consumer — decomposed into the four mechanisms it is really made of, with the precondition that decides whether a display wants one and a scorecard of every display against it. Read before adding a mark to a multi-mark display, before proposing a registry for one, and before declining a registry on the grounds that the backends are "not 1:1". |
 | [feature-band-consumers](feature-band-consumers.md) | A panel showing what another panel already draws has two seams available — the other one's shell (model, config, fetch, lifecycle) or its pipeline (payload → layout → fit → paint → pick) — and only the pipeline composes. The nested-child-display attempt that proved it, the four cheapest answers now in tree, the purity precondition that decides whether the seam exists, and the seven rules a band consumer owes with the failure behind each. Read before adding a band to a display, before hosting one display inside another, and before packaging a band's pipeline for a second caller. |
 | [feature-track-decision-tree](feature-track-decision-tree.md) | What an annotation track decides — which glyph a feature gets, how much of it survives the vertical budget, and what colour a box takes — as three rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before adding a glyph, touching the fit ladder or the label modes. |
@@ -86,6 +96,7 @@ write the doc's `description:` instead.
 | [maf-decision-tree](maf-decision-tree.md) | What a multiple-alignment track decides — which of two tiers a fetch reads, which of five renderings the rows are painting, what colour one aligned base takes, and how a species becomes a placed row — as four rendered decision graphs, each stated against the naive version it replaced. Read before touching the summary threshold, a row rendering, the cell colour table or the height ladder. |
 | [mobx-state-patterns](mobx-state-patterns.md) | Two state-management patterns built and validated here that need nothing from genomics — splitting an autorun into a pure plan and an installer, and answering a lifecycle with one discriminated getter instead of N booleans every caller re-subtracts. Both have a failure story sharp enough to carry the idea, and neither has a name outside this repo. |
 | [rendering-decisions](rendering-decisions.md) | The decision sequence every track type runs — the too-large gate, the fetch tier, layout, height, the backend ladder, the layer lists and the overlays — plus the one table saying what a row and a colour mean in each plugin, and which map to read next. Read first when the question is what the program does when it draws a track. |
+| [split-read-chains](split-read-chains.md) | How a split read is put back together from the SA tags of the segments that were fetched — the read-order axis every consumer sorts on, the dedup key that separates two passes over one locus, what happens to a segment no view fetched, and why a per-region answer about a chain is an answer about the region. Read before joining alignment records into a chain, before deriving a field from what one fetch saw, or before dropping a segment nothing returned. |
 | [synteny-decision-tree](synteny-decision-tree.md) | What a comparative track decides — which surface draws it, what a fetch asks for at this zoom, what colour an alignment takes, and how a ribbon is built and picked — as four rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a level-of-detail tier, a colour mode, the ribbon geometry or the pick index. |
 | [variants-decision-tree](variants-decision-tree.md) | What a variant track decides and in what order — which of the four displays a VCF lands in, what the "Color by" slot resolves to, what colour one genotype cell takes, and the draw sequence from filters to overlays — as four rendered decision graphs, with the failures behind the odd-looking branches kept to a tail. Read before touching a colour mode, a cell loop or a band. |
 | [wiggle-decision-tree](wiggle-decision-tree.md) | What a quantitative track decides — the score domain, the shape that draws it, and the colour that shape takes — as three rendered decision graphs, each resolved in one place and read by the axis, the painter, the legend and the tooltip alike. Read before touching autoscale, a plot type or the multi-wiggle colour model. |
