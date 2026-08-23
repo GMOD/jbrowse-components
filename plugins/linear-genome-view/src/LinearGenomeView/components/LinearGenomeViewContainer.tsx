@@ -9,6 +9,8 @@ import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
+import Header from './Header.tsx'
+import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
 import Scalebar from './Scalebar.tsx'
 import TrackContainer from './TrackContainer.tsx'
@@ -63,8 +65,6 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   // cached left edge of the view, refreshed on resize, so the mousemove hover
   // handler doesn't call getBoundingClientRect() (a layout reflow) every move
   const rectLeftRef = useRef(0)
-  const MiniControlsComponent = model.MiniControlsComponent()
-  const HeaderComponent = model.HeaderComponent()
   // The tracks area, and not the whole view — the same rule the click-drag half
   // already follows (see TracksContainer's useSideScroll), for a bigger payoff.
   // The chrome above the tracks is the only surface left where a wheel still
@@ -162,8 +162,8 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           className={classes.header}
           style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
         >
-          <HeaderComponent model={model} />
-          {hideHeader ? <MiniControlsComponent model={model} /> : null}
+          <Header model={model} />
+          {hideHeader ? <MiniControls model={model} /> : null}
         </div>
         {/* Everything the wheel may zoom, in both modes — see tracksRef. */}
         <div ref={tracksRef}>

@@ -190,8 +190,6 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-minicontrolscomponent">**MiniControlsComponent**</span><br><code>() =&gt; FC&lt;any&gt;</code> |  |
-| <span id="method-headercomponent">**HeaderComponent**</span><br><code>() =&gt; FC&lt;any&gt;</code> |  |
 | <span id="method-trackheight">**trackHeight**</span><br><code>(track: any) =&gt; any</code> | rendered height of a single track, collapsing to a fixed height when minimized. Shared by trackHeights and getTrackYOffset so the two can't disagree. Reads `activeDisplay` — the display TrackContainer actually mounts — rather than re-picking `displays[0]`, so the view's height math can't diverge from what is on screen. |
 | <span id="method-gettrackyoffset">**getTrackYOffset**</span><br><code>(trackId: string) =&gt; number &#124; undefined</code> | Y offset (in pixels, from the top of the view) where a track's rendering container starts. Walks tracks in DOM render order (pinned first, then unpinned), from the same constants TrackContainer lays its Paper out with. Returns `undefined` if the track is not present.<br><br>Exact while track labels are hidden or overlapping. With an offset label the answer is short by one label box per labelled track above this one — see `trackChromeHeight` for why that box is not derivable here. |
 | <span id="method-tracksection">**trackSection**</span><br><code>(id: string) =&gt; any[]</code> | the pinned or unpinned sibling list a track renders within; move up/down/top/bottom reorder inside this section rather than the full `tracks` array, since the two sections lay out independently |

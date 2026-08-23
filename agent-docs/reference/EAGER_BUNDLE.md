@@ -51,7 +51,7 @@ no change.
 evaluated module names the same component.** A plugin `exports` object is the
 easiest place to name one by accident.
 
-### 2. The view model holding its own Header
+### 2. The view model holding its own Header — the diagnosis was right, the fix was not
 
 `LinearGenomeView/model.ts` opened with `import Header from
 './components/Header.tsx'`, to serve the `HeaderComponent()` /
@@ -59,13 +59,64 @@ easiest place to name one by accident.
 gets, so that one line pulled the whole stock header in: `SearchBox` →
 `RefNameAutocomplete` → MUI `Autocomplete`, `HeaderZoomControls` →
 `SingleSlider` → MUI `Slider`, and `@jbrowse/core/ui` behind both — in every
-host, including one that sets `hideHeader`. Now
-`LinearGenomeView/lazyChromeComponents.tsx`.
+host, including one that sets `hideHeader`.
 
-This is the same anti-pattern `BaseDisplayModel`'s `DisplayMessageComponent`
+That is the same anti-pattern `BaseDisplayModel`'s `DisplayMessageComponent`
 getter was deleted for (DISPLAYCHROME.md §"One element per display"). Deleting
-was not repeated here only because these two are documented `#method` entries an
-external plugin may override; `lazy()` gets the same bytes without the bet.
+was not repeated here, because these two are documented `#method` entries an
+external plugin may override, and a second `lazy()` was taken to get the same
+bytes without the bet. **That second `lazy()` was reverted on 2026-08-23**, and
+the reasons are worth keeping, because the shape recurs.
+
+**It shipped a visible defect.** The header is above the tracks, and
+`rubberbandTop` / `pinnedTracksTop` are arithmetic that assumes it is mounted, so
+with `fallback={null}` the box measured 0 for as long as the chunk was in flight
+while the sticky scalebar still pinned at 96 — detached, floating 66px down over
+the first track, then snapping back. Measured on jbrowse-web at 4x CPU and
+200 KB/s: the view container and the first track mount in the **same frame**, and
+the header arrives **+513ms** later. `lazy()` does not fetch until React first
+renders the component, so the request cannot start earlier than the frame the
+rest of the view paints in. Every LGV load did this.
+
+**And it bought 1 KB.** A/B on the examples site, same worktree, only this change
+between the arms:
+
+| | lazy header | header on the lazy view chunk | Δ |
+| --- | --- | --- | --- |
+| gzip, 13 of 14 pages | *n* KB | *n+1* KB | **+1 KB** |
+| `ultraminimal` | 550 KB | 550 KB | 0 |
+| chunks, every page | — | — | **0** |
+
+One kilobyte, no chunks — inside `OVER_KB` (10) and two orders of magnitude below
+the 50-150 KB regressions the budget exists to catch. It is that small because
+the header was never going to reach the eager set either way: the view component
+is *already* registered with `ReactComponent: lazy()`, so a plain
+`import Header from './Header.tsx'` in `LinearGenomeViewContainer` puts the
+header in the chunk the view was already fetching. **The eager pin was
+`model.ts` naming a component, not the header being reachable from `components/`.**
+
+So the fix is the deletion after all: `HeaderComponent()` and
+`MiniControlsComponent()` are gone, `lazyChromeComponents.tsx` with them, and the
+components are plain imports on the lazy side. Nothing in the tree,
+`example-plugins/`, `test_data/` or the docs ever overrode or called either
+method; their only trace was two rows with empty descriptions in the generated
+`website/docs/models/LinearGenomeView.md`. `model.eager.test.ts` now pins the
+rule that actually mattered — **the eagerly-evaluated model statically imports no
+`.tsx`** — which is cheaper to satisfy than the second boundary and cannot be
+satisfied by accident.
+
+**Two things to carry forward.**
+
+- **A `lazy()` inside an already-lazy subtree is not free, and its cost is a
+  frame, not bytes.** Ask what the inner boundary defers *relative to the outer
+  one*. Here: nothing, because both are fetched only when the view renders.
+- **`fallback={null}` is a layout claim.** It asserts the component occupies no
+  space until it arrives. That is true for a dialog and false for anything a
+  sibling's geometry is computed from. The old comment justified it with "the
+  chunks are dynamic children of a subtree that is already lazy, so **Vite**
+  preloads them alongside it rather than in a second round trip" — jbrowse-web is
+  **webpack** (`products/jbrowse-web/scripts/start.ts` → `config/webpack`), and
+  the +513ms above is that second round trip happening.
 
 ### 3. The runtime re-export registry — 126 KB gzipped, the whole of it
 

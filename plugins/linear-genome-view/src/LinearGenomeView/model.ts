@@ -61,9 +61,6 @@ import {
   TRACK_TOP_GAP,
 } from './consts.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
-// lazy, and deliberately so — see lazyChromeComponents.tsx. A view model is
-// eager, so a React component it names is in every host's first paint.
-import { Header, MiniControls } from './lazyChromeComponents.tsx'
 import {
   buildMenuItems,
   buildRubberBandMenuItems,
@@ -101,7 +98,6 @@ import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type React from 'react'
 
 // lazies
 const SearchResultsDialog = lazy(
@@ -747,20 +743,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           : undefined
       },
       /**
-       * #method
-       */
-      MiniControlsComponent(): React.FC<any> {
-        return MiniControls
-      },
-
-      /**
-       * #method
-       */
-      HeaderComponent(): React.FC<any> {
-        return Header
-      },
-
-      /**
        * #getter
        */
       get assembliesNotFound() {
@@ -862,6 +844,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return this.showLoading
           ? this.loadingAssembly?.statusProgress
           : undefined
+      },
+
+      /**
+       * #getter
+       * The URL the assembly load is currently fetching, when the phase named
+       * one. Only the stalled-load notice reads it — see
+       * {@link ViewLoadingScreen}.
+       */
+      get loadingSource() {
+        return this.showLoading ? this.loadingAssembly?.statusSource : undefined
       },
 
       /**
