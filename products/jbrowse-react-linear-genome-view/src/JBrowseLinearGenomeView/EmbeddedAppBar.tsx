@@ -14,7 +14,10 @@ import type { ViewModel } from '../createModel/createModel.ts'
  *
  * It renders nothing when there are no menus, which is what `disableAddTracks`
  * leaves behind -- a File menu whose every item is refused by the session
- * guards is worse than no bar at all.
+ * guards is worse than no bar at all. A second reason to bow out belongs in
+ * `menus()` rather than here: the root's grid keys the bar's row off that same
+ * call, and a row declared with nothing in it is one grid auto-placement fills
+ * with the view box and the drawer instead.
  */
 const EmbeddedAppBar = observer(function EmbeddedAppBar({
   viewState,
