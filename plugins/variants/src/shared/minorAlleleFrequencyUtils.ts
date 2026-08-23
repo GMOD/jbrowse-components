@@ -10,9 +10,9 @@ import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 export interface AlleleSummary {
   // Frequency of the second-most-common allele among *called* alleles (the VCF
   // AN definition). No-call '.' is not an allele: it is excluded from both the
-  // minor-allele candidacy and the denominator, or on sites where no-calls
-  // outnumber the true minor allele the returned frequency is actually the
-  // missingness fraction. Missingness is its own metric below.
+  // minor-allele candidacy and the denominator — counted as one, a site whose
+  // no-calls outnumber its true minor allele would report the missingness
+  // fraction here instead. Missingness is its own metric below.
   minorAlleleFrequency: number
   // Fraction of all alleles that are no-call ('.'); high on sparse multi-sample
   // panels where many samples lack a genotype at a site. This is the complement
