@@ -100,10 +100,6 @@ export interface PipelineDescriptor {
   // custom blend factors (defaults to src-alpha / one-minus-src-alpha if omitted)
   blendState?: BlendState
   vertexAttributes: readonly VertexAttributeLayout[]
-  // WGSL fragment entry point override (default: 'fs_main')
-  wgslFragmentEntry?: string
-  // GLSL fragment shader override (e.g. alternate fragment program)
-  glslFragmentOverride?: string
   // primitive topology (default: 'triangle-list')
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'
   // Texture binding for this pass. Only textures[0] is wired up by both HAL

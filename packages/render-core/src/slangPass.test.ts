@@ -137,17 +137,13 @@ describe('slangPass', () => {
     expect(desc.bindings).toEqual(bindings)
   })
 
-  it('forwards the fragment-entry overrides', () => {
+  it('takes an explicit blend over the module default', () => {
     const desc = slangPass({
       id: 'outline',
       mod: shaderModule({ VERTS_PER_INSTANCE: 6 }),
-      wgslFragmentEntry: 'fs_outline',
-      glslFragmentOverride: 'alt-fs',
       blend: false,
     })
 
-    expect(desc.wgslFragmentEntry).toBe('fs_outline')
-    expect(desc.glslFragmentOverride).toBe('alt-fs')
     expect(desc.blend).toBe(false)
   })
 })

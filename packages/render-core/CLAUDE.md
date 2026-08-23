@@ -31,7 +31,13 @@ What follows is this package's own.
 - **HAL parity**: a behavior change to one HAL lands in the other and in
   `MockHal`. The gates are `browser-tests/compare-backends.ts` and
   `hal/regionRegistry.test.ts` — not the attribute layout, which
-  `assertVertexInputsMatch` settles at `pnpm gen:shaders` time.
+  `assertVertexInputsMatch` settles at `pnpm gen:shaders` time. `GpuHalBase` is
+  the structural half of that rule: all three HALs extend it, so the upload
+  shells, the registry passthroughs, the over-limit wording and the `dispose`
+  guard are shared code rather than three copies. Behavior that is genuinely
+  per-backend stays in the leaf hooks (`limits`, `createBuffer`,
+  `destroyBuffer`, `createTexture`, `releaseResources`) — a change that lands in
+  one of those is still a change to mirror.
 - A shared `.slang` **shape** module needs two real consumers and non-obvious
   math (ADR-040).
 

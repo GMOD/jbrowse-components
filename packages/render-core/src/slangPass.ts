@@ -70,8 +70,6 @@ export interface SlangPassOpts {
   blend?: boolean
   blendState?: BlendState
   textures?: [TextureBinding, ...TextureBinding[]]
-  wgslFragmentEntry?: string
-  glslFragmentOverride?: string
 }
 
 export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
@@ -97,7 +95,5 @@ export function slangPass(opts: SlangPassOpts): PipelineDescriptor {
     topology: opts.topology ?? opts.mod.TOPOLOGY,
     textures: opts.textures ?? opts.mod.TEXTURES,
     bindings: opts.mod.BINDINGS,
-    wgslFragmentEntry: opts.wgslFragmentEntry,
-    glslFragmentOverride: opts.glslFragmentOverride,
   }
 }

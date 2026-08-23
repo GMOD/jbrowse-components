@@ -1056,6 +1056,19 @@ is where a renderer test says which of the two shapes it has.
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery), `WebGL2Hal`
 (`antialias: true`, VAO + UBO, context-loss recovery), `MockHal` (tests).
 
+**All three extend `GpuHalBase`**, which owns the half of a HAL that was only
+ever mirrored: the descriptor map, the `RegionRegistry` over `(region, pass)`,
+the `uploadBuffer` and `uploadTexture` shells with their over-limit refusals and
+the one wording those use, the four registry passthroughs, `setErrorHandler`,
+and the once-only `dispose` guard. A leaf supplies `limits()`, `createBuffer`,
+`destroyBuffer`, `createTexture` and `releaseResources` — so the deferred
+destroy above stays WebGPU's alone (it is what its `destroyBuffer` does), and so
+does everything else that genuinely differs: the frame bracket, uniform ring vs
+UBO, the scissor Y-flip, MSAA, and lazy vs eager pipeline build. `MockHal`
+overrides the shells to log and then calls `super`, so a unit test watches the
+same lifecycle the GPU runs. `gpuHalBase.test.ts` pins the refusals, which no
+backend test could reach without a GPU large enough to hit the real limits.
+
 ### WebGL2 contexts are a page-level budget, one per display
 
 `WebGL2Hal`'s constructor takes its own `canvas.getContext('webgl2')` with no

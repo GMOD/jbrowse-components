@@ -1,8 +1,8 @@
 import { getDpr } from '../canvas2dUtils.ts'
+import { GpuHalBase } from './gpuHalBase.ts'
 import { assertUniquePassIds } from './passIds.ts'
-import { RegionRegistry } from './regionRegistry.ts'
 
-import type { GpuHal, PipelineDescriptor } from './types.ts'
+import type { GpuHal, PipelineDescriptor, TextureBinding } from './types.ts'
 
 export interface MockCall {
   method: string
@@ -51,13 +51,9 @@ export interface MockDraw {
   uniformWrite: number
 }
 
-export class MockHal implements GpuHal {
+export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   calls: MockCall[] = []
 
-  // The same registry both real HALs use, so buffer lifecycle (delete-on-empty,
-  // prune) is shared code rather than a hand-rolled twin that can drift out of
-  // parity. There is nothing to free, so the destroy hook is a no-op.
-  private regions = new RegionRegistry<MockBuffer>(() => {})
   // Every write of the frame, in order, not just the last. A renderer that
   // rewrites the UBO mid-frame — for a band that reads it differently, or a
   // section with its own offsets — has invariants the final state cannot show:
@@ -65,11 +61,6 @@ export class MockHal implements GpuHal {
   // overwrite doesn't outlive its pass, and how many writes a frame costs at
   // all (the real HALs stage these into a fixed-size ring).
   private uniformWrites: ArrayBuffer[] = []
-
-  // Every id the display registered. Both real HALs key their pipelines by it
-  // and return early from `drawPass` on an id they don't hold; keeping the set
-  // is what lets `drawPass` below say so instead of recording the call.
-  private registered: Set<string>
 
   /**
    * The clip each draw of the frame went out under — see {@link draws}.
@@ -113,8 +104,45 @@ export class MockHal implements GpuHal {
   // mock is what puts it in front of a unit test — every backend test builds a
   // `MockHal` from its display's real pass list.
   constructor(passes: PipelineDescriptor[]) {
+    super(passes, 'MockHal')
     assertUniquePassIds(passes)
-    this.registered = new Set(passes.map(p => p.id))
+  }
+
+  // No device behind this HAL, so nothing is ever over-limit: the shells' checks
+  // are the real HALs' to make. `descriptors` — the base's map of the same pass
+  // list — is what `drawPass` and `uploadTexture` below answer from.
+  protected limits() {
+    return {
+      maxBufferBytes: Number.POSITIVE_INFINITY,
+      maxTextureDimensionPx: Number.POSITIVE_INFINITY,
+    }
+  }
+
+  // The bytes are copied because both real HALs hand them to the driver at
+  // upload time, so a caller reusing its scratch array must not be able to
+  // change what a test then reads back out of `getBuffer`.
+  protected createBuffer(data: ArrayBuffer | ArrayBufferView, count: number) {
+    const copy = ArrayBuffer.isView(data)
+      ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
+      : data.slice(0)
+    return { data: copy, count }
+  }
+
+  protected destroyBuffer() {}
+
+  protected createTexture(
+    passId: string,
+    binding: TextureBinding,
+    data: Uint8Array,
+    width: number,
+    height: number,
+  ) {
+    this.record('uploadTexture', passId, data.byteLength, width, height)
+  }
+
+  protected releaseResources() {
+    this.record('dispose')
+    this.regions.deleteAll()
   }
 
   private record(method: string, ...args: unknown[]) {
@@ -124,6 +152,7 @@ export class MockHal implements GpuHal {
   errorHandler: ((error: Error) => void) | null = null
 
   setErrorHandler(handler: (error: Error) => void) {
+    super.setErrorHandler(handler)
     this.errorHandler = handler
     this.record('setErrorHandler')
   }
@@ -137,6 +166,9 @@ export class MockHal implements GpuHal {
     return { x: getDpr(), y: getDpr() }
   }
 
+  // The overrides below log and then defer to the base's shells, so the buffer
+  // lifecycle a test observes (delete-before-count, prune) is the same code both
+  // real HALs run rather than a twin that can drift out of parity.
   uploadBuffer(
     regionKey: number,
     passId: string,
@@ -145,32 +177,19 @@ export class MockHal implements GpuHal {
   ) {
     this.record('uploadBuffer', regionKey, passId, data.byteLength, count)
     this.noteReplaced(regionKey, passId)
-    // Both real HALs delete the prior buffer up front and leave nothing behind
-    // on an empty upload; mirroring that here keeps `getBuffer` bookkeeping
-    // honest instead of leaving a count-0 entry the GPU never has.
-    this.regions.deleteBuffer(regionKey, passId)
-    if (count > 0) {
-      const copy = ArrayBuffer.isView(data)
-        ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
-        : data.slice(0)
-      this.regions.set(regionKey, passId, { data: copy, count })
-    }
-  }
-
-  getBufferCount(regionKey: number, passId: string) {
-    return this.regions.get(regionKey, passId)?.count ?? 0
+    super.uploadBuffer(regionKey, passId, data, count)
   }
 
   deleteBuffer(regionKey: number, passId: string) {
     this.record('deleteBuffer', regionKey, passId)
     this.noteReplaced(regionKey, passId)
-    this.regions.deleteBuffer(regionKey, passId)
+    super.deleteBuffer(regionKey, passId)
   }
 
   deleteRegion(regionKey: number) {
     this.record('deleteRegion', regionKey)
     this.noteRegionReplaced(regionKey)
-    this.regions.deleteRegion(regionKey)
+    super.deleteRegion(regionKey)
   }
 
   pruneRegions(active: Iterable<number>) {
@@ -181,7 +200,7 @@ export class MockHal implements GpuHal {
         this.noteRegionReplaced(regionKey)
       }
     }
-    this.regions.prune(activeSet)
+    super.pruneRegions(activeSet)
   }
 
   private noteReplaced(regionKey: number, passId: string) {
@@ -197,15 +216,6 @@ export class MockHal implements GpuHal {
         this.noteReplaced(regionKey, passId)
       }
     }
-  }
-
-  uploadTexture(
-    passId: string,
-    data: Uint8Array,
-    width: number,
-    height: number,
-  ) {
-    this.record('uploadTexture', passId, data.byteLength, width, height)
   }
 
   writeUniforms(data: ArrayBuffer) {
@@ -262,10 +272,10 @@ export class MockHal implements GpuHal {
   }
 
   private assertRegistered(passId: string, role: string) {
-    if (!this.registered.has(passId)) {
+    if (!this.descriptors.has(passId)) {
       throw new Error(
         `drawPass ${role} '${passId}' is not a registered pass — this HAL holds ` +
-          `${[...this.registered].map(id => `'${id}'`).join(', ') || '(none)'}. ` +
+          `${[...this.descriptors.keys()].map(id => `'${id}'`).join(', ') || '(none)'}. ` +
           `Both real HALs drop such a draw without a word, so on the GPU ` +
           `backends this paints nothing while Canvas2D still looks right.`,
       )
@@ -295,11 +305,6 @@ export class MockHal implements GpuHal {
   clearViewport() {
     this.record('clearViewport')
     this.viewport = null
-  }
-
-  dispose() {
-    this.record('dispose')
-    this.regions.deleteAll()
   }
 
   // Test helpers
@@ -374,6 +379,7 @@ export class MockHal implements GpuHal {
   }
 
   reset() {
+    this.disposed = false
     this.calls = []
     this.regions.deleteAll()
     this.uniformWrites = []

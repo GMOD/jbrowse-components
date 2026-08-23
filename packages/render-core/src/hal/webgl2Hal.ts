@@ -1,9 +1,13 @@
 import { syncCanvasSize } from '../canvas2dUtils.ts'
 import { canvasContextError, noteCanvasContext } from '../canvasContext.ts'
-import { OomReporter } from './oomReporter.ts'
-import { RegionRegistry } from './regionRegistry.ts'
+import { GpuHalBase } from './gpuHalBase.ts'
 
-import type { BlendFactor, GpuHal, PipelineDescriptor } from './types.ts'
+import type {
+  BlendFactor,
+  GpuHal,
+  PipelineDescriptor,
+  TextureBinding,
+} from './types.ts'
 
 function createShader(
   gl: WebGL2RenderingContext,
@@ -171,24 +175,23 @@ const MAX_VERTEX_BUFFER_BYTES = 256 * 1024 * 1024
 // webgpu vs canvas2d output, and shared buffer bookkeeping is covered by
 // hal/regionRegistry.test.ts. Neither HAL is where attribute layout is checked —
 // `assertVertexInputsMatch` does that at `pnpm gen:shaders` time, per shader and
-// per target. Mirror any behavior change in webgpuHal.ts.
-export class WebGL2Hal implements GpuHal {
+// per target. Mirror any behavior change in webgpuHal.ts — and note that
+// `GpuHalBase` already holds the parts that were only ever mirrored: the
+// descriptor map, the buffer registry, both upload shells and their over-limit
+// wording, and the dispose guard.
+export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
-  private descriptors: Map<string, PipelineDescriptor>
   // Compiled passes, filled on demand by `getPass`. A pass whose program failed
   // to build caches `null` so the failure is reported once, not every frame.
   private passes: Map<string, PassState | null>
-  private regions: RegionRegistry<RegionPassBuffer>
   private ubo: WebGLBuffer
+  // Asked once: `getParameter` is a synchronous driver query and `limits()` is
+  // now read on every upload, not only on a texture one.
+  private maxTextureDim: number
   private debug = false
   private instanceId = 0
   private firstDrawSeen = new Set<string>()
-
-  // Guards dispose() against double invocation (pagehide + React cleanup can
-  // both fire) so the disposed-counter telemetry stays honest and gl.delete*
-  // isn't called twice on the same handle.
-  private disposed = false
 
   // Latched on context loss, never cleared. GL objects from before the loss are
   // invalid even after restore — isContextLost()===false by then, so a live
@@ -197,8 +200,6 @@ export class WebGL2Hal implements GpuHal {
 
   private contextLostListener: ((e: Event) => void) | null = null
   private contextRestoredListener: (() => void) | null = null
-
-  private oom = new OomReporter('WebGL2Hal')
 
   private checkGlError(label: string) {
     if (!this.debug) {
@@ -217,6 +218,7 @@ export class WebGL2Hal implements GpuHal {
     descriptors: PipelineDescriptor[],
     uniformByteSize: number,
   ) {
+    super(descriptors, 'WebGL2Hal')
     this.canvas = canvas
     this.debug = debugEnabled()
     totalCreated += 1
@@ -262,22 +264,12 @@ export class WebGL2Hal implements GpuHal {
     }
     noteCanvasContext(canvas, 'webgl2')
     this.gl = gl
+    this.maxTextureDim = Number(gl.getParameter(gl.MAX_TEXTURE_SIZE))
 
     this.ubo = gl.createBuffer()!
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, uniformByteSize, gl.DYNAMIC_DRAW)
 
-    // No mid-frame deferral, unlike `WebGPUHal`'s hook: GL is immediate-mode, so
-    // a draw already issued has consumed the buffer and deleting it between
-    // beginFrame and endFrame is defined. The parity that matters is the
-    // caller's — the same upload sequence is legal on both.
-    this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
-      if (!this.contextWasLost && !gl.isContextLost()) {
-        gl.deleteBuffer(buf.vbo)
-      }
-    })
-
-    this.descriptors = new Map(descriptors.map(d => [d.id, d]))
     this.passes = new Map()
 
     // Programs are built on first use (see `getPass`), not here: a renderer
@@ -299,10 +291,40 @@ export class WebGL2Hal implements GpuHal {
     gl.enable(gl.BLEND)
   }
 
+  // A fixed buffer ceiling rather than a queried one — see
+  // MAX_VERTEX_BUFFER_BYTES for why the guard exists at all and why the number
+  // is WebGPU's. Past it, an unguarded bufferData loses the context in Chrome
+  // and throws RangeError in Firefox; neither is a getError() case, so the
+  // base's report is the only place the display can be told.
+  protected limits() {
+    return {
+      maxBufferBytes: MAX_VERTEX_BUFFER_BYTES,
+      maxTextureDimensionPx: this.maxTextureDim,
+    }
+  }
+
+  protected createBuffer(data: ArrayBuffer | ArrayBufferView, count: number) {
+    const gl = this.gl
+    const vbo = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
+    return { vbo, count }
+  }
+
+  // No mid-frame deferral, unlike `WebGPUHal`'s hook: GL is immediate-mode, so
+  // a draw already issued has consumed the buffer and deleting it between
+  // beginFrame and endFrame is defined. The parity that matters is the
+  // caller's — the same upload sequence is legal on both.
+  protected destroyBuffer(buf: RegionPassBuffer) {
+    const gl = this.gl
+    if (!this.contextWasLost && !gl.isContextLost()) {
+      gl.deleteBuffer(buf.vbo)
+    }
+  }
+
   private compilePass(desc: PipelineDescriptor): PassState {
     const gl = this.gl
-    const fragShader = desc.glslFragmentOverride ?? desc.glslFragment
-    const program = createProgram(gl, desc.glslVertex, fragShader)
+    const program = createProgram(gl, desc.glslVertex, desc.glslFragment)
     bindUniformBlock(gl, program, 'Uniforms', 0)
     this.checkGlError(`link pass "${desc.id}"`)
 
@@ -382,77 +404,16 @@ export class WebGL2Hal implements GpuHal {
     return syncCanvasSize(this.canvas, width, height).scale
   }
 
-  setErrorHandler(handler: (error: Error) => void) {
-    this.oom.setHandler(handler)
-  }
-
-  uploadBuffer(
-    regionKey: number,
+  protected createTexture(
     passId: string,
-    data: ArrayBuffer | ArrayBufferView,
-    count: number,
-  ) {
-    const gl = this.gl
-    this.regions.deleteBuffer(regionKey, passId)
-    if (count === 0) {
-      return
-    }
-    // A fixed ceiling rather than a queried one — see MAX_VERTEX_BUFFER_BYTES
-    // for why this exists at all and why the number is WebGPU's. Past it, an
-    // unguarded bufferData loses the context in Chrome and throws RangeError in
-    // Firefox; neither is a getError() case, so this is the only place the
-    // display can be told. Below it the upload stays unchecked, exactly as
-    // before: no per-upload sync flush.
-    if (data.byteLength > MAX_VERTEX_BUFFER_BYTES) {
-      this.oom.report(
-        `This region has too much data to render on this GPU — zoom in. (vertex buffer ${data.byteLength} bytes exceeds the ${MAX_VERTEX_BUFFER_BYTES}-byte WebGL2 ceiling)`,
-      )
-      return
-    }
-    const vbo = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
-    this.regions.set(regionKey, passId, { vbo, count })
-  }
-
-  getBufferCount(regionKey: number, passId: string) {
-    return this.regions.get(regionKey, passId)?.count ?? 0
-  }
-
-  deleteBuffer(regionKey: number, passId: string) {
-    this.regions.deleteBuffer(regionKey, passId)
-  }
-
-  deleteRegion(regionKey: number) {
-    this.regions.deleteRegion(regionKey)
-  }
-
-  pruneRegions(active: Iterable<number>) {
-    this.regions.prune(active)
-  }
-
-  uploadTexture(
-    passId: string,
+    binding: TextureBinding,
     data: Uint8Array,
     width: number,
     height: number,
   ) {
     const gl = this.gl
-    // Read the binding off the descriptor so a pass with no texture never
-    // triggers a compile just to be told it has nothing to upload to.
-    const tb = this.descriptors.get(passId)?.textures?.[0]
-    if (!tb) {
-      return
-    }
     const ts = this.getPass(passId)?.textureState
     if (!ts) {
-      return
-    }
-    const maxDim = Number(gl.getParameter(gl.MAX_TEXTURE_SIZE))
-    if (width > maxDim || height > maxDim) {
-      this.oom.report(
-        `This region is too large to render on this GPU — zoom in. (texture ${width}×${height} exceeds max texture size ${maxDim})`,
-      )
       return
     }
     if (ts.texture) {
@@ -471,7 +432,7 @@ export class WebGL2Hal implements GpuHal {
       gl.UNSIGNED_BYTE,
       data,
     )
-    const filter = tb.filter === 'linear' ? gl.LINEAR : gl.NEAREST
+    const filter = binding.filter === 'linear' ? gl.LINEAR : gl.NEAREST
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
@@ -561,16 +522,7 @@ export class WebGL2Hal implements GpuHal {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
   }
 
-  dispose() {
-    if (this.disposed) {
-      if (this.debug) {
-        console.warn(
-          `[WebGL2Hal #${this.instanceId}] dispose() called but already disposed`,
-        )
-      }
-      return
-    }
-    this.disposed = true
+  protected releaseResources() {
     const gl = this.gl
     totalDisposed += 1
     if (this.debug) {

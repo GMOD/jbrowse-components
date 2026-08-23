@@ -15,8 +15,7 @@ import {
   toGpuVertexFormat,
 } from '../webgpuUtils.ts'
 import { getDeviceLayouts, getOrBuildPipeline } from './deviceGpuCache.ts'
-import { OomReporter } from './oomReporter.ts'
-import { RegionRegistry } from './regionRegistry.ts'
+import { GpuHalBase } from './gpuHalBase.ts'
 
 import type { DeviceLayouts } from './deviceGpuCache.ts'
 import type {
@@ -24,6 +23,7 @@ import type {
   GpuHal,
   PipelineDescriptor,
   SampleCount,
+  TextureBinding,
 } from './types.ts'
 
 class ShaderCompileError extends Error {
@@ -130,7 +130,7 @@ async function buildPipeline(
     vertex: { module, entryPoint: 'vs_main', buffers: vertexBuffers },
     fragment: {
       module,
-      entryPoint: desc.wgslFragmentEntry ?? 'fs_main',
+      entryPoint: 'fs_main',
       targets: [
         {
           format: navigator.gpu.getPreferredCanvasFormat(),
@@ -180,13 +180,14 @@ interface Rect {
 // webgpu vs canvas2d output, and shared buffer bookkeeping is covered by
 // hal/regionRegistry.test.ts. Neither HAL is where attribute layout is checked —
 // `assertVertexInputsMatch` does that at `pnpm gen:shaders` time, per shader and
-// per target. Mirror any behavior change in webgl2Hal.ts.
-export class WebGPUHal implements GpuHal {
+// per target. Mirror any behavior change in webgl2Hal.ts — and note that
+// `GpuHalBase` already holds the parts that were only ever mirrored: the
+// descriptor map, the buffer registry, both upload shells and their over-limit
+// wording, and the dispose guard.
+export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private device: GPUDevice
   private canvas: HTMLCanvasElement
   private context: GPUCanvasContext
-  private regions: RegionRegistry<RegionPassBuffer>
-  private descriptors: Map<string, PipelineDescriptor>
   private pipelines: ReadonlyMap<string, GPURenderPipeline>
   private passTextures = new Map<string, PassTextureState>()
   // One bind group per textured pass, built lazily by `getBindGroup` and
@@ -264,16 +265,10 @@ export class WebGPUHal implements GpuHal {
   private appliedScissor: Rect = { x: 0, y: 0, w: 0, h: 0 }
   private appliedViewport: Rect = { x: 0, y: 0, w: 0, h: 0 }
 
-  // Guards dispose() against double invocation (pagehide + React cleanup can
-  // both fire).
-  private disposed = false
-
   // One-shot flags for `acquireTextureView`: the warn fires once per HAL rather
   // than once per frame, and a reconfigure that failed is not attempted again.
   private warnedSwapChainLoss = false
   private swapChainUnrecoverable = false
-
-  private oom = new OomReporter('WebGPUHal')
 
   private constructor(
     device: GPUDevice,
@@ -285,10 +280,10 @@ export class WebGPUHal implements GpuHal {
     pipelines: Map<string, GPURenderPipeline>,
     layouts: DeviceLayouts,
   ) {
+    super(descriptors, 'WebGPUHal')
     this.device = device
     this.canvas = canvas
     this.context = context
-    this.descriptors = new Map(descriptors.map(d => [d.id, d]))
     this.pipelines = pipelines
     this.layouts = layouts
     this.sampleCount = sampleCount
@@ -309,10 +304,23 @@ export class WebGPUHal implements GpuHal {
       this.uniformRingBuffer,
       this.alignedUniformSize,
     )
-    this.regions = new RegionRegistry<RegionPassBuffer>(buf => {
-      this.destroyWhenIdle(buf.dataBuffer)
-    })
     this.configureContext()
+  }
+
+  protected limits() {
+    const { maxBufferSize, maxTextureDimension2D } = this.device.limits
+    return {
+      maxBufferBytes: maxBufferSize,
+      maxTextureDimensionPx: maxTextureDimension2D,
+    }
+  }
+
+  protected createBuffer(data: ArrayBuffer | ArrayBufferView, count: number) {
+    return { dataBuffer: createVertexBuffer(this.device, data), count }
+  }
+
+  protected destroyBuffer(buf: RegionPassBuffer) {
+    this.destroyWhenIdle(buf.dataBuffer)
   }
 
   /**
@@ -404,31 +412,6 @@ export class WebGPUHal implements GpuHal {
     }
   }
 
-  setErrorHandler(handler: (error: Error) => void) {
-    this.oom.setHandler(handler)
-  }
-
-  uploadBuffer(
-    regionKey: number,
-    passId: string,
-    data: ArrayBuffer | ArrayBufferView,
-    count: number,
-  ) {
-    this.regions.deleteBuffer(regionKey, passId)
-    if (count === 0) {
-      return
-    }
-    const { maxBufferSize } = this.device.limits
-    if (data.byteLength > maxBufferSize) {
-      this.oom.report(
-        `This region has too much data to render on this GPU — zoom in. (vertex buffer ${data.byteLength} bytes exceeds device limit ${maxBufferSize})`,
-      )
-      return
-    }
-    const dataBuffer = createVertexBuffer(this.device, data)
-    this.regions.set(regionKey, passId, { dataBuffer, count })
-  }
-
   /**
    * Bind group matching the pipeline layout of `passId`.
    *
@@ -479,10 +462,6 @@ export class WebGPUHal implements GpuHal {
     return this.uniformOnlyBindGroup
   }
 
-  getBufferCount(regionKey: number, passId: string) {
-    return this.regions.get(regionKey, passId)?.count ?? 0
-  }
-
   /**
    * The one place a GPU resource this HAL owns is released — see
    * {@link pendingDestroy} for why the frame decides when.
@@ -506,36 +485,13 @@ export class WebGPUHal implements GpuHal {
     this.pendingDestroy.length = 0
   }
 
-  deleteBuffer(regionKey: number, passId: string) {
-    this.regions.deleteBuffer(regionKey, passId)
-  }
-
-  deleteRegion(regionKey: number) {
-    this.regions.deleteRegion(regionKey)
-  }
-
-  pruneRegions(active: Iterable<number>) {
-    this.regions.prune(active)
-  }
-
-  uploadTexture(
+  protected createTexture(
     passId: string,
+    binding: TextureBinding,
     data: Uint8Array,
     width: number,
     height: number,
   ) {
-    const desc = this.descriptors.get(passId)
-    const tb = desc?.textures?.[0]
-    if (!tb) {
-      return
-    }
-    const maxDim = this.device.limits.maxTextureDimension2D
-    if (width > maxDim || height > maxDim) {
-      this.oom.report(
-        `This region is too large to render on this GPU — zoom in. (texture ${width}×${height} exceeds max texture size ${maxDim})`,
-      )
-      return
-    }
     const existing = this.passTextures.get(passId)
     if (existing) {
       // Same hazard as a buffer, one step further from a live caller: every
@@ -558,8 +514,8 @@ export class WebGPUHal implements GpuHal {
       { width, height },
     )
     const sampler = this.device.createSampler({
-      magFilter: tb.filter,
-      minFilter: tb.filter,
+      magFilter: binding.filter,
+      minFilter: binding.filter,
       addressModeU: 'clamp-to-edge',
       addressModeV: 'clamp-to-edge',
     })
@@ -902,11 +858,7 @@ export class WebGPUHal implements GpuHal {
     this.viewportRect = null
   }
 
-  dispose() {
-    if (this.disposed) {
-      return
-    }
-    this.disposed = true
+  protected releaseResources() {
     // Abandon an open frame before releasing anything, so the releases below
     // are immediate: its encoded draws never reach the queue, and a deferral
     // here would have no `endFrame` left to drain it. The error scopes it
