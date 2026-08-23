@@ -263,6 +263,15 @@ These apply to everything under `website/`, including `docs/` and `tutorials/`.
   the figure carry how far. Measurements go in a table, the script, or a spec
   comment. Density matters too: several derived figures in one paragraph read as
   arithmetic even when each is defensible.
+- **An aside a first-time reader does not need is a footnote**, `[^name]` with
+  its definition at the bottom of the file (GFM footnotes, through remarkGfm).
+  They render as a small **Notes** block under the page's last section, and
+  `src/lib/markdown.ts` names that label; the two heading plugins skip it, so it
+  is in neither the table of contents nor the heading anchors. What earned them:
+  `ld_human`'s Prerequisites explained which plink binary and which flag renamed
+  in 2.0, three sentences deep, to a reader still working out what to install.
+  One footnote can be referenced twice, so the install line and the command that
+  needs it point at the same note.
 - **Keep specific values out of captions and callouts.**
 - **A callout must say what the picture cannot.** If it names the largest thing
   in the frame, delete it rather than reword it. Shading a region is different:

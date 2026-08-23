@@ -23,38 +23,30 @@ window you cut and on which samples went in.
 - [vcftools](https://vcftools.github.io/) and
   [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) for the Fst
   lane, plus [PLINK 1.9](https://www.cog-genomics.org/plink/1.9/) for the r²
-  tables, which installs as `plink`. PLINK 2.0 is a separate program with its
-  own plink2 binary, and it splits `--r2` into `--r2-unphased` and
-  `--r2-phased`, so the commands here are written for 1.9. Debian and Ubuntu
-  package that build as plink1.9.
+  tables[^plink]
 
 ## Where the data comes from
 
-Every genotype on this page is the 1000 Genomes 30x high-coverage release from
-NYGC ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),
+1000 Genomes 30x high-coverage from NYGC
+([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),
 called natively on GRCh38, so no liftover sits between the calls and the hg38
-coordinates the figures use. The file the commands read is that release's phased
-chromosome 2 panel, in
-[its data collection at the EBI](https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/),
-and they take a 3.4 Mb region of it rather than the 2.5 GB chromosome. The
-commands below call that file `$CALLSET`.
+coordinates the figures use.
 
-The three sample lists the commands pass to `-S` come out of two tables in that
-same collection, so no cohort here is hand-assembled:
+- phased chromosome 2, which the commands slice to a 3.4 Mb region and call
+  `$CALLSET`:
+  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+- the release's own unrelated set, whose SAMPLE_NAME column is
+  `unrelated.samples`. Relatives share long haplotypes for reasons that have
+  nothing to do with a sweep:
+  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/1000G_2504_high_coverage.sequence.index
+- populations and superpopulations, narrowed to that unrelated set for
+  `panel.samples` (EUR) and `rest.samples` (everything else):
+  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt
+- the region slices, rehosted so the figures and their live links load without
+  the EBI round trip: https://jbrowse.org/demos/popgen/
 
-- `unrelated.samples` is the release's own unrelated set, the SAMPLE_NAME column
-  of `1000G_2504_high_coverage.sequence.index`. Relatives share long haplotypes
-  for reasons that have nothing to do with a sweep, so the relatives the release
-  adds are left out.
-- `panel.samples` is the EUR superpopulation of
-  `20130606_g1k_3202_samples_ped_population.txt` narrowed to that unrelated set,
-  and `rest.samples` is the unrelated samples it leaves.
-
-The region slices are
-[rehosted on jbrowse.org](https://jbrowse.org/demos/popgen/) so the figures and
-their live links load without the EBI round trip, and the gene, ClinVar and
-recombination lanes beside them are tracks of the hosted UCSC hg38
-[hub](/docs/user_guides/hub_url).
+The gene, ClinVar and recombination lanes beside them are tracks of the hosted
+UCSC hg38 [hub](/docs/user_guides/hub_url).
 
 ## Reading the triangle
 
@@ -135,9 +127,9 @@ tabix -p vcf pooled.vcf.gz
 ```
 
 How wide is wide enough is a question for the file rather than for the picture.
-Running `plink --r2` against the causal variant gives r² to every other variant
-in the slice, and binning that by position says where the correlation falls
-away, which is where the window above comes from.
+Running `plink --r2` against the causal variant[^plink] gives r² to every other
+variant in the slice, and binning that by position says where the correlation
+falls away, which is where the window above comes from.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -155,12 +147,6 @@ plink --vcf pooled.snvs.vcf.gz --double-id --allow-extra-chr \
   --r2 --ld-window 999999 --ld-window-r2 0 \
   --ld-snp chr2:135851076 --ld-window-kb 4000 --out anchor
 ```
-
-Those tables are 1.9's. PLINK 2.0 runs the same command once `--r2` says which
-statistic it means: `--r2-unphased` is the genotypic correlation 1.9 computed,
-and `--r2-phased` is the haplotypic one the display computes, so on a phased VCF
-that second spelling puts the table and the triangle on the same footing. Every
-other flag above keeps its name in 2.0.
 
 ## Subset the VCF to one panel
 
@@ -194,9 +180,6 @@ The two lanes also end up drawing different variants, because
 `minorAlleleFrequencyFilter` is a frequency in whatever samples the file holds:
 a variant common in one panel and rare elsewhere clears the floor in the panel
 file and falls below it in the pooled one.
-
-The same applies to species, and more sharply: a panel mixing two species
-invents LD that neither species has.
 
 ## Compute Fst per variant
 
@@ -404,3 +387,11 @@ frequencies the six populations were chosen for.
   [High-coverage whole-genome sequencing of the expanded 1000 Genomes Project cohort including 602 trios](https://doi.org/10.1016/j.cell.2022.08.004)
 - Halldorsson et al. (2019).
   [Characterizing mutagenic effects of recombination through a sequence-level genetic map](https://doi.org/10.1126/science.aau1043)
+
+[^plink]:
+    PLINK 1.9 installs as `plink`, and Debian and Ubuntu package that build as
+    plink1.9. PLINK 2.0 is a separate program with its own plink2 binary, where
+    `--r2` splits in two: `--r2-unphased` is the genotypic correlation 1.9
+    computes, and `--r2-phased` is the haplotypic one an `LDDisplay` computes,
+    so on a phased VCF that second spelling puts the table and the triangle on
+    the same footing. Every other flag in these commands keeps its name in 2.0.

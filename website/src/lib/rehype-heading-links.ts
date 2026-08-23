@@ -1,5 +1,7 @@
 import { visit } from 'unist-util-visit'
 
+import { isFootnoteLabel } from './hast-utils.ts'
+
 import type { Element, Root } from 'hast'
 import type { Plugin } from 'unified'
 
@@ -8,7 +10,7 @@ const HEADING_TAGS = new Set(['h2', 'h3', 'h4'])
 const rehypeHeadingLinks: Plugin<[], Root> = () => {
   return tree => {
     visit(tree, 'element', (node: Element) => {
-      if (!HEADING_TAGS.has(node.tagName)) {
+      if (!HEADING_TAGS.has(node.tagName) || isFootnoteLabel(node)) {
         return
       }
       const id = node.properties.id

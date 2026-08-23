@@ -1,6 +1,6 @@
 import { visit } from 'unist-util-visit'
 
-import { getText } from './hast-utils.ts'
+import { getText, isFootnoteLabel } from './hast-utils.ts'
 
 import type { Element, Root } from 'hast'
 import type { Plugin } from 'unified'
@@ -23,7 +23,7 @@ const rehypeCollectToc: Plugin<[], Root> = () => {
     visit(tree, 'element', (node: Element) => {
       const depth = HEADING_DEPTHS[node.tagName]
       const id = node.properties.id
-      if (depth && id) {
+      if (depth && id && !isFootnoteLabel(node)) {
         toc.push({ depth, id, text: getText(node) })
       }
     })

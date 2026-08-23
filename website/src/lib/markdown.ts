@@ -39,7 +39,16 @@ const processor = unified()
   .use(remarkAutolinkTypes)
   .use(remarkWikiTitle)
   .use(remarkRelatedGuides)
-  .use(remarkRehype, { allowDangerousHtml: true })
+  // Footnotes come from remarkGfm above; these name what they render as. The
+  // default label is an `sr-only` "Footnotes" heading, which is invisible here
+  // (that class is scoped to DocsSidebarNav) and would leave the notes as an
+  // unlabelled list under the page's last section.
+  .use(remarkRehype, {
+    allowDangerousHtml: true,
+    footnoteLabel: 'Notes',
+    footnoteLabelProperties: { className: ['footnotes-label'] },
+    footnoteBackLabel: 'Back to the text',
+  })
   .use(rehypeRaw)
   .use(rehypeShiki)
   .use(rehypeLightbox)
