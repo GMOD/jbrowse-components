@@ -17,7 +17,7 @@ import { isObject } from './objectUtils.ts'
 import { isViewContainer } from './types/index.ts'
 
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
-import type { AbstractSessionModel } from './index.ts'
+import type { AbstractSessionModel } from './types/index.ts'
 
 // A view whose open tracks we can enumerate. The generic view interface doesn't
 // surface `tracks`, so narrow structurally — the declared display shape is the

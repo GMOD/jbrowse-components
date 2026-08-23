@@ -17,6 +17,9 @@ Audience and framing: [upstreamable-ideas](upstreamable-ideas.md).
 
 ## The measurement
 
+Figures as first taken. `scripts/moduleClosure.ts` reproduces them, and the
+current ones are in the status section at the bottom.
+
 `fetchEachRegion.ts` is 169 lines with exactly one runtime import:
 
 ```ts
@@ -69,6 +72,58 @@ independent arguments for one move should raise its priority there.
    structurally.
 3. Then the extractions in
    [lightweight-toolkit.md](lightweight-toolkit.md) stop needing an argument.
+
+## Done, 2026-08-23: both edges cut, the extraction still unproven
+
+Steps 1 and 2 landed. The plain-data types are `util/types/data.ts` and
+`types/index.ts` re-exports them; the fetch harness and the `util/` leaves
+import by subpath; `getRpcSessionId` moved from `util/tracks.ts` (which reaches
+the configuration schemas) to `util/mstUtils.ts`, which is what let
+`fetchContext.ts` stop dragging them.
+
+`scripts/moduleClosure.ts` is how the numbers above and below were taken —
+TypeScript's own resolver over the static import graph, runtime edges for one
+column and every edge for the other. `scripts/moduleClosure.test.ts` holds each
+entry to a ceiling of roughly half again its current cost, so the next import
+written through a barrel fails there. Files in the closure, before → after:
+
+| entry | runtime | type |
+| --- | --- | --- |
+| `fetchEachRegion.ts` | 122 → 8 | 378 → 379 |
+| `FetchMixin.ts` | 126 → 18 | 374 → 375 |
+| `installPerRegionFetchAutoruns.ts` | 126 → 42 | 406 → 407 |
+| `MultiRegionDisplayMixin.ts` | 149 → 150 | 430 → 431 |
+| `util/fetchContext.ts` | 122 → 4 | 368 → 369 |
+| `util/installFetch.ts` | 125 → 14 | 372 → 373 |
+| `util/locString.ts` | 4 → 4 | 367 → 8 |
+| `util/bpUtils.ts` | 2 → 2 | 367 → 6 |
+| `util/assemblyConfigUtils.ts` | 3 → 3 | 367 → 6 |
+
+Three things that reading only the runtime column would miss.
+
+**The type column did not move for the harness, and that is the finding.** Every
+one of those files reaches `getSession`, whose return type is
+`AbstractSessionModel` — so the 370-odd stands until the session interface
+splits, which is [lightweight-toolkit.md](lightweight-toolkit.md) §2 and not
+this. The barrel was never the only edge; it was the one that was there by
+accident.
+
+**What is left in the runtime column is real.**
+`installPerRegionFetchAutoruns` keeps 42 because it reads a track's assembly
+names out of a config, and `MultiRegionDisplayMixin` keeps 150 because it
+composes `RegionTooLargeMixin` and names the LGV model. Both are coupling those
+files actually have. The barrel's cost was that it made 122 and 42 look alike.
+
+**The data half kept its `SnapshotIn` derivation** rather than being redeclared
+structurally. It buys a types-only edge into a three-file graph
+(`types/mst.ts`, `ElementId.ts`, `nanoid.ts`), which render-core — the leaf this
+is modelled on — already exceeds by depending on `@jbrowse/mobx-state-tree`
+outright. Redeclaring would have to reproduce
+`UriLocation.internetAccountPreAuthorization.authInfo`, which is
+`types.frozen()`, i.e. `any`, and is indexed into by three callers.
+
+Still unproven, and unchanged by any of this: **nobody has tried to build the
+harness as a separate package.** The graph is small enough now to try.
 
 ## What this is not
 

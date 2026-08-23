@@ -1,5 +1,5 @@
 import { PLUGIN_STORE_URL } from '../checkPlugins.ts'
-import { fetchJson } from './index.ts'
+import { fetchJson } from './fetchJson.ts'
 import { useFetch } from './useFetch.ts'
 
 import type { JBrowsePlugin } from './types/data.ts'

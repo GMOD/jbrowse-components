@@ -3,7 +3,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { layoutBpToPx, moveTo, pxToBp } from './Base1DUtils.ts'
 import calculateDynamicBlocks from './calculateDynamicBlocks.ts'
 import calculateStaticBlocks from './calculateStaticBlocks.ts'
-import { clamp } from './index.ts'
+import { clamp } from './numericUtils.ts'
 import { ElementId } from './types/mst.ts'
 
 import type { BpOffset } from './Base1DUtils.ts'

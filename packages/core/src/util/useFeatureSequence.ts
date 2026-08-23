@@ -2,7 +2,7 @@ import { fetchSeq } from './fetchSeq.ts'
 import { createStatusFanOut } from './progress.ts'
 import { useFetch } from './useFetch.ts'
 
-import type { AbstractSessionModel } from './index.ts'
+import type { AbstractSessionModel } from './types/index.ts'
 
 const BPLIMIT = 20_000_000
 

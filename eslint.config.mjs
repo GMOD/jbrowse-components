@@ -889,6 +889,45 @@ export default defineConfig(
       ],
     },
   },
+  // A module under `packages/core/src/util` imports its siblings by path. The
+  // barrel is 68 value re-exports, so one edge through it is the whole graph:
+  // `fetchContext.ts` reached `getSession` that way and carried 122 files.
+  // Nothing outside the package is affected — `@jbrowse/core/util` still
+  // exports what it always did (it is a plugin ABI module), and this is only
+  // about how the package talks to itself. Flat config overrides rather than
+  // merges, so the global paths and patterns are restated here.
+  // See agent-docs/ideas/barrels-block-extraction.md.
+  {
+    files: ['packages/core/src/util/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              importNames: ['useEffectEvent'],
+              message:
+                'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@jbrowse/*/src', '@jbrowse/*/src/**'],
+              message:
+                'Do not import from the src directory of another package. Use the package public API instead.',
+            },
+            {
+              group: ['./index.ts'],
+              message:
+                'Import the sibling module directly (e.g. ./mstUtils.ts, ./progress.ts). Going through the util barrel pulls its whole graph into this module and is what stops it being extracted.',
+            },
+          ],
+        },
+      ],
+    },
+  },
   // The one file that has to reach another package's src: it pins the app's
   // format guesser to the CLI's, and @jbrowse/cli publishes a binary rather
   // than an importable entry point, so there is no public API to compare

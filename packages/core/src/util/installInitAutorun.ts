@@ -1,7 +1,7 @@
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { getSession } from './index.ts'
+import { getSession } from './mstUtils.ts'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
