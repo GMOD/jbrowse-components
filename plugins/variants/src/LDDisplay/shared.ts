@@ -459,11 +459,12 @@ export default function sharedModelFactory(
       },
 
       // Literal RPC payload for RenderLDData. Adding a field here
-      // automatically flows into both the RPC call (via the fetch autorun
-      // in afterAttach.ts) and into mobx's dependency tracking — the
-      // fetch autorun calls `self.rpcProps()` once, so any change to any
-      // field refires it. No hand-enumerated fields at the top of the
-      // autorun.
+      // automatically flows into both the RPC call and the refetch trigger:
+      // the global fetch skeleton tracks the *serialized* payload
+      // (`installGlobalFetchAutorun`'s computed over `serializeRpcProps`), so
+      // a change to any returned field refires the fetch while a read the
+      // payload doesn't return cannot. No hand-enumerated fields at the top of
+      // the autorun.
       rpcProps() {
         return {
           ldMetric: self.ldMetric,

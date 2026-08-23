@@ -277,9 +277,14 @@ export function RenderLifecycleMixin() {
               // buffer-packing edge case) is routed to `renderError` for the
               // same reason as the render autorun below: an uncaught reaction
               // error would skip `renderNow()`, never flip `canvasDrawn`, and
-              // strand the display on 'loading' forever with no retry. Setting
-              // `renderError` unmounts the canvas and disposes the backend, so
-              // this can't re-fire into a loop.
+              // strand the display on 'loading' forever with no retry. For
+              // DisplayChrome consumers setting `renderError` unmounts the
+              // canvas and disposes the backend, so this can't re-fire into a
+              // loop; a shared-canvas consumer (dotplot, synteny) keeps the
+              // canvas mounted through an error (ADR-025), so there the only
+              // pacing is that autoruns re-fire on dep changes — a
+              // deterministically-throwing callback re-throws once per change,
+              // each landing on `setRenderError`'s identity guard.
               try {
                 cbs.upload(b)
                 // Force the render autorun to re-fire after each upload.
@@ -311,8 +316,9 @@ export function RenderLifecycleMixin() {
               // an uncaught reaction error and leave the display stuck on
               // "loading" forever. Route it to `renderError` so it surfaces as
               // the render-error overlay (with the message + retry) instead.
-              // Setting `renderError` unmounts the canvas and disposes the
-              // backend, so this can't re-fire into a loop.
+              // Same loop caveat as the upload autorun above: the
+              // unmount-and-dispose that prevents re-fire is DisplayChrome's,
+              // not a shared canvas's.
               try {
                 if (cbs.render(b)) {
                   self.markCanvasDrawn()

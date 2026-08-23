@@ -211,9 +211,14 @@ jbrowse-img), so gating on the paint flag would hang forever.
 **One policy, five predicates.** The formula is single-sourced in
 `computeSvgReady(terminals, dataCurrent)` (`@jbrowse/core/svg/svgReady`, beside
 `awaitSvgReady`) — the `computeDisplayPhase` treatment applied to export
-readiness: `error || regionTooLarge || extraTerminal || dataCurrent()`, with
-`dataCurrent` a **thunk** so a display under a banner doesn't subscribe to the
-view's `visibleRegions`/`loadedRegions` churn. Every `svgReady` getter in the
+readiness: `error || regionTooLarge || extraTerminal || fetchCanceled ||
+dataCurrent()`, with `dataCurrent` a **thunk** so a display under a banner
+doesn't subscribe to the view's `visibleRegions`/`loadedRegions` churn.
+`fetchCanceled` is a required terminal because a standing user cancel is a
+resting state — durable until Retry or a viewport change, and an export causes
+neither — and `awaitSvgReady` then fails the export on it the way it fails on
+`error`, so the track is reported rather than written blank (a family with no
+cancel affordance, chord, answers it `false`). Every `svgReady` getter in the
 tree calls it; what varies is only how that display answers `dataCurrent`, the
 one freshness name every foundation exposes. Each of the five hand-written copies
 this replaced was a place to forget a terminal (hang the export) or forget
@@ -320,9 +325,12 @@ A correct `dataCurrent` is not sufficient. `dataCurrent` answers "is the held
 data current"; it cannot answer "will data ever arrive". So the rule is one
 level up: **if a display can sit indefinitely in a state where its fetch trigger
 is false, that state has to reach `svgReady` some other way** — `error`,
-`regionTooLarge`, or `fetchInert`. Otherwise one such track hangs the
-whole view's export, because `renderToSvg` awaits every display and
-`awaitSvgReady` has no time bound.
+`regionTooLarge`, `fetchCanceled`, or `fetchInert`. Otherwise one such track
+hangs the whole view's export, because `renderToSvg` awaits every display and
+`awaitSvgReady` has no time bound. The cancel is the resting state every
+fetching display has: the user parks it, Retry or a viewport change releases
+it, and an export does neither — which is why `SvgReadyTerminals` takes it as a
+required field rather than leaving it to each display's memory.
 
 Read a global display's `prepare` and ask what leaves it declining forever.
 Three shapes have shipped this bug:

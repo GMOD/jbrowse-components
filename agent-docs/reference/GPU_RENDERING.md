@@ -497,8 +497,11 @@ touching either path, preserve whichever of these the display uses:
   path's arithmetic but in the range over which they agree. So a budget needs
   **the input range it covers, stated where the number is**, measured rather than
   reasoned — sweep the shader's own window arithmetic and record the threshold
-  and the cost of moving it (`MAX_VISIBLE_CHEVRONS_PER_LINE` carries 4960 CSS px
-  of block width, the numbers either side, and what 7680 would cost). A budget
+  and the cost of moving it. `MAX_VISIBLE_CHEVRONS_PER_LINE`
+  (`sharedRendererConstants.ts`) is the worked example: it carries the CSS-px
+  window it covers, the numbers either side, and the cost of widening — read the
+  figure there, not here, since a copy of it in this doc has already gone stale
+  once. A budget
   with no stated range reads as a limit nobody will hit, and there is nothing to
   check it against.
 - **`SYNC:` comments anchor formulas** — the fallback, not a mechanism. Where a
@@ -556,16 +559,20 @@ export class GpuXxxRenderer extends GpuPerRegionRenderingBackend<XxxUploadData, 
   protected drawRegion(block, clip, region, state) { … }
 }
 
-// Canvas2D renderer implements renderBlocks only:
+// Canvas2D renderer implements draw only — never renderBlocks, which the base
+// owns (hi-DPI sizing via prepareCanvas, the painted answer):
 export class Canvas2DXxxRenderer extends Canvas2DPerRegionRenderingBackend<XxxUploadData, XxxRenderState> {
-  renderBlocks(blocks, regions, state) { … }
+  protected draw(blocks, regions, state) { … }
 }
 ```
 
 The bases own everything that's truly shared:
 
 - `Canvas2DPerRegionRenderingBackend` owns `canvas` + `ctx` (constructor throws if
-  no 2D context) and stubs `uploadRegion` / `pruneRegions` / `dispose` as no-ops,
+  no 2D context), owns the concrete `renderBlocks` (hi-DPI `prepareCanvas`
+  sizing and the `painted` answer, around the abstract `draw` the subclass
+  implements — overriding `renderBlocks` instead silently drops both), and stubs
+  `uploadRegion` / `pruneRegions` / `dispose` as no-ops,
   since the source of truth is the `regions` map.
 - `GpuPerRegionRenderingBackend` owns the `hal` reference and a pre-allocated
   uniform scratch `ArrayBuffer`. Default `pruneRegions(active)` delegates to
@@ -771,9 +778,10 @@ what it already sent.
 
 **The helper lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is
 used by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
-`LinearMultiRowFeatureDisplay`. It does **not** apply to the canvas plugin's other
-display, `LinearBasicDisplay`, whose whole-map Y-layout keeps it on the
-computed-map form described below. (The canvas plugin's two displays sit on
+`LinearMultiRowFeatureDisplay`. The **streamed-encode form** does not apply to
+the canvas plugin's other display, `LinearBasicDisplay`, whose whole-map
+Y-layout keeps it on the computed-map (identity) form of this same installer,
+described below. (The canvas plugin's two displays sit on
 opposite upload strategies, so they're always spelled out where they diverge.
 `LinearMultiSampleVariantDisplay` is per-region too, deriving its regions map
 from a single `cellData` computed (`perRegionCellMap`) and handing that to this

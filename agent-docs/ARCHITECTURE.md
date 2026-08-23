@@ -250,12 +250,12 @@ someone pans.
 
 **Only that one foundation installs it, so a storer outside it owes its own.**
 Both comparative views store a hover and both had to answer this separately,
-which is what makes it a rule rather than one mixin's habit:
-`setupClearHoverOnPlotMove` (dotplot) and `installClearHoverOnBandMove`
-(synteny) are each a `reaction` on the *view* — the view is what owns the hover
-there, since one action fans a pick hit out across every display on the shared
-canvas — over one value carrying every number that moves the picture.
-Dotplot watches `plotTransform`; synteny watches `bandTransformKey`, each row's
+which is what makes it a rule rather than one mixin's habit — and the answer is
+now one named thing, `installClearHoverOnSurfaceMove` (`@jbrowse/synteny-core`):
+a `reaction` on the *model that owns the surface* — the view/level, since one
+action fans a pick hit out across every display on the shared canvas — over one
+value carrying every number that moves the picture. Dotplot passes
+`plotTransform`; synteny's level passes `bandTransformKey`, each row's
 `offsetPx` and `bpPerPx` plus the band height. Both leave out the two axes a
 shared canvas does not have: no per-display scroll, no too-large banner.
 
@@ -846,10 +846,10 @@ copies:
 
 | what | where | who runs on it |
 | --- | --- | --- |
-| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them — `FetchMixin.runFetch` wraps it and adds the observable bookkeeping (`isLoading`, `error`, `fetchGeneration`, `fetchCanceled`); the comparative installer, the two second-fetch autoruns (variants sources, breakpoint overlay), chord's fetch and `withDiagonalizeProgress` hold one directly |
+| latest-wins token rotation, the `isCurrent` guard, the supersede-vs-end status rule (ADR-080) | `createStopTokenRotation` | all of them — `FetchMixin.runFetch` wraps it and adds the observable bookkeeping (`isLoading`, `error`, `fetchGeneration`, `fetchCanceled`); `installPrerequisiteFetch` (which the variants sources scan and HiC's header read run on), the comparative installer, the breakpoint overlay fetch, chord's fetch and `withDiagonalizeProgress` hold one directly |
 | the `prepare` / `run` / `commit` contract and its rules | `FetchPhases` (`@jbrowse/core/util/fetchPhases`) | the global and comparative families; per-region is deliberately not this shape, see `RegionFetchContext` |
 | the leading-edge scheduler | `leadingEdgeAutorun` | all three installers, plus the dotplot view's region autorun |
-| the non-abort fetch-error rule: an abort is the ordinary end of a superseded fetch and is swallowed, so is any failure of a fetch that is no longer current, and only a current fetch's real failure is logged and published | `handleFetchError` (`@jbrowse/core/util`) | `FetchMixin.runFetch`, the comparative installer, chord's fetch |
+| the non-abort fetch-error rule: an abort is the ordinary end of a superseded fetch and is swallowed, so is any failure of a fetch that is no longer current, and only a current fetch's real failure is logged and published | `handleFetchError` (`@jbrowse/core/util`) | `FetchMixin.runFetch`, `installPrerequisiteFetch`, the comparative installer, the breakpoint overlay fetch, chord's fetch |
 
 `FetchMixin` reimplemented the rotation rather than wrapping it until
 2026-08-20, and the two copies had drifted over whether a completed fetch
@@ -874,8 +874,9 @@ fetch stopping at the measurement rather than downloading. So the banner release
 on a fresh index read, with no imperative clear and no flicker on pan. Displays
 opt in by overriding hooks — `measuresBytesPreFlight` for a pre-flight estimate,
 `measuresBytesInFetch` for a byte check inside the display's own feature RPC,
-plus `byteGateAdapterConfig` / `densityTooLarge` / `configuredFetchSizeLimit` —
-rather than shadowing the getter. **Never override
+plus `byteGateAdapterConfig` / `densityTooLarge` — rather than shadowing the
+getter (`configuredFetchSizeLimit` / `configForceLoad` are plain slot reads,
+not part of the overridable hook surface). **Never override
 `gateEnabled`**: it is the OR of the two opt-ins, additive
 precisely so a gate mixin can contribute one without racing the base on
 composition order, and `no-restricted-syntax` fails both the shadow and a
@@ -1126,8 +1127,12 @@ what leaves it false indefinitely — a user toggle inside it (LD's
 `showLDTriangle`), an unmet prerequisite (HiC's `prepare` needs an
 `effectiveResolution`, which `CoreGetInfo` supplies), a static "zoom in" mode
 (sequence). Each such state has to reach `svgReady` through `error`,
-`regionTooLarge`, or `fetchInert`, or one track hangs the whole
-view's export with the dialog spinner up and nothing said. Two cases are already
+`regionTooLarge`, `fetchCanceled` or `fetchInert`, or one track hangs the whole
+view's export with the dialog spinner up and nothing said. A standing user
+cancel is such a state — durable until Retry or a viewport change, and an
+export causes neither — so `computeSvgReady` takes it as a required terminal
+and `awaitSvgReady` fails the export on it the way it fails on `error`,
+matching the "Loading canceled / Retry" the user is looking at. Two cases are already
 handled for you: minimized tracks, which `SVGLinearGenomeView` filters out, and
 the viewport holding no content block at all (`showAllRegions` on a
 scaffold-level assembly, where every region elides — the only way in), which
@@ -1691,11 +1696,11 @@ and 12 lines — and both have since been given the sections they wanted.
 ### Chrome, readiness and export
 
 - Don't leave a resting state that never fetches non-terminal. `awaitSvgReady`
-  has no time bound, so a user toggle, an unmet prerequisite or a static "zoom
-  in" mode must reach `svgReady` through `error`, `regionTooLarge` or
-  `fetchInert` — otherwise one track hangs the whole view's export
-  with the dialog spinner up. Enumerate every way the prerequisite fails, not
-  just the throw. See [SVG export](#svg-export).
+  has no time bound, so a user toggle, an unmet prerequisite, a standing user
+  cancel or a static "zoom in" mode must reach `svgReady` through `error`,
+  `regionTooLarge`, `fetchCanceled` or `fetchInert` — otherwise one track hangs
+  the whole view's export with the dialog spinner up. Enumerate every way the
+  prerequisite fails, not just the throw. See [SVG export](#svg-export).
 - Don't derive the export's terminal set separately from the loading overlay's.
   They are the same states, plus two readers outside the display
   (`displaysSettled`, the retry check), which is why `fetchInert` is one mixin
@@ -1720,8 +1725,9 @@ and 12 lines — and both have since been given the sections they wanted.
   don't skip overriding `clearHoveredFeature` if you store one — the mixin
   installs the reaction and that one action is all a storer owes it. Outside
   that family nothing installs it, so a display or view that stores a hover owes
-  the whole reaction, the way dotplot's `setupClearHoverOnPlotMove` and
-  synteny's `installClearHoverOnBandMove` each do.
+  the whole reaction — `installClearHoverOnSurfaceMove`
+  (`@jbrowse/synteny-core`), which both comparative views call with their own
+  transform key.
 
 ### Backends and generated code
 
