@@ -45,10 +45,21 @@ export default function WithDisableZoomAndSideScroll() {
       },
     ],
     plugins: [MyPlugin],
+    // every header control routes through zoomTo/scrollTo, so with those
+    // stubbed the pan arrows, zoom buttons, slider and search box are all
+    // inert. MiniControls takes the header's place and keeps two zoom buttons
+    defaultSession: {
+      name: 'disable-zoom-and-side-scroll',
+      view: {
+        id: 'linearGenomeView',
+        type: 'LinearGenomeView',
+        hideHeader: true,
+      },
+    },
     // the lock is not only a gesture lock: navTo/moveTo reach the view through
     // the same two actions, so this picks the displayed region but the view
     // opens at its default scale rather than on this window. A view that has to
-    // start somewhere specific wants its bpPerPx/offsetPx in a defaultSession
+    // start somewhere specific wants its bpPerPx/offsetPx on the view above
     location: 'ctgA:1105..1221',
   })
   return <JBrowseLinearGenomeView viewState={state} />
