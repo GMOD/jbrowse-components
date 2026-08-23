@@ -87,6 +87,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'ERR_INSUFFICIENT_RESOURCES',
     "TEST_INFRASTRUCTURE quotes Chrome's own error",
   ],
+  [
+    'MiniControlsComponent',
+    'EAGER_BUNDLE names the view method whose deletion was the fix',
+  ],
 ])
 
 const LADDER = ['~128', '~512', '~2048']
