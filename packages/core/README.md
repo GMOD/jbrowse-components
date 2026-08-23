@@ -49,6 +49,19 @@ this rule and a doc comment claiming to be the whole of it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
 
+### buildColorRampLut
+
+A 256-entry RGBA lookup table over sampleColorRamp, laid out as the 256x1
+texture both GPU backends upload and the Canvas2D twins index — entry `i` is the
+color at `t = i / 255`.
+
+```js
+// type signature
+(stops: readonly ColorRampStop[]) => Uint8Array<ArrayBuffer>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
 ### canonicalizeViewRefName
 
 Resolve user-authored refName text against the assembly of the view containing
@@ -488,6 +501,19 @@ Takes no jexl `args`, unlike `getConf`: a promotable slot cannot hold a callback
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
+### sampleColorRamp
+
+The color at `t` in `[0, 1]` across a list of EVENLY SPACED stops, linearly
+interpolated per channel. `t` is clamped, so the ends are the end stops rather
+than an extrapolation past them, and a one-stop ramp is that stop everywhere.
+
+```js
+// type signature
+(stops: readonly ColorRampStop[], t: number) => ColorRampStop
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
 ### SessionPaletteProvider
 

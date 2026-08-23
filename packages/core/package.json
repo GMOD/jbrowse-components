@@ -156,6 +156,7 @@
     "./util/chooseGridPitch": "./src/util/chooseGridPitch.ts",
     "./util/color": "./src/util/color/index.ts",
     "./util/colorBits": "./src/util/colorBits.ts",
+    "./util/colorRamp": "./src/util/colorRamp.ts",
     "./util/colord": "./src/util/colord.ts",
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/copyText": "./src/util/copyText.ts",
@@ -817,6 +818,10 @@
       "./util/colorBits": {
         "types": "./esm/util/colorBits.d.ts",
         "import": "./esm/util/colorBits.js"
+      },
+      "./util/colorRamp": {
+        "types": "./esm/util/colorRamp.d.ts",
+        "import": "./esm/util/colorRamp.js"
       },
       "./util/colord": {
         "types": "./esm/util/colord.d.ts",
@@ -1492,6 +1497,9 @@
         ],
         "util/colorBits": [
           "esm/util/colorBits.d.ts"
+        ],
+        "util/colorRamp": [
+          "esm/util/colorRamp.d.ts"
         ],
         "util/colord": [
           "esm/util/colord.d.ts"

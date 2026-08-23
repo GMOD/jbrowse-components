@@ -1,23 +1,12 @@
-function interpolateStops(stops: RgbStop[]): Uint8Array {
-  const data = new Uint8Array(256 * 4)
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255
-    const stopIndex = t * (stops.length - 1)
-    const lower = Math.floor(stopIndex)
-    const upper = Math.min(lower + 1, stops.length - 1)
-    const frac = stopIndex - lower
-    const lo = stops[lower]!
-    const hi = stops[upper]!
-
-    data[i * 4] = Math.round(lo[0] * (1 - frac) + hi[0] * frac)
-    data[i * 4 + 1] = Math.round(lo[1] * (1 - frac) + hi[1] * frac)
-    data[i * 4 + 2] = Math.round(lo[2] * (1 - frac) + hi[2] * frac)
-    data[i * 4 + 3] = 255
-  }
-  return data
-}
+import { buildColorRampLut } from '@jbrowse/core/util/colorRamp'
 
 export type RgbStop = [number, number, number]
+
+// The LD ramps are opaque throughout, so the shared interpolation gets its
+// alpha channel here rather than each stop table carrying a fourth 255.
+function opaqueRampLut(stops: RgbStop[]) {
+  return buildColorRampLut(stops.map(([r, g, b]) => [r, g, b, 255] as const))
+}
 
 const R2_STOPS: RgbStop[] = [
   [255, 255, 255],
@@ -111,7 +100,7 @@ export function ldColorStops(metric: string, signedLD: boolean): RgbStop[] {
 const RAMPS = new Map(
   [R2_STOPS, DPRIME_STOPS, R_SIGNED_STOPS, DPRIME_SIGNED_STOPS].map(stops => [
     stops,
-    interpolateStops(stops),
+    opaqueRampLut(stops),
   ]),
 )
 

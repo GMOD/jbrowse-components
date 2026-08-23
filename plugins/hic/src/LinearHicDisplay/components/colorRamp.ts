@@ -1,37 +1,36 @@
+import {
+  buildColorRampLut,
+  sampleColorRamp,
+} from '@jbrowse/core/util/colorRamp'
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
 import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
 
-export type RGBA = readonly [number, number, number, number]
+import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
+
+export type RGBA = ColorRampStop
 
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
-// 256x1 RGBA ramp AND the CSS/SVG legend gradients. Stops are evenly spaced.
-interface ColorStops {
-  stops: readonly RGBA[]
-}
+// 256x1 RGBA ramp AND the CSS/SVG legend gradients. Stops are evenly spaced,
+// which is what `sampleColorRamp` interpolates between.
+const FALL_STOPS: readonly RGBA[] = [
+  [255, 255, 255, 255],
+  [255, 255, 204, 255],
+  [255, 237, 160, 255],
+  [254, 217, 118, 255],
+  [254, 178, 76, 255],
+  [253, 141, 60, 255],
+  [252, 78, 42, 255],
+  [227, 26, 28, 255],
+  [189, 0, 38, 255],
+  [128, 0, 38, 255],
+  [0, 0, 0, 255],
+]
 
-const FALL_STOPS: ColorStops = {
-  stops: [
-    [255, 255, 255, 255],
-    [255, 255, 204, 255],
-    [255, 237, 160, 255],
-    [254, 217, 118, 255],
-    [254, 178, 76, 255],
-    [253, 141, 60, 255],
-    [252, 78, 42, 255],
-    [227, 26, 28, 255],
-    [189, 0, 38, 255],
-    [128, 0, 38, 255],
-    [0, 0, 0, 255],
-  ],
-}
-
-const JUICEBOX_STOPS: ColorStops = {
-  stops: [
-    [255, 0, 0, 0],
-    [255, 0, 0, 255],
-  ],
-}
+const JUICEBOX_STOPS: readonly RGBA[] = [
+  [255, 0, 0, 0],
+  [255, 0, 0, 255],
+]
 
 // Viridis full 256-color hex spec — kept for the GPU ramp so the heatmap has
 // the smooth perceptually-uniform gradient. Legends use a 10-stop subset
@@ -53,7 +52,7 @@ function viridisRgbaFromHex(): RGBA[] {
   return out
 }
 
-const VIRIDIS_FULL_STOPS: ColorStops = { stops: viridisRgbaFromHex() }
+const VIRIDIS_FULL_STOPS: readonly RGBA[] = viridisRgbaFromHex()
 
 // One source of truth for the scheme names, their menu labels and the default:
 // the config schema's `types.enumeration` spreads the value list, the track menu
@@ -78,46 +77,10 @@ export const HIC_COLOR_SCHEMES = HIC_COLOR_SCHEME_OPTIONS.map(
 
 export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
 
-const SCHEMES: Record<HicColorScheme, ColorStops> = {
+const SCHEMES: Record<HicColorScheme, readonly RGBA[]> = {
   fall: FALL_STOPS,
   juicebox: JUICEBOX_STOPS,
   viridis: VIRIDIS_FULL_STOPS,
-}
-
-function lerp(a: number, b: number, t: number) {
-  return a * (1 - t) + b * t
-}
-
-function sample(scheme: ColorStops, t: number): RGBA {
-  const stops = scheme.stops
-  if (stops.length === 1) {
-    return stops[0]!
-  }
-  // Evenly spaced stops: bucket index = floor(t * (n-1)).
-  const last = stops.length - 1
-  const idx = Math.min(Math.floor(t * last), last - 1)
-  const f = t * last - idx
-  const a = stops[idx]!
-  const b = stops[idx + 1]!
-  return [
-    Math.round(lerp(a[0], b[0], f)),
-    Math.round(lerp(a[1], b[1], f)),
-    Math.round(lerp(a[2], b[2], f)),
-    Math.round(lerp(a[3], b[3], f)),
-  ]
-}
-
-function buildRamp(scheme: ColorStops): Uint8Array {
-  const data = new Uint8Array(256 * 4)
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255
-    const [r, g, b, a] = sample(scheme, t)
-    data[i * 4] = r
-    data[i * 4 + 1] = g
-    data[i * 4 + 2] = b
-    data[i * 4 + 3] = a
-  }
-  return data
 }
 
 // Derived from SCHEMES rather than listing the three names a third time, so the
@@ -125,7 +88,10 @@ function buildRamp(scheme: ColorStops): Uint8Array {
 // only table keyed by HicColorScheme, and its Record type makes a missing entry
 // a type error.
 const RAMPS = Object.fromEntries(
-  Object.entries(SCHEMES).map(([name, stops]) => [name, buildRamp(stops)]),
+  Object.entries(SCHEMES).map(([name, stops]) => [
+    name,
+    buildColorRampLut(stops),
+  ]),
 ) as Record<HicColorScheme, Uint8Array>
 
 export function generateColorRamp(colorScheme: HicColorScheme): Uint8Array {
@@ -139,7 +105,7 @@ export function getLegendStops(colorScheme: HicColorScheme) {
   const out: { offset: number; rgba: RGBA }[] = []
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1)
-    out.push({ offset: t, rgba: sample(scheme, t) })
+    out.push({ offset: t, rgba: sampleColorRamp(scheme, t) })
   }
   return out
 }

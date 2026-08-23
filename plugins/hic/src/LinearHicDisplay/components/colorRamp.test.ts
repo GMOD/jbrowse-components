@@ -75,6 +75,51 @@ describe('color ramps', () => {
     expect(generateColorRamp(scheme)).toHaveLength(256 * 4)
   })
 
+  // The pixels themselves, at five points across each scheme. The stop tables
+  // and the shared interpolation (`@jbrowse/core/util/colorRamp`, which the LD
+  // ramp builds through too) can both be edited without any other test here
+  // noticing: these entries are what says the heatmap still paints the colors
+  // it painted, byte for byte.
+  const RAMP_BYTES: [HicColorScheme, number[][]][] = [
+    [
+      'juicebox',
+      [
+        [255, 0, 0, 0],
+        [255, 0, 0, 64],
+        [255, 0, 0, 128],
+        [255, 0, 0, 192],
+        [255, 0, 0, 255],
+      ],
+    ],
+    [
+      'fall',
+      [
+        [255, 255, 255, 255],
+        [254, 227, 139, 255],
+        [253, 140, 60, 255],
+        [207, 12, 33, 255],
+        [0, 0, 0, 255],
+      ],
+    ],
+    [
+      'viridis',
+      [
+        [68, 1, 84, 255],
+        [59, 82, 139, 255],
+        [33, 145, 140, 255],
+        [94, 201, 98, 255],
+        [253, 231, 37, 255],
+      ],
+    ],
+  ]
+
+  test.each(RAMP_BYTES)('%s paints these bytes', (scheme, expected) => {
+    const ramp = generateColorRamp(scheme)
+    expect(
+      [0, 64, 128, 192, 255].map(i => [...ramp.slice(i * 4, i * 4 + 4)]),
+    ).toEqual(expected)
+  })
+
   test.each(SCHEMES)(
     '%s legend samples the same source as the ramp',
     scheme => {
