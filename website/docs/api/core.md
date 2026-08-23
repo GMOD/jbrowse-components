@@ -7,6 +7,19 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how
 to import these from a plugin.
 
+## buildColorRampLut
+
+A 256-entry RGBA lookup table over sampleColorRamp, laid out as the 256x1
+texture both GPU backends upload and the Canvas2D twins index — entry `i` is the
+color at `t = i / 255`.
+
+```js
+// type signature
+(stops: readonly ColorRampStop[]) => Uint8Array<ArrayBuffer>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
+
 ## relight
 
 Move a color's OKLCH lightness by `lightnessShift` and scale its chroma, holding
@@ -33,6 +46,19 @@ has to read as one tone across the whole palette or it reads as noise.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
+
+## sampleColorRamp
+
+The color at `t` in `[0, 1]` across a list of EVENLY SPACED stops, linearly
+interpolated per channel. `t` is clamped, so the ends are the end stops rather
+than an extrapolation past them, and a one-stop ramp is that stop everywhere.
+
+```js
+// type signature
+(stops: readonly ColorRampStop[], t: number) => ColorRampStop
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
 ## SessionPaletteProvider
 

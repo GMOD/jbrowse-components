@@ -135,6 +135,7 @@ const result: LinearMafGetAlignmentDataResult = {
   treeNewick,
   samplesCanonical: hasConfiguredSamples,
   regionData,
+  bytes,
 }
 // second arg is the transfer list: these buffers are moved to the main
 // thread, not structured-cloned. collectMafTransferables walks the result and

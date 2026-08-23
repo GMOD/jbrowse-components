@@ -241,6 +241,21 @@ differently, and the alignments coverage band does.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scoreRuleMarks.ts)
 
+## visibleStatsDomain
+
+The visible score domain four displays derive identically: walk the settled
+blocks, accumulate the stats of what each one shows, and nice-round the
+autoscaled range inside the configured bounds. `undefined` while there is
+nothing to scale against — no data, a hidden band, or a view that has not
+initialized — which every caller distinguishes from a domain.
+
+```js
+// type signature
+<Payload, Item, Stats>({ active, view, payloadFor, itemsFor, accumulate, range, bounds, scaleType, }: VisibleStatsDomainSpec<Payload, Item, Stats>) => [number, number] | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/visibleStatsDomain.ts)
+
 ## widenRangeToRules
 
 Widens an autoscaled range so every configured rule stays on the axis.
