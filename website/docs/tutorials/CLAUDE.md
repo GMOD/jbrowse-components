@@ -107,6 +107,27 @@ A tutorial with real requirements opens with `## Prerequisites` under the TL;DR:
 a bulleted list, optionally one short paragraph on installing what apt does not
 carry. Nothing else. The intro goes under its own `##` heading.
 
+**`## Where the data comes from` is a source list, one bullet per file**, and
+each bullet ends in the raw full URL rather than a link label, because the host
+and the path are the thing worth showing. Link the FTP or bucket folder instead
+where the reader wants the file's siblings. The prose above the list is one
+sentence naming the release and citing it; what a file means to the page belongs
+in the section that uses it. The section goes between Prerequisites and the
+intro, so a reader meets the data before the work.
+
+A folder URL has to actually serve a listing. Archive directories do
+(ftp.ensembl.org, ftp.1000genomes.ebi.ac.uk, ftp.ncbi.nlm.nih.gov,
+ngs.sanger.ac.uk); **our own buckets do not**, so a rehosted copy is written as
+the file URLs rather than as `https://jbrowse.org/demos/<name>/`, which 404s. A
+genome the script fetches by accession with the `datasets` CLI has no download
+URL to write, and the plain NCBI FTP folder for that accession stands in for
+one. A Zarr store is a directory of chunks and 404s at its root, which is worth
+saying in the bullet since the string is still what an adapter takes.
+
+**A list past about ten bullets splits into labelled groups**, a bold lead line
+and its own bullets each, rather than running as one column. `cancer_sv` is two
+cell lines out of two releases, and read as one list it was a wall.
+
 Frontmatter carries `data: hosted | download | pipeline` — what it takes to end
 up with what the page shows, **not** whether the figures can be read with
 nothing installed. A page whose cost is not about data leaves the field off. An

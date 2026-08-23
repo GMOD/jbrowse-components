@@ -32,6 +32,27 @@ but `bedGraphToBigWig`, which is a
 Homebrew has the same four (`brew install vcftools bcftools htslib`), and all
 five are on [bioconda](https://bioconda.github.io/) if you already run conda.
 
+## Where the data comes from
+
+The Drosophila Genetic Reference Panel, 205 inbred lines
+([Mackay et al. 2012](https://doi.org/10.1038/nature10811)), lifted to dm6.
+
+- the DGRP freeze-2 genotype calls:
+  https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
+- the `In(2L)t` inversion karyotype for each line, from DGRPool's phenotype
+  record: https://dgrpool.epfl.ch/phenotypes/1520/download
+- the finished Fst scan, rehosted so the tracks on this page load without
+  rebuilding: https://jbrowse.org/demos/popgen/fst_In2Lt.bw
+- π inside the inverted and standard karyotypes:
+  https://jbrowse.org/demos/popgen/pi_INV.bw and
+  https://jbrowse.org/demos/popgen/pi_STD.bw
+- the inversion genotypes and the line table beside them:
+  https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz and
+  https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv
+
+The dm6 assembly and gene track are the hosted UCSC
+[hub](/docs/user_guides/hub_url)'s own entries.
+
 ## Windowed statistics as tracks
 
 A population-genetic scan is a per-window statistic running along the genome:
@@ -55,16 +76,12 @@ insecticide-resistance gene _Cyp6g1_
 
 ## Building the scans
 
-Two inputs, both on stable HTTPS hosts. The genotypes are the DGRP freeze-2
-calls lifted to dm6 ([aertslab](https://resources.aertslab.org/DGRP2/)); the
-inversion karyotypes come from
-[DGRPool's In(2L)t phenotype record](https://dgrpool.epfl.ch/phenotypes/1520)
-([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)), which harmonizes
-the `In(2L)t` typing of
-[Huang et al. 2015](https://doi.org/10.1534/g3.115.019554). The karyotype column
-is `0` for standard homozygotes, `2` for inverted homozygotes, and `1` for
-heterozygotes, which is what splits the panel into the two groups Fst compares.
-The heterozygotes are dropped from both groups.
+The inversion karyotypes
+([Gardeux et al. 2023](https://doi.org/10.7554/eLife.88981)) harmonize the
+`In(2L)t` typing of [Huang et al. 2015](https://doi.org/10.1534/g3.115.019554).
+The karyotype column is `0` for standard homozygotes, `2` for inverted
+homozygotes, and `1` for heterozygotes, which is what splits the panel into the
+two groups Fst compares. The heterozygotes are dropped from both groups.
 
 [`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh)
 downloads both files and derives the two sample lists, normalizing DGRPool's

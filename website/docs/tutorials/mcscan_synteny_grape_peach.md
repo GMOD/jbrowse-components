@@ -32,6 +32,20 @@ On Debian/Ubuntu, `apt install samtools tabix wget last-align` covers the
 aligner and the file tools; jcvi installs with `pip install jcvi` and `node`
 comes from [nodejs.org](https://nodejs.org/).
 
+## Where the data comes from
+
+Grape ([Jaillon et al. 2007](https://doi.org/10.1038/nature06148)) and peach
+genomes and gene annotations, Ensembl Plants release 58.
+
+- grape (Vitis_vinifera, PN40024.v4) genome and CDS FASTA:
+  http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/vitis_vinifera/
+- grape gene annotation:
+  http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/vitis_vinifera/
+- peach (Prunus_persica, Prunus_persica_NCBIv2) genome and CDS FASTA:
+  http://ftp.ensemblgenomes.org/pub/plants/release-58/fasta/prunus_persica/
+- peach gene annotation:
+  http://ftp.ensemblgenomes.org/pub/plants/release-58/gff3/prunus_persica/
+
 ## What MCScan compares
 
 MCScan works through the two genomes' gene annotations, which finds synteny

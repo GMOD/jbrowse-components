@@ -34,6 +34,36 @@ Both UCSC binaries are
 [single-binary downloads](https://hgdownload.soe.ucsc.edu/admin/exe/), and
 `build_repeat_density.sh`'s header carries the curl line for each.
 
+## Where the data comes from
+
+[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), whose
+Minigraph-Cactus graph, wave callset and the alignment underneath both are read
+straight off S3 or through small tabix projections we host beside them.
+
+- the SV-resolution graph (`sv.gfa`), the minigraph backbone our rGFA tabix
+  projections are built from:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.sv.gfa.gz
+- the decomposed variant callset, 464 haplotypes, read straight off S3:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz
+- the undecomposed, snarl-level carriage file, 462 haplotypes:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/671F0A25-700C-4DDF-96B0-9668F6C0F25E--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz
+- the multiple alignment the graph and the callset are both derived from:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz
+- the release's all-vs-GRCh38 alignment, sliced for the CFHR and inversion
+  synteny figures:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
+- the CAT gene annotation index, one GFF3 per haplotype:
+  https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
+- the T2T-CHM13v2.0 reference (hs1), loaded as its own donor assembly:
+  https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
+- GRCh38's RepeatMasker annotation, binned for the repeat-density lanes:
+  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/rmsk.txt.gz
+- hs1's RepeatMasker annotation, the same lanes' other assembly:
+  https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb
+- our own rGFA, bubble and repeat-density projections, with the exact build
+  recorded beside them: https://jbrowse.org/demos/hprc/README.txt
+- hs1's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hs1/hs1.gff.gz
+
 ## The route, end to end
 
 Everything this page does to the graph, in one session:

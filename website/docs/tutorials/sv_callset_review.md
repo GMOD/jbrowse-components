@@ -22,18 +22,29 @@ normal, rendered the same way, is the control.
 npm install -g @jbrowse/img
 ```
 
+## Where the data comes from
+
+COLO829's somatic SV callset is the ONT open-data release's own
+`wf-somatic-variation` run
+([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)),
+rehosted alongside the [cancer SV demo](/docs/tutorials/cancer_sv).
+
+- the callset these commands fetch directly:
+  https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
+- the config the batch renders read tracks from:
+  https://jbrowse.org/demos/cancer_sv/config.json
+- the tumor reads the config's `COLO829_tumor_ont` track streams, Oxford
+  Nanopore R10 from the ONT open-data release:
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram
+- the matched normal the config's `COLO829BL_normal_ont` track streams:
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam
+
 ## COLO829 and its matched normal
 
 **COLO829** is a melanoma cell line with a matched normal, COLO829BL, and a
-community reference for somatic structural-variant calling
-([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)). The
-reads are Oxford Nanopore R10 from the
-[ONT open-data release](https://registry.opendata.aws/ont-open-data/); the calls
-are that release's own `wf-somatic-variation` run, served alongside the
-[cancer SV demo](/docs/tutorials/cancer_sv).
-
-That tutorial follows **one** event all the way down. This one renders every
-junction in the callset at a glance.
+community reference for somatic structural-variant calling. The
+[multi-hop tutorial](/docs/tutorials/cancer_sv) follows **one** event in this
+callset all the way down; this one renders every junction at a glance.
 
 ## The contact sheet
 

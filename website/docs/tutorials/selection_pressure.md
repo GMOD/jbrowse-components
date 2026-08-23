@@ -25,6 +25,24 @@ jcvi builds C extensions and will not install against every python. If
 `pip install jcvi` fails compiling them, `uv venv --python 3.12` followed by
 `uv pip install jcvi biopython` gets an interpreter it does build on.
 
+## Where the data comes from
+
+The two assemblies are
+[GCA_000001405.29](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_000001405.29/)
+(human GRCh38) and
+[GCA_003339765.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_003339765.3/)
+(rhesus macaque Mmul_10), with gene models and coding sequence from Ensembl
+release 116.
+
+- human gene models:
+  https://ftp.ensembl.org/pub/release-116/gff3/homo_sapiens/Homo_sapiens.GRCh38.116.gff3.gz
+- human coding sequence:
+  https://ftp.ensembl.org/pub/release-116/fasta/homo_sapiens/cds/Homo_sapiens.GRCh38.cds.all.fa.gz
+- rhesus macaque gene models:
+  https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz
+- rhesus macaque coding sequence:
+  https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz
+
 ## What dN/dS says
 
 Every coding substitution between two orthologs is either synonymous, changing
@@ -39,12 +57,6 @@ sit most of the time. Above it, amino acid changes fixed faster than silent
 ones, which takes positive selection to explain.
 
 ## Producing the data
-
-The two assemblies are
-[GCA_000001405.29](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_000001405.29/)
-(human GRCh38) and
-[GCA_003339765.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_003339765.3/)
-(rhesus macaque Mmul_10), with gene models from Ensembl 116.
 
 dS has to be large enough to estimate and small enough not to saturate, and
 rhesus macaque sits in that window against human. Chimpanzee leaves a

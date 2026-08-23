@@ -19,6 +19,16 @@ the mate genome on demand, so the second assembly needs no setup.
 - nothing to install: this is a click-path through a hosted site, and no data,
   config or second assembly is prepared by hand
 
+## Where the data comes from
+
+genomes.jbrowse.org's own hosted configs for the three genomes this page
+compares, each already carrying UCSC's pairwise liftOver chains to the others.
+
+- hg38: https://jbrowse.org/ucsc/hg38/config.json
+- Human (hs1, T2T-CHM13): https://jbrowse.org/ucsc/hs1/config.json
+- Chimp (panTro6), for [Trying other pairs](#trying-other-pairs):
+  https://jbrowse.org/ucsc/panTro6/config.json
+
 ## The hosted configs
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a ready-made JBrowse

@@ -25,6 +25,18 @@ draws one row per file.
   [desktop quickstart](/docs/quickstart_desktop), which opens local `.bw` files
   with nothing hosted)
 
+## Where the data comes from
+
+SnapATAC2's annotated release of the 10x 5k PBMC scATAC dataset, already
+clustered and cell-type-labeled by that tool's own pipeline.
+
+- the annotated `AnnData` that `snap.datasets.pbmc5k(type="annotated_h5ad")`
+  downloads and caches:
+  https://scverse.org/SnapATAC2/api/_autosummary/snapatac2.datasets.pbmc5k.html
+- CATlas' published hg38 per-cell-type accessibility BigWigs, the atlas bucket
+  the [published-atlas example](#published-atlas-bigwigs) reads from:
+  https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/
+
 ## Pooling cells into rows
 
 One ATAC cell contributes only a few thousand fragments, so a coverage track of

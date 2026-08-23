@@ -25,6 +25,18 @@ class is already in the file, and the display discovers the lanes from it.
   [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
   only
 
+## Where the data comes from
+
+The figures read UCSC's RepeatMasker track for hg38 and dm6, rehosted on
+jbrowse.org.
+
+- hg38, read by the tabix command under
+  [Checking the lanes against the file](#checking-the-lanes-against-the-file):
+  https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
+- dm6, the file the diff under
+  [Reproduce it end to end](#reproduce-it-end-to-end) checks a home-built
+  conversion against: https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
+
 ## Where the class lives in the file
 
 The two hub pipelines store it differently:

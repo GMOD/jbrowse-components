@@ -32,6 +32,21 @@ the build writes is a local file, so [JBrowse Desktop](/docs/quickstart_desktop)
 opens it by path with no web server, and on JBrowse Web it goes in through **Add
 track** or a `config.json`.
 
+## Where the data comes from
+
+The Dog10K consortium's public phased reference panel
+([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), plus a
+canFam4 genetic map published separately.
+
+- the phased reference panel of 1929 canids FLARE runs against:
+  https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
+- the sample table, breed and category labels the panels and targets are derived
+  from:
+  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
+- the Campbell pedigree map, transitioned onto this panel's own assembly
+  ([Wang et al. 2025](https://doi.org/10.5281/zenodo.17095604)):
+  https://zenodo.org/records/17095604/files/campbell_sex_average_canFam4.tar.gz?download=1
+
 ## Two wolfdog breeds and their wolf blocks
 
 The Saarloos Wolfdog and the Czechoslovakian Wolfdog are both 20th-century

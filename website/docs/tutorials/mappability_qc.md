@@ -20,6 +20,39 @@ all of them for hg38, so this page is a click-path.
 - to re-measure the numbers on this page, the tools listed under
   [Reproduce it end to end](#reproduce-it-end-to-end)
 
+## Where the data comes from
+
+Every hosted lane here is a file already wired into the
+[genomes.jbrowse.org](https://genomes.jbrowse.org) hg38 config, plus the 1000
+Genomes high-coverage short-read CRAM and its ONT long-read release
+([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
+
+- Umap k100 multi-read mappability:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/hoffmanMappability/k100.Umap.MultiTrackMappability.bw
+- gnomAD v3 mean genome coverage:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/gnomAD/coverage/v3-genome/gnomad.coverage.mean.bw
+- GIAB's low-mappability and segmental-duplication regions:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/GIAB/alllowmapandsegdupregions.bb
+- ENCODE's blacklist:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/encBlacklist.bb
+- the GRC's exclusion list:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/grcExclusions.bb
+- UCSC's own problematic-regions comments:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/problematic/comments.bb
+- the DGV merged CNV catalogue:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb
+- the 1000 Genomes ONT long-read SV callset:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/lrSv/1kgOnt.bb
+- NA12878 at 30x, GRCh38, the read track added to the session:
+  https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
+- UCSC's hg38-to-CHM13 liftOver chain set:
+  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz
+- GM18501 ONT long reads aligned to GRCh38, counted rather than shown since the
+  bucket serves no CORS headers:
+  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
+- the same sample aligned to T2T-CHM13:
+  https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
+
 ## The SMN1 and SMN2 duplication
 
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%

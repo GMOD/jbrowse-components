@@ -21,6 +21,30 @@ and the Philadelphia chromosome in K562.
 - for the [scan script](#run-the-scan), `java` and `curl`, which is what
   `juicer_tools` needs; the script downloads `juicer_tools` itself
 
+## Where the data comes from
+
+Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's own domain,
+loop and compartment calls over the same two matrices.
+
+- GM12878 in situ Hi-C (ENCSR410MDC):
+  https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic
+- K562 in situ Hi-C (ENCSR545YBD):
+  https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic
+- GM12878 contact domains (Arrowhead):
+  https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz
+- GM12878 loops (HiCCUPS):
+  https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz
+- GM12878 compartment eigenvector:
+  https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig
+- K562 compartment eigenvector:
+  https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig
+- pseudobulk ATAC-seq by blood lineage beside the MYC domain (10x 5k-PBMC,
+  SnapATAC2), rehosted for the
+  [scATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk). One bigWig
+  per cell type, so CD14 monocytes are
+  https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw and naive CD4 T cells
+  https://jbrowse.org/demos/scatac_pbmc5k/CD4_Naive.bw
+
 ## What Hi-C measures, and what it looks like
 
 Hi-C counts how often two stretches of the genome are found touching each other

@@ -18,6 +18,26 @@ reads and watch the coverage go to zero, halve, and stay flat.
 - nothing to install: the demo instance already carries the callset and the
   alignments
 
+## Where the data comes from
+
+The 1000 Genomes 2022 high-coverage ensemble SV callset
+([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004)), read
+against three of its own samples' CRAMs and QuicK-mer2 copy number for the whole
+cohort.
+
+- the ensemble SV callset, 3202 samples:
+  https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz
+- HG00113 (homozygous alt) high-coverage CRAM:
+  https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240129/HG00113.final.cram
+- HG00096 (heterozygous) high-coverage CRAM:
+  https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240114/HG00096.final.cram
+- HG00097 (homozygous reference) high-coverage CRAM:
+  https://ftp.sra.ebi.ac.uk/vol1/run/ERR324/ERR3240115/HG00097.final.cram
+- QuicK-mer2 copy number for the cohort, the store the
+  [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory
+  of chunks rather than a file, so it is the `uri` an adapter takes:
+  https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+
 ## The 1000 Genomes SV callset
 
 The [1000 Genomes Project](https://www.internationalgenome.org/) sequenced

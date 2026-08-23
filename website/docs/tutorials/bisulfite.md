@@ -27,6 +27,17 @@ CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
   track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
+## Where the data comes from
+
+TAIR10 (RefSeq `GCF_000001735.4`) and one wild-type Col-0 WGBS run from the
+European Nucleotide Archive, `DRR029742` (paired-end 150 bp).
+
+- the TAIR10 reference and its gene models, fetched by accession with the
+  `datasets` CLI:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/735/GCF_000001735.4_TAIR10.1/
+- the WGBS run's paired-end reads:
+  https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/
+
 ## What bisulfite data looks like
 
 Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation

@@ -19,6 +19,18 @@ those tracks is a checkbox away, with nothing to download, index or configure.
 - nothing to install: this is a click-path through a hosted site, and no data,
   config or index is prepared by hand
 
+## Where the data comes from
+
+genomes.jbrowse.org's hosted hg38 config, and the one GenArk assembly this page
+opens for comparison.
+
+- hg38: https://jbrowse.org/ucsc/hg38/config.json
+- the 100-way phyloP conservation bigWig, read by locus over TP53:
+  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/phyloP100way/hg38.phyloP100way.bw
+- axolotl (Mex_15411), the GenArk assembly in
+  [Trying another genome](#trying-another-genome):
+  https://jbrowse.org/hubs/genark/GCF/040/938/575/GCF_040938575.1/config.json
+
 ## Opening a genome
 
 In 2025 we created [genomes.jbrowse.org](https://genomes.jbrowse.org) which

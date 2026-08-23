@@ -35,6 +35,56 @@ hypodiploid tumor genome where arm-level loss is the backdrop.
   - [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV) (v1.0 or later),
     for the binned depth track
 
+## Where the data comes from
+
+Cancer Genome in a Bottle publishes HG008 as raw HiFi reads, several groups'
+benchmark and published calls, and a T2T tumor assembly
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)), all under
+NCBI BioProject PRJNA200694 on the C-GIAB FTP.
+
+The reference and the reads:
+
+- the C-GIAB reference build (GRCh38 with decoys and masked regions):
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/references/GRCh38/GRCh38_GIABv3_no_alt_analysis_set_maskedGRC_decoys_MAP2K3_KMT2C_KCNJ18.fasta.gz
+- the tumor/normal PacBio HiFi reads (Revio run, 116x tumor, 35x normal):
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/
+
+The somatic call sets, one per group that published one:
+
+- the V0.5 draft benchmark SV and CNV calls:
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.5-20260318/
+- Severus somatic SVs (HiFi):
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Severus-SV_20240308/somatic_SVs/severus_somatic.vcf.gz
+- the minda ensemble SVs (HiFi, ONT and Illumina callers):
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH-NCI_minda-ensemble_20240710/HG008_minda_ensemble.vcf
+- DRAGEN's somatic SV and CNV calls (Illumina):
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/
+- NYGC's somatic SVs, annotated CNV segments and BIC-seq2 log2 ratio (Illumina):
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/
+- Wakhan's haplotype-specific copy number and LOH segments (HiFi phased with
+  Hi-C):
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi-HiC_Wakhan-CNA_20240424/bed_output/
+- the earlier Wakhan run's Clair3 tumor small-variant calls, which HiFiCNV reads
+  for its own MAF track:
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIH_HiFi_Wakhan-CNA_20240308/vcf_inputs/merge_output_tumor.vcf.gz
+- the normal's germline calls, which the BAF track piles the tumor reads up
+  against:
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
+
+The assemblies:
+
+- the T2T tumor assembly, v3.2:
+  https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz
+- the matched normal assembly, v6.3:
+  https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz
+
+The single-cell-derived clone panel:
+
+- short-read WGS for the HG008-T single-cell-derived clone panel:
+  https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/NIST/HG008-T_clones/
+- the per-clone CNVkit calls, rehosted merged into one multi-row BED:
+  https://jbrowse.org/demos/cgiab/HG008T-clones.cnv.multirow.bed.gz
+
 ## The C-GIAB dataset
 
 [Cancer Genome in a Bottle (C-GIAB)](https://www.nist.gov/programs-projects/cancer-genome-bottle)
@@ -917,12 +967,6 @@ the insertion burden downstream of it
 for the display modes, and the
 [methylation tutorial](/docs/tutorials/methylation) for the aggregate and
 allele-specific views.
-
-## Data availability
-
-Raw data from C-GIAB is under NCBI BioProject PRJNA200694. Processed data and
-benchmark call sets are available from the
-[NIST Cancer Genome in a Bottle page](https://www.nist.gov/programs-projects/cancer-genome-bottle).
 
 ## Where to go next
 

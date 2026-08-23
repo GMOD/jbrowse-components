@@ -30,6 +30,22 @@ On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
 these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
 from [nodejs.org](https://nodejs.org/).
 
+## Where the data comes from
+
+Three _H. pylori_ RefSeq assemblies, each fetched by accession with the
+`datasets` CLI.
+
+- 26695:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/307/795/GCF_000307795.1_ASM30779v1/
+- CHC155:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/025/998/455/GCF_025998455.1_ASM2599845v1/
+- J99:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/982/695/GCF_000982695.1_ASM98269v1/
+
+- the 26695 strain's gene annotation, rehosted so the color-by-attribute figure
+  loads without rerunning the pipeline:
+  https://jbrowse.org/demos/hpylori/hpylori_26695.gff.gz
+
 ## Three strains, stacked
 
 This tutorial follows three _Helicobacter pylori_ strains (26695, CHC155, and

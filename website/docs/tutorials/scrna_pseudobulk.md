@@ -26,6 +26,17 @@ rows.
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop))
 
+## Where the data comes from
+
+10x Genomics'
+[5k PBMC v3](https://www.10xgenomics.com/datasets/5-k-peripheral-blood-mononuclear-cells-pbm-cs-from-a-healthy-donor-v-3-chemistry-3-1-standard-3-0-2)
+experiment, streamed and pooled by cell type without landing on disk.
+
+- the barcoded alignments, read by region over HTTPS rather than downloaded:
+  https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
+- the filtered feature-barcode matrix the clustering runs on:
+  https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5
+
 ## Where in the gene the reads land
 
 Putting the cells on genomic coordinates says where in the gene the reads

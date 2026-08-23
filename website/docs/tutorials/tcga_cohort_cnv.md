@@ -27,10 +27,30 @@ by gain or loss, so a recurrent event reads as a vertical stripe down the stack.
 | `https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz` | the same, split by clinical group |
 | `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                          | per-tumor histology, receptors    |
 
+## Where the data comes from
+
+TCGA-BRCA, from the GDC's open-access **Masked Copy Number Segment** files
+(Affymetrix SNP 6.0, harmonized to GRCh38), so no dbGaP application or token is
+needed.
+
+- primary-tumor segment calls for 1104 tumors, queried and downloaded through
+  the GDC API: https://api.gdc.cancer.gov/files
+- per-tumor clinical annotation, from harmonized case fields and each case's
+  clinical XML: https://api.gdc.cancer.gov/cases
+- the segment stack, rehosted so the figures and their live links load without
+  the GDC round trip: https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz
+- the cohort recurrence track and the same split by clinical group:
+  https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz and
+  https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz
+- the clinical table the stack is grouped by:
+  https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
+
+The hg38 reference and gene track beside them are the hosted UCSC
+[hub](/docs/user_guides/hub_url)'s own entries.
+
 ## What the files hold
 
-These come from open-access GDC data, so no dbGaP application and no token is
-involved. [Reproduce it end to end](#reproduce-it-end-to-end) below builds them
+[Reproduce it end to end](#reproduce-it-end-to-end) below builds these files
 from the GDC for any project id.
 
 The BED is one segment call per line, with a `#`-prefixed header naming the

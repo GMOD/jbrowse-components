@@ -24,6 +24,21 @@ the chain between them, so there is nothing to align.
   [JBrowse CLI](/docs/cli) if you take the CLI tab under each config below
   rather than editing `config.json` by hand
 
+## Where the data comes from
+
+T2T-HG002 v1.2, the [Q100 project](https://github.com/marbl/HG002)'s diploid
+assembly and its own maternal-to-paternal chain, plus JHU Liftoff v0.6 gene
+models built on v1.1.
+
+- the diploid assembly, `chr1_MATERNAL` and `chr1_PATERNAL` and the rest of both
+  haplotypes in one FASTA:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz
+- the Q100 project's maternal-to-paternal chain:
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz
+- the JHU Liftoff v0.6 gene models, maternal haplotype (the paternal file sits
+  beside it, `PAT` in place of `MAT`):
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz
+
 ## Loading the assembly and the alignment
 
 The Q100 project serves both the assembly and the alignment between the

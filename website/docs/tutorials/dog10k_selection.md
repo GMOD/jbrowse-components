@@ -29,6 +29,19 @@ callset. The scripts write local files, which
 [JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
 through **Add track**.
 
+## Where the data comes from
+
+The Dog10K consortium's public share
+([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read
+directly over HTTP with no local copy of either callset.
+
+- the phased imputation panel, scored window by window for the Fst scan:
+  https://kiddlabshare.med.umich.edu/dog10K/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
+- the SNV/indel callset the _IGF1_ window is sliced from:
+  https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
+- the sample table, breed panels and the wolf outgroup are derived from it:
+  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
+
 ## Scanning for a locus
 
 Body size is the trait, so the two groups are the breeds at its extremes: every

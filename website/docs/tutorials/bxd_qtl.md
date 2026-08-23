@@ -25,6 +25,18 @@ GeneNetwork QTL scan, so a trait peak sits over the blocks that drive it.
 On Debian/Ubuntu, `apt install curl jq python3 tabix` covers it. The QTL scan is
 [downloaded already computed](#track-2-the-qtl-manhattan).
 
+## Where the data comes from
+
+BXD consensus genotypes and QTL scans from GeneNetwork
+([Wang et al. 2016](https://doi.org/10.1038/ncomms10464)).
+
+- the BXD consensus genotypes, 198 strains:
+  https://gn1.genenetwork.org/genotypes/BXD.geno
+- the coat-color scan (trait 11280), from GeneNetwork's mapping API:
+  https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma&trait_id=11280
+- the chromosome painting, rehosted for the track config:
+  https://jbrowse.org/demos/bxd/bxd_painting.bed.gz
+
 ## The BXD panel
 
 The [BXD family](https://genenetwork.org) is a panel of ~200 mouse

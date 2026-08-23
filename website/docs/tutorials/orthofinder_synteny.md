@@ -34,6 +34,21 @@ here calls it as `orthofinder` on `PATH`, so without root that container works
 too, wrapped as a shim; the [build script](#reproduce-it-end-to-end) header has
 the [Apptainer](https://apptainer.org/) version.
 
+## Where the data comes from
+
+Three OrthoFinder sets built from Ensembl proteomes and annotations: five
+vertebrates (Ensembl release 113), five grasses, and six genomes of the wheat
+lineage (both Ensembl Plants release 63).
+
+- vertebrates (human, chicken, frog, gar, zebrafish) protein FASTA and GFF3 per
+  genome: https://ftp.ensembl.org/pub/release-113/
+- grasses (rice, sorghum, maize, brachypodium, setaria) and the wheat lineage
+  (_Aegilops tauschii_, bread wheat, durum, wild emmer, _Triticum urartu_, _T.
+  timopheevii_) protein FASTA and GFF3 per genome:
+  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
+- the _T. timopheevii_ assembly its refName aliases are read from:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/963/921/465/GCA_963921465.1_WRC_timopheevii_genome_with_organelles/
+
 ## Orthogroups as a synteny source
 
 OrthoFinder clusters proteins into orthogroups without reference to where those

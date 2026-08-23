@@ -27,6 +27,25 @@ mutations a subtype shares line up.
 | `https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv`                               | per-tumor histology, receptors, stage |
 | `https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz` | per-gene mutation rate per subtype    |
 
+## Where the data comes from
+
+TCGA-BRCA open-access somatic mutation calls from the GDC
+([TCGA 2012](https://doi.org/10.1038/nature11412)).
+
+- primary-tumor **Masked Somatic Mutation** MAFs, queried and downloaded through
+  the GDC API: https://api.gdc.cancer.gov/files
+- per-tumor clinical annotation, from harmonized case fields and each case's
+  clinical XML: https://api.gdc.cancer.gov/cases
+- the cohort VCF, rehosted so the figures and their live links load without the
+  GDC round trip: https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz
+- the recurrence track split by clinical group:
+  https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz
+- the clinical table those groups come from:
+  https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv
+
+The hg38 reference and gene track beside them are the hosted UCSC
+[hub](/docs/user_guides/hub_url)'s own entries.
+
 ## What the two files hold
 
 The VCF is the GDC's per-tumor **Masked Somatic Mutation** calls merged into one

@@ -21,6 +21,22 @@ linked to the genome, so hovering a variant highlights the residue it lands on.
 - to add these views to your own JBrowse instead, see
   [Adding the plugins to your own instance](#adding-the-plugins-to-your-own-instance)
 
+## Where the data comes from
+
+genomes.jbrowse.org's hosted hg38 config carries the gene track the examples
+below click through; the protein3d and msaview plugins resolve everything else
+live, per gene, from the services beside them.
+
+- hg38: https://jbrowse.org/ucsc/hg38/config.json
+- AlphaFold DB, where a launched structure comes from:
+  https://alphafold.ebi.ac.uk/
+- UniProt, the isoform mapping and the projected Domains, Chains, Mutations and
+  AA Modifications tracks: https://www.uniprot.org/
+- NCBI's ortholog report, the MSA's rows:
+  https://www.ncbi.nlm.nih.gov/datasets/docs/v2/reference-docs/rest-api/
+- NCBI's Conserved Domain Database, the alignment's overlay:
+  https://www.ncbi.nlm.nih.gov/Structure/cdd/cdd.shtml
+
 ## Two ways to open a protein view
 
 Two hosted sites reach the same three linked views, and they suit different

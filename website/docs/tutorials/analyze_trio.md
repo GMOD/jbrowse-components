@@ -27,17 +27,29 @@ On Debian/Ubuntu, `apt install tabix python3 default-jre` covers most of it;
 single download from its
 [releases page](https://github.com/browning-lab/hap-ibd/releases).
 
+## Where the data comes from
+
+1000 Genomes Project phased low-coverage calls
+([1000 Genomes Project Consortium 2015](https://doi.org/10.1038/nature15393)),
+the Kinh-Vietnamese trio HG02024 (child), HG02026 (father) and HG02025 (mother),
+chr1 only.
+
+- the phased trio VCF:
+  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
+- the GRCh38 PLINK genetic map hap-ibd needs, the `no_chr_in_chrom_field`
+  variant, since the trio VCF calls its chromosome `1` rather than `chr1`:
+  https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/plink.GRCh38.map.zip
+- the hg38 reference sequence the reproduce script's own JBrowse instance opens
+  on, rehosted: https://jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz
+
 ## The trio VCF
 
 A trio is a mother, father, and child sequenced together. A phased VCF tags each
 variant with the haplotype it sits on (`0|1` vs `1|0`), so each variant can be
 followed to the copy of the genome it came from.
 
-This page uses a pre-built phased VCF from the 1000 Genomes Project, the
-Kinh-Vietnamese trio HG02024, chr1 only:
-
-- [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
-- [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
+This page uses the phased VCF above, the Kinh-Vietnamese trio HG02024, chr1
+only.
 
 The finished tracks also render inline in a notebook through the
 [Python anywidget interface](/docs/jbrowse_anywidget), or [](/docs/jbrowser) in

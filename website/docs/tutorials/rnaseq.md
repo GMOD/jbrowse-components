@@ -20,6 +20,19 @@ first-of-pair strand for strand-specific libraries.
   [desktop quickstart](/docs/quickstart_desktop), which opens a local BAM with
   no hosting step
 
+## Where the data comes from
+
+Three hg19 alignment sets, hosted on jbrowse.org's demo bucket.
+
+- the paired-end stranded RNA-seq alignments behind every short-read figure on
+  this page, from the sample files listed at
+  [RSeQC](https://rseqc.sourceforge.net/):
+  https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam
+- the long-read IsoSeq alignments:
+  https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam
+- the NCBI RefSeq gene models drawn under every figure:
+  https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz
+
 ## What RNA-seq looks like in the genome browser
 
 The example gene is _ACTB_, a compact gene with deep, even read coverage.

@@ -28,6 +28,21 @@ jcvi builds C extensions and will not install against every python. If
 `uv pip install jcvi biopython` gets an interpreter it does build on. DIAMOND
 ships a static binary in its GitHub releases.
 
+## Where the data comes from
+
+Oat cultivar Williams
+([Peng et al. 2022](https://doi.org/10.1038/s41588-022-01127-7)), annotated by
+Ensembl Plants release 63 as
+[GCA_951802345.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_951802345.1/).
+
+- the annotation the self-alignment runs on:
+  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/gff3/avena_sativa_gca951802345v1cm/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz
+- the CDS the proteome is translated from:
+  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/fasta/avena_sativa_gca951802345v1cm/cds/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz
+- the wheat panel's annotations (Aegilops tauschii, sorghum, bread wheat) and
+  the sorghum-anchored Compara homology table, same release:
+  https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
+
 ## Oat's three subgenomes and their homoeologs
 
 Oat (_Avena sativa_) is an allohexaploid: three diploid grasses hybridized and
@@ -45,10 +60,6 @@ groups it leaves the diagonal. How hard selection has held each pair together is
 dN/dS, which is a per-pair measurement and therefore a colour.
 
 ## Producing the data
-
-The assembly is
-[GCA_951802345.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_951802345.1/),
-oat cultivar Williams, with gene models from Ensembl Plants.
 
 ### Gene models, a proteome, and chromosome sizes
 

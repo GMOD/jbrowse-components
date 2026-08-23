@@ -24,6 +24,27 @@ the two parental alleles pulled apart.
 - [modkit](https://github.com/nanoporetech/modkit/releases) for the aggregate
   section only, a single-binary download from its releases page
 
+## Where the data comes from
+
+Both files are region slices of public
+[ONT open data](https://labs.epi2me.io/dataindex/) on the `ont-open-data` S3
+bucket.
+
+- the HP1 bedMethyl from the `wf-human-variation` sup run on HG002, restricted
+  to the SNRPN locus and to `m` (5mC) rows:
+  https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.1.bedmethyl.gz
+- the HP2 bedMethyl from that same run:
+  https://ont-open-data.s3.amazonaws.com/giab_2025.01/analysis/wf-human-variation/sup/HG002/PAW70337/output/SAMPLE.wf_mods.2.bedmethyl.gz
+- the reads, from the HG002 sup basecalls, sliced to the same locus and
+  haplotagged with `whatshap haplotag` against the phased SNP calls from that
+  same `wf-human-variation` run:
+  https://ont-open-data.s3.amazonaws.com/giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram
+- the HP1 slice the figures actually load, rehosted so they load without the S3
+  round trip:
+  https://jbrowse.org/demos/methylation/HG002_SNRPN_hp1.modkit.bed.gz
+- the haplotagged read slice beside it:
+  https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam
+
 ## The SNRPN imprinting center
 
 At this locus on chr15, one parental allele is methylated and the other is not.
@@ -139,20 +160,6 @@ To compare two samples rather than two alleles, run `modkit dmr` on their
 per-sample pileups and load its BED output as a `FeatureTrack` beside the
 bedMethyl tracks, so the differentially-methylated regions line up with the
 positions driving them.
-
-## Where the data comes from
-
-Both files are region slices of public
-[ONT open data](https://labs.epi2me.io/dataindex/), hosted so this page loads
-without a large download:
-
-- the per-haplotype bedMethyl from the `wf-human-variation` sup run on HG002
-  (`giab_2025.01/.../PAW70337/output/SAMPLE.wf_mods.{1,2}.bedmethyl.gz`),
-  restricted to the SNRPN locus and to `m` (5mC) rows, the populated ones here;
-- the reads from the HG002 sup basecalls
-  (`giab_2023.05/analysis/hg002/sup/PAO83395.pass.cram`), sliced to the same
-  locus and haplotagged with `whatshap haplotag` against the phased SNP calls
-  from that same `wf-human-variation` run.
 
 ## See also
 

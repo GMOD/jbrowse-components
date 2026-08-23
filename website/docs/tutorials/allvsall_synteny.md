@@ -24,6 +24,26 @@ On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
 these. The NCBI `datasets` CLI is a single-binary download, and `node` comes
 from [nodejs.org](https://nodejs.org/).
 
+## Where the data comes from
+
+Five _E. coli_ RefSeq assemblies, each fetched by accession with the `datasets`
+CLI.
+
+- K12:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
+- Sakai:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/
+- CFT073:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/
+- NCTC86:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/
+- IAI39:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
+
+- the all-vs-all PAF, per-strain gene tracks and config, rehosted so the stacked
+  view loads without rerunning the pipeline:
+  https://jbrowse.org/demos/ecoli_pangenome/
+
 ## Many genome rows from one PAF file
 
 A linear synteny view can stack more than two genomes: N genome rows with a

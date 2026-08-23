@@ -25,18 +25,32 @@ dominate, so the second half packs the values into one Zarr store.
 - QuicK-mer2 and a 30x alignment, to add
   [samples of your own](#your-own-samples)
 
+## Where the data comes from
+
+QuicK-mer2 copy-number estimates over the 30x 1000 Genomes panel, from the Kidd
+lab at the University of Michigan
+([Shen and Kidd 2020](https://doi.org/10.3390/genes11020141)).
+
+- the sample list across 26 populations, from the lab's UCSC track hub:
+  https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
+- the per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted
+  unmodified because the lab's own download share is offline. One file per
+  sample under its population, so HG00551 and HG00553 are
+  https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00551.qm2.CN.1k.bw
+  and
+  https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/PUR/HG00553.qm2.CN.1k.bw
+- the same values packed into one Zarr store for the
+  [latency comparison](#scaling-past-one-population). This is a directory of
+  chunks rather than a file, so it is the `uri` an adapter takes and not
+  something to open in a browser:
+  https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
+
 ## The QuicK-mer2 estimates
 
-The values are [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) copy-number
-estimates over the 30x 1000 Genomes panel, from the Kidd lab at the University
-of Michigan. Their [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track
-hub publishes bigBed heat maps for the UCSC browser, and its `trackDb` lists all
-2504 samples across 26 populations. The files this page reads are the lab's raw
-per-sample bigWigs, one individual's copy number in 1 kb bins, re-hosted
-unmodified at
-`https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv/<POP>/<SAMPLE>.qm2.CN.1k.bw`
-because the lab's own download share is offline. **If you use them, cite
-[Shen and Kidd 2020](https://doi.org/10.3390/genes11020141).**
+[QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) estimates are from the Kidd
+lab's [KiddLab/kmer_1KG](https://github.com/KiddLab/kmer_1KG) track hub, which
+publishes bigBed heat maps for the UCSC browser; the files this page reads are
+the lab's raw per-sample bigWigs.
 
 QuicK-mer2 counts only k-mers that occur exactly once in the reference, so its
 estimates are per _paralog_.

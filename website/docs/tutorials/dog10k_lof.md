@@ -28,6 +28,24 @@ callset and CRAMs. The scripts write local files, which
 [JBrowse Desktop](/docs/quickstart_desktop) opens by path and JBrowse Web takes
 through **Add track**.
 
+## Where the data comes from
+
+The Dog10K consortium's public share
+([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read
+directly over HTTP with no local copy of the 397 GB callset.
+
+- the SNV/indel callset the gene is sliced from, 397 GB over 1,987 canids:
+  https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
+- the sample table, breed and category per animal:
+  https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
+- the reference sequence the stop codon is derived from, over UCSC's canFam4
+  REST API:
+  https://api.genome.ucsc.edu/getData/sequence?genome=canFam4;chrom=chr30;start=38258000;end=38265000
+- the RefSeq gene structure that same derivation reads exon boundaries from:
+  https://api.genome.ucsc.edu/getData/track?genome=canFam4;track=ncbiRefSeqCurated;chrom=chr30;start=38258000;end=38265000
+- the 15 published CRAMs the copy-number lane validates callset depth against:
+  https://kiddlabshare.med.umich.edu/dog10K/cram-share/
+
 ## The CYP1A2 nonsense variant
 
 _CYP1A2_ is a drug-metabolizing cytochrome P450 in which dogs carry a nonsense

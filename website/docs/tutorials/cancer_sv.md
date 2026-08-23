@@ -33,14 +33,53 @@ comes from [nodejs.org](https://nodejs.org/). `sv_multihop.py` is one file:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/sv_multihop.py
 ```
 
+## Where the data comes from
+
+Two cell lines, out of separate releases.
+
+**COLO829**, whose reads, calls and coverage are all the ONT open-data release's
+own `wf-somatic-variation` run
+([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)):
+
+- COLO829 tumor reads (ONT R10, haplotagged):
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram
+- COLO829BL matched normal reads:
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam
+- the somatic SV calls `sv_multihop.py` searches:
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829.wf-somatic-sv.vcf.gz
+- mosdepth coverage regions, tumor:
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_tumor.regions.bed.gz
+- mosdepth coverage regions, normal:
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz
+- the GRCh38 build the CRAM decodes against, which `derive` also realigns the
+  consensus to:
+  https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta
+  **K562**, ENCODE Iso-Seq and DepMap's STAR-Fusion and copy-number calls, with
+  its DNA breakpoints ENCODE's 10X linked-read set lifted from hg19:
+
+- K562 PacBio Iso-Seq, ENCODE `ENCFF433YKW`:
+  https://www.encodeproject.org/files/ENCFF433YKW/@@download/ENCFF433YKW.bam
+- K562 PacBio Iso-Seq, ENCODE `ENCFF092NLB`:
+  https://www.encodeproject.org/files/ENCFF092NLB/@@download/ENCFF092NLB.bam
+- K562 PacBio Iso-Seq, ENCODE `ENCFF515YRZ`:
+  https://www.encodeproject.org/files/ENCFF515YRZ/@@download/ENCFF515YRZ.bam
+- K562 PacBio Iso-Seq, ENCODE `ENCFF475XQX`:
+  https://www.encodeproject.org/files/ENCFF475XQX/@@download/ENCFF475XQX.bam
+- K562 STAR-Fusion calls (DepMap 24Q4, `OmicsFusionFiltered.csv`):
+  https://ndownloader.figshare.com/files/51065693
+- K562 copy-number segments (DepMap 24Q4 WGS, `OmicsCNSegmentsProfile.csv`):
+  https://ndownloader.figshare.com/files/51065333
+- K562 DNA breakpoints (ENCODE 10X linked-read large-SV calls, hg19, lifted to
+  hg38 by the build script):
+  https://www.encodeproject.org/files/ENCFF863MPP/@@download/ENCFF863MPP.vcf.gz
+- the hg19-to-hg38 chain the lift uses:
+  https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz
+
 ## COLO829 and K562
 
-**COLO829** is a melanoma cell line with a matched normal, COLO829BL, and is a
+**COLO829** is a melanoma cell line with a matched normal, COLO829BL, and a
 community reference for somatic structural-variant calling
-([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)). The
-tracks here are Oxford Nanopore R10 reads for tumor and normal from the
-[ONT open-data release](https://registry.opendata.aws/ont-open-data/), with the
-somatic SV calls from its `wf-somatic-variation` run.
+([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)).
 
 The coverage lanes beside those reads are the same run's `mosdepth` output in 50
 kb windows, repacked as bigWig:

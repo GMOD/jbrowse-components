@@ -42,6 +42,29 @@ CLI and `bedGraphToBigWig` are each a
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
 cactus image.
 
+## Where the data comes from
+
+Five _E. coli_ RefSeq assemblies, fetched by accession with the NCBI datasets
+CLI, K12 the `--reference` backbone the other four are aligned onto.
+
+- K12:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
+- Sakai:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/
+- CFT073:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/
+- NCTC86:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/
+- IAI39:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
+- KTa004 short reads mapped through the finished graph, forward mate:
+  https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_1.fastq.gz
+- KTa004 short reads, reverse mate:
+  https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR063/DRR063408/DRR063408_2.fastq.gz
+- the graph's segments and links, tabix-indexed and rehosted so the graph genome
+  view figures load with no local build:
+  https://jbrowse.org/demos/ecoli_pangenome/
+
 ## The Minigraph-Cactus pipeline
 
 [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)

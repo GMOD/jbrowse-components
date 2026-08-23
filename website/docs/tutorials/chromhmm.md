@@ -20,6 +20,27 @@ track with one color-coded row per cell type.
 On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
 comes from [nodejs.org](https://nodejs.org/).
 
+## Where the data comes from
+
+Two hg19 ChromHMM releases, both 15-state segmentations: UCSC's nine-cell-type
+ENCODE Broad HMM set, and the Roadmap Epigenomics compendium across 127
+epigenomes.
+
+- the nine ENCODE Broad HMM segmentation BEDs, one per cell type, merged into
+  the multi-row file below:
+  http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm/
+- the Roadmap segmentations, fetched either individually or as the whole
+  127-epigenome tarball:
+  https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/
+- the row labels and tissue groups the `rowGroups` stripe reads,
+  `EID_metadata.tab`:
+  https://egg2.wustl.edu/roadmap/data/byFileType/metadata/EID_metadata.tab
+- the state colors, since the Roadmap segmentations themselves carry none:
+  https://egg2.wustl.edu/roadmap/data/byFileType/chromhmmSegmentations/ChmmModels/coreMarks/jointModel/final/colormap_15_coreMarks.tab
+- both merged files, rehosted as bigBeds so the tracks below load without the
+  build: https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb and
+  https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb
+
 ## Many cell types in one track
 
 [ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into chromatin
@@ -84,12 +105,10 @@ jbrowse sort-bed multirow.bed | bgzip > multirow.bed.gz
 tabix -p bed multirow.bed.gz
 ```
 
-Both merged files are also hosted, as bigBeds, for reading with nothing built:
-`https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb` for the nine
-cell types and
-`https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb` for the
-127 epigenomes. Those take a [`BigBedAdapter`](/docs/config/bigbedadapter),
-which is what the second track config below names.
+Both merged files are also hosted as bigBeds, for reading with nothing built
+(see [Where the data comes from](#where-the-data-comes-from)). Those take a
+[`BigBedAdapter`](/docs/config/bigbedadapter), which is what the second track
+config below names.
 
 ## Configure the multi-row feature display
 

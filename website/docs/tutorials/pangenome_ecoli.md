@@ -41,6 +41,27 @@ CLI and `bedGraphToBigWig` are each a
 comes from [nodejs.org](https://nodejs.org/). Everything else runs inside the
 pggb image.
 
+## Where the data comes from
+
+Five _E. coli_ RefSeq assemblies, fetched by accession with the NCBI datasets
+CLI and concatenated into one PanSN-named FASTA for pggb.
+
+- K12:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/
+- Sakai:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2/
+- CFT073:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/445/GCF_000007445.1_ASM744v1/
+- NCTC86:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/705/GCF_002007705.1_ASM200770v1/
+- IAI39:
+  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/026/345/GCF_000026345.1_ASM2634v1/
+- nanopore reads from an unrelated isolate, _E. coli_ E146, mapped straight onto
+  K12 with no graph: https://www.ebi.ac.uk/ena/browser/view/DRR193901
+- the pggb and minigraph graphs' segments, links and bubbles, tabix-indexed and
+  rehosted so the graph genome view figures load with no local build:
+  https://jbrowse.org/demos/ecoli_pangenome/
+
 ## The linear projections
 
 A pangenome graph collapses many genomes into one structure: shared sequence is

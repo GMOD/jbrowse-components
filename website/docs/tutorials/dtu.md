@@ -20,6 +20,33 @@ from ENCODE quantifications and gives the track configuration that reads it.
 - to read along without running anything, the finished analysis is hosted at
   [jbrowse.org/demos/dtu](https://jbrowse.org/demos/dtu/)
 
+## Where the data comes from
+
+ENCODE's ENTEx panel, four skeletal-muscle and four liver donors, quantified
+with RSEM against GENCODE v29.
+
+- eight RSEM per-transcript quantification tables, the four muscle donors then
+  the four liver donors:
+  https://www.encodeproject.org/files/ENCFF353NZM/@@download/ENCFF353NZM.tsv,
+  https://www.encodeproject.org/files/ENCFF172SLW/@@download/ENCFF172SLW.tsv,
+  https://www.encodeproject.org/files/ENCFF140GJI/@@download/ENCFF140GJI.tsv,
+  https://www.encodeproject.org/files/ENCFF576DOG/@@download/ENCFF576DOG.tsv,
+  https://www.encodeproject.org/files/ENCFF996LRE/@@download/ENCFF996LRE.tsv,
+  https://www.encodeproject.org/files/ENCFF641ADT/@@download/ENCFF641ADT.tsv,
+  https://www.encodeproject.org/files/ENCFF392VYD/@@download/ENCFF392VYD.tsv,
+  https://www.encodeproject.org/files/ENCFF383KWZ/@@download/ENCFF383KWZ.tsv
+- the four coverage bigWigs the demo's track config loads, one donor per tissue,
+  plus and minus strand:
+  https://www.encodeproject.org/files/ENCFF007ZBY/@@download/ENCFF007ZBY.bigWig,
+  https://www.encodeproject.org/files/ENCFF518WGP/@@download/ENCFF518WGP.bigWig,
+  https://www.encodeproject.org/files/ENCFF565QRM/@@download/ENCFF565QRM.bigWig,
+  https://www.encodeproject.org/files/ENCFF253OSP/@@download/ENCFF253OSP.bigWig
+- the GENCODE v29 annotation those quantifications were made against:
+  https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_29/gencode.v29.annotation.gff3.gz
+- the finished GFF3 with satuRn's statistics written in, rehosted so the track
+  configuration below loads without the build:
+  https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz
+
 ## Building the GFF3
 
 Four steps take the ENCODE quantifications to a GFF3 the gene glyph can paint.
