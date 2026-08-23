@@ -11,7 +11,7 @@ exports[`renders all the different types of built-in slots 1`] = `
     >
       <button
         aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
         tabindex="0"
         type="button"
       >
@@ -178,7 +178,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       <button
                         aria-label="local file"
                         aria-pressed="false"
-                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton css-ll6l22-MuiButtonBase-root-MuiToggleButton-root"
+                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton css-ye4ew2-MuiButtonBase-root-MuiToggleButton-root"
                         tabindex="0"
                         type="button"
                         value="file"
@@ -188,7 +188,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       <button
                         aria-label="url"
                         aria-pressed="true"
-                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton css-ll6l22-MuiButtonBase-root-MuiToggleButton-root"
+                        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton css-ye4ew2-MuiButtonBase-root-MuiToggleButton-root"
                         tabindex="-1"
                         type="button"
                         value="url"
@@ -276,7 +276,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                           >
                             <button
-                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                               tabindex="0"
                               type="button"
                             >
@@ -316,7 +316,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                           >
                             <button
-                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                               tabindex="0"
                               type="button"
                             >
@@ -357,7 +357,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                           >
                             <button
-                              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                               data-testid="stringArrayAdd-stringArrayTest"
                               disabled=""
                               tabindex="-1"
@@ -419,7 +419,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                           tabindex="0"
                           type="button"
                         >
@@ -463,7 +463,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                               >
                                 <button
-                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                                   tabindex="0"
                                   type="button"
                                 >
@@ -503,7 +503,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                               >
                                 <button
-                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                                   tabindex="0"
                                   type="button"
                                 >
@@ -544,7 +544,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                               >
                                 <button
-                                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                                   data-testid="stringArrayAdd-"
                                   disabled=""
                                   tabindex="-1"
@@ -602,7 +602,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                               class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                             >
                               <button
-                                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                                 disabled=""
                                 tabindex="-1"
                                 type="button"
@@ -773,7 +773,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                       class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-19opgx6-MuiFormControlLabel-root"
                     >
                       <span
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-1bncirt-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
+                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium Mui-checked MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-5er8cx-MuiButtonBase-root-MuiSwitchBase-root-MuiCheckbox-root"
                       >
                         <input
                           checked=""
@@ -828,7 +828,7 @@ exports[`renders with just the required model elements 1`] = `
     >
       <button
         aria-expanded="true"
-        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+        class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
         tabindex="0"
         type="button"
       >

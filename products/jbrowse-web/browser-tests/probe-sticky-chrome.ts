@@ -92,8 +92,8 @@ function readPinnedCap() {
   return {
     portHeight: port.clientHeight,
     windowHeight: window.innerHeight,
-    stickyTop: parseFloat(style.top),
-    maxHeight: parseFloat(style.maxHeight),
+    stickyTop: Number.parseFloat(style.top),
+    maxHeight: Number.parseFloat(style.maxHeight),
   }
 }
 

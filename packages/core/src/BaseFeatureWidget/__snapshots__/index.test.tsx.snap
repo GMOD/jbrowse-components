@@ -15,7 +15,7 @@ exports[`open up a widget 1`] = `
       >
         <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
           type="button"
         >
@@ -127,7 +127,7 @@ exports[`open up a widget 1`] = `
                     class="MuiFormControl-root MuiFormControl-marginDense css-1uvyb5m-MuiFormControl-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-14l5tz3-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
@@ -135,7 +135,7 @@ exports[`open up a widget 1`] = `
                     </button>
                   </div>
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"
                   >

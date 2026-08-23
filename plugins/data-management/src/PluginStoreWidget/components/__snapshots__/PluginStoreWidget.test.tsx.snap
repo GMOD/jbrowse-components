@@ -29,7 +29,7 @@ exports[`renders with the available plugins 1`] = `
         >
           <button
             aria-label="Clear filter plugins"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -57,7 +57,7 @@ exports[`renders with the available plugins 1`] = `
       >
         <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
           type="button"
         >
@@ -116,7 +116,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -149,7 +149,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -182,7 +182,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -215,7 +215,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -248,7 +248,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -281,7 +281,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -314,7 +314,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -347,7 +347,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -380,7 +380,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -413,7 +413,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -446,7 +446,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -479,7 +479,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -512,7 +512,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -545,7 +545,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -578,7 +578,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -611,7 +611,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -644,7 +644,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -677,7 +677,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -710,7 +710,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -743,7 +743,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -776,7 +776,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -809,7 +809,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -842,7 +842,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -875,7 +875,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -908,7 +908,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -941,7 +941,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -974,7 +974,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -1007,7 +1007,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -1040,7 +1040,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -1073,7 +1073,7 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
@@ -1113,7 +1113,7 @@ exports[`renders with the available plugins 1`] = `
       >
         <button
           aria-expanded="true"
-          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-12u8ob8-MuiButtonBase-root-MuiAccordionSummary-root"
+          class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-iygobf-MuiButtonBase-root-MuiAccordionSummary-root"
           tabindex="0"
           type="button"
         >
@@ -1222,7 +1222,7 @@ exports[`renders with the available plugins 1`] = `
                   class="MuiCardActions-root MuiCardActions-spacing css-1q4nm6f-MuiCardActions-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-wbgmo7-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-14l5tz3-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
