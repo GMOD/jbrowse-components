@@ -22,6 +22,21 @@ export function resolveUri({
 }
 
 /**
+ * An address with its query string dropped, which is what makes it safe to put
+ * on screen. A presigned S3 or GCS link carries its credential in the query — a
+ * few hundred characters of `?X-Amz-Signature=…` — and a notice that renders one
+ * puts it in front of whoever is looking at the screen and into every screenshot
+ * of it. The host and path are the whole diagnostic anyway.
+ *
+ * Same reasoning as {@link getFileName}'s own strip, and the same limitation: a
+ * URI only. `?` is a legal character in a POSIX filename, so a local path keeps
+ * whatever it was given.
+ */
+function withoutQuery(uri: string) {
+  return uri.split(/[?#]/)[0]!
+}
+
+/**
  * Where a location's bytes come from, as an address worth showing someone, or
  * undefined when it has none.
  *
@@ -32,7 +47,7 @@ export function resolveUri({
  */
 export function getLocationUri(location: FileLocation) {
   if (isUriLocation(location)) {
-    return resolveUri(location)
+    return withoutQuery(resolveUri(location))
   }
   if (isLocalPathLocation(location)) {
     return location.localPath

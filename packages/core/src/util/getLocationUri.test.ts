@@ -53,3 +53,14 @@ test('a phase over a real location carries it', () => {
     source: 'https://example.com/cytoband.txt.gz',
   })
 })
+
+// a presigned link carries its credential in the query string, and the notice
+// renders on screen and into every screenshot of it
+test('a presigned url shows its host and path, not its signature', () => {
+  expect(
+    getLocationUri({
+      locationType: 'UriLocation',
+      uri: 'https://s3.amazonaws.com/bucket/hg38.2bit?X-Amz-Signature=deadbeef&X-Amz-Expires=3600',
+    }),
+  ).toBe('https://s3.amazonaws.com/bucket/hg38.2bit')
+})
