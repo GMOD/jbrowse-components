@@ -100,7 +100,7 @@ export function featureNameMatchesHighlight(
 
 // What resolveFeatureHighlights needs from each fetched region — a structural
 // subset of the model's LoadedFeatureData, kept local so this stays pure.
-interface HighlightableRegion {
+export interface HighlightableRegion {
   refName: string
   flatbushItems: readonly (HighlightItem & { featureId: string })[]
   subfeatureInfos: readonly {

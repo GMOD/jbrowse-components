@@ -11,7 +11,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
-  canonicalizeViewRefName,
   getContainingView,
   getSession,
   isFeature,
@@ -25,7 +24,6 @@ import {
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import { sameOptionalStrings } from '@jbrowse/core/util/sameStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -43,17 +41,14 @@ import {
 } from '@jbrowse/render-core/installPerRegionLifecycle'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { toJS, untracked } from 'mobx'
+import { toJS } from 'mobx'
 
 import {
   FEATURE_DEFAULT_COLOR,
   STRAND_COLOR_JEXL,
   UTR_DEFAULT_COLOR,
 } from '../RenderFeatureDataRPC/featureColors.ts'
-import {
-  HEIGHT_MULTIPLIERS,
-  labelFontSize,
-} from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   THEME_DERIVED_COLOR,
   pickDisplayConfig,
@@ -62,36 +57,25 @@ import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThres
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
-import {
-  findSubfeatureById,
-  indexById,
-  toggleArrayMember,
-} from './baseModelHelpers.ts'
+import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
+import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
-  FeatureHighlightModel,
-  resolveFeatureHighlights,
-  warnUnresolvedHighlights,
-} from './featureHighlight.ts'
-import {
-  MIN_FIT_BOX_PX,
-  resolveFitLadder,
-  snapFittedContentHeight,
-  solveLabelRoomFactor,
-  squeezeFloorScale,
-} from './fitLadder.ts'
+  featureHighlightActions,
+  featureHighlightViews,
+} from './featureHighlightViews.ts'
+import { featureSetActions, featureSetViews } from './featureSetViews.ts'
+import { snapFittedContentHeight } from './fitLadder.ts'
+import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
 import {
   countTruncatedFeatures,
-  createContentHeightProbe,
-  createIncrementalLayout,
   featureIdsTouchingBlocks,
   maxBottom,
-  minDrawnBoxHeight,
   scaleLaidOutData,
 } from './layout.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
@@ -104,15 +88,12 @@ import {
   showSubmenuRadioGroups,
 } from './trackMenus.ts'
 import {
-  canMorph,
-  captureFeatureTops,
-  easeInOutCubic,
-  interpolateYData,
-  morphAllowed,
-  morphClockMs,
-  morphOffset,
-  rowGeometrySignature,
-} from './yMorph.ts'
+  installYMorphAutorun,
+  morphOffsetViews,
+  yMorphActions,
+  yMorphViews,
+  yMorphVolatiles,
+} from './yMorphViews.ts'
 
 import type { IsoformPicks } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -131,18 +112,7 @@ import type {
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
-import type {
-  FeatureHighlight,
-  HighlightTarget,
-  ResolvedHighlights,
-} from './featureHighlight.ts'
-import type { FitStage } from './fitLadder.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
-import type {
-  IncrementalLayout,
-  LabelRoomFactorFreeInputs,
-  LayoutInputs,
-} from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -363,59 +333,9 @@ export default function baseStateModelFactory(
         // Everything the right-click resolved — see FeatureContextMenuInfo for
         // what each field means and which entry points supply it.
         contextMenuInfo: undefined as FeatureContextMenuInfo | undefined,
-        /**
-         * #volatile
-         */
-        // Per-instance memo backing `laidOutDataMap`. Stateful (holds the
-        // previous per-ref-group layout) so unchanged chromosomes keep stable
-        // object references — turns whole-genome layout/upload from O(N²) to
-        // O(N). The volatile holds a stable reference; mutating its internal
-        // cache is invisible to MobX, so reading it in the computed is safe.
-        incrementalLayout: createIncrementalLayout(),
-        /**
-         * #volatile
-         */
-        // Fit-mode escalation layouts (see `fitStage`). One memo instance per
-        // reservation config, so each keeps its own stable per-group references
-        // and prior-row ordering exactly like `incrementalLayout` — a single
-        // shared instance can only cache one config at a time.
-        incrementalLayoutLabelsOnly: createIncrementalLayout(),
-        /**
-         * #volatile
-         */
-        incrementalLayoutBodiesOnly: createIncrementalLayout(),
-        /**
-         * #volatile
-         */
-        // The `decimated` rung's memo. Unlike its three siblings this one packs
-        // WITHOUT prior-row seeding (`seedPriorRows: false`), because the rung's
-        // whitespace factor is chosen by measuring unseeded candidate packs and
-        // the commit has to match what was measured — see `fitDecimatedSolved`.
-        // Its job here is purely to hand back the same stack by reference when
-        // the solve lands on the factor it already committed, which is the common
-        // case: every pan settle and every drag-resize frame re-solves, and most
-        // of those re-solve to the same factor over the same data.
-        incrementalLayoutDecimated: createIncrementalLayout({
-          seedPriorRows: false,
-        }),
-        /**
-         * #volatile
-         */
-        // Feature-Y transition state. While `morphFromTops` is set,
-        // `renderDataMap` eases each feature from its previous row (id ->
-        // topPx here) toward its `laidOutDataMap` row by `morphProgress` (0->1,
-        // driven by a rAF clock). Render-only — hit-test and layout always read
-        // the destination `laidOutDataMap`.
-        morphFromTops: undefined as Map<string, number> | undefined,
-        /**
-         * #volatile
-         */
-        morphProgress: 1,
-        morphStartMs: 0,
-        // Height of the layout being animated away from; `maxY` holds at the
-        // taller of this and the destination during a morph (anti-clip).
-        morphFromMaxY: 0,
       }))
+      .volatile(fitLadderVolatiles)
+      .volatile(yMorphVolatiles)
       .views(self => ({
         /**
          * #getter
@@ -712,155 +632,6 @@ export default function baseStateModelFactory(
 
         /**
          * #getter
-         */
-        // MobX caches this, so the returned Set keeps a stable reference until
-        // pinnedFeatureIds mutates — letting the layout cache detect a pin
-        // toggle with a cheap reference compare (see groupUnchanged).
-        get pinnedFeatureIdSet(): ReadonlySet<string> {
-          return new Set(self.pinnedFeatureIds)
-        },
-
-        /**
-         * #getter
-         */
-        // The highlight list with every refName run through
-        // canonicalizeViewRefName — the one normalization layer, which resolves
-        // aliases and casing together.
-        //
-        // The matchers compare refName text directly, and the regions they
-        // compare it against carry the assembly's CANONICAL name. A highlight
-        // does not: the right-click path copies the region's own refName and is
-        // therefore already canonical, but a hand-authored session spec carries
-        // whatever the author typed — which is whatever the location box showed
-        // them, i.e. an alias as often as not. Unnormalized, `chr12` against an
-        // assembly canonicalized on `12` boxes nothing, says nothing, and is
-        // indistinguishable from the feature not being there. Worse, it depends
-        // on the assembly: the same spec key works on one hg38 config and
-        // silently does nothing on another.
-        //
-        // The search bridge (searchResultHighlight.ts) canonicalizes at its own
-        // producer for exactly this reason. Doing it here covers the provenance
-        // that has no producer to fix it.
-        get canonicalFeatureHighlights(): FeatureHighlight[] {
-          return self.featureHighlights.map(h => ({
-            refName: canonicalizeViewRefName(self, h.refName),
-            start: h.start,
-            end: h.end,
-            name: h.name,
-            featureId: h.featureId,
-          }))
-        },
-
-        /**
-         * #getter
-         */
-        // Resolve declarative highlights against the RAW fetched data (rpcDataMap)
-        // rather than the laid-out data — deliberately pre-layout, so it can feed
-        // both boxing and pinning without a layout→layout cycle (coords/name live
-        // on the raw items, no row/topPx needed). See resolveFeatureHighlights for
-        // the box/pin/boxedBy resolution rules.
-        get resolvedHighlights(): ResolvedHighlights {
-          // index-aligned with self.featureHighlights, so `boxedBy` attribution
-          // still indexes the stored list (removeFeatureHighlightsForId).
-          const highlights = this.canonicalFeatureHighlights
-          const resolved = resolveFeatureHighlights(
-            self.rpcDataMap.values(),
-            highlights,
-          )
-          // exact-span matching makes a mistyped coordinate draw nothing at all;
-          // say so once rather than leaving it silent (warnUnresolvedHighlights
-          // dedupes, so recomputing this getter doesn't spam). It is handed the
-          // loaded region SPANS, not just "is there data": a highlight resolves
-          // to nothing whenever the user pans or navigates off its locus, and
-          // gating on data-existence alone blamed the spec for that.
-          warnUnresolvedHighlights(highlights, resolved, [
-            ...self.loadedRegions.values(),
-          ])
-          return resolved
-        },
-
-        /**
-         * #getter
-         */
-        // The render-item ids resolved from a search highlight (features and/or
-        // subfeatures), for the overlay and SVG export to box. Resolved pre-layout
-        // against the raw fetched data (see resolvedHighlights), so it stays stable
-        // across pan/zoom; the overlay's addFeatureBox no-ops any id not currently
-        // laid out, so no on-screen intersection is needed here (same as
-        // soloFeatureIdSet).
-        get highlightedFeatureIdSet(): ReadonlySet<string> {
-          return this.resolvedHighlights.box
-        },
-
-        /**
-         * #getter
-         */
-        // Rows the packer pins to the top: the user's explicit pins PLUS any
-        // searched highlight, so a searched feature lands in a top row instead of
-        // being buried (or clipped) deep in a dense track. Returns the pinned set
-        // by reference when nothing is highlighted, keeping the layout cache's
-        // reference compare cheap in the common case.
-        get layoutPinnedFeatureIdSet(): ReadonlySet<string> {
-          const highlighted = this.resolvedHighlights.pin
-          if (highlighted.size === 0) {
-            return this.pinnedFeatureIdSet
-          }
-          return new Set([...self.pinnedFeatureIds, ...highlighted])
-        },
-
-        /**
-         * #getter
-         */
-        // Membership set for the "show only these features" collection; drives
-        // the overlay highlight and the context-menu toggle labels.
-        get soloFeatureIdSet(): ReadonlySet<string> {
-          return new Set(self.soloFeatureIds)
-        },
-
-        /**
-         * #getter
-         */
-        // How many features the user has hidden one at a time, for the
-        // "Show N hidden features" recovery item. The menu builders read this
-        // rather than the array, so their structural `self` types ask for a
-        // number instead of an observable they'd only call `.length` on.
-        get hiddenFeatureCount() {
-          return self.hiddenFeatureIds.length
-        },
-
-        /**
-         * #getter
-         */
-        // Size of the show-only list, whether or not it has been applied.
-        // `soloFeatureIdSet.size` would answer the same question, but that
-        // getter allocates a Set for membership tests the count doesn't need.
-        get soloFeatureCount() {
-          return self.soloFeatureIds.length
-        },
-
-        /**
-         * #getter
-         */
-        // How many features are pinned to the top, for the "Unpin N features"
-        // recovery item. The array's length rather than `pinnedFeatureIdSet.size`
-        // for the same reason as `soloFeatureCount`: the count needs no Set.
-        get pinnedFeatureCount() {
-          return self.pinnedFeatureIds.length
-        },
-
-        /**
-         * #getter
-         */
-        // How many highlight boxes are drawn, for the "Clear N highlights"
-        // recovery item. Counts the specs, not the resolved boxes: a highlight
-        // the user has panned away from resolves to nothing but is exactly the
-        // one the track-level clear exists to reach.
-        get featureHighlightCount() {
-          return self.featureHighlights.length
-        },
-
-        /**
-         * #getter
          * Singular, lowercase noun for what this track holds. Every menu label,
          * chip and indicator that names the thing reads it from here, so a
          * subclass renames its whole vocabulary with one override rather than
@@ -876,6 +647,8 @@ export default function baseStateModelFactory(
         // generic widget. The variant display, which shares this base, overrides
         // both.
       }))
+      .views(featureSetViews)
+      .views(featureHighlightViews)
       .views(self => ({
         /**
          * #method
@@ -1046,291 +819,7 @@ export default function baseStateModelFactory(
           return self.fitHeightToDisplay ? this.onScreenFeatureIds : undefined
         },
       }))
-      .views(self => ({
-        /**
-         * #method
-         * One fit-escalation candidate: the stack packed with the given
-         * label/description reservation, via that config's own memo instance so
-         * each keeps stable references across renders. Empty until
-         * initialized/in-bounds, so the GPU upload autorun has nothing to push.
-         */
-        fitLayoutAt(
-          memo: IncrementalLayout,
-          showLabels: boolean,
-          showDescriptions: boolean,
-        ): Map<number, FeatureDataResult> {
-          return self.layoutReady
-            ? memo(self.rpcDataMap, {
-                ...self.layoutInputs,
-                showLabels,
-                showDescriptions,
-              })
-            : new Map<number, FeatureDataResult>()
-        },
-        /**
-         * #getter
-         * The `decimated` rung's layout inputs minus the whitespace factor. Typed
-         * without `labelRoomFactor` so the solve's shared preparation provably can't
-         * depend on it (see createContentHeightProbe).
-         */
-        get decimatedBaseInputs(): LabelRoomFactorFreeInputs {
-          return {
-            ...self.layoutInputs,
-            showLabels: self.showLabels,
-            showDescriptions: false,
-            labelDecimation: 'fitWidth',
-          }
-        },
-        /**
-         * #method
-         * Layout inputs for the `decimated` rung at one whitespace factor. Every
-         * probe and the committed layout go through this single builder, so the
-         * stack the solve measures cannot differ from the stack it commits by a
-         * forgotten field.
-         */
-        decimatedLayoutInputs(labelRoomFactor: number): LayoutInputs {
-          return { ...this.decimatedBaseInputs, labelRoomFactor }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Measures the `decimated` rung's stack height at any whitespace factor,
-         * against the features the ladder measures its rungs with — so the factor
-         * the solve picks is judged on the same stack the rung is then kept or
-         * rejected on.
-         *
-         * A getter, not a call inside the solve, because the preparation it holds
-         * (per-kind label widths, the two neighbor-room sorts — about a fifth of
-         * a layout) depends on the data and the layout inputs but NOT on the track
-         * height. Dragging the resize handle re-solves every frame; caching it
-         * here keeps those frames to the bisection's packs alone.
-         */
-        get decimatedHeightProbe(): (labelRoomFactor: number) => number {
-          return createContentHeightProbe(
-            self.rpcDataMap,
-            self.decimatedBaseInputs,
-            undefined,
-            self.fitMeasureFeatureIds,
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * The whitespace factor the `decimated` rung commits at: the smallest one
-         * whose packed stack fits `trackHeight` (smallest = most names kept), or
-         * undefined when even the most aggressive decimation overflows. The
-         * bisection lives in `solveLabelRoomFactor` (fitLadder.ts), next to the
-         * ladder walk it serves.
-         */
-        solveLabelRoomFactor(trackHeight: number) {
-          return solveLabelRoomFactor(self.decimatedHeightProbe, trackHeight)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Full reservation (names + descriptions): rendered at fit stage `full`
-         * and in non-fit modes, and the first stack `fitStage` probes.
-         */
-        get baseLaidOutDataMap(): Map<number, FeatureDataResult> {
-          return self.fitLayoutAt(
-            self.incrementalLayout,
-            self.showLabels,
-            self.effectiveShowDescriptions,
-          )
-        },
-        /**
-         * #getter
-         * Names reserved, descriptions dropped — the `labels` stage's stack. With
-         * descriptions already off (config, or the auto density gate) this rung's
-         * reservation is the base one, so reuse that stack by reference rather than
-         * packing a byte-identical copy into a second memo.
-         */
-        get fitLabelsOnlyLayout(): Map<number, FeatureDataResult> {
-          return self.effectiveShowDescriptions
-            ? self.fitLayoutAt(
-                self.incrementalLayoutLabelsOnly,
-                self.showLabels,
-                false,
-              )
-            : this.baseLaidOutDataMap
-        },
-        /**
-         * #getter
-         * The whitespace factor the `decimated` rung commits at: the smallest
-         * one whose packed stack fits `fitTargetHeight`, so the most names are
-         * kept. Undefined when there is nothing to decimate (names off) or when
-         * even the most aggressive factor overflows.
-         */
-        get fitDecimatedFactor(): number | undefined {
-          // A memoized getter rather than the bare `solveLabelRoomFactor` call
-          // it replaces, so `rowGeometrySignature` reads the same answer the
-          // rung packed at without paying for a second bisection (~9 packs).
-          return self.layoutReady && self.showLabels
-            ? self.solveLabelRoomFactor(self.fitTargetHeight)
-            : undefined
-        },
-        /**
-         * #getter
-         * The `decimated` stack: names kept only on features with at least
-         * `fitDecimatedFactor ×` their label width in neighbour whitespace (plus
-         * pinned/highlighted, always). Filling the height with as many
-         * non-overlapping names as fit, rather than snapping between a few fixed
-         * rungs, is what this rung is for; it decimates by isolation, not by any
-         * notion of feature importance. Falls back to the `labels` stack when
-         * there is nothing to decimate or no factor fits.
-         */
-        get fitDecimatedSolved(): Map<number, FeatureDataResult> {
-          // Probe and commit must pack identically or the committed stack
-          // overflows the height the solve fit, the ladder descends to `bodies`
-          // and every name vanishes on the tallest tracks. Hence
-          // `incrementalLayoutDecimated`, built with `seedPriorRows: false` to
-          // match the unseeded probe; the memo is there for reference stability
-          // across the re-solve every pan settle and drag frame triggers.
-          //
-          // Seeding this rung from the factor-independent `labels` stack was
-          // tried and moved zero rows — that seed's order and the
-          // `layoutStartBp` tiebreak it would replace already coincide. Don't
-          // re-add it without a measurement.
-          const factor = this.fitDecimatedFactor
-          return factor === undefined
-            ? this.fitLabelsOnlyLayout
-            : self.incrementalLayoutDecimated(
-                self.rpcDataMap,
-                self.decimatedLayoutInputs(factor),
-              )
-        },
-        get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
-          return self.showLabels
-            ? self.fitLayoutAt(self.incrementalLayoutBodiesOnly, false, false)
-            : this.fitLabelsOnlyLayout
-        },
-        /**
-         * #getter
-         * The unscaled height (px) of the shortest box on screen that the layout
-         * actually DRAWS — a UTR at its 0.65 fraction, a transcript rect inside a
-         * gene, a plain variant box — which is the one a uniform squeeze takes
-         * below a visible size first, and so the basis for the squeeze floor
-         * below. 0 when nothing is drawn, which makes that floor a no-op.
-         *
-         * A drawn box, not a feature's laid-out extent, and the distinction is the
-         * whole floor: a gene's extent is every stacked transcript plus its label
-         * rows, so a floor built on it promised 2px boxes while letting each
-         * transcript render at a third of a pixel. See `minDrawnBoxHeight`.
-         *
-         * Measured off the layout, never off the `featureHeight` config slot. The
-         * slot is a per-feature jexl callback slot (`contextVariable:
-         * ['feature']`), so reading it here — with no feature in scope —
-         * evaluates the callback against nothing and throws, taking the whole fit
-         * layout down with it. And even where it holds a plain number it names
-         * the plain-rect glyph's row height, which is not what a UTR or an
-         * isoform inside a gene is drawn at.
-         *
-         * Reads the `full` rung specifically because it is the stack the ladder
-         * always materializes, so it costs nothing extra. Box HEIGHTS don't vary
-         * across rungs (only the label reservation does), but the set of boxes
-         * counted can: `minDrawnBoxHeight` skips a feature the packer left
-         * unplaced, and `bodies` — the only rung a squeeze ever runs on — packs
-         * tighter and so places features `full` pushed past the row limit. On a
-         * stack deep enough to truncate at `full`, the floor is therefore
-         * measured over a subset and can allow a squeeze slightly past the
-         * MIN_FIT_BOX_PX promise. Reading it off `bodies` instead would be
-         * circular — that layout is chosen using this scale.
-         *
-         * Narrowed to `fitMeasureFeatureIds`, the same on-screen set every rung
-         * is measured over.
-         */
-        get fitSmallestBoxPx() {
-          return minDrawnBoxHeight(
-            this.baseLaidOutDataMap,
-            self.fitMeasureFeatureIds,
-          )
-        },
-        /**
-         * #getter
-         * Floor on the fit squeeze: the smallest vertical scale that still leaves
-         * every drawn box at least `MIN_FIT_BOX_PX` tall. When boxes would pack
-         * tighter than this the squeeze stops here and the surplus scrolls instead
-         * of vanishing. `squeezeFloorScale` answers both degenerate cases (nothing
-         * drawn, or boxes already at the minimum) as 1 — no squeeze available — so
-         * there is nothing to clamp or zero-check here.
-         */
-        get fitMinScale() {
-          return squeezeFloorScale(this.fitSmallestBoxPx, MIN_FIT_BOX_PX)
-        },
-        /**
-         * #getter
-         * Ceiling on the fit grow: the largest vertical scale before a feature body
-         * exceeds the height it would have outside fit mode. A sparse stack grows
-         * to fill the track only until its bodies reach that height, so fit never
-         * makes a feature taller than the display normally draws it. In normal
-         * display mode the laid-out body already is that height, pinning the scale
-         * at 1 (no grow, surplus stays whitespace); a compact mode may grow back up
-         * to — but not past — it.
-         *
-         * That works out to exactly `1 / multiplier`, with no body height read at
-         * all: the grow target is the unmultiplied height and the laid-out body is
-         * that height times the mode's multiplier, so it cancels whatever it was
-         * per feature and the ceiling is purely the display mode's compact ratio (1
-         * in normal mode → no grow). Unlike the squeeze floor, which has to know
-         * the shortest actual box (see `fitSmallestBoxPx`), this bound is uniform.
-         */
-        get fitMaxScale() {
-          return Math.max(1, 1 / HEIGHT_MULTIPLIERS[self.displayMode])
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The resolved fit outcome — which reservation `level` survived, its
-         * unscaled `layout`, and the vertical `scale` to fill the track — bundled
-         * so the three can never disagree. The ladder keeps the least reduction
-         * whose *unscaled* stack fits the track height: `full` (names +
-         * descriptions), else `labels` (drop descriptions), else `decimated` at a
-         * whitespace factor solved to the height (`fitDecimatedSolved` — keeps as
-         * many non-overlapping names as fit, filling the space continuously), else
-         * `bodies` (drop names too, pack tight) when even the tightest decimation
-         * overflows. The kept rung is then scaled to fill the track: grown up to
-         * `fitMaxScale` when it fits with room to spare, but never past the normal
-         * feature height — so in normal display mode grow is pinned at 1 and spare
-         * space stays whitespace, while a compact mode may enlarge back up to
-         * normal; or — only at the last `bodies` rung — squeezed down to
-         * `fitMinScale` and scrolled if even that overflows. Non-fit modes stay at `full`, scale 1. Read off the unscaled
-         * candidate heights so it can't feed back on its own `scale`. The ladder
-         * walk + scale math live in `resolveFitLadder`.
-         *
-         * Every rung is measured over `fitMeasureFeatureIds` — on screen in fit
-         * mode, everything otherwise — so the rung that survives and the squeeze
-         * it gets are decided by the stack in view, not by the half-viewport of
-         * buffered features packed on either side of it.
-         */
-        get fitStage(): FitStage {
-          const base = self.baseLaidOutDataMap
-          const fit = self.fitHeightToDisplay
-          // Non-fit mode is the `full` rung with no scaling freedom:
-          // minScale=maxScale=1 pins the scale at 1 and the lone rung lays out
-          // only `base` (resolveFitLadder returns immediately on the last rung).
-          // Routing both modes through resolveFitLadder keeps FitStage assembled
-          // in one place, so its fields (level/layout/scale/contentHeight) can't
-          // drift apart.
-          return resolveFitLadder(
-            fit
-              ? [
-                  { level: 'full', layout: () => base },
-                  { level: 'labels', layout: () => self.fitLabelsOnlyLayout },
-                  { level: 'decimated', layout: () => self.fitDecimatedSolved },
-                  { level: 'bodies', layout: () => self.fitBodiesOnlyLayout },
-                ]
-              : [{ level: 'full', layout: () => base }],
-            self.fitTargetHeight,
-            fit ? self.fitMinScale : 1,
-            fit ? self.fitMaxScale : 1,
-            self.fitMeasureFeatureIds,
-          )
-        },
-      }))
+      .views(fitLadderViews)
       .views(self => ({
         /**
          * #getter
@@ -1399,79 +888,8 @@ export default function baseStateModelFactory(
           return self.fitStage.scale >= 1
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         */
-        // The morph's progress with the easing curve applied. The ONE place
-        // `easeInOutCubic` is called on it: the interpolated map below, the
-        // overlay offset and the mid-flight re-seed in CanvasYMorph all read
-        // this, so none of them can end up describing a different frame than
-        // the one the canvas drew.
-        get morphEased() {
-          return easeInOutCubic(self.morphProgress)
-        },
-        /**
-         * #getter
-         */
-        // What the canvas + DOM overlays actually draw. Identical to
-        // `laidOutDataMap` except during a row re-pack, when feature Y eases
-        // from the previous layout to the new one (see yMorph). Returns the
-        // same object reference as `laidOutDataMap` when idle, so consumers
-        // don't re-upload/re-render unless an animation is in flight.
-        get renderDataMap(): ReadonlyMap<number, FeatureDataResult> {
-          const from = self.morphFromTops
-          const t = this.morphEased
-          // t === 1 is the settled frame between the clock's final
-          // setMorphProgress(1) and endYMorph clearing morphFromTops: every
-          // feature already sits at its destination, so return laidOutDataMap by
-          // reference (same as idle) instead of rebuilding an identical map. The
-          // stable reference also lets the MobX computed skip a redundant
-          // re-render when endYMorph then clears the morph.
-          if (from === undefined || t === 1) {
-            return self.laidOutDataMap
-          }
-          return interpolateYData(from, self.laidOutDataMap, t)
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         */
-        // Start the feature-Y transition from `fromTops` (each feature's row in
-        // the layout being left) toward the current `laidOutDataMap`. The rAF
-        // clock that advances `morphProgress` lives in FeatureComponent (it
-        // observes `morphFromTops`) and recomputes t from `morphStartMs` each
-        // frame, so resetting these mid-flight cleanly retargets the animation.
-        // A zoom morph (300ms) finishes before the next zoom (coarseBpPerPx is
-        // debounced 500ms), but non-debounced changes (pin toggle, region flip)
-        // can land mid-morph; the CanvasYMorph autorun re-seeds `fromTops` from
-        // the live displayed positions in that case so the retarget doesn't snap.
-        beginYMorph(fromTops: Map<string, number>, fromMaxY: number) {
-          self.morphFromTops = fromTops
-          self.morphFromMaxY = fromMaxY
-          self.morphStartMs = morphClockMs()
-          self.morphProgress = 0
-        },
-        /**
-         * #action
-         */
-        setMorphProgress(t: number) {
-          self.morphProgress = Math.min(1, Math.max(0, t))
-        },
-        /**
-         * #action
-         */
-        endYMorph() {
-          self.morphFromTops = undefined
-          self.morphProgress = 1
-          // Cleared, not left behind: `maxY` reads it only while a morph is in
-          // flight, but CanvasYMorph folds it into the next morph's hold with a
-          // plain `Math.max`, which is only correct if a settled display reports
-          // no held height.
-          self.morphFromMaxY = 0
-        },
-      }))
+      .views(yMorphViews)
+      .actions(yMorphActions)
       .views(self => ({
         /**
          * #getter
@@ -1670,33 +1088,8 @@ export default function baseStateModelFactory(
       // not, so the two kinds cannot be told apart by looking at the call site.
       // Read siblings off `self` in a later block and the distinction stops
       // mattering.
+      .views(morphOffsetViews)
       .views(self => ({
-        /**
-         * #method
-         */
-        // How far this feature's glyph is currently drawn from the row it is
-        // laid out on, or 0 when no morph is easing it. The DOM overlay boxes
-        // add it to their tops: they take geometry from `featureItemMap`, which
-        // is built off the settled `laidOutDataMap` so hit targets are the
-        // destination, and without this a selection or hover box sits on the
-        // destination row for the morph's 300ms while the glyph inside it is
-        // still travelling. A subfeature rides its parent's row, so its box
-        // takes the parent's offset.
-        morphOffsetFor(featureId: string) {
-          const from = self.morphFromTops
-          if (from === undefined) {
-            return 0
-          }
-          const topLevelId = self.featureIdIndex.has(featureId)
-            ? featureId
-            : (self.subfeatureIdIndex.get(featureId)?.parentFeatureId ??
-              featureId)
-          const item = self.featureIdIndex.get(topLevelId)
-          return item === undefined
-            ? 0
-            : morphOffset(from, topLevelId, item.topPx, self.morphEased)
-        },
-
         /**
          * #getter
          */
@@ -1904,253 +1297,9 @@ export default function baseStateModelFactory(
               ),
           })
         },
-
-        /**
-         * #action
-         */
-        // Inert while a context menu is open: openContextMenu pins the hover to
-        // the menu's target so the highlight box always frames what the menu acts
-        // on, and that pin has to survive the cursor drifting onto a neighbouring
-        // feature's label (the label layer keeps emitting mousemove over its own
-        // divs). Enforced here rather than at each call site because this model
-        // owns both halves of the invariant — contextMenuInfo and the hover — so a
-        // new hover source can't reintroduce the bug. closeContextMenu releases it.
-        setHover(
-          featureId: string | null,
-          subfeatureId: string | null,
-          tooltip: string[] | undefined,
-        ) {
-          if (self.contextMenuInfo) {
-            return
-          }
-          self.featureIdUnderMouse = featureId
-          self.subfeatureIdUnderMouse = subfeatureId
-          // The two ids above are primitives, so MobX already drops a rewrite
-          // with the same value; the tooltip is a fresh array on every hit and
-          // needs the comparison spelled out. Without it a cursor resting on one
-          // feature re-rendered `FeatureTooltip` on every raw mousemove — the
-          // rows were identical each time, and only the array's identity moved.
-          if (!sameOptionalStrings(self.mouseoverExtraInformation, tooltip)) {
-            self.mouseoverExtraInformation = tooltip
-          }
-        },
-
-        /**
-         * #action
-         */
-        // Holds the same pin as setHover, so the box can't be dropped out from
-        // under an open menu — by a viewport shift (the clear-on-viewport-change
-        // autorun), or by the cursor leaving the canvas for the menu itself.
-        // closeContextMenu clears contextMenuInfo first, so its own call lands.
-        clearHover() {
-          if (!self.contextMenuInfo) {
-            self.featureIdUnderMouse = null
-            self.subfeatureIdUnderMouse = null
-            self.mouseoverExtraInformation = undefined
-          }
-        },
-
-        /**
-         * #action
-         */
-        // Close the feature context menu and drop the hover it was pinned to.
-        closeContextMenu() {
-          self.contextMenuInfo = undefined
-          this.clearHover()
-        },
-
-        /**
-         * #action
-         */
-        // Pin/unpin a feature to the top of the layout. Toggling mutates the
-        // observable array, which reruns the layout (see pinnedFeatureIdSet)
-        // and animates the feature to/from its top row via the Y morph.
-        //
-        // Pinning also resets scroll, for the reason `showAllHidden` does: the
-        // feature lands in a top row, and a track scrolled past that row would
-        // show the user's "Pin to top" making the feature vanish upward. A pin
-        // does not shrink the content, so the layout autorun's maxScroll clamp
-        // never fires here. Unpinning leaves the scroll alone — that returns the
-        // feature to its natural row and is not a request to look at anything.
-        togglePinnedFeature(featureId: string) {
-          toggleArrayMember(self.pinnedFeatureIds, featureId)
-          if (self.pinnedFeatureIds.includes(featureId)) {
-            self.setScrollTop(0)
-          }
-        },
-        /**
-         * #action
-         * Open or re-collapse one gene's isoforms, from the badge on its own
-         * label. Nothing else has to change: the badge's text comes from the
-         * worker's own `isoformOverflow`, which reports what the collapse WOULD
-         * hide whether or not this gene is in the set — so the badge that
-         * opened a gene is the badge that closes it again.
-         */
-        toggleExpandedGene(featureId: string) {
-          toggleArrayMember(self.expandedGeneIds, featureId)
-        },
-        /**
-         * #action
-         * Re-collapse every gene opened from a badge.
-         */
-        clearExpandedGenes() {
-          self.expandedGeneIds.clear()
-        },
-
-        /**
-         * #action
-         */
-        // Unpin every feature. The track-level counterpart of the per-feature
-        // "Unpin from top", and the only way back once the pinned feature is out
-        // of reach: `togglePinnedFeature` needs the feature under the cursor, and
-        // a pin outlives the navigation that created it — nothing on screen marks
-        // a pinned feature, and the set persists in the snapshot, so a pin left on
-        // another chromosome goes on claiming a top row wherever it is drawn with
-        // no affordance naming it. Same gap, and the same shape of answer, as
-        // `clearFeatureHighlights`.
-        clearPinnedFeatures() {
-          self.pinnedFeatureIds.clear()
-        },
-
-        /**
-         * #action
-         */
-        // Add/remove a feature from the "show only" collection. Ctrl+clicking a
-        // feature and the right-click "Add/Remove" item both route here. If a
-        // removal empties an applied set, drop back to showing everything.
-        toggleSoloFeature(featureId: string) {
-          toggleArrayMember(self.soloFeatureIds, featureId)
-          // A removal that empties an applied set drops back to showing all
-          // (adding never empties, so this only fires on removal).
-          if (self.soloFeatureIds.length === 0) {
-            self.soloApplied = false
-          }
-        },
-
-        /**
-         * #action
-         */
-        // Stop isolating and drop the whole collection.
-        clearSolo() {
-          self.soloFeatureIds.clear()
-          self.soloApplied = false
-        },
-
-        /**
-         * #action
-         */
-        // Hide a single feature (add to the exclusion set). Applies immediately.
-        hideFeature(featureId: string) {
-          if (!self.hiddenFeatureIds.includes(featureId)) {
-            self.hiddenFeatureIds.push(featureId)
-          }
-        },
-
-        /**
-         * #action
-         */
-        // Bring back every hidden feature. Reset scroll so a re-shown feature
-        // that first-fits to a top row (it re-enters layout as "new", with no
-        // prior-y to hold its old row) lands in view instead of above a
-        // scrolled-down viewport.
-        showAllHidden() {
-          self.hiddenFeatureIds.clear()
-          self.setScrollTop(0)
-        },
-
-        /**
-         * #action
-         */
-        // Replace the highlight set (a search selecting a new gene supersedes the
-        // previous highlight rather than accumulating). Resolved lazily against
-        // rendered features via highlightedFeatureIdSet.
-        setFeatureHighlights(highlights: FeatureHighlight[]) {
-          self.featureHighlights = cast(highlights)
-        },
-
-        /**
-         * #action
-         */
-        // Additively highlight one rendered feature (right-click "Highlight
-        // feature"). Unlike setFeatureHighlights, which replaces the set so a new
-        // search supersedes the old one, manual highlights accumulate so a user
-        // can mark several features at once; skip the add if this exact feature
-        // (by id) is already highlighted (idempotent re-highlight). Dedupe on the
-        // stored featureId, so re-highlighting a gene never collides with a
-        // separately highlighted transcript that shares its span.
-        addFeatureHighlightForItem(target: HighlightTarget, refName: string) {
-          const already = self.featureHighlights.some(
-            h => h.featureId === target.featureId,
-          )
-          if (!already) {
-            self.featureHighlights.push({
-              refName,
-              start: target.startBp,
-              end: target.endBp,
-              name: target.name,
-              featureId: target.featureId,
-            })
-          }
-        },
-
-        /**
-         * #action
-         */
-        // Drop the highlights that actually box this rendered id, asking the same
-        // resolution the overlay draws from — so "Remove highlight" removes
-        // exactly the boxes the user is looking at, and the menu's label can't
-        // disagree with what its click does.
-        //
-        // Deliberately NOT a re-match against the stored signature. The matchers
-        // are heuristic by necessity (trix records no uniqueId, so a highlight is
-        // pinned by span + a label that may be a custom/indexed string), and a
-        // heuristic match is a fine basis for best-effort boxing but a bad one
-        // for deleting: a gene-wide highlight fuzzily matches an isoform sharing
-        // its span, so removing that isoform's highlight used to silently take
-        // the gene's with it. Attribution still clears a search-drifted
-        // highlight — resolution matched it by span in the first place.
-        removeFeatureHighlightsForId(featureId: string) {
-          const { boxedBy } = self.resolvedHighlights
-          self.featureHighlights = cast(
-            self.featureHighlights.filter(
-              (_h, i) => !boxedBy[i]?.has(featureId),
-            ),
-          )
-        },
-
-        /**
-         * #action
-         */
-        clearFeatureHighlights() {
-          self.featureHighlights.clear()
-        },
       }))
-      .actions(self => ({
-        /**
-         * #action
-         */
-        // Isolate to the collected set (worker drops non-members). No transient
-        // snackbar: the persistent SoloSelectionChip is both the confirmation
-        // and the later-undo affordance (its × clears the set at any time), so a
-        // toast that auto-hides would only duplicate it and vanish before the
-        // user finishes exploring.
-        applySolo() {
-          if (self.soloFeatureIds.length === 0) {
-            return
-          }
-          self.soloApplied = true
-        },
-
-        /**
-         * #action
-         */
-        // One-shot single-feature isolate: replace the collection with just this
-        // feature and apply immediately (the common "show only this one" case).
-        soloFeature(featureId: string) {
-          self.soloFeatureIds.replace([featureId])
-          self.soloApplied = true
-        },
-      }))
+      .actions(featureSetActions)
+      .actions(featureHighlightActions)
       .actions(self => {
         // cache the header-metadata round-trip so repeated feature clicks reuse
         // one fetch; cleared on failure so a later click retries
@@ -2268,27 +1417,6 @@ export default function baseStateModelFactory(
             if (!same) {
               self.sequenceHoverPosition = pos
             }
-          },
-
-          /**
-           * #action
-           */
-          // One object rather than positional args: every new hit-derived
-          // field the menu wants would otherwise widen this signature and the
-          // two call sites' prop types too (same idiom as
-          // LinearMultiRowFeatureDisplay's openContextMenu).
-          openContextMenu(info: FeatureContextMenuInfo) {
-            self.contextMenuInfo = info
-            // Pin the hover to the menu's target so its highlight box always
-            // matches what the menu acts on — for every entry point (canvas or
-            // label right-click), and even when no mousemove preceded this
-            // open. When the click landed on a transcript, keep the box on that
-            // transcript: the menu names it, so the box must agree. Drop the
-            // tooltip so it doesn't overlap the menu. closeContextMenu clears
-            // all of this again.
-            self.featureIdUnderMouse = info.item.featureId
-            self.subfeatureIdUnderMouse = info.subfeature?.featureId ?? null
-            self.mouseoverExtraInformation = undefined
           },
         }
       })
@@ -2698,121 +1826,7 @@ export default function baseStateModelFactory(
             // (pan, zoom, internal vertical scroll). Shared with the alignments
             // display; see installClearHoverOnViewportChange.
 
-            // Drive the feature-Y transition. When laidOutDataMap re-packs at
-            // the same vertical scale (a zoom step — not a label/mode change,
-            // which alters row heights), animate from the previous rows to the
-            // new ones; otherwise snap. Compares to the prior map kept in
-            // closure so the trigger is the layout change itself.
-            // Seeded lazily on the autorun's first initialized run, NOT here:
-            // showLabels/effectiveShowDescriptions transitively read view.width
-            // (via the density gate), which throws before the view is measured.
-            // Reading them synchronously in afterAttach would throw during
-            // session restore — propagating out of display instantiation and
-            // making the session loader drop the display as "unhydratable".
-            // These prevs are only compared once prevLayout is non-undefined,
-            // which can't happen until after the first guarded run has set them.
-            let prevLayout: ReadonlyMap<number, FeatureDataResult> | undefined
-            let prevGeometry: string | undefined
-            // autorunOnReadyView gates on view.initialized — laidOutDataMap is
-            // empty until then, and rowGeometrySignature reads renderedShow*
-            // which read view.width (which throws pre-measure), so the body must
-            // not run until the view is ready. prevs stay undefined until the
-            // first ready run seeds them; they're only compared once prevLayout
-            // is non-undefined, which can't happen before that first run.
-            autorunOnReadyView(
-              self,
-              () => {
-                const current = self.laidOutDataMap
-                // Same row heights/scale as the previous layout means the change
-                // is a same-scale zoom re-pack (row *assignment* only) and can
-                // morph; a changed signature rescaled every row (mode/label/fit-
-                // level change, or a fit squeeze) and must snap. See
-                // rowGeometrySignature for why it reads the rendered, not raw,
-                // label/description flags.
-                const { level } = self.fitStage
-                const geometry = rowGeometrySignature({
-                  displayMode: self.displayMode,
-                  renderedShowLabels: self.renderedShowLabels,
-                  renderedShowDescriptions: self.renderedShowDescriptions,
-                  fitScale: self.fitScale,
-                  fitLevel: level,
-                  // Only where it selects rows: at any other rung the solve is
-                  // never run, and reading it would pay for a bisection to
-                  // discriminate stacks it had no hand in.
-                  labelRoomFactor:
-                    level === 'decimated' ? self.fitDecimatedFactor : undefined,
-                })
-                const scaleUnchanged = geometry === prevGeometry
-                const from = prevLayout
-                prevLayout = current
-                prevGeometry = geometry
-                // Not a real layout-to-layout transition (first data, an
-                // empty map on nav) — nothing to morph or snap.
-                if (
-                  from === undefined ||
-                  from === current ||
-                  from.size === 0 ||
-                  current.size === 0
-                ) {
-                  return
-                }
-                // scrollTop/height are viewport state, not layout inputs, and
-                // morphFromTops/morphProgress/morphFromMaxY advance every rAF
-                // frame — read all untracked so neither writing scrollTop back
-                // below nor the morph clock can re-trigger this layout autorun.
-                const { scrollTop, height, fromTops, fromMaxY } = untracked(
-                  () => {
-                    // A morph still in flight means a second, non-debounced
-                    // layout change (a pin toggle or region flip — unlike zoom)
-                    // is interrupting it. Re-seed the next morph from each
-                    // feature's live displayed position instead of `from`'s
-                    // settled rows so mid-flight features don't snap, and hold
-                    // the content height across the taller of the two morphs so
-                    // a feature easing up from a deep row isn't clipped. With
-                    // nothing in flight both fall through to `from` alone: no
-                    // morphFromTops eases the capture, and endYMorph zeroed the
-                    // held height.
-                    return {
-                      scrollTop: self.scrollTop,
-                      height: self.height,
-                      fromTops: captureFeatureTops(
-                        from,
-                        self.morphFromTops,
-                        self.morphEased,
-                      ),
-                      fromMaxY: Math.max(maxBottom(from), self.morphFromMaxY),
-                    }
-                  },
-                )
-                // Whenever the new layout is shorter than the current scroll
-                // position, clamp back into range so the viewport can't strand
-                // past the content bottom. This happens on same-scale repacks
-                // (zoom-in de-stacking rows) AND on mode/label changes (compact
-                // mode shrinks every row) — so it must run before the branch
-                // below, not only in the same-scale path. Clamp to the incoming
-                // layout's own bottom, NOT self.scrollableHeight/maxY: mid-morph
-                // those are held at the taller of old/new (morphFromMaxY,
-                // anti-clip), so reusing them here would skip clamping to the
-                // shorter incoming content until the morph settles.
-                const maxScroll = Math.max(0, maxBottom(current) - height)
-                if (scrollTop > maxScroll) {
-                  self.setScrollTop(maxScroll)
-                }
-                // Only a same-scale repack (a zoom step) has comparable rows to
-                // pin against; a mode/label change rescales every row, so let it
-                // snap without a row morph.
-                if (
-                  scaleUnchanged &&
-                  morphAllowed(getSession(self).animationMode) &&
-                  canMorph(fromTops, current)
-                ) {
-                  self.beginYMorph(fromTops, fromMaxY)
-                } else {
-                  self.endYMorph()
-                }
-              },
-              { name: 'CanvasYMorph' },
-            )
+            installYMorphAutorun(self)
           },
         }
       })
