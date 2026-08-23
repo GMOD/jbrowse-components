@@ -186,7 +186,9 @@ describe('gene-glyph control tooltip', () => {
           picks: picks({ 'MANE Select': 9 }, 2),
           noticeShowing: true,
         }),
-      ).toContain("as many as fit this track's height, MANE Select first")
+      ).toContain(
+        "as many as fit this track's height, fewer where genes stack, MANE Select first",
+      )
     })
 
     it('singularizes a cap of one', () => {

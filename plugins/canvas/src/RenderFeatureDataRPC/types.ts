@@ -75,6 +75,21 @@ export interface LayoutArgs {
   // whatever the mode's collapse says. A per-GENE override of a track-wide
   // setting, so it rides beside the config rather than in it.
   expandedGeneIds?: ReadonlySet<string>
+  // How busy the lane is where this gene sits, so the isoform cap can hand it a
+  // share rather than the whole track (see laneBudgetRows). Per-GENE and
+  // measured over its neighbours, so it rides beside the config like
+  // `expandedGeneIds`. Absent for a caller with no neighbourhood to sweep,
+  // which reads as the whole lane.
+  laneShare?: LaneShare
+}
+
+// What stacks with one gene at the busiest point of its span, itself included.
+// Two counts rather than one because the two cost the lane different amounts: a
+// gene spends its own rows plus however many isoforms it keeps, while a plain
+// feature spends its own rows plus exactly one.
+export interface LaneShare {
+  genes: number
+  features: number
 }
 
 export type GlyphType =

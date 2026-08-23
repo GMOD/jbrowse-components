@@ -4,14 +4,20 @@ import {
   budgetFeatureHeightPx,
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { WHOLE_LANE } from '../RenderFeatureDataRPC/glyphs/isoformLanes.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
-import { geneRowCostPx, isoformRowBudget } from './isoformBudget.ts'
+import {
+  geneOwnRows,
+  geneRowCostPx,
+  isoformRowBudget,
+} from './isoformBudget.ts'
 
 import type {
   DisplayMode,
   DisplayConfig,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { LaneShare } from '../RenderFeatureDataRPC/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function mockFeature(opts: {
@@ -133,9 +139,11 @@ function packedRowHeightPx(
   feature: Feature,
   displayMode: DisplayMode,
   config: DisplayConfig,
+  laneShare = WHOLE_LANE,
 ) {
   const layout = layoutSubfeatures({
     feature,
+    laneShare,
     config: {
       ...config,
       subfeatureLabels: workerSubfeatureLabels(
@@ -448,5 +456,72 @@ describe('the lane holds a capped gene whatever else it carries', () => {
     expect(packedRowHeightPx(geneWith(3), 'normal', shortLane)).toBeGreaterThan(
       30,
     )
+  })
+})
+
+// `isoformRowBudget` sizes ONE gene to the whole track. That is the right answer
+// for the lane it is asked about and the wrong one for the lane that exists: a
+// second gene stacking with the first overflows by the same factor at EVERY
+// height, so dragging the track taller buys isoforms and never the label rows
+// the fit ladder needs — and the names go. `laneBudgetRows` re-spends the same
+// arithmetic over the genes actually stacking there.
+describe('a lane several genes stack in', () => {
+  const cost = geneRowCostPx({
+    featureHeightPx: 10,
+    displayMode: 'normal',
+    subfeatureLabelsBelow: false,
+  })
+
+  function sharedLaneConfig(trackHeightPx: number) {
+    return mockDisplayConfig({
+      subfeatureLabels: 'none',
+      geneGlyphMode: 'all',
+      maxIsoforms: isoformRowBudget(trackHeightPx, cost),
+      geneOwnRows: geneOwnRows(cost),
+    })
+  }
+
+  // The measurement the sharing exists for, kept as a test so it cannot quietly
+  // stop being true: one gene fills the lane exactly, and two do not fit at any
+  // height.
+  it('is filled by a single gene at every height', () => {
+    for (const trackHeightPx of [100, 200, 400]) {
+      const alone = packedRowHeightPx(
+        geneWith(40),
+        'normal',
+        sharedLaneConfig(trackHeightPx),
+      )
+      expect(alone).toBeLessThanOrEqual(trackHeightPx)
+      expect(alone * 2).toBeGreaterThan(trackHeightPx)
+    }
+  })
+
+  it.each([2, 3, 4])('fits %i genes stacked in it', genes => {
+    for (const trackHeightPx of [200, 400, 800]) {
+      const share: LaneShare = { genes, features: 0 }
+      const rowPx = packedRowHeightPx(
+        geneWith(40),
+        'normal',
+        sharedLaneConfig(trackHeightPx),
+        share,
+      )
+      expect(rowPx * genes).toBeLessThanOrEqual(trackHeightPx)
+    }
+  })
+
+  // A plain neighbour costs the lane its own rows plus one body, which is what
+  // `geneRowCostPx` prices a one-isoform gene at — so the charge is checked
+  // against exactly that gene rather than against a second arithmetic.
+  it('leaves plain neighbours the rows they take', () => {
+    const trackHeightPx = 400
+    const config = sharedLaneConfig(trackHeightPx)
+    const neighbourPx = packedRowHeightPx(geneWith(1), 'normal', config)
+    for (const features of [1, 3, 6]) {
+      const rowPx = packedRowHeightPx(geneWith(40), 'normal', config, {
+        genes: 1,
+        features,
+      })
+      expect(rowPx + features * neighbourPx).toBeLessThanOrEqual(trackHeightPx)
+    }
   })
 })

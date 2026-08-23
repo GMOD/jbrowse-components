@@ -33,6 +33,7 @@ export function mockDisplayConfig(
     containerTypes: [],
     geneGlyphMode: 'all',
     maxIsoforms: undefined,
+    geneOwnRows: undefined,
     subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
     impliedUTRs: true,
     displayDirectionalChevrons: true,

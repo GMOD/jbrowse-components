@@ -72,3 +72,17 @@ export function isoformRowBudget(
     Math.floor((trackHeightPx - cost.geneOwnPx) / cost.perIsoformPx),
   )
 }
+
+/**
+ * What a gene's own rows — the mode's padding and its label lines — cost in
+ * `isoformRowBudget` units.
+ *
+ * Rows rather than pixels because that is the only form that survives the trip
+ * to the worker, which knows neither the display mode nor the label font (see
+ * `DisplayConfig.geneOwnRows`). `isoformRowBudget` spends this once, for the one
+ * gene it sizes against the whole lane; a lane several genes stack in owes it
+ * once per gene, and re-spending it is what `laneBudgetRows` is for.
+ */
+export function geneOwnRows(cost: ReturnType<typeof geneRowCostPx>) {
+  return cost.geneOwnPx / cost.perIsoformPx
+}

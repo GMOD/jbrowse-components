@@ -6,9 +6,10 @@ import {
   featureHeightPx,
   isCodingFeature,
 } from './glyphUtils.ts'
+import { WHOLE_LANE, laneBudgetRows } from './isoformLanes.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
-import type { FeatureLayout, LayoutArgs } from '../types.ts'
+import type { FeatureLayout, LaneShare, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Expressed as a fraction of heightPx so the entire within-gene layout scales
@@ -33,6 +34,30 @@ function isIsoform(sub: Feature, transcriptTypes: ReadonlySet<string>) {
   return (
     getSubfeatures(sub).length > 0 ||
     transcriptTypes.has(featureType(sub).toLowerCase())
+  )
+}
+
+function transcriptTypeSet(config: DisplayConfig) {
+  return new Set(config.transcriptTypes.map(t => t.toLowerCase()))
+}
+
+// Is this a gene the isoform cap has something to divide? The gene-level glyph
+// is the only one that stacks its children on rows of their own, and one
+// isoform is not a choice — a transcript's exons are subfeatures too, and
+// answer `getIsoforms` just as readily.
+//
+// The pair `layoutSubfeatures` asks of itself below (`hasMultipleIsoforms`),
+// hoisted so the lane sweep can ask it of every feature in the region BEFORE
+// any of them is laid out. Takes the dispatch answer rather than finding it,
+// because the caller sweeping a whole region already has one per feature.
+export function stacksMultipleIsoforms(
+  feature: Feature,
+  config: DisplayConfig,
+  glyph: (args: LayoutArgs) => FeatureLayout,
+) {
+  return (
+    glyph === layoutSubfeatures &&
+    getIsoforms(getSubfeatures(feature), transcriptTypeSet(config)).length > 1
   )
 }
 
@@ -296,15 +321,17 @@ function collapseIsoforms({
   decorations,
   scores,
   config,
+  laneShare,
   layoutOf,
 }: {
   isoforms: Feature[]
   decorations: Feature[]
   scores: Scores
   config: DisplayConfig
+  laneShare: LaneShare
   layoutOf: (child: Feature) => FeatureLayout
 }) {
-  const { geneGlyphMode, maxIsoforms } = config
+  const { geneGlyphMode, maxIsoforms, geneOwnRows } = config
   if (geneGlyphMode === 'longestCoding') {
     return isoforms.length > 1
       ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config)
@@ -315,7 +342,7 @@ function collapseIsoforms({
   }
   const budget = {
     decorations,
-    budgetRows: Math.max(1, maxIsoforms),
+    budgetRows: laneBudgetRows(maxIsoforms, geneOwnRows, laneShare),
     rowPx: budgetFeatureHeightPx(config.featureHeight),
     subfeatureLabelsBelow: config.subfeatureLabels === 'below',
     layoutOf,
@@ -366,7 +393,7 @@ function memoizeChildLayouts(args: LayoutArgs) {
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
-  const { geneGlyphMode, transcriptTypes } = config
+  const { geneGlyphMode } = config
 
   // the gene's own resolved height, used only for the inter-transcript gap below
   // — each stacked child carries whatever height its own glyph resolved
@@ -374,14 +401,13 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   let subfeatures = [...getSubfeatures(feature)]
 
-  const transcriptTypeSet = new Set(transcriptTypes.map(t => t.toLowerCase()))
   const scores = scoreIsoforms(subfeatures, config)
 
   // Resolve the isoform list once and reuse it for both the gene-glyph control's
   // visibility (does this gene actually have multiple isoforms to choose among?)
   // and the longestCoding collapse, so the control appears exactly when switching
   // modes would change anything.
-  const isoforms = getIsoforms(subfeatures, transcriptTypeSet)
+  const isoforms = getIsoforms(subfeatures, transcriptTypeSet(config))
   const hasMultipleIsoforms = isoforms.length > 1
   const isoformSet = new Set(isoforms)
 
@@ -399,6 +425,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     decorations: subfeatures.filter(sub => !isoformSet.has(sub)),
     scores,
     config,
+    laneShare: args.laneShare ?? WHOLE_LANE,
     layoutOf,
   })
   // An expanded gene still ASKS what the collapse would do — the badge on its

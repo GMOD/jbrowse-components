@@ -68,6 +68,7 @@ export function laneDisplayConfig({
     // assumption the lane rests on, so it is worth being able to read.
     geneGlyphMode: 'all',
     maxIsoforms: undefined,
+    geneOwnRows: undefined,
     subfeatureLabels: 'none',
     transcriptTypes: [],
     canonicalTranscriptField: '',

@@ -86,6 +86,16 @@ export interface DisplayConfig {
   // slot — the display derives it from its track height (`effectiveMaxIsoforms`)
   // and substitutes it into the payload the way `geneGlyphMode` is substituted.
   maxIsoforms: number | undefined
+  // What a gene's own rows — padding and label lines — cost in `maxIsoforms`
+  // units. Rows and not pixels because the worker knows neither the display mode
+  // nor the label font, and both price them.
+  //
+  // Travels with `maxIsoforms` and is undefined exactly when it is: they are one
+  // budget, substituted together by the same `rpcProps()`. `maxIsoforms` is
+  // already net of ONE of these, for the single gene it sizes; a lane several
+  // genes stack in owes one apiece, which is what `laneBudgetRows` spends this
+  // on.
+  geneOwnRows: number | undefined
   subfeatureLabels: SubfeatureLabels
   transcriptTypes: string[]
   // the attribute an isoform's curated "represents the gene" tag rides in, and
@@ -139,6 +149,7 @@ export interface DisplayConfig {
 const WORKER_READS: Record<keyof DisplayConfig, true> = {
   geneGlyphMode: true,
   maxIsoforms: true,
+  geneOwnRows: true,
   subfeatureLabels: true,
   transcriptTypes: true,
   canonicalTranscriptField: true,

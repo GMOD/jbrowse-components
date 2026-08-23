@@ -68,7 +68,10 @@ export function geneGlyphTooltip({
 }: {
   mode: GeneGlyphMode
   collapsed: boolean
-  // the height cap hiding transcripts, or undefined when none is
+  // the height cap hiding transcripts, or undefined when none is. An upper
+  // bound rather than a promise: a gene sharing its lane with others is handed
+  // a share of this (laneBudgetRows), and its own label badge names what it
+  // actually left out.
   maxIsoforms?: number
   // what picked each collapsed gene's transcript, counted per rule
   picks?: IsoformPicks
@@ -83,7 +86,7 @@ export function geneGlyphTooltip({
     ? 'Showing all transcripts per gene'
     : maxIsoforms === undefined
       ? `Showing one transcript per gene — ${picked ?? "the annotation's representative one where it names one, else the longest coding"}`
-      : `Showing up to ${maxIsoforms} transcript${maxIsoforms === 1 ? '' : 's'} per gene — as many as fit this track's height${tag ? `, ${tag} first` : ''}`
+      : `Showing up to ${maxIsoforms} transcript${maxIsoforms === 1 ? '' : 's'} per gene — as many as fit this track's height, fewer where genes stack${tag ? `, ${tag} first` : ''}`
   const auto =
     mode === 'auto' && collapsed && maxIsoforms === undefined
       ? ' — chosen automatically at this zoom'

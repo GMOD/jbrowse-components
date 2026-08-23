@@ -28,7 +28,11 @@ import {
   isGeneLikeType,
 } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
-import { geneRowCostPx, isoformRowBudget } from './isoformBudget.ts'
+import {
+  geneOwnRows,
+  geneRowCostPx,
+  isoformRowBudget,
+} from './isoformBudget.ts'
 import { collapsedLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -171,21 +175,38 @@ export default function stateModelFactory(
        * `cappableTrackHeight`).
        */
       get effectiveMaxIsoforms(): number | undefined {
+        const cost = this.isoformLaneCost
+        return cost ? isoformRowBudget(self.coarseTrackHeight, cost) : undefined
+      },
+
+      // What one gene's own rows cost in `effectiveMaxIsoforms` units, for the
+      // worker to re-spend once per gene stacking in the same lane (see
+      // `laneBudgetRows`). Off the same cost as the budget above and gated on
+      // the same state, so the pair the payload carries can only be both set or
+      // both unset.
+      get effectiveGeneOwnRows(): number | undefined {
+        const cost = this.isoformLaneCost
+        return cost ? geneOwnRows(cost) : undefined
+      },
+
+      // What a lane's rows cost this display, or undefined where no cap
+      // applies: under `longestCoding` the worker ignores it, and in `grow` the
+      // height IS the content's, so a cap read off it would be a fetch-derived
+      // value in `rpcProps()` (the loop trap `makeSettingsLoopGuard` names).
+      // Hence `cappableTrackHeight`, the raw slot, rather than `height`.
+      get isoformLaneCost() {
         return this.geneGlyphMode !== 'auto' ||
           this.effectiveGeneGlyphMode !== 'all' ||
           self.heightMode === 'grow' ||
           !self.coarseTrackHeight
           ? undefined
-          : isoformRowBudget(
-              self.coarseTrackHeight,
-              geneRowCostPx({
-                featureHeightPx: budgetFeatureHeightPx(
-                  self.configuration.featureHeight,
-                ),
-                displayMode: self.displayMode,
-                subfeatureLabelsBelow: this.subfeatureLabels === 'below',
-              }),
-            )
+          : geneRowCostPx({
+              featureHeightPx: budgetFeatureHeightPx(
+                self.configuration.featureHeight,
+              ),
+              displayMode: self.displayMode,
+              subfeatureLabelsBelow: this.subfeatureLabels === 'below',
+            })
       },
 
       // Gate for the bottom-right isoform-collapse control: the loaded data has
@@ -252,6 +273,7 @@ export default function stateModelFactory(
               geneGlyphMode: self.effectiveGeneGlyphMode,
               // same reason — not a slot, so pickDisplayConfig reads undefined
               maxIsoforms: self.effectiveMaxIsoforms,
+              geneOwnRows: self.effectiveGeneOwnRows,
             },
             showOnlyGenes: self.showOnlyGenes,
           }

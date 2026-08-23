@@ -1459,6 +1459,7 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'displayDirectionalChevrons',
     'featureHeight',
     'geneGlyphMode',
+    'geneOwnRows',
     'hideSourceFeatures',
     'impliedUTRs',
     'jexlFilters',
@@ -1552,8 +1553,14 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
 
     expect(display.effectiveMaxIsoforms).toBeGreaterThan(budgetBefore)
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    // Both halves of the budget, because the worker divides one by the other
+    // when a lane holds more than one gene (laneBudgetRows) — a payload
+    // carrying only the cap silently over-admits there.
     expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
-      displayConfig: { maxIsoforms: display.effectiveMaxIsoforms },
+      displayConfig: {
+        maxIsoforms: display.effectiveMaxIsoforms,
+        geneOwnRows: display.effectiveGeneOwnRows,
+      },
     })
   })
 
@@ -1568,9 +1575,10 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     await jest.runAllTimersAsync()
 
     expect(display.effectiveMaxIsoforms).toBeUndefined()
+    expect(display.effectiveGeneOwnRows).toBeUndefined()
     expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
     expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
-      displayConfig: { maxIsoforms: undefined },
+      displayConfig: { maxIsoforms: undefined, geneOwnRows: undefined },
     })
   })
 

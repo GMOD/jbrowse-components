@@ -69,6 +69,19 @@ Three things made the main-thread version unbuildable as designed:
   `longestCoding` the worker ignores it, and under `grow` the track's height is
   its own content's, so reading a cap off it would put a fetch-derived value in
   `rpcProps()`. Either way the height stops being a cache key at all.
+- **The lane is divided in the worker, not sized on the main thread.**
+  `isoformRowBudget` answers for a lane holding one gene, which is the only lane
+  the display can see before the fetch — so a second gene stacking with the
+  first took the same whole-track budget and the pair overflowed by ~2x at
+  EVERY height. Scale-invariant, so dragging a fitted track taller bought
+  isoforms and never the label rows the fit ladder needs, and the names went
+  (`bodies`). The division (`laneShares` / `laneBudgetRows`) happens where the
+  neighbours are visible, on the same argument this ADR makes for the cap
+  itself. `maxIsoforms` stays a pure function of the debounced height, so the
+  cache key and the loop story above are untouched. It travels with
+  `geneOwnRows` — what a gene's own padding and label lines cost in those same
+  row units — because the lane owes that once per gene and only the display can
+  price it.
 - **The budget is a mirror, and mirrors drift.** The display solves
   `decideLabelReservations`' row arithmetic for n (`geneRowCostPx` /
   `isoformRowBudget`); `isoformBudget.test.ts` pins the two against the packer

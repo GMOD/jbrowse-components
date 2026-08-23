@@ -18,7 +18,7 @@ digraph feature_budget {
   one  [label="one per gene: MANE or\nRefSeq Select, else longest coding"]
   zoom [label="by zoom"]
 
-  budget [label="maxIsoforms\na budget of ROWS, estimated on the\nmain thread and re-spent in the worker\nover the real children"]
+  budget [label="maxIsoforms\na budget of ROWS, estimated on the\nmain thread, divided in the worker among\nthe genes stacking in one lane, and re-spent\nover the real children"]
   allt -> budget  one -> budget  zoom -> budget
 
   pack [label="pack rows,\nreserving label rows"]
