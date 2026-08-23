@@ -115,6 +115,24 @@ export function offscreenMateColors(theme: Theme) {
 // one hit test answer for both without deciding between them.
 export type OffscreenMateSide = 'top' | 'bottom'
 
+/**
+ * A dataset the strip draws from.
+ *
+ * TWO KINDS, one shape. Without `mateCumBpStarts` every entry is a mark by
+ * construction — the worker found no place on the facing axis for it at all.
+ * With them the entry HAS a place, and whether it is a mark is a question about
+ * where that place currently sits: see `culledRibbonMates`.
+ */
+export interface OffscreenMateDataset extends Omit<
+  OffscreenMateData,
+  'mateStarts' | 'mateEnds'
+> {
+  mateStarts: ArrayLike<number>
+  mateEnds: ArrayLike<number>
+  mateCumBpStarts?: Float64Array
+  mateCumBpEnds?: Float64Array
+}
+
 // One strip's worth of input: what to mark and the ruler to mark it against.
 // A band has at most two, and they are NOT interchangeable — see
 // `offscreenMateStrips`, which is what builds them.
@@ -122,7 +140,14 @@ export interface OffscreenMateLane {
   // one per synteny display on the level, drawn and hit-tested as one strip:
   // they share a band, so labels that avoid each other within a display have to
   // avoid the neighbouring display's too
-  datasets: OffscreenMateData[]
+  datasets: OffscreenMateDataset[]
+  // The facing axis's drawable span in ITS cumBp — the overdraw band
+  // `isRibbonCulled` keeps a ribbon for, restated in bp so a mark and the
+  // ribbon it stands in for cannot disagree about the edge. Read only by
+  // datasets carrying `mateCumBpStarts`, and required by them: a dataset that
+  // knows where its mates are and is handed no band marks nothing, rather than
+  // marking alignments the band is drawing.
+  mateBand?: { lo: number; hi: number }
   // the axis these are placed against, which is the only axis they have — the
   // query row for a top strip, the target row for a bottom one
   bpPerPx: number
@@ -361,7 +386,7 @@ export interface OffscreenMateRect {
   // the dataset and lane index it came from, rather than the contig name it
   // points at: the hover scan builds one of these per candidate and reads the
   // name only for the one it answers with
-  data: OffscreenMateData
+  data: OffscreenMateDataset
   index: number
   x: number
   // the strip's own top edge: 0 for a top strip, and the band height less the
@@ -373,7 +398,7 @@ export interface OffscreenMateRect {
   height: number
 }
 
-function offscreenMateRefName(data: OffscreenMateData, i: number) {
+function offscreenMateRefName(data: OffscreenMateDataset, i: number) {
   return data.mateRefNameDict[data.mateRefNameIds[i]!]!
 }
 
@@ -450,8 +475,14 @@ function stripGeometry({
 // cost the REPAINT 25%, which is the every-pan path rather than the
 // pointer-is-on-the-marks one. See `agent-docs/reference/REJECTED_IDEAS.md`.
 function offscreenMateRectAt(
-  { bpPerPx, offsetPx, width, minAlignmentLength }: OffscreenMateLayout,
-  data: OffscreenMateData,
+  {
+    bpPerPx,
+    offsetPx,
+    width,
+    minAlignmentLength,
+    mateBand,
+  }: OffscreenMateLayout,
+  data: OffscreenMateDataset,
   i: number,
   { markY, markHeight }: StripGeometry,
 ): OffscreenMateRect | undefined {
@@ -466,6 +497,19 @@ function offscreenMateRectAt(
   const x2 = screenX(data.ends[i]!, bpPerPx, offsetPx)
   if (x2 < 0 || x1 > width) {
     return undefined
+  }
+  // AFTER the span tests, not before: an entry whose instances were all emitted
+  // off-screen keeps its sentinel mate span, and reading that as a position
+  // would call it hidden. It is the x test above that drops it.
+  const { mateCumBpStarts } = data
+  if (mateCumBpStarts) {
+    const drawn =
+      mateBand === undefined ||
+      (data.mateCumBpEnds![i]! >= mateBand.lo &&
+        mateCumBpStarts[i]! <= mateBand.hi)
+    if (drawn) {
+      return undefined
+    }
   }
   return {
     data,
@@ -536,6 +580,11 @@ export interface OffscreenMateLocus {
 export interface OffscreenMateSpan {
   refName: string
   locus?: OffscreenMateLocus
+  // The facing row already displays this contig and has merely scrolled off it,
+  // so the click has somewhere to scroll TO. False for a contig that row is not
+  // displaying at all, where the only way to show it is to replace what the row
+  // is displaying with it.
+  displayed?: boolean
 }
 
 /**
@@ -574,12 +623,14 @@ export function offscreenMateSpanAt(
   }
   const spans = new Map<string, OffscreenMateLocus>()
   let top: string | undefined
+  let displayed = false
   for (const data of layout.datasets) {
     for (let i = 0; i < data.starts.length; i++) {
       const rect = offscreenMateRectAt(layout, data, i, strip)
       if (rect && pointerOnMark(rect, x)) {
         const refName = offscreenMateRefName(data, i)
         top = refName
+        displayed = data.mateCumBpStarts !== undefined
         const span = spans.get(refName)
         const start = data.mateStarts[i]!
         const end = data.mateEnds[i]!
@@ -598,7 +649,11 @@ export function offscreenMateSpanAt(
   const locus = spans.get(top)!
   // A degenerate zero-length span still navigates, as a whole contig — which is
   // what every click did before there were coordinates to do better with.
-  return { refName: top, locus: locus.end > locus.start ? locus : undefined }
+  return {
+    refName: top,
+    locus: locus.end > locus.start ? locus : undefined,
+    displayed,
+  }
 }
 
 /**

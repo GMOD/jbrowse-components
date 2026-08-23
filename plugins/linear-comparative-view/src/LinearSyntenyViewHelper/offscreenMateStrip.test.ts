@@ -36,6 +36,8 @@ function source(over: Record<string, unknown> = {}) {
     parentView: {
       showOffscreenMates: true,
       minAlignmentLength: 0,
+      overdrawPx: 1000,
+      width: 800,
       views: [QUERY_ROW, TARGET_ROW],
     },
     ...over,
@@ -59,6 +61,8 @@ function bothSides(over: Record<string, unknown> = {}) {
     parentView: {
       showOffscreenMates: true,
       minAlignmentLength: 0,
+      overdrawPx: 1000,
+      width: 800,
       views: [QUERY_ROW, QUERY_ROW],
     },
     ...over,
@@ -284,6 +288,7 @@ test('a click resolves the same strip and row, plus the mate locus', () => {
     refName: 'fromTarget',
     navRow: 0,
     side: 'bottom',
+    displayed: false,
     locus: { start: 0, end: 500 },
   })
 })

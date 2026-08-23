@@ -310,3 +310,47 @@ runs off those same rects, is what makes that more than a draw-loop change.
 Panning the facing view so the mate comes on screen is not the same feature and
 does not compete with it: the mate contig has to already be a displayed region
 for that, and the case here is precisely that it is not.
+
+*2026-08-23:* **that paragraph was the blind spot, and class C is what it read
+past.** "The mate contig has to already be a displayed region" is not the rare
+case — it is what a stack of whole assemblies IS, and the multiway demo we ship
+is one. Reported from `demos/grape_peach_cacao` with all three rows on whole
+assemblies and "Mark them" on: the strip drew nothing, because
+`v2RefNames.has(mate.refName)` is true for every mate when the facing row
+displays every contig. Meanwhile `isRibbonCulled` was dropping all but the
+ribbons reaching the visible slice — 125 of 126 instances in the volvox
+reproduction. The one arrangement where "what am I not being shown" is hardest
+to answer was the one arrangement the feature said nothing about.
+
+| class | anchor | mate | why no ribbon | decided |
+| --- | --- | --- | --- | --- |
+| **A** | visible v1 window | contig v2 does not display | no second endpoint | worker, per fetch |
+| **B** | contig v1 does not display | visible v2 window | never requested | worker, per fetch (`bidirectionalFetch`) |
+| **C** | visible v1 window | contig v2 displays and has scrolled off | `overdrawPx` cull | **main thread, per repaint** |
+
+**C cannot move into the fetch, and that is the whole of its design.** The facing
+row pans a full `syntenyPanBufferPx` without refetching, so a mark decided when
+the data landed sits beside the ribbon it claims does not exist. It is therefore
+a draw-time question asked against the same band `isRibbonCulled` uses —
+`culledRibbonMates` restates that band in the facing axis's cumBp, and the one
+comparison decides both, so a mark and its ribbon cannot both be drawn.
+
+**Off the instances, not the feature lanes.** `starts`/`ends` are the adapter's
+untrimmed coordinates; a CIGAR-clipped block draws from corners the projection
+loop moved, so a reprojected mark sits beside its own ribbon. Min/max over a
+feature's instances also covers transparent-CIGAR mode, where the base trapezoid
+is replaced by one tile per match segment and no single instance spans the block.
+
+**What keeps it off the frame budget is `mateCumBpLo/Hi`.** A facing row whose
+band already spans every mate the fetch holds can hide none of them, so the whole
+dataset leaves the lane on two comparisons — which is two rows zoomed out over
+each other, the common state. The per-repaint walk is paid only where marks are
+actually being drawn, and there it is bounded by the same count the table above
+measures.
+
+**The click stops being destructive in this class.** `navToLocString` REPLACES
+the row's displayed regions, which is right for a contig that row does not have
+and catastrophic for one it does — a click in the arrangement that produces these
+marks would answer "your mate is over there" by discarding every other chromosome
+of the row it was pointing at. A class C hit carries `displayed`, and its click
+`centerAt`s instead.

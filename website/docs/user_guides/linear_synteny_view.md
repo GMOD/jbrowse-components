@@ -272,10 +272,18 @@ inside **Rows**:
 
 ## Off-screen mates
 
-A ribbon needs both of its ends on screen. An alignment whose mate lands on a
-contig the facing panel is not displaying has only one end, so the view draws
-nothing for it — and a locus syntenic to a chromosome you did not stack then
-looks exactly like a locus syntenic to nothing.
+A ribbon needs both of its ends on screen. An alignment with only one end there
+draws nothing, so a locus syntenic to a chromosome the view cannot pair looks
+exactly like a locus syntenic to nothing. Two arrangements produce that, and the
+marks cover both. Either the mate is on a contig the facing panel is not
+displaying at all, or it is on one that panel has scrolled away from. The second
+is what a stack of whole genomes is made of. Every contig is displayed there, so
+nothing is missing from the panel, and the ribbons still disappear as soon as
+the two rows are not over each other.
+
+Where the mate sits on the facing panel is a live question, so the marks answer
+it live. Scroll that panel onto the mate and the mark becomes the ribbon it
+stood in for. **Overdraw** is the edge it is measured against.
 
 **Off-screen mates** in the settings menu is where **Mark them** turns on a
 strip of marks along the query axis, and it is on by default. Each mark sits
@@ -288,20 +296,25 @@ A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and
 how many alignments on this band go there.
 
-Clicking a mark navigates the facing panel to the mate's own locus rather than
-to the whole contig, close enough to show the alignments the mark stands for.
-The window is widened around that locus — to at least 20kb, and a little past
-its ends — so a single small anchor arrives with context around it to place the
-alignment against. The click turns those marks into ribbons, and the hover says
-what it will do beforehand.
+Clicking a mark shows that mate on the facing panel. A contig the panel is
+already displaying is scrolled to, so the rest of what it was showing stays.
+That matters most in a stack of whole genomes, where replacing the panel's
+regions would throw away every other chromosome. A contig it is not displaying
+has to replace them, and there the click navigates to the mate's own locus
+rather than to the whole contig, close enough to show the alignments the mark
+stands for. The window is widened around that locus, to at least 20kb and a
+little past its ends, so a single small anchor arrives with context around it to
+place the alignment against. The click turns those marks into ribbons, and the
+hover says what it will do beforehand.
 
-Navigating that way replaces what that row was displaying, which may be a region
-list built over several navigations, so the click raises a notification carrying
-an **Undo** that puts back the row's regions, its zoom and its scroll position.
-If the rows are following each other and the one clicked was not the anchor, the
-click also makes it the anchor, since the follow would otherwise pull the row
-straight back off the contig it was just sent to, and the notification says so.
-That undo restores the previous anchor too.
+Either way the click raises a notification carrying an **Undo** that puts back
+the row's regions, its zoom and its scroll position. The replacing kind discards
+a region list that may have been built over several navigations, and even a
+scroll is worth being able to take back. If the rows are following each other
+and the one clicked was not the anchor, the click also makes it the anchor,
+since the follow would otherwise pull the row straight back off the contig it
+was just sent to, and the notification says so. That undo restores the previous
+anchor too.
 
 <Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
 

@@ -11,6 +11,7 @@ import {
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type {
   OffscreenMateBand,
+  OffscreenMateDataset,
   OffscreenMateLane,
 } from './drawOffscreenMates.ts'
 
@@ -118,7 +119,7 @@ const params = {
 // the box and the colors per band.
 function draw(
   ctx: CanvasRenderingContext2D,
-  lanes: (Partial<OffscreenMateLane> & { datasets: OffscreenMateData[] })[],
+  lanes: (Partial<OffscreenMateLane> & { datasets: OffscreenMateDataset[] })[],
   over: Partial<OffscreenMateBand> = {},
 ) {
   drawOffscreenMates(
@@ -854,6 +855,7 @@ test('a click answers the mate locus, not just the contig', () => {
   expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
     refName: 'ctgB',
     locus: { start: 4000, end: 4400 },
+    displayed: false,
   })
 })
 
@@ -882,6 +884,7 @@ test('...unioned over every alignment stacked under the pointer', () => {
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgB',
     locus: { start: 4000, end: 9100 },
+    displayed: false,
   })
 })
 
@@ -911,6 +914,7 @@ test('...but never across the contigs sharing that column', () => {
   expect(offscreenMateSpanAt(layout, 11, 3)).toEqual({
     refName: 'ctgC',
     locus: { start: 4000, end: 4100 },
+    displayed: false,
   })
 })
 
@@ -930,5 +934,89 @@ test('a mark with no mate coordinates still resolves its contig', () => {
     ...params,
     datasets: [data([[100, 400]], ['ctgB'], [[0, 0]])],
   }
-  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({ refName: 'ctgB' })
+  expect(offscreenMateSpanAt(layout, 20, 3)).toEqual({
+    refName: 'ctgB',
+    displayed: false,
+  })
+})
+
+// A dataset whose entries DO have a place on the facing axis: the same shape,
+// plus where each one sits there. Whether it is a mark is then a question about
+// where that axis currently is — see `culledRibbonMates`.
+function placed(
+  spans: [number, number][],
+  mateCumBp: [number, number][],
+  names?: string[],
+): OffscreenMateDataset {
+  return {
+    ...data(spans, names),
+    mateCumBpStarts: Float64Array.from(mateCumBp.map(s => s[0])),
+    mateCumBpEnds: Float64Array.from(mateCumBp.map(s => s[1])),
+  }
+}
+
+// THE CLASS THE WORKER CANNOT SEE. Both rows displaying every contig makes the
+// fetch-time tally empty by construction, while `overdrawPx` goes on culling
+// every ribbon whose mate has scrolled away — which is what stacked whole
+// assemblies are, and what left a band drawing almost nothing and saying
+// nothing about it.
+test('a mate outside the facing row band is a mark', () => {
+  const { ctx, rects } = fakeCtx()
+  draw(ctx, [
+    {
+      datasets: [placed([[100, 400]], [[90_000, 90_300]])],
+      mateBand: { lo: 0, hi: 1000 },
+    },
+  ])
+  expect(rects).toEqual([{ x: 10, y: 0, w: 30, h: OFFSCREEN_MATE_HEIGHT_PX }])
+})
+
+// ...and the same alignment, with that row scrolled onto it, is a RIBBON. The
+// two answers come off one comparison so a mark and the ribbon it stands in for
+// cannot both be drawn.
+test('a mate inside it is left to the ribbon', () => {
+  const { ctx, rects } = fakeCtx()
+  draw(ctx, [
+    {
+      datasets: [placed([[100, 400]], [[90_000, 90_300]])],
+      mateBand: { lo: 89_000, hi: 91_000 },
+    },
+  ])
+  expect(rects).toEqual([])
+})
+
+// Touching the edge counts as inside: the band is the overdraw band, so a ribbon
+// reaching it is drawn, and marking it would double the alignment.
+test('a mate reaching the band edge is inside it', () => {
+  const { ctx, rects } = fakeCtx()
+  draw(ctx, [
+    {
+      datasets: [placed([[100, 400]], [[90_000, 90_300]])],
+      mateBand: { lo: 90_300, hi: 99_000 },
+    },
+  ])
+  expect(rects).toEqual([])
+})
+
+// Fail closed. A lane with no facing row has no band, and a dataset that knows
+// where its mates are cannot say they scrolled off an axis that is not there.
+test('no band marks nothing', () => {
+  const { ctx, rects } = fakeCtx()
+  draw(ctx, [{ datasets: [placed([[100, 400]], [[90_000, 90_300]])] }])
+  expect(rects).toEqual([])
+})
+
+// The click has somewhere to scroll TO, which the other class does not: that
+// row is displaying this contig already. Reported here rather than re-derived at
+// the click, since only the dataset knows which class its entry came from.
+test('a click on one says the contig is displayed', () => {
+  const layout = {
+    ...params,
+    datasets: [placed([[100, 400]], [[90_000, 90_300]])],
+    mateBand: { lo: 0, hi: 1000 },
+  }
+  expect(offscreenMateSpanAt(layout, 20, 3)).toMatchObject({
+    refName: 'other',
+    displayed: true,
+  })
 })

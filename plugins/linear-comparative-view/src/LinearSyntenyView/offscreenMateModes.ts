@@ -29,8 +29,9 @@ export type OffscreenMateMode =
   (typeof OFFSCREEN_MATE_MODE_OPTIONS)[number]['value']
 
 export const OFFSCREEN_MATE_HELP =
-  'An alignment whose mate is on a contig the facing row is not displaying ' +
-  'has only one end on screen, so no ribbon is drawn for it. Mark them puts ' +
-  'those on a strip along the axis they do have, from the alignments this ' +
-  'view already holds. Marking both rows adds a second query per row pair, ' +
-  'and is the only way to find the ones anchored on the lower row.'
+  'An alignment the facing row cannot pair has only one end on screen, so no ' +
+  'ribbon is drawn for it — either its mate is on a contig that row is not ' +
+  'displaying, or on one it has scrolled away from. Mark them puts those on ' +
+  'a strip along the axis they do have, from the alignments this view ' +
+  'already holds. Marking both rows adds a second query per row pair, and is ' +
+  'the only way to find the ones anchored on the lower row.'

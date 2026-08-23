@@ -4,7 +4,9 @@ import {
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 
+import type { CulledRibbonMateData } from '../LinearSyntenyDisplay/culledRibbonMates.ts'
 import type {
+  OffscreenMateDataset,
   OffscreenMateLane,
   OffscreenMateLayout,
   OffscreenMateLocus,
@@ -36,6 +38,11 @@ export interface OffscreenMateSource extends MarkColorSource {
       // view has not asked for one
       targetOffscreenMates?: OffscreenMateData
     }
+    // The alignments whose mate contig the facing row IS displaying and has
+    // scrolled off, which is a question about the current transform rather than
+    // about the fetch — see `culledRibbonMates`. Undefined while the setting is
+    // off, so the pass that builds it is not run for a strip nothing draws.
+    culledRibbonMates?: CulledRibbonMateData
     // what the ribbons beside these marks are keyed by, which is what decides
     // whether a mark may be colored by the contig it names
     effectiveColorBy?: SyntenyColorBy
@@ -44,33 +51,65 @@ export interface OffscreenMateSource extends MarkColorSource {
   parentView: {
     showOffscreenMates: boolean
     minAlignmentLength: number
+    // the band the ribbons are culled against, which is the edge a mark stands
+    // in for — one number, so the two cannot come apart
+    overdrawPx: number
+    width: number
     views: { bpPerPx: number; offsetPx: number }[]
   }
 }
 
-// Which of a display's two lanes a side names. One place says so, because a hit
+// Which of a display's lanes a side names. One place says so, because a hit
 // reports the side it was found on and the tally it is then counted against has
-// to be the lane that answered — the two hold contigs of DIFFERENT assemblies.
+// to be the lane that answered — the two SIDES hold contigs of DIFFERENT
+// assemblies. Within a side the two datasets hold contigs of the same one, and
+// are disjoint: an alignment the worker never decorated has no geometry to be
+// culled, and one it did is not in the worker's tally.
 function laneData(
   display: OffscreenMateSource['linearSyntenyDisplays'][number],
   side: OffscreenMateSide,
-) {
+): (OffscreenMateDataset | undefined)[] {
   const { featureData } = display
   return side === 'top'
-    ? featureData?.offscreenMates
-    : featureData?.targetOffscreenMates
+    ? [featureData?.offscreenMates, display.culledRibbonMates]
+    : [featureData?.targetOffscreenMates]
+}
+
+// Nothing this dataset holds can be off the facing axis, so the strip need not
+// walk it at all. The common state by a wide margin — two rows zoomed out over
+// each other hide nothing — and the whole of what keeps the per-frame half of
+// `culledRibbonMates` free there.
+//
+// A dataset with no mate positions is unconditional: the worker found its
+// entries no place on that axis, so no band can put them back. One with mate
+// positions and NO band is the opposite — there is no facing row to have
+// scrolled away — and marks nothing.
+function mayHide(
+  data: OffscreenMateDataset,
+  band: { lo: number; hi: number } | undefined,
+) {
+  const culled = data as CulledRibbonMateData
+  return data.mateCumBpStarts === undefined
+    ? true
+    : band !== undefined &&
+        (culled.mateCumBpLo < band.lo || culled.mateCumBpHi > band.hi)
 }
 
 // One lane across every display on the level: they paint one strip, so the
 // label placement and the "on top" the pointer answers with have to run across
 // all of them at once. A dataset with nothing placed is dropped here rather than
 // carried, so "has a strip" is one question rather than two.
-function lane(model: OffscreenMateSource, side: OffscreenMateSide) {
-  const out: OffscreenMateData[] = []
+function lane(
+  model: OffscreenMateSource,
+  side: OffscreenMateSide,
+  band: { lo: number; hi: number } | undefined,
+) {
+  const out: OffscreenMateDataset[] = []
   for (const display of model.linearSyntenyDisplays) {
-    const data = laneData(display, side)
-    if (data && data.starts.length > 0) {
-      out.push(data)
+    for (const data of laneData(display, side)) {
+      if (data && data.starts.length > 0 && mayHide(data, band)) {
+        out.push(data)
+      }
     }
   }
   return out
@@ -96,21 +135,41 @@ export function offscreenMateStrips(
   if (!parentView.showOffscreenMates) {
     return []
   }
-  const { minAlignmentLength, views } = parentView
+  const { minAlignmentLength, overdrawPx, width, views } = parentView
+  const above = views[model.level]
+  const below = views[model.level + 1]
   const sides = [
-    { side: 'top' as const, row: views[model.level], navRow: model.level + 1 },
+    {
+      side: 'top' as const,
+      row: above,
+      mateRow: below,
+      navRow: model.level + 1,
+    },
     {
       side: 'bottom' as const,
-      row: views[model.level + 1],
+      row: below,
+      mateRow: above,
       navRow: model.level,
     },
   ]
-  return sides.flatMap(({ side, row, navRow }) => {
-    const datasets = lane(model, side)
+  return sides.flatMap(({ side, row, mateRow, navRow }) => {
+    // The facing row's own overdraw band, in its cumBp. Absent when that row is
+    // not there — the level is being built, or this is the last one — and then
+    // a dataset that knows where its mates are draws nothing, which is the
+    // honest answer: there is no axis to have scrolled off. The lane's other
+    // datasets are unaffected; theirs is not a question about that row.
+    const mateBand = mateRow
+      ? {
+          lo: (mateRow.offsetPx - overdrawPx) * mateRow.bpPerPx,
+          hi: (mateRow.offsetPx + width + overdrawPx) * mateRow.bpPerPx,
+        }
+      : undefined
+    const datasets = lane(model, side, mateBand)
     return row && datasets.length > 0
       ? [
           {
             datasets,
+            mateBand,
             bpPerPx: row.bpPerPx,
             offsetPx: row.offsetPx,
             minAlignmentLength,
@@ -139,6 +198,9 @@ export interface OffscreenMateHit {
 // the lane carries no mate coordinates, and then the contig alone navigates.
 export interface OffscreenMateNavHit extends OffscreenMateHit {
   locus?: OffscreenMateLocus
+  // the facing row is displaying this contig already, so the click scrolls
+  // rather than replacing what that row is displaying
+  displayed?: boolean
 }
 
 /**
@@ -230,10 +292,11 @@ export function offscreenMateCount(
 ) {
   let total = 0
   for (const display of model.linearSyntenyDisplays) {
-    const data = laneData(display, side)
-    const id = data?.mateRefNameDict.indexOf(refName) ?? -1
-    if (data && id >= 0) {
-      total += data.counts[id] ?? 0
+    for (const data of laneData(display, side)) {
+      const id = data?.mateRefNameDict.indexOf(refName) ?? -1
+      if (data && id >= 0) {
+        total += data.counts[id] ?? 0
+      }
     }
   }
   return total

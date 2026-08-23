@@ -391,6 +391,14 @@ export function linearSyntenyViewHelperModelFactory(
        * so the ribbons that now have both ends have something around them to be
        * read against at either end of the size range.
        *
+       * A CONTIG THAT ROW ALREADY HAS IS SCROLLED TO, not navigated to. Its
+       * marks are the ones the band is culling rather than the ones it never
+       * had a second endpoint for (`culledRibbonMates`), and that class arises
+       * precisely where the row displays everything — so replacing its regions
+       * would answer "your mate is over there" by discarding every other
+       * chromosome of the row the mark was pointing at. The rest below is the
+       * other class.
+       *
        * `navToLocString` REPLACES that row's displayed regions, which is exactly
        * the narrowing the synteny follow must never do to itself. Here it is the
        * whole request: the mark says "these go to ctgB", and the only thing that
@@ -413,6 +421,7 @@ export function linearSyntenyViewHelperModelFactory(
         refName: string,
         row: number,
         locus?: OffscreenMateLocus,
+        displayed?: boolean,
       ) {
         const { parentView } = self
         const view = parentView.views[row]
@@ -420,6 +429,32 @@ export function linearSyntenyViewHelperModelFactory(
           // before the take, which already re-places the other rows
           const restoreStack = captureStackViewports([...parentView.views])
           const anchor = takeFollowAnchor(parentView, row)
+          // A CONTIG THE ROW ALREADY HAS scrolls, and must not go through
+          // `navToLocString`: that REPLACES the row's displayed regions, so a
+          // click on a mark in a stack of whole assemblies — the arrangement
+          // that produces these marks in the first place — would answer "your
+          // mate is over there" by throwing away every other chromosome of the
+          // row it was pointing at.
+          if (displayed && locus) {
+            const center = Math.round((locus.start + locus.end) / 2)
+            view.centerAt(center, refName)
+            getSession(self).notify(
+              anchor.taken
+                ? `Showing ${refName}:${center.toLocaleString()}, and following this row`
+                : `Showing ${refName}:${center.toLocaleString()}`,
+              'info',
+              {
+                name: 'Undo',
+                onClick: () => {
+                  runInAction(() => {
+                    restoreStack()
+                    anchor.release()
+                  })
+                },
+              },
+            )
+            return
+          }
           const loc = navLocString(refName, locus)
           view
             .navToLocString(loc)

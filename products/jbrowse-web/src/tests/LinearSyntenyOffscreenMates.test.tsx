@@ -1,7 +1,9 @@
 import { waitFor } from '@testing-library/react'
 
+import { offscreenMateStrips } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyViewHelper/offscreenMateStrip.ts'
 import { doBeforeEach, getTestSession, setup } from './util.tsx'
 
+import type { OffscreenMateSource } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyViewHelper/offscreenMateStrip.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()
@@ -101,4 +103,52 @@ test('searching the other row is a step further in, not the default', async () =
   view.setOffscreenMateMode('off')
   expect(view.showOffscreenMates).toBe(false)
   expect(view.bidirectionalFetch).toBe(false)
+})
+
+function strips(view: SyntenyView) {
+  return offscreenMateStrips(view.levels[0] as unknown as OffscreenMateSource)
+}
+
+// THE OTHER HALF, and the one stacked whole assemblies are made of. Both rows
+// display every contig, so the worker's tally is empty by construction — and
+// `overdrawPx` still culls every ribbon whose mate has scrolled out of the band,
+// which is most of them the moment the rows are not over each other. The band
+// drew almost nothing and said nothing about it.
+test('a row scrolled off its mate marks what it can no longer pair', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  expect(strips(view)).toEqual([])
+
+  query!.zoomTo(10)
+  query!.scrollTo(0)
+  // onto volvox's other contig, so ctgA's mate is off this row's overdraw band
+  // while both rows still display both contigs
+  target!.zoomTo(1)
+  target!.scrollTo(52000)
+
+  await waitFor(() => {
+    expect(strips(view).length).toBe(1)
+  }, timeout)
+  expect(view.offscreenMateTally).toEqual([])
+  expect(strips(view)[0]!.side).toBe('top')
+})
+
+// ...and it goes away again on its own, because it is a question about where
+// that row is rather than about what was fetched. A mark decided when the data
+// landed would sit beside the ribbon it says does not exist.
+test('and stops marking it when that row comes back', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  query!.zoomTo(10)
+  query!.scrollTo(0)
+  target!.zoomTo(1)
+  target!.scrollTo(52000)
+  await waitFor(() => {
+    expect(strips(view).length).toBe(1)
+  }, timeout)
+
+  target!.showAllRegions()
+  await waitFor(() => {
+    expect(strips(view)).toEqual([])
+  }, timeout)
 })

@@ -28,6 +28,7 @@ import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { cappedMeanWidthPx } from '../LinearSyntenyView/fadeThin.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
+import { culledRibbonMateData } from './culledRibbonMates.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
@@ -373,6 +374,23 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         return featureData
           ? offscreenMateTally(featureData.targetOffscreenMates)
           : []
+      },
+      /**
+       * #getter
+       * Every alignment this display drew geometry for, placed on both axes, so
+       * the strip can mark the ones the band is currently culling — the mate is
+       * on a contig the facing row displays and has scrolled off, which no
+       * fetch-time tally can answer. See `culledRibbonMates`.
+       *
+       * LAZY BY CONSTRUCTION rather than gated on the setting:
+       * `offscreenMateStrips` reads `showOffscreenMates` before it reads this,
+       * so with the marks off nothing observes it and the pass never runs.
+       */
+      get culledRibbonMates() {
+        const { featureData, instanceData } = self
+        return featureData && instanceData
+          ? culledRibbonMateData(instanceData, featureData)
+          : undefined
       },
       /**
        * #getter
