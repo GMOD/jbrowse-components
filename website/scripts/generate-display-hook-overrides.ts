@@ -150,10 +150,16 @@ const HOOKS: Hook[] = [
       'no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off',
   },
   {
+    name: 'byteGateAdapterPath',
+    owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
+    ifNotOverridden:
+      'the estimate and the budget both describe the track’s own `adapter` — wrong for a display that reads a different file at different zooms, and the one hook such a display overrides, since `byteGateAdapterConfig` is the config at this path',
+  },
+  {
     name: 'byteGateAdapterConfig',
     owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
     ifNotOverridden:
-      'the estimate measures the display’s own adapter — wrong for a display that reads a different file at different zooms',
+      'the config sitting at `byteGateAdapterPath`, which a tier swap already moves — so this one is for a display whose adapter config is SYNTHESIZED rather than read off the track (GC content folds `windowSize` / `gcMode` in), where no path names what it fetches',
   },
   {
     name: 'scrollableHeight',

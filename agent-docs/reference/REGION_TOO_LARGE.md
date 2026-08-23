@@ -167,7 +167,7 @@ which fetch that is.
 - **A tier swap** — `byteGateAdapterConfig` changing under a display that reads a
   different file at different zooms. `RegionTooLargeMixin`'s own `afterAttach`
   installs `ClearByteEstimateOnTierSwap`, an autorun over `byteGateAdapterKey`
-  (the config, stringified), so overriding `byteGateAdapterConfig` stays the
+  (the config, stringified), so overriding `byteGateAdapterPath` stays the
   whole opt-in and no display has to remember a second wire — the same call
   `CanvasFeatureGateMixin` makes for its own stale-stat cleanup. Guarded on
   `gateEnabled`, so a display that never gates still never evaluates the adapter
@@ -443,24 +443,30 @@ before this line grows an "overridable" back.
 **`densityTooLarge`** supplies a second gating axis, false in the base mixin.
 Canvas overrides it with its feature-density gate; byte-only displays leave it.
 
-**`byteGateAdapterConfig`** is which adapter the pre-flight measures, defaulting
-to the display's own. A display that swaps files by zoom overrides it so the
-estimate always describes the fetch about to happen — MAF points it at the
-`summaryAdapter` sub-adapter while `showSummary`, and at the MAF adapter below
-the swap. Overriding it is the whole opt-in: the cached estimate is dropped when
-this getter's value changes, so a measurement can't outlive the tier it measured
-(§ How the verdict is built).
+**`byteGateAdapterPath`** is where on the track config the measured adapter
+sits, and **a tiered display overrides this one hook**.
+`adapterFetchSizeLimit` reads `[...byteGateAdapterPath, 'fetchSizeLimit']` off
+the containing track — `['adapter']` in the base mixin,
+`['adapter','summaryAdapter']` in MAF while `showSummary` — so a swapped-in
+sub-adapter is sized against its own declared limit rather than the parent
+adapter's. A path rather than the node or the resolved number, because the
+snapshot `byteGateAdapterConfig` hands back cannot answer it: slots sitting at
+their schema default are absent from a snapshot, so a sub-adapter's limit is
+unreadable there in any config that does not restate the number.
 
-**`byteGateAdapterPath`** moves the budget with it, and a tiered display
-overrides both. `adapterFetchSizeLimit` reads
-`[...byteGateAdapterPath, 'fetchSizeLimit']` off the containing track —
-`['adapter']` in the base mixin, `['adapter','summaryAdapter']` in MAF while
-`showSummary` — so a swapped-in sub-adapter is sized against its own declared
-limit rather than the parent adapter's. A path rather than the node or the
-resolved number, because the snapshot `byteGateAdapterConfig` hands back cannot
-answer it: slots sitting at their schema default are absent from a snapshot, so
-a sub-adapter's limit is unreadable there in any config that does not restate
-the number.
+**`byteGateAdapterConfig`** is which adapter the pre-flight measures, and it is
+the config at that path — `getConf(track, byteGateAdapterPath)`. So the
+measurement and the budget describe one file by construction rather than by two
+overrides agreeing, and MAF's swap is a single getter. Overriding the path is
+the whole opt-in: the cached estimate is dropped when this getter's value
+changes, so a measurement can't outlive the tier it measured (§ How the verdict
+is built).
+
+The config hook stays overridable for the case a path cannot express — a
+display whose adapter config is *synthesized* rather than read. Both GC-content
+displays wrap the track's sequence adapter and fold `windowSize` / `gcMode` in,
+so no path on the track config names what they fetch; neither gates today, and
+one that opted in would override the config and leave the path alone.
 
 Inert in the tree: the four adapters declaring `fetchSizeLimit` are
 Bam/Cram/VcfTabix/SplitVcfTabix, and MAF's summary tier is a BedTabix or a

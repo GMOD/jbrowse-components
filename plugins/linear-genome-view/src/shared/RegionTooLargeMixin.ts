@@ -107,21 +107,16 @@ export function reportRenamedHooks(self: IAnyStateTreeNode) {
   }
 }
 
-// The mixin declares no `configuration` / `adapterConfig`, but every display
-// that composes it has both (BaseDisplay via MultiRegionDisplayMixin, or the SVG
-// arc displays directly). Cast once so the config-slot defaults below read them
-// type-safely — the same pattern CanvasFeatureGateMixin uses.
+// The mixin declares no `configuration`, but every display that composes it has
+// one (BaseDisplay via MultiRegionDisplayMixin, or the SVG arc displays
+// directly). Cast once so the config-slot defaults below read it type-safely —
+// the same pattern CanvasFeatureGateMixin uses.
 /** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
 export interface RegionTooLargeHost {
   // `baseLinearDisplayConfigSchema` rather than `AnyConfigurationModel`: the
   // widened form switches off `getConf`'s slot-name check, and the two slots
   // this mixin reads (`fetchSizeLimit`, `forceLoad`) are that schema's own
   configuration: BaseLinearDisplayConfigModel
-  // A resolved snapshot (`getConf(track, 'adapter')`), not a config node —
-  // which is why `adapterFetchSizeLimit` below reads its slot off the track's
-  // live config instead. Typed as what it is, so `byteGateAdapterConfig` can
-  // be overridden with a sub-adapter snapshot without a cast.
-  adapterConfig: Record<string, unknown>
 }
 
 function host(self: object) {
@@ -346,11 +341,13 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Which adapter the pre-flight measures. The display's own by default —
+       * Which adapter the pre-flight measures: the config sitting at
+       * `byteGateAdapterPath`, which is `['adapter']` here — the display's own,
        * correct wherever a display has one fetch path.
        *
-       * A display that swaps tiers by zoom overrides it, so the estimate always
-       * describes the fetch that is actually about to happen. MAF is the case it
+       * **Derived from the path rather than declared beside it**, so a display
+       * that swaps tiers by zoom overrides one hook instead of two and the
+       * measurement cannot name a file the budget doesn't. MAF is the case it
        * was built for: past the force-load floor it reads a `summaryAdapter`
        * instead of the alignment, and measuring the alignment there would quote a
        * download nobody is doing. The alternative it replaced — turning
@@ -358,9 +355,16 @@ export default function RegionTooLargeMixin() {
        * gate entirely, which is only safe if the tier really is bounded. A
        * `BigBedAdapter` read is a full-feature download (see its `getFeatures`),
        * so at genome scale it is not, and the exemption was hiding it.
+       *
+       * Still overridable, and the case that needs it is a display whose
+       * `adapterConfig` is *synthesized* rather than read — GC content wraps the
+       * track's sequence adapter and folds `windowSize` / `gcMode` in, so no
+       * path on the track config names what it fetches. Neither GC-content
+       * display gates today; one that opted in would override this getter and
+       * leave the path alone.
        */
       get byteGateAdapterConfig(): Record<string, unknown> {
-        return host(self).adapterConfig
+        return getConf(getContainingTrack(self), this.byteGateAdapterPath)
       },
       /**
        * #getter
@@ -387,7 +391,8 @@ export default function RegionTooLargeMixin() {
        * #getter
        * Where on the track config the adapter `byteGateAdapterConfig` names
        * lives. The track's own `adapter` by default; a display that swaps tiers
-       * overrides **both**, so the budget and the measurement describe one file.
+       * overrides **this one hook**, and both the measurement and the budget
+       * follow it, so they cannot describe two different files.
        *
        * A path rather than the node or the budget itself because
        * `byteGateAdapterConfig` is a resolved snapshot, and a snapshot cannot

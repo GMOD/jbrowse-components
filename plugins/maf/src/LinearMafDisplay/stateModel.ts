@@ -644,9 +644,10 @@ export default function stateModelFactory(
          * The configured `bigMafSummary` sub-adapter snapshot, or undefined when
          * unset. Same journey as `annotationAdapterConfig`.
          *
-         * Declared here, beside its sibling, so the slot is read in one place:
-         * `showSummary` asks whether it exists and `byteGateAdapterConfig` wants
-         * the value, and those two used to read the slot separately.
+         * Declared here, beside its sibling, so `showSummary` has one place to
+         * ask whether the tier exists. The gate reaches the same slot through
+         * `byteGateAdapterPath` rather than through this getter, since it needs
+         * the path anyway to read the tier's own budget.
          */
         get summaryAdapterConfig(): Record<string, unknown> | undefined {
           return (
@@ -770,7 +771,7 @@ export default function stateModelFactory(
          * and the gate can't end up disagreeing about where the floor is. It
          * deliberately excludes the opt-in terms, which is what keeps this from
          * being a cycle — everything below that reads this getter
-         * (`byteGateAdapterConfig`) sits downstream of the floor, never upstream.
+         * (`byteGateAdapterPath`) sits downstream of the floor, never upstream.
          *
          * The swap point is 20kb and stays there even though the byte gate has no
          * floor at all any more: where the summary tier starts being the better
@@ -2358,7 +2359,7 @@ export default function stateModelFactory(
          * fetch with a force-load prompt rather than downloading hundreds of
          * species' bases at genome scale.
          *
-         * On for **both** tiers, and `byteGateAdapterConfig` below is what makes
+         * On for **both** tiers, and `byteGateAdapterPath` below is what makes
          * that safe: each is measured against the file it actually reads. This
          * used to be `!showSummary`, exempting the summary tier on the grounds
          * that it is the cheap one. It is cheap *per base* — no sequence — but it
@@ -2381,25 +2382,14 @@ export default function stateModelFactory(
          * estimate — a number describing a download that isn't happening, which
          * at genome scale would block the cheap tier on the expensive one's cost.
          *
-         * A plain snapshot off the frozen slot, handed straight to `getAdapter`
-         * in the worker — the same shape and the same journey as
-         * `annotationAdapterConfig`. Reading `showSummary` here is not a cycle:
-         * it resolves through `aboveForceLoadFloor`, which deliberately excludes
-         * every opt-in term (`RegionTooLargeMixin`), so nothing in the gate is
-         * upstream of it.
-         */
-        get byteGateAdapterConfig(): Record<string, unknown> {
-          const summary = self.showSummary
-            ? self.summaryAdapterConfig
-            : undefined
-          return summary ?? self.adapterConfig
-        },
-        /**
-         * #getter
-         * Where the tier above came from, so `adapterFetchSizeLimit` reads the
-         * budget of the file the estimate measured rather than the alignment's.
-         * `showSummary` already implies `summaryAdapterConfig` exists, so this
-         * and the snapshot above cannot pick different tiers.
+         * The only hook the swap needs: `byteGateAdapterConfig` is the config at
+         * this path and `adapterFetchSizeLimit` is that config's own
+         * `fetchSizeLimit` slot, so the measurement and the budget describe one
+         * file by construction rather than by two overrides agreeing.
+         *
+         * Reading `showSummary` here is not a cycle: it resolves through
+         * `aboveForceLoadFloor`, which deliberately excludes every opt-in term
+         * (`RegionTooLargeMixin`), so nothing in the gate is upstream of it.
          */
         get byteGateAdapterPath(): string[] {
           return self.showSummary ? ['adapter', 'summaryAdapter'] : ['adapter']
