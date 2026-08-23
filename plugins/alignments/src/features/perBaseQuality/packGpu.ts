@@ -1,7 +1,9 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as perBaseQualityShader from '../../shaders/slang/packedColorQuad.generated.ts'
+import { countMarks } from '../mark.ts'
 import { qualityAbgr } from './colors.ts'
+import { PER_BASE_QUALITY_MARK } from './mark.ts'
 
 import type { PerBaseQualityUploadData } from './types.ts'
 
@@ -13,20 +15,27 @@ export const PER_BASE_QUALITY_PASS = {
   pack: packPerBaseQuality,
 }
 
-function packPerBaseQuality(data: PerBaseQualityUploadData): ArrayBuffer {
-  const n = data.perBaseQualPositions.length
+export function packPerBaseQuality(
+  data: PerBaseQualityUploadData,
+): ArrayBuffer {
+  const mark = PER_BASE_QUALITY_MARK
+  const rows = mark.rows(data)
   const F_U32 = perBaseQualityShader.INSTANCE_OFFSET_U32
   const s32 = perBaseQualityShader.INSTANCE_STRIDE_WORDS
-  const buf = new ArrayBuffer(n * perBaseQualityShader.INSTANCE_STRIDE_BYTES)
+  const buf = new ArrayBuffer(
+    countMarks(mark, data) * perBaseQualityShader.INSTANCE_STRIDE_BYTES,
+  )
   const u32 = new Uint32Array(buf)
-  const pos = data.perBaseQualPositions
-  const ys = data.perBaseQualYs
-  const scores = data.perBaseQualScores
-  for (let i = 0; i < n; i++) {
-    const o = i * s32
-    u32[o + F_U32.position] = pos[i]!
-    u32[o + F_U32.y] = ys[i]!
-    u32[o + F_U32.packedColor] = qualityAbgr[scores[i]!]!
+  let o = 0
+  for (let i = 0; i < rows.length; i++) {
+    if (mark.selects(data, i)) {
+      u32[o + F_U32.position] = mark.startBp(data, i)
+      u32[o + F_U32.y] = rows[i]!
+      // The ramp `qualityCssColors` is built from, so the fill and the vertex
+      // buffer cannot carry different colours for one score.
+      u32[o + F_U32.packedColor] = qualityAbgr[data.perBaseQualScores[i]!]!
+      o += s32
+    }
   }
   return buf
 }

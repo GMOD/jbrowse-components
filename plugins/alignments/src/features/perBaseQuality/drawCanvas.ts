@@ -1,9 +1,6 @@
-import {
-  makePileupCellMapper,
-  pileupRowOffCanvas,
-  pileupRowY,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { paintMarks } from '../mark.ts'
 import { qualityCssColors } from './colors.ts'
+import { PER_BASE_QUALITY_MARK } from './mark.ts'
 
 import type {
   DrawBlock,
@@ -20,23 +17,14 @@ export function drawPerBaseQuality(
   fullBlockWidth: number,
   state: RenderState,
 ) {
-  const n = region.perBaseQualPositions.length
-  const fH = state.featureHeight
-  const { cellX, w } = makePileupCellMapper(
-    block,
-    bpLength,
-    fullBlockWidth,
-    true,
+  paintMarks(
+    ctx,
+    PER_BASE_QUALITY_MARK,
+    region,
+    { block, bpLength, fullBlockWidth },
+    state,
+    // Prebuilt per score, not formatted per base: this is one cell per aligned
+    // base of every read on screen.
+    (_alpha, data, i) => qualityCssColors[data.perBaseQualScores[i]!]!,
   )
-
-  for (let i = 0; i < n; i++) {
-    const yRow = region.perBaseQualYs[i]!
-    const y = pileupRowY(yRow, state)
-    if (pileupRowOffCanvas(y, state)) {
-      continue
-    }
-    const x = cellX(region.perBaseQualPositions[i]!)
-    ctx.fillStyle = qualityCssColors[region.perBaseQualScores[i]!]!
-    ctx.fillRect(x, y, w, fH)
-  }
 }
