@@ -86,8 +86,8 @@ free of node, so that line stands in a fence of its own.
 
 **A page that shows no command at all is the other failure**, and
 `check-unshown-tools` ratchets it: hand a reader a build script without one
-marked fence and the list grows. `scripts/unshown-tools.txt` names the four
-still on it and why none of them will move.
+marked fence and the list grows. `website/scripts/unshown-tools.txt` names the
+one still on it and why it will not move.
 
 **The marker has to go over a fence that shows a command.** Putting one over the
 `curl … | bash build_x.sh` fence satisfies the ratchet and asserts nothing,

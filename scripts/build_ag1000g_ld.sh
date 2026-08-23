@@ -76,6 +76,7 @@ PROBE_TO=42165532
 # The column layout that comes out, #CHROM_A POS_A ID_A CHROM_B POS_B ID_B
 # PHASED_R2 ABS_DPRIME, is what PlinkLDTabixAdapter parses, and sits at the same
 # eight offsets 1.9 used, so every awk below counts columns the same way.
+# shellcheck disable=SC2054  # cols= takes plink2's own comma list, not array elements
 LD_FLAGS=(--r2-phased cols=chrom,pos,id,dprimeabs
   --ld-window 999999 --ld-window-kb 1000000 --ld-window-r2 0)
 
