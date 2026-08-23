@@ -357,8 +357,9 @@ describe('the dependency set is the contract', () => {
   // The list itself, stated once per state, rather than one probe per
   // observable someone thought to write. Every rule above is visible in it: the
   // two pure signals present in every state, the viewport present only while
-  // the display can act on it, and the untracked guards (`isLoading`,
-  // `loadedRegions`) absent from all of them.
+  // the display can act on it, and the in-flight and coverage reads
+  // (`activeStopToken`, `loadedRegions`) tracked rather than guarded — a fetch
+  // moving them re-runs the plan onto its in-flight or covered branch.
   const signals = [
     'PerRegionTestDisplay.fetchGeneration',
     'PerRegionTestDisplay.reloadCounter',
@@ -388,6 +389,10 @@ describe('the dependency set is the contract', () => {
         'PerRegionTestDisplay.fetchKey',
         ...signals,
         'PerRegionTestDisplay.gateEnabled',
+        'PerRegionTestDisplay.activeStopToken',
+        'PerRegionTestDisplay.loadedRegions',
+        'loadedRegions.0',
+        'loadedRegions.0?',
         'alive',
         'string[]',
       ].sort(),

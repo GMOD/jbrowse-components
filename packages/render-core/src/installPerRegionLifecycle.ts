@@ -111,7 +111,7 @@ export function regionDataMap<T extends object>(
   // reached by forgetting rather than by deciding.
   name: string,
 ): ObservableMap<number, T> {
-  const map = observable.map<number, T>(undefined, { deep: false })
+  const map = observable.map<number, T>(undefined, { deep: false, name })
   if (process.env.NODE_ENV !== 'production') {
     checkedAtTheStore.add(map)
     const set = map.set.bind(map)

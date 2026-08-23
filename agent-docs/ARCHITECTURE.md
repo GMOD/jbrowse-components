@@ -662,8 +662,7 @@ split is what either half can be tested against.** `planRegionFetch` answers
 raise this assembly mismatch, or do nothing for this reason — and is pure, so
 its precedence and its buffered-region substitution need no tree.
 `installPerRegionFetchAutoruns` owns what no pure function can state: which
-reads MobX tracks, which are `untracked` perf guards whose observable has a
-better re-trigger, and which sit behind a thunk so a run that bails early does
+reads MobX tracks and which sit behind a thunk so a run that bails early does
 not subscribe to the viewport. The plan's thunk parameters are the only thing it
 says about that, the way `computeDisplayPhase` takes its `loading` term as one.
 Two test files, one per half; a third (`fetchRegions.test.ts`) covers the commit
@@ -679,10 +678,25 @@ count tests above pin one observable each, and only the ones someone thought to
 write; the "dependency set is the contract" blocks in
 `installPerRegionFetchAutoruns.test.ts` and `RenderLifecycleMixin.test.ts` pin
 the whole list per state instead: the two pure signals present in every state,
-the viewport present only while the display can act on it, `isLoading` and
-`loadedRegions` absent from all of them. A read that moves in or out of a body
+the viewport present only while the display can act on it, the in-flight and
+coverage reads tracked rather than guarded. A read that moves in or out of a body
 — a trigger dropped under a gate, a guard that stopped being `untracked`, a dev
 check leaking a read — changes the list, whichever observable it was.
+
+**`untracked` has two legal grounds, and "perf guard" is not one of them.** A
+body may read untracked what its own effect writes — the viewport-change clear
+reads `error` / `fetchCanceled` that way because it clears them, and tracking
+them would re-fire it off `setError` and wipe the flag — and a dev-only check
+reads untracked so the production dependency set is not a development one.
+Everything else is a guess about cost, and the two the per-region autorun
+carried (`isLoading`, `loadedRegions`, "would re-fire mid-fetch") were measured
+on 2026-08-23 and deleted: tracked, a fetch shorter than the 600 ms debounce
+coalesces the flip into the run `fetchGeneration` already owes, and a longer
+one costs one idle run of the pure plan. Two body runs per fetch cycle either
+way, three past the debounce, and no loop, since the re-run lands on the plan's
+in-flight or covered branch. The better spelling of the self-write case is
+structural: read a signal the write does not move, which is what
+`fetchGeneration` is and why the body never needed `isLoading`.
 
 Why the byte estimate is dropped here: `displayedRegionIndex` is reused across
 chromosomes, so a stale estimate describes the previous chromosome's numbers and

@@ -542,20 +542,25 @@ describe('FetchVisibleRegions autorun', () => {
 
     jest.advanceTimersByTime(400)
 
-    // Only one RPC should be in flight (the cleared one was invalidated)
-    const callCount = mockRpcCall.mock.calls.length
-
-    // Resolve the pending RPC
+    // Resolve whichever RPC is pending; the cleared one was invalidated
     resolveRpc!(makeEmptyGroupedData())
     await jest.runAllTimersAsync()
-
-    // After the first fetch resolves, isLoading becomes false, and the
-    // autorun should detect the new viewport needs data and re-fetch
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
-    // A new fetch should have been triggered for the new viewport
-    expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callCount)
+    // The new viewport was fetched — whether that fetch was issued before or
+    // after the first one resolved is the debounce's business, not this test's
+    expect(mockRpcCall).toHaveBeenCalledWith(
+      expect.any(String),
+      'RenderAlignmentData',
+      expect.objectContaining({
+        regions: expect.arrayContaining([
+          expect.objectContaining({ refName: 'ctgA', start: 5000 }),
+        ]),
+      }),
+    )
+    expect(display.isLoading).toBe(false)
+    expect(display.loadedRegions.size).toBe(1)
   })
 
   // Connections are a DRAW setting and the fetch must not depend on them. This

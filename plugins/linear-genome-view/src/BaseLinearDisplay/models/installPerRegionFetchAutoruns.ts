@@ -60,10 +60,20 @@ export interface PerRegionFetchHost extends IStateTreeNode {
  * `installComparativeFetchAutorun`. It is a function rather than an inline
  * `afterAttach` body for the reason those two are: **what this file decides is
  * the MobX dependency set**, and that is the half no pure function can express.
- * `planRegionFetch` owns the decision; this owns which reads are tracked, which
- * are `untracked` perf guards, and which sit behind a thunk so an early bail-out
- * does not subscribe to the viewport. `installPerRegionFetchAutoruns.test.ts`
- * is what fails when one of those moves.
+ * `planRegionFetch` owns the decision; this owns which reads are tracked and
+ * which sit behind a thunk so an early bail-out does not subscribe to the
+ * viewport. `installPerRegionFetchAutoruns.test.ts` is what fails when one of
+ * those moves, and its last block states the whole set per state.
+ *
+ * `untracked` is allowed on two grounds only: a read the body's own effect
+ * writes (`ClearBlockingStateOnViewportChange` clears the flags it reads, so
+ * tracking them would re-fire it off `setError` and wipe the flag before any
+ * viewport change), and a dev-only check that must not alter the production
+ * dependency set. Anything else was a perf guard, and the two this file carried
+ * (`isLoading`, `loadedRegions`) were measured on 2026-08-23 and removed: a
+ * fetch shorter than the 600 ms debounce coalesces the flip into the run
+ * `fetchGeneration` already owes, and a longer one costs one idle run of the
+ * plan mid-fetch. Two runs per fetch cycle either way, three past the debounce.
  */
 export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   // Dev-only: the contracts no type expresses (`afterAttach` not being chained
@@ -190,10 +200,9 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
         // run owes a re-measure, and the flip back to false has to re-fire
         // the autorun or the release lands a viewport late
         gateBlocked: self.regionTooLarge,
-        // untracked: isLoading flips at fetch start, and tracking it would
-        // re-fire this autorun mid-fetch. `fetchGeneration` at fetch end is
-        // the real re-trigger.
-        isLoading: () => untracked(() => self.isLoading),
+        // tracked: the flip at fetch start costs one idle run, measured
+        // below, and `fetchGeneration` at fetch end is the re-trigger
+        isLoading: () => self.isLoading,
         // tracked, and behind a thunk: `minimized` is what the display's
         // `isMinimized` getter resolves to, so un-minimizing re-fires this and
         // the fetch resumes — while a minimized track stays off the viewport's
@@ -207,9 +216,7 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
               !!assemblyManager.get(trackName)?.hasName(regionName),
             visibleRegions: view.visibleRegions,
             bufferedVisibleRegions: view.bufferedVisibleRegions,
-            // untracked: populating loadedRegions would re-fire this autorun,
-            // and the fetchGeneration bump after setLoadedRegion is the signal
-            loadedRegion: idx => untracked(() => self.loadedRegions.get(idx)),
+            loadedRegion: idx => self.loadedRegions.get(idx),
             isCacheValid: idx => self.isCacheValid(idx),
           }
         },
