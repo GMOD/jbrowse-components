@@ -653,11 +653,11 @@ describe('FetchMixin: isStale contract for work callbacks', () => {
 })
 
 // Every fetch's context carries this display's status callback, so a helper
-// holding only a ctx -- `byteGateBlocksFetch`, `fetchEachRegion` -- can report
+// holding only a ctx -- `fetchEachRegion` and its two siblings -- can report
 // progress without reaching back into the model for it. It is a REQUIRED field
 // on FetchContext for that reason: `runFetch` is the only producer, and a
 // helper narrowing its parameter to a subset of the context is what dropped the
-// byte-gate pre-flight's token and status in the first place.
+// byte measurement's token and status in the first place.
 describe('FetchMixin: the context status callback', () => {
   it('writes the display status through the ctx callback', async () => {
     const m = makeModel()

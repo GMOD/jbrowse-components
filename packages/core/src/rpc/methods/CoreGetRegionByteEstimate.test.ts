@@ -59,7 +59,7 @@ describe('CoreGetRegionByteEstimate', () => {
   // features" for an adapter serving something other than features
   // (PlinkLD*/Ldmat serve precomputed LD pairs). That made "can this be
   // measured" a question the *display* had to answer before asking, and the
-  // only tool it had was turning `measuresBytesPreFlight` off — abandoning the whole
+  // only tool it had was turning `gateEnabled` off — abandoning the whole
   // gate for one adapter family. Answering `undefined` puts the capability
   // question where the capability lives, and lands it on the same "no byte
   // axis" path an estimate-less feature adapter already takes.
