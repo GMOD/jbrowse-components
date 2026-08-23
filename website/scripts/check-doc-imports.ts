@@ -548,6 +548,11 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // story kept it in the symbol set until `codeOf` stopped collecting from
   // comments.
   'featureUnderMouse',
+  // ARCHITECTURE.md §"Display stacks", BaseLinearDisplay/CLAUDE.md and adr-007:
+  // the second global foundation, named to say it is gone and why the argument
+  // for splitting the family in two did not survive. `GlobalFetchMixin` is the
+  // whole family now, so the name must stay unwritten.
+  'GlobalDataDisplayMixin',
   // packages/tree-sidebar/CLAUDE.md §"`RowSource` is the row vocabulary": the
   // computed MAF bridged its own `color` field with, named because that bridge
   // is why three adapter schemas advertised a slot reaching no renderer.

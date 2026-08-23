@@ -339,9 +339,11 @@ draws rows from. That read is **per adapter, not per viewport**, so it cannot
 ride the autoruns above — watching `fetchGeneration` would re-read the header on
 every pan.
 
-`installPrerequisiteFetch(self, { run, commit, delay, name })` is the shape for
-it, and it exists because the two displays that had hand-rolled the same fetch
-were each missing a different rule:
+`installFetch(self, { report, prepare, run, commit, setError, delay, name })`
+(`@jbrowse/core/util/installFetch`) is the shape for it — the same skeleton
+every fetch outside the two display foundations runs on — and the rules it holds
+are there because the displays that had hand-rolled the same fetch were each
+missing a different one:
 
 - **latest-wins.** A reload-overlapped pair of reads must not commit in whatever
   order they resolve.
@@ -352,12 +354,16 @@ were each missing a different rule:
 - **the leading edge.** First paint waits on this fetch, so it must not spend
   its whole debounce window on a cold open.
 
-`run` owns the RPC through the same `ctx.callRpc` envelope, and its synchronous
-prefix runs inside the autorun body — so what it reads to build the call is
-tracked and re-fires it. `commit` runs only while the run is still current. A
-display whose failure has a second consequence passes `onError`; the sample-list
-scan does, because a list that will not load leaves the band empty rather than
-partial and nothing else on screen would say so.
+`prepare` runs synchronously inside the autorun body, so what it reads to build
+the call — the adapter config — is tracked and re-fires the read; `run` owns the
+RPC through the same `ctx.callRpc` envelope and reads nothing tracked; `commit`
+runs only while the run is still current. `setError` is both the clear at the
+start and the publish on failure, so a display whose failure has a second
+consequence says so there — the sample-list scan raises a session notification
+too, because a list that will not load leaves the band empty rather than partial
+and nothing else on screen would say so. Pass no `contract`: the display's own
+foundation already installed the two dev-only contract checks, and a second
+install is reported as the double-attach it exists to catch.
 
 The viewport fetch then declines until the prerequisite lands, and says so with
 `awaitingPrerequisite` — which **defers** the retry verdict to the run after it
