@@ -1,0 +1,16 @@
+---
+import OpenALocalFile from '../examples/OpenALocalFile.tsx'
+import OpenALocalFileCode from '../examples/OpenALocalFile.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('local-files')
+const sec = section(page, 'open-a-local-file')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={OpenALocalFileCode}>
+    <OpenALocalFile client:only="react" />
+  </Section>
+</Layout>

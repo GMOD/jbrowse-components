@@ -34,6 +34,8 @@ const DIVERGES = {
     'the feature-details page gives the genes track more height, being the only track on it; the search pages must additionally name it `gff3tabix_genes`, the trackId the hosted trix index was built against',
   BrowserView:
     'pages with no session alias the view directly; the rest destructure it',
+  TrackColumn:
+    'the selector page renders the catalogue in its own order and skips what is hidden; the local-file page renders `view.tracks`, which is the order the files were opened -- nothing there can hide a track, so the order cannot shuffle',
 }
 
 // The other half of the rule, and the one this file was missing.

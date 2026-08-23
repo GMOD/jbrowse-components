@@ -69,6 +69,7 @@ const MUI_BUDGET = {
   // the `ultraminimal` unearned-zero trap one paragraph up.
   'track-settings': 0,
   'search-by-name': 0,
+  'local-files': 0,
   'highlight-a-region': 0,
   'web-workers': 0,
   // measured, not chosen -- see the note below the budget
@@ -658,6 +659,96 @@ async function everyDisplayIsInAnOverlaySlot(page) {
     : []
 }
 
+// Both halves of the local-file page, neither of which exists until a click.
+//
+// The page's claim is a pipeline — bytes become a blob location, a name becomes
+// an adapter, an adapter becomes a track — and every link in it fails silently.
+// `guessAdapter` answers `UNKNOWN` rather than throwing, `addSessionTrackConf`
+// reports a config it rejects on the snackbar channel this page does not draw,
+// and a blob whose index was not paired reads the data file as its own index,
+// which fails inside the adapter. At rest the page is one URL track and a row
+// of buttons, so a run that only loads it cannot tell working from broken.
+//
+// The mismatch notice is the second half and the reason the page exists: it is
+// the only signal that a file's contig names and the genome's have nothing in
+// common, JBrowse's own presentation of it lives on a track label this site
+// never draws, and it is drawn here from `track.refNameMismatch`. So it is
+// asserted on the text of the published message rather than on a class or a
+// count — a notice drawn by nothing is what this catches.
+async function localFileOpensAsATrack(page, slug) {
+  if (slug !== 'local-files') {
+    return []
+  }
+  // by name, with a synthetic click: nothing here is about whether a click
+  // reaches a target through the pan handler (`clicksReachTheTrack` owns that),
+  // and a coordinate failure reported as a pipeline failure would be a worse
+  // message than either
+  const clickByText = text =>
+    page.evaluate(t => {
+      const el = [...document.querySelectorAll('button')].find(e =>
+        e.innerText.includes(t),
+      )
+      el?.click()
+      return !!el
+    }, text)
+  const displayCount = () =>
+    page.evaluate(() => document.querySelectorAll('[data-display-id]').length)
+  const demoText = () =>
+    page.evaluate(() => document.querySelector('.demo')?.innerText ?? '')
+
+  const out = []
+  const before = await displayCount()
+
+  if (!(await clickByText('Open a BAM for me'))) {
+    return ['no "open a BAM" button on the page']
+  }
+  try {
+    // the fetch is ~400 KB and the pileup then has to lay out, so this is the
+    // long wait on the page
+    await page.waitForFunction(
+      n => document.querySelectorAll('[data-display-id]').length > n,
+      { timeout: 30000 },
+      before,
+    )
+    // the opened track mounts through the same `TrackRow` as the static one, so
+    // its display owes the same slot — and at-rest is the only instant the
+    // shared check above could have seen
+    out.push(...(await everyDisplayIsInAnOverlaySlot(page)))
+  } catch {
+    out.push(
+      'a local file was registered and no display appeared, so one of ' +
+        'storeBlobLocation / guessAdapter / guessTrackType / ' +
+        'addSessionTrackConf / showTrack stopped working without throwing. ' +
+        `Demo read:\n${await demoText()}`,
+    )
+  }
+
+  if (!(await clickByText('another genome'))) {
+    return [...out, 'no "file from another genome" button on the page']
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        document
+          .querySelector('.demo')
+          ?.innerText.includes('reference sequence names match'),
+      { timeout: 20000 },
+    )
+    // raised by a click, so the at-rest contrast pass never sees it — and it is
+    // the one thing on this page a reader has to be able to read, since it is
+    // the only account of why their own file drew nothing
+    out.push(...(await checkTextContrast(page)))
+  } catch {
+    out.push(
+      'a track whose refNames share nothing with the assembly drew no ' +
+        'notice, so `track.refNameMismatch` is no longer reaching the screen ' +
+        'and the commonest data mistake there is looks like an empty region. ' +
+        `Demo read:\n${await demoText()}`,
+    )
+  }
+  return out
+}
+
 // The one page whose subject is a state you cannot see by loading it.
 //
 // `loading-and-errors` argues that a host gating on `view.ready` alone ships an
@@ -974,6 +1065,8 @@ const failures = await smokeExamplesSite({
     ...(await searchByNameResolvesNames(page, slug)),
     ...(await legendIsPlainAndAboveTheSeams(page, slug)),
     ...(await everyDisplayIsInAnOverlaySlot(page)),
+    // adds displays to its own page, so it goes after every census above
+    ...(await localFileOpensAsATrack(page, slug)),
     // last: this one replaces the engine on the page it runs on
     ...(await viewStatusStatesAreDrawn(page, slug)),
   ],

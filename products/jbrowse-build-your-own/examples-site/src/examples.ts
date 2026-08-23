@@ -209,6 +209,28 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'local-files',
+    title: 'Local files',
+    description:
+      "Open a file off the reader's own disk with your own picker, and say why one whose contig names disagree with the genome draws nothing.",
+    group: 'Your own UI',
+    // After the pages that drive a view and a display, because this one is the
+    // first that changes what the session *holds* rather than what it shows --
+    // it needs `addSessionTrackConf` from the track selector two pages up. It
+    // is also the only page here with no JBrowse fallback at all: the managed
+    // component ships an Add-track widget, and a host drawing its own chrome
+    // has nothing, so every call is the reader's.
+    //
+    // no section description: a single-section page draws no "On this page"
+    // card, so it would render nowhere
+    sections: [
+      {
+        slug: 'open-a-local-file',
+        title: 'A file picker, and the two things a URL hides',
+      },
+    ],
+  },
+  {
     slug: 'highlight-a-region',
     title: 'Highlighting a region',
     description:
