@@ -30,7 +30,8 @@ const REGIONS = ['ctgA', 'ctgB'].map(refName => ({
  */
 export function createTestEnvironment({
   colorBy = 'normal',
-}: { colorBy?: 'normal' | 'ld' } = {}) {
+  ldAdapter = true,
+}: { colorBy?: 'normal' | 'ld'; ldAdapter?: boolean } = {}) {
   const env = createDisplayTestEnvironment<LinearManhattanDisplayModel>({
     plugins: [new LinearGenomeViewPlugin()],
     trackType: 'GWASTrack',
@@ -39,7 +40,14 @@ export function createTestEnvironment({
       slots: { ldAdapter: { type: 'frozen', defaultValue: null } },
       config: {
         type: 'GWASAdapter',
-        ldAdapter: { type: 'PlinkLDAdapter', uri: 'https://example.com/x.ld' },
+        ...(ldAdapter
+          ? {
+              ldAdapter: {
+                type: 'PlinkLDAdapter',
+                uri: 'https://example.com/x.ld',
+              },
+            }
+          : {}),
       },
     },
     displayName: 'LinearManhattanDisplay',

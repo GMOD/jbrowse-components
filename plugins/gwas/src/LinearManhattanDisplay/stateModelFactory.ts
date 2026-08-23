@@ -437,14 +437,21 @@ export function stateModelFactory(
          * Fills MultiRegionDisplayMixin's supersession hook: the loaded data was
          * colored under an index SNP the auto-pick is about to replace with the
          * top hit, so `setIndexSnp` — an `rpcProps` field — will clear it and
-         * refetch. On screen that is one invisible tick; an export samples
+         * refetch.
+         *
+         * The condition is the auto-pick's own, `colorBy === 'ld'` rather than
+         * `ldColoringActive`: what invalidates the load is the WRITE, and the
+         * autorun writes whether or not an `ldAdapter` is configured. Gating
+         * this on the adapter left `colorBy: 'ld'` with none — a config the
+         * getters above document as supported — exporting the empty lane this
+         * exists to prevent. On screen that is one invisible tick; an export samples
          * `svgReady` once, and sampling it here captured the doomed load and
          * painted the emptied map, which is a Manhattan lane with no points in
          * it and the LD legend beside it.
          */
         get dataSuperseded(): boolean {
           return (
-            self.ldColoringActive &&
+            self.colorBy === 'ld' &&
             !self.indexSnpPinned &&
             this.topSnp !== undefined &&
             this.topSnp !== self.indexSnp
