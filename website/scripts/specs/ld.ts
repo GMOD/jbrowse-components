@@ -1155,7 +1155,7 @@ export const ldSpecs: ScreenshotSpec[] = [
   // sidebar but leaves each band in adapter order, so the slab never forms. The
   // population information is not lost — `colorBy` puts it in the sidebar stripe
   // — and it now arrives as a RESULT: the clustering is given no knowledge of
-  // rs4988235, and the clade it finds is the one whose stripe is CEU and FIN.
+  // rs4988235, and the cluster it finds is the one whose stripe is CEU and FIN.
   //
   // rs4988235 itself is MAF 0.30 across these samples and so sits below the 0.35
   // filter — it is not one of the columns drawn. The ClinVar tick above the
@@ -1250,7 +1250,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               // row, and what the lane is read for survives that: the readout
               // is a HORIZONTAL texture -- one band decided the same way
               // straight across the block against speckle everywhere else --
-              // and the clade is ~124 of those rows, so it is still a 215 px
+              // and the cluster is ~124 of those rows, so it is still a 215 px
               // slab. Per-row resolution would matter if a reader had to follow
               // one haplotype, which is what the dendrogram gutter cannot
               // support at any height this figure can afford anyway.
@@ -1291,6 +1291,12 @@ export const ldSpecs: ScreenshotSpec[] = [
     // window
     readyTimeout: 300000,
     settleMs: 8000,
+    // The samples table is the whole 1000 Genomes release and the VCF is the
+    // six-population subsample, so the app warns that it dropped the samples it
+    // has no rows for, correctly and every time. The toast lands over the
+    // matrix, and its own dismissal is volatile state a session spec cannot
+    // arrive in.
+    hideSelectors: ['.MuiSnackbar-root'],
     // gene(60) + clinvar(70) + the 260px LD band + the 520px matrix, their
     // headers and the ruler. Sized from the run's own clipped/blank report.
     // 1518 -> 1238: 100 px off the LD band and 180 off the matrix, both argued
@@ -1321,19 +1327,27 @@ export const ldSpecs: ScreenshotSpec[] = [
     // WHAT THE PILL MUST NOT SAY, and did on hg19: that the slab IS those 90.
     // On this callset it is not. Measured two ways and they agree.
     //
-    // Off the capture: one contiguous clade of ~124 of 300 rows is decided the
+    // Off the capture: one contiguous cluster of ~124 of 300 rows is decided the
     // same way across a 249-column run, and NONE of the other 176 rows matches
-    // it there -- a clean separation, just a wider clade than the carrier set.
+    // it there -- a clean separation, just a wider cluster than the carrier set.
     //
     // Off the VCF, over the clustering window at the same MAF floor (230
     // columns): carrier haplotypes agree with the carrier consensus at 0.963
     // mean against 0.301 for non-carriers, so the sweep signal is very strong.
     // But the agreement tail is gradual rather than a cliff -- >=0.90 takes 90
     // haplotypes of which 82 are carriers, >=0.60 takes 123 of which 89 are.
-    // So the clade holds essentially every carrier PLUS a few dozen
+    // So the cluster holds essentially every carrier PLUS a few dozen
     // chromosomes carrying most of the same background, which is what a young
     // haplotype at 30% frequency should look like. Say that; don't restore the
     // arithmetic coincidence.
+    //
+    // CLUSTER, NOT CLADE, in the pill and in this file (review: "please be
+    // careful about using the term 'clade' to refer to humans"). These rows are
+    // the output of hierarchical clustering over one window, which is what the
+    // pill can name; a clade says descent, and the dendrogram beside it fits no
+    // evolutionary model and computes no support, so it does not establish one.
+    // user_guides/clustering.md carries the same caution about the tree.
+    //
     // TWO PILLS, AND EVERY MARK POINTS AT SOMETHING (review: "there are too
     // many red text annotations, unclear what they are pointing at. might need
     // red arrow from the 'unbroken across block' and ideally the red text is
@@ -1348,7 +1362,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     //
     // The third pill is folded into the second as its second line. "Everything
     // else: no shared block" was a whole pill for the half of the finding that
-    // the OTHER arrow now makes: two heads out of one pill, one into the clade
+    // the OTHER arrow now makes: two heads out of one pill, one into the cluster
     // and one into the mosaic below it, is the same statement with one box
     // instead of two and with both ends of it identified.
     //
@@ -1376,13 +1390,13 @@ export const ldSpecs: ScreenshotSpec[] = [
     //
     // ARROW HEADS ARE GENOMIC, the matrix's columns are not (matrix mode gives
     // every variant equal width), so the heads are placed to land inside the
-    // drawn block rather than at a variant. fracY 0.30 and 0.78 are the clade's
-    // and the mosaic's centres, measured off the capture -- the clade occupies
+    // drawn block rather than at a variant. fracY 0.30 and 0.78 are the cluster's
+    // and the mosaic's centres, measured off the capture -- the cluster occupies
     // the top ~0.08-0.52 of the lane and the mosaic the rest.
     //
     // 135,900,000 -> 135,760,000 (review: "the arrows might be slightly
     // pointing to the wrong place, too far to right, off"). Measured off the
-    // capture against the highlight, whose edges are known: the clade's
+    // capture against the highlight, whose edges are known: the cluster's
     // unbroken slab runs about 135.73-135.97 Mb, so 135,900,000 was inside it
     // but within a head's length of its right edge, and an arrowhead is drawn
     // short of its anchor -- so both heads landed on the edge where the slab
@@ -1425,7 +1439,7 @@ export const ldSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'One clade, unbroken across the block.\nEvery other row: mosaic.',
+        text: 'One cluster, unbroken across the block.\nEvery other row: mosaic.',
         fontSize: 22,
         maxWidth: 340,
         anchor: {

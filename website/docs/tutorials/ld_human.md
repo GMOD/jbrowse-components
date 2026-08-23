@@ -80,10 +80,16 @@ along the run correlated with the others, which is the block in the triangle.
 The stretch it left at this locus is what
 [Bersaglieri et al. 2004](https://doi.org/10.1086/421051) read.
 
+The allele itself is `rs4988235`, and its
+[dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) is where to see what
+is known about it: the ClinVar records for lactase persistence hang off it, and
+the frequency table gives it population by population.
+
 <Figure src="/img/ld/lct_sweep_two_scales.png" caption="Top, RefSeq genes and Weir and Cockerham Fst per variant across 40 Mb of chr2. Under the wedge, the same locus, window and allele-frequency floor twice, differing only in which samples went in, over that Fst lane at its own scale and the deCODE genetic map." links="Wide scan=ld/lct_fst_scan,The two triangles=ld/lct_pooled_vs_panel"/>
 
-Every site in the frame sits on the swept haplotype, so the frame's own
-background is the sweep and the lanes around it carry the outside evidence.
+The lower frame is all block, so it cannot tell you the locus is unusual:
+everything in it sits on the swept haplotype, which makes the sweep the frame's
+own background. The lanes around it are where that comparison comes from.
 
 - **Fst, top.** Fst scores how differently two sets of samples carry a variant,
   so a variant one panel carries and the other mostly lacks scores high. Widened
@@ -101,9 +107,12 @@ background is the sweep and the lanes around it carry the outside evidence.
   it carries no LD of its own. It loads as an ordinary
   [quantitative track](/docs/user_guides/quantitative_track) from the same hg38
   hub as the gene lane.
-- **The two triangles.** Lactase persistence swept in Europe, so the block is a
-  property of that panel: pooling it with populations the haplotype never
-  reached mixes in their backgrounds and the correlations average down.
+- **The two triangles.** Remember that r² is a correlation across the samples
+  you hand it, and this haplotype swept in Europe. Pool that panel with
+  populations the haplotype never reached and their chromosomes go into the same
+  correlation, where they carry a different background: every pair of variants
+  then looks less correlated than it is inside either group, which is why the
+  upper triangle is the paler and patchier of the two.
 
 The 2019 sequence-level map is why this page is on hg38: it was built natively
 on GRCh38, resolves to under a kilobase, and comes from Icelandic meioses.
@@ -113,7 +122,7 @@ populations, and fine-scale hotspot positions follow PRDM9 allele frequencies
 panel in the lane below is matched to it. The HapMap and 1000 Genomes maps in
 the same hub are estimated from LD.
 
-### Cut the slice wider than the block
+### Cut the region out of the VCF
 
 The triangle is drawn from what the file holds, so the slice has to reach past
 both edges of the block for those edges to be in frame. One region query cuts
@@ -258,7 +267,7 @@ Both work unchanged on [JBrowse Desktop](/docs/quickstart_desktop), which opens
 the VCF from local disk with `uri` pointed at a local path. That block's CLI tab
 puts the same track into a `config.json`.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The shaded stripe is the 89 kb of LCT/MCM6 selection acted on, and the block it left behind fills the triangle above. The pale slab is one clade, uniform across that block, and the rs4988235-A haplotypes sit inside it."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises over one window: 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The shaded stripe is the 89 kb of LCT/MCM6 selection acted on, and the block it left behind fills the triangle above. The pale slab is one cluster of near-identical chromosomes, uniform across that block, and the rs4988235-A haplotypes sit inside it."/>
 
 **Ordering is what makes a block visible.** In file order the same matrix is a
 plaid at any size, because a block is a set of alleles travelling together and
@@ -272,7 +281,7 @@ independently of the columns the clustering ran on.
 populations in the sidebar stripe, so which of them carry the block reads off
 the clustered rows.
 
-### Rows have to be worth a pixel
+### The subsample behind the figure {#rows-have-to-be-worth-a-pixel}
 
 Over the whole release each haplotype row falls well below a pixel in a lane
 this tall and averages into its neighbours, leaving a flat wash whatever the
