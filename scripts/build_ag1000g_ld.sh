@@ -55,6 +55,9 @@
 set -euo pipefail
 
 OUTDIR="${1:-ag1000g_ld_build}"
+# The derived inputs, and the switch that rebuilds them from the release.
+DERIVED=https://jbrowse.org/demos/ag1000g
+FROM_RELEASE="${FROM_RELEASE:-}"
 AR1=https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1
 GENOME=https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome
 CHROM=2L
@@ -99,14 +102,23 @@ cd "$OUTDIR"
 # outside source.
 fetch() { [ -f "$2" ] || curl -fsSL --retry 3 -o "$2" "$1"; }
 
-fetch "$AR1/samples/samples.meta.txt" samples.meta.txt
-fetch "$AR1/haplotypes/main/shapeit/ag1000g.phase2.ar1.samples.$CHROM.gz" "samples.$CHROM.gz"
-echo "fetching phased haplotypes for $CHROM (~470 MB, one time)..."
-fetch "$AR1/haplotypes/main/shapeit/ag1000g.phase2.ar1.haplotypes.$CHROM.gz" "haplotypes.$CHROM.gz"
-fetch "$GENOME/Anopheles-gambiae-PEST_CHROMOSOMES_AgamP4.fa.gz" AgamP4.fa.gz
-fetch "$GENOME/Anopheles-gambiae-PEST_BASEFEATURES_AgamP4.12.gff3.gz" AgamP4.gff3.gz
 
-gzip -dc "samples.$CHROM.gz" > "samples.$CHROM.txt"
+# Two files here are DERIVED from the release rather than copied from it: the
+# common-variant grid the LD tables are computed on, and the tag-SNP rows the
+# karyotypes are scored from. Both cost a full pass over a 470 MB haplotype
+# file, and both come to a few megabytes, so they are rehosted and fetched by
+# default. FROM_RELEASE=1 rebuilds them from the Sanger release instead, which
+# is what made the hosted copies; the commands are the ones below either way.
+if [ -n "$FROM_RELEASE" ]; then
+  fetch "$AR1/samples/samples.meta.txt" samples.meta.txt
+  fetch "$AR1/haplotypes/main/shapeit/ag1000g.phase2.ar1.samples.$CHROM.gz" "samples.$CHROM.gz"
+  echo "fetching phased haplotypes for $CHROM (~470 MB, one time)..."
+  fetch "$AR1/haplotypes/main/shapeit/ag1000g.phase2.ar1.haplotypes.$CHROM.gz" "haplotypes.$CHROM.gz"
+  gzip -dc "samples.$CHROM.gz" > "samples.$CHROM.txt"
+else
+  fetch "$DERIVED/samples.meta.txt" samples.meta.txt
+  fetch "$DERIVED/samples.$CHROM.txt" "samples.$CHROM.txt"
+fi
 NHAP=$(( $(wc -l < "samples.$CHROM.txt") - 2 ))
 echo "$NHAP phased individuals ($(( NHAP * 2 )) haplotypes)"
 
@@ -169,12 +181,16 @@ emit_vcf() { # ids-file from to step minmaf out
 # One pass over the 470 MB file gives a common-variant grid for every panel;
 # per-population MAF and thinning are applied afterwards from the plink set.
 if [ ! -f common.bim ]; then
-  echo "building common-variant grid over $CHROM (one pass, a few minutes)..."
-  cols_for <(awk 'NR>2{print $1}' "samples.$CHROM.txt") > cols.all
-  emit_vcf cols.all 1 300000000 4000 0.1 common.vcf
-  "$PLINK" --vcf common.vcf --double-id --allow-extra-chr \
-    --make-bed --out common >/dev/null
-  rm -f common.vcf
+  if [ -n "$FROM_RELEASE" ]; then
+    echo "building common-variant grid over $CHROM (one pass, a few minutes)..."
+    cols_for <(awk 'NR>2{print $1}' "samples.$CHROM.txt") > cols.all
+    emit_vcf cols.all 1 300000000 4000 0.1 common.vcf
+    "$PLINK" --vcf common.vcf --double-id --allow-extra-chr \
+      --make-bed --out common >/dev/null
+    rm -f common.vcf
+  else
+    for f in common.bed common.bim common.fam; do fetch "$DERIVED/$f" "$f"; done
+  fi
 fi
 echo "grid: $(wc -l < common.bim) common sites on $CHROM"
 
@@ -297,13 +313,28 @@ fetch "$COMPKARYO/2La_targets.txt" 2La_targets.txt
 # with GQ<20 masked, gives the identical karyotype for all 1142 samples. The
 # calls are not an artifact of the phasing.
 #
-# grep before awk. Only ~200 of the file's millions of rows are wanted, and each
+# Prefilter before awk. Only ~200 of the file's ~2.5M rows are wanted, and each
 # row carries 2328 haplotype columns, so letting awk split every record costs
-# minutes; a fixed-string prefilter on "<chrom> . <pos> " does the same job in
-# well under one. The .haps chromosome column is a bare '2' for arm 2L (the same
-# quirk haps2vcf.awk handles above), which is what the pattern matches.
-awk -v C=2 '{print C " . " $1 " "}' 2La_targets.txt > tagpat.txt
-gzip -dc "haplotypes.$CHROM.gz" | grep -F -f tagpat.txt > tagrows.txt
+# minutes. A fixed-string match on "<chrom> . <pos> " is all that is needed, and
+# the .haps chromosome column is a bare '2' for arm 2L (the same quirk
+# haps2vcf.awk handles above), which is what the prefix matches.
+#
+# GNU grep does this in about a minute. BSD grep, which is what macOS ships,
+# runs the same command at 0.25 MB/s against rows this long -- about twelve
+# hours -- so use ggrep there if it is installed and say so if it is not.
+# (LC_ALL=C buys 16%, not a fix.) This only runs under FROM_RELEASE=1; the
+# default path fetches the 200 rows it would produce.
+if [ -n "$FROM_RELEASE" ]; then
+  awk -v C=2 '{print C " . " $1 " "}' 2La_targets.txt > tagpat.txt
+  GREP=$(command -v ggrep || command -v grep)
+  if [ "$(uname)" = Darwin ] && [ "$GREP" = /usr/bin/grep ]; then
+    echo "warning: BSD grep scans this file for hours. brew install grep, or" >&2
+    echo "         drop FROM_RELEASE=1 to fetch the rows it would produce." >&2
+  fi
+  gzip -dc "haplotypes.$CHROM.gz" | "$GREP" -F -f tagpat.txt > tagrows.txt
+else
+  fetch "$DERIVED/tagrows.txt" tagrows.txt
+fi
 awk -v SAMP="samples.$CHROM.txt" -v NTAG="$(wc -l < 2La_targets.txt)" '
 BEGIN { while ((getline l < SAMP) > 0) { if (++nl > 2) { split(l, f, " "); name[++ns] = f[1] } } }
 { sites++; for (s = 1; s <= ns; s++) sum[s] += $(4 + 2 * s) + $(5 + 2 * s) }
@@ -393,8 +424,24 @@ echo "building per-mosquito karyotype tracks..."
 for pop in $PANEL_POPS; do emit_karyotype_track "$pop"; done
 
 # ── Assembly and JBrowse ────────────────────────────────────────────────────
-gzip -dc AgamP4.fa.gz | bgzip > AgamP4.fa.bgz
-samtools faidx AgamP4.fa.bgz
+# VectorBase publishes the reference as a plain .fa.gz and the genes unsorted,
+# so both need converting before JBrowse can index them: bgzip plus faidx for
+# the one, sort plus tabix for the other. The converted files are a few tens of
+# megabytes and never change, so they are rehosted too and fetched ready to use.
+if [ -n "$FROM_RELEASE" ]; then
+  fetch "$GENOME/Anopheles-gambiae-PEST_CHROMOSOMES_AgamP4.fa.gz" AgamP4.fa.gz
+  fetch "$GENOME/Anopheles-gambiae-PEST_BASEFEATURES_AgamP4.12.gff3.gz" AgamP4.gff3.gz
+  gzip -dc AgamP4.fa.gz | bgzip > AgamP4.fa.bgz
+  samtools faidx AgamP4.fa.bgz
+  gzip -dc AgamP4.gff3.gz > AgamP4.gff3
+  jb sort-gff AgamP4.gff3 | bgzip > AgamP4.sorted.gff3.gz
+  tabix -f -p gff AgamP4.sorted.gff3.gz
+else
+  for f in AgamP4.fa.bgz AgamP4.fa.bgz.fai AgamP4.fa.bgz.gzi \
+           AgamP4.sorted.gff3.gz AgamP4.sorted.gff3.gz.tbi; do
+    fetch "$DERIVED/$f" "$f"
+  done
+fi
 
 [ -f jbrowse2/index.html ] || jb create jbrowse2
 
@@ -402,9 +449,6 @@ samtools faidx AgamP4.fa.bgz
 # does not recognize .bgz (it wants .fa.gz), so it cannot guess this one
 jb add-assembly AgamP4.fa.bgz --type bgzipFasta --name AgamP4 \
   --load copy --force --out jbrowse2
-gzip -dc AgamP4.gff3.gz > AgamP4.gff3
-jb sort-gff AgamP4.gff3 | bgzip > AgamP4.sorted.gff3.gz
-tabix -f -p gff AgamP4.sorted.gff3.gz
 jb add-track AgamP4.sorted.gff3.gz --name "AgamP4.12 genes" --trackId agamp4_genes \
   --load copy --force --out jbrowse2
 cp ld_cmgam.vcor.gz ld_cmgam.vcor.gz.tbi ld_gagam.vcor.gz ld_gagam.vcor.gz.tbi jbrowse2/

@@ -137,6 +137,18 @@ bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
 tabix -p vcf pooled.vcf.gz
 ```
 
+:::note One file, three kinds of variant
+
+This panel is `SNV_INDEL_SV_phased_panel`, so SNVs, indels and symbolic SV
+records share it, and `<CN0>` is an allele as far as anything downstream can
+tell. That is why `-e 'ALT[0]~"<"'` here and the `-m2 -M2 -v snps` reduction
+below are both load-bearing rather than tidying: plink2 refuses a multiallelic
+record outright, and an SV sharing a position with a SNV leaves two records that
+collide under `--set-missing-var-ids @:#`, after which `--ld-snp chr2:135851076`
+matches nothing and says so as though the coordinate were wrong.
+
+:::
+
 How wide is wide enough is a question for the file rather than for the picture.
 Running `plink2 --r2-phased` against the causal variant[^phased] gives r² to
 every other variant in the slice, and binning that by position says where the
