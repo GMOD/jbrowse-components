@@ -1,6 +1,8 @@
 import {
   isRegionRefused,
   largestRegionBytes,
+  measureRegionsBytes,
+  measuredBytes,
   overByteBudget,
 } from './byteBudget.ts'
 
@@ -87,5 +89,93 @@ describe('isRegionRefused', () => {
   it('is false for null and undefined rather than throwing', () => {
     expect(isRegionRefused(null)).toBe(false)
     expect(isRegionRefused(undefined)).toBe(false)
+  })
+})
+
+describe('measuredBytes', () => {
+  it('reads the field off either arm of a fetch result', () => {
+    expect(measuredBytes({ regionTooLarge: true, bytes: 9e9 })).toBe(9e9)
+    expect(measuredBytes({ features: [], bytes: 10 })).toBe(10)
+  })
+
+  it('is undefined for a result that measured nothing', () => {
+    expect(measuredBytes({ features: [] })).toBeUndefined()
+    expect(measuredBytes({ bytes: 'lots' })).toBeUndefined()
+    expect(measuredBytes(null)).toBeUndefined()
+    expect(measuredBytes([1, 2, 3])).toBeUndefined()
+  })
+})
+
+// The whole-region-set form, for an RPC whose worker serves every region in one
+// call. Every region is measured on its own and the largest is what the budget
+// judges, so a multi-region view where each region individually fits is never
+// refused by what they add up to.
+describe('measureRegionsBytes', () => {
+  const region = (refName: string) => ({
+    refName,
+    start: 0,
+    end: 100,
+    assemblyName: 'volvox',
+  })
+
+  function adapterQuoting(perRegion: Record<string, number | undefined>) {
+    const asked: string[] = []
+    return {
+      asked,
+      adapter: {
+        getRegionByteSize: (regions: { refName: string }[]) => {
+          asked.push(regions.map(r => r.refName).join(','))
+          return Promise.resolve(perRegion[regions[0]!.refName])
+        },
+      },
+    }
+  }
+
+  it('measures each region separately and judges the largest', async () => {
+    const { adapter, asked } = adapterQuoting({ ctgA: 900, ctgB: 300 })
+    const result = await measureRegionsBytes({
+      dataAdapter: adapter,
+      regions: [region('ctgA'), region('ctgB')],
+      byteLimit: 1000,
+    })
+    // one call per region, never one merged call, or the answer is the sum
+    expect(asked).toEqual(['ctgA', 'ctgB'])
+    expect(result).toEqual({ bytes: 900 })
+  })
+
+  it('refuses on the largest region and quotes its bytes', async () => {
+    const { adapter } = adapterQuoting({ ctgA: 300, ctgB: 1200 })
+    const result = await measureRegionsBytes({
+      dataAdapter: adapter,
+      regions: [region('ctgA'), region('ctgB')],
+      byteLimit: 1000,
+    })
+    expect(result).toEqual({
+      bytes: 1200,
+      tooLarge: { regionTooLarge: true, bytes: 1200 },
+    })
+  })
+
+  it('measures nothing at all without a budget', async () => {
+    const { adapter, asked } = adapterQuoting({ ctgA: 9e9 })
+    expect(
+      await measureRegionsBytes({
+        dataAdapter: adapter,
+        regions: [region('ctgA')],
+        byteLimit: undefined,
+      }),
+    ).toEqual({})
+    expect(asked).toEqual([])
+  })
+
+  it('is unmeasurable, not zero, when the adapter quotes nothing', async () => {
+    const { adapter } = adapterQuoting({ ctgA: undefined })
+    expect(
+      await measureRegionsBytes({
+        dataAdapter: adapter,
+        regions: [region('ctgA')],
+        byteLimit: 1000,
+      }),
+    ).toEqual({ bytes: undefined })
   })
 })
