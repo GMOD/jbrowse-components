@@ -54,6 +54,76 @@ Three things made the main-thread version unbuildable as designed:
 - **The payload is the other half of the point.** Collapsing in the worker means
   a 40-transcript Gencode gene ships one transcript's geometry, not forty.
 
+## The first two reasons no longer hold, and the third was never measured
+
+Amended 2026-08-23, after the cap was found to be stripping every label on a
+fitted track (see the lane-division consequence below). Re-reading the three
+reasons above against the code as it stands:
+
+- **Isoform structure DOES survive the boundary.** `subfeatureInfos` crosses
+  carrying `featureId`, `parentFeatureId`, `type`, `startBp`/`endBp`, `topPx`,
+  `bottomPx`, `labelRowsAbove` and `ownsLabelRow` for every transcript
+  (`registerSubfeature` in `collect/glyphEmitters.ts`). So per-isoform identity
+  and geometry are already main-thread — and so is each child's measured height,
+  as `bottomPx - topPx`, which is what the second reason said only the worker
+  had. Undoing a member of `labelRowsAbove` is a constant subtraction per
+  following sibling, not "the layout pass again": the worker derives it as a
+  linear running sum.
+- **What is actually missing is primitive attribution.** `rectFeatureIndices`
+  (and its line and arrow twins, and `aminoAcidOverlay[].flatbushIdx`) index a
+  primitive to a FEATURE, never to a subfeature, so nothing says which rects
+  belong to which isoform. A second gap: `parentFeatureId` is the ROOT feature
+  at every nesting depth by design (`collect/glyphEmitters.ts` aliases the
+  placement's `parentFeature` to `rootFeature` and registers a polyprotein's
+  cleavage products against it), so those products are siblings of the CDS they
+  came from and "the direct children of gene X" is not recoverable by
+  grouping. Both are fixed by one
+  mechanism — a stack-child ordinal threaded through `GlyphPlacement`.
+- **And the drawn order is not the ranked order.** `keepRanked` keeps the top n
+  of `rankIsoforms` (canonical tag, coding, coding length, index) while the
+  stack is sorted only by (canonical, coding). So a main-thread trim to a
+  smaller n is not "drop a suffix" — it needs a per-isoform rank emitted, or it
+  keeps a different set than the worker would at the same cap.
+- **The payload reason was never measured, and it is small.** It is the argument
+  that carried the cap across the boundary, and so the reason track height is an
+  RPC cache key at all:
+
+<!-- BEGIN GENERATED MEASUREMENT isoform-cap-payload -->
+
+| track height | isoform cap |  payload | saved vs uncapped | saved |
+| ------------ | ----------: | -------: | ----------------: | ----: |
+| uncapped     |           0 | 180.4 KB |            0.0 KB |  0.0% |
+| ~400px lane  |          31 | 172.1 KB |            8.3 KB |  4.6% |
+| ~200px lane  |          14 | 145.5 KB |           35.0 KB | 19.4% |
+| ~100px lane  |           6 | 114.2 KB |           66.2 KB | 36.7% |
+| ~20px lane   |           1 |  55.5 KB |          124.9 KB | 69.2% |
+
+<!-- END GENERATED MEASUREMENT isoform-cap-payload -->
+
+  At the track heights people actually use the cap removes a minority of the
+  payload, roughly half of which was crossing zero-copy as a transferable
+  anyway. It matters at a ~100px lane and below, which is the case it was built
+  for; it does not pay for a resize invalidating every loaded region.
+
+**So the honest version of this ADR's argument is a cost argument, not an
+impossibility one**: the primitives carry no isoform attribution, the flat
+subfeature list conflates nesting depth, and four secondary systems (`isoformPicks`
+and the chip, the `moreIsoforms` badge, the gene's collapsed re-anchoring in
+`processFeatureRecord`, and rank order) are all keyed to the collapse firing
+worker-side. Moving the trim to the main thread is estimated at 800-1500 lines
+with real silent-corruption surface — every trimmed isoform shifts ~30 parallel
+fields and a miss mis-draws a row without throwing.
+
+That cost still wins today, because what it buys is a bounded annoyance rather
+than a correctness bug: `clearAllRpcData` deliberately keeps `rpcDataMap` and
+`scrollTop`, so the track stays painted through the refetch window and nothing
+blanks. **Supersede this ADR rather than amend it again** the moment something
+else needs per-isoform structure on the main thread — instant per-gene
+expand/collapse without a refetch, per-isoform hover trimming, isoform
+reordering, a "pick this transcript" affordance. Each needs the same stack-child
+index and the same trim mechanics, and the height-out-of-the-cache-key win rides
+along at marginal cost.
+
 ## Consequences
 
 - **Expanding one gene refetches its regions.** Accepted, on the same basis as
