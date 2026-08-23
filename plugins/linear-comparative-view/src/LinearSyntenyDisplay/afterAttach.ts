@@ -1,4 +1,3 @@
-import { getSession } from '@jbrowse/core/util'
 import {
   getCanonicalRefNameFn,
   installAssemblySwapCheck,
@@ -90,15 +89,9 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         drawCIGARMatchesOnly,
         lodTier,
       },
-      {
-        adapterConfig,
-        sessionId,
-        stopToken,
-        statusCallback,
-        rename,
-        assemblyManager,
-      },
+      ctx,
     ) => {
+      const { adapterConfig, rename, assemblyManager } = ctx
       // Both axes rename their displayed regions; each renames its fetch window
       // too, and the target's is empty unless the view asked for the second
       // query — in which case the worker needs it in the adapter's spelling for
@@ -115,20 +108,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           ? await rename(rawTarget.fetchRegions)
           : undefined,
       }
-      const result = await getSession(self).rpcManager.call(
-        sessionId,
-        'SyntenyGetFeaturesAndPositions',
-        {
-          adapterConfig,
-          queryView,
-          targetView,
-          stopToken,
-          drawCIGAR,
-          drawCIGARMatchesOnly,
-          lodMode: lodTier,
-          statusCallback,
-        },
-      )
+      const result = await ctx.callRpc('SyntenyGetFeaturesAndPositions', {
+        adapterConfig,
+        queryView,
+        targetView,
+        drawCIGAR,
+        drawCIGARMatchesOnly,
+        lodMode: lodTier,
+      })
 
       // AND BACK AGAIN, which the inbound rename above does not do for us. A
       // synteny feature names a contig on the OTHER axis — that is what a

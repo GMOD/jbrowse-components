@@ -1,4 +1,3 @@
-import { getSession } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   installAssemblySwapCheck,
@@ -94,36 +93,21 @@ export function doAfterAttach(
       }
       return undefined
     },
-    run: async (
-      { lodTier, hViewSnap, vViewSnap, regions },
-      {
+    run: async ({ lodTier, hViewSnap, vViewSnap, regions }, ctx) => {
+      const { adapterConfig, rename, assemblyManager } = ctx
+      const result = await ctx.callRpc('DotplotGetFeaturesAndPositions', {
         adapterConfig,
-        sessionId,
-        stopToken,
-        statusCallback,
-        rename,
-        assemblyManager,
-      },
-    ) => {
-      const result = await getSession(self).rpcManager.call(
-        sessionId,
-        'DotplotGetFeaturesAndPositions',
-        {
-          adapterConfig,
-          regions: await rename(regions),
-          hViewSnap: {
-            ...hViewSnap,
-            displayedRegions: await rename(hViewSnap.displayedRegions),
-          },
-          vViewSnap: {
-            ...vViewSnap,
-            displayedRegions: await rename(vViewSnap.displayedRegions),
-          },
-          stopToken,
-          lodMode: lodTier,
-          statusCallback,
+        regions: await rename(regions),
+        hViewSnap: {
+          ...hViewSnap,
+          displayedRegions: await rename(hViewSnap.displayedRegions),
         },
-      )
+        vViewSnap: {
+          ...vViewSnap,
+          displayedRegions: await rename(vViewSnap.displayedRegions),
+        },
+        lodMode: lodTier,
+      })
       // Skipped features are only worth warning about when the refName is
       // genuinely absent from the assembly. An axis restricted to a subset of
       // its assembly (per-axis `displayedRegionNames` — e.g. one haplotype of a

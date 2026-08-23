@@ -161,6 +161,7 @@
     "./util/copyText": "./src/util/copyText.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/eventPoint": "./src/util/eventPoint.ts",
+    "./util/fetchContext": "./src/util/fetchContext.ts",
     "./util/fetchHub": "./src/util/fetchHub.ts",
     "./util/fetchPhases": "./src/util/fetchPhases.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
@@ -837,6 +838,10 @@
         "types": "./esm/util/eventPoint.d.ts",
         "import": "./esm/util/eventPoint.js"
       },
+      "./util/fetchContext": {
+        "types": "./esm/util/fetchContext.d.ts",
+        "import": "./esm/util/fetchContext.js"
+      },
       "./util/fetchHub": {
         "types": "./esm/util/fetchHub.d.ts",
         "import": "./esm/util/fetchHub.js"
@@ -1502,6 +1507,9 @@
         ],
         "util/eventPoint": [
           "esm/util/eventPoint.d.ts"
+        ],
+        "util/fetchContext": [
+          "esm/util/fetchContext.d.ts"
         ],
         "util/fetchHub": [
           "esm/util/fetchHub.d.ts"

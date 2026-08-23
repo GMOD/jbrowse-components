@@ -7,6 +7,7 @@ import {
   getSession,
   handleFetchError,
 } from '@jbrowse/core/util'
+import { makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
@@ -14,21 +15,13 @@ import { untracked } from 'mobx'
 
 import { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 
-import type {
-  AssemblyManager,
-  Region,
-  RpcStatus,
-  StopToken,
-} from '@jbrowse/core/util'
+import type { AssemblyManager, Region, RpcStatus } from '@jbrowse/core/util'
+import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-export interface ComparativeFetchContext {
+export interface ComparativeFetchContext extends FetchContext {
   adapterConfig: Record<string, unknown>
-  sessionId: string
-  stopToken: StopToken
-  /** pre-gated on staleness; pass straight as the RPC `statusCallback` arg */
-  statusCallback: (status: RpcStatus) => void
   /**
    * Canonical assembly refNames -> the adapter's own namespace (e.g. "1" ->
    * "NC_012119.1"). Every region the worker sees must go through this: it has
@@ -157,10 +150,12 @@ export function installComparativeFetchAutorun<TArgs, TResult>(
       const sessionId = getRpcSessionId(self)
       const { assemblyManager } = getSession(self)
       const result: TResult | undefined = await run(args, {
+        ...makeFetchContext(self, {
+          stopToken,
+          isStale: () => !isCurrent(),
+          statusCallback,
+        }),
         adapterConfig,
-        sessionId,
-        stopToken,
-        statusCallback,
         assemblyManager,
         rename: regions =>
           renameRegionsForAdapter({
