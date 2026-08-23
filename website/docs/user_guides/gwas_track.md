@@ -71,9 +71,62 @@ bgzipped or not. Generate it from:
 
 - Your own cohort - `plink2 --r2-unphased --ld-window-kb 1000 --ld-window-r2 0`,
   or 1.9's `plink --r2 --ld-window-kb 1000 --ld-window-r2 0`
-- Reference panel - 1000 Genomes phase 3 VCFs at
+- Reference panel - 1000 Genomes phase 3 at
   `ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/` (choose EUR, AFR, EAS,
-  AMR, or SAS by population)
+  AMR, or SAS by population). Point `bcftools` at the `.bcf` files under
+  `supporting/bcf_files/` rather than the `.vcf.gz` beside them: the BCF and its
+  `.csi` answer a remote region query in seconds, while the `.vcf.gz` index
+  sends htslib to an offset that fails with "Illegal seek"
+
+## Clumping the peak
+
+A peak is one signal smeared across every variant in LD with the causal one.
+`plink2 --clump` writes that down rather than leaving it to be read off the
+colors: each clump is an index variant plus the variants whose signal it
+accounts for, which loads as an interval track under the Manhattan lane.
+
+The reference panel is a region of 1000 Genomes, fetched over HTTP without
+downloading the file:
+
+```bash
+BCF=https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/supporting/bcf_files/ALL.chr16.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.bcf
+curl -fsSLO https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel
+awk 'NR>1 && $3=="EUR"{print $1}' integrated_call_samples_v3.20130502.ALL.panel > eur.samples
+
+# -r is a region request, so 900 kb costs 900 kb rather than the 450 MB chromosome
+bcftools view -r 16:53400000-54300000 -S eur.samples -m2 -M2 -v snps \
+  -q 0.01:minor -Oz -o fto.vcf.gz "$BCF"
+
+# --set-missing-var-ids is not optional: plink2 refuses a dataset where the ID
+# '.' appears twice, and an unnamed variant is common in a reference panel
+plink2 --vcf fto.vcf.gz --double-id --set-missing-var-ids @:# \
+  --rm-dup force-first --make-bed --out fto
+```
+
+`--clump` then reads the summary statistics themselves. The columns are named
+rather than positional, and `--clump-log10 input-only` is what says the p-value
+column is already -log10, as `neg_log_pvalue` is:
+
+```bash
+# plink2 reads the header, so the leading '#' on '#chrom' has to go
+gzip -dc summary_stats.txt.gz | sed '1s/^#//' > stats.txt
+
+plink2 --bfile fto --clump stats.txt --clump-log10 input-only \
+  --clump-p-field neg_log_pvalue --clump-id-field rsid \
+  --clump-log10-p1 7.3 --clump-log10-p2 2 --clump-r2 0.2 --clump-kb 500 --out fto
+
+# clump to BED: SP2 names the members, and the .bim says where each one is, so
+# the span is their lowest and highest position
+awk 'NR==FNR{pos[$2]=$4; next} FNR>1 {n=split($11,m,","); lo=$2; hi=$2
+    for(i=1;i<=n;i++){p=pos[m[i]]; if(p){if(p<lo)lo=p; if(p>hi)hi=p}}
+    printf "%s\t%d\t%d\t%s (%d variants)\n", $1, lo-1, hi, $3, $5}' \
+  fto.bim fto.clumps | sort -k2,2n > clumps.bed
+```
+
+Over the example file that gives three clumps at FTO, and the big one is the
+answer to what the peak is tagging: index `rs1121980`, 51 variants, spanning 51
+kb of FTO's first intron. Load `clumps.bed` through a
+[`BedAdapter`](/docs/config/bedadapter) beside the GWAS track.
 
 ## Add GWAS track workflow
 
