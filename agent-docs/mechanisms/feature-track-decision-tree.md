@@ -37,10 +37,12 @@ those name a meaning rather than a shape.
   a gene costs, then re-spent in the worker over the real children.
 - That estimate sizes ONE gene to the whole track, so the worker **divides the
   lane** before spending it (`laneShares` / `laneBudgetRows`): a sweep charges
-  each gene the genes and plain features stacking at the busiest point of its
+  each gene the other MULTI-ISOFORM genes stacking at the busiest point of its
   span. Undivided, a second gene stacking with the first overflowed by the same
   factor at every height — so dragging a fitted track taller bought isoforms and
-  never the label rows the ladder needs.
+  never the label rows the ladder needs. Single-row neighbours are deliberately
+  not charged: they take real rows, but charging them floored a gene to one
+  transcript because a `contig` backdrop overlapped it. See `LaneShare`.
 - Where the display fits to height, the **fit ladder** runs: `full` → `labels`
   (descriptions dropped) → `decimated` (a name only where it is isolated) →
   `bodies` (no labels). The first rung that fits wins, each rung is laid out

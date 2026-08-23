@@ -83,13 +83,18 @@ export interface LayoutArgs {
   laneShare?: LaneShare
 }
 
-// What stacks with one gene at the busiest point of its span, itself included.
-// Two counts rather than one because the two cost the lane different amounts: a
-// gene spends its own rows plus however many isoforms it keeps, while a plain
-// feature spends its own rows plus exactly one.
+// How many multi-isoform genes stack at the busiest point of one gene's span,
+// itself included — the divisor the isoform budget is split by.
+//
+// Genes ONLY. Charging single-row neighbours too was tried and reverted: a
+// volvox gene overlapped by a `contig 1-50001` backdrop, a `BAC`, and a dozen
+// `match` rows was floored to one transcript, including at heights where its
+// name was already drawn. Those rows do consume the lane, so the arithmetic was
+// right and the behaviour was still wrong — a gene must not lose transcripts to
+// a backdrop annotation nobody is reading. A second MULTI-ISOFORM gene is the
+// case that actually doubles the stack, and it is the one this divides for.
 export interface LaneShare {
   genes: number
-  features: number
 }
 
 export type GlyphType =

@@ -32,12 +32,15 @@ function isoformLaneShares(choices: GlyphChoice[], config: DisplayConfig) {
     config.geneGlyphMode === 'longestCoding'
     ? new Map<string, LaneShare>()
     : laneShares(
-        choices.map(({ feature, glyph }) => ({
-          featureId: feature.id(),
-          startBp: feature.get('start'),
-          endBp: feature.get('end'),
-          stacksIsoforms: stacksMultipleIsoforms(feature, config, glyph),
-        })),
+        choices
+          .filter(({ feature, glyph }) =>
+            stacksMultipleIsoforms(feature, config, glyph),
+          )
+          .map(({ feature }) => ({
+            featureId: feature.id(),
+            startBp: feature.get('start'),
+            endBp: feature.get('end'),
+          })),
       )
 }
 

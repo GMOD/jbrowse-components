@@ -1,18 +1,17 @@
 import type { LaneShare } from '../types.ts'
 
-// One feature's claim on the lane: the span it packs into, and whether it is a
-// gene that would spend the whole isoform budget on itself.
+// One multi-isoform gene's claim on the lane: the span it packs into. Callers
+// pass only the genes — see `LaneShare` for why nothing else is counted.
 export interface LaneItem {
   featureId: string
   startBp: number
   endBp: number
-  stacksIsoforms: boolean
 }
 
 // A gene with no measured neighbourhood owns the lane outright, which is what
 // `maxIsoforms` already means — so this share reproduces the pre-sharing budget
 // exactly (see laneBudgetRows).
-export const WHOLE_LANE: LaneShare = { genes: 1, features: 0 }
+export const WHOLE_LANE: LaneShare = { genes: 1 }
 
 /**
  * How many isoform rows one gene may spend, given what stacks beside it.
@@ -23,10 +22,8 @@ export const WHOLE_LANE: LaneShare = { genes: 1, features: 0 }
  * further lane in the share owes its own — the second gene's padding and label
  * lines come out of the same track height the first one is filling.
  *
- * A plain feature costs `geneOwnRows + 1`: its own rows plus its single body,
- * which is exactly what `geneRowCostPx` prices a one-isoform gene at. So both
- * terms are the same arithmetic, and a lane of one gene and no neighbours
- * cancels back to `maxIsoforms` with no rounding at all.
+ * A lane holding one gene cancels back to `maxIsoforms` with no rounding at all,
+ * so nothing uncrowded moves.
  *
  * Floors at one isoform, like `isoformsWithinBudget` and `isoformRowBudget`
  * before it: a gene collapsed to nothing is not an overview of it, however
@@ -44,8 +41,7 @@ export function laneBudgetRows(
   share: LaneShare,
 ) {
   const ownRows = geneOwnRows === undefined ? 0 : geneOwnRows
-  const spentByNeighbours =
-    (share.genes - 1) * ownRows + share.features * (ownRows + 1)
+  const spentByNeighbours = (share.genes - 1) * ownRows
   return Math.max(
     1,
     Math.floor((maxIsoforms - spentByNeighbours) / share.genes),
@@ -73,7 +69,8 @@ interface LaneEvent {
  * layout.ts). Both are the erring-toward-a-share direction, which is the one
  * that keeps names.
  *
- * Only genes get an entry: a plain feature has no isoform budget to divide.
+ * Only genes are counted, and only genes get an entry — see `LaneShare` for the
+ * measurement that settled charging plain features too.
  */
 export function laneShares(items: LaneItem[]) {
   const events: LaneEvent[] = items.flatMap(item => [
@@ -85,28 +82,18 @@ export function laneShares(items: LaneItem[]) {
   const shares = new Map<string, LaneShare>()
   const openGenes = new Map<LaneItem, LaneShare>()
   let genes = 0
-  let features = 0
   for (const { opens, item } of events) {
     if (opens) {
-      if (item.stacksIsoforms) {
-        genes++
-        const share = { genes: 0, features: 0 }
-        shares.set(item.featureId, share)
-        openGenes.set(item, share)
-      } else {
-        features++
-      }
-      for (const share of openGenes.values()) {
-        share.genes = Math.max(share.genes, genes)
-        share.features = Math.max(share.features, features)
+      genes++
+      const share = { genes: 0 }
+      shares.set(item.featureId, share)
+      openGenes.set(item, share)
+      for (const open of openGenes.values()) {
+        open.genes = Math.max(open.genes, genes)
       }
     } else {
-      if (item.stacksIsoforms) {
-        genes--
-        openGenes.delete(item)
-      } else {
-        features--
-      }
+      genes--
+      openGenes.delete(item)
     }
   }
   return shares

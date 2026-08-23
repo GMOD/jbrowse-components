@@ -498,7 +498,7 @@ describe('a lane several genes stack in', () => {
 
   it.each([2, 3, 4])('fits %i genes stacked in it', genes => {
     for (const trackHeightPx of [200, 400, 800]) {
-      const share: LaneShare = { genes, features: 0 }
+      const share: LaneShare = { genes }
       const rowPx = packedRowHeightPx(
         geneWith(40),
         'normal',
@@ -506,22 +506,6 @@ describe('a lane several genes stack in', () => {
         share,
       )
       expect(rowPx * genes).toBeLessThanOrEqual(trackHeightPx)
-    }
-  })
-
-  // A plain neighbour costs the lane its own rows plus one body, which is what
-  // `geneRowCostPx` prices a one-isoform gene at — so the charge is checked
-  // against exactly that gene rather than against a second arithmetic.
-  it('leaves plain neighbours the rows they take', () => {
-    const trackHeightPx = 400
-    const config = sharedLaneConfig(trackHeightPx)
-    const neighbourPx = packedRowHeightPx(geneWith(1), 'normal', config)
-    for (const features of [1, 3, 6]) {
-      const rowPx = packedRowHeightPx(geneWith(40), 'normal', config, {
-        genes: 1,
-        features,
-      })
-      expect(rowPx + features * neighbourPx).toBeLessThanOrEqual(trackHeightPx)
     }
   })
 })
