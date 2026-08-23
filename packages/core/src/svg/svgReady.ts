@@ -2,10 +2,18 @@ import { when } from 'mobx'
 
 import { whenViewSettled } from '../util/whenViewSettled.ts'
 
-// Ten minutes: far past any real export (a slow remote whole-genome one runs in
-// seconds to low minutes) and short enough that a stuck one is noticed rather
-// than left overnight. A caller with a genuinely slower export passes its own.
-const SVG_READY_TIMEOUT_MS = 600_000
+// Elapsed, not idle. An idle bound would be the better instrument — a slow
+// export progresses, a stuck one does not — but there is no signal to hang it
+// on: `svgReady` is a computed that stays false for the whole fetch, so mobx
+// never re-evaluates the predicate to say work is still landing, and only one
+// of the five display families exposes `isLoading`.
+//
+// So the number carries the whole argument, and it is picked to make a false
+// failure implausible rather than merely unlikely: half an hour, against real
+// exports over remote 1000 Genomes data that finish in about ten seconds and a
+// worst measured case in low minutes. A caller that knows it is slower than
+// that passes its own bound; nothing here fails an export that is merely slow.
+const SVG_READY_TIMEOUT_MS = 1_800_000
 
 /**
  * The contract every GPU display's `renderSvg` relies on: a `svgReady` gate
@@ -116,10 +124,10 @@ export async function awaitSvgReady(
     (e: unknown) => {
       throw e instanceof Error && e.message === 'WHEN_TIMEOUT'
         ? new Error(
-            `a display never became ready to export, after ${Math.round(timeoutMs / 1000)}s. ` +
+            `a display never became ready to export, after ${Math.round(timeoutMs / 60_000)} minutes. ` +
               'Every wait here ends on data, an error or a cancel, so this is ' +
               'none of the three: a gate that cannot converge. Pass a longer ' +
-              'timeoutMs if the export is merely slow.',
+              'timeoutMs if this export really does take longer than that.',
           )
         : e
     },

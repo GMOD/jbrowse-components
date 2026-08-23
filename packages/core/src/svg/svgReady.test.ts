@@ -98,7 +98,7 @@ describe('awaitSvgReady', () => {
   it('fails with a diagnostic rather than waiting forever', async () => {
     const model = observable({ svgReady: false, error: undefined })
     await expect(awaitSvgReady(model, 20)).rejects.toThrow(
-      /never became ready to export, after 0s/,
+      /never became ready to export, after 0 minutes/,
     )
   })
 
