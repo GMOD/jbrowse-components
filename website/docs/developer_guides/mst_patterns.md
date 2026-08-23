@@ -349,12 +349,6 @@ get colorLegendItems(): LegendItem[] {
   }
   return []
 },
-/**
- * #getter
- */
-get colorLegend() {
-  return this.colorLegendItems
-},
 ```
 
 Note `colorLegendItems`' explicit `: LegendItem[]` return type. A getter read
