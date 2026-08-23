@@ -12,19 +12,37 @@ import type { RpcStatus, StatusStream, StatusWindow } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-export interface StatusReporter {
-  setStatusMessage: (status?: RpcStatus) => void
-  /**
-   * The host's own window, present on any display composing the LGV fetch
-   * mixins. When it is, the rotation reports through it rather than opening a
-   * SECOND on the same status field — which is what one-window-per-owner exists
-   * to prevent.
-   *
-   * Optional because the displays this helper was written for (dotplot,
-   * synteny) compose no fetch mixin; the rotation opens its own for them.
-   */
-  statusWindow?: StatusWindow
-}
+/**
+ * Where a rotation reports, in the one of two modes the host is actually in.
+ *
+ * A union rather than one shape with an optional window, because the two modes
+ * do not use the same member and the optional version required the one that is
+ * dead in the lending mode: when a host lends its `statusWindow` the rotation
+ * writes through the window and never calls `setStatusMessage`, so a caller
+ * supplying both got silence from the half it thought it was wiring up.
+ * `FetchMixin` was that caller.
+ */
+export type StatusReporter =
+  | {
+      /**
+       * The host's own window, present on any display composing the LGV fetch
+       * mixins. The rotation reports through it rather than opening a SECOND on
+       * the same status field — which is what one-window-per-owner exists to
+       * prevent.
+       */
+      statusWindow: StatusWindow
+      setStatusMessage?: never
+    }
+  | {
+      /**
+       * The sink for the window the rotation opens for itself. This is the mode
+       * the displays this helper was written for are in (dotplot, synteny),
+       * which compose no fetch mixin, along with every
+       * {@link createStatusChannel} holder.
+       */
+      setStatusMessage: (status?: RpcStatus) => void
+      statusWindow?: never
+    }
 
 /**
  * A {@link StatusReporter} a model can hold in **one** volatile, for something
@@ -39,7 +57,8 @@ export interface StatusReporter {
  * fetch runs. A plain function rather than a mixin because a compose layer is
  * what the model chains here cannot afford (ADR-041).
  */
-export interface StatusChannel extends StatusReporter {
+export interface StatusChannel {
+  setStatusMessage: (status?: RpcStatus) => void
   readonly message: string | undefined
   readonly fraction: number | undefined
 }
@@ -151,15 +170,15 @@ export function createStopTokenRotation(
   // (ADR-081), which is why `end()` no longer has to ask whether it owns the
   // field.
   const lent = report.statusWindow !== undefined
-  const statusWindow =
-    report.statusWindow ??
-    // the one place the field is touched, so the liveness check covers a
-    // stream's statuses and the clear that ends it alike
-    createStatusWindow((status: RpcStatus | undefined) => {
-      if (isAlive(self)) {
-        report.setStatusMessage(status)
-      }
-    })
+  const statusWindow = report.statusWindow
+    ? report.statusWindow
+    : // the one place the field is touched, so the liveness check covers a
+      // stream's statuses and the clear that ends it alike
+      createStatusWindow((status: RpcStatus | undefined) => {
+        if (isAlive(self)) {
+          report.setStatusMessage(status)
+        }
+      })
   let openStream: StatusStream | undefined
   /**
    * Stop the in-flight fetch without starting one, and retire its slot.

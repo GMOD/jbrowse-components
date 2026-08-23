@@ -5,7 +5,7 @@ import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { makeFetchContext } from './FetchMixin.ts'
 
 import type { FetchContext } from './FetchMixin.ts'
-import type { ActiveFetch, RpcStatus, StatusWindow } from '@jbrowse/core/util'
+import type { ActiveFetch, StatusWindow } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any`
@@ -14,10 +14,10 @@ interface PrerequisiteFetchHost extends IStateTreeNode {
   isMinimized: boolean
   reloadCounter: number
   setError: (e?: unknown) => void
-  setStatusMessage: (status?: RpcStatus) => void
   // Lent to the rotation so this fetch takes a slot on the display's one
   // status field beside the viewport fetch, rather than opening a second
-  // window over it (ADR-081).
+  // window over it (ADR-081). The display's `setStatusMessage` is not asked
+  // for: the lending mode never calls it — see `StatusReporter`.
   statusWindow: StatusWindow
 }
 

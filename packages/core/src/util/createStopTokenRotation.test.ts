@@ -245,7 +245,14 @@ const LendingModel = types
 describe('a host that owns its own window', () => {
   function lendingHost() {
     const host = LendingModel.create({})
-    return { host, rotation: createStopTokenRotation(host, host) }
+    // the window alone, the way `FetchMixin` passes it: the lending arm of
+    // `StatusReporter` takes no `setStatusMessage`, because it never calls one
+    return {
+      host,
+      rotation: createStopTokenRotation(host, {
+        statusWindow: host.statusWindow,
+      }),
+    }
   }
 
   test('reports through the host window, not a second one', () => {

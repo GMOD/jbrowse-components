@@ -259,12 +259,6 @@ export default function FetchMixin() {
        */
       fetchRotation: createStopTokenRotation(self, {
         statusWindow: self.statusWindow,
-        // The window above is what the rotation actually reports through, so
-        // this is only the fallback branch's writer. It goes through
-        // `writeStatus` for the reason that helper exists: `setStatusMessage`
-        // is an action further down the chain, so it is not on `self` yet here
-        // and can only be resolved at call time.
-        setStatusMessage: writeStatus(self),
       }),
     }))
     .views(self => ({
