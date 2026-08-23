@@ -358,14 +358,27 @@ const baseThemeOptions: ThemeOptions = {
     // Speed up ripple animations for snappier feel (default is 550ms)
     // See https://mui.com/material-ui/api/button-base/
     // and https://github.com/mui/material-ui/blob/master/packages/mui-material/src/ButtonBase/TouchRipple.js
+    //
+    // The click ripple only: a *focus* ripple is a different animation on the
+    // same two elements — childPulsate, which runs `infinite` — so a blanket
+    // 50ms turns MUI's 2500ms breath into a 20Hz strobe that never stops. It
+    // shows up on any focus-visible button, and Chrome hands one out unasked:
+    // it re-evaluates :focus-visible on the already-focused element after any
+    // keystroke, and the focus event that a browser-tab switch fires on the way
+    // back is what makes MUI act on it. So these select the enter and leaving
+    // keyframes by name and let the pulsate keep its own duration.
+    //
+    // Both selectors also outrank TouchRipple's own rules on specificity, which
+    // is what `!important` was here for.
     MuiButtonBase: {
       styleOverrides: {
         root: {
-          '& .MuiTouchRipple-ripple': {
-            animationDuration: '50ms !important',
-          },
-          '& .MuiTouchRipple-child': {
-            animationDuration: '50ms !important',
+          '& .MuiTouchRipple-ripple.MuiTouchRipple-rippleVisible:not(.MuiTouchRipple-ripplePulsate)':
+            {
+              animationDuration: '50ms',
+            },
+          '& .MuiTouchRipple-child.MuiTouchRipple-childLeaving': {
+            animationDuration: '50ms',
           },
         },
       },
