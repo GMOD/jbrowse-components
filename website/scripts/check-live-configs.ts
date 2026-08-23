@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 
 import { CODE_BASE } from '../src/lib/code-base.ts'
 import { reportProblems } from './check-utils.ts'
@@ -139,16 +139,23 @@ for (const [name, url] of [
   }
 }
 
-function isTracked(path: string) {
-  try {
-    execFileSync('git', ['ls-files', '--error-unmatch', '--', path], {
-      cwd: repoRoot,
-      stdio: 'ignore',
-    })
-    return true
-  } catch {
-    return false
-  }
+// Everything git tracks, read once. Asking per config was 50 `git ls-files
+// --error-unmatch` processes for 1.5s of work — the check spent most of its
+// wall clock waiting on git to start. The whole listing is 8780 paths and
+// 0.13s, and unlike a batched `--error-unmatch` it cannot throw on a path that
+// leaves the repo.
+function trackedPaths() {
+  const listed = execFileSync('git', ['ls-files', '-z'], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    maxBuffer: 1 << 26,
+  })
+  return new Set(
+    listed
+      .split('\0')
+      .filter(Boolean)
+      .map(p => resolve(repoRoot, p)),
+  )
 }
 
 async function status(url: string) {
@@ -162,8 +169,10 @@ async function status(url: string) {
 
 const problems: string[] = [...checkPluginPins()]
 
+const tracked = trackedPaths()
+
 for (const [config, names] of specsByConfig) {
-  if (!config.startsWith('http') && !isTracked(config)) {
+  if (!config.startsWith('http') && !tracked.has(resolve(repoRoot, config))) {
     problems.push(
       `${config} is not tracked in git, so the hosted build never serves it\n    ${names.join('\n    ')}`,
     )

@@ -366,6 +366,12 @@ function run(argv: string[], extra: string[] = []) {
   })
 }
 
+// V8's code cache, shared by every child below. Each of these is a fresh node
+// compiling the same TypeScript module graphs from source, which is most of
+// what the cheap ones cost at all. Nothing about what runs changes: a stale
+// entry is recompiled and a missing directory is written on the first run.
+const compileCache = join(root, 'node_modules/.cache/node-compile')
+
 // The same, captured rather than inherited, for the pooled `--check` runs below
 // — interleaved output from six processes at once is unreadable, so each one's
 // is held and printed whole when it finishes.
@@ -374,6 +380,7 @@ function runCaptured(argv: string[], extra: string[] = []) {
     const child = spawn(argv[0]!, [...argv.slice(1), ...extra], {
       cwd: root,
       shell: process.platform === 'win32',
+      env: { ...process.env, NODE_COMPILE_CACHE: compileCache },
     })
     let output = ''
     for (const stream of [child.stdout, child.stderr]) {

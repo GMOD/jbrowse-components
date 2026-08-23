@@ -47,7 +47,7 @@ import {
 } from '../src/lib/derive-session-url.ts'
 import { defaultSessionObject } from '../src/lib/derive-set-default-session.ts'
 import { isSession } from '../src/lib/remark-config-cli-tabs.ts'
-import { docFiles, reportProblems } from './check-utils.ts'
+import { docsMatching, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir, repoRoot } from './paths.ts'
 
 const DEMO_PREFIX = 'https://jbrowse.org/demos/'
@@ -105,9 +105,13 @@ const parser = unified().use(remarkParse).use(remarkGfm)
 const problems: string[] = []
 let checked = 0
 
-for (const file of docFiles(docsDir)) {
+// Weaker than isSession by construction — a `session` fence is where its lang
+// and meta come from — so nothing this skips could have matched.
+const SESSION_FENCE = /^\s*(?:```|~~~)json\b[^\n]*\bsession\b/m
+
+for (const { file, text } of docsMatching(docsDir, SESSION_FENCE)) {
   const rel = docRelative(file)
-  visit(parser.parse(readFileSync(file, 'utf8')), 'code', node => {
+  visit(parser.parse(text), 'code', node => {
     const configUrl = isSession(node) ? sessionConfigUrl(node.meta) : undefined
     if (configUrl === undefined) {
       return

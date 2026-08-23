@@ -31,7 +31,6 @@
 // source, not here. ALLOWED lists the deliberate exceptions.
 //
 // Run: `pnpm check-config-blocks`
-import { readFileSync } from 'node:fs'
 
 import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
@@ -47,7 +46,7 @@ import {
   isAddtrack,
   isSession,
 } from '../src/lib/remark-config-cli-tabs.ts'
-import { docFiles, reportProblems } from './check-utils.ts'
+import { docsMatching, reportProblems } from './check-utils.ts'
 import { docRelative, docsDir } from './paths.ts'
 
 // A doc block is one track or one assembly, so wrap it in the smallest config
@@ -150,12 +149,15 @@ function shape(obj: Record<string, unknown>) {
 }
 
 const problems: string[] = []
-for (const file of docFiles(docsDir)) {
+// Weaker than `node.lang === 'json'`, which is read off this same fence line.
+const JSON_FENCE = /^\s*(?:```|~~~)json\b/m
+
+for (const { file, text } of docsMatching(docsDir, JSON_FENCE)) {
   const rel = docRelative(file)
   if (/^(config|models|api)\//.test(rel) || rel.endsWith('CLAUDE.md')) {
     continue
   }
-  visit(parser.parse(readFileSync(file, 'utf8')), 'code', node => {
+  visit(parser.parse(text), 'code', node => {
     if (node.lang !== 'json') {
       return
     }

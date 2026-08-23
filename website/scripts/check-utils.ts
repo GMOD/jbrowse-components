@@ -112,6 +112,22 @@ export function docFiles(dir: string): string[] {
   return walkFiles(dir, isDocFile)
 }
 
+// The docs whose raw text matches `mustContain`, paired with that text so the
+// caller does not read them twice.
+//
+// For a validator whose subject CANNOT appear in a file the pattern misses —
+// the pattern has to be strictly weaker than the real predicate, because a file
+// it skips is a file that validator never sees. Worth the care: remark-parsing
+// the corpus is ~10s, three quarters of it the generated `models/*.md` pages at
+// 100-200kb each, and the fenced blocks these validators are looking for are in
+// a handful of hand-written pages.
+export function docsMatching(dir: string, mustContain: RegExp) {
+  return docFiles(dir).flatMap(file => {
+    const text = readFileSync(file, 'utf8')
+    return mustContain.test(text) ? [{ file, text }] : []
+  })
+}
+
 const KEY_LINE = /^([A-Za-z_][\w-]*):(.*)$/
 
 // Strip one matched pair of surrounding quotes. Only the ADR `summary:` values

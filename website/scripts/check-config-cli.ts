@@ -61,7 +61,7 @@ import {
 } from '../src/lib/remark-config-cli-tabs.ts'
 import { decodeSpecUrl } from '../src/lib/spec-recipe/decode.ts'
 import { deriveCliRecipe } from '../src/lib/spec-recipe/recipe.ts'
-import { docFiles, reportProblems } from './check-utils.ts'
+import { docsMatching, reportProblems } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 
@@ -154,14 +154,24 @@ function targetConfig(assemblyNames: unknown) {
   }
 }
 
+// V8's code cache for the CLI's own module graph, which every case below pays
+// to compile from source otherwise. It is the larger half of a run that does
+// almost no work — 0.51s to start the CLI cold against 0.24s warm, times the
+// corpus. Nothing about what runs changes: a stale entry is recompiled, and a
+// missing directory is written on the first run.
+const compileCache = join(repoRoot, 'node_modules/.cache/node-compile')
+
 // One CLI run. Every case below is one of these and they are independent of
-// each other, so they run through the pool at the bottom rather than in
-// sequence: the corpus is ~240 cases, the work in each is a node process
-// starting an oclif command, and serially that was the slowest thing in
-// `pnpm check-docs` by a factor of four.
+// each other, so they go through the pool at the bottom rather than in
+// sequence: the corpus is ~240 cases, each of them a node process that starts
+// the CLI to do a few milliseconds of work, and serially that was the slowest
+// thing in `pnpm check-docs` by a factor of four.
 function runNode(args: string[], input: string | undefined) {
   return new Promise<void>((resolve, reject) => {
-    const child = spawn('node', args, { stdio: ['pipe', 'ignore', 'pipe'] })
+    const child = spawn('node', args, {
+      stdio: ['pipe', 'ignore', 'pipe'],
+      env: { ...process.env, NODE_COMPILE_CACHE: compileCache },
+    })
     let stderr = ''
     child.stderr.setEncoding('utf8')
     child.stderr.on('data', (chunk: string) => {
@@ -424,8 +434,13 @@ interface Case {
 const cases: Case[] = []
 
 let checked = 0
-for (const file of docFiles(docsDir)) {
-  for (const block of taggedBlocks(readFileSync(file, 'utf8'), file)) {
+// Weaker than the three predicates in taggedBlocks, which read the lang and
+// meta off this same fence line.
+const TAGGED_FENCE =
+  /^\s*(?:```|~~~)json\b[^\n]*\b(?:addtrack|addassembly|session)\b/m
+
+for (const { file, text } of docsMatching(docsDir, TAGGED_FENCE)) {
+  for (const block of taggedBlocks(text, file)) {
     checked++
     cases.push({
       where: `  ${block.file.slice(repoRoot.length + 1)}:${block.line}`,

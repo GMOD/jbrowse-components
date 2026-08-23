@@ -45,18 +45,22 @@
 # too slow per commit and about right per push, which is also the moment the
 # cost lands on other people rather than on you.
 #
-# WHAT IT COSTS. Measured warm in a worktree on 2026-08-23, with the numbers
-# this file carried before that pass beside them — every one of the four that
-# moved was a serial loop over independent processes, not work that had grown:
-#   pnpm autogen --check    73s   (118s sequential; the rewrite still is)
-#   pnpm check-docs         84s   (344s, of which one validator was 218s)
-#   pnpm lint               24s
+# WHAT IT COSTS. Measured warm in a worktree on 2026-08-23, with what this file
+# said before that pass beside it — every one that moved was a serial loop over
+# independent processes, or a process pool recompiling the same modules, not
+# work that had grown:
+#   pnpm autogen --check    46s   (118s sequential; the rewrite still is)
+#   pnpm check-docs         50s   (344s, of which one validator was 218s)
+#                                 — and 50s is what an idle machine gives; the
+#                                 CPU behind it, 247s to 85s, is the stable half
+#   pnpm lint               13s   type-aware oxlint; `lint:fast` is 4s of it
 #   pnpm lint:eslint         9s   (127s without --cache)
-#   pnpm format             17s   whole tree, 6908 files
+#   pnpm format             12s   whole tree, 6908 files
 #   pnpm build:esm           5s   incremental
-# ~3min wall, with check-docs overlapping the three fixers after it. The gates
-# are all CPU-bound and this machine runs several agents, so a number here is
-# the contended one, not the best case.
+# ~100s wall, with check-docs overlapping the three fixers after it. Every gate
+# here is CPU-bound and this machine runs several agents, so a wall number
+# swings by a factor of two with what else is running — the same check-docs run
+# measured 46s, 53s and 81s over one afternoon.
 #
 # THE FIXERS RUN IN SEQUENCE, unlike the old all-parallel version, because they
 # write to the same files: autogen emits sources the linters then lint, and both
@@ -155,7 +159,7 @@ if ! printf '%s' "$range_files" | grep -Eq \
   exit 0
 fi
 
-echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~3min, SKIP_DOCS_CHECK=1 to skip)" >&2
+echo "pre-push: checking docs and artifacts, fixing lint and format, building esm (~2min, SKIP_DOCS_CHECK=1 to skip)" >&2
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
