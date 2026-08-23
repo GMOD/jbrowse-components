@@ -2,6 +2,11 @@ import { when } from 'mobx'
 
 import { whenViewSettled } from '../util/whenViewSettled.ts'
 
+// Ten minutes: far past any real export (a slow remote whole-genome one runs in
+// seconds to low minutes) and short enough that a stuck one is noticed rather
+// than left overnight. A caller with a genuinely slower export passes its own.
+const SVG_READY_TIMEOUT_MS = 600_000
+
 /**
  * The contract every GPU display's `renderSvg` relies on: a `svgReady` gate
  * (the per-display terminal-state getter — see MultiRegionDisplayMixin /
@@ -34,8 +39,8 @@ export interface SvgExportable {
  *
  * `fetchCanceled` is the user's own resting state: a standing cancel holds the
  * fetch gate shut until Retry or a viewport change, and an export causes
- * neither, so without this terminal `awaitSvgReady` — which has no time bound —
- * spins forever with the dialog up and nothing said. A display family with no
+ * neither, so without this terminal `awaitSvgReady` waits out its whole bound
+ * with the dialog up and nothing said, then fails. A display family with no
  * cancel affordance answers it `false`.
  */
 export interface SvgReadyTerminals {
@@ -103,8 +108,22 @@ export function computeSvgReady(
  */
 export async function awaitSvgReady(
   model: Pick<SvgExportable, 'svgReady' | 'error' | 'fetchCanceled'>,
+  timeoutMs = SVG_READY_TIMEOUT_MS,
 ) {
-  await when(() => model.svgReady)
+  // Only the bound is rewritten. A `svgReady` getter that throws rejects here
+  // too, and that error is the caller's answer, not a timeout.
+  await when(() => model.svgReady, { timeout: timeoutMs }).catch(
+    (e: unknown) => {
+      throw e instanceof Error && e.message === 'WHEN_TIMEOUT'
+        ? new Error(
+            `a display never became ready to export, after ${Math.round(timeoutMs / 1000)}s. ` +
+              'Every wait here ends on data, an error or a cancel, so this is ' +
+              'none of the three: a gate that cannot converge. Pass a longer ' +
+              'timeoutMs if the export is merely slow.',
+          )
+        : e
+    },
+  )
   throwOnExportErrors([
     model.error == null && model.fetchCanceled
       ? new Error('data loading was canceled — Retry the track, then export')

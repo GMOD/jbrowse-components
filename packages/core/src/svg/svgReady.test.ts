@@ -90,6 +90,18 @@ describe('awaitSvgReady', () => {
     await expect(p).resolves.toBeUndefined()
   })
 
+  // The wait ends on data, an error or a cancel, so a gate that never opens is
+  // none of the three and no further event is coming. Unbounded, that is an
+  // export with no output, no error and no end; bounded, it says so. The GWAS
+  // LD auto-index could reach it: a fetch input derived from the fetched data
+  // that never reaches a fixpoint leaves `svgReady` false forever.
+  it('fails with a diagnostic rather than waiting forever', async () => {
+    const model = observable({ svgReady: false, error: undefined })
+    await expect(awaitSvgReady(model, 20)).rejects.toThrow(
+      /never became ready to export, after 0s/,
+    )
+  })
+
   // `svgReady` is *true* on error — it is a terminal like any other — so a wait
   // that stopped there handed the export a display with no data and let it
   // export the failure. The postcondition is "there is something to draw",
