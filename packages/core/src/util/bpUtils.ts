@@ -1,6 +1,6 @@
 import { reducePrecision, sum, toLocale, toPrecision } from './numericUtils.ts'
 
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 
 export interface MinimalRegion {
   start: number

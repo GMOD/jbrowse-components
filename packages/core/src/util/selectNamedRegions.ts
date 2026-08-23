@@ -1,4 +1,4 @@
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 
 /**
  * `*` is the only metacharacter; everything else in a name is matched literally,

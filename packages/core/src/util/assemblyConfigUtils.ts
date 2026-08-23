@@ -1,7 +1,7 @@
 import { getFileName } from './getFileName.ts'
-import { isLocalPathLocation, isUriLocation } from './types/index.ts'
+import { isLocalPathLocation, isUriLocation } from './types/data.ts'
 
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 // Shared assembly "add sequence" form logic used by both the jbrowse-desktop
 // Open genome(s) dialog and the in-app data-management Assembly manager. Pure

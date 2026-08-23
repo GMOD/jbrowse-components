@@ -4,7 +4,7 @@ import {
   selectNamedRegions,
 } from './selectNamedRegions.ts'
 
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 
 function region(refName: string): Region {
   return { refName, start: 0, end: 100, assemblyName: 'asm' }

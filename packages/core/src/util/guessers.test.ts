@@ -5,7 +5,7 @@ import {
   getFileName,
 } from './tracks.ts'
 
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 function uri(s: string): FileLocation {
   return { uri: s, locationType: 'UriLocation' }

@@ -20,7 +20,7 @@ import type {
   FileLocation,
   LocalPathLocation,
   UriLocation,
-} from '../types/index.ts'
+} from '../types/data.ts'
 import type { Fetcher, GenericFilehandle } from 'generic-filehandle2'
 
 function isLocalPathLocation(

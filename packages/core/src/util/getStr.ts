@@ -1,6 +1,6 @@
 import { resolveUri } from './getLocationUri.ts'
 import { isObject } from './objectUtils.ts'
-import { isUriLocation } from './types/index.ts'
+import { isUriLocation } from './types/data.ts'
 
 /**
  * A value rendered as a display string: a UriLocation as its resolved href, any

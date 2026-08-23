@@ -1,6 +1,6 @@
 import { parseLocString } from './locString.ts'
 
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 
 // Only what the parse reads off an assembly, so it stays testable on plain data
 // rather than needing a live MST instance. `Assembly` satisfies it.

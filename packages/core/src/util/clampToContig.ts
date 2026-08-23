@@ -1,5 +1,5 @@
 import type { Assembly } from '../assemblyManager/assembly.ts'
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 
 /**
  * Clamp a span to the extents of the contig it names, resolving the refName to

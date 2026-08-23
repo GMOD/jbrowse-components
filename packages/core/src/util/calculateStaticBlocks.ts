@@ -1,6 +1,6 @@
 import { BlockSet } from './blockTypes.ts'
 
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 import type { Region as RegionModel } from './types/mst.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

@@ -1,4 +1,4 @@
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 // Handles both forward slashes and Windows backslashes in file:// URLs
 function filenameFromPath(path: string) {

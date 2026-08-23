@@ -4,7 +4,7 @@ import {
   siblingLocation,
 } from './indexCandidates.ts'
 
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 const uri = (u: string): FileLocation => ({
   uri: u,

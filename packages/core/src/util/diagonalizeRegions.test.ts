@@ -1,7 +1,7 @@
 import { diagonalizeRegions } from './diagonalizeRegions.ts'
 
 import type { AlignmentData } from './diagonalizeRegions.ts'
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 
 function region(refName: string, end: number, assemblyName: string): Region {
   return { refName, start: 0, end, assemblyName }

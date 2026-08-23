@@ -5,7 +5,7 @@ import {
   resolvePlugin,
 } from './pluginStore.ts'
 
-import type { JBrowsePlugin } from './types/index.ts'
+import type { JBrowsePlugin } from './types/data.ts'
 
 function plugin(extra: Partial<JBrowsePlugin>): JBrowsePlugin {
   return {

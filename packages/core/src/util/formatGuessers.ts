@@ -9,7 +9,7 @@ import { addAdapterGuesser, addTrackTypeGuesser, makeIndex } from './tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AdapterConfig } from './tracks.ts'
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 import type { AdapterSpec } from '@jbrowse/add-track-core'
 
 /**

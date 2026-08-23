@@ -38,7 +38,7 @@ import type {
   FileHandleLocation,
   FileLocation,
   PreFileLocation,
-} from './types/index.ts'
+} from './types/data.ts'
 import type {
   IAnyStateTreeNode,
   IAnyType,

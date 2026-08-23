@@ -7,7 +7,7 @@ import { clamp } from './index.ts'
 import { ElementId } from './types/mst.ts'
 
 import type { BpOffset } from './Base1DUtils.ts'
-import type { Region as IRegion } from './types/index.ts'
+import type { Region as IRegion } from './types/data.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

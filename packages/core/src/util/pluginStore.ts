@@ -8,7 +8,7 @@ import {
 } from '../pluginDefinitions.ts'
 
 import type { PluginDefinition } from '../pluginDefinitions.ts'
-import type { JBrowsePlugin, JBrowsePluginVersion } from './types/index.ts'
+import type { JBrowsePlugin, JBrowsePluginVersion } from './types/data.ts'
 
 // The url-bearing fields shared by a JBrowsePlugin and a JBrowsePluginVersion.
 type UrlFields = Pick<

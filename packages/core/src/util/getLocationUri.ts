@@ -1,6 +1,6 @@
-import { isLocalPathLocation, isUriLocation } from './types/index.ts'
+import { isLocalPathLocation, isUriLocation } from './types/data.ts'
 
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 /**
  * A `UriLocation` as the absolute address it actually fetches — its `uri`

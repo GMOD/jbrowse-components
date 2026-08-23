@@ -1,6 +1,6 @@
 import { getFileName } from './getFileName.ts'
 
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 /**
  * Every conventional spelling of an index file, for the docs that describe this

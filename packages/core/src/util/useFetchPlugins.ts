@@ -2,7 +2,7 @@ import { PLUGIN_STORE_URL } from '../checkPlugins.ts'
 import { fetchJson } from './index.ts'
 import { useFetch } from './useFetch.ts'
 
-import type { JBrowsePlugin } from './types/index.ts'
+import type { JBrowsePlugin } from './types/data.ts'
 
 /**
  * The plugin store listing. Shared by every surface that installs plugins (the

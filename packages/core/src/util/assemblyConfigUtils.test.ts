@@ -25,7 +25,7 @@ import {
 } from './assemblyConfigUtils.ts'
 
 import type { FormState } from './assemblyConfigUtils.ts'
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 const noEdits: ReadonlySet<keyof FormState> = new Set()
 

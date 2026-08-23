@@ -1,7 +1,7 @@
 import { isElectron } from './environment.ts'
 import { storeBlobLocation } from './tracks.ts'
 
-import type { FileLocation } from './types/index.ts'
+import type { FileLocation } from './types/data.ts'
 
 // `unzip` is deliberately NOT re-exported here — it lives at
 // '@jbrowse/core/util/unzip' so this barrel does not reach bgzf/pako. See that

@@ -4,7 +4,7 @@ import { checkStopToken } from './stopToken.ts'
 
 import type { StatusCallback } from './progress.ts'
 import type { StopToken } from './stopToken.ts'
-import type { Region } from './types/index.ts'
+import type { Region } from './types/data.ts'
 
 export interface AlignmentData {
   refRefName: string
