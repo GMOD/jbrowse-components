@@ -10,13 +10,13 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
     >
       <div
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 css-1dhovzc-MuiPaper-root"
-        style="--Paper-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12);"
+        style="--Paper-shadow: 0px 7px 8px -4px rgba(0,0,0,0.2),0px 12px 17px 2px rgba(0,0,0,0.14),0px 5px 22px 4px rgba(0,0,0,0.12); --jbrowse-view-header-height: 0px;"
       >
         <div
           class="css-rpkodz"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-10bvihs-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-14syrzp-MuiButtonBase-root-MuiIconButton-root"
             data-testid="view_menu_icon"
             tabindex="0"
             type="button"
@@ -40,7 +40,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             class="css-i9gxme"
           />
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -141,7 +141,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               class="css-1tmkrny"
             >
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Zoom out"
                 type="button"
@@ -159,7 +159,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Zoom in"
                 type="button"
@@ -180,7 +180,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Rotate counter-clockwise"
                 type="button"
@@ -198,7 +198,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Rotate clockwise"
                 type="button"
@@ -216,7 +216,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Reset view"
                 type="button"
@@ -234,7 +234,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
                 title="Export SVG"
                 type="button"
@@ -257,7 +257,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 </svg>
               </button>
               <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-xuuue7-MuiButtonBase-root-MuiIconButton-root"
                 data-testid="circular_track_select"
                 tabindex="0"
                 title="Open track selector"
