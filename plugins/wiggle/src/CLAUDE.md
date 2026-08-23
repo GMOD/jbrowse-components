@@ -32,13 +32,50 @@ across every hole for that frame.
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.
 
-## The two displays differ in one thing: the vertical inset
+## The two displays differ in one thing, and `plotGeometry` is it
 
-Single-wiggle insets by `YSCALEBAR_LABEL_OFFSET` so end labels aren't clipped;
-multi-wiggle stacks rows edge-to-edge. Two halves must move together — the
-render height and `computeYTicks`' offset — or ticks label the wrong data.
-`WiggleFamilySvgFrame` bakes in the single-wiggle inset, so parameterize that
-before unifying the SVG bodies.
+Single-wiggle insets by `YSCALEBAR_LABEL_OFFSET` so end labels aren't clipped
+and draws one row; multi-wiggle stacks `numRows` rows edge-to-edge over the full
+height. `{ yTop, plotHeight, numRows, tickHeight }` states that once, and every
+half that has to move with it reads it: `computeYTicks`' height and offset, the
+render state, the on-screen `<canvas>` box, and `WiggleFamilySvgFrame`'s clip
+translate — a prop there, defaulting to the single-plot box, which is what the
+Manhattan display (no such getter) still draws in.
+
+**Everything written over it is `wiggleDisplayViews`**: `ticks`, `scoreRamp`,
+`renderState` and the shared halves of the two props methods, as a plain
+function each display installs as one `.views()` layer. Not a mixin — composed
+beside `TrackHeightMixin` it could not see `height` or `canvasWidthPx` without
+casting to reach them, and `types.compose` depth is a real ceiling (ADR-041).
+
+**`sharedRpcProps` / `sharedGpuProps` are named apart from the methods they
+feed, deliberately.** MST _intersects_ what each `.views()` layer returns, so
+two same-named methods resolve to the **first** at the type level however the
+runtime member behaves; the super-capture override reads as working only where
+every key it adds is optional. Each display spreads the shared half into its own
+`rpcProps()` / `gpuProps()`, and what it adds there is what is genuinely its
+own: single-wiggle's `useBicolor` key and solid-color `negColor` override,
+multi-wiggle's `summaryScoreMode` key and row list.
+
+`fetchNeeded` is the one statement still made twice. What differs is the RPC
+method name — which `ARCHITECTURE.md` wants at the call site so the registry's
+typed args survive — plus multi-wiggle's structural `sources` argument.
+
+## Multi-wiggle's rows are a getter over `rpcDataMap`
+
+Each region's payload carries the full source list, entries leave that map only
+via `clearAllRpcData`, so the row set IS the first-seen union over its values —
+`sourcesFromRegionData`, unioned rather than read off the first region because a
+plain fallback adapter discovers its sources per region. There is no second
+store to keep in step, which is what `sourcesVolatile` was.
+
+**The comparer on that computed is load-bearing.** The list reaches
+`gpuProps()`, whose identity re-encodes every loaded region, so a refetch
+reporting the same rows has to hand back the same array — `compareStructural`,
+and the metadata is stripped off the payload first so the compare never walks a
+feature array. MAF's `sourcesVolatile` buys the same property with a `deepEqual`
+before the write; either way it is the property, not the mechanism, that
+matters.
 
 ## `viewportWidth` is CSS px — `clip.scissorW`, never `clip.pxW`
 
