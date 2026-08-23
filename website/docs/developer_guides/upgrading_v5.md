@@ -30,9 +30,6 @@ Most sessions and configs migrate through `preProcessSnapshot`:
   height slot
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 - the alignments `insertSizeGradient` color scheme resolves to `insertSize`
-- a v4 session's per-view `highlightsVisible` (and grid-bookmark's per-view
-  `bookmarkHighlightsVisible`) fold into the one session-wide
-  `highlightsVisible`
 
 The gradient is gone rather than migrated because it duplicated the scheme it
 now maps to: same thresholds, same classifier, same buckets, and two endpoint
@@ -40,9 +37,14 @@ hues close enough that a half-ramped read on either side of the band came out
 the same faint grey. The `heightOverride` shadow-prop that existed during
 development is gone, and there is no `<name>Override` shadow-property system.
 
-Highlight visibility is session-wide in v5 rather than per view, so a v4 session
-that had the band dismissed on any one view opens with it off everywhere; the
-"Bookmarks/highlights" toggle turns it back on for all views at once.
+Highlight visibility is session-wide in v5 rather than per view, and the v4 keys
+that expressed it are **not** migrated. A v4 session carrying a dismissed band —
+the LGV's own `highlightsVisible`, or grid-bookmark's
+`bookmarkHighlightsVisible`, both written out only when the user turned the band
+off — reopens with the band visible, because MST drops a snapshot key the model
+no longer declares. Dismissing it again is one click on the
+"Bookmarks/highlights" toggle, and it now applies to every view at once. The
+setting is the only thing lost; nothing about the session fails to load.
 
 ## The renderer registry is gone
 
