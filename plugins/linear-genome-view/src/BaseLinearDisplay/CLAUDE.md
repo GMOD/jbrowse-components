@@ -28,17 +28,19 @@ check: it reports a fetch foundation whose `afterAttach` ran twice on one
 display, which no spelling in one file predicts. `makeRetryContractCheck` is the
 same idea for retry: it reports when a `reloadCounter` bump re-runs the autorun
 and the gate still declines — the dead Retry button. All three fetch installers
-install it. `serializeRpcProps` reports, once per display, an `rpcProps()` value
+install it. Opt out with `fetchInert` if the display deliberately isn't fetching
+— the loading scrim and the SVG export read the same hook (ADR-082). A two-stage
+`reload()` says `awaitingPrerequisite` instead (HiC, whose contacts fetch
+declines until the header lands; variants, until `sourcesBase` does), which
+**defers** the verdict to the run after the prerequisite arrives rather than
+waiving it. Reports reach the jest gate through `console.error`, so a harness
+replacing it opts itself out; a test provoking a violation calls
+`takeContractReports()`.
+
+`serializeRpcProps` reports, once per display, an `rpcProps()` value
 `JSON.stringify` would flatten — a `Map`, a typed array, a class without
 `toJSON` — which is a cache axis that never refetches; the `undefined`-drops-
-its-key case is not detectable from one payload and stays a rule. Opt out with
-`fetchInert` if the display deliberately isn't fetching — the loading scrim and
-the SVG export read the same hook (ADR-082). A two-stage `reload()` says
-`awaitingPrerequisite` instead (HiC, whose contacts fetch declines until the
-header lands; variants, until `sourcesBase` does), which **defers** the verdict
-to the run after the prerequisite arrives rather than waiving it. Reports reach
-the jest gate through `console.error`, so a harness replacing it opts itself
-out; a test provoking a violation calls `takeContractReports()`.
+its-key case is not detectable from one payload and stays a rule.
 
 Both flags are getters on `FetchMixin` — and `fetchInert` on
 `SyntenyFetchStateMixin` too, for the family that composes no mixin in common
