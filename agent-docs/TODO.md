@@ -95,6 +95,7 @@ the half that rots is the half it covers.
 | [The swapped track resolves to a point](todo/the-swapped-assembly-track-resolves-to-a-point.md) | synteny | the hang is fixed; what is left is the swap, still not isolated |
 | [Observer reactions leak from discarded renders](todo/destroying-an-mst-tree-that-something-still-observes.md) | app-core, drawer | give each lazy its own Suspense boundary; verified 2 leaked -> 0 |
 | [Cut WebGL2 contexts per display](todo/cut-webgl2-contexts-per-display.md) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
+| [Split the arc band's uniforms off the pileup struct](todo/split-the-arc-bands-uniforms-off-the-pileup-struct.md) | alignments, GPU, limits | the 4 -> 2 MiB was arithmetic on a slot that is not arc-only; it is 4 -> 3, so measure the ring before spending the regen |
 | [Produce and host the HPRC summary tier](todo/produce-and-host-the-hprc-summary-tier.md) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
 | [Does a sixth track want a sixth RPC worker](todo/does-a-sixth-alignments-track-want-a-sixth-rpc-worker.md) | RPC, limits | one `workerCount` line to try; the answer is a memory measurement, not a stopwatch |
 | [Cross-region arc count at 300x](todo/read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from.md) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |

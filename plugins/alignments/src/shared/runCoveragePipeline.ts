@@ -113,8 +113,8 @@ export async function runCoveragePipeline({
   // LGVSyntenyDisplay default is off). The per-bp buffer alone is regionWidth×8
   // bytes and overflows the GPU device limit at whole-chromosome scale, so when
   // the band is off we skip every band computation and return an empty coverage
-  // depth array; the coverage uploads / buildCoverageFields / coverageStats all no-op
-  // on a zero-length depth array.
+  // depth array; the coverage uploads / packCoverageAreaForGpu / coverageStats all
+  // no-op on a zero-length depth array.
   const band = showCoverage
     ? computeCoverageBand({
         coverage,

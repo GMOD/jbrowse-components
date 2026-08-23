@@ -22,7 +22,9 @@ here comparing two implementations is an interleaved ratio.
   computeMafCoverage                             89 ms   <- half the worker
   computeSNPCoverage                             27 ms
   computeInterbaseCoverage                        6 ms
-  packCoverageBinsCanvas2D                        1 ms
+  packCoverageBinsCanvas2D                        1 ms   <- since deleted; the
+                                                         depth bars have one
+                                                         layout, the GPU's
   packCoverageSegmentsForGpu                      6 ms   <- since folded into
                                                          the two computes
   collectMafTransferables                       0.0 ms
