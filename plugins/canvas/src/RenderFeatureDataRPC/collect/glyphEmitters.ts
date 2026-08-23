@@ -768,7 +768,7 @@ export function processFeatureRecord(
       : undefined
 
   if (nameLabel || descriptionLabel) {
-    collector.floatingLabelsData[feature.id()] = {
+    collector.floatingLabelsData.set(feature.id(), {
       featureId: feature.id(),
       minX: featureStart,
       maxX: featureEnd,
@@ -778,7 +778,7 @@ export function processFeatureRecord(
       nameLabel,
       descriptionLabel,
       moreIsoformsLabel,
-    }
+    })
   }
 
   collector.flatbushItems.push({

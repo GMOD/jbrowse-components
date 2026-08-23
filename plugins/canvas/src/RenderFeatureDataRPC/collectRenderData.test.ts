@@ -688,7 +688,7 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
       config: cfg,
     })
 
-    const label = result.floatingLabelsData.DPP6
+    const label = result.floatingLabelsData.get('DPP6')
     expect(label).toBeDefined()
     // not the gene start (100) — the selected transcript's extent
     expect(label!.minX).toBe(1100)
@@ -711,9 +711,27 @@ describe('collectRenderData collapsed-gene label + hit-box anchor', () => {
       config: cfg,
     })
 
-    const label = result.floatingLabelsData.DPP6
+    const label = result.floatingLabelsData.get('DPP6')
     expect(label!.minX).toBe(100)
     expect(label!.maxX).toBe(2500)
+  })
+
+  // The overlay skips its whole per-feature walk on these, so a kind reported
+  // absent that was actually emitted loses a label outright.
+  it('bakes which label kinds the region emitted', () => {
+    const cfg = labelConfig('all')
+    const result = collect(
+      layoutSubfeatures({ feature: collapsedGeneLayout(), config: cfg }),
+      { regionEnd: Number.MAX_SAFE_INTEGER, config: cfg },
+    )
+    const emitted = { name: false, description: false, subfeature: false }
+    for (const label of result.floatingLabelsData.values()) {
+      emitted.name ||= !!label.nameLabel
+      emitted.description ||= !!label.descriptionLabel
+      emitted.subfeature ||= !!label.subfeatureLabel
+    }
+    expect(result.labelKinds).toEqual(emitted)
+    expect(emitted.name).toBe(true)
   })
 })
 

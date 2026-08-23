@@ -250,7 +250,7 @@ describe("a container's floating label clears the rows it contains", () => {
   it.each(modes)('matches the extent the hit box reports (%s)', mode => {
     const data = geneLayout(mode, 'below')
     const gene = data.flatbushItems.find(i => i.type === 'gene')!
-    const label = data.floatingLabelsData[gene.featureId]!
+    const label = data.floatingLabelsData.get(gene.featureId)!
     expect(label.featureHeight).toBeCloseTo(gene.featureHeightPx, 5)
   })
 
@@ -259,7 +259,7 @@ describe("a container's floating label clears the rows it contains", () => {
     const without = geneLayout(mode, 'none')
     const heightOf = (data: FeatureDataResult) => {
       const gene = data.flatbushItems.find(i => i.type === 'gene')!
-      return data.floatingLabelsData[gene.featureId]!.featureHeight
+      return data.floatingLabelsData.get(gene.featureId)!.featureHeight
     }
     expect(heightOf(withLabels) - heightOf(without)).toBeCloseTo(
       3 * labelFontSize(mode),

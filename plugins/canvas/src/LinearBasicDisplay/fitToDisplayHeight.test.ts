@@ -12,7 +12,7 @@ import { rowGeometrySignature } from './yMorph.ts'
 
 import type {
   FeatureDataResult,
-  FeatureLabelData,
+  FloatingLabelsDataMap,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { TestDisplay } from './testEnv.ts'
 
@@ -54,9 +54,9 @@ function stackedRegionData(rows: number, heightPx: number) {
 // the fit-escalation ladder something to strip: full > labels-only > bodies-only.
 function labeledStackedRegionData(rows: number, heightPx: number) {
   const base = stackedRegionData(rows, heightPx)
-  const floatingLabelsData: Record<string, FeatureLabelData> = {}
+  const floatingLabelsData: FloatingLabelsDataMap = new Map()
   for (let i = 0; i < rows; i++) {
-    floatingLabelsData[`f${i}`] = {
+    floatingLabelsData.set(`f${i}`, {
       featureId: `f${i}`,
       minX: 100,
       maxX: 500,
@@ -74,7 +74,7 @@ function labeledStackedRegionData(rows: number, heightPx: number) {
         color: '#000',
         textWidth: 80,
       },
-    }
+    })
   }
   return makeFeatureData({ ...base, floatingLabelsData })
 }
@@ -104,9 +104,9 @@ function mixedWidthRegionData(count: number) {
     })
     pos += 6 + 2 * i
   }
-  const floatingLabelsData: Record<string, FeatureLabelData> = {}
+  const floatingLabelsData: FloatingLabelsDataMap = new Map()
   for (const f of features) {
-    floatingLabelsData[f.featureId] = {
+    floatingLabelsData.set(f.featureId, {
       featureId: f.featureId,
       minX: f.startBp,
       maxX: f.endBp,
@@ -118,7 +118,7 @@ function mixedWidthRegionData(count: number) {
         color: '#000',
         textWidth: 40,
       },
-    }
+    })
   }
   return makeFeatureData({
     flatbushItems: features.map(f =>
@@ -845,7 +845,7 @@ describe('canvas display fit escalation ladder', () => {
       const layout: Map<number, FeatureDataResult> = display.fitStage.layout
       let kept = 0
       for (const region of layout.values()) {
-        for (const label of Object.values(region.floatingLabelsData)) {
+        for (const label of [...region.floatingLabelsData.values()]) {
           if (label.nameLabel) {
             kept++
           }
@@ -1366,9 +1366,9 @@ function genesOver(
     endBp: end - i * 500,
     height,
   }))
-  const floatingLabelsData: Record<string, FeatureLabelData> = {}
+  const floatingLabelsData: FloatingLabelsDataMap = new Map()
   for (const f of feats) {
-    floatingLabelsData[f.featureId] = {
+    floatingLabelsData.set(f.featureId, {
       featureId: f.featureId,
       minX: f.startBp,
       maxX: f.endBp,
@@ -1380,7 +1380,7 @@ function genesOver(
         color: '#000',
         textWidth: 60,
       },
-    }
+    })
   }
   return { feats, floatingLabelsData }
 }
@@ -1401,7 +1401,7 @@ function stackedGenesAt(
       endBp: end,
       height: 20,
     })),
-    floatingLabelsData: {},
+    floatingLabelsData: new Map(),
   }
 }
 
@@ -1427,10 +1427,7 @@ function geneRegionData(
     rectStrands: new Float32Array(feats.length),
     rectDensityFade: new Uint32Array(feats.length),
     rectFeatureIndices: new Uint32Array(feats.map((_, i) => i)),
-    floatingLabelsData: Object.assign(
-      {},
-      ...groups.map(g => g.floatingLabelsData),
-    ),
+    floatingLabelsData: new Map(groups.flatMap(g => [...g.floatingLabelsData])),
   })
 }
 

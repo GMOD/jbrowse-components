@@ -654,7 +654,7 @@ export function drawHighlightBoxes(
             toX,
             scrollY,
             colors,
-            region.floatingLabelsData[item.featureId],
+            region.floatingLabelsData.get(item.featureId),
             labelContext,
           )
         }

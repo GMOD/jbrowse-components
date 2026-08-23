@@ -9,6 +9,7 @@ import { renderToString } from 'react-dom/server'
 
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import {
+  labelsMap,
   makeFeatureData,
   makeFlatbushItem,
   packFixtureRects,
@@ -232,7 +233,7 @@ describe('renderSvg', () => {
       flatbushItems: [
         makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
       ],
-      floatingLabelsData: {
+      floatingLabelsData: labelsMap({
         f0: {
           featureId: 'f0',
           minX: 400,
@@ -246,7 +247,7 @@ describe('renderSvg', () => {
             textWidth: 500,
           },
         },
-      },
+      }),
       featureCount: 1,
     })
     const result = await renderSvg(
@@ -271,7 +272,7 @@ describe('renderSvg', () => {
       flatbushItems: [
         makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
       ],
-      floatingLabelsData: {
+      floatingLabelsData: labelsMap({
         f0: {
           featureId: 'f0',
           minX: 400,
@@ -285,7 +286,7 @@ describe('renderSvg', () => {
             textWidth: 500,
           },
         },
-      },
+      }),
       featureCount: 1,
     })
     const result = await renderSvg(
@@ -379,7 +380,7 @@ describe('renderSvg', () => {
       flatbushItems: [
         makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
       ],
-      floatingLabelsData: {
+      floatingLabelsData: labelsMap({
         f0: {
           featureId: 'f0',
           minX: 1400,
@@ -393,7 +394,7 @@ describe('renderSvg', () => {
             textWidth: 40,
           },
         },
-      },
+      }),
       featureCount: 1,
     })
     const html = renderResult(
@@ -416,7 +417,7 @@ describe('renderSvg', () => {
         flatbushItems: [
           makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
         ],
-        floatingLabelsData: {
+        floatingLabelsData: labelsMap({
           f0: {
             featureId: 'f0',
             minX: 1400,
@@ -438,7 +439,7 @@ describe('renderSvg', () => {
               expanded,
             },
           },
-        },
+        }),
         featureCount: 1,
       })
       return renderResult(
@@ -465,7 +466,7 @@ describe('renderSvg', () => {
       flatbushItems: [
         makeFlatbushItem({ featureId: 'f0', startBp: 800, endBp: 1000 }),
       ],
-      floatingLabelsData: {
+      floatingLabelsData: labelsMap({
         f0: {
           featureId: 'f0',
           minX: 800,
@@ -479,7 +480,7 @@ describe('renderSvg', () => {
             textWidth: 500,
           },
         },
-      },
+      }),
       featureCount: 1,
     })
     const html = renderResult(
@@ -512,7 +513,7 @@ describe('renderSvg', () => {
         makeFlatbushItem({ featureId: 'near', startBp: 1400, endBp: 1600 }),
         makeFlatbushItem({ featureId: 'far', startBp: 1400, endBp: 1600 }),
       ],
-      floatingLabelsData: {
+      floatingLabelsData: labelsMap({
         near: {
           featureId: 'near',
           minX: 1400,
@@ -531,7 +532,7 @@ describe('renderSvg', () => {
           featureHeight: 10,
           nameLabel: label('OFF-VIEWPORT'),
         },
-      },
+      }),
       featureCount: 2,
     })
     const html = renderResult(

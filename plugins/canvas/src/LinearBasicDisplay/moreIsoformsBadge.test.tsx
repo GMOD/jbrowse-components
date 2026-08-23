@@ -14,6 +14,7 @@ import {
 } from '../RenderFeatureDataRPC/constants.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import {
+  labelsMap,
   makeFeatureData,
   makeFlatbushItem,
   mockDisplayConfig,
@@ -224,18 +225,21 @@ function labelDataFor(
 describe('the badge rides the gene name label', () => {
   it('reads "+N more" collapsed and "show fewer" expanded', () => {
     expect(
-      labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!.moreIsoformsLabel,
+      labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get('gene1')!
+        .moreIsoformsLabel,
     ).toMatchObject({ text: '+6 more', hidden: 6, expanded: false })
 
     expect(
       labelDataFor(
         layoutGene(9, { maxIsoforms: 3, expandedGeneIds: new Set(['gene1']) }),
-      ).gene1!.moreIsoformsLabel,
+      ).get('gene1')!.moreIsoformsLabel,
     ).toMatchObject({ text: 'show fewer', hidden: 6, expanded: true })
   })
 
   it('is absent where nothing is collapsed', () => {
-    expect(labelDataFor(layoutGene(3)).gene1!.moreIsoformsLabel).toBeUndefined()
+    expect(
+      labelDataFor(layoutGene(3)).get('gene1')!.moreIsoformsLabel,
+    ).toBeUndefined()
   })
 
   // The badge qualifies a name, so a gene the annotation never named has none to
@@ -245,7 +249,7 @@ describe('the badge rides the gene name label', () => {
     const data = labelDataFor(
       layoutGene(9, { maxIsoforms: 3, name: undefined }),
     )
-    expect(data.gene1?.moreIsoformsLabel).toBeUndefined()
+    expect(data.get('gene1')?.moreIsoformsLabel).toBeUndefined()
   })
 
   // The width every consumer that has to cover the label re-derives — the hit
@@ -253,8 +257,9 @@ describe('the badge rides the gene name label', () => {
   // the name on the same row, so all of them have to reserve both or the box
   // stops at the name and the badge hangs outside its own feature.
   it("bakes its width at the size it draws, not the name's", () => {
-    const badge = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!
-      .moreIsoformsLabel!
+    const badge = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get(
+      'gene1',
+    )!.moreIsoformsLabel!
     // `renderedTextWidth` scales every baked width from LABEL_FONT_SIZE, so
     // measuring the badge at the smaller size is what makes each reservation
     // land on the width it paints without knowing there are two sizes in play.
@@ -264,7 +269,7 @@ describe('the badge rides the gene name label', () => {
   })
 
   it('counts toward the label width the hit box and highlight reserve', () => {
-    const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!
+    const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get('gene1')!
     const extra = (d: typeof data) =>
       computeLabelExtraWidth(d, 0, true, true, LABEL_FONT_SIZE)
     const withBadge = extra(data)
@@ -279,7 +284,7 @@ describe('the badge rides the gene name label', () => {
   })
 
   it('reserves the gap at the drawn size in a compact mode', () => {
-    const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).gene1!
+    const data = labelDataFor(layoutGene(9, { maxIsoforms: 3 })).get('gene1')!
     const fontSize = LABEL_FONT_SIZE / 2
     const withBadge = computeLabelExtraWidth(data, 0, true, true, fontSize)
     const withoutBadge = computeLabelExtraWidth(
@@ -327,7 +332,7 @@ function twoFeatures(badgeWidth: number | undefined) {
             makeFlatbushItem({ featureId: 'gene1', startBp: 0, endBp: 10 }),
             makeFlatbushItem({ featureId: 'gene2', startBp: 60, endBp: 70 }),
           ],
-          floatingLabelsData: {
+          floatingLabelsData: labelsMap({
             gene1: {
               featureId: 'gene1',
               minX: 0,
@@ -344,7 +349,7 @@ function twoFeatures(badgeWidth: number | undefined) {
                       expanded: false,
                     },
             },
-          },
+          }),
         }),
       },
     ],

@@ -504,21 +504,24 @@ function makeDataWithLabel(
   const item = flatbushItems[0]!
   return {
     ...data,
-    floatingLabelsData: {
-      [item.featureId]: {
-        featureId: item.featureId,
-        minX: item.startBp,
-        maxX: item.endBp,
-        topY: 0,
-        featureHeight: item.bottomPx - item.topPx,
-        nameLabel: {
-          text: 'longname',
-          relativeY: 0,
-          color: '#000',
-          textWidth: labelTextWidth,
+    floatingLabelsData: new Map([
+      [
+        item.featureId,
+        {
+          featureId: item.featureId,
+          minX: item.startBp,
+          maxX: item.endBp,
+          topY: 0,
+          featureHeight: item.bottomPx - item.topPx,
+          nameLabel: {
+            text: 'longname',
+            relativeY: 0,
+            color: '#000',
+            textWidth: labelTextWidth,
+          },
         },
-      },
-    },
+      ],
+    ]),
   }
 }
 
@@ -578,22 +581,25 @@ test('subfeature label hit area is reserved when the label is present', () => {
     const item = items[0]!
     return {
       ...data,
-      floatingLabelsData: {
-        [item.featureId]: {
-          featureId: item.featureId,
-          minX: item.startBp,
-          maxX: item.endBp,
-          topY: 0,
-          featureHeight: item.bottomPx - item.topPx,
-          subfeatureLabel: {
-            text: 'subname',
-            relativeY: 0,
-            color: '#000',
-            textWidth: 200,
-            isOverlay: false,
+      floatingLabelsData: new Map([
+        [
+          item.featureId,
+          {
+            featureId: item.featureId,
+            minX: item.startBp,
+            maxX: item.endBp,
+            topY: 0,
+            featureHeight: item.bottomPx - item.topPx,
+            subfeatureLabel: {
+              text: 'subname',
+              relativeY: 0,
+              color: '#000',
+              textWidth: 200,
+              isOverlay: false,
+            },
           },
-        },
-      },
+        ],
+      ]),
     }
   }
   const regions = [makeRegion(0, 0, 10000, 0, 800)]

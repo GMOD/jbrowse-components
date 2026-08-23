@@ -11,6 +11,7 @@ import type {
   FeatureDataResult,
   FeatureLabelData,
   LabelItem,
+  LabelKinds,
   MoreIsoformsLabel,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
@@ -94,6 +95,28 @@ function renderedLabelSet(
       ? labelData.subfeatureLabel
       : undefined,
   }
+}
+
+// Whether ANY feature in a region can yield a label, from the region's baked
+// `labelKinds` and the display flags — the same conjunction `renderedLabelSet`
+// applies per feature, hoisted out of the loop. A region of SNPs or repeats
+// carries thousands of description-only entries, and at the fit ladder's
+// `bodies` rung every one of them resolves to nothing; without this the overlay
+// walks all of them each frame to rediscover that. Kept beside
+// `renderedLabelSet` because it has to stay its exact disjunction: a kind this
+// says no to must be a kind that one leaves undefined.
+//
+// `labelKinds` absent means a fixture predating the field, which has to walk.
+function anyLabelKindRenders(
+  labelKinds: LabelKinds | undefined,
+  { showLabels, showDescriptions, showSubfeatureLabels }: LabelRenderContext,
+) {
+  return (
+    !labelKinds ||
+    (showLabels && labelKinds.name) ||
+    (showDescriptions && labelKinds.description) ||
+    (showSubfeatureLabels && labelKinds.subfeature)
+  )
 }
 
 // The widest label row this feature actually draws, at the size it draws it —
@@ -342,16 +365,18 @@ export function forEachRenderedLabel(
   skip?: Set<string>,
   cullBand?: LabelCullBand,
 ) {
+  if (!anyLabelKindRenders(data.labelKinds, context)) {
+    return
+  }
   const { showLabels, showDescriptions, showSubfeatureLabels } = context
   let toScreen: ((bp: number) => number) | undefined
 
-  for (const featureId in data.floatingLabelsData) {
+  for (const [featureId, labelData] of data.floatingLabelsData) {
     // Features already emitted by an earlier region (collapsed introns) are
     // dropped so they don't double-paint in a later region.
     if (skip?.has(featureId)) {
       continue
     }
-    const labelData = data.floatingLabelsData[featureId]!
     if (labelData.maxX < vr.start || labelData.minX > vr.end) {
       continue
     }

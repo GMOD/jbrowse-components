@@ -3,6 +3,7 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import {
+  labelsMap,
   makeFeatureData,
   makeFlatbushItem,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
@@ -24,7 +25,7 @@ const VR: VisibleRegion = {
 const ITEM = makeFlatbushItem({ featureId: 'f1', startBp: 100, endBp: 200 })
 
 const DATA = makeFeatureData({
-  floatingLabelsData: {
+  floatingLabelsData: labelsMap({
     f1: {
       featureId: 'f1',
       minX: 100,
@@ -33,7 +34,7 @@ const DATA = makeFeatureData({
       featureHeight: 10,
       nameLabel: { text: 'NAME', relativeY: 4, color: 'black', textWidth: 30 },
     },
-  },
+  }),
 })
 
 const MODEL = {
@@ -141,7 +142,7 @@ test.each([
 // no name or description of its own — so the only thing the layer can emit is
 // the subfeature label, and its presence in the DOM is the whole assertion.
 const SUBFEATURE_LABEL_DATA = makeFeatureData({
-  floatingLabelsData: {
+  floatingLabelsData: labelsMap({
     f1: {
       featureId: 'f1',
       minX: 100,
@@ -156,7 +157,7 @@ const SUBFEATURE_LABEL_DATA = makeFeatureData({
         isOverlay: false,
       },
     },
-  },
+  }),
 })
 
 function renderLabels(overrides: Partial<typeof MODEL>) {

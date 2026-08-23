@@ -5,9 +5,20 @@ import type { DisplayConfig } from './renderConfig.ts'
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
+  FeatureLabelData,
   FlatbushItem,
+  FloatingLabelsDataMap,
   SubfeatureInfo,
 } from './rpcTypes.ts'
+
+// `floatingLabelsData` is a Map in the render contract, but a fixture reads far
+// better as a literal keyed by feature id. Tests build one of these instead of
+// spelling out nested Map constructor arrays.
+export function labelsMap(
+  entries: Record<string, FeatureLabelData>,
+): FloatingLabelsDataMap {
+  return new Map(Object.entries(entries))
+}
 
 export function mockDisplayConfig(
   overrides: Partial<DisplayConfig> = {},
@@ -128,7 +139,7 @@ export function makeFeatureData(
     ...packFixtureRects([]),
     flatbushItems: [],
     subfeatureInfos: [],
-    floatingLabelsData: {},
+    floatingLabelsData: new Map(),
     outlineColor: 0,
     featureCount: 0,
     ...overrides,

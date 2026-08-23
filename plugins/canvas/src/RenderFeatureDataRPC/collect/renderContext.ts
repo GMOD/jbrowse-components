@@ -80,7 +80,7 @@ export function createCollector(): Collector {
     rects: [],
     lines: [],
     arrows: [],
-    floatingLabelsData: {},
+    floatingLabelsData: new Map(),
     flatbushItems: [],
     subfeatureInfos: [],
     aminoAcidOverlay: [],

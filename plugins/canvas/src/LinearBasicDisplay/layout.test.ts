@@ -1,6 +1,7 @@
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import { ROW_PADDING } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
+  labelsMap,
   makeFeatureData as makeBaseFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
@@ -95,9 +96,9 @@ function labeledFeatureData(
   nameWidthPx = 40,
 ): LayoutRegionData {
   const base = makeFeatureData({ features })
-  const floatingLabelsData: FeatureDataResult['floatingLabelsData'] = {}
+  const floatingLabelsData: FeatureDataResult['floatingLabelsData'] = new Map()
   for (const f of features) {
-    floatingLabelsData[f.featureId] = {
+    floatingLabelsData.set(f.featureId, {
       featureId: f.featureId,
       minX: f.startBp,
       maxX: f.endBp,
@@ -109,7 +110,7 @@ function labeledFeatureData(
         color: '#000',
         textWidth: nameWidthPx,
       },
-    }
+    })
   }
   return { ...base, floatingLabelsData }
 }
@@ -140,7 +141,7 @@ describe('fitWidth label decimation', () => {
   // still have reserved space) and loses only `nameLabel`, so presence of the
   // entry is not the question — presence of the name is.
   const keptName = (labels: FloatingLabelsDataMap, featureId: string) =>
-    labels[featureId]?.nameLabel !== undefined
+    labels.get(featureId)?.nameLabel !== undefined
 
   // `crowded` (10px box) is followed 5px later by `blocker`, leaving 5px < 46px
   // of overhang room, so its name is dropped; `blocker` itself is the last
@@ -176,8 +177,8 @@ describe('fitWidth label decimation', () => {
 
   it('keeps every name under the default `all` policy', () => {
     const out = layout(new Map([[0, mixed()]]), 1, true, false).get(0)!
-    expect(out.floatingLabelsData.crowded).toBeDefined()
-    expect(out.floatingLabelsData.blocker).toBeDefined()
+    expect(out.floatingLabelsData.get('crowded')).toBeDefined()
+    expect(out.floatingLabelsData.get('blocker')).toBeDefined()
   })
 
   it('packs a shorter stack than `all` by dropping decimated name rows', () => {
@@ -621,7 +622,7 @@ test('bpPerPx changes label-driven packing', () => {
       { featureId: 'f2', startBp: 300, endBp: 400, height: 20 },
     ],
   })
-  data.floatingLabelsData = {
+  data.floatingLabelsData = labelsMap({
     f1: {
       featureId: 'f1',
       minX: 100,
@@ -638,7 +639,7 @@ test('bpPerPx changes label-driven packing', () => {
       featureHeight: 20,
       nameLabel: { text: 'L2', relativeY: 0, color: 'black', textWidth: 300 },
     },
-  }
+  })
   // Zoomed out: labels are 300bp wide → features overlap → different rows
   const zoomedOut = layout(new Map([[0, data]]), 1)
   const zo = zoomedOut.get(0)!
@@ -670,7 +671,7 @@ test('subfeatures and floating labels inherit their parent feature offset', () =
       bottomPx: 15,
     },
   ]
-  data.floatingLabelsData = {
+  data.floatingLabelsData = labelsMap({
     gene2: {
       featureId: 'gene2',
       minX: 200,
@@ -684,7 +685,7 @@ test('subfeatures and floating labels inherit their parent feature offset', () =
         textWidth: 50,
       },
     },
-  }
+  })
 
   const out = layout(new Map([[0, data]]), 1)
   const r = out.get(0)!
@@ -692,7 +693,7 @@ test('subfeatures and floating labels inherit their parent feature offset', () =
   expect(gene2Top).toBeGreaterThan(0)
   expect(r.subfeatureInfos[0]!.topPx).toBe(5 + gene2Top)
   expect(r.subfeatureInfos[0]!.bottomPx).toBe(15 + gene2Top)
-  expect(r.floatingLabelsData.gene2!.topY).toBe(gene2Top)
+  expect(r.floatingLabelsData.get('gene2')!.topY).toBe(gene2Top)
 })
 
 test('lines and arrows are offset by parent feature top', () => {
@@ -731,7 +732,7 @@ test('showLabels adds label height to the feature row', () => {
         { featureId: 'f2', startBp: 200, endBp: 600, height: 10 },
       ],
     })
-    data.floatingLabelsData = {
+    data.floatingLabelsData = labelsMap({
       f1: {
         featureId: 'f1',
         minX: 100,
@@ -751,7 +752,7 @@ test('showLabels adds label height to the feature row', () => {
           textWidth: 80,
         },
       },
-    }
+    })
     return data
   }
 
@@ -863,7 +864,7 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
       ],
     })
     // Long label on fLabel (300 px wide) — overhangs ~300 bp at bpPerPx=1.
-    data.floatingLabelsData = {
+    data.floatingLabelsData = labelsMap({
       fLabel: {
         featureId: 'fLabel',
         minX: 200,
@@ -872,7 +873,7 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
         featureHeight: 10,
         nameLabel: { text: 'L', relativeY: 0, color: 'black', textWidth: 300 },
       },
-    }
+    })
     return data
   }
 
@@ -909,7 +910,7 @@ describe('subfeature-label overhang is reserved even with no name line', () => {
         { featureId: 'geneB', startBp: 20, endBp: 30, height: 10 },
       ],
     })
-    const floatingLabelsData: FloatingLabelsDataMap = {
+    const floatingLabelsData: FloatingLabelsDataMap = labelsMap({
       // keyed by the transcript, attributed to its gene — what emitSubfeatureLabel
       // writes
       'geneA-mRNA1': {
@@ -927,7 +928,7 @@ describe('subfeature-label overhang is reserved even with no name line', () => {
           isOverlay: false,
         },
       },
-    }
+    })
     return { ...base, floatingLabelsData }
   }
 
@@ -1104,14 +1105,14 @@ test('a feature compacts up to a freed row on zoom-in (no downward hold)', () =>
   // incremental memo (which once seeded from the prior layout) B must now rise
   // to row 0 rather than being held on its old lower row.
   const withNameLabel = (data: LayoutRegionData, id: string, width: number) => {
-    data.floatingLabelsData[id] = {
+    data.floatingLabelsData.set(id, {
       featureId: id,
       minX: 0,
       maxX: 0,
       topY: 0,
       featureHeight: 10,
       nameLabel: { text: id, relativeY: 0, color: 'black', textWidth: width },
-    }
+    })
     return data
   }
   const mk = () =>
@@ -1323,7 +1324,7 @@ test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () =
       },
     ],
   })
-  data.floatingLabelsData = {
+  data.floatingLabelsData = labelsMap({
     mir1: {
       featureId: 'mir1',
       minX: 1000,
@@ -1350,7 +1351,7 @@ test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () =
         textWidth: 55,
       },
     },
-  }
+  })
   // showLabels off: no label to protect, so the sub-pixel boxes still collapse
   const noLabels = layout(new Map([[0, data]]), 26, false)
   const topNo = (id: string) =>
@@ -1392,10 +1393,10 @@ test('a compact mode reserves label overhang at its own smaller font size', () =
     featureHeight: 10,
     nameLabel: { text: id, relativeY: 0, color: 'black', textWidth },
   })
-  data.floatingLabelsData = {
+  data.floatingLabelsData = labelsMap({
     g1: label('g1', 1000, 1070, 60),
     g2: label('g2', 2470, 2540, 55),
-  }
+  })
   const topIn = (mode: 'normal' | 'superCompact', id: string) =>
     layout(new Map([[0, data]]), 26, true, false, new Set(), mode)
       .get(0)!
@@ -1433,7 +1434,7 @@ test('an unlabeled sub-pixel box does not collapse onto a labeled one', () => {
       },
     ],
   })
-  data.floatingLabelsData = {
+  data.floatingLabelsData = labelsMap({
     rs123: {
       featureId: 'rs123',
       minX: 2000,
@@ -1442,7 +1443,7 @@ test('an unlabeled sub-pixel box does not collapse onto a labeled one', () => {
       featureHeight: 10,
       nameLabel: { text: 'rs123', relativeY: 0, color: 'black', textWidth: 40 },
     },
-  }
+  })
   const out = layout(new Map([[0, data]]), 26, true)
   const top = (id: string) =>
     out.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx

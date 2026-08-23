@@ -46,7 +46,9 @@ function makeLabelData(
 }
 
 function makeData(labels: Record<string, FeatureLabelData>): FeatureDataResult {
-  return { floatingLabelsData: labels } as FeatureDataResult
+  return {
+    floatingLabelsData: new Map(Object.entries(labels)),
+  } as FeatureDataResult
 }
 
 const FULL_REGION: BpRegionBounds = {
@@ -81,6 +83,52 @@ function collect(
   )
   return out
 }
+
+// A region whose baked `labelKinds` rules out every kind the display flags hold
+// must not be walked at all. Proved by a container that throws if iterated,
+// because the observable behaviour of the slow path and the fast path is
+// identical — both emit nothing — and it is the walk itself that costs 20% of a
+// dense frame.
+describe('the label walk is skipped outright when no kind can render', () => {
+  const trapData = (labelKinds: FeatureDataResult['labelKinds']) => {
+    const floatingLabelsData = new Map([['f1', makeLabelData('f1')]])
+    floatingLabelsData[Symbol.iterator] = () => {
+      throw new Error('walked the label map when no label could render')
+    }
+    return { floatingLabelsData, labelKinds } as FeatureDataResult
+  }
+
+  test('skips the walk when the region baked no label of any held kind', () => {
+    const data = trapData({ name: false, description: true, subfeature: false })
+    expect(
+      collect(data, FULL_REGION, {
+        showLabels: true,
+        showDescriptions: false,
+        showSubfeatureLabels: true,
+      }),
+    ).toHaveLength(0)
+  })
+
+  test('still walks when a held flag matches a kind the region baked', () => {
+    const data = trapData({ name: true, description: false, subfeature: false })
+    expect(() =>
+      collect(data, FULL_REGION, {
+        showLabels: true,
+        showDescriptions: false,
+        showSubfeatureLabels: false,
+      }),
+    ).toThrow('walked the label map')
+  })
+
+  test('walks a fixture that predates labelKinds', () => {
+    expect(() =>
+      collect(trapData(undefined), FULL_REGION, {
+        showLabels: true,
+        showDescriptions: true,
+      }),
+    ).toThrow('walked the label map')
+  })
+})
 
 describe('forEachRenderedLabel', () => {
   test('skips features whose bp span is outside the region', () => {

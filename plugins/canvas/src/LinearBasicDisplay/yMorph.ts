@@ -234,14 +234,16 @@ export function interpolateYData(
     if (!moved || rem === 0) {
       out.set(regionIdx, data)
     } else {
-      const floatingLabelsData: FeatureDataResult['floatingLabelsData'] = {}
-      for (const key in data.floatingLabelsData) {
-        const label = data.floatingLabelsData[key]!
+      const floatingLabelsData: FeatureDataResult['floatingLabelsData'] =
+        new Map()
+      for (const [key, label] of data.floatingLabelsData) {
         const delta = deltaById.get(label.parentFeatureId ?? label.featureId)
-        floatingLabelsData[key] =
+        floatingLabelsData.set(
+          key,
           delta === undefined
             ? label
-            : { ...label, topY: label.topY + delta * rem }
+            : { ...label, topY: label.topY + delta * rem },
+        )
       }
       out.set(regionIdx, {
         ...data,

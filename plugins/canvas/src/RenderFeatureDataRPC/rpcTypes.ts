@@ -160,6 +160,15 @@ export interface FeatureDataResult {
   // Floating labels metadata
   floatingLabelsData: FloatingLabelsDataMap
 
+  // Which label kinds this region emitted at all, baked in the worker so the
+  // label overlay can skip the whole per-feature walk when no flag it holds can
+  // produce a label. Only ever an over-estimate on the main thread: layout
+  // deletes entries and decimates names, so a region that says it has names may
+  // end up drawing none — which costs a walk that emits nothing, never a
+  // missing label. Undefined in fixtures that predate the field; a reader must
+  // treat that as "may have any kind" rather than as false.
+  labelKinds?: LabelKinds
+
   // Precomputed amino acid overlay items (only when colorByCDS is true)
   aminoAcidOverlay?: AminoAcidOverlayItem[]
 
@@ -335,4 +344,22 @@ export type MoreIsoformsLabel = LabelItem & {
   expanded: boolean
 }
 
-export type FloatingLabelsDataMap = Record<string, FeatureLabelData>
+// A Map, not a Record. At high feature density this container is walked once per
+// frame by the label overlay and rebuilt by every committed layout, and an object
+// with thousands of dynamically-added string keys is a V8 dictionary — the walk
+// measured 6x slower than the same walk over a Map at 60k features, and
+// `applyLayoutToRegion`'s `delete` keeps it in dictionary mode. Structured-clone
+// carries a Map across the worker boundary unchanged.
+export type FloatingLabelsDataMap = Map<string, FeatureLabelData>
+
+// Whether a region emitted each label kind. The subfeature flag is the one that
+// earns this its own type: names and descriptions are gated by display flags the
+// main thread already holds, but a subfeature label is worker-baked, so
+// "subfeature labels are switched on" says nothing about whether any exist — and
+// a track of SNPs or repeats has none, which is exactly the dense case where
+// walking every feature to discover that costs the most.
+export interface LabelKinds {
+  name: boolean
+  description: boolean
+  subfeature: boolean
+}

@@ -707,7 +707,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     if (entry.kind !== 'feature') {
       return 0
     }
-    const labelData = entry.data.floatingLabelsData[entry.item.featureId]
+    const labelData = entry.data.floatingLabelsData.get(entry.item.featureId)
     if (!labelData) {
       return 0
     }

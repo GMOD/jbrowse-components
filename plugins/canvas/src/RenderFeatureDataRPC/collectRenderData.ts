@@ -40,9 +40,17 @@ export function collectRenderData(
     regionEnd,
   )
 
+  const labelKinds = { name: false, description: false, subfeature: false }
+  for (const labelData of collector.floatingLabelsData.values()) {
+    labelKinds.name ||= !!labelData.nameLabel
+    labelKinds.description ||= !!labelData.descriptionLabel
+    labelKinds.subfeature ||= !!labelData.subfeatureLabel
+  }
+
   return {
     ...packed,
     outlineColor,
+    labelKinds,
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,

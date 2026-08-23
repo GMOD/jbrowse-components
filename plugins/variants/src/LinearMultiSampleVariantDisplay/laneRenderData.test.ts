@@ -162,6 +162,10 @@ test('each record keeps the color the display resolved for it', () => {
 test('label mode none letters nothing', () => {
   const withNames = laidOut(source([['rs1', 1000, 2000]]), { labels: 'name' })
   const without = laidOut(source([['rs1', 1000, 2000]]), { labels: 'none' })
-  expect(withNames.get(0)!.floatingLabelsData.rs1?.nameLabel?.text).toBe('rs1')
-  expect(without.get(0)!.floatingLabelsData.rs1?.nameLabel).toBeUndefined()
+  expect(withNames.get(0)!.floatingLabelsData.get('rs1')?.nameLabel?.text).toBe(
+    'rs1',
+  )
+  expect(
+    without.get(0)!.floatingLabelsData.get('rs1')?.nameLabel,
+  ).toBeUndefined()
 })

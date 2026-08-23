@@ -15,6 +15,14 @@ geometry channel plus an object spread per `flatbushItems` entry, per
 `subfeatureInfos` entry and per `floatingLabelsData` entry, all so
 `computeLaidOutData` can add each feature's row offset into the copy in place.
 
+**That 78% is a 4k-feature number and does not survive density.** A DevTools trace
+of a dense VCF plus a RepeatMasker track (~60k features in view, everything
+density-collapsed to row 0) puts `cloneMutableFields` at 73ms of a 724ms committed
+layout — **15%, not 78%** — behind `prepareRefPack` (82ms) and
+`applyLayoutToRegion` (82ms), with `pileupFadeIds` (47ms) and `applyHeightScale`
+(51ms) close behind. The clone is no longer the thing to attack first at that
+density; the shared cause underneath all of them is below.
+
 `createContentHeightProbe` packs straight from the raw worker data and never
 clones, so the fit solve's height probes escape the cost. Every *committed*
 layout pays it: each settled zoom, each pan into new data, each label or
@@ -45,6 +53,54 @@ And `rectDensityFade` is worker-allocated but layout-valued, with
 allocate it rather than copy it — the catch being that `cloneMutableFields` is
 shared with `scaleLaidOutData`, which does not rewrite the array and still needs
 the copy, so that split costs a per-caller flag or a second clone helper.
+
+## The shared cause is that per-feature identity is a string
+
+Every function in that list associates data per feature through a
+`Map<string, _>`, a `Set<string>` or a `Record<string, _>`, and at ~60k features
+the keying is most of the cost rather than the work. Measured standalone at
+N=60k, against the index-keyed equivalent:
+
+| site | now | index-keyed | |
+| --- | --- | --- | --- |
+| `applyLayoutToRegion`'s `densityFadeIds.has(featureId)` per rect | 12.1ms | 0.10ms | 121x |
+| `prepareRefPack`'s two `Map<string, object>` | 90.7ms | 8.2ms | 11x |
+| `layoutMap.get(featureId)` offset/height gathers | 6.6ms | 0.22ms | 30x |
+
+Numeric feature ids were floated as the fix and are the wrong lever: at the same
+N, `Set<number>.has` is 20.7ms against `Set<string>.has`'s 31.8ms, while
+`Uint8Array[idx]` is 1.05ms. Numeric ids buy ~35% of a 30x win and cost a change
+to `feature.id()` across every plugin surface. **The index already exists** —
+`rectFeatureIndices` / `lineFeatureIndices` / `arrowFeatureIndices` index into
+`flatbushItems` — so the per-feature arrays can be keyed by it without touching
+the `Feature` ABI at all.
+
+`plugins/alignments` already works this way and is the pattern to copy:
+`readChainIndices`, `segmentReadIndices` and `overlapPositions` are `Uint32Array`
+indices into parallel arrays, with no string id in the layout path
+(`collapsedLayout.ts`, `computeChainLayout.ts`).
+
+Landed so far (commit "perf(canvas): the label map is a Map"): `floatingLabelsData`
+is a `Map`, and the label overlay skips its walk outright via a worker-baked
+`labelKinds`. Still open, in value order: `prepareRefPack`'s two maps, then
+`applyLayoutToRegion`'s fade/offset/height gathers, which need
+`packPreparedRef`'s `CollapsedMark` to carry an index rather than an id.
+
+### `pileupFadeIds` is fast to fix and needs a figure re-checked first
+
+A pixel difference array over integer columns replaces the `flatMap` of 2N event
+objects and the comparator sort: **45.9ms to 6.1ms at N=60k**, O(N+W), with a
+symmetric difference of 0 against the current implementation on a uniform
+sub-pixel input.
+
+It is not a pure speedup, which is why it is parked rather than done. The current
+sweep works in continuous px and half-open spans that merely touch do not share a
+point; quantizing to pixel columns makes two marks inside one column read as depth
+2. That is arguably what the function means — the comment argues occlusion is
+"measured in painted pixels" — but `PILEUP_FADE_DEPTH`'s threshold of 3 is
+calibrated against `website/scripts/specs/graph-hprc.ts`'s `repeatLane`, where the
+recorded result is "at 3 nothing on screen fades, at any pane width the figure is
+captured at". Re-capture that figure before taking the 7.5x.
 
 ## `featureItemMap` is the same allocation, in the same file
 

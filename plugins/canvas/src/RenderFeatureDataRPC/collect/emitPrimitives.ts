@@ -287,8 +287,8 @@ export function emitSubfeatureLabel(
     // Merge, don't replace: FeatureLabelData carries name/description and
     // subfeature labels together, so preserve any name/description entry already
     // recorded for this id rather than clobbering it.
-    collector.floatingLabelsData[featureId] = {
-      ...collector.floatingLabelsData[featureId],
+    collector.floatingLabelsData.set(featureId, {
+      ...collector.floatingLabelsData.get(featureId),
       featureId,
       minX,
       maxX,
@@ -297,6 +297,6 @@ export function emitSubfeatureLabel(
       featureHeight,
       parentFeatureId: result.parentFeatureId,
       subfeatureLabel: result.subfeatureLabel,
-    }
+    })
   }
 }

@@ -92,7 +92,7 @@ export function buildFeatureFlatbushIndex(
   for (const item of items) {
     let hitStartBp = item.startBp - padBp
     let hitEndBp = item.endBp + padBp
-    const labelData = floatingLabelsData[item.featureId]
+    const labelData = floatingLabelsData.get(item.featureId)
     if (labelData) {
       const featureWidthPx = (item.endBp - item.startBp) / bpPerPx
       const extraBp =

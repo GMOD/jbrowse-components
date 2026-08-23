@@ -49,7 +49,7 @@ const DELTA = Number(process.env.DELTA || 30)
 const GAP_MS = Number(process.env.GAP_MS || 12)
 const READY_MS = Number(process.env.READY_MS || 20000)
 const LABEL =
-  process.env.LABEL || new Date().toISOString().replace(/[:.]/g, '-')
+  process.env.LABEL || new Date().toISOString().replaceAll(/[:.]/g, '-')
 
 const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
 
@@ -164,7 +164,7 @@ const sourceMaps = new Map<string, SourceMap | null>()
 
 function loadSourceMap(url: string) {
   if (!sourceMaps.has(url)) {
-    const file = path.join(BUILD, new globalThis.URL(url).pathname) + '.map'
+    const file = `${path.join(BUILD, new globalThis.URL(url).pathname)}.map`
     sourceMaps.set(
       url,
       fs.existsSync(file)
@@ -271,7 +271,7 @@ export function summarize(events: TraceEvent[]) {
   const renders = new Map<string, number>()
   for (const e of events) {
     if (e.cat === 'blink.user_timing' && e.ph === 'b' && inWindow(e)) {
-      const n = e.name.replace(/​/g, '')
+      const n = e.name.replaceAll('​', '')
       renders.set(n, (renders.get(n) || 0) + 1)
     }
   }
@@ -433,7 +433,7 @@ export function print(s: ReturnType<typeof summarize>) {
     }
   }
   console.log('component renders:')
-  console.log('    ' + s.renders.map(([n, c]) => `${n}=${c}`).join('  '))
+  console.log(`    ${s.renders.map(([n, c]) => `${n}=${c}`).join('  ')}`)
   console.log(`top self time (sampled ${ms(s.sampled)}ms):`)
   for (const [k, v] of s.topSelf) {
     console.log(`    ${ms(v).padStart(7)}ms  ${frameLabel(k)}`)

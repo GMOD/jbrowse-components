@@ -478,7 +478,7 @@ describe('collectRenderData for mature protein regions', () => {
     const result = collect(layout, config)
     // the top-level CDS emits its own (name) label; keep only the per-mature
     // subfeature labels, which is what was previously missing entirely
-    const labels = Object.values(result.floatingLabelsData).filter(
+    const labels = [...result.floatingLabelsData.values()].filter(
       l => 'subfeatureLabel' in l,
     )
     expect(labels).toHaveLength(2)
@@ -514,7 +514,7 @@ describe('collectRenderData for mature protein regions', () => {
     const layout = findGlyph(feature, config)({ feature, config })
 
     const result = collect(layout, config)
-    const subfeatureLabels = Object.values(result.floatingLabelsData).filter(
+    const subfeatureLabels = [...result.floatingLabelsData.values()].filter(
       l => 'subfeatureLabel' in l,
     )
     expect(subfeatureLabels).toHaveLength(0)

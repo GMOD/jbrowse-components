@@ -1,4 +1,5 @@
 import {
+  labelsMap,
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
@@ -98,7 +99,7 @@ test('non-Y fields and hit-test extents come from target', () => {
 test('floating label tops follow their feature', () => {
   const fromTops = new Map([['a', 100]])
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
-  target.get(0)!.floatingLabelsData = {
+  target.get(0)!.floatingLabelsData = labelsMap({
     a: {
       featureId: 'a',
       minX: 0,
@@ -107,9 +108,9 @@ test('floating label tops follow their feature', () => {
       featureHeight: 10,
       nameLabel: { text: 'a', relativeY: 0, color: 'black', textWidth: 20 },
     },
-  }
+  })
   const mid = interpolateYData(fromTops, target, 0.5).get(0)!
-  expect(mid.floatingLabelsData.a!.topY).toBe(50)
+  expect(mid.floatingLabelsData.get('a')!.topY).toBe(50)
 })
 
 test('canMorph needs at least one shared feature and a bounded rect count', () => {

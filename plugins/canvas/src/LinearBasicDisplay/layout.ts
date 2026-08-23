@@ -494,7 +494,7 @@ function applyHeightScale(
     info.bottomPx =
       info.bottomPx * multiplier + above + (info.ownsLabelRow ? labelFontPx : 0)
   }
-  for (const labelData of Object.values(data.floatingLabelsData)) {
+  for (const labelData of data.floatingLabelsData.values()) {
     labelData.topY =
       labelData.topY * multiplier +
       (labelData.labelRowsAbove ?? 0) * labelFontPx
@@ -945,9 +945,9 @@ export function scaleLaidOutData(
 }
 
 function cloneMutableFields(raw: FeatureDataResult) {
-  const floatingLabelsData: Record<string, FeatureLabelData> = {}
-  for (const [k, v] of Object.entries(raw.floatingLabelsData)) {
-    floatingLabelsData[k] = { ...v }
+  const floatingLabelsData = new Map<string, FeatureLabelData>()
+  for (const [k, v] of raw.floatingLabelsData) {
+    floatingLabelsData.set(k, { ...v })
   }
   return {
     ...raw,
@@ -1188,7 +1188,7 @@ function prepareRefPack(
   // widths rather than one max across them.
   const labelInfoByFeatureId = new Map<string, LabelInfo>()
   for (const [, data] of regions) {
-    for (const labelData of Object.values(data.floatingLabelsData)) {
+    for (const labelData of data.floatingLabelsData.values()) {
       const targetId = labelData.parentFeatureId ?? labelData.featureId
       const widths = renderedLabelWidths(
         labelData,
@@ -1594,8 +1594,8 @@ interface CollapsedMark {
 // Three marks covering one point means three within ~2px however they are
 // spread, which no clamp explains and no zoom can resolve.
 //
-// Measured on website/scripts/specs/graph.ts's repeat lane, which is read for
-// how much of the interval is red and so needs the coverage answer: of the 171
+// Measured on website/scripts/specs/graph-hprc.ts's repeatLane, which is read
+// for how much of the interval is red and so needs the coverage answer: of the 171
 // RepeatMasker elements on screen over its 180 kb, 89 are sub-pixel at a 900px
 // pane, and a threshold of 2 faded 24 of them — the denser clusters rendering
 // LIGHTER than their isolated neighbours, which is the inversion above, in the
@@ -1720,11 +1720,11 @@ function applyLayoutToRegion(
   // one label the decimation ruled on, and it's the one whose row height went
   // unreserved, so drawing it would overlap the boxes. Its description and
   // subfeature label still have reserved space and still draw.
-  for (const [key, labelData] of Object.entries(data.floatingLabelsData)) {
+  for (const [key, labelData] of data.floatingLabelsData) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
     const offset = layoutMap.get(layoutKey)
     if (offset === undefined || !isPlacedRow(offset)) {
-      delete data.floatingLabelsData[key]
+      data.floatingLabelsData.delete(key)
       continue
     }
     if (droppedLabelIds.has(layoutKey)) {
