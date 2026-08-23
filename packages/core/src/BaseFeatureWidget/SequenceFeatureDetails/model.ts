@@ -49,6 +49,12 @@ export type SequenceDisplayMode =
 
 const p = 'sequenceFeatureDetails'
 
+// A row has to hold at least one base: `splitString` advances the string by
+// this, so a width of zero never finishes it.
+function clampCharactersPerRow(n: number) {
+  return Math.max(1, Math.floor(n))
+}
+
 // User preferences for the sequence readout, seeded from and written straight
 // back to localStorage. Nothing here is snapshotted or reads the tree, so an
 // instance is cheap and needs no lifecycle: a holder that only sometimes shows
@@ -78,8 +84,14 @@ export function SequenceFeatureDetailsF() {
       upperCaseCDS: localStorageGetBoolean(`${p}-upperCaseCDS`, true),
       /**
        * #volatile
+       * how wide a row of the readout is. Rows exist only while coordinates are
+       * shown — without them the panel wraps to its container — so this is what
+       * the labels step by, and the line width of the FASTA exported from that
+       * state.
        */
-      charactersPerRow: 100,
+      charactersPerRow: clampCharactersPerRow(
+        localStorageGetNumber(`${p}-charactersPerRow`, 100),
+      ),
     }))
     .actions(self => ({
       /**
@@ -102,6 +114,14 @@ export function SequenceFeatureDetailsF() {
       setUpperCaseCDS(f: boolean) {
         self.upperCaseCDS = f
         localStorageSetBoolean(`${p}-upperCaseCDS`, f)
+      },
+      /**
+       * #action
+       */
+      setCharactersPerRow(f: number) {
+        const clamped = clampCharactersPerRow(f)
+        self.charactersPerRow = clamped
+        localStorageSetNumber(`${p}-charactersPerRow`, clamped)
       },
       /**
        * #action

@@ -39,17 +39,29 @@ const SequenceFeatureSettingsDialog = observer(
     const { upperCaseCDS } = model
     const [intronBp, setIntronBp] = useState<number | undefined>(model.intronBp)
     const [upDownBp, setUpDownBp] = useState<number | undefined>(model.upDownBp)
+    const [charactersPerRow, setCharactersPerRow] = useState<
+      number | undefined
+    >(model.charactersPerRow)
     return (
       <SubmitDialog
         maxWidth="xl"
         open
         title="Feature sequence settings"
-        submitDisabled={intronBp === undefined || upDownBp === undefined}
+        submitDisabled={
+          intronBp === undefined ||
+          upDownBp === undefined ||
+          charactersPerRow === undefined
+        }
         onCancel={handleClose}
         onSubmit={() => {
-          if (intronBp !== undefined && upDownBp !== undefined) {
+          if (
+            intronBp !== undefined &&
+            upDownBp !== undefined &&
+            charactersPerRow !== undefined
+          ) {
             model.setIntronBp(intronBp)
             model.setUpDownBp(upDownBp)
+            model.setCharactersPerRow(charactersPerRow)
             handleClose()
           }
         }}
@@ -69,6 +81,14 @@ const SequenceFeatureSettingsDialog = observer(
               className={classes.formElt}
               defaultValue={model.upDownBp}
               onValueChange={setUpDownBp}
+            />
+          </div>
+          <div>
+            <NumberTextField
+              label="Number of bases per row"
+              className={classes.formElt}
+              defaultValue={model.charactersPerRow}
+              onValueChange={setCharactersPerRow}
             />
           </div>
           <div>

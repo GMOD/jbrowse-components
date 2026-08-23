@@ -249,6 +249,42 @@ test('the export is FASTA even with coordinates on', () => {
   ])
 })
 
+// The row width is a setting now. Rows only exist with coordinates on — without
+// them the panel wraps to its container and the readout is one line — so this is
+// where the setting shows, and it is the FASTA's line width there too. Zero is
+// the one value that must not reach `splitString`, which advances the string by
+// it; the clamp is in the action rather than the dialog so a hand-edited
+// localStorage entry cannot hang the panel either.
+test('the row width is a setting, and never zero', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  model.setCharactersPerRow(60)
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'ACGT'.repeat(30) }}
+      feature={{
+        start: 0,
+        end: 120,
+        refName: 'chr1',
+        strand: 1,
+        type: 'region',
+        uniqueId: 'fwd',
+        name: 'fwd',
+      }}
+    />,
+  )
+  const body = getSequenceFasta(getByTestId('sequence_panel'))
+    .split('\n')
+    .slice(1)
+    .filter(Boolean)
+  expect(body).toEqual(['ACGT'.repeat(15), 'ACGT'.repeat(15)])
+
+  model.setCharactersPerRow(0)
+  expect(model.charactersPerRow).toBe(1)
+})
+
 test('single exon cDNA should not have duplicate sequences', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()
