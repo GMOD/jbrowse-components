@@ -345,10 +345,10 @@ for r in 1 2; do
   [ -f "reads/${READS_ACC}_$r.fastq.gz" ] || wget -nv --tries=5 --continue \
     -O "reads/${READS_ACC}_$r.fastq.gz" \
     "https://ftp.sra.ebi.ac.uk/vol1/fastq/${READS_ACC:0:6}/${READS_ACC}/${READS_ACC}_$r.fastq.gz"
-  # awk does the head: `| head -600000` closes the pipe on zcat, which dies of
+  # awk does the head: `| head -600000` closes the pipe on gzip, which dies of
   # SIGPIPE, and under `set -o pipefail` that aborts the run after the reads
   # are already downloaded.
-  zcat "reads/${READS_ACC}_$r.fastq.gz" |
+  gzip -dc "reads/${READS_ACC}_$r.fastq.gz" |
     awk 'NR<=600000' | gzip > "reads/sub_$r.fastq.gz"
 done
 

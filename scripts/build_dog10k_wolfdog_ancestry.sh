@@ -213,7 +213,7 @@ java -Xmx12g -jar flare.jar ref="$CHROM.ref.vcf.gz" ref-panel=refpanel.txt \
 # wolf ancestry, the German Shepherds essentially none.
 echo
 echo "Ancestry fractions on $CHROM:"
-zcat "wolfdog_$CHROM.global.anc.gz"
+gzip -dc "wolfdog_$CHROM.global.anc.gz"
 
 # ── The named subset ────────────────────────────────────────────────────────
 # The spectrum painting is 243 animals, which at any sane figure height is under

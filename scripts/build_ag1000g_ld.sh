@@ -182,7 +182,7 @@ emit_vcf() { # ids-file from to step minmaf out
 # per-population MAF and thinning are applied afterwards from the plink set.
 if [ ! -f common.bim ]; then
   if [ -n "$FROM_RELEASE" ]; then
-    echo "building common-variant grid over $CHROM (one pass, a few minutes)..."
+    echo "finding the common variants on $CHROM (one pass, a few minutes)..."
     cols_for <(awk 'NR>2{print $1}' "samples.$CHROM.txt") > cols.all
     emit_vcf cols.all 1 300000000 4000 0.1 common.vcf
     "$PLINK" --vcf common.vcf --double-id --allow-extra-chr \
@@ -192,7 +192,7 @@ if [ ! -f common.bim ]; then
     for f in common.bed common.bim common.fam; do fetch "$DERIVED/$f" "$f"; done
   fi
 fi
-echo "grid: $(wc -l < common.bim) common sites on $CHROM"
+echo "$(wc -l < common.bim) common variants on $CHROM to compute LD from"
 
 # ── Which population? ───────────────────────────────────────────────────────
 # An inversion only shows a block where both arrangements segregate. Probe it:

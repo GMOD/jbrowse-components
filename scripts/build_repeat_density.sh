@@ -123,7 +123,7 @@ fetch "$HS1_RMSK" chm13v2.0_rmsk.bb
 # entire point of comparing them.
 echo "== normalizing =="
 if [[ ! -s rmsk_hg38.bed ]]; then
-  zcat rmsk_hg38.txt.gz |
+  gzip -dc rmsk_hg38.txt.gz |
     awk -F'\t' '$6 ~ /^chr[0-9XY]+$/ {print $6"\t"$7"\t"$8"\t"$12}' |
     sort -k1,1 -k2,2n > rmsk_hg38.bed
 fi

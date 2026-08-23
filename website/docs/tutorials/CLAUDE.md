@@ -98,6 +98,17 @@ bgzip/tabix prep are exempt (PLUMBING there); a tool another tool drives — LAS
 under jcvi, minimap2 inside a python helper — goes in that script's ALLOWED with
 the reason.
 
+**`gzip -dc`, never `zcat`.** macOS `/usr/bin/zcat` only ever looks for a `.Z`,
+so `zcat foo.gz` fails there and writes an empty file, which a build script then
+carries forward as if nothing happened. `gzip -dc` is the same thing everywhere.
+This is a page rule as much as a script one, since the fences are what a reader
+copies.
+
+**Assume a GNU userland is not what the reader has.** The same trap in a slower
+form: `grep -F -f` with many patterns against very long lines runs at 0.25 MB/s
+on the BSD grep macOS ships, against a minute's work on GNU grep. Where a
+command's cost depends on which build of it is installed, say so where it runs.
+
 **A display setting the figure depends on goes in the track config on the page**
 too, not only in the script's config patch.
 

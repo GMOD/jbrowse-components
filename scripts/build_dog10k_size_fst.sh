@@ -186,14 +186,14 @@ tabix -f -p bed "$OUTBED.gz"
 # top a scan is the result, and a script that checked for IGF1 would be checking
 # its own expectation.
 echo
-echo "windows scored: $(zcat "$OUTBED.gz" | wc -l)"
+echo "windows scored: $(gzip -dc "$OUTBED.gz" | wc -l)"
 # A scan has no p-value, so "how high is high" is empirical: these are the
 # quantiles of the scan's own windows. The 99.9th is what the published figure
 # draws as its significanceLine, and re-running this is how to re-derive it
 # rather than trust the number written into the spec.
 echo
 echo "empirical Fst quantiles over the scored windows:"
-zcat "$OUTBED.gz" | awk '{print $5}' | sort -g |
+gzip -dc "$OUTBED.gz" | awk '{print $5}' | sort -g |
   awk '{v[NR]=$1} END {
     printf "  %6s %8s\n", "pct", "Fst"
     split("95 99 99.5 99.9", q, " ")
@@ -205,7 +205,7 @@ echo
 echo "top 20 windows by Fst:"
 # awk does the head: `| head -20` closes the pipe on sort, which dies of
 # SIGPIPE, and under `set -o pipefail` the script exits 141 right here.
-zcat "$OUTBED.gz" | sort -k5,5gr |
+gzip -dc "$OUTBED.gz" | sort -k5,5gr |
   awk 'BEGIN{OFS="\t"} NR<=20 {print NR, $1":"$2"-"$3, $5, $6" sites"}'
 
 echo

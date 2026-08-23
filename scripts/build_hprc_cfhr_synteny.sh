@@ -98,7 +98,7 @@ if [ -f cfhr_window_all_haplotypes.paf ]; then
 else
   echo "== streaming $PAF, keeping GRCh38#0#chr1:$SLICE_START-$SLICE_END"
   curl -fsS "$PAF" \
-    | zcat \
+    | gzip -dc \
     | awk -F'\t' -v s="$SLICE_START" -v e="$SLICE_END" \
         '$6=="GRCh38#0#chr1" && $8 < e && $9 > s' \
     > cfhr_window_all_haplotypes.paf
@@ -156,7 +156,7 @@ while IFS=$'\t' read -r sample hap label; do
   # overlapping genes therefore interleave backwards, which tabix rejects
   { echo '##gff-version 3'
     curl -fsS "$url" \
-      | zcat \
+      | gzip -dc \
       | awk -F'\t' -v c="$contig" -v s="$qstart" -v e="$qend" \
           '$1==c && $4<e && $5>s && $3!="intron" && $3!="start_codon" &&
            $3!="stop_codon"' \
@@ -164,7 +164,7 @@ while IFS=$'\t' read -r sample hap label; do
   } > "hprc_cfhr_$name.genes.gff3"
   bgzip -f "hprc_cfhr_$name.genes.gff3"
   tabix -f -p gff "hprc_cfhr_$name.genes.gff3.gz"
-  zcat "hprc_cfhr_$name.genes.gff3.gz" \
+  gzip -dc "hprc_cfhr_$name.genes.gff3.gz" \
     | awk -F'\t' '$3=="gene" { match($9, /Name=[^;]*/); print substr($9, RSTART+5, RLENGTH-5) }' \
     | sort -u | tr '\n' ' ' | sed 's/^/   genes: /;s/$/\n/'
 done < cfhr_panel.txt

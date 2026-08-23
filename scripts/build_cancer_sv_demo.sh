@@ -64,7 +64,7 @@ for s in tumor normal; do
   [ -f "$DEMO/COLO829_$s.coverage.bw" ] && continue
   curl -fL "$WF/COLO829/qc/coverage/COLO829_$s.regions.bed.gz" -o "cov_$s.bed.gz"
   # drop the alt/decoy contigs bedGraphToBigWig would reject as absent from .fai
-  zcat "cov_$s.bed.gz" | sort -k1,1 -k2,2n |
+  gzip -dc "cov_$s.bed.gz" | sort -k1,1 -k2,2n |
     awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > "cov_$s.bg"
   bedGraphToBigWig "cov_$s.bg" hg38.chrom.sizes "$DEMO/COLO829_$s.coverage.bw"
   rm -f "cov_$s.bg" "cov_$s.bed.gz"

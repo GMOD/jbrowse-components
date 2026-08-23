@@ -95,7 +95,7 @@ if [ -f inv_window_all_haplotypes.paf ]; then
 else
   echo "== streaming $PAF, keeping GRCh38#0#chr1:$SLICE_START-$SLICE_END"
   curl -fsS "$PAF" \
-    | zcat \
+    | gzip -dc \
     | awk -F'\t' -v s="$SLICE_START" -v e="$SLICE_END" \
         '$6=="GRCh38#0#chr1" && $8 < e && $9 > s' \
     > inv_window_all_haplotypes.paf
@@ -269,7 +269,7 @@ while IFS=$'\t' read -r sample hap label contig qstart qend; do
   # overlapping genes therefore interleave backwards, which tabix rejects
   { echo '##gff-version 3'
     curl -fsS "$url" \
-      | zcat \
+      | gzip -dc \
       | awk -F'\t' -v c="$contig" -v s="$gs" -v e="$ge" \
           '$1==c && $4<e && $5>s && $3!="intron" && $3!="start_codon" &&
            $3!="stop_codon" && $9 !~ /gene_name=ENSG/' \
@@ -279,7 +279,7 @@ while IFS=$'\t' read -r sample hap label contig qstart qend; do
   tabix -f -p gff "hprc_inv_$name.genes.gff3.gz"
   # named genes only, in the order the row draws them: the carrier's is the
   # reference's reversed, which is the figure's second statement of the event
-  zcat "hprc_inv_$name.genes.gff3.gz" \
+  gzip -dc "hprc_inv_$name.genes.gff3.gz" \
     | awk -F'\t' '$3=="gene" { match($9, /Name=[^;]*/)
                                n = substr($9, RSTART+5, RLENGTH-5)
                                if (n !~ /^ENSG/) print n }' \

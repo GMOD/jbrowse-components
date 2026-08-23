@@ -68,7 +68,7 @@ fi
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
   for entry in "${CELL_TYPES[@]}"; do
-    zcat "$(bed_file "$entry")" \
+    gzip -dc "$(bed_file "$entry")" \
       | awk -v c="${entry##*:}" 'BEGIN{OFS="\t"} {print $0, c}'
   done
 } > wgEncodeBroadHmm.multirow.bed

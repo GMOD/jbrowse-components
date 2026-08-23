@@ -62,4 +62,4 @@ bgzip -f omia_dog_variants.gff3
 tabix -f -p gff omia_dog_variants.gff3.gz
 
 echo
-echo "wrote $OUTDIR/omia_dog_variants.gff3.gz ($(zcat omia_dog_variants.gff3.gz | grep -cv '^#') records)"
+echo "wrote $OUTDIR/omia_dog_variants.gff3.gz ($(gzip -dc omia_dog_variants.gff3.gz | grep -cv '^#') records)"

@@ -191,7 +191,7 @@ PY
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
   while IFS=$'\t' read -r eid celltype; do
-    zcat "seg/${eid}_15_coreMarks_mnemonics.bed.gz" \
+    gzip -dc "seg/${eid}_15_coreMarks_mnemonics.bed.gz" \
       | awk -v c="$celltype" -F'\t' 'BEGIN { OFS = "\t" }
           NR == FNR { rgb[$1] = $2; next }
           {

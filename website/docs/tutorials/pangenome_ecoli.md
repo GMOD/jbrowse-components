@@ -282,7 +282,7 @@ already shows. The two files differ at a repeat. Find one by looking for a
 reference span that more than one segment of the same query lands on:
 
 ```bash
-zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
+gzip -dc ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
   | cut -f1,3,4,8,9 | sort -k4,4n
 ```
 

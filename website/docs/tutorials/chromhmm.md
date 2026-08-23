@@ -95,7 +95,7 @@ names from the data. The merge is one pass over the per-cell-type BEDs:
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
   for f in *.bed.gz; do
-    zcat "$f" | awk -v c="${f%%.*}" 'BEGIN{OFS="\t"} {print $0, c}'
+    gzip -dc "$f" | awk -v c="${f%%.*}" 'BEGIN{OFS="\t"} {print $0, c}'
   done
 } > multirow.bed
 

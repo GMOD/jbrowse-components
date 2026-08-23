@@ -34,7 +34,8 @@ or a data-access agreement.
   https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt
 - the AgamP4 reference and its gene models, which the gene lane reads:
   https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/
-- the 2La tag SNPs each mosquito's karyotype is scored from
+- the 2La tag SNPs, the ~200 positions whose allele says which arrangement a
+  chromosome carries, which each mosquito's karyotype is scored from
   ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
   https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt
 - the finished `CMgam` LD table, rehosted so the track blocks on this page load
@@ -65,7 +66,8 @@ plink asks for.
 
 ```bash
 # the display uploads n(n-1)/2 cells, and ~800 SNPs across an arm is already at
-# screen resolution, so thin to a grid rather than to the callset's density
+# screen resolution, so keep roughly one variant per 50 kb rather than every
+# variant the callset has
 plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt --maf 0.2 \
   --chr 2L --write-snplist --out sel
 awk -F'_' -v g=50000 '{p=$2+0; if (p >= nxt) {print $0; nxt = p + g}}' \
