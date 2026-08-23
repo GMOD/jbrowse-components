@@ -3,7 +3,6 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { buildFeatureRenderData } from '@jbrowse/plugin-canvas'
 
 import type { VariantFeatureInfo } from '../shared/types.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { DisplayConfig, LayoutRegionData } from '@jbrowse/plugin-canvas'
 
@@ -59,13 +58,11 @@ export function buildLaneRenderData({
   data,
   region,
   config,
-  palette,
   jexl,
 }: {
   data: LaneSourceData
   region: LaneRegion
   config: DisplayConfig
-  palette: JBrowsePalette
   jexl: JexlInstance
 }): LayoutRegionData {
   const { featureIdList, featurePositions, featureColors, featureGenotypeMap } =
@@ -90,7 +87,6 @@ export function buildLaneRenderData({
       features,
       featureCount: features.length,
       config,
-      palette,
       jexl,
       regionStart: region.start,
       regionEnd: region.end,

@@ -65,13 +65,11 @@ function labeledStackedRegionData(rows: number, heightPx: number) {
       nameLabel: {
         text: `name${i}`,
         relativeY: 0,
-        color: '#000',
         textWidth: 40,
       },
       descriptionLabel: {
         text: `description ${i}`,
         relativeY: 0,
-        color: '#000',
         textWidth: 80,
       },
     })
@@ -115,7 +113,6 @@ function mixedWidthRegionData(count: number) {
       nameLabel: {
         text: f.featureId,
         relativeY: 0,
-        color: '#000',
         textWidth: 40,
       },
     })
@@ -1377,7 +1374,6 @@ function genesOver(
       nameLabel: {
         text: f.featureId,
         relativeY: 0,
-        color: '#000',
         textWidth: 60,
       },
     })

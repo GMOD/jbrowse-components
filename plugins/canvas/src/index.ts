@@ -63,9 +63,14 @@ export {
 //
 // `createFeatureFloatingLabels` is the whole text half in one call — it is what
 // truncates a name by length and a description by *rendered width*, drops one
-// that is blank or `.`, measures at LABEL_FONT_SIZE and picks the theme's two
-// label colors. Re-spelling any part of that outside this plugin is how the same
-// record ends up lettered differently in two displays.
+// that is blank or `.`, and measures at LABEL_FONT_SIZE. Re-spelling any part of
+// that outside this plugin is how the same record ends up lettered differently
+// in two displays.
+//
+// Not the COLORS, which are `labelColors` on the main thread: a label's color is
+// a function of its kind and the theme alone, and resolving it here would put
+// the palette in the worker's RPC payload — where every field is a cache key, so
+// a light/dark toggle would refetch (see colorClasses.ts).
 //
 // `LABEL_PADDING_PX` is the horizontal breathing room two labels need whatever
 // resolves their overlap, sized to absorb measureText's disagreement with the

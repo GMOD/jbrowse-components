@@ -473,7 +473,6 @@ export function stateModelFactory(
           // reads `visibleRegions` before the view has blocks.
           if (self.canRender && self.topBands.laneHeight > 0) {
             const config = self.laneDisplayConfig
-            const { palette } = getSession(self)
             const { jexl } = getEnv<{ pluginManager: PluginManager }>(
               self,
             ).pluginManager
@@ -484,13 +483,7 @@ export function stateModelFactory(
               if (data?.featureIdList.length) {
                 out.set(
                   region.displayedRegionIndex,
-                  buildLaneRenderData({
-                    data,
-                    region,
-                    config,
-                    palette,
-                    jexl,
-                  }),
+                  buildLaneRenderData({ data, region, config, jexl }),
                 )
               }
             }

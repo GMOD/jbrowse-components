@@ -1,4 +1,3 @@
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { findGlyph } from '../glyphs/findGlyph.ts'
@@ -21,7 +20,6 @@ function mockFeature(data: Record<string, unknown>): Feature {
 function makeContext(): RenderContext {
   return {
     config: mockDisplayConfig(),
-    palette: resolvePalette(),
     colorByCDS: false,
     jexl: createJexlInstance(),
   }

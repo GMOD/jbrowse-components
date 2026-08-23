@@ -1,4 +1,3 @@
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
@@ -17,7 +16,6 @@ import type { Feature } from '@jbrowse/core/util'
 // one outcome a per-feature height must never have.
 
 const jexl = createJexlInstance()
-const palette = resolvePalette()
 
 function mockFeature(opts: {
   type: string
@@ -45,7 +43,6 @@ function render(feature: Feature, config: DisplayConfig) {
     regionStart: 0,
     regionEnd: 1000,
     config,
-    palette,
     colorByCDS: false,
     jexl,
   })

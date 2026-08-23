@@ -5,16 +5,20 @@ import {
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
 
+import { LITERAL, codonStripeClass } from '../colorClasses.ts'
 import { createTranscriptFloatingLabel } from '../floatingLabels.ts'
 import { hasVisibleText, isUTR } from '../util.ts'
 import {
   TRANSL_EXCEPT_HIGHLIGHT,
   boxColor,
+  packClassedColor,
   strokeColor,
 } from './glyphColors.ts'
 
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
 import type { FeatureLayout } from '../types.ts'
+import type { ClassedColor } from '../util.ts'
+import type { PackedColor } from './glyphColors.ts'
 import type {
   Collector,
   GlyphPlacement,
@@ -56,13 +60,13 @@ export function emitIntronLines(
     transcript: FeatureLayout
     topPx: number
     labelRowsAbove: number
-    strokeUint: number
+    stroke: PackedColor
     flatbushIdx: number
     showChevrons: boolean
   },
   collector: Collector,
 ) {
-  const { transcript, topPx, labelRowsAbove, strokeUint, flatbushIdx } = args
+  const { transcript, topPx, labelRowsAbove, stroke, flatbushIdx } = args
   const { showChevrons } = args
   const { lines } = collector
   const feature = transcript.feature
@@ -83,7 +87,8 @@ export function emitIntronLines(
         end: childStart,
         y: lineY,
         height: lineHeight,
-        color: strokeUint,
+        color: stroke.color,
+        colorClass: stroke.colorClass,
         direction,
         flatbushIdx,
         labelRowsAbove,
@@ -99,7 +104,8 @@ export function emitIntronLines(
       end,
       y: lineY,
       height: lineHeight,
-      color: strokeUint,
+      color: stroke.color,
+      colorClass: stroke.colorClass,
       direction,
       flatbushIdx,
       labelRowsAbove,
@@ -110,7 +116,10 @@ export function emitIntronLines(
 export function emitCodonRects(
   args: {
     aminoAcids: AggregatedAminoAcid[]
-    baseColor: string
+    // The CDS box's own fill, which the stripes are two tints of. Themed when
+    // `colorByCDS` painted the box by reading frame, in which case there is no
+    // string to lighten and the tint rides as a class of its own.
+    baseColor: ClassedColor
     topPx: number
     height: number
     strand: number
@@ -122,9 +131,16 @@ export function emitCodonRects(
   const { aminoAcids, baseColor, topPx: y, height, strand, flatbushIdx } = args
   const { labelRowsAbove } = args
   const { rects, aminoAcidOverlay: overlayItems } = collector
-  const baseHex = formatHEX(parseCssColor(baseColor))
-  const color1 = colorToUint32(lighten(baseHex, 0.5))
-  const color2 = colorToUint32(lighten(baseHex, 0.35))
+  const baseHex =
+    baseColor.color === undefined
+      ? undefined
+      : formatHEX(parseCssColor(baseColor.color))
+  const color1 =
+    baseHex === undefined ? 0 : colorToUint32(lighten(baseHex, 0.5))
+  const color2 =
+    baseHex === undefined ? 0 : colorToUint32(lighten(baseHex, 0.35))
+  const class1 = codonStripeClass(baseColor.colorClass, false)
+  const class2 = codonStripeClass(baseColor.colorClass, true)
 
   // emitCodonRects is called once per CDS segment, so alternate by the global
   // residue index (proteinIndex), not the per-call loop index — this keeps the
@@ -141,6 +157,11 @@ export function emitCodonRects(
         : aa.proteinIndex % 2 === 1
           ? color2
           : color1,
+      colorClass: aa.isTranslExcept
+        ? LITERAL
+        : aa.proteinIndex % 2 === 1
+          ? class2
+          : class1,
       strand,
       flatbushIdx,
       labelRowsAbove,
@@ -167,8 +188,10 @@ export function pushBoxRect(
     height: number
     flatbushIdx: number
     labelRowsAbove: number
-    // packed RGBA32 override (mature-protein palette); 0 is a valid color so the
-    // guard is `=== undefined`, not a falsy/`??` check
+    // packed RGBA32 override (mature-protein palette, repeat subpart fills); 0
+    // is a valid color so the guard is `=== undefined`, not a falsy/`??` check.
+    // Always a literal — every override in tree is a fixed palette this plugin
+    // owns, not the page theme.
     colorOverride?: number
   },
   ctx: RenderContext,
@@ -184,15 +207,14 @@ export function pushBoxRect(
   } = args
   const { rects } = collector
   const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
+  const box = colorOverride === undefined ? boxColor(feature, ctx) : undefined
   rects.push({
     start: feature.get('start'),
     end: feature.get('end'),
     y,
     height,
-    color:
-      colorOverride === undefined
-        ? colorToUint32(boxColor(feature, ctx))
-        : colorOverride,
+    color: box === undefined ? colorOverride! : packClassedColor(box.color),
+    colorClass: box?.colorClass ?? LITERAL,
     strand: feature.get('strand') ?? 0,
     flatbushIdx,
     labelRowsAbove,
@@ -204,13 +226,13 @@ export function emitStrandArrow(
     feature: Feature
     topPx: number
     height: number
-    strokeUint: number
+    stroke: PackedColor
     flatbushIdx: number
     labelRowsAbove: number
   },
   collector: Collector,
 ) {
-  const { feature, topPx, height, strokeUint, flatbushIdx } = args
+  const { feature, topPx, height, stroke, flatbushIdx } = args
   const { labelRowsAbove } = args
   const { arrows } = collector
   const strand = feature.get('strand') ?? 0
@@ -223,7 +245,8 @@ export function emitStrandArrow(
       height,
       widthBp: end - start,
       direction: strand,
-      color: strokeUint,
+      color: stroke.color,
+      colorClass: stroke.colorClass,
       flatbushIdx,
       labelRowsAbove,
     })
@@ -248,7 +271,7 @@ export function emitTopLevelStrandArrow(
         feature,
         topPx: place.baseTopPx,
         height: layout.height,
-        strokeUint: colorToUint32(strokeColor(feature, ctx)),
+        stroke: strokeColor(feature, ctx),
         flatbushIdx: place.flatbushIdx,
         labelRowsAbove: place.labelRowsAbove,
       },
@@ -282,7 +305,6 @@ export function emitSubfeatureLabel(
       featureHeight,
       subfeatureLabels: config.subfeatureLabels,
       parentFeatureId: args.parentFeatureId,
-      palette: ctx.palette,
     })
     // Merge, don't replace: FeatureLabelData carries name/description and
     // subfeature labels together, so preserve any name/description entry already

@@ -1,5 +1,6 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
+import { LITERAL } from '../colorClasses.ts'
 import {
   createFeatureFloatingLabels,
   createMoreIsoformsLabel,
@@ -130,14 +131,14 @@ function processTranscriptLayout(
     labelRowsAbove,
   } = place
   const transcriptFeature = transcript.feature
-  const strokeUint = colorToUint32(strokeColor(transcriptFeature, ctx))
+  const stroke = strokeColor(transcriptFeature, ctx)
 
   emitIntronLines(
     {
       transcript,
       topPx: transcriptTopPx,
       labelRowsAbove,
-      strokeUint,
+      stroke,
       flatbushIdx,
       showChevrons: ctx.config.displayDirectionalChevrons,
     },
@@ -178,7 +179,7 @@ function processTranscriptLayout(
       feature: transcriptFeature,
       topPx: transcriptTopPx,
       height: transcript.height,
-      strokeUint,
+      stroke,
       flatbushIdx,
       labelRowsAbove,
     },
@@ -324,7 +325,10 @@ function processMatureProteinLayout(
       emitCodonRects(
         {
           aminoAcids: childAminoAcids,
-          baseColor: MATURE_PROTEIN_COLOR_HEX[colorIdx]!,
+          baseColor: {
+            color: MATURE_PROTEIN_COLOR_HEX[colorIdx]!,
+            colorClass: LITERAL,
+          },
           topPx,
           height: childLayout.height,
           strand: cdsFeature.get('strand') ?? 0,
@@ -384,7 +388,7 @@ function processMatureProteinLayout(
       feature: layout.feature,
       topPx: baseTopPx,
       height: layout.height,
-      strokeUint: colorToUint32(strokeColor(layout.feature, ctx)),
+      stroke: strokeColor(layout.feature, ctx),
       flatbushIdx,
       labelRowsAbove: place.labelRowsAbove,
     },
@@ -406,13 +410,14 @@ function processRepeatRegionLayout(
 ) {
   const { baseTopPx, flatbushIdx, labelRowsAbove } = place
   const { feature } = layout
-  const strokeUint = colorToUint32(strokeColor(feature, ctx))
+  const stroke = strokeColor(feature, ctx)
   collector.lines.push({
     start: feature.get('start'),
     end: feature.get('end'),
     y: baseTopPx + layout.height / 2,
     height: layout.height,
-    color: strokeUint,
+    color: stroke.color,
+    colorClass: stroke.colorClass,
     direction: 0,
     flatbushIdx,
     labelRowsAbove,
@@ -505,6 +510,7 @@ function pushCutTicks(
       y,
       height: cutHeight,
       color: CUT_SITE_COLOR,
+      colorClass: LITERAL,
       strand,
       flatbushIdx,
       labelRowsAbove,
@@ -554,6 +560,7 @@ function processCrisprGuideLayout(
       y: baseTopPx,
       height,
       color: CRISPR_PAM_COLOR,
+      colorClass: LITERAL,
       strand,
       flatbushIdx,
       labelRowsAbove,
@@ -752,7 +759,6 @@ export function processFeatureRecord(
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     name,
     description,
-    palette: ctx.palette,
   })
 
   // Only beside a name, because the badge sits ON the name row and is read as
@@ -761,10 +767,7 @@ export function processFeatureRecord(
   // label rather than as this gene's own missing count.
   const moreIsoformsLabel =
     nameLabel && layout.isoformOverflow
-      ? createMoreIsoformsLabel({
-          overflow: layout.isoformOverflow,
-          palette: ctx.palette,
-        })
+      ? createMoreIsoformsLabel({ overflow: layout.isoformOverflow })
       : undefined
 
   if (nameLabel || descriptionLabel) {

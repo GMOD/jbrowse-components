@@ -1,10 +1,13 @@
 import { drawFeatureBlocks } from './Canvas2DFeatureRenderer.ts'
+import { labelColors } from './labelColors.ts'
 import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { paintLabels } from './paintLabels.ts'
+import { resolveMapColors } from './resolveRegionColors.ts'
 
 import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 import type { RegionWithData } from './labelPositioning.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export interface FeatureBandPaint {
@@ -16,6 +19,13 @@ export interface FeatureBandPaint {
   showLabels: boolean
   showDescriptions: boolean
   fontSize: number
+  // The active theme's palette. The worker resolves no theme color at all —
+  // a CDS frame fill, a connector stroke and every label text color arrive as
+  // classes or as nothing (colorClasses.ts, labelColors.ts) — so a band that
+  // draws this data owes the palette the same way the display does. Passing it
+  // rather than the resolved colors keeps the two halves, glyphs and labels,
+  // from being handed different themes.
+  palette: JBrowsePalette
 }
 
 /**
@@ -54,9 +64,10 @@ export function paintFeatureBand(
     showLabels,
     showDescriptions,
     fontSize,
+    palette,
   }: FeatureBandPaint,
 ) {
-  drawFeatureBlocks(ctx, dataMap, blocks, {
+  drawFeatureBlocks(ctx, resolveMapColors(dataMap, palette), blocks, {
     scrollY: 0,
     canvasWidth,
     canvasHeight: bandHeight,
@@ -64,7 +75,13 @@ export function paintFeatureBand(
   forEachDisplayLabel(
     regions,
     dataMap,
-    { showLabels, showDescriptions, showSubfeatureLabels: false, fontSize },
+    {
+      showLabels,
+      showDescriptions,
+      showSubfeatureLabels: false,
+      fontSize,
+      colors: labelColors(palette),
+    },
     (_, labels) => {
       paintLabels(ctx, labels, fontSize)
     },

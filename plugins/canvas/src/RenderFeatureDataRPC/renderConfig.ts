@@ -61,16 +61,14 @@ export function readConfigValueSafe<T>(
   }
 }
 
-// Sentinel config color meaning "derive from the theme". The worker swaps it for
-// `fallback` via resolveThemeColor. Only outlineColor still needs it: that slot
-// has three states (no outline / theme-derived / explicit color) and just one
-// spare non-color value (`''` = off), so the third has to be in-band. Slots with
-// only a theme-derived default use `maybeColor` instead — see configurationSlot.ts.
+// Sentinel config color meaning "derive from the theme". The worker recognizes
+// it and emits the OUTLINE color class rather than a color, because it has no
+// palette to resolve one from (see colorClasses.ts). Only outlineColor still
+// needs a sentinel: that slot has three states (no outline / theme-derived /
+// explicit color) and just one spare non-color value (`''` = off), so the third
+// has to be in-band. Slots with only a theme-derived default use `maybeColor`
+// instead — see configurationSlot.ts.
 export const THEME_DERIVED_COLOR = '#f0f'
-
-export function resolveThemeColor(value: string, fallback: string) {
-  return value === THEME_DERIVED_COLOR ? fallback : value
-}
 
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
 // any property is a type error rather than silently typing as `unknown`. The

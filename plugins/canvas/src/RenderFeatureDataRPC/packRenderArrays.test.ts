@@ -1,3 +1,4 @@
+import { LITERAL } from './colorClasses.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
@@ -9,6 +10,7 @@ function rect(start: number, end: number): RectData {
     y: 0,
     height: 10,
     color: 0,
+    colorClass: LITERAL,
     flatbushIdx: 0,
     labelRowsAbove: 0,
     strand: 0,
@@ -21,6 +23,7 @@ function line(start: number, end: number): LineData {
     y: 0,
     height: 10,
     color: 0,
+    colorClass: LITERAL,
     direction: 0,
     flatbushIdx: 0,
     labelRowsAbove: 0,
@@ -34,6 +37,7 @@ function arrow(x: number): ArrowData {
     widthBp: 1000,
     direction: 1,
     color: 0,
+    colorClass: LITERAL,
     flatbushIdx: 0,
     labelRowsAbove: 0,
   }

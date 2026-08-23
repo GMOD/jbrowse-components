@@ -1,13 +1,11 @@
 import type { IsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
-import type { SerializableThemeArgs } from '@jbrowse/core/ui'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {
   text: string
   relativeY: number
-  color: string
   textWidth: number
 }
 
@@ -64,7 +62,6 @@ export interface RenderFeatureDataArgs {
   // downloading features if the estimate exceeds it. Undefined disables the
   // byte gate (i.e. after force-load).
   byteLimit?: number
-  theme?: SerializableThemeArgs
 }
 
 export interface GetFeatureDetailsArgs {
@@ -113,6 +110,11 @@ export interface FeatureDataResult {
   // lives on `FlatbushItem.densityFade` (per feature); there is deliberately no
   // worker-side rect-level flag to disagree with it.
   rectDensityFade: Uint32Array
+  // Theme class per rect, or LENGTH ZERO when every rect here carries a literal
+  // color (see colorClasses.ts and packRenderArrays' colorClassArray). The
+  // worker has no palette, so a CDS painted by reading frame ships its class
+  // and a zero color; the main-thread encode writes the lane.
+  rectColorClasses: Uint8Array
   // Per-primitive `below` subfeature-label row counts, or LENGTH ZERO when this
   // region has none (the ordinary case — `subfeatureLabels` defaults to `none`).
   // The main thread adds `count × labelFontPx` to each Y after the compact
@@ -129,6 +131,7 @@ export interface FeatureDataResult {
   lineHeights: Float32Array
   lineColors: Uint32Array
   lineDirections: Int8Array // strand direction: -1, 0, or 1
+  lineColorClasses: Uint8Array
   lineLabelRows: Uint8Array
 
   // Strand arrows (at feature ends)
@@ -146,6 +149,7 @@ export interface FeatureDataResult {
   arrowWidthsBp: Uint32Array
   arrowDirections: Int8Array
   arrowColors: Uint32Array
+  arrowColorClasses: Uint8Array
   arrowLabelRows: Uint8Array
 
   // Hit detection
@@ -201,6 +205,9 @@ export interface FeatureDataResult {
 
   // Packed RGBA outline color for all rects (0 = no outline)
   outlineColor: number
+  // LITERAL when `outlineColor` above is the color; OUTLINE when the slot asked
+  // for the theme-derived one, which only the main thread can name.
+  outlineColorClass: number
 }
 
 /**
@@ -221,15 +228,21 @@ type PrimitiveArrayKey = Extract<
 export type PackedPrimitives = Pick<FeatureDataResult, PrimitiveArrayKey>
 
 /**
- * What a renderer backend draws one region from. The `*FeatureIndices` and
- * `*LabelRows` arrays are excluded on purpose: both are main-thread layout
- * inputs — one maps an element back to its hit-test entry, the other is spent
- * into the element's Y before a draw ever sees it — and nothing in a draw call
- * reads either.
+ * What a renderer backend draws one region from. Three families of array are
+ * excluded on purpose, all main-thread inputs rather than draw inputs: a
+ * `*FeatureIndices` maps an element back to its hit-test entry, a `*LabelRows`
+ * is spent into the element's Y before a draw ever sees it, and a
+ * `*ColorClasses` is consumed by the encode that produces the color lane a
+ * draw does read. Nothing in a draw call reads any of them — and the class
+ * lanes in particular must not be reachable there, or a renderer could draw
+ * from the unresolved zero the worker shipped.
  */
 export type RegionRenderData = Pick<
   FeatureDataResult,
-  | Exclude<PrimitiveArrayKey, `${string}FeatureIndices` | `${string}LabelRows`>
+  | Exclude<
+      PrimitiveArrayKey,
+      `${string}FeatureIndices` | `${string}LabelRows` | `${string}ColorClasses`
+    >
   | 'outlineColor'
 >
 

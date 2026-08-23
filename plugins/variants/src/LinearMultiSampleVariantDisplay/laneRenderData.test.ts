@@ -1,4 +1,3 @@
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import { computeLaidOutData, maxBottom } from '@jbrowse/plugin-canvas'
@@ -11,7 +10,6 @@ import type { LaneSourceData } from './laneRenderData.ts'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
 const jexl = createJexlInstance()
-const palette = resolvePalette({})
 const region = {
   displayedRegionIndex: 0,
   refName: 'ctgA',
@@ -62,7 +60,6 @@ function laidOut(
     data,
     region,
     config: laneDisplayConfig({ labels, featureHeight: 10 }),
-    palette,
     jexl,
   })
   return computeLaidOutData(new Map([[0, built]]), {

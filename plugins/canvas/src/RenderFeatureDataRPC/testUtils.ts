@@ -1,3 +1,4 @@
+import { LITERAL } from './colorClasses.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RectData } from './packRenderArrays.ts'
@@ -64,6 +65,7 @@ export function packFixtureRects(
     y: 0,
     height: 10,
     color: 0xff_80_40_ff,
+    colorClass: LITERAL,
     strand: 0,
     flatbushIdx: i,
     labelRowsAbove: 0,
@@ -141,6 +143,7 @@ export function makeFeatureData(
     subfeatureInfos: [],
     floatingLabelsData: new Map(),
     outlineColor: 0,
+    outlineColorClass: LITERAL,
     featureCount: 0,
     ...overrides,
   }

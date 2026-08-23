@@ -8,6 +8,7 @@ import { layoutMatureProteinRegion } from '../RenderFeatureDataRPC/glyphs/mature
 import { layoutRepeatRegion } from '../RenderFeatureDataRPC/glyphs/repeatRegion.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
+import { labelColors } from './components/labelColors.ts'
 import { forEachRenderedLabel } from './components/labelPositioning.ts'
 import { computeLaidOutData } from './layout.ts'
 
@@ -18,7 +19,6 @@ import type { LayoutRegionData } from './layout.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const jexl = createJexlInstance()
-const palette = resolvePalette()
 
 function mockFeature(opts: {
   type: string
@@ -107,7 +107,6 @@ function layoutAt(
     regionStart: 0,
     regionEnd: 10_000,
     config,
-    palette,
     colorByCDS: false,
     jexl,
   })
@@ -357,6 +356,7 @@ describe('the shared below-label row of the repeat and CRISPR glyphs', () => {
         showDescriptions: false,
         showSubfeatureLabels: true,
         fontSize: labelFontSize(mode),
+        colors: labelColors(resolvePalette()),
       },
       (_featureId, labels) => out.push(...labels),
     )

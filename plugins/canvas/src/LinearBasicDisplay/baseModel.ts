@@ -43,6 +43,7 @@ import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { toJS } from 'mobx'
 
+import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import {
   FEATURE_DEFAULT_COLOR,
   STRAND_COLOR_JEXL,
@@ -63,6 +64,7 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
+import { resolveRegionColors } from './components/resolveRegionColors.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
@@ -732,14 +734,31 @@ export default function baseStateModelFactory(
               self.expandedGeneIds.length > 0
                 ? toJS(self.expandedGeneIds)
                 : undefined,
-            // Structurally-serializable theme description so worker-side coloring
-            // (CDS frames, stroke fallback) matches the user's active theme; the
-            // worker rebuilds the full theme via createJBrowseThemeFromArgs. The
-            // created theme itself carries functions and can't cross the worker
-            // boundary. Tracked here (not added at the call site) so switching
-            // themes invalidates the RPC cache and refetches with new colors.
-            theme: getSession(self).themeOptions,
           }
+        },
+
+        /**
+         * #method
+         * What the main-thread encode needs beyond a region's own data: the
+         * packed color for every theme class the worker emitted.
+         *
+         * The theme deliberately does NOT appear in `rpcProps()` above. It used
+         * to, so worker-baked CDS-frame and connector colors could follow it —
+         * and every field of that payload is an RPC cache key, so a light/dark
+         * toggle or a config `theme` edit re-downloaded and re-parsed every
+         * visible region of every canvas feature track. The worker now emits a
+         * class where it used to bake a theme color (colorClasses.ts) and this
+         * resolves it, so the same toggle is a re-encode of what is already
+         * loaded.
+         *
+         * `session.palette`, not `session.theme`: this crosses no boundary that
+         * needs MUI, and a getter rather than a pushed volatile so the SVG
+         * export and the RPC — neither of which has a component — see a real
+         * palette (ARCHITECTURE.md, "Theme-derived render inputs are session
+         * getters").
+         */
+        gpuProps() {
+          return { colorTable: themedColorTable(getSession(self).palette) }
         },
       }))
       // Laid-out data derived from the raw per-region fetch results. MobX
@@ -1289,12 +1308,11 @@ export default function baseStateModelFactory(
           // rows re-upload each frame (and once more on settle).
           installPerRegionLifecycle(self, backend, {
             data: () => self.renderDataMap,
-            render: b =>
-              b.renderBlocks(
-                self.renderBlocks,
-                self.renderDataMap,
-                self.renderState,
-              ),
+            inputs: () => self.gpuProps(),
+            encode: (data, { colorTable }) =>
+              resolveRegionColors(data, colorTable),
+            render: (b, encoded) =>
+              b.renderBlocks(self.renderBlocks, encoded, self.renderState),
           })
         },
       }))

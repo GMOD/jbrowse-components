@@ -244,7 +244,6 @@ describe('renderSvg', () => {
           nameLabel: {
             text: 'a-very-long-gene-name',
             relativeY: 0,
-            color: '#000',
             textWidth: 500,
           },
         },
@@ -283,7 +282,6 @@ describe('renderSvg', () => {
           nameLabel: {
             text: 'a-very-long-gene-name',
             relativeY: 0,
-            color: '#000',
             textWidth: 500,
           },
         },
@@ -388,7 +386,6 @@ describe('renderSvg', () => {
           nameLabel: {
             text: 'GENE1',
             relativeY: 0,
-            color: '#000',
             textWidth: 40,
           },
         },
@@ -425,13 +422,11 @@ describe('renderSvg', () => {
             nameLabel: {
               text: 'GENE1',
               relativeY: 0,
-              color: '#000',
               textWidth: 40,
             },
             moreIsoformsLabel: {
               text: expanded ? 'show fewer' : '+3 more',
               relativeY: 0,
-              color: '#888',
               textWidth: 30,
               hidden: 3,
               expanded,
@@ -474,7 +469,6 @@ describe('renderSvg', () => {
           nameLabel: {
             text: 'a-very-long-gene-name',
             relativeY: 0,
-            color: '#000',
             textWidth: 500,
           },
         },
@@ -502,7 +496,6 @@ describe('renderSvg', () => {
     const label = (text: string) => ({
       text,
       relativeY: 0,
-      color: '#000',
       textWidth: 40,
     })
     const data = makeFeatureData({

@@ -1,11 +1,11 @@
 import { getFrame, measureText } from '@jbrowse/core/util'
 import { featureBedColor } from '@jbrowse/core/util/colorBits'
 
+import { LITERAL, STROKE, cdsFrameClass } from './colorClasses.ts'
 import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
 import { readConfigValueSafe } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -115,19 +115,28 @@ const BOX_COLOR_SLOTS = {
   utrColor: UTR_DEFAULT_COLOR,
 } as const
 
+/**
+ * A color the worker resolved, or the theme class the main thread has to
+ * resolve for it. `color` is undefined exactly when `colorClass` is not
+ * `LITERAL` — there is no literal to fall back to, because the worker has no
+ * palette to read one from.
+ */
+export interface ClassedColor {
+  color: string | undefined
+  colorClass: number
+}
+
 export function getBoxColor({
   feature,
   config,
   colorByCDS,
-  palette,
   jexl,
 }: {
   feature: Feature
   config: DisplayConfig
   colorByCDS: boolean
-  palette: JBrowsePalette
   jexl: JexlInstance
-}) {
+}): ClassedColor {
   // An unset (`maybeColor` undefined) slot means nothing asked for a color here,
   // so the file's own gets to speak; any set value wins, making "the config
   // beats the file" the single rule. Because unset is `undefined` rather than a
@@ -176,39 +185,44 @@ export function getBoxColor({
       featureStrand,
       featurePhase,
     )
-    const frameColor = palette.framesCDS.at(frame)?.main
-    if (frameColor) {
-      fill = frameColor
+    const frameClass = cdsFrameClass(frame)
+    // An unrecognized frame keeps the resolved fill, which is what the missing
+    // `palette.framesCDS.at(frame)` entry used to do.
+    if (frameClass !== LITERAL) {
+      return { color: undefined, colorClass: frameClass }
     }
   }
 
-  return fill
+  return { color: fill, colorClass: LITERAL }
 }
 
 export function getStrokeColor({
   feature,
   config,
-  palette,
   jexl,
 }: {
   feature: Feature
   config: DisplayConfig
-  palette: JBrowsePalette
   jexl: JexlInstance
-}) {
-  // text.secondary is translucent; keep its alpha so connector lines and strand
-  // arrows blend into the track as a subtle grey rather than glaring full-white
-  // (dark mode) or full-black (light mode) at forced opacity. An unset slot
-  // takes it, and so does a throwing jexl — degrading to the subtle line rather
-  // than crashing the render.
-  const themed = palette.text.secondary
-  return config.connectorColor === undefined
-    ? themed
-    : readConfigValueSafe<string>(
-        config,
-        'connectorColor',
-        feature,
-        jexl,
-        themed,
-      )
+}): ClassedColor {
+  // The themed stroke is `palette.text.secondary`, which is translucent; keeping
+  // its alpha is what lets connector lines and strand arrows blend into the
+  // track as a subtle grey rather than glaring full-white (dark mode) or
+  // full-black (light mode) at forced opacity. An unset slot takes it, and so
+  // does a throwing jexl — degrading to the subtle line rather than crashing
+  // the render, which is what the `undefined` fallback below expresses now that
+  // the worker holds no palette to name the color with.
+  const configured =
+    config.connectorColor === undefined
+      ? undefined
+      : readConfigValueSafe<string | undefined>(
+          config,
+          'connectorColor',
+          feature,
+          jexl,
+          undefined,
+        )
+  return configured === undefined
+    ? { color: undefined, colorClass: STROKE }
+    : { color: configured, colorClass: LITERAL }
 }

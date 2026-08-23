@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { hoverBoxStyle } from '@jbrowse/core/ui'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   isHitFeature,
   paintFeatureBand,
@@ -197,6 +198,7 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
 }: {
   model: LinearMultiSampleVariantDisplayModel
 }) {
+  const palette = usePalette()
   const {
     laneLaidOutDataMap,
     laneRenderedLabels,
@@ -226,6 +228,7 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
               bandHeight: laneHeight,
               ...laneRenderedLabels,
               fontSize: laneFontSize,
+              palette,
             },
           )
         }}

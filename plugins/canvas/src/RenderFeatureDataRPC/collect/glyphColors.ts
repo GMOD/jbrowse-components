@@ -1,12 +1,11 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
-import { colord } from '@jbrowse/core/util/colord'
 
+import { LITERAL, OUTLINE } from '../colorClasses.ts'
 import { getFeatureName } from '../labelUtils.ts'
-import { readConfigValueSafe, resolveThemeColor } from '../renderConfig.ts'
+import { THEME_DERIVED_COLOR, readConfigValueSafe } from '../renderConfig.ts'
 import { getBoxColor, getStrokeColor } from '../util.ts'
 
 import type { RenderContext } from './renderContext.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
 // transl_except residues (selenocysteine, pyrrolysine, polyA-completed stops)
@@ -98,18 +97,36 @@ export function boxColor(feature: Feature, ctx: RenderContext) {
     feature,
     config: ctx.config,
     colorByCDS: ctx.colorByCDS,
-    palette: ctx.palette,
     jexl: ctx.jexl,
   })
 }
 
-export function strokeColor(feature: Feature, ctx: RenderContext) {
-  return getStrokeColor({
+/**
+ * The connector/arrow stroke, packed. Packed here rather than at the four call
+ * sites because none of them wants the CSS string — unlike `boxColor`, whose
+ * string the codon shading lightens.
+ *
+ * A themed color has nothing to pack — its class names it and the main-thread
+ * encode writes the lane — so the color slot carries 0, which the encode then
+ * overwrites before anything draws from it.
+ */
+export function strokeColor(feature: Feature, ctx: RenderContext): PackedColor {
+  const { color, colorClass } = getStrokeColor({
     feature,
     config: ctx.config,
-    palette: ctx.palette,
     jexl: ctx.jexl,
   })
+  return { color: packClassedColor(color), colorClass }
+}
+
+/** A primitive's color as it is packed into a lane, beside its theme class. */
+export interface PackedColor {
+  color: number
+  colorClass: number
+}
+
+export function packClassedColor(color: string | undefined) {
+  return color === undefined ? 0 : colorToUint32(color)
 }
 
 // Hover tooltip = the display's `mouseover` config slot evaluated against the
@@ -134,11 +151,11 @@ export function featureTooltip(feature: Feature, ctx: RenderContext) {
 // stores THEME_DERIVED_COLOR, resolved to text.primary at low alpha so the
 // outline stays visible on both light and dark tracks (a fixed black outline
 // vanishes on a dark background); in light mode this matches the old black-0.3.
-export function resolveOutlineColor(
-  outlineColor: string,
-  palette: JBrowsePalette,
-) {
-  const faint = colord(palette.text.primary).alpha(0.3).toRgbString()
-  const c = resolveThemeColor(outlineColor, faint)
-  return c ? colorToUint32(c) : 0
+export function resolveOutlineColor(outlineColor: string) {
+  return outlineColor === THEME_DERIVED_COLOR
+    ? { outlineColor: 0, outlineColorClass: OUTLINE }
+    : {
+        outlineColor: outlineColor ? colorToUint32(outlineColor) : 0,
+        outlineColorClass: LITERAL,
+      }
 }

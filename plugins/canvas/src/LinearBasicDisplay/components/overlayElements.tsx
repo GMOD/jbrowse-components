@@ -16,6 +16,7 @@ import {
 } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { htmlToPlainText } from './hoverReadout.ts'
+import { labelColors } from './labelColors.ts'
 import {
   computeLabelExtraWidth,
   forEachDisplayLabel,
@@ -170,7 +171,7 @@ function MoreIsoformsBadge({
   labelFontSize: number
   className: string
 }) {
-  const { label, labelX, labelY } = resolved
+  const { label, labelX, labelY, color } = resolved
   return (
     <div
       title={moreIsoformsTitle(label)}
@@ -180,7 +181,7 @@ function MoreIsoformsBadge({
       data-region-index={displayedRegionIndex}
       className={className}
       style={{
-        color: label.color,
+        color,
         fontSize: labelFontSize * MORE_ISOFORMS_FONT_SCALE,
         transform: `translate(${labelX}px, ${moreBadgeTop(labelY, labelFontSize)}px)`,
       }}
@@ -208,7 +209,7 @@ function FloatingLabel({
   clickable: boolean
   labelClasses: LabelClasses
 }) {
-  const { label, labelX, labelY, kind } = resolved
+  const { label, labelX, labelY, color, kind } = resolved
   return (
     <div
       data-testid={clickable ? `feature-${kind}-${label.text}` : undefined}
@@ -220,7 +221,7 @@ function FloatingLabel({
         ]
       }
       style={{
-        color: label.color,
+        color,
         fontSize: labelFontSize,
         transform: `translate(${labelX}px, ${labelY}px)`,
       }}
@@ -387,6 +388,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   onLabelMouseLeave?: () => void
 }) {
   const { classes, cx } = useStyles()
+  const palette = usePalette()
   const {
     renderedShowLabels,
     renderedShowDescriptions,
@@ -426,6 +428,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     showDescriptions: renderedShowDescriptions,
     showSubfeatureLabels: model.renderedShowSubfeatureLabels,
     fontSize: labelFontSize,
+    colors: labelColors(palette),
   }
   const cullBand = labelCullBand(labelScrollBucket, height)
 

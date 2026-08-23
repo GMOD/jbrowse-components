@@ -14,6 +14,7 @@ import {
   drawHighlightBoxes,
 } from './components/Canvas2DFeatureRenderer.ts'
 import { highlightBoxColors } from './components/highlightUtils.ts'
+import { labelColors } from './components/labelColors.ts'
 import {
   LABEL_CULL_BUCKET_PX,
   forEachDisplayLabel,
@@ -21,6 +22,7 @@ import {
 } from './components/labelPositioning.ts'
 import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
+import { resolveMapColors } from './components/resolveRegionColors.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
@@ -90,7 +92,12 @@ function CanvasFeaturesSvgBody({
     showDescriptions: model.renderedShowDescriptions,
     showSubfeatureLabels: model.renderedShowSubfeatureLabels,
     fontSize,
+    colors: labelColors(palette),
   }
+  // The theme classes the worker emitted, resolved against the EXPORT theme's
+  // palette rather than the session's — the whole reason the colors ride as
+  // classes (see resolveRegionColors).
+  const dataMap = resolveMapColors(model.laidOutDataMap, palette)
   // The export clips to the scrolled viewport (SvgClipRect below, `scrollY`
   // above), so a label whose feature sits outside it is written into the file
   // and then clipped away — on a fixed-height track scrolling over content many
@@ -113,12 +120,7 @@ function CanvasFeaturesSvgBody({
         height={height}
         opts={opts}
         paint={ctx => {
-          drawFeatureBlocks(
-            ctx,
-            model.laidOutDataMap,
-            renderBlocks,
-            renderState,
-          )
+          drawFeatureBlocks(ctx, dataMap, renderBlocks, renderState)
         }}
       />
       {/* The three overlays the app canvas never paints — on-screen they are the

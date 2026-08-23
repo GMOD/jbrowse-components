@@ -1,9 +1,14 @@
+import { LITERAL } from './colorClasses.ts'
+
 import type { PackedPrimitives } from './rpcTypes.ts'
 
 export interface RectData {
   // `below` label rows above this primitive inside its gene; the main thread
   // spends them at the display mode's label font size (see GlyphPlacement)
   labelRowsAbove: number
+  // `LITERAL` when `color` above is the color; otherwise the theme class the
+  // main-thread encode resolves it from (see colorClasses.ts)
+  colorClass: number
   start: number
   end: number
   y: number
@@ -17,6 +22,9 @@ export interface LineData {
   // `below` label rows above this primitive inside its gene; the main thread
   // spends them at the display mode's label font size (see GlyphPlacement)
   labelRowsAbove: number
+  // `LITERAL` when `color` above is the color; otherwise the theme class the
+  // main-thread encode resolves it from (see colorClasses.ts)
+  colorClass: number
   start: number
   end: number
   y: number
@@ -32,6 +40,9 @@ export interface ArrowData {
   // `below` label rows above this primitive inside its gene; the main thread
   // spends them at the display mode's label font size (see GlyphPlacement)
   labelRowsAbove: number
+  // `LITERAL` when `color` above is the color; otherwise the theme class the
+  // main-thread encode resolves it from (see colorClasses.ts)
+  colorClass: number
   x: number
   y: number
   // Height of the box this arrow sits on, so the renderer can snap it onto the
@@ -79,6 +90,18 @@ function labelRowArray(items: { labelRowsAbove: number }[]) {
     : new Uint8Array(0)
 }
 
+// Theme classes for one primitive kind, or LENGTH ZERO when every primitive in
+// it resolved to a literal color — the same length-zero idiom as
+// `labelRowArray` above, and the common case: only a CDS painted by reading
+// frame and a connector taking the unset `connectorColor` default are themed.
+// The main-thread encode reads the empty array as "nothing to resolve here" and
+// hands the worker's color lane back untouched (see resolveColorLane).
+function colorClassArray(items: { colorClass: number }[]) {
+  return items.some(i => i.colorClass !== LITERAL)
+    ? new Uint8Array(items.length)
+    : new Uint8Array(0)
+}
+
 // Filters a per-feature accumulator down to the visible bp window and packs
 // into the parallel typed arrays the GPU/Canvas2D renderers consume. Color
 // is already a packed RGBA32 u32 on the producer side — copied straight to
@@ -112,6 +135,7 @@ export function packRenderArrays(
   // dense-pileup regime per FEATURE (see applyLayoutToRegion). The worker has no
   // say, so it doesn't pretend to by writing a per-rect eligibility flag.
   const rectDensityFade = new Uint32Array(visibleRects.length)
+  const rectColorClasses = colorClassArray(visibleRects)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
   const rectLabelRows = labelRowArray(visibleRects)
 
@@ -123,6 +147,9 @@ export function packRenderArrays(
     rectColors[i] = rect.color
     rectStrands[i] = rect.strand
     rectFeatureIndices[i] = rect.flatbushIdx
+    if (rectColorClasses.length) {
+      rectColorClasses[i] = rect.colorClass
+    }
     if (rectLabelRows.length) {
       rectLabelRows[i] = rect.labelRowsAbove
     }
@@ -133,6 +160,7 @@ export function packRenderArrays(
   const lineHeights = new Float32Array(visibleLines.length)
   const lineColors = new Uint32Array(visibleLines.length)
   const lineDirections = new Int8Array(visibleLines.length)
+  const lineColorClasses = colorClassArray(visibleLines)
   const lineFeatureIndices = new Uint32Array(visibleLines.length)
   const lineLabelRows = labelRowArray(visibleLines)
 
@@ -144,6 +172,9 @@ export function packRenderArrays(
     lineColors[i] = line.color
     lineDirections[i] = line.direction
     lineFeatureIndices[i] = line.flatbushIdx
+    if (lineColorClasses.length) {
+      lineColorClasses[i] = line.colorClass
+    }
     if (lineLabelRows.length) {
       lineLabelRows[i] = line.labelRowsAbove
     }
@@ -155,6 +186,7 @@ export function packRenderArrays(
   const arrowWidthsBp = new Uint32Array(visibleArrows.length)
   const arrowDirections = new Int8Array(visibleArrows.length)
   const arrowColors = new Uint32Array(visibleArrows.length)
+  const arrowColorClasses = colorClassArray(visibleArrows)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
   const arrowLabelRows = labelRowArray(visibleArrows)
 
@@ -166,6 +198,9 @@ export function packRenderArrays(
     arrowDirections[i] = arrow.direction
     arrowColors[i] = arrow.color
     arrowFeatureIndices[i] = arrow.flatbushIdx
+    if (arrowColorClasses.length) {
+      arrowColorClasses[i] = arrow.colorClass
+    }
     if (arrowLabelRows.length) {
       arrowLabelRows[i] = arrow.labelRowsAbove
     }
@@ -178,6 +213,7 @@ export function packRenderArrays(
     rectColors,
     rectStrands,
     rectDensityFade,
+    rectColorClasses,
     rectFeatureIndices,
     rectLabelRows,
     linePositions,
@@ -185,6 +221,7 @@ export function packRenderArrays(
     lineHeights,
     lineColors,
     lineDirections,
+    lineColorClasses,
     lineFeatureIndices,
     lineLabelRows,
     arrowXs,
@@ -193,6 +230,7 @@ export function packRenderArrays(
     arrowWidthsBp,
     arrowDirections,
     arrowColors,
+    arrowColorClasses,
     arrowFeatureIndices,
     arrowLabelRows,
   }

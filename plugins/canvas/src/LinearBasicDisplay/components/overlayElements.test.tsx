@@ -32,7 +32,7 @@ const DATA = makeFeatureData({
       maxX: 200,
       topY: 0,
       featureHeight: 10,
-      nameLabel: { text: 'NAME', relativeY: 4, color: 'black', textWidth: 30 },
+      nameLabel: { text: 'NAME', relativeY: 4, textWidth: 30 },
     },
   }),
 })
@@ -152,7 +152,6 @@ const SUBFEATURE_LABEL_DATA = makeFeatureData({
       subfeatureLabel: {
         text: 'TX1',
         relativeY: 4,
-        color: 'black',
         textWidth: 30,
         isOverlay: false,
       },

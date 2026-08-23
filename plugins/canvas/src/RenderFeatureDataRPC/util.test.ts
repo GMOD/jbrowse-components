@@ -12,7 +12,6 @@ import { mockDisplayConfig } from './testUtils.ts'
 import { getBoxColor, isUTR, truncateLabel } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
 function createMockFeature(opts: {
@@ -262,11 +261,10 @@ describe('truncateLabel', () => {
 })
 
 describe('getBoxColor (BED itemRgb)', () => {
-  const palette = { framesCDS: [] } as unknown as JBrowsePalette
   const jexl = createJexlInstance()
 
   function boxColor(feature: Feature, config = mockDisplayConfig()) {
-    return getBoxColor({ feature, config, colorByCDS: false, palette, jexl })
+    return getBoxColor({ feature, config, colorByCDS: false, jexl }).color
   }
 
   it('inherits itemRgb from the parent for a drawn exon', () => {
@@ -332,7 +330,6 @@ describe('getBoxColor (BED itemRgb)', () => {
 })
 
 describe('getBoxColor (a per-transcript attribute read from the box)', () => {
-  const palette = { framesCDS: [] } as unknown as JBrowsePalette
   const jexl = createJexlInstance()
 
   // a per-transcript statistic lives on the transcript row only; the glyph
@@ -363,7 +360,7 @@ describe('getBoxColor (a per-transcript attribute read from the box)', () => {
   const config = mockDisplayConfig({ color: COLOR })
 
   function boxColor(feature: Feature) {
-    return getBoxColor({ feature, config, colorByCDS: false, palette, jexl })
+    return getBoxColor({ feature, config, colorByCDS: false, jexl }).color
   }
 
   it('every child box resolves the transcript attribute', () => {
@@ -388,15 +385,13 @@ describe('getBoxColor (a per-transcript attribute read from the box)', () => {
         feature: orphan,
         config: mockDisplayConfig({ color: 'jexl:feature.parent.dtu' }),
         colorByCDS: false,
-        palette,
         jexl,
-      }),
+      }).color,
     ).toBe('magenta')
   })
 })
 
 describe('getBoxColor (an explicit color always beats the file)', () => {
-  const palette = { framesCDS: [] } as unknown as JBrowsePalette
   const jexl = createJexlInstance()
   const itemRgbFeature = createMockFeature({
     type: 'block',
@@ -408,9 +403,8 @@ describe('getBoxColor (an explicit color always beats the file)', () => {
       feature: itemRgbFeature,
       config,
       colorByCDS: false,
-      palette,
       jexl,
-    })
+    }).color
   }
 
   // the reason `color` is a maybeColor: with a concrete 'goldenrod' default,
@@ -429,7 +423,7 @@ describe('getBoxColor (an explicit color always beats the file)', () => {
       attrs: { itemRgb: '227,26,28' },
     })
     expect(
-      getBoxColor({ feature: utr, config, colorByCDS: false, palette, jexl }),
+      getBoxColor({ feature: utr, config, colorByCDS: false, jexl }).color,
     ).toBe(UTR_DEFAULT_COLOR)
   })
 

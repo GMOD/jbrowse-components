@@ -8,7 +8,6 @@ import {
 import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
 import type { LabelItem } from './rpcTypes.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 // Single constructor for a LabelItem so textWidth is always the measured width
 // of `text` at the base size this label DRAWS at — the invariant the
@@ -19,14 +18,12 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 // thread (labelPositioning) sets the final name→description gap.
 function labelItem(
   text: string,
-  color: string,
   relativeY = 0,
   fontSize = LABEL_FONT_SIZE,
 ): LabelItem {
   return {
     text,
     relativeY,
-    color,
     textWidth: measureText(text, fontSize),
   }
 }
@@ -34,11 +31,9 @@ function labelItem(
 export function createFeatureFloatingLabels({
   name: rawName,
   description: rawDescription,
-  palette,
 }: {
   name: string | undefined
   description: string | undefined
-  palette: JBrowsePalette
 }) {
   const name = truncateLabel(rawName ?? '')
   const description = truncateToWidth(
@@ -53,11 +48,9 @@ export function createFeatureFloatingLabels({
   // The name→description gap depends on the display mode's label font size,
   // which only the main thread knows, so relativeY stays 0 here and is set in
   // labelPositioning.resolveFeatureLabels.
-  const nameLabel = shouldShowLabel
-    ? labelItem(name, palette.text.primary)
-    : undefined
+  const nameLabel = shouldShowLabel ? labelItem(name) : undefined
   const descriptionLabel = shouldShowDescription
-    ? labelItem(description, palette.featureDescription)
+    ? labelItem(description)
     : undefined
 
   return { nameLabel, descriptionLabel }
@@ -73,16 +66,13 @@ export function createFeatureFloatingLabels({
 // agreeing across the two sizes (see the invariant there).
 export function createMoreIsoformsLabel({
   overflow,
-  palette,
 }: {
   overflow: { hidden: number; expanded: boolean }
-  palette: JBrowsePalette
 }) {
   const { hidden, expanded } = overflow
   return {
     ...labelItem(
       expanded ? 'show fewer' : `+${hidden} more`,
-      palette.text.secondary,
       0,
       LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE,
     ),
@@ -96,13 +86,11 @@ export function createTranscriptFloatingLabel({
   featureHeight,
   subfeatureLabels,
   parentFeatureId,
-  palette,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
   parentFeatureId: string
-  palette: JBrowsePalette
 }) {
   const truncatedName = truncateLabel(displayLabel)
 
@@ -117,13 +105,10 @@ export function createTranscriptFloatingLabel({
       // spelled out here, `measureText` and all — the only thing it adds is
       // `isOverlay`, which is why it reads as a spread now.
       //
-      // overlay labels sit on a light backing rect, so keep them dark; inline
-      // ones read against the track and follow the theme text color
-      ...labelItem(
-        truncatedName,
-        isOverlay ? palette.common.black : palette.text.primary,
-        relativeY,
-      ),
+      // `isOverlay` is what the main thread colors by: an overlay label sits on
+      // a light backing rect and stays dark, an inline one reads against the
+      // track and follows the theme text color (see labelColors).
+      ...labelItem(truncatedName, relativeY),
       isOverlay,
     },
     parentFeatureId,

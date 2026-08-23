@@ -7,15 +7,17 @@ import type {
   SubfeatureInfo,
 } from '../rpcTypes.ts'
 import type { PeptideData } from '../types.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-// Read-only inputs threaded through every emitter: the resolved config, theme,
+// Read-only inputs threaded through every emitter: the resolved config, the
 // colorByCDS flag, the per-feature translated peptides, and the worker jexl.
+//
+// No palette. The worker resolves no theme color at all — one that depends on
+// the theme ships as a class the main-thread encode fills in (colorClasses.ts),
+// which is what keeps a light/dark toggle out of the RPC cache key.
 export interface RenderContext {
   config: DisplayConfig
-  palette: JBrowsePalette
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
   // worker pluginManager's jexl instance, so a custom `mouseover` slot can call

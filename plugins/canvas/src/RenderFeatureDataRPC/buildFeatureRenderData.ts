@@ -5,7 +5,6 @@ import { summarizeIsoformPicks } from './isoformPicks.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 import type { FeatureDataResult } from './rpcTypes.ts'
 import type { FeatureLayout, PeptideData } from './types.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -32,7 +31,6 @@ export function buildFeatureRenderData({
   features,
   featureCount,
   config,
-  palette,
   jexl,
   regionStart,
   regionEnd,
@@ -47,7 +45,6 @@ export function buildFeatureRenderData({
   // decided on.
   featureCount: number
   config: DisplayConfig
-  palette: JBrowsePalette
   jexl: JexlInstance
   regionStart: number
   regionEnd: number
@@ -77,7 +74,6 @@ export function buildFeatureRenderData({
     regionStart,
     regionEnd,
     config,
-    palette,
     colorByCDS,
     peptideDataMap,
     jexl,

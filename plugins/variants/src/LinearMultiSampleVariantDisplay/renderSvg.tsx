@@ -99,9 +99,10 @@ function VariantSvgBody({
             paint={ctx => {
               // The band the screen drew: the same laid-out stack through the
               // same plugin-canvas call, so an export cannot pack, letter or
-              // order the marks differently from what the reader saw. The colors
-              // are baked per record, which is why this pass takes no palette
-              // where the markers below do.
+              // order the marks differently from what the reader saw. Each
+              // record's fill is baked per record, but the label text and the
+              // connector stroke are the theme's, so the band takes the EXPORT
+              // palette like the markers below do.
               paintFeatureBand(
                 ctx,
                 laneLaidOutDataMap,
@@ -112,6 +113,7 @@ function VariantSvgBody({
                   bandHeight: topBands.laneHeight,
                   ...laneRenderedLabels,
                   fontSize: laneFontSize,
+                  palette: exportPalette,
                 },
               )
             }}

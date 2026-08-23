@@ -1,6 +1,8 @@
+import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 
 import { LABEL_EDGE_GUTTER_PX } from '../../RenderFeatureDataRPC/constants.ts'
+import { labelColors } from './labelColors.ts'
 import {
   LABEL_CULL_BUCKET_PX,
   computeLabelExtraWidth,
@@ -8,6 +10,8 @@ import {
   forEachRenderedLabel,
   labelCullBand,
 } from './labelPositioning.ts'
+
+const TEST_LABEL_COLORS = labelColors(resolvePalette())
 
 import type {
   FeatureDataResult,
@@ -25,7 +29,6 @@ function makeLabel(overrides: Partial<LabelItem> = {}): LabelItem {
   return {
     text: 'NAME',
     relativeY: 4,
-    color: 'black',
     textWidth: 30,
     ...overrides,
   }
@@ -74,7 +77,12 @@ function collect(
   forEachRenderedLabel(
     data,
     vr,
-    { showSubfeatureLabels: true, ...visibility, fontSize: LABEL_FONT },
+    {
+      showSubfeatureLabels: true,
+      ...visibility,
+      fontSize: LABEL_FONT,
+      colors: TEST_LABEL_COLORS,
+    },
     (featureId, labels) => {
       out.push({ featureId, labels })
     },
@@ -386,6 +394,7 @@ describe('forEachDisplayLabel', () => {
         showDescriptions: true,
         showSubfeatureLabels: true,
         fontSize: LABEL_FONT,
+        colors: TEST_LABEL_COLORS,
       },
       featureId => {
         emitted.push(featureId)
@@ -408,6 +417,7 @@ describe('forEachDisplayLabel', () => {
         showDescriptions: true,
         showSubfeatureLabels: true,
         fontSize: LABEL_FONT,
+        colors: TEST_LABEL_COLORS,
       },
       featureId => {
         emitted.push(featureId)
@@ -434,6 +444,7 @@ describe('forEachDisplayLabel', () => {
         showDescriptions: false,
         showSubfeatureLabels: false,
         fontSize: LABEL_FONT,
+        colors: TEST_LABEL_COLORS,
       },
       featureId => {
         emitted.push(featureId)

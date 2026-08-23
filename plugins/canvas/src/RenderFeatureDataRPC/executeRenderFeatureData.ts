@@ -1,5 +1,4 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
@@ -46,16 +45,9 @@ export async function executeRenderFeatureData({
     expandedGeneIds,
     maxFeatureDensity,
     byteLimit,
-    theme: themeOptions,
     stopToken,
     statusCallback,
   } = args
-
-  // Resolve the colors worker-side from the structurally serializable args the
-  // display passes via rpcProps. This is plain data in and plain data out, so
-  // no Material UI reaches the worker. When absent (e.g. a session without
-  // theming), this returns the default palette.
-  const palette = resolvePalette(themeOptions)
 
   const stopTokenCheck = createStopTokenChecker(stopToken)
 
@@ -201,7 +193,6 @@ export async function executeRenderFeatureData({
         features: features.values(),
         featureCount: features.size,
         config: displayConfig,
-        palette,
         jexl: pluginManager.jexl,
         regionStart: region.start,
         regionEnd: region.end,

@@ -107,7 +107,6 @@ function labeledFeatureData(
       nameLabel: {
         text: f.featureId,
         relativeY: 0,
-        color: '#000',
         textWidth: nameWidthPx,
       },
     })
@@ -629,7 +628,7 @@ test('bpPerPx changes label-driven packing', () => {
       maxX: 200,
       topY: 0,
       featureHeight: 20,
-      nameLabel: { text: 'L1', relativeY: 0, color: 'black', textWidth: 300 },
+      nameLabel: { text: 'L1', relativeY: 0, textWidth: 300 },
     },
     f2: {
       featureId: 'f2',
@@ -637,7 +636,7 @@ test('bpPerPx changes label-driven packing', () => {
       maxX: 400,
       topY: 0,
       featureHeight: 20,
-      nameLabel: { text: 'L2', relativeY: 0, color: 'black', textWidth: 300 },
+      nameLabel: { text: 'L2', relativeY: 0, textWidth: 300 },
     },
   })
   // Zoomed out: labels are 300bp wide → features overlap → different rows
@@ -681,7 +680,6 @@ test('subfeatures and floating labels inherit their parent feature offset', () =
       nameLabel: {
         text: 'Gene 2',
         relativeY: 0,
-        color: 'black',
         textWidth: 50,
       },
     },
@@ -742,13 +740,11 @@ test('showLabels adds label height to the feature row', () => {
         nameLabel: {
           text: 'Gene 1',
           relativeY: 0,
-          color: 'black',
           textWidth: 50,
         },
         descriptionLabel: {
           text: 'A description',
           relativeY: 12,
-          color: 'blue',
           textWidth: 80,
         },
       },
@@ -871,7 +867,7 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
         maxX: 250,
         topY: 0,
         featureHeight: 10,
-        nameLabel: { text: 'L', relativeY: 0, color: 'black', textWidth: 300 },
+        nameLabel: { text: 'L', relativeY: 0, textWidth: 300 },
       },
     })
     return data
@@ -923,7 +919,6 @@ describe('subfeature-label overhang is reserved even with no name line', () => {
         subfeatureLabel: {
           text: 'geneA-mRNA1',
           relativeY: 0,
-          color: 'black',
           textWidth: 100,
           isOverlay: false,
         },
@@ -1111,7 +1106,7 @@ test('a feature compacts up to a freed row on zoom-in (no downward hold)', () =>
       maxX: 0,
       topY: 0,
       featureHeight: 10,
-      nameLabel: { text: id, relativeY: 0, color: 'black', textWidth: width },
+      nameLabel: { text: id, relativeY: 0, textWidth: width },
     })
     return data
   }
@@ -1334,7 +1329,6 @@ test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () =
       nameLabel: {
         text: 'MIR6088',
         relativeY: 0,
-        color: 'black',
         textWidth: 60,
       },
     },
@@ -1347,7 +1341,6 @@ test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () =
       nameLabel: {
         text: 'MIR769',
         relativeY: 0,
-        color: 'black',
         textWidth: 55,
       },
     },
@@ -1391,7 +1384,7 @@ test('a compact mode reserves label overhang at its own smaller font size', () =
     maxX,
     topY: 0,
     featureHeight: 10,
-    nameLabel: { text: id, relativeY: 0, color: 'black', textWidth },
+    nameLabel: { text: id, relativeY: 0, textWidth },
   })
   data.floatingLabelsData = labelsMap({
     g1: label('g1', 1000, 1070, 60),
@@ -1441,7 +1434,7 @@ test('an unlabeled sub-pixel box does not collapse onto a labeled one', () => {
       maxX: 2001,
       topY: 0,
       featureHeight: 10,
-      nameLabel: { text: 'rs123', relativeY: 0, color: 'black', textWidth: 40 },
+      nameLabel: { text: 'rs123', relativeY: 0, textWidth: 40 },
     },
   })
   const out = layout(new Map([[0, data]]), 26, true)

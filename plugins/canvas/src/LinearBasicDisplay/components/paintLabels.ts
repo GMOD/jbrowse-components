@@ -57,7 +57,7 @@ export function paintLabels(
         )
       }
     }
-    ctx.fillStyle = label.color
+    ctx.fillStyle = resolved.color
     // labelY is the label's TOP (the DOM overlay positions the div by it), so
     // convert to the baseline fillText wants. Alphabetic baseline rather than
     // ctx.textBaseline = 'top': SvgCanvas maps that to dominant-baseline

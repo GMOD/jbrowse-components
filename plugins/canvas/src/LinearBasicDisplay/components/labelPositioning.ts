@@ -14,6 +14,7 @@ import type {
   LabelKinds,
   MoreIsoformsLabel,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LabelColors } from './labelColors.ts'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 // Gap (px) between a feature's bottom and its floating name/description row.
@@ -251,6 +252,9 @@ export interface PlainResolvedLabel {
   label: LabelItem & { isOverlay?: boolean }
   labelX: number
   labelY: number
+  // Resolved here rather than carried on the label, because a label's color is
+  // a function of its KIND and the theme alone — see labelColors.
+  color: string
   kind: 'name' | 'desc' | 'sub'
 }
 
@@ -258,6 +262,7 @@ export interface MoreResolvedLabel {
   label: MoreIsoformsLabel
   labelX: number
   labelY: number
+  color: string
   kind: 'more'
 }
 
@@ -275,6 +280,7 @@ export interface LabelRenderContext {
   // scaling the rows these labels were reserved in
   showSubfeatureLabels: boolean
   fontSize: number
+  colors: LabelColors
 }
 
 function resolveFeatureLabels(
@@ -285,6 +291,7 @@ function resolveFeatureLabels(
 ): ResolvedLabel[] {
   const { showLabels, showDescriptions, showSubfeatureLabels, fontSize } =
     context
+  const { colors } = context
   const px1 = toScreen(labelData.minX)
   const px2 = toScreen(labelData.maxX)
   const featureLeftPx = Math.min(px1, px2)
@@ -311,6 +318,14 @@ function resolveFeatureLabels(
     const resolved = {
       label,
       ...computeLabelPosition(label, padding, bounds, fontSize),
+      color:
+        kind === 'sub'
+          ? label.isOverlay
+            ? colors.subfeatureOverlay
+            : colors.subfeature
+          : kind === 'desc'
+            ? colors.description
+            : colors.name,
       kind,
     }
     out.push(resolved)
@@ -332,6 +347,7 @@ function resolveFeatureLabels(
           renderedTextWidth(nameLabel.textWidth, fontSize) +
           LABEL_PADDING_PX,
         labelY: name.labelY,
+        color: colors.more,
         kind: 'more',
       })
     }

@@ -1,5 +1,4 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 import { ThemeProvider } from '@mui/material'
@@ -46,7 +45,6 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // somewhere other than the three gestures that already live on a label.
 
 const jexl = createJexlInstance()
-const palette = resolvePalette()
 
 // `mockDisplayConfig` leaves the label slots empty, which resolves to no name at
 // all; the badge only exists beside one, so every case here carries the schema's
@@ -216,7 +214,6 @@ function labelDataFor(
     regionStart: 0,
     regionEnd: 100_000,
     config,
-    palette,
     colorByCDS: false,
     jexl,
   }).floatingLabelsData
@@ -319,7 +316,6 @@ function twoFeatures(badgeWidth: number | undefined) {
   const label = (text: string, textWidth: number) => ({
     text,
     relativeY: 0,
-    color: 'black',
     textWidth,
   })
   return new Map([
@@ -391,7 +387,6 @@ const BADGE_DATA = {
     regionStart: 0,
     regionEnd: 100_000,
     config: labelledConfig({ maxIsoforms: 3 }),
-    palette,
     colorByCDS: false,
     jexl,
   }),

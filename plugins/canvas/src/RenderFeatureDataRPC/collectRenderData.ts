@@ -23,10 +23,10 @@ export function collectRenderData(
     regionEnd: number
   },
 ) {
-  const { layouts, regionStart, regionEnd, config, palette } = args
+  const { layouts, regionStart, regionEnd, config } = args
   const collector = createCollector()
 
-  const outlineColor = resolveOutlineColor(config.outlineColor, palette)
+  const outline = resolveOutlineColor(config.outlineColor)
 
   for (const layout of layouts) {
     processFeatureRecord(layout, args, collector)
@@ -49,7 +49,7 @@ export function collectRenderData(
 
   return {
     ...packed,
-    outlineColor,
+    ...outline,
     labelKinds,
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
