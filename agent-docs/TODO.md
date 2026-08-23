@@ -33,6 +33,7 @@ the half that rots is the half it covers.
 | --- | --- | --- |
 | [Should a track's height be bounded at all](todo/decide-whether-a-tracks-height-should-be-bounded-at-all.md) | GPU, limits | the blank is fixed; what is left is whether the drag should stop, and per display |
 | [A repeat's subpart labels collide in one row](todo/a-repeats-subpart-labels-collide-inside-the-row-they-now-share.md) | canvas | the row is reserved now; decide whether the one-row design survives |
+| [Put the Manhattan display on `plotGeometry`](todo/put-the-manhattan-display-on-plotgeometry.md) | gwas, wiggle | check Manhattan against the shared views' host type; the frame already defaults for it |
 | [Let a dotplot click open the alignment it is on](todo/let-a-dotplot-click-open-the-alignment-it-is-on.md) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](todo/import-the-recipes-remaining-copied-label-tables.md) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](todo/decide-whether-the-examples-sites-configs-get-a-validator-gate.md) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
@@ -61,6 +62,7 @@ the half that rots is the half it covers.
 | [Bound a breakend foot by its region](todo/bound-a-breakend-foot-by-its-displayed-region.md) | alignments | bound it by the REGION; the partner bound is wrong and was reverted |
 | [One mark per interchromosomal cluster](todo/draw-one-mark-per-interchromosomal-cluster.md) | alignments | a figure-changing decision; pick the position rule first |
 | [Bound a cluster's diameter](todo/bound-an-interchromosomal-clusters-diameter.md) | alignments | measure at depth before changing what the floor means |
+| [Re-measure the bicolor split on the main thread](todo/re-measure-the-bicolor-split-on-the-main-thread.md) | wiggle, perf | ADR-016's premise is gone under ADR-078; take the number on a 1000-source multiwiggle |
 | [The read cloud's axis follows one outlier](todo/the-read-clouds-y-axis-autoscales-to-a-single-outlier.md) | alignments | needs a measurement on deep data, not a chosen statistic |
 | [Linearize the pangenome](todo/linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs.md) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Pangenome graph view queue](todo/pangenome-graph-view-the-open-queue.md) | pangenome | three items unblock the rest; take the LGV axis first |
