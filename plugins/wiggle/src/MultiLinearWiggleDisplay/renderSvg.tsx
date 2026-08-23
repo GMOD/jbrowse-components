@@ -1,11 +1,6 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
-import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
 import {
   SvgClusterProvenanceCaption,
   SvgTreePath,
@@ -15,6 +10,7 @@ import { ONSCREEN_AXIS_LEFT_PX } from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import {
+  WiggleFamilySvgFrame,
   svgLegendRightPx,
   svgScalebarLeftPx,
 } from '../shared/WiggleFamilySvg.tsx'
@@ -26,6 +22,7 @@ import MultiWiggleSvgScales, {
 
 import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
+import type { WigglePlotGeometry } from '../shared/wiggleDisplayViews.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type {
   ExportSvgDisplayOptions,
@@ -55,6 +52,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   renderState: WiggleGPURenderState
   gpuProps: () => WiggleGpuProps
+  plotGeometry: WigglePlotGeometry
 
   // the dendrogram and its caption
   showTree: boolean
@@ -102,18 +100,8 @@ export async function renderSvg(
   return renderDisplaySvg(model, opts, MultiWiggleSvgBody)
 }
 
-function MultiWiggleSvgBody({
-  model,
-  view,
-  height,
-  canvasWidth,
-  renderBlocks,
-  opts,
-}: LgvSvgBodyProps<RenderSvgModel>) {
-  // Multi keeps its own body rather than WiggleFamilySvgFrame (it stacks rows
-  // edge-to-edge with no YSCALEBAR_LABEL_OFFSET inset — see its `renderState`),
-  // but the two anchor helpers are pure geometry and shared, so the scale bars
-  // and legends land in the same place as every other wiggle-family export.
+function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
+  const { model, view, height, canvasWidth } = props
   const { rpcDataMap, renderState } = model
 
   // No data-size gate: renderState is always defined (a [0,1] stub until
@@ -138,74 +126,69 @@ function MultiWiggleSvgBody({
     ? labelOffset + ONSCREEN_AXIS_LEFT_PX
     : svgScalebarLeftPx(view)
 
-  const props = model.gpuProps()
+  const gpuProps = model.gpuProps()
   const legendRight = svgLegendRightPx(view, canvasWidth)
   const legendTop = scoreLegendReservedPx(model)
-  const state = {
-    ...renderState,
-    canvasWidth,
-    canvasHeight: height,
-  }
 
   return (
-    <>
-      <SvgClipRect
-        id={`wiggle-clip-${svgNodeId(model)}`}
-        width={canvasWidth}
-        height={height}
-      >
-        <PaintLayer
-          width={canvasWidth}
-          height={height}
-          opts={opts}
-          paint={ctx => {
-            drawWiggleToCtx(
-              ctx,
-              {
-                rpcDataMap,
-                encode: data => buildSourceRenderData(data, props),
-              },
-              renderBlocks,
-              state,
-            )
-          }}
-        />
-      </SvgClipRect>
-      {/* Row separators and Y-scale cross-hatches, shared with the on-screen
-          path so an exported SVG matches the track when either is enabled. */}
-      <MultiWiggleOverlayLines model={model} width={canvasWidth} />
-      <MultiWiggleSvgScales
-        model={model}
-        legendRight={legendRight}
-        scalebarLeft={scalebarLeft}
-        labelOffset={labelOffset}
-      />
-      {/* The color key, drawn inline here; on screen the same `legendItems` go
-          to `FloatingLegend` instead (which portals above the inter-region
-          masks the flat export SVG doesn't have). Both read `hasOverlayLegend`,
-          so a dismissed legend stays out of the export, and both push it below
-          the score legend by the same `scoreLegendReservedPx`. */}
-      {model.hasOverlayLegend ? (
-        <g transform={`translate(0 ${legendTop})`}>
-          <SvgColorLegend
-            entries={legendEntries({ items: model.legendItems })}
-            canvasWidth={legendRight}
-            maxHeight={height - legendTop}
-            testid="multiwiggle-color-legend"
-          />
-        </g>
-      ) : null}
-      {labelOffset && hierarchy ? (
+    <WiggleFamilySvgFrame
+      {...props}
+      clipIdPrefix="wiggle"
+      plotGeometry={model.plotGeometry}
+      paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
+        drawWiggleToCtx(
+          ctx,
+          {
+            rpcDataMap,
+            encode: data => buildSourceRenderData(data, gpuProps),
+          },
+          renderBlocks,
+          { ...renderState, canvasWidth: w, canvasHeight: drawHeight },
+        )
+      }}
+      /* Row separators and per-row Y-scale cross-hatches, shared with the
+         on-screen path so an exported SVG matches the track when either is
+         enabled. Takes the frame's hatch slot, since these ARE the hatches. */
+      crossHatches={
+        <MultiWiggleOverlayLines model={model} width={canvasWidth} />
+      }
+      legend={
         <>
-          <SvgTreePath hierarchy={hierarchy} />
-          {/* The same caption component `SvgTreeSidebar` draws for the displays
-              that can use that wrapper — see there for why this display can't,
-              and there for the caption's own rationale. */}
-          <SvgClusterProvenanceCaption
-            clusterProvenance={model.clusterProvenance}
+          <MultiWiggleSvgScales
+            model={model}
+            legendRight={legendRight}
+            scalebarLeft={scalebarLeft}
+            labelOffset={labelOffset}
           />
+          {/* The color key, drawn inline here; on screen the same `legendItems`
+              go to `FloatingLegend` instead (which portals above the
+              inter-region masks the flat export SVG doesn't have). Both read
+              `hasOverlayLegend`, so a dismissed legend stays out of the export,
+              and both push it below the score legend by the same
+              `scoreLegendReservedPx`. */}
+          {model.hasOverlayLegend ? (
+            <g transform={`translate(0 ${legendTop})`}>
+              <SvgColorLegend
+                entries={legendEntries({ items: model.legendItems })}
+                canvasWidth={legendRight}
+                maxHeight={height - legendTop}
+                testid="multiwiggle-color-legend"
+              />
+            </g>
+          ) : null}
+          {labelOffset && hierarchy ? (
+            <>
+              <SvgTreePath hierarchy={hierarchy} />
+              {/* The same caption component `SvgTreeSidebar` draws for the
+                  displays that can use that wrapper — see there for why this
+                  display can't, and there for the caption's own rationale. */}
+              <SvgClusterProvenanceCaption
+                clusterProvenance={model.clusterProvenance}
+              />
+            </>
+          ) : null}
         </>
-      ) : null}
-    </>
+      }
+    />
   )
 }

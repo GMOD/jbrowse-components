@@ -101,6 +101,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
   return {
     id: 'test',
     height: 100,
+    // rows edge-to-edge over the full height, two of them
+    plotGeometry: { yTop: 0, plotHeight: 100, numRows: 2, tickHeight: 50 },
     error: undefined,
     regionTooLarge: false,
     svgReady: true,

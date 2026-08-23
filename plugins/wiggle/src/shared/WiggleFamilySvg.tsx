@@ -12,9 +12,10 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type React from 'react'
 
-// The display fields the shared SVG scaffold reads. Both LinearWiggleDisplay and
-// LinearManhattanDisplay satisfy this (`error`/`regionTooLarge`/`svgReady` come
-// from SvgExportable); each supplies its own paint + legend.
+// The display fields the shared SVG scaffold reads. LinearWiggleDisplay,
+// MultiLinearWiggleDisplay and LinearManhattanDisplay all satisfy this
+// (`error`/`regionTooLarge`/`svgReady` come from SvgExportable); each supplies
+// its own paint + legend.
 export interface WiggleFamilySvgModel extends SvgExportable {
   id: string
   height: number
@@ -53,17 +54,18 @@ export function svgLegendRightPx(
   return legendRightEdgePx(view.visibleRegions, canvasWidth)
 }
 
-// Shared SVG-export body for the single-plot wiggle-family displays
-// (LinearWiggleDisplay, GWAS Manhattan), mounted by each display's own body
-// through `renderDisplaySvg`. Owns the parts that must stay pixel-aligned with
-// the on-screen canvas — the clip rect + YSCALEBAR_LABEL_OFFSET translate, the
-// PaintLayer sizing, and the cross-hatch overlay. The caller supplies only its
-// paint (draws the data onto a 2D context) and an optional legend/axis element.
+// Shared SVG-export body for every wiggle-family display, mounted by each
+// display's own body through `renderDisplaySvg`. Owns the parts that must stay
+// pixel-aligned with the on-screen canvas — the clip rect + plot-box translate,
+// the PaintLayer sizing, and the cross-hatch overlay. The caller supplies only
+// its paint (draws the data onto a 2D context) and an optional legend/axis
+// element.
 //
-// MultiLinearWiggleDisplay deliberately does NOT use this: it stacks rows
-// edge-to-edge over the full height with no YSCALEBAR_LABEL_OFFSET inset (see
-// its `renderState`), so it keeps its own body. Don't "unify" them without
-// first parameterizing the inset.
+// `plotGeometry` is where the plot sits inside the display's own height, and is
+// the whole of what the two wiggle displays disagree about: single-wiggle insets
+// by the scalebar label gutter, multi-wiggle stacks rows edge-to-edge over the
+// full height. It defaults to the single-plot box, which is what the Manhattan
+// display (whose model has no `plotGeometry` getter) draws in.
 export function WiggleFamilySvgFrame({
   model,
   height,
@@ -71,20 +73,23 @@ export function WiggleFamilySvgFrame({
   renderBlocks,
   opts,
   clipIdPrefix,
+  plotGeometry = axisPlotBox(height),
   paint,
   legend,
   overlay,
+  crossHatches,
 }: LgvSvgBodyProps<WiggleFamilySvgModel> & {
   clipIdPrefix: string
+  plotGeometry?: { yTop: number; plotHeight: number }
   paint: (ctx: Ctx2D, layout: WiggleFamilySvgLayout) => void
   legend?: React.ReactNode
   overlay?: React.ReactNode
+  // The hatch overlay, for a display that rules more than one axis: multi-wiggle
+  // repeats them per row, and passes its row separators through the same
+  // element. Unset draws the single-plot set below.
+  crossHatches?: React.ReactNode
 }) {
-  // the plot itself is inset by the scalebar label gutter at top and bottom, so
-  // it never overlaps the axis labels drawn in those bands — the same box
-  // `ticks` places itself in, which is why both read it from one helper
-  const plotBox = axisPlotBox(height)
-  const drawHeight = plotBox.plotHeight
+  const { yTop, plotHeight } = plotGeometry
   const { ticks, showCrossHatches } = model
   return (
     <>
@@ -93,23 +98,24 @@ export function WiggleFamilySvgFrame({
         width={canvasWidth}
         height={height}
       >
-        <g transform={`translate(0,${plotBox.yTop})`}>
+        <g transform={`translate(0,${yTop})`}>
           <PaintLayer
             width={canvasWidth}
-            height={drawHeight}
+            height={plotHeight}
             opts={opts}
             paint={ctx => {
-              paint(ctx, { canvasWidth, drawHeight, renderBlocks })
+              paint(ctx, { canvasWidth, drawHeight: plotHeight, renderBlocks })
             }}
           />
         </g>
       </SvgClipRect>
       {/* Y-scale cross-hatches, shared with the on-screen path so an exported
           SVG matches the track when the option is enabled. Tick y-positions
-          already include YSCALEBAR_LABEL_OFFSET, aligning with the canvas group. */}
-      {showCrossHatches && ticks ? (
-        <CrossHatchLines ticks={ticks} width={canvasWidth} />
-      ) : null}
+          already carry the plot box's own inset, aligning with the canvas group. */}
+      {crossHatches ??
+        (showCrossHatches && ticks ? (
+          <CrossHatchLines ticks={ticks} width={canvasWidth} />
+        ) : null)}
       {/* Annotations drawn on the plot rather than in it, in the same
           un-translated space the cross-hatches use: a y computed from
           `axisPlotBox` already carries the label-gutter inset. */}
