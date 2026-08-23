@@ -85,8 +85,19 @@ interface Fixture {
 
 const FIXTURES: Fixture[] = [
   { displayType: 'LinearAlignmentsDisplay', trackId: 'volvox_cram_alignments' },
-  { displayType: 'LinearBasicDisplay', trackId: 'gff3tabix_genes' },
-  { displayType: 'LinearVariantDisplay', trackId: 'volvox_test_vcf' },
+  {
+    // Same legend gate as `LinearMultiRowFeatureDisplay` below, reached the same
+    // way: this display's `colorLegend` IS the `legend` slot, so a configured
+    // one is the only thing that can give it a key here.
+    displayType: 'LinearBasicDisplay',
+    trackId: 'gff3tabix_genes',
+    displaySnapshot: { legend: [{ label: 'a', color: 'red' }] },
+  },
+  {
+    displayType: 'LinearVariantDisplay',
+    trackId: 'volvox_test_vcf',
+    states: [colorByConsequenceImpact],
+  },
   { displayType: 'LinearPairedArcDisplay', trackId: 'volvox_sv_test' },
   { displayType: 'LGVSyntenyDisplay', trackId: 'volvox_fake_synteny' },
   { displayType: 'LinearManhattanDisplay', trackId: 'volvox_gwas' },
@@ -169,6 +180,25 @@ function wiggleRenderingStates(scatter = 'scatter', line = 'line') {
 function overlayWithSources(d: any) {
   d.setRenderingType('multixyplot')
   d.setRpcData(0, { sources: [{ name: 'a' }, { name: 'b' }] })
+}
+
+// LinearVariantDisplay overrides `colorLegend` instead of reading the `legend`
+// slot the two canvas displays do, and its key exists only under the two colour
+// presets — so the "Show legend" row, and the pin on it, appear only once one is
+// picked. Driven through the colour submenu rather than by setting the preset's
+// jexl string, which is plugin-internal: this is also the gesture a user makes,
+// and it fails loudly if the preset is renamed rather than quietly reporting the
+// pin as missing.
+function colorByConsequenceImpact(d: any) {
+  const preset = d
+    .colorBySubMenuItems()
+    .find((i: any) => i.label === 'Consequence impact')
+  if (!preset) {
+    throw new Error(
+      'the "Consequence impact" colour preset is gone — this fixture is stale',
+    )
+  }
+  preset.onClick()
 }
 
 interface TestView {
