@@ -1,6 +1,6 @@
 ---
 name: interaction-perf
-description: 'Measured: interaction is main-thread React re-render bound, the per-frame churn is the LGV coordinate ruler creating ~144 tick divs per zoom rather than the alignments overlays, and the p99 during a multi-track pan is periodic on the 500 ms coarse tick — with the two traps that make that period look absent (testing it against the wall clock) and its size look meaningful (a loaded box, where the profile goes 83% program). Read before optimizing the wrong component, or before quoting a frame spike measured on this machine.'
+description: 'Measured: interaction is main-thread React re-render bound, the per-frame churn is the LGV coordinate ruler creating ~144 tick divs per zoom rather than the alignments overlays, and the p99 during a multi-track pan is periodic on the 500 ms coarse tick — with the two traps that make that period look absent (testing it against the wall clock) and its size look meaningful (a loaded box, where the profile goes 83% program). Then measured again on a PRODUCTION build, which reorders that list: the ruler is 12ms and the canvas marker overlays are the top cost, because any canvas text op (ctx.font or fillText, not fillRect) flushes the whole document style recalc from inside a passive effect. Read before optimizing the wrong component, before profiling a dev build, or before quoting a frame spike measured on this machine.'
 ---
 
 # Interaction perf: which components re-render per frame
@@ -130,6 +130,89 @@ to this tick at all.
 
 Measuring it also confirms the ~500 ms period by a second route: 4 ticks over
 ~2.2 s of frames, arrived at with no reference to the frame gaps.
+
+## Profile the production build, or you will rank the wrong components
+
+**Measured 2026-08-23**, scroll-zoom on a four-track LGV (variants + MAF +
+multi-wiggle + synteny), production bundle served statically, Chrome CPU profile
+resolved through the build's sourcemaps. `products/jbrowse-web/browser-tests/profile-zoom.ts`
+is the harness.
+
+The section above asks for "a React-render-level measurement (React DevTools
+profiler or render counters)" as the honest next step. **Take the render COUNTS
+from a dev build and nothing else.** Component costs measured there are inflated
+by React's dev instrumentation — `jsxDEV`, `createTask`, `logComponentRender`,
+the component performance-track measures — and the inflation is not uniform, so
+it reorders the list:
+
+| inclusive, one ~7s gesture | dev build | production |
+| -------------------------- | --------: | ---------: |
+| `ScalebarCoordinateLabels` |     275ms |       12ms |
+| `ZoomTransform`            |     249ms |        5ms |
+| `PaddingBlocks`            |     238ms |        6ms |
+| `Gridlines`                |     113ms |        4ms |
+
+A dev profile puts the coordinate ruler back at the top of the list, which is
+where the 2026-07-11 mutation count also put it and where it no longer belongs
+once the keys were pooled. In production the ruler is 12ms and the marker
+overlays — which the DOM-mutation method could not see at all, because they are
+canvases — were the top cost.
+
+Two further traps in that measurement, both of which produced a confident wrong
+answer before they were caught:
+
+- **Charging a message its enclosing task overstates it.** Booking each
+  `HandlePostMessage` the duration of the `RunTask` containing it attributed 1284ms
+  (23% of main-thread busy) to worker RPC traffic. Cutting that traffic by 92%
+  moved total busy time by ~0%: the tasks were mostly the renders the messages
+  triggered, and true per-message overhead was ~200ms. Sum the event's own `dur`.
+- **A gesture driven by `page.mouse.wheel` measures the wrong thing.** Each call
+  is a CDP round trip the page's own busyness delays, so a SLOWER build ran a
+  shorter gesture and traced less work. Drive the wheels from inside the page on
+  a wall-clock schedule, and bound the sweep by `bpPerPx` rather than by a wheel
+  count — the zoom rate limiter is per elapsed-ms, so a fixed count leaves each
+  run at a different place on the scale, rendering different amounts of detail.
+  Before that bound, run-to-run variance in main-thread busy was ~16% and swamped
+  everything being measured.
+
+### Any canvas text op flushes the document's style
+
+The finding worth carrying to other overlays. Setting `ctx.font` **or** calling
+`ctx.fillText` makes the browser resolve the canvas element's computed font,
+which flushes the whole document's pending style recalc. `fillRect` does not.
+Measured in isolation, 200 iterations against a dirty DOM: `fillRect` 11.8ms,
+`ctx.font` set to the value it already holds 73.4ms, `fillText` 72.1ms — and
+with the DOM clean, the same `ctx.font` write is 0.0ms.
+
+An `OverlayCanvas` draws from a passive effect, which runs immediately after
+React commits a frame of dirty inline styles, so the first overlay to touch text
+is charged for the entire document recalc. MAF's deletion labels cost 272ms a
+gesture and its insertion labels 385ms doing this at zoom levels where the rows
+are too short to render a single letter. Both now decide whether any label will
+draw before touching text state; insertions fell to 40ms.
+
+So: **an overlay that draws text must gate the text work on something actually
+being drawn**, and caching `ctx.font` yourself does not help — `fillText` pays
+the same flush. The corollary is that the flush cost is proportional to how much
+React just dirtied, which is the same "too many components re-render per frame"
+problem this page has been circling, reached from the canvas side.
+
+### What is left, in production, after 2026-08-23
+
+The pass that landed (`perf(zoom)`, 1dd2e3f) took the median frame rate from 34
+to 41fps and pinned the p50 frame interval at 16.8ms across every run, where the
+baseline flipped to 32ms on a third of runs. Main-thread busy moved ~3%: the win
+is frame pacing, not throughput, and the remaining budget is roughly:
+
+- **Instance encoding on the main thread, inside the RPC message handler**:
+  `mafInstanceBuffer` 126ms, wiggle `pack` 110ms, `autoscale` 111ms. These are
+  the largest identified block of real compute left.
+- **Stop tokens without cross-origin isolation**: `Blob` + `createObjectURL`
+  94ms, plus `notifyStopToken` broadcasting to every worker in the pool, 79ms of
+  `postMessage`. The section below already records why the cheap branch is out of
+  reach.
+- **React commit**: `react-dom` self time 651ms, `setAttribute` 81ms. Still the
+  largest single block, and still the same answer — fewer components per frame.
 
 ## The stop-token probe, for whoever finds it in a trace next
 
