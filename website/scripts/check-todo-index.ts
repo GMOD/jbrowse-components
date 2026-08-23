@@ -1,79 +1,70 @@
-// agent-docs/TODO.md opens with a hand-written index of its own `###` entries.
-// This fails when that index and the document disagree.
+// agent-docs/TODO.md is an index over agent-docs/todo/, one file per backlog
+// item. This fails when that index and the directory disagree.
 //
 // It exists because the table is exactly the shape agent-docs/CLAUDE.md warns
 // about — "if a doc sentence tells the reader to go look at a file, the table
-// under it should be generated from that file" — one level in: the rows restate
-// the document's own headings, and nothing re-derived them. It had drifted twice
-// by the time anyone looked (`The SV inspector rebuilds its chord track` never
-// had a row; `Pool the coordinate ruler's tick <div>s` lost one the day it was
-// added), which is the failure mode that rule describes.
+// under it should be generated from that file" — one level in: the rows name
+// files under todo/, and nothing re-derived them. The table used to restate
+// each item's own heading inside TODO.md itself, and it drifted twice before
+// anyone noticed (`The SV inspector rebuilds its chord track` never had a row;
+// `Pool the coordinate ruler's tick <div>s` lost one the day it was added),
+// which is the failure mode this check still guards against.
 //
 // Deliberately NOT a generator, unlike the `ideas/` and `reference/` indexes.
 // Those tables are two columns, both derivable from a doc's frontmatter. This
-// one carries `Area` and `First move`, which are editorial judgements about work
-// nobody has done yet — a generator would have to invent them or drop them, and
-// "the first move" is the most useful column in the table. So: check the half
-// that rots (does every entry have a row, does every row point somewhere real)
-// and leave the half that cannot.
-//
-// A `####` is a sub-entry deliberately folded into its parent and is not
-// indexed; only `###` is an entry.
-import { readFileSync } from 'node:fs'
+// one carries `Area` and `First move`, which are editorial judgements about
+// work nobody has done yet — a generator would have to invent them or drop
+// them, and "the first move" is the most useful column in the table. So: check
+// the half that rots (does every file have a row, does every row point
+// somewhere real) and leave the half that cannot.
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { reportProblems } from './check-utils.ts'
+import { parseFrontmatter, reportProblems } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
 const todoPath = join(repoRoot, 'agent-docs', 'TODO.md')
+const todoDir = join(repoRoot, 'agent-docs', 'todo')
 const rel = 'agent-docs/TODO.md'
 
-// GitHub's heading slug: drop code fences and punctuation, keep word characters
-// (underscores included, so `#widen-ci_gate_suites` resolves), spaces to
-// hyphens.
-function slug(heading: string) {
-  return heading
-    .replaceAll('`', '')
-    .toLowerCase()
-    .replaceAll(/[^\w\- ]/g, '')
-    .trim()
-    .replaceAll(' ', '-')
-}
+const files = readdirSync(todoDir).filter(f => f.endsWith('.md'))
 
 const lines = readFileSync(todoPath, 'utf8').split('\n')
 
-const headings = new Map<string, string>()
+// A row is `| [label](todo/<file>) | area | first move |`.
+const rowFiles = new Map<string, string>()
 for (const line of lines) {
-  const m = /^### (.+)$/.exec(line)
+  const m = /^\|\s*\[([^\]]+)]\(todo\/([^)]+\.md)\)\s*\|/.exec(line)
   if (m) {
-    headings.set(slug(m[1]!), m[1]!)
-  }
-}
-
-// A row is `| [label](#anchor) | area | first move |`. Only same-document
-// anchors are index rows; a row linking out is something else.
-const rowAnchors = new Map<string, string>()
-for (const line of lines) {
-  const m = /^\|\s*\[([^\]]+)]\(#([^)]+)\)\s*\|/.exec(line)
-  if (m) {
-    rowAnchors.set(m[2]!, m[1]!)
+    rowFiles.set(m[2]!, m[1]!)
   }
 }
 
 const problems: string[] = []
 
-for (const [anchor, heading] of headings) {
-  if (!rowAnchors.has(anchor)) {
+const categoryByFile = new Map<string, string | undefined>()
+for (const file of files) {
+  const fm = parseFrontmatter(readFileSync(join(todoDir, file), 'utf8'))
+  if (!fm?.name || !fm.description) {
     problems.push(
-      `${rel}: heading "${heading}" has no index row. Add one, or fold the entry into its neighbour as a ####.`,
+      `agent-docs/todo/${file}: no \`name:\`/\`description:\` frontmatter.`,
+    )
+  }
+  const categoryMatch = /category:\s*(\S+)/.exec(
+    readFileSync(join(todoDir, file), 'utf8'),
+  )
+  categoryByFile.set(file, categoryMatch?.[1])
+  if (!rowFiles.has(file)) {
+    problems.push(
+      `agent-docs/todo/${file}: has no index row in ${rel}. Add one, or fold the entry into its neighbour and delete the file.`,
     )
   }
 }
 
-for (const [anchor, label] of rowAnchors) {
-  if (!headings.has(anchor)) {
+for (const [file, label] of rowFiles) {
+  if (!files.includes(file)) {
     problems.push(
-      `${rel}: index row "${label}" points at #${anchor}, which is not a ### heading. The entry was renamed or removed — other docs and source comments cite these titles, so check what else names it before settling on a fix.`,
+      `${rel}: index row "${label}" points at todo/${file}, which does not exist. The entry was renamed or removed — other docs and source comments may cite this filename, so check what else names it before settling on a fix.`,
     )
   }
 }
@@ -81,7 +72,7 @@ for (const [anchor, label] of rowAnchors) {
 // The preamble also carries a count — "Nine are blocked on a visual call" —
 // which rots the same way the table did, and had already drifted to seven by
 // the time anyone counted. It is the one prose number in the file that is
-// derivable, so derive it.
+// derivable, so derive it from each doc's own `metadata.category`.
 const NUMBER_WORDS = [
   'Zero',
   'One',
@@ -98,18 +89,10 @@ const NUMBER_WORDS = [
   'Twelve',
 ]
 
-const visualCallSection = '## Blocked on a visual call'
-let inVisualCall = false
-let visualCallEntries = 0
-for (const line of lines) {
-  if (line.startsWith('## ')) {
-    inVisualCall = line.trim() === visualCallSection
-  } else if (inVisualCall && line.startsWith('### ')) {
-    visualCallEntries++
-  }
-}
+const visualCallEntries = [...categoryByFile.values()].filter(
+  c => c === 'visual-call',
+).length
 
-// the sentence wraps, so match against the file with newlines flattened
 const claim = /(\w+) are blocked on a visual call/.exec(
   lines.join(' ').replaceAll(/\s+/g, ' '),
 )
@@ -120,11 +103,11 @@ if (!claim) {
   )
 } else if (claim[1] !== expected) {
   problems.push(
-    `${rel}: the preamble says "${claim[1]} are blocked on a visual call" and "${visualCallSection}" holds ${visualCallEntries}. Write "${expected}".`,
+    `${rel}: the preamble says "${claim[1]} are blocked on a visual call" and agent-docs/todo/ holds ${visualCallEntries} with \`category: visual-call\`. Write "${expected}".`,
   )
 }
 
 reportProblems(
   problems,
-  `${rel}: ${headings.size} entries, all indexed, every row resolves; ${visualCallEntries} blocked on a visual call, as the preamble says.`,
+  `${rel}: ${files.length} entries in todo/, all indexed, every row resolves; ${visualCallEntries} blocked on a visual call, as the preamble says.`,
 )
