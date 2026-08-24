@@ -508,6 +508,8 @@ jobs:
         run: node scripts/pack.ts
       - name: Check emitted .d.ts don't name workspace source paths
         run: pnpm check-declaration-leaks
+      - name: Check extension-point declarations reach their package entry
+        run: pnpm check-extension-point-reachability
       # 39 end-to-end jb2export renders (BAM/CRAM/VCF, dotplot, synteny,
       # circular, track modifiers, the failure paths) that gated nothing until
       # now. Lives here rather than in `test` because it runs the CLI from
