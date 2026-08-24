@@ -43,16 +43,17 @@ try {
 
   await page.goto(`http://localhost:${port}/`, { timeout: TIMEOUT })
 
-  // `data-testid` names the display type and never changes; DisplayChrome
-  // publishes readiness as `data-display-drawn` beside it (ADR-065). Waiting on
-  // the pair covers plugin install, display-type registration, the custom RPC
-  // method resolving in a worker, and a draw.
+  // `data-testid` is `${name}-display` for a defineDisplay spec (ADR-089), so
+  // it names the display type and never changes; DisplayChrome publishes
+  // readiness as `data-display-drawn` beside it (ADR-065). Waiting on the pair
+  // covers plugin install, display-type registration, the custom RPC method
+  // resolving in a worker, and a draw.
   //
   // Spelled out rather than imported from @jbrowse/browser-test-utils: this is
   // its own pnpm workspace, and depending on the monorepo's test utils is the
   // thing a published-plugin smoke test exists to avoid.
   await page.waitForSelector(
-    '[data-testid="score-display"][data-display-drawn="true"]',
+    '[data-testid="LinearScoreDisplay-display"][data-display-drawn="true"]',
     { timeout: TIMEOUT },
   )
 } catch (e) {
