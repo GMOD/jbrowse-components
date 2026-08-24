@@ -76,7 +76,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
 
     const buf = hal.getBuffer(0, 'line')
     expect(buf).toBeDefined()
@@ -104,9 +104,7 @@ describe('GpuWiggleRenderer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.uploadRegion(0, [
-      makeSource({ renderingType: RENDERING_TYPE_XYPLOT }),
-    ])
+    renderer.upload(0, [makeSource({ renderingType: RENDERING_TYPE_XYPLOT })])
 
     const fill = hal.getBuffer(0, 'fill')
     expect(fill).toBeDefined()
@@ -120,10 +118,10 @@ describe('GpuWiggleRenderer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.uploadRegion(0, [makeSource()])
+    renderer.upload(0, [makeSource()])
     expect(hal.getBufferCount(0, 'fill')).toBe(2)
 
-    renderer.uploadRegion(0, [])
+    renderer.upload(0, [])
     expect(hal.getBufferCount(0, 'fill')).toBe(0)
   })
 
@@ -131,11 +129,11 @@ describe('GpuWiggleRenderer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.uploadRegion(0, [makeSource()])
-    renderer.uploadRegion(1, [makeSource()])
-    renderer.uploadRegion(2, [makeSource()])
+    renderer.upload(0, [makeSource()])
+    renderer.upload(1, [makeSource()])
+    renderer.upload(2, [makeSource()])
 
-    renderer.pruneRegions([0, 2])
+    renderer.release(1)
 
     expect(hal.getBufferCount(0, 'fill')).toBe(2)
     expect(hal.getBufferCount(1, 'fill')).toBe(0)
@@ -147,7 +145,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource()
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
     renderer.renderBlocks(
       [makeBlock()],
       new Map([[0, [source]]]),
@@ -181,7 +179,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource()
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
     renderer.renderBlocks(
       [makeBlock()],
       new Map([[0, [source]]]),
@@ -207,7 +205,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource({ renderingType: RENDERING_TYPE_LINE })
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
     renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_LINE,
@@ -232,7 +230,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const stale = makeSource({ renderingType: RENDERING_TYPE_XYPLOT })
 
-    renderer.uploadRegion(0, [stale])
+    renderer.upload(0, [stale])
     renderer.renderBlocks([makeBlock()], new Map([[0, [stale]]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_LINE,
@@ -247,7 +245,7 @@ describe('GpuWiggleRenderer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.uploadRegion(0, [])
+    renderer.upload(0, [])
     renderer.renderBlocks([makeBlock()], new Map([[0, []]]), {
       ...DEFAULT_STATE,
       renderingType: RENDERING_TYPE_LINE,
@@ -261,7 +259,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource()
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
     renderer.renderBlocks(
       [makeBlock()],
       new Map([[0, [source]]]),
@@ -294,8 +292,8 @@ describe('GpuWiggleRenderer', () => {
     const s0 = makeSource()
     const s1 = makeSource()
 
-    renderer.uploadRegion(0, [s0])
-    renderer.uploadRegion(1, [s1])
+    renderer.upload(0, [s0])
+    renderer.upload(1, [s1])
 
     renderer.renderBlocks(
       [
@@ -331,7 +329,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource()
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
     renderer.renderBlocks(
       [makeBlock({ reversed: true })],
       new Map([[0, [source]]]),
@@ -354,7 +352,7 @@ describe('GpuWiggleRenderer', () => {
       featureScores: new Float32Array([15, 20]),
     })
 
-    renderer.uploadRegion(0, [source0, source1])
+    renderer.upload(0, [source0, source1])
 
     // default sources are xyplot, so this is the fill record
     const buf = hal.getBuffer(0, 'fill')
@@ -374,7 +372,7 @@ describe('GpuWiggleRenderer', () => {
     const hal = new MockHal(WIGGLE_PASSES)
     const renderer = new GpuWiggleRenderer(hal)
 
-    renderer.uploadRegion(0, [makeSource()])
+    renderer.upload(0, [makeSource()])
     renderer.dispose()
 
     expect(hal.callsOf('dispose').length).toBe(1)
@@ -393,7 +391,7 @@ describe('GpuWiggleRenderer', () => {
       const renderer = new GpuWiggleRenderer(hal)
       const source = makeSource()
 
-      renderer.uploadRegion(0, [source])
+      renderer.upload(0, [source])
       renderer.renderBlocks(
         [makeBlock({ screenStartPx: 0, screenEndPx: 800 })],
         new Map([[0, [source]]]),
@@ -419,7 +417,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource()
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
     renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       origin: 5,
@@ -434,7 +432,7 @@ describe('GpuWiggleRenderer', () => {
     const renderer = new GpuWiggleRenderer(hal)
     const source = makeSource()
 
-    renderer.uploadRegion(0, [source])
+    renderer.upload(0, [source])
     renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
       ...DEFAULT_STATE,
       scaleType: SCALE_TYPE_LOG,

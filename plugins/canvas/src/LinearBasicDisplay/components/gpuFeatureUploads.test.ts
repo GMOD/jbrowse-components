@@ -84,7 +84,7 @@ function callsTo(hal: MockHal, method: string) {
 describe('per-region uploads', () => {
   it('uploads ONE buffer for the rects, not one per pass that reads them', () => {
     const { hal, renderer } = setup()
-    renderer.uploadRegion(REGION, regionData(4))
+    renderer.upload(REGION, regionData(4))
     const uploads = callsTo(hal, 'uploadBuffer')
     // [regionKey, passId, byteLength, count]. One upload per pass that owns a
     // buffer — continuation is not among them, it draws from rect's.
@@ -94,7 +94,7 @@ describe('per-region uploads', () => {
 
   it('packs the strand the continuation pass needs into that one buffer', () => {
     const { hal, renderer } = setup()
-    renderer.uploadRegion(REGION, regionData(3))
+    renderer.upload(REGION, regionData(3))
     const [upload] = callsTo(hal, 'uploadBuffer')
     // 3 instances x 28 bytes: startEnd(8) y(4) height(4) color(4)
     // densityFade(4) strand(4). The strand is what makes one buffer serve both
@@ -104,7 +104,7 @@ describe('per-region uploads', () => {
 
   it('uploads no instances for an empty region', () => {
     const { hal, renderer } = setup()
-    renderer.uploadRegion(REGION, regionData(0))
+    renderer.upload(REGION, regionData(0))
     // An empty pack is uploaded rather than skipped — that is how a pass whose
     // data went empty stops drawing its last buffer (see `uploadPass`).
     expect(callsTo(hal, 'uploadBuffer').map(c => c.args[3])).toStrictEqual([
@@ -129,7 +129,7 @@ describe('draw passes', () => {
 
   it('draws the borrowing passes from the lender’s buffer', () => {
     const { hal, renderer } = setup()
-    renderer.uploadRegion(REGION, regionData(2))
+    renderer.upload(REGION, regionData(2))
     renderer.renderBlocks([block()], new Map([[REGION, regionData(2)]]), STATE)
     // [passId, regionKey, bufferPassId]
     expect(
@@ -160,7 +160,7 @@ describe('draw passes', () => {
       arrowDirections: new Int8Array(2).fill(1),
       arrowColors: new Uint32Array(2).fill(0xff00_00ff),
     })
-    renderer.uploadRegion(REGION, data)
+    renderer.upload(REGION, data)
     renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
 
     // `GLYPH_LAYERS` is what the renderer walks, and each id resolves to one or
@@ -175,7 +175,7 @@ describe('draw passes', () => {
 
   it('skips the continuation pass on an interior block', () => {
     const { hal, renderer } = setup()
-    renderer.uploadRegion(REGION, regionData(2))
+    renderer.upload(REGION, regionData(2))
     // Neither edge touches the canvas edge, so no instance could qualify and
     // shading one per rect would be pure waste.
     renderer.renderBlocks(

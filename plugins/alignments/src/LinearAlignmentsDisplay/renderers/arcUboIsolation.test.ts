@@ -77,7 +77,7 @@ function sources(): AlignmentsSources {
 function frameWrites() {
   const hal = new MockHal(ALIGNMENTS_PASSES)
   const renderer = new GpuAlignmentsRenderer(hal)
-  renderer.sync(sources())
+  renderer.upload('sources', sources())
   renderer.renderBlocks(
     [BLOCK],
     makeTestRenderState({

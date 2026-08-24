@@ -144,7 +144,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams()]]))
 
     expect(pathOps.filter(op => op === 'beginPath')).toHaveLength(1)
@@ -162,7 +162,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 300
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 300)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({ yTop: 100, height: 100 })]]))
 
     // straight-feature path: top edge at y=yTop (100), bottom at yTop+height (200)
@@ -179,7 +179,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({ drawCurves: true })]]))
 
     const bezierCount = pathOps.filter(op =>
@@ -194,7 +194,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, { alignmentLengths: new Float32Array([100]) }),
     )
@@ -209,7 +209,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, { colors: new Uint32Array([0x00808080]) }),
     )
@@ -228,7 +228,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: bpArr([-950]),
@@ -251,7 +251,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: bpArr([-950]),
@@ -275,7 +275,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const c2 = bpArr([6000])
     const c3 = bpArr([6000])
     const c4 = bpArr([5000])
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: c1,
@@ -297,7 +297,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
 
     expect(ctx.stroke).toHaveBeenCalled()
@@ -309,7 +309,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
 
     // Path ops after the fill belong to the clicked outline. The GPU edge
@@ -346,7 +346,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const c2 = bpArr([10.5])
     const c3 = bpArr([10.5])
     const c4 = bpArr([10])
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: c1,
@@ -383,7 +383,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const c2 = bpArr([10.5])
     const c3 = bpArr([10.5])
     const c4 = bpArr([10])
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: c1,
@@ -414,7 +414,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const c2 = bpArr([102])
     const c3 = bpArr([502])
     const c4 = bpArr([500])
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: c1,
@@ -449,7 +449,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     renderer.resize(800, 100)
     // top end at 100, bottom end at 500 before any pan: 400px of travel, half
     // the 800px view
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: bpArr([100]),
@@ -487,27 +487,27 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams()]]))
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(1)
 
     ctx.fillRect.mockClear()
     pathOps.length = 0
-    renderer.deleteGeometry(0)
+    renderer.release(0)
     renderer.render(makeState([]))
 
     expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 800, 100)
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
   })
 
-  test('deleteGeometry removes a track from rendering', () => {
+  test('release removes a track from rendering', () => {
     const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.deleteGeometry(0)
+    renderer.upload(0, makeInstanceData(1))
+    renderer.release(0)
     renderer.render(makeState([[0, makeParams()]]))
 
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
@@ -519,8 +519,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 200
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 200)
-    renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.uploadGeometry(1, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
+    renderer.upload(1, makeInstanceData(1))
     renderer.render(
       makeState([
         [0, makeParams({ yTop: 0, height: 100 })],
@@ -537,7 +537,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
   })
@@ -561,7 +561,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 200
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     const state = makeState([[0, makeParams()]])
     renderer.render(state)
     const drawnOps = pathOps.length
@@ -579,7 +579,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     inPath = () => false
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(50, 50, state)).toBeUndefined()
   })
@@ -590,7 +590,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(3))
+    renderer.upload(0, makeInstanceData(3))
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 2 })
   })
@@ -601,8 +601,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 200
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 200)
-    renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.uploadGeometry(1, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
+    renderer.upload(1, makeInstanceData(1))
     const state = makeState([
       [0, makeParams({ yTop: 0, height: 200 })],
       [1, makeParams({ yTop: 0, height: 200 })],
@@ -616,8 +616,8 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 200
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 200)
-    renderer.uploadGeometry(0, makeInstanceData(1))
-    renderer.uploadGeometry(1, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
+    renderer.upload(1, makeInstanceData(1))
     const state = makeState([
       [0, makeParams({ yTop: 0, height: 100 })],
       [1, makeParams({ yTop: 100, height: 100 })],
@@ -634,7 +634,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, { alignmentLengths: new Float32Array([100]) }),
     )
@@ -649,7 +649,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, { colors: new Uint32Array([0x00808080]) }),
     )
@@ -671,7 +671,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const c2 = bpArr([101.5])
     const c3 = bpArr([101.5])
     const c4 = bpArr([100])
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: c1,
@@ -702,7 +702,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     const c2 = bpArr([100.5])
     const c3 = bpArr([100.5])
     const c4 = bpArr([100])
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeInstanceData(1, {
         bp1: c1,
@@ -724,7 +724,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     const state = makeState([[0, makeParams({ drawCurves: true })]])
     expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
     expect(pick.calls.bezierCurveTo).toBeGreaterThan(0)
@@ -736,7 +736,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.dispose()
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(50, 50, state)).toBeUndefined()
@@ -753,7 +753,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     }
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    renderer.uploadGeometry(0, makeInstanceData(3))
+    renderer.upload(0, makeInstanceData(3))
     const state = makeState([[0, makeParams()]])
     expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 1 })
   })
@@ -763,7 +763,7 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.width = 800
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.dispose()
     renderer.render(makeState([[0, makeParams()]]))
     expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)

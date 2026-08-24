@@ -733,7 +733,7 @@ export class GpuAlignmentsRenderer
   private regions = new Map<number, LocalRegion>()
   // Upload memo, written only by `sync`. Lives on the renderer rather than in a
   // model-side `createRegionUploadSync` because this backend is whole-map synced
-  // (one `sync(sources)` call owns every section), and because the renderer is
+  // (one `upload('sources', …)` call owns every section), and because the renderer is
   // rebuilt with its HAL on a context loss — so the memo drops exactly when the
   // GPU buffers do, which is the part a hand-rolled model-side memo forgets.
   private uploaded = new Map<number, UploadedRegion>()
@@ -756,7 +756,9 @@ export class GpuAlignmentsRenderer
     new Uint8Array(this.uArc).set(new Uint8Array(this.uData))
   }
 
-  sync(sources: AlignmentsSources) {
+  release() {}
+
+  upload(_key: 'sources', sources: AlignmentsSources) {
     // Stale-buffer hygiene is two deleteRegion calls, not a HAL transaction: a
     // key absent this sync is swept in the loop below, and a key whose payload
     // changed is wiped whole at the head of syncRegion's rebuild branch — cost-

@@ -203,10 +203,11 @@ export interface AlignmentsSources {
   readConnectionsLineWidth: number
 }
 
-// Whole-map synced, and the only one: `sync(sources)` rebuilds every region
+// Whole-map synced, and the only one: one `sources` cell rebuilds every region
 // together because pileup Y-rows must be assigned consistently across regions.
 export interface AlignmentsRenderingBackend extends RenderingBackend {
-  sync(sources: AlignmentsSources): void
+  upload(key: 'sources', sources: AlignmentsSources): void
+  release(key: 'sources'): void
   renderBlocks(blocks: RenderBlock[], state: RenderState): boolean
 }
 

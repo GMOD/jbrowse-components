@@ -127,7 +127,7 @@ function oneRegion(): AlignmentsSources {
 
 function uploadedPasses() {
   const hal = new MockHal(ALIGNMENTS_PASSES)
-  new GpuAlignmentsRenderer(hal).sync(oneRegion())
+  new GpuAlignmentsRenderer(hal).upload('sources', oneRegion())
   return new Set(
     hal.calls.filter(c => c.method === 'uploadBuffer').map(c => c.args[1]),
   )

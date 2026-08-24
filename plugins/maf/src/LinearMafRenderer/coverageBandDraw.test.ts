@@ -98,7 +98,7 @@ function payload(): MafUploadPayload {
 function render(coverage: MafCoverageBandState | undefined) {
   const hal = new MockHal(MAF_PASSES)
   const renderer = new GpuMafRenderer(hal)
-  renderer.uploadRegion(0, payload())
+  renderer.upload(0, payload())
   renderer.renderBlocks(
     [
       {

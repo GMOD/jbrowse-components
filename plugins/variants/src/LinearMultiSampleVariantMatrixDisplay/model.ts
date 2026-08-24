@@ -1,7 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
+import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
@@ -120,7 +120,7 @@ export default function stateModelFactory(
          * key off this so columns/lines/clicks stay pixel-aligned.
          */
         get columnGeometry() {
-          const view = self.lgv
+          const view = self.host
           const n = self.featuresVolatile?.length
           return {
             n: n ?? 0,
@@ -213,13 +213,8 @@ export default function stateModelFactory(
          * #action
          */
         startRenderingBackend(backend: VariantMatrixRenderingBackend) {
-          installGlobalLifecycle<VariantMatrixRenderingBackend>(self, backend, {
-            upload: b => {
-              const { placedMatrixData } = self
-              if (placedMatrixData) {
-                b.uploadData(placedMatrixData)
-              }
-            },
+          installUpload(self, backend, {
+            cells: () => oneCell('data', self.placedMatrixData),
             // The backend answers "did real content reach the canvas", the same
             // way a per-region `renderBlocks` does (ADR-009). It used to be this
             // callback's answer, and "the placed data is here" was the wrong

@@ -32,7 +32,7 @@ export class GpuVariantMatrixRenderer extends GpuGlobalRenderingBackend<
     super(hal, UNIFORMS_SIZE_BYTES)
   }
 
-  uploadData(data: VariantMatrixUploadData) {
+  upload(_key: 'data', data: VariantMatrixUploadData) {
     if (data.numCells === 0) {
       this.hal.deleteRegion(REGION_KEY)
       return

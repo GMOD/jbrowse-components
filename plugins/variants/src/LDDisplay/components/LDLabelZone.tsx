@@ -20,7 +20,7 @@ const LDLabelZone = observer(function LDLabelZone({
   exportSVG?: boolean
 }) {
   const { height, showLabels, effectiveLineZoneHeight } = model
-  const { width } = model.lgv
+  const { width } = model.host
 
   return (
     <>

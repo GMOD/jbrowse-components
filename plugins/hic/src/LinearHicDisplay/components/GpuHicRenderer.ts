@@ -5,6 +5,7 @@ import * as hicShader from './shaders/hic.generated.ts'
 
 import type {
   HicRenderState,
+  HicCellKey,
   HicRenderingBackend,
   HicUploadData,
 } from './hicRenderingBackendTypes.ts'
@@ -24,14 +25,27 @@ export const HIC_PASSES: PipelineDescriptor[] = [
 export { UNIFORMS_SIZE_BYTES as HIC_UNIFORM_BYTE_SIZE }
 
 export class GpuHicRenderer
-  extends GpuGlobalRenderingBackend<HicUploadData, HicRenderState>
+  extends GpuGlobalRenderingBackend<
+    HicUploadData,
+    HicRenderState,
+    HicCellKey,
+    HicUploadData | Uint8Array
+  >
   implements HicRenderingBackend
 {
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
   }
 
-  uploadData(data: HicUploadData) {
+  upload(_key: HicCellKey, cell: HicUploadData | Uint8Array) {
+    if (cell instanceof Uint8Array) {
+      this.uploadColorRamp(cell)
+    } else {
+      this.uploadMatrix(cell)
+    }
+  }
+
+  private uploadMatrix(data: HicUploadData) {
     // Zero-copy: the worker already packed this in the shader's own instance
     // layout (`HicDataResult.instances`), so there is nothing to interleave —
     // the buffer that arrived over the RPC boundary is the vertex buffer. This

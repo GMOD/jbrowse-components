@@ -7,7 +7,7 @@ import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
-import { containingLgv, foundationCanRender } from './foundationView.ts'
+import { containingHost, foundationCanRender } from './foundationView.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
 import type { RegionHost } from './regionHost.ts'
@@ -75,12 +75,12 @@ export default function GlobalFetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * The containing LinearGenomeView — see `containingLgv` for the cast it
-       * owns, why the name is `lgv` and not `view`, and why both foundations
+       * The hosting view as the `RegionHost` contract — see `containingHost` for the cast it
+       * owns, why the name is `host` and not `view`, and why both foundations
        * still declare the name over one body.
        */
-      get lgv(): RegionHost {
-        return containingLgv(self)
+      get host(): RegionHost {
+        return containingHost(self)
       },
       /**
        * #getter
@@ -110,11 +110,11 @@ export default function GlobalFetchMixin() {
        * nothing to paint — see `viewportEmpty.ts` for the one viewport that
        * reaches it, how narrow that is, and why the state still has to be
        * terminal rather than a permanent scrim. Both foundations declare it over
-       * that one expression, the same way they each declare `lgv` and
+       * that one expression, the same way they each declare `host` and
        * `paintInert`.
        */
       get viewportEmpty(): boolean {
-        return viewportEmpty(self.lgv)
+        return viewportEmpty(self.host)
       },
       /**
        * #getter

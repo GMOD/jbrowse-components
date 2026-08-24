@@ -43,10 +43,10 @@ function fakeBackend<State>() {
     calls,
     backend: {
       resize() {},
-      uploadGeometry(key: number) {
+      upload(key: number) {
         calls.uploaded.push(key)
       },
-      deleteGeometry(key: number) {
+      release(key: number) {
         calls.deleted.push(key)
       },
       render(state: State) {

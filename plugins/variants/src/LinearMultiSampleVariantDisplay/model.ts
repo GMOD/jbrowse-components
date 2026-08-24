@@ -22,7 +22,7 @@ import {
   solveLabelRoomFactor,
   squeezeFloorScale,
 } from '@jbrowse/plugin-canvas'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
@@ -183,7 +183,7 @@ export function stateModelFactory(
             return getConf(self, 'showInsertionGlyphs')
           },
           get visibleRegions() {
-            const view = self.lgv
+            const view = self.host
             return view.visibleRegions
           },
           // Resolved geometry, never undefined. "The view isn't measured yet" is
@@ -698,8 +698,8 @@ export function stateModelFactory(
           // `perRegionCellMap` is one MobX computed and its entries are the
           // upload payload, so the encode is the identity and there is nothing
           // to declare `inputs` for.
-          installPerRegionLifecycle(self, backend, {
-            data: () => self.perRegionCellMap,
+          installUpload(self, backend, {
+            cells: () => self.perRegionCellMap,
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,

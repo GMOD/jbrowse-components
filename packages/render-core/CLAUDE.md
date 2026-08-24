@@ -4,9 +4,9 @@ The HAL, the draw-lifecycle mixin, backend base classes, clip/canvas geometry,
 React backend hooks.
 
 `agent-docs/ARCHITECTURE.md` ("What not to do") and `reference/GPU_RENDERING.md`
-(lifecycle, the four upload patterns and the three installers that drive them,
-backend parity, HAL, shaders) own the rules those two state; don't restate them.
-What follows is this package's own.
+(lifecycle, the upload cells and the one installer that drives them, backend
+parity, HAL, shaders) own the rules those two state; don't restate them. What
+follows is this package's own.
 
 **@experimental** — third-party plugins should pin an exact version.
 
@@ -52,15 +52,17 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
 
 ## Upload
 
-- **A display installs a lifecycle; it never calls `attachRenderingBackend`.**
-  Three installers are the whole taxonomy — `installPerRegionLifecycle` (a keyed
-  map of per-region payloads, streamed or from a whole-map computed),
-  `installKeyedLifecycle` (one canvas shared by sibling displays) and
-  `installGlobalLifecycle` (one whole-view payload, with named slots when its
-  uploads have independent inputs). A display fitting none of them wants a
-  fourth installer here, not a hand-rolled attach. `noHandRolledAttach` in
-  `eslint.config.mjs` is the check; ADR-079 is the why.
-- **Whatever an installer's callbacks close over goes inside the setup thunk**,
+- **A display installs the upload; it never calls `attachRenderingBackend`.**
+  `installUpload(self, backend, { cells, inputs?, encode?, render })` is the
+  whole taxonomy: a map of immutable payloads diffed by reference, keyed by
+  whatever the display's map is keyed by — a `displayedRegionIndex`, a sibling
+  display's `sharedBackendKey`, or a slot name (`oneCell('data', payload)`) on a
+  display that holds one payload for the view. Every backend implements
+  `upload(key, data)` and `release(key)`; a departed key is released by itself,
+  never by an active-set prune, which is what makes one installer correct on a
+  canvas several displays share. `noHandRolledAttach` in `eslint.config.mjs` is
+  the check; ADR-088 is the why.
+- **Whatever the installer's callbacks close over goes inside the setup thunk**,
   which `attachRenderingBackend` runs once. A second call swaps the backend and
   keeps the first call's callbacks, so state allocated outside it is rebuilt and
   dropped on every context-loss recovery — silently, because the original copy
@@ -70,26 +72,27 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   the one way this breaks is a patch landing in a different lane than the pack.
   Its geometry token must be a **coordinate** array (replaced atomically on
   refetch); a color array would never invalidate.
-- **An `installPerRegionLifecycle` declares a narrow `inputs` getter
-  (`gpuProps()`), never the display's `renderState`.** Its identity re-encodes
-  _every_ region, and a `renderState` carries the canvas box and row geometry,
-  which move on each frame of a height drag — rebuilding byte-identical output
-  at tens of MB per frame. Omitting `inputs` is the other safe shape, for an
-  encode that needs nothing. Reading an observable inside `encode` is no longer
-  the trap it was (ADR-078: it invalidates nothing), but state the dependency in
-  `inputs` or a settings change will not reach the buffer.
+- **An `installUpload` declares a narrow `inputs` getter (`gpuProps()`), never
+  the display's `renderState`.** Its identity re-encodes _every_ region, and a
+  `renderState` carries the canvas box and row geometry, which move on each
+  frame of a height drag — rebuilding byte-identical output at tens of MB per
+  frame. Omitting `inputs` is the other safe shape, for an encode that needs
+  nothing. Reading an observable inside `encode` is no longer the trap it was
+  (ADR-078: it invalidates nothing), but state the dependency in `inputs` or a
+  settings change will not reach the buffer.
 - **Omit `encode` outright when the display's payload is what the backend
   uploads** — four of the seven per-region displays. The helper then keeps no
   mirror maps and hands `render` the display's own map, which is what those four
   were reading anyway while passing `encode: data => data` beside it.
 - **Don't guard an empty upload.** Every HAL deletes the pass's prior buffer
   before it looks at the count, so an empty pack IS the release.
-- **A per-region entry is a non-null object, and both ends check it** —
-  `regionDataMap` at the `set`, `installPerRegionLifecycle` over whatever `data`
-  hands it, which is what covers a map derived off a computed (canvas's
-  `renderDataMap`, variants' `perRegionCellMap`). Dev-only, reports rather than
-  throws, and `Data extends object` says the same thing where a type can. No
-  rule to remember: the two checks are the check.
+- **A cell is a payload, and absence is absence.** `regionDataMap` checks a
+  region entry is a non-null object at the `set`; `installUpload` checks every
+  other map it is handed for `undefined` / `null` cells, which is what covers a
+  map derived off a computed (canvas's `renderDataMap`, variants'
+  `perRegionCellMap`). A display with nothing to upload yet leaves the key out
+  (`oneCell` does) rather than storing nothing under it. Dev-only, reports
+  rather than throws.
 
 ## Drawing
 

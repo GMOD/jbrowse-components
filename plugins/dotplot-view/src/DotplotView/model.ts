@@ -21,7 +21,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import { installKeyedLifecycle } from '@jbrowse/render-core/installKeyedLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   DiagonalizeProgressMixin,
   TrackColorsMixin,
@@ -1150,18 +1150,14 @@ export default function stateModelFactory(pm: PluginManager) {
           // One display committing new geometry re-fires the shared upload
           // autorun for every track on the canvas, so the installer diffs by
           // reference: only the track that actually changed re-uploads.
-          installKeyedLifecycle<DotplotGeometryData, DotplotRenderingBackend>(
-            self,
-            backend,
-            {
-              entries: () => self.geometryByDisplayKey,
-              render: b => {
-                b.resize(self.viewWidth, self.viewHeight)
-                b.render(self.dotplotRenderState)
-                return true
-              },
+          installUpload(self, backend, {
+            cells: () => self.geometryByDisplayKey,
+            render: b => {
+              b.resize(self.viewWidth, self.viewHeight)
+              b.render(self.dotplotRenderState)
+              return true
             },
-          )
+          })
         },
       }))
       .actions(self => ({

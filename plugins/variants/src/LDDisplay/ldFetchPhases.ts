@@ -10,7 +10,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 // `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
 export interface LDFetchSelf extends IStateTreeNode {
   showLDTriangle: boolean
-  lgv: RegionHost
+  host: RegionHost
   adapterConfig: Record<string, unknown>
   // Derived from the RPC's own arg type rather than restated, so a field added
   // to the payload cannot arrive here under a different name.
@@ -67,12 +67,12 @@ export function ldFetchPhases(
 ): GlobalFetchPhases<LDFetchArgs, LDDataResult> {
   return {
     prepare: () => {
-      const regions = self.lgv.dynamicBlocks.contentBlocks
+      const regions = self.host.dynamicBlocks.contentBlocks
       return !self.showLDTriangle || !regions.length
         ? undefined
         : {
             regions: [...regions],
-            originBp: axisOriginBp(regions[0]!, self.lgv.displayedRegions),
+            originBp: axisOriginBp(regions[0]!, self.host.displayedRegions),
           }
     },
     run: ({ regions, originBp }, ctx) =>

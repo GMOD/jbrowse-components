@@ -33,11 +33,11 @@ export class Canvas2DDotplotRenderer
     this.height = height
   }
 
-  uploadGeometry(displayKey: number, data: DotplotGeometryData) {
+  upload(displayKey: number, data: DotplotGeometryData) {
     this.geometries.set(displayKey, data)
   }
 
-  deleteGeometry(displayKey: number) {
+  release(displayKey: number) {
     this.geometries.delete(displayKey)
   }
 

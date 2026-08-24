@@ -509,7 +509,7 @@ export default function stateModelFactory(
     }))
     .actions(self => ({
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        const view = self.lgv
+        const view = self.host
         // Always fetch the full (unfiltered, un-reordered) source list. A
         // subtree filter or reorder only affects client-side rendering
         // (gpuProps re-upload) and the autoscale domain — never what's

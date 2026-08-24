@@ -1,6 +1,7 @@
 import { Suspense, lazy, useState } from 'react'
 
 import { getStrokeProps } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ArcsContainer from '../../shared/ArcsContainer.tsx'
@@ -40,6 +41,7 @@ const Arc = observer(function Arc({
   view,
   semicircle,
   selected,
+  hoverColor,
   exportSVG,
 }: {
   model: LinearArcDisplayModel
@@ -48,6 +50,7 @@ const Arc = observer(function Arc({
   view: LGV
   semicircle: boolean
   selected: boolean
+  hoverColor: string
   exportSVG?: boolean
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
@@ -74,7 +77,7 @@ const Arc = observer(function Arc({
     return null
   }
 
-  const stroke = selected ? 'red' : color
+  const stroke = selected ? 'red' : mouseOvered ? hoverColor : color
   const textStroke = selected ? 'red' : 'black'
   const centerX = (left + right) / 2
   const { d, textYCoord } = semicircle
@@ -124,6 +127,9 @@ const Arcs = observer(function Arcs({
 }) {
   const { arcStyles, displayMode, selectedFeatureId } = model
   const semicircle = displayMode === 'semicircles'
+  // resolved once here rather than per arc — every <Arc> would otherwise
+  // subscribe to theme context on its own to compute this one color
+  const hoverColor = useTheme().palette.text.primary
   return (
     <ArcsContainer model={model} exportSVG={exportSVG}>
       {(assembly, view) =>
@@ -136,6 +142,7 @@ const Arcs = observer(function Arcs({
             assembly={assembly}
             semicircle={semicircle}
             selected={selectedFeatureId === style.feature.id()}
+            hoverColor={hoverColor}
             exportSVG={exportSVG}
           />
         ))

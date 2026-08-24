@@ -189,13 +189,13 @@ describe('Canvas2DPerRegionRenderingBackend.renderBlocks paint reporting', () =>
   })
 })
 
-// `uploadRegion` is the base's too, driven by each backend's `regionPasses`.
+// `upload` is the base's too, driven by each backend's `regionPasses`.
 // What the six hand-written versions it replaced all had to get right — and
 // each spelled differently — is that a pass whose data went empty must not keep
 // drawing its last buffer. The base gets that from the HAL rather than from a
 // guard of its own: an empty pack IS the release, so a multi-pass backend
 // clears exactly the passes that emptied.
-describe('GpuPerRegionRenderingBackend.uploadRegion', () => {
+describe('GpuPerRegionRenderingBackend.upload', () => {
   const STRIDE = 8
 
   function countingPass(
@@ -239,21 +239,21 @@ describe('GpuPerRegionRenderingBackend.uploadRegion', () => {
 
   test('each pass gets as many instances as its packed bytes hold', () => {
     const { hal, b } = backend()
-    b.uploadRegion(0, { value: 3 })
+    b.upload(0, { value: 3 })
     expect(counts(hal)).toEqual([3, 1])
   })
 
   test('a pass that empties releases its buffer; its siblings keep theirs', () => {
     const { hal, b } = backend()
-    b.uploadRegion(0, { value: 3 })
-    b.uploadRegion(0, { value: 1 })
+    b.upload(0, { value: 3 })
+    b.upload(0, { value: 1 })
     expect(counts(hal)).toEqual([1, 0])
   })
 
   test('a region that empties holds no buffers', () => {
     const { hal, b } = backend()
-    b.uploadRegion(0, { value: 3 })
-    b.uploadRegion(0, { value: 0 })
+    b.upload(0, { value: 3 })
+    b.upload(0, { value: 0 })
     expect(counts(hal)).toEqual([0, 0])
   })
 })

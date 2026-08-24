@@ -7,7 +7,7 @@ import {
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import { installKeyedLifecycle } from '@jbrowse/render-core/installKeyedLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 import {
   comparativeSurfacePhase,
   comparativeSurfaceSettled,
@@ -511,21 +511,17 @@ export function linearSyntenyViewHelperModelFactory(
         // upstream deps are unchanged, so the identity diff keeps an
         // upload-autorun re-fire from one display off the other displays'
         // buffers.
-        installKeyedLifecycle<SyntenyInstanceData, SyntenyRenderingBackend>(
-          self,
-          backend,
-          {
-            entries: () => self.geometryByDisplayKey,
-            render: b => {
-              // the parent's own width, not views[0]'s: the same number one hop
-              // closer (the view pushes it down to every row) and no assertion
-              // on a row that may not exist yet
-              b.resize(self.parentView.width, self.height)
-              b.render(self.syntenyRenderState)
-              return true
-            },
+        installUpload(self, backend, {
+          cells: () => self.geometryByDisplayKey,
+          render: b => {
+            // the parent's own width, not views[0]'s: the same number one hop
+            // closer (the view pushes it down to every row) and no assertion
+            // on a row that may not exist yet
+            b.resize(self.parentView.width, self.height)
+            b.render(self.syntenyRenderState)
+            return true
           },
-        )
+        })
       },
       afterAttach() {
         // No `super`: our MST fork auto-chains lifecycle hooks, so calling it

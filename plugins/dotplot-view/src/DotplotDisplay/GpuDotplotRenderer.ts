@@ -57,9 +57,9 @@ export class GpuDotplotRenderer
     this.hal.resize(width, height)
   }
 
-  uploadGeometry(displayKey: number, data: DotplotGeometryData) {
+  upload(displayKey: number, data: DotplotGeometryData) {
     if (data.instanceCount === 0) {
-      this.deleteGeometry(displayKey)
+      this.release(displayKey)
       return
     }
     const { baseH, baseV, instanceCount } = data
@@ -72,7 +72,7 @@ export class GpuDotplotRenderer
     )
   }
 
-  deleteGeometry(displayKey: number) {
+  release(displayKey: number) {
     this.hal.deleteRegion(displayKey)
     this.baseByKey.delete(displayKey)
     this.interleaveCache.delete(displayKey)

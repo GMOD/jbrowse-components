@@ -75,7 +75,7 @@ describe('GpuSyntenyRenderer CPU pick', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     const state = makeState([[0, makeParams()]])
-    renderer.uploadGeometry(0, makeInstanceData())
+    renderer.upload(0, makeInstanceData())
 
     expect(renderer.pick(50, 50, state)).toEqual({ key: 0, instanceIndex: 0 })
   })
@@ -85,7 +85,7 @@ describe('GpuSyntenyRenderer CPU pick', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     const state = makeState([[0, makeParams()]])
-    renderer.uploadGeometry(0, makeInstanceData())
+    renderer.upload(0, makeInstanceData())
 
     expect(renderer.pick(50, 50, state)).toBeUndefined()
   })
@@ -95,7 +95,7 @@ describe('GpuSyntenyRenderer CPU pick', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     const state = makeState([[0, makeParams()]])
-    renderer.uploadGeometry(0, makeInstanceData())
+    renderer.upload(0, makeInstanceData())
 
     expect(renderer.pick(50, 9999, state)).toBeUndefined()
   })
@@ -130,7 +130,7 @@ describe('GpuSyntenyRenderer clicked outline', () => {
   test('draws the edge pass against a one-instance buffer of its own', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeClickableData())
+    renderer.upload(0, makeClickableData())
 
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
 
@@ -145,7 +145,7 @@ describe('GpuSyntenyRenderer clicked outline', () => {
   test('re-renders the same selection without re-uploading', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeClickableData())
+    renderer.upload(0, makeClickableData())
     const state = makeState([[0, makeParams({ clickedFeatureId: 1 })]])
 
     renderer.render(state)
@@ -161,7 +161,7 @@ describe('GpuSyntenyRenderer clicked outline', () => {
   test('a drawCurves toggle moves the buffer to the other edge pass', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeClickableData())
+    renderer.upload(0, makeClickableData())
 
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
     hal.calls = []
@@ -181,7 +181,7 @@ describe('GpuSyntenyRenderer clicked outline', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
     const data = makeClickableData()
-    renderer.uploadGeometry(0, data)
+    renderer.upload(0, data)
 
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 2 })]]))
@@ -204,7 +204,7 @@ describe('GpuSyntenyRenderer clicked outline', () => {
   test('skips the edge pass when the clicked feature is not in the region', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeClickableData())
+    renderer.upload(0, makeClickableData())
 
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 99 })]]))
 
@@ -217,10 +217,10 @@ describe('GpuSyntenyRenderer clicked outline', () => {
   test('re-uploaded geometry drops the stale outline buffer', () => {
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas())
-    renderer.uploadGeometry(0, makeClickableData())
+    renderer.upload(0, makeClickableData())
     renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
 
-    renderer.uploadGeometry(0, makeClickableData())
+    renderer.upload(0, makeClickableData())
 
     expect(hal.getBufferCount(0, 'edgeStraight')).toBe(0)
   })
@@ -248,7 +248,7 @@ describe('GpuSyntenyRenderer window-relative uniforms', () => {
       base1: base,
       bp1: Float32Array.from([300]), // corner at cumBp = base + 300
     }
-    renderer.uploadGeometry(0, data)
+    renderer.upload(0, data)
     // Render with the view panned 500px past the fetch base (bpPerPx = 1).
     const offsetPx = base - 500
     renderer.render(
@@ -275,7 +275,7 @@ describe('GpuSyntenyRenderer window-relative uniforms', () => {
     })
     const hal = new MockHal(SYNTENY_PASSES)
     const renderer = new GpuSyntenyRenderer(hal, makeMockCanvas(800, 100))
-    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.upload(0, makeInstanceData(1))
     renderer.render(makeState([[0, makeParams({})]]))
 
     const u = hal.getLastUniformsF32()!

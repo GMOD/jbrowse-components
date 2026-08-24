@@ -28,9 +28,9 @@
  * rather than "nothing", and `hasVisibleContent` reads `dynamicBlocks`, which
  * throws by design until then.
  */
-export function viewportEmpty(lgv: {
+export function viewportEmpty(host: {
   initialized: boolean
   hasVisibleContent: boolean
 }) {
-  return lgv.initialized && !lgv.hasVisibleContent
+  return host.initialized && !host.hasVisibleContent
 }

@@ -8,7 +8,7 @@ guide_category: Plugins
 **TL;DR:** Build a display that renders via WebGPU/WebGL2 with a required
 Canvas2D fallback: define data types, write a `.slang` shader, implement a GPU
 and a Canvas2D renderer behind one factory, wire an MST model with
-`installPerRegionLifecycle`, and render through `DisplayChrome`.
+`installUpload`, and render through `DisplayChrome`.
 
 :::note
 
@@ -35,7 +35,7 @@ JBrowse GPU displays follow a three-layer model:
 <Figure caption="Two autoruns, each with its own trigger: one upload autorun on any rpcDataMap entry changing, which diffs the map and uploads what moved, and a render autorun on renderTick or a frame-level change like scroll. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted also flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
-`RenderLifecycleMixin`, installed by `installPerRegionLifecycle`):
+`RenderLifecycleMixin`, installed by `installUpload`):
 
 - One upload autorun fires when any `rpcDataMap` entry or the backend changes;
   it diffs the map against what it last sent and calls `backend.uploadRegion()`
@@ -399,8 +399,8 @@ export function ScoreRenderer(canvas: HTMLCanvasElement) {
 
 Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin` and the
 fetch autoruns), store the worker output in an `rpcDataMap`, and wire the render
-lifecycle with `installPerRegionLifecycle`. This is the **per-region streamed**
-upload pattern from the
+lifecycle with `installUpload`. This is the **per-region streamed** upload
+pattern from the
 [architecture spec's upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#upload-patterns),
 the right shape when each region's data is independent (no cross-region layout
 coupling).
@@ -419,8 +419,8 @@ here is the render wiring:
 // the only part of the model that knows a backend exists, and it is
 // identical whether that backend is the GPU or the Canvas2D one.
 startRenderingBackend(backend: ScoreRenderingBackend) {
-  installPerRegionLifecycle(self, backend, {
-    data: () => self.rpcDataMap,
+  installUpload(self, backend, {
+    cells: () => self.rpcDataMap,
     render: (b, regions) => {
       if (regions.size === 0) {
         return false // keep the loading overlay up until data lands
@@ -432,19 +432,16 @@ startRenderingBackend(backend: ScoreRenderingBackend) {
 },
 ```
 
-Three installers wire the
+One installer wires the
 [render lifecycle](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
-for you:
-
-- **`installPerRegionLifecycle`** remembers what it last sent for each region
-  and uploads only what changed, so N regions streaming in cost N uploads rather
-  than N².
-- **`installKeyedLifecycle`** for a canvas shared by sibling displays.
-- **`installGlobalLifecycle`** for a display with one whole-view payload.
-
-Only displays that lay features into Y-rows _across_ regions
-(`LinearBasicDisplay`, alignments) need the whole-map `laidOutDataMap` form
-instead.
+for you. `installUpload` remembers what it last sent for each key and uploads
+only what changed, so N regions streaming in cost N uploads rather than N². The
+key is whatever your map is keyed by: a `displayedRegionIndex` here, a sibling
+display's `sharedBackendKey` on a canvas several displays share, or a slot name
+(`oneCell('data', payload)`) on a display that holds one payload for the whole
+view. Only displays that lay features into Y-rows _across_ regions
+(`LinearBasicDisplay`, alignments) hand it a whole-map computed instead of the
+raw `rpcDataMap`.
 
 An encode that needs more than the region's own data — a color scheme, a scale —
 declares it as `inputs`, and a change there re-encodes every loaded region.

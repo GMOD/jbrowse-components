@@ -39,9 +39,8 @@ identifiers used here.
 ## The core contract
 
 Each GPU display is an MST model that composes `RenderLifecycleMixin` and, in
-its `startRenderingBackend(backend)` action, installs one of the three
-render-core lifecycles (`installPerRegionLifecycle`, `installKeyedLifecycle`,
-`installGlobalLifecycle` — ADR-079); the installer is what calls the mixin's
+its `startRenderingBackend(backend)` action, calls render-core's one upload
+installer, `installUpload` (ADR-088); the installer is what calls the mixin's
 `attachRenderingBackend`, and `noHandRolledAttach` errors on a display calling
 it by hand. Underneath, the mixin spawns two autoruns tied to the model's
 lifetime — one runs the upload callback, one the render callback. MobX
@@ -58,12 +57,12 @@ interface RenderingBackend {
   dispose(): void
 }
 
-// In the plugin's MST model (the per-region form; keyed and global
-// installers take the same shape of callbacks):
+// In the plugin's MST model (a per-region display; a shared canvas or a
+// whole-view display hands over a map keyed differently, and nothing else):
 startRenderingBackend(backend: RenderingBackend) {
-  installPerRegionLifecycle(self, backend, {
-    data: () => self.rpcDataMap,
-    // The upload half is the installer's diff over `data`; an `encode` option
+  installUpload(self, backend, {
+    cells: () => self.rpcDataMap,
+    // The upload half is the installer's diff over `cells`; an `encode` option
     // is where a display transforms a region's payload on the way up.
     // `renderState` is a plain resolved getter — never `undefined`. "The view
     // isn't measured yet" is the mixins' `canRender` gate (see below), not a
@@ -573,12 +572,12 @@ The bases own everything that's truly shared:
   no 2D context), owns the concrete `renderBlocks` (hi-DPI `prepareCanvas`
   sizing and the `painted` answer, around the abstract `draw` the subclass
   implements — overriding `renderBlocks` instead silently drops both), and stubs
-  `uploadRegion` / `pruneRegions` / `dispose` as no-ops,
+  `upload` / `release` / `dispose` as no-ops,
   since the source of truth is the `regions` map.
 - `GpuPerRegionRenderingBackend` owns the `hal` reference and a pre-allocated
   uniform scratch `ArrayBuffer`. Default `pruneRegions(active)` delegates to
   `hal.pruneRegions(active)`; default `dispose()` calls `hal.dispose()`. It also
-  owns `uploadRegion`, over the `regionPasses` the subclass declares — six
+  owns `upload`, over the `regionPasses` the subclass declares — six
   subclasses used to write that method, each restating an instance count the
   packed buffer already stated and each spelling the empty case differently. A
   pass registered but never uploaded to — wiggle's line passes, canvas's chevron,
@@ -632,7 +631,7 @@ the previous answer here; the wipe-plus-sweep replaced it 2026-08-21, deleting
 the three methods from `GpuHal` and the recording from `RegionRegistry`.)
 
 The memo lives on the renderer (`GpuAlignmentsRenderer.uploaded`), not in a
-model-side `createRegionUploadSync`: this pattern's upload is one `sync` call
+model-side memo in `installUpload`: this pattern's upload is one `sources` cell
 owning every section, and the renderer is rebuilt with its HAL on a context loss,
 so the memo drops exactly when the buffers do — the part a hand-rolled model-side
 memo forgets. It stores array identities only, never the payload, so an evicted
@@ -700,55 +699,56 @@ score config `WiggleCommonMixin` itself sits on top of.
 
 ### Upload patterns
 
-Displays use one of four upload shapes. Pick the one that matches the data
-shape, not the one your neighbour copied. **Every one of these contracts extends
-`RenderingBackend`** (`dispose` + `setErrorHandler`), and a backend gets that by
-extending `GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` — see
-"Every backend extends a base" below for what happened to the three that didn't.
+**One installer, one contract.** A display's rendering wiring is one call from
+its `startRenderingBackend`, `installUpload(self, backend, { cells, inputs?,
+encode?, render })`, and nothing else; `attachRenderingBackend` is render-core's
+own and a lint rule says so ([ADR-088](../architecture-decision-records/adr-088-one-upload-installer-over-one-cell-contract.md)).
+`cells` is a map of immutable payloads. The installer diffs it by reference on
+every commit, encodes and uploads what moved, releases what left, and re-uploads
+everything into a fresh backend after a context loss. Every backend implements
+the same two verbs, `upload(key, data)` and `release(key)`, so what is left per
+display is **what its map is keyed by**:
 
-**The installer column is the whole wiring.** A display calls one of these three
-from its `startRenderingBackend` and nothing else; `attachRenderingBackend` is
-render-core's own and a lint rule says so ([ADR-079](../architecture-decision-records/adr-079-a-display-installs-a-lifecycle.md)).
+| Key | Contract | Render | Use when | Examples |
+|---|---|---|---|---|
+| `displayedRegionIndex` | `PerRegionRenderingBackend` | `renderBlocks(blocks, regions, state)` | each region's data is independent, or a whole-map computed hands back per-region payloads | canvas, wiggle, multi-wiggle, MAF, manhattan, sequence, multi-variant |
+| a sibling display's `sharedBackendKey` | `KeyedRenderingBackend` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
+| a slot name, via `oneCell` | `GlobalRenderingBackend` | `render(data, state)` (no blocks) | the display holds one payload for the whole view | HiC, LD, the variant matrix; alignments' whole-map `sources` |
 
-| Pattern | Installer | Contract | Upload methods | Render | Use when | Examples |
-|---|---|---|---|---|---|---|
-| **Per-region streamed** | `installPerRegionLifecycle` | `PerRegionRenderingBackend` | `uploadRegion(idx, data)` + `pruneRegions(active)` | `renderBlocks(blocks, regions, state)` | each region's data is independent, reactive per-region updates | canvas, wiggle, multi-wiggle, MAF, manhattan, multi-variant |
-| **Whole-map synced** | `installGlobalLifecycle` | (its own; one consumer) | `sync(sources)` | `renderBlocks(blocks, state)` | per-region streams must rebuild coherently — main-thread cross-region Y layout | alignments, and only alignments |
-| **Monolithic** | `installGlobalLifecycle` | `GlobalRenderingBackend` | `uploadX(data)` | `render(data, state)` (no blocks, no keys) | display has no region partitioning (heatmaps spanning the whole view) | HiC, LD (both `GlobalFetchMixin`); multi-variant matrix (monolithic backend but `MultiRegionDisplayMixin` fetch) |
-| **Keyed shared-canvas** | `installKeyedLifecycle` | `KeyedRenderingBackend` | `uploadGeometry(key, data)` + `deleteGeometry(key)` | `render(state)` — every key, one frame | one canvas paints several displays/levels, each with its own buffer | dotplot (key per display), multi-LGV synteny (key per level) |
+**Release is per key, never an active-set prune.** The diff knows exactly which
+keys departed, so a per-key release does the same job on a display's own map as
+the HAL's old `pruneRegions(active)` did, and it is the only correct shape on a
+shared canvas, where a prune computed from one display's map would wipe its
+siblings' buffers. That one fact is why the three installers this used to be
+(per-region, keyed, global — ADR-079) collapsed to one.
 
-Four contracts and three installers, because the whole-map synced payload is one
-global slot: what separates it from monolithic is the backend's shape, not how
-the upload is driven.
+**A display with two cells of different kinds** (HiC's contact matrix from the
+fetch beside its colour ramp from a config slot; LD's matrix and ramp, both off
+one fetch) keys them by name and lets `encode` see the key — `encode(data,
+props, key)` — while the backend's `upload` tells them apart by the cell's type.
+A palette flip then re-encodes and re-uploads the ramp alone, which is what the
+old installer's named slots existed for.
 
-The per-region and keyed installers diff through one primitive,
-`createMapUploadSync`, configured with how a departed key is released — the
-HAL's active-set `pruneRegions` for a display's own map, a per-key
-`deleteGeometry` for a shared canvas whose keys belong to siblings. The diff
-also answers whether anything reached the backend, and only then does the
-upload autorun force a redraw; the global installer always forces one, since
-three of its four consumers upload outside its slot memo.
+**Absence is absence.** A whole-view display with nothing fetched yet leaves the
+key out (`oneCell('data', self.rpcData)` does), so the key is released rather
+than uploaded as `undefined`; `render` is handed `null` and the frame clears.
 
-The last row keeps getting misfiled, and this table had it wrong in both
-directions: dotplot was listed as Monolithic — whose base class it does not
-extend and whose `uploadData(data)` signature it does not have — and synteny as
-whole-map synced, which would need a `sync` it has never had. Both are keyed, and
-keyed is neither neighbour: monolithic has no key at all, and per-region hands
-the model's data map back at render time instead of the backend owning it.
+The keyed table row keeps getting misfiled: dotplot and synteny are keyed, and
+keyed is neither neighbour — a whole-view display has no key at all, and
+per-region hands the model's data map back at render time instead of the
+backend owning it. `KeyedRenderingBackend` is an interface with no abstract
+class under it, unlike the other two: the base classes are the shared state,
+and there is no shared behavior on top because the two render loops genuinely
+differ.
 
-`KeyedRenderingBackend` is an interface with no abstract class under it, unlike
-the other two. The base classes are the shared state; there is no shared behavior
-on top, because the two render loops genuinely differ.
-
-MAF is **per-region streamed**, not whole-map synced: its blocks are independent,
-with no main-thread Y-layout coupling adjacent regions, so each region's upload
-re-encodes in isolation. Alignments' whole-map sync exists *only* because pileup
-Y-rows must be assigned consistently across `displayedRegions` — a read spanning
-a region boundary needs the same Y row in both — which forces the upload to
-rebuild the whole map whenever any region's input changes.
-
-All four patterns expose the same lifecycle (`attachRenderingBackend({ upload,
-render })`); the difference is how the upload callback shovels bytes.
+MAF is **per-region**, not whole-map: its blocks are independent, with no
+main-thread Y-layout coupling adjacent regions, so each region's upload
+re-encodes in isolation. Alignments' whole-map `sources` cell exists *only*
+because pileup Y-rows must be assigned consistently across `displayedRegions` —
+a read spanning a region boundary needs the same Y row in both — which forces
+the upload to rebuild the whole map whenever any region's input changes; its
+renderer holds the memo of what it last sent, and this layer's diff has nothing
+to add to it.
 
 #### Every backend extends a base, and the reason is the error channel
 
@@ -770,7 +770,7 @@ so a backend that doesn't extend a base is a compile error rather than a display
 silently forgoing its error channel. `?.` on a capability every implementer
 should have reads as tolerance and spends as silence.
 
-#### Per-region streamed: one autorun and a diff (`installPerRegionLifecycle`)
+#### One autorun and a diff (`installUpload`)
 
 **Plain English:** The naive implementation re-uploads every chromosome to the
 GPU each time any chromosome finishes loading — 300 uploads instead of 24 for a
@@ -780,26 +780,10 @@ uploads. When the user changes a color setting, all 24 re-encode and re-upload �
 which is the right behavior, and is why the display has to *declare* that the
 color is an encode input.
 
-Naive per-region upload iterates the full `rpcDataMap` inside the upload callback
-and re-uploads all N regions on every `rpcDataMap.set` — O(N²) GPU uploads when N
-regions arrive sequentially. The loop is fine; the missing piece was memory of
-what it already sent.
-
-**The helper lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is
-used by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
-`LinearMultiRowFeatureDisplay`. The **streamed-encode form** does not apply to
-the canvas plugin's other display, `LinearBasicDisplay`, whose whole-map
-Y-layout keeps it on the computed-map (identity) form of this same installer,
-described below. (The canvas plugin's two displays sit on
-opposite upload strategies, so they're always spelled out where they diverge.
-`LinearMultiSampleVariantDisplay` is per-region too, deriving its regions map
-from a single `cellData` computed (`perRegionCellMap`) and handing that to this
-same installer.) Each plugin's `startRenderingBackend`
-collapses to a single call:
-
 ```ts
 startRenderingBackend(backend: XxxRenderingBackend) {
-  installPerRegionLifecycle(self, self.rpcDataMap, backend, {
+  installUpload(self, backend, {
+    cells: () => self.rpcDataMap,
     inputs: () => self.gpuProps(),     // omit for an encode that needs nothing
     encode: (data, props) => encode(data, props),  // omit if there is nothing
     render: (b, encoded) =>            // to encode — see below
@@ -813,15 +797,13 @@ startRenderingBackend(backend: XxxRenderingBackend) {
 ```
 
 **Omit `encode` when the payload the display holds is the payload the backend
-takes**, which four of the seven per-region displays are. It is not the same code
-with an identity default filled in: the helper skips the encode step, so the two
-mirror maps it otherwise keeps — one payload reference and one source reference
-per loaded region — are never allocated, and `render` receives the display's own
-map. The four each wrote `encode: data => data` and then ignored `render`'s
-second argument, reading their own map instead.
+takes**, which most per-region displays are. It is not the same code with an
+identity default filled in: the helper skips the encode step, so the two mirror
+maps it otherwise keeps — one payload reference and one source reference per
+loaded key — are never allocated, and `render` receives the display's own map.
 
 One upload autorun runs over the whole map with two reference diffs under it: a
-region re-encodes when its own entry is replaced or when `inputs` changes
+cell re-encodes when its own entry is replaced or when `inputs` changes
 identity, and re-uploads when its encoded payload changes. A new key costs one
 encode and one upload; a settings change costs N of each. The quadratic term left
 is N `Map.get`s per arrival. [ADR-078](../architecture-decision-records/adr-078-one-upload-autorun-and-a-diff.md)
@@ -836,16 +818,11 @@ computed.
 **This fixes uploads and encodes only. Draws keep the O(N²) shape.**
 `renderBlocks` clears the canvas and redraws every loaded region, so N sequential
 arrivals still cost about N²/2 block draws. Each arrival no longer draws *twice*
-— the upload now happens inside the upload autorun's own run, so there is no pass
+— the upload happens inside the upload autorun's own run, so there is no pass
 where the map holds a region the backend does not — but read
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#a-region-arrival-draws-twice-wherever-the-render-autorun-observes-the-data)
 before chasing the rest: 24 regions cost 72 draws, the double draw explains 24 of
 them, and removing two thirds moved no user-visible number.
-
-The helper also caches successful encode outputs in a `Map<number, Encoded>` and
-passes it to the render callback — wiggle's renderer reads from this map because
-its renderer is stateless; other callers ignore the arg and read `rpcDataMap`
-directly.
 
 **Why `LinearBasicDisplay` / alignments are whole-map rather than streamed:** those
 lay out features into Y-rows across all loaded regions together (a gene spanning
@@ -853,64 +830,17 @@ two adjacent regions lands on the same row in both), so any new arrival can in
 principle change the layout of everything already loaded. They route through a
 whole-map MobX computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates
 on any `rpcDataMap` change, and their upload payload *is* that computed's output
-— no encode step, so nothing to declare `inputs` for. Until ADR-078 the reason
-was stronger than that: per-key autoruns could not help a whole-map computed at
-all, because reading `laidOutDataMap.get(key)` still tracks the whole thing. Now
-the two paths run the same diff and the split is thin, so a display moving from
-one to the other is a small change rather than a different strategy. This
-cross-region coupling is load-bearing (collapsed-intron views split one
-chromosome into many
-displayed regions, and a long gene must hold the same Y row in each) and is why
-layout runs on the main thread — row assignment needs the union of all visible
-regions' features. For alignments that placement is settled by
+— no encode step, so nothing to declare `inputs` for. Both hand that computed's
+map to the same installer (`cells: () => self.renderDataMap`), which diffs it
+against the last upload by reference, so only regions whose data object actually
+changed re-upload. This cross-region coupling is load-bearing (collapsed-intron
+views split one chromosome into many displayed regions, and a long gene must
+hold the same Y row in each) and is why layout runs on the main thread — row
+assignment needs the union of all visible regions' features. For alignments that
+placement is settled by
 [ADR-053](../architecture-decision-records/adr-053-alignments-layout-stays-on-the-main-thread.md),
 which also says what to attack instead when the main-thread pack shows up in a
 trace.
-
-The whole-map form takes the **same installer** as the streamed one, with no
-encode: `installPerRegionLifecycle(self, backend, { data: () =>
-self.renderDataMap, render })`. It diffs the computed map
-against the last upload by reference, so only regions whose data object actually
-changed re-upload, and it owns the prune plus the re-upload-all on backend swap.
-Canvas and `LinearMultiSampleVariantDisplay` are the two.
-
-#### Monolithic and whole-map synced: named upload slots (`installGlobalLifecycle`)
-
-A monolithic display has no region map to diff, but it can still have **more than
-one upload slot** — and the mixin gives it exactly one upload autorun, so every
-observable any slot reads re-fires all of them. That's harmless when the slots
-share a source: LD derives both its matrix and its color ramp from `rpcData`, so
-one arrival legitimately re-pushes both. It bites when the inputs are
-independent — HiC's palette is a config slot while its contact matrix comes from
-the RPC, so a palette flip re-uploaded the whole matrix and every fetch rebuilt
-the ramp texture.
-
-The installer hands `upload` a `slot` function for exactly that: name each slot,
-and it skips the upload while that slot's input is reference-identical to its
-last, dropping every memo on a backend swap for the same context-loss reason.
-
-```ts
-startRenderingBackend(backend: HicRenderingBackend) {
-  installGlobalLifecycle<HicRenderingBackend>(self, backend, {
-    upload: (b, slot) => {
-      slot('data', self.rpcData, (bb, data) => {
-        if (data) { bb.uploadData(data) }
-      })
-      slot('colorRamp', self.colorScheme, (bb, scheme) => {
-        bb.uploadColorRamp(generateColorRamp(scheme))
-      })
-    },
-    render: …,
-  })
-}
-```
-
-Read every slot's input **unconditionally**, as above — a read moved behind an
-`if` drops out of the autorun's dependency set on the runs that skip it, the same
-hazard `installGlobalFetchAutorun` documents for its trigger list. Let the upload
-callback handle the empty case. A display whose uploads share one input (LD, the
-variant matrix, alignments' `sync`) ignores the `slot` argument: the autorun's
-whole dependency set is that field, so it cannot re-fire spuriously.
 
 `LinearBasicDisplay` recovers O(N) anyway via `createIncrementalLayout`
 (`plugins/canvas/src/LinearBasicDisplay/layout.ts`), which memoizes the pure
@@ -923,7 +853,7 @@ the incremental-layout memo and its chain-mode wrinkle: [ADR-017](../architectur
 color-lane patch.** A genuine recolor (`colorBy`, `opacityByIdentity`, a track
 palette shift) does produce a fresh `colors` array, and the `geometry` getter
 then hands the backend a fresh object over the *same* coordinate arrays — which
-is exactly what `createKeyedUploadSync`'s reference diff is meant to catch, but a
+is exactly what `installUpload`'s reference diff is meant to catch, but a
 naive backend re-packs every lane to change one. So both renderers hold a
 `createInstanceCache` (`@jbrowse/render-core/instanceCache`), which memoizes the
 packed bytes on `(one geometry array's identity, colors' identity)` and patches
@@ -1762,9 +1692,8 @@ does the Canvas2D-only version); keep them in step with any change here.
     needed (rare).
   - Add a cached `renderState` view.
   - Define `startRenderingBackend(backend)` calling
-    the render-core installer that fits its upload shape
-    (`installPerRegionLifecycle` / `installKeyedLifecycle` /
-    `installGlobalLifecycle`) — never a hand-rolled `attachRenderingBackend`.
+    `installUpload` over the map the display keys its payloads by — never a
+    hand-rolled `attachRenderingBackend`.
   - Expose `rpcProps()`; add `gpuProps()` only when the main thread encodes GPU
     buffers from settings.
 - **React component** — `observer()`. Render the canvas through the shared

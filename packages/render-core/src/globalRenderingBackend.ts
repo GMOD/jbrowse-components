@@ -11,20 +11,24 @@ import type {
 
 /**
  * Shared contract for monolithic GPU backends (HiC, LD, multi-variant
- * matrix) — displays with no region partitioning. One bulk upload, one
- * draw per frame. Render receives the data directly so Canvas2D backends
- * stay stateless; GPU backends use `uploadData` to push bytes into a HAL
- * buffer and ignore the `data` arg at render time.
+ * matrix) — displays with no region partitioning. One payload under the
+ * `data` key, one draw per frame. Render receives the data directly so
+ * Canvas2D backends stay stateless; GPU backends use `upload` to push bytes
+ * into a HAL buffer and ignore the `data` arg at render time.
  *
- * Plugins with color textures or other side-channel resources (HiC, LD)
- * extend this interface with their own upload methods (e.g.
- * `uploadColorRamp`); the base contract stays minimal.
+ * A display with a second upload beside the payload — HiC's and LD's colour
+ * ramp texture, derived from a setting rather than the fetch — widens `Key`
+ * and `Cell` so `upload` takes both cells and tells them apart, while `render`
+ * is still handed the payload alone.
  */
 export interface GlobalRenderingBackend<
   UploadData,
   RenderState,
+  Key extends string = 'data',
+  Cell = UploadData,
 > extends RenderingBackend {
-  uploadData(data: UploadData): void
+  upload(key: Key, data: Cell): void
+  release(key: Key): void
   /**
    * Paint one frame and report whether real content reached the canvas — the
    * monolithic twin of `PerRegionRenderingBackend.renderBlocks`, and it answers
@@ -47,7 +51,7 @@ export interface GlobalRenderingBackend<
 /**
  * Canvas2D-side base for `GlobalRenderingBackend` implementations. Inherits the
  * `canvas` + 2D context (and no-op `dispose`) from
- * `Canvas2DRenderingBackendBase`; stubs `uploadData` (no-op — data flows through
+ * `Canvas2DRenderingBackendBase`; stubs `upload` (no-op — data flows through
  * `render`).
  *
  * `render` is concrete and runs `prepareCanvas` (DPR-aware backing-store sizing)
@@ -63,11 +67,14 @@ export interface GlobalRenderingBackend<
 export abstract class Canvas2DGlobalRenderingBackend<
   UploadData,
   RenderState extends FrameDimensions,
+  Key extends string = 'data',
+  Cell = UploadData,
 >
   extends Canvas2DRenderingBackendBase
-  implements GlobalRenderingBackend<UploadData, RenderState>
+  implements GlobalRenderingBackend<UploadData, RenderState, Key, Cell>
 {
-  uploadData(): void {}
+  upload(_key: Key, _cell: Cell): void {}
+  release(_key: Key): void {}
 
   render(data: UploadData | null, state: RenderState): boolean {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
@@ -86,7 +93,7 @@ export abstract class Canvas2DGlobalRenderingBackend<
  * GPU-side base for `GlobalRenderingBackend` implementations. Inherits the
  * `hal` reference, the pre-allocated uniform scratch buffer, and the
  * HAL-delegating `dispose` from `GpuRenderingBackendBase`. Subclasses implement
- * `uploadData` and `draw`.
+ * `upload` and `draw`.
  *
  * `render` is the frame scaffold the per-region base has always had and this
  * one did not: resize the backing store, `beginFrame`/`endFrame`, and hand the
@@ -94,15 +101,23 @@ export abstract class Canvas2DGlobalRenderingBackend<
  * the canvas, so a frame that draws nothing still has to open and close one or
  * the last picture stays up — and with each subclass writing its own scaffold,
  * that invariant held three times by hand.
+ *
+ * `release` is a no-op by default: a payload leaving the map is answered by
+ * `render` being handed `null`, and `beginFrame` clears the last picture. A
+ * subclass whose buffers are worth freeing early overrides it.
  */
 export abstract class GpuGlobalRenderingBackend<
   UploadData,
   RenderState extends FrameDimensions,
+  Key extends string = 'data',
+  Cell = UploadData,
 >
   extends GpuRenderingBackendBase
-  implements GlobalRenderingBackend<UploadData, RenderState>
+  implements GlobalRenderingBackend<UploadData, RenderState, Key, Cell>
 {
-  abstract uploadData(data: UploadData): void
+  abstract upload(key: Key, data: Cell): void
+
+  release(): void {}
 
   render(data: UploadData | null, state: RenderState): boolean {
     this.hal.resize(state.canvasWidth, state.canvasHeight)

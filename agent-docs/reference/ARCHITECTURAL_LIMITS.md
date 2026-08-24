@@ -430,7 +430,7 @@ should rely on the order. The upload autorun ran first all along; what it did wa
 a running reaction is scheduled rather than run inline. So the upload could not
 happen in the pass that decided to do it: a render callback observing the map
 painted the pre-upload state, and the real state followed on the `renderTick`
-bump. `installPerRegionLifecycle` now uploads inside the upload autorun's own
+bump. `installUpload` now uploads inside the upload autorun's own
 run, which closes the window — `uploadOrder.test.ts` pins upload-then-paint for
 both the direct read and the computed chain, and the count that used to read
 **9** renders for 4 arrivals reads **5**, the same as a callback that ignores the
@@ -1123,7 +1123,7 @@ only on a real violation):
   looks like that and is not: its `prepare` reads it before deciding. The rest
   is held by convention — every in-tree `prepare` bails on something the
   skeleton already tracks, or on an observable of its own that it read first.
-- **An `installPerRegionLifecycle` declares a narrow `inputs` getter, never
+- **An `installUpload` declares a narrow `inputs` getter, never
   `renderState`.** ADR-078 moved this from a trap to a declaration: an
   observable read inside `encode` no longer invalidates anything, so the old
   failure — a `renderState` read rebuilding tens of MB per frame of

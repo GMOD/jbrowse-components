@@ -39,7 +39,7 @@ describe('GpuHicRenderer', () => {
 
     const uploads = jest.spyOn(hal, 'uploadBuffer')
     const instances = packTestInstances([10, 20, 30, 40], [5, 15])
-    renderer.uploadData({ instances, numContacts: 2, binWidth: 10 })
+    renderer.upload('data', { instances, numContacts: 2, binWidth: 10 })
 
     const buf = hal.getBuffer(0, 'main')
     expect(buf).toBeDefined()
@@ -63,14 +63,14 @@ describe('GpuHicRenderer', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
 
-    renderer.uploadData({
+    renderer.upload('data', {
       instances: packTestInstances([10, 20], [5]),
       numContacts: 1,
       binWidth: 10,
     })
     expect(hal.getBufferCount(0, 'main')).toBe(1)
 
-    renderer.uploadData({
+    renderer.upload('data', {
       instances: packTestInstances([], []),
       numContacts: 0,
       binWidth: 10,
@@ -98,7 +98,7 @@ describe('GpuHicRenderer', () => {
     const renderer = new GpuHicRenderer(hal)
 
     const data = makeData()
-    renderer.uploadData(data)
+    renderer.upload('data', data)
 
     renderer.render(data, makeRenderState())
 
@@ -119,7 +119,7 @@ describe('GpuHicRenderer', () => {
     const renderer = new GpuHicRenderer(hal)
 
     const data = makeData()
-    renderer.uploadData(data)
+    renderer.upload('data', data)
 
     renderer.render(data, makeRenderState({ useLogScale: true }))
 
@@ -143,7 +143,7 @@ describe('GpuHicRenderer', () => {
     const renderer = new GpuHicRenderer(hal)
 
     const data = makeData()
-    renderer.uploadData(data)
+    renderer.upload('data', data)
 
     renderer.render(data, makeRenderState())
 
@@ -185,7 +185,7 @@ describe('GpuHicRenderer paint reporting', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
     const data = makeData()
-    renderer.uploadData(data)
+    renderer.upload('data', data)
 
     expect(renderer.render(data, makeRenderState())).toBe(true)
   })
@@ -203,7 +203,7 @@ describe('GpuHicRenderer paint reporting', () => {
     const hal = new MockHal(HIC_PASSES)
     const renderer = new GpuHicRenderer(hal)
     const empty = makeData({ numContacts: 0 })
-    renderer.uploadData(empty)
+    renderer.upload('data', empty)
 
     expect(renderer.render(empty, makeRenderState())).toBe(false)
   })

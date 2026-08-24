@@ -63,7 +63,7 @@ function gpuBaseSlots(showModifications: boolean) {
     ],
     readConnectionsLineWidth: 1,
   }
-  renderer.sync(sources)
+  renderer.upload('sources', sources)
   renderer.renderBlocks(
     [
       {

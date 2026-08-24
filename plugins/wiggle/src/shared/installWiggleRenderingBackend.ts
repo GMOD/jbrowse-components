@@ -1,4 +1,4 @@
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { buildSourceRenderData } from './buildSourceRenderData.ts'
 
@@ -30,8 +30,8 @@ export function installWiggleRenderingBackend(
   self: WiggleLifecycleModel,
   backend: WiggleRenderingBackend,
 ) {
-  installPerRegionLifecycle(self, backend, {
-    data: () => self.rpcDataMap,
+  installUpload(self, backend, {
+    cells: () => self.rpcDataMap,
     inputs: () => self.gpuProps(),
     encode: buildSourceRenderData,
     render: (b, encoded) =>

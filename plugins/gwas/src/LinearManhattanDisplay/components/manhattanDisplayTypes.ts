@@ -21,7 +21,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
-  lgv: RegionHost
+  host: RegionHost
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>

@@ -49,7 +49,7 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeGeometry({
         x1: new Float64Array([8e8 + 100]),
@@ -72,7 +72,7 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
     const base = 1.5e9 // fetch-time base cumBp, past Float32 exact-int
-    renderer.uploadGeometry(
+    renderer.upload(
       0,
       makeGeometry({
         x1: new Float64Array([base + 300]), // corner at cumBp = base + 300
@@ -103,7 +103,7 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry())
+    renderer.upload(0, makeGeometry())
     renderer.render(makeState())
     expect(hal.getLastUniformsF32()![U.devicePixelRatio]).toBeGreaterThan(0)
   })
@@ -112,8 +112,8 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry({ baseH: 1000, baseV: 2000 }))
-    renderer.uploadGeometry(1, makeGeometry({ baseH: 3000, baseV: 4000 }))
+    renderer.upload(0, makeGeometry({ baseH: 1000, baseV: 2000 }))
+    renderer.upload(1, makeGeometry({ baseH: 3000, baseV: 4000 }))
     renderer.render(makeState({ displayKeys: [0, 1] }))
     // The last drawn key (1) leaves its uniforms: panPxH = base - viewBp = 3000.
     const u = hal.getLastUniformsF32()!
@@ -126,8 +126,8 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry())
-    renderer.uploadGeometry(0, makeGeometry({ instanceCount: 0 }))
+    renderer.upload(0, makeGeometry())
+    renderer.upload(0, makeGeometry({ instanceCount: 0 }))
     renderer.render(makeState())
     // No base for key 0 → no draw.
     expect(hal.callsOf('drawPass')).toHaveLength(0)
@@ -144,7 +144,7 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry())
+    renderer.upload(0, makeGeometry())
     hal.calls = []
 
     renderer.render(makeState({ alpha: 0.25 }))
@@ -169,9 +169,9 @@ describe('GpuDotplotRenderer recolor', () => {
       baseH: 8e8,
       baseV: 5e8,
     })
-    renderer.uploadGeometry(0, geom)
+    renderer.upload(0, geom)
 
-    renderer.uploadGeometry(0, {
+    renderer.upload(0, {
       ...geom,
       colors: new Uint32Array([0x0000ff80]),
     })
@@ -189,9 +189,9 @@ describe('GpuDotplotRenderer recolor', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry())
+    renderer.upload(0, makeGeometry())
 
-    renderer.uploadGeometry(0, makeGeometry({ x1: new Float64Array([700]) }))
+    renderer.upload(0, makeGeometry({ x1: new Float64Array([700]) }))
 
     const f = new Float32Array(hal.getBuffer(0, 'line')!.data)
     expect(f[F_F32.x1]).toBe(700)
@@ -199,17 +199,17 @@ describe('GpuDotplotRenderer recolor', () => {
 
   // A departed track's cached bytes have to go with its buffer, or the next
   // display to take that key patches colors into the wrong geometry.
-  test('deleteGeometry drops the cached pack', () => {
+  test('release drops the cached pack', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)
     renderer.resize(800, 600)
     const geom = makeGeometry()
-    renderer.uploadGeometry(0, geom)
-    renderer.deleteGeometry(0)
+    renderer.upload(0, geom)
+    renderer.release(0)
 
     // Same geomToken as before the delete: a surviving cache entry would answer
     // from the stale buffer instead of repacking.
-    renderer.uploadGeometry(0, {
+    renderer.upload(0, {
       ...geom,
       colors: new Uint32Array([0xabcdef01]),
     })

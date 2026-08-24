@@ -25,10 +25,8 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
-import {
-  installPerRegionLifecycle,
-  regionDataMap,
-} from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
@@ -1177,8 +1175,8 @@ export default function stateModelFactory(
        * #action
        */
       startRenderingBackend(backend: MultiRowRenderingBackend) {
-        installPerRegionLifecycle(self, backend, {
-          data: () => self.rpcDataMap,
+        installUpload(self, backend, {
+          cells: () => self.rpcDataMap,
           // `featurePaintInputs`, never `renderState`: the instance buffer holds
           // {startBp,endBp,rowIndex,color} and no geometry — the row height and
           // canvas box reach the shader as uniforms, and both move on every

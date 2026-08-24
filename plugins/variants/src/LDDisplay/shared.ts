@@ -26,7 +26,7 @@ import {
 } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { cast, types } from '@jbrowse/mobx-state-tree'
-import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
@@ -45,6 +45,7 @@ import type {
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
 import type {
+  LDCellKey,
   LDRenderState,
   LDRenderingBackend,
 } from './components/ldRenderingBackendTypes.ts'
@@ -257,7 +258,7 @@ export default function sharedModelFactory(
        * appends.
        */
       get viewSignature(): string | undefined {
-        const view = self.lgv
+        const view = self.host
         return view.initialized
           ? blockKeySignature(view.dynamicBlocks.contentBlocks)
           : undefined
@@ -518,7 +519,7 @@ export default function sharedModelFactory(
        * a stale triangle draws at its genomic position while a refetch runs.
        */
       get viewTransform() {
-        const { bpPerPx, offsetPx } = self.lgv
+        const { bpPerPx, offsetPx } = self.host
         const originBp = self.rpcData?.originBp ?? 0
         return {
           viewScale: 1 / bpPerPx,
@@ -686,14 +687,21 @@ export default function sharedModelFactory(
        * input independent of the RPC result.)
        */
       startRenderingBackend(backend: LDRenderingBackend) {
-        installGlobalLifecycle<LDRenderingBackend>(self, backend, {
-          upload: b => {
-            const d = self.rpcData
-            if (d) {
-              b.uploadData(toLDUploadData(d))
-              b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
+        installUpload(self, backend, {
+          // Both cells encode off the one fetch result, so both re-upload on a
+          // new fetch and neither on anything else.
+          cells: () => {
+            const cells = new Map<LDCellKey, LDDataResult>()
+            if (self.rpcData) {
+              cells.set('data', self.rpcData)
+              cells.set('colorRamp', self.rpcData)
             }
+            return cells
           },
+          encode: (d, _props, key) =>
+            key === 'colorRamp'
+              ? generateLDColorRamp(d.metric, d.signedLD)
+              : toLDUploadData(d),
           // The backend answers "did real content reach the canvas". It used to
           // be this callback's answer, because a monolithic `render` returned
           // void — and "the data is here" is not the same claim as "something

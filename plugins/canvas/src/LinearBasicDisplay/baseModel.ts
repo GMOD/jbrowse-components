@@ -38,10 +38,8 @@ import MultiRegionDisplayMixin, {
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
-import {
-  installPerRegionLifecycle,
-  regionDataMap,
-} from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { toJS } from 'mobx'
@@ -1309,8 +1307,8 @@ export default function baseStateModelFactory(
           // meaningful. `renderDataMap === laidOutDataMap` when idle; during a Y
           // morph it yields fresh per-frame region objects, so the interpolated
           // rows re-upload each frame (and once more on settle).
-          installPerRegionLifecycle(self, backend, {
-            data: () => self.renderDataMap,
+          installUpload(self, backend, {
+            cells: () => self.renderDataMap,
             inputs: () => self.gpuProps(),
             encode: (data, { colorTable }) =>
               resolveRegionColors(data, colorTable),

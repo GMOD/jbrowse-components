@@ -8,6 +8,7 @@ import { mapLDValue } from './ldColorRamp.ts'
 
 import type {
   LDRenderState,
+  LDCellKey,
   LDRenderingBackend,
   LDUploadData,
 } from './ldRenderingBackendTypes.ts'
@@ -87,10 +88,21 @@ export function drawLDBlocks(
 }
 
 export class Canvas2DLDRenderer
-  extends Canvas2DGlobalRenderingBackend<LDUploadData, LDRenderState>
+  extends Canvas2DGlobalRenderingBackend<
+    LDUploadData,
+    LDRenderState,
+    LDCellKey,
+    LDUploadData | Uint8Array
+  >
   implements LDRenderingBackend
 {
   private colorRamp: Uint8Array | null = null
+
+  upload(_key: LDCellKey, cell: LDUploadData | Uint8Array) {
+    if (cell instanceof Uint8Array) {
+      this.uploadColorRamp(cell)
+    }
+  }
 
   uploadColorRamp(colors: Uint8Array) {
     this.colorRamp = colors

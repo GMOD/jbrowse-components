@@ -37,15 +37,14 @@
     "./gpuDevice": "./src/gpuDevice.ts",
     "./graphicsCapabilities": "./src/graphicsCapabilities.ts",
     "./hal": "./src/hal/index.ts",
-    "./installGlobalLifecycle": "./src/installGlobalLifecycle.ts",
-    "./installKeyedLifecycle": "./src/installKeyedLifecycle.ts",
-    "./installPerRegionLifecycle": "./src/installPerRegionLifecycle.ts",
+    "./installUpload": "./src/installUpload.ts",
     "./instanceCache": "./src/instanceCache.ts",
     "./instancePass": "./src/instancePass.ts",
     "./keyedRenderingBackend": "./src/keyedRenderingBackend.ts",
     "./namedReactions": "./src/namedReactions.ts",
     "./OverlayCanvas": "./src/OverlayCanvas.tsx",
     "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
+    "./regionDataMap": "./src/regionDataMap.ts",
     "./renderBlock": "./src/renderBlock.ts",
     "./renderingBackendBase": "./src/renderingBackendBase.ts",
     "./ScrollLockedOverlay": "./src/ScrollLockedOverlay.tsx",
@@ -132,17 +131,9 @@
         "types": "./esm/hal/index.d.ts",
         "import": "./esm/hal/index.js"
       },
-      "./installGlobalLifecycle": {
-        "types": "./esm/installGlobalLifecycle.d.ts",
-        "import": "./esm/installGlobalLifecycle.js"
-      },
-      "./installKeyedLifecycle": {
-        "types": "./esm/installKeyedLifecycle.d.ts",
-        "import": "./esm/installKeyedLifecycle.js"
-      },
-      "./installPerRegionLifecycle": {
-        "types": "./esm/installPerRegionLifecycle.d.ts",
-        "import": "./esm/installPerRegionLifecycle.js"
+      "./installUpload": {
+        "types": "./esm/installUpload.d.ts",
+        "import": "./esm/installUpload.js"
       },
       "./instanceCache": {
         "types": "./esm/instanceCache.d.ts",
@@ -167,6 +158,10 @@
       "./perRegionRenderingBackend": {
         "types": "./esm/perRegionRenderingBackend.d.ts",
         "import": "./esm/perRegionRenderingBackend.js"
+      },
+      "./regionDataMap": {
+        "types": "./esm/regionDataMap.d.ts",
+        "import": "./esm/regionDataMap.js"
       },
       "./renderBlock": {
         "types": "./esm/renderBlock.d.ts",
@@ -279,14 +274,8 @@
         "hal": [
           "esm/hal/index.d.ts"
         ],
-        "installGlobalLifecycle": [
-          "esm/installGlobalLifecycle.d.ts"
-        ],
-        "installKeyedLifecycle": [
-          "esm/installKeyedLifecycle.d.ts"
-        ],
-        "installPerRegionLifecycle": [
-          "esm/installPerRegionLifecycle.d.ts"
+        "installUpload": [
+          "esm/installUpload.d.ts"
         ],
         "instanceCache": [
           "esm/instanceCache.d.ts"
@@ -305,6 +294,9 @@
         ],
         "perRegionRenderingBackend": [
           "esm/perRegionRenderingBackend.d.ts"
+        ],
+        "regionDataMap": [
+          "esm/regionDataMap.d.ts"
         ],
         "renderBlock": [
           "esm/renderBlock.d.ts"

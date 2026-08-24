@@ -1,7 +1,7 @@
 import { getSession } from '@jbrowse/core/util/mstUtils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import FetchMixin from './FetchMixin.ts'
@@ -9,7 +9,7 @@ import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
-import { containingLgv, foundationCanRender } from './foundationView.ts'
+import { containingHost, foundationCanRender } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks } from './regionCommit.ts'
@@ -75,11 +75,11 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #getter
          * The containing LinearGenomeView, typed once for every display in this
-         * family — see `containingLgv` for the cast it owns and why both
+         * family — see `containingHost` for the cast it owns and why both
          * foundations still declare the name.
          */
-        get lgv(): RegionHost {
-          return containingLgv(self)
+        get host(): RegionHost {
+          return containingHost(self)
         },
 
         /**
@@ -108,7 +108,7 @@ export default function MultiRegionDisplayMixin() {
          * `LgvSvgBodyProps`).
          */
         get canvasWidthPx(): number {
-          return this.lgv.trackWidthPx
+          return this.host.trackWidthPx
         },
 
         /**
@@ -129,7 +129,7 @@ export default function MultiRegionDisplayMixin() {
          * and for the resolution-staleness gap.
          */
         get viewportWithinLoadedData() {
-          const view = this.lgv
+          const view = this.host
           return view.initialized
             ? view.visibleRegions.every(block =>
                 isBlockCovered(
@@ -146,11 +146,11 @@ export default function MultiRegionDisplayMixin() {
          * and nothing to paint — see `viewportEmpty.ts` for the one viewport that
          * reaches it, how narrow that is, and why the state still has to be
          * terminal rather than a permanent scrim. Both foundations declare it
-         * over that one expression, the same way they each declare `lgv` and
+         * over that one expression, the same way they each declare `host` and
          * `paintInert`.
          */
         get viewportEmpty(): boolean {
-          return viewportEmpty(this.lgv)
+          return viewportEmpty(this.host)
         },
 
         /**
@@ -262,7 +262,7 @@ export default function MultiRegionDisplayMixin() {
          * then issue an empty-blocks render that clears the canvas.
          */
         get renderBlocks() {
-          return buildRenderBlocks(this.lgv.visibleRegions)
+          return buildRenderBlocks(this.host.visibleRegions)
         },
       }))
       // `dataCurrent` and `svgReady` sit in their own blocks, after everything

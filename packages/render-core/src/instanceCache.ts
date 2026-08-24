@@ -30,7 +30,7 @@ export interface InstanceCacheOpts<TData> {
  * makes it worth a helper rather than two copies is the invalidation: get the
  * `geomToken` comparison or the `colors` write-back wrong and the failure is
  * stale geometry on screen, which no test catches and which looks like a data
- * problem. `createRegionUploadSync` and friends exist for the same reason one
+ * problem. `installUpload` exists for the same reason one
  * layer up — an upload memo is not a hand-rolled `let`.
  *
  * The GPU re-upload still happens on a recolor (no HAL does partial buffer

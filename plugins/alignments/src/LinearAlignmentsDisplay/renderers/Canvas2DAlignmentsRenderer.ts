@@ -283,7 +283,9 @@ export class Canvas2DAlignmentsRenderer
     super(canvas)
   }
 
-  sync(sources: AlignmentsSources) {
+  release() {}
+
+  upload(_key: 'sources', sources: AlignmentsSources) {
     this.regions = buildAlignmentsRegionMap(sources)
   }
 

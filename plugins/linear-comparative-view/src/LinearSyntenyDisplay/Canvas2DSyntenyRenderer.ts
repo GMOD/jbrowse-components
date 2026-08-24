@@ -304,11 +304,11 @@ export class Canvas2DSyntenyRenderer
     }
   }
 
-  uploadGeometry(key: number, data: SyntenyInstanceData) {
+  upload(key: number, data: SyntenyInstanceData) {
     this.cache.set(key, data)
   }
 
-  deleteGeometry(key: number) {
+  release(key: number) {
     this.cache.delete(key)
   }
 

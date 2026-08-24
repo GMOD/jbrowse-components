@@ -23,8 +23,8 @@ export type { FrameDimensions } from './renderingBackendBase.ts'
  * Shared contract for per-region streamed GPU backends.
  *
  * The model owns the data (`rpcDataMap` / `laidOutDataMap`); the backend
- * uploads what's needed to the GPU (`uploadRegion`) and draws against a
- * data map passed back through `renderBlocks` each frame.
+ * uploads what's needed to the GPU (`upload`, one region per key) and draws
+ * against a data map passed back through `renderBlocks` each frame.
  *
  * `UploadData` is what the upload-side autorun pushes per region;
  * `RenderData` is what the render-side reads. They default to the same
@@ -32,10 +32,9 @@ export type { FrameDimensions } from './renderingBackendBase.ts'
  * carries a pre-encoded GPU buffer that the render side doesn't need).
  *
  * Renderers are stateless: they keep no per-region cache. Canvas2D backends
- * stub `uploadRegion` / `pruneRegions` as no-ops since they read everything
- * from the `regions` map at render time. GPU backends use `uploadRegion` to
- * push bytes into HAL buffers, and `pruneRegions` to delegate region
- * lifecycle to HAL via `hal.pruneRegions(active)`.
+ * stub `upload` / `release` as no-ops since they read everything from the
+ * `regions` map at render time. GPU backends use `upload` to push bytes into
+ * HAL buffers, and `release` to drop a departed region's buffers.
  */
 export interface PerRegionRenderingBackend<
   UploadData,
@@ -43,8 +42,8 @@ export interface PerRegionRenderingBackend<
   Block = RenderBlock,
   RenderData = UploadData,
 > extends RenderingBackend {
-  uploadRegion(displayedRegionIndex: number, data: UploadData): void
-  pruneRegions(activeRegions: Iterable<number>): void
+  upload(displayedRegionIndex: number, data: UploadData): void
+  release(displayedRegionIndex: number): void
   /**
    * Paint one frame and report whether real content reached the canvas. The
    * render callback forwards this straight to `RenderLifecycleMixin`, which
@@ -90,8 +89,8 @@ export abstract class Canvas2DPerRegionRenderingBackend<
   implements
     PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
 {
-  uploadRegion(): void {}
-  pruneRegions(): void {}
+  upload(): void {}
+  release(): void {}
 
   renderBlocks(
     blocks: Block[],
@@ -118,15 +117,15 @@ export abstract class Canvas2DPerRegionRenderingBackend<
  * GPU-side base for `PerRegionRenderingBackend` implementations. Inherits the
  * `hal` reference, the pre-allocated uniform scratch `ArrayBuffer`, and the
  * HAL-delegating `dispose` from `GpuRenderingBackendBase`; adds the shared
- * `pruneRegions` (delegates to HAL).
+ * `release` (delegates to HAL).
  *
  * `renderBlocks` is a concrete frame scaffold shared by every per-region GPU
  * renderer: resize the backing store, `beginFrame`/`endFrame`, and per block
  * compute the scissor clip + set scissor/viewport. The scaffold's invariants
  * (paired begin/end, cleared scissor/viewport, the skip-absent-region and
  * skip-offscreen guards) are owned here so a subclass can't forget them.
- * Subclasses implement only `uploadRegion` and `drawRegion` — the latter writes
- * uniforms and issues draw passes for one already-clipped block.
+ * Subclasses implement only `drawRegion`, which writes uniforms and issues
+ * draw passes for one already-clipped block.
  */
 export abstract class GpuPerRegionRenderingBackend<
   UploadData,
@@ -138,8 +137,8 @@ export abstract class GpuPerRegionRenderingBackend<
   implements
     PerRegionRenderingBackend<UploadData, RenderState, Block, RenderData>
 {
-  pruneRegions(activeRegions: Iterable<number>): void {
-    this.hal.pruneRegions(activeRegions)
+  release(displayedRegionIndex: number): void {
+    this.hal.deleteRegion(displayedRegionIndex)
   }
 
   /**
@@ -164,7 +163,7 @@ export abstract class GpuPerRegionRenderingBackend<
    *
    * Override only for a payload no packer can take — none does today.
    */
-  uploadRegion(displayedRegionIndex: number, data: UploadData): void {
+  upload(displayedRegionIndex: number, data: UploadData): void {
     for (const pass of this.regionPasses) {
       uploadPass(this.hal, displayedRegionIndex, pass, data)
     }

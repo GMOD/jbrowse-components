@@ -8,7 +8,7 @@ import MultiRegionDisplayMixin, {
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 import { observable } from 'mobx'
 // #endregion
 
@@ -104,8 +104,8 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       // the only part of the model that knows a backend exists, and it is
       // identical whether that backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
-        installPerRegionLifecycle(self, backend, {
-          data: () => self.rpcDataMap,
+        installUpload(self, backend, {
+          cells: () => self.rpcDataMap,
           render: (b, regions) => {
             if (regions.size === 0) {
               return false // keep the loading overlay up until data lands

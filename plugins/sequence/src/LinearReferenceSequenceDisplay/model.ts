@@ -21,10 +21,8 @@ import MultiRegionDisplayMixin, {
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  installPerRegionLifecycle,
-  regionDataMap,
-} from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
 import {
   buildColorPalette,
@@ -208,7 +206,7 @@ export function modelFactory(
        * the view is too zoomed out to show individual bases
        */
       get zoomedOut() {
-        const view = self.lgv
+        const view = self.host
         return view.bpPerPx > ZOOMED_OUT_BP_PER_PX
       },
       /**
@@ -296,7 +294,7 @@ export function modelFactory(
       get renderState(): DrawSequenceState {
         return {
           ...self.rowVisibility,
-          bpPerPx: self.lgv.bpPerPx,
+          bpPerPx: self.host.bpPerPx,
           isDna: self.isDna,
           rowHeight: self.rowHeight,
           palette: self.colorPalette,
@@ -375,8 +373,8 @@ export function modelFactory(
        * draws every frame from `renderState`.
        */
       startRenderingBackend(backend: Canvas2DSequenceRenderer) {
-        installPerRegionLifecycle(self, backend, {
-          data: () => self.sequenceData,
+        installUpload(self, backend, {
+          cells: () => self.sequenceData,
           render: (b, regions) =>
             self.rendersCanvas &&
             b.renderBlocks(self.renderBlocks, regions, self.renderState),

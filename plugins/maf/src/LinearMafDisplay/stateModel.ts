@@ -21,10 +21,8 @@ import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { coverageBandBuffers } from '@jbrowse/render-core/coverageBand'
-import {
-  installPerRegionLifecycle,
-  regionDataMap,
-} from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
@@ -950,7 +948,7 @@ export default function stateModelFactory(
          */
         get rowsVisible() {
           return (
-            self.lgv.initialized && self.showAlignments && self.sourcesKnown
+            self.host.initialized && self.showAlignments && self.sourcesKnown
           )
         },
         /**
@@ -1614,7 +1612,7 @@ export default function stateModelFactory(
       .views(self => {
         // The block-overlay helpers all take this same bundle.
         const overlayParams = () => ({
-          view: self.lgv,
+          view: self.host,
           rpcDataMap: self.rpcDataMap,
           ...self.rowGeometry(),
         })
@@ -1826,7 +1824,7 @@ export default function stateModelFactory(
           // replace the per-base letters).
           return self.rowsVisible && !self.resizing && self.basesRenderingActive
             ? computeVisibleLabels({
-                view: self.lgv,
+                view: self.host,
                 rpcDataMap: self.rpcDataMap,
                 ...self.rowGeometry(),
                 showAllLetters: self.showAllLetters,
@@ -1856,7 +1854,7 @@ export default function stateModelFactory(
         get visibleInsertions() {
           return self.rowsVisible && self.basesRenderingActive
             ? computeVisibleInsertions({
-                view: self.lgv,
+                view: self.host,
                 rpcDataMap: self.rpcDataMap,
                 ...self.rowGeometry(),
               })
@@ -1890,7 +1888,7 @@ export default function stateModelFactory(
           }
           const summary = self.summaryDataMap
           return computeVisibleSummaryBars({
-            view: self.lgv,
+            view: self.host,
             summaryDataMap: self.showSummary
               ? summary
               : {
@@ -1911,7 +1909,7 @@ export default function stateModelFactory(
         get visibleFrames(): FrameMarker[] {
           return self.rowsVisible && self.annotationsActive
             ? computeVisibleAnnotations({
-                view: self.lgv,
+                view: self.host,
                 framesDataMap: self.framesDataMap,
                 rowIndexBySrc: self.rowIndexBySrc,
                 ...self.rowGeometry(),
@@ -1937,7 +1935,7 @@ export default function stateModelFactory(
          */
         get codonConservationActive() {
           return (
-            self.lgv.initialized &&
+            self.host.initialized &&
             // carries both "the user asked for the band" and "not the summary
             // path", which this used to spell as two terms of its own
             self.conservationBandActive &&
@@ -1963,7 +1961,7 @@ export default function stateModelFactory(
           return (self.codonCellsActive || self.codonConservationActive) &&
             src !== undefined
             ? locateVisibleCodons({
-                view: self.lgv,
+                view: self.host,
                 rpcDataMap: self.rpcDataMap,
                 framesDataMap: self.framesDataMap,
                 defaultSrc: src,
@@ -2085,7 +2083,7 @@ export default function stateModelFactory(
          * palette stops changing.
          */
         get legendItems(): LegendItem[] {
-          const view = self.lgv
+          const view = self.host
           if (!view.initialized) {
             return []
           }
@@ -2235,8 +2233,8 @@ export default function stateModelFactory(
           // instance buffer on the main thread from raw region data + gpuProps,
           // so theme / showAllLetters / mismatchRendering changes re-encode
           // without an RPC roundtrip.
-          installPerRegionLifecycle(self, backend, {
-            data: () => self.rpcDataMap,
+          installUpload(self, backend, {
+            cells: () => self.rpcDataMap,
             // `basesRenderingActive` belongs in here with gpuProps, not read
             // inside the encode: flipping modes has to re-encode every region,
             // and only a declared input does that now.

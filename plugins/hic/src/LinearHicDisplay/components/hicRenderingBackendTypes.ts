@@ -30,11 +30,16 @@ export interface HicUploadData {
   binWidth: number
 }
 
-// HiC adds `uploadColorRamp` for its color-mapped texture; otherwise
-// follows the standard monolithic shape (one bulk uploadData, one render).
+// Two cells: the contact matrix from the fetch, and the colour ramp texture
+// from a config slot. `upload` tells them apart by the cell's type, so a
+// palette flip re-pushes the ramp alone.
+export type HicCellKey = 'data' | 'colorRamp'
+
 export interface HicRenderingBackend extends GlobalRenderingBackend<
   HicUploadData,
-  HicRenderState
+  HicRenderState,
+  HicCellKey,
+  HicUploadData | Uint8Array
 > {
   uploadColorRamp(colors: Uint8Array): void
 }

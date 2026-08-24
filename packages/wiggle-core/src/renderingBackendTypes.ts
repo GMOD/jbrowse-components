@@ -92,7 +92,7 @@ export interface SourceRenderData {
   // pairing used to be implicit: the encoder wrote every field unconditionally
   // and `drawRegion` picked the pass off the render state. The two reach the
   // display through separate autoruns (encode is per-region under
-  // installPerRegionLifecycle, render is RenderLifecycleMixin's), and the
+  // installUpload, render is RenderLifecycleMixin's), and the
   // render one is registered first, so a plot-type switch can paint once with
   // the new pass against the old buffer. Harmless while every buffer carried
   // every field; not harmless once the encoder skips the fields the pass in

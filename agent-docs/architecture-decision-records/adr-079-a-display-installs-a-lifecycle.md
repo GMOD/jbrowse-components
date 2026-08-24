@@ -1,5 +1,5 @@
 ---
-status: Accepted
+status: Superseded
 summary: "A display installs one of three rendering lifecycles; nothing outside render-core calls attachRenderingBackend, and the setup thunk is what makes the once-only semantics structural"
 ---
 
@@ -7,8 +7,11 @@ summary: "A display installs one of three rendering lifecycles; nothing outside 
 
 ## Status
 
-Accepted. Enforced by `no-restricted-syntax` (`noHandRolledAttach` in
-`eslint.config.mjs`), which carves out only the three installers.
+Superseded by [ADR-088](adr-088-one-upload-installer-over-one-cell-contract.md)
+on 2026-08-23: the three installers are one `installUpload` over one
+`upload(key, data)` / `release(key)` contract. The setup-thunk decision and the
+rule that no display calls `attachRenderingBackend` stand, and the lint rule
+now carves out that one installer.
 
 ## Context
 

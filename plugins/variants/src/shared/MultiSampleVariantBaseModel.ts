@@ -1513,7 +1513,7 @@ export default function MultiSampleVariantBaseModelF(
          * (`isCacheValidTracking.test.ts`).
          */
         get regionFetchKey(): string {
-          return cellDataMode === 'matrix' ? String(self.lgv.bpPerPx) : ''
+          return cellDataMode === 'matrix' ? String(self.host.bpPerPx) : ''
         },
 
         /**
@@ -1609,7 +1609,7 @@ export default function MultiSampleVariantBaseModelF(
           if (self.isMinimized || !self.sourcesBase) {
             return
           }
-          const view = self.lgv
+          const view = self.host
           const regions = fetchRegionsForMode(view, cellDataMode)
           if (regions.length === 0) {
             return

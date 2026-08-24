@@ -161,7 +161,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          */
         get lodTier() {
           return resolveLodTier({
-            bpPerPx: self.lgv.bpPerPx,
+            bpPerPx: self.host.bpPerPx,
             coarseBpPerPxThreshold: getCoarseBpPerPxThreshold(self.parentTrack),
             lodMode: self.lodMode,
           })

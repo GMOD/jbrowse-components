@@ -229,6 +229,21 @@ not overruled.
   was blocked on keeping the fat barrel for external plugins. With no
   compatibility owed, the barrel goes and each plugin gets a narrow entry.
 
+## Landed so far
+
+- **Step 1** measured the single-copy set off the emitted `.d.ts`: `react`
+  (114 files), `@jbrowse/mobx-state-tree` (265), `@mui/material` (42,
+  augmented), `@jbrowse/core` (augmented by every plugin's registry
+  declaration merge), `mobx` (5); `mobx-react` appears in none and is not in
+  the set.
+- **Step 2** landed as `@jbrowse/display-kit` (44 subpaths, `RegionHost` at 15
+  members, the mixin getter renamed `host` so `host` is the contract and
+  `view` is the LGV). `display-ui` stays its own package rather than folding
+  in: its MUI-free module graph is a tested guarantee `display-kit`, which
+  holds the Material chrome, cannot make.
+- **Step 3** landed as ADR-088: one `installUpload` over `upload(key, data)` /
+  `release(key)`, the three installers and their syncs deleted.
+
 ## Order, and the gauge
 
 The measurable target is the score-example: 17 files and 709 lines today, of

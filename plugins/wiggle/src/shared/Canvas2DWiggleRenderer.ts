@@ -134,7 +134,7 @@ export function drawWiggleToCtx<Data>(
 }
 
 // Stateless on-screen backend. The encoded sources map lives in the
-// per-region lifecycle closure (see installPerRegionLifecycle) and is
+// per-region lifecycle closure (see installUpload) and is
 // passed to renderBlocks each frame.
 export class Canvas2DWiggleRenderer
   extends Canvas2DPerRegionRenderingBackend<

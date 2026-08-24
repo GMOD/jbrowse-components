@@ -22,7 +22,7 @@ class TestGpuBackend extends GpuGlobalRenderingBackend<Data, FrameDimensions> {
   seen: Data[] = []
   painted = true
 
-  uploadData() {}
+  upload() {}
 
   protected draw(data: Data) {
     this.seen.push(data)

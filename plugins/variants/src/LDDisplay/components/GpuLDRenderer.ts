@@ -6,6 +6,7 @@ import * as ldUniformShader from './shaders/ldUniform.generated.ts'
 
 import type {
   LDRenderState,
+  LDCellKey,
   LDRenderingBackend,
   LDUploadData,
 } from './ldRenderingBackendTypes.ts'
@@ -57,14 +58,27 @@ export const LD_PASSES: PipelineDescriptor[] = [
 export { UNIFORMS_SIZE_BYTES as LD_UNIFORM_BYTE_SIZE }
 
 export class GpuLDRenderer
-  extends GpuGlobalRenderingBackend<LDUploadData, LDRenderState>
+  extends GpuGlobalRenderingBackend<
+    LDUploadData,
+    LDRenderState,
+    LDCellKey,
+    LDUploadData | Uint8Array
+  >
   implements LDRenderingBackend
 {
   constructor(hal: GpuHal) {
     super(hal, UNIFORMS_SIZE_BYTES)
   }
 
-  uploadData(data: LDUploadData) {
+  upload(_key: LDCellKey, cell: LDUploadData | Uint8Array) {
+    if (cell instanceof Uint8Array) {
+      this.uploadColorRamp(cell)
+    } else {
+      this.uploadMatrix(cell)
+    }
+  }
+
+  private uploadMatrix(data: LDUploadData) {
     if (data.numCells === 0) {
       this.hal.deleteRegion(REGION_KEY)
       return

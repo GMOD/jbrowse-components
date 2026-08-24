@@ -110,7 +110,7 @@ function makeMinimalReadData() {
 }
 
 // Stubs for the CIGAR / modification / mod-coverage fields of
-// PileupDataResult. Coverage tests don't exercise these but uploadRegion
+// PileupDataResult. Coverage tests don't exercise these but upload
 // reads them.
 const EMPTY_PILEUP_STUBS = {
   gapPositions: new Uint32Array(),
@@ -234,7 +234,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const covData = makeCoverageData()
 
     // GPU path: upload to HAL
-    gpu.sync(oneRegion(makeMinimalPileupResult(covData)))
+    gpu.upload('sources', oneRegion(makeMinimalPileupResult(covData)))
 
     const gpuCovBuf = hal.getBuffer(0, 'coverage')
     expect(gpuCovBuf).toBeDefined()
@@ -251,7 +251,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       getContext: () => ({ setTransform() {}, clearRect() {} }),
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
-    canvas2d.sync({
+    canvas2d.upload('sources', {
       sections: [
         {
           groupKey: '',
@@ -274,7 +274,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const covData = makeCoverageData()
 
-    gpu.sync(oneRegion(makeMinimalPileupResult(covData)))
+    gpu.upload('sources', oneRegion(makeMinimalPileupResult(covData)))
 
     const gpuSnpBuf = hal.getBuffer(0, 'snpCov')
     expect(gpuSnpBuf).toBeDefined()
@@ -289,7 +289,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       getContext: () => ({ setTransform() {}, clearRect() {} }),
     } as unknown as HTMLCanvasElement
     const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
-    canvas2d.sync({
+    canvas2d.upload('sources', {
       sections: [
         {
           groupKey: '',
@@ -321,7 +321,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
     } as unknown as HTMLCanvasElement
     const renderer = new Canvas2DAlignmentsRenderer(canvas)
 
-    renderer.sync({
+    renderer.upload('sources', {
       sections: [
         {
           groupKey: '',
@@ -458,13 +458,13 @@ describe('GPU sync rebuild transaction', () => {
       overlapYs: new Uint16Array([0]),
     })
 
-    gpu.sync(oneRegion(withOverlap))
+    gpu.upload('sources', oneRegion(withOverlap))
     expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
 
     // Same region still active, but the overlap data is gone. A fresh layout
     // run takes the rebuild branch, whose head wipes the region before the
     // unconditional re-uploads — the empty overlap pack then leaves no buffer.
-    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
+    gpu.upload('sources', oneRegion(makeMinimalPileupResult(cov)))
     expect(hal.getBufferCount(0, 'overlap')).toBe(0)
   })
 
@@ -473,10 +473,10 @@ describe('GPU sync rebuild transaction', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const cov = makeCoverageData()
 
-    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
+    gpu.upload('sources', oneRegion(makeMinimalPileupResult(cov)))
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
 
-    gpu.sync({ sections: [], readConnectionsLineWidth: 1 })
+    gpu.upload('sources', { sections: [], readConnectionsLineWidth: 1 })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
 })
@@ -493,11 +493,11 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const data = makeMinimalPileupResult(makeCoverageData())
 
-    gpu.sync(oneRegion(data))
+    gpu.upload('sources', oneRegion(data))
     const first = uploadsFor(hal)
     expect(first).toBeGreaterThan(0)
 
-    gpu.sync(oneRegion(data))
+    gpu.upload('sources', oneRegion(data))
     expect(uploadsFor(hal)).toBe(first)
     // The skipped region's buffers are still on the HAL.
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
@@ -527,12 +527,13 @@ describe('GPU sync skips regions whose data is unchanged', () => {
       numSegments: 1,
     })
 
-    gpu.sync(oneRegion(laidOut))
+    gpu.upload('sources', oneRegion(laidOut))
     const before = uploadsFor(hal)
 
     // What the color tier produces: the same layout run (same `readYs` and every
     // other array) with the two per-read color arrays rebaked.
-    gpu.sync(
+    gpu.upload(
+      'sources',
       oneRegion({
         ...laidOut,
         readTagColors: new Uint32Array([0xff00ff00]),
@@ -550,11 +551,11 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const cov = makeCoverageData()
 
-    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
+    gpu.upload('sources', oneRegion(makeMinimalPileupResult(cov)))
     const first = uploadsFor(hal)
 
     // A fresh layout run allocates a fresh `readYs`, which is the token.
-    gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
+    gpu.upload('sources', oneRegion(makeMinimalPileupResult(cov)))
     expect(uploadsFor(hal)).toBe(first * 2)
   })
 
@@ -563,15 +564,15 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     const gpu = new GpuAlignmentsRenderer(hal)
     const data = makeMinimalPileupResult(makeCoverageData())
 
-    gpu.sync(oneRegion(data))
+    gpu.upload('sources', oneRegion(data))
     const first = uploadsFor(hal)
 
     // Scrolled out: the departed-key sweep deleted its buffers, so the memo
     // must forget it.
-    gpu.sync({ sections: [], readConnectionsLineWidth: 1 })
+    gpu.upload('sources', { sections: [], readConnectionsLineWidth: 1 })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
 
-    gpu.sync(oneRegion(data))
+    gpu.upload('sources', oneRegion(data))
     expect(uploadsFor(hal)).toBe(first * 2)
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
   })
@@ -692,7 +693,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
     renderer: AlignmentsRenderingBackend,
     cov: CoverageUploadData = makeCoverageData(),
   ) {
-    renderer.sync(oneRegion(makeMinimalPileupResult(cov)))
+    renderer.upload('sources', oneRegion(makeMinimalPileupResult(cov)))
     return renderer
   }
 

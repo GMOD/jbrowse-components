@@ -60,7 +60,7 @@ export const MAF_COVERAGE_PASSES = orderCoverageBandLayers<
   indicator: COVERAGE_INDICATOR_PASS,
 })
 
-// Everything the HAL compiles and `uploadRegion` fills. Two feeds, not one: the
+// Everything the HAL compiles and `upload` fills. Two feeds, not one: the
 // rows instances are encoded on the main thread from theme + toggles, the band's
 // four buffers arrive packed out of the RPC.
 export const MAF_PASSES: InstancePass<MafUploadPayload>[] = [

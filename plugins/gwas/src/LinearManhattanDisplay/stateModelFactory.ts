@@ -23,10 +23,8 @@ import MultiRegionDisplayMixin, {
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
-import {
-  installPerRegionLifecycle,
-  regionDataMap,
-} from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   SCALE_TYPE_LINEAR,
   axisPlotBox,
@@ -362,7 +360,7 @@ export function stateModelFactory(
          * once rather than rebuilding per event.
          */
         get regionRefNames(): ReadonlyMap<number, string> {
-          const view = self.lgv
+          const view = self.host
           return new Map(
             view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
           )
@@ -406,7 +404,7 @@ export function stateModelFactory(
           // rpcDataMap keeps buffered regions that may have scrolled off-screen,
           // and the top hit can live in one of them — resolving via visible
           // regions alone would drop it and stall the LD auto-index autorun.
-          const view = self.lgv
+          const view = self.host
           const refName =
             bestIdx === -1 ? undefined : view.displayedRegions[bestIdx]?.refName
           return refName ? `${refName}:${bestPos + 1}` : undefined
@@ -435,7 +433,7 @@ export function stateModelFactory(
          * known here.
          */
         get indexSnpOffscreen(): boolean {
-          return isIndexSnpOffscreen(self.indexSnp, self.lgv.visibleRegions)
+          return isIndexSnpOffscreen(self.indexSnp, self.host.visibleRegions)
         },
         /**
          * #getter
@@ -685,8 +683,8 @@ export function stateModelFactory(
          * identity encode — RPC result is the upload payload
          */
         startRenderingBackend(backend: ManhattanRenderingBackend) {
-          installPerRegionLifecycle(self, backend, {
-            data: () => self.rpcDataMap,
+          installUpload(self, backend, {
+            cells: () => self.rpcDataMap,
             render: b =>
               b.renderBlocks(
                 self.renderBlocks,

@@ -2,7 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { computed, observable, runInAction } from 'mobx'
 
 import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
-import { installPerRegionLifecycle } from './installPerRegionLifecycle.ts'
+import { installUpload } from './installUpload.ts'
 
 const TestModel = types
   .compose('TestModel', RenderLifecycleMixin(), types.model({}))
@@ -13,7 +13,7 @@ interface FakeRegionData {
 }
 
 // Why this file exists rather than another render count: the count in
-// installPerRegionLifecycle.test.ts says a region arrival paints once, and a
+// installUpload.test.ts says a region arrival paints once, and a
 // helper that painted once *before* uploading would satisfy it while showing
 // the user an empty frame. What has to hold is the order.
 //
@@ -31,14 +31,14 @@ test('an arrival uploads before anything paints, whether or not render reads the
       deep: false,
     })
     const backend = {
-      uploadRegion(key: number) {
+      upload(key: number) {
         log.push(`upload:${key}`)
       },
-      pruneRegions() {},
+      release() {},
     }
 
-    installPerRegionLifecycle(model, backend, {
-      data: () => data,
+    installUpload(model, backend, {
+      cells: () => data,
       encode: ({ value }: FakeRegionData) => ({ value }),
       render: (_b, encoded) => {
         log.push(`render:${encoded.size}`)
@@ -71,16 +71,16 @@ test('a render callback reaching the map through a computed chain also paints af
     deep: false,
   })
   const backend = {
-    uploadRegion(key: number) {
+    upload(key: number) {
       log.push(`upload:${key}`)
     },
-    pruneRegions() {},
+    release() {},
   }
   const lanes = computed(() => [...data.keys()].map(k => k * 2))
   const renderState = computed(() => ({ laneCount: lanes.get().length }))
 
-  installPerRegionLifecycle(model, backend, {
-    data: () => data,
+  installUpload(model, backend, {
+    cells: () => data,
     encode: ({ value }: FakeRegionData) => ({ value }),
     render: (_b, encoded) => {
       log.push(`render:${renderState.get().laneCount}/${encoded.size}`)

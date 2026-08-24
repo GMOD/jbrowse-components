@@ -300,7 +300,7 @@ function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
     height: 0,
   } as unknown as HTMLCanvasElement
   const renderer = new Canvas2DAlignmentsRenderer(canvas)
-  renderer.sync({
+  renderer.upload('sources', {
     sections: [
       {
         groupKey: '',

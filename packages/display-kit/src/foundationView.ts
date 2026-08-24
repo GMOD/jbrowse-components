@@ -4,27 +4,23 @@ import type { RegionHost } from './regionHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * The containing LinearGenomeView, typed once for every display in both
- * foundations so no consumer repeats the cast `getContainingView` needs (it is
- * view-type-agnostic) but which a foundation has already committed to.
+ * The view that hosts a display, typed once for every display in both
+ * foundations as the `RegionHost` contract, so no consumer repeats the cast
+ * `getContainingView` needs (it is view-type-agnostic) but which a foundation
+ * has already committed to.
  *
- * `lgv` rather than `view` at the two call sites, because a display's containing
- * view is not always an LGV — the comparative displays' `view` is a synteny or
- * dotplot view — so the name says which one this is. Three displays had each
- * invented the getter under two names before it was hoisted onto the
- * foundations, and ~35 other sites repeated the cast inline.
- *
- * The two foundations still each declare `lgv`, over this: a display composes
- * exactly one of them, so the pair can never shadow each other, and hoisting the
- * declaration into the `RegionTooLargeMixin` they share would name it on a mixin
- * that is about the byte gate. What was left duplicated was the body, which is
- * what this is.
+ * `host` rather than `view`, because the two are different things: `host` is
+ * the contract this layer reads (regions, viewport, scale), and a display that
+ * needs the linear genome view itself (`pxToBp`, `showTrack`, its chrome
+ * settings) declares its own `view` getter typed as that model. Naming the
+ * contract after the view it happens to be satisfied by is how the display
+ * layer came to depend on the view plugin.
  *
  * Components and structural helpers keep calling `getContainingView`: they take
  * duck-typed model shapes that deliberately don't carry the whole MST instance
- * type, so there is no `lgv` on them to read.
+ * type, so there is no `host` on them to read.
  */
-export function containingLgv(self: IStateTreeNode): RegionHost {
+export function containingHost(self: IStateTreeNode): RegionHost {
   return getContainingView(self) as RegionHost
 }
 
@@ -41,6 +37,6 @@ export function containingLgv(self: IStateTreeNode): RegionHost {
  * plain resolved getter and its render callback gate only on its own data. The
  * render-lifecycle twin of `autorunOnReadyView`.
  */
-export function foundationCanRender(self: { lgv: { initialized: boolean } }) {
-  return self.lgv.initialized
+export function foundationCanRender(self: { host: { initialized: boolean } }) {
+  return self.host.initialized
 }

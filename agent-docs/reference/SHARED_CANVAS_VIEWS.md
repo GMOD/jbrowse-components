@@ -119,7 +119,7 @@ shared by several displays: dotplot on the view itself, synteny on
 `LinearSyntenyViewHelper` — the per-level (row-gap) model — so a 3-row stack has
 two canvases, one per band, each shared by that level's synteny tracks. That is
 what makes their upload callbacks keyed rather than per-region: they diff through
-`createKeyedUploadSync` and delete each departed key individually, because an
+`installUpload` and delete each departed key individually, because an
 active-set prune computed from one display's map would wipe its siblings'
 buffers.
 

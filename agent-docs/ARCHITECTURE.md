@@ -1113,7 +1113,7 @@ What the GPU doc covers, so you can jump straight in:
 | Life of a frame | Debugging "why didn't it redraw", context loss, tab visibility |
 | RenderingBackend interfaces per plugin | Writing a backend factory; going Canvas2D-only |
 | Keeping the two backends in parity | Touching either a `.slang` or a Canvas2D draw fn |
-| Upload patterns / `installPerRegionLifecycle` | Choosing how a display shovels bytes; O(N²) upload bugs |
+| Upload patterns / `installUpload` | Choosing what a display keys its payloads by; O(N²) upload bugs |
 | HAL / Renderers stay stateless | Touching `packages/render-core/src/hal/` or renderer state |
 | Shaders (Slang codegen) | Editing a `.slang` or a generated module |
 | Canvas scaling & hi-DPI / `displayedRegionIndex` | Blurry canvases; region↔buffer join keys |
@@ -1487,8 +1487,8 @@ when settings change the shape/contents of per-region data; use `gpuProps()` for
 scalars fed to an encoder.
 
 That the raw map is never mutated is also what fixes how it is *represented*:
-build it with `regionDataMap()` from
-[`installPerRegionLifecycle`](../packages/render-core/src/installPerRegionLifecycle.ts),
+build it with
+[`regionDataMap()`](../packages/render-core/src/regionDataMap.ts),
 which is a **shallow** `observable.map`. An entry that can never change has
 nothing for MobX's deep enhancer to observe, so the observable-object graph it
 builds per entry on insert — and the proxy hop it adds to every field read — buys
@@ -1734,7 +1734,7 @@ and 12 lines — and both have since been given the sections they wanted.
 - Don't use `useMemo` for observable-dependent values; use a cached MST view.
 - Don't mutate per-region values in place; emit fresh objects.
 - Don't build a per-region map with a bare `observable.map<number, …>()`. Use
-  `regionDataMap()` from `installPerRegionLifecycle`, which is shallow: an entry
+  `regionDataMap()` from `@jbrowse/render-core/regionDataMap`, which is shallow: an entry
   nothing mutates has nothing for MobX's deep enhancer to observe, so the
   per-entry observable graph and the proxy hop on every field read buy no
   reactivity ([ADR-060](architecture-decision-records/adr-060-region-data-maps-are-shallow-observable.md)).

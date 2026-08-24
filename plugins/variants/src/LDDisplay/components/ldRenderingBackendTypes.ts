@@ -25,9 +25,15 @@ export interface LDUploadData {
   cellSizes?: Float32Array
 }
 
+// Two cells, both encoded off the one fetch result: the matrix, and the colour
+// ramp its metric and sign select. `upload` tells them apart by the cell's type.
+export type LDCellKey = 'data' | 'colorRamp'
+
 export interface LDRenderingBackend extends GlobalRenderingBackend<
   LDUploadData,
-  LDRenderState
+  LDRenderState,
+  LDCellKey,
+  LDUploadData | Uint8Array
 > {
   uploadColorRamp(colors: Uint8Array): void
 }

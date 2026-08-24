@@ -52,7 +52,7 @@ describe('GpuVariantRenderer', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
-    renderer.uploadRegion(0, makeUploadData())
+    renderer.upload(0, makeUploadData())
 
     const buf = hal.getBuffer(0, 'main')
     expect(buf).toBeDefined()
@@ -84,8 +84,8 @@ describe('GpuVariantRenderer', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
-    renderer.uploadRegion(0, makeUploadData())
-    renderer.uploadRegion(0, { ...makeUploadData(), numCells: 0 })
+    renderer.upload(0, makeUploadData())
+    renderer.upload(0, { ...makeUploadData(), numCells: 0 })
 
     expect(hal.getBufferCount(0, 'main')).toBe(0)
   })
@@ -95,7 +95,7 @@ describe('GpuVariantRenderer', () => {
     const renderer = new GpuVariantRenderer(hal)
     const data = makeUploadData()
 
-    renderer.uploadRegion(0, data)
+    renderer.upload(0, data)
     renderer.renderBlocks([makeBlock()], new Map([[0, data]]), {
       ...DEFAULT_STATE,
       scrollTop: 50,
@@ -120,15 +120,16 @@ describe('GpuVariantRenderer', () => {
     expect(f32[6]).toBe(50)
   })
 
-  it('prunes stale regions via hal.pruneRegions', () => {
+  it('prunes stale regions via hal.release', () => {
     const hal = new MockHal(VARIANT_PASSES)
     const renderer = new GpuVariantRenderer(hal)
 
-    renderer.uploadRegion(0, makeUploadData())
-    renderer.uploadRegion(1, makeUploadData())
-    renderer.uploadRegion(2, makeUploadData())
+    renderer.upload(0, makeUploadData())
+    renderer.upload(1, makeUploadData())
+    renderer.upload(2, makeUploadData())
 
-    renderer.pruneRegions([1])
+    renderer.release(0)
+    renderer.release(2)
 
     expect(hal.getBufferCount(0, 'main')).toBe(0)
     expect(hal.getBufferCount(1, 'main')).toBe(2)
@@ -153,8 +154,8 @@ describe('GpuVariantRenderer', () => {
     const renderer = new GpuVariantRenderer(hal)
     const data = makeUploadData()
 
-    renderer.uploadRegion(0, data)
-    renderer.uploadRegion(1, data)
+    renderer.upload(0, data)
+    renderer.upload(1, data)
 
     renderer.renderBlocks(
       [

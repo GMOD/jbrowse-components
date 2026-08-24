@@ -7,7 +7,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { sharedBackendKey } from '@jbrowse/render-core/installKeyedLifecycle'
+import { sharedBackendKey } from '@jbrowse/render-core/keyedRenderingBackend'
 import {
   NO_CIGAR_OPS,
   SyntenyFetchStateMixin,

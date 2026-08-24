@@ -78,7 +78,7 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(3))
+    renderer.upload(0, makeGeometry(3))
     renderer.render(DEFAULT_STATE)
     expect(ctx.lineTo).toHaveBeenCalledTimes(3)
   })
@@ -92,7 +92,7 @@ describe('Canvas2DDotplotRenderer', () => {
     geometry.colors.set([
       0xff0000ff, 0xff0000ff, 0xff0000ff, 0xff00ff00, 0xff00ff00,
     ])
-    renderer.uploadGeometry(0, geometry)
+    renderer.upload(0, geometry)
     renderer.render(DEFAULT_STATE)
     expect(ctx.lineTo).toHaveBeenCalledTimes(5)
     expect(strokeCalls.length).toBe(2)
@@ -102,12 +102,12 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(0))
+    renderer.upload(0, makeGeometry(0))
     renderer.render(DEFAULT_STATE)
     expect(strokeCalls.length).toBe(0)
   })
 
-  test('does nothing without uploadGeometry', () => {
+  test('does nothing without upload', () => {
     const { canvas, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
@@ -123,7 +123,7 @@ describe('Canvas2DDotplotRenderer', () => {
     // cumBp=100 for x1, cumBp=200 for y1.
     // With bpPerPxHInv=2 and viewBpH=5: sx1 = (100 - 5) * 2 = 190.
     // With bpPerPxVInv=3 and viewBpV=20/3: sy1 = 600 - (200 - 20/3) * 3 = 600 - 580 = 20.
-    renderer.uploadGeometry(0, oneSegment([100, 200, 150, 250], 0xff0000ff))
+    renderer.upload(0, oneSegment([100, 200, 150, 250], 0xff0000ff))
 
     renderer.render({
       viewBpH: 5,
@@ -143,7 +143,7 @@ describe('Canvas2DDotplotRenderer', () => {
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
 
-    renderer.uploadGeometry(0, oneSegment([0, 0, 1, 1], 0xccbf4080))
+    renderer.upload(0, oneSegment([0, 0, 1, 1], 0xccbf4080))
 
     renderer.render(DEFAULT_STATE)
     expect(ctx.strokeStyle).toMatch(/^rgba\(128,64,191,0\.8/)
@@ -159,7 +159,7 @@ describe('Canvas2DDotplotRenderer', () => {
     renderer.resize(800, 600)
 
     // opaque, as every packed dotplot color now is
-    renderer.uploadGeometry(0, oneSegment([0, 0, 1, 1], 0xffbf4080))
+    renderer.upload(0, oneSegment([0, 0, 1, 1], 0xffbf4080))
 
     renderer.render({ ...DEFAULT_STATE, alpha: 0.25 })
     expect(ctx.strokeStyle).toBe('rgba(128,64,191,0.25)')
@@ -169,8 +169,8 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas, ctx, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(2))
-    renderer.uploadGeometry(1, makeGeometry(3))
+    renderer.upload(0, makeGeometry(2))
+    renderer.upload(1, makeGeometry(3))
     renderer.render({
       ...DEFAULT_STATE,
       displayKeys: [0, 1],
@@ -180,13 +180,13 @@ describe('Canvas2DDotplotRenderer', () => {
     expect(strokeCalls.length).toBe(2)
   })
 
-  test('deleteGeometry removes a track', () => {
+  test('release removes a track', () => {
     const { canvas, ctx } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(2))
-    renderer.uploadGeometry(1, makeGeometry(3))
-    renderer.deleteGeometry(0)
+    renderer.upload(0, makeGeometry(2))
+    renderer.upload(1, makeGeometry(3))
+    renderer.release(0)
     renderer.render({
       ...DEFAULT_STATE,
       displayKeys: [0, 1],
@@ -222,7 +222,7 @@ describe('Canvas2DDotplotRenderer', () => {
     const { canvas, ctx, strokeCalls } = createMockCanvas()
     const renderer = new Canvas2DDotplotRenderer(canvas)
     renderer.resize(800, 600)
-    renderer.uploadGeometry(0, makeGeometry(2))
+    renderer.upload(0, makeGeometry(2))
     renderer.dispose()
     renderer.render(DEFAULT_STATE)
     expect(ctx.lineTo).not.toHaveBeenCalled()

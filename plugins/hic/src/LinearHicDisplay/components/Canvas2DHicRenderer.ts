@@ -10,6 +10,7 @@ import { mapHicCount } from './shaders/hic.js.generated.ts'
 import type {
   HicDrawState,
   HicRenderState,
+  HicCellKey,
   HicRenderingBackend,
   HicUploadData,
 } from './hicRenderingBackendTypes.ts'
@@ -117,10 +118,21 @@ export function drawHicBlocks(
 }
 
 export class Canvas2DHicRenderer
-  extends Canvas2DGlobalRenderingBackend<HicUploadData, HicRenderState>
+  extends Canvas2DGlobalRenderingBackend<
+    HicUploadData,
+    HicRenderState,
+    HicCellKey,
+    HicUploadData | Uint8Array
+  >
   implements HicRenderingBackend
 {
   private fillStyleLut: ((t: number) => string | undefined) | null = null
+
+  upload(_key: HicCellKey, cell: HicUploadData | Uint8Array) {
+    if (cell instanceof Uint8Array) {
+      this.uploadColorRamp(cell)
+    }
+  }
 
   uploadColorRamp(colors: Uint8Array) {
     this.fillStyleLut = makeHicFillStyleLut(colors)

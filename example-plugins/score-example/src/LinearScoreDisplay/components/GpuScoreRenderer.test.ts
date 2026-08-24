@@ -85,7 +85,7 @@ describe('reversed convention', () => {
     const hal = new MockHal(SCORE_PASSES)
     const renderer = new GpuScoreRenderer(hal)
     const data = mkData([500], [600], [0.5])
-    renderer.uploadRegion(0, data)
+    renderer.upload(0, data)
     renderer.renderBlocks([{ ...block, reversed }], new Map([[0, data]]), state)
     return hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.bpRangeX + 2]!
   }

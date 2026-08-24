@@ -292,7 +292,7 @@ export default function stateModelFactory(
        */
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         const { adapterConfig } = self
-        const { bpPerPx } = self.lgv
+        const { bpPerPx } = self.host
         return fetchAllRegions(self, needed, {
           call: (regions, ctx) =>
             ctx.callRpc('RenderWiggleData', {

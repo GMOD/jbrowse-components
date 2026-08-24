@@ -101,7 +101,7 @@ export class GpuSyntenyRenderer
     this.hal.resize(width, height)
   }
 
-  uploadGeometry(key: number, data: SyntenyInstanceData) {
+  upload(key: number, data: SyntenyInstanceData) {
     this.cache.set(key, data)
     // Defer the GPU upload to render() — at that point we know which mode
     // (straight vs curve) the track is in and upload only to that pass.
@@ -113,7 +113,7 @@ export class GpuSyntenyRenderer
     this.dropOutlineBuffer(key)
   }
 
-  deleteGeometry(key: number) {
+  release(key: number) {
     this.cache.delete(key)
     this.uploadedPass.delete(key)
     this.interleaveCache.delete(key)

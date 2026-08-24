@@ -17,7 +17,7 @@ import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFet
 import { triangleScreenToData } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
 import { types } from '@jbrowse/mobx-state-tree'
-import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
+import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
@@ -30,6 +30,7 @@ import type {
 } from '../RenderHicDataRPC/types.ts'
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type {
+  HicCellKey,
   HicRenderState,
   HicRenderingBackend,
 } from './components/hicRenderingBackendTypes.ts'
@@ -277,7 +278,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         if (!avail?.length) {
           return -1
         }
-        const bpPerPx = Math.max(1, self.lgv.bpPerPx)
+        const bpPerPx = Math.max(1, self.host.bpPerPx)
         // sorted ascending by setAvailableResolutions, so the last match is the
         // largest qualifying binsize
         const idx = avail.findLastIndex(binSize => binSize <= 2 * bpPerPx)
@@ -403,7 +404,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * genomic position under the live map.
        */
       get viewTransform() {
-        const { bpPerPx, offsetPx } = self.lgv
+        const { bpPerPx, offsetPx } = self.host
         const originBp = self.rpcData?.originBp ?? 0
         return {
           viewScale: 1 / bpPerPx,
@@ -493,23 +494,20 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * `attachRenderingBackend`.
        */
       startRenderingBackend(backend: HicRenderingBackend) {
-        installGlobalLifecycle<HicRenderingBackend>(self, backend, {
-          // The matrix and the palette have independent inputs (RPC result vs
-          // config slot) but share the one mixin-owned upload autorun, so
-          // without per-slot diffing a palette flip re-pushed the whole contact
-          // matrix and a new fetch rebuilt the ramp texture. Both inputs stay
-          // read unconditionally so neither drops out of the autorun's
-          // dependency set.
-          upload: (b, slot) => {
-            slot('data', self.rpcData, (bb, data) => {
-              if (data) {
-                bb.uploadData(data)
-              }
-            })
-            slot('colorRamp', self.colorScheme, (bb, colorScheme) => {
-              bb.uploadColorRamp(generateColorRamp(colorScheme))
-            })
+        installUpload(self, backend, {
+          // Two cells with independent inputs, the matrix from the RPC and the
+          // palette from a config slot, so a palette flip re-encodes and
+          // re-uploads the ramp alone and a new fetch leaves the ramp be.
+          cells: () => {
+            const cells = new Map<HicCellKey, HicDataResult | HicColorScheme>()
+            if (self.rpcData) {
+              cells.set('data', self.rpcData)
+            }
+            cells.set('colorRamp', self.colorScheme)
+            return cells
           },
+          encode: cell =>
+            typeof cell === 'string' ? generateColorRamp(cell) : cell,
           // The backend answers "did real content reach the canvas" — its own
           // guard (an empty HAL buffer, a colour ramp that has not arrived) is
           // narrower than anything this callback can see.
@@ -733,7 +731,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             // See HicAxisBlock.
             const { originBp, axisBlocks } = calcAxisBlocks(
               blocks,
-              self.lgv.displayedRegions,
+              self.host.displayedRegions,
             )
             return {
               resolution,

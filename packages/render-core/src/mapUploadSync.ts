@@ -3,10 +3,9 @@ export interface MapUploadTarget<K, T, B> {
   /**
    * How a key that left the map is released. `remove` deletes it by itself;
    * `prune` is handed the keys still present and releases everything else.
-   * The keyed (shared-canvas) lifecycle needs the first, because the keys
-   * belong to sibling displays and an active-set prune computed from one
-   * display's map would wipe the others; the per-region lifecycle takes the
-   * second, which is what the HAL's `pruneRegions` is.
+   * `installUpload` takes the first, which is the only correct shape on a
+   * canvas several displays share and does the same job on a display's own
+   * map.
    */
   remove?: (backend: B, key: K) => void
   prune?: (backend: B, active: ReadonlySet<K>) => void

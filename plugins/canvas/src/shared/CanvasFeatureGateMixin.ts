@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { types } from '@jbrowse/mobx-state-tree'
-import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 
 import { overDensityBudget } from '../RenderFeatureDataRPC/densityGate.ts'
 import { screenDensity } from './regionDensity.ts'

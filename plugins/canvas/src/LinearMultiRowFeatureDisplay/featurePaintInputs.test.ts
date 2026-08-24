@@ -30,7 +30,7 @@ function makeDisplay() {
   return display
 }
 
-// `installPerRegionLifecycle` memoizes the display's declared `inputs`, so what
+// `installUpload` memoizes the display's declared `inputs`, so what
 // that getter reads decides how often every region's instance buffer is rebuilt.
 // This stands in for the helper's computed: the real one needs a GPU backend,
 // and what is under test is which observables the encode's input depends on, not

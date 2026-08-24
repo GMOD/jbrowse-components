@@ -23,7 +23,7 @@ import type { SourceRenderData } from '@jbrowse/wiggle-core'
 // The two shaders take different per-instance records, so there is one packer
 // each and a region's layers feed exactly one of them: whichever matches the
 // rendering they were built for. The other returns an empty buffer, which is how
-// a pass releases its buffer (see GpuPerRegionRenderingBackend.uploadRegion — an
+// a pass releases its buffer (see GpuPerRegionRenderingBackend.upload — an
 // empty pack IS the release), so switching plot type frees the layout that is no
 // longer drawn instead of leaving a stale one bound.
 //

@@ -38,8 +38,8 @@ import MultiRegionDisplayMixin, {
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
-import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   ScoreScaleMixin,
   domainFromStats,
@@ -1646,7 +1646,7 @@ export default function stateModelFactory(
          * memo.
          */
         get displayedRegionInfos() {
-          const view = self.lgv
+          const view = self.host
           return view.initialized
             ? view.displayedRegions.map((r, displayedRegionIndex) => ({
                 refName: r.refName,
@@ -2349,7 +2349,7 @@ export default function stateModelFactory(
          * #getter
          */
         get visibleLabels() {
-          const view = self.lgv
+          const view = self.host
           if (!view.initialized) {
             return []
           }
@@ -2384,7 +2384,7 @@ export default function stateModelFactory(
          * the canvas would repaint the whole pileup each move.
          */
         get highlightBoxes() {
-          const view = self.lgv
+          const view = self.host
           const chainReadIds = this.highlightChainReadIds
           const ids =
             chainReadIds.length > 0
@@ -3548,16 +3548,18 @@ export default function stateModelFactory(
          * #action
          */
         startRenderingBackend(backend: AlignmentsRenderingBackend) {
-          installGlobalLifecycle<AlignmentsRenderingBackend>(self, backend, {
-            upload: b => {
-              b.sync({
+          installUpload(self, backend, {
+            // A fresh object every run, so every run reaches the renderer: it
+            // holds the memo of what it last sent (GPU_RENDERING.md, the
+            // whole-map sync), and this layer's diff has nothing to add to it.
+            cells: () =>
+              oneCell('sources', {
                 sections: self.sourceSections,
                 // Read inside the upload autorun, not lifted into an action:
                 // arc instances are packed at this width (arcLineWidth ×
                 // support), so a change to it has to reach the pack.
                 readConnectionsLineWidth: self.readConnectionsLineWidth,
-              })
-            },
+              }),
             // size === 0 keeps first paint gated until data arrives, so the
             // loading overlay stays up (canvasDrawn stays false); an empty but
             // loaded region has size > 0 and paints an empty pileup. Keyed on the
@@ -3847,7 +3849,7 @@ export default function stateModelFactory(
           // reset-to-default, or a session-default change flipping a track that
           // follows the default) so fixed/fit resume from the height the user was
           // seeing, not the stale slot.
-          addDisposer(self, installGrowExitBake(self, self.lgv))
+          addDisposer(self, installGrowExitBake(self, self.host))
 
           // Drop the collapses and height overrides whenever the grouping key
           // space moves. A reaction rather than a line in `setGroupBy`, because

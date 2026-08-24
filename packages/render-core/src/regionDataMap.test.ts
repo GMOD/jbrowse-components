@@ -17,10 +17,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { RenderLifecycleMixin } from './RenderLifecycleMixin.ts'
-import {
-  installPerRegionLifecycle,
-  regionDataMap,
-} from './installPerRegionLifecycle.ts'
+import { installUpload } from './installUpload.ts'
+import { regionDataMap } from './regionDataMap.ts'
 
 function captureReports(fn: () => void) {
   fn()
@@ -73,23 +71,23 @@ test('the value is stored anyway', () => {
 })
 
 // The same invariant at the other enforcement point. `regionDataMap` is only
-// the most common implementation of `data: () => ReadonlyMap<number, Data>` —
+// the most common implementation of `cells: () => ReadonlyMap<number, Data>` —
 // two displays derive theirs off a computed instead, and a map built that way
 // reaches the encode, the upload and every renderer having been checked by
 // nothing.
-describe('the map handed to installPerRegionLifecycle', () => {
+describe('the map handed to installUpload', () => {
   const TestModel = types
     .compose('TestModel', RenderLifecycleMixin(), types.model({}))
     .volatile(() => ({}))
 
   const backend = {
-    uploadRegion: () => {},
-    pruneRegions: () => {},
+    upload: () => {},
+    release: () => {},
   }
 
   function installOver(data: ReadonlyMap<number, object>) {
-    installPerRegionLifecycle(TestModel.create(), backend, {
-      data: () => data,
+    installUpload(TestModel.create(), backend, {
+      cells: () => data,
       render: () => true,
     })
   }
@@ -106,7 +104,7 @@ describe('the map handed to installPerRegionLifecycle', () => {
 
     expect(reports).toHaveLength(1)
     expect(reports[0]).toContain('TestModel')
-    expect(reports[0]).toContain('region 4')
+    expect(reports[0]).toContain('cell 4')
     expect(reports[0]).toContain('undefined')
   })
 

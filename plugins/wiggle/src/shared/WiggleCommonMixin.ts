@@ -6,7 +6,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
+import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
   autoscaleDomainFromStats,
   computeScoreStats,
