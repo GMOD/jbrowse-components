@@ -24,7 +24,11 @@ const HeaderRegionWidth = observer(function HeaderRegionWidth({
 }) {
   const { classes } = useStyles()
   return (
-    <Typography variant="body2" className={classes.bp}>
+    <Typography
+      variant="body2"
+      className={classes.bp}
+      data-testid="header_region_width"
+    >
       {model.effectiveTotalBpDisplayStr}
     </Typography>
   )

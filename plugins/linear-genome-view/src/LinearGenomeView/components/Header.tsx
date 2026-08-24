@@ -5,7 +5,9 @@ import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
 import { headerFit } from '../headerFit.ts'
-import HeaderClearHighlightButton from './HeaderClearHighlightButton.tsx'
+import HeaderClearHighlightButton, {
+  highlightedDisplays,
+} from './HeaderClearHighlightButton.tsx'
 import HeaderPanControls from './HeaderPanControls.tsx'
 import HeaderRegionWidth from './HeaderRegionWidth.tsx'
 import HeaderTrackSelectorButton from './HeaderTrackSelectorButton.tsx'
@@ -42,7 +44,8 @@ const Controls = observer(function Controls({
   // differs between the app's view container, an embedded host and a synteny
   // row
   const [ref, { width }] = useMeasure('width')
-  const fit = headerFit(width)
+  const highlighted = highlightedDisplays(model)
+  const fit = headerFit(width, highlighted.length > 0)
   return (
     <div className={classes.headerBar} ref={ref}>
       <HeaderTrackSelectorButton
@@ -53,7 +56,7 @@ const Controls = observer(function Controls({
       <div className={classes.spacer} />
       <HeaderPanControls model={model} compact={!fit.panButtonSpacing} />
       <SearchBox model={model} />
-      <HeaderClearHighlightButton model={model} />
+      <HeaderClearHighlightButton highlighted={highlighted} />
       {fit.regionWidth ? <HeaderRegionWidth model={model} /> : null}
       <HeaderZoomControls model={model} showSlider={fit.zoomSlider} />
       <div className={classes.spacer} />

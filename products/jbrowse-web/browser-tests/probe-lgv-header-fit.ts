@@ -14,7 +14,7 @@ import puppeteer from 'puppeteer'
 import { startServerOnFreePort } from './server.ts'
 
 const { server, port } = await startServerOnFreePort(3000)
-const WIDTHS = [1400, 1200, 1000, 900, 800, 700, 600, 500, 420]
+const WIDTHS = [900, 800, 700, 600, 500, 450, 420, 390, 360, 320]
 
 const spec = {
   views: [

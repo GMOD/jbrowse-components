@@ -5,8 +5,20 @@
 // readout, 192 zoom controls, 32 of flex gap), and the search box asks for
 // 189px including its margins before flexbox starts squeezing it. So below
 // 780px something in the row has to give.
+//
+// A much larger root font — the header's own styles cite a 28px one — widens
+// the text and the icons without widening the fixed-px slider or MUI's 64px
+// button minimum, so no single factor rescales this table. There the row sheds
+// later than it should and the search box is squeezed the way it was before any
+// of this, which is a degradation rather than a new failure.
 const ROW_WITHOUT_SEARCH_PX = 591
 const SEARCH_BOX_PX = 189
+
+// The one piece of the row that comes and goes on its own. A text search that
+// lands on a feature raises it — the same flow that was just using the search
+// box this whole table exists to protect — so its width is taken off the top
+// rather than left for the search box to absorb.
+const CLEAR_HIGHLIGHT_PX = 35
 
 // What the header gives up as its window narrows, cheapest first, with the
 // pixels each one frees. Whitespace goes before words, words before a redundant
@@ -25,23 +37,29 @@ export type HeaderFit = Record<(typeof SHEDDABLE)[number][0], boolean>
 
 /**
  * Which of the header bar's optional pieces a header `width` px wide still has
- * room for. An unmeasured width — the first render, before the ResizeObserver
- * has reported — keeps all of them, so the common wide case paints its final
- * form immediately rather than flashing the compact one.
+ * room for, given whether the clear-highlights button is currently in the row.
+ * An unmeasured width — the first render, before the ResizeObserver has
+ * reported — keeps all of them, so the common wide case paints its final form
+ * immediately rather than flashing the compact one.
  *
  * Below 427px even the fully shed row overflows, and from there the search box
- * shrinks like any flex item. That is the floor, not a cliff: it starts from
- * the 189px it was protected at rather than from the 101px the unshed row used
- * to leave it.
+ * shrinks like any flex item. That is a floor, not a cliff: it shrinks from the
+ * 189px it was protected at rather than from the 101px the unshed row used to
+ * leave it. jbrowse-web stops narrowing at a 400px header, where the box
+ * measures 158px.
  */
-export function headerFit(width: number | undefined): HeaderFit {
+export function headerFit(
+  width: number | undefined,
+  clearHighlight = false,
+): HeaderFit {
   const fit = Object.fromEntries(SHEDDABLE.map(([k]) => [k, true])) as HeaderFit
   if (width === undefined) {
     return fit
   }
+  const room = width - (clearHighlight ? CLEAR_HIGHLIGHT_PX : 0)
   let need = ROW_WITHOUT_SEARCH_PX + SEARCH_BOX_PX
   for (const [key, saves] of SHEDDABLE) {
-    if (need <= width) {
+    if (need <= room) {
       break
     }
     fit[key] = false
