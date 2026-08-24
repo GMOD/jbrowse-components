@@ -169,6 +169,36 @@ Clicking a tree node calls `setSubtreeFilter` to collapse/expand that clade.
 
 ---
 
+## Where the time goes on a population panel
+
+Every hclust benchmark before August 2026 ran at V = 20 columns, and at that
+width the merge loop is the cost. The variant RPC hands over one column per
+site in the window at the default filters (MAF 0, missingness 1: every site),
+so a 1000 Genomes window is thousands to tens of thousands of columns wide, and
+there the Euclidean distance build is the run: on chr22:20-21 Mb (2504 samples,
+22,383 sites) the merge loop is ~40 ms of a run that takes seconds to minutes.
+`pnpm bench:real` in the hclust repo measures that regime on real genotypes,
+and `ideas/gpu-sample-distance-matrix.md` carries the table and the case for
+doing the build on a compute shader.
+
+Two things about hclust 5.0.0, which is what this tree pins, follow from that
+measurement:
+
+- **The first clustering in a fresh worker runs the distance build at about
+  half speed.** V8 promotes a wasm function out of its baseline tier on call
+  count, without on-stack replacement, and 5.0.0 does the whole build in one
+  call, so that call stays baseline to the end. A best-of-N benchmark in one
+  process never sees it, which is why it went unreported. Fixed in hclust
+  after 5.0.0 by moving the per-row work into its own function; the bump is
+  what brings it here.
+- **The kernel after 5.0.0 is 2.5x faster at these widths** (f32x4
+  differences and squares, promoted to f64x2 every 16 elements), with merges
+  and heights bit-identical on every real matrix checked. Same bump.
+
+`products/jbrowse-web/browser-tests/probe-gpu-distance-matrix.ts` runs the
+wasm and a WebGPU kernel on one synthetic dosage matrix for an A/B at a given
+N and V.
+
 ## Key files
 
 | File | Role |
