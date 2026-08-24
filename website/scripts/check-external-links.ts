@@ -78,9 +78,13 @@ const PREFIXES: [string, string][] = [
   ['https://jbrowse.org/demos/1000g/qm2_cn_wg_10kb.zarr', '/zarr.json'],
   ['https://jbrowse.org/demos/scrna_pbmc5k/percell.zarr', '/zarr.json'],
   ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph', '.segs.bed.gz'],
+  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus', '.segs.bed.gz'],
   // a demo's asset directory, named as a base a spec or script appends to
   ['https://jbrowse.org/demos/cancer_sv', '/config.json'],
   ['https://jbrowse.org/demos/cancer_sv/', 'config.json'],
+  ['https://jbrowse.org/demos/dtu/', 'config.json'],
+  // build_ag1000g_ld.sh's $DERIVED, which it appends each intermediate to
+  ['https://jbrowse.org/demos/ag1000g', '/samples.meta.txt'],
   // the desktop updater's release-page base, built up with a version
   ['https://github.com/GMOD/jbrowse-components/releases/tag/v', '3.0.0'],
   ['https://jbrowse.org/demos/tcga', '/tcga_brca_clinical.tsv'],
@@ -103,7 +107,10 @@ const PREFIXES: [string, string][] = [
   // the deployed app's bundled test data, which examples and the quickstart
   // script point at by directory
   ['https://jbrowse.org/code/jb2/main/test_data/volvox', '/volvox.fa'],
+  ['https://jbrowse.org/code/jb2/main/test_data/volvox/', 'volvox.fa'],
   ['https://jbrowse.org/code/jb2/latest/test_data/volvox', '/volvox.fa'],
+  // the hosted reference the config guide and the embed examples load
+  ['https://jbrowse.org/genomes/GRCh38/fasta/', 'GRCh38.fa.gz'],
   // a tutorial's $BASE, appended with a script name
   [
     'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts',
@@ -115,6 +122,11 @@ const PREFIXES: [string, string][] = [
   [
     'https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA',
     '/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam',
+  ],
+  // hg002_haplotypes.ts's GENE_TRACK_BASE, extended per haplotype
+  [
+    'https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1',
+    '.MAT.loff.v0.6.gff.gz',
   ],
 ]
 
@@ -165,6 +177,7 @@ const EXPECTED_NON_2XX = new Set([
   // deliberately absent: the example is about what a failed track fetch looks
   // like, so a 404 is the point of it
   'https://jbrowse.org/code/jb2/main/test_data/volvox/does-not-exist.bw',
+  'https://jbrowse.org/genomes/volvox/does-not-exist.2bit',
 ])
 
 // Hosts that serve a scripted request an error and a browser a page. Their
