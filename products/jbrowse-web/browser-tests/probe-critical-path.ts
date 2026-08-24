@@ -11,14 +11,21 @@ import { launch } from 'puppeteer'
 import { collectWireRequests, isJsOrCssUrl } from './cdpNetwork.ts'
 import { buildPath, startServer } from './server.ts'
 
+// A marker has to be long enough to mean something. `dockview css` used to be
+// probed as `dv-`, which matched React's SVG attribute table (`horiz-adv-x`) and
+// so reported ON CRITICAL PATH forever — including after ADR-068 removed
+// dockview from the tree entirely, when there was nothing left to find.
 const MARKERS: Record<string, string> = {
   '@floating-ui': 'clippingAncestors',
   '@leeoniya/ufuzzy': 'test man ger pp a',
   'pako inflate': 'incorrect header check',
   'MUI Autocomplete': 'MuiAutocomplete',
   'MUI Slider': 'MuiSlider',
-  'dockview css': 'dv-',
   '@popperjs': 'popperOffsets',
+  // the stack-trace dialog's source-map consumer, which every route into it
+  // reaches through a lazy() — so a static import creeping back in is the thing
+  // this line is here to catch
+  'source-map-js': 'Expected more digits in base 64 VLQ value.',
 }
 
 const PORT = 3352
