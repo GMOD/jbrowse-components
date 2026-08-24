@@ -134,7 +134,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          * it again without a refetch.
          */
         get hiddenGroupKeys(): ReadonlySet<string> {
-          const assemblyName = self.lgv.assemblyNames[0]
+          const assemblyName = self.view.assemblyNames[0]
           return this.hideSelfAlignments &&
             self.groupBy?.type === 'mateAssembly' &&
             assemblyName !== undefined

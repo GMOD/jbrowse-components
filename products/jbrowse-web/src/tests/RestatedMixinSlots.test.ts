@@ -3,7 +3,7 @@ import {
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
 } from '@jbrowse/core/configuration'
-import { legendMixinSlots } from '@jbrowse/plugin-linear-genome-view'
+import { legendMixinSlots } from '@jbrowse/display-kit/LegendMixin'
 import { wiggleCommonExtraSlots } from '@jbrowse/plugin-wiggle'
 
 import corePlugins from '../corePlugins.ts'

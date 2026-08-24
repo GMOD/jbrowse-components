@@ -29,15 +29,15 @@ import {
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import {
-  HeightModeMixin,
-  LegendMixin,
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
-  fetchEachRegion,
+import HeightModeMixin, {
   installGrowExitBake,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/HeightModeMixin'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import MultiRegionDisplayMixin, {
+  fetchEachRegion,
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
@@ -185,11 +185,10 @@ import type {
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { HeightMode } from '@jbrowse/display-kit/heightMode'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type {
-  ExportSvgDisplayOptions,
-  HeightMode,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // lazy so this eager state model does not pull the tooltip's @floating-ui
 // dependency onto the startup path; the consumer renders it inside a Suspense
@@ -462,6 +461,12 @@ export default function stateModelFactory(
       // expression doesn't have to be re-derived (and re-explained) at each
       // call site.
       .views(self => ({
+        /**
+         * #getter
+         */
+        get view() {
+          return getContainingView(self) as LinearGenomeViewModel
+        },
         /**
          * #getter
          */
@@ -993,7 +998,7 @@ export default function stateModelFactory(
           const hidden = self.hiddenGroupKeys
           return visibleStatsDomain({
             active: self.showCoverage,
-            view: self.lgv,
+            view: self.view,
             payloadFor: index => self.rpcDataMap.get(index),
             itemsFor: grouped =>
               grouped.groups
@@ -2212,7 +2217,7 @@ export default function stateModelFactory(
          * assignment for every section on every scroll frame.
          */
         get sashimiArcSections(): SashimiArcSection[] {
-          const view = self.lgv
+          const view = self.view
           if (
             !self.showSashimiArcs ||
             !self.showCoverage ||
@@ -2664,7 +2669,7 @@ export default function stateModelFactory(
          * this shares with the sashimi and ruler walks.
          */
         get crossRegionArcSections() {
-          const view = self.lgv
+          const view = self.view
           if (self.readConnections === 'off' || !view.initialized) {
             return []
           }
@@ -2930,7 +2935,7 @@ export default function stateModelFactory(
            * #action
            */
           setSortedBy(type: string, tag?: string) {
-            const view = self.lgv
+            const view = self.view
             const { centerLineInfo } = view
             // basePair / insertion / softclip / hardclip / tag use sortPos
             // to pick which reads to sort first; position / strand ignore
@@ -3002,7 +3007,7 @@ export default function stateModelFactory(
             tag?: string
           }) {
             const { type, pos, refName, tag } = arg
-            const view = self.lgv
+            const view = self.view
             const assemblyName = view.assemblyNames[0]
             if (assemblyName) {
               this.setSortSlot({ type, pos, refName, assemblyName, tag })

@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getBpDisplayStr } from '@jbrowse/core/util'
-import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
+import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
 import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core'
 import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'

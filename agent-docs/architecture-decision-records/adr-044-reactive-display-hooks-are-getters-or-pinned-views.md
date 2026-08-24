@@ -9,7 +9,7 @@ summary: "Reactive display hooks are getters where possible, pinned views where 
 
 Accepted (2026-07). Applies to every overridable hook a display exposes that is
 read from an autorun or a computed. Implements the rule stated in
-`plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` and closes the
+`packages/display-kit/CLAUDE.md` and closes the
 failure mode behind two shipped bugs.
 
 ## Context
@@ -82,7 +82,7 @@ unchanged; only where the pin lives is.
 **A shared test helper exported from `@jbrowse/core`.** Three lines of assertion
 would become a test-only symbol on core's public surface, reachable by every
 plugin forever — the ossification [PLUGIN_ABI_STABILITY.md](../reference/PLUGIN_ABI_STABILITY.md)
-is about. The rationale lives once in `BaseLinearDisplay/CLAUDE.md`; the
+is about. The rationale lives once in `packages/display-kit/CLAUDE.md`; the
 assertion is cheap enough to inline where a display instance already exists.
 
 **A lint rule ("no method matching /^(isCacheValid|rpcProps)$/ inside

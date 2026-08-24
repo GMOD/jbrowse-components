@@ -13,7 +13,7 @@ import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
  * caching or reactivity from MST anyway).
  */
 export interface MafHitTestModel {
-  lgv: {
+  view: {
     pxToBp: (px: number) => PxToBpResult
     bpPerPx: number
   }
@@ -50,7 +50,7 @@ export function mafPointerAt(
   mouseX: number,
   mouseY: number,
 ): MafPointer {
-  const pos = model.lgv.pxToBp(mouseX)
+  const pos = model.view.pxToBp(mouseX)
   return {
     pos,
     gposFrac: pos.reversed ? pos.end - pos.offset : pos.start + pos.offset,
@@ -129,7 +129,7 @@ export function resolveMafPointerHit({
           pos.index,
           { gposFrac, baseBp },
           rowIndex,
-          model.lgv.bpPerPx,
+          model.view.bpPerPx,
         )
       : undefined,
   }

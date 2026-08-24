@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { GROW_MAX_HEIGHT } from '@jbrowse/plugin-linear-genome-view'
+import { GROW_MAX_HEIGHT } from '@jbrowse/display-kit/heightMode'
 
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import { bootAlignmentsDisplay, makeEmptyPileupData } from './testUtils.ts'

@@ -1,11 +1,12 @@
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  GlobalFetchMixin,
+import { getContainingView } from '@jbrowse/core/util'
+import GlobalFetchMixin, {
   blockKeySignature,
-  foundationDisplayStatusPhase,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/GlobalFetchMixin'
+import { foundationDisplayStatusPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
@@ -52,12 +53,18 @@ export function ArcFetchModel() {
       // clears the estimate on chromosome nav. Byte-only — no density axis. The
       // mixin reads `fetchSizeLimit` / `forceLoad` straight off the display
       // config.
-      .views(() => ({
+      .views(self => ({
         /**
          * #getter
          */
         get gateEnabled() {
           return true
+        },
+        /**
+         * #getter
+         */
+        get view() {
+          return getContainingView(self) as LinearGenomeViewModel
         },
       }))
       .views(self => ({
@@ -74,7 +81,7 @@ export function ArcFetchModel() {
          * is the viewport width the shell paints at — see `renderArcSvg`.
          */
         get canvasWidth() {
-          return self.lgv.totalWidthPx
+          return self.view.totalWidthPx
         },
         /**
          * #getter
@@ -85,7 +92,7 @@ export function ArcFetchModel() {
          * does not.
          */
         get viewSignature() {
-          const view = self.lgv
+          const view = self.view
           return view.initialized
             ? blockKeySignature(view.staticBlocks.contentBlocks)
             : undefined

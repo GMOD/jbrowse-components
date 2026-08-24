@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.base.esm.json",
   "references": [
     { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
     { "path": "../../packages/sv-core/tsconfig.build.esm.json" },
     { "path": "../../plugins/breakpoint-split-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/circular-view/tsconfig.build.esm.json" },

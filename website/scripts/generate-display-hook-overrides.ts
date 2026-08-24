@@ -67,15 +67,13 @@ function ownersOf(hook: Hook) {
 const HOOKS: Hook[] = [
   {
     name: 'regionFetchKey',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
+    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     ifNotOverridden:
       'the empty key, so loaded regions never go stale on zoom — correct unless the worker output is zoom-dependent. A subclass that changes what it fetches and forgets the key gets a redundant fetch, not a cached answer for a zoom the data was never fetched at',
   },
   {
     name: 'regionHasData',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
+    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     ifNotOverridden:
       'true — nothing checks that a region marked loaded has data behind it, so a display whose commit sites drift from its stores reads the viewport as covered against data nobody holds, and never asks again',
   },
@@ -87,28 +85,25 @@ const HOOKS: Hook[] = [
   },
   {
     name: 'fetchNeeded',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
+    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     ifNotOverridden: 'nothing is ever fetched',
   },
   {
     name: 'viewSignature',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts',
+    owner: 'packages/display-kit/src/GlobalFetchMixin.ts',
     ifNotOverridden:
       'undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census)',
   },
   {
     name: 'layoutReady',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
+    owner: 'packages/display-kit/src/MultiRegionDisplayMixin.ts',
     ifNotOverridden:
       'overlays are dropped rather than pinned to a stale layout',
   },
   {
     name: 'fetchInert',
     owner: [
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts',
+      'packages/display-kit/src/FetchMixin.ts',
       'packages/synteny-core/src/SyntenyFetchStateMixin.ts',
     ],
     ifNotOverridden:
@@ -116,8 +111,7 @@ const HOOKS: Hook[] = [
   },
   {
     name: 'awaitingPrerequisite',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts',
+    owner: 'packages/display-kit/src/FetchMixin.ts',
     ifNotOverridden:
       'every decline is judged on the spot by the dev-only retry check, which is right for a display whose fetch answers off its own state — a two-stage one (HiC waits on `CoreGetInfo`, variants on `sourcesBase`) is reported as a dead Retry it does not have, since the run that will fetch is the one after the prerequisite lands. Overriding it DEFERS that verdict, never waives it, so the override has to be strictly narrower than the gate it explains',
   },
@@ -135,43 +129,41 @@ const HOOKS: Hook[] = [
   },
   {
     name: 'gateEnabled',
-    owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
+    owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden:
       'no byte gate: the track downloads whatever it is pointed at, with no banner and no error',
   },
   {
     name: 'densityTooLarge',
-    owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
+    owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden: 'byte-only gating, no feature-density axis',
   },
   {
     name: 'densityGateEnabled',
-    owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
+    owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden:
       'no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off',
   },
   {
     name: 'byteGateAdapterPath',
-    owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
+    owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden:
       'the estimate and the budget both describe the track’s own `adapter` — wrong for a display that reads a different file at different zooms, and the one hook such a display overrides, since `byteGateAdapterConfig` is the config at this path',
   },
   {
     name: 'byteGateAdapterConfig',
-    owner: 'plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts',
+    owner: 'packages/display-kit/src/RegionTooLargeMixin.ts',
     ifNotOverridden:
       'the config sitting at `byteGateAdapterPath`, which a tier swap already moves — so this one is for a display whose adapter config is SYNTHESIZED rather than read off the track (GC content folds `windowSize` / `gcMode` in), where no path names what it fetches',
   },
   {
     name: 'scrollableHeight',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx',
+    owner: 'packages/display-kit/src/TrackHeightMixin.tsx',
     ifNotOverridden: '`Infinity` — the display does not scroll internally',
   },
   {
     name: 'growTargetHeight',
-    owner:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/HeightModeMixin.ts',
+    owner: 'packages/display-kit/src/HeightModeMixin.ts',
     ifNotOverridden: 'grow mode targets the raw `height` slot',
   },
   {

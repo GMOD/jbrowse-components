@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintFeatureBand } from '@jbrowse/plugin-canvas'
-import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
@@ -16,11 +16,9 @@ import type {
   VariantRenderState,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { FeatureDataResult, VisibleRegion } from '@jbrowse/plugin-canvas'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
 
 interface RenderSvgModel extends RenderSvgBaseModel {
   referenceDrawingMode: string

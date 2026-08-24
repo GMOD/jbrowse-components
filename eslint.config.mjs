@@ -203,7 +203,7 @@ const restrictedSyntax = [
 const noHandRolledAttach = {
   selector: "CallExpression[callee.property.name='attachRenderingBackend']",
   message:
-    'Call installPerRegionLifecycle / installKeyedLifecycle / installGlobalLifecycle rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installers own that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079 and packages/render-core/CLAUDE.md.',
+    'Call installUpload (or, until they are gone, installPerRegionLifecycle / installKeyedLifecycle / installGlobalLifecycle) rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installer owns that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079 and packages/render-core/CLAUDE.md.',
 }
 
 // `session.addTrackConf` survives only so that prebuilt plugin bundles keep
@@ -747,10 +747,13 @@ export default defineConfig(
       'no-restricted-syntax': ['error', ...sourceRestrictedSyntax],
     },
   },
-  // The three installers, which are what `attachRenderingBackend` exists for.
-  // The mixin declaring it needs no entry — a declaration is not a call.
+  // The installers, which are what `attachRenderingBackend` exists for. The
+  // mixin declaring it needs no entry — a declaration is not a call.
   {
-    files: ['packages/render-core/src/install*Lifecycle.ts'],
+    files: [
+      'packages/render-core/src/installUpload.ts',
+      'packages/render-core/src/install*Lifecycle.ts',
+    ],
     rules: {
       'no-restricted-syntax': [
         'error',
@@ -778,9 +781,7 @@ export default defineConfig(
   // width question for everyone else. `LinearGenomeView/model.ts` defines it and
   // is not a read, so it needs no entry.
   {
-    files: [
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
-    ],
+    files: ['packages/display-kit/src/MultiRegionDisplayMixin.ts'],
     rules: {
       'no-restricted-syntax': [
         'error',

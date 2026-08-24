@@ -1,7 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
-import { heightModeLabel } from '@jbrowse/plugin-linear-genome-view'
+import { heightModeLabel } from '@jbrowse/display-kit/heightMode'
 import { autorun } from 'mobx'
 
 import { namesToBlock } from '../shared/readNameBlock.ts'

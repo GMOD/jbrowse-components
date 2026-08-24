@@ -5,9 +5,9 @@ sidebar_label: Mixin -> HeightModeMixin
 ---
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-genome-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/HeightModeMixin.ts).
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/HeightModeMixin.ts).
 
 #crossCuttingMixin Track-height strategy; the one row that must compose
 **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides.

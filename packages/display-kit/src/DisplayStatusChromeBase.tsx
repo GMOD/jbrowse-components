@@ -5,10 +5,10 @@ import {
   TrackOverlayPortal,
 } from '@jbrowse/display-ui'
 
-import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
 import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
 import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
+import type { TooLargeMessageModel } from './TooLargeMessage.tsx'
 import type { DisplayChromeOverlays } from '@jbrowse/display-ui'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ComponentPropsWithRef, MouseEventHandler, ReactNode } from 'react'

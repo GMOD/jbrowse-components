@@ -3,9 +3,9 @@ import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { HeightMode } from './heightMode.ts'
 import type { HeightModeConfigModel } from './heightModeConfigSchemaFields.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { IReactionDisposer } from 'mobx'
 
@@ -159,7 +159,7 @@ export default function HeightModeMixin() {
        * `TrackHeightMixin.height`.
        */
       get height(): number {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = getContainingView(self) as RegionHost
         return self.autoHeight && view.initialized
           ? self.grownHeight
           : self.fitTargetHeight

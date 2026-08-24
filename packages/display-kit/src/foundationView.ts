@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util/mstUtils'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -24,8 +24,8 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * duck-typed model shapes that deliberately don't carry the whole MST instance
  * type, so there is no `lgv` on them to read.
  */
-export function containingLgv(self: IStateTreeNode): LinearGenomeViewModel {
-  return getContainingView(self) as LinearGenomeViewModel
+export function containingLgv(self: IStateTreeNode): RegionHost {
+  return getContainingView(self) as RegionHost
 }
 
 /**

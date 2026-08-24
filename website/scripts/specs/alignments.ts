@@ -1,6 +1,6 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { heightModeLabel } from '../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
+import { heightModeLabel } from '../../../packages/display-kit/src/heightMode.ts'
 import {
   DEMO_CONFIG,
   HG002_NANOPORE_HP_TRACK,

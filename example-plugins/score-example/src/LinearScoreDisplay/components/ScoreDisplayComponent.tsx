@@ -1,5 +1,5 @@
 // #exampleFile shared | React: DisplayChrome wrapping the canvas
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { observer } from 'mobx-react'
 
 import { ScoreRenderer } from './ScoreRendererFactory.ts'

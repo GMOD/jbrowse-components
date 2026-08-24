@@ -23,15 +23,13 @@ const root = join(__dirname, '..')
 const CEILINGS = [
   // 8 runtime / 48 type
   {
-    entry:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/fetchEachRegion.ts',
+    entry: 'packages/display-kit/src/fetchEachRegion.ts',
     runtime: 20,
     types: 70,
   },
   // 18 runtime / 44 type
   {
-    entry:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts',
+    entry: 'packages/display-kit/src/FetchMixin.ts',
     runtime: 30,
     types: 70,
   },
@@ -39,8 +37,7 @@ const CEILINGS = [
   // reads a track's assembly names off a config, which is the configuration
   // schemas and therefore the whole graph.
   {
-    entry:
-      'plugins/linear-genome-view/src/BaseLinearDisplay/models/installPerRegionFetchAutoruns.ts',
+    entry: 'packages/display-kit/src/installPerRegionFetchAutoruns.ts',
     runtime: 60,
   },
   // 4 runtime / 35 type

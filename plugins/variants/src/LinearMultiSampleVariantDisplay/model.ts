@@ -44,6 +44,7 @@ import type { VariantRenderingBackend } from './components/variantRenderingBacke
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   FeatureDataResult,
@@ -53,7 +54,6 @@ import type {
   LayoutRegionData,
   ShowLabelsMode,
 } from '@jbrowse/plugin-canvas'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * The unscaled height a lane mark is packed at, before the fit ladder scales the
@@ -510,7 +510,7 @@ export function stateModelFactory(
             }
           }
           return {
-            bpPerPx: self.lgv.coarseBpPerPx,
+            bpPerPx: self.view.coarseBpPerPx,
             reversedRegions,
             displayMode: LANE_DISPLAY_MODE,
             pinnedFeatureIds: NO_PINNED_FEATURES,

@@ -7,7 +7,7 @@ import { legendRightEdgePx } from './wiggleComponentUtils.ts'
 
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { LgvSvgBodyProps } from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type React from 'react'

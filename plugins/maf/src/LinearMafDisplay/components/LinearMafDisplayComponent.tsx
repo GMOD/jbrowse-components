@@ -5,7 +5,7 @@ import {
   VerticalScrollbar,
   useMouseState,
 } from '@jbrowse/core/ui'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
   DisplayCrosshairs,
   RowLabelsOverlay,
@@ -125,7 +125,7 @@ const MafBody = observer(function MafBody({
   const [conservationResizeActive, setConservationResizeActive] =
     useState(false)
   const resizeActive = coverageResizeActive || conservationResizeActive
-  const view = model.lgv
+  const view = model.view
   // the canvas box, not the viewport: must equal renderState.canvasWidth, and
   // every overlay below is positioned in the same space — see canvasWidthPx
   const width = model.canvasWidthPx

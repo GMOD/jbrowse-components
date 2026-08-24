@@ -3,8 +3,8 @@ import { max } from '@jbrowse/core/util'
 
 import { totalHeight } from './util.ts'
 
-import type { ExportSvgDisplayOptions } from '../../BaseLinearDisplay/types.ts'
 import type { ExportSvgOptions, TrackLabelMode } from '../types.ts'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { ThemeOptions } from '@mui/material'
 import type { ReactNode } from 'react'
 

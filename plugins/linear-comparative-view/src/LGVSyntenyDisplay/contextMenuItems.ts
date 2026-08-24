@@ -49,7 +49,7 @@ interface SyntenyContextMenuModel extends IStateTreeNode {
   // display's `ContextMenuHit`: this menu asks nothing about which mark
   // answered.
   contextMenuHit: { block: { bpRange: [number, number] } } | undefined
-  lgv: LinearGenomeViewModel
+  view: LinearGenomeViewModel
   selectFeature: (feature: Feature) => void
   withFeatureById: (
     featureId: string,
@@ -110,7 +110,7 @@ function launchSyntenyItem(
   feature: Feature,
   region: RegionOfInterest | undefined,
 ): MenuItem[] {
-  const view = self.lgv
+  const view = self.view
   // The anchor panel opens on the view's own assembly, which is what the
   // features were fetched against — more dependable than the feature's own
   // `assemblyName` field, which not every adapter sets.
@@ -186,7 +186,7 @@ function movePanelItem(
   feature: Feature,
   region: RegionOfInterest | undefined,
 ): MenuItem[] {
-  const view = self.lgv
+  const view = self.view
   const stack = containingPanelStack(view)
   if (!stack || !region || !getCigar(feature)) {
     return []

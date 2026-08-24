@@ -1,5 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
-import { autorunOnReadyView } from '@jbrowse/plugin-linear-genome-view'
+import { autorunOnReadyView } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { untracked } from 'mobx'
 
 import { maxBottom } from './layout.ts'

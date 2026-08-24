@@ -6,8 +6,8 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
 import { makeFeaturePair, pairKey } from './components/util.ts'
@@ -18,8 +18,8 @@ import type {
   LinearPairedArcDisplayConfigModel,
 } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /**

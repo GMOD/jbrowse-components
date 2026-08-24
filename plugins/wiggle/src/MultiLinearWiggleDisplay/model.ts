@@ -10,13 +10,12 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  LegendMixin,
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import MultiRegionDisplayMixin, {
   fetchAllRegions,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
@@ -64,8 +63,8 @@ import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTyp
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSortSpec } from '@jbrowse/tree-sidebar'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 

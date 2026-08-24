@@ -1,4 +1,4 @@
-import { runGlobalFetch } from '@jbrowse/plugin-linear-genome-view'
+import { runGlobalFetch } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 import { ldFetchPhases } from './ldFetchPhases.ts'
 import { createTestEnvironment } from './testEnv.ts'

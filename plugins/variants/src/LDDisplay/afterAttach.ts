@@ -1,12 +1,10 @@
-import {
-  installGlobalFetchAutorun,
-  onDisplayedRegionsChange,
-} from '@jbrowse/plugin-linear-genome-view'
+import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 import { ldFetchPhases } from './ldFetchPhases.ts'
 
 import type { LDFetchSelf } from './ldFetchPhases.ts'
-import type { GlobalFetchAutorunHost } from '@jbrowse/plugin-linear-genome-view'
+import type { GlobalFetchAutorunHost } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 // The skeleton's own hosting requirements (`GlobalFetchAutorunHost`, the
 // interface the skeleton itself is typed against) on top of what the fetch

@@ -1,18 +1,16 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
+import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { types } from '@jbrowse/mobx-state-tree'
-import { onDisplayedRegionsChange } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 
 import { overDensityBudget } from '../RenderFeatureDataRPC/densityGate.ts'
 import { screenDensity } from './regionDensity.ts'
 
 import type { RegionDensityStats } from './regionDensity.ts'
-import type {
-  BaseLinearDisplayConfigModel,
-  GateFetchState,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { BaseLinearDisplayConfigModel } from '@jbrowse/display-kit/configSchema'
+import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * The members a composing display provides that this gate reads but doesn't own:

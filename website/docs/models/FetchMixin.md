@@ -5,9 +5,9 @@ sidebar_label: Mixin -> FetchMixin
 ---
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-genome-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts).
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/FetchMixin.ts).
 
 Cancel-safe fetch lifecycle for any display that loads data over RPC. Owns the
 entire fetch state machine (stop-token rotation, staleness tracking, error

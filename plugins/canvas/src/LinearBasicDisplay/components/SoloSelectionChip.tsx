@@ -1,5 +1,5 @@
 import { pluralize } from '@jbrowse/core/util'
-import { TrackControl } from '@jbrowse/plugin-linear-genome-view'
+import TrackControl from '@jbrowse/display-kit/TrackControl'
 
 // Bottom-right badge for the show-only list. While the user is collecting
 // (ctrl/cmd+click or the right-click "Add to show-only list" item) it shows the

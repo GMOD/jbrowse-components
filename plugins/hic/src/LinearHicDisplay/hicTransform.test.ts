@@ -1,7 +1,7 @@
 import {
   triangleDataToScreen,
   triangleScreenToData,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/triangleTransform'
 
 import {
   INSTANCE_STRIDE_WORDS,

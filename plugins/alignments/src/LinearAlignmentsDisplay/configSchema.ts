@@ -1,9 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  baseLinearDisplayConfigSchema,
-  heightModeConfigSchemaFields,
-} from '@jbrowse/plugin-linear-genome-view'
 
 import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
 import { isRegisteredColorScheme } from '../shared/colorSchemes.ts'

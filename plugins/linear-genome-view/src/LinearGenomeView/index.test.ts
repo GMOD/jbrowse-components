@@ -17,12 +17,12 @@ import {
   statusMessageText,
   statusSource,
 } from '@jbrowse/core/util'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
 import { autorun } from 'mobx'
 
-import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'

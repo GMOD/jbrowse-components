@@ -11,11 +11,11 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
-import TrackHeightMixin from '../../BaseLinearDisplay/models/TrackHeightMixin.tsx'
 import { stateModelFactory } from '../index.ts'
 import volvoxDisplayedRegions from '../volvoxDisplayedRegions.json' with { type: 'json' }
 import { useViewSvgFigure } from './useViewSvgFigure.tsx'

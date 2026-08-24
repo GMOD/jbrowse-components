@@ -1151,7 +1151,7 @@ only on a real violation):
   correct for `LinearReferenceSequenceDisplay`, indistinguishable from an
   omission for everyone else. Checkable only behind an explicit opt-out
   (`noSettingsInvalidation: true`), which the foundation's own test display
-  (`BaseLinearDisplay/models/perRegionTestEnv.ts`, which defines no `rpcProps`
+  (`plugins/linear-genome-view/src/displayKitTests/perRegionTestEnv.ts`, which defines no `rpcProps`
   because it is testing the autoruns rather than a payload) would also have to
   declare — otherwise the check is console noise in the test suite rather than a
   signal.

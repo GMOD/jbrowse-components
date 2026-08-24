@@ -22,8 +22,8 @@ axis's own terms.
 
 | Code | Path |
 | --- | --- |
-| `RegionTooLargeMixin` (derived gate, byte axis, worker byte budget) | `plugins/linear-genome-view/src/shared/RegionTooLargeMixin.ts` |
-| Shared verdict primitives | `plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts` |
+| `RegionTooLargeMixin` (derived gate, byte axis, worker byte budget) | `packages/display-kit/src/RegionTooLargeMixin.ts` |
+| Shared verdict primitives | `packages/display-kit/src/regionTooLargeUtils.ts` |
 | Budget vocabulary, and the in-fetch measurement every gated RPC runs | `packages/core/src/rpc/byteBudget.ts` |
 | Adapter estimate | `BaseFeatureDataAdapter.getRegionByteSize` |
 | The byte-commit the fan-out helpers make | `commitFetchBytes`, `RegionTooLargeMixin.ts` |

@@ -3,6 +3,7 @@
   "references": [
     { "path": "../../packages/alignments-core/tsconfig.build.esm.json" },
     { "path": "../../packages/core/tsconfig.build.esm.json" },
+    { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
     { "path": "../../packages/ld-core/tsconfig.build.esm.json" },
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../../packages/sv-core/tsconfig.build.esm.json" },

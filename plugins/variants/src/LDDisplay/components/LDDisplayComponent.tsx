@@ -4,7 +4,7 @@ import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -94,7 +94,7 @@ const LDCanvas = observer(function LDCanvas({
     mouseState && !model.isLoadingOrCanceled
       ? model.hitTest(mouseState.x, mouseState.y)
       : undefined
-  const view = model.lgv
+  const view = model.view
   const {
     showLegend,
     // The metric and sign convention the loaded values ACTUALLY have, not the

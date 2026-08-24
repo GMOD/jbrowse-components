@@ -8,7 +8,7 @@ import { createStatusFanOut } from '@jbrowse/core/util'
 import {
   callEachRegion,
   fetchRegionsBatched,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
@@ -17,7 +17,7 @@ import type { Region } from '@jbrowse/core/util'
 import type {
   FetchContext,
   FetchEachRegionModel,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
 interface MafFetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>

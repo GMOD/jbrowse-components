@@ -10,14 +10,18 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getSession, openFeatureWidget, toLocale } from '@jbrowse/core/util'
-import Flatbush from '@jbrowse/core/util/flatbush'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
+  getContainingView,
+  getSession,
+  openFeatureWidget,
+  toLocale,
+} from '@jbrowse/core/util'
+import Flatbush from '@jbrowse/core/util/flatbush'
+import MultiRegionDisplayMixin, {
   fetchEachRegion,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
 import {
   installPerRegionLifecycle,
@@ -56,8 +60,9 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { VisibleEntry } from '@jbrowse/wiggle-core'
 
 // The Manhattan walker: the worker ships each region's score extremes already
@@ -256,7 +261,7 @@ export function stateModelFactory(
         get domain() {
           return visibleStatsDomain({
             active: true,
-            view: self.lgv,
+            view: getContainingView(self) as LinearGenomeViewModel,
             payloadFor: index => self.rpcDataMap.get(index),
             itemsFor: data => (data.numFeatures === 0 ? [] : [data]),
             accumulate: shippedExtremes,

@@ -1,11 +1,9 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
-import type { LgvSvgBodyProps } from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 
 // Bezier-arc-overlay exception (see agent-docs/reference/SVG_EXPORT.md): arc
 // paths render as vector SVG on both the on-screen and export paths so

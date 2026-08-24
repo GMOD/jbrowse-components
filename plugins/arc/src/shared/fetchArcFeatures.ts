@@ -4,7 +4,7 @@ import { SimpleFeature, dedupe } from '@jbrowse/core/util'
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
-import type { GlobalFetchPhases } from '@jbrowse/plugin-linear-genome-view'
+import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 // The features plus what the fetch measured on the way to them: `runGlobalFetch`
 // commits the bytes and hands the rest to `commit`.
@@ -36,7 +36,7 @@ export function arcFetchPhases(
 ): GlobalFetchPhases<ArcFetchArgs, ArcFetchResult> {
   return {
     prepare: () => {
-      const regions = self.lgv.staticBlocks.contentBlocks
+      const regions = self.view.staticBlocks.contentBlocks
       return regions.length ? { regions } : undefined
     },
     run: async ({ regions }, ctx) => {

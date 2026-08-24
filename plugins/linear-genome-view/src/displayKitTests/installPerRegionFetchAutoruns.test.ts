@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/react'
 
 import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 
 // The half `planRegionFetch` cannot express: which reads MobX tracks.

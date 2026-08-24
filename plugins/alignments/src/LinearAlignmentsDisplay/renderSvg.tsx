@@ -9,10 +9,8 @@ import {
 } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
@@ -39,10 +37,8 @@ import { buildSectionRenders } from './sectionLayout.ts'
 import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Theme } from '@mui/material'
 import type React from 'react'
 
@@ -151,7 +147,7 @@ function AlignmentsSvgBody({
         />
         <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
         <CrossRegionArcsSvg model={model} width={canvasWidth} />
-        <PileupBezierArcsSvg model={model} view={view} />
+        <PileupBezierArcsSvg model={model} view={model.view} />
       </SvgClipRect>
       {model.showCoverage && coverageTicks ? (
         <CoverageScaleBars

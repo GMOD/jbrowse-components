@@ -1,4 +1,11 @@
-# BaseLinearDisplay fetch system
+# @jbrowse/display-kit
+
+The display integration layer: the fetch foundations, the byte gate, the display
+chrome, SVG export, and the `RegionHost` contract. No barrel; the `exports` map
+is the API, pinned by `src/publicApi.test.ts`. The tests that need a real linear
+genome view (`perRegionTestEnv.ts` and its five suites) live in
+`plugins/linear-genome-view/src/displayKitTests/`, since this package sits below
+that plugin.
 
 `FetchMixin` (stop tokens, staleness, `isLoading`) + `MultiRegionDisplayMixin`
 (autoruns, `fetchRegions`, `loadedRegions`, overridable hooks). Status chrome is

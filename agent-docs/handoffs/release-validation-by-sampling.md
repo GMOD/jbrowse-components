@@ -27,7 +27,7 @@ and gets its confidence from a sample rather than from coverage.
 
 One subsystem, ~2 hours, on the concept the expansion worry was raised about.
 
-**The truth table** — `plugins/linear-genome-view/src/shared/gateTruthTable.test.ts`
+**The truth table** — `packages/display-kit/src/gateTruthTable.test.ts`
 composes the real `RegionTooLargeMixin` and overrides its nine leaves, so a row
 costs one `create` with no view, track or config node. It crosses every boolean
 against boundary values for span, adapter limit and bytes:

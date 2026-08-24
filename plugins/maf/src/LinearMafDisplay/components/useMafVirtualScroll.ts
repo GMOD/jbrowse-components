@@ -21,6 +21,6 @@ export function useMafVirtualScroll(
 ) {
   useRowVirtualScroll(rowsEl, model, {
     viewportHeight: model.rowsHeight,
-    scrollZoom: model.lgv.scrollZoom,
+    scrollZoom: model.view.scrollZoom,
   })
 }

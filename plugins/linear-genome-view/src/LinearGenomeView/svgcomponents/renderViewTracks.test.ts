@@ -1,7 +1,7 @@
 import { renderViewTracks } from './renderViewTracks.ts'
 import { trackSpacing } from './util.ts'
 
-import type { ExportSvgDisplayOptions } from '../../BaseLinearDisplay/types.ts'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 // The orderings renderViewTracks exists to own. Both were violated by all three
 // view exports at some point, and each time only a minute-long integration

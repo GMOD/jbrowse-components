@@ -62,7 +62,7 @@ function isFollowingStack(stack: PanelStack): stack is FollowingStack {
 }
 
 /**
- * The stack `lgv` is a panel of, or undefined when it is a view in its own
+ * The stack `view` is a panel of, or undefined when it is a view in its own
  * right.
  *
  * Both halves of the test are load-bearing. Membership alone is not enough:
@@ -74,16 +74,16 @@ function isFollowingStack(stack: PanelStack): stack is FollowingStack {
  * panels.
  */
 export function containingPanelStack(
-  lgv: LinearGenomeViewModel,
+  view: LinearGenomeViewModel,
 ): PanelStack | undefined {
-  let node: IAnyStateTreeNode = lgv
+  let node: IAnyStateTreeNode = view
   while (hasParent(node)) {
     node = getParent<IAnyStateTreeNode>(node)
     const { views } = node as { views?: unknown }
     if (
       isViewModel(node) &&
       Array.isArray(views) &&
-      (views as unknown[]).includes(lgv)
+      (views as unknown[]).includes(view)
     ) {
       return node as unknown as PanelStack
     }

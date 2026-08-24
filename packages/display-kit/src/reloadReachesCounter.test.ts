@@ -20,7 +20,7 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-const root = path.resolve(__dirname, '../../../../..')
+const root = path.resolve(__dirname, '../../..')
 
 function sourceFiles() {
   return execFileSync(
@@ -92,8 +92,8 @@ test('the scan finds the reload declarations it is about', () => {
   // directly through the shared fetch skeleton, so its override is gone too.)
   const files = declarations.map(d => d.where.split(':')[0])
   for (const expected of [
-    'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
-    'plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts',
+    'packages/display-kit/src/MultiRegionDisplayMixin.ts',
+    'packages/display-kit/src/GlobalFetchMixin.ts',
     'plugins/canvas/src/LinearBasicDisplay/baseModel.ts',
     'packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx',
   ]) {

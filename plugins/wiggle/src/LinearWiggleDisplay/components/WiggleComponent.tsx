@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { Crosshairs, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
   CrossHatches,
   ScoreRules,

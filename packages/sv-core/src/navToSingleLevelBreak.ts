@@ -136,21 +136,21 @@ export async function singleLevelEncompassingSnapshotFromBreakendFeature({
  * as "unable to navigate" for a locus the view is perfectly able to show.
  */
 function moveToEncompass({
-  lgv,
+  view,
   refName,
   startPos,
   mateRefName,
   endPos,
   windowSize,
 }: {
-  lgv: LinearGenomeViewModel
+  view: LinearGenomeViewModel
   refName: string
   startPos: number
   mateRefName: string
   endPos: number
   windowSize: number
 }) {
-  const { displayedRegions } = lgv
+  const { displayedRegions } = view
   const clamped = (name: string, coord: number) => {
     const r = displayedRegions.find(r => r.refName === name)
     return r ? Math.min(Math.max(coord, r.start), r.end) : coord
@@ -171,9 +171,9 @@ function moveToEncompass({
     // `windowSize` — and moveTo computes a negative bpPerPx from a backwards
     // pair rather than refusing
     const [a, b] = compareBpOffsets(l0, r0) <= 0 ? [l0, r0] : [r0, l0]
-    lgv.moveTo(a, b)
+    view.moveTo(a, b)
   } else {
-    getNotificationSink(lgv).notify('Unable to navigate to breakpoint')
+    getNotificationSink(view).notify('Unable to navigate to breakpoint')
   }
 }
 
@@ -263,7 +263,7 @@ export async function navToSingleLevelBreak({
   } else {
     // for encompassing view, fit the whole range
     moveToEncompass({
-      lgv,
+      view: lgv,
       refName,
       startPos,
       mateRefName,

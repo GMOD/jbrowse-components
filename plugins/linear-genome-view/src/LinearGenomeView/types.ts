@@ -14,22 +14,10 @@ export interface BpOffset {
   assemblyName?: string
   oob?: boolean
 }
-export type TrackLabelMode = 'offset' | 'overlay' | 'left' | 'none'
-
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  format?: 'svg' | 'png'
-  filename?: string
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  fontSize?: number
-  rulerHeight?: number
-  textHeight?: number
-  trackLabels?: TrackLabelMode
-  themeName?: string
-  fontFamily?: string
-  showGridlines?: boolean
-  createCanvas?: (width: number, height: number) => HTMLCanvasElement
-}
+export type {
+  ExportSvgOptions,
+  TrackLabelMode,
+} from '@jbrowse/display-kit/types'
 
 // canonical definition lives in core so the shared HighlightsMixin and dotplot
 // can reference it without depending on this plugin

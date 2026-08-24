@@ -1,4 +1,4 @@
-import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
+import { fetchEachRegion } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
 import type { RegionGateMeasurement } from './CanvasFeatureGateMixin.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
@@ -6,8 +6,8 @@ import type { Region } from '@jbrowse/core/util'
 import type {
   FetchContext,
   FetchEachRegionModel,
-  GateFetchState,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 
 type IndexedRegion = { region: Region; displayedRegionIndex: number }
 

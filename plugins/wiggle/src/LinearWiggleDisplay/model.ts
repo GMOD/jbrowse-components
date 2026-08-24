@@ -8,12 +8,11 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
+import MultiRegionDisplayMixin, {
   fetchAllRegions,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   axisPlotBox,
   makeCrossHatchItem,
@@ -43,8 +42,8 @@ import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'

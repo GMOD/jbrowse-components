@@ -1,10 +1,10 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
+import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
-import { baseLinearDisplayConfigSchema } from './BaseLinearDisplay/index.ts'
 import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import SequenceFeatureHoverHighlightExtensionF from './LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx'
@@ -73,111 +73,34 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 }
 
+// The toolkit-free chrome contract, re-exported for code already reaching
+// this plugin; its home is `@jbrowse/display-ui`. The display layer itself
+// (the fetch foundations, the chrome, SVG export, the byte gate) is
+// `@jbrowse/display-kit`, and is imported from there by subpath, never from
+// here.
+export {
+  DisplayChromeOverlayProvider,
+  DisplayUIProvider,
+  FloatingLegend,
+  TrackControlProvider,
+  plainChromeOverlays,
+  plainTrackControl,
+  useTrackControlMenu,
+} from '@jbrowse/display-ui'
 export type {
-  ExportSvgDisplayOptions,
+  DisplayBackgroundProgressModel,
+  DisplayChromeOverlays,
+  DisplayErrorBarModel,
+  DisplayLoadingOverlayModel,
   LegendItem,
   LegendSection,
+  TooLargeMessageModel,
   TrackControlComponent,
   TrackControlIcon,
   TrackControlMenu,
   TrackControlOption,
   TrackControlProps,
-} from './BaseLinearDisplay/index.ts'
-
-export {
-  BlockMsg,
-  BottomRightIndicators,
-  DisplayChrome,
-  DisplayChromeBase,
-  DisplayChromeOverlayProvider,
-  DisplayUIProvider,
-  DisplayErrorBar,
-  DisplayLoadingOverlay,
-  DisplayStatusChrome,
-  DisplayStatusChromeBase,
-  FetchMixin,
-  FloatingLegend,
-  GROW_MAX_HEIGHT,
-  GlobalFetchMixin,
-  HEIGHT_MODE_VALUES,
-  HeightModeMixin,
-  LegendMixin,
-  MIN_DISPLAY_HEIGHT,
-  MultiRegionDisplayMixin,
-  TooLargeMessage,
-  TrackControl,
-  TrackControlProvider,
-  TrackHeightIndicator,
-  TrackHeightMixin,
-  autorunOnReadyView,
-  baseLinearDisplayConfigSchema,
-  blockKeySignature,
-  callEachRegion,
-  computeTriangleYScalar,
-  fetchAllRegions,
-  fetchEachRegion,
-  fetchRegionsBatched,
-  foundationDisplayStatusPhase,
-  gradientSvgLegendWidth,
-  legendMixinSlots,
-  squashToHeightCheckboxItem,
-  getHeightModeOptions,
-  heightModeConfigSchemaFields,
-  heightModeLabel,
-  heightModeMenuItems,
-  installClearHoverOnViewportChange,
-  installGlobalFetchAutorun,
-  installGrowExitBake,
-  makeFetchContext,
-  onDisplayedRegionsChange,
-  plainTrackControl,
-  runGlobalFetch,
-  triangleDataToScreen,
-  triangleScreenToData,
-  useTrackControlMenu,
-} from './BaseLinearDisplay/index.ts'
-export type {
-  BaseLinearDisplayConfigModel,
-  DisplayBackgroundProgressModel,
-  DisplayChromeOverlays,
-  DisplayErrorBarModel,
-  DisplayLoadingOverlayModel,
-  DisplayStatusPhaseFoundation,
-  FetchContext,
-  GlobalFetchAutorunHost,
-  FetchEachRegionModel,
-  GlobalFetchPhases,
-  HeightMode,
-  HeightModeMenuModel,
-  LoadedRegion,
-  RegionFetchContext,
-  StatusChromeModel,
-  TooLargeMessageModel,
-  TriangleTransform,
-} from './BaseLinearDisplay/index.ts'
-// plain, toolkit-free overlays. All of this comes from `@jbrowse/display-ui`,
-// which has no UI-toolkit dependency; importing it from here is a convenience
-// for code already reaching this plugin, not a second home. Mounting
-// `DisplayUIProvider` makes JBrowse's own displays render without Material UI;
-// keeping Material out of the *bundle* is `DisplayChromeBase` and a display
-// component of your own.
-export { plainChromeOverlays } from './BaseLinearDisplay/index.ts'
-// The terminal-state precedence used by chrome that hosts its own (non-GPU)
-// rendering lives in `@jbrowse/render-core/displayPhase` and is imported from
-// there — by this plugin's internals and by arc's SVG chrome alike. It is
-// deliberately not mirrored here: one module owns the ranking, and consumers
-// name that module.
-// The only region-too-large names that leave this plugin: canvas's duck-typed
-// fetch contracts have to name them. The rest is internal (ADR-045). The last
-// two are named by inference rather than by hand -- every display's emitted
-// `.d.ts` serializes them, so they need a path a published tarball ships.
-export type {
-  ByteEstimate,
-  GateFetchState,
-  GateViewport,
-  RegionTooLargeStatus,
-} from './shared/regionTooLargeUtils.ts'
-export type { IndexedRegion } from './BaseLinearDisplay/models/planRegionFetch.ts'
+} from '@jbrowse/display-ui'
 export {
   HighlightBand,
   HighlightChip,
@@ -292,11 +215,6 @@ export { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 export { svgSafeId } from '@jbrowse/core/svg/svgId'
 export { awaitSvgReady, awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
-export { renderDisplaySvg } from './shared/renderDisplaySvg.tsx'
-export type {
-  LgvSvgBodyProps,
-  LgvSvgExportable,
-} from './shared/renderDisplaySvg.tsx'
 export {
   defaultTextHeight,
   getRowHeaderLayout,

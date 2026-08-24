@@ -1,9 +1,7 @@
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
-import {
-  DisplayChrome,
-  FloatingSvgOverlay,
-} from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { FloatingSvgOverlay } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
   RowLabelsOverlay,

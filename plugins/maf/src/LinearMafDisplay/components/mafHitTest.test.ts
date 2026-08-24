@@ -30,7 +30,7 @@ const CELL_HOVER: MafHover = {
 
 function makeModel(overrides?: Partial<MafHitTestModel>): MafHitTestModel {
   return {
-    lgv: { pxToBp: pxToBp(false), bpPerPx: 1 },
+    view: { pxToBp: pxToBp(false), bpPerPx: 1 },
     scrollTop: 0,
     rowsTopOffset: 45,
     effectiveRowHeight: 10,
@@ -46,7 +46,7 @@ describe('mafPointerAt', () => {
 
   test('a reversed region counts down from the region end', () => {
     const model = makeModel({
-      lgv: { pxToBp: pxToBp(true), bpPerPx: 1 },
+      view: { pxToBp: pxToBp(true), bpPerPx: 1 },
     })
     expect(mafPointerAt(model, 25.5, 100).gposFrac).toBe(1974.5)
   })
@@ -54,7 +54,7 @@ describe('mafPointerAt', () => {
   test('baseBp is the base painted at the pixel, which reversed is not a floor', () => {
     expect(mafPointerAt(makeModel(), 25.5, 100).baseBp).toBe(1025)
     const reversed = makeModel({
-      lgv: { pxToBp: pxToBp(true), bpPerPx: 1 },
+      view: { pxToBp: pxToBp(true), bpPerPx: 1 },
     })
     // mid-cell the two agree...
     expect(mafPointerAt(reversed, 25.5, 100).baseBp).toBe(1974)

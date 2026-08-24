@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
@@ -13,10 +13,8 @@ import type {
   MatrixRenderState,
   VariantMatrixUploadData,
 } from './components/variantMatrixRenderingBackendTypes.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 interface MatrixRenderSvgModel
   extends RenderSvgBaseModel, MatrixConnectorLinesModel {

@@ -581,7 +581,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `fetchInert` | false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled` | `breakpoint-split-view/BreakpointSplitView`, `circular-view/ChordVariantDisplay`, `linear-comparative-view/LinearSyntenyDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
 | `awaitingPrerequisite` | every decline is judged on the spot by the dev-only retry check, which is right for a display whose fetch answers off its own state — a two-stage one (HiC waits on `CoreGetInfo`, variants on `sourcesBase`) is reported as a dead Retry it does not have, since the run that will fetch is the one after the prerequisite lands. Overriding it DEFERS that verdict, never waives it, so the override has to be strictly narrower than the gate it explains | `hic/LinearHicDisplay`, `variants/shared` |
 | `rendersCanvas` | `painted` waits on a canvas that is never mounted, so `data-display-drawn` stays false for the display’s whole life and every `waitForDisplaysDone` on the page burns its timeout | `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
-| `paintInert` | same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own | `linear-genome-view/BaseLinearDisplay` |
+| `paintInert` | same, for a fetch that failed before first paint — both fetch families fill it with `!!error`, so a display outside them owes its own | `display-kit` |
 | `gateEnabled` | no byte gate: the track downloads whatever it is pointed at, with no banner and no error | `alignments/LinearAlignmentsDisplay`, `arc/shared`, `canvas/shared`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/shared` |
 | `densityTooLarge` | byte-only gating, no feature-density axis | `canvas/shared` |
 | `densityGateEnabled` | no density axis — `canvas/shared` contributes the `true` beside the measurement that fills it, and a display painting into fixed lanes turns it back off | `canvas/LinearMultiRowFeatureDisplay`, `canvas/shared` |
@@ -638,7 +638,7 @@ is the tutorial version of this section (the `fetchNeeded` → `fetchEachRegion`
 wrapper, `rpcProps`, cancellation, byte gate).
 
 `MultiRegionDisplayMixin` (in
-`plugins/linear-genome-view/src/BaseLinearDisplay/`) drives RPC fetches for all
+`packages/display-kit/src/`) drives RPC fetches for all
 LGV displays (alignments, canvas, wiggle, variants). Its `afterAttach` is one
 call to `installPerRegionFetchAutoruns`, which installs these:
 
@@ -961,7 +961,7 @@ not part of the overridable hook surface). Canvas adds the density axis via
 `CanvasFeatureGateMixin` (`plugins/canvas/src/shared/`), which both canvas
 feature displays compose and which `no-restricted-syntax` requires after
 `MultiRegionDisplayMixin()`; the shared verdict/threshold/banner-text
-primitives live in `plugins/linear-genome-view/src/shared/regionTooLargeUtils.ts`.
+primitives live in `packages/display-kit/src/regionTooLargeUtils.ts`.
 
 Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
 shared decision primitives: [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).
@@ -1000,7 +1000,7 @@ a synchronous freeze, caught by `makeSettingsLoopGuard`'s within-tick counter;
 on the global family `installGlobalFetchAutorun` reads the key and fetches in one
 debounced body, so it loops on the async-fetch cadence instead, which no
 within-tick counter can tell apart from fast interaction. See
-`plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the overridable
+`packages/display-kit/CLAUDE.md` for the overridable
 hook list and test-file mapping.
 
 ### Row order is not a fetch input

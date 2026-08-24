@@ -1,4 +1,4 @@
-import { DisplayStatusChrome } from '@jbrowse/plugin-linear-genome-view'
+import { DisplayStatusChrome } from '@jbrowse/display-kit/DisplayChrome'
 import { observer } from 'mobx-react'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'

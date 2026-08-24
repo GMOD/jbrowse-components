@@ -1,7 +1,7 @@
 import { useMouseState } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { reducePrecision, toLocale } from '@jbrowse/core/util'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { observer } from 'mobx-react'
 
 import HicOverlayPanel from './HicOverlayPanel.tsx'

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,

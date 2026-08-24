@@ -15,12 +15,10 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import {
-  MIN_DISPLAY_HEIGHT,
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { coverageBandBuffers } from '@jbrowse/render-core/coverageBand'
 import {
@@ -116,8 +114,9 @@ import type {
 import type { RowRendering } from './rowRenderings.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type { Region, UriLocation } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSource } from '@jbrowse/tree-sidebar'
 
 /**
@@ -291,6 +290,9 @@ export default function stateModelFactory(
         treeNewickVolatile: undefined as string | undefined,
       }))
       .views(self => ({
+        get view() {
+          return getContainingView(self) as LinearGenomeViewModel
+        },
         /**
          * #getter
          */
@@ -613,7 +615,7 @@ export default function stateModelFactory(
               return region.refSampleId
             }
           }
-          return self.lgv.assemblyNames[0]
+          return self.view.assemblyNames[0]
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
@@ -1231,7 +1233,7 @@ export default function stateModelFactory(
          * bin under half a CSS pixel at every tier.
          */
         get encodeBinBp() {
-          const view = self.lgv
+          const view = self.view
           return view.initialized && view.coarseBpPerPx >= MIN_BINNED_BP_PER_PX
             ? 2 ** Math.floor(Math.log2(view.coarseBpPerPx / 2))
             : 1
@@ -1320,7 +1322,7 @@ export default function stateModelFactory(
         get coverageDomain() {
           return visibleStatsDomain({
             active: self.coverageBandActive,
-            view: self.lgv,
+            view: self.view,
             payloadFor: index => self.rpcDataMap.get(index)?.coverage,
             itemsFor: coverage => [coverage],
             accumulate: entries => computeVisibleCoverageStats(entries),
@@ -1660,7 +1662,7 @@ export default function stateModelFactory(
          * mid-zoom. False until the view is initialized.
          */
         get zoomedToBaseLevel() {
-          const view = self.lgv
+          const view = self.view
           return view.initialized && view.coarseBpPerPx <= 1
         },
       }))

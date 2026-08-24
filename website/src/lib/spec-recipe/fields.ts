@@ -29,7 +29,7 @@ import {
   DISPLAY_MODE_OPTIONS,
   SUBFEATURE_LABEL_OPTIONS,
 } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/displayModes.ts'
-import { getHeightModeOptions } from '../../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
+import { getHeightModeOptions } from '../../../../packages/display-kit/src/heightMode.ts'
 import {
   MULTI_WIGGLE_RENDERING_GROUPS,
   WIGGLE_RENDERINGS,

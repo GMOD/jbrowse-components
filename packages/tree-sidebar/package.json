@@ -35,6 +35,7 @@
     "@gmod/hclust": "5.0.0",
     "@gmod/newick": "^1.0.2",
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",

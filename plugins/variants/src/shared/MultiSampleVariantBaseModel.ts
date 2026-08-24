@@ -7,6 +7,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   getContainingTrack,
+  getContainingView,
   getNotificationSink,
   getSession,
   openFeatureWidget,
@@ -18,14 +19,13 @@ import {
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
-import {
-  LegendMixin,
-  MIN_DISPLAY_HEIGHT,
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import MultiRegionDisplayMixin, {
   fetchRegionsBatched,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
@@ -62,6 +62,7 @@ import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 import type {
@@ -291,7 +292,7 @@ function applyArrangement(
 // features would cram off-screen variants into the viewport and draw connector
 // lines to off-screen genomic positions — use the visible regions only.
 function fetchRegionsForMode(
-  view: LinearGenomeViewModel,
+  view: RegionHost,
   mode: 'regular' | 'matrix',
 ): { region: Region; displayedRegionIndex: number }[] {
   if (mode === 'matrix') {
@@ -453,6 +454,9 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .views(self => ({
+        get view() {
+          return getContainingView(self) as LinearGenomeViewModel
+        },
         /**
          * #method
          * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.

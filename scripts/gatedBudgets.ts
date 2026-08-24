@@ -211,7 +211,7 @@ export const DISPLAY_TIERS = [
   },
   {
     name: 'baseLinearDisplayConfigSchema',
-    file: 'plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts',
+    file: 'packages/display-kit/src/configSchema.ts',
     applies: 'every inheriting adapter under every other display',
   },
 ]

@@ -272,6 +272,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -463,6 +466,39 @@ importers:
       source-map-js:
         specifier: ^1.2.1
         version: 1.2.1
+
+  packages/display-kit:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../core
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../display-ui
+      '@jbrowse/mobx-state-tree':
+        specifier: ^6.5.0
+        version: 6.5.0(mobx@7.0.3)
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../render-core
+      '@mui/icons-material':
+        specifier: ^9.3.1
+        version: 9.3.1(@mui/material@9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react@19.2.18)(react@19.2.8)
+      '@mui/material':
+        specifier: ^9.3.1
+        version: 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      mobx:
+        specifier: ^7.0.3
+        version: 7.0.3
+      mobx-react:
+        specifier: ^10.0.2
+        version: 10.0.2(mobx@7.0.3)(react@19.2.8)
+      react:
+        specifier: '>=19.0.0'
+        version: 19.2.8
+      react-dom:
+        specifier: '>=19.0.0'
+        version: 19.2.8(react@19.2.8)
 
   packages/display-test-utils:
     dependencies:
@@ -664,6 +700,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../display-kit
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../display-ui
@@ -763,6 +802,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -808,6 +850,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -933,6 +978,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -972,6 +1020,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -1304,6 +1355,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/ld-core':
         specifier: workspace:^
         version: link:../../packages/ld-core
@@ -1356,6 +1410,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
@@ -1447,6 +1504,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -1493,6 +1553,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
@@ -1536,6 +1599,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -1639,6 +1705,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -1783,6 +1852,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/ld-core':
         specifier: workspace:^
         version: link:../../packages/ld-core
@@ -1841,6 +1913,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -2187,6 +2262,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)
@@ -2698,6 +2776,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.0
         version: 6.5.0(mobx@7.0.3)

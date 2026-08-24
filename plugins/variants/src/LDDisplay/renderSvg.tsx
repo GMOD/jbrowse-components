@@ -1,10 +1,8 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import LDColumnZone from './components/LDColumnZone.tsx'
@@ -13,10 +11,8 @@ import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 
 import type { SharedLDModel } from './shared.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 export async function renderSvg(
   self: SharedLDModel,

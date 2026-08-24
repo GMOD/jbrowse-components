@@ -4,8 +4,8 @@ import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
-import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
+import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
@@ -15,9 +15,9 @@ import { isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks } from './regionCommit.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { LoadedRegion, RegionFetchContext } from './regionCommit.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -78,7 +78,7 @@ export default function MultiRegionDisplayMixin() {
          * family — see `containingLgv` for the cast it owns and why both
          * foundations still declare the name.
          */
-        get lgv(): LinearGenomeViewModel {
+        get lgv(): RegionHost {
           return containingLgv(self)
         },
 
@@ -160,7 +160,7 @@ export default function MultiRegionDisplayMixin() {
          * (`searchFeatureByID`, `getFeatureById`) must override it, so callers can
          * tell "laid out, but off-display" from "no layout exists yet" — a
          * distinction only the display can make. See
-         * plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md §"Four
+         * packages/display-kit/CLAUDE.md §"Four
          * readiness axes".
          */
         get layoutReady(): boolean {

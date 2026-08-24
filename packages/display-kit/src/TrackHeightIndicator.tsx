@@ -1,9 +1,9 @@
 import { pluralize } from '@jbrowse/core/util'
 
-import { getHeightModeOptions } from '../models/heightMode.ts'
+import { getHeightModeOptions } from './heightMode.ts'
 import TrackControl from './trackControl/TrackControl.tsx'
 
-import type { HeightMode } from '../models/heightMode.ts'
+import type { HeightMode } from './heightMode.ts'
 
 // Persistent bottom-right track-sizing switcher (fixed / autogrow / fit),
 // shared by every display that exposes the `heightMode` slot so the fixed/grow/

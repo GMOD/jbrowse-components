@@ -1,4 +1,4 @@
-import { TrackControl } from '@jbrowse/plugin-linear-genome-view'
+import TrackControl from '@jbrowse/display-kit/TrackControl'
 import { observer } from 'mobx-react'
 
 import { GENE_GLYPH_MODE_OPTIONS } from '../geneGlyphMode.ts'

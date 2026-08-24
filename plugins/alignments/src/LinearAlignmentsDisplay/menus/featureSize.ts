@@ -3,15 +3,15 @@ import { lazy } from 'react'
 import { makePin } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
-import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
+import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
 
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
 
 import type { LinearAlignmentsDisplayConfigSchema } from '../configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),

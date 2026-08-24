@@ -36,8 +36,7 @@ import {
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
-const SOURCE =
-  'plugins/linear-genome-view/src/BaseLinearDisplay/models/installPerRegionFetchAutoruns.ts'
+const SOURCE = 'packages/display-kit/src/installPerRegionFetchAutoruns.ts'
 
 // The two installers `installPerRegionFetchAutoruns` builds on. Each names the
 // argument its autorun name comes from: an options object for the general one,

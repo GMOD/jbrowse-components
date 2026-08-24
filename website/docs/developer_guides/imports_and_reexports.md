@@ -135,12 +135,11 @@ kinds without distinguishing them:
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
+import MultiRegionDisplayMixin, {
   fetchEachRegion,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { types } from '@jbrowse/mobx-state-tree'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 ```

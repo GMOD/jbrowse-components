@@ -3,18 +3,18 @@ import {
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
+import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { stateModelFactory as linearGenomeViewStateModelFactory } from '../../LinearGenomeView/index.ts'
-import MultiRegionDisplayMixin from './MultiRegionDisplayMixin.ts'
-import TrackHeightMixin from './TrackHeightMixin.tsx'
-import baseLinearDisplayConfigSchema from './configSchema.ts'
-import { fetchEachRegion } from './fetchEachRegion.ts'
+import { stateModelFactory as linearGenomeViewStateModelFactory } from '../LinearGenomeView/index.ts'
 
-import type { IndexedRegion } from './planRegionFetch.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
+import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DISPLAY_NAME = 'PerRegionTestDisplay'

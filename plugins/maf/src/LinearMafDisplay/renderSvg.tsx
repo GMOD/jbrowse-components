@@ -9,10 +9,8 @@ import {
 } from '@jbrowse/core/ui'
 import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { getMafCoverageColors } from '../LinearMafRenderer/coverageBandColors.ts'
@@ -42,10 +40,8 @@ import {
 import { drawMafRowsCanvas2d } from './components/drawMafRowsCanvas2d.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 export async function renderSvg(
   model: LinearMafDisplayModel,

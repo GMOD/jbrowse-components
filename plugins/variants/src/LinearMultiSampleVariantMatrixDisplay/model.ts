@@ -14,8 +14,8 @@ import type {
   VariantMatrixRenderingBackend,
   VariantMatrixUploadData,
 } from './components/variantMatrixRenderingBackendTypes.ts'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearMultiSampleVariantMatrixDisplay
@@ -88,7 +88,7 @@ export default function stateModelFactory(
          * box they don't fill and the connector lines miss their columns.
          */
         get canvasWidth() {
-          return self.lgv.totalWidthPxWithoutBorders
+          return self.view.totalWidthPxWithoutBorders
         },
       }))
       .views(self => ({
@@ -150,7 +150,7 @@ export default function stateModelFactory(
          * here has to invert a mirror.
          */
         get connectorCoordsByColumn(): (ConnectorCoord | undefined)[] {
-          const view = self.lgv
+          const view = self.view
           const { assemblyManager } = getSession(self)
           const assembly = assemblyManager.get(view.assemblyNames[0]!)
           const features = self.featuresVolatile

@@ -16,7 +16,7 @@ function model(
 ): SampleNavigationModel {
   return {
     id: 'display1',
-    lgv: {
+    view: {
       bpPerPx: 1,
       pxToBp: px => ({
         index: 0,

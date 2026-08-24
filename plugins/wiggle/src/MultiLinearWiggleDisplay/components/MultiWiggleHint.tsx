@@ -1,4 +1,4 @@
-import { BlockMsg } from '@jbrowse/plugin-linear-genome-view'
+import BlockMsg from '@jbrowse/display-kit/BlockMsg'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 

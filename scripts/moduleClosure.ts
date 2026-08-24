@@ -134,10 +134,10 @@ export function closure(entry: string, includeTypes: boolean) {
 }
 
 export const ENTRIES = [
-  'plugins/linear-genome-view/src/BaseLinearDisplay/models/fetchEachRegion.ts',
-  'plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts',
-  'plugins/linear-genome-view/src/BaseLinearDisplay/models/installPerRegionFetchAutoruns.ts',
-  'plugins/linear-genome-view/src/BaseLinearDisplay/models/MultiRegionDisplayMixin.ts',
+  'packages/display-kit/src/fetchEachRegion.ts',
+  'packages/display-kit/src/FetchMixin.ts',
+  'packages/display-kit/src/installPerRegionFetchAutoruns.ts',
+  'packages/display-kit/src/MultiRegionDisplayMixin.ts',
   'packages/core/src/util/locString.ts',
   'packages/core/src/util/bpUtils.ts',
   'packages/core/src/util/assemblyConfigUtils.ts',

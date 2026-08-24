@@ -61,7 +61,7 @@ out. So a third-party display that never wrote one costs itself a place in
 figures rather than breaking the export for every track in the session. Every
 in-tree LGV display has one.
 
-`renderDisplaySvg` (`plugins/linear-genome-view/src/shared/renderDisplaySvg.tsx`)
+`renderDisplaySvg` (`packages/display-kit/src/renderDisplaySvg.tsx`)
 **is** the shape: it awaits readiness (failing the export if the display errored),
 resolves the view geometry once, and mounts the terminal-state chrome around the
 display's own body. A display writes the body and nothing else.
@@ -228,7 +228,7 @@ The two LGV foundations don't even call it directly: the *field mapping* onto
 `SvgReadyTerminals` was itself the last duplicated copy (both wrote the same four
 fields, so a fifth terminal would have had to be remembered twice), and it now
 lives in `foundationSvgReady(self)`
-(`BaseLinearDisplay/models/foundationSvgReady.ts`). The non-LGV displays name
+(`packages/display-kit/src/foundationSvgReady.ts`). The non-LGV displays name
 their terminals differently and keep their own call.
 
 - **`MultiRegionDisplayMixin`** (per-region streamed — canvas, alignments, MAF,
@@ -269,7 +269,7 @@ cannot reach it: the view clamps `offsetPx` to the region extent. Both freshness
 answers above are false there **permanently**: the per-region one by its
 `loadedRegions.size` term, the global one because `prepare` declines on an empty
 block list. That is a resting state, so it has to be terminal, and
-`viewportEmpty` (`BaseLinearDisplay/models/viewportEmpty.ts`, over the view's own
+`viewportEmpty` (`packages/display-kit/src/viewportEmpty.ts`, over the view's own
 `hasVisibleContent`) is the term that makes it one — in `foundationSvgReady`'s
 freshness thunk rather than as a fourth `SvgReadyTerminals` field, because it is
 a view read and the non-LGV callers have no view to answer it from. The same
@@ -287,8 +287,8 @@ content hung the whole view's export and sat under a scrim that never lifted.
 <!-- prettier-ignore -->
 | Model | Loaded signature | Live signature |
 | --- | --- | --- |
+| `packages/display-kit/src/GlobalFetchMixin.ts` | `self.loadedFetchSignature` | `self.fetchSignature` |
 | `packages/synteny-core/src/comparativeFetchFlags.ts` | `self.loadedFetchKey` | `self.currentFetchKey` |
-| `plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts` | `self.loadedFetchSignature` | `self.fetchSignature` |
 <!-- END GENERATED FRESHNESS_SIGNATURE_CENSUS -->
 
 ### The view-level wait: `awaitViewInitialized`

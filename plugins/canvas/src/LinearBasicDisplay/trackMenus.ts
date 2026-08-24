@@ -7,7 +7,7 @@ import {
   withHint,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
+import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
 
@@ -21,11 +21,9 @@ import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { Pin, ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
+import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type {
-  HeightModeMenuModel,
-  LegendItem,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // What the recovery rows (clear highlights, unpin, the filter family) carry so
 // they sort to the bottom of the track menu. Every menu level sorts by

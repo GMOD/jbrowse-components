@@ -1,7 +1,5 @@
-import {
-  installGlobalFetchAutorun,
-  onDisplayedRegionsChange,
-} from '@jbrowse/plugin-linear-genome-view'
+import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 import { arcFetchPhases } from './fetchArcFeatures.ts'
 

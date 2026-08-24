@@ -8,9 +8,9 @@ import { observer } from 'mobx-react'
 
 import { MINIMIZED_TRACK_HEIGHT } from '../consts.ts'
 
-import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 
 const useStyles = makeStyles()({
   // aligns with block boundaries. check for example the breakpoint split view

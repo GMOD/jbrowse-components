@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.0",
     "@jbrowse/render-core": "workspace:^",

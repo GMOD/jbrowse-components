@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import { ARC_DISPLAY_MODES } from './displayModes.ts'
 import { migrateLegacyArcRendererConfig } from './migrate.ts'

@@ -7,8 +7,8 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getSession, isFeature, openFeatureWidget } from '@jbrowse/core/util'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
-import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
@@ -19,8 +19,8 @@ import type {
 } from './configSchema.ts'
 import type { ArcDisplayMode } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /**

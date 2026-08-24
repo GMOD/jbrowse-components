@@ -11,8 +11,8 @@ import {
   resolveByteLimit,
 } from './regionTooLargeUtils.ts'
 
-import type { BaseLinearDisplayConfigModel } from '../BaseLinearDisplay/models/configSchema.ts'
-import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
+import type { BaseLinearDisplayConfigModel } from './configSchema.ts'
+import type { RegionHost } from './regionHost.ts'
 import type {
   ByteEstimate,
   GateEvent,
@@ -404,7 +404,7 @@ export default function RegionTooLargeMixin() {
        * changed on sub-base jitter would call every estimate stale.
        */
       get gateViewport(): GateViewport | undefined {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = getContainingView(self) as RegionHost
         return view.initialized
           ? {
               spanBp: view.visibleBp,

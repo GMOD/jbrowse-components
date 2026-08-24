@@ -1,9 +1,9 @@
 import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 
-import { createPerRegionTestEnvironment } from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
 
-import type { PerRegionTestDisplay } from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
+import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
 
 // Refusal is per region; the banner is per DISPLAY. The two scopes differ, and
 // the gap between them is what a reader coming off `fetchEachRegion.test.ts`

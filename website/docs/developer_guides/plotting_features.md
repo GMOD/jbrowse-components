@@ -183,12 +183,11 @@ action, and a `startRenderingBackend` action.
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
+import MultiRegionDisplayMixin, {
   fetchEachRegion,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { types } from '@jbrowse/mobx-state-tree'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 
@@ -443,7 +442,7 @@ and WebGL/WebGPU context-loss recovery. You give it your factory and render the
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
 
 ```tsx
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { observer } from 'mobx-react'
 
 import { ScoreRenderer } from './ScoreRendererFactory.ts'

@@ -1,10 +1,10 @@
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
 import { createStatusFanOut } from '@jbrowse/core/util/progress'
 
-import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
+import type { GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

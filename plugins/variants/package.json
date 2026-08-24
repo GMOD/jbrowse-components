@@ -34,6 +34,7 @@
     "@gmod/vcf": "^7.2.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/ld-core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.0",
     "@jbrowse/plugin-canvas": "workspace:^",

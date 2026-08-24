@@ -27,7 +27,7 @@ import { join } from 'node:path'
 // Packages whose `exports` map is hand-curated and richer than a single
 // barrel. Everything else in the monorepo exports only `.`, where the two maps
 // are too small to drift.
-const PACKAGES = ['packages/render-core']
+const PACKAGES = ['packages/display-kit', 'packages/render-core']
 
 interface PackageJson {
   exports?: Record<string, string>

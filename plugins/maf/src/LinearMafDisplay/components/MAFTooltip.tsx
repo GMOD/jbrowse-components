@@ -34,7 +34,7 @@ const MAFTooltip = observer(function ({
   const { coverageBandActive, coverageDisplayHeight } = model
   const clientPoint = { x: mouseState.clientX, y: mouseState.clientY }
   const mouseY = mouseState.y
-  const view = model.lgv
+  const view = model.view
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
   const { pos: p2, gposFrac, baseBp, rowIndex, inBands, onRow, hover } = hit
 

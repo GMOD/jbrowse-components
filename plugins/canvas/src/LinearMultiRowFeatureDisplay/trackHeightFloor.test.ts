@@ -1,4 +1,4 @@
-import { MIN_DISPLAY_HEIGHT } from '@jbrowse/plugin-linear-genome-view'
+import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 
 import { createTestEnvironment } from './testEnv.ts'
 

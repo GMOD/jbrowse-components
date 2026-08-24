@@ -15,9 +15,9 @@ import PaddingBlocks from './PaddingBlocks.tsx'
 import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
 
-import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 
 const useStyles = makeStyles()({
   // No `overflow`: paint containment already clips to the padding box, and an

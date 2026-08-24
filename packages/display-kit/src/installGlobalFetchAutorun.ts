@@ -7,8 +7,8 @@ import { untracked } from 'mobx'
 
 import { autorunOnReadyView } from './displayAutoruns.ts'
 
-import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
+import type { GateFetchState } from './regionTooLargeUtils.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { FetchPhases } from '@jbrowse/core/util/fetchPhases'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

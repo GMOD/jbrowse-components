@@ -1,7 +1,7 @@
 import { useId } from 'react'
 
 import { useMouseState } from '@jbrowse/core/ui'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 

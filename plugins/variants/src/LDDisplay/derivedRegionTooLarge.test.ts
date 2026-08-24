@@ -1,5 +1,5 @@
+import { runGlobalFetch } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { getMembers } from '@jbrowse/mobx-state-tree'
-import { runGlobalFetch } from '@jbrowse/plugin-linear-genome-view'
 
 import { ldFetchPhases } from './ldFetchPhases.ts'
 import { createTestEnvironment } from './testEnv.ts'

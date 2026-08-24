@@ -52,7 +52,7 @@ read one section, read [The cascade](#the-cascade).
 | Adopters: `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `showSashimiArcs` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` / `showLegend` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 | Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` + `showLdLegend` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
 | Adopters: `showLegend`, in six schemas | `plugins/{alignments/src/LinearAlignmentsDisplay,hic/src/LinearHicDisplay,canvas/src/LinearMultiRowFeatureDisplay,wiggle/src/MultiLinearWiggleDisplay}/configSchema.ts`, `plugins/variants/src/{shared/SharedVariantConfigSchema,LDDisplay/SharedLDConfigSchema}.ts`. `promotedBase` differs per display and is each one's old `defaultValue` (Hi-C and LD off, the rest on), because the legends are different objects. `LGVSyntenyDisplay` inherits the alignments slot and wires its own pin. The row itself is one builder — see [the `showLegend` note](#showlegend-is-one-row-across-nine-displays-and-one-of-them-has-no-slot) |
-| Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
+| Shared `heightMode` mixin (canvas + alignments) | `packages/display-kit/src/{HeightModeMixin.ts,heightMode.ts}` |
 
 Tests: `promotableDefaults.test.ts` (resolver + `makePin`),
 `promotedValueCloneable.test.ts` (node env: a resolved value must survive

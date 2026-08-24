@@ -6,7 +6,7 @@ import {
 
 import type { Sample } from '../types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { RegionFetchContext } from '@jbrowse/plugin-linear-genome-view'
+import type { RegionFetchContext } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 
 const mockRpcCall = jest.fn()
 

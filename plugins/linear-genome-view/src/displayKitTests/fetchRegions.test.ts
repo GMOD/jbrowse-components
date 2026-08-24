@@ -2,8 +2,8 @@ import { waitFor } from '@testing-library/react'
 
 import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
 
-import type { FetchContext } from './FetchMixin.ts'
 import type { PerRegionTestDisplay } from './perRegionTestEnv.ts'
+import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
 
 // `fetchRegions` carries one rule: a region is marked loaded by whoever stores
 // its payload, through `ctx.commitRegion`, and only while the fetch is still

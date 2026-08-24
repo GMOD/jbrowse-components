@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
-import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import {
   SvgClusterProvenanceCaption,
   SvgTreePath,
@@ -25,10 +25,10 @@ import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../shared/wiggleDisplayViews.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 import type {
-  ExportSvgDisplayOptions,
   LgvSvgBodyProps,
   LgvSvgExportable,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type {
   ClusterHierarchyNode,
   ClusterProvenance,

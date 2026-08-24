@@ -22,7 +22,7 @@ Three questions:
 The GPU lifecycle around all of it is
 [reference/GPU_RENDERING.md](../reference/GPU_RENDERING.md); the rotated-triangle
 forward/inverse pair is the shared
-`plugins/linear-genome-view/src/BaseLinearDisplay/models/triangleTransform.ts`
+`packages/display-kit/src/triangleTransform.ts`
 (the LD heatmap draws and hit-tests through the same pair, plus the connector
 zone its `yOffsetPx` carries).
 

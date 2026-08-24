@@ -5,9 +5,9 @@ sidebar_label: Mixin -> TrackHeightMixin
 ---
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-genome-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx).
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/TrackHeightMixin.tsx).
 
 #crossCuttingMixin Internal vertical scroll. `scrollableHeight` (default
 `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun

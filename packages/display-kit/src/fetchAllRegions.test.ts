@@ -23,9 +23,9 @@
  */
 import { fetchAllRegions } from './MultiRegionDisplayMixin.ts'
 
-import type { GateFetchState } from '../../shared/regionTooLargeUtils.ts'
 import type { FetchContext } from './FetchMixin.ts'
 import type { RegionFetchContext } from './regionCommit.ts'
+import type { GateFetchState } from './regionTooLargeUtils.ts'
 
 const NEEDED = [
   {

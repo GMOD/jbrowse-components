@@ -1,18 +1,16 @@
 import type { RenderLDDataArgs } from '../RenderLDDataRPC/RenderLDData.ts'
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type {
-  GlobalFetchPhases,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
 
 // `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
 // silently turns off checking for every member below. See the note on
 // `FetchSelf` in canvas's fetchMultiRowFeatures.ts.
 export interface LDFetchSelf extends IStateTreeNode {
   showLDTriangle: boolean
-  lgv: LinearGenomeViewModel
+  lgv: RegionHost
   adapterConfig: Record<string, unknown>
   // Derived from the RPC's own arg type rather than restated, so a field added
   // to the payload cannot arrive here under a different name.

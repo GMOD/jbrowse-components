@@ -31,7 +31,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
       openSubsequenceWidget(
         getSession(model),
         model,
-        model.lgv,
+        model.view,
         contextCoord.startX,
         contextCoord.endX,
         rows,

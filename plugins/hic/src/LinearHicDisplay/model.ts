@@ -4,18 +4,19 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { getContainingView } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  GlobalFetchMixin,
-  LegendMixin,
-  TrackHeightMixin,
+import GlobalFetchMixin, {
   blockKeySignature,
-  computeTriangleYScalar,
+} from '@jbrowse/display-kit/GlobalFetchMixin'
+import LegendMixin, {
   gradientSvgLegendWidth,
-  installGlobalFetchAutorun,
-  triangleScreenToData,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/LegendMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import { triangleScreenToData } from '@jbrowse/display-kit/triangleTransform'
+import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
+import { types } from '@jbrowse/mobx-state-tree'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
@@ -33,8 +34,9 @@ import type {
   HicRenderingBackend,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 /**
@@ -99,6 +101,9 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       availableResolutions: undefined as number[] | undefined,
     }))
     .views(self => ({
+      get view() {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
       /**
        * #getter
        */
@@ -294,7 +299,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         return computeTriangleYScalar({
           squashToHeight: self.squashToHeight,
           displayHeight: self.height,
-          triangleWidth: self.lgv.totalWidthPxWithoutBorders,
+          triangleWidth: self.view.totalWidthPxWithoutBorders,
         })
       },
       /**
@@ -311,7 +316,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * agree except when scrolled past an end.
        */
       get canvasWidth() {
-        return self.lgv.totalWidthPx
+        return self.view.totalWidthPx
       },
     }))
     .views(self => ({
@@ -379,7 +384,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * mismatch converges in one fetch.
        */
       get viewSignature(): string | undefined {
-        const view = self.lgv
+        const view = self.view
         const resolution = self.effectiveResolution
         return view.initialized && resolution !== undefined
           ? `${blockKeySignature(view.staticBlocks.contentBlocks)}|res:${resolution}`
@@ -719,7 +724,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           // the same tracked read.
           prepare: () => {
             const resolution = self.effectiveResolution
-            const blocks = self.lgv.staticBlocks.contentBlocks
+            const blocks = self.view.staticBlocks.contentBlocks
             if (resolution === undefined || !blocks.length) {
               return undefined
             }

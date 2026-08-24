@@ -4,10 +4,8 @@ import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes
 import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { Region } from '@jbrowse/core/util'
-import type {
-  FetchEachRegionModel,
-  GateFetchState,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { FetchEachRegionModel } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 
 interface FetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>

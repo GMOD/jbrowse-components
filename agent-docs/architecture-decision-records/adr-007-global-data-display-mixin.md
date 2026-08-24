@@ -24,7 +24,7 @@ signalling structural mismatch.
 ## Decision
 
 Extract the shared lifecycle into
-`plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalDataDisplayMixin.ts`.
+`packages/display-kit/src/GlobalDataDisplayMixin.ts`.
 
 The mixin provides:
 - `isLoading` view (token presence)

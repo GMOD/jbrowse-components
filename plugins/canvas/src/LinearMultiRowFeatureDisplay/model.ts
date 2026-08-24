@@ -8,6 +8,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { legendIsReadable } from '@jbrowse/core/ui'
 import {
   assembleLocString,
+  getContainingView,
   getSession,
   notifyFeatureDetailsMiss,
   openFeatureWidget,
@@ -18,13 +19,11 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  LegendMixin,
-  MIN_DISPLAY_HEIGHT,
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import {
   installPerRegionLifecycle,
@@ -86,8 +85,9 @@ import type {
 import type { MultiRowSource, RowGroup } from './sourcesLogic.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSortSpec } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
@@ -197,6 +197,12 @@ export default function stateModelFactory(
       // #endregion
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get view() {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
       /**
        * #getter
        * Fills `BaseDisplay`'s cross-display hover hook, which the view reads to
@@ -855,7 +861,7 @@ export default function stateModelFactory(
         if (!self.sources[targetRow]) {
           return undefined
         }
-        const view = self.lgv
+        const view = self.view
         const p = view.pxToBp(mouseX)
         if (p.oob) {
           return undefined
@@ -913,7 +919,7 @@ export default function stateModelFactory(
         if (mouseX < treeSidebarRightEdge(self)) {
           return undefined
         }
-        const p = self.lgv.pxToBp(mouseX)
+        const p = self.view.pxToBp(mouseX)
         if (p.oob) {
           return undefined
         }

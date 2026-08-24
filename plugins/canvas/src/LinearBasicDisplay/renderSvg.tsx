@@ -3,10 +3,8 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { SvgColorLegend } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import {
@@ -26,11 +24,9 @@ import { resolveMapColors } from './components/resolveRegionColors.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
-import type {
-  ExportSvgDisplayOptions,
-  LegendItem,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export interface RenderSvgModel extends SvgExportable {
   id: string

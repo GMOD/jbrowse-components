@@ -1,6 +1,7 @@
 import { trackMatches, trackName } from './trackFields.ts'
 
 import type { AssertNever, AssertTrue, Covers, Track } from './types.ts'
+import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   COMPACTNESS_PRESETS,
@@ -12,10 +13,7 @@ import type {
   LinearBasicDisplayModel,
 } from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
-import type {
-  HeightMode,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 import type { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 

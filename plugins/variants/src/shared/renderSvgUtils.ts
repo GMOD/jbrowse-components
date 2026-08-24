@@ -1,10 +1,8 @@
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SampleRowLabelsModel } from './components/types.ts'
 import type { VariantTopBands } from './variantTopBands.ts'
-import type {
-  LegendSection,
-  LgvSvgExportable,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
 
 // Extends SampleRowLabelsModel because the export paints its sidebar row colors with

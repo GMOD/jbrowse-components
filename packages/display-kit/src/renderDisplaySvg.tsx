@@ -3,8 +3,8 @@ import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
-import type { ExportSvgDisplayOptions } from '../BaseLinearDisplay/types.ts'
-import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
+import type { RegionHost } from './regionHost.ts'
+import type { ExportSvgDisplayOptions } from './types.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type React from 'react'
@@ -24,7 +24,7 @@ export interface LgvSvgExportable extends SvgExportable {
  */
 export interface LgvSvgBodyProps<M> {
   model: M
-  view: LinearGenomeViewModel
+  view: RegionHost
   height: number
   /**
    * The width the export paints at — `view.width`, deliberately NOT the
@@ -79,7 +79,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   Body: React.ComponentType<LgvSvgBodyProps<M>>,
 ): Promise<React.ReactNode> {
   await awaitSvgReady(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = getContainingView(model) as RegionHost
   const height = model.height
   return (
     <SvgChrome

@@ -5,9 +5,9 @@ sidebar_label: Mixin -> GlobalFetchMixin
 ---
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`linear-genome-view` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/GlobalFetchMixin.ts).
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/GlobalFetchMixin.ts).
 
 **The** foundation for a display holding a single global (non-regional) dataset
 — HiC's contact matrix, the LD triangle, both arc displays. One foundation
@@ -64,7 +64,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="getter-lgv">**lgv**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;_OverrideProps&lt;_OverrideProps&lt;…&gt;, { ...; }&gt;&gt; &amp; ... 24 more ... &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> | The containing LinearGenomeView — see `containingLgv` for the cast it owns, why the name is `lgv` and not `view`, and why both foundations still declare the name over one body. | GlobalFetchMixin |
+| <span id="getter-lgv">**lgv**</span><br><code>RegionHost</code> | The containing LinearGenomeView — see `containingLgv` for the cast it owns, why the name is `lgv` and not `view`, and why both foundations still declare the name over one body. | GlobalFetchMixin |
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | Overridable hook, the one freshness input a global display supplies: the signature of what the current *view* calls for — its block set (`blockKeySignature`) plus any view-derived fetch tier, like HiC's binsize. `undefined` means "not computable yet" (view unmeasured, a prerequisite header still in flight) and holds the fetch off.<br><br>Settings are deliberately not the display's half: `fetchSignature` below appends `rpcPropsCacheKey`, so a field added to `rpcProps()` invalidates held data structurally. HiC hand-folded one settings term in and would have silently missed the second.<br><br>Default `undefined`, so a display that forgets the override never fetches and never exports — hung is diagnosable, stale ships wrong pixels. | GlobalFetchMixin |
 | <span id="getter-viewportempty">**viewportEmpty**</span><br><code>boolean</code> | No content block is on screen, so this display has nothing to fetch and nothing to paint — see `viewportEmpty.ts` for the one viewport that reaches it, how narrow that is, and why the state still has to be terminal rather than a permanent scrim. Both foundations declare it over that one expression, the same way they each declare `lgv` and `paintInert`. | GlobalFetchMixin |
 | <span id="getter-canrender">**canRender**</span><br><code>boolean</code> | Overrides `RenderLifecycleMixin`'s default-true hook with the LGV precondition both foundations share — see `foundationCanRender`. | GlobalFetchMixin |

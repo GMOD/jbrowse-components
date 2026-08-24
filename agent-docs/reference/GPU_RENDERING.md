@@ -173,7 +173,7 @@ through the fetch cycle (hiding once the first frame paints);
 `viewportWithinLoadedData` re-shows the overlay when the viewport extends past
 loaded data — e.g. the pre-refetch debounce after a zoom-out, where the first two
 are already satisfied but stale data is still on screen (separate getter for
-tracking reasons — see BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend`
+tracking reasons — see packages/display-kit/CLAUDE.md). `stopRenderingBackend`
 resets `canvasDrawn` so the overlay recovers after WebGL context loss.
 
 That `rendersCanvas && !canvasDrawn` clause covers the window between component

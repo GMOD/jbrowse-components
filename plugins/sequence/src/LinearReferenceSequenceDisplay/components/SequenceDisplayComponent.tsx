@@ -1,7 +1,7 @@
 import { useMouseState } from '@jbrowse/core/ui'
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { toLocale } from '@jbrowse/core/util'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 

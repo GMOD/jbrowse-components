@@ -6,7 +6,7 @@ import type {
 } from '../manhattanRenderingBackendTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
@@ -21,7 +21,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   // read by DisplayChrome, which publishes it as `data-display-id` — the stable
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
-  lgv: LinearGenomeViewModel
+  lgv: RegionHost
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>

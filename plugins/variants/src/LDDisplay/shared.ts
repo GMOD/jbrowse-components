@@ -4,22 +4,28 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getNotificationSink, getSession } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getNotificationSink,
+  getSession,
+} from '@jbrowse/core/util'
 import {
   activeJexlFilters,
   configuredJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
-import { cast, types } from '@jbrowse/mobx-state-tree'
-import {
-  GlobalFetchMixin,
-  LegendMixin,
-  TrackHeightMixin,
+import GlobalFetchMixin, {
   blockKeySignature,
-  computeTriangleYScalar,
+} from '@jbrowse/display-kit/GlobalFetchMixin'
+import LegendMixin, {
   gradientSvgLegendWidth,
+} from '@jbrowse/display-kit/LegendMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import {
   triangleDataToScreen,
   triangleScreenToData,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/triangleTransform'
+import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 import { installGlobalLifecycle } from '@jbrowse/render-core/installGlobalLifecycle'
 
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
@@ -42,8 +48,9 @@ import type {
   LDRenderState,
   LDRenderingBackend,
 } from './components/ldRenderingBackendTypes.ts'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
 
 function upperBoundFloat32(arr: Float32Array, val: number) {
@@ -157,6 +164,9 @@ export default function sharedModelFactory(
       },
     }))
     .views(self => ({
+      get view() {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
       /**
        * #getter
        */
@@ -435,7 +445,7 @@ export default function sharedModelFactory(
        * the drawn width even when the genome doesn't fill the viewport.
        */
       get canvasWidth() {
-        return self.lgv.totalWidthPxWithoutBorders
+        return self.view.totalWidthPxWithoutBorders
       },
       /**
        * #getter
@@ -526,7 +536,7 @@ export default function sharedModelFactory(
       // already in screen order (`RenderLDDataRPC/reversedRegions.ts`), so the
       // index axis and the genomic x agree.
       get connectorLineCoords(): ConnectorCoord[] {
-        const view = self.lgv
+        const view = self.view
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(view.assemblyNames[0]!)
         return assembly
@@ -575,7 +585,7 @@ export default function sharedModelFactory(
        * to 0.
        */
       locusViewportX(refName: string, coord: number): number | undefined {
-        const view = self.lgv
+        const view = self.view
         const assembly = getSession(self).assemblyManager.get(
           view.assemblyNames[0]!,
         )

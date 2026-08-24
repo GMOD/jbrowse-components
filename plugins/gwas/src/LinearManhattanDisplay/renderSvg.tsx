@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import {
   WiggleFamilySvgFrame,
   svgLegendRightPx,
@@ -15,10 +15,8 @@ import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 import SvgLdLegend from './components/SvgLdLegend.tsx'
 
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { WiggleFamilySvgModel } from '@jbrowse/plugin-wiggle'
 import type React from 'react'
 

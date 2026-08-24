@@ -41,10 +41,7 @@ import esbuild from 'esbuild'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(here, '..')
-const chromeDir = path.join(
-  root,
-  'plugins/linear-genome-view/src/BaseLinearDisplay/components',
-)
+const chromeDir = path.join(root, 'packages/display-kit/src')
 const outFile = path.join(here, 'chromeBundleSizes.json')
 
 // The host app already ships these; counting them would flatter both numbers

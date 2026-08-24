@@ -13,13 +13,11 @@ import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  BottomRightIndicators,
-  DisplayChrome,
-  FloatingLegend,
-  TrackHeightIndicator,
-} from '@jbrowse/plugin-linear-genome-view'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'

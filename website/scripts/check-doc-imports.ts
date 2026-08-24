@@ -548,7 +548,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // story kept it in the symbol set until `codeOf` stopped collecting from
   // comments.
   'featureUnderMouse',
-  // ARCHITECTURE.md §"Display stacks", BaseLinearDisplay/CLAUDE.md and adr-007:
+  // ARCHITECTURE.md §"Display stacks", packages/display-kit/CLAUDE.md and adr-007:
   // the second global foundation, named to say it is gone and why the argument
   // for splitting the family in two did not survive. `GlobalFetchMixin` is the
   // whole family now, so the name must stay unwritten.

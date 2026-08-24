@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { renderDisplaySvg } from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { ScoreRuleLines } from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
@@ -12,10 +12,8 @@ import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import WiggleSvgScale from './WiggleSvgScale.tsx'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type React from 'react'
 
 export async function renderSvg(

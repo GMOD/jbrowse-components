@@ -4,12 +4,10 @@ import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import TrackHeightIndicator from '@jbrowse/display-kit/TrackHeightIndicator'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  BottomRightIndicators,
-  DisplayChrome,
-  TrackHeightIndicator,
-} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'

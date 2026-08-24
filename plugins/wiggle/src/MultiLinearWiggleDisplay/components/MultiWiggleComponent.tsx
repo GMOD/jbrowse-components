@@ -3,10 +3,8 @@ import { useCallback } from 'react'
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
-import {
-  DisplayChrome,
-  FloatingLegend,
-} from '@jbrowse/plugin-linear-genome-view'
+import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
   TreeSidebar,

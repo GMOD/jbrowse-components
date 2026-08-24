@@ -3,7 +3,7 @@ import { showLegendCheckboxItem, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
 import { jexlFilterNarrowing } from '@jbrowse/core/util/jexlFilters'
-import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
+import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 
 // lazy: this builder is reached from a state model, so a dialog named here is

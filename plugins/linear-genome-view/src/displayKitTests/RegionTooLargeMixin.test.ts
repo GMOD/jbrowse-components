@@ -1,16 +1,14 @@
-import { createPerRegionTestEnvironment } from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
 import {
   AUTO_FORCE_LOAD_BP,
   SUB_FLOOR_BYTE_BUDGET_FACTOR,
-} from './regionTooLargeUtils.ts'
+} from '@jbrowse/display-kit/regionTooLargeUtils'
 
-import type {
-  GateOptIns,
-  PerRegionTestDisplay,
-} from '../BaseLinearDisplay/models/perRegionTestEnv.ts'
+import { createPerRegionTestEnvironment } from './perRegionTestEnv.ts'
+
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
-import type { RegionTooLargeHost } from './RegionTooLargeMixin.ts'
+import type { GateOptIns, PerRegionTestDisplay } from './perRegionTestEnv.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
+import type { RegionTooLargeHost } from '@jbrowse/display-kit/RegionTooLargeMixin'
 
 // The mixin's own tests. `regionTooLargeUtils.test.ts` covers the comparison
 // half — which axis is over budget, given numbers. This covers the half that

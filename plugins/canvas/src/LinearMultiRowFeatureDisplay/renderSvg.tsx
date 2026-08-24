@@ -2,10 +2,8 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
@@ -21,10 +19,8 @@ import type {
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LegendItem } from '@jbrowse/core/ui'
-import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type {
   ClusterProvenance,
   ClusterHierarchyNode,

@@ -1,5 +1,5 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-import { triangleDataToScreen } from '@jbrowse/plugin-linear-genome-view'
+import { triangleDataToScreen } from '@jbrowse/display-kit/triangleTransform'
 
 import { packTestInstances } from '../../testInstances.ts'
 import { drawHicBlocks } from './Canvas2DHicRenderer.ts'

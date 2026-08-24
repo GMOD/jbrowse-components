@@ -2,15 +2,15 @@ import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
-import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
+import RegionTooLargeMixin from './RegionTooLargeMixin.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 import { containingLgv, foundationCanRender } from './foundationView.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 /**
@@ -79,7 +79,7 @@ export default function GlobalFetchMixin() {
        * owns, why the name is `lgv` and not `view`, and why both foundations
        * still declare the name over one body.
        */
-      get lgv(): LinearGenomeViewModel {
+      get lgv(): RegionHost {
         return containingLgv(self)
       },
       /**

@@ -1,7 +1,7 @@
 import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { reaction } from 'mobx'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IReactionDisposer } from 'mobx'
 
@@ -72,7 +72,7 @@ export function installClearHoverOnViewportChange(
 ): IReactionDisposer {
   return reaction(
     () => {
-      const view = getContainingView(self) as LinearGenomeViewModel
+      const view = getContainingView(self) as RegionHost
       return `${view.bpPerPx}-${view.offsetPx}-${self.scrollTop ?? 0}-${self.regionTooLarge}`
     },
     () => {

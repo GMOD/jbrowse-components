@@ -7,6 +7,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   addAndShowTrack,
   getContainingTrack,
+  getContainingView,
   getPaletteHost,
   getSession,
   isSessionWithAddSessionTrack,
@@ -15,12 +16,11 @@ import {
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
-import { types } from '@jbrowse/mobx-state-tree'
-import {
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
+import MultiRegionDisplayMixin, {
   fetchEachRegion,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   installPerRegionLifecycle,
   regionDataMap,
@@ -42,8 +42,9 @@ import type {
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ZOOMED_OUT_BP_PER_PX = 10
 const ROW_HEIGHT_PX = 15
@@ -116,6 +117,14 @@ export function modelFactory(
       /**
        * #getter
        */
+      get view() {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
       get showForward(): boolean {
         return getConf(self, 'showForward')
       },
@@ -146,7 +155,7 @@ export function modelFactory(
       get colorPalette(): ColorPalette {
         return buildColorPalette(
           getPaletteHost(self).palette,
-          self.lgv.colorByCDS,
+          self.view.colorByCDS,
         )
       },
     }))
@@ -353,7 +362,7 @@ export function modelFactory(
                 sequenceAdapter: getConf(track, 'adapter'),
               },
             },
-            self.lgv,
+            self.view,
           )
         }
       },
@@ -433,7 +442,7 @@ export function modelFactory(
         // nothing painted, nothing under the cursor — and this is also what
         // makes the `rowHeight` division below safe, since `rendersCanvas`
         // false is exactly the zoomed-out and zero-row cases
-        const bp = self.rendersCanvas ? self.lgv.pxToBp(offsetX) : undefined
+        const bp = self.rendersCanvas ? self.view.pxToBp(offsetX) : undefined
         if (bp && !bp.oob) {
           // basePaintedAt, not bp.coord0: this indexes the fetched sequence, so
           // it has to name the base drawn under the cursor. Reversed, coord0

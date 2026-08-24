@@ -2,7 +2,7 @@ import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
-import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
+import type { RegionHost } from './regionHost.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // This ESM package builds without @types/node, but consuming bundlers
@@ -27,11 +27,11 @@ declare const process: { env: { NODE_ENV?: string } }
  */
 export function autorunOnReadyView(
   self: IAnyStateTreeNode,
-  fn: (view: LinearGenomeViewModel) => boolean | void,
+  fn: (view: RegionHost) => boolean | void,
   { name, delay }: { name: string; delay?: number },
 ) {
   const body = () => {
-    const view = getContainingView(self) as LinearGenomeViewModel
+    const view = getContainingView(self) as RegionHost
     return view.initialized ? fn(view) : false
   }
   if (delay === undefined) {

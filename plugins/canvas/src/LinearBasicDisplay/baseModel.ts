@@ -28,16 +28,16 @@ import {
 } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
-import {
-  HeightModeMixin,
-  LegendMixin,
-  MultiRegionDisplayMixin,
-  TrackHeightMixin,
-  autorunOnReadyView,
+import HeightModeMixin, {
   installGrowExitBake,
+} from '@jbrowse/display-kit/HeightModeMixin'
+import LegendMixin from '@jbrowse/display-kit/LegendMixin'
+import MultiRegionDisplayMixin, {
+  autorunOnReadyView,
   onDisplayedRegionsChange,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   installPerRegionLifecycle,
   regionDataMap,
@@ -124,9 +124,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
-  ExportSvgDisplayOptions,
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'

@@ -2,24 +2,24 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawSequenceBlocks } from './components/drawSequence.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
 
 import type { DrawSequenceState } from './components/drawSequence.ts'
 import type { SequenceRegionData } from './model.ts'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type {
-  ExportSvgDisplayOptions,
-  LgvSvgBodyProps,
+  LinearGenomeViewModel,
   SvgExportable,
 } from '@jbrowse/plugin-linear-genome-view'
 
 interface SequenceDisplayModel extends SvgExportable {
   id: string
+  view: LinearGenomeViewModel
   height: number
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderState: DrawSequenceState
@@ -38,7 +38,6 @@ export async function renderSvg(
 
 function SequenceSvgBody({
   model,
-  view,
   height,
   canvasWidth,
   renderBlocks,
@@ -60,7 +59,7 @@ function SequenceSvgBody({
     canvasWidth,
     palette: buildColorPalette(
       resolvePalette({ configTheme: opts?.theme }),
-      view.colorByCDS,
+      model.view.colorByCDS,
     ),
   }
 
