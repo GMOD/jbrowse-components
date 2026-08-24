@@ -1,0 +1,256 @@
+---
+title: AlphaGenome predictions
+description:
+  Predict expression, accessibility, splicing and 3D contacts over a locus, then
+  score a variant against the reference
+guide_category: Tutorials
+tutorial_category: Epigenomics & single cell
+data: hosted
+---
+
+**TL;DR:** AlphaGenome reads a megabase of DNA and says what it does: where it
+is transcribed, where the chromatin is open, how it splices, and how it folds.
+This page asks it about _TAL1_ in two cell lines, stacks the answers that share
+units on one axis, and then scores an oncogenic insertion against the reference
+to see the enhancer it creates.
+
+:::caution Experimental
+
+The AlphaGenome plugin is beta, and every track on this page is a model's answer
+rather than a measurement. We welcome your [feedback](/contact).
+
+:::
+
+## Prerequisites
+
+- [the AlphaGenome plugin](#the-alphagenome-plugin), which contributes the
+  adapters these tracks use, the query panel, and the variant right-click item
+- nothing installed locally, and no AlphaGenome API key: the two predictions
+  this page reads were recorded once and stored, so following it spends no quota
+
+## Where the data comes from
+
+Two predictions over the _TAL1_ locus, made once against
+[AlphaGenome](https://www.alphagenomedocs.com/) and frozen under stable tokens,
+plus the hg38 annotation they are read against. The locus and the variant follow
+the AlphaGenome team's
+[worked example](https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html).
+
+- the reference prediction over chr1:46,700,048..47,748,623, all eleven output
+  types, K562 and GM12878, as the manifest a browser reads it through:
+  https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval
+- the variant prediction, the same window scored twice for the Jurkat MuTE
+  insertion:
+  https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant
+- the oncogenic _TAL1_ variants as a variant track, the insertion among them:
+  https://jbrowse.org/demos/alphagenome_test.bed
+- hg38's NCBI RefSeq annotation:
+  https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz
+- the hg38 sequence:
+  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
+
+## A model instead of an experiment
+
+Every other track in these docs is a picture of something that was measured.
+AlphaGenome's are not: the model is given a window of reference sequence and
+returns what an RNA-seq, DNase, ATAC, CAGE, PRO-cap or ChIP-seq experiment in a
+named cell type would have produced over it, plus splice junctions and a contact
+map. One request can carry all of them, and the answer is per biosample, so
+asking about K562 and GM12878 in the same call gives two cell types to read
+against each other.
+
+That is what makes the second half of the page possible. The model takes
+sequence, so it will answer for sequence that does not exist: change one base,
+ask again, and the difference between the two answers is the variant's predicted
+effect.
+
+The window here is a megabase centered on _TAL1_ on chr1, a transcription factor
+whose misexpression drives T-cell acute lymphoblastic leukemia. It is on in
+K562, an erythroleukemia line, and off in GM12878, a lymphoblastoid line, which
+gives every figure below a control in the same frame.
+
+## The AlphaGenome plugin
+
+It is beta and not in the [plugin store](/docs/user_guides/plugin_store) yet, so
+it loads by URL. In JBrowse Web that is a `plugins` array at the top level of
+`config.json`, beside `assemblies` and `tracks` (see
+[configuring plugins](/docs/config_guides/plugins)):
+
+```json
+{
+  "plugins": [
+    {
+      "name": "AlphaGenome",
+      "umdUrl": "https://jbrowse.org/demos/alphagenome-plugin/jbrowse-plugin-alphagenome.umd.js"
+    }
+  ]
+}
+```
+
+On [JBrowse Desktop](/docs/quickstart_desktop), install it once from the start
+screen at **Global plugins... → Add custom plugin**, with that URL as the plugin
+URL and the name `AlphaGenome`.
+
+The plugin holds no API key. It talks to a small service that runs the
+prediction, stores the arrays it gets back, and hands the browser a manifest of
+byte ranges. The public instance is the default; `setApiRoot` points it at your
+own.
+
+## Ask for a prediction
+
+Open the session below and the locus is already in view, with RefSeq genes and
+the oncogenic _TAL1_ variants above it and no predictions yet.
+
+```json session config=https://jbrowse.org/demos/alphagenome/config.json
+{
+  "defaultSession": {
+    "name": "TAL1",
+    "views": [
+      {
+        "id": "alphagenome_lgv",
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg38",
+          "loc": "chr1:47,195,000..47,265,000",
+          "tracks": ["genes", "tal1_variants"]
+        }
+      }
+    ]
+  }
+}
+```
+
+**View menu → AlphaGenome predictions…** opens the query panel. Four things go
+into a request:
+
+- **what to predict.** Eleven output types, and asking for all of them is one
+  call rather than eleven, so there is little reason to be sparing. The presets
+  pick the usual groups.
+- **which cell types and tissues.** The box searches the catalog of about 5,900
+  predictable tracks by biosample, and marks a biosample that has none of the
+  output types asked for. K562 and GM12878 are the two this page uses.
+- **how wide a window.** 16 kb, 100 kb, 500 kb or 1 Mb, centered on what the
+  view is showing. The panel prints the interval it will actually ask about, so
+  the window is visible before anything is spent.
+- **a variant, or none.** Left empty, the locus is predicted as it is. That is
+  the first half of this page.
+
+A wide request over many output types takes minutes, well past what an API
+gateway holds a connection open for, so the request is registered and the
+browser polls for it. Identical requests are keyed by content: asking again for
+what this page already asked for costs nothing and returns at once, which is why
+the prediction behind the figures below is instant.
+
+## Two cell lines on one axis
+
+A finished prediction is a list of tracks, often thousands of them, and none of
+them cost anything to add: the arrays are already stored, and a track is an HTTP
+range request into one. Filter the list to `polyA plus`, tick K562 and GM12878,
+and **Add selected** puts both in a single multi-wiggle track.
+
+The stacking is the point. Predicted RNA-seq in two cell types is a comparison
+only if the two rows share a y-axis, and four separately-scaled rows are four
+unrelated pictures. Everything measured in the same units goes onto one axis:
+several biosamples of one assay always, and DNase beside ATAC, splice sites
+beside splice site usage, CAGE beside PRO-cap, histone ChIP beside TF ChIP.
+Anything else keeps its own. Untick **Stack on a shared scale** to get one track
+per pick instead.
+
+On that shared axis, _TAL1_ carries predicted transcription in K562 and
+essentially none in GM12878, and the RefSeq track above says the signal sits on
+the annotated exons. The lane below _TAL1_ is `STIL`, which the model predicts
+in both lines.
+
+## Where the chromatin is open
+
+Add the DNase and ATAC tracks for both biosamples the same way. All four land in
+one track, because accessibility is one scale: this is the case the shared axis
+was built for, since a DNase peak that is real in K562 should also be an ATAC
+peak in K562 and neither should be conspicuous in GM12878.
+
+Reading it against the expression track above, the open regions cluster over the
+_TAL1_ promoter and over the region upstream of it. The GM12878 rows are not
+empty, which is the honest shape of the prediction: chromatin is open at plenty
+of places that are not being transcribed.
+
+## Splicing and folding
+
+The other two output types are not quantitative rows and never join a stacked
+track.
+
+**Splice junctions** come back as arcs, which is a sashimi plot. AlphaGenome
+returns tens of thousands of them for a megabase, so the adapter ships them
+whole and thresholds them in the browser. Add the K562 polyA junctions and the
+arcs land on the same exon boundaries the RefSeq track draws, colored by the
+strand they were called on.
+
+**Contact maps** come back as a triangle, at 2 kb bins and only for about a
+dozen cell lines, so they want a wide window and a biosample that has one. The
+GM12878 map is the one this prediction carries. Predicted maps are much less
+skewed than sequenced ones, so the display saturates at the 95th percentile
+rather than at a fraction of the maximum; the default ramp washes the whole
+triangle out.
+
+## Scoring a variant
+
+The expression track raised a question the reference prediction cannot answer.
+_TAL1_ is off in GM12878 and on in K562, and in T-ALL patients it is switched on
+in a lineage where it should be silent. One of the ways that happens is a small
+insertion upstream of the gene that creates a binding site, and one of those is
+in the variant track already on screen.
+
+Right-click it and the menu offers to send it to AlphaGenome, naming the variant
+it would send. The panel picks it up as the variant to score, and the button
+changes to say so. Run it, and the same window comes back twice: once for the
+reference sequence and once with the insertion in place.
+
+Two things are worth knowing before running one of these yourself:
+
+- **the variant has to be inside the window.** The panel says when it is not,
+  and offers to navigate there.
+- **splice junctions go sparse in variant mode.** AlphaGenome reports only
+  junctions the variant could plausibly affect, which for a variant nowhere near
+  a splice site is none at all. Clear the variant to get the whole locus back.
+
+## Reading the difference
+
+Adding a track from a variant prediction gives two tracks rather than one: the
+reference and alternate curves side by side, and their difference on its own
+row.
+
+The pair is there to be looked at first, and at this scale the two curves sit
+almost exactly on top of each other. That is the reason the difference gets its
+own row. On the difference track, positive is where the insertion raises
+predicted expression and negative is where it lowers it, and the row is flat
+almost everywhere: one insertion changes one thing. What it changes is _TAL1_,
+which reads positive across the gene body.
+
+The flatness is the check. A difference track that lit up across the whole
+megabase would be a prediction responding to the request rather than to the
+variant, and there would be no way to tell which part of it was the insertion.
+
+## What a prediction is, as configuration
+
+The tracks the panel adds are session tracks, and they are not portable the way
+the rest of these docs' configs are. Their adapters address a stored array by
+byte range through a presigned URL that expires within the hour, so a track
+config copied out of one session does not load in the next one. Re-open the
+panel instead: the prediction itself is still stored, the request is keyed by
+content, and rebuilding the same query lands back on the same arrays for free.
+
+## See also
+
+- [](/docs/tutorials/rnaseq)
+- [](/docs/tutorials/chromhmm)
+- [](/docs/tutorials/hic_structural_variants)
+- [](/docs/config_guides/plugins)
+
+## References
+
+Avsec Ž, et al. AlphaGenome: advancing regulatory variant effect prediction with
+a unified DNA sequence model. bioRxiv (2025).
+https://doi.org/10.1101/2025.06.25.661532
+
+Mansour MR, et al. An oncogenic super-enhancer formed through somatic mutation
+of a noncoding intergenic element. Science 346:1373-1377 (2014).
+https://doi.org/10.1126/science.1259037

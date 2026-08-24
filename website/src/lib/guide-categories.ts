@@ -193,7 +193,13 @@ export const TUTORIAL_ORDER = [
 // the generator only checked that its own specs still had pages. A new tutorial
 // with no spec therefore linked a webp nobody had generated, and the first thing
 // to notice was the website link checker.
-export const TUTORIAL_NO_THUMB = new Set(['cli_desktop', 'embedding_examples'])
+export const TUTORIAL_NO_THUMB = new Set([
+  'cli_desktop',
+  'embedding_examples',
+  // No figure yet: the AlphaGenome figures need a capture pass against a
+  // jbrowse-web build with the plugin loaded.
+  'alphagenome',
+])
 
 // Curated lead pages within a `guide_category`, by slug — the same idea as
 // TUTORIAL_ORDER above, for the same reason. A category sorted purely

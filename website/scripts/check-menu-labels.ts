@@ -66,6 +66,7 @@ const LIBRARY_SRC = (name: string, ...rest: string[]) =>
 // to — so this maps a page to every checkout its labels live in, and a page is
 // checked against the union.
 const EXTERNAL_PLUGIN_PAGES = new Map([
+  ['tutorials/alphagenome.md', [PLUGIN_SRC('alphagenome')]],
   ['user_guides/graph_genome_view.md', [PLUGIN_SRC('graphgenomeview')]],
   ['tutorials/pangenome_ecoli.md', [PLUGIN_SRC('graphgenomeview')]],
   ['tutorials/pangenome_hprc.md', [PLUGIN_SRC('graphgenomeview')]],

@@ -111,6 +111,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/bisulfite)
 - [](/docs/tutorials/chromhmm)
 - [](/docs/tutorials/scatac_pseudobulk)
+- [](/docs/tutorials/alphagenome)
 - [](/docs/tutorials/scrna_pseudobulk)
 
 ### Transcriptomics & proteins

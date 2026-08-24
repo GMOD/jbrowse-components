@@ -1,0 +1,73 @@
+{
+  "plugins": [
+    {
+      "name": "AlphaGenome",
+      "umdUrl": "https://jbrowse.org/demos/alphagenome-plugin/c70db17cdfe4/jbrowse-plugin-alphagenome.umd.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "genes",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "tal1_variants",
+      "name": "Oncogenic TAL1 variants",
+      "assemblyNames": ["hg38"],
+      "category": ["Variants"],
+      "adapter": {
+        "type": "BedAdapter",
+        "uri": "https://jbrowse.org/demos/alphagenome_test.bed"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "TAL1",
+    "views": [
+      {
+        "id": "alphagenome_lgv",
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg38",
+          "loc": "chr1:47,195,000..47,265,000",
+          "tracks": ["genes", "tal1_variants"]
+        }
+      }
+    ]
+  }
+}
