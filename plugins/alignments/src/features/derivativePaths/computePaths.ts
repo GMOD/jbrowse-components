@@ -29,7 +29,29 @@ export interface DerivativeSegment {
 }
 
 export interface DerivativeCandidate {
+  /**
+   * What the view OPENS on: the reads' segments grown outward by `flank` at the
+   * two ends of the path, so the picture carries reference either side of the
+   * outermost junctions rather than starting flush against them.
+   *
+   * Not the evidence. The growth is context this layer added, so anything asking
+   * how much reference the reads actually covered reads `observedSegments`
+   * instead — see it for why the difference is not cosmetic.
+   */
   segments: DerivativeSegment[]
+  /**
+   * What the READS saw: the same segments without the context flank.
+   *
+   * The two differ only at the path's two outer edges, and only by `flank`, and
+   * that is still enough to invert the judgement the picker asks a reader to
+   * make. The caveat above the candidate list says a route whose segments are
+   * all about one read long is an aligner splitting a read rather than an
+   * allele. A short-read path is TWO segments, so both of them are outer ones:
+   * 96bp and 54bp of evidence are drawn as 2096bp and 2054bp, and the row that
+   * is supposed to expose the artefact reports two comfortable two-kilobase
+   * blocks. The strip and the size summary read this field for that reason.
+   */
+  observedSegments: DerivativeSegment[]
   /**
    * Opaque identity of the ROUTE: the grouping key itself, built from the
    * clustered junctions alone.
@@ -425,6 +447,7 @@ export function computeDerivativePaths(
     const segments = segmentsFromChain(oriented, flank)
     candidates.push({
       segments,
+      observedSegments: segmentsFromChain(oriented, 0),
       pathId: signature,
       readCount: group.length,
       locString: derivativeLocString(segments),

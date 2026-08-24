@@ -177,10 +177,18 @@ function CandidateRow({
   return (
     <div className={classes.row}>
       <div className={classes.path}>{derivativePathLabel(candidate)}</div>
-      <DerivativePathStrip segments={candidate.segments} />
+      {/*
+        `observedSegments`, not `segments`: the drawn ones carry a context flank
+        at the path's two outer edges, and this row is exactly where that lies.
+        The caveat below tells the reader to spot an aligner artefact by its
+        segments all being one read long — and a short-read path is two
+        segments, so the flank lands on both and reports two 2kb blocks whatever
+        the reads saw.
+      */}
+      <DerivativePathStrip segments={candidate.observedSegments} />
       <div className={classes.detail}>
-        {candidate.readCount} reads · {candidate.segments.length} segments ·{' '}
-        {segmentSizeSummary(candidate.segments)}
+        {candidate.readCount} reads · {candidate.observedSegments.length}{' '}
+        segments · {segmentSizeSummary(candidate.observedSegments)}
         {showOffScreen && candidate.extendsOffScreen
           ? ' · extends beyond this window'
           : ''}

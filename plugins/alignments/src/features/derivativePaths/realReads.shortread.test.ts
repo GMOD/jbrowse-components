@@ -2100,10 +2100,19 @@ describe('paired-end short reads', () => {
     // the ranking, which is by read count alone, that does not know it.
     const { candidates } = run()
     const longest = Math.max(
-      ...candidates.flatMap(c => c.segments.map(seg => seg.end - seg.start)),
+      ...candidates.flatMap(c =>
+        c.observedSegments.map(seg => seg.end - seg.start),
+      ),
     )
-    // the flank the candidate carries is 2000 each side, so bound the raw
-    // segments rather than the drawn ones
-    expect(longest - 2 * 2000).toBeLessThan(200)
+    // A piece of a 150 bp read, bounded as one. Asserted on `observedSegments`
+    // because `segments` carries the context flank, and bounding those would be
+    // a check on the flank: the same expression over `segments` reads ~2150 and
+    // passes any bound up to two kilobases past what the reads saw.
+    expect(longest).toBeLessThan(200)
+    expect(
+      Math.max(
+        ...candidates.flatMap(c => c.segments.map(s => s.end - s.start)),
+      ),
+    ).toBeGreaterThan(2000)
   })
 })

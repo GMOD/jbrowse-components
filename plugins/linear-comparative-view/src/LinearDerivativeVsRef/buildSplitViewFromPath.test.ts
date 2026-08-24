@@ -8,8 +8,12 @@ import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 function candidate(
   segments: { refName: string; start: number; end: number; strand?: number }[],
 ): DerivativeCandidate {
+  const observedSegments = segments.map(s => ({ strand: 1, ...s }))
   return {
-    segments: segments.map(s => ({ strand: 1, ...s })),
+    // No flank modelled: this builder reads `segments`, and every span here is
+    // written as the one the panels should open on.
+    segments: observedSegments,
+    observedSegments,
     readCount: 4,
     pathId: segments.map(s => `${s.refName}:${s.start}:${s.strand}`).join('|'),
     locString: '',

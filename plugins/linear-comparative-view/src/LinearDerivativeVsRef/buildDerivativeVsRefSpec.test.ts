@@ -15,13 +15,18 @@ function syntenyConf(viewSpec: { tracks: unknown[] }) {
 
 // The COLO829 der(3) path: two chr3 arms in opposite orientations with short
 // pieces of chr10 and chr12 spliced in at the turn.
+const CANDIDATE_SEGMENTS = [
+  { refName: 'chr3', start: 25_326_821, end: 25_359_568, strand: 1 },
+  { refName: 'chr10', start: 58_717_463, end: 58_717_662, strand: 1 },
+  { refName: 'chr12', start: 72_273_111, end: 72_273_294, strand: -1 },
+  { refName: 'chr3', start: 25_352_683, end: 25_359_111, strand: -1 },
+]
+
+// No flank modelled: this builder reads `segments`, and the spans above are
+// written as the ones the drawing should carry.
 const CANDIDATE: DerivativeCandidate = {
-  segments: [
-    { refName: 'chr3', start: 25_326_821, end: 25_359_568, strand: 1 },
-    { refName: 'chr10', start: 58_717_463, end: 58_717_662, strand: 1 },
-    { refName: 'chr12', start: 72_273_111, end: 72_273_294, strand: -1 },
-    { refName: 'chr3', start: 25_352_683, end: 25_359_111, strand: -1 },
-  ],
+  segments: CANDIDATE_SEGMENTS,
+  observedSegments: CANDIDATE_SEGMENTS,
   readCount: 29,
   pathId: 'der3',
   locString: '',
@@ -284,8 +289,8 @@ describe('selectedCandidateIndex', () => {
 // `data-testid` and every `getByTestId` for it would throw "found multiple
 // elements".
 describe('derivativePathTestIds', () => {
-  const foldback = (start: number): DerivativeCandidate => ({
-    segments: [
+  const foldback = (start: number): DerivativeCandidate => {
+    const segments = [
       { refName: 'chr9', start, end: start + 1837, strand: 1 },
       {
         refName: 'chr9',
@@ -293,13 +298,17 @@ describe('derivativePathTestIds', () => {
         end: start + 31_000,
         strand: -1,
       },
-    ],
-    readCount: 4,
-    pathId: `foldback-${start}`,
-    locString: '',
-    refNames: ['chr9'],
-    extendsOffScreen: false,
-  })
+    ]
+    return {
+      segments,
+      observedSegments: segments,
+      readCount: 4,
+      pathId: `foldback-${start}`,
+      locString: '',
+      refNames: ['chr9'],
+      extendsOffScreen: false,
+    }
+  }
 
   it('suffixes the later rows of a repeated shape', () => {
     expect(

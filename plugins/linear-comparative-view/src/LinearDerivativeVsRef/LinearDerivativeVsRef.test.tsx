@@ -8,13 +8,24 @@ import { MAX_SPLIT_PANELS } from './buildSplitViewFromPath.ts'
 import type { AbstractTrackModel } from '@jbrowse/core/util'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
+// The flank a real candidate carries on the path's two outer edges, so anything
+// rendering one of these meets the same gap between drawn and observed that the
+// picker's row has to get right.
+const FLANK = 2000
+
 function route(segmentCount: number, refName = 'chr3'): DerivativeCandidate {
+  const observedSegments = Array.from({ length: segmentCount }, (_, i) => ({
+    refName,
+    start: i * 10_000,
+    end: i * 10_000 + 500,
+    strand: 1,
+  }))
   return {
-    segments: Array.from({ length: segmentCount }, (_, i) => ({
-      refName,
-      start: i * 10_000,
-      end: i * 10_000 + 500,
-      strand: 1,
+    observedSegments,
+    segments: observedSegments.map((seg, i) => ({
+      ...seg,
+      start: i === 0 ? seg.start - FLANK : seg.start,
+      end: i === observedSegments.length - 1 ? seg.end + FLANK : seg.end,
     })),
     readCount: 4,
     pathId: `${refName}-${segmentCount}`,
@@ -94,6 +105,28 @@ test('a dead track stops the render before the model is read', () => {
 })
 
 // One panel per segment is one pileup fetch per segment, and nothing upstream
+// The row's sizes are the evidence, not the picture. The caveat above the list
+// tells a reader to spot an aligner artefact by its segments all being about one
+// read long, and the flank the candidate carries for drawing lands on exactly
+// the two segments a short-read path has — so a row reading `segments` reports
+// two comfortable kilobase blocks for two hundred bases of evidence, and the
+// check the caveat asks for cannot come out false.
+test('the row sizes what the reads saw, not what the view will open on', () => {
+  render(
+    <DerivativeVsRefDialog
+      model={{
+        derivativePathCandidates: [route(2)],
+        hasReadsForDerivativePaths: true,
+      }}
+      track={makeTrack().track}
+      handleClose={() => {}}
+    />,
+  )
+  // 500bp segments, twice — not the 2.5Kbp each carries once flanked
+  expect(screen.getByText(/500bp, 500bp/)).toBeTruthy()
+  expect(screen.queryByText(/2\.5Kbp/)).toBeNull()
+})
+
 // bounds the count — a real ngmlr-aligned ONT record in COLO829 carries 943 SA
 // entries. Disabled rather than truncated: a prefix of a path drawn under the
 // whole path's name is worse than not drawing it.
