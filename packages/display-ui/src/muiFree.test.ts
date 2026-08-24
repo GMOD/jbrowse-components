@@ -40,25 +40,23 @@ test('nothing in the package reaches Material UI', () => {
 
 // Entry points outside this package that owe the same guarantee.
 //
-// The two chrome bases stay in the LGV plugin — they are that plugin's chrome,
-// and `DisplayChromeBase` is typed on `@jbrowse/render-core`'s backend — but
-// they are the *weight* half of the same story: a display written over them
-// imports no toolkit at all, and that is the only path that keeps Material UI
-// out of a bundle rather than merely off the screen. Nothing else asserts it.
+// The two chrome bases live in `@jbrowse/display-kit` — they are that
+// package's chrome, and `DisplayChromeBase` is typed on
+// `@jbrowse/render-core`'s backend — but they are the *weight* half of the
+// same story: a display written over them imports no toolkit at all, and
+// that is the only path that keeps Material UI out of a bundle rather than
+// merely off the screen. Nothing else asserts it.
 //
 // `FloatingLegend` used to be listed here and is not, because it moved into
 // this package — so the whole-package test above now walks it, which is the
 // better arrangement and the one to reach for when a component on this list
 // turns out to belong here.
 const packages = path.join(__dirname, '../..')
-const lgv = path.join(
-  packages,
-  '../plugins/linear-genome-view/src/BaseLinearDisplay/components',
-)
+const displayKit = path.join(packages, 'display-kit/src')
 const core = path.join(packages, 'core/src')
 const weightPath = {
-  DisplayChromeBase: path.join(lgv, 'DisplayChromeBase.tsx'),
-  DisplayStatusChromeBase: path.join(lgv, 'DisplayStatusChromeBase.tsx'),
+  DisplayChromeBase: path.join(displayKit, 'DisplayChromeBase.tsx'),
+  DisplayStatusChromeBase: path.join(displayKit, 'DisplayStatusChromeBase.tsx'),
   // The same shape, found the same way, fixed the same way — and it had only
   // half the guard. DISPLAYCHROME.md names `BaseTooltip` and `FloatingLegend`
   // together: each is rendered by a display directly, behind neither seam, and

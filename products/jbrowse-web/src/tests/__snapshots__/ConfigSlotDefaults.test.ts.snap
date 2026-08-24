@@ -496,6 +496,7 @@ exports[`every registered schema slot default 1`] = `
     "jexlFilters": "stringArray = []",
     "label": "string = "jexl:get(feature,'score')"",
     "maxFeatureScreenDensity": "number = 1",
+    "minScore": "number = 0",
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
     "thickness": "number = "jexl:logThickness(feature,'score')"",
   },
@@ -727,6 +728,7 @@ exports[`every registered schema slot default 1`] = `
     "jexlFilters": "stringArray = []",
     "lineWidth": "maybeNumber promotedBase 3",
     "maxFeatureScreenDensity": "number = 1",
+    "minScore": "number = 0",
     "mouseover": "string = "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"",
   },
   "display: LinearReferenceSequenceDisplay": {
