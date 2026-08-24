@@ -1,6 +1,5 @@
 import { mirrorU } from '../regionOffsets.ts'
 import {
-  INSTANCE_STRIDE_WORDS,
   getInstanceCount,
   getInstancePosition,
 } from './components/shaders/hic.iface.generated.ts'
@@ -35,9 +34,11 @@ import type {
  *
  * The build is what blocks a render, so that is the side worth buying. It is
  * not free on the other side — `probe` walks a tile neighbourhood where the
- * hash went to one slot, 0.99us against 0.10us at 4.5M — but that runs per
- * mousemove against a build per fetch, and a microsecond does not show up in a
- * frame.
+ * hash went to one slot — but that runs per mousemove against a build per
+ * fetch. What it costs there is mostly a matter of which test screens the
+ * neighbourhood: taking the cell rectangle before the run lookup and the bin
+ * recovery is 0.36us at 4.5M against 1.15us for the other order, measured A/B
+ * on one machine, and the hash's one-slot probe is 0.06us. See `probe`.
  *
  * What is indexed is cells, not points, so a cell straddling a tile boundary is
  * filed under the tile holding its min corner only and `probe` reads the 2x2
@@ -84,9 +85,8 @@ function buildContactIndex(data: HicDataResult): ContactIndex {
   let loY = Infinity
   let hiY = -Infinity
   for (let i = 0; i < numContacts; i++) {
-    const o = i * INSTANCE_STRIDE_WORDS
-    const px = instances[o]!
-    const py = instances[o + 1]!
+    const px = getInstancePosition(instances, i, 0)
+    const py = getInstancePosition(instances, i, 1)
     loX = px < loX ? px : loX
     hiX = px > hiX ? px : hiX
     loY = py < loY ? py : loY
@@ -109,9 +109,8 @@ function buildContactIndex(data: HicDataResult): ContactIndex {
   const nTiles = tilesX * tilesY
   const offsets = new Uint32Array(nTiles + 1)
   for (let i = 0; i < numContacts; i++) {
-    const o = i * INSTANCE_STRIDE_WORDS
-    const tx = ((instances[o]! - originX) * invSpanX) | 0
-    const ty = ((instances[o + 1]! - originY) * invSpanY) | 0
+    const tx = ((getInstancePosition(instances, i, 0) - originX) * invSpanX) | 0
+    const ty = ((getInstancePosition(instances, i, 1) - originY) * invSpanY) | 0
     const t = ty * tilesX + tx + 1
     offsets[t] = offsets[t]! + 1
   }
@@ -121,9 +120,8 @@ function buildContactIndex(data: HicDataResult): ContactIndex {
   const cursor = offsets.slice(0, nTiles)
   const items = new Uint32Array(numContacts)
   for (let i = 0; i < numContacts; i++) {
-    const o = i * INSTANCE_STRIDE_WORDS
-    const tx = ((instances[o]! - originX) * invSpanX) | 0
-    const ty = ((instances[o + 1]! - originY) * invSpanY) | 0
+    const tx = ((getInstancePosition(instances, i, 0) - originX) * invSpanX) | 0
+    const ty = ((getInstancePosition(instances, i, 1) - originY) * invSpanY) | 0
     const t = ty * tilesX + tx
     items[cursor[t]!] = i
     cursor[t] = cursor[t]! + 1
@@ -157,33 +155,12 @@ function getContactIndex(data: HicDataResult) {
 }
 
 /**
- * The contact in the cursor's own cell, or undefined.
- *
- * The scan covers the cursor's tile and its neighbours one step down and left,
- * because a cell is filed under its min corner and can reach `binWidth` past
- * it. Bounds are clamped rather than guarded: a cursor left of or below the
- * grid gives an empty range and scans nothing.
- *
- * A candidate has to pass both the bin comparison and its own cell rectangle,
- * which is what the hash this replaced also required — the key first, the
- * rectangle as the collision filter. Neither is redundant here. The rectangle
- * alone is not enough because `instances` is Float32Array: rounding a corner
- * down by an ulp leaves a cell overlapping its neighbour by that much, a seam
- * ~1e-7 of a cell wide where the wrong cell covers the point, and taking it
- * would pair a score from one bin with the loci `findContactAt` floored out of
- * the cursor for the other. The bins alone are not enough because a cell the
- * float32 cast shrank can fail to reach a cursor inside its exact bounds, which
- * is a miss rather than a wrong answer and stays one.
- *
- * The region pair is checked too, and by run rather than by asking which region
- * the candidate's coordinates fall in: the two disagree within a float32 ulp of
- * a region boundary, where a neighbour's rounded-down start still reads as
- * inside the region before it.
- *
- * Recovering a candidate's bins is the arithmetic the *build* used to do for
- * every contact in the payload; against the handful a tile holds it costs
- * nothing, and against the cursor's own regions it is exact once the pair is
- * known to match.
+ * The run contact `i` belongs to. Relies on `pairRuns` tiling
+ * `[0, numContacts)` in order, which `executeRenderHicData` guarantees by
+ * construction — the adapter only emits a run for a pair that contributed at
+ * least one contact, so a non-empty payload has a non-empty run table. The
+ * index above no longer walks the runs to build itself, so this is where that
+ * invariant is depended on.
  */
 function runAt(pairRuns: RegionPairRun[], i: number) {
   let lo = 0
@@ -199,14 +176,47 @@ function runAt(pairRuns: RegionPairRun[], i: number) {
   return pairRuns[lo]!
 }
 
+/**
+ * The contact in the cursor's own cell, or undefined.
+ *
+ * The scan covers the cursor's tile and its neighbours one step down and left,
+ * because a cell is filed under its min corner and can reach `binWidth` past
+ * it. Bounds are clamped rather than guarded: a cursor left of or below the
+ * grid gives an empty range and scans nothing.
+ *
+ * A candidate has to pass both its own cell rectangle and the bin comparison,
+ * which is what the hash this replaced also required — there the key first and
+ * the rectangle as the collision filter, here the other way round, because the
+ * hash arrived at one slot and a tile hands over a neighbourhood. The rectangle
+ * is four float compares off values already loaded and rejects all but the one
+ * cell that can contain the point, so the run lookup and the bin recovery are
+ * paid once rather than per candidate.
+ *
+ * Neither test is redundant. The rectangle alone is not enough because
+ * `instances` is Float32Array: rounding a corner down by an ulp leaves a cell
+ * overlapping its neighbour by that much, a seam ~1e-7 of a cell wide where the
+ * wrong cell covers the point, and taking it would pair a score from one bin
+ * with the loci `findContactAt` floored out of the cursor for the other. The
+ * bins alone are not enough because a cell the float32 cast shrank can fail to
+ * reach a cursor inside its exact bounds, which is a miss rather than a wrong
+ * answer and stays one.
+ *
+ * The region pair is checked too, and by run rather than by asking which region
+ * the candidate's coordinates fall in: the two disagree within a float32 ulp of
+ * a region boundary, where a neighbour's rounded-down start still reads as
+ * inside the region before it.
+ *
+ * Recovering a candidate's bins is the arithmetic the *build* used to do for
+ * every contact in the payload; against the one candidate the rectangle admits
+ * it costs nothing, and against the cursor's own regions it is exact once the
+ * pair is known to match.
+ */
 function probe(
   data: HicDataResult,
   ux: number,
   uy: number,
   regionX: number,
   regionY: number,
-  rx: HicResultRegion,
-  ry: HicResultRegion,
   bin1: number,
   bin2: number,
 ) {
@@ -220,7 +230,9 @@ function probe(
     tilesX,
     tilesY,
   } = getContactIndex(data)
-  const { instances, binWidth, pairRuns } = data
+  const { instances, binWidth, pairRuns, regions } = data
+  const rx = regions[regionX]!
+  const ry = regions[regionY]!
   const sameRegion = regionX === regionY
   const invBinWidth = 1 / binWidth
   const mirrorBaseX = rx.dataXStart + rx.dataXEnd - binWidth
@@ -238,29 +250,27 @@ function probe(
       const end = offsets[t + 1]!
       for (let k = offsets[t]!; k < end; k++) {
         const i = items[k]!
-        const run = runAt(pairRuns, i)
         const px = getInstancePosition(instances, i, 0)
         const py = getInstancePosition(instances, i, 1)
-        const a = Math.round(
-          (rx.reversed ? mirrorBaseX - px : px) * invBinWidth -
-            rx.combinedOffset,
-        )
-        const b = Math.round(
-          (ry.reversed ? mirrorBaseY - py : py) * invBinWidth -
-            ry.combinedOffset,
-        )
-        const swap = sameRegion && a > b
-        if (
-          run.region1Idx === regionX &&
-          run.region2Idx === regionY &&
-          (swap ? b : a) === bin1 &&
-          (swap ? a : b) === bin2 &&
-          ux >= px &&
-          ux < px + binWidth &&
-          uy >= py &&
-          uy < py + binWidth
-        ) {
-          return i
+        if (ux >= px && ux < px + binWidth && uy >= py && uy < py + binWidth) {
+          const run = runAt(pairRuns, i)
+          const a = Math.round(
+            (rx.reversed ? mirrorBaseX - px : px) * invBinWidth -
+              rx.combinedOffset,
+          )
+          const b = Math.round(
+            (ry.reversed ? mirrorBaseY - py : py) * invBinWidth -
+              ry.combinedOffset,
+          )
+          const swap = sameRegion && a > b
+          if (
+            run.region1Idx === regionX &&
+            run.region2Idx === regionY &&
+            (swap ? b : a) === bin1 &&
+            (swap ? a : b) === bin2
+          ) {
+            return i
+          }
         }
       }
     }
@@ -318,7 +328,7 @@ export function findContactAt(
   // ux ≤ uy below the apex), so only a same-region pair can need the swap.
   const swap = regionX === regionY && binX > binY
   const [bin1, bin2] = swap ? [binY, binX] : [binX, binY]
-  const idx = probe(data, ux, uy, regionX, regionY, rx, ry, bin1, bin2)
+  const idx = probe(data, ux, uy, regionX, regionY, bin1, bin2)
   return idx === undefined
     ? undefined
     : {

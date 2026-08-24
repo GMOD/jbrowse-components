@@ -25,9 +25,12 @@
 //
 // WHAT IS NOT MODELLED. The `WeakMap` around the build (once per payload) and
 // the probe itself. T moves work into the probe — it scans a 2x2 tile
-// neighbourhood and recovers the bins of the few contacts there, where the hash
-// went straight to one slot — so the probe is timed separately below rather
-// than left out of the comparison. It runs per mousemove, not per fetch.
+// neighbourhood where the hash went straight to one slot — so the probe is
+// timed separately below rather than left out of the comparison. It runs per
+// mousemove, not per fetch. Its arm mirrors `probe`'s test order, which is most
+// of what the probe costs: screening the neighbourhood on the cell rectangle
+// before recovering any bins is 0.36us at 4.5M against 1.15us the other way
+// round.
 //
 // Fixture is one forward region and one pairRun: a single LGV region with the
 // cursor on it, the shape the profiled stall had. A reversed region changes
@@ -407,18 +410,16 @@ function lookupTile(
         const i = items[k]!
         const px = instances[i * STRIDE_WORDS]!
         const py = instances[i * STRIDE_WORDS + 1]!
-        const a = Math.round(px / binWidth - region.combinedOffset)
-        const b = Math.round(py / binWidth - region.combinedOffset)
-        const swap = a > b
-        if (
-          (swap ? b : a) === bin1 &&
-          (swap ? a : b) === bin2 &&
-          ux >= px &&
-          ux < px + binWidth &&
-          uy >= py &&
-          uy < py + binWidth
-        ) {
-          return i
+        // rectangle first, as `probe` does: four compares off values already
+        // loaded reject every candidate but the one cell that can hold the
+        // point, so the bin recovery is paid once rather than per candidate
+        if (ux >= px && ux < px + binWidth && uy >= py && uy < py + binWidth) {
+          const a = Math.round(px / binWidth - region.combinedOffset)
+          const b = Math.round(py / binWidth - region.combinedOffset)
+          const swap = a > b
+          if ((swap ? b : a) === bin1 && (swap ? a : b) === bin2) {
+            return i
+          }
         }
       }
     }
