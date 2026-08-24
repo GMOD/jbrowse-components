@@ -25,6 +25,7 @@ function ldData(
     ),
     boundaries: Float32Array.from({ length: n + 1 }, (_, i) => i * uniformW),
     numCells: (n * (n - 1)) / 2,
+    band: 1_000_000,
     uniformW,
     originBp: 0,
     genomicMode: false,

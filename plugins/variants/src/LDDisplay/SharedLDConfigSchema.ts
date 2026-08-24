@@ -107,6 +107,21 @@ export default function sharedLDConfigFactory() {
       },
       /**
        * #slot
+       * Maximum separation, in variants, between the two SNPs of a computed
+       * pair. Pairs further apart are not computed and not drawn, which turns
+       * the matrix from n²/2 cells into n·k and so makes the cost linear in the
+       * variant count rather than quadratic. This is plink's `--ld-window`, and
+       * like it the window is the way to look at a large region at all: the
+       * full triangle for 50,000 variants is 1.25e9 cells, which no GPU will
+       * allocate. Set to 0 for the full triangle.
+       */
+      maxVariantSeparation: {
+        type: 'number',
+        defaultValue: 0,
+        advanced: true,
+      },
+      /**
+       * #slot
        * Whether to show vertical guides at the connected genome positions on hover
        */
       showVerticalGuides: {

@@ -13,6 +13,8 @@ struct LDPhasedComputeUniforms {
   uint numWords;
   uint ldMetric;
   uint signedLD;
+  // Pair-separation window; see decodeBanded in ldUniforms.
+  uint band;
   // Threads per dispatch row — see ldCompute.slang.
   uint dispatchRowStride;
 };
@@ -32,7 +34,7 @@ uint getWord(uint snp, uint arr, uint word) {
 void computeLDPhased(uint3 gid: SV_DispatchThreadID) {
   uint k;
   uint2 ij;
-  if (!triangularCell(gid, u.dispatchRowStride, u.numSnps, k, ij)) {
+  if (!bandedCell(gid, u.dispatchRowStride, u.numSnps, u.band, k, ij)) {
     return;
   }
   uint i = ij.x;

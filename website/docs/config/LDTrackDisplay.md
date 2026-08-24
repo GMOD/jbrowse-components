@@ -66,7 +66,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span class="slot-group">Inherited from [SharedLDDisplay](../sharedlddisplay)</span> | <span class="slot-group-count">15 slots</span> |
+| <span class="slot-group">Inherited from [SharedLDDisplay](../sharedlddisplay)</span> | <span class="slot-group-count">16 slots</span> |
 | <span id="slot-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | Filter variants by minor allele frequency (0-1). Variants with MAF below this threshold will be hidden<br>_advanced_ |
 | <span id="slot-lengthcutofffilter">**lengthCutoffFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_SAFE_INTEGER</code> | Maximum length of variants to include (in bp)<br>_advanced_ |
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Height of the zone for connecting lines at the top<br>_advanced_ |
@@ -76,6 +76,7 @@ surface.
 | <span id="slot-squashtoheight">**squashToHeight**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, squash the LD triangle to fit the display height<br>_advanced_ |
 | <span id="slot-hwefilterthreshold">**hweFilterThreshold**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | HWE filter p-value threshold (variants with HWE p < this are excluded). Set to 0 to disable HWE filtering<br>_advanced_ |
 | <span id="slot-callratefilter">**callRateFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Call rate filter threshold (0-1). Variants with fewer than this proportion of non-missing genotypes are excluded. Set to 0 to disable.<br>_advanced_ |
+| <span id="slot-maxvariantseparation">**maxVariantSeparation**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | Maximum separation, in variants, between the two SNPs of a computed pair. Pairs further apart are not computed and not drawn, which turns the matrix from n²/2 cells into n·k and so makes the cost linear in the variant count rather than quadratic. This is plink's `--ld-window`, and like it the window is the way to look at a large region at all: the full triangle for 50,000 variants is 1.25e9 cells, which no GPU will allocate. Set to 0 for the full triangle.<br>_advanced_ |
 | <span id="slot-showverticalguides">**showVerticalGuides**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Whether to show vertical guides at the connected genome positions on hover<br>_advanced_ |
 | <span id="slot-showlabels">**showLabels**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Whether to show variant labels above the tick marks<br>_advanced_ |
 | <span id="slot-tickheight">**tickHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6</code> | Height of the vertical tick marks at the genomic position<br>_advanced_ |

@@ -1,7 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 
-import { ldPairIndex } from './getLDMatrix.ts'
+import { bandCellCount, bandPairIndex, resolveBand } from './ldBand.ts'
 
 import type {
   FilterStats,
@@ -66,9 +66,16 @@ export async function getLDMatrixFromPlink({
     headers?: Record<string, string>
     regions: Region[]
     ldMetric?: LDMetric
+    maxVariantSeparation?: number
   }
 }): Promise<LDMatrixResult> {
-  const { regions, adapterConfig, sessionId, ldMetric = 'r2' } = args
+  const {
+    regions,
+    adapterConfig,
+    sessionId,
+    ldMetric = 'r2',
+    maxVariantSeparation = 0,
+  } = args
 
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -105,15 +112,22 @@ export async function getLDMatrixFromPlink({
     indexByKey.set(snpKey(snp.refName, snp.start), idx)
   }
 
-  // Lower-triangular LD matrix. A fresh Float32Array is zero-filled, so pairs
-  // never named in the records stay 0 (no LD) with no extra bookkeeping.
-  const ldValues = new Float32Array((n * (n - 1)) / 2)
+  // Banded LD matrix. A fresh Float32Array is zero-filled, so pairs never named
+  // in the records stay 0 (no LD) with no extra bookkeeping — and a record for
+  // a pair outside the band is dropped the same way, since the band says that
+  // pair is not shown. A pre-computed file is usually already windowed (it is
+  // plink's default output), so this most often drops nothing.
+  const band = resolveBand(n, maxVariantSeparation)
+  const ldValues = new Float32Array(bandCellCount(n, band))
 
   for (const record of allRecords) {
     const i = indexByKey.get(snpKey(record.chrA, record.bpA))
     const j = indexByKey.get(snpKey(record.chrB, record.bpB))
     if (i !== undefined && j !== undefined && i !== j) {
-      ldValues[ldPairIndex(i, j)] = metricValue(record, metric)
+      const slot = bandPairIndex(i, j, band)
+      if (slot >= 0) {
+        ldValues[slot] = metricValue(record, metric)
+      }
     }
   }
 
@@ -135,6 +149,7 @@ export async function getLDMatrixFromPlink({
     metric,
     hasDprime,
     method: 'precomputed',
+    band,
     filterStats,
   }
 }

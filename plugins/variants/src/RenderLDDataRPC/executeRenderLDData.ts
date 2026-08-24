@@ -5,6 +5,7 @@ import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
+import { bandCellCount } from '../VariantRPC/ldBand.ts'
 import { buildGenomicCellBuffers, computeBoundaries } from './ldLayout.ts'
 import { applyDisplayOrder, getDisplayOrder } from './reversedRegions.ts'
 import { isPrecomputedLDAdapter } from './types.ts'
@@ -45,6 +46,7 @@ function emptyResult(
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
     numCells: 0,
+    band: 0,
     uniformW: 0,
     originBp,
     genomicMode,
@@ -170,13 +172,14 @@ export async function executeRenderLDData({
   // connector lines, labels, SVG export) stays forward-only.
   const displayOrder = getDisplayOrder(ldData.snps, regions)
   const { snps, ldValues } = displayOrder
-    ? applyDisplayOrder(ldData, displayOrder)
+    ? applyDisplayOrder(ldData, displayOrder, ldData.band)
     : ldData
   const n = snps.length
 
   const totalWidthBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
   const uniformW = totalWidthBp / (n * Math.SQRT2)
-  const numCells = (n * (n - 1)) / 2
+  const band = ldData.band
+  const numCells = bandCellCount(n, band)
 
   const boundaries = computeBoundaries({
     snps,
@@ -185,7 +188,7 @@ export async function executeRenderLDData({
     genomicMode,
   })
   const cellBuffers = genomicMode
-    ? buildGenomicCellBuffers(boundaries)
+    ? buildGenomicCellBuffers(boundaries, band)
     : undefined
 
   // The buffers move rather than clone: `ldValues` alone is n(n-1)/2 floats,
@@ -195,6 +198,7 @@ export async function executeRenderLDData({
     ldValues,
     boundaries,
     numCells,
+    band,
     uniformW,
     originBp,
     genomicMode,

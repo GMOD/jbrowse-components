@@ -1,7 +1,8 @@
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 
-import { getLDMatrix, ldPairIndex } from '../VariantRPC/getLDMatrix.ts'
+import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
+import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { executeRenderLDData } from './executeRenderLDData.ts'
 
 import type { LDMatrixResult, LDSnp } from '../VariantRPC/getLDMatrix.ts'
@@ -9,6 +10,10 @@ import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
+
+// Wider than any n these fixtures use, so the banded layout collapses to the
+// triangular one these expectations were written against.
+const FULL_BAND = 1_000_000
 
 jest.mock('../VariantRPC/getLDMatrix.ts', () => ({
   ...jest.requireActual('../VariantRPC/getLDMatrix.ts'),
@@ -41,7 +46,7 @@ function matrix(snps: LDSnp[]): LDMatrixResult {
   const ldValues = new Float32Array((n * (n - 1)) / 2)
   for (let i = 1; i < n; i++) {
     for (let j = 0; j < i; j++) {
-      ldValues[ldPairIndex(i, j)] = pairValue(snps[i]!, snps[j]!)
+      ldValues[bandPairIndex(i, j, FULL_BAND)] = pairValue(snps[i]!, snps[j]!)
     }
   }
   return {
@@ -50,6 +55,7 @@ function matrix(snps: LDSnp[]): LDMatrixResult {
     metric: 'r2',
     hasDprime: true,
     method: 'composite',
+    band: FULL_BAND,
     filterStats: {
       totalVariants: n,
       passedVariants: n,
@@ -97,6 +103,7 @@ async function run(
           lengthCutoffFilter: 0,
           hweFilterThreshold: 0,
           callRateFilter: 0,
+          maxVariantSeparation: 0,
           jexlFilters: [],
           signedLD: false,
           useGenomicPositions,
@@ -111,7 +118,7 @@ async function run(
 function valueFor(d: LDDataResult, a: number, b: number) {
   const i = d.snps.findIndex(s => s.start === a)
   const j = d.snps.findIndex(s => s.start === b)
-  return d.ldValues[ldPairIndex(i, j)]
+  return d.ldValues[bandPairIndex(i, j, FULL_BAND)]
 }
 
 const POSITIONS = [100, 250, 400, 900]

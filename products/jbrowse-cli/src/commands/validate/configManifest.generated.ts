@@ -4052,6 +4052,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "maxVariantSeparation",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "showVerticalGuides",
           "type": "(JexlString | boolean)"
         },
@@ -4147,6 +4151,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "callRateFilter",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "maxVariantSeparation",
           "type": "(JexlString | number)"
         },
         {

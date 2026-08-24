@@ -529,7 +529,8 @@ only helps SwiftShader as a figure-pipeline change rather than an app one.
 
 ### The LD triangle is materialized in full, so its ceiling is quadratic
 
-**Status:** Accepted (the compute shader buys a band, not a scale).
+**Status:** Mitigated by `maxVariantSeparation`; Accepted at that slot's
+default, which is the full triangle.
 
 **Provenance: Chrome 151 on macOS/Metal, Apple silicon, 2026-08-24** — not the
 Intel UHD 630 this section's preamble names. The storage-buffer limit differs by
@@ -584,22 +585,32 @@ Two sub-points, both live:
 `ldValues`' 4. `planDispatch` weighs only `ldValues`, so the ceilings above are
 the uniform-mode ones; genomic mode reaches the same wall at a fifth of the SNPs.
 
-**Retire when** the triangle is computed banded — only pairs within a bounded
-separation `k`, making the cost `n*k` instead of `n^2`, and so linear in the SNP
-count. This is a **semantic** change, not a free optimization: both display
-modes draw the WHOLE triangle today, so nothing is being computed and thrown
-away. `canvasHeight` is `squashToHeight ? ldCanvasHeight : canvasWidth / 2` and
-`computeTriangleYScalar` squashes the natural apex height into the display
-rather than clipping it, so no cell is off-canvas at any zoom. A band means
-declaring that pairs past `k` are not shown — which is what a distance window
-like plink's `--ld-window-kb` already means, and what makes large-scale LD
-figures parallelograms rather than triangles.
+**The mitigation is `maxVariantSeparation`** (`SharedLDConfigSchema`), plink's
+`--ld-window`: pairs separated by more than `k` variants are not computed and
+not drawn, so the matrix is `n*k` cells and the cost is linear in the variant
+count. At 50,000 SNPs a `k = 500` window is 24,874,750 cells (~95 MiB), inside
+even the 128 MiB spec floor, against 1.25e9 cells (4.66 GiB) for the full
+triangle.
 
-The prize is the ceiling changing kind. At 50,000 SNPs a band of `k = 500`
-is ~2.5e7 cells (~100 MB), inside even the 128 MiB spec floor, against 1.25e9
-cells (5 GB) for the full triangle. It also simplifies the kernel: a banded
-`(i, d)` index is plain rectangular arithmetic where `decodeTriangular` is a
-sqrt plus two correction loops per thread.
+It is a **semantic** change, not a free optimization, and the slot therefore
+defaults to 0 (the full triangle) rather than to some window: both display modes
+draw every cell they are given. `canvasHeight` is
+`squashToHeight ? ldCanvasHeight : canvasWidth / 2` and `computeTriangleYScalar`
+squashes the natural apex height into the display rather than clipping it, so
+nothing is off-canvas at any zoom and there is no window that is invisible to
+pick. Choosing one says pairs past `k` are not shown.
+
+`ldBand.ts` owns the layout, and the property that made it affordable is that
+**it generalizes the triangular one rather than replacing it**: rows are ragged,
+`rowStart(i) = m*(m-1)/2 + (i-m)*k` for `m = min(i, k)`, so once the band covers
+a row the second term vanishes and the index is the `i*(i-1)/2 + j` it always
+was. An unbanded run is bit-identical to the pre-band code, which is why the
+existing suite needed no expectation changed. A flat `i*k + (i-j-1)` would be
+simpler arithmetic but costs `n*(n-1)` cells at `k = n-1` — twice the triangle —
+and loses that collapse.
+
+**Retire when** nothing needs the full triangle, i.e. when the default flips.
+That is a product decision about what an LD view means, not an engineering one.
 
 ---
 

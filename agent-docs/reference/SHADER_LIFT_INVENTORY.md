@@ -13,8 +13,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 95 functions
-are inside the emitter's subset, of which **67 are exported**.
+Scanned 42 shaders with entry points. 96 functions
+are inside the emitter's subset, of which **68 are exported**.
 
 ## Candidates
 
@@ -76,11 +76,12 @@ noticing in a diff.
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 18 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcStrokeHalfPx`, `arcsPointDown`, `barAaPx`, … |
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBarScale`, `covBottom`, `covBpToClipX`, `covClipKindColor`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
-| type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, `linkedReadColorByIndex`, … |
+| type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `bandedCell`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | indexing is outside the supported scalar subset | 2 | `getGeno`, `getWord` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
+| vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
@@ -92,7 +93,6 @@ noticing in a diff.
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
 | type 'RowRectInstance' is outside the supported scalar subset | 1 | `rowRectVertex` |
 | type 'VsOut' is outside the supported scalar subset | 1 | `arcDistance` |
-| vec2 element type 'u32' is outside the supported scalar subset | 1 | `decodeTriangular` |
 
 ## Exported, but nothing imports it
 
@@ -106,6 +106,7 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
+| `bandedCellCount` | nothing |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |

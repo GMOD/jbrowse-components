@@ -33,6 +33,7 @@ function noSurvivors(snps: LDSnp[]): LDMatrixResult {
     metric: 'r2',
     hasDprime: true,
     method: 'composite',
+    band: 0,
     filterStats: {
       totalVariants: 812,
       passedVariants: snps.length,
@@ -74,6 +75,7 @@ async function run(regions: Region[], useGenomicPositions: boolean) {
           lengthCutoffFilter: 0,
           hweFilterThreshold: 0,
           callRateFilter: 0,
+          maxVariantSeparation: 0,
           jexlFilters: [],
           signedLD: false,
           useGenomicPositions,

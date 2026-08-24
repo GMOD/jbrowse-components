@@ -20,6 +20,7 @@ import {
   computeLDMatrixGPU,
   computeLDMatrixGPUPhased,
 } from './getLDMatrixGPU.ts'
+import { bandCellCount, bandRowFirstColumn, resolveBand } from './ldBand.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -190,18 +191,6 @@ export interface LDSnp {
   maf?: number
 }
 
-/**
- * Slot holding the pair (i, j) in `ldValues`, which is packed strictly
- * lower-triangular: row i (i > 0) starts at i*(i-1)/2 and holds its j < i
- * entries. LD is symmetric, so the argument order doesn't matter — callers with
- * a canonical i > j and callers reading a transposed pair share this.
- */
-export function ldPairIndex(i: number, j: number) {
-  const hi = i > j ? i : j
-  const lo = i > j ? j : i
-  return (hi * (hi - 1)) / 2 + lo
-}
-
 export interface LDMatrixResult {
   snps: LDSnp[]
   ldValues: Float32Array
@@ -215,6 +204,13 @@ export interface LDMatrixResult {
   // How these values were derived ('phased' | 'composite' | 'precomputed'), so
   // the UI can label the precision honestly.
   method: LDMethod
+  /**
+   * The pair-separation window `ldValues` was laid out at — `resolveBand` of
+   * the requested `maxVariantSeparation`, so always concrete and never wider
+   * than `snps.length - 1`. Every reader indexes through it (`bandPairIndex`);
+   * at the full-triangle value it is the layout this one generalizes.
+   */
+  band: number
   filterStats: FilterStats
 }
 
@@ -225,6 +221,7 @@ function emptyLDResult(metric: LDMetric, method: LDMethod): LDMatrixResult {
     metric,
     hasDprime: true,
     method,
+    band: 0,
     filterStats: {
       totalVariants: 0,
       passedVariants: 0,
@@ -238,10 +235,13 @@ function emptyLDResult(metric: LDMetric, method: LDMethod): LDMatrixResult {
   }
 }
 
-// CPU fallback for the full pairwise lower-triangular LD matrix, used when the
-// GPU path is unavailable.
+// CPU fallback for the banded pairwise LD matrix, used when the GPU path is
+// unavailable. Rows are walked in order and each row's columns ascending from
+// its first in-band one, which is exactly `bandPairIndex`'s order — so the flat
+// slot is a running counter here rather than a computation per pair.
 function computeLDMatrixCPU(
   n: number,
+  band: number,
   ldMetric: LDMetric,
   signedLD: boolean,
   dataIsPhased: boolean,
@@ -250,7 +250,7 @@ function computeLDMatrixCPU(
   stopTokenCheck: StopTokenChecker,
   statusCallback?: StatusCallback,
 ): Float32Array {
-  const vals = new Float32Array((n * (n - 1)) / 2)
+  const vals = new Float32Array(bandCellCount(n, band))
   // Bit-packed here rather than alongside fillEncoded, because this is the
   // fallback: when the GPU takes the matrix nothing below runs, and packing is
   // O(n * samples) against the O(n^2 * samples) loop it replaces.
@@ -265,7 +265,7 @@ function computeLDMatrixCPU(
   })
   let idx = 0
   for (let i = 1; i < n; i++) {
-    for (let j = 0; j < i; j++) {
+    for (let j = bandRowFirstColumn(i, band); j < i; j++) {
       const stats = dataIsPhased
         ? calculateLDStatsPhasedBits(
             packedHaplotypes[i]!,
@@ -299,6 +299,7 @@ export async function getLDMatrix({
     lengthCutoffFilter: number
     hweFilterThreshold?: number
     callRateFilter?: number
+    maxVariantSeparation?: number
     jexlFilters?: string[]
     ldMetric?: LDMetric
     signedLD?: boolean
@@ -313,6 +314,7 @@ export async function getLDMatrix({
     lengthCutoffFilter,
     hweFilterThreshold = 0,
     callRateFilter = 0,
+    maxVariantSeparation = 0,
     jexlFilters = [],
     stopToken,
     ldMetric = 'r2',
@@ -472,13 +474,14 @@ export async function getLDMatrix({
   }
 
   const n = snps.length
+  const band = resolveBand(n, maxVariantSeparation)
 
   let ldValues: Float32Array | null = null
   try {
     ldValues = await updateStatus('Computing LD values', statusCallback, () =>
       dataIsPhased
-        ? computeLDMatrixGPUPhased(packedHaplotypes, ldMetric, signedLD)
-        : computeLDMatrixGPU(encodedGenotypes, ldMetric, signedLD),
+        ? computeLDMatrixGPUPhased(packedHaplotypes, band, ldMetric, signedLD)
+        : computeLDMatrixGPU(encodedGenotypes, band, ldMetric, signedLD),
     )
   } catch (e) {
     console.warn('GPU LD computation failed, falling back to CPU', e)
@@ -487,6 +490,7 @@ export async function getLDMatrix({
   ldValues ??= await updateStatus('Computing LD values', statusCallback, () =>
     computeLDMatrixCPU(
       n,
+      band,
       ldMetric,
       signedLD,
       dataIsPhased,
@@ -514,6 +518,7 @@ export async function getLDMatrix({
     metric: ldMetric,
     hasDprime: true,
     method: dataIsPhased ? 'phased' : 'composite',
+    band,
     filterStats,
   }
 }

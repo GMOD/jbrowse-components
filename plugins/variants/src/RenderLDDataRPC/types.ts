@@ -45,6 +45,12 @@ export interface LDDataResult {
   // For genomic positions mode: midpoint boundaries between adjacent SNPs.
   boundaries: Float32Array
   numCells: number
+  /**
+   * Pair-separation window `ldValues` is laid out at. Every reader — both
+   * renderers, hitTest, the SVG export — indexes through it, and at the
+   * full-triangle value it is the layout the band generalizes.
+   */
+  band: number
   uniformW: number
   // echoed from RenderLDDataArgs.originBp; see its note
   originBp: number

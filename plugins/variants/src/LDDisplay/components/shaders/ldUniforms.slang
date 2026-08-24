@@ -2,7 +2,7 @@
 // uniform-grid). The genomic variant ignores `uniformW`; keeping the struct
 // identical lets both shaders share a single UBO byte layout so the renderer
 // writes one uniform buffer per frame regardless of which pass draws.
-//! js-export: dprimeFinalize, ldRSquared, ldGenotypeD, ldGenotypeCorrelation, ldHaplotypeCorrelation, ldEnoughGenotypes, ldEnoughGametes, ldLociPolymorphic, ldGenotypeAlleleFreq
+//! js-export: dprimeFinalize, ldRSquared, ldGenotypeD, ldGenotypeCorrelation, ldHaplotypeCorrelation, ldEnoughGenotypes, ldEnoughGametes, ldLociPolymorphic, ldGenotypeAlleleFreq, bandedCellCount
 //! js-export-out: packages/ld-core/src/ldStats.generated.ts
 //! js-skip: ldFinalize — picks one metric for the heatmap; the CPU path returns r2 AND dprime because the tooltip shows both, so it has no single value to pick. Everything ldFinalize dispatches to is exported
 //! js-skip: ldGenotypeCovariance — reached as a private helper inside the generated ldGenotypeD and ldGenotypeCorrelation, so it is already shared without being public
@@ -17,6 +17,10 @@ public struct Uniforms {
   public float  viewOffsetX;
   public uint   signedLd;
   public float  uniformW;
+  // Pair-separation window the instance buffer was laid out at; see
+  // decodeBanded. The render path needs it for the same reason the compute
+  // kernels do — it is what turns a flat index back into (i, j).
+  public uint   band;
 };
 
 // Genome-space cell corner -> clip space. Both variants lay cells out as
@@ -52,22 +56,57 @@ public uint2 decodeTriangular(uint idx) {
   return uint2(i, j);
 }
 
-// Map a compute thread to its lower-triangular cell, returning false for the
-// threads past the last cell (which must just exit). Cells are addressed as a
-// 2D grid because a 1D dispatch caps at maxComputeWorkgroupsPerDimension
-// (65535) workgroups = ~4.19M cells, which a mere ~2896 SNPs exceeds. Both
-// kernels decode through here so the grid addressing can't diverge between
-// them — or from the render path, which lays cells out via decodeTriangular.
-public bool triangularCell(
-  uint3 gid, uint dispatchRowStride, uint numSnps, out uint k, out uint2 ij
+// Cells stored for `numSnps` at window `band` — the TS `bandCellCount`, which
+// is `bandRowStart(numSnps, band)`. Guarded at the small end because `m - 1u`
+// would wrap in uint arithmetic where the TS twin merely goes negative and
+// multiplies to zero.
+public uint bandedCellCount(uint numSnps, uint band) {
+  if (numSnps < 2u || band == 0u) {
+    return 0u;
+  }
+  uint m = min(numSnps, band);
+  return m * (m - 1u) / 2u + (numSnps - m) * band;
+}
+
+// Decode a flat BANDED index into (i, j), i > j, where row i holds only its
+// j with i - j <= band. Two regimes, split at T = the head's cell count:
+// rows 1..band are the untouched triangle (so an unbanded matrix, where every
+// index is < T, decodes through exactly the code it always did), and rows past
+// band are all exactly `band` wide, which is plain div/mod with no sqrt at all.
+//
+// A useful side effect of the band: the sqrt's domain is capped at T ~ band²/2
+// no matter how many SNPs there are, so the float pressure that motivates
+// decodeTriangular's correction loops depends on the window rather than on n.
+public uint2 decodeBanded(uint idx, uint band) {
+  uint T = band * (band + 1u) / 2u;
+  if (idx < T) {
+    return decodeTriangular(idx);
+  }
+  uint off = idx - T;
+  uint i = band + 1u + off / band;
+  return uint2(i, (i - band) + (off % band));
+}
+
+// Map a compute thread to its banded cell, returning false for the threads past
+// the last cell (which must just exit). Cells are addressed as a 2D grid
+// because a 1D dispatch caps at maxComputeWorkgroupsPerDimension (65535)
+// workgroups = ~4.19M cells, which a mere ~2896 SNPs exceeds. Both kernels
+// decode through here so the grid addressing can't diverge between them — or
+// from the render path, which lays cells out via decodeBanded.
+public bool bandedCell(
+  uint3 gid,
+  uint dispatchRowStride,
+  uint numSnps,
+  uint band,
+  out uint k,
+  out uint2 ij
 ) {
   k = gid.y * dispatchRowStride + gid.x;
-  uint numCells = numSnps * (numSnps - 1u) / 2u;
-  if (k >= numCells) {
+  if (k >= bandedCellCount(numSnps, band)) {
     ij = uint2(0u, 0u);
     return false;
   }
-  ij = decodeTriangular(k);
+  ij = decodeBanded(k, band);
   return true;
 }
 

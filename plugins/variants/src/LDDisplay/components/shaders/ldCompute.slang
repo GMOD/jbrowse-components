@@ -15,6 +15,8 @@ struct LDComputeUniforms {
   uint numSamplesPacked;
   uint ldMetric;
   uint signedLD;
+  // Pair-separation window; see decodeBanded in ldUniforms.
+  uint band;
   // Threads per dispatch row (workgroupsX * WORKGROUP_SIZE_X); see
   // triangularCell in ldUniforms for why the grid is 2D.
   uint dispatchRowStride;
@@ -37,7 +39,7 @@ int getGeno(uint snp, uint sample) {
 void computeLD(uint3 gid: SV_DispatchThreadID) {
   uint k;
   uint2 ij;
-  if (!triangularCell(gid, u.dispatchRowStride, u.numSnps, k, ij)) {
+  if (!bandedCell(gid, u.dispatchRowStride, u.numSnps, u.band, k, ij)) {
     return;
   }
   uint i = ij.x;

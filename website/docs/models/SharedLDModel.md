@@ -67,6 +67,7 @@ the whole surface.
 | <span id="getter-squashtoheight">**squashToHeight**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-hwefilterthreshold">**hweFilterThreshold**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-callratefilter">**callRateFilter**</span><br><code>number</code> |  | SharedLDModel |
+| <span id="getter-maxvariantseparation">**maxVariantSeparation**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-showverticalguides">**showVerticalGuides**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-showlabels">**showLabels**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-tickheight">**tickHeight**</span><br><code>number</code> |  | SharedLDModel |

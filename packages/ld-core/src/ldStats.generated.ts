@@ -112,3 +112,17 @@ export function ldLociPolymorphic(pA: number, pB: number): boolean {
 export function ldGenotypeAlleleFreq(dosageSum: number, sampleCount: number): number {
   return (dosageSum / (2.0 * sampleCount))
 }
+
+export function bandedCellCount(numSnps: number, band: number): number {
+  let _t0: boolean
+  if ((numSnps < 2)) {
+    _t0 = true
+  } else {
+    _t0 = (band == 0)
+  }
+  if (_t0) {
+    return 0
+  }
+  let _t1 = _min(numSnps, band)
+  return ((Math.trunc(((Math.imul(_t1, ((_t1 - 1) >>> 0))) >>> 0) / 2) + ((Math.imul(((numSnps - _t1) >>> 0), band)) >>> 0)) >>> 0)
+}

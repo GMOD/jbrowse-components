@@ -1,4 +1,8 @@
-import { ldPairIndex } from '../VariantRPC/getLDMatrix.ts'
+import {
+  bandCellCount,
+  bandPairIndex,
+  bandRowFirstColumn,
+} from '../VariantRPC/ldBand.ts'
 
 import type { LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { Region } from '@jbrowse/core/util/types'
@@ -56,8 +60,14 @@ export function getDisplayOrder(snps: LDSnp[], regions: Region[]) {
 }
 
 /**
- * Re-index the fetched matrix into screen order. `ldPairIndex` is symmetric, so
- * a pair whose order the reversal inverted just reads the transposed slot.
+ * Re-index the fetched matrix into screen order. `bandPairIndex` is symmetric,
+ * so a pair whose order the reversal inverted just reads the transposed slot.
+ *
+ * A pair adjacent on screen need not have been adjacent in the source order —
+ * a reversal preserves separation, but two blocks laid end to end do not — so a
+ * screen-order pair can name a source pair the band never computed. That reads
+ * as 0, the same "no value for this pair" convention the pre-computed adapter
+ * uses for a pair its file never mentions, rather than as an out-of-range slot.
  */
 export function applyDisplayOrder(
   data: {
@@ -65,14 +75,16 @@ export function applyDisplayOrder(
     ldValues: Float32Array
   },
   order: Uint32Array,
+  band: number,
 ) {
   const n = order.length
   const snps = Array.from(order, i => data.snps[i]!)
-  const ldValues = new Float32Array(data.ldValues.length)
+  const ldValues = new Float32Array(bandCellCount(n, band))
+  let idx = 0
   for (let i = 1; i < n; i++) {
-    const rowBase = (i * (i - 1)) / 2
-    for (let j = 0; j < i; j++) {
-      ldValues[rowBase + j] = data.ldValues[ldPairIndex(order[i]!, order[j]!)]!
+    for (let j = bandRowFirstColumn(i, band); j < i; j++) {
+      const src = bandPairIndex(order[i]!, order[j]!, band)
+      ldValues[idx++] = src < 0 ? 0 : data.ldValues[src]!
     }
   }
   return { snps, ldValues }

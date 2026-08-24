@@ -27,6 +27,7 @@ export const UNIFORM_OFFSET_F32 = {
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
   signedLd: 5,
+  band: 7,
 } as const
 
 
@@ -37,6 +38,7 @@ export interface Uniforms {
   viewOffsetX: number
   signedLd: number
   uniformW: number
+  band: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -49,6 +51,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[4] = uniforms.viewOffsetX
   u32[5] = uniforms.signedLd
   f32[6] = uniforms.uniformW
+  u32[7] = uniforms.band
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

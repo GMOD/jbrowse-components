@@ -17,6 +17,7 @@ function ldData(n: number, widthBp: number, originBp: number): LDDataResult {
     ldValues: new Float32Array((n * (n - 1)) / 2),
     boundaries: new Float32Array(n + 1),
     numCells: (n * (n - 1)) / 2,
+    band: 1_000_000,
     uniformW: widthBp / (n * Math.SQRT2),
     originBp,
     genomicMode: false,

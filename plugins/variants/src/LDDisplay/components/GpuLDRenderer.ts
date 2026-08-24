@@ -132,6 +132,9 @@ export class GpuLDRenderer
       viewOffsetX: state.viewOffsetX,
       signedLd: data.signedLD ? 1 : 0,
       uniformW: data.uniformW,
+      // Uniform mode's vertex shader turns instance_index back into (i, j)
+      // through this; genomic mode carries per-cell positions and ignores it.
+      band: data.band,
     })
 
     this.hal.writeUniforms(this.uniformData)

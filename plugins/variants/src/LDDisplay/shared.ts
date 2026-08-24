@@ -29,6 +29,7 @@ import { cast, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { isPrecomputedLDAdapter } from '../RenderLDDataRPC/types.ts'
+import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { genomicViewportX } from '../shared/genomicViewportX.ts'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
@@ -197,6 +198,9 @@ export default function sharedModelFactory(
       },
       get callRateFilter() {
         return getConf(self, 'callRateFilter')
+      },
+      get maxVariantSeparation() {
+        return getConf(self, 'maxVariantSeparation')
       },
       get showVerticalGuides() {
         return getConf(self, 'showVerticalGuides')
@@ -484,6 +488,7 @@ export default function sharedModelFactory(
           lengthCutoffFilter: self.lengthCutoffFilter,
           hweFilterThreshold: self.hweFilterThreshold,
           callRateFilter: self.callRateFilter,
+          maxVariantSeparation: self.maxVariantSeparation,
           jexlFilters: self.activeFilters(),
           signedLD: self.signedLD,
           useGenomicPositions: self.useGenomicPositions,
@@ -653,7 +658,7 @@ export default function sharedModelFactory(
           return undefined
         }
         const { x, y } = this.screenToCell(mouseX, mouseY)
-        const { boundaries, ldValues } = data
+        const { boundaries, ldValues, band } = data
         const n = boundaries.length - 1
         // One search for both layouts: uniform mode's boundaries ARE
         // `i * uniformW`, so the division it used to do here is what this
@@ -663,17 +668,23 @@ export default function sharedModelFactory(
         // guard below.
         const hitJ = upperBoundFloat32(boundaries, x) - 1
         const hitI = upperBoundFloat32(boundaries, y) - 1
-        if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
-          const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
-          return {
-            i: hitI,
-            j: hitJ,
-            ldValue: ldValues[ldIdx]!,
-            snp1: self.snps[hitI]!,
-            snp2: self.snps[hitJ]!,
-          }
-        }
-        return undefined
+        // A pair outside the band was never computed and is not drawn, so
+        // there is nothing under the cursor there — `bandPairIndex` says -1
+        // rather than this restating the layout, which is the fourth hand-copy
+        // of the index formula this used to be.
+        const ldIdx =
+          hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n
+            ? bandPairIndex(hitI, hitJ, band)
+            : -1
+        return ldIdx < 0
+          ? undefined
+          : {
+              i: hitI,
+              j: hitJ,
+              ldValue: ldValues[ldIdx]!,
+              snp1: self.snps[hitI]!,
+              snp2: self.snps[hitJ]!,
+            }
       },
     }))
     .actions(self => ({

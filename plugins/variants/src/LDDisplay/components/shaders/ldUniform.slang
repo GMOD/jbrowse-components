@@ -1,6 +1,6 @@
 // LD heatmap — UNIFORM mode. Instance data is just ldValue; (i, j)
-// coordinates within the triangular grid come from `instance_index` decoded
-// via decodeTriangular. Cell pitch is `uniformW` (shared across all cells).
+// coordinates within the banded triangular grid come from `instance_index`
+// decoded via decodeBanded. Cell pitch is `uniformW` (shared across all cells).
 //! targets: wgsl, glsl
 //! blend: premultiplied
 
@@ -28,7 +28,7 @@ VsOut vs_main(
   uint vid : SV_VertexID,
   uint iid : SV_InstanceID,
 ) {
-  uint2 ij = decodeTriangular(iid);
+  uint2 ij = decodeBanded(iid, u.band);
   float2 pos = (float2(float(ij.y), float(ij.x)) + quadLocal(vid)) * u.uniformW;
 
   VsOut o;

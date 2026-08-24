@@ -18,6 +18,7 @@ export interface LDUploadData {
   ldValues: Float32Array
   boundaries: Float32Array
   numCells: number
+  band: number
   signedLD: boolean
   uniformW: number
   // Present only for genomic positions mode (pre-computed per-cell positions)
@@ -48,6 +49,7 @@ export function toLDUploadData(data: LDDataResult): LDUploadData {
     ldValues: data.ldValues,
     boundaries: data.boundaries,
     numCells: data.numCells,
+    band: data.band,
     signedLD: data.signedLD,
     uniformW: data.uniformW,
     positions: data.positions,

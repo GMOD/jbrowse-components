@@ -4,6 +4,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
+import { bandRowFirstColumn } from '../../VariantRPC/ldBand.ts'
 import { mapLDValue } from './ldColorRamp.ts'
 
 import type {
@@ -29,7 +30,7 @@ export function drawLDBlocks(
   state: LDRenderState,
 ) {
   const { yScalar, viewScale, viewOffsetX } = state
-  const { ldValues, boundaries, numCells, signedLD } = data
+  const { ldValues, boundaries, numCells, band, signedLD } = data
   if (numCells === 0) {
     return
   }
@@ -41,7 +42,7 @@ export function drawLDBlocks(
   for (let i = 1; i < n; i++) {
     const py = boundaries[i]!
     const ch = boundaries[i + 1]! - py
-    for (let j = 0; j < i; j++) {
+    for (let j = bandRowFirstColumn(i, band); j < i; j++) {
       const px = boundaries[j]!
       const cw = boundaries[j + 1]! - px
       const ldVal = ldValues[k++]!

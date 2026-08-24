@@ -22,6 +22,8 @@ export interface RenderLDDataArgs {
   lengthCutoffFilter: number
   hweFilterThreshold: number
   callRateFilter: number
+  /** plink's `--ld-window`; 0 for the full triangle. See `ldBand.ts`. */
+  maxVariantSeparation: number
   jexlFilters: string[]
   signedLD: boolean
   useGenomicPositions: boolean

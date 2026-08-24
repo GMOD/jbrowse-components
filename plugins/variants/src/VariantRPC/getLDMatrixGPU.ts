@@ -4,6 +4,7 @@ import { getGpuDevice, onDeviceLost } from '@jbrowse/render-core/gpuDevice'
 
 import * as ldCompute from '../LDDisplay/components/shaders/ldCompute.generated.ts'
 import * as ldPhasedCompute from '../LDDisplay/components/shaders/ldPhasedCompute.generated.ts'
+import { bandCellCount } from './ldBand.ts'
 
 import type { LDMetric } from './getLDMatrix.ts'
 import type { PackedHaplotypes } from '@jbrowse/ld-core'
@@ -227,6 +228,7 @@ async function runGPUCompute({
 
 export async function computeLDMatrixGPU(
   encodedGenotypes: Int8Array[],
+  band: number,
   ldMetric: LDMetric,
   signedLD: boolean,
 ): Promise<Float32Array | null> {
@@ -236,7 +238,7 @@ export async function computeLDMatrixGPU(
   }
 
   const numSamples = encodedGenotypes[0]!.length
-  const numCells = (n * (n - 1)) / 2
+  const numCells = bandCellCount(n, band)
 
   if (numCells * numSamples < MIN_WORK) {
     return null
@@ -289,6 +291,7 @@ export async function computeLDMatrixGPU(
     numSnps: n,
     numSamples,
     numSamplesPacked,
+    band,
     ldMetric: ldMetric === 'dprime' ? 1 : 0,
     signedLD: signedLD ? 1 : 0,
     dispatchRowStride: plan.rowStride,
@@ -308,6 +311,7 @@ export async function computeLDMatrixGPU(
 
 export async function computeLDMatrixGPUPhased(
   packedHaplotypes: PackedHaplotypes[],
+  band: number,
   ldMetric: LDMetric,
   signedLD: boolean,
 ): Promise<Float32Array | null> {
@@ -317,7 +321,7 @@ export async function computeLDMatrixGPUPhased(
   }
 
   const numWords = packedHaplotypes[0]!.words
-  const numCells = (n * (n - 1)) / 2
+  const numCells = bandCellCount(n, band)
 
   // Work proportional to numCells * numWords (each word covers 32 samples)
   if (numCells * numWords * 32 < MIN_WORK) {
@@ -353,6 +357,7 @@ export async function computeLDMatrixGPUPhased(
   ldPhasedCompute.writeUniforms(uniformData, {
     numSnps: n,
     numWords,
+    band,
     ldMetric: ldMetric === 'dprime' ? 1 : 0,
     signedLD: signedLD ? 1 : 0,
     dispatchRowStride: plan.rowStride,
