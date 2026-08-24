@@ -126,8 +126,7 @@ the oncogenic _TAL1_ variants above it and no predictions yet.
 }
 ```
 
-**View menu → AlphaGenome predictions…** opens the query panel. Four things go
-into a request:
+**Tools → AlphaGenome** opens the query panel. Four things go into a request:
 
 - **what to predict.** Eleven output types, and asking for all of them is one
   call rather than eleven, so there is little reason to be sparing. The presets
