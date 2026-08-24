@@ -1,5 +1,5 @@
 ---
-status: Accepted
+status: Rejected
 summary: "A third-party display is a spec of plain values and functions handed to defineDisplay, which composes the in-tree display stack once, inside display-kit; the author never composes a mixin, names a hook, or writes an RPC class, a config schema, a backend class or a component"
 ---
 
@@ -7,14 +7,16 @@ summary: "A third-party display is a spec of plain values and functions handed t
 
 ## Status
 
-Accepted. `packages/display-kit/src/defineDisplay.tsx`;
+Rejected (2026-08-24), and the code removed: [ADR-091](adr-091-a-displays-settings-are-a-declaration.md) has the measurements. The port of an in-tree display showed the spec holds a display's wiring and nothing else, so it was not kept for third parties either. What follows is the record as accepted; the file paths in it no longer exist.
+
+As accepted: `packages/display-kit/src/defineDisplay.tsx`;
 `plugins/linear-genome-view/src/displayKitTests/defineDisplay.test.ts` pins
 the fetch, the settings split and the registration; `example-plugins/score-example`
 is the gauge.
 
 ## Context
 
-The published-ABI goal ([ideas/a-track-type-is-five-primitives](../ideas/a-track-type-is-five-primitives.md))
+The published-ABI goal (`ideas/a-track-type-is-five-primitives`, since rejected with the factory it proposed: [ADR-091](adr-091-a-displays-settings-are-a-declaration.md))
 needs an authoring surface a third party can hold. What existed was
 `types.compose` over nine model layers, nineteen overridable hooks that default
 silently, three MST view methods (`rpcProps`, `gpuProps`, `renderState`) whose

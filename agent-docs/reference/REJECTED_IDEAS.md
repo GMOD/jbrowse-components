@@ -16,18 +16,24 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
-- **Porting in-tree displays onto `defineDisplay`, and a declared settings table
-  under them** — run as Level 0 of `ideas/a-display-declares-itself.md` on
-  2026-08-24 and rejected the same day, [ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md).
-  `LinearManhattanDisplay` fit the factory, through six spec fields that were
-  each an override hook with one consumer, a ~478-line imperative `extend` and
-  an RPC serialization the spec could not hold; it also put 40 modules and
-  ~240 KB onto the gwas plugin's startup path, because a state model is eager.
-  The data-only table left behind eliminated 0 of the 60 declarable getters,
-  derived a correct fetch payload on 1 display in 6, and gave every shared
-  setting a second owner. The branch (`worktree-manhattan-lazy-spike`) stays
-  as the record; its four config-read fixes and the factory's promotable-slot
-  read were salvaged onto main.
+- **`defineDisplay`: a track type as a spec, a mark as a shape plus channels, and a
+  declared settings table under them** (ADR-089, ADR-090, and the branch that
+  tried the table; also `ideas/a-track-type-is-five-primitives`, the proposal
+  behind all three) — all rejected on 2026-08-24 and removed from the tree,
+  [ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md).
+  The factory was gauged on `example-plugins/score-example` (two settings, no
+  layout, one mark) and then tested on an in-tree display: `LinearManhattanDisplay`
+  fit only through six spec fields that were each an override hook with one
+  consumer, a ~478-line imperative `extend` and an RPC serialization the spec
+  could not hold, and it put 40 modules and ~240 KB onto the gwas plugin's
+  startup path because a state model is eager. The data-only settings table left
+  behind eliminated 0 of 60 declarable getters, derived a correct fetch payload
+  on 1 display in 6, and gave every shared setting a second owner. A spec that
+  holds a display's wiring and nothing else is not worth keeping for third
+  parties either: they get the same hand-composed stack the in-tree displays use,
+  through the published subpaths, which is what `score-example` shows again.
+  The branch `worktree-manhattan-lazy-spike` stays as the record; its four
+  config-read fixes were salvaged onto main.
 
 - **A query language for the SV inspector's search** — proposed as
   `ideas/sv-search-language.md`, and closed 2026-08-16 by giving the grid two

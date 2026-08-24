@@ -1,6 +1,6 @@
 ---
 name: a-display-declares-itself
-description: A multi-level simplification target whose Level 0 has RUN and been REJECTED (ADR-091) — read the Result section at the top before anything else, because it corrects this doc's own numbers. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) that was left behind was then rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check.
+description: A multi-level simplification target whose Level 0 has RUN and been REJECTED, and whose subject, defineDisplay, was then removed from the tree with it (ADR-091, which also rejects ADR-089 and ADR-090) — read the Result section at the top before anything else. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) left behind was rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. Levels 0.5 to 5 below are written against a factory that no longer exists; what survives of them is the census and the placement question (Level 2). The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check.
 ---
 
 # A display declares itself
@@ -42,7 +42,9 @@ in-tree displays. On the branch, Manhattan and `LinearHicDisplay` were both
 converted to declare themselves, on different fetch foundations, composing
 their own MST chains. **None of it landed**: the measurements below are what
 ADR-091 rejected the declaration on, and what was salvaged from the branch is
-listed in that ADR's Consequences.
+listed in that ADR's Consequences. The factory itself, `defineDisplay` and the mark
+system (ADR-089, ADR-090), was then removed from the tree on the same evidence,
+so every mention of it below is historical.
 
 ### The numbers in this doc that did not survive
 
@@ -274,7 +276,7 @@ Named rather than numbered, because only the dependency order below is fixed.
 > scoreable.
 
 **Today.** `defineDisplay` is measured against the easy case, and
-[a-track-type-is-five-primitives](a-track-type-is-five-primitives.md) says in so
+`a-track-type-is-five-primitives` (since rejected, see REJECTED_IDEAS) said in so
 many words that alignments "stays on the full stack and is not a target". Every
 level below assumes the factory can hold a real display. Nothing has tested that.
 
@@ -784,7 +786,7 @@ them as re-taken understates what Levels 1 and 3 need.
   multiplies the shape list over an orthogonal axis. The rest of ADR-090 stands,
   including "the next shape joins on a consumer's pull" — Level 0 names the
   consumer and Level 3 says which shape.
-- **[a-track-type-is-five-primitives](a-track-type-is-five-primitives.md)** scopes
+- **`a-track-type-is-five-primitives`** (rejected with the factory, [ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md)) scoped
   the ABI to what the score-example has and puts alignments out of scope. That
   scoping is right for the *published contract* and wrong as the measure of
   whether the system got simpler; this doc is the second measure, not a

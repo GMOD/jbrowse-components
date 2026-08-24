@@ -1,5 +1,5 @@
 ---
-status: Accepted
+status: Rejected
 summary: "A display declares a mark, a shape plus the channels that feed it, and the GPU pass, the Canvas2D painter and the SVG export derive from that one declaration; shapes live in render-core as one hand-written shader, one painter and one pack each, and the worked example needs no shader of its own"
 ---
 
@@ -7,7 +7,9 @@ summary: "A display declares a mark, a shape plus the channels that feed it, and
 
 ## Status
 
-Accepted. `packages/render-core/src/marks/bar.ts` and
+Rejected (2026-08-24), and the code removed: [ADR-091](adr-091-a-displays-settings-are-a-declaration.md) has the measurements. The port of an in-tree display showed the spec holds a display's wiring and nothing else, so it was not kept for third parties either. What follows is the record as accepted; the file paths in it no longer exist.
+
+As accepted: `packages/render-core/src/marks/bar.ts` and
 `packages/render-core/src/shaders/bar.slang` are the first shape;
 `packages/display-kit/src/marks.ts` is the mark-to-display wiring;
 `example-plugins/score-example` draws with `mark: { type: 'bar', ... }`.

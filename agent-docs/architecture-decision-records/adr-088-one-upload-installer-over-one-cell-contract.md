@@ -30,7 +30,7 @@ per-key release does not, and on a shared canvas it was the mistake the keyed
 installer existed to prevent. Once release is per key, the only difference left
 between the three was a method name.
 
-The published-ABI goal ([ideas/a-track-type-is-five-primitives](../ideas/a-track-type-is-five-primitives.md))
+The published-ABI goal (`ideas/a-track-type-is-five-primitives`, since rejected with the factory it proposed: [ADR-091](adr-091-a-displays-settings-are-a-declaration.md))
 is what changed the weighing: three installers and three contracts is three
 things a third party has to choose between, and ADR-079's own consequence was
 "a display that fits none of the three wants a fourth."
