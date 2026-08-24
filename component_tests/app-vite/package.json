@@ -25,6 +25,7 @@
     "@jbrowse/app-core": "file:./packed/jbrowse-app-core.tgz",
     "@jbrowse/cigar-utils": "file:./packed/jbrowse-cigar-utils.tgz",
     "@jbrowse/core": "file:./packed/jbrowse-core.tgz",
+    "@jbrowse/display-kit": "file:./packed/jbrowse-display-kit.tgz",
     "@jbrowse/display-ui": "file:./packed/jbrowse-display-ui.tgz",
     "@jbrowse/ld-core": "file:./packed/jbrowse-ld-core.tgz",
     "@jbrowse/modifications-utils": "file:./packed/jbrowse-modifications-utils.tgz",
