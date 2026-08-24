@@ -52,8 +52,8 @@ async function main() {
         const btn = e.matches('button') ? e : e.querySelector('button')
         return (
           btn?.getAttribute('value') ??
-          e.querySelector('[data-testid]')?.getAttribute('data-testid') ??
-          e.getAttribute('data-testid') ??
+          e.querySelector<HTMLElement>('[data-testid]')?.dataset.testid ??
+          e.dataset.testid ??
           (e.textContent.trim().slice(0, 18) || `<${e.tagName.toLowerCase()}>`)
         )
       }
