@@ -77,6 +77,7 @@ surface.
 | <span id="slot-archeight">**arcHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'jexl:log10(get(feature,'end')-get(feature,'start'))*50'</code> | the height of the arcs<br>_callback args:_ `feature` |
 | <span id="slot-caption">**caption**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'jexl:get(feature,'name')'</code> | the caption to appear when hovering over any point on the arcs<br>_callback args:_ `feature` |
 | <span id="slot-displaymode">**displayMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (arcs, semicircles) = <code>'arcs'</code> | render semi-circles instead of arcs |
+| <span id="slot-minscore">**minScore**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | hide arcs whose feature score is below this; features with no score are always drawn |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">6 slots</span> |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
 | <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1_000_000</code> | maximum data to attempt to download for a given track, used if adapter doesn't specify one<br>_advanced_ |

@@ -100,6 +100,15 @@ export function configSchemaFactory() {
         model: types.enumeration('DisplayMode', [...ARC_DISPLAY_MODES]),
         description: 'render semi-circles instead of arcs',
       },
+      /**
+       * #slot
+       */
+      minScore: {
+        type: 'number',
+        defaultValue: 0,
+        description:
+          'hide arcs whose feature score is below this; features with no score are always drawn',
+      },
     },
     {
       /**

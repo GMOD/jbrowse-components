@@ -59,6 +59,15 @@ export function configSchemaFactory() {
         // sentinel promotable slot: see promotableDefaults.ts
         promotedBase: defaultArcLineWidth,
       },
+      /**
+       * #slot
+       */
+      minScore: {
+        type: 'number',
+        defaultValue: 0,
+        description:
+          'hide arcs whose feature score is below this; features with no score are always drawn',
+      },
     },
     {
       /**

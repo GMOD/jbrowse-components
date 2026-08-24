@@ -11,6 +11,11 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
+import {
+  featureScoreRange,
+  filterByScore,
+  makeScoreFilterMenuItem,
+} from '../shared/scoreFilter.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
 
 import type {
@@ -92,6 +97,22 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       get conf(): LinearArcDisplayConfig {
         return self.configuration
       },
+      /**
+       * #getter
+       * arcs whose feature scores below this are not drawn; 0 (the default)
+       * draws every arc, as does any feature carrying no score
+       */
+      get minScore(): number {
+        return getConf(self, 'minScore')
+      },
+      /**
+       * #getter
+       * the score span the filter slider is laid out over, `undefined` when the
+       * loaded features give it nothing to filter on
+       */
+      get scoreRange() {
+        return self.features && featureScoreRange(self.features)
+      },
     }))
     .views(self => ({
       /**
@@ -112,7 +133,9 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
         // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
         // returns) a number — both have a default, so the read is never unset.
         // color/label/caption are string slots read through the typed self.conf.
-        return self.features?.map(feature => ({
+        const kept =
+          self.features && filterByScore(self.features, self.minScore)
+        return kept?.map(feature => ({
           feature,
           color: readConfObject(self.conf, 'color', { feature }),
           thickness: getConf(self, 'thickness', { feature }),
@@ -152,6 +175,12 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       setDisplayMode(mode: ArcDisplayMode) {
         setConf(self, 'displayMode', mode)
       },
+      /**
+       * #action
+       */
+      setMinScore(score: number) {
+        setConf(self, 'minScore', score)
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -190,6 +219,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
          * #method
          */
         trackMenuItems() {
+          const { scoreRange } = self
           return [
             ...superMenuItems(),
             makeRadioSubMenu({
@@ -200,6 +230,9 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
               },
               options: ARC_DISPLAY_MODE_OPTIONS,
             }),
+            // left out entirely when the data has no score span to filter on,
+            // rather than shown as a slider whose ends mean the same thing
+            ...(scoreRange ? [makeScoreFilterMenuItem(self, scoreRange)] : []),
           ]
         },
       }

@@ -1,5 +1,6 @@
 import {
   ConfigurationReference,
+  getConf,
   readConfObject,
   resolveConf,
   setConf,
@@ -10,6 +11,11 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
+import {
+  featureScoreRange,
+  filterByScore,
+  makeScoreFilterMenuItem,
+} from '../shared/scoreFilter.ts'
 import { makeFeaturePair, pairKey } from './components/util.ts'
 import { makeLineWidthMenuItem } from './lineWidthMenu.tsx'
 
@@ -98,6 +104,22 @@ export function stateModelFactory(
       get lineWidth(): number {
         return resolveConf(self, 'lineWidth')
       },
+      /**
+       * #getter
+       * arcs whose feature scores below this are not drawn; 0 (the default)
+       * draws every arc, as does any feature carrying no score
+       */
+      get minScore(): number {
+        return getConf(self, 'minScore')
+      },
+      /**
+       * #getter
+       * the score span the filter slider is laid out over, `undefined` when the
+       * loaded features give it nothing to filter on
+       */
+      get scoreRange() {
+        return self.features && featureScoreRange(self.features)
+      },
     }))
     .views(self => ({
       /**
@@ -110,7 +132,9 @@ export function stateModelFactory(
        * twice whenever both endpoints are in the fetched regions.
        */
       get arcStyles() {
-        const styles = self.features?.flatMap(feature => {
+        const kept =
+          self.features && filterByScore(self.features, self.minScore)
+        const styles = kept?.flatMap(feature => {
           const alts = feature.get('ALT') as string[] | undefined
           const make = (alt: string | undefined) => ({
             feature,
@@ -139,6 +163,12 @@ export function stateModelFactory(
        */
       setLineWidth(n?: number) {
         setConf(self, 'lineWidth', n)
+      },
+      /**
+       * #action
+       */
+      setMinScore(score: number) {
+        setConf(self, 'minScore', score)
       },
     }))
 
@@ -179,7 +209,14 @@ export function stateModelFactory(
          * #method
          */
         trackMenuItems() {
-          return [...superMenuItems(), makeLineWidthMenuItem(self)]
+          const { scoreRange } = self
+          return [
+            ...superMenuItems(),
+            makeLineWidthMenuItem(self),
+            // left out entirely when the data has no score span to filter on,
+            // rather than shown as a slider whose ends mean the same thing
+            ...(scoreRange ? [makeScoreFilterMenuItem(self, scoreRange)] : []),
+          ]
         },
       }
     })

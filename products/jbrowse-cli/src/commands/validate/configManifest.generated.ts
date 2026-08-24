@@ -4875,6 +4875,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayMode",
           "type": "(JexlString | DisplayMode)"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
         }
       ],
       "legacyKeys": [
@@ -4927,6 +4931,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "lineWidth",
           "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "minScore",
+          "type": "(JexlString | number)"
         }
       ],
       "stateModelProps": [
