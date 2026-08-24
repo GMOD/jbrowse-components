@@ -321,7 +321,7 @@ jb2export --hub hg38 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.ecb39b87baa3.png)
+![HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.82749bd6f26f.png)
 
 ### Breakpoint split views
 
@@ -768,7 +768,7 @@ jb2export dotplot \
   --autoDiagonalize --width 1100 --out yeast_dotplot.png
 ```
 
-![Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)](https://jbrowse.org/jb2-figures/jbrowse-img/yeast_dotplot.0bd73e242994.png)
+![Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)](https://jbrowse.org/jb2-figures/jbrowse-img/yeast_dotplot.c789460b7da2.png)
 
 A linear synteny ribbon between one chromosome in each assembly (here YJM1447
 chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders the
@@ -903,7 +903,7 @@ jb2export synteny --chromSizes data/comparative/hs1.chrom.sizes \
   --cigarMode matches --width 1400 --out hs1_mm39_synteny.png
 ```
 
-![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://jbrowse.org/jb2-figures/jbrowse-img/hs1_mm39_synteny.79bdcd5f1b54.png)
+![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://jbrowse.org/jb2-figures/jbrowse-img/hs1_mm39_synteny.b681810f2751.png)
 
 A three-level stack: hg38, hs1 (T2T), and mm39, with one ribbon per adjacent
 pair: the conserved hg38↔hs1 build liftover on top (near-vertical bands) and the
@@ -923,7 +923,7 @@ jb2export synteny --chromSizes data/comparative/hg38.chrom.sizes \
   --drawCurves --cigarMode matches --width 1400 --out hg38_hs1_mm39_synteny.png
 ```
 
-![Three-level synteny stack: hg38, hs1, and mm39](https://jbrowse.org/jb2-figures/jbrowse-img/hg38_hs1_mm39_synteny.ea2fd8d2a5d4.png)
+![Three-level synteny stack: hg38, hs1, and mm39](https://jbrowse.org/jb2-figures/jbrowse-img/hg38_hs1_mm39_synteny.bf2fbcbc046e.png)
 
 ### All-vs-all alignments (PGGB, minimap2 -X)
 
@@ -1030,7 +1030,7 @@ jb2export circular --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --width 800 --out circular_chords.png
 ```
 
-![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://jbrowse.org/jb2-figures/jbrowse-img/circular_chords.044d7fab1633.png)
+![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://jbrowse.org/jb2-figures/jbrowse-img/circular_chords.d3023abf23c5.png)
 
 Run `jb2export circular --help` for the full list of options.
 
