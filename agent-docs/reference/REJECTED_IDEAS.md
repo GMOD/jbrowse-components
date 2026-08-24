@@ -16,6 +16,19 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **Porting in-tree displays onto `defineDisplay`, and a declared settings table
+  under them** — run as Level 0 of `ideas/a-display-declares-itself.md` on
+  2026-08-24 and rejected the same day, [ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md).
+  `LinearManhattanDisplay` fit the factory, through six spec fields that were
+  each an override hook with one consumer, a ~478-line imperative `extend` and
+  an RPC serialization the spec could not hold; it also put 40 modules and
+  ~240 KB onto the gwas plugin's startup path, because a state model is eager.
+  The data-only table left behind eliminated 0 of the 60 declarable getters,
+  derived a correct fetch payload on 1 display in 6, and gave every shared
+  setting a second owner. The branch (`worktree-manhattan-lazy-spike`) stays
+  as the record; its four config-read fixes and the factory's promotable-slot
+  read were salvaged onto main.
+
 - **A query language for the SV inspector's search** — proposed as
   `ideas/sv-search-language.md`, and closed 2026-08-16 by giving the grid two
   columns instead. The complaint was real: a search matched the spreadsheet's

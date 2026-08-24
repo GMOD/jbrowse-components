@@ -1,6 +1,6 @@
 ---
 name: a-display-declares-itself
-description: An ambitious multi-level simplification target, written against a measured census rather than against the render path — five surfaces are hand-written against the display's getters, and the move is to make the declaration derive them. The census reproduces; the inferences needed correcting, so the doc also carries what the numbers do NOT support: the reducible target is ~90 settings-and-UI getters and not all 288, two unrelated things in the tree are both called a mark, and the two placement files that share an opening paragraph make opposite decisions under it. Two grounds are contested rather than re-taken — ADR-090's per-frame colour ruling, which describes `bar` and no other shape in the tree, and RFC-001 §2, whose leading objection names Manhattan. Read before proposing a grammar layer, before generalizing a band, before merging a placement primitive, and before taking defineDisplay further on the score-example.
+description: A multi-level simplification target whose Level 0 has RUN and been REJECTED (ADR-091) — read the Result section at the top before anything else, because it corrects this doc's own numbers. On an unlanded branch Manhattan was ported to defineDisplay and came back off it, and the settings declaration (params.ts) that was left behind was then rejected too: every field the port added to the factory was an override hook, and the table eliminated nothing. The measured target is 60 declarable getters and not ~90, out of 321 and not 288, and the count ELIMINATED is 0 — deleting a display's own getters moves the break to its public surface, so this is not a getter-reduction play. What survives: the table as the one place a setting is named, and `affects` as a claim a per-display check holds a display to. What was tried and reversed: resolving the table into a bag on the model, which erases the types the config readers derive and needed four pieces of machinery to buy back. What does not: Level 1's ambition of deriving menus and legends from the table — the declaration standardizes a setting's plumbing, not its meaning. Do not convert a display that composes a cross-cutting mixin for a setting until the two-owner seam has a check.
 ---
 
 # A display declares itself
@@ -14,7 +14,136 @@ cannot answer "is this system simpler", because the in-tree displays it does not
 reach are where every measured cost sits.
 
 This is the plan for the second question, written against a census taken
-2026-08-24.
+2026-08-24. Level 0 has since run; the Result section immediately below records
+what it returned and which numbers in this doc it corrected.
+
+## Result: Level 0 ran, 2026-08-24
+
+Everything below this section is the plan as written before it ran, kept
+unedited except where a number in it is now known to be wrong (each such place
+says so and points here). Read this first; it changes what several of the levels
+are worth.
+
+**Level 0's port happened, and then came back off.** `LinearManhattanDisplay`
+was ported to `defineDisplay` and scored against a pre-committed budget
+(the commit range on the unlanded `worktree-manhattan-lazy-spike` branch;
+[ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md)
+records the decision not to land it). The port fit. What it cost was measured afterwards and was not in the budget: 40
+modules and ~240 KB of source moved onto the gwas plugin's startup path,
+because a state model is eager and everything a spec names by value is eager
+with it; four generated censuses lost the display, two silently; and two of the
+port's structural claims did not hold as written.
+
+So the reusable half moved BELOW the factory. `packages/display-kit/src/params.ts`
+is a settings declaration — data that builds the schema and carries what each
+setting invalidates, which a display's getters do NOT read through;
+`defineDisplay` is one assembly of those pieces rather than the destination for
+in-tree displays. On the branch, Manhattan and `LinearHicDisplay` were both
+converted to declare themselves, on different fetch foundations, composing
+their own MST chains. **None of it landed**: the measurements below are what
+ADR-091 rejected the declaration on, and what was salvaged from the branch is
+listed in that ADR's Consequences.
+
+### The numbers in this doc that did not survive
+
+A census of the four model files against the real mechanism (not the estimate
+this doc was written from):
+
+| this doc says | measured |
+| --- | --- |
+| 288 `#getter` across four files | 321 — the count omits `alignments/…/configSlotViews.ts`, 32 getters and the single most declarable block in the tree |
+| ~90 reducible settings-and-UI getters | **60** are declarable at all |
+| (implied) the mechanism reduces that count | **0 eliminated.** Both converted displays kept one hand-written getter per param; only the right-hand side changed |
+
+The last row is the one that matters. Deleting those getters means every
+consumer — menus, dialogs, renderers, SVG export, third-party plugins — spells
+`display.declaredParams.showCoverage` instead of `display.showCoverage`. That is
+a break in the display model's public surface, so **the declaration is not a
+getter-reduction play and should stop being described as one.**
+
+Two more measurements worth carrying:
+
+- `canvas/LinearBasicDisplay` has **3** declarable getters out of 47 despite ~25
+  slots, because it transports its settings wholesale
+  (`getConfigSnapshotWithPromotables` + `pickDisplayConfig`) rather than reading
+  them one at a time. The display with the largest slot table has the smallest
+  declarable surface.
+- The derived fetch bag is a display's whole `rpcProps()` on **1 of 6** displays
+  examined. Alignments transports 5 of 12 fields verbatim, canvas 0 of ~12, MAF
+  0 of 2, HiC 0 of 2. The values that invalidate a fetch are usually *derived* —
+  a precedence ladder, a resolution against fetched metadata, an ordering — and
+  raw-slot-verbatim transport is the special case. The same holds for the encode
+  side, where the derived bag found zero consumers in two displays and was
+  deleted.
+
+### What does generalize
+
+Not factory residence, and not getter count. Three things:
+
+- **A read discipline that cannot be got wrong.** `read: 'resolved'` is required
+  at the type level for a promotable slot and rejected for any other. Promotable
+  slots store a sentinel, so a plain `getConf` on one answers `undefined` where
+  the display-type default is what the user sees, and nothing at any layer
+  reports it. 19 promotable slots across the four big displays, and the census
+  found zero live instances.
+
+  **The census and I both then got the reason wrong**, and the correction
+  matters: `getConf` on a promotable slot is typed `T | undefined` where
+  `resolveConf` is typed `T`, and `ConfigurationSlotValue` in
+  `core/configuration/types.ts` describes itself as "the whole compile-time
+  guard". The wrong verb at a typed call site is already a compile error. Zero
+  violations is the type system working, not convention holding. What
+  `read: 'resolved'` actually buys back is the guard `readParams` gives up by
+  looping into a `Record<string, unknown>` and asserting the result — which is
+  an argument against the bag, not for the axis.
+- **`affects` as a statement a check can hold a display to.** Not as something
+  to derive a bag from, which works on one display in six. HiC's
+  `paramsInvalidate.test.ts` is the shape: drive the tags off the table and
+  assert each one moves the fetch signature, or re-encodes, exactly when it
+  claims to.
+- **A fetch input that is session state is a declared param**, so a volatile —
+  the fetch's own result — cannot reach an RPC cache key. That makes the
+  documented `rpcProps()` loop trap unwritable rather than warned about, which
+  the earlier `rpc.inputs` hook did not: it took the whole model.
+
+### What this costs, and the open question
+
+The tree already had a better answer for the reducible getters, and it is not
+this. Six cross-cutting mixins (`LegendMixin`, `HeightModeMixin`,
+`RowHeightMixin`, `TreeSidebarMixin`, `ScoreScaleMixin`,
+`WiggleScoreConfigMixin`) each bundle **slot table + getter + setter + pin +
+menu row + dialog** and retire that whole triple across four to eight displays.
+The declaration bundles slot + `affects` + read discipline and leaves the rest
+where it was.
+
+So a shared setting now has **two owners** — the declaration owns the slot, a
+mixin owns everything you touch it with — and nothing checks they agree. The
+seam is already open: `symlogConstant` was read by a mixin against a host whose
+schema never declared it, silently, for as long as both existed (fixed
+`d740bb0d6f`), and `scatterPointSize` is declared twice with different
+`promotedBase` and read once. **Do not convert a display that composes a
+cross-cutting mixin for a setting until that seam has a check.**
+
+### Consequences for the levels below
+
+- **Level 0** is done and its verdict is above. Its own framing — "if Manhattan
+  does not fit, the imperative altitude is the real contract" — asked the wrong
+  question. Manhattan fit; the cost was elsewhere.
+- **Level 1** survived only in its smaller form, the declaration metadata on
+  existing models, which is what the branch did and what ADR-091 then
+  rejected. Its larger ambition — deriving the
+  menu row, the legend, the config slot, the session key and the CLI spelling
+  from a channel table — is **not supported by the evidence**. The guard this
+  doc names as the deciding one (write alignments' `colorBy` declaration first)
+  was run: the declaration holds `colorBy` as a param — one `maybeFrozen`
+  promotable slot with a `validate` — and says nothing whatever about the
+  six-variant union with a nested six-field `modifications` object inside it.
+  **The declaration standardizes a setting's plumbing — where the value lives,
+  what changing it invalidates, how it must be read — and not its meaning.**
+- **Levels 0.5, 2, 3, 4, 5** are untouched by this and stand as written. Level 2
+  in particular was always independent.
+
+---
 
 ## What the census says
 
@@ -78,6 +207,12 @@ against them**, not 288. That is still the largest reducible thing measured here
 It is not two thirds of the model files, and a level that claims to be is
 measuring the wrong denominator.
 
+> **Both numbers here are wrong, measured against the real mechanism.** The
+> denominator is 321, not 288 — this count omits `configSlotViews.ts`. The
+> target is 60 declarable getters, not ~90. And the count the mechanism
+> *eliminates* is 0, because deleting a display's own getters would move the
+> break to its public surface. See the Result section at the top.
+
 ## Where the grammar stops, and why that is the finding
 
 The obvious move is a grammar of graphics — the vendored comparisons are
@@ -131,6 +266,12 @@ Named rather than numbered, because only the dependency order below is fixed.
 ---
 
 ### Level 0 — Re-gauge the factory on a display that is hard
+
+> **Done, 2026-08-24 — see the Result section at the top.** Manhattan fit the
+> factory and then came back off it, because what generalizes is the
+> declaration rather than factory residence. What follows is the plan as
+> written, kept because the gauge it commits to is what made the result
+> scoreable.
 
 **Today.** `defineDisplay` is measured against the easy case, and
 [a-track-type-is-five-primitives](a-track-type-is-five-primitives.md) says in so
@@ -231,6 +372,14 @@ band as an argument", the convergence is a refactor, not a redesign.
 ---
 
 ### Level 1 — The channel, and the scale
+
+> **Half-falsified — see the Result section at the top.** The smaller form (the
+> declaration metadata on existing models) landed and works. The larger one
+> below — deriving the menu row, the legend, the session key and the CLI
+> spelling from a channel table — is not supported by the evidence. This
+> section's own deciding guard, "write alignments' `colorBy` declaration first",
+> was run and the table holds the slot while saying nothing about the union
+> inside it.
 
 **Today.** `colorBy` is three unrelated types wearing one word: a six-variant
 discriminated union with modification sub-options in
