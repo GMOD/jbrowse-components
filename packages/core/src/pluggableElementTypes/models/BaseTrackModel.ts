@@ -17,7 +17,10 @@ import {
   getEnv,
   getSession,
 } from '../../util/index.ts'
-import { viewDisplayNames } from '../../util/tracks.ts'
+import {
+  getConfAssemblyNamesOrNone,
+  viewDisplayNames,
+} from '../../util/tracks.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
 import { stringifyBED } from './saveTrackFileTypes/bed.ts'
@@ -148,9 +151,19 @@ export function createBaseTrackModel(
       },
       /**
        * #getter
+       * this track's own name-search index, from the `textSearching`
+       * sub-config. `undefined` when the track has none.
+       *
+       * The path, not a bare `'textSearchAdapter'`: the slot is
+       * `textSearching.textSearchAdapter` (`baseTrackConfig.ts`), and a bare
+       * read of a name no schema declares returns `undefined` and reports
+       * nothing at any layer, so this getter answered `undefined` for every
+       * track ever configured with one. `TextSearchManager` reads the same slot
+       * by hand-walking `conf.textSearching.textSearchAdapter`, which is why
+       * nothing noticed.
        */
       get textSearchAdapter() {
-        return getConf(self, 'textSearchAdapter')
+        return getConf(self, ['textSearching', 'textSearchAdapter'])
       },
 
       /**
@@ -208,21 +221,21 @@ export function createBaseTrackModel(
        * what `rpcSessionId` already is, so a track finds its own with no
        * plumbing in between.
        *
-       * `assemblyNames` is read as a raw slot rather than through
-       * `getConfAssemblyNames`, which throws for a config carrying neither the
-       * slot nor an assembly parent — this is read during render, where an
-       * unanswerable question must not become a thrown getter. A
-       * ReferenceSequenceTrack is the config that lacks the slot, and it is also
-       * the one track that cannot have this problem: its names are what the
-       * assembly's names *are*.
+       * The names come from `getConfAssemblyNamesOrNone`, not from a raw
+       * `assemblyNames` slot read: this model is shared by every track type, and
+       * `ReferenceSequenceTrack`'s schema does not declare that slot — it names
+       * its assembly by being the `sequence` of one. A raw read there returns
+       * `undefined` with no diagnostic at any layer, so the getter was inert for
+       * that one track type while looking like it worked. The `OrNone` half is
+       * what keeps this total: it runs on every render of every track label, and
+       * an unanswerable question must not become a thrown getter.
        *
        * Diagnostic only. It gates nothing, and a track carrying one still loads,
        * still fetches and still draws whatever it can.
        */
       get refNameMismatch(): RefNameMismatch | undefined {
         const { assemblyManager } = getSession(self)
-        const names = (getConf(self, 'assemblyNames') ?? []) as string[]
-        for (const name of names) {
+        for (const name of getConfAssemblyNamesOrNone(self.configuration)) {
           // screened with `has` first: `get` reports a name the session lacks
           // to Core-handleUnrecognizedAssembly, and this getter runs on every
           // render of every track label. A track config is free to name an

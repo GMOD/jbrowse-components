@@ -144,21 +144,49 @@ export function isSameAssemblyName(
   )
 }
 
-export function getConfAssemblyNames(conf: AnyConfigurationModel) {
+/**
+ * The assemblies a track config names, or `undefined` when it names none.
+ *
+ * Two shapes, and the second is why this is a function rather than a slot read.
+ * A track built on `createBaseTrackConfig` carries `assemblyNames`.
+ * `ReferenceSequenceTrack` does not — its schema omits the slot deliberately
+ * (see `createReferenceSeqTrackConfig`), because the assembly config holding it
+ * IS its assembly, so the name is read off the parent instead.
+ */
+function confAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
     | string[]
     | undefined
-  if (!trackAssemblyNames) {
-    const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
-      conf,
-    )
-    if ('sequence' in parent) {
-      return [readConfObject(parent, 'name') as string]
-    } else {
-      throw new Error('unknown assembly names')
-    }
+  if (trackAssemblyNames) {
+    return trackAssemblyNames
   }
-  return trackAssemblyNames
+  const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(conf)
+  return 'sequence' in parent
+    ? [readConfObject(parent, 'name') as string]
+    : undefined
+}
+
+export function getConfAssemblyNames(conf: AnyConfigurationModel) {
+  const names = confAssemblyNames(conf)
+  if (!names) {
+    throw new Error('unknown assembly names')
+  }
+  return names
+}
+
+/**
+ * {@link getConfAssemblyNames} for a caller that cannot afford its throw — a
+ * config answering neither way leaves the question unanswered instead.
+ *
+ * `BaseTrackModel.refNameMismatch` is the caller: it runs on every render of
+ * every track label, so an unanswerable question must not become a thrown
+ * getter. It used to read the raw `assemblyNames` slot itself for that reason,
+ * which is a second, subtly different copy of the walk above — and one that
+ * answers `[]` for a ReferenceSequenceTrack whose assembly this already knows
+ * how to name.
+ */
+export function getConfAssemblyNamesOrNone(conf: AnyConfigurationModel) {
+  return confAssemblyNames(conf) ?? []
 }
 
 export const UNKNOWN = 'UNKNOWN'
