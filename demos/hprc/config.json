@@ -13,6 +13,118 @@
       "refNameAliases": {
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
       }
+    },
+    {
+      "name": "HG01109.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG01109.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG01109.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG01123.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG01123.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG01123.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG01960.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG01960.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG01960.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG02055.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG02055.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG02055.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG00097.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG00097.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG00097.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG00099.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG00099.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG00099.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG00128.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG00128.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG00128.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG00133.1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG00133.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hprc_cfhr_HG00133.1.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "tracks": [
@@ -102,6 +214,271 @@
       "displayDefaults": {
         "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG01109_1",
+      "name": "HG01109.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01109.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG01109.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG01123_1",
+      "name": "HG01123.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01123.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG01123.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG01960_1",
+      "name": "HG01960.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG01960.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG01960.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG02055_1",
+      "name": "HG02055.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG02055.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG02055.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00097_1",
+      "name": "HG00097.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00097.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00097.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00099_1",
+      "name": "HG00099.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00099.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00099.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00128_1",
+      "name": "HG00128.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00128.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00128.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hprc_cfhr_genes_HG00133_1",
+      "name": "HG00133.1 genes (HPRC release 2 CAT annotation)",
+      "assemblyNames": ["HG00133.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "hprc_cfhr_HG00133.1.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG01109_1",
+      "name": "HG01109.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG01109.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG01109.1.paf",
+        "queryAssembly": "HG01109.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG01123_1",
+      "name": "HG01123.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG01123.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG01123.1.paf",
+        "queryAssembly": "HG01123.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG01960_1",
+      "name": "HG01960.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG01960.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG01960.1.paf",
+        "queryAssembly": "HG01960.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG02055_1",
+      "name": "HG02055.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG02055.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG02055.1.paf",
+        "queryAssembly": "HG02055.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG00097_1",
+      "name": "HG00097.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG00097.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG00097.1.paf",
+        "queryAssembly": "HG00097.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG00099_1",
+      "name": "HG00099.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG00099.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG00099.1.paf",
+        "queryAssembly": "HG00099.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG00128_1",
+      "name": "HG00128.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG00128.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG00128.1.paf",
+        "queryAssembly": "HG00128.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_synteny_HG00133_1",
+      "name": "HG00133.1 vs GRCh38 at CFH (HPRC release 2 alignment)",
+      "assemblyNames": ["HG00133.1", "hg38"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "uri": "hprc_cfhr_HG00133.1.paf",
+        "queryAssembly": "HG00133.1",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hprc_cfhr_multiway",
+      "name": "CFH cluster orthologs (hg38 + 8 haplotypes, CAT)",
+      "assemblyNames": [
+        "hg38",
+        "HG00097.1",
+        "HG00099.1",
+        "HG00128.1",
+        "HG00133.1",
+        "HG01109.1",
+        "HG01123.1",
+        "HG01960.1",
+        "HG02055.1"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "mcscanBlocksLocation": {
+          "uri": "hprc_cfhr.blocks",
+          "locationType": "UriLocation"
+        },
+        "blockAssemblies": [
+          "hg38",
+          "HG01109.1",
+          "HG01123.1",
+          "HG01960.1",
+          "HG02055.1",
+          "HG00097.1",
+          "HG00099.1",
+          "HG00128.1",
+          "HG00133.1"
+        ],
+        "bedLocations": [
+          {
+            "uri": "hprc_cfhr_hg38.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG01109.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG01123.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG01960.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG02055.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG00097.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG00099.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG00128.1.bed",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "hprc_cfhr_HG00133.1.bed",
+            "locationType": "UriLocation"
+          }
+        ],
+        "assemblyNames": [
+          "hg38",
+          "HG01109.1",
+          "HG01123.1",
+          "HG01960.1",
+          "HG02055.1",
+          "HG00097.1",
+          "HG00099.1",
+          "HG00128.1",
+          "HG00133.1"
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiWaySyntenyDisplay",
+          "displayId": "hprc_cfhr_multiway-MultiWaySyntenyDisplay"
+        }
+      ]
     }
   ]
 }

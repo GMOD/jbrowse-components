@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 #
-# Slice two HPRC haplotype alignments to GRCh38 out of HPRC's own all-vs-GRCh38
-# PAF, for the CFH cluster on chr1: a haplotype that carries the CFHR3/CFHR1
-# deletion and one that does not. The pangenome_hprc tutorial draws the pair as a
-# LinearSyntenyView beside the same window as a graph, so the deletion reads
-# twice: as an arc in the graph, and as one haplotype's alignment stopping and
-# resuming past CFHR1 while the other's runs straight through.
+# Slice HPRC haplotype alignments to GRCh38 out of HPRC's own all-vs-GRCh38
+# PAF, for the CFH cluster on chr1: haplotypes that carry the CFHR3/CFHR1
+# deletion and haplotypes that do not. The pangenome_hprc tutorial draws the
+# first pair as a LinearSyntenyView beside the same window as a graph, so the
+# deletion reads twice: as an arc in the graph, and as one haplotype's alignment
+# stopping and resuming past CFHR1 while the other's runs straight through. The
+# whole panel draws as one multi-way synteny track, a lane per haplotype.
 #
-# Requires: bcftools (libcurl), curl, awk, python3
+# Requires: bcftools (libcurl), curl, awk, python3, bgzip, tabix
 # Usage:    bash scripts/build_hprc_cfhr_synteny.sh [outdir]
+#           CARRIERS=4 NONCARRIERS=4 CAT_JOBS=6 bash scripts/build_hprc_cfhr_synteny.sh
 #
-# Writes, per haplotype, into ./hprc_cfhr_synteny_build/ (copy them beside
-# test_data/graphgenomeview/hprc.json, which is where the figure reads them):
+# Writes, per haplotype, into ./hprc_cfhr_synteny_build/. demos/hprc/config.json
+# reads the whole panel; test_data/graphgenomeview/hprc.json reads the two
+# haplotypes its own two-row synteny figures draw, and ships its own three-column
+# copy of the blocks table for them, since the table below has a column per
+# panel member.
 #
 #   hprc_cfhr_<sample>.<hap>.paf          the sliced alignment, query names with
 #                                         the PanSN prefix stripped
@@ -20,13 +25,28 @@
 #                                         row needs coordinates, not sequence)
 #   hprc_cfhr_<sample>.<hap>.genes.gff3.gz  HPRC's own CAT annotation of that
 #                                     {,.tbi} haplotype, sliced to the same window
+#   hprc_cfhr_<sample>.<hap>.bed          its gene names and spans, the placement
+#                                         column MCScanBlocksAdapter reads
+#   hprc_cfhr.blocks                      the gene-name join across all of them
+#   hprc_cfhr_config_fragment.json        the assemblies and tracks that carry
+#                                         them, to merge into a JBrowse config
 #
 # NOTHING here is chosen by eye. The carriers come from the callset, the
 # alignments from the published PAF and the gene models from HPRC's published
-# CAT annotation, so a reader can re-derive all three.
+# CAT annotation, so a reader can re-derive all three, and a haplotype joins the
+# panel only after its own annotation agrees with the genotype it was picked on.
 set -euo pipefail
 
 OUTDIR="${1:-hprc_cfhr_synteny_build}"
+# Lanes per class. The default pair is what the two-row synteny figures draw;
+# the multi-way lane stack wants several of each, so the deletion reads as a
+# chain that runs through every non-carrier lane and stops at the first carrier.
+CARRIERS="${CARRIERS:-4}"
+NONCARRIERS="${NONCARRIERS:-4}"
+# Concurrent CAT annotation slices. Each is a ~110 MB stream that spends most of
+# its time waiting on the network, so this is bandwidth-bound rather than
+# CPU-bound and the default is well past the core count.
+CAT_JOBS="${CAT_JOBS:-6}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
@@ -50,8 +70,8 @@ SITE=chr1:196753075
 SLICE_START=196600000
 SLICE_END=197000000
 
-if [ -f cfhr_panel.txt ]; then
-  echo "== reusing cfhr_panel.txt: $(tr '\n' ' ' < cfhr_panel.txt)"
+if [ -f cfhr_candidates.txt ]; then
+  echo "== reusing cfhr_candidates.txt: $(wc -l < cfhr_candidates.txt) candidate(s)"
 else
 echo "== genotyping $SITE over the 464 haplotypes"
 bcftools view -r "$SITE-${SITE##*:}" -Oz -o cfhr_site.vcf.gz "$WAVE"
@@ -80,11 +100,15 @@ for line in gzip.open('cfhr_site.vcf.gz', 'rt'):
         print(f'deletion allele index {deletion}')
         print(f'{carriers} of {2 * len(samples)} haplotypes carry it')
         print(f'{len(hom_alt)} samples homozygous for it, {len(hom_ref)} homozygous reference')
-        print(f'first homozygous carrier: {hom_alt[0]}')
-        print(f'first homozygous reference: {hom_ref[0]}')
-        with open('cfhr_panel.txt', 'w') as fh:
-            fh.write(f'{hom_alt[0]}\t1\tcarrier\n')
-            fh.write(f'{hom_ref[0]}\t1\tnon-carrier\n')
+        # Homozygous samples only, so the haplotype drawn carries what the
+        # sample was picked on whichever of the two the assembly names hap 1.
+        # Candidates in callset order; the panel below takes them in that order
+        # and stops when it has enough that survive every check.
+        with open('cfhr_candidates.txt', 'w') as fh:
+            for name in hom_alt:
+                fh.write(f'{name}\t1\tcarrier\n')
+            for name in hom_ref:
+                fh.write(f'{name}\t1\tnon-carrier\n')
 PY
 fi
 
@@ -97,61 +121,108 @@ if [ -f cfhr_window_all_haplotypes.paf ]; then
   echo "== reusing cfhr_window_all_haplotypes.paf"
 else
   echo "== streaming $PAF, keeping GRCh38#0#chr1:$SLICE_START-$SLICE_END"
+  # Under a .part name, renamed only once the whole pipeline returns clean: a
+  # stream that dies half way through otherwise leaves a file the `[ -f ]` guard
+  # above reads as finished, and every haplotype below is then sliced out of an
+  # arbitrary prefix of the alignment.
   curl -fsS "$PAF" \
     | gzip -dc \
     | awk -F'\t' -v s="$SLICE_START" -v e="$SLICE_END" \
         '$6=="GRCh38#0#chr1" && $8 < e && $9 > s' \
-    > cfhr_window_all_haplotypes.paf
+    > cfhr_window_all_haplotypes.paf.part
+  mv cfhr_window_all_haplotypes.paf.part cfhr_window_all_haplotypes.paf
 fi
 echo "   $(wc -l < cfhr_window_all_haplotypes.paf) records"
 
-# Per haplotype: keep its records, drop the PanSN prefixes so the query names are
-# the assembly's own contig names, and write the contig lengths the PAF already
-# carries in column 2.
+[ -f cat_index.csv ] || curl -fsSL -o cat_index.csv "$CAT_INDEX"
+
+# ── The panel ───────────────────────────────────────────────────────────────
+# A candidate joins the panel only if all three of these hold, and each is a
+# reason to skip rather than a reason to stop:
+#
+#   its alignment in the window sits on ONE contig — a haplotype whose assembly
+#   breaks here has no single frame to draw a lane in;
+#   release 2 annotated it, so the lane can carry its own gene models;
+#   its own CAT annotation agrees with the genotype it was picked on — the
+#   carrier is annotated without CFHR3 and CFHR1, the non-carrier with both.
+#
+# The third is the control: the callset and the annotation are separate
+# products of the release, and a lane is drawn only where they say the same
+# thing.
+#
+# The first two cost nothing and the third costs a 100 MB download, so they run
+# as three stages rather than one loop: shortlist, fetch, then judge.
+
+# Stage 1, no network. Two spares per class, so a haplotype the annotation
+# check rejects does not send the script back for another download afterwards.
+: > cfhr_shortlist.txt
+short_carrier=0
+short_noncarrier=0
 while IFS=$'\t' read -r sample hap label; do
+  if [ "$label" = carrier ]; then
+    [ "$short_carrier" -lt "$((CARRIERS + 2))" ] || continue
+  else
+    [ "$short_noncarrier" -lt "$((NONCARRIERS + 2))" ] || continue
+  fi
   name="$sample.$hap"
+
   awk -F'\t' -v p="$sample#$hap#" -v OFS='\t' \
     'index($1,p)==1 {
        sub(/^[^#]*#[^#]*#/, "", $1)
        sub(/^[^#]*#[^#]*#/, "", $6)
        print
      }' cfhr_window_all_haplotypes.paf > "hprc_cfhr_$name.paf"
+  contig=$(cut -f1 "hprc_cfhr_$name.paf" | sort -u)
+  if [ "$(printf '%s\n' "$contig" | grep -c .)" != 1 ]; then
+    echo "-- $name ($label): skipped, alignment spans $(printf '%s\n' "$contig" | grep -c .) contigs"
+    rm -f "hprc_cfhr_$name.paf"
+    continue
+  fi
+  s3=$(awk -F, -v s="$sample" -v h="$hap" '$1==s && $2==h {print $4}' cat_index.csv)
+  if [ -z "$s3" ]; then
+    echo "-- $name ($label): skipped, no CAT annotation indexed"
+    rm -f "hprc_cfhr_$name.paf"
+    continue
+  fi
+
   awk -F'\t' -v p="$sample#$hap#" \
     'index($1,p)==1 { c=$1; sub(/^[^#]*#[^#]*#/, "", c); if (!(c in seen)) { seen[c]=1; print c "\t" $2 } }' \
     cfhr_window_all_haplotypes.paf > "hprc_cfhr_$name.chrom.sizes"
-  echo "== $name ($label): $(wc -l < "hprc_cfhr_$name.paf") record(s)"
-  awk -F'\t' '{print "   query " $3 "-" $4 "  target chr1:" $8 "-" $9}' "hprc_cfhr_$name.paf"
-done < cfhr_panel.txt
 
-# ── The genes on each haplotype ─────────────────────────────────────────────
-# A row of ribbons says a haplotype's alignment stops and resumes; it does not
-# say what is missing. HPRC annotates every release 2 assembly with CAT, on the
-# assembly's own contigs (GenBank accessions, the same names the PAF queries
-# carry once the PanSN prefix is off), so each haplotype row can carry its own
-# gene models rather than borrow the reference's.
-#
-# `intron`, `start_codon` and `stop_codon` rows are dropped: a gene glyph draws
-# exons and CDS, and an intron feature would paint over the gap it names.
-[ -f cat_index.csv ] || curl -fsSL -o cat_index.csv "$CAT_INDEX"
-
-echo
-echo "== CAT gene annotation, per haplotype"
-while IFS=$'\t' read -r sample hap label; do
-  name="$sample.$hap"
-  s3=$(awk -F, -v s="$sample" -v h="$hap" '$1==s && $2==h {print $4}' cat_index.csv)
-  [ -n "$s3" ] || { echo "no CAT annotation indexed for $name"; exit 1; }
-  url="https://s3-us-west-2.amazonaws.com/human-pangenomics/${s3#s3://human-pangenomics/}"
-  # the contig this haplotype's alignment is on, and the span it covers, both
-  # read off the PAF written above rather than restated
-  contig=$(cut -f1 "hprc_cfhr_$name.paf" | sort -u)
-  [ "$(printf '%s\n' "$contig" | wc -l)" = 1 ] \
-    || { echo "$name: alignment spans several contigs: $contig"; exit 1; }
+  # the span this haplotype's alignment covers on its own contig, read off the
+  # PAF written above rather than restated
   read -r qstart qend < <(awk -F'\t' -v f="$GENE_FLANK" '
     NR==1 { s=$3; e=$4 }
     $3 < s { s=$3 }
     $4 > e { e=$4 }
     END { print (s>f ? s-f : 0), e+f }' "hprc_cfhr_$name.paf")
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$sample" "$hap" "$label" "$contig" \
+    "$qstart" "$qend" \
+    "https://s3-us-west-2.amazonaws.com/human-pangenomics/${s3#s3://human-pangenomics/}" \
+    >> cfhr_shortlist.txt
   echo "== $name ($label): $contig:$qstart-$qend"
+  if [ "$label" = carrier ]; then
+    short_carrier=$((short_carrier + 1))
+  else
+    short_noncarrier=$((short_noncarrier + 1))
+  fi
+done < cfhr_candidates.txt
+
+# Stage 2, and the only network in the panel. A CAT annotation is ~110 MB, whole
+# genome, and ships no index, so each one is streamed and filtered on the fly —
+# which makes this the longest step in the script by an order of magnitude, and
+# the reason the slices are fetched CONCURRENTLY rather than one at a time.
+# Guarded on its own output, so a re-run that only wants the table below does
+# not refetch a slice it already has.
+#
+# `intron`, `start_codon` and `stop_codon` rows are dropped: a gene glyph draws
+# exons and CDS, and an intron feature would paint over the gap it names.
+slice_cat_annotation() {
+  local name=$1 contig=$2 qstart=$3 qend=$4 url=$5
+  if [ -f "hprc_cfhr_$name.genes.gff3.gz" ]; then
+    echo "   reusing hprc_cfhr_$name.genes.gff3.gz"
+    return 0
+  fi
   # CAT emits each gene's rows together rather than in coordinate order, and
   # overlapping genes therefore interleave backwards, which tabix rejects
   { echo '##gff-version 3'
@@ -161,42 +232,64 @@ while IFS=$'\t' read -r sample hap label; do
           '$1==c && $4<e && $5>s && $3!="intron" && $3!="start_codon" &&
            $3!="stop_codon"' \
       | LC_ALL=C sort -k1,1 -k4,4n -k5,5n
-  } > "hprc_cfhr_$name.genes.gff3"
+  } > "hprc_cfhr_$name.genes.gff3.part"
+  mv "hprc_cfhr_$name.genes.gff3.part" "hprc_cfhr_$name.genes.gff3"
   bgzip -f "hprc_cfhr_$name.genes.gff3"
   tabix -f -p gff "hprc_cfhr_$name.genes.gff3.gz"
+  echo "   sliced hprc_cfhr_$name.genes.gff3.gz"
+}
+export -f slice_cat_annotation
+
+echo
+echo "== slicing $(wc -l < cfhr_shortlist.txt) CAT annotations, $CAT_JOBS at a time"
+awk -F'\t' -v OFS='\t' '{print $1 "." $2, $4, $5, $6, $7}' cfhr_shortlist.txt \
+  | tr '\t' '\n' \
+  | xargs -P "$CAT_JOBS" -n 5 bash -c 'slice_cat_annotation "$@"' _
+
+# Stage 3, no network: the annotation each haplotype was fetched for, read
+# against the genotype it was picked on. First past the post per class.
+: > cfhr_panel.txt
+kept_carrier=0
+kept_noncarrier=0
+while IFS=$'\t' read -r sample hap label contig qstart qend url; do
+  if [ "$label" = carrier ]; then
+    [ "$kept_carrier" -lt "$CARRIERS" ] || continue
+  else
+    [ "$kept_noncarrier" -lt "$NONCARRIERS" ] || continue
+  fi
+  name="$sample.$hap"
   gzip -dc "hprc_cfhr_$name.genes.gff3.gz" \
-    | awk -F'\t' '$3=="gene" { match($9, /Name=[^;]*/); print substr($9, RSTART+5, RLENGTH-5) }' \
-    | sort -u | tr '\n' ' ' | sed 's/^/   genes: /;s/$/\n/'
-done < cfhr_panel.txt
+    | awk -F'\t' -v OFS='\t' '$3=="gene" {
+        match($9, /Name=[^;]*/)
+        print $1, $4 - 1, $5, substr($9, RSTART+5, RLENGTH-5), 0, $7
+      }' > "hprc_cfhr_$name.bed"
 
-# The deletion takes CFHR3 and CFHR1 with it, which is the whole reason the pair
-# is worth drawing, so it is asserted rather than described: the two genes are on
-# the non-carrier and absent from the carrier.
-python3 - <<'PY'
-import gzip
-import re
-import sys
+  present=$(cut -f4 "hprc_cfhr_$name.bed" | grep -cE '^(CFHR3|CFHR1)$' || true)
+  want=$([ "$label" = carrier ] && echo 0 || echo 2)
+  if [ "$present" != "$want" ]; then
+    echo "-- $name ($label): dropped, its annotation carries $present of CFHR3/CFHR1 where the callset says $want"
+    rm -f "hprc_cfhr_$name".{paf,chrom.sizes,bed} "hprc_cfhr_$name".genes.gff3.gz{,.tbi}
+    continue
+  fi
+  echo "== $name ($label): $(wc -l < "hprc_cfhr_$name.bed" | tr -d ' ') genes on $contig"
+  printf '%s\t%s\t%s\n' "$sample" "$hap" "$label" >> cfhr_panel.txt
+  if [ "$label" = carrier ]; then
+    kept_carrier=$((kept_carrier + 1))
+  else
+    kept_noncarrier=$((kept_noncarrier + 1))
+  fi
+done < cfhr_shortlist.txt
 
-panel = [l.split('\t') for l in open('cfhr_panel.txt').read().splitlines()]
-deleted = {'CFHR3', 'CFHR1'}
-failures = []
-for sample, hap, label in panel:
-    names = {
-        re.search(r'Name=([^;]*)', f[8]).group(1)
-        for f in (l.rstrip('\n').split('\t')
-                  for l in gzip.open(f'hprc_cfhr_{sample}.{hap}.genes.gff3.gz', 'rt')
-                  if not l.startswith('#'))
-        if f[2] == 'gene'
-    }
-    present = deleted & names
-    want = set() if label == 'carrier' else deleted
-    if present != want:
-        failures.append(f'{sample}.{hap} ({label}) carries {sorted(present)},'
-                        f' expected {sorted(want)}')
-if failures:
-    sys.exit('\nFAILED:\n  ' + '\n  '.join(failures))
-print('   the carrier is annotated without CFHR3 and CFHR1; the non-carrier has both')
-PY
+[ "$kept_carrier" = "$CARRIERS" ] && [ "$kept_noncarrier" = "$NONCARRIERS" ] || {
+  echo "only $kept_carrier carrier and $kept_noncarrier non-carrier haplotype(s) survived the checks" >&2
+  exit 1
+}
+echo
+echo "== panel: $kept_carrier carrier and $kept_noncarrier non-carrier haplotype(s)"
+# The spares that were shortlisted and never needed keep their slices on disk.
+# That is cache, not output: nothing downstream reads a haplotype cfhr_panel.txt
+# does not name, and a re-run with a larger CARRIERS/NONCARRIERS finds them
+# already fetched.
 
 # ── The ortholog table, for the multi-way track ─────────────────────────────
 # CAT projects GENCODE onto every haplotype, so the same gene carries the same
@@ -214,14 +307,6 @@ tabix -f https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz \
       match($9, /ID=[^;]*/)
       print $1, $4 - 1, $5, substr($9, RSTART+3, RLENGTH-3), 0, $7
     }' > hprc_cfhr_hg38.bed
-while IFS=$'\t' read -r sample hap label; do
-  name="$sample.$hap"
-  zcat "hprc_cfhr_$name.genes.gff3.gz" \
-    | awk -F'\t' -v OFS='\t' '$3=="gene" {
-        match($9, /Name=[^;]*/)
-        print $1, $4 - 1, $5, substr($9, RSTART+5, RLENGTH-5), 0, $7
-      }' > "hprc_cfhr_$name.bed"
-done < cfhr_panel.txt
 python3 - <<'PY'
 def names(path):
     return {l.split('\t')[3] for l in open(path).read().splitlines()}
@@ -235,12 +320,96 @@ with open('hprc_cfhr.blocks', 'w') as fh:
         gene = r[3]
         fh.write('\t'.join([gene, *[gene if gene in c else '.' for c in columns]]) + '\n')
 print(f'   {len(rows)} rows, {1 + len(columns)} columns')
+for (s, h, label), c in zip(panel, columns):
+    missing = sorted({'CFHR3', 'CFHR1'} - c)
+    print(f'   {s}.{h} ({label}): {len(c)} genes'
+          + (f", missing {', '.join(missing)}" if missing else ''))
 PY
 
+# ── The config fragment that wires all of it ────────────────────────────────
+# Which haplotypes survive the checks is a property of the data, so the
+# assemblies and tracks that carry them are written here rather than kept by
+# hand. The URIs are relative, so the fragment reads the same beside
+# test_data/graphgenomeview/hprc.json and in the demos/hprc folder; merge its
+# `assemblies` and `tracks` into either config.
+python3 - <<'FRAGMENT' > hprc_cfhr_config_fragment.json
+import json
+
+panel = [l.split('\t') for l in open('cfhr_panel.txt').read().splitlines()]
+names = [f'{s}.{h}' for s, h, _ in panel]
+# Non-carriers first, so a chain the deletion cuts runs through every lane that
+# kept the genes and stops at the first lane that lost them. A ribbon joins
+# ADJACENT lanes only, which is what makes that reading possible.
+lanes = [f'{s}.{h}' for s, h, label in panel if label != 'carrier']
+lanes += [f'{s}.{h}' for s, h, label in panel if label == 'carrier']
+
+
+def uri(path):
+    return {'uri': path, 'locationType': 'UriLocation'}
+
+
+def track_id(name):
+    return name.replace('.', '_')
+
+
+print(json.dumps({
+    'assemblies': [{
+        'name': name,
+        'sequence': {
+            'type': 'ReferenceSequenceTrack',
+            'trackId': f'{name}-ReferenceSequenceTrack',
+            'adapter': {
+                'type': 'ChromSizesAdapter',
+                'chromSizesLocation': uri(f'hprc_cfhr_{name}.chrom.sizes'),
+            },
+        },
+    } for name in names],
+    'tracks': [{
+        'type': 'FeatureTrack',
+        'trackId': f'hprc_cfhr_genes_{track_id(name)}',
+        'name': f'{name} genes (HPRC release 2 CAT annotation)',
+        'assemblyNames': [name],
+        'adapter': {
+            'type': 'Gff3TabixAdapter',
+            'uri': f'hprc_cfhr_{name}.genes.gff3.gz',
+        },
+    } for name in names] + [{
+        'type': 'SyntenyTrack',
+        'trackId': f'hprc_cfhr_synteny_{track_id(name)}',
+        'name': f'{name} vs GRCh38 at CFH (HPRC release 2 alignment)',
+        'assemblyNames': [name, 'hg38'],
+        'adapter': {
+            'type': 'PAFAdapter',
+            'uri': f'hprc_cfhr_{name}.paf',
+            'queryAssembly': name,
+            'targetAssembly': 'hg38',
+        },
+    } for name in names] + [{
+        'type': 'SyntenyTrack',
+        'trackId': 'hprc_cfhr_multiway',
+        'name': f'CFH cluster orthologs (hg38 + {len(names)} haplotypes, CAT)',
+        'assemblyNames': ['hg38', *lanes],
+        'adapter': {
+            'type': 'MCScanBlocksAdapter',
+            'mcscanBlocksLocation': uri('hprc_cfhr.blocks'),
+            'blockAssemblies': ['hg38', *names],
+            'bedLocations': [uri('hprc_cfhr_hg38.bed')]
+            + [uri(f'hprc_cfhr_{name}.bed') for name in names],
+            'assemblyNames': ['hg38', *names],
+        },
+        'displays': [{
+            'type': 'MultiWaySyntenyDisplay',
+            'displayId': 'hprc_cfhr_multiway-MultiWaySyntenyDisplay',
+        }],
+    }],
+}, indent=2))
+FRAGMENT
+echo "   wrote hprc_cfhr_config_fragment.json"
+
 echo
-echo "The carrier's two records leave a gap on the reference axis and the"
+echo "A carrier's two records leave a gap on the reference axis and a"
 echo "non-carrier's single record runs through it. That gap is the deletion,"
-echo "and the genes it takes with it are missing from the carrier's own"
-echo "annotation."
+echo "and the genes it takes with it are missing from every carrier's own"
+echo "annotation, which is what the ortholog table's dots say."
 echo "Wrote $(pwd)/hprc_cfhr_*.paf, hprc_cfhr_*.chrom.sizes,"
 echo "hprc_cfhr_*.genes.gff3.gz, hprc_cfhr_*.bed and hprc_cfhr.blocks"
