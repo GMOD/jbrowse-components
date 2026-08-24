@@ -50,7 +50,8 @@ export interface DisplayStatusPhaseFoundation
  * `viewportCurrent` is all that genuinely differs, so it stays a parameter:
  * per-region passes its spatial-staleness predicate, global and arc pass
  * `() => true` (they keep the last frame up through a refetch rather than
- * scrimming).
+ * scrimming). `hostMounted` is forwarded for the families whose view can go
+ * unmounted under it — see `computeLoadingTerm`.
  *
  * Both thunks are preserved for the MobX reason the compute functions document:
  * passing `self` straight through means the reads still happen inside the thunk,
@@ -59,9 +60,10 @@ export interface DisplayStatusPhaseFoundation
 export function foundationDisplayPhase(
   self: DisplayPhaseFoundation,
   viewportCurrent: () => boolean,
+  hostMounted?: () => boolean,
 ): DisplayPhase {
   return computeDisplayPhase(self, () =>
-    computeLoadingTerm(self, viewportCurrent),
+    computeLoadingTerm(self, viewportCurrent, hostMounted),
   )
 }
 

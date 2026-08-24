@@ -369,6 +369,7 @@ export default function MultiRegionDisplayMixin() {
           return foundationDisplayPhase(
             self,
             () => self.viewportWithinLoadedData,
+            () => self.host.bodyMounted,
           )
         },
       }))

@@ -201,7 +201,11 @@ export default function GlobalFetchMixin() {
        * branch.
        */
       get displayPhase(): DisplayPhase {
-        return foundationDisplayPhase(self, () => true)
+        return foundationDisplayPhase(
+          self,
+          () => true,
+          () => self.host.bodyMounted,
+        )
       },
     }))
     .actions(self => ({

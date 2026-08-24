@@ -216,12 +216,14 @@ export function linearSyntenyViewHelperModelFactory(
        * from the same three values.
        */
       get surfaceReadiness(): ComparativeSurface {
-        const { initPending, pendingAutoDiagonalize } = this.parentView
+        const { initPending, pendingAutoDiagonalize, bodyMounted } =
+          this.parentView
         return {
           painted: self.painted,
           initPending,
           pendingAutoDiagonalize,
           renderError: self.renderError,
+          hostMounted: bodyMounted,
         }
       },
       /**

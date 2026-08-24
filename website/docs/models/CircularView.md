@@ -65,6 +65,7 @@ the whole surface.
 | <span id="volatile-panx">**panX**</span><br><code>panX: 0</code> |  | CircularView |
 | <span id="volatile-pany">**panY**</span><br><code>panY: 0</code> |  | CircularView |
 | <span id="volatile-width">**width**</span><br><code>width: 800</code> |  | [BaseViewModel](../baseviewmodel#volatile-width) |
+| <span id="volatile-bodymounted">**bodyMounted**</span><br><code>bodyMounted: true</code> | <span data-pagefind-ignore>Whether the container has this view's body in the DOM.<br><br>`ViewContainer` mounts a view's body only while an IntersectionObserver says it is on screen, to hold the app under the WebGL2 context ceiling (`reference/GPU_CONTEXT_BUDGET.md`). A view below the fold therefore has no canvas, so nothing ever calls `markCanvasDrawn` and the pre-first-paint term of `displayPhase` pins every display in it at `loading` with nothing left to resolve it — which parks `[data-app-phase="ready"]` for the whole app on a view the user cannot see.<br><br>Defaults true so the containers that always mount a body — embedded views, workspace panels, and any test rendering a display directly — are unaffected and need not set it.</span> | [BaseViewModel](../baseviewmodel#volatile-bodymounted) |
 
 ## Getters
 
@@ -137,4 +138,5 @@ the whole surface.
 | <span id="action-resizeheight">**resizeHeight**</span><br><code>(distance: number) =&gt; number</code> |  | CircularView |
 | <span id="action-resizewidth">**resizeWidth**</span><br><code>(distance: number) =&gt; number</code> |  | CircularView |
 | <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
+| <span id="action-setbodymounted">**setBodyMounted**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>See `bodyMounted`. Written by the view's container, which is the only thing that knows whether it rendered the body.</span> | [BaseViewModel](../baseviewmodel#action-setbodymounted) |
 | <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setminimized) |

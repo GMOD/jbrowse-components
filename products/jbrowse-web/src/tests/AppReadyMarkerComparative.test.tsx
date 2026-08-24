@@ -102,6 +102,66 @@ test('the app marker counts a synteny level a walk of view.tracks cannot reach',
   await appPhase('ready')
 }, 60000)
 
+// The other way a level never paints, and the one that happens in the app rather
+// than only in jsdom: `ViewContainer` mounts a view's body only while it is on
+// screen, so a view below the fold has no canvas at all. `painted` then cannot
+// flip, and the marker parked the whole app at `loading` on a view the user
+// could not see — every capture and e2e gate waiting on it burning its timeout.
+// The test above fakes the paint with `markCanvasDrawn`; this one asserts the
+// case where no paint is ever coming.
+test('the app marker does not wait on a view whose body was never mounted', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearSyntenyView', {
+    init: {
+      views: [
+        { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+        { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+      ],
+      tracks: [['subset']],
+    },
+  }) as {
+    setWidth: (n: number) => void
+    setBodyMounted: (flag: boolean) => void
+    levels: { linearSyntenyDisplays: { displayPhase: string }[] }[]
+  }
+  view.setWidth(800)
+
+  const marker = render(<AppReadyMarker session={session} />).getByTestId(
+    'app-ready-marker',
+  )
+
+  await waitFor(
+    () => {
+      expect(view.levels[0]?.linearSyntenyDisplays.length).toBe(1)
+    },
+    { timeout: 30000 },
+  )
+  const display = view.levels[0]!.linearSyntenyDisplays[0]!
+
+  // no markCanvasDrawn: the container never rendered a body, so nothing will
+  // ever call it
+  view.setBodyMounted(false)
+
+  await waitFor(
+    () => {
+      expect(display.displayPhase).toBe('ready')
+    },
+    { timeout: 30000 },
+  )
+  await waitFor(() => {
+    expect(marker.dataset.appPhase).toBe('ready')
+  })
+
+  // and scrolling it into view puts the wait back, rather than leaving it
+  // excused for the rest of the session
+  view.setBodyMounted(true)
+  await waitFor(() => {
+    expect(display.displayPhase).toBe('loading')
+  })
+}, 60000)
+
 // The dotplot half. Its tracks ARE on the view, so the marker already walked to
 // them — what it found there was a display with no `displayPhase`, which reads
 // as finished. Same conjunction, reached by the ordinary arm.

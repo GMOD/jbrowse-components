@@ -97,6 +97,43 @@ describe('computeLoadingTerm', () => {
     expect(computeLoadingTerm(DRAWN, () => false)).toBe(true)
   })
 
+  // A view below the fold: `ViewContainer` mounts no body, so there is no canvas
+  // to paint and `canvasDrawn` can never flip. Reported as loading, one such
+  // view parked `[data-app-phase="ready"]` for the whole app.
+  describe('hostMounted', () => {
+    const unmounted = { ...DRAWN, canvasDrawn: false }
+
+    test('drops the pre-paint term for an unmounted host', () => {
+      expect(computeLoadingTerm(unmounted, current, () => false)).toBe(false)
+    })
+
+    // the fetch terms stay live, so a gate cannot fire over work in flight —
+    // including during cold load, before the observer's first callback
+    test('keeps the fetch term for an unmounted host', () => {
+      expect(
+        computeLoadingTerm(
+          { ...unmounted, isLoadingOrCanceled: true },
+          current,
+          () => false,
+        ),
+      ).toBe(true)
+    })
+
+    test('keeps the staleness term for an unmounted host', () => {
+      expect(
+        computeLoadingTerm(
+          unmounted,
+          () => false,
+          () => false,
+        ),
+      ).toBe(true)
+    })
+
+    test('defaults to mounted, so a caller that omits it is unchanged', () => {
+      expect(computeLoadingTerm(unmounted, current)).toBe(true)
+    })
+  })
+
   // LD with the triangle off: it renders a static placeholder, never paints a
   // canvas, so `canvasDrawn` can never flip. Without the gate the scrim sits
   // over that placeholder permanently.

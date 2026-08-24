@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
+
 import { useFocusOnInteraction, useWidthSetter } from '@jbrowse/core/util/hooks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -135,6 +138,16 @@ const ViewContainer = observer(function ViewContainer({
   const { minimized } = view
   const showBody = visible && !minimized
   const reserveSpace = !visible && !minimized
+
+  // Tell the view whether its body is in the DOM. A display's phase counts its
+  // first paint as pending work, and a body that was never mounted has no
+  // canvas to paint — so without this an off-screen view holds the whole app's
+  // readiness marker at `loading` forever. See `BaseViewModel.bodyMounted`.
+  useEffect(() => {
+    if (isAlive(view)) {
+      view.setBodyMounted(showBody)
+    }
+  }, [view, showBody])
 
   // Only this container tracks focus now, not its header: with the arrow icon
   // in its own observer (ViewFocusIndicator) the header's props are unchanged

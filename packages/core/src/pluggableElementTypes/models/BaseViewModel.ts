@@ -33,6 +33,22 @@ const BaseViewModel = types
   })
   .volatile(() => ({
     width: 800,
+    /**
+     * Whether the container has this view's body in the DOM.
+     *
+     * `ViewContainer` mounts a view's body only while an IntersectionObserver
+     * says it is on screen, to hold the app under the WebGL2 context ceiling
+     * (`reference/GPU_CONTEXT_BUDGET.md`). A view below the fold therefore has
+     * no canvas, so nothing ever calls `markCanvasDrawn` and the pre-first-paint
+     * term of `displayPhase` pins every display in it at `loading` with nothing
+     * left to resolve it — which parks `[data-app-phase="ready"]` for the whole
+     * app on a view the user cannot see.
+     *
+     * Defaults true so the containers that always mount a body — embedded
+     * views, workspace panels, and any test rendering a display directly — are
+     * unaffected and need not set it.
+     */
+    bodyMounted: true,
   }))
   .views(() => ({
     /**
@@ -63,6 +79,15 @@ const BaseViewModel = types
      */
     setWidth(newWidth: number) {
       self.width = newWidth
+    },
+
+    /**
+     * #action
+     * See `bodyMounted`. Written by the view's container, which is the only
+     * thing that knows whether it rendered the body.
+     */
+    setBodyMounted(flag: boolean) {
+      self.bodyMounted = flag
     },
 
     /**

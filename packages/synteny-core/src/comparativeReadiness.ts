@@ -66,6 +66,21 @@ export interface ComparativeSurface {
    * already given up.
    */
   renderError: unknown
+  /**
+   * Whether the container has this surface's view body in the DOM.
+   *
+   * The same hole `renderError` above covers, reached the other way: a view
+   * below the fold is not mounted (`ViewContainer` lazy-mounts to stay under the
+   * WebGL2 context ceiling), so there is no canvas, `painted` never becomes
+   * true, and the phase said `loading` until the user happened to scroll to it —
+   * parking `[data-app-phase="ready"]` for the whole app on a view nobody was
+   * looking at.
+   *
+   * Gates the paint term only. A surface still fetching while off screen
+   * reports `loading`, which is true and is what stops a readiness gate firing
+   * over work in flight.
+   */
+  hostMounted: boolean
 }
 
 /** One comparative display's fetch state, as its readiness is computed from. */
@@ -129,6 +144,7 @@ export function comparativeDisplayPhase(
           display.dataCurrent &&
           !surface.initPending &&
           !surface.pendingAutoDiagonalize,
+        () => surface.hostMounted,
       ),
   )
 }

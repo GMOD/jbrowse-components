@@ -17,6 +17,7 @@ const painted: ComparativeSurface = {
   initPending: false,
   pendingAutoDiagonalize: false,
   renderError: undefined,
+  hostMounted: true,
 }
 
 const done = {
@@ -80,6 +81,47 @@ describe('comparativeDisplayPhase', () => {
     ).toBe('loading')
   })
 
+  // A view below the fold is not mounted, so it has no canvas, so `painted` can
+  // never become true. Reported as still working, this parked the whole app's
+  // readiness marker on a view the user could not see, and every capture gate
+  // waiting on it burned its full timeout.
+  describe('a host whose body was never mounted', () => {
+    const unmounted: ComparativeSurface = {
+      painted: false,
+      initPending: false,
+      pendingAutoDiagonalize: false,
+      renderError: undefined,
+      hostMounted: false,
+    }
+
+    it('is ready despite never having painted', () => {
+      expect(comparativeDisplayPhase(done, unmounted)).toBe('ready')
+    })
+
+    // the fetch terms stay live: an off-screen display still fetches, and a
+    // readiness gate must not fire over work in flight
+    it('is still loading while its fetch is in flight', () => {
+      expect(
+        comparativeDisplayPhase(
+          { ...done, loading: true, dataCurrent: false },
+          unmounted,
+        ),
+      ).toBe('loading')
+    })
+
+    it('is still loading while its data is stale', () => {
+      expect(
+        comparativeDisplayPhase({ ...done, dataCurrent: false }, unmounted),
+      ).toBe('loading')
+    })
+
+    it('mounting it puts the pre-first-paint wait back', () => {
+      expect(
+        comparativeDisplayPhase(done, { ...unmounted, hostMounted: true }),
+      ).toBe('loading')
+    })
+  })
+
   it('ranks an error above every loading term', () => {
     expect(
       comparativeDisplayPhase(
@@ -89,6 +131,7 @@ describe('comparativeDisplayPhase', () => {
           initPending: true,
           pendingAutoDiagonalize: true,
           renderError: undefined,
+          hostMounted: true,
         },
       ),
     ).toBe('error')
@@ -106,6 +149,7 @@ describe('comparativeDisplayPhase', () => {
           initPending: true,
           pendingAutoDiagonalize: true,
           renderError: undefined,
+          hostMounted: true,
         },
       ),
     ).toBe('ready')

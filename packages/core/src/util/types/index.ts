@@ -618,7 +618,14 @@ export interface AbstractViewModel {
   type: string
   width: number
   minimized: boolean
+  /**
+   * Whether the view's container has its body in the DOM — see
+   * `BaseViewModel.bodyMounted`. A display's phase excuses the first paint it
+   * will never make while this is false.
+   */
+  bodyMounted: boolean
   setWidth(width: number): void
+  setBodyMounted(flag: boolean): void
   setMinimized(flag: boolean): void
   displayName: string | undefined
   setDisplayName: (arg: string) => void

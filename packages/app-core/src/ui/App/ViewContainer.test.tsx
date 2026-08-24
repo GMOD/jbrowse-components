@@ -1,8 +1,8 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
-import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
 import { MultipleViewsSessionMixin } from '@jbrowse/product-core'
 import { ThemeProvider } from '@mui/material'
@@ -22,11 +22,16 @@ class FakeViewsPlugin extends Plugin {
       () =>
         new ViewType({
           name: 'StubView',
-          stateModel: types.model('StubView', {
-            id: ElementId,
-            type: types.literal('StubView'),
-            displayName: types.maybe(types.string),
-          }),
+          // composed over BaseViewModel rather than declared bare: the
+          // container drives real view members on it (`setWidth`,
+          // `setBodyMounted`, `minimized`), and a stub that merely happens not
+          // to be asked for one passes by accident
+          stateModel: types.compose(
+            BaseViewModel,
+            types.model('StubView', {
+              type: types.literal('StubView'),
+            }),
+          ),
           ReactComponent: () => <div>view body</div>,
         }),
     )

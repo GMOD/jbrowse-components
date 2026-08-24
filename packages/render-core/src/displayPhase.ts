@@ -132,10 +132,29 @@ export interface DisplayLoadingInputs {
  * global family did not have it.
  *
  * `viewportCurrent` is a **thunk** for the same MobX reason `computeDisplayPhase`'s
- * `loading` is, and it is the only term that needs to be: it reads the containing
- * view (`visibleRegions`, `loadedRegions`), while the four inputs above are flags
- * on the display itself. Short-circuiting keeps a suppressed or already-loading
- * display from subscribing to viewport churn.
+ * `loading` is: it reads the containing view (`visibleRegions`, `loadedRegions`),
+ * while the flag inputs above are on the display itself. Short-circuiting keeps a
+ * suppressed or already-loading display from subscribing to viewport churn.
+ *
+ * `hostMounted` is a thunk for the same reason, and gates the **pre-first-paint
+ * term only**. A container that mounts a view's body lazily — `ViewContainer`
+ * does, to stay under the WebGL2 context ceiling — leaves an off-screen view
+ * with no canvas, so `markCanvasDrawn` is never called and `!canvasDrawn` stays
+ * true with nothing able to resolve it. That parked `[data-app-phase="ready"]`
+ * for the whole app on a view the user could not see, and every capture and e2e
+ * gate waiting on it burned its full timeout.
+ *
+ * Callers read it as `bodyMounted !== false`, so only an explicit false counts:
+ * a view model that predates the flag, or a duck-typed stand-in that never had
+ * it, is treated as mounted. Defaulting the other way would silently excuse the
+ * first paint for every such view and let a gate fire over one that had not
+ * started.
+ *
+ * The fetch terms deliberately stay live while unmounted: an off-screen display
+ * still fetches, so reporting it idle would let a readiness gate fire over work
+ * genuinely in flight — and during cold load `visible` is false until the
+ * IntersectionObserver's first callback, which is exactly when a display must
+ * not flash `ready`. Only the paint it will never do is excused.
  */
 export function computeLoadingTerm(
   {
@@ -146,12 +165,13 @@ export function computeLoadingTerm(
     canvasDrawn,
   }: DisplayLoadingInputs,
   viewportCurrent: () => boolean,
+  hostMounted: () => boolean = () => true,
 ): boolean {
   return (
     !fetchInert &&
     !viewportEmpty &&
     (isLoadingOrCanceled ||
-      (rendersCanvas && !canvasDrawn) ||
+      (rendersCanvas && hostMounted() && !canvasDrawn) ||
       !viewportCurrent())
   )
 }
