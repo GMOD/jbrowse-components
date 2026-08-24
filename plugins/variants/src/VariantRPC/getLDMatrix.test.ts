@@ -10,9 +10,10 @@ import { fillEncoded } from './getLDMatrix.ts'
 // describing behavior the app does not have.
 //
 // The statistics are not this plugin's code and are tested where they live:
-// `calculateLDStats` and `calculateLDStatsPhasedBits`/`packHaplotypesWithCounts`
-// in `packages/ld-core` (including a brute-force fuzz across multi-word sample
-// counts), and phase detection in `../shared/detectPhased.test.ts`. What is
+// `calculateLDStatsDosageBits`/`packDosages` and
+// `calculateLDStatsPhasedBits`/`packHaplotypesWithCounts` in `packages/ld-core`
+// (including a brute-force fuzz across multi-word sample counts), and phase
+// detection in `../shared/detectPhased.test.ts`. What is
 // genuinely local is the encoding below, and `getLDMatrixMaf.test.ts` drives the
 // whole of `getLDMatrix` through a mocked adapter for the end-to-end rules.
 

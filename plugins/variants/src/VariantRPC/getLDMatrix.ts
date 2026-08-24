@@ -6,9 +6,10 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import {
-  calculateLDStats,
+  calculateLDStatsDosageBits,
   calculateLDStatsPhasedBits,
   getChiSquareCritical,
+  packDosages,
   packHaplotypesWithCounts,
   passesHweFilter,
 } from '@jbrowse/ld-core'
@@ -250,6 +251,10 @@ function computeLDMatrixCPU(
   statusCallback?: StatusCallback,
 ): Float32Array {
   const vals = new Float32Array((n * (n - 1)) / 2)
+  // Bit-packed here rather than alongside fillEncoded, because this is the
+  // fallback: when the GPU takes the matrix nothing below runs, and packing is
+  // O(n * samples) against the O(n^2 * samples) loop it replaces.
+  const packedDosages = encodedGenotypes.map(geno => packDosages(geno))
   // Report once per row (n rows): report() also runs the throttled stop-token
   // check, so cancellation stays responsive without a per-pair check.
   const report = createProgressReporter({
@@ -267,7 +272,11 @@ function computeLDMatrixCPU(
             packedHaplotypes[j]!,
             signedLD,
           )
-        : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, signedLD)
+        : calculateLDStatsDosageBits(
+            packedDosages[i]!,
+            packedDosages[j]!,
+            signedLD,
+          )
       vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
     }
     report(i)

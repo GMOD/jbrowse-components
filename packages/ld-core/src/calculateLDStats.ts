@@ -10,15 +10,17 @@ import {
 
 // Every statistic below comes from ldUniforms.slang, generated into TS by
 // `pnpm gen:shaders` (adr-051); each was a line-for-line hand-written twin
-// before. LD runs on WebGPU compute (`ldCompute.slang`) or on this CPU path —
+// before. LD runs on WebGPU compute (`ldCompute.slang`) or on a CPU path —
 // chosen by GPU availability and by a work threshold below which dispatch
 // overhead dominates — so the two must agree on a *number the user reads* off
 // the heatmap and the tooltip, not merely on pixels.
 //
-// What stays here is the part that is genuinely this side's: walking a
-// `Int8Array` of dosages and skipping the uncalled, where the kernel walks a
-// packed genotype buffer. The moments those two loops produce are the same six
-// numbers, and everything downstream of them is now stated once.
+// The CPU path the app runs is `calculateLDStatsDosageBits`, which reaches the
+// same six moments by popcount over bit planes. This function is the scalar
+// statement of them — one sample per iteration, nothing packed — which is what
+// makes it the thing the packed kernel is checked against, at exact equality
+// rather than a tolerance (`calculateLDStatsDosage.test.ts`). It is meant to
+// stay readable, not to be fast.
 
 /**
  * Composite-LD r²/D' between two SNPs from encoded genotype dosages

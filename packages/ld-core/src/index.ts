@@ -6,6 +6,11 @@ export {
 } from './parsePlinkLD.ts'
 export type { PlinkLDHeader, PlinkLDRecord } from './plinkLDTypes.ts'
 export { calculateLDStats } from './calculateLDStats.ts'
+export {
+  calculateLDStatsDosageBits,
+  packDosages,
+} from './calculateLDStatsDosage.ts'
+export type { PackedDosages } from './calculateLDStatsDosage.ts'
 export { dprimeFinalize } from './ldStats.generated.ts'
 export {
   calculateLDStatsPhasedBits,

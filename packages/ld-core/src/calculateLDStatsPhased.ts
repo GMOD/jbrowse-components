@@ -5,6 +5,7 @@ import {
   ldLociPolymorphic,
   ldRSquared,
 } from './ldStats.generated.ts'
+import { popcount32 } from './popcount.ts'
 
 const PIPE_CODE = 124 // '|'
 const ZERO_CODE = 48 // '0'
@@ -30,14 +31,6 @@ export interface HaplotypeCounts {
   // counted sample carries exactly two called alleles.
   nCalledAlleles: number
   nAltAlleles: number
-}
-
-function popcount32(v: number) {
-  v = v | 0
-  v -= (v >>> 1) & 0x55555555
-  v = (v & 0x33333333) + ((v >>> 2) & 0x33333333)
-  v = (v + (v >>> 4)) & 0x0f0f0f0f
-  return Math.imul(v, 0x01010101) >>> 24
 }
 
 /**
