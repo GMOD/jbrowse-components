@@ -27,17 +27,33 @@ and alignment tracks and pans with them.
 
 Each lane below the anchor is drawn in its genome's **own coordinates**: the
 display looks up which orthologs fall in the visible window, takes the span they
-cover in each genome, and fits that span to the track's width. Each lane's
-header names the chromosome and coordinate range it is showing, with `[rev]` on
-a lane whose gene order runs against the anchor's. The grey ribbons carry the
-correspondence between lanes, so an insertion or a local expansion in one genome
-simply takes more of its own lane.
+cover in each genome, and fits that span to the track's width. The grey ribbons
+carry the correspondence between lanes, so an insertion or a local expansion in
+one genome simply takes more of its own lane.
+
+Because each lane has its own scale, every lane says what that scale is. A
+lane's header names where it starts and `[rev]` where its gene order runs
+against the anchor's; on the right it names the lane's span, and the multiple of
+the anchor's span where that is not one. A lane's span is snapped to a short
+ladder of anchor-span multiples, so the number is always a round one and a pan
+that leaves a lane on its rung leaves the lane's content where it was. The
+anchor lane carries the same header, so the stack states the scale everything
+else is read against.
+
+Each lane also draws its own coordinate ticks, all at one interval named in the
+anchor's header. Two lanes whose ticks fall at the same spacing are at the same
+bp-per-pixel; a lane whose ticks crowd together is zoomed out by what the
+spacing shows. The linear view's own gridlines stop at the anchor lane, which is
+the only lane they are true for.
 
 A lane draws real gene models when the session has a gene track for that
 assembly: the display finds the first GFF3 feature track declared for the lane's
 assembly alone and fetches its genes over the lane's window, so exons and
 introns come from the same annotation the ortholog table was built from. A lane
-with no gene track draws the table's own gene spans as plain boxes.
+with no gene track draws the table's own gene spans as outlined boxes instead,
+and says `no annotation` in its header — a placement box and a gene model are
+never the same ink, so one box filling a lane cannot be misread as one enormous
+gene.
 
 This tutorial uses the hosted grape/peach/cacao demo, whose one
 `MCScanBlocksAdapter` track carries an ortholog column for seven plant genomes;
@@ -102,9 +118,9 @@ lane placed mid-stack would cut the chains of every denser lane below it.
 
 Zoomed in, each ribbon connects one gene to one ortholog, and a copy-number
 difference shows up as a ribbon fanning from one gene into several. A sparse
-lane holds its genome's scale: a lane never zooms in past the anchor's own
-bp-per-pixel, so a lone ortholog draws at gene size with its lane's frame
-centered on it.
+lane holds its genome's scale: the shortest rung on the ladder is the anchor's
+own span, so a lone ortholog draws at gene size with its lane's frame centered
+on it rather than stretched across the viewport.
 
 <Figure caption="The same lanes cut to a few genes, close enough to read exon structure in the annotated lanes. Each ribbon links one gene to its ortholog in the lane below, and the lanes that kept a single gene here show it at the anchor's scale." src="/img/multiway_synteny/lgv_track_zoom.png" />
 
@@ -240,9 +256,9 @@ The same lanes hold up across species too divergent for whole-genome alignment.
 The five-vertebrate OrthoFinder table behind
 [Synteny from OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny)
 draws the human HOXD cluster with a lane per genome: the cluster's block is
-syntenic in all five, each lane's header names the chromosome carrying it and
-`[rev]` where it is inverted, and every lane draws that genome's own gene
-models.
+syntenic in all five, each lane's header names the chromosome carrying it, its
+span and `[rev]` where it is inverted, and every lane draws that genome's own
+gene models.
 
 <Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. The cluster's block stays syntenic in every lane, each lane names its own chromosome and orientation, and the ribbon chains thin outside it where the orthogroups scatter." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 

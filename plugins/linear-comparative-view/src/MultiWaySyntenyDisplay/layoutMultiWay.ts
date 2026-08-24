@@ -96,19 +96,31 @@ export function groupFeatures(features: Feature[]) {
   )
 }
 
-// Mate assemblies in first-appearance order over the anchor-sorted groups, so
-// the row order is stable under pans that keep the same gene set. A non-empty
-// `preferred` (the display's rowOrder property) pins the lanes it names to the
-// top, in its order; lanes it does not name follow in first-appearance order.
+// Mate assemblies densest-first over the anchor-sorted groups: a ribbon
+// connects ADJACENT lanes only, so a near-empty lane sitting mid-stack cuts the
+// chains of every denser lane below it. Density is counted over the whole
+// fetched block set rather than the viewport, so the order holds still across
+// the pans that keep one fetch. A non-empty `preferred` (the display's rowOrder
+// property) pins the lanes it names to the top, in its order.
 export function rowAssembliesOf(groups: MultiWayGroup[], preferred: string[]) {
-  const present: string[] = []
+  const appearance = new Map<string, number>()
+  const placementCount = new Map<string, number>()
   for (const group of groups) {
-    for (const assemblyName of group.mates.keys()) {
-      if (!present.includes(assemblyName)) {
-        present.push(assemblyName)
+    for (const [assemblyName, placements] of group.mates) {
+      if (!appearance.has(assemblyName)) {
+        appearance.set(assemblyName, appearance.size)
       }
+      placementCount.set(
+        assemblyName,
+        (placementCount.get(assemblyName) ?? 0) + placements.length,
+      )
     }
   }
+  const present = [...appearance.keys()].sort(
+    (a, b) =>
+      placementCount.get(b)! - placementCount.get(a)! ||
+      appearance.get(a)! - appearance.get(b)!,
+  )
   return [
     ...preferred.filter(assemblyName => present.includes(assemblyName)),
     ...present.filter(assemblyName => !preferred.includes(assemblyName)),
@@ -140,6 +152,64 @@ function keepPlacementsNearMedian(
   }
   const kept = sorted.filter(p => Math.abs(mid(p) - center) <= reachBp)
   return kept.length ? kept : sorted
+}
+
+// The scales a lane's frame is allowed to sit at, as multiples of the anchor's
+// visible span. Fitting a lane exactly to its placements gives it an arbitrary
+// bp/px that also MOVES: one more ortholog entering the window re-fits the
+// frame, so the lane's content slides under its own ribbons on every pan and
+// the scale a reader just worked out is stale. Snapping to a short ladder makes
+// the scale one of a handful of legible values, holds a lane still under a pan
+// that does not change its rung, and lets the header name it as a round
+// multiple. The first rung is the old "never zoom in past the anchor" clamp.
+const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
+
+// The frame's span rounded up to a ladder rung and its center snapped to an
+// eighth of that span. `unitBp` of 0 means the caller has no anchor span to
+// scale against (the layout unit tests), and the fitted frame passes through.
+function snapFrameToLadder(lo: number, hi: number, unitBp: number) {
+  if (unitBp <= 0) {
+    return { min: lo, max: hi }
+  }
+  const wanted = Math.max(hi - lo, unitBp)
+  const rung = SCALE_LADDER.find(multiple => multiple * unitBp >= wanted)
+  const span =
+    rung === undefined ? Math.ceil(wanted / unitBp) * unitBp : rung * unitBp
+  const grid = span / 8
+  const center = Math.round((lo + hi) / 2 / grid) * grid
+  return { min: center - span / 2, max: center + span / 2 }
+}
+
+// The one tick interval the whole track draws at, picked off the anchor's
+// visible span so it lands about six ticks across it. Every lane draws ITS
+// ticks at this same bp interval in its own frame, which is what makes the
+// spacing readable as scale: two lanes whose ticks line up are at the same
+// bp/px, and a lane whose ticks crowd together is zoomed out by exactly the
+// ratio the spacing shows.
+export function tickIntervalFor(spanBp: number) {
+  const target = Math.max(spanBp, 1) / 6
+  const magnitude = 10 ** Math.floor(Math.log10(target))
+  const step = [1, 2, 5].find(candidate => candidate * magnitude >= target)
+  return (step === undefined ? 10 : step) * magnitude
+}
+
+// past this a lane is far enough out that its ticks read as hatching rather
+// than as a scale, and the header's multiple is the legible statement
+const MAX_LANE_TICKS = 24
+
+// The x positions of the shared tick interval inside one lane's own frame.
+export function frameTickXs(frame: RowFrame, interval: number, width: number) {
+  const xs: number[] = []
+  if (interval > 0 && (frame.max - frame.min) / interval <= MAX_LANE_TICKS) {
+    for (
+      let bp = Math.ceil(frame.min / interval) * interval;
+      bp <= frame.max;
+      bp += interval
+    ) {
+      xs.push(rowFrameX(frame, bp, width))
+    }
+  }
+  return xs
 }
 
 // The row's own coordinate frame: the dominant refName among the visible
@@ -203,19 +273,13 @@ export function computeRowFrame(
     }
   }
   const pad = Math.max((max - min) * 0.02, 1)
-  let lo = min - pad
-  let hi = max + pad
-  // a sparse lane never zooms in past the anchor's own scale: a lone ortholog
-  // stretched across the full viewport reads as a block, not a gene
-  if (hi - lo < minSpanBp) {
-    const center = (lo + hi) / 2
-    lo = center - minSpanBp / 2
-    hi = center + minSpanBp / 2
-  }
+  const lo = min - pad
+  const hi = max + pad
+  const snapped = snapFrameToLadder(lo, hi, minSpanBp)
   return {
     refName: dominant,
-    min: lo,
-    max: hi,
+    min: snapped.min,
+    max: snapped.max,
     flipped: orientation < 0,
   }
 }

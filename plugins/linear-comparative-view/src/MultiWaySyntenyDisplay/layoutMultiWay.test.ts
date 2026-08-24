@@ -2,12 +2,14 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
   computeRowFrame,
+  frameTickXs,
   geneGlyphShape,
   groupFeatures,
   groupSpanOnRow,
   laneGeneFeatures,
   rowAssembliesOf,
   rowFrameX,
+  tickIntervalFor,
 } from './layoutMultiWay.ts'
 
 function pairFeature({
@@ -121,7 +123,7 @@ test('groups by anchor gene, dedupes repeated mates, sorts by anchor position', 
   expect(groups[1]!.mates.has('cacao')).toBe(false)
 })
 
-test('row assemblies come out in first-appearance order', () => {
+test('row assemblies come out densest lane first, rowOrder pinning over that', () => {
   expect(rowAssembliesOf(groupFeatures(features), [])).toEqual([
     'peach',
     'cacao',
@@ -130,6 +132,116 @@ test('row assemblies come out in first-appearance order', () => {
     'cacao',
     'peach',
   ])
+})
+
+// A ribbon connects ADJACENT lanes only, so a lane holding one placement sitting
+// above a lane holding four cuts every chain that would have run through it.
+test('a sparse lane sorts below a denser one that appears after it', () => {
+  const sparseFirst = [
+    pairFeature({
+      uniqueId: 's1',
+      name: 'g1',
+      start: 100,
+      end: 200,
+      mate: {
+        assemblyName: 'sparse',
+        refName: 'S1',
+        start: 10,
+        end: 20,
+        name: 's1',
+      },
+    }),
+    ...['a', 'b', 'c'].map((suffix, i) =>
+      pairFeature({
+        uniqueId: `d${suffix}`,
+        name: `g${i + 1}`,
+        start: 100 * (i + 1),
+        end: 100 * (i + 1) + 50,
+        mate: {
+          assemblyName: 'dense',
+          refName: 'D1',
+          start: 1000 * (i + 1),
+          end: 1000 * (i + 1) + 50,
+          name: `d${suffix}`,
+        },
+      }),
+    ),
+  ]
+  expect(rowAssembliesOf(groupFeatures(sparseFirst), [])).toEqual([
+    'dense',
+    'sparse',
+  ])
+})
+
+test('a lane frame snaps to a multiple of the anchor span', () => {
+  const groups = groupFeatures(features)
+  const frame = computeRowFrame(groups, 'peach', 1000)!
+  expect((frame.max - frame.min) / 1000).toBeCloseTo(1)
+})
+
+// The whole point of the ladder: a pan that does not change which rung a lane
+// sits on leaves the lane's content where it was, instead of sliding it under
+// its own ribbons.
+test('a small change in the placements leaves a snapped frame alone', () => {
+  const peachPair = (uniqueId: string, name: string, mateStart: number) =>
+    pairFeature({
+      uniqueId,
+      name,
+      start: 100,
+      end: 200,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: mateStart,
+        end: mateStart + 100,
+        name: 'p1',
+      },
+    })
+  const before = computeRowFrame(
+    groupFeatures([peachPair('1', 'g1', 1000), peachPair('2', 'g2', 1200)]),
+    'peach',
+    1000,
+  )!
+  const after = computeRowFrame(
+    groupFeatures([peachPair('1', 'g1', 1007), peachPair('2', 'g2', 1207)]),
+    'peach',
+    1000,
+  )!
+  expect(after.min).toBe(before.min)
+  expect(after.max).toBe(before.max)
+})
+
+test('the shared tick interval is a 1/2/5 step landing a few ticks per span', () => {
+  expect(tickIntervalFor(88000)).toBe(20000)
+  expect(tickIntervalFor(200000)).toBe(50000)
+  expect(tickIntervalFor(1000)).toBe(200)
+})
+
+// Two lanes drawn at the same bp/px put their ticks at the same spacing, and a
+// lane zoomed out by 2x puts them at half of it. That spacing IS the scale
+// statement the headers otherwise make a reader compute.
+test('tick spacing across lanes reports the ratio of their scales', () => {
+  const tight = frameTickXs(
+    { refName: 'a', min: 0, max: 100000, flipped: false },
+    20000,
+    800,
+  )
+  const wide = frameTickXs(
+    { refName: 'a', min: 0, max: 200000, flipped: false },
+    20000,
+    800,
+  )
+  expect(tight[1]! - tight[0]!).toBeCloseTo(2 * (wide[1]! - wide[0]!))
+})
+
+test('a lane far enough out that its ticks would hatch draws none', () => {
+  expect(
+    frameTickXs(
+      { refName: 'a', min: 0, max: 100000000, flipped: false },
+      20000,
+      800,
+    ),
+  ).toEqual([])
 })
 
 test('a forward row frame spans its placements unflipped', () => {

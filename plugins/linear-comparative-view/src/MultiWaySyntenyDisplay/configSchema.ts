@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { featureDefaultColor, utrDefaultColor } from '@jbrowse/core/ui/palette'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -72,6 +72,34 @@ export function configSchemaFactory() {
         type: 'color',
         description: 'the color of the ribbons connecting adjacent lanes',
         defaultValue: 'rgba(130,130,130,0.3)',
+      },
+      /**
+       * #slot
+       */
+      drawCurves: {
+        type: 'boolean',
+        description:
+          "draw the ribbons as bezier curves rather than straight chords, the same setting the linear synteny view spells `drawCurves`. Straight is the default there and here: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides",
+        defaultValue: false,
+      },
+      /**
+       * #slot
+       */
+      showLaneTicks: {
+        type: 'boolean',
+        description:
+          "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement",
+        defaultValue: true,
+      },
+      /**
+       * #slot
+       * overrides the base schema's 100, which divides into a lane stack at
+       * the glyph-height floor with the headers colliding into the glyphs
+       */
+      height: {
+        type: 'number',
+        description: 'default height for the track',
+        defaultValue: 240,
       },
     },
     {

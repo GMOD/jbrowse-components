@@ -6,17 +6,17 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   doesIntersect2,
+  getContainingView,
   getSession,
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
-import {
-  GlobalFetchMixin,
-  TrackHeightMixin,
+import GlobalFetchMixin, {
   blockKeySignature,
-  foundationDisplayStatusPhase,
-} from '@jbrowse/plugin-linear-genome-view'
+} from '@jbrowse/display-kit/GlobalFetchMixin'
+import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { foundationDisplayStatusPhase } from '@jbrowse/display-kit/foundationDisplayPhase'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import {
@@ -27,14 +27,16 @@ import {
   computeRowFrame,
   groupFeatures,
   rowAssembliesOf,
+  tickIntervalFor,
 } from './layoutMultiWay.ts'
 
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { RowFrame } from './layoutMultiWay.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type React from 'react'
 
@@ -170,6 +172,17 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the hosting linear genome view. `GlobalFetchMixin` hands down the
+       * view-shaped `host` its own gating needs; a display reaching LGV's own
+       * geometry names it itself, the way the arc displays do
+       */
+      get lgv() {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        */
       get canvasWidth() {
         return self.lgv.width
@@ -219,6 +232,18 @@ export function stateModelFactory(
        */
       get ribbonColor(): string {
         return getConf(self, 'ribbonColor')
+      },
+      /**
+       * #getter
+       */
+      get drawCurves(): boolean {
+        return getConf(self, 'drawCurves')
+      },
+      /**
+       * #getter
+       */
+      get showLaneTicks(): boolean {
+        return getConf(self, 'showLaneTicks')
       },
       /**
        * #getter
@@ -281,6 +306,29 @@ export function stateModelFactory(
       get visibleBpSpan() {
         const view = self.lgv
         return view.initialized ? view.width * view.bpPerPx : 0
+      },
+      /**
+       * #getter
+       * the anchor lane's own frame — the widest block the view is showing —
+       * so the anchor lane carries the same header as every other lane. It is
+       * the baseline the lane multiples are read against, and without it the
+       * stack states its scale nowhere the ruler above has not been cropped
+       */
+      get anchorFrame() {
+        const view = self.lgv
+        return view.initialized
+          ? widestRegion(view.coarseDynamicBlocks)
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the one bp interval every lane draws its ticks at, so tick spacing is
+       * readable as bp-per-pixel across lanes drawn in different frames
+       */
+      get tickIntervalBp() {
+        return tickIntervalFor(self.visibleBpSpan)
       },
     }))
     .views(self => ({

@@ -1,11 +1,9 @@
 import { dedupe, getSession } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  installGlobalFetchAutorun,
-  onDisplayedRegionsChange,
-} from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import { laneGeneFeatures } from './layoutMultiWay.ts'
@@ -14,7 +12,7 @@ import type { MultiWaySyntenyDisplayModel } from './model.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { GlobalFetchPhases } from '@jbrowse/plugin-linear-genome-view'
+import type { GlobalFetchPhases } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 interface MultiWayFetchArgs {
   regions: ContentBlock[]

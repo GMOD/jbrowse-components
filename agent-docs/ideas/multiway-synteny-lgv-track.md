@@ -91,11 +91,42 @@ walk offsets are exactly what the 19x-smaller reference-keyed index dropped
 its whole ortholog group across every lane (`hoveredGroupKey`, main-thread
 recolor), and the track menu carries **Launch stacked synteny view (visible
 region)** — the `syntenyRegionMenuItems` dialog seeded from this track alone,
-which is the "lane you want to drive independently" handoff. Still missing:
+which is the "lane you want to drive independently" handoff. Lane order is
+densest-first by default (`rowAssembliesOf` counts placements over the fetched
+block set, not the viewport, so it holds still across a pan), which is what the
+tutorial used to tell a reader to hand-author `rowOrder` for. Still missing:
 `rowOrder` has no UI (a track-menu lane editor or drag on the lane labels),
 and the label is the obvious home for per-lane actions — hide a lane, open
 that assembly in its own LGV (`LaunchLinearGenomeView` exists), re-anchor the
-whole track on that lane's assembly. Ribbon color modes (strand for
+whole track on that lane's assembly.
+
+**Lane scale legibility, and what is still open on it.** Every lane sits in its
+own frame, and until 2026-08-24 nothing in the picture said so: the view's
+gridlines (`Gridlines.tsx`, painted under track content at the ANCHOR's bp
+ticks, full track height, inside `ZoomTransform`) ran through every lane and
+were the most confident regularity on the page. What shipped: an opaque band
+per mate lane, tiling the whole area below the anchor so those gridlines stop
+where they are true; each lane's own ticks at one shared interval
+(`tickIntervalFor`/`frameTickXs`), so tick spacing reads as bp/px across frames;
+a header stating span and the anchor multiple where it is not 1, on the anchor
+lane too; frames snapped to a `SCALE_LADDER` rung with the center on an eighth
+of the span, so the scale is a round number and a small pan stops re-fitting
+every lane; and straight chords by default (`drawCurves`, matching
+`LinearSyntenyView`), whose slant is the offset between two frames.
+
+Still open: a **Match anchor scale** mode (one line in `computeRowFrame` — every
+lane's span is the anchor's, and content that does not fit runs off the lane
+edge, which is itself the information) and the height story. The display's
+`height` slot defaults to 240 rather than the base schema's 100, which stops the
+seven-genome demos landing on the 5px glyph floor, but a lane count past about
+eight still crushes: `TrackHeightMixin` is composed and `scrollableHeight` is
+never supplied, so the lanes divide whatever height there is instead of
+scrolling. The fix is a fixed lane pitch plus `scrollableHeight`, which drags in
+`VerticalScrollbar` + `useVirtualScrollWheel` the way `FeatureComponent` mounts
+them — or `HeightModeMixin`'s grow mode, whose `growTargetHeight` hook is
+exactly `rowCount * pitch`, with the caveat that
+`heightModeConfigSchemaFields` pins `promotedBase: 'fixed'` so grow is a menu
+choice rather than this display type's default. Ribbon color modes (strand for
 inversions, identity from the PAF's `de:f:`) fit the existing `ribbonColor`
 slot as a colorBy the way `syntenyColors.ts` does it — main-thread recolor, no
 refetch. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the

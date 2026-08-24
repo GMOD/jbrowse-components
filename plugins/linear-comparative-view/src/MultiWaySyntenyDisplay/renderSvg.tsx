@@ -1,13 +1,11 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import {
-  SvgClipRect,
-  renderDisplaySvg,
-} from '@jbrowse/plugin-linear-genome-view'
+import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
+import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import MultiWayRows from './components/MultiWayRows.tsx'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
-import type { LgvSvgBodyProps } from '@jbrowse/plugin-linear-genome-view'
+import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 
 // the lazy boundary for the export path, same shape as the arc displays: the
 // model's renderSvg reaches this through one import(), and the body renders the

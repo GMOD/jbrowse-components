@@ -3591,6 +3591,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "ribbonColor",
           "type": "(JexlString | string)"
+        },
+        {
+          "name": "drawCurves",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showLaneTicks",
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
