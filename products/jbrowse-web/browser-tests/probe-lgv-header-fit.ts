@@ -66,13 +66,53 @@ async function main() {
           mr: Math.round(Number.parseFloat(cs.marginRight)),
         }
       }
-      const search = document.querySelector('[data-testid="autocomplete"]')
+      const search = document.querySelector<HTMLElement>(
+        '[data-testid="autocomplete"]',
+      )
+      // What the box spends on everything that is not the locstring, measured
+      // rather than added up from MUI's defaults: the width the reserve
+      // constants are supposed to name is exactly this minus the text.
+      const chrome = (() => {
+        if (!search) {
+          return null
+        }
+        const input = search.querySelector('input')!
+        const cs = getComputedStyle(input)
+        const px = (v: string) => Number.parseFloat(v) || 0
+        const text =
+          input.clientWidth - px(cs.paddingLeft) - px(cs.paddingRight)
+        const adornment = search.querySelector('.MuiInputAdornment-root')
+        const overflow = adornment?.querySelector('button')
+        const icon = adornment?.querySelector('svg')
+        const w = search.getBoundingClientRect().width
+        // `measureText`'s Helvetica table stands in for the font the box
+        // actually renders in, and the reserve is only safe to tighten if the
+        // table is not under-measuring it
+        const ctx = document.createElement('canvas').getContext('2d')!
+        ctx.font = cs.font
+        return {
+          asked: search.style.width,
+          value: input.value,
+          font: cs.font,
+          rendered: Math.round(ctx.measureText(input.value).width * 100) / 100,
+          text: Math.round(text),
+          chrome: Math.round(w - text),
+          adornment: adornment
+            ? Math.round(adornment.getBoundingClientRect().width)
+            : null,
+          overflow: overflow
+            ? Math.round(overflow.getBoundingClientRect().width)
+            : null,
+          icon: icon ? Math.round(icon.getBoundingClientRect().width) : null,
+        }
+      })()
       return {
         bar: {
           client: bar.clientWidth,
           scroll: bar.scrollWidth,
         },
         search: search ? box(search).w : null,
+        chrome,
         children: [...bar.children].map(c => ({ label: label(c), ...box(c) })),
       }
     })
@@ -91,6 +131,15 @@ async function main() {
         .map(c => `  ${c.label.padEnd(22)} ${c.w}  (m ${c.ml}/${c.mr})`)
         .join('\n'),
     )
+    const c = r.chrome
+    if (c) {
+      console.log(
+        `  search box: asked ${c.asked || '(none)'}  value "${c.value}"` +
+          `  rendered ${c.rendered} in ${c.font}` +
+          `  text ${c.text}  chrome ${c.chrome}` +
+          `  (adornment ${c.adornment}, icon ${c.icon}, overflow ${c.overflow})`,
+      )
+    }
   }
 
   await browser.close()

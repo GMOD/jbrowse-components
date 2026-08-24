@@ -7,12 +7,22 @@ import {
 
 import type { RefNameMatchSource } from '../../util/selectNamedRegions.ts'
 
-// matches the rendered font-size of the TextField
+// Above the 13.71px the TextField renders at, and left there deliberately. The
+// table is Helvetica's and the box draws in Roboto, so measuring the value at 14
+// comes out about 3% over what the browser paints — `ctgA:1..20,000` measures
+// 90.04 against a drawn 87.74 — and that margin is what lets the reserves below
+// be the chrome's exact width rather than a padded guess.
 const INPUT_FONT_SIZE = 14
-// input padding + search icon + right margin (excludes the overflow button)
-const ADORNMENT_RESERVE_PX = 70
-// extra room for the ⋮ IconButton, only reserved when it is actually drawn
-const OVERFLOW_BUTTON_RESERVE_PX = 30
+// What the box spends on everything that is not the locstring, less the ⋮
+// button: the search icon (17), the adornment's right margin (7), and the input
+// padding and border (20). Measured in a built jbrowse-web, where
+// `products/jbrowse-web/browser-tests/probe-lgv-header-fit.ts` prints the box
+// decomposed — adding MUI's documented defaults up instead is what had this
+// reserving 100 for a 71px chrome, so every box stood 29px wider than its
+// contents.
+const ADORNMENT_RESERVE_PX = 44
+// The ⋮ IconButton, only reserved when it is actually drawn
+const OVERFLOW_BUTTON_RESERVE_PX = 27
 // quantize the computed width to this step so short locstring length changes (a
 // digit/comma appearing while panning/zooming) don't reflow the box and jitter
 // the surrounding header; also gives short values a little pleasant slack

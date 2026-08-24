@@ -357,6 +357,16 @@ describe('adornmentReservePx', () => {
     )
   })
 
+  // Both halves are measured in a built jbrowse-web by
+  // `products/jbrowse-web/browser-tests/probe-lgv-header-fit.ts`: the box spends
+  // 71px on everything that is not the locstring, 27 of it on the ⋮ button.
+  // Reserving the MUI defaults' 100 instead stood every box 29px wider than its
+  // own contents.
+  it('reserves the chrome the box actually has', () => {
+    expect(adornmentReservePx({ showHelp: true })).toBe(71)
+    expect(adornmentReservePx({})).toBe(44)
+  })
+
   it('reserves the button for injected rows with help off', () => {
     // the header box in a stacked view: showHelp={false}, but a recent location
     // draws the button anyway, and the locstring lost that width to it
