@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`the published contract is what the worked example imports 1`] = `
+[
+  "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard",
+  "@jbrowse/core/Plugin",
+  "@jbrowse/core/PluginManager",
+  "@jbrowse/core/ui",
+  "@jbrowse/core/util",
+  "@jbrowse/display-kit/defineDisplay",
+]
+`;

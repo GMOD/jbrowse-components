@@ -29,8 +29,10 @@ import MultiRegionDisplayMixin, {
 } from './MultiRegionDisplayMixin.ts'
 import TrackHeightMixin from './TrackHeightMixin.tsx'
 import baseLinearDisplayConfigSchema from './configSchema.ts'
+import { markGpu, markPaint } from './marks.ts'
 import { renderDisplaySvg } from './renderDisplaySvg.tsx'
 
+import type { Mark } from './marks.ts'
 import type { LgvSvgBodyProps, LgvSvgExportable } from './renderDisplaySvg.tsx'
 import type { ExportSvgDisplayOptions } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -117,21 +119,33 @@ export interface GpuSpec<Payload, P extends ParamSchema, Uniforms> {
   ) => Uniforms
 }
 
-export interface DisplaySpec<
+// #region drawing
+/**
+ * How the display draws: a `mark` (a shape plus its channels, from which the
+ * GPU pass, the Canvas2D painter and the SVG export all derive), or a `paint`
+ * of your own with an optional `gpu` block beside it.
+ */
+export type Drawing<Payload, P extends ParamSchema, Uniforms> =
+  | { mark: Mark<Payload, P>; paint?: never; gpu?: never }
+  | {
+      paint: Paint<Payload, P>
+      gpu?: GpuSpec<Payload, P, Uniforms>
+      mark?: never
+    }
+// #endregion
+
+export type DisplaySpec<
   Payload extends object,
   P extends ParamSchema,
   Uniforms,
-> {
+> = {
   name: string
   displayName?: string
   trackType: string
   params: P
   /** Runs in the worker, once per region. Positions come back as absolute bp. */
   data: (ctx: DataContext<P>) => Promise<Payload>
-  /** The Canvas2D painter, which is also the SVG export. */
-  paint: Paint<Payload, P>
-  gpu?: GpuSpec<Payload, P, Uniforms>
-}
+} & Drawing<Payload, P, Uniforms>
 
 interface DataArgs<P extends ParamSchema> extends RpcCallContext {
   sessionId: string
@@ -177,7 +191,8 @@ export function defineDisplay<
   P extends ParamSchema,
   Uniforms,
 >(spec: DisplaySpec<Payload, P, Uniforms>) {
-  const { name, trackType, params, data, paint, gpu } = spec
+  const { name, trackType, params, data } = spec
+  const paint = spec.mark ? markPaint(spec.mark) : spec.paint
   const methodName = `${name}Data`
   const configSchema = ConfigurationSchema(name, slotsOf(params), {
     baseConfiguration: baseLinearDisplayConfigSchema,
@@ -220,7 +235,7 @@ export function defineDisplay<
     }
   }
 
-  function gpuRenderer(g: GpuSpec<Payload, P, Uniforms>) {
+  function gpuRenderer<U>(g: GpuSpec<Payload, P, U>) {
     return class GpuRenderer extends GpuPerRegionRenderingBackend<
       Payload,
       State
@@ -249,18 +264,23 @@ export function defineDisplay<
     }
   }
 
-  const factory = gpu
-    ? (canvas: HTMLCanvasElement) => {
-        const GpuRenderer = gpuRenderer(gpu)
-        return createRenderingBackend<Backend>(canvas, {
-          passes: gpu.passes,
-          uniformByteSize: gpu.shader.UNIFORMS_SIZE_BYTES,
-          createGpuBackend: hal => new GpuRenderer(hal),
-          createCanvas2DBackend: c => new Canvas2DRenderer(c),
-        })
-      }
-    : (canvas: HTMLCanvasElement) =>
-        createCanvas2DBackend<Backend>(canvas, c => new Canvas2DRenderer(c))
+  function gpuFactory<U>(g: GpuSpec<Payload, P, U>) {
+    const GpuRenderer = gpuRenderer(g)
+    return (canvas: HTMLCanvasElement) =>
+      createRenderingBackend<Backend>(canvas, {
+        passes: g.passes,
+        uniformByteSize: g.shader.UNIFORMS_SIZE_BYTES,
+        createGpuBackend: hal => new GpuRenderer(hal),
+        createCanvas2DBackend: c => new Canvas2DRenderer(c),
+      })
+  }
+
+  const factory = spec.mark
+    ? gpuFactory(markGpu(spec.mark))
+    : spec.gpu
+      ? gpuFactory(spec.gpu)
+      : (canvas: HTMLCanvasElement) =>
+          createCanvas2DBackend<Backend>(canvas, c => new Canvas2DRenderer(c))
 
   interface SvgModel extends LgvSvgExportable {
     id: string

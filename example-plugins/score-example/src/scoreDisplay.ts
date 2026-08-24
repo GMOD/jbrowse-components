@@ -1,22 +1,11 @@
-// #exampleFile shared | the whole display: settings, worker fetch, painter, shader passes
+// #exampleFile shared | the whole display: settings, worker fetch, and the mark
 // #region imports
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { defineDisplay } from '@jbrowse/display-kit/defineDisplay'
-import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
-import {
-  bpToScreenPx,
-  forEachClippedBlock,
-} from '@jbrowse/render-core/canvas2dUtils'
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
-import * as shader from './shaders/score.generated.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type {
   DataContext,
-  DisplayRenderState,
-  GpuSpec,
-  Paint,
+  ParamValues,
 } from '@jbrowse/display-kit/defineDisplay'
 // #endregion
 
@@ -54,7 +43,7 @@ const params = {
 // #endregion
 
 type ScoreParams = typeof params
-export type ScoreRenderState = DisplayRenderState<ScoreParams>
+type ScoreParamValues = ParamValues<ScoreParams>
 
 // #region pack
 // Pure packer: features -> parallel typed arrays. Kept separate from the fetch
@@ -107,87 +96,18 @@ export async function fetchScoreData({
 }
 // #endregion
 
-// #region paint
-// Pure draw function: paints the visible blocks into any 2D context. Ctx2D =
-// CanvasRenderingContext2D | SvgCanvas, so the same implementation backs the
-// on-screen Canvas2D fallback and SVG export.
-export const drawScoreBlocks: Paint<ScoreRegionData, ScoreParams> = (
-  ctx,
-  regions,
-  blocks,
-  { canvasWidth, canvasHeight, params },
-) => {
-  ctx.fillStyle = params.color
-  forEachClippedBlock(
-    ctx,
-    blocks,
-    canvasWidth,
-    canvasHeight,
-    block => regions.get(block.displayedRegionIndex),
-    (data, block) => {
-      const { start, end, screenStartPx, screenEndPx, reversed } = block
-      for (let i = 0; i < data.numFeatures; i++) {
-        const left = bpToScreenPx(
-          data.starts[i]!,
-          start,
-          end,
-          screenStartPx,
-          screenEndPx,
-          reversed,
-        )
-        const right = bpToScreenPx(
-          data.ends[i]!,
-          start,
-          end,
-          screenStartPx,
-          screenEndPx,
-          reversed,
-        )
-        const h = data.scores[i]! * canvasHeight
-        ctx.fillRect(
-          Math.min(left, right),
-          canvasHeight - h,
-          Math.abs(right - left) || 1,
-          h,
-        )
-      }
-    },
-  )
-}
-// #endregion
-
-// #region gpu
-// The optional accelerator: one pass whose instance buffer the generated
-// `packInstances` interleaves from the region's arrays, and the uniforms one
-// clipped block draws with. `bpRangeXTuple` carries the hp-split genomic ->
-// clip transform, negated on a reversed block, so the shader needs no
-// reversed flag of its own.
-export const scoreGpu: GpuSpec<ScoreRegionData, ScoreParams, shader.Uniforms> =
-  {
-    shader,
-    passes: [
-      {
-        ...slangPass({ id: 'score', mod: shader }),
-        pack: data =>
-          shader.packInstances(
-            { startBp: data.starts, endBp: data.ends, score: data.scores },
-            data.numFeatures,
-          ),
-      },
-    ],
-    uniforms: (
-      block,
-      clip,
-      _region,
-      { canvasWidth, canvasHeight, params },
-    ) => ({
-      bpRangeX: bpRangeXTuple(clip, block.reversed),
-      zero: 0,
-      canvasWidth,
-      canvasHeight,
-      color: cssColorToABGR(params.color),
-    }),
-  }
+// #region mark
+// One box per feature: from `starts` to `ends`, `scores` tall as a fraction of
+// the canvas, in the configured color. The GPU pass, the Canvas2D fallback and
+// the SVG export all come from this one declaration; there is no shader to
+// write and no draw function to keep in step with it.
+const scoreMark = {
+  type: 'bar',
+  x: (d: ScoreRegionData) => d.starts,
+  x2: (d: ScoreRegionData) => d.ends,
+  y: (d: ScoreRegionData) => d.scores,
+  color: (params: ScoreParamValues) => params.color,
+} as const
 // #endregion
 
 // #region define
@@ -197,7 +117,6 @@ export const LinearScoreDisplay = defineDisplay({
   trackType: 'FeatureTrack',
   params,
   data: fetchScoreData,
-  paint: drawScoreBlocks,
-  gpu: scoreGpu,
+  mark: scoreMark,
 })
 // #endregion

@@ -132,23 +132,12 @@ Import everything normally. `LinearScoreDisplay`, from the
 <!-- include: example-plugins/score-example/src/scoreDisplay.ts#imports -->
 
 ```ts
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { defineDisplay } from '@jbrowse/display-kit/defineDisplay'
-import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
-import {
-  bpToScreenPx,
-  forEachClippedBlock,
-} from '@jbrowse/render-core/canvas2dUtils'
-import { slangPass } from '@jbrowse/render-core/slangPass'
-
-import * as shader from './shaders/score.generated.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 import type {
   DataContext,
-  DisplayRenderState,
-  GpuSpec,
-  Paint,
+  ParamValues,
 } from '@jbrowse/display-kit/defineDisplay'
 ```
 

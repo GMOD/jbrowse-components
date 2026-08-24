@@ -1,20 +1,21 @@
 ---
 title: Plotting features in a custom display
 description:
-  Build a plugin that fetches features in a worker and plots them on the main
-  thread with Canvas2D, no shaders required
+  Build a plugin that fetches features in a worker and declares the mark that
+  draws them, no shader and no draw function required
 guide_category: Plugins
 sidebar_label: Plotting features
 ---
 
-**TL;DR:** A custom display that fetches features in a worker and draws them
-with Canvas2D, no shaders required. You write a spec with four parts, the
-display's settings, its worker fetch, its painter and optionally a shader, and
-`defineDisplay` composes the display type around it. Right for gene-scale tracks
-(hundreds to thousands of features per frame); move to
-[](/docs/developer_guides/creating_gpu_display) only when a profile shows
-Canvas2D can't hold 60fps (roughly ≳100K features per frame). The GPU path is
-the same spec with one more block.
+**TL;DR:** A custom display that fetches features in a worker and declares how
+they draw as a mark, a shape plus the channels that feed it. You write a spec
+with three parts, the display's settings, its worker fetch and its mark, and
+`defineDisplay` composes the display type around it: the GPU pass, the Canvas2D
+fallback and the SVG export all derive from the mark, so there is no shader and
+no draw function to write. A mark already draws on WebGPU, then WebGL2, then
+Canvas2D, so feature count is not what sends a display to
+[](/docs/developer_guides/creating_gpu_display); a shape the library does not
+have is.
 
 A [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build](/docs/developer_guides/no_build_plugin) one: it bundles
@@ -30,21 +31,22 @@ land `@experimental`; until then, build against a `jbrowse-components` checkout.
 
 Rendering splits across two threads:
 
-<Figure caption="The worker fetches and packs, the main thread stores per region and draws. The pure draw function backs both the canvas and SVG export." src="/img/feature_plotting_threads.png" />
+<Figure caption="The worker fetches and packs, the main thread stores per region and draws. The painter the mark derives backs both the Canvas2D fallback and the SVG export." src="/img/feature_plotting_threads.png" />
 
 The worker returns compact data, never pixels, with all genomic positions
 absolute (not region-relative). The spec's `data` function is the worker half
-and its `paint` function is the main-thread half. The factory stores what `data`
-returns per region (`rpcDataMap`), decides which regions need fetching, and
-calls `paint` with the visible blocks whenever anything on screen changes.
+and its `mark` is the main-thread half: the factory derives a GPU pass and a
+Canvas2D painter from it. The factory stores what `data` returns per region
+(`rpcDataMap`), decides which regions need fetching, and redraws the visible
+blocks whenever anything on screen changes.
 
 Three terms recur below (the
 [architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
 is fuller):
 
 - **region**: one entry of `view.displayedRegions`. `data` runs once per region.
-- **block**: a visible slice of a region with its on-screen pixel span. `paint`
-  draws per block.
+- **block**: a visible slice of a region with its on-screen pixel span. Drawing
+  happens per block.
 - **`displayedRegionIndex`**: a region's index in `view.displayedRegions`, the
   join key between the per-region payloads and the blocks:
   `regions.get(block.displayedRegionIndex)`.
@@ -55,11 +57,14 @@ is fuller):
 an in-tree display spells by hand: the config schema from your `params`, an MST
 model composing `MultiRegionDisplayMixin` and `TrackHeightMixin` with
 `rpcProps`, `renderState` and `fetchNeeded` derived from the spec, an
-`RpcMethodType` subclass that runs `data` in the worker, a
-`Canvas2DPerRegionRenderingBackend` that calls `paint`, the `installUpload`
-render lifecycle, a React component rendering the canvas through
-`DisplayChrome`, and SVG export through `renderDisplaySvg`. Those names are
-where to read when a display outgrows the spec; the
+`RpcMethodType` subclass that runs `data` in the worker, the painter and the GPU
+pass derived from `mark` (`markPaint` and `markGpu` in
+`packages/display-kit/src/marks.ts`), the `Canvas2DPerRegionRenderingBackend`
+and `GpuPerRegionRenderingBackend` that run them behind a WebGPU, then WebGL2,
+then Canvas2D backend factory, the `installUpload` render lifecycle, a React
+component rendering the canvas through `DisplayChrome`, and SVG export through
+`renderDisplaySvg`. Those names are where to read when a display outgrows the
+spec; the
 [architecture spec's display stacks](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
 and
 [GPU_RENDERING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md)
@@ -70,19 +75,17 @@ written that way.
 
 `example-plugins/score-example/` is the finished plugin, a standalone package CI
 installs from a packed tarball and asserts renders, so it stays buildable
-against the published packages. The display is one file; the `[GPU only]` row
-and the `gpu` block inside that file are what a Canvas2D display skips:
+against the published packages. The display is one file, and nothing in the tree
+is a shader: the `bar` shape's shader ships inside `@jbrowse/render-core`.
 
 <!-- EXAMPLE_PLUGIN_TREE START -->
 
 ```
 src/
   index.ts            the plugin class; installs the display and the feature panel
-  scoreDisplay.ts     the whole display: settings, worker fetch, painter, shader passes
+  scoreDisplay.ts     the whole display: settings, worker fetch, and the mark
   ScoreFeaturePanel/
     index.tsx         adds a panel to the feature details widget
-  shaders/
-    score.slang       [GPU only] vertex + fragment for one pass; compiled by gen:shaders
 ```
 
 <!-- EXAMPLE_PLUGIN_TREE END -->
@@ -118,7 +121,8 @@ const params = {
 
 - **`fetch`**: the worker reads it. The factory builds the RPC cache key from
   this set, so a change refetches every region. Only these params reach `data`.
-- **`frame`**: only `paint` reads it. A change redraws and fetches nothing.
+- **`frame`**: only the drawing reads it, here the mark's `color` channel. A
+  change redraws and fetches nothing.
 - **`encode`**: a setting the main-thread buffer packing reads, the third bucket
   the architecture spec calls
   [`gpuProps()`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern).
@@ -129,7 +133,7 @@ blocks. [The data fetching pipeline](/docs/developer_guides/data_fetching)
 explains the cache key the `fetch` set becomes.
 
 `as const` matters: it is what lets `DataContext` type `params` as the `fetch`
-subset and `paint` see every value with its literal type.
+subset and the mark's `color` channel see every value with its literal type.
 
 ## Define the data the worker returns
 
@@ -222,38 +226,85 @@ fetch that only brackets its work with them cannot be cancelled mid-download and
 reports no progress. [](/docs/developer_guides/rpc_workers) covers what they are
 on each side of the boundary.
 
-## Paint
+## Declare the mark
 
-`paint` is a pure function over any 2D context: `Ctx2D` is
-`CanvasRenderingContext2D | SvgCanvas`, so the same implementation is the
-on-screen Canvas2D renderer and the SVG export. It receives the per-region
-payloads, the visible blocks, and a `DisplayRenderState`: the canvas box plus
-every param, resolved.
+A mark is a shape plus the channels that feed it. `bar` is a box per feature:
+`x` and `x2` are its left and right edges in absolute bp, `y` is its height as a
+fraction of the canvas height, grown up from the bottom, and `color` is its
+fill. `x`, `x2` and `y` are accessors over the region's payload returning
+parallel arrays, one value per feature; `color` is an accessor over the resolved
+params, so it is one value per frame rather than one per feature, and a change
+to the `color` setting reaches the screen without touching the payload:
 
-<!-- include: example-plugins/score-example/src/scoreDisplay.ts#paint -->
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#mark -->
 
 ```ts
-// Pure draw function: paints the visible blocks into any 2D context. Ctx2D =
-// CanvasRenderingContext2D | SvgCanvas, so the same implementation backs the
-// on-screen Canvas2D fallback and SVG export.
-export const drawScoreBlocks: Paint<ScoreRegionData, ScoreParams> = (
-  ctx,
-  regions,
-  blocks,
-  { canvasWidth, canvasHeight, params },
-) => {
-  ctx.fillStyle = params.color
+// One box per feature: from `starts` to `ends`, `scores` tall as a fraction of
+// the canvas, in the configured color. The GPU pass, the Canvas2D fallback and
+// the SVG export all come from this one declaration; there is no shader to
+// write and no draw function to keep in step with it.
+const scoreMark = {
+  type: 'bar',
+  x: (d: ScoreRegionData) => d.starts,
+  x2: (d: ScoreRegionData) => d.ends,
+  y: (d: ScoreRegionData) => d.scores,
+  color: (params: ScoreParamValues) => params.color,
+} as const
+```
+
+That is the whole drawing. `defineDisplay` derives the GPU pass (`markGpu`) and
+the Canvas2D painter (`markPaint`) from it, and SVG export runs that painter
+over an `SvgCanvas`, so the Canvas2D fallback and the SVG export come for free
+and cannot drift from the shader: all three read the same channels. The shape
+itself lives in `packages/render-core/src/marks/bar.ts` (`barPass`,
+`barUniforms`, `paintBars`, and the `BarEncoding` the channels satisfy) and
+`packages/render-core/src/shaders/bar.slang`; `BarMark` in
+`packages/display-kit/src/marks.ts` adds the `color` channel on top. Canvas2D is
+still
+[the floor every display ships](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator):
+the GPU pass is the accelerator layered on the painter, and a browser with
+neither WebGPU nor WebGL2 gets the painter.
+
+## Bring your own painter
+
+`bar` is the shape the library has today. A shape it does not have is `paint` in
+place of `mark`: a pure function over any 2D context, `Ctx2D` being
+`CanvasRenderingContext2D | SvgCanvas`, handed the per-region payloads, the
+visible blocks and a `DisplayRenderState`, the canvas box plus every param
+resolved. The `bar` shape's own painter is exactly what one looks like;
+`markPaint` calls it with the mark's channels and the resolved color:
+
+<!-- include: packages/render-core/src/marks/bar.ts#paintBars -->
+
+```ts
+/**
+ * The Canvas2D twin of the shader, and so also the SVG export. A sub-pixel
+ * bar widens to 1px so it still paints, which is what `extendToMinWidthX`
+ * does on the GPU side.
+ */
+export function paintBars<Payload>(
+  ctx: BarContext2D,
+  regions: ReadonlyMap<number, Payload>,
+  blocks: RenderBlock[],
+  frame: BarFrame & { color: string },
+  encoding: BarEncoding<Payload>,
+) {
+  const { canvasWidth, canvasHeight } = frame
+  ctx.fillStyle = frame.color
   forEachClippedBlock(
     ctx,
     blocks,
     canvasWidth,
     canvasHeight,
     block => regions.get(block.displayedRegionIndex),
-    (data, block) => {
+    (payload, block) => {
       const { start, end, screenStartPx, screenEndPx, reversed } = block
-      for (let i = 0; i < data.numFeatures; i++) {
+      const x = encoding.x(payload)
+      const x2 = encoding.x2(payload)
+      const y = encoding.y(payload)
+      for (let i = 0; i < x.length; i++) {
         const left = bpToScreenPx(
-          data.starts[i]!,
+          x[i]!,
           start,
           end,
           screenStartPx,
@@ -261,14 +312,14 @@ export const drawScoreBlocks: Paint<ScoreRegionData, ScoreParams> = (
           reversed,
         )
         const right = bpToScreenPx(
-          data.ends[i]!,
+          x2[i]!,
           start,
           end,
           screenStartPx,
           screenEndPx,
           reversed,
         )
-        const h = data.scores[i]! * canvasHeight
+        const h = y[i]! * canvasHeight
         ctx.fillRect(
           Math.min(left, right),
           canvasHeight - h,
@@ -284,10 +335,12 @@ export const drawScoreBlocks: Paint<ScoreRegionData, ScoreParams> = (
 `forEachClippedBlock` clips to each block's pixel span and hands the draw
 callback whatever your lookup returns for that block, here the payload keyed by
 `displayedRegionIndex`; `bpToScreenPx` maps an absolute position into the block,
-honoring `reversed`. Canvas2D is
-[the floor every display ships](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator):
-SVG export runs this function, and a shader, when one is added, is an
-accelerator layered on top of it.
+honoring `reversed`. A `paint` is the SVG export and the Canvas2D floor exactly
+as the mark's painter is. Without a `gpu` block beside it the factory builds the
+Canvas2D backend alone, which holds 60fps for gene-scale tracks, hundreds to
+thousands of features per frame; a `.slang` shader and a `gpu` block naming its
+passes and uniforms are the accelerator, and
+[](/docs/developer_guides/creating_gpu_display) is how to write them.
 
 ## Define and install
 
@@ -303,15 +356,34 @@ export const LinearScoreDisplay = defineDisplay({
   trackType: 'FeatureTrack',
   params,
   data: fetchScoreData,
-  paint: drawScoreBlocks,
-  gpu: scoreGpu,
+  mark: scoreMark,
 })
 ```
 
-A Canvas2D-only display leaves `gpu` out. The result carries `install`, which
-registers the display type and the RPC method that runs `data`. Call it from the
-plugin's `install`, which runs on the main thread and in every worker alike;
-that is what puts `data` where the adapter is:
+`mark` is one spelling of how the display draws and `paint`, with an optional
+`gpu` beside it, is the other; the spec takes one or the other, never both:
+
+<!-- include: packages/display-kit/src/defineDisplay.tsx#drawing -->
+
+```ts
+/**
+ * How the display draws: a `mark` (a shape plus its channels, from which the
+ * GPU pass, the Canvas2D painter and the SVG export all derive), or a `paint`
+ * of your own with an optional `gpu` block beside it.
+ */
+export type Drawing<Payload, P extends ParamSchema, Uniforms> =
+  | { mark: Mark<Payload, P>; paint?: never; gpu?: never }
+  | {
+      paint: Paint<Payload, P>
+      gpu?: GpuSpec<Payload, P, Uniforms>
+      mark?: never
+    }
+```
+
+The result carries `install`, which registers the display type and the RPC
+method that runs `data`. Call it from the plugin's `install`, which runs on the
+main thread and in every worker alike; that is what puts `data` where the
+adapter is:
 
 <!-- include: example-plugins/score-example/src/index.ts -->
 
@@ -350,17 +422,18 @@ is a worked example over a hand-written model.
 
 ## SVG export
 
-Nothing to add: `paint` takes a `Ctx2D`, so the factory's `renderSvg` calls it
-with an `SvgCanvas` and emits vector output from the same code.
-[](/docs/developer_guides/svg_export) is the contract it satisfies, for a
-display written without the factory.
+Nothing to add: the mark's painter, like any `paint`, takes a `Ctx2D`, so the
+factory's `renderSvg` calls it with an `SvgCanvas` and emits vector output from
+the same code. [](/docs/developer_guides/svg_export) is the contract it
+satisfies, for a display written without the factory.
 
-## Moving to the GPU path
+## A shape the library lacks
 
-Everything above carries over unchanged: `params`, `data`, `paint`, which SVG
-export keeps using either way, and the `defineDisplay` call. You add a `.slang`
-shader and a `gpu` block naming its passes and uniforms. See
-[](/docs/developer_guides/creating_gpu_display).
+A mark already draws on the GPU, so nothing here is left behind for scale. What
+sends a display to [](/docs/developer_guides/creating_gpu_display) is a shape
+`mark` cannot say: `params`, `data` and the `defineDisplay` call carry over
+unchanged, `mark` becomes the `paint` above, and a `.slang` shader with a `gpu`
+block naming its passes and uniforms gives that painter its GPU twin.
 
 ## In-tree references
 

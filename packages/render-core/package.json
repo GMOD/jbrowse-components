@@ -41,6 +41,7 @@
     "./instanceCache": "./src/instanceCache.ts",
     "./instancePass": "./src/instancePass.ts",
     "./keyedRenderingBackend": "./src/keyedRenderingBackend.ts",
+    "./marks/bar": "./src/marks/bar.ts",
     "./namedReactions": "./src/namedReactions.ts",
     "./OverlayCanvas": "./src/OverlayCanvas.tsx",
     "./perRegionRenderingBackend": "./src/perRegionRenderingBackend.ts",
@@ -48,6 +49,7 @@
     "./renderBlock": "./src/renderBlock.ts",
     "./renderingBackendBase": "./src/renderingBackendBase.ts",
     "./ScrollLockedOverlay": "./src/ScrollLockedOverlay.tsx",
+    "./shaders/bar": "./src/shaders/bar.generated.ts",
     "./shaders/coverageBar": "./src/shaders/coverageBar.generated.ts",
     "./shaders/coverageIndicator": "./src/shaders/coverageIndicator.generated.ts",
     "./shaders/coverageInterbase": "./src/shaders/coverageInterbase.generated.ts",
@@ -147,6 +149,10 @@
         "types": "./esm/keyedRenderingBackend.d.ts",
         "import": "./esm/keyedRenderingBackend.js"
       },
+      "./marks/bar": {
+        "types": "./esm/marks/bar.d.ts",
+        "import": "./esm/marks/bar.js"
+      },
       "./namedReactions": {
         "types": "./esm/namedReactions.d.ts",
         "import": "./esm/namedReactions.js"
@@ -174,6 +180,10 @@
       "./ScrollLockedOverlay": {
         "types": "./esm/ScrollLockedOverlay.d.ts",
         "import": "./esm/ScrollLockedOverlay.js"
+      },
+      "./shaders/bar": {
+        "types": "./esm/shaders/bar.generated.d.ts",
+        "import": "./esm/shaders/bar.generated.js"
       },
       "./shaders/coverageBar": {
         "types": "./esm/shaders/coverageBar.generated.d.ts",
@@ -286,6 +296,9 @@
         "keyedRenderingBackend": [
           "esm/keyedRenderingBackend.d.ts"
         ],
+        "marks/bar": [
+          "esm/marks/bar.d.ts"
+        ],
         "namedReactions": [
           "esm/namedReactions.d.ts"
         ],
@@ -306,6 +319,9 @@
         ],
         "ScrollLockedOverlay": [
           "esm/ScrollLockedOverlay.d.ts"
+        ],
+        "shaders/bar": [
+          "esm/shaders/bar.generated.d.ts"
         ],
         "shaders/coverageBar": [
           "esm/shaders/coverageBar.generated.d.ts"

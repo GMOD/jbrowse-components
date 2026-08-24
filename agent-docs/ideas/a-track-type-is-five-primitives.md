@@ -249,6 +249,10 @@ not overruled.
   itself 16 + 196 lines with its GPU pass, no import from the LGV plugin, and
   it gained SVG export. The typing unknown resolved: one fixed composition
   inside the factory infers fine.
+- **Step 6** started as ADR-090: `mark: { type: 'bar', x, x2, y, color }`,
+  the shape in render-core (`shaders/bar.slang`, `marks/bar.ts`), the wiring
+  in display-kit. The example is three files, 16 + 122 + 38 lines, and has no
+  shader and no draw function. The next shape joins on a consumer's pull.
 
 ## Order, and the gauge
 

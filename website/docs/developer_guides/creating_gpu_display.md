@@ -1,22 +1,25 @@
 ---
 title: GPU displays
 description:
-  Build a display that renders with WebGPU/WebGL2 and falls back to Canvas2D
+  Bring a shape the library lacks, as a hand-written shader and a gpu block
+  beside your own painter, with the Canvas2D fallback the factory requires
 guide_category: Plugins
 ---
 
-**TL;DR:** Build a display that renders via WebGPU/WebGL2 with a required
-Canvas2D fallback: the same `defineDisplay` spec as
-[](/docs/developer_guides/plotting_features), plus a `.slang` shader and a `gpu`
-block naming its passes and uniforms. The factory tries WebGPU, then WebGL2,
-then the `paint` you already wrote.
+**TL;DR:** A `mark` from [](/docs/developer_guides/plotting_features) already
+draws on WebGPU, then WebGL2, then Canvas2D. This guide is for a shape the
+library lacks: the same `defineDisplay` spec with `paint` in place of `mark`,
+plus a `.slang` shader and a `gpu` block naming its passes and uniforms. The
+factory tries WebGPU, then WebGL2, then the `paint` you wrote. The worked shader
+and `gpu` block below are the library's own `bar`, the shape behind
+`mark: { type: 'bar' }`, because a shape a plugin brings is written exactly the
+way render-core writes one.
 
 :::note
 
-The scale-up path, for roughly ≳100K features per frame. Start from
-[](/docs/developer_guides/plotting_features) otherwise; it builds the same
-plugin without the shader, so moving up later adds a block rather than changing
-one.
+Not the scale-up path: a mark is GPU-drawn already, and feature count is no
+reason to leave it. Start from [](/docs/developer_guides/plotting_features), and
+come here when the shape you need is not one `mark` offers.
 
 `@jbrowse/display-kit`, `@jbrowse/render-core` and `@jbrowse/shader-tools`
 **first publish in the next release**. Until then, author against a
@@ -63,20 +66,21 @@ Manhattan when your regions are independent.
 
 ## Files to create
 
-The same `example-plugins/score-example/` the Canvas2D guide builds. The shader
-is the one new file; the `gpu` block goes in the display file that already
-exists:
+The same `example-plugins/score-example/` as
+[](/docs/developer_guides/plotting_features), and it has no shader of its own:
+its `bar` ships in `@jbrowse/render-core`. A plugin bringing a shape adds a
+`.slang` file beside the display file, the codegen writes the `*.generated.ts`
+modules next to it, and the `gpu` block goes in the display file where `mark`
+was:
 
 <!-- EXAMPLE_PLUGIN_TREE START -->
 
 ```
 src/
   index.ts            the plugin class; installs the display and the feature panel
-  scoreDisplay.ts     the whole display: settings, worker fetch, painter, shader passes
+  scoreDisplay.ts     the whole display: settings, worker fetch, and the mark
   ScoreFeaturePanel/
     index.tsx         adds a panel to the feature details widget
-  shaders/
-    score.slang       [GPU only] vertex + fragment for one pass; compiled by gen:shaders
 ```
 
 <!-- EXAMPLE_PLUGIN_TREE END -->
@@ -87,18 +91,20 @@ Create a `.slang` file. JBrowse uses a Slang-derived shader language that
 compiles to both WGSL (WebGPU) and GLSL (WebGL2). Modules are referenced by bare
 name (`import hpmath;`), not file path; the shared helpers live in
 `packages/render-core/src/shaders/` (`hpmath` for the high-precision
-genomic→pixel transform, `colorPack` for unpacking packed colors). The example
-declares its uniforms inline; if several passes share a struct, put it in a
-sibling module (`scoreUniforms.slang`, starting `module scoreUniforms;` with a
-`public struct`).
+genomic→pixel transform, `colorPack` for unpacking packed colors). The worked
+shader is the library's `bar`, `packages/render-core/src/shaders/bar.slang`, the
+one `mark: { type: 'bar' }` draws with. It declares its uniforms inline; if
+several passes share a struct, put it in a sibling module of its own, starting
+`module <name>;` with a `public struct`, and `import <name>;` it from each pass.
 
-<!-- include: example-plugins/score-example/src/shaders/score.slang -->
+<!-- include: packages/render-core/src/shaders/bar.slang -->
 
 ```slang
-// Score display: one box per feature. The box spans start->end horizontally and
-// its height is score (0..1) x canvasHeight, grown up from the bottom. A single
-// uniform ABGR color fills every box. This is the minimal per-region GPU pass
-// used by the "GPU displays" developer guide.
+// The `bar` mark: one box per instance. The box spans x..x2 horizontally (absolute
+// bp) and its height is y (0..1) x canvasHeight, grown up from the bottom. One
+// uniform ABGR color fills every box. The shape behind `mark: { type: 'bar' }`
+// in @jbrowse/display-kit's defineDisplay, and the worked shader in the GPU
+// displays developer guide.
 //! targets: wgsl, glsl
 
 import hpmath;
@@ -106,10 +112,10 @@ import colorPack;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
-struct ScoreInstance {
-  uint  startBp : ATTR0;
-  uint  endBp   : ATTR1;
-  float score   : ATTR2;
+struct BarInstance {
+  uint  x  : ATTR0;
+  uint  x2 : ATTR1;
+  float y  : ATTR2;
 };
 
 struct Uniforms {
@@ -132,18 +138,18 @@ struct VsOut {
 };
 
 [shader("vertex")]
-VsOut vs_main(ScoreInstance inst, uint vid : SV_VertexID) {
+VsOut vs_main(BarInstance inst, uint vid : SV_VertexID) {
   // quadLocal maps the 6 vertices to the corners of a unit box: x/y each 0 or 1.
   float2 local = quadLocal(vid);
 
-  float x1 = bpToClipX(inst.startBp, u);
-  float x2 = bpToClipX(inst.endBp, u);
+  float x1 = bpToClipX(inst.x, u);
+  float x2 = bpToClipX(inst.x2, u);
   // widen a sub-pixel feature so a 1bp box still paints (reversal-safe: reversal
   // is baked into bpRangeX's negated length, so x2 < x1 on reversed blocks).
   x2 = extendToMinWidthX(x1, x2, 1.0, u.canvasWidth);
   float x = local.x < 0.5 ? x1 : x2;
 
-  float barHeightPx = clamp(inst.score, 0.0, 1.0) * u.canvasHeight;
+  float barHeightPx = clamp(inst.y, 0.0, 1.0) * u.canvasHeight;
   // local.y: 0 = top of the box, 1 = bottom (canvas bottom edge).
   float yPx = (u.canvasHeight - barHeightPx) + local.y * barHeightPx;
 
@@ -173,20 +179,20 @@ tool is `pnpm gen:shaders`.
 
 One `.slang` file with entry points produces up to three modules, and **which
 one you import from decides what your users download**. A bundler treats a
-namespace import (`import * as shader from './score.generated.ts'`) as using
-every export, so a module is included or excluded whole — whatever the smallest
-eager consumer of a module wants, the always-loaded chunk pays for all of it.
+namespace import (`import * as shader from './bar.generated.ts'`) as using every
+export, so a module is included or excluded whole — whatever the smallest eager
+consumer of a module wants, the always-loaded chunk pays for all of it.
 
-| Module                      | Holds                                                             | Import it from                                                            |
-| --------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `score.generated.ts`        | the compiled WGSL/GLSL strings, and a re-export of the other two  | the render path, which needs the shader source anyway                     |
-| `score.iface.generated.ts`  | uniform + instance layout, the typed packers, `VERTEX_ATTRIBUTES` | code that packs or reads a buffer                                         |
-| `score.consts.generated.ts` | the `//! export-consts` values, and nothing else                  | a state model, a hit test, a Canvas2D twin — anything that wants a number |
+| Module                    | Holds                                                             | Import it from                                                            |
+| ------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `bar.generated.ts`        | the compiled WGSL/GLSL strings, and a re-export of the other two  | the render path, which needs the shader source anyway                     |
+| `bar.iface.generated.ts`  | uniform + instance layout, the typed packers, `VERTEX_ATTRIBUTES` | code that packs or reads a buffer                                         |
+| `bar.consts.generated.ts` | the `//! export-consts` values, and nothing else                  | a state model, a hit test, a Canvas2D twin — anything that wants a number |
 
 So a display model reading one threshold reaches for the `.consts.` module, not
 the shader module that re-exports it.
 
-What lands in `score.generated.ts`, and what a plugin imports from it. It
+What lands in `bar.generated.ts`, and what a plugin imports from it. It
 re-exports the other two modules, so the table below is the union of all three:
 
 <!-- SHADER_EXPORTS START -->
@@ -239,46 +245,77 @@ confined to that one line; in TypeScript outside uniform writes, use plain
 
 A `GpuSpec` is three things: the generated shader module, the passes packed from
 one region's payload, and the uniforms one clipped block draws with.
+`packages/render-core/src/marks/bar.ts` spells the `bar` shape's two halves as
+functions over its channels, and `markGpu` in
+`packages/display-kit/src/marks.ts` is the `gpu` block that assembles them. The
+pass:
 
-<!-- include: example-plugins/score-example/src/scoreDisplay.ts#gpu -->
+<!-- include: packages/render-core/src/marks/bar.ts#barPass -->
 
 ```ts
-// The optional accelerator: one pass whose instance buffer the generated
-// `packInstances` interleaves from the region's arrays, and the uniforms one
-// clipped block draws with. `bpRangeXTuple` carries the hp-split genomic ->
-// clip transform, negated on a reversed block, so the shader needs no
-// reversed flag of its own.
-export const scoreGpu: GpuSpec<ScoreRegionData, ScoreParams, shader.Uniforms> =
-  {
-    shader,
-    passes: [
-      {
-        ...slangPass({ id: 'score', mod: shader }),
-        pack: data =>
-          shader.packInstances(
-            { startBp: data.starts, endBp: data.ends, score: data.scores },
-            data.numFeatures,
-          ),
-      },
-    ],
-    uniforms: (
-      block,
-      clip,
-      _region,
-      { canvasWidth, canvasHeight, params },
-    ) => ({
-      bpRangeX: bpRangeXTuple(clip, block.reversed),
-      zero: 0,
-      canvasWidth,
-      canvasHeight,
-      color: cssColorToABGR(params.color),
-    }),
+/** The pass that draws every bar of one region, packed from its channels. */
+export function barPass<Payload>(
+  encoding: BarEncoding<Payload>,
+): InstancePass<Payload> {
+  return {
+    ...slangPass({ id: BAR_PASS, mod: shader }),
+    pack: payload => {
+      const x = encoding.x(payload)
+      return shader.packInstances(
+        { x, x2: encoding.x2(payload), y: encoding.y(payload) },
+        x.length,
+      )
+    },
   }
+}
 ```
 
-- **`shader`** is the namespace import of `score.generated.ts`. The factory
-  reads `UNIFORMS_SIZE_BYTES` and `writeUniforms` off it, so the uniform block
-  is typed by the generated `Uniforms` interface and a field the shader dropped
+The uniforms:
+
+<!-- include: packages/render-core/src/marks/bar.ts#barUniforms -->
+
+```ts
+/** The uniforms one clipped block draws its bars with; `color` is packed ABGR. */
+export function barUniforms(
+  block: RenderBlock,
+  clip: BlockClipResult,
+  frame: BarFrame & { color: number },
+): shader.Uniforms {
+  return {
+    bpRangeX: bpRangeXTuple(clip, block.reversed),
+    zero: 0,
+    canvasWidth: frame.canvasWidth,
+    canvasHeight: frame.canvasHeight,
+    color: frame.color,
+  }
+}
+```
+
+And the block that hands both to the factory, with the resolved CSS color packed
+to the ABGR the shader's `uint color` reads:
+
+<!-- include: packages/display-kit/src/marks.ts#markGpu -->
+
+```ts
+export function markGpu<Payload, P extends ParamSchema>(
+  mark: Mark<Payload, P>,
+): GpuSpec<Payload, P, barShader.Uniforms> {
+  return {
+    shader: barShader,
+    passes: [barPass(mark)],
+    uniforms: (block, clip, _region, { canvasWidth, canvasHeight, params }) =>
+      barUniforms(block, clip, {
+        canvasWidth,
+        canvasHeight,
+        color: cssColorToABGR(mark.color(params)),
+      }),
+  }
+}
+```
+
+- **`shader`** is the namespace import of `bar.generated.ts`. The factory reads
+  `UNIFORMS_SIZE_BYTES` and `writeUniforms` off it, so the uniform block is
+  typed by the generated `Uniforms` interface and a field the shader dropped
   fails to compile here.
 - **`passes`** is one entry per pipeline. `slangPass` builds the
   `PipelineDescriptor` from the module (its sources, `VERTS_PER_INSTANCE`,
@@ -289,32 +326,38 @@ export const scoreGpu: GpuSpec<ScoreRegionData, ScoreParams, shader.Uniforms> =
 - **`uniforms`** runs once per clipped block per frame. `bpRangeXTuple` gives
   the hp-split genomic→clip transform, negated on a reversed block, so the
   shader needs no `reversed` flag. `canvasWidth` and `canvasHeight` are CSS
-  pixels; the factory owns `devicePixelRatio`. `params` is every setting
-  resolved, so a `frame` param such as the color reaches the shader without a
-  refetch.
+  pixels; the factory owns `devicePixelRatio`. The state the factory hands in
+  carries every setting resolved, so a `frame` param such as the color reaches
+  the shader without a refetch.
 
-Then name it in the spec:
+Then plug it into the spec. `defineDisplay({ ..., paint, gpu })` is where a
+hand-written shader goes: `paint` in place of `mark`, `gpu` beside it, and the
+same `name`, `trackType`, `params` and `data` as before. The spec's drawing slot
+is one or the other, never both:
 
-<!-- include: example-plugins/score-example/src/scoreDisplay.ts#define -->
+<!-- include: packages/display-kit/src/defineDisplay.tsx#drawing -->
 
 ```ts
-export const LinearScoreDisplay = defineDisplay({
-  name: 'LinearScoreDisplay',
-  displayName: 'Score display (example)',
-  trackType: 'FeatureTrack',
-  params,
-  data: fetchScoreData,
-  paint: drawScoreBlocks,
-  gpu: scoreGpu,
-})
+/**
+ * How the display draws: a `mark` (a shape plus its channels, from which the
+ * GPU pass, the Canvas2D painter and the SVG export all derive), or a `paint`
+ * of your own with an optional `gpu` block beside it.
+ */
+export type Drawing<Payload, P extends ParamSchema, Uniforms> =
+  | { mark: Mark<Payload, P>; paint?: never; gpu?: never }
+  | {
+      paint: Paint<Payload, P>
+      gpu?: GpuSpec<Payload, P, Uniforms>
+      mark?: never
+    }
 ```
 
 With `gpu` set, the factory's backend factory goes through
 `createRenderingBackend`, which tries WebGPU, then WebGL2, and falls back to a
-Canvas2D backend over `paint` when no GPU device is available. Without it the
-factory builds the Canvas2D backend alone. Everything else, `params`, `data`,
-`paint`, the `install`, is unchanged from
-[](/docs/developer_guides/plotting_features).
+Canvas2D backend over `paint` when no GPU device is available; a `mark` takes
+the same route with the block `markGpu` builds. Without either the factory
+builds the Canvas2D backend alone. Everything else, `params`, `data`, the
+`install`, is unchanged from [](/docs/developer_guides/plotting_features).
 
 ## Canvas2D is still required
 
@@ -323,8 +366,9 @@ factory builds the Canvas2D backend alone. Everything else, `params`, `data`,
 **SVG export runs the Canvas2D path**, and the GPU shader is the optional
 accelerator layered on top. The Canvas2D backend also runs when WebGPU and
 WebGL2 are both unavailable.
-[Plotting features](/docs/developer_guides/plotting_features#paint) builds
-`drawScoreBlocks` in full; the GPU path adds to it and changes none of it.
+[Plotting features](/docs/developer_guides/plotting_features#bring-your-own-painter)
+shows `paintBars`, the `bar` shape's painter, in full; the GPU path adds to it
+and changes none of it.
 
 ## Settings and what they invalidate
 
@@ -371,6 +415,8 @@ What each backend refuses to allocate is
 
 ## Key invariants
 
+- A shape the library has is a `mark`. `paint` plus `gpu` is for one it lacks,
+  and a spec carries one spelling or the other, never both.
 - All worker output uses absolute genomic uint32 coordinates, not
   region-relative. float32 cannot hold 3 Gbp; use uint32 for positions crossing
   the worker boundary.

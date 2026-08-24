@@ -36,6 +36,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./installClearHoverOnViewportChange",
   "./installGlobalFetchAutorun",
   "./installPerRegionFetchAutoruns",
+  "./marks",
   "./planRegionFetch",
   "./regionCommit",
   "./regionHost",
