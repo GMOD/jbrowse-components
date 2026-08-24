@@ -150,18 +150,23 @@ export const PROCEDURES: Record<string, Procedure> = {
             labelDx: 190,
             maxWidth: 320,
           }),
-          // BELOW its control, not beside it (reviewer: "the red boxes are
-          // slightly overlapping which looks messy"). "Open from a URL" sits
-          // directly under the drop zone, so a label to its right started
-          // level with the drop zone's own red box and the two rectangles
-          // met. Under the link there is nothing but dialog padding.
-          ...step({
-            n: 3,
-            anchor: { text: 'Open from a URL' },
-            label: 'or paste file URLs instead',
-            labelSide: 'below',
-            labelDy: 6,
-          }),
+          // NO CALLOUT ON "Open from a URL", which is where the frame's third
+          // and fourth red rectangles used to be (reviewer: "too many red boxes
+          // in second figure", after an earlier round on the same frame: "the
+          // red boxes are slightly overlapping which looks messy").
+          //
+          // Moving it below its control stopped the overlap and did not fix the
+          // count: a step is a box plus a pill, so two steps put four rectangles
+          // and two badges inside one dialog, where the frame beside it carries
+          // two rectangles in a whole window.
+          //
+          // Dropping it rather than restyling it, because the number was also
+          // wrong. 1, 2, 3 reads as an order, and the URL box is not the step
+          // after the drop zone -- it is the other way to do the same step. The
+          // prose beside the figure already carries it ("To load from the web,
+          // click Open from a URL and paste your file URLs, one per line"),
+          // which is where an alternative route belongs. What is left is the
+          // procedure the figure is for: press this, then drop your files here.
         ],
       },
       // No third frame. It was the volvox view the flow lands on, which is

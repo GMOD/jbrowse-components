@@ -72,7 +72,7 @@ autosaves. Click a session name to reopen it (see
 **Open new genome** brings up the "Open genome(s)" dialog, and what you give it
 there becomes a new session on that assembly.
 
-<Figure src="/img/desktop-open-genome-steps.png" caption="Opening a genome from your own files. Open new genome (1) brings up the dialog, which takes the sequence file either from the drop area (2) or from pasted URLs (3)."/>
+<Figure src="/img/desktop-open-genome-steps.png" caption="Opening a genome from your own files. Open new genome (1) brings up the dialog, and the sequence file goes onto its drop area (2)."/>
 
 The dialog is drop-first. Drop your sequence file (a FASTA, bgzip-compressed
 FASTA, or 2bit, along with any `.fai`/`.gzi` index files) onto the drop area, or
