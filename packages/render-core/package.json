@@ -31,6 +31,7 @@
     "./canvas2dUtils": "./src/canvas2dUtils.ts",
     "./canvasContext": "./src/canvasContext.ts",
     "./coverageBand": "./src/coverageBand.ts",
+    "./coverageBandBuffers": "./src/coverageBandBuffers.ts",
     "./createRenderingBackend": "./src/createRenderingBackend.ts",
     "./displayPhase": "./src/displayPhase.ts",
     "./globalRenderingBackend": "./src/globalRenderingBackend.ts",
@@ -108,6 +109,10 @@
       "./coverageBand": {
         "types": "./esm/coverageBand.d.ts",
         "import": "./esm/coverageBand.js"
+      },
+      "./coverageBandBuffers": {
+        "types": "./esm/coverageBandBuffers.d.ts",
+        "import": "./esm/coverageBandBuffers.js"
       },
       "./createRenderingBackend": {
         "types": "./esm/createRenderingBackend.d.ts",
@@ -265,6 +270,9 @@
         ],
         "coverageBand": [
           "esm/coverageBand.d.ts"
+        ],
+        "coverageBandBuffers": [
+          "esm/coverageBandBuffers.d.ts"
         ],
         "createRenderingBackend": [
           "esm/createRenderingBackend.d.ts"

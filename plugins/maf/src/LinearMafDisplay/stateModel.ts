@@ -20,7 +20,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
-import { coverageBandBuffers } from '@jbrowse/render-core/coverageBand'
+import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {

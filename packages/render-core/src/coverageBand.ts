@@ -5,46 +5,14 @@ import * as coverageModShader from './shaders/coverageMod.generated.ts'
 import * as coverageSnpShader from './shaders/coverageSnp.generated.ts'
 import { slangPass } from './slangPass.ts'
 
+import type { CoverageBandBuffers } from './coverageBandBuffers.ts'
 import type { InstancePass } from './instancePass.ts'
+
+export { coverageBandBuffers } from './coverageBandBuffers.ts'
+export type { CoverageBandBuffers } from './coverageBandBuffers.ts'
 
 export const COVERAGE_BAND_UNIFORMS_SIZE_BYTES =
   coverageBarShader.UNIFORMS_SIZE_BYTES
-
-/**
- * The four coverage-band buffers a producer packs per region, in the layouts
- * `coverageBand.slang`'s passes read. Every field is filled by
- * `@jbrowse/alignments-core` — `packCoverageBinsForGpu`, `computeSNPCoverage`
- * and `computeInterbaseCoverage` (which emits the last two) — so a display gets
- * these by running that pipeline, not by shaping them itself.
- *
- * Structural rather than nominal, and named after the layout rather than after
- * either display: the alignments worker's `CoverageUploadData` and the MAF
- * worker's `MafCoverageRegion` both satisfy it, which is what lets the passes
- * below carry their own packers instead of each plugin restating four field
- * reads.
- */
-export interface CoverageBandBuffers {
-  coveragePackedBuffer: ArrayBuffer
-  snpPackedBuffer: ArrayBuffer
-  interbasePackedBuffer: ArrayBuffer
-  indicatorPackedBuffer: ArrayBuffer
-}
-
-/**
- * Just the band's four buffers out of a wider per-region payload — the field set
- * stated once, so a display carrying them into its own upload payload cannot
- * spell three of them.
- */
-export function coverageBandBuffers(
-  src: CoverageBandBuffers,
-): CoverageBandBuffers {
-  return {
-    coveragePackedBuffer: src.coveragePackedBuffer,
-    snpPackedBuffer: src.snpPackedBuffer,
-    interbasePackedBuffer: src.interbasePackedBuffer,
-    indicatorPackedBuffer: src.indicatorPackedBuffer,
-  }
-}
 
 /**
  * The fifth buffer, base modifications stacked in the same bars. Separate

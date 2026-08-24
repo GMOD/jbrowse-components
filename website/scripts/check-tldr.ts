@@ -93,7 +93,7 @@ const TUTORIAL_TYPE_NAME =
 // The opening clause: everything before the first comma, colon or semicolon.
 function openingClause(paragraph: string): string {
   const prose = paragraph.replace('**TL;DR:**', '').trim()
-  const [clause] = prose.split(/[,:;]/)
+  const [clause = prose] = prose.split(/[,:;]/)
   return clause
 }
 
