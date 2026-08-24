@@ -2,6 +2,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
   getConf,
+  resolveConf,
 } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
@@ -36,6 +37,10 @@ import type { Mark } from './marks.ts'
 import type { LgvSvgBodyProps, LgvSvgExportable } from './renderDisplaySvg.tsx'
 import type { ExportSvgDisplayOptions } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type {
+  ResolvableDisplay,
+  SlotValueResolvedFromDef,
+} from '@jbrowse/core/configuration'
 import type { ConfigSlotDefinition } from '@jbrowse/core/configuration/configurationSlot'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
@@ -64,8 +69,13 @@ export type ParamDefinition = ConfigSlotDefinition & { affects: ParamAffects }
 
 export type ParamSchema = Record<string, ParamDefinition>
 
+/**
+ * Every setting as its paint and worker see it: the slot's own value type, and
+ * for a `promotedBase` slot the cascade's answer rather than the inherit
+ * sentinel, because that is how `readParams` reads it.
+ */
 export type ParamValues<P extends ParamSchema> = {
-  [K in keyof P]: P[K]['defaultValue']
+  [K in keyof P]: SlotValueResolvedFromDef<P[K]>
 }
 
 type KeysAffecting<P extends ParamSchema, A extends ParamAffects> = {
@@ -163,15 +173,22 @@ function slotsOf(schema: ParamSchema) {
   )
 }
 
+// A spec author writes no getters, so the reader picks the verb a typed call
+// site would have: a slot declaring `promotedBase` stores the inherit sentinel
+// and only `resolveConf` answers with the display-type default; `getConf` on
+// it is `undefined` with no diagnostic at any layer.
 function readParams<P extends ParamSchema>(
-  self: Parameters<typeof getConf>[0],
+  self: ResolvableDisplay,
   schema: P,
   affecting?: ParamAffects,
 ) {
   const out: Record<string, unknown> = {}
   for (const [key, def] of Object.entries(schema)) {
     if (affecting === undefined || def.affects === affecting) {
-      out[key] = getConf(self, key)
+      out[key] =
+        def.promotedBase === undefined
+          ? getConf(self, key)
+          : resolveConf(self, key)
     }
   }
   return out as ParamValues<P>

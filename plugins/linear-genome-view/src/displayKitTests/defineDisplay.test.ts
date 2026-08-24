@@ -23,6 +23,7 @@ function makeDisplay() {
     params: {
       color: { type: 'color', defaultValue: 'red', affects: 'frame' },
       column: { type: 'string', defaultValue: 'score', affects: 'fetch' },
+      pointSize: { type: 'maybeNumber', promotedBase: 6, affects: 'frame' },
     },
     data: async (): Promise<Payload> => ({ count: 1 }),
     paint: () => {},
@@ -47,8 +48,11 @@ function setup() {
       return { count: 2 }
     },
   })
-  const { display } = env.createDisplay() as { display: DisplayModel }
-  return { defined, display, calls }
+  const { session, display } = env.createDisplay() as {
+    session: ReturnType<typeof env.createDisplay>['session']
+    display: DisplayModel
+  }
+  return { defined, session, display, calls }
 }
 
 async function loaded(display: DisplayModel) {
@@ -71,8 +75,22 @@ test('fetches through its own method, sending only the fetch-tagged params', asy
 test('the render state carries every setting, resolved', async () => {
   const { display } = setup()
   await loaded(display)
-  expect(display.renderState.params).toEqual({ color: 'red', column: 'score' })
+  expect(display.renderState.params).toEqual({
+    color: 'red',
+    column: 'score',
+    pointSize: 6,
+  })
   expect(display.renderState.canvasHeight).toBe(display.height)
+})
+
+test('a promotable setting resolves through the cascade, never its sentinel', async () => {
+  const { session, display } = setup()
+  await loaded(display)
+  expect(display.renderState.params.pointSize).toBe(6)
+  session.setDisplayTypeDefault(display.type, 'pointSize', 8)
+  expect(display.renderState.params.pointSize).toBe(8)
+  setConf(display, 'pointSize', 9)
+  expect(display.renderState.params.pointSize).toBe(9)
 })
 
 test('a frame setting redraws without a refetch', async () => {

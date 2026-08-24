@@ -16,6 +16,7 @@ export type {
   ConfigurationSlotValue,
   ConfigurationSnapshot,
   HostChecksSlotNames,
+  SlotValueResolvedFromDef,
 } from './types.ts'
 
 export {
@@ -67,4 +68,8 @@ export {
   getConfigSnapshotWithPromotables,
   getTrackConfigWithPromotables,
 } from './promotableDefaults.ts'
-export type { Pin, TrackConfigWithPromotables } from './promotableDefaults.ts'
+export type {
+  Pin,
+  ResolvedConfigSnapshot,
+  TrackConfigWithPromotables,
+} from './promotableDefaults.ts'
