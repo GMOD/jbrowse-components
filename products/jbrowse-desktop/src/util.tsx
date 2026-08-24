@@ -2,9 +2,29 @@ import fsPromises from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 
-import sanitize from 'sanitize-filename'
-
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
+
+/**
+ * A filename for the fetched plugin. The temp directory below is created fresh
+ * for this one file, so the name carries no identity — it only has to be a
+ * valid filename, and to read well in the stack traces the plugin will produce.
+ * Its own basename is both, and better than what `sanitize-filename` gave:
+ * that stripped the separators out of the whole url, so
+ * https://example.com/plugin.js was written as httpsexample.complugin.js.
+ *
+ * Whatever the url is, the result is one path segment: an allowlist strips the
+ * separators an encoded url can still be carrying, and it has to hold a word
+ * character rather than merely be non-empty, which is what turns `.` and `..`
+ * into the fallback instead of a name that walks out of the directory.
+ */
+export function pluginFileName(url: string) {
+  const pathname = url.replace(/[?#].*$/, '')
+  // `basename` ignores a trailing slash, so without this a url that names a
+  // directory is written under the host name it ends with
+  const basename = pathname.endsWith('/') ? '' : path.posix.basename(pathname)
+  const cleaned = basename.replaceAll(/[^\w.-]/g, '').slice(0, 200)
+  return /\w/.test(cleaned) ? cleaned : 'plugin.js'
+}
 
 export async function fetchCJS(url: string): Promise<LoadedPlugin> {
   // On macOS `os.tmpdir()` returns the path to a symlink, see:
@@ -13,7 +33,7 @@ export async function fetchCJS(url: string): Promise<LoadedPlugin> {
     path.join(await fsPromises.realpath(os.tmpdir()), 'jbrowse-plugin-'),
   )
   try {
-    const pluginLocation = path.join(tmpDir, sanitize(url))
+    const pluginLocation = path.join(tmpDir, pluginFileName(url))
     const response = await fetch(url, { cache: 'no-cache' })
     if (!response.ok) {
       throw new Error(

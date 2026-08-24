@@ -3,10 +3,10 @@ import { useState } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import deepmerge from 'deepmerge'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
+import { mergeConfigInputs } from '../configInputs.ts'
 import defaultFavs from '../defaultFavs.ts'
 import { fetchConfig, launchSnapshot } from '../util.tsx'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
@@ -49,22 +49,7 @@ export default function LeftSidePanel({
     try {
       setLoading('Loading session')
       const entries = await getEntries()
-      const merged = deepmerge.all(entries) as JBrowseConfig
-      // a single hub config can be reused as the export base; merging several
-      // leaves no single source config, so drop the marker the entries carry
-      if (entries.length > 1 && merged.configuration) {
-        merged.configuration = { ...merged.configuration, sourceConfigUrl: '' }
-      }
-      setPluginManager(
-        await launchSnapshot({
-          ...merged,
-          // The first entry's session, not the deep merge of every entry's,
-          // which would splice unrelated view lists into one. createPluginManager
-          // names it, and the recent-sessions row is written from the named
-          // session at the first autosave rather than from this snapshot.
-          defaultSession: entries[0]?.defaultSession,
-        }),
-      )
+      setPluginManager(await launchSnapshot(mergeConfigInputs(entries)))
     } catch (e) {
       console.error(e)
       notifyError(e)

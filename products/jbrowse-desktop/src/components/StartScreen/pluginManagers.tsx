@@ -9,15 +9,14 @@ import {
   pluginUrl,
   samePlugin,
 } from '@jbrowse/core/pluginDefinitions'
-import { dedupe } from '@jbrowse/core/util'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
-import deepmerge from 'deepmerge'
 
 import corePlugins from '../../corePlugins.ts'
 import { invokeIpc } from '../../ipc.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
+import { completeConfig } from './configInputs.ts'
 import { fetchConfig } from './fetchConfig.ts'
 import {
   getGlobalPlugins,
@@ -244,37 +243,7 @@ export async function createPluginManager(
     sessionModelFactory,
   })
 
-  // this merge is what turns a JBrowseConfigInput into a complete config: the
-  // three list fields the input need not carry are supplied here, so the
-  // dedupes below have something to walk
-  const jbrowse = deepmerge(configSnapshot, {
-    internetAccounts: [
-      {
-        type: 'DropboxOAuthInternetAccount',
-        internetAccountId: 'dropboxOAuth',
-        name: 'Dropbox',
-        description: 'Account to access Dropbox files',
-        clientId: 'ykjqg1kr23pl1i7',
-      },
-      {
-        type: 'GoogleDriveOAuthInternetAccount',
-        internetAccountId: 'googleOAuth',
-        name: 'Google Drive',
-        description: 'Account to access Google Drive files',
-        clientId:
-          '109518325434-m86s8a5og8ijc5m6n7n8dk7e9586bg9i.apps.googleusercontent.com',
-      },
-    ],
-    assemblies: [],
-    tracks: [],
-  })
-
-  jbrowse.assemblies = dedupe(jbrowse.assemblies, asm => asm.name)
-  jbrowse.tracks = dedupe(jbrowse.tracks, acct => acct.trackId)
-  jbrowse.internetAccounts = dedupe(
-    jbrowse.internetAccounts,
-    acct => acct.internetAccountId,
-  )
+  const jbrowse = completeConfig(configSnapshot)
 
   const rootModel = JBrowseRootModel.create({ jbrowse }, { pluginManager })
 
