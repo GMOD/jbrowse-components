@@ -38,10 +38,7 @@ export default class BreakpointSplitViewPlugin extends Plugin {
   configure() {}
 }
 
-// Re-exported so the `declare module '@jbrowse/core/PluginManager'` block in
-// this module reaches an installed consumer. tsc keeps a module in the emitted
-// `.d.ts` only when the entry's public surface names it; a value import used
-// inside `install()` is erased, and so was this point's declaration — leaving
-// `addToExtensionPoint` on its untyped overload for the external plugin the
-// point exists for. `scripts/check-extension-point-reachability.ts` is the gate.
+// Carries this module's extension-point declaration into the emitted `.d.ts`;
+// `scripts/check-extension-point-reachability.ts` is the gate, and its header
+// is the why.
 export type { LaunchBreakpointSplitViewArgs } from './LaunchBreakpointSplitView/index.ts'
