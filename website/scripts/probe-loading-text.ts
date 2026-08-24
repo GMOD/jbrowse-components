@@ -99,7 +99,7 @@ for (let i = 0; i < seconds; i++) {
       let el = n.parentElement
       const trail: string[] = []
       while (el && trail.length < 12) {
-        const id = el.getAttribute('data-testid')
+        const id = el.dataset.testid
         if (id) {
           trail.push(id)
         }
@@ -135,9 +135,7 @@ for (let i = 0; i < seconds; i++) {
     return {
       hits,
       visibleHits: hits.filter(h => h.visible).length,
-      phase: document
-        .querySelector('[data-app-phase]')
-        ?.getAttribute('data-app-phase'),
+      phase: document.querySelector('[data-app-phase]')?.dataset.appPhase,
       drawn: document.querySelectorAll('[data-display-drawn="true"]').length,
       displays: document.querySelectorAll('[data-testid^="display-"]').length,
     }
