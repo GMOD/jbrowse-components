@@ -740,13 +740,43 @@ export const ldSpecs: ScreenshotSpec[] = [
               uri: 'https://jbrowse.org/demos/popgen/lct_1kg38_chr2_fst_eur_vs_rest_scan.bw',
               locationType: 'UriLocation',
             },
-            // NO resolutionMultiplier here, where the lane below pins one. That
-            // lane draws 81,000 sites and needs the raw values, because a zoom
-            // bin's average over ninety variants is the background. This one
-            // draws 977,000 over 40 Mb -- 650 to a pixel -- so raw values are
-            // both unfetchable and unplottable, and the zoom bin is what makes
-            // it drawable. `summaryScoreMode: 'max'` below is what keeps the
-            // peak through that bin; `avg` is the same trap one level down.
+            // RAW PER-SITE, the same pin the narrow lane takes, because the
+            // zoom bin this lane used to be read through was drawing its own
+            // background rather than the data's (review: "did you look to see
+            // if more fine-grained fst can be added in the zoomed out view? we
+            // can recalculate data").
+            //
+            // Nothing needed recalculating. build_lct_fst_scan.sh already
+            // scores every site and 930,180 of them are in this window; what
+            // was coarse was the READ. 40 Mb across the capture's ~1,490 CSS px
+            // of data area is ~27 kb a pixel, which lands on the file's
+            // coarsest useful zoom level, 40,960 bp -- so the lane drew 1,078
+            // points, each of them `summaryScoreMode: 'max'` over about 950
+            // sites. Outside the block that bin max has a median of 0.160 and a
+            // 99th percentile of 0.333, where the per-site values it summarizes
+            // are 0.0002 and 0.118. More than half the old scatter therefore
+            // sat above 0.15 for no reason but the summarization, and its
+            // background ran to within 0.14 of the 0.474 the pill points at.
+            // Per site the peak stands four times clear of the same percentile.
+            //
+            // The peak was never what the bin was protecting: unbinned, sites
+            // over 0.45 go 8 -> 10 and sites over 0.35 go 33 -> 67, while
+            // points above the lane's 0.1 floor go 949 -> 13,676. What the bin
+            // was hiding is the low half of the distribution, which is the half
+            // that makes a peak look like one.
+            //
+            // The note that used to be here called raw "both unfetchable and
+            // unplottable". Measured, it is neither: the whole per-site set is
+            // one ~5.5 MB read of the file's data section in ~0.6 s, and of the
+            // 930,180 points only 13,676 land above the floor -- the rest clamp
+            // onto it, since makeScoreNormalizer clamps to the domain rather
+            // than dropping. `max` stays below anyway, for a reader who
+            // coarsens this lane from the track menu.
+            //
+            // The frame beneath draws the same way, which is the other half of
+            // this: the two are one analysis at two scales and now look like
+            // it, where before the wide lane read as a different dataset.
+            resolutionMultiplier: 0.001,
           },
         },
       ],

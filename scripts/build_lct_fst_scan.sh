@@ -28,10 +28,16 @@
 # the same slice, unbinned, puts the block first outright. Don't re-add
 # --fst-window-size here.
 #
-# What that costs is drawing: 977k points over ~1,500 px is 650 a pixel, so the
-# lane is read through a bigWig zoom bin with `summaryScoreMode: 'max'`, which
-# is the summarization that keeps a peak. `avg` over the same bin is the
-# background, which is the same trap one level down.
+# AND THE FIGURE READS THIS PER SITE TOO, which took a second round to get to.
+# 40 Mb across the capture is ~27 kb a pixel, so the lane was first drawn
+# through the file's 40,960 bp zoom bin under `summaryScoreMode: 'max'` -- the
+# summarization that at least keeps a peak, where `avg` over the same bin is the
+# background. But max over ~950 sites is not the background either: outside the
+# block those bins have a median of 0.160 against the 0.0002 of the sites they
+# summarize, so half the drawn scatter was the bin rather than the data, and the
+# lane's 99th percentile ran to 0.333 against a per-site 0.118. The spec pins
+# `resolutionMultiplier: 0.001` and reads all 930k points -- one ~5.5 MB read,
+# and only 13,676 of them are above the lane's 0.1 floor to draw.
 #
 # Same release, same panels, same estimator and same tool as build_lct_ld.sh, so
 # the two lanes are one analysis at two scales rather than two datasets.
