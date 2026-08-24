@@ -183,10 +183,14 @@ one track, because accessibility is one scale: this is the case the shared axis
 was built for, since a DNase peak that is real in K562 should also be an ATAC
 peak in K562 and neither should be conspicuous in GM12878.
 
-Reading it against the expression track above, the open regions cluster over the
-_TAL1_ promoter and over the region upstream of it. The GM12878 rows are not
-empty, which is the honest shape of the prediction: chromatin is open at plenty
-of places that are not being transcribed.
+The shared axis is also what makes the rows' floors comparable, and that is the
+first thing to read here: predicted ATAC in K562 sits well above everything else
+across the whole window, while the same cell line's DNase resolves into
+individual peaks. On a per-row scale those two would look alike. The GM12878
+rows are not empty either, which is the honest shape of the prediction —
+chromatin is open at plenty of places that are not being transcribed.
+
+<Figure caption="Predicted DNase and ATAC for K562 and GM12878, four rows on one shared y-axis because accessibility is one set of units. The K562 ATAC row runs high across the whole window; the K562 DNase row below it resolves into peaks." src="/img/alphagenome/accessibility_shared_axis.png" />
 
 ## Splicing and folding
 
@@ -197,7 +201,10 @@ track.
 returns tens of thousands of them for a megabase, so the adapter ships them
 whole and thresholds them in the browser. Add the K562 polyA junctions and the
 arcs land on the same exon boundaries the RefSeq track draws, colored by the
-strand they were called on.
+strand they were called on — one color here, because every junction over _TAL1_
+is on the strand the gene is transcribed from.
+
+<Figure caption="Predicted splice junctions for K562 polyA plus RNA-seq, as sashimi arcs. The arcs span the introns between the TAL1 exons the RefSeq track draws above them, with a second set over STIL to the right." src="/img/alphagenome/splice_junctions.png" />
 
 **Contact maps** come back as a triangle, at 2 kb bins and only for about a
 dozen cell lines, so they want a wide window and a biosample that has one. The
@@ -205,6 +212,14 @@ GM12878 map is the one this prediction carries. Predicted maps are much less
 skewed than sequenced ones, so the display saturates at the 95th percentile
 rather than at a fraction of the maximum; the default ramp washes the whole
 triangle out.
+
+The window matters as much as the ramp. At the 70 kb this page has been sitting
+at, a 2 kb map is thirty-five bins across and shows nothing; zoom out to the
+whole predicted megabase and the domain structure appears. Navigating after the
+prediction is free — the arrays are already stored, and the adapter reads
+whatever range the view asks for.
+
+<Figure caption="The predicted GM12878 contact map across the whole 1 Mb window, at 2 kb bins. Blocks of self-interaction meet along the diagonal, with TAL1 near the middle of the view." src="/img/alphagenome/contact_map.png" />
 
 ## Scoring a variant
 
@@ -218,6 +233,14 @@ Right-click it and the menu offers to send it to AlphaGenome, naming the variant
 it would send. The panel picks it up as the variant to score, and the button
 changes to say so. Run it, and the same window comes back twice: once for the
 reference sequence and once with the insertion in place.
+
+<Figure caption="Right-clicking a variant in the track. The last row of the menu names the variant it would send, which is the only thing on screen that says the feature under the cursor is the one that would be scored." src="/img/alphagenome/send_variant_menu.png" />
+
+The recorded prediction this page reads is for the **Jurkat** insertion,
+`chr1:47239297 C>CCGTTTCCTAACC`, which sits in the same stack of patient
+variants and is easiest to reach by typing it into the panel's variant box.
+Right-clicking any other row asks a question nobody has asked yet, which is a
+real API call rather than a stored answer.
 
 Two things are worth knowing before running one of these yourself:
 
@@ -235,14 +258,22 @@ row.
 
 The pair is there to be looked at first, and at this scale the two curves sit
 almost exactly on top of each other. That is the reason the difference gets its
-own row. On the difference track, positive is where the insertion raises
-predicted expression and negative is where it lowers it, and the row is flat
-almost everywhere: one insertion changes one thing. What it changes is _TAL1_,
-which reads positive across the gene body.
+own row, and why its axis runs to a fifth of a unit where the tracks above it
+run to six.
 
-The flatness is the check. A difference track that lit up across the whole
-megabase would be a prediction responding to the request rather than to the
-variant, and there would be no way to tell which part of it was the insertion.
+On the difference track, positive is where the insertion raises predicted
+expression and negative is where it lowers it. The row is flat across most of
+the window and moves only where something is transcribed: over _TAL1_, and again
+over _STIL_ to the right. Neither is a clean one-sided shift — each carries
+positive and negative within the same gene body, which is a redistribution of
+predicted coverage rather than a simple increase.
+
+The flatness everywhere else is the check. A difference track that lit up across
+the whole megabase would be a prediction responding to the request rather than
+to the variant, and there would be no way to tell which part of it was the
+insertion.
+
+<Figure caption="A variant prediction adds two tracks: the reference and alternate curves together, and their difference below. The difference is flat except over TAL1 and STIL, and its axis spans a fraction of the one above it." src="/img/alphagenome/variant_difference.png" />
 
 ## What a prediction is, as configuration
 

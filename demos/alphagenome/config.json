@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "AlphaGenome",
-      "umdUrl": "https://jbrowse.org/demos/alphagenome-plugin/41ade508c91e/jbrowse-plugin-alphagenome.umd.js"
+      "umdUrl": "https://jbrowse.org/demos/alphagenome-plugin/4a110714b876/jbrowse-plugin-alphagenome.umd.js"
     }
   ],
   "assemblies": [
