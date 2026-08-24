@@ -66,6 +66,7 @@ identifies it (not one of the config slots below).
   ([state model](../../models/linearbasicdisplay))
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
   ([state model](../../models/linearmultirowfeaturedisplay))
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Adapter:** [BedAdapter](../bedadapter)
 - **Adapter:** [BedTabixAdapter](../bedtabixadapter)
 - **Adapter:** [BigBedAdapter](../bigbedadapter)

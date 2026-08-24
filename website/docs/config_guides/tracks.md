@@ -144,7 +144,7 @@ tracks can be drawn more than one way, and the `displays` array picks which:
 | Track type | Display types |
 | --- | --- |
 | [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay) |
-| [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay)<br/>[](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay) |
+| [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay)<br/>[](/docs/config/linearbasicdisplay)<br/>[](/docs/config/linearmultirowfeaturedisplay)<br/>[](/docs/config/linearscoredisplay) |
 | [](/docs/config/gccontenttrack) | [](/docs/config/lineargccontenttrackdisplay) |
 | [](/docs/config/gwastrack) | [](/docs/config/linearmanhattandisplay) |
 | [](/docs/config/hictrack) | [](/docs/config/linearhicdisplay) |

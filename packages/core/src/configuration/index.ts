@@ -16,7 +16,6 @@ export type {
   ConfigurationSlotValue,
   ConfigurationSnapshot,
   HostChecksSlotNames,
-  SlotValueResolvedFromDef,
 } from './types.ts'
 
 export {

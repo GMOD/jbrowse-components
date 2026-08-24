@@ -31,6 +31,7 @@ _See the **Config slots** section below for all available configuration fields._
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 
 ## Config slots
 

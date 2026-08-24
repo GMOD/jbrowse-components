@@ -275,6 +275,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../../plugins/linear-genome-view
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core

@@ -42,7 +42,6 @@
     "./TrackHeightIndicator": "./src/TrackHeightIndicator.tsx",
     "./TrackHeightMixin": "./src/TrackHeightMixin.tsx",
     "./configSchema": "./src/configSchema.ts",
-    "./defineDisplay": "./src/defineDisplay.tsx",
     "./const": "./src/const.ts",
     "./displayAutoruns": "./src/displayAutoruns.ts",
     "./fetchEachRegion": "./src/fetchEachRegion.ts",
@@ -56,7 +55,6 @@
     "./installClearHoverOnViewportChange": "./src/installClearHoverOnViewportChange.ts",
     "./installGlobalFetchAutorun": "./src/installGlobalFetchAutorun.ts",
     "./installPerRegionFetchAutoruns": "./src/installPerRegionFetchAutoruns.ts",
-    "./marks": "./src/marks.ts",
     "./planRegionFetch": "./src/planRegionFetch.ts",
     "./regionCommit": "./src/regionCommit.ts",
     "./regionHost": "./src/regionHost.ts",
@@ -175,10 +173,6 @@
         "types": "./esm/configSchema.d.ts",
         "import": "./esm/configSchema.js"
       },
-      "./defineDisplay": {
-        "types": "./esm/defineDisplay.d.ts",
-        "import": "./esm/defineDisplay.js"
-      },
       "./const": {
         "types": "./esm/const.d.ts",
         "import": "./esm/const.js"
@@ -230,10 +224,6 @@
       "./installPerRegionFetchAutoruns": {
         "types": "./esm/installPerRegionFetchAutoruns.d.ts",
         "import": "./esm/installPerRegionFetchAutoruns.js"
-      },
-      "./marks": {
-        "types": "./esm/marks.d.ts",
-        "import": "./esm/marks.js"
       },
       "./planRegionFetch": {
         "types": "./esm/planRegionFetch.d.ts",
@@ -346,9 +336,6 @@
         "configSchema": [
           "esm/configSchema.d.ts"
         ],
-        "defineDisplay": [
-          "esm/defineDisplay.d.ts"
-        ],
         "const": [
           "esm/const.d.ts"
         ],
@@ -387,9 +374,6 @@
         ],
         "installPerRegionFetchAutoruns": [
           "esm/installPerRegionFetchAutoruns.d.ts"
-        ],
-        "marks": [
-          "esm/marks.d.ts"
         ],
         "planRegionFetch": [
           "esm/planRegionFetch.d.ts"

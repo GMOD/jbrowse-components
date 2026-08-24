@@ -36,6 +36,7 @@ used to load bgzip-compressed, tabix-indexed GFF3 files
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+- **Display:** [LinearScoreDisplay](../linearscoredisplay)
 
 ## Config slots
 

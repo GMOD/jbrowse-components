@@ -39,9 +39,7 @@ follows is this package's own.
   `destroyBuffer`, `createTexture`, `releaseResources`) — a change that lands in
   one of those is still a change to mirror.
 - A shared `.slang` **shape** module needs two real consumers and non-obvious
-  math (ADR-040), or a `marks/` entry that `@jbrowse/display-kit`'s
-  `defineDisplay` draws through (ADR-090): one hand-written shader, one Canvas2D
-  painter, one packer, over the same channels.
+  math (ADR-040).
 
 ## The reversed-block family
 

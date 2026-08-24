@@ -131,9 +131,7 @@ export type ConfigurationSnapshot<SCHEMA> = SCHEMA extends undefined
 // satisfy `{ promotedBase: unknown }`, so without this branch the type would
 // keep resolving the sentinel away for exactly the slot that just stopped being
 // promotable, and `resolveConf` would throw on a read tsc had blessed.
-export type SlotValueResolvedFromDef<DEF> = DEF extends {
-  promotedBase: undefined
-}
+type SlotValueResolvedFromDef<DEF> = DEF extends { promotedBase: undefined }
   ? SlotValueRawFromDef<DEF>
   : DEF extends { promotedBase: unknown }
     ? Exclude<SlotValueRawFromDef<DEF>, undefined>
