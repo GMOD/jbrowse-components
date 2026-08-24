@@ -18,7 +18,7 @@ struct LDComputeUniforms {
   // Pair-separation window; see decodeBanded in ldUniforms.
   uint band;
   // Threads per dispatch row (workgroupsX * WORKGROUP_SIZE_X); see
-  // triangularCell in ldUniforms for why the grid is 2D.
+  // bandedCell in ldUniforms for why the grid is 2D.
   uint dispatchRowStride;
 };
 
