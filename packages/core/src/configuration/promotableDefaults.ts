@@ -58,6 +58,35 @@ export function isSlotCustomized<
   return resolveSlot(self, slot).customized
 }
 
+declare const promotablesResolved: unique symbol
+
+/**
+ * #api core/configuration
+ * A display config snapshot whose promotable slots hold RESOLVED values rather
+ * than the inherit sentinel — what a worker payload has to be built from.
+ *
+ * The brand is required and unforgeable, so a plain `Record<string, unknown>`
+ * is not assignable to it and neither is `getSnapshot(self.configuration)`.
+ * That is the whole point. Everything downstream of the resolve is an ERASED
+ * container — a snapshot is `Record<string, unknown>`, and the payload it
+ * becomes is an `as`-asserted interface — so a payload builder handed the RAW
+ * snapshot instead typechecks, ships `undefined` for every promotable slot, and
+ * types it as the resolved value. That was measured, not supposed: the raw
+ * spelling in `LinearBasicDisplay`'s `rpcProps()` passed `pnpm typecheck` and
+ * every suite in `plugins/canvas`, `packages/core/src/configuration` and
+ * `products/jbrowse-web`, while sending the worker `undefined` for chevrons,
+ * subfeature labels and feature height.
+ *
+ * The rest of this subsystem's guarantees are carried by types that stay
+ * connected to the schema: a raw read of a promotable `maybe*` slot is
+ * `T | undefined` (see `ConfigurationSlotValue`), so `getConf` where
+ * `resolveConf` was meant is a compile error at any typed consumer. The brand is
+ * that guarantee re-established at the point where the connection is cut.
+ */
+export interface ResolvedConfigSnapshot extends Record<string, unknown> {
+  readonly [promotablesResolved]: true
+}
+
 /**
  * #api core/configuration
  * The display's full config snapshot with every `promotable`
@@ -70,15 +99,19 @@ export function isSlotCustomized<
  * consults the session). Display-only promotable slots the worker never reads
  * (e.g. displayMode) are still excluded by the caller — resolving them here is a
  * harmless no-op since they're dropped anyway.
+ *
+ * The return type is branded (`ResolvedConfigSnapshot`) so a payload builder can
+ * demand a snapshot that has been through here. The assertion below is the one
+ * place the brand is applied, and it sits on the line after the resolve.
  */
 export function getConfigSnapshotWithPromotables(
   self: ResolvableDisplay,
-): Record<string, unknown> {
+): ResolvedConfigSnapshot {
   // the unresolved walk: this is the one place allowed to snapshot a promotable
   // config, because `resolvePromotablesInto` is what resolves every such slot
   const snap = fullConfSnapshot(self.configuration)
   resolvePromotablesInto(cascadeContextFor(self), snap)
-  return snap
+  return snap as ResolvedConfigSnapshot
 }
 
 /**

@@ -1,6 +1,7 @@
 import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
 
 import type { SubfeatureLabels } from './displayModes.ts'
+import type { ResolvedConfigSnapshot } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -198,8 +199,16 @@ const DISPLAY_CONFIG_KEYS = Object.keys(WORKER_READS) as (keyof DisplayConfig)[]
  * what it stands on is different from what the `as DisplayConfig` it replaced
  * stood on: there, an unchecked superset; here, a key list the compiler proved
  * complete.
+ *
+ * **`ResolvedConfigSnapshot`, not `Record<string, unknown>`**, and that is the
+ * half the key list cannot prove. `DisplayConfig` declares
+ * `displayDirectionalChevrons: boolean` and `featureHeight: number | string`,
+ * and the pick asserts them — so handing this a RAW snapshot compiles, ships
+ * `undefined` for every promotable slot, and types it as the resolved value.
+ * Only `getConfigSnapshotWithPromotables` produces the branded type, so the raw
+ * spelling no longer typechecks here.
  */
-export function pickDisplayConfig(snapshot: Record<string, unknown>) {
+export function pickDisplayConfig(snapshot: ResolvedConfigSnapshot) {
   const picked: Record<string, unknown> = {}
   for (const key of DISPLAY_CONFIG_KEYS) {
     picked[key] = snapshot[key]

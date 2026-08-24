@@ -1,4 +1,10 @@
-import { destroy, isAlive, types, unprotect } from '@jbrowse/mobx-state-tree'
+import {
+  destroy,
+  getSnapshot,
+  isAlive,
+  types,
+  unprotect,
+} from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
@@ -16,6 +22,7 @@ import {
 import { readConfObject } from './readConfObject.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 
+import type { ResolvedConfigSnapshot } from './promotableDefaults.ts'
 import type { ResolvableDisplay } from './promotableResolve.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -783,6 +790,28 @@ describe('getConfigSnapshotWithPromotables', () => {
     const { session, display } = createDisplay(configSchema, { chevrons: true })
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
     expect(getConfigSnapshotWithPromotables(display).chevrons).toBe(true)
+  })
+
+  // The brand, and the only thing that can hold it: a payload builder demanding
+  // `ResolvedConfigSnapshot` must refuse a raw one.
+  //
+  // Everything past this function is an erased container — a snapshot is
+  // `Record<string, unknown>`, and the RPC payload it becomes is an
+  // `as`-asserted interface — so `getSnapshot(self.configuration)` in place of
+  // this call typechecked, passed `plugins/canvas` and `products/jbrowse-web`
+  // whole, and sent the worker `undefined` for every promotable slot while
+  // typing it as the resolved value. `@ts-expect-error` is what fails if the
+  // brand is ever loosened, since a `describe` block cannot assert at runtime
+  // about a type.
+  test('a raw snapshot is not a resolved one', () => {
+    const { display } = createDisplay(configSchema)
+    const resolved: ResolvedConfigSnapshot =
+      getConfigSnapshotWithPromotables(display)
+    const raw: Record<string, unknown> = getSnapshot(display.configuration)
+    // @ts-expect-error a raw snapshot has not been through the cascade
+    const refused: ResolvedConfigSnapshot = raw
+    expect(resolved.chevrons).toBe(true)
+    expect(refused.chevrons).toBeUndefined()
   })
 })
 
