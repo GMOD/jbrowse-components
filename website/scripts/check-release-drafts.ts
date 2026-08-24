@@ -161,7 +161,7 @@ function unresolvedNames(source: string, notes: string) {
     for (const m of notes.matchAll(re)) {
       // Prettier wraps the draft, so a two-word label arrives with a newline in
       // it and the source has it on one line.
-      names.add(m[1]!.replace(/\s+/g, ' ').trim())
+      names.add(m[1]!.replaceAll(/\s+/g, ' ').trim())
     }
   }
   const missing = [...names].filter(n => !exempt.has(n))
