@@ -110,6 +110,9 @@ export function freezeAnimations(page: Page) {
 // different flags.
 const TRUSTED_PLUGIN_URLS = [
   'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
+  // demos/alphagenome/config.json, pinned to a content-addressed build — see
+  // that demo's README for why the pin is there and what bumping it means here
+  'https://jbrowse.org/demos/alphagenome-plugin/c70db17cdfe4/jbrowse-plugin-alphagenome.umd.js',
 ]
 
 // Pre-approve the cross-origin plugin warning, which otherwise covers the whole
