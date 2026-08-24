@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { invokeIpc } from '../ipc.ts'
+import { useUpdateStatus } from './useUpdateStatus.ts'
 
 import type { AssemblyAdapter } from '@jbrowse/core/util/assemblyConfigUtils'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -19,10 +20,10 @@ let nextJobId = 0
  * it and leaving the download going with nothing waiting on it.
  *
  * `status` is the caller's busy flag as well as its message: it is set for
- * exactly as long as a run is in flight.
+ * exactly as long as a run is in flight, and `undefined` otherwise.
  */
 export function useFastaIndexer() {
-  const [status, setStatus] = useState('')
+  const { status, updateStatus } = useUpdateStatus()
   const jobRef = useRef<string | undefined>(undefined)
 
   async function indexFasta(
@@ -42,20 +43,28 @@ export function useFastaIndexer() {
     }
     const jobId = `fasta-index-${(nextJobId += 1)}`
     jobRef.current = jobId
-    setStatus(`Reading ${assemblyName} to build its .fai index`)
     try {
-      const faiPath = await invokeIpc('indexFasta', fastaLocation, jobId)
-      return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation,
-        faiLocation: {
-          localPath: faiPath,
-          locationType: 'LocalPathLocation',
+      // the type argument, so the object literal below is contextually typed by
+      // `AssemblyAdapter` — inside the callback it has no other way to know that
+      // `type` is a discriminant rather than a string
+      return await updateStatus<AssemblyAdapter>(
+        `Reading ${assemblyName} to build its .fai index`,
+        async () => {
+          const faiPath = await invokeIpc('indexFasta', fastaLocation, jobId)
+          return {
+            type: 'IndexedFastaAdapter',
+            fastaLocation,
+            faiLocation: {
+              localPath: faiPath,
+              locationType: 'LocalPathLocation',
+            },
+          }
         },
-      }
+      )
     } finally {
+      // the handle `cancel` reaches the run through; the status label is
+      // `updateStatus`'s to retire
       jobRef.current = undefined
-      setStatus('')
     }
   }
 

@@ -1,11 +1,10 @@
-import { useState } from 'react'
-
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
+import { useUpdateStatus } from '../../useUpdateStatus.ts'
 import { mergeConfigInputs } from '../configInputs.ts'
 import defaultFavs from '../defaultFavs.ts'
 import { fetchConfig, launchSnapshot } from '../util.tsx'
@@ -36,7 +35,7 @@ export default function LeftSidePanel({
 }) {
   const { classes } = useStyles()
   const notifyError = useNotifyError()
-  const [loading, setLoading] = useState('')
+  const { status, updateStatus } = useUpdateStatus()
 
   const [favorites, setFavorites] = useLocalStorage<Fav[]>(
     'startScreen-favEntries',
@@ -47,14 +46,13 @@ export default function LeftSidePanel({
     getEntries: () => Promise<JBrowseConfigInput[]>,
   ) {
     try {
-      setLoading('Loading session')
-      const entries = await getEntries()
-      setPluginManager(await launchSnapshot(mergeConfigInputs(entries)))
+      await updateStatus('Loading session', async () => {
+        const entries = await getEntries()
+        setPluginManager(await launchSnapshot(mergeConfigInputs(entries)))
+      })
     } catch (e) {
       console.error(e)
       notifyError(e)
-    } finally {
-      setLoading('')
     }
   }
 
@@ -66,8 +64,8 @@ export default function LeftSidePanel({
 
   return (
     <div className={classes.form}>
-      {loading ? (
-        <LoadingEllipses variant="h6" message={loading} />
+      {status ? (
+        <LoadingEllipses variant="h6" message={status} />
       ) : (
         <>
           <OpenSequencePanel
