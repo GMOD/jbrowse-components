@@ -63,9 +63,14 @@ export function collectOrthofinderSets(): OrthofinderSet[] {
         `${FILE}: species set '${m[1]}' parsed to no genomes, so the tutorial's set table would render an empty row`,
       )
     }
-    // The plant sets come from Ensembl Genomes, whose release numbering is its
-    // own: a bare "63" beside vertebrates' "113" reads as an older Ensembl.
-    const division = m[2]!.includes('/plants/') ? 'Ensembl Plants' : 'Ensembl'
+    // The plant and metazoa sets come from Ensembl Genomes, whose release
+    // numbering is its own: a bare "63" beside vertebrates' "113" reads as an
+    // older Ensembl.
+    const division = m[2]!.includes('/plants/')
+      ? 'Ensembl Plants'
+      : m[2]!.includes('/metazoa/')
+        ? 'Ensembl Metazoa'
+        : 'Ensembl'
     sets.push({ name: m[1]!, genomes, release: `${division} ${m[3]!}` })
   }
 

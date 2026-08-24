@@ -1,0 +1,300 @@
+{
+  "assemblies": [
+    {
+      "name": "melanogaster",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "melanogaster-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "melanogaster.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "simulans",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "simulans-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "simulans.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "simulans.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "yakuba",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "yakuba-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "yakuba.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "yakuba.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "pseudoobscura",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "pseudoobscura-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "pseudoobscura.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "pseudoobscura.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "virilis",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "virilis-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "virilis.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "virilis.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "Drosophila orthology synteny",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "melanogaster - simulans - yakuba - pseudoobscura - virilis (OrthoFinder orthogroups)",
+        "showColorLegend": false,
+        "init": {
+          "views": [
+            {
+              "assembly": "melanogaster"
+            },
+            {
+              "assembly": "simulans"
+            },
+            {
+              "assembly": "yakuba"
+            },
+            {
+              "assembly": "pseudoobscura"
+            },
+            {
+              "assembly": "virilis"
+            }
+          ],
+          "tracks": [
+            ["drosophila_orthogroups"],
+            ["drosophila_orthogroups"],
+            ["drosophila_orthogroups"],
+            ["drosophila_orthogroups"]
+          ],
+          "colorBy": "reference",
+          "autoDiagonalize": true,
+          "sameScale": true,
+          "collapseEmptyRows": true
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "melanogaster_genes",
+      "name": "melanogaster genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "melanogaster.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "melanogaster.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["melanogaster"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "simulans_genes",
+      "name": "simulans genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "simulans.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "simulans.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["simulans"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "yakuba_genes",
+      "name": "yakuba genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "yakuba.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "yakuba.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["yakuba"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "pseudoobscura_genes",
+      "name": "pseudoobscura genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "pseudoobscura.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "pseudoobscura.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["pseudoobscura"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "virilis_genes",
+      "name": "virilis genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "virilis.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "virilis.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["virilis"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "drosophila_orthogroups",
+      "name": "Drosophila orthogroups (OrthoFinder)",
+      "assemblyNames": [
+        "melanogaster",
+        "simulans",
+        "yakuba",
+        "pseudoobscura",
+        "virilis"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "melanogaster.blocks.gz",
+        "blockAssemblies": [
+          "melanogaster",
+          "pseudoobscura",
+          "simulans",
+          "virilis",
+          "yakuba"
+        ],
+        "bedLocations": [
+          {
+            "uri": "melanogaster.bed.gz"
+          },
+          {
+            "uri": "pseudoobscura.bed.gz"
+          },
+          {
+            "uri": "simulans.bed.gz"
+          },
+          {
+            "uri": "virilis.bed.gz"
+          },
+          {
+            "uri": "yakuba.bed.gz"
+          }
+        ],
+        "assemblyNames": [
+          "melanogaster",
+          "simulans",
+          "yakuba",
+          "pseudoobscura",
+          "virilis"
+        ]
+      }
+    }
+  ]
+}

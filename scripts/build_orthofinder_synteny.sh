@@ -48,7 +48,7 @@
 #   exec apptainer exec --bind "$PWD" ~/orthofinder.sif orthofinder "$@"
 #   EOF
 #   chmod +x ~/.local/bin/orthofinder
-# Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat] [outdir]
+# Usage:    bash scripts/build_orthofinder_synteny.sh [vertebrates|grasses|wheat|drosophila|solanaceae] [outdir]
 #
 #   MAXSEQ=60 MAXCOPIES=6 bash scripts/build_orthofinder_synteny.sh wheat
 #
@@ -138,8 +138,45 @@ EOF
   # Ensembl's T. timopheevii GFF3 carries OY997261.1 ... rather than Chr1At ...
   ALIASES="timopheevii GCA_963921465.1"
   ;;
+drosophila)
+  BASE=http://ftp.ensemblgenomes.org/pub/metazoa/release-63
+  REL=63
+  SPECIES=$(cat <<'EOF'
+melanogaster  Drosophila_melanogaster                   BDGP6.54
+simulans      Drosophila_simulans_gca016746395v2rs      Prin_Dsim_3.1
+yakuba        Drosophila_yakuba_gca016746365v2rs        Prin_Dyak_Tai18E2_2.1
+pseudoobscura Drosophila_pseudoobscura_gca009870125v2rs UCI_Dpse_MV25
+virilis       Drosophila_virilis_gca030788295v1rs       Dvir_AGI_RSII_ME
+EOF
+  )
+  # Only melanogaster's annotation is Ensembl's own, and only it names arms 2L,
+  # 2R, 3L, 3R, X. The other four are RefSeq annotations Ensembl imported, whose
+  # sequences are INSDC accessions, and the Muller element a row sits on is the
+  # whole point of the comparison, so each gets its submitter names.
+  ALIASES=$(cat <<'EOF'
+simulans      GCA_016746395.2
+yakuba        GCA_016746365.2
+pseudoobscura GCA_009870125.2
+virilis       GCA_030788295.1
+EOF
+  )
+  ;;
+solanaceae)
+  BASE=http://ftp.ensemblgenomes.org/pub/plants/release-63
+  REL=63
+  SPECIES=$(cat <<'EOF'
+tomato  Solanum_lycopersicum_gca000188115v5cm SL4.0
+potato  Solanum_tuberosum                     SolTub_3.0
+pepper  Capsicum_annuum                       ASM51225v2
+tobacco Nicotiana_attenuata                   NIATTr2
+coffee  Coffea_canephora                      AUK_PRJEB4211_v1
+EOF
+  )
+  ALIASES="tomato GCA_000188115.5"
+  ;;
 *)
-  echo "unknown species set '$SET' (expected vertebrates, grasses, or wheat)" >&2
+  echo "unknown species set '$SET' (expected vertebrates, grasses, wheat," >&2
+  echo "drosophila or solanaceae)" >&2
   exit 1
   ;;
 esac

@@ -1,0 +1,255 @@
+{
+  "assemblies": [
+    {
+      "name": "tomato",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "tomato-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "tomato.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "NcbiSequenceReportAliasAdapter",
+          "location": {
+            "uri": "tomato.sequence_report.tsv",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "potato",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "potato-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "potato.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "pepper",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "pepper-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "pepper.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "tobacco",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "tobacco-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "tobacco.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "coffee",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "coffee-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "coffee.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "Solanaceae orthology synteny",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "tomato - potato - pepper - tobacco - coffee (OrthoFinder orthogroups)",
+        "showColorLegend": false,
+        "init": {
+          "views": [
+            {
+              "assembly": "tomato"
+            },
+            {
+              "assembly": "potato"
+            },
+            {
+              "assembly": "pepper"
+            },
+            {
+              "assembly": "tobacco"
+            },
+            {
+              "assembly": "coffee"
+            }
+          ],
+          "tracks": [
+            ["solanaceae_orthogroups"],
+            ["solanaceae_orthogroups"],
+            ["solanaceae_orthogroups"],
+            ["solanaceae_orthogroups"]
+          ],
+          "colorBy": "reference",
+          "autoDiagonalize": true,
+          "sameScale": true,
+          "collapseEmptyRows": true
+        }
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "tomato_genes",
+      "name": "tomato genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "tomato.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "tomato.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["tomato"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "potato_genes",
+      "name": "potato genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "potato.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "potato.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["potato"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "pepper_genes",
+      "name": "pepper genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "pepper.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "pepper.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["pepper"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "tobacco_genes",
+      "name": "tobacco genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "tobacco.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "tobacco.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["tobacco"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "coffee_genes",
+      "name": "coffee genes",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "coffee.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "coffee.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "assemblyNames": ["coffee"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "solanaceae_orthogroups",
+      "name": "Solanaceae orthogroups (OrthoFinder)",
+      "assemblyNames": ["tomato", "potato", "pepper", "tobacco", "coffee"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "tomato.blocks.gz",
+        "blockAssemblies": ["coffee", "pepper", "potato", "tobacco", "tomato"],
+        "bedLocations": [
+          {
+            "uri": "coffee.bed.gz"
+          },
+          {
+            "uri": "pepper.bed.gz"
+          },
+          {
+            "uri": "potato.bed.gz"
+          },
+          {
+            "uri": "tobacco.bed.gz"
+          },
+          {
+            "uri": "tomato.bed.gz"
+          }
+        ],
+        "assemblyNames": ["tomato", "potato", "pepper", "tobacco", "coffee"]
+      }
+    }
+  ]
+}
