@@ -169,7 +169,7 @@ only the first table is one.
 | unit | verdict | what the tests miss |
 | --- | --- | --- |
 | `packages/core/src/util/color-bits` (0 tests) | thin | not one assertion in the repo passes an out-of-range value into the unit, which is exactly where it misbehaved |
-| `plugins/linear-genome-view/src/BaseLinearDisplay` (0 tests) | thin | the unit is now 152 lines of barrel; its `models/` destination is among the best-tested code in the repo, and what nothing pins is the export surface itself |
+| `packages/display-kit/src` (0 tests) | thin | the unit is now 152 lines of barrel; its `models/` destination is among the best-tested code in the repo, and what nothing pins is the export surface itself |
 | `packages/product-core/src/Session` (2 tests) | thin | no snapshot round-trip test and no v4.3.0-shaped session load test anywhere |
 
 A risk-ranked unit coming back thin is close to what that ranking predicts, so
@@ -232,7 +232,7 @@ A finding in one says nothing about the other. **Pre-registered, seed
 
 **Risk-ranked (churn discounted by colocated tests), for bug finding:**
 
-    ✅ 1333  plugins/linear-genome-view/src/BaseLinearDisplay          0 tests
+    ✅ 1333  packages/display-kit/src                                  0 tests
     ✅ 1259  packages/core/src/util/color-bits                         0 tests
     ✅ 3321  packages/product-core/src/Session                         2 tests
     ⬜ 3126  plugins/breakpoint-split-view/src/BreakpointSplitView/components
