@@ -18,19 +18,17 @@ export const UNIFORMS_SIZE_BYTES = 32
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
   numSnps: 0,
-  numSamples: 1,
-  numSamplesPacked: 2,
-  ldMetric: 3,
-  signedLD: 4,
-  band: 5,
-  dispatchRowStride: 6,
+  numWords: 1,
+  ldMetric: 2,
+  signedLD: 3,
+  band: 4,
+  dispatchRowStride: 5,
 } as const
 
 
 export interface Uniforms {
   numSnps: number
-  numSamples: number
-  numSamplesPacked: number
+  numWords: number
   ldMetric: number
   signedLD: number
   band: number
@@ -40,10 +38,9 @@ export interface Uniforms {
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   const u32 = new Uint32Array(buf)
   u32[0] = uniforms.numSnps
-  u32[1] = uniforms.numSamples
-  u32[2] = uniforms.numSamplesPacked
-  u32[3] = uniforms.ldMetric
-  u32[4] = uniforms.signedLD
-  u32[5] = uniforms.band
-  u32[6] = uniforms.dispatchRowStride
+  u32[1] = uniforms.numWords
+  u32[2] = uniforms.ldMetric
+  u32[3] = uniforms.signedLD
+  u32[4] = uniforms.band
+  u32[5] = uniforms.dispatchRowStride
 }

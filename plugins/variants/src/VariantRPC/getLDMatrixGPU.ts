@@ -1,5 +1,6 @@
 /// <reference types="@webgpu/types" />
 
+import { packDosages } from '@jbrowse/ld-core'
 import { getGpuDevice, onDeviceLost } from '@jbrowse/render-core/gpuDevice'
 
 import * as ldCompute from '../LDDisplay/components/shaders/ldCompute.generated.ts'
@@ -257,40 +258,25 @@ export async function computeLDMatrixGPU(
   const { pipeline, bindGroupLayout, bindings } =
     await ensureUnphasedPipeline(device)
 
-  // Pack genotypes: 4 samples per u32, missing (-1) stored as 0xFF.
-  // Build each word in a local variable (1 write vs 4 read-modify-writes).
-  const numSamplesPacked = Math.ceil(numSamples / 4)
-  const genoPacked = new Uint32Array(n * numSamplesPacked)
-  const fullWords = numSamples >> 2
-  const remainder = numSamples & 3
+  // Three bit planes per SNP, laid out [het, homAlt, valid] to match getWord in
+  // ldCompute.slang. packDosages is the same function the CPU fallback packs
+  // with, so the two paths cannot drift into different encodings of the same
+  // genotypes — the only difference here is that the planes are copied into one
+  // flat buffer for a single upload.
+  const numWords = Math.ceil(numSamples / 32)
+  const genoPacked = new Uint32Array(n * 3 * numWords)
   for (let snp = 0; snp < n; snp++) {
-    const geno = encodedGenotypes[snp]!
-    const base = snp * numSamplesPacked
-    for (let w = 0, s = 0; w < fullWords; w++, s += 4) {
-      const b0 = geno[s]! < 0 ? 0xff : geno[s]!
-      const b1 = geno[s + 1]! < 0 ? 0xff : geno[s + 1]!
-      const b2 = geno[s + 2]! < 0 ? 0xff : geno[s + 2]!
-      const b3 = geno[s + 3]! < 0 ? 0xff : geno[s + 3]!
-      genoPacked[base + w] = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)
-    }
-    if (remainder) {
-      const s = fullWords << 2
-      let word = geno[s]! < 0 ? 0xff : geno[s]!
-      if (remainder > 1) {
-        word |= (geno[s + 1]! < 0 ? 0xff : geno[s + 1]!) << 8
-      }
-      if (remainder > 2) {
-        word |= (geno[s + 2]! < 0 ? 0xff : geno[s + 2]!) << 16
-      }
-      genoPacked[base + fullWords] = word
-    }
+    const { het, homAlt, valid } = packDosages(encodedGenotypes[snp]!)
+    const base = snp * 3 * numWords
+    genoPacked.set(het, base)
+    genoPacked.set(homAlt, base + numWords)
+    genoPacked.set(valid, base + numWords * 2)
   }
 
   const uniformData = new ArrayBuffer(ldCompute.UNIFORMS_SIZE_BYTES)
   ldCompute.writeUniforms(uniformData, {
     numSnps: n,
-    numSamples,
-    numSamplesPacked,
+    numWords,
     band,
     ldMetric: ldMetric === 'dprime' ? 1 : 0,
     signedLD: signedLD ? 1 : 0,

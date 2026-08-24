@@ -79,7 +79,6 @@ noticing in a diff.
 | type 'vec3' is outside the supported scalar subset | 7 | `arcColorByIndex`, `bandedCell`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
-| indexing is outside the supported scalar subset | 2 | `getGeno`, `getWord` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |
@@ -87,6 +86,7 @@ noticing in a diff.
 | //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
 | //! js-export: 'strokeCoverage' reaches strokeAaRamp(), which is outside the supported scalar subset | 1 | `strokeCoverage` |
 | call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
+| indexing is outside the supported scalar subset | 1 | `getWord` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
