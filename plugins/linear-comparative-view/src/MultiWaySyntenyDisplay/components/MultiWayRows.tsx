@@ -252,6 +252,16 @@ const MultiWayRows = observer(function MultiWayRows({
   }
   const width = model.canvasWidth
 
+  // What a lane's header calls its sequence. A placement carries whatever
+  // refName the table's BED used, which for an assembly whose annotation names
+  // sequences by INSDC accession is `CM028642.2` where the reader knows the
+  // chromosome as `3L`. The assembly's own alias table closes that, the same
+  // call the anchor's bpToPx below makes for the opposite reason.
+  const refNameLabel = (assemblyName: string, refName: string) => {
+    const laneAssembly = assemblyManager.get(assemblyName)
+    return laneAssembly ? laneAssembly.getCanonicalRefName2(refName) : refName
+  }
+
   const anchorX = (refName: string, bp: number) => {
     const px = view.bpToPx({
       refName: assembly.getCanonicalRefName2(refName),
@@ -568,9 +578,10 @@ const MultiWayRows = observer(function MultiWayRows({
 
     const where =
       rowIndex === 0
-        ? anchorFrame && `${anchorFrame.refName}:${fmt(anchorFrame.start)}`
+        ? anchorFrame &&
+          `${refNameLabel(assemblyName, anchorFrame.refName)}:${fmt(anchorFrame.start)}`
         : frame &&
-          `${frame.refName}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
+          `${refNameLabel(assemblyName, frame.refName)}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
     headers.push(
       <text
         key={`label-${assemblyName}`}
