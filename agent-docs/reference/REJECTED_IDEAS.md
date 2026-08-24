@@ -306,6 +306,29 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   of "drawn coordinate" from "reported coordinate" for the tooltip. Revisit only
   if a real set outgrows the SVG overlay with the cap already lifted.
 
+- **Folding content staleness into `displayPhase`** — moved here from
+  `ideas/zoom-perf-followups.md` 2026-08-24, having been costed and never taken.
+  During a zoom an LGV display reports `ready` for ~600ms between fetches, which
+  looks like a bug. It is not a stop-token handover artifact — supersede is
+  gap-free by construction (ADR-080) — it is the fetch autorun's debounce, and
+  in that window the display genuinely has data covering the viewport with
+  nothing in flight.
+
+  The tempting fix is to fold `isCacheValid` into the per-region
+  `viewportCurrent`, so a display whose `regionFetchKey` has moved reads
+  `loading`. **It would raise the loading scrim 250ms into every zoom**, since
+  `visible = phase === 'loading'`, and delay every interaction-time readiness
+  gate by the debounce. `zoomInvalidation.test.ts` and
+  `displayPhaseWiring.test.ts` pin "ready through a zoom inside the buffer" and
+  are the standing guard against taking this by accident.
+
+  The comparative family *does* fold `dataCurrent` in
+  (`comparativeReadiness.ts`), so the two families genuinely differ — a real
+  inconsistency, and the LGV reading is the one with the scrim attached to it.
+  **Reopen only** with a scrim that can distinguish "stale but showing data"
+  from "nothing to show".
+
+
 ## Config and MST
 
 - **A `legendConfigSchemaFields` helper**, sharing the `showLegend` config slot
@@ -1465,6 +1488,70 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   x 4 isoforms went **313-365ms before, 324-349ms after**: noise. The two
   `.toLowerCase()` maps are per gene and look like an obvious hoist, which is why
   this is written down.
+
+- **Avoiding the MAF overlays' forced style flush** — four shapes costed
+  2026-08-24 and all four declined: making one overlay pay per frame, moving the
+  draw off the passive-effect path, a pre-rasterised glyph atlas drawn with
+  `drawImage`, and putting labels on the GPU path. A production profile books
+  ~249ms self + 247ms of forced style recalc to `DeletionsOverlay` and ~144ms +
+  140ms to `InsertionsOverlay`, which reads like the largest block in a zoom
+  gesture. It is not a block anyone can remove.
+
+  **The ceiling is exactly 0ms, and the trace says so.** Style flush is per
+  DOCUMENT, not per canvas, and the harness's `(no stack)` recalc bucket — the
+  frames' own lifecycle recalcs — is **3.2ms across 27 events while the two MAF
+  buckets hold 387ms of a 394ms total**. So MAF's forced flushes are absorbing
+  the frame's own recalc entirely: the document is dirty when the overlay effect
+  runs, and if MAF does not flush it the frame's lifecycle does, a few hundred
+  microseconds later, in a task `main busy` also sums. Every avoidance
+  re-attributes the microseconds; none removes work. rAF deferral additionally
+  lands labels a frame behind the cells they annotate, which a zoom makes
+  obvious.
+
+  Two further traps in the number itself: `topSelf` (v8 samples) and
+  `styleRecalc` (Blink trace events) are independent instruments that do not
+  subtract from each other, so a recalc run synchronously inside `fillText` is
+  plausibly counted in both — the honest attributable total is ~395-780ms, not
+  780. And both gates already exist and are correct; a previously recorded
+  "insertions fell to 40ms" was taken where rows are too short for a letter, so
+  reading it against a sweep that draws labels looks like a regression and is
+  not.
+
+  **What the investigation actually found**: MAF writes no per-frame inline
+  styles at all. The dirty set is ~150-160 elements, ~90% of it the ~144 tick
+  transforms at `ScalebarCoordinateLabels.tsx:81`. **Reopen only** via the
+  coordinate ruler — see `todo/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md`,
+  whose priority this raises, since the ruler turns out to be charging four
+  other subsystems for its dirt.
+
+- **Moving MAF's instance packing to the worker** — costed 2026-08-24 alongside
+  wiggle's, which stays alive in `ideas/zoom-perf-followups.md`. MAF's pack is
+  126ms and looks like the same opportunity. It is not: its `regionFetchKey` is
+  empty by design, so it deliberately does not refetch on zoom and re-encodes on
+  the main thread instead, and its pack depends on `binBp` (a power-of-two tier
+  off `coarseBpPerPx`) and on the palette. Worker-side packing would turn every
+  zoom-tier crossing and every theme flip into a full refetch at ~31ms/region
+  (`reference/MAF_WORKER_PIPELINE.md`). It re-encodes precisely because there is
+  no RPC to ride along on. **Reopen only if** MAF gains a real
+  `regionFetchKey`.
+
+- **Deleting the stop-token sync probe outright** — the published plan, declined
+  2026-08-24 in favour of an opt-in `syncProbe` (see
+  `ideas/zoom-perf-followups.md`). The plan was: chunk the six await-free worker
+  loops that need a synchronous cancellation check, then delete `probeBlobUrl`,
+  the blob, `createObjectURL` and the revoke, collecting a measured ~100ms a
+  gesture.
+
+  Its premise is false in the one place that matters. There are ~27
+  probe-dependent sites, not six, and `clusterMatrix.ts:67` is not a loop at all
+  — it is a `checkCancellation` callback invoked from inside a synchronous
+  `@gmod/hclust` WASM call, where no `await` can be inserted at any stride. All
+  three cluster executors funnel through it. Ship the deletion on that plan and
+  Cancel on a large dendrogram does nothing for minutes, silently, and jsdom
+  cannot see it because `probeBlobUrl` is inert there. **Reopen only** with the
+  cancel measurement that has never existed: an await-free workload cancelled
+  mid-flight, probe on vs off.
+
 
 ## Comparative and pangenome
 

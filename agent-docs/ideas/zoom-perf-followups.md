@@ -1,127 +1,140 @@
 ---
 name: zoom-perf-followups
-description: What is left after the 2026-08-23 scroll-zoom pass, and the two things it establishes should NOT be attempted. The stop-token blob URL is paid on every fetch in the app to serve six await-free worker loops and is the one substantial simplification left; wiggle instance packing could move to the worker and MAF's cannot; and putting content staleness into displayPhase would raise the loading scrim 250ms into every zoom.
+description: What survived a four-way investigation of the 2026-08-23 scroll-zoom pass. Two live items — an opt-in sync probe that collects the stop-token blob URL without touching the un-chunkable WASM clustering call, and worker-side wiggle packing that is blocked on a retention decision — plus the deterministic render-count instrument that should be built before any of it. The MAF and displayPhase items moved to REJECTED_IDEAS.
 ---
 
-# Scroll-zoom: what is left, and what not to try
+# Scroll-zoom: what is left
 
-Follow-ups from the 2026-08-23 pass (`perf(zoom)`, and the four fixes after it).
-The measurements behind them are in
-[reference/INTERACTION_PERF.md](../reference/INTERACTION_PERF.md) §"Profile the
-production build"; that page also holds the two measurement traps, which anyone
-picking this up should read first.
+Follow-ups from the 2026-08-23 pass (`perf(zoom)`) and the four fixes after it,
+re-investigated 2026-08-24 after those four were A/B'd. The A/B is in
+[reference/INTERACTION_PERF.md](../reference/INTERACTION_PERF.md), and its
+instrument caveats there are load-bearing for everything below: the top-self
+list shows 22 of ~920 sampled frames, so every self-time figure quoted here is a
+floor.
 
-Numbers below are main-thread self time over one ~7s production-build gesture on
-a four-track LGV, whose total busy is ~5.1s.
+Three things this file used to propose are now in
+[reference/REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md): the MAF overlay
+flush, moving MAF's packing to the worker, and folding content staleness into
+`displayPhase`.
 
-## Retire the stop-token sync probe
+## Build the render-count gate first
 
-**The largest simplification available, and the motive for the machinery is
-gone.**
+Everything below is bounded by an instrument problem, not an idea problem. The
+browser profile is truncated, noisy (~17ms floor on a single self-time frame,
+67ms on total main busy) and needs a rebuild per arm; resolving a ~100ms effect
+in it needs ≥8 runs an arm.
 
-`createStopToken` mints `URL.createObjectURL(new Blob())` — 94ms of Blob +
-createObjectURL — and `notifyStopToken` fans each stop out to every worker in the
-pool, 79ms of postMessage. The blob URL exists for exactly one reason: it is what
-`probeBlobUrl` fails against once revoked, giving a **synchronous** cancellation
-check. `probeBlobUrl` is a synchronous XHR, and is inert unless the caller is in a
-worker and the token is a `blob:` id.
+`mobx-react-lite` names every observer's reaction `observer<ComponentName>`, so
+`mobx.spy()` filtered to reaction events yields a **per-component render count
+with no instrumentation of any component** — integers, in jsdom, deterministic,
+one run. Drive N `model.zoomTo()` steps over a multi-track LGV in the style of
+`searchBoxPanRenders.test.tsx` and assert a budget.
 
-Six call sites actually need a sync probe, all await-free worker compute:
-`getLDMatrix.ts`'s O(n²) fill, the four clustering executors
-(`executeClusterGenotypeMatrix`, `executeClusterScoreMatrix`,
-`buildIdentityMatrix`, `clusterMatrix`), and `diagonalizeRegions`. Everything the
-zoom path touches — the whole alignments/canvas/wiggle fetch, the streaming
-adapters — is already chunked by awaits, where the free `stoppedIds.has` lookup
-cancels perfectly well.
+That is what turns "fewer components re-render per frame" — prescribed by this
+page in July, August and again now, never executed — into a gate that survives
+its author. An afternoon, and it makes the claim falsifiable for the first time.
 
-So the cost is paid on every fetch in the app to serve six batch jobs. The
-original motive was cancelling long synchronous **canvas drawing** during rapid
-re-render, which GPU rendering removed.
+## Retire the stop-token blob URL, opt-in rather than outright
 
-**The shape of the fix**: make those six loops yield periodically — they are
-already inside async RPC methods, so `await` is available — and the plain-id
-check cancels them. `probeBlobUrl`, the blob, `createObjectURL` and the revoke
-all delete, and `createStopToken` becomes `nanoid()`. Note
-`stopToken.ts`'s header records that the probe was deleted once before and had to
-be restored; deleting it *without* first chunking those loops is that same
-mistake.
+`createStopToken` mints `URL.createObjectURL`, **measured ~100ms** of main-thread
+self time on one ~7s gesture. (Sharing one `Blob` behind every token landed
+2026-08-24 and took a separate ~61ms; the mint itself is what is left.) The blob
+URL exists so `probeBlobUrl` — a synchronous XHR — has something to fail against
+once revoked, giving a **synchronous** cancellation check no plain-id lookup can.
 
-**Weaker variants**, if the loops turn out not to be chunkable:
+**The earlier version of this section said six call sites need the probe and that
+the zoom path is fully chunked. Both are wrong.** There are ~27 probe-dependent
+sites: 26 direct `checkStopTokenThrottled` calls plus everything driven through
+`createProgressReporter` (`packages/core/src/util/progress.ts:1088`), and
+several — `BamAdapter.ts:211`, `extractFeatureArrays.ts:123`,
+`runCoveragePipeline.ts:96` — are squarely on the zoom path. The reason they do
+not matter is a **measurement**, not a structural property: `cancel-bench`
+measured the alignments family probe-on vs probe-off and got nothing (median
+settle 513ms both arms). Everything outside that family is unmeasured.
 
-- Upgrade to a blob URL per RPC **method** rather than per token, at
-  `RpcManager.call` — it is the one place that knows `functionName`, `sessionId`
-  and `args.stopToken` together. Flagging the *rotation* instead does not work:
-  LD reaches the worker through the same `FetchMixin.runFetch` →
-  `createStopTokenRotation.begin()` path as the zoom-hot fetches, so a
-  probe-less rotation would silently un-cancel it.
-- Narrow the broadcast. `WebWorkerRpcDriver.getWorker` is sticky per `sessionId`,
-  and a token belongs to one display whose session id is fixed, so token → worker
-  is a one-hop lookup that already exists. Costs plumbing a sessionId through
-  `stopStopToken`, which is public API.
+**`clusterMatrix` cannot be chunked, and it decides the shape of the fix.**
+`packages/tree-sidebar/src/clusterMatrix.ts:67` is not a loop — it is the
+`checkCancellation` callback handed to `@gmod/hclust`, registered with
+`module.addFunction` and invoked from inside one synchronous
+`module._hierarchicalCluster` call. A JS callback called from WASM cannot await;
+there is no seam at any stride. All three cluster executors funnel through it,
+so four of the "six" collapse into one un-chunkable call.
+`executeRenderHicData.ts:89` is the same exposure one step down.
 
-**Do not** reach for cross-origin isolation to get the `SharedArrayBuffer` branch:
-[ADR-056](../architecture-decision-records/adr-056-jbrowse-org-is-not-cross-origin-isolated.md)
-rejected it. COEP is not the blocker (CORS-mode fetches are exempt); COOP
-`same-origin` nulls `window.opener` and hangs the OAuth popup, and an embeddable
-library cannot demand headers of its host page anyway.
+**The header's "deleted once and had to be restored" is a misreading.**
+`git log --all -S XMLHttpRequest` on `stopToken.ts` returns one commit, the pnpm
+move; the XHR count is 1 at every commit in the file's history. The deletion
+never landed — it happened inside the development of `2816289219` and was
+restored on a reasoned counter-example (`getLDMatrix`'s O(n²) fill), not an
+observed failure. `probeBlobUrl` is inert under jsdom, so deleting it passes all
+6000+ unit tests either way.
 
-## Wiggle instance packing could move to the worker; MAF's cannot
+**The shape that works**: `createStopToken({ syncProbe })`, defaulting off, with
+a display able to declare it (`createStopTokenRotation(self, report, {
+syncProbe })`). The un-chunkable paths mint through their own entry points —
+`useClusterRun.ts:66`, `runClusteringAutorun.ts:102`, `DiagonalizeDialog.tsx:86`,
+`indexJobsModel.ts:309` — at single-digit frequency, where a blob URL costs
+nothing. The zoom-hot rotation gets a bare `nanoid()`. An explicit enumerable
+list that fails at the call site, not a `functionName` registry that fails
+silently in a worker.
 
-`wiggleInstanceBuffer.pack` is 110ms and `mafInstanceBuffer` is 126ms, both run
-synchronously inside the RPC message handler, so they land mid-frame.
+**Do first, before any of the work**: count the mints. ~100ms over a few dozen
+tokens a gesture is ~2.5ms per call, implausible for a registry insert and a
+strong hint the sampler folds the revoke or GC into that frame. The counter
+already exists — `fetch-cancellation.ts:79-82` patches `URL.createObjectURL`.
+Ten minutes either sizes the prize or redirects the effort. Confirmation
+afterwards is presence/absence, not a delta: the frame leaves the profile and
+`blobUrls` reads 0.
 
-**MAF is closed.** Its pack depends on `binBp` (a power-of-two tier off
-`coarseBpPerPx`) and on the palette, and its `regionFetchKey` is empty — it
-deliberately does *not* refetch on zoom, re-encoding on the main thread instead.
-Moving the pack worker-side would make every zoom-tier crossing and every theme
-flip a full refetch, at ~31ms/region
-([reference/MAF_WORKER_PIPELINE.md](../reference/MAF_WORKER_PIPELINE.md)). It
-re-encodes precisely because there is no RPC to ride along on.
+**Do not** reach for the `SharedArrayBuffer` branch; ADR-056 rejected the
+cross-origin isolation it needs.
 
-**Wiggle is open but not cheap.** Its `regionFetchKey` is `String(bpPerPx)`, so a
-zoom already refetches and a worker-side pack would ride along free. The obstacles
-are that packing needs main-thread-only inputs (the colour strings, `rowIndex`
-from the visible ordered source list, the whisker band split) and that
-`installPerRegionLifecycle` re-encodes with **no RPC** on recolour, plot-type and
-summary-mode changes — so the main-thread packer has to stay for that path
-regardless. `createInstanceCache` does not rescue it: wiggle's layer *set* changes
-with `summaryScoreMode`, so geometry and colour are not separable.
+## Wiggle instance packing could move to the worker
 
-Transferring the result is solved: `rpcResult(value, transferables)` /
-`rpcResultWithArrayBuffers` already carry wiggle's typed arrays, and MAF's
-coverage half is already packed in the worker
-(`buildMafCoverageRegion.ts`) as the precedent.
+`wiggleInstanceBuffer.pack` is **measured ~98ms**, run synchronously inside the
+RPC message handler so it lands mid-frame. Wiggle's `regionFetchKey` is
+`String(bpPerPx)`, so a zoom already refetches and a worker-side pack rides along
+free; `MafUploadPayload` is the payload shape to copy.
 
-## Do not put content staleness into `displayPhase`
+**The obstacle list this file used to carry was wrong on two of three counts.**
+Colour strings parse fine in a worker (`colorBits.ts` is a pure parser, and
+wiggle's colours are config slots, not theme reads — the theme-flip hazard was
+imported from MAF by analogy). Multi-wiggle already ships `summaryScoreMode`
+worker-side, so the whisker split is not blocked either. Only `rowIndex` is
+genuinely main-thread-bound, and worse than stated: the ordered source list is
+derived from the fetched data itself, so a fetch discovering a new source cannot
+be told its own row assignment.
 
-During a zoom a display reports `ready` for ~600ms between fetches. That is not a
-stop-token handover artifact — supersede is gap-free by construction (ADR-080) —
-it is the fetch autorun's debounce, and in that window the display genuinely has
-data covering the viewport with nothing in flight.
+**The blocker nobody listed is retention.** Today the packed buffer is
+transient — pack, upload, garbage. In the upload payload it is resident for the
+life of the region, twice over (`mapUploadSync` also holds it, and payloads are
+documented immutable so it cannot be nulled after upload). Wiggle's own comment
+puts that at **82MB for a 1000-source multiwiggle at a 1Mb view**
+(`wiggleInstanceBuffer.ts:33`). That is the decision, not a detail.
 
-The tempting fix is to fold `isCacheValid` into the per-region `viewportCurrent`,
-so a display whose `regionFetchKey` has moved reads `loading`. **It would raise
-the loading scrim 250ms into every zoom**, since `visible = phase === 'loading'`,
-and it would delay every interaction-time readiness gate by the debounce.
-`zoomInvalidation.test.ts` and `displayPhaseWiring.test.ts` already pin "ready
-through a zoom inside the buffer" and are the standing guard against taking this
-without deciding to.
+Note `installPerRegionLifecycle` is now `installUpload` (ADR-088); the no-RPC
+re-encode on recolour, plot type, summary mode and re-sort is at
+`installUpload.ts:188-206`, and the main-thread packer stays in full for it. So
+this deletes no code, and its ~98ms is **~8ms per fetch round over ~11-12
+rounds** — pacing, not throughput. Anyone selling it as "5.68s → 5.58s" is
+quoting noise; it is verifiable only as a frame leaving the top-self list.
 
-The comparative family *does* fold `dataCurrent` in
-(`comparativeReadiness.ts`), so the two families genuinely differ here — that is
-a real inconsistency, and the LGV reading is the one with the scrim attached to
-it.
+Order if taken: measure `pack` in isolation first (a whole-gesture A/B cannot
+resolve it), settle retention, then write the plumbing.
 
 ## Smaller, measured, unclaimed
 
-- **`visibleEntries` rebuilds a fresh `flatMap` array** on every recompute
-  (`WiggleCommonMixin.ts`). Worth looking at only if autoscale is still hot after
-  the binary-search clip that landed.
-- **React commit is still the largest single block** — `react-dom` self time
-  651ms, `setAttribute` 81ms. Same answer as ever: fewer components per frame.
-  The production profile is what should choose them; the dev build misranks by
-  ~20x.
-- **`stopStopToken` is still called two or three times per token.** The guard
-  that landed makes the repeats free, but the cause is that
-  `createStopTokenRotation.end()` does not clear `currentStopToken`, so the next
-  `begin()` re-stops what the fetch's own `finally` already stopped.
+- **The profiled sweep may be the wrong regime.** `FloatingLabelsLayer`
+  (`overlayElements.tsx:375`) rebuilds every gene label div per frame. At the
+  harness's 0.5-4 bpPerPx that is nearly free; at 10-500, where people read gene
+  tracks, it is plausibly the largest per-frame list in the app.
+- **`legendRightEdgePx`** (`wiggleComponentUtils.ts:38`) consumes the whole
+  `visibleRegions` array to produce what is usually the constant `totalWidth`,
+  re-rendering both wiggle bodies every frame. Publishing the scalar stops it at
+  the computed. Mechanically certain, under 20ms, invisible to the profiler —
+  take it for the rule it states, not the win.
+- **Three overlays set `ctx.font` ungated** —
+  `drawVariantInsertionGlyphs.ts:147`, `drawMultiRowIndelGlyphs.ts:113`,
+  `drawOffscreenMates.ts:763`. Same bug MAF already fixed. Hygiene only: per
+  REJECTED_IDEAS they would win nothing, only change whose name is in the
+  profile.

@@ -234,6 +234,15 @@ that metric — the `floor` column. A row whose delta does not clear its own flo
 says nothing, however plausible its mechanism, and three rows here are in that
 state.
 
+**Two instrument limits that bound every number on this page.** The top-self
+list is `.slice(0, 22)` over ~920 distinct sampled frames, so a self-time figure
+taken from it is a FLOOR, not a total — the `react-dom` self time reads 340ms as
+four surviving frames here and 651ms in the fuller 2026-08-23 accounting, and
+those are not in conflict. And `topSelf` (v8 samples) and `styleRecalc` (Blink
+trace events) are independent instruments that do not subtract from each other,
+so a style recalc run synchronously inside a canvas text op is plausibly counted
+in both. Do not add a self-time column to a forced-recalc total.
+
 <!-- BEGIN GENERATED MEASUREMENT zoom-token-churn -->
 
 | one ~7s scroll-zoom gesture         |   main | with the four fixes | A/A floor |
