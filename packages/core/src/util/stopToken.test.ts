@@ -92,6 +92,25 @@ describe('stopToken', () => {
       expect(seen).toEqual(['broadcast-me'])
     })
 
+    // One token is stopped two or three times over — the fetch's `finally`, the
+    // rotation superseding it, and `cancel` — and each repeat used to fan a
+    // message out to every worker in the pool for a token they had all been
+    // told about already.
+    it('broadcasts once however many times the same id is stopped', () => {
+      const seen: string[] = []
+      const unregister = registerStopTokenBroadcaster(id => {
+        seen.push(id)
+      })
+      try {
+        stopStopToken('stopped-thrice')
+        stopStopToken('stopped-thrice')
+        stopStopToken('stopped-thrice')
+        expect(seen).toEqual(['stopped-thrice'])
+      } finally {
+        unregister()
+      }
+    })
+
     it('does not broadcast SAB tokens, which carry their own flag', () => {
       const seen: string[] = []
       const unregister = registerStopTokenBroadcaster(id => {

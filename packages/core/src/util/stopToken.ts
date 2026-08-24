@@ -174,6 +174,12 @@ export function createStopToken(): StopToken {
   return hasSharedArrayBuffer ? new SharedArrayBuffer(4) : createStringToken()
 }
 
+// One Blob behind every token. Object URLs minted over the same blob are
+// distinct ids and revoke independently, so nothing about the probe changes —
+// but a zoom mints these continuously and constructing the blob was showing up
+// beside `createObjectURL` in a profile.
+const emptyBlob = new Blob()
+
 function createStringToken() {
   // A blob URL serves as both the token's unique id (which is all the message
   // path needs) and the thing the sync probe fails against once revoked. Where
@@ -183,7 +189,7 @@ function createStringToken() {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return URL.createObjectURL === undefined
     ? nanoid()
-    : URL.createObjectURL(new Blob())
+    : URL.createObjectURL(emptyBlob)
 }
 
 /**
@@ -203,7 +209,13 @@ export function stopStopToken(stopToken?: StopToken) {
       // wakes the waitAsync watcher stopTokenSignal installs; free when there
       // is none waiting
       Atomics.notify(view, 0)
-    } else {
+    } else if (!stoppedIds.has(stopToken)) {
+      // Guarded, because one token is stopped two or three times over. A fetch's
+      // `finally` stops it, the rotation's next `begin` stops what it is
+      // superseding, and `cancel` stops it again — and each repeat re-inserted
+      // the id and fanned a postMessage out to every worker in the pool for a
+      // token they had all already been told about. The revoke is idempotent
+      // but the broadcast is not free.
       markStopTokenStopped(stopToken)
       for (const broadcast of broadcasters) {
         broadcast(stopToken)
