@@ -755,11 +755,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // structure. PROTEIN3D_CONFIG loads protein3d against the local build, whose
   // session has the `init` split API the side-by-side launch needs.
   //
-  // That config pins the plugin to jbrowse.org/plugins/…/0.8.0/, not `latest/`:
-  // the figure is a picture of a specific plugin's UI, so a release of it
-  // shouldn't be able to change or break the capture without a commit here. Bump
-  // the pin deliberately and re-render. (The comment used to claim a pin that
-  // wasn't there, and pointed at jsDelivr, which is not where this loads from.)
+  // That config loads the plugin from the version-agnostic `latest/` path, like
+  // every other plugin-store URL in this tree, so a release can change this
+  // figure with no commit here — the weekly sweep is what surfaces it. A version
+  // pin is the worse trade: one held at 0.8.0 through four releases, so every
+  // capture drove a launcher from before protein3d returned its extendee from
+  // `LaunchView-ProteinView` and warned on every launch.
   {
     mode: 'url',
     name: 'protein/connected',
