@@ -64,6 +64,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0, 0.5],
     position: 'center',
   },
+  alphagenome: {
+    // The claim the page is built on, and the only figure on it that reads at
+    // card size: two predicted RNA-seq rows on one axis with the gene model
+    // above them. Anchored left rather than centered so the row labels — which
+    // are what say the two traces are different cell lines — survive the crop.
+    src: 'alphagenome/expression_two_cell_lines.png',
+    band: [0.24, 0.86],
+    position: 'left',
+  },
   display_settings: {
     src: 'display_settings_url_snapshot.png',
     band: [0.3, 1],

@@ -170,8 +170,11 @@ per pick instead.
 
 On that shared axis, _TAL1_ carries predicted transcription in K562 and
 essentially none in GM12878, and the RefSeq track above says the signal sits on
-the annotated exons. The lane below _TAL1_ is `STIL`, which the model predicts
-in both lines.
+the annotated exons. The lane to the right is `STIL`, which the model predicts
+in both lines — which is what says the flat GM12878 row is a prediction rather
+than a track that failed to load.
+
+<Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878, both rows on one y-axis. The K562 row carries a block of signal across the annotated exons that the GM12878 row does not." src="/img/alphagenome/expression_two_cell_lines.png" />
 
 ## Where the chromatin is open
 
