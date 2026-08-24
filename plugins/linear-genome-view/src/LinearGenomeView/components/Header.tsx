@@ -13,7 +13,7 @@ import HeaderRegionWidth from './HeaderRegionWidth.tsx'
 import HeaderTrackSelectorButton from './HeaderTrackSelectorButton.tsx'
 import HeaderZoomControls from './HeaderZoomControls.tsx'
 import OverviewScalebar from './OverviewScalebar.tsx'
-import SearchBox from './SearchBox.tsx'
+import SearchBox, { searchBoxWidth } from './SearchBox.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -45,7 +45,11 @@ const Controls = observer(function Controls({
   // row
   const [ref, { width }] = useMeasure('width')
   const highlighted = highlightedDisplays(model)
-  const fit = headerFit(width, highlighted.length > 0)
+  const fit = headerFit({
+    width,
+    searchBoxPx: searchBoxWidth(model.coarseVisibleLocStrings),
+    clearHighlight: highlighted.length > 0,
+  })
   return (
     <div className={classes.headerBar} ref={ref}>
       <HeaderTrackSelectorButton

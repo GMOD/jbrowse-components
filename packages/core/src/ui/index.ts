@@ -39,6 +39,7 @@ export type { RecentLocation } from './useRecentLocations.ts'
 export {
   RefNameAutocompleteEndAdornment,
   adornmentReservePx,
+  getInputWidth,
   default as RefNameAutocomplete,
 } from './RefNameAutocomplete/index.tsx'
 export { default as CascadingMenu } from './CascadingMenu.tsx'

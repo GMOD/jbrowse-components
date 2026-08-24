@@ -2,6 +2,7 @@ import {
   RefNameAutocomplete,
   RefNameAutocompleteEndAdornment,
   adornmentReservePx,
+  getInputWidth,
   useRecentLocations,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -22,11 +23,43 @@ import type React from 'react'
 
 const defaultStyle = { margin: SPACING }
 
+// The header box's floor and ceiling. A stacked view's row passes its own, and
+// `searchBoxWidth` answers for these.
+const MIN_WIDTH = 175
+const MAX_WIDTH = 550
+
+/**
+ * What the box asks its row for at `value`, margins included — the number
+ * `headerFit` sheds against.
+ *
+ * The ask follows the locstring, which is the whole point of asking: 194px at
+ * `ctgA:1..20,000` and 284px at `chr22:10,510,000..10,610,000`, so a row sized
+ * against the 189px floor sheds too little and flexbox squeezes the box anyway.
+ * It is `getInputWidth`, the same function the box sizes itself with, rather
+ * than that arithmetic done again out here.
+ *
+ * `showHelp` is the component's own default below, and with help on
+ * `adornmentReservePx` returns the same number whatever the recent-locations
+ * menu holds — so the count only this component's hook knows cannot change the
+ * answer.
+ */
+export function searchBoxWidth(value: string) {
+  return (
+    getInputWidth(
+      value,
+      MIN_WIDTH,
+      MAX_WIDTH,
+      adornmentReservePx({ showHelp: true }),
+    ) +
+    2 * SPACING
+  )
+}
+
 const SearchBox = observer(function SearchBox({
   model,
   showHelp = true,
-  minWidth = 175,
-  maxWidth,
+  minWidth = MIN_WIDTH,
+  maxWidth = MAX_WIDTH,
   style = defaultStyle,
 }: {
   showHelp?: boolean

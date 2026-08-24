@@ -163,4 +163,4 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
 
 export default RefNameAutocomplete
 export { default as RefNameAutocompleteEndAdornment } from './EndAdornment.tsx'
-export { adornmentReservePx } from './util.ts'
+export { adornmentReservePx, getInputWidth } from './util.ts'

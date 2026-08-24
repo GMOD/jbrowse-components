@@ -2,11 +2,9 @@
 // font size — `products/jbrowse-web/browser-tests/probe-lgv-header-fit.ts`
 // prints the row piece by piece. It spends 591px on everything that is not the
 // search box (47 track selector, 114 scroll-zoom toggle, 156 pan buttons, 50 bp
-// readout, 192 zoom controls, 32 of flex gap), and the search box asks for
-// 189px including its margins before flexbox starts squeezing it. So below
-// 780px something in the row has to give.
+// readout, 192 zoom controls, 32 of flex gap). What the box itself asks for is
+// the caller's, because it follows the locstring rather than being a constant.
 const ROW_WITHOUT_SEARCH_PX = 591
-const SEARCH_BOX_PX = 189
 
 // The one piece of the row that comes and goes on its own. A text search that
 // lands on a feature raises it — the same flow that was just using the search
@@ -31,27 +29,38 @@ export type HeaderFit = Record<(typeof SHEDDABLE)[number][0], boolean>
 
 /**
  * Which of the header bar's optional pieces a header `width` px wide still has
- * room for, given whether the clear-highlights button is currently in the row.
+ * room for, given what the search box is asking for — `searchBoxWidth`, margins
+ * included — and whether the clear-highlights button is currently in the row.
  * An unmeasured width — the first render, before the ResizeObserver has
  * reported — keeps all of them, so the common wide case paints its final form
  * immediately rather than flashing the compact one.
  *
- * Below 427px even the fully shed row overflows, and from there the search box
- * shrinks like any flex item. That is a floor, not a cliff: it shrinks from the
- * 189px it was protected at rather than from the 101px the unshed row used to
- * leave it. jbrowse-web stops narrowing at a 400px header, where the box
- * measures 158px.
+ * `searchBoxPx` is the box's ask and not its floor, because the two differ by
+ * the locstring — 189px empty, 194 at `ctgA:1..20,000`, 284 at
+ * `chr22:10,510,000..10,610,000`. Shedding against the floor is what left
+ * flexbox squeezing the box this whole table exists to protect: against the
+ * floor the probe read 184px of an asked 210 at an 800px window and 186 at 600.
+ *
+ * The fully shed row costs 238px, so under `238 + searchBoxPx` the row overflows
+ * whatever it gives up and the box shrinks like any flex item. That is a floor,
+ * not a cliff: it shrinks from what it asked for rather than from the 101px the
+ * unshed row used to leave it.
  */
-export function headerFit(
-  width: number | undefined,
+export function headerFit({
+  width,
+  searchBoxPx,
   clearHighlight = false,
-): HeaderFit {
+}: {
+  width: number | undefined
+  searchBoxPx: number
+  clearHighlight?: boolean
+}): HeaderFit {
   const fit = Object.fromEntries(SHEDDABLE.map(([k]) => [k, true])) as HeaderFit
   if (width === undefined) {
     return fit
   }
   const room = width - (clearHighlight ? CLEAR_HIGHLIGHT_PX : 0)
-  let need = ROW_WITHOUT_SEARCH_PX + SEARCH_BOX_PX
+  let need = ROW_WITHOUT_SEARCH_PX + searchBoxPx
   for (const [key, saves] of SHEDDABLE) {
     if (need <= room) {
       break
