@@ -11,8 +11,8 @@ import {
   resolveByteLimit,
 } from './regionTooLargeUtils.ts'
 
-import type { BaseLinearDisplayConfigModel } from './configSchema.ts'
 import type { RegionHost } from './regionHost.ts'
+import type { RegionTooLargeConfigModel } from './regionTooLargeConfigSchemaFields.ts'
 import type {
   ByteEstimate,
   GateEvent,
@@ -47,10 +47,12 @@ function applyGateEvent(self: GateState, event: GateEvent) {
 // the same pattern CanvasFeatureGateMixin uses.
 /** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
 export interface RegionTooLargeHost {
-  // `baseLinearDisplayConfigSchema` rather than `AnyConfigurationModel`: the
-  // widened form switches off `getConf`'s slot-name check, and the two slots
-  // this mixin reads (`fetchSizeLimit`, `forceLoad`) are that schema's own
-  configuration: BaseLinearDisplayConfigModel
+  // The mixin's OWN field table, rather than `AnyConfigurationModel` (which
+  // switches off `getConf`'s slot-name check) and rather than the whole
+  // `baseLinearDisplayConfigSchema` it used to name. The base schema was both
+  // too wide — it admitted every other base slot name to the two reads below —
+  // and, for five composers, not something their schema extends at all.
+  configuration: RegionTooLargeConfigModel
 }
 
 function host(self: object) {
@@ -302,11 +304,14 @@ export default function RegionTooLargeMixin() {
       /**
        * #getter
        * The composing display's configured `fetchSizeLimit`, read straight from
-       * its config. Only evaluated when the gate is enabled (guarded by
-       * `gateEnabled`), and every gated display extends
-       * `baseLinearDisplayConfigSchema`, which owns the slot — so the read is
-       * always valid where it fires. A display with a bespoke source can still
-       * override it.
+       * its config. The slot is this mixin's own
+       * (`regionTooLargeConfigSchemaFields`), so every composing display
+       * declares it — by extending `baseLinearDisplayConfigSchema`, which
+       * spreads the table, or by spreading it directly. It used to be the base
+       * schema's, on the argument that "the read only fires under `gateEnabled`
+       * and every gated display extends the base schema": true, unenforced, and
+       * five composers did not extend it. A display with a bespoke source can
+       * still override this getter.
        */
       get configuredFetchSizeLimit(): number {
         return getConf(host(self), 'fetchSizeLimit')
@@ -366,8 +371,8 @@ export default function RegionTooLargeMixin() {
        * #getter
        * Declarative force-load: when true the display always renders regardless
        * of region size / feature density (the config-driven equivalent of the
-       * force-load button). Read straight from the `forceLoad` config slot on
-       * `baseLinearDisplayConfigSchema` (same guard/ownership as
+       * force-load button). Read straight from the `forceLoad` config slot in
+       * this mixin's own field table (same ownership as
        * `configuredFetchSizeLimit`), so every opt-in display honors it without
        * per-display wiring.
        */

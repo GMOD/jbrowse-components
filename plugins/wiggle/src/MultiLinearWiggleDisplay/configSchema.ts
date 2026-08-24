@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar'
 
@@ -166,6 +167,12 @@ const configSchema = ConfigurationSchema(
       // resolved `showLegend` getter (resolveConf), never raw.
       promotedBase: true,
     },
+    // Owed to `RegionTooLargeMixin`, which this display composes through
+    // `MultiRegionDisplayMixin` and which reads both slots through a host cast.
+    // Same reason as the single-source wiggle schema: neither extends
+    // `baseLinearDisplayConfigSchema`, so the pair comes from the mixin's own
+    // table.
+    ...regionTooLargeConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

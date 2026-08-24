@@ -3570,6 +3570,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showTranslation",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -4262,6 +4270,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -4372,6 +4388,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLegend",
           "type": "(JexlString | (boolean | undefined))"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -4482,6 +4506,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "windowSize",
@@ -4596,6 +4628,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryScoreMode",
           "type": "(JexlString | Score type)"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "windowSize",

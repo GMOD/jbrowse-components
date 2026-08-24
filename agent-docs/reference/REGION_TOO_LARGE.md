@@ -438,11 +438,21 @@ of tree nothing does, and nothing is kept around to — a renamed hook is a
 breaking change and is released as one.
 
 **`configuredFetchSizeLimit`** and **`configForceLoad`** read the
-`fetchSizeLimit` and `forceLoad` slots from `baseLinearDisplayConfigSchema`,
-which every gated display extends. Plain slot reads, not part of the
-overridable hook surface — nothing has ever overridden them, and a display
-whose budget genuinely comes from somewhere else should surface that need
-before this line grows an "overridable" back.
+`fetchSizeLimit` and `forceLoad` slots, which are the mixin's own:
+`regionTooLargeConfigSchemaFields` sits beside it, and every composing display
+declares the pair either by extending `baseLinearDisplayConfigSchema` (which
+spreads the table) or by spreading it directly — wiggle, multi-wiggle and the
+reference sequence display do the latter, and the two GC-content displays
+inherit wiggle's. They used to be the base schema's alone, on the argument that
+"the read only fires under `gateEnabled` and every gated display extends the
+base schema". True, unenforced, and five composers did not extend it: on those
+five both reads answered `undefined` while typed `number`/`boolean`, which is
+what `getConf` on an undeclared slot always does. Inert while they leave the
+gate off, and an `undefined` budget is a gate that never fires the moment one
+does not.
+Plain slot reads, not part of the overridable hook surface — nothing has ever
+overridden them, and a display whose budget genuinely comes from somewhere else
+should surface that need before this line grows an "overridable" back.
 
 **`densityTooLarge`** supplies a second gating axis, false in the base mixin.
 Canvas overrides it with its feature-density gate; byte-only displays leave it.

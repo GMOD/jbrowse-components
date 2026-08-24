@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { regionTooLargeConfigSchemaFields } from './regionTooLargeConfigSchemaFields.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -30,36 +32,11 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
       defaultValue: 1,
       advanced: true,
     },
-    /**
-     * #slot
-     */
-    // Conservative 1MB floor for the base display; the byte gate prefers an
-    // adapter-declared fetchSizeLimit over this (resolveByteLimit), so it only
-    // bites adapters that declare none. LinearBasicDisplay raises it to 5MB for
-    // feature tracks.
-    fetchSizeLimit: {
-      type: 'number',
-      defaultValue: 1_000_000,
-      description:
-        "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
-      advanced: true,
-    },
-    /**
-     * #slot
-     * Declarative equivalent of the "Force load" button on the "too much data"
-     * banner: when true the display always renders, however large the region or
-     * dense the features. Off by default (the gate guards against huge
-     * downloads). Set it on a view no one can interact with — an embedded /
-     * notebook view, or a screenshot — where the region is known and you want it
-     * drawn without a click.
-     */
-    forceLoad: {
-      type: 'boolean',
-      defaultValue: false,
-      description:
-        'always render regardless of the region-size / feature-density gate (declarative equivalent of the "Force load" button)',
-      advanced: true,
-    },
+    // `fetchSizeLimit` and `forceLoad`, which every display composing
+    // `RegionTooLargeMixin` owes it. Here as the mixin's own table rather than
+    // written out, so the five displays composing the mixin against a schema
+    // that does NOT extend this one declare the same pair from the same place.
+    ...regionTooLargeConfigSchemaFields,
     /**
      * #slot
      */

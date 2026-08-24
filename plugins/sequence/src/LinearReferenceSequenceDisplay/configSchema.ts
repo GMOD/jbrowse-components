@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 
 /**
  * #config LinearReferenceSequenceDisplay
@@ -63,6 +64,12 @@ export const configSchema = ConfigurationSchema(
       defaultValue: true,
       description: 'show the translation frame rows (DNA only)',
     },
+    // Owed to `RegionTooLargeMixin`, which this display composes through
+    // `MultiRegionDisplayMixin` and which reads both slots through a host cast.
+    // This schema stands apart from `baseLinearDisplayConfigSchema` (its
+    // `height` is a `maybeNumber` that auto-fits, and none of the feature slots
+    // apply to a sequence row), so the pair comes from the mixin's own table.
+    ...regionTooLargeConfigSchemaFields,
   },
   { explicitIdentifier: 'displayId', explicitlyTyped: true },
 )

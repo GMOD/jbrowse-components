@@ -60,6 +60,7 @@
     "./planRegionFetch": "./src/planRegionFetch.ts",
     "./regionCommit": "./src/regionCommit.ts",
     "./regionHost": "./src/regionHost.ts",
+    "./regionTooLargeConfigSchemaFields": "./src/regionTooLargeConfigSchemaFields.ts",
     "./regionTooLargeUtils": "./src/regionTooLargeUtils.ts",
     "./renderDisplaySvg": "./src/renderDisplaySvg.tsx",
     "./rpcPropsCacheKey": "./src/rpcPropsCacheKey.ts",
@@ -246,6 +247,10 @@
         "types": "./esm/regionHost.d.ts",
         "import": "./esm/regionHost.js"
       },
+      "./regionTooLargeConfigSchemaFields": {
+        "types": "./esm/regionTooLargeConfigSchemaFields.d.ts",
+        "import": "./esm/regionTooLargeConfigSchemaFields.js"
+      },
       "./regionTooLargeUtils": {
         "types": "./esm/regionTooLargeUtils.d.ts",
         "import": "./esm/regionTooLargeUtils.js"
@@ -394,6 +399,9 @@
         ],
         "regionHost": [
           "esm/regionHost.d.ts"
+        ],
+        "regionTooLargeConfigSchemaFields": [
+          "esm/regionTooLargeConfigSchemaFields.d.ts"
         ],
         "regionTooLargeUtils": [
           "esm/regionTooLargeUtils.d.ts"

@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
@@ -120,6 +121,13 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       advanced: true,
     },
     ...summaryScoreModeConfigSchemaFields({ defaultMode: 'whiskers' }),
+    // Owed to `RegionTooLargeMixin`, which this display composes through
+    // `MultiRegionDisplayMixin` and which reads both slots through a host cast.
+    // This schema does not extend `baseLinearDisplayConfigSchema` (its
+    // `mouseover` / `jexlFilters` / `maxFeatureScreenDensity` are all about
+    // features, which a quantitative display has none of), so the pair comes
+    // from the mixin's own table instead.
+    ...regionTooLargeConfigSchemaFields,
   },
   {
     explicitlyTyped: true,

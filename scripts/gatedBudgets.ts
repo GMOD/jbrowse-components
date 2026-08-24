@@ -211,7 +211,11 @@ export const DISPLAY_TIERS = [
   },
   {
     name: 'baseLinearDisplayConfigSchema',
-    file: 'packages/display-kit/src/configSchema.ts',
+    // The field table `baseLinearDisplayConfigSchema` spreads, not the schema
+    // file: `fetchSizeLimit` belongs to `RegionTooLargeMixin`, and the five
+    // displays composing that mixin without extending the base schema spread
+    // the same table. One file still holds the number.
+    file: 'packages/display-kit/src/regionTooLargeConfigSchemaFields.ts',
     applies: 'every inheriting adapter under every other display',
   },
 ]

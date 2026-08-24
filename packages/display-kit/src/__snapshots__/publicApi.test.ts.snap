@@ -40,6 +40,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./planRegionFetch",
   "./regionCommit",
   "./regionHost",
+  "./regionTooLargeConfigSchemaFields",
   "./regionTooLargeUtils",
   "./renderDisplaySvg",
   "./rpcPropsCacheKey",
