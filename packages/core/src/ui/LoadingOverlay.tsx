@@ -18,24 +18,38 @@ const cancelDelayMs = 5000
 // there's no content to flash over, so the indicator shows right away.
 const flashDelayMs = 250
 
-// Returns false, then flips true once `active` has stayed true continuously for
-// `delayMs`. Resets to false the moment `active` goes false, so each activation
-// gets a fresh delay.
+/**
+ * Returns false, then flips true once `active` has stayed true continuously for
+ * `delayMs`. Each activation gets a fresh delay, and the flag drops the moment
+ * `active` does.
+ *
+ * Keyed on a count of RISING edges rather than on `active` itself, so the
+ * falling edge does no work at all. A display refetching through a wheel zoom
+ * flips `active` several times a second — it finishes a fetch, waits out the
+ * debounce, starts the next — and an effect depending on `active` tore its timer
+ * down and built a new one on each of those, twice over, for a scrim that by
+ * construction never appears. Deriving the flag from a comparison instead means
+ * one `setTimeout` per loading pulse, which is the floor for these semantics.
+ */
 function useDelayedFlag(active: boolean, delayMs: number) {
-  const [flag, setFlag] = useState(false)
-  useEffect(() => {
+  const [previous, setPrevious] = useState(active)
+  const [activation, setActivation] = useState(0)
+  if (previous !== active) {
+    setPrevious(active)
     if (active) {
-      const id = setTimeout(() => {
-        setFlag(true)
-      }, delayMs)
-      return () => {
-        clearTimeout(id)
-        setFlag(false)
-      }
+      setActivation(n => n + 1)
     }
-    return undefined
-  }, [active, delayMs])
-  return flag
+  }
+  const [elapsedFor, setElapsedFor] = useState(-1)
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setElapsedFor(activation)
+    }, delayMs)
+    return () => {
+      clearTimeout(id)
+    }
+  }, [activation, delayMs])
+  return active && elapsedFor === activation
 }
 
 const useStyles = makeStyles()(theme => {

@@ -522,6 +522,43 @@ describe('the loading scrim spans one continuous load', () => {
     })
     expect(queryByTestId('loading-overlay')).not.toBeNull()
   })
+
+  // What the delay is FOR, and the case the hook's rising-edge rewrite must not
+  // change: a display refetching through a wheel zoom finishes one fetch, waits
+  // out its debounce and starts the next, so the loading flag pulses several
+  // times a second. Each pulse is shorter than the delay, so the scrim must
+  // never appear — the delay does not accumulate across them.
+  test('two short loading pulses separated by a gap raise no scrim', () => {
+    const model = TestChromeModel.create({})
+    model.setCanvasDrawn(true)
+    const { queryByTestId } = renderChrome(model)
+
+    for (const _ of [0, 1]) {
+      act(() => {
+        model.setLoadingCondition(true)
+      })
+      act(() => {
+        jest.advanceTimersByTime(150)
+      })
+      expect(queryByTestId('loading-overlay')).toBeNull()
+      act(() => {
+        model.setLoadingCondition(false)
+      })
+      act(() => {
+        jest.advanceTimersByTime(150)
+      })
+      expect(queryByTestId('loading-overlay')).toBeNull()
+    }
+
+    // and the delay still works after them: a pulse that does outlast it shows
+    act(() => {
+      model.setLoadingCondition(true)
+    })
+    act(() => {
+      jest.advanceTimersByTime(250)
+    })
+    expect(queryByTestId('loading-overlay')).not.toBeNull()
+  })
 })
 
 // A backend re-init needs a canvas element that never held a context: a canvas's
