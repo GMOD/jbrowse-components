@@ -5,8 +5,8 @@
 // The question a duration cannot answer, and the one filming more than one tour
 // at a time raises: headless Chrome paints the foreground tab, so a screencast
 // taken on a backgrounded one can deliver the same frame over and over. That
-// clip has the right length, the right size, and a `keptUp` of 1.00 — every
-// number the run reports is fine and the picture is frozen.
+// clip has the right duration and the right size — every number the run prints
+// is fine and the picture is frozen.
 //
 // Counts distinct frames by content hash over evenly spaced samples. A tour that
 // is doing anything changes most of them; a frozen capture collapses to a

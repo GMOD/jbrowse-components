@@ -228,8 +228,8 @@ the tour was filmed in.
 - **Does a finished clip MOVE?** `node scripts/probe-clip-motion.ts <clip.mp4>`
   counts distinct frames. Headless Chrome paints the foreground tab, so a
   screencast off a backgrounded one delivers the same frame over and over at the
-  right length, the right size and a `keptUp` of 1.00 — every number the run
-  reports is fine and the picture is frozen.
+  right duration and the right size — every number the run prints is fine and
+  the picture is frozen.
 - **Every annotation `anchor`s** — by locus, dotplot cell, graph node or chord,
   never a measured pixel. Shapes belong in
   `@jbrowse/browser-test-utils/src/annotationOverlay.ts`. Prefer an in-app
