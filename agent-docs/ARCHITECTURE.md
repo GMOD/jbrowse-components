@@ -156,7 +156,7 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-19 registered displays declare 176 config slots, 40 MST properties and 52 volatiles between them — counting what each display's own directory declares.
+19 registered displays declare 178 config slots, 40 MST properties and 52 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
@@ -167,8 +167,8 @@ track-menu setting is a slot.
 | `LDDisplay` | `plugins/variants` | 15 | 1 | 2 |
 | `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 12 | 4 | 2 |
 | `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 3 |
+| `LinearArcDisplay` | `plugins/arc` | 7 | 2 | 0 |
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
-| `LinearArcDisplay` | `plugins/arc` | 6 | 2 | 0 |
 | `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
 | `LinearWiggleDisplay` | `plugins/wiggle` | 6 | 2 | 0 |
 | `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 0 |
@@ -176,8 +176,8 @@ track-menu setting is a slot.
 | `ChordVariantDisplay` | `plugins/circular-view` | 4 | 3 | 3 |
 | `LinearReferenceSequenceDisplay` | `plugins/sequence` | 4 | 2 | 0 |
 | `LinearGCContentDisplay` | `plugins/gccontent` | 3 | 0 | 0 |
+| `LinearPairedArcDisplay` | `plugins/arc` | 3 | 2 | 0 |
 | `LinearMultiSampleVariantMatrixDisplay` | `plugins/variants` | 2 | 0 | 0 |
-| `LinearPairedArcDisplay` | `plugins/arc` | 2 | 2 | 0 |
 | `LinearSyntenyDisplay` | `plugins/linear-comparative-view` | 0 | 2 | 4 |
 | `LinearVariantDisplay` | `plugins/variants` | 0 | 1 | 0 |
 <!-- END GENERATED DISPLAY_STATE_CENSUS -->

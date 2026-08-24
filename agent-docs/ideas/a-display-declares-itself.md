@@ -1,6 +1,6 @@
 ---
 name: a-display-declares-itself
-description: An ambitious multi-level simplification target, written against the measured census rather than against the render path. A display today IS its 288 getters, and five surfaces are hand-written against them nineteen times over — menus, legends, hit tests, renderer pairs and the session spelling. The move is to make the declaration the source of truth and derive the five; the levels, the gauge each is falsified by, the boundary where the grammar deliberately stops, and what each level lets the manuscript claim. Read before proposing a grammar layer, before generalizing a band, and before taking defineDisplay further on the score-example.
+description: An ambitious multi-level simplification target, written against a measured census rather than against the render path — five surfaces are hand-written against the display's getters, and the move is to make the declaration derive them. The census reproduces; the inferences needed correcting, so the doc also carries what the numbers do NOT support: the reducible target is ~90 settings-and-UI getters and not all 288, two unrelated things in the tree are both called a mark, and the two placement files that share an opening paragraph make opposite decisions under it. Two grounds are contested rather than re-taken — ADR-090's per-frame colour ruling, which describes `bar` and no other shape in the tree, and RFC-001 §2, whose leading objection names Manhattan. Read before proposing a grammar layer, before generalizing a band, before merging a placement primitive, and before taking defineDisplay further on the score-example.
 ---
 
 # A display declares itself
@@ -50,6 +50,34 @@ display:
 Every one of those five surfaces exists because there was nothing machine-readable
 to derive it from. That is the single fact this whole plan is against.
 
+### But 288 is not the number this plan can move
+
+Reading "the whole cost" as "288 getters are reducible" is the trap this table
+sets, and the boundary below excludes most of them. Split the same 288 by body
+size and by whether the getter reads config at all — walk each `#getter` to its
+`get x(` and brace-match the body:
+
+| Of the 288 `#getter` | Count |
+| --- | --- |
+| body is three lines or fewer | 144 |
+| reads `getConf` / `readConfObject` / `resolveConf` anywhere | 47 |
+
+Categorizing alignments' 54 short ones: roughly 25 settings, 9 capability
+predicates (`canSortReads`, `canSizeGroupHeights`, `gateEnabled`), 7 heights,
+7 data plumbing, and 3 of the sentinel-plus-resolved-getter pairs CLAUDE.md
+mandates (`mismatchAlphaDisplayTypeDefault`, `effectiveGroupBy`) — a rule
+being followed, not a defect.
+
+The remaining ~61 in that file are `laidOutByGroup`, `laidOutByGroupFramed`,
+`sections`, `renderSections`, `bezierPairSections`, `crossRegionArcSections`,
+`scrollableHeight`, `pileupContentHeight`. That is **layout**, which the thesis
+below says stays imperative, deliberately and correctly.
+
+So the target is **the ~90 settings-and-UI getters and the five surfaces written
+against them**, not 288. That is still the largest reducible thing measured here.
+It is not two thirds of the model files, and a level that claims to be is
+measuring the wrong denominator.
+
 ## Where the grammar stops, and why that is the finding
 
 The obvious move is a grammar of graphics — the vendored comparisons are
@@ -75,10 +103,26 @@ grammar:
 > the fetch stay imperative and per-display, because they are where the domain
 > actually is.
 
-This restates RFC-001 §2's non-goal ("no glyph-registration / spec-grammar / DSL
-layer") on narrower ground rather than overruling it. §2's objection was that a
-grammar "would replace only the render-callback layer" — correct, and the reason
-to aim it somewhere else.
+**This does not restate RFC-001 §2 on narrower ground. It re-opens §2 on §2's own
+ground**, and quoting one of §2's three objections is what obscures that.
+The full non-goal ("no glyph-registration / spec-grammar / DSL layer") rests on:
+
+- **"Unmotivated at both ends"** — the simple BED-like case is already covered by
+  the canvas plugin's config, and the complex case, **which §2 names as Manhattan
+  and methylation matrices**, "needs the full mixin/RPC/render shape regardless."
+- It "would replace only the render-callback layer, **lose per-feature batching,
+  conditional paths and custom hit-testing**."
+- It would "add indirection that does not earn its keep."
+
+The middle clause of the second bullet is the quotable one, and on its own it
+reads as an invitation to aim elsewhere. The first bullet names Level 0's exact
+target, and the phrase "custom hit-testing" is what Level 3 proposes to derive —
+a head-on collision, not a narrowing.
+
+That is a better position for this plan, not a worse one: it means Level 0 is a
+sharper experiment than it first appears. If Manhattan ports, the "complex
+case needs the full shape regardless" clause is falsified on the case §2 chose.
+But the doc has to own that it is contesting §2 rather than refining it.
 
 ## The levels
 
@@ -100,12 +144,89 @@ shader, and a `renderSvg`. The todo
 [put-the-manhattan-display-on-plotgeometry](../todo/put-the-manhattan-display-on-plotgeometry.md)
 is the same complaint arriving from the wiggle side.
 
-**Gauge.** Under 400 lines, no renderer class, no `rpcProps`/`gpuProps` split
-written by hand, tooltip and legend intact, `renderSvg` unchanged in output.
+**Fix the denominator before porting, or the gauge proves nothing.** "2,180
+lines, 24 files" reproduces exactly, but only as `LinearManhattanDisplay/`
+*excluding* `shaders/` and `ManhattanRPC/`. What that leaves inside:
+
+| Inside the 2,180 | Lines | Can a declaration derive it? |
+| --- | --- | --- |
+| `stateModelFactory.ts` | 795 | mostly, and this is the real target |
+| React components (7 files) | 583 | **no** — see below |
+| `configSchemaFactory.ts` | 192 | yes, from `params` |
+| `Canvas2D`/`Gpu` renderer pair + base | 207 | yes, ADR-089 already does this |
+| `findManhattanHit.ts` | 142 | only if Level 3 lands |
+| `renderSvg.tsx` | 84 | yes |
+| `ldBins.ts`, `isIndexSnpOffscreen.ts`, `index.ts`, types | 177 | no, domain |
+
+Outside it and not going anywhere: `manhattan.slang` (190) plus its four
+generated files (186), and `ManhattanRPC/` (190), whose `makeLdEvaluator` is a
+real domain computation with no channel expression.
+
+The 583 lines of components are 27% of the target and nothing in Levels 1-5
+derives an `LdIndexWarning` or a `HoverHighlight`. `SetSignificanceLineDialog`
+and `LdColorLegend` are the only two a declaration plausibly reaches.
+
+**Gauge.** Write the derivable / stays-hand-written split above as a commitment
+*before* the port, then: the derivable column under 400 lines, no renderer class,
+no `rpcProps`/`gpuProps` split written by hand, tooltip and legend intact,
+`renderSvg` unchanged in output. A gauge whose denominator is settled afterwards
+can be declared a pass or a fail at will, which is the one thing a falsification
+step must not allow.
 
 **Falsifies.** If Manhattan does not fit, the imperative altitude is the real
 contract and the levels below shrink to Level 1 and Level 2 only. **Find this out
 before writing another shape.**
+
+---
+
+### Level 0.5 — Reconcile the two Mark systems, or separate them on purpose
+
+**This level was missing, and Level 3 cannot start without it.** There are two
+unrelated things called a mark in the tree, and citing both in one sentence as
+though they were one lineage is the easy mistake:
+
+| | `packages/display-kit/src/marks.ts` | `plugins/alignments/src/features/mark.ts` |
+| --- | --- | --- |
+| Size | ~60 lines | 249 + five feature marks |
+| Shapes | `export type Mark = BarMark` — **a union of one** | `gap`, `mismatch`, `arcs`, `perBaseQuality`, `perBaseLetter`, `softclipBases` |
+| Colour | `(params) => string`, one uniform per frame | per instance |
+| Geometry | `x` / `x2` / `y` off parallel payload arrays | `MarkFrame` + `MarkCanvas2D` with `contiguous` / `bandTop` / `bandHeight` |
+| Depends on | nothing above render-core | `pileupRowY`, `pileupRowOffCanvas` from alignments' own renderer types |
+| Feeds | `defineDisplay` | alignments' three backends and its hit test |
+
+ADR-090's mark is the published one and has never expressed a per-instance
+colour. Alignments' mark is the one that actually deleted the third copy of five
+features and found the GPU/Canvas2D bug — and it **depends on pileup row
+geometry**, which puts it downstream of layout.
+
+That is the problem in one line: **the mark abstraction that works is below the
+layout boundary this plan draws, and the one above the boundary has one shape.**
+
+**The gap decomposes into two parts, and they have different answers:**
+
+- **Per-instance channels.** Level 1's relitigation of ADR-090 closes this one.
+  Once a channel can be a field rather than a constant, display-kit's `Mark` can
+  express what `rowRect` and `arc` already draw, and most of the distance between
+  the two systems is gone. This is the larger half and it is tractable.
+- **Row geometry.** `MarkCanvas2D`'s `bandTop` / `bandHeight` / `contiguous`
+  resolve against a pileup row, so alignments' mark reads layout output. This is
+  the half that touches the boundary, and it is the real question.
+
+**The move.** Answer only the second: does a mark take its row band as an
+*argument* — layout stays imperative, hands the mark a resolved `rowY` and
+`featureHeight`, and the boundary holds — or does the mark reach into layout, in
+which case the boundary moves and the thesis paragraph needs rewriting?
+
+The first looks right, and it is close to what `MarkFrame` already does: it is
+handed a `DrawBlock` and a span rather than computing one. If that holds, the two
+systems converge with no boundary change, and the alignments mark becomes the
+proof that display-kit's can carry a real display.
+
+**Gauge.** One sentence in ADR-090's successor naming which. If it is "takes the
+band as an argument", the convergence is a refactor, not a redesign.
+
+**Risk.** The cheapest level here and the one that most changes what Levels 1 and
+3 are allowed to claim.
 
 ---
 
@@ -141,6 +262,60 @@ the session key, the CLI spelling and the config-docs page. `resolve` remains
 per-display. genome-spy makes exactly this split: the channel list is a
 declaration, the encoder is per-mark.
 
+**The UI half has a mechanism already, and it is not called a channel.**
+`defineDisplay.tsx` has
+`ParamDefinition = ConfigSlotDefinition & { affects: 'fetch' | 'encode' | 'frame' }`.
+Extending that with the UI-derivation metadata — label, legend, where the options
+come from — derives all six of the things listed above, is already rooted in the
+factory, and costs one type. It also fixes this level's place in the order:
+**Level 1 depends on Level 0**, because it extends the factory's own type. It is
+not parallel to Level 2.
+
+#### Relitigate ADR-090's per-frame colour while doing it
+
+ADR-090 says "`color` is a uniform per frame, not a lane per instance. A
+per-instance color channel... changes the instance layout, so it is **a second
+shape variant** rather than an option on this one." That ruling should not
+survive this level, and the tree already argues against it:
+
+| Shape | Colour cardinality |
+| --- | --- |
+| `render-core/shaders/bar.slang` | constant, one uniform per frame |
+| `render-core/shaders/rowRect.slang:31` | **`public uint color : ATTR3` — per instance, packed ABGR** |
+| `alignments/shaders/slang/arc.slang:103` | **`float colorType : ATTR2` — per instance palette index** |
+
+`rowRect` is the shared "row of coloured rects" primitive that already serves MAF
+and multi-row, and it is *one shape* with a per-instance colour lane, not two
+shape variants. `arc` carries a third cardinality — an index into a uniform
+palette, which is cheaper than an ABGR lane and is what a bounded scheme like
+alignments' actually wants.
+
+So the axis is wrong. **Constant-versus-field is channel cardinality, not shape
+identity** — it is Vega-Lite's `value` versus `field`, and every grammar treats
+it as one concept for the reason that treating it as two multiplies the shape
+list: `bar` / `barColoured` / `cell` / `cellColoured`, a combinatorial blowup
+over one orthogonal axis. Preventing exactly that is what a channel abstraction
+is for. ADR-090 is titled "a mark is a shape plus its channels"; its colour
+ruling makes it a shape plus *some* of its channels, and `bar` is the only shape
+in the tree the ruling describes.
+
+**The move, then, is bigger than a settings table and better founded**: a
+channel declares its cardinality (constant, per-instance value, per-instance
+palette index), the pass packs a lane only for the field forms, and the
+declaration drives both the render path and the six UI surfaces. That is a real
+grammar at the declaration layer rather than a settings table wearing the word.
+
+**This does not reopen the scoping above.** Cardinality is not resolution. The
+channel says *whether* colour varies per instance; it never says which colour a
+given read gets, and alignments' precedence ladder stays in the worker producing
+the byte array the lane is packed from. What the declaration gains is one bit the
+pass needs and every UI surface already wanted — constant or field — not the
+ladder itself.
+
+**What it costs.** Superseding an ADR two commits old, and a `bar` that packs a
+colour lane conditionally. ADR-051 is untouched: the `.slang` stays hand-written
+and `rowRect` shows the hand-written version of exactly this.
+
 **Gauge.** `plugins/variants/src/shared/multiSampleVariantMenuItems.ts` (401
 lines, 18 hand-written labels) becomes a declaration plus its resolver. The
 legend files for that display disappear rather than shrink.
@@ -153,30 +328,69 @@ lines of legend, and it closes the first and largest item in
 failure mode. Guard by porting alignments' declaration *without* its resolver
 first; if the declaration cannot be written in isolation, the split is wrong.
 
+**And that guard does not test the hard part.** The hard part is not the
+resolver, it is that the declaration is not a flat field list. `modifications` in
+the example block is not a field: `ModificationColorBy` in
+`plugins/alignments/src/shared/types.ts` is a six-field sub-object where
+`fillUnmarked` and `cytosineContext` change what the mark *means*, `twoColor` is
+shared with the `bisulfite` scheme under a different default, and
+`hiddenModifications` is a read-only legacy deny-list kept resolving beneath the
+allow-list that replaced it. A field list cannot hold that, and a table that
+grows a nested-options escape hatch to hold it has stopped deriving anything.
+
+The real guard: **write alignments' `colorBy` declaration first, not last.** It
+is the one that decides whether the table is a table.
+
 ---
 
 ### Level 2 — Name the placement
 
-**Today.** Five implementations, and two of them are the same paragraph. Read
-the doc comments on `maf/LinearMafDisplay/placeMafRows.ts` and
+**Today.** Five implementations, and two of them open with the same paragraph.
+Read the doc comments on `maf/LinearMafDisplay/placeMafRows.ts` and
 `variants/shared/placeVariantRows.ts` side by side:
 
 > "The worker names rows by species and knows nothing about display order, so
 > this is where a fetched row becomes a *placed* row... It is also what lets a
 > reorder re-place cached data instead of refetching it."
 
-**The move.** `place(payload, ordering) → rowIndex[]`, carrying the invariant
-**a reorder re-places, never refetches** as a type rather than a doc comment.
-Two flavours, both already in tree:
+**The shared paragraph is real, and it is the right thing to have noticed** — the
+invariant *a reorder re-places, never refetches* genuinely holds in both, and
+naming it is what this level is for. What the shared prose hides is one level
+down. On what happens to a row the display is not drawing, the two files decide
+inversely, and each records why the other is wrong *for it*:
+
+| | `placeMafRows.ts` | `placeVariantRows.ts` |
+| --- | --- | --- |
+| Unplaced row | **dropped** | **kept at `HIDDEN_ROW`** |
+| Because | "everything downstream — the instance buffer, `rowFlank`, the identity plot — keys on `rowIndex` and would **collide on a shared sentinel**" | at `0x00ffffff` "every painter's own Y-cull already puts the cell millions of pixels below the canvas, so the sentinel **costs no branch**", and it is "chosen to be exactly representable in float32" |
+| Returns | a rehydrated `MafRegionData` — a columnar-to-object transform, measured 30ms to 47ms at 83k rows | `Placed<T>`, carrying a **second** index `cellWorkerRowIndices` |
+| Second index because | — | the hit test binary-searches the **worker** ordering, which a screen ordering is an arbitrary permutation of |
+
+Neither returns `rowIndex[]`. Both are right about their own downstream.
+
+**The move.** `place(payload, ordering)`, carrying the invariant **a reorder
+re-places, never refetches** as a type rather than a doc comment. Two flavours,
+both already in tree:
 
 - **Projection** — a name maps to a row. MAF species, variant samples, wiggle
-  sources, multi-row groups. Four displays, four copies.
+  sources, multi-row groups. Two *named* implementations, not four: wiggle
+  sources and multi-row groups resolve `sources[rowIndex]` implicitly
+  (`LinearMultiRowFeatureDisplay/model.ts:99`) rather than in a `place` function.
+  That is still an argument for naming the primitive; it is not four copies of
+  one function waiting to be merged.
 - **Packing** — an interval finds a free row. `GranularRectLayout` (canvas) and
   `sortLayout`'s `placeRectCapped` (alignments). Two displays, two copies, and
   alignments' adds a cross-region sort anchor that the shared one would have to
   take as a parameter.
 
-**Gauge.** The four projection sites collapse to one call plus a key function.
+**Settle drop-versus-sentinel before designing the signature.** It is the whole
+design: a primitive that takes it as a parameter is a union of two functions with
+a shared name, and one that picks a side breaks a display whose downstream was
+built on the other.
+
+**Gauge.** MAF and variants place through one call plus a key function, with the
+drop-versus-sentinel choice expressed in the type rather than in each caller's
+prose, and the two implicit projection sites converted to it.
 `ARCHITECTURE.md`'s "Row order is not a fetch input" section becomes a property
 of the primitive instead of a rule readers have to remember.
 
@@ -188,9 +402,14 @@ mechanism plus a per-plugin "what is the matrix" function — and it works today
 Placement is the missing half of it: clustering produces an ordering, and
 `place` is what consumes one.
 
-**Risk.** Low. This is the level with the best evidence and the least design
-left in it, and it is the one with no equivalent in any grammar system, which
-makes it the better contribution of the two.
+**Risk.** Medium, not Low. "The best evidence and the least design left in it"
+is the reading two matching opening paragraphs invite, and their decisions do
+not match. The evidence is still the best here — two real implementations, both documented to an
+unusual standard — but the design left in it is the largest of any level below
+Level 4, because it starts with a semantic conflict rather than a merge.
+
+It remains the one with no equivalent in any grammar system, which still makes it
+the better contribution of the two.
 
 ---
 
@@ -203,6 +422,18 @@ files are named for hit testing or picking;
 records that **nothing gated draw against hit test** the way CI gates GPU against
 Canvas2D. Five features are converted and the conversion found a live
 GPU/Canvas2D bug.
+
+**Which mark, though — this level is blocked on Level 0.5.** The sentence above
+cites ADR-090's `Mark` and the 3,335-line alignments measurement together; those
+are two different abstractions and only one of them has ever derived a hit test.
+The 3,335 lines belong to `plugins/alignments/src/features/mark.ts`, which
+already does what this level proposes, for five features, using per-instance
+geometry that reads pileup row offsets. ADR-090's `Mark` is a union of one shape
+with a per-frame colour and cannot express any of them.
+
+So the real question is not "derive hit from the mark" — alignments did that —
+but **whether the thing that worked can move above the layout boundary at all.**
+Answer Level 0.5 first.
 
 **The move.** The channels already carry what a hit test needs — `x..x2` contains
 a bp, `y` is above the cursor. Derive `hit` from the mark alongside the pass and
@@ -258,6 +489,14 @@ build failures rather than prose.
 **Gauge.** A second band consumer costs the 400 lines of glue and none of the
 500 lines of prose.
 
+**Note what that gauge deletes: prose, not code.** The ~400 lines of glue stay by
+construction — the doc's own position is that the allocators should not be
+generalized. So this is the highest-risk level with the smallest measured code
+win, which is the inverse of every other level here. That is not an argument
+against it (re-derivation is a real cost, and a build failure beats a rule
+readers must remember), but it should be taken *last* rather than on enthusiasm,
+and it is the first level to cut if the plan needs shortening.
+
 **Risk.** Highest of the five, and the one most likely to become a framework.
 The kill condition is explicit: if the type cannot be written without a
 registry, stop — a registry serving one display is
@@ -286,13 +525,26 @@ the format, reusable scale objects, no sentinels in the public form.
 ## Order, and where each level can be abandoned
 
 Level 0 first and alone; it is the falsification step and everything above
-assumes its result. Then Level 1 and Level 2 in parallel — they touch different
-files and neither depends on the other. Level 3 needs Level 0's answer. Level 4
-needs Level 2. Level 5 needs Level 1.
+assumes its result. **Level 2 is the only one that is genuinely parallel to it** —
+it is about placement, not about the factory, and it stands whatever Level 0
+returns.
+
+The rest is a chain:
+
+| Level | Depends on | Because |
+| --- | --- | --- |
+| 0 | — | falsification step |
+| 2 | — | placement is independent of the factory |
+| 0.5 | 0 | needs to know the factory holds a real display |
+| 1 | 0, and supersedes ADR-090's colour ruling | extends the factory's own `ParamDefinition` |
+| 3 | 0.5, then 1 | needs the mark question settled and per-instance channels to exist |
+| 4 | 2 | the rows half of a band stack is placement |
+| 5 | 1 | lowers the CLI grammar onto Level 1's table |
 
 Every level is separately shippable and separately abandonable. If Level 0 comes
-back negative, Levels 1 and 2 still stand on their own — they are about the
-declaration and the placement, not about the factory.
+back negative, Level 2 still stands entirely on its own, and Level 1 survives in
+its smaller form — the UI-derivation metadata is worth having on the four
+hand-written model files even if no display ever moves onto the factory.
 
 ## What this must not become
 
@@ -340,11 +592,20 @@ measurement:
 | Level | The claim it earns |
 | --- | --- |
 | 0 | the authoring surface holds a real display, not only a toy |
+| 0.5 | one mark abstraction, and the boundary it stops at is named |
 | 1 | encodings are orthogonal to track types, as in a grammar |
 | 2 | reordering is a view operation, never a refetch — stated as a primitive |
 | 3 | one declaration, three backends and a hit test that **cannot** silently disagree |
 | 4 | a track is a composition of bands, and a band has a contract |
 | 5 | one spec, three front-ends, no dialect drift |
+
+**Level 1's row is conditional on the colour relitigation.** A declaration that
+derives menus, legends and session keys but never reaches the render path does
+not earn "encodings are orthogonal to track types, as in a grammar" — in a
+grammar the encoding *is* what draws. With per-instance channel cardinality it
+earns the row outright. Without it, the honest claim shrinks to "the UI surfaces
+derive from one settings table", which is worth shipping and is not this
+sentence. Do not write the grammar claim against the smaller version.
 
 Level 3's row is the headline, and the defensible novelty against both vendored
 comparisons: genome-spy is single-backend, gosling is single-backend, and neither
@@ -356,14 +617,24 @@ cross-region.**
 
 ## Ground this changes
 
-Re-taken, not overruled, and each on a premise this plan moves:
+Two of these are overruled outright and the rest re-taken. Describing all of
+them as re-taken understates what Levels 1 and 3 need.
 
-- **RFC-001 §2** ruled out a spec grammar because it would replace only the
-  render-callback layer. This aims it at the declaration layer instead, and keeps
-  §2's verdict for the render layer.
+- **RFC-001 §2** — **contested, not narrowed.** §2's leading objection is
+  "unmotivated at both ends", and it names Manhattan as the complex end that
+  "needs the full mixin/RPC/render shape regardless". Level 0 is a direct test of
+  that clause on §2's own example. §2 also counts "custom hit-testing" among what
+  a grammar loses, which Level 3 proposes to derive. If both land, §2's non-goal
+  is superseded rather than refined, and it should be rewritten to say so.
 - **[ADR-090](../architecture-decision-records/adr-090-a-mark-is-a-shape-plus-its-channels.md)**
-  says the next shape joins on a consumer's pull. Level 0 names the consumer, and
-  Level 3 says which shape.
+  — **its colour ruling should be superseded.** "A per-instance color channel...
+  is a second shape variant rather than an option on this one" describes `bar`
+  and nothing else in the tree: `rowRect.slang` carries a per-instance ABGR lane
+  and `arc.slang` a per-instance palette index, each as one shape. Constant-versus-field
+  is channel cardinality, not shape identity, and treating it as shape identity
+  multiplies the shape list over an orthogonal axis. The rest of ADR-090 stands,
+  including "the next shape joins on a consumer's pull" — Level 0 names the
+  consumer and Level 3 says which shape.
 - **[a-track-type-is-five-primitives](a-track-type-is-five-primitives.md)** scopes
   the ABI to what the score-example has and puts alignments out of scope. That
   scoping is right for the *published contract* and wrong as the measure of

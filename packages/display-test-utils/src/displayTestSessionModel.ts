@@ -53,6 +53,9 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       theme: createJBrowseTheme(),
       palette: resolvePalette(),
       queuedDialogs: [] as QueuedDialog[],
+      // what `getSession(self).selection` answers — the globally-selected
+      // feature a display highlights against
+      selection: undefined as unknown,
       // What the session was asked to tell the user, in order. Recorded rather
       // than dropped because "the user was told nothing" is a real assertion —
       // a click whose lookup comes back empty and says nothing is the failure
@@ -79,6 +82,9 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       },
       queueDialog(cb: (handleClose: () => void) => QueuedDialog) {
         self.queuedDialogs.push(cb(() => {}))
+      },
+      setSelection(thing: unknown) {
+        self.selection = thing
       },
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
         const forType = { ...self.displayTypeDefaults[displayType] }

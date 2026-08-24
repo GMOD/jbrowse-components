@@ -219,6 +219,15 @@ export function configSchemaFactory() {
         // sentinel promotable slot: see promotableDefaults.ts
         promotedBase: defaultArcLineWidth,
       },
+      /**
+       * #slot
+       */
+      minScore: {
+        type: 'number',
+        defaultValue: 0,
+        description:
+          'hide arcs whose feature score is below this; features with no score are always drawn',
+      },
     },
     {
       /**
@@ -345,6 +354,22 @@ getter:
    */
   get conf(): LinearArcDisplayConfig {
     return self.configuration
+  },
+  /**
+   * #getter
+   * arcs whose feature scores below this are not drawn; 0 (the default)
+   * draws every arc, as does any feature carrying no score
+   */
+  get minScore(): number {
+    return getConf(self, 'minScore')
+  },
+  /**
+   * #getter
+   * the score span the filter slider is laid out over, `undefined` when the
+   * loaded features give it nothing to filter on
+   */
+  get scoreRange() {
+    return self.features && featureScoreRange(self.features)
   },
 }))
 .views(self => ({
@@ -479,7 +504,9 @@ get arcStyles() {
   // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
   // returns) a number — both have a default, so the read is never unset.
   // color/label/caption are string slots read through the typed self.conf.
-  return self.features?.map(feature => ({
+  const kept =
+    self.features && filterByScore(self.features, self.minScore)
+  return kept?.map(feature => ({
     feature,
     color: readConfObject(self.conf, 'color', { feature }),
     thickness: getConf(self, 'thickness', { feature }),
