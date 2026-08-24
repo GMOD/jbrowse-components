@@ -193,7 +193,16 @@ draw before touching text state; insertions fell to 40ms.
 
 So: **an overlay that draws text must gate the text work on something actually
 being drawn**, and caching `ctx.font` yourself does not help — `fillText` pays
-the same flush. The corollary is that the flush cost is proportional to how much
+the same flush.
+
+**That 40ms is regime-specific, and comparing across regimes will look like a
+regression.** It was taken where the rows are too short for a letter, so the
+gate suppresses the flush entirely. A sweep that spends part of its time zoomed
+in enough to draw labels pays it legitimately: the default `profile-zoom` sweep
+(0.5-4 bpPerPx) flushes on ~85 of ~573 frames and books ~140ms, because a
+`large` insertion labels at any zoom once its row clears
+`MIN_HEIGHT_FOR_TEXT` — only `small` ones wait for `MIN_PX_PER_BP_FOR_TEXT`
+(6.5), which that sweep never reaches. Quote the zoom range with the number. The corollary is that the flush cost is proportional to how much
 React just dirtied, which is the same "too many components re-render per frame"
 problem this page has been circling, reached from the canvas side.
 
@@ -219,43 +228,66 @@ is frame pacing, not throughput, and the remaining budget is roughly:
 **Measured 2026-08-24**, same harness and session, two production builds per arm
 alternating main / branch, each figure the mean of that arm's two runs.
 
+**The control is built into the design, and read it first.** The two builds
+within an arm are identical source, so their spread is this harness's floor for
+that metric — the `floor` column. A row whose delta does not clear its own floor
+says nothing, however plausible its mechanism, and three rows here are in that
+state.
+
 <!-- BEGIN GENERATED MEASUREMENT zoom-token-churn -->
 
-| one ~7s scroll-zoom gesture         |   main | with the four fixes |
-| ----------------------------------- | -----: | ------------------: |
-| `Blob` construction, self           |   61ms |          **< 29ms** |
-| `postMessage`, self                 |  101ms |            **71ms** |
-| autoscale's two passes, self        |   74ms |            **63ms** |
-| `setTimeout` + `clearTimeout`, self |  173ms |               198ms |
-| timers installed                    |    911 |                 885 |
-| main-thread tasks                   | 11,235 |              10,220 |
-| main busy, total                    | 5679ms |              5684ms |
+| one ~7s scroll-zoom gesture         |   main | with the four fixes | A/A floor |
+| ----------------------------------- | -----: | ------------------: | --------: |
+| `Blob` construction, self           |   61ms |          **< 29ms** |       4ms |
+| `postMessage`, self                 |  101ms |            **71ms** |       8ms |
+| autoscale's two passes, self        |   74ms |              ≤ 63ms |       1ms |
+| `setTimeout` + `clearTimeout`, self |  173ms |               198ms |      27ms |
+| timers installed                    |    911 |                 885 |       237 |
+| main-thread tasks                   | 11,235 |              10,220 |     2,570 |
+| main busy, total                    | 5679ms |              5684ms |      67ms |
 
 <!-- END GENERATED MEASUREMENT zoom-token-churn -->
 
-Read the rows, not the last one. Three of the four fixes move the frame they
-aimed at and **none of it reaches total busy** — ~100ms of attributable work off
-a 5.7s gesture is inside this harness's run-to-run spread, so the honest claim is
-per-frame attribution, not a faster gesture.
+Two rows clear their floor:
 
-- **One shared `Blob` behind every token retires the whole `Blob` frame.** The
-  61ms was the constructor, not `createObjectURL`, which is unchanged at ~100ms
-  and is still the substantial cost — the split the 94ms figure above hides.
-- **Guarding the repeat stop cuts `postMessage` by 30%**, and ~1000 main-thread
-  tasks with it: a token was stopped two or three times over and every repeat
-  fanned out to the whole pool.
-- **Clipping autoscale to the visible window is worth ~15%** of its two passes,
-  which matches an isolated A/B of the function (1.15–1.4x, the larger figure at
-  feature counts a screen does not reach).
+- **One shared `Blob` behind every token retires the whole `Blob` frame** — 61ms
+  against a 4ms floor, and mechanically certain besides (one blob per session
+  instead of one per token). The 61ms was the constructor, not
+  `createObjectURL`, which is unchanged at ~100ms and is still the substantial
+  cost — the split the 94ms figure above hides.
+- **Guarding the repeat stop cuts `postMessage` by 30%**, 30ms against an 8ms
+  floor: a token was stopped two or three times over and every repeat fanned out
+  to the whole pool.
+
+The rest do not, and saying which is the point of the table:
+
+- **Task and worker-message counts are unusable here.** Main-thread tasks vary
+  by ~2570 between two builds of the SAME source, so the 1015 that looked like a
+  win is inside the floor by more than double. Do not quote a task count off
+  this harness at all until something stabilises it.
+- **The autoscale clip is not resolvable by this harness.** Its two frames sit
+  near the top-self cutoff, so one arm reports them and the other does not, and
+  the effect is the size of the truncation. The instrument that does resolve it
+  is an isolated A/B of the function itself — 1.15–1.4x, same answer verified
+  across a sweep of windows — and that is what the claim should rest on.
 - **The `LoadingOverlay` timer rewrite shows nothing either way.** Its
-  `setTimeout` + `clearTimeout` self time came out ~25ms worse across both
-  pairs, which reads like a regression until you count the timers: installs are
-  flat to slightly DOWN (911 → 885), so the extra time is not extra timers. Both
-  frames aggregate every timer in the app, and neither can isolate one hook —
-  the sampled cost is noise at this effect size and the count is the honest
-  read. Keep the rewrite for its pinned semantics, not for a win, and if the
-  per-pulse timer saving is worth proving, it needs a counter around the hook
-  itself rather than a whole-app profile.
+  `setTimeout` + `clearTimeout` self time came out ~25ms worse, which reads like
+  a regression until you notice the floor on that row is 27ms and that timer
+  INSTALLS are flat to slightly down. Both frames aggregate every timer in the
+  app and neither can isolate one hook. Keep the rewrite for its pinned
+  semantics, not for a win; proving the per-pulse saving needs a counter around
+  the hook, not a whole-app profile.
+
+**`main busy` did not move, and could not have.** Its own floor is 67ms, so a
+~100ms effect on a 5.7s gesture is at the edge of detection at two runs an arm.
+"unchanged" here means "not detectable by this design", not "zero" — and a
+design that could see it needs many more repetitions than a per-arm rebuild
+makes affordable.
+
+**Between-build drift is larger than an arm's internal spread suggests.**
+`deletions.ts`, which neither arm's change touches, came out 17ms lower in the
+branch arm across both pairs. Treat ~17ms as the practical floor for any single
+self-time frame here, not the 4-8ms the tighter rows imply.
 
 ## The stop-token probe, for whoever finds it in a trace next
 

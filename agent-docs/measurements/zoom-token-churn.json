@@ -4,88 +4,40 @@
   "source": {
     "kind": "bench",
     "repro": "node products/jbrowse-web/browser-tests/profile-zoom.ts",
-    "notes": "Headed system Chrome, production bundle served statically from products/jbrowse-web/build, the harness's default four-track session, 500 wheels over ~7s. Two builds per arm, alternating main / branch, rebuilt between every arm; each figure is the mean of that arm's two runs. Self time comes from the harness's top-self list, which is truncated at ~29ms \u2014 a frame absent from it is bounded by that, not zero. Timer counts come from the trace's TimerInstall events, not from the sampler."
+    "notes": "Headed system Chrome, production bundle served statically from products/jbrowse-web/build, the harness's default session and its 0.5-4 bpPerPx sweep, 500 wheels over ~7s. Two builds per arm, alternating main / branch, rebuilt between every arm. The two builds WITHIN an arm are the A/A control: identical source, so their spread is this harness's floor for that metric, and it is the `floor` column. Self time comes from the harness's top-self list, truncated at ~29ms, so a frame absent from it is bounded rather than zero.",
+    "from": ""
   },
   "columns": [
-    {
-      "key": "metric",
-      "label": "one ~7s scroll-zoom gesture"
-    },
-    {
-      "key": "main",
-      "label": "main",
-      "format": "ms",
-      "precision": 0,
-      "align": "right"
-    },
-    {
-      "key": "branch",
-      "label": "with the four fixes",
-      "format": "ms",
-      "precision": 0,
-      "align": "right"
-    }
+    { "key": "metric", "label": "one ~7s scroll-zoom gesture" },
+    { "key": "main", "label": "main", "format": "ms", "precision": 0, "align": "right" },
+    { "key": "branch", "label": "with the four fixes", "format": "ms", "precision": 0, "align": "right" },
+    { "key": "floor", "label": "A/A floor", "format": "ms", "precision": 0, "align": "right" }
   ],
   "rows": [
     {
-      "values": {
-        "metric": "`Blob` construction, self",
-        "main": 61,
-        "branch": "< 29ms"
-      },
-      "emphasize": [
-        "branch"
-      ]
+      "values": { "metric": "`Blob` construction, self", "main": 61, "branch": "< 29ms", "floor": 4 },
+      "emphasize": ["branch"]
     },
     {
-      "values": {
-        "metric": "`postMessage`, self",
-        "main": 101,
-        "branch": 71
-      },
-      "emphasize": [
-        "branch"
-      ]
+      "values": { "metric": "`postMessage`, self", "main": 101, "branch": 71, "floor": 8 },
+      "emphasize": ["branch"]
     },
     {
-      "values": {
-        "metric": "autoscale's two passes, self",
-        "main": 74,
-        "branch": 63
-      },
-      "emphasize": [
-        "branch"
-      ]
+      "values": { "metric": "autoscale's two passes, self", "main": 74, "branch": "≤ 63ms", "floor": 1 }
     },
     {
-      "values": {
-        "metric": "`setTimeout` + `clearTimeout`, self",
-        "main": 173,
-        "branch": 198
-      }
+      "values": { "metric": "`setTimeout` + `clearTimeout`, self", "main": 173, "branch": 198, "floor": 27 }
     },
     {
-      "values": {
-        "metric": "timers installed",
-        "main": 911,
-        "branch": 885
-      },
+      "values": { "metric": "timers installed", "main": 911, "branch": 885, "floor": 237 },
       "format": "int"
     },
     {
-      "values": {
-        "metric": "main-thread tasks",
-        "main": 11235,
-        "branch": 10220
-      },
+      "values": { "metric": "main-thread tasks", "main": 11235, "branch": 10220, "floor": 2570 },
       "format": "int"
     },
     {
-      "values": {
-        "metric": "main busy, total",
-        "main": 5679,
-        "branch": 5684
-      }
+      "values": { "metric": "main busy, total", "main": 5679, "branch": 5684, "floor": 67 }
     }
   ],
   "published": false
