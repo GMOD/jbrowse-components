@@ -132,6 +132,14 @@ const TreeSidebar = observer(function TreeSidebar({
     spatialIndex,
   } = model
 
+  // What's left to apply here, on top of whatever `top` already carries. A
+  // caller passing `top` (maf) has already put that amount on the ancestor the
+  // inline layer sits in, and on the portaled `GutterLayer` itself — so
+  // reusing `rowsTopOffset` again below double-counts it. A caller passing
+  // none (variants, wiggle, multi-row) needs the full amount supplied here,
+  // since nothing external is offsetting either layer.
+  const innerTop = rowsTopOffset - top
+
   // Cursor → tree node. All this owns is the coordinate change: the hit box is
   // positioned at the top of the rows, so client coords become box-relative
   // ones, and `+ scrollTop` puts them back into the un-scrolled space the tree
@@ -210,7 +218,7 @@ const TreeSidebar = observer(function TreeSidebar({
     return (
       <TrackOverlayPortal>
         <GutterLayer top={top}>
-          <StaleTreeHint model={model} top={rowsTopOffset} />
+          <StaleTreeHint model={model} top={innerTop} />
         </GutterLayer>
       </TrackOverlayPortal>
     )
@@ -233,12 +241,12 @@ const TreeSidebar = observer(function TreeSidebar({
           <div
             className={classes.panel}
             style={{
-              top: rowsTopOffset,
+              top: innerTop,
               width: treeAreaWidth,
               height: contentHeight,
             }}
           />
-          <ClusterProvenanceHint model={model} top={rowsTopOffset} />
+          <ClusterProvenanceHint model={model} top={innerTop} />
           {/* the ref callbacks are the model's own actions, which are stable per
               instance — wrapping them in useCallback([model]) bought nothing */}
           <canvas
@@ -248,7 +256,7 @@ const TreeSidebar = observer(function TreeSidebar({
               width: treeAreaWidth,
               height: contentHeight,
               position: 'absolute',
-              top: rowsTopOffset,
+              top: innerTop,
               left: 0,
               pointerEvents: 'none',
             }}
@@ -259,7 +267,7 @@ const TreeSidebar = observer(function TreeSidebar({
               width: viewWidth,
               height: contentHeight,
               position: 'absolute',
-              top: rowsTopOffset,
+              top: innerTop,
               left: 0,
               zIndex: 1,
               pointerEvents: 'none',
@@ -281,7 +289,7 @@ const TreeSidebar = observer(function TreeSidebar({
           onClick={handleClick}
           style={{
             position: 'absolute',
-            top: rowsTopOffset,
+            top: innerTop,
             left: 0,
             width: treeAreaWidth,
             height: contentHeight,
@@ -298,7 +306,7 @@ const TreeSidebar = observer(function TreeSidebar({
           className={classes.resizeHandle}
           style={{
             position: 'absolute',
-            top: rowsTopOffset,
+            top: innerTop,
             height: contentHeight,
             width: TREE_RESIZE_HANDLE_WIDTH,
             zIndex: 101,
