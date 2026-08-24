@@ -40,9 +40,8 @@
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
     "cli-progress": "^3.12.0",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
     "ixixx": "^3.0.13",
+    "serve-handler": "^6.1.7",
     "tmp": "^0.2.7"
   },
   "publishConfig": {

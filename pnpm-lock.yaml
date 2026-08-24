@@ -2024,15 +2024,12 @@ importers:
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
-      cors:
-        specifier: ^2.8.6
-        version: 2.8.6
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1(supports-color@8.1.1)
       ixixx:
         specifier: ^3.0.13
         version: 3.0.13
+      serve-handler:
+        specifier: ^6.1.7
+        version: 6.1.7
       tmp:
         specifier: ^0.2.7
         version: 0.2.7

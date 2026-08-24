@@ -1,18 +1,16 @@
+import http from 'node:http'
 import { parseArgs } from 'node:util'
-
-import cors from 'cors'
-import express, { json, static as serveStatic } from 'express'
 
 import { printHelp } from '../../utils.ts'
 import {
+  createRequestHandler,
   generateKey,
+  parseByteLimit,
   parsePort,
   setupConfigFile,
-  setupRoutes,
   startServer,
 } from './utils.ts'
 
-import type { Request, Response } from 'express'
 import type { Server } from 'node:http'
 
 export async function run(args?: string[]) {
@@ -79,11 +77,6 @@ export async function run(args?: string[]) {
 
   const { outFile, baseDir } = await setupConfigFile({ root })
   const port = parsePort({ portStr: flags.port })
-  const app = express()
-
-  app.use(serveStatic(baseDir))
-  app.use(cors())
-  app.use(json({ limit: bodySizeLimit }))
 
   // the key lives only in this process and in the startup URL printed below. It
   // used to also be written to os.tmpdir()/jbrowse-admin-<key>, which nothing
@@ -92,19 +85,15 @@ export async function run(args?: string[]) {
 
   const serverRef: { current: Server | null } = { current: null }
 
-  setupRoutes({ app, baseDir, outFile, key, serverRef })
+  const server = http.createServer(
+    createRequestHandler({
+      baseDir,
+      outFile,
+      key,
+      serverRef,
+      bodySizeLimit: parseByteLimit(bodySizeLimit),
+    }),
+  )
 
-  // error-handling middleware must be registered after the routes it guards so
-  // it can catch errors thrown from them (and from the json() body parser)
-  app.use((err: unknown, _req: Request, res: Response, next: () => void) => {
-    if (err) {
-      console.error('Server error:', err)
-      res.status(500).setHeader('Content-Type', 'text/plain')
-      res.send('Internal Server Error')
-    } else {
-      next()
-    }
-  })
-
-  startServer({ app, port, key, outFile, serverRef })
+  startServer({ server, port, key, outFile, serverRef })
 }
