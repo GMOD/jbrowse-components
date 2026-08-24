@@ -578,11 +578,28 @@ Two sub-points, both live:
   deliberately NOT queued: it would save ~430ms off-thread behind the 500ms fetch
   debounce (`ldFetchPhases`), inside a band that is already fast enough.
 
+**Genomic mode costs 5x this, and the check does not see it.**
+`buildGenomicCellBuffers` allocates `positions` and `cellSizes`, two more
+`Float32Array(numCells * 2)`, so `useGenomicPositions` is 20 bytes/cell against
+`ldValues`' 4. `planDispatch` weighs only `ldValues`, so the ceilings above are
+the uniform-mode ones; genomic mode reaches the same wall at a fifth of the SNPs.
+
 **Retire when** the triangle is computed banded — only pairs within a bounded
-distance of the diagonal, which is all any zoom draws. That makes the cost `n*k`
-instead of `n^2` and moves the ceiling from a matrix size to a fetch size. It is
-also what makes a comparison against a streaming LD tool (LDBlockShow and
-kin) meaningful, since none of them materialize the full triangle either.
+separation `k`, making the cost `n*k` instead of `n^2`, and so linear in the SNP
+count. This is a **semantic** change, not a free optimization: both display
+modes draw the WHOLE triangle today, so nothing is being computed and thrown
+away. `canvasHeight` is `squashToHeight ? ldCanvasHeight : canvasWidth / 2` and
+`computeTriangleYScalar` squashes the natural apex height into the display
+rather than clipping it, so no cell is off-canvas at any zoom. A band means
+declaring that pairs past `k` are not shown — which is what a distance window
+like plink's `--ld-window-kb` already means, and what makes large-scale LD
+figures parallelograms rather than triangles.
+
+The prize is the ceiling changing kind. At 50,000 SNPs a band of `k = 500`
+is ~2.5e7 cells (~100 MB), inside even the 128 MiB spec floor, against 1.25e9
+cells (5 GB) for the full triangle. It also simplifies the kernel: a banded
+`(i, d)` index is plain rectangular arithmetic where `decodeTriangular` is a
+sqrt plus two correction loops per thread.
 
 ---
 
