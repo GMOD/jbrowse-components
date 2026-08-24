@@ -686,8 +686,8 @@ importers:
   packages/tree-sidebar:
     dependencies:
       '@gmod/hclust':
-        specifier: 5.0.0
-        version: 5.0.0
+        specifier: 5.1.0
+        version: 5.1.0
       '@gmod/newick':
         specifier: ^1.0.2
         version: 1.0.2
@@ -4474,8 +4474,8 @@ packages:
   '@gmod/faidx@3.0.1':
     resolution: {integrity: sha512-VvAPjPbZ1wGKQKFnyfaZJnhSiowon6eLQlgRuukmZb4InwVv8yAEzlCTvRyCl2Nlqjw6VN7W+jyHEVgWAD0uNQ==}
 
-  '@gmod/hclust@5.0.0':
-    resolution: {integrity: sha512-HGRfbUZHULnfnlJV7BkfAWpKpKNeqLnb8puZWWNFmQgT6Y3AnJYHBL4cj9EUpiwQ/IB3v/6QR/pJ6Zmrre3mXw==}
+  '@gmod/hclust@5.1.0':
+    resolution: {integrity: sha512-AHXWpuri7b26SSJztg7niWJwWbpK5HnWbMPcs801ZZ6/iJmB4PQrbw4O5DiyfpgFl7GbXedqX1nUvIk90pZynQ==}
 
   '@gmod/hic@1.2.1':
     resolution: {integrity: sha512-xow548gNyPrRSfukFkQo8Q2/ihAT76rTttDPd3OVVCqpc++EBEr2VzghXFfqCKAI967CnCd+eeuH9YWapVFVvg==}
@@ -12298,7 +12298,7 @@ snapshots:
 
   '@gmod/faidx@3.0.1': {}
 
-  '@gmod/hclust@5.0.0':
+  '@gmod/hclust@5.1.0':
     dependencies:
       '@gmod/newick': 1.0.2
 

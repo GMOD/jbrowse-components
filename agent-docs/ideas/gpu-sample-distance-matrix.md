@@ -1,6 +1,6 @@
 ---
 name: gpu-sample-distance-matrix
-description: "Cluster by genotype" on a population panel is almost entirely hclust's sample-by-sample distance build, because the window hands over one column per site and the merge loop is noise beside it. A deliberately naive WebGPU kernel does that build 12 to 19x faster than hclust 5.0.0 and 6 to 12x faster than its current kernel on real 1000 Genomes windows, and the same matrix would feed PC1 ordering and compare-to-selected shading for free. What the numbers are, what integrating it takes, the criterion that says which in-browser compute is worth doing at all, and the other candidates that pass it.
+description: "Cluster by genotype" on a population panel is almost entirely hclust's sample-by-sample distance build, because the window hands over one column per site and the merge loop is noise beside it. A deliberately naive WebGPU kernel does that build 12 to 19x faster than hclust 5.0.0 and 6 to 12x faster than 5.1.0 on real 1000 Genomes windows, and the same matrix would feed PC1 ordering and compare-to-selected shading for free. What the numbers are, what integrating it takes, the criterion that says which in-browser compute is worth doing at all, and the other candidates that pass it.
 ---
 
 # A GPU sample distance matrix for clustering
@@ -51,19 +51,19 @@ upload and readback:
 
 <!-- BEGIN GENERATED MEASUREMENT cluster-distance-gpu -->
 
-| window                     |     N |      V | hclust 5.0.0 | hclust, new kernel | WebGPU | GPU vs 5.0.0 | GPU vs new kernel |
-| -------------------------- | ----: | -----: | -----------: | -----------------: | -----: | -----------: | ----------------: |
-| 100 kb, MAF 0, samples     | 2,504 |  3,106 |         5.0s |               2.7s |  0.42s |          12x |                6x |
-| 1 Mb, MAF 0.05, samples    | 2,504 |  2,357 |         4.5s |               2.1s |  0.31s |          15x |                7x |
-| 1 Mb, MAF 0.05, haplotypes | 5,008 |  2,311 |        16.8s |               9.3s |   1.1s |          15x |                8x |
-| 1 Mb, MAF 0, samples       | 2,504 | 22,514 |        38.3s |              23.0s |   2.3s |          17x |               10x |
-| 1 Mb, MAF 0, haplotypes    | 5,008 | 22,383 |       156.9s |              98.0s |   8.2s |          19x |               12x |
+| window                     |     N |      V | hclust 5.0.0 | hclust 5.1.0 | WebGPU | GPU vs 5.0.0 | GPU vs 5.1.0 |
+| -------------------------- | ----: | -----: | -----------: | -----------: | -----: | -----------: | -----------: |
+| 100 kb, MAF 0, samples     | 2,504 |  3,106 |         5.0s |         2.7s |  0.42s |          12x |           6x |
+| 1 Mb, MAF 0.05, samples    | 2,504 |  2,357 |         4.5s |         2.1s |  0.31s |          15x |           7x |
+| 1 Mb, MAF 0.05, haplotypes | 5,008 |  2,311 |        16.8s |         9.3s |   1.1s |          15x |           8x |
+| 1 Mb, MAF 0, samples       | 2,504 | 22,514 |        38.3s |        23.0s |   2.3s |          17x |          10x |
+| 1 Mb, MAF 0, haplotypes    | 5,008 | 22,383 |       156.9s |        98.0s |   8.2s |          19x |          12x |
 
 <!-- END GENERATED MEASUREMENT cluster-distance-gpu -->
 
 The GPU's margin grows with N x V. The 5.0.0 column's first call was 12.6 s on
-the first row (see `reference/CLUSTERING_WORKFLOW.md` for why); the new kernel's
-first call is within 5% of warm.
+the first row (see `reference/CLUSTERING_WORKFLOW.md` for why); 5.1.0's first
+call is within 5% of warm.
 
 The GPU column is a floor: one thread per pair looping over V from global
 memory, no shared-memory tiling, chunked at 64 MB per upload. A tiled kernel is
@@ -71,7 +71,7 @@ typically another 3 to 5x on this shape, and a packed 2-bit popcount variant,
 which is the shape the LD kernels already have, would be beyond that. The
 result matched an f64 reference exactly on the 1000 Genomes matrices (integer
 dosages) and to 1.2e-9 relative on dog10k, which has imputed fractional values.
-The hclust wasm got its 2.5x from the same measurement: its kernel promoted
+hclust 5.1.0 got its 2.5x from the same measurement: the 5.0.0 kernel promoted
 every element to double before the subtract, and now differences and squares
 are f32x4 with the promotion to f64x2 every 16 elements, bit-identical merges
 and heights on every real matrix checked. The distance build in that repo is

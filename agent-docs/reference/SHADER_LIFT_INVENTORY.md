@@ -106,7 +106,6 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
-| `bandedCellCount` | nothing |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |

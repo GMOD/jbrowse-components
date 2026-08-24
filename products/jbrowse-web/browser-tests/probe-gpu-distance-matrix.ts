@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 /* eslint-disable no-console */
 /// <reference types="@webgpu/types" />
 // The sample-by-sample Euclidean distance matrix that "Cluster by genotype"
@@ -18,9 +19,13 @@
 // generated here, so the size arguments are the only thing that matters:
 //
 //     node browser-tests/probe-gpu-distance-matrix.ts [N] [V]
+//     node browser-tests/probe-gpu-distance-matrix.ts --matrix=<file.bin> [--skip-cpu]
 //
 // N=2504 is 1000 Genomes in sample mode, 5008 in phased mode; V=3000 is a
-// 100 kb window at the default MAF filter, 22000 a 1 Mb one.
+// 100 kb window at the default MAF filter, 22000 a 1 Mb one. --matrix reads a
+// real one instead: the layout `pnpm bench:real --dump=<dir>` writes in the
+// hclust repo (uint32 rows, uint32 columns, float32 row-major), so both sides
+// of the comparison see the identical input.
 import http from 'node:http'
 
 import {
@@ -31,8 +36,24 @@ import puppeteer from 'puppeteer'
 
 import { clusterMatrix } from '../../../packages/tree-sidebar/src/clusterMatrix.ts'
 
-const N = Number(process.argv[2] ?? 2504)
-const V = Number(process.argv[3] ?? 3000)
+const matrixArg = process.argv.find(a => a.startsWith('--matrix='))
+const matrixFile = matrixArg?.slice('--matrix='.length)
+const skipCpu = process.argv.includes('--skip-cpu')
+const positional = process.argv.slice(2).filter(a => !a.startsWith('--'))
+const N = Number(positional[0] ?? 2504)
+const V = Number(positional[1] ?? 3000)
+
+function readMatrix(file: string) {
+  const buf = readFileSync(file)
+  const [rows, cols] = new Uint32Array(buf.buffer, buf.byteOffset, 2)
+  const data = new Float32Array(
+    buf.buffer.slice(
+      buf.byteOffset + 8,
+      buf.byteOffset + 8 + rows! * cols! * 4,
+    ),
+  )
+  return { n: rows!, v: cols!, data }
+}
 const MAC_CHROME =
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 
@@ -98,6 +119,7 @@ async function gpuDistances(
   n: number,
   v: number,
   kernel: string,
+  served: boolean,
 ): Promise<GpuResult> {
   const adapter = await navigator.gpu.requestAdapter()
   if (!adapter) {
@@ -116,7 +138,9 @@ async function gpuDistances(
       entryPoint: 'main',
     },
   })
-  const data = window.genotypes(n, v, 7)
+  const data = served
+    ? new Float32Array(await (await fetch('/matrix')).arrayBuffer(), 8, n * v)
+    : window.genotypes(n, v, 7)
   const chunk = Math.max(1, Math.floor((64 << 20) / 4 / n))
   const t0 = performance.now()
   const distBuf = device.createBuffer({
@@ -205,8 +229,7 @@ async function gpuDistances(
   }
 }
 
-async function cpuCluster(n: number, v: number) {
-  const all = genotypes(n, v, 7)
+async function cpuCluster(n: number, v: number, all: Float32Array) {
   const data = new Map(
     Array.from({ length: n }, (_, i) => [
       `sample${i}`,
@@ -222,9 +245,17 @@ async function cpuCluster(n: number, v: number) {
 }
 
 async function main() {
-  const server = http.createServer((_req, res) => {
-    res.setHeader('content-type', 'text/html')
-    res.end('<html><body></body></html>')
+  const matrix = matrixFile ? readMatrix(matrixFile) : undefined
+  const n = matrix?.n ?? N
+  const v = matrix?.v ?? V
+  const server = http.createServer((req, res) => {
+    if (req.url === '/matrix' && matrixFile) {
+      res.setHeader('content-type', 'application/octet-stream')
+      res.end(readFileSync(matrixFile))
+    } else {
+      res.setHeader('content-type', 'text/html')
+      res.end('<html><body></body></html>')
+    }
   })
   await new Promise<void>(resolve => {
     server.listen(0, () => {
@@ -245,8 +276,10 @@ async function main() {
     await page.addScriptTag({
       content: `window.genotypes = ${genotypes.toString()}`,
     })
-    const gpu = await page.evaluate(gpuDistances, N, V, KERNEL)
-    console.log(`N=${N} V=${V} (${(((N * N) / 2) * V) / 1e9} G pair-elements)`)
+    const gpu = await page.evaluate(gpuDistances, n, v, KERNEL, !!matrixFile)
+    console.log(
+      `${matrixFile ?? 'synthetic'}: N=${n} V=${v} (${(((n * n) / 2) * v) / 1e9} G pair-elements)`,
+    )
     console.log(
       `gpu ${gpu.adapter}: compute+upload ${gpu.computeMs.toFixed(0)} ms, with readback ${gpu.readbackMs.toFixed(0)} ms, max rel err ${gpu.maxRelErr.toExponential(1)} over ${gpu.checkedPairs} pairs`,
     )
@@ -254,10 +287,12 @@ async function main() {
     await browser.close()
     server.close()
   }
-  const cpu = await cpuCluster(N, V)
-  console.log(
-    `clusterMatrix (hclust wasm): first call ${cpu.first.toFixed(0)} ms, warm ${cpu.warm.toFixed(0)} ms (distance build, merge loop and newick)`,
-  )
+  if (!skipCpu) {
+    const cpu = await cpuCluster(n, v, matrix?.data ?? genotypes(n, v, 7))
+    console.log(
+      `clusterMatrix (hclust wasm): first call ${cpu.first.toFixed(0)} ms, warm ${cpu.warm.toFixed(0)} ms (distance build, merge loop and newick)`,
+    )
+  }
 }
 
 main().catch((e: unknown) => {

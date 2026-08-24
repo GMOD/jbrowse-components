@@ -181,19 +181,18 @@ there the Euclidean distance build is the run: on chr22:20-21 Mb (2504 samples,
 and `ideas/gpu-sample-distance-matrix.md` carries the table and the case for
 doing the build on a compute shader.
 
-Two things about hclust 5.0.0, which is what this tree pins, follow from that
+Two things changed in hclust 5.1.0, which this tree pins, because of that
 measurement:
 
-- **The first clustering in a fresh worker runs the distance build at about
-  half speed.** V8 promotes a wasm function out of its baseline tier on call
-  count, without on-stack replacement, and 5.0.0 does the whole build in one
-  call, so that call stays baseline to the end. A best-of-N benchmark in one
-  process never sees it, which is why it went unreported. Fixed in hclust
-  after 5.0.0 by moving the per-row work into its own function; the bump is
-  what brings it here.
-- **The kernel after 5.0.0 is 2.5x faster at these widths** (f32x4
-  differences and squares, promoted to f64x2 every 16 elements), with merges
-  and heights bit-identical on every real matrix checked. Same bump.
+- **The first clustering in a fresh worker no longer runs at half speed.** V8
+  promotes a wasm function out of its baseline tier on call count, without
+  on-stack replacement, and 5.0.0 did the whole build in one call, so that call
+  stayed baseline to the end. A best-of-N benchmark in one process never sees
+  it, which is why it went unreported. 5.1.0 does the per-row work in its own
+  function, and the first call is within 5% of a warm one.
+- **The kernel is 2.5x faster at these widths** (f32x4 differences and
+  squares, promoted to f64x2 every 16 elements), with merges and heights
+  bit-identical to 5.0.0 on every real matrix checked.
 
 `products/jbrowse-web/browser-tests/probe-gpu-distance-matrix.ts` runs the
 wasm and a WebGPU kernel on one synthetic dosage matrix for an A/B at a given

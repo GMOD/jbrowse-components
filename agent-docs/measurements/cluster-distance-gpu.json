@@ -4,18 +4,18 @@
   "published": false,
   "source": {
     "kind": "hand",
-    "repro": "CPU columns: `pnpm bench:real` in ~/src/gmod/hclust (the 5.0.0 column from the same matrices through the 5.0.0 wasm, warm call). GPU column: `node browser-tests/probe-gpu-distance-matrix.ts N V` in products/jbrowse-web, headed system Chrome, upload and readback included. Idle machine: a run taken under a shared CPU came out 2 to 3x slower across the board and was discarded.",
-    "notes": "1000 Genomes phase 3 chr22:20-21 Mb, 2504 samples, 22,383 phased sites, matrices built the way plugins/variants builds them (one column per ALT allele, 2/called dosage, site-mean imputation, one 0/1 row per haplotype in phased mode). 2019 MacBook Pro, i9-9980HK single threaded for the wasm, Radeon Pro 5300M for the kernel. The kernel is one thread per pair looping over V from global memory with no tiling, so the GPU column is a floor. Its result matched an f64 reference exactly on these integer-dosage matrices."
+    "repro": "CPU columns: `pnpm bench:real` in ~/src/gmod/hclust (the 5.0.0 column is the same matrices through the v5.0.0 wasm, warm call). GPU column: `node browser-tests/probe-gpu-distance-matrix.ts N V` in products/jbrowse-web, headed system Chrome, upload and readback included. Idle machine: a run taken under a shared CPU came out 2 to 3x slower across the board and was discarded.",
+    "notes": "1000 Genomes phase 3 chr22:20-21 Mb, 2504 samples, 22,383 phased sites, matrices built the way plugins/variants builds them (one column per ALT allele, 2/called dosage, site-mean imputation, one 0/1 row per haplotype in phased mode). 2019 MacBook Pro, i9-9980HK single threaded for the wasm, Radeon Pro 5300M for the kernel. The kernel is one thread per pair looping over V from global memory with no tiling, so the GPU column is a floor. Its result matched an f64 reference exactly on these integer-dosage matrices. A second GPU pass on the matrices `pnpm bench:real --dump` wrote (byte-identical input to the wasm) reproduced every cell within 8% under a load average of 8; the wasm arms of that same sitting ran 2 to 3.5x slow and were discarded, so the CPU columns remain the idle-machine runs."
   },
   "columns": [
     { "key": "window", "label": "window" },
     { "key": "n", "label": "N", "format": "int", "align": "right" },
     { "key": "v", "label": "V", "format": "int", "align": "right" },
     { "key": "hclust500", "label": "hclust 5.0.0", "format": "s", "align": "right" },
-    { "key": "hclustNew", "label": "hclust, new kernel", "format": "s", "align": "right" },
+    { "key": "hclustNew", "label": "hclust 5.1.0", "format": "s", "align": "right" },
     { "key": "gpu", "label": "WebGPU", "format": "s", "align": "right" },
     { "key": "speedupOld", "label": "GPU vs 5.0.0", "format": "x", "precision": 0, "align": "right", "derived": "hclust500 / gpu" },
-    { "key": "speedupNew", "label": "GPU vs new kernel", "format": "x", "precision": 0, "align": "right", "derived": "hclustNew / gpu" }
+    { "key": "speedupNew", "label": "GPU vs 5.1.0", "format": "x", "precision": 0, "align": "right", "derived": "hclustNew / gpu" }
   ],
   "rows": [
     { "values": { "window": "100 kb, MAF 0, samples", "n": 2504, "v": 3106, "hclust500": 5.0, "hclustNew": 2.7, "gpu": 0.42 } },

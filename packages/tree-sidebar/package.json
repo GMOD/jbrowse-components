@@ -32,7 +32,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "@gmod/hclust": "5.0.0",
+    "@gmod/hclust": "5.1.0",
     "@gmod/newick": "^1.0.2",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
