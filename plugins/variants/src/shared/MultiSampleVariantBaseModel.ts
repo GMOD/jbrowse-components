@@ -13,6 +13,7 @@ import {
   openFeatureWidget,
   SimpleFeature,
 } from '@jbrowse/core/util'
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -35,7 +36,6 @@ import {
   filterRowsBySubtree,
   rowLabelsCarryText,
 } from '@jbrowse/tree-sidebar'
-import deepEqual from 'fast-deep-equal'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
 import {

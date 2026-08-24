@@ -161,6 +161,7 @@
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/copyText": "./src/util/copyText.ts",
     "./util/createStopTokenRotation": "./src/util/createStopTokenRotation.ts",
+    "./util/deepEqual": "./src/util/deepEqual.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/eventPoint": "./src/util/eventPoint.ts",
     "./util/fetchContext": "./src/util/fetchContext.ts",
@@ -845,6 +846,10 @@
       "./util/createStopTokenRotation": {
         "types": "./esm/util/createStopTokenRotation.d.ts",
         "import": "./esm/util/createStopTokenRotation.js"
+      },
+      "./util/deepEqual": {
+        "types": "./esm/util/deepEqual.d.ts",
+        "import": "./esm/util/deepEqual.js"
       },
       "./util/diagonalizeRegions": {
         "types": "./esm/util/diagonalizeRegions.d.ts",
@@ -1547,6 +1552,9 @@
         ],
         "util/createStopTokenRotation": [
           "esm/util/createStopTokenRotation.d.ts"
+        ],
+        "util/deepEqual": [
+          "esm/util/deepEqual.d.ts"
         ],
         "util/diagonalizeRegions": [
           "esm/util/diagonalizeRegions.d.ts"

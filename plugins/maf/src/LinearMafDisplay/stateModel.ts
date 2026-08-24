@@ -15,6 +15,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
@@ -34,7 +35,6 @@ import {
   setupTreeDrawingAutorun,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
-import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
 
 import {

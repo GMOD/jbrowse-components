@@ -27,10 +27,10 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
-import { singular } from 'pluralize'
 
 import SlotEditor from './SlotEditor.tsx'
 import TypeSelector from './TypeSelector.tsx'
+import { singularSlotName } from './singularSlotName.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
@@ -155,8 +155,8 @@ const Member = observer(function Member(props: {
     if (Array.isArray(slot)) {
       return slot.map((subslot: AnyConfigurationModel, slotIndex: number) => {
         const key = subslot.type
-          ? `${singular(slotName)} ${subslot.type}`
-          : `${singular(slotName)} ${slotIndex + 1}`
+          ? `${singularSlotName(slotName)} ${subslot.type}`
+          : `${singularSlotName(slotName)} ${slotIndex + 1}`
         return <Member key={key} {...props} slot={subslot} slotName={key} />
       })
     }
