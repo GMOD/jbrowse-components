@@ -125,6 +125,26 @@ export function WiggleCommonMixin() {
       },
       /**
        * #getter
+       * Raw `symlogConstant` slot; `0` means "derive from the domain". Resolve
+       * it with `resolveSymlogConstant` once the domain is known.
+       *
+       * Here rather than on `WiggleScoreConfigMixin` because the slot is in
+       * `wiggleConfigSchemaFields`, which is this mixin's host table. It sat
+       * one level up, whose OTHER composer is `LinearManhattanDisplay` --
+       * linear-only by construction, so its schema declares no
+       * `symlogConstant` and the getter answered `undefined` while typed
+       * `number`. Inert, because nothing on that path reads it, and invisible:
+       * `getConf` on an undeclared slot returns `undefined` and reports
+       * nothing at any layer. That is the same reasoning the getter already
+       * carried for moving off `ScoreScaleMixin` (the alignments coverage band
+       * composes that against a schema that never declares it) -- it just
+       * stopped one mixin too high.
+       */
+      get symlogConstant(): number {
+        return getConf(confNode(self), 'symlogConstant')
+      },
+      /**
+       * #getter
        */
       get posColor(): string {
         return getConf(confNode(self), 'posColor')

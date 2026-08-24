@@ -63,19 +63,6 @@ export function WiggleScoreConfigMixin() {
     .views(self => ({
       /**
        * #getter
-       * Raw `symlogConstant` slot; `0` means "derive from the domain". Lives
-       * here rather than on `ScoreScaleMixin` because the slot does: only the
-       * wiggle shaders implement symlog, and the alignments coverage band
-       * composes that mixin against a config schema that never declares it.
-       * Resolve it with `resolveSymlogConstant` once the domain is known.
-       */
-      get symlogConstant(): number {
-        return getConf(confNode(self), 'symlogConstant')
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        */
       get scatterPointSize(): number {
         return resolveConf(confNode(self), 'scatterPointSize')
