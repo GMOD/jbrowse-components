@@ -33,7 +33,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^6.5.0",
+    "@jbrowse/mobx-state-tree": "^6.5.1",
     "@jbrowse/render-core": "workspace:^",
     "@mui/icons-material": "^9.3.1",
     "@mui/material": "^9.3.1",
