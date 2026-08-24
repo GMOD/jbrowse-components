@@ -114,6 +114,39 @@ of the span, so the scale is a round number and a small pan stops re-fitting
 every lane; and straight chords by default (`drawCurves`, matching
 `LinearSyntenyView`), whose slant is the offset between two frames.
 
+A second pass on 2026-08-24 took on the ribbon zigzag. Three things caused it.
+`groupSpanOnRow` filtered placements on refName only, so the repeat hit
+`computeRowFrame`'s median filter had just thrown out of the FRAME came back as
+a drawn span — `rowFrameX` extrapolates, the rect was clipped by the svg and
+looked fine, and the ribbon kept the endpoint and swept the page. A lane's
+horizontal position was an accident of where its leftmost placement fell.
+And orientation was decided against the anchor rather than against the lane
+the ribbons are actually drawn to.
+
+`alignRowFrames` walks the lanes top down and fixes the second and third.
+Splitting a lane's bp→px map into a scale and an offset lets the two be chosen
+for different reasons: the scale off the ladder for honesty, the offset for
+legibility. Minimizing `sum |x_upper(g) - x_lane(g)|` at fixed scale is L1, and
+since a ribbon only joins ADJACENT lanes the objective is a chain — it
+decomposes into one choice per lane and each choice is the weighted median of
+the displacement to the lane above, clamped to the slack the rung left over the
+fitted extent and quantized to 8px so a median that moves as a pan swaps a
+group cannot slide the lane. What it cannot fix is two lanes on different rungs:
+their spacing genuinely differs by the rung ratio, so the medians align and the
+ends fan, and that fan IS the scale difference.
+
+Still open on the zigzag: collapsing collinear runs into block ribbons
+(DAGchainer's chaining, per lane pair — walk the shared groups in the upper
+lane's order and extend a run while the lower lane's rank advances by one in the
+same direction). Most of the remaining ribbons are individually thin and
+collectively collinear, and one band per run would cut both the clutter and the
+svg node count. It is parked because it changes what a ribbon IS: hover reads
+one ortholog group today, and a run either becomes the hover unit or has to
+carry its members. Lane ordering could also use it — seed with the densest lane,
+then append whichever unused lane shares the most collinear runs with the last
+one placed, which shortens the travel without giving up the density-first
+property that keeps chains running.
+
 Still open: a **Match anchor scale** mode (one line in `computeRowFrame` — every
 lane's span is the anchor's, and content that does not fit runs off the lane
 edge, which is itself the information) and the height story. The display's

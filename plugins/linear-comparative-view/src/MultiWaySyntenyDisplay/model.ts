@@ -24,7 +24,7 @@ import {
   widestRegion,
 } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import {
-  computeRowFrame,
+  alignRowFrames,
   groupFeatures,
   rowAssembliesOf,
   tickIntervalFor,
@@ -324,6 +324,27 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the anchor lane as a `RowFrame`, so the lane-alignment pass can treat
+       * it as the first link in the chain rather than as a special case. It
+       * never slides, hence the zero slack
+       */
+      get anchorRowFrame(): RowFrame | undefined {
+        const frame = self.anchorFrame
+        return frame
+          ? {
+              refName: frame.refName,
+              min: frame.start,
+              max: frame.end,
+              flipped: false,
+              fitMin: frame.start,
+              fitMax: frame.end,
+            }
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * the one bp interval every lane draws its ticks at, so tick spacing is
        * readable as bp-per-pixel across lanes drawn in different frames
        */
@@ -336,16 +357,13 @@ export function stateModelFactory(
        * #getter
        * each mate lane's local coordinate frame
        */
-      get rowFrames() {
-        return new Map<string, RowFrame | undefined>(
-          self.rowAssemblies.map(assemblyName => [
-            assemblyName,
-            computeRowFrame(
-              self.visibleGroups,
-              assemblyName,
-              self.visibleBpSpan,
-            ),
-          ]),
+      get rowFrames(): Map<string, RowFrame | undefined> {
+        return alignRowFrames(
+          self.visibleGroups,
+          self.rowAssemblies,
+          self.anchorRowFrame,
+          self.visibleBpSpan,
+          self.canvasWidth,
         )
       },
       /**

@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
+  alignRowFrames,
   computeRowFrame,
   frameTickXs,
   geneGlyphShape,
@@ -222,12 +223,26 @@ test('the shared tick interval is a 1/2/5 step landing a few ticks per span', ()
 // statement the headers otherwise make a reader compute.
 test('tick spacing across lanes reports the ratio of their scales', () => {
   const tight = frameTickXs(
-    { refName: 'a', min: 0, max: 100000, flipped: false },
+    {
+      refName: 'a',
+      min: 0,
+      max: 100000,
+      flipped: false,
+      fitMin: 0,
+      fitMax: 100000,
+    },
     20000,
     800,
   )
   const wide = frameTickXs(
-    { refName: 'a', min: 0, max: 200000, flipped: false },
+    {
+      refName: 'a',
+      min: 0,
+      max: 200000,
+      flipped: false,
+      fitMin: 0,
+      fitMax: 200000,
+    },
     20000,
     800,
   )
@@ -237,7 +252,14 @@ test('tick spacing across lanes reports the ratio of their scales', () => {
 test('a lane far enough out that its ticks would hatch draws none', () => {
   expect(
     frameTickXs(
-      { refName: 'a', min: 0, max: 100000000, flipped: false },
+      {
+        refName: 'a',
+        min: 0,
+        max: 100000000,
+        flipped: false,
+        fitMin: 0,
+        fitMax: 100000000,
+      },
       20000,
       800,
     ),
@@ -507,4 +529,177 @@ test('a far-flung repeat placement does not stretch the frame', () => {
   ])
   const frame = computeRowFrame(groups, 'peach', 1000)!
   expect(frame.max).toBeLessThan(10000)
+})
+
+// A repeat hit megabases away is thrown out of the FRAME by computeRowFrame's
+// median filter, and used to come straight back as a drawn span: rowFrameX
+// extrapolates, so the group's px span ran tens of thousands of pixels wide and
+// the ribbon on it swept the page.
+test('a placement outside the frame does not reach the drawn span', () => {
+  const groups = groupFeatures([
+    pairFeature({
+      uniqueId: '1',
+      name: 'g1',
+      start: 100,
+      end: 200,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1000,
+        end: 1100,
+        name: 'p1',
+      },
+    }),
+    pairFeature({
+      uniqueId: '2',
+      name: 'g1',
+      start: 100,
+      end: 200,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 900000,
+        end: 900100,
+        name: 'repeat-hit',
+      },
+    }),
+    pairFeature({
+      uniqueId: '3',
+      name: 'g2',
+      start: 300,
+      end: 400,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1200,
+        end: 1300,
+        name: 'p2',
+      },
+    }),
+  ])
+  const frame = computeRowFrame(groups, 'peach', 1000)!
+  const span = groupSpanOnRow(groups[0]!, 'peach', frame, 800)!
+  expect(span[1] - span[0]).toBeLessThan(800)
+})
+
+// The lane's scale comes off the ladder and its offset comes off the ribbons:
+// with both lanes at the same rung and the same gene spacing, the offset pass
+// should put every ortholog at the same x as the anchor, and the ribbons
+// between them go vertical.
+test('a lane slides to line its orthologs up with the lane above', () => {
+  const anchorFrame = {
+    refName: 'chr1',
+    min: 0,
+    max: 1000,
+    flipped: false,
+    fitMin: 0,
+    fitMax: 1000,
+  }
+  const groups = groupFeatures(
+    [100, 300, 500, 700].map((start, i) =>
+      pairFeature({
+        uniqueId: `${i}`,
+        name: `g${i}`,
+        start,
+        end: start + 60,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: start + 500000,
+          end: start + 500060,
+          name: `p${i}`,
+        },
+      }),
+    ),
+  )
+  const frames = alignRowFrames(groups, ['peach'], anchorFrame, 1000, 800)
+  const frame = frames.get('peach')!
+  const offsets = groups.map(group => {
+    const anchorX = rowFrameX(anchorFrame, group.anchor.start + 30, 800)
+    const laneX = rowFrameX(
+      frame,
+      group.mates.get('peach')![0]!.start + 30,
+      800,
+    )
+    return Math.abs(anchorX - laneX)
+  })
+  expect(Math.max(...offsets)).toBeLessThanOrEqual(8)
+})
+
+test('the aligned frame still covers the placements it was fitted to', () => {
+  const anchorFrame = {
+    refName: 'chr1',
+    min: 0,
+    max: 1000,
+    flipped: false,
+    fitMin: 0,
+    fitMax: 1000,
+  }
+  const groups = groupFeatures([
+    pairFeature({
+      uniqueId: '1',
+      name: 'g1',
+      start: 900,
+      end: 960,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 500000,
+        end: 500060,
+        name: 'p1',
+      },
+    }),
+    pairFeature({
+      uniqueId: '2',
+      name: 'g2',
+      start: 940,
+      end: 1000,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 500700,
+        end: 500760,
+        name: 'p2',
+      },
+    }),
+  ])
+  const frame = alignRowFrames(groups, ['peach'], anchorFrame, 1000, 800).get(
+    'peach',
+  )!
+  expect(frame.min).toBeLessThanOrEqual(500000)
+  expect(frame.max).toBeGreaterThanOrEqual(500760)
+})
+
+// A mate lane whose gene order runs backwards against the lane above is
+// mirrored, which is the worst zigzag available: every ribbon crosses.
+test('a lane running against the lane above comes out flipped', () => {
+  const anchorFrame = {
+    refName: 'chr1',
+    min: 0,
+    max: 1000,
+    flipped: false,
+    fitMin: 0,
+    fitMax: 1000,
+  }
+  const groups = groupFeatures(
+    [100, 300, 500, 700].map((start, i) =>
+      pairFeature({
+        uniqueId: `${i}`,
+        name: `g${i}`,
+        start,
+        end: start + 60,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 500000 - start,
+          end: 500060 - start,
+          name: `p${i}`,
+        },
+      }),
+    ),
+  )
+  expect(
+    alignRowFrames(groups, ['peach'], anchorFrame, 1000, 800).get('peach')!
+      .flipped,
+  ).toBe(true)
 })

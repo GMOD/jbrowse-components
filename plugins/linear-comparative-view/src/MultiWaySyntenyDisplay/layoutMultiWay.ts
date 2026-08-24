@@ -1,3 +1,5 @@
+import { clamp, doesIntersect2 } from '@jbrowse/core/util'
+
 import type { Feature } from '@jbrowse/core/util'
 
 export interface MultiWayPlacement {
@@ -21,6 +23,11 @@ export interface RowFrame {
   min: number
   max: number
   flipped: boolean
+  // The extent of the placements the frame was fitted to, before the ladder
+  // rounded the span up. The frame may slide anywhere that still covers this,
+  // and that difference is the whole freedom `alignRowFrames` works in.
+  fitMin: number
+  fitMax: number
 }
 
 interface MatePlacement extends MultiWayPlacement {
@@ -281,6 +288,8 @@ export function computeRowFrame(
     min: snapped.min,
     max: snapped.max,
     flipped: orientation < 0,
+    fitMin: lo,
+    fitMax: hi,
   }
 }
 
@@ -379,18 +388,27 @@ export function geneGlyphShape(feature: Feature): GeneGlyphShape {
     : { full: mergedExons, thin: [] }
 }
 
-// The group's merged [x1, x2] px span on one row, or undefined when the group
-// has nothing on that row's dominant refName — which is what makes a ribbon
-// skip a row rather than draw to nowhere
-export function groupSpanOnRow(
+// The group's placements on one row, in bp, restricted to the ones the frame
+// actually shows.
+//
+// The frame filter is the load-bearing part. `computeRowFrame` throws out the
+// repeat hit that lands megabases away so it cannot stretch the lane — and
+// without the same filter here that placement came straight back as a drawn
+// span. `rowFrameX` extrapolates, so a mate 900 kb outside an 88 kb frame maps
+// to tens of thousands of pixels: the rect is clipped by the svg and looks
+// fine, while the RIBBON keeps that endpoint and sweeps across the whole page.
+function groupExtentOnRow(
   group: MultiWayGroup,
   assemblyName: string,
   frame: RowFrame,
-  width: number,
 ) {
   const placements = group.mates
     .get(assemblyName)
-    ?.filter(p => p.refName === frame.refName)
+    ?.filter(
+      p =>
+        p.refName === frame.refName &&
+        doesIntersect2(frame.min, frame.max, p.start, p.end),
+    )
   if (!placements?.length) {
     return undefined
   }
@@ -400,7 +418,193 @@ export function groupSpanOnRow(
     min = Math.min(min, p.start)
     max = Math.max(max, p.end)
   }
-  const a = rowFrameX(frame, min, width)
-  const b = rowFrameX(frame, max, width)
+  return { min, max }
+}
+
+// The group's merged [x1, x2] px span on one row, or undefined when the row's
+// frame shows nothing of it — which is what makes a ribbon skip a row rather
+// than draw to nowhere
+export function groupSpanOnRow(
+  group: MultiWayGroup,
+  assemblyName: string,
+  frame: RowFrame,
+  width: number,
+) {
+  const extent = groupExtentOnRow(group, assemblyName, frame)
+  if (extent === undefined) {
+    return undefined
+  }
+  const a = rowFrameX(frame, extent.min, width)
+  const b = rowFrameX(frame, extent.max, width)
   return a < b ? ([a, b] as const) : ([b, a] as const)
+}
+
+interface LanePlacement {
+  key: string
+  center: number
+  weight: number
+}
+
+// What one lane offers the lane below it to line up against: a bp center and a
+// length per group the frame shows. The anchor lane's placements come off the
+// groups' own anchor coordinates rather than a mate list.
+function lanePlacements(
+  groups: MultiWayGroup[],
+  assemblyName: string | undefined,
+  frame: RowFrame,
+): LanePlacement[] {
+  const out: LanePlacement[] = []
+  for (const group of groups) {
+    const extent =
+      assemblyName === undefined
+        ? group.anchor.refName === frame.refName &&
+          doesIntersect2(
+            frame.min,
+            frame.max,
+            group.anchor.start,
+            group.anchor.end,
+          )
+          ? { min: group.anchor.start, max: group.anchor.end }
+          : undefined
+        : groupExtentOnRow(group, assemblyName, frame)
+    if (extent) {
+      out.push({
+        key: group.key,
+        center: (extent.min + extent.max) / 2,
+        weight: Math.max(extent.max - extent.min, 1),
+      })
+    }
+  }
+  return out
+}
+
+// how many groups two lanes must share before their shared order is trusted
+// over the anchor-order orientation `computeRowFrame` already worked out
+const MIN_SHARED_FOR_ORIENTATION = 3
+
+// Does this lane read the same direction as the one above it? Walk the shared
+// groups in the UPPER lane's drawn order and sum the direction each consecutive
+// step takes in this one, weighting a pair by its shorter member — a pair of
+// long syntenic genes says more about the direction than a pair of fragments.
+// Against the lane above rather than the anchor, because that is the pair the
+// ribbons are drawn between.
+function readsBackwards(
+  upperX: Map<string, number>,
+  lane: LanePlacement[],
+): boolean | undefined {
+  const shared = lane
+    .filter(p => upperX.has(p.key))
+    .sort((a, b) => upperX.get(a.key)! - upperX.get(b.key)!)
+  if (shared.length < MIN_SHARED_FOR_ORIENTATION) {
+    return undefined
+  }
+  let concordance = 0
+  for (let i = 1; i < shared.length; i++) {
+    const a = shared[i - 1]!
+    const b = shared[i]!
+    concordance += Math.sign(b.center - a.center) * Math.min(a.weight, b.weight)
+  }
+  return concordance < 0
+}
+
+function weightedMedian(samples: { value: number; weight: number }[]) {
+  const sorted = [...samples].sort((a, b) => a.value - b.value)
+  const total = sorted.reduce((sum, s) => sum + s.weight, 0)
+  let acc = 0
+  for (const sample of sorted) {
+    acc += sample.weight
+    if (acc >= total / 2) {
+      return sample.value
+    }
+  }
+  return 0
+}
+
+// A lane slides in whole multiples of this, so the median moving by a pixel or
+// two as a pan swaps one group for another cannot slide the whole lane
+const SHIFT_QUANTUM_PX = 8
+
+// Where a lane sits horizontally was, until this pass, an accident: the frame
+// started at the leftmost placement, which has nothing to do with where the
+// ribbons want to go. Splitting the lane's bp->px map into a scale and an
+// offset lets the two be chosen for different reasons — the scale off the
+// ladder, for honesty, and the offset here, for legibility.
+//
+// Minimizing the total ribbon travel `sum |x_upper(g) - x_lane(g)|` over a fixed
+// scale is an L1 problem, and because a ribbon only ever joins ADJACENT lanes
+// the objective is a chain: it decomposes into one independent choice per lane,
+// walked top down, and each choice is the weighted median of the displacement
+// to the lane above. Median rather than mean so one stray placement cannot drag
+// a lane, and the shift is clamped to the slack the ladder rung left over the
+// fitted extent so a lane can never slide its own content off its edge.
+function alignFrameTo(
+  upperX: Map<string, number>,
+  lane: LanePlacement[],
+  frame: RowFrame,
+  width: number,
+): RowFrame {
+  const samples = lane.flatMap(p => {
+    const x = upperX.get(p.key)
+    return x === undefined
+      ? []
+      : [{ value: x - rowFrameX(frame, p.center, width), weight: p.weight }]
+  })
+  if (!samples.length) {
+    return frame
+  }
+  const wanted =
+    Math.round(weightedMedian(samples) / SHIFT_QUANTUM_PX) * SHIFT_QUANTUM_PX
+  const span = frame.max - frame.min
+  const shift = clamp(
+    ((frame.flipped ? 1 : -1) * wanted * span) / width,
+    Math.min(0, frame.fitMax - frame.max),
+    Math.max(0, frame.fitMin - frame.min),
+  )
+  return { ...frame, min: frame.min + shift, max: frame.max + shift }
+}
+
+// Every lane's frame, walked top down so each one is oriented and positioned
+// against the lane above it — the pair its ribbons are actually drawn between.
+// A lane with no frame does not break the chain: the next lane still lines up
+// against the last lane that has one.
+export function alignRowFrames(
+  groups: MultiWayGroup[],
+  assemblyNames: string[],
+  anchorFrame: RowFrame | undefined,
+  minSpanBp: number,
+  width: number,
+) {
+  const frames = new Map<string, RowFrame | undefined>()
+  let upperX =
+    anchorFrame && width > 0
+      ? new Map(
+          lanePlacements(groups, undefined, anchorFrame).map(p => [
+            p.key,
+            rowFrameX(anchorFrame, p.center, width),
+          ]),
+        )
+      : undefined
+  for (const assemblyName of assemblyNames) {
+    const fitted = computeRowFrame(groups, assemblyName, minSpanBp)
+    if (fitted === undefined || upperX === undefined) {
+      frames.set(assemblyName, fitted)
+      continue
+    }
+    const backwards = readsBackwards(
+      upperX,
+      lanePlacements(groups, assemblyName, fitted),
+    )
+    const oriented =
+      backwards === undefined ? fitted : { ...fitted, flipped: backwards }
+    const placements = lanePlacements(groups, assemblyName, oriented)
+    const frame = alignFrameTo(upperX, placements, oriented, width)
+    frames.set(assemblyName, frame)
+    upperX = new Map(
+      lanePlacements(groups, assemblyName, frame).map(p => [
+        p.key,
+        rowFrameX(frame, p.center, width),
+      ]),
+    )
+  }
+  return frames
 }
