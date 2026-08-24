@@ -527,6 +527,63 @@ autorun, with the synchronous contract those three test files assert re-expresse
 as an explicit flush. Re-measure first, on hardware GL, and treat any change that
 only helps SwiftShader as a figure-pipeline change rather than an app one.
 
+### The LD triangle is materialized in full, so its ceiling is quadratic
+
+**Status:** Accepted (the compute shader buys a band, not a scale).
+
+**Provenance: Chrome 151 on macOS/Metal, Apple silicon, 2026-08-24** — not the
+Intel UHD 630 this section's preamble names. The storage-buffer limit differs by
+4x between them and is the binding constraint here, so re-measure before quoting
+these on other hardware.
+
+`getLDMatrix` computes every pair and returns one `Float32Array` of
+`n*(n-1)/2` cells, which `RenderLDData` transfers whole to the main thread. The
+cost of a view is therefore quadratic in the SNP count, and **the ceiling is the
+output matrix, not the kernel**.
+
+`planDispatch` checks that matrix against `maxStorageBufferBindingSize` and
+`maxBufferSize` and returns null when it does not fit, dropping to the CPU path:
+
+| adapter                    | cap          | max SNPs   |
+| -------------------------- | ------------ | ---------- |
+| WebGPU spec floor, 128 MiB | 33.5M cells  | **~8,193** |
+| this machine, 2 GiB        | 536.9M cells | **32,768** |
+
+Bracketed by measurement at 2000 samples: n=32,000 dispatches, n=33,000 and
+n=50,000 decline. A 1000-Genomes-scale 50,000 SNPs needs **4.66 GiB** and about
+**25 minutes** on the CPU fallback (measured 1195 ns/cell). `fetchSizeLimit`
+(5 MB, `VcfTabixAdapter`) refuses the underlying VCF long before any of that
+runs, which is why this surfaces as a limit rather than as a hang.
+
+**The shader does not move the scale, only the band.** A 20x speedup on an n²
+problem buys sqrt(20) ~ 4.5x more SNPs. Measured at one second of latency, the
+ceiling is ~1,300 SNPs on CPU and ~4,000 on GPU — real, and worth having, but
+not a different order of magnitude. Within that band the win is large (phased,
+2504 samples: 510ms -> 31ms at n=800, 1741ms -> 89ms at n=1500); past n=16,000 the
+GPU itself takes tens of seconds.
+
+Two sub-points, both live:
+
+- **`planDispatch` checks only the OUTPUT buffer.** The genotype input is
+  unchecked: unphased packs `n * samples` bytes, so a 128 MiB-floor device breaks
+  at ~65k samples with no plan-time refusal. It survives only because
+  `pushErrorScope('validation')` in `runGPUCompute` routes the failed dispatch to
+  the CPU path.
+- **The unphased kernel is the slow algorithm on fast hardware.** `ldCompute.slang`
+  loops per sample where the phased kernel popcounts bit planes, and the ~6x gap
+  that costs shows up on the GPU too (n=1500: 522ms unphased vs 89ms phased, same
+  cells). The CPU side of that gap is closed —
+  `calculateLDStatsDosageBits` in `@jbrowse/ld-core` is bit-planed and exact-parity
+  tested against `calculateLDStats`. Porting the same planes into the kernel is
+  deliberately NOT queued: it would save ~430ms off-thread behind the 500ms fetch
+  debounce (`ldFetchPhases`), inside a band that is already fast enough.
+
+**Retire when** the triangle is computed banded — only pairs within a bounded
+distance of the diagonal, which is all any zoom draws. That makes the cost `n*k`
+instead of `n^2` and moves the ceiling from a matrix size to a fetch size. It is
+also what makes a comparison against a streaming LD tool (LDBlockShow and
+kin) meaningful, since none of them materialize the full triangle either.
+
 ---
 
 ## Fetch / RPC
