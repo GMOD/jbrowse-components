@@ -17,45 +17,112 @@ const DEFAULT_ACTION_DELAY_MS = 500
 // puppeteer text-pseudo-selector: matches an element by its visible text. Used
 // to reach HTML floating labels / menu items that carry no testid.
 export const textSelector = (text: string) => `::-p-text(${text})`
+const textOf = (selector: string) =>
+  /^::-p-text\((.*)\)$/s.exec(selector)?.[1] ?? selector
 
-// Poll, from Node, until a plain-CSS element is gone or styled-hidden. Used for
-// the loading-overlay-disappears wait: puppeteer's in-page waits (waitForSelector
+// Poll, from Node, until nothing matching is left showing. Used for the
+// loading-overlay-disappears wait: puppeteer's in-page waits (waitForSelector
 // rAF-poll, waitForFunction timer-poll) both run their polling loop *inside* the
 // page, and once a view settles the headless tab is non-visible — Chrome starves
 // rAF and throttles in-page timers — so the loop stops firing and the wait times
 // out even though the element was already removed. A Node-side timer is never
 // throttled by page visibility, so this observes the removal reliably.
+//
+// Takes a CSS selector or a TEXT string. The text case used to go to puppeteer's
+// native `waitForSelector('::-p-text(…)', { hidden: true })`, whose notion of
+// visible is "has a box and is not styled away" — which an element clipped by an
+// ancestor keeps.
 async function waitHiddenByNodePolling(
   page: Page,
-  selector: string,
+  target: { selector?: string; text?: string },
   timeout: number,
 ) {
+  // Exactly one, because the degenerate cases are both silent: a missing
+  // selector would fall back to matching everything (a wait that never ends) or
+  // nothing (a wait that ends at once and reports success).
+  if ((target.selector === undefined) === (target.text === undefined)) {
+    throw new Error('waitHiddenByNodePolling needs one of selector or text')
+  }
   const deadline = Date.now() + timeout
   let gone = false
   while (!gone && Date.now() < deadline) {
-    // every match must be gone/hidden, not just the first: a view renders one
-    // loading-overlay per pending block, so querySelector alone reports "gone"
-    // as soon as the earliest-finishing block clears
     gone = await page.evaluate(
-      (sel: string) =>
-        Array.from(document.querySelectorAll(sel)).every(el => {
-          const s = getComputedStyle(el)
-          const r = el.getBoundingClientRect()
-          return (
-            s.display === 'none' ||
-            s.visibility === 'hidden' ||
-            Number(s.opacity) === 0 ||
-            (r.width === 0 && r.height === 0)
-          )
-        }),
-      selector,
+      ({ selector, text }: { selector?: string; text?: string }) => {
+        // Whether an element shows nothing to a reader.
+        //
+        // The styled cases are the obvious ones. THE CLIPPED CASE IS NOT, and it
+        // is the one that hangs a run: an element inside an ancestor with
+        // `overflow: hidden` keeps its own box and its own computed style while
+        // the compositor paints none of it, so every other check reads it as
+        // visible. A JBrowse view is full of those — a display renders block
+        // placeholders past the edges of a track container that clips them — and
+        // `waitForText 'Loading' hidden` on genomes.jbrowse.org waited out its
+        // 90s on a "Loading" no pixel of which was ever drawn, over a page that
+        // had finished rendering.
+        //
+        // `hidden` and `clip` only, never `auto`/`scroll`: a scrollable
+        // container's contents are out of view but reachable, and calling those
+        // hidden would let a wait on a long menu finish while it is still open.
+        const isHidden = (el: Element) => {
+          const style = getComputedStyle(el)
+          const rect = el.getBoundingClientRect()
+          if (
+            style.display === 'none' ||
+            style.visibility === 'hidden' ||
+            Number(style.opacity) === 0 ||
+            (rect.width === 0 && rect.height === 0)
+          ) {
+            return true
+          }
+          for (let up = el.parentElement; up; up = up.parentElement) {
+            const upStyle = getComputedStyle(up)
+            if (
+              ![upStyle.overflowX, upStyle.overflowY].some(
+                v => v === 'hidden' || v === 'clip',
+              )
+            ) {
+              continue
+            }
+            const box = up.getBoundingClientRect()
+            if (
+              rect.right <= box.left ||
+              rect.left >= box.right ||
+              rect.bottom <= box.top ||
+              rect.top >= box.bottom
+            ) {
+              return true
+            }
+          }
+          return false
+        }
+        // every match must be gone, not just the first: a view renders one
+        // loading-overlay per pending block, so querySelector alone reports
+        // "gone" as soon as the earliest-finishing block clears
+        const matches =
+          text === undefined
+            ? Array.from(document.querySelectorAll(selector!))
+            : // the deepest elements carrying the string, which is how
+              // `::-p-text(…)` matches: an ancestor is not reported for text
+              // that belongs to its child
+              Array.from(document.querySelectorAll('*')).filter(
+                el =>
+                  el.textContent.includes(text) &&
+                  !Array.from(el.children).some(child =>
+                    child.textContent.includes(text),
+                  ),
+              )
+        return matches.every(el => isHidden(el))
+      },
+      target,
     )
     if (!gone) {
       await delay(200)
     }
   }
   if (!gone) {
-    throw new Error(`timed out waiting for ${selector} to be hidden`)
+    const what =
+      target.text === undefined ? target.selector : `text "${target.text}"`
+    throw new Error(`timed out waiting for ${what} to be hidden`)
   }
 }
 
@@ -118,15 +185,19 @@ export async function waitForVisible(
     timeout = FIND_TIMEOUT,
   }: { hidden?: boolean; timeout?: number } = {},
 ) {
-  // Plain-CSS hidden waits poll from Node (see waitHiddenByNodePolling). Text
-  // disappearances use puppeteer's `::-p-text(…)` pseudo-selector, which
-  // document.querySelector can't parse, and follow a click that keeps the page
-  // compositing — so they keep the native wait. The appear case likewise stays
-  // native (appearances follow clicks/paints that keep rAF alive).
+  // BOTH hidden waits poll from Node now (see waitHiddenByNodePolling). The text
+  // case used the native `::-p-text(…)` wait until it hung a tour for 90s on
+  // text an ancestor was clipping; matching the deepest text-carrying elements
+  // in-page costs one querySelectorAll and answers the question the spec is
+  // actually asking. The APPEAR case stays native — appearances follow clicks
+  // and paints that keep rAF alive, and puppeteer's own visibility test is the
+  // right one for "can I click this".
   if (hidden) {
-    return selector.startsWith('::-p-')
-      ? page.waitForSelector(selector, { hidden: true, timeout })
-      : waitHiddenByNodePolling(page, selector, timeout)
+    return waitHiddenByNodePolling(
+      page,
+      selector.startsWith('::-p-') ? { text: textOf(selector) } : { selector },
+      timeout,
+    )
   }
   const el = await page.waitForSelector(selector, { visible: true, timeout })
   if (el) {

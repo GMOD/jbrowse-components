@@ -214,6 +214,22 @@ the tour was filmed in.
   agrees belongs to that chord — a buried one resolves to nothing rather than
   clicking its neighbour. `node scripts/probe-chords.ts <spec> --click=<label>`
   lists what was drawn and says which of those two it hit.
+- **`waitForText … hidden` means "nothing a reader can see says it".**
+  Puppeteer's own visibility test is "has a box and is not styled away", and an
+  element clipped by an ancestor's `overflow: hidden` keeps both — so a wait can
+  hang forever on text no pixel of which was drawn. A JBrowse view is full of
+  those: a display renders block placeholders past the edges of the track
+  container that clips them. `waitForVisible` now polls from Node for BOTH
+  selectors and text and rejects the clipped case (`hidden`/`clip` only, never
+  `auto`/`scroll`, so a scrollable menu still counts as open).
+  `probe-loading-text.ts` names what is still saying it, with a rect, a hit test
+  and an outlined screenshot; `probe-visible-text.ts` says what is on screen
+  instead.
+- **Does a finished clip MOVE?** `node scripts/probe-clip-motion.ts <clip.mp4>`
+  counts distinct frames. Headless Chrome paints the foreground tab, so a
+  screencast off a backgrounded one delivers the same frame over and over at the
+  right length, the right size and a `keptUp` of 1.00 — every number the run
+  reports is fine and the picture is frozen.
 - **Every annotation `anchor`s** — by locus, dotplot cell, graph node or chord,
   never a measured pixel. Shapes belong in
   `@jbrowse/browser-test-utils/src/annotationOverlay.ts`. Prefer an in-app
