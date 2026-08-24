@@ -1262,44 +1262,110 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 680,
   },
 
-  // The human pangenome case of the same track: the CFH cluster over hg38
-  // with two HPRC haplotype lanes, from the gene-name join table
+  // The human pangenome case of the same track: the CFH cluster over hg38 with
+  // a lane per HPRC haplotype, from the gene-name join table
   // build_hprc_cfhr_synteny.sh writes out of the CAT annotations (CAT reuses
   // the GENCODE gene names on every haplotype, so the join IS the ortholog
-  // table). HG01109.1 carries the CFHR3/CFHR1 deletion and its own annotation
-  // has neither gene, so their ribbon chains stop at the non-carrier lane —
-  // rowOrder puts the non-carrier between hg38 and the carrier for that
-  // reason (a ribbon connects adjacent lanes only).
+  // table). The panel is 4 haplotypes homozygous reference at the CFHR3/CFHR1
+  // site and 4 homozygous for the deletion, each picked out of the wave
+  // callset and kept only where its own CAT annotation agrees with that
+  // genotype.
+  //
+  // rowOrder puts every non-carrier above every carrier, because a ribbon
+  // connects ADJACENT lanes only: the CFHR3 and CFHR1 chains then run down
+  // through the lanes that kept the genes and stop at the first lane that lost
+  // them, which is the whole reading.
   {
     mode: 'url',
     name: 'multiway_synteny/hprc_cfhr_lanes',
-    url: sessionSpec('test_data/graphgenomeview/hprc.json', {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1:196,480,000-196,980,000',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              showOnlyGenes: true,
-              displayMode: 'compact',
-            },
-            {
-              trackId: 'hprc_cfhr_multiway',
-              type: 'MultiWaySyntenyDisplay',
-              rowOrder: ['HG00099.1', 'HG01109.1'],
-              height: 230,
-            },
-          ],
-        },
-      ],
-    }),
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/hprc/config.json'),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr1:196,480,000-196,980,000',
+            tracks: [
+              {
+                trackId: 'hg38_ncbiRefSeq_ucsc',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+              },
+              {
+                trackId: 'hprc_cfhr_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: [
+                  'HG00097.1',
+                  'HG00099.1',
+                  'HG00128.1',
+                  'HG00133.1',
+                  'HG01109.1',
+                  'HG01123.1',
+                  'HG01960.1',
+                  'HG02055.1',
+                ],
+                // nine lanes: 240 leaves them at the glyph-height floor with
+                // the headers colliding into the glyphs
+                height: 460,
+              },
+            ],
+          },
+        ],
+      },
+    ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    settleMs: 12000,
-    viewportHeight: 580,
+    settleMs: 15000,
+    viewportHeight: 860,
+  },
+
+  // The same panel cut to the deletion itself, for pangenome_hprc.md: close
+  // enough that each ribbon connects one gene to one gene, so the two chains
+  // that stop are countable rather than inferred from a band.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_cfhr_lane_stack',
+    url: sessionSpec(
+      encodeURIComponent('https://jbrowse.org/demos/hprc/config.json'),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'hg38',
+            loc: 'chr1:196,640,000-196,900,000',
+            tracks: [
+              {
+                trackId: 'hg38_ncbiRefSeq_ucsc',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+              },
+              {
+                trackId: 'hprc_cfhr_multiway',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: [
+                  'HG00097.1',
+                  'HG00099.1',
+                  'HG00128.1',
+                  'HG00133.1',
+                  'HG01109.1',
+                  'HG01123.1',
+                  'HG01960.1',
+                  'HG02055.1',
+                ],
+                height: 460,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 860,
   },
 
   // The alignment-level case of the same track: the E. coli all-vs-all PAF as

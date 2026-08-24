@@ -211,7 +211,7 @@ and every one of the four other flies keeps all twenty. The two near relatives
 keep them in order too, so their ribbons run parallel. The two distant ones keep
 the block and reverse it, which the header says as `[rev]`.
 
-<Figure caption="A 142 kb window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their own 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane names the X." src="/img/multiway_synteny/drosophila_lanes.png" />
+<Figure caption="A window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their own 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane names the X." src="/img/multiway_synteny/drosophila_lanes.png" />
 
 The pseudoobscura lane is the one to read twice. Muller element D is
 melanogaster's 3L, and in the obscura lineage that element is fused to the X, so
@@ -230,7 +230,7 @@ difference being repeat sequence between the genes rather than genes.
 Stacked on one bp/px, a row's drawn length is its genome size, so the stack
 states that difference before any ribbon is read.
 
-<Figure caption="Five nightshade-family genomes stacked on OrthoFinder orthogroups: tomato, potato, pepper, Nicotiana attenuata, coffee, all on one bp per pixel. Pepper's row runs nearly four times tomato's while answering it gene for gene, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
+<Figure caption="Five nightshade-family genomes stacked on OrthoFinder orthogroups: tomato, potato, pepper, Nicotiana attenuata, coffee, all on one bp per pixel. Pepper's row is by far the longest while answering tomato gene for gene, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
 
 _N. attenuata_ is the assembly still on scaffolds here, and the correspondence
 print says so rather than leaving it to be discovered: its best partner holds
@@ -283,7 +283,7 @@ four other genomes keeps. Potato and coffee draw them at 1.5 times the anchor's
 span; pepper and _N. attenuata_ need 3 times it for the same genes, which is the
 intergenic expansion arriving as a number in a lane header.
 
-<Figure caption="A 157 kb tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in its own coordinates. The potato and coffee lanes hold the block at 1.5x the anchor's span, the pepper and N. attenuata lanes at 3x, with the genes visibly further apart." src="/img/multiway_synteny/solanaceae_lanes.png" />
+<Figure caption="A tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in its own coordinates. The potato and coffee lanes hold the block at the anchor's own scale; the pepper and N. attenuata lanes need several times it for the same genes, with the multiple in each header." src="/img/multiway_synteny/solanaceae_lanes.png" />
 
 Every lane's genes stay in the anchor's order, so what changed between them is
 the spacing rather than the arrangement. The coffee lane is `[rev]`, the whole

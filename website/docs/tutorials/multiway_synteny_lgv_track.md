@@ -183,8 +183,9 @@ directly.
 [`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh),
 the script behind the
 [HPRC pangenome tutorial](/docs/tutorials/pangenome_hprc)'s CFH-cluster figures,
-slices two haplotypes' CAT annotations to that window and then writes the gene
-BED per assembly and the join:
+genotypes the CFHR3/CFHR1 deletion over all 464 haplotypes, slices the CAT
+annotation of each haplotype it keeps, and writes the gene BED per assembly and
+the join:
 
 <!-- from: scripts/build_hprc_cfhr_synteny.sh -->
 
@@ -198,11 +199,13 @@ gzip -dc hprc_cfhr_HG00099.1.genes.gff3.gz \
 ```
 
 One row per GRCh38 gene in the window, one column per genome, `.` where an
-annotation has no copy. HG01109.1 carries the CFHR3/CFHR1 deletion, and its own
-CAT annotation has neither gene, so the two ribbon chains reach the non-carrier
-lane and stop there.
+annotation has no copy. The panel here is 4 haplotypes homozygous reference at
+the site and 4 homozygous for the deletion, and every carrier's own CAT
+annotation is missing both genes, so the _CFHR3_ and _CFHR1_ chains run down
+through the non-carrier lanes and stop at the first carrier. Ordering the lanes
+that way is what makes that visible: a ribbon connects adjacent lanes only.
 
-<Figure caption="The complement factor H cluster on chr1: hg38 genes over one multi-way track with a lane per HPRC haplotype, each carrying its own CAT gene models on its own contig. The CFHR3 and CFHR1 chains connect hg38 to the non-carrier haplotype and no further, and every flanking gene's chain runs through both." src="/img/multiway_synteny/hprc_cfhr_lanes.png" />
+<Figure caption="The complement factor H cluster on chr1: hg38 genes over one multi-way track with a lane per HPRC haplotype, the ones homozygous reference at the CFHR3/CFHR1 site above the ones homozygous for the deletion, each carrying its own CAT gene models on its own contig. The CFHR3 and CFHR1 chains stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/multiway_synteny/hprc_cfhr_lanes.png" />
 
 ## An all-vs-all alignment as the source
 

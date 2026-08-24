@@ -246,6 +246,66 @@ awk -F'\t' -v OFS='\t' '{print $1 "." $2, $4, $5, $6, $7}' cfhr_shortlist.txt \
   | tr '\t' '\n' \
   | xargs -P "$CAT_JOBS" -n 5 bash -c 'slice_cat_annotation "$@"' _
 
+# Stage 2b, no network: drop gene models longer than the window they were
+# sliced to. CAT runs liftoff and augustus beside its own projection, and a few
+# of those come back as one "gene" spanning most of a contig — HG01960.1 carries
+# a 61 Mb lncRNA over this locus. A lane draws a gene as a filled glyph, so one
+# of those paints the whole lane and every real gene model in it disappears
+# under a bar. Descendants go with the gene, or its exons are left as orphan
+# features. Idempotent, so it re-runs over slices the fetch above reused.
+while IFS=$'\t' read -r sample hap label contig qstart qend url; do
+  name="$sample.$hap"
+  gzip -dc "hprc_cfhr_$name.genes.gff3.gz" > "hprc_cfhr_$name.genes.gff3.raw"
+  python3 - "hprc_cfhr_$name.genes.gff3.raw" "$((qend - qstart))" <<'FILTER'
+import re
+import sys
+
+path, limit = sys.argv[1], int(sys.argv[2])
+lines = open(path).read().splitlines()
+rows = [l.split('\t') for l in lines if not l.startswith('#')]
+
+
+def attr(row, key):
+    m = re.search(f'(?:^|;){key}=([^;]*)', row[8])
+    return m.group(1) if m else None
+
+
+dropped = {
+    attr(r, 'ID') for r in rows
+    if int(r[4]) - int(r[3]) > limit and attr(r, 'ID')
+}
+# a gene's transcripts name it as Parent and its exons name those, so the set
+# has to close over descendants rather than over one level
+grew = True
+while grew:
+    grew = False
+    for r in rows:
+        parents = (attr(r, 'Parent') or '').split(',')
+        rid = attr(r, 'ID')
+        if rid and rid not in dropped and any(p in dropped for p in parents):
+            dropped.add(rid)
+            grew = True
+
+
+def keep(row):
+    parents = (attr(row, 'Parent') or '').split(',')
+    return attr(row, 'ID') not in dropped and not any(p in dropped for p in parents)
+
+
+kept = [r for r in rows if keep(r)]
+with open(path, 'w') as fh:
+    fh.write('##gff-version 3\n')
+    for r in kept:
+        fh.write('\t'.join(r) + '\n')
+if dropped:
+    print(f'   {path}: dropped {len(dropped)} feature(s) longer than the '
+          f'{limit} bp window')
+FILTER
+  bgzip -f "hprc_cfhr_$name.genes.gff3.raw"
+  mv "hprc_cfhr_$name.genes.gff3.raw.gz" "hprc_cfhr_$name.genes.gff3.gz"
+  tabix -f -p gff "hprc_cfhr_$name.genes.gff3.gz"
+done < cfhr_shortlist.txt
+
 # Stage 3, no network: the annotation each haplotype was fetched for, read
 # against the genotype it was picked on. First past the post per class.
 : > cfhr_panel.txt

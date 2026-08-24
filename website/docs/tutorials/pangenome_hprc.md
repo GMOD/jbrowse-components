@@ -1097,6 +1097,103 @@ The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
 files.
 
+## Every haplotype in its own coordinates
+
+The alignment above is anchored: each haplotype is drawn on GRCh38's axis, which
+is what makes hundreds of rows comparable at all, and what leaves each
+assembly's own coordinates out of the picture. A
+[multi-way synteny track](/docs/tutorials/multiway_synteny_lgv_track) is the
+other reading. One lane per haplotype, each in that assembly's own contig
+coordinates and carrying that assembly's own CAT gene models, with ribbons
+connecting a gene to its copy in the lane below.
+
+No aligner is in the loop. CAT projects the GENCODE gene set onto every release
+2 assembly, so a gene keeps its name on every haplotype, and joining the
+annotations by name is already the ortholog table: one row per GRCh38 gene in
+the window, one column per haplotype, `.` where that haplotype's annotation has
+no copy.
+
+### Picking the panel out of the callset
+
+`build_hprc_cfhr_synteny.sh` genotypes the CFHR3/CFHR1 deletion over all 464
+haplotypes rather than taking a list, and prints what it found: 139 haplotypes
+carry it, 36 samples are homozygous for it and 124 are homozygous reference.
+
+<!-- from: scripts/build_hprc_cfhr_synteny.sh -->
+
+```bash
+# the site as the callset states it. One record with two ALTs here, so the
+# deletion allele is the one far shorter than the REF span rather than the one
+# at a fixed index.
+bcftools view -r chr1:196753075-196753075 -Oz -o cfhr_site.vcf.gz "$WAVE"
+```
+
+It then walks the homozygous samples in callset order and keeps a haplotype only
+if three things hold: its alignment in the window sits on one contig, release 2
+annotated it, and its own CAT annotation agrees with the genotype it was picked
+on — no _CFHR3_ or _CFHR1_ on a carrier, both on a non-carrier. The third is the
+control, since the callset and the annotation are separate products of the
+release, and a lane is drawn only where the two say the same thing.
+
+That last check is the one that costs: a CAT annotation is ~110 MB, whole
+genome, and ships no index, so the shortlist is fetched concurrently
+(`CAT_JOBS`, 6 by default) and each slice is kept, which is what makes a re-run
+that only wants the table cheap.
+
+### Reading it
+
+```json session config=https://jbrowse.org/demos/hprc/config.json
+{
+  "defaultSession": {
+    "name": "CFH cluster, one lane per haplotype",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg38",
+          "loc": "chr1:196,640,000-196,900,000",
+          "tracks": [
+            {
+              "trackId": "hg38_ncbiRefSeq_ucsc",
+              "type": "LinearBasicDisplay",
+              "showOnlyGenes": true,
+              "displayMode": "compact"
+            },
+            {
+              "trackId": "hprc_cfhr_multiway",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": [
+                "HG00097.1",
+                "HG00099.1",
+                "HG00128.1",
+                "HG00133.1",
+                "HG01109.1",
+                "HG01123.1",
+                "HG01960.1",
+                "HG02055.1"
+              ],
+              "height": 460
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+`rowOrder` puts every non-carrier above every carrier, and that ordering is what
+makes the deletion readable: a ribbon connects **adjacent** lanes only, so a
+chain can only run as far as the first lane missing the gene.
+
+<Figure caption="The CFH cluster on chr1 as one multi-way synteny track: hg38 genes over a lane per HPRC haplotype, each on its own contig and carrying its own CAT gene models. The CFHR3 and CFHR1 chains run through the non-carrier lanes and stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/pangenome/hprc_cfhr_lane_stack.png" />
+
+Every lane sits at a different coordinate on a different contig, which is what
+the headers say, and the flanking genes still line up down the stack because a
+lane is fitted to the orthologs rather than projected onto GRCh38. The two
+chains that stop are _CFHR3_ and _CFHR1_: the carriers' own annotations have
+neither gene, so there is nothing in those lanes for a ribbon to reach.
+
 ## Comparing the graph with the callset
 
 The graph and the callset are the same object at two resolutions. minigraph
