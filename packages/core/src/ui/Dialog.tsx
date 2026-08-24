@@ -86,6 +86,13 @@ function Dialog(props: Props) {
             {titleNode ?? <SanitizedHTML html={title ?? ''} />}
             {onClose ? (
               <IconButton
+                // The one handle on a dialog's (×), for a driver that cannot use
+                // Escape: MUI delivers Escape through the modal, so a press
+                // while focus sits on the body — where clicking an action button
+                // that then disables itself leaves it — closes nothing, and a
+                // screenshot spec's later actions all keep succeeding under the
+                // panel they were meant to dismiss
+                data-testid="dialog-close"
                 className={classes.closeButton}
                 onClick={event => {
                   onClose(event, 'closeButtonClick')
