@@ -51,12 +51,13 @@ the whole surface.
 ## Volatiles
 
 <!-- prettier-ignore -->
-| Member | Description |
-| --- | --- |
-| <span id="volatile-width">**width**</span><br><code>width: 800</code> |  |
-| <span id="volatile-matchedtrackfeatures">**matchedTrackFeatures**</span><br><code>matchedTrackFeatures: {}</code> |  |
-| <span id="volatile-reloadcounter">**reloadCounter**</span><br><code>reloadCounter: 0</code> | The pure "go again" signal the shared fetch skeleton reads above every gate, bumped by `reload()`: after a failure every other input of the overlay fetch is unchanged, so nothing else can rewake it. The Retry on the failure notification is what spends it. |
-| <span id="volatile-fetchstatus">**fetchStatus**</span><br><code>fetchStatus: createStatusChannel()</code> | What the overlay-feature fetch is doing, for the corner chip. A `StatusChannel` rather than the `statusMessage`/`statusProgress`/ `setStatusMessage` trio a display declares: this is a view with one operation to narrate, and the trio is a status vocabulary it has no other use for. |
+| Member | Description | Defined by |
+| --- | --- | --- |
+| <span id="volatile-width">**width**</span><br><code>width: 800</code> |  | BreakpointSplitView |
+| <span id="volatile-matchedtrackfeatures">**matchedTrackFeatures**</span><br><code>matchedTrackFeatures: {}</code> |  | BreakpointSplitView |
+| <span id="volatile-reloadcounter">**reloadCounter**</span><br><code>reloadCounter: 0</code> | The pure "go again" signal the shared fetch skeleton reads above every gate, bumped by `reload()`: after a failure every other input of the overlay fetch is unchanged, so nothing else can rewake it. The Retry on the failure notification is what spends it. | BreakpointSplitView |
+| <span id="volatile-fetchstatus">**fetchStatus**</span><br><code>fetchStatus: createStatusChannel()</code> | What the overlay-feature fetch is doing, for the corner chip. A `StatusChannel` rather than the `statusMessage`/`statusProgress`/ `setStatusMessage` trio a display declares: this is a view with one operation to narrate, and the trio is a status vocabulary it has no other use for. | BreakpointSplitView |
+| <span id="volatile-bodymounted">**bodyMounted**</span><br><code>bodyMounted: true</code> | <span data-pagefind-ignore>Whether the container has this view's body in the DOM.<br><br>`ViewContainer` mounts a view's body only while an IntersectionObserver says it is on screen, to hold the app under the WebGL2 context ceiling (`reference/GPU_CONTEXT_BUDGET.md`). A view below the fold therefore has no canvas, so nothing ever calls `markCanvasDrawn` and the pre-first-paint term of `displayPhase` pins every display in it at `loading` with nothing left to resolve it — which parks `[data-app-phase="ready"]` for the whole app on a view the user cannot see.<br><br>Defaults true so the containers that always mount a body — embedded views, workspace panels, and any test rendering a display directly — are unaffected and need not set it.</span> | [BaseViewModel](../baseviewmodel#volatile-bodymounted) |
 
 ## Getters
 
@@ -109,4 +110,5 @@ the whole surface.
 | <span id="action-setinit">**setInit**</span><br><code>(init?: BreakpointSplitViewInitView[] &#124; undefined) =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-setviews">**setViews**</span><br><code>(viewInits: BreakpointSplitViewInitView[]) =&gt; void</code> |  | BreakpointSplitView |
 | <span id="action-setdisplayname">**setDisplayName**</span><br><code>(name: string) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setdisplayname) |
+| <span id="action-setbodymounted">**setBodyMounted**</span><br><code>(flag: boolean) =&gt; void</code> | <span data-pagefind-ignore>See `bodyMounted`. Written by the view's container, which is the only thing that knows whether it rendered the body.</span> | [BaseViewModel](../baseviewmodel#action-setbodymounted) |
 | <span id="action-setminimized">**setMinimized**</span><br><code>(flag: boolean) =&gt; void</code> |  | [BaseViewModel](../baseviewmodel#action-setminimized) |
