@@ -1,7 +1,6 @@
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { types } from '@jbrowse/mobx-state-tree'
 
-import { recordNamedReaction } from './namedReactions.ts'
+import { namedAutorun } from './namedReactions.ts'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -273,7 +272,8 @@ export function RenderLifecycleMixin() {
         // un-installed and the next backend can try again.
         const cbs = setup()
         self.autorunsInstalled = true
-        const upload = autorun(
+        namedAutorun(
+          self,
           () => {
             const b = self.currentRenderingBackend as B | undefined
             if (b === undefined || !self.canRender) {
@@ -301,9 +301,8 @@ export function RenderLifecycleMixin() {
           },
           { name: 'RenderLifecycle:upload' },
         )
-        recordNamedReaction(self, 'RenderLifecycle:upload', upload)
-        addDisposer(self, upload)
-        const render = autorun(
+        namedAutorun(
+          self,
           () => {
             const b = self.currentRenderingBackend as B | undefined
             void self.renderTick
@@ -328,8 +327,6 @@ export function RenderLifecycleMixin() {
           },
           { name: 'RenderLifecycle:render' },
         )
-        recordNamedReaction(self, 'RenderLifecycle:render', render)
-        addDisposer(self, render)
       },
     }))
 }

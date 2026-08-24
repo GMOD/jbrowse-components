@@ -174,11 +174,12 @@ fails the test that collected one.
 ### An autorun's dependency set is assertable
 
 Every autorun installer (`leadingEdgeAutorun`, `autorunOnReadyView`,
-`RenderLifecycleMixin.attachRenderingBackend`) records its reaction by name on
-the node through `recordNamedReaction`, and
-`reactionDependencies(node, name)` from `@jbrowse/render-core/namedReactions`
-returns the leaf observables it subscribed to on its last run, sorted, as
-`Model.prop` names (computeds flattened to what they read). Use it when the
+`RenderLifecycleMixin.attachRenderingBackend`) builds its reaction through
+`namedAutorun`, which records it by name on the node as well as disposing it
+with one, and `reactionDependencies(node, name)` from
+`@jbrowse/render-core/namedReactions` returns the leaf observables it subscribed
+to on its last run, sorted, as `Model.prop` names (computeds flattened to what
+they read). Use it when the
 property under test is *which reads are tracked* — a trigger that must stay
 above a gate, a guard that must stay `untracked` — and state the list per state
 rather than probing one observable per test. `installPerRegionFetchAutoruns.test.ts`

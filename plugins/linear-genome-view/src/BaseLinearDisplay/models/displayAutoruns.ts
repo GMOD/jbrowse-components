@@ -1,8 +1,6 @@
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
 import { getContainingView } from '@jbrowse/core/util/mstUtils'
-import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { recordNamedReaction } from '@jbrowse/render-core/namedReactions'
-import { autorun } from 'mobx'
+import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 
 import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -37,9 +35,7 @@ export function autorunOnReadyView(
     return view.initialized ? fn(view) : false
   }
   if (delay === undefined) {
-    const disposer = autorun(body, { name })
-    recordNamedReaction(self, name, disposer)
-    addDisposer(self, disposer)
+    namedAutorun(self, body, { name })
   } else {
     leadingEdgeAutorun(self, body, { name, delay })
   }

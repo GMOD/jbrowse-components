@@ -670,8 +670,11 @@ ordering. Before the split all three were transcriptions of the autoruns, and
 deleting the half-screen prefetch buffer from production left every one green.
 
 **The dependency set is itself a value, and the wiring test states it.** Every
-installer records its reaction through `recordNamedReaction`
-(`@jbrowse/render-core/namedReactions`), and `reactionDependencies(node, name)`
+installer builds its reaction through `namedAutorun`
+(`@jbrowse/render-core/namedReactions`), which records it against the node as
+well as disposing it with one — a bare `autorun` beside an `addDisposer` would
+opt that reaction's set out of the tests below and nothing would fail, so there
+is one spelling and no second half to forget. `reactionDependencies(node, name)`
 answers, as sorted leaf names, what that reaction subscribed to on its last run
 — MobX rebuilds the set every run, so the answer is per state. The mutate-and-
 count tests above pin one observable each, and only the ones someone thought to

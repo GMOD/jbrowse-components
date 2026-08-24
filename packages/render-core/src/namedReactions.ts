@@ -1,6 +1,8 @@
-import { getDependencyTree } from 'mobx'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { autorun, getDependencyTree } from 'mobx'
 
-import type { IDependencyTree } from 'mobx'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IAutorunOptions, IDependencyTree } from 'mobx'
 
 declare const process: { env: { NODE_ENV?: string } }
 
@@ -25,6 +27,27 @@ export function recordNamedReaction(
       registry.set(self, new Map([[name, disposer]]))
     }
   }
+}
+
+/**
+ * An autorun that is disposed with `self` and answerable by name.
+ *
+ * The two halves belong together: `reactionDependencies` can only see a
+ * reaction that was recorded, so an installer that calls `autorun` and
+ * `addDisposer` directly silently opts its dependency set out of the tests that
+ * are supposed to pin it — and nothing fails, which is the same shape of
+ * quiet-hole the mechanism exists to close. Every installer goes through here
+ * so there is no second spelling to forget.
+ */
+export function namedAutorun(
+  self: IAnyStateTreeNode,
+  body: () => void,
+  options: IAutorunOptions & { name: string },
+) {
+  const disposer = autorun(body, options)
+  recordNamedReaction(self, options.name, disposer)
+  addDisposer(self, disposer)
+  return disposer
 }
 
 function leaves(tree: IDependencyTree, out: Set<string>) {
