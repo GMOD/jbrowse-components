@@ -121,7 +121,12 @@ export function segmentEntryBp(seg: {
   return seg.strand === -1 ? seg.end : seg.start
 }
 
-/** #api The reference coordinate the path LEAVES this segment by. */
+/**
+ * #api
+ * The reference coordinate the path LEAVES this segment by.
+ *
+ * The mirror of {@link segmentEntryBp}, and exported for the same consumer.
+ */
 export function segmentExitBp(seg: {
   start: number
   end: number
