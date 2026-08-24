@@ -371,7 +371,35 @@ declaration rides along.
 
 So: the ledger below did not have to grow, but not because nothing was silent.
 The one silent break was invisible to the ledger too. And the largest class by
-count — the dependency ranges — no checker sees either.
+count — the dependency ranges — no checker sees either
+([ideas/a-dependency-bump-is-an-abi-event.md](../ideas/a-dependency-bump-is-an-abi-event.md)).
+
+### The sweep that property implied: seven more, all silent
+
+`Core-extendWorker` was fixed one site at a time. Sweeping all of them found
+**seven already in the same state**, every one a point an external plugin is the
+whole audience for:
+
+    LaunchBreakpointSplitView, LaunchCircularView, LaunchDotplotView,
+    LaunchLinearSyntenyView, LaunchSpreadsheetView, LaunchSvInspectorView,
+    TrackSelector-folderDialog
+
+Each is reached only as `import LaunchXF from './LaunchX/index.ts'` called inside
+`install()`. tsc erases a value import from the declarations, so the `declare
+module` block goes with it. Fixed by re-exporting a name from each package's
+entry — the fix `check-declaration-leaks.ts` already prescribes, and the one
+linear-genome-view was already getting by accident, because its three declaring
+modules happen to export types the entry re-exports.
+
+**Measure this in `esm/`, never in `src/`.** The two disagree and only the
+emitted tree is what a consumer resolves: all seven were reachable in source.
+Core's `import type {}` side-effect imports survive the emit because the
+augmentation targets `PluginManager` itself; the identical line in a plugin is
+elided as unused, which was tried and discarded before the re-export. Source
+reachability tracks which modules a consumer pulls in for other reasons — the
+same confusion the untyped overload makes.
+`scripts/check-extension-point-reachability.ts` is the gate, beside
+`check-declaration-leaks.ts` in the post-build CI step, and it reports 23/23.
 
 ## Ledger: behavior changes external plugins inherit
 
@@ -620,6 +648,19 @@ belong *inside* RFC-001 §7 rather than bolted beside it.
 - [ ] **Snapshot the `@public` set + CI diff.** Minimal (a JSON snapshot + a
   jest diff test), *not* a heavyweight `api-extractor` toolchain — keep it a net
   simplification, not a new thing to maintain.
+- [ ] **Derive `preservedExports`.** `packages/core/scripts/generateExports.mjs`
+  builds core's `exports` map from in-repo *subpath* usage, which is
+  uncorrelated with what an external plugin needs, and the gap is carried by a
+  hand-maintained `preservedExports` allowlist whose entries were each added
+  after something broke (`WebWorkerRpcDriver` after Apollo, `util/unzip`
+  because in-repo use "comes and goes"). Every module declaring an extension
+  point is derivable and belongs in it by construction; so is every module the
+  `@public` surface names. Same "enumerations that rot" disease as the docs, and
+  the same cure.
+- [ ] **Name the dependencies that cross the boundary.** The largest error class
+  in the v5 measurement, and the only one with no mechanism —
+  [ideas/a-dependency-bump-is-an-abi-event.md](../ideas/a-dependency-bump-is-an-abi-event.md)
+  has the directions; its first move is a measurement, not a build.
 - [ ] **Runtime deprecation-warning wrapper.** A tiny helper to mark a specific
   export deprecated; apply to gray-area exports like `BaseLinearDisplay` first.
   Ships now, starts learning usage.
