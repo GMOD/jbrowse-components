@@ -5,12 +5,6 @@
 // readout, 192 zoom controls, 32 of flex gap), and the search box asks for
 // 189px including its margins before flexbox starts squeezing it. So below
 // 780px something in the row has to give.
-//
-// A much larger root font — the header's own styles cite a 28px one — widens
-// the text and the icons without widening the fixed-px slider or MUI's 64px
-// button minimum, so no single factor rescales this table. There the row sheds
-// later than it should and the search box is squeezed the way it was before any
-// of this, which is a degradation rather than a new failure.
 const ROW_WITHOUT_SEARCH_PX = 591
 const SEARCH_BOX_PX = 189
 
