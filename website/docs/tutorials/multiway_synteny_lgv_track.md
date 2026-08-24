@@ -9,11 +9,11 @@ tutorial_category: Synteny & comparative genomics
 data: hosted
 ---
 
-**TL;DR:** a multi-genome ortholog track in a plain linear genome view can draw
-as a `MultiWaySyntenyDisplay`: one lane per genome, with ribbons connecting each
-ortholog between adjacent lanes. The top lane is the view's own assembly at
-genomic coordinates; every other lane is laid out in that genome's own local
-frame, fitted to the viewport.
+**TL;DR:** one locus across many genomes, inside one ordinary track. The genes
+around the window are drawn once per genome, each genome in its own coordinates,
+and grey ribbons carry every ortholog from one genome down to the next. The
+track type doing that is a `MultiWaySyntenyDisplay`, so it sits under the
+reference genome's own gene tracks and pans with them.
 
 ## One track, one lane per genome
 
@@ -190,7 +190,7 @@ BED per assembly and the join:
 
 ```bash
 # one plain BED per genome, from the gene rows of its own annotation
-zcat hprc_cfhr_HG00099.1.genes.gff3.gz \
+gzip -dc hprc_cfhr_HG00099.1.genes.gff3.gz \
   | awk -F'\t' -v OFS='\t' '$3=="gene" {
       match($9, /Name=[^;]*/)
       print $1, $4 - 1, $5, substr($9, RSTART+5, RLENGTH-5), 0, $7
@@ -261,6 +261,13 @@ span and `[rev]` where it is inverted, and every lane draws that genome's own
 gene models.
 
 <Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. The cluster's block stays syntenic in every lane, each lane names its own chromosome and orientation, and the ribbon chains thin outside it where the orthogroups scatter." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
+
+Two more orthogroup sets read as lanes on the same page as their stacked views:
+[five Drosophila genomes](/docs/tutorials/orthofinder_synteny#one-locus-one-lane-per-fly),
+where the block survives out to _D. virilis_ and its orientation does not, and
+[five nightshade genomes](/docs/tutorials/orthofinder_synteny#one-locus-five-lanes-five-scales),
+where the same two dozen genes need three times the DNA in pepper as in tomato
+and each lane's header says so.
 
 ## See also
 

@@ -1385,6 +1385,100 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 660,
   },
 
+  // The plant case where the lanes' own scales are the finding: five
+  // nightshade-family genomes over a tomato window on SL4.0ch04. Pepper's
+  // genome is nearly four times tomato's with about the same gene count, so
+  // the same two dozen orthologs take 2.8x the DNA there, and the pepper lane
+  // says so in the multiple its header carries. Coffee, the outgroup and the
+  // smallest genome here, comes back at the anchor's own scale.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/solanaceae_lanes',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_solanaceae/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'tomato',
+            loc: 'SL4.0ch04:62,880,000-63,037,000',
+            tracks: [
+              {
+                trackId: 'tomato_genes',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+                // Ensembl's tomato GFF3 names every gene `gene:gene-Solyc04g…`,
+                // so the labels are three lines of identifier that say nothing
+                // the glyphs do not. The fly figure above keeps its labels for
+                // the opposite reason: those are symbols.
+                showLabels: 'none',
+              },
+              {
+                trackId: 'solanaceae_orthogroups',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: ['potato', 'pepper', 'tobacco', 'coffee'],
+                height: 320,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 660,
+  },
+
+  // The animal case at the other end of the divergence scale: five fly genomes
+  // on one orthogroups track, anchored on a melanogaster 3L window whose 20
+  // genes every one of the four other flies keeps. What the lanes add over the
+  // stacked figure is per-lane framing: simulans and yakuba draw the block at
+  // the anchor's own scale and in its order, while pseudoobscura and virilis
+  // draw the same genes [rev] — the block survived, its orientation did not.
+  // The pseudoobscura lane names the X, because Muller element D (melanogaster
+  // 3L) is fused to the X in the obscura lineage, and a lane header naming a
+  // different chromosome than the anchor is exactly how that reads.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/drosophila_lanes',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'melanogaster',
+            loc: '3L:5,789,000-5,931,000',
+            tracks: [
+              {
+                trackId: 'melanogaster_genes',
+                type: 'LinearBasicDisplay',
+                showOnlyGenes: true,
+                displayMode: 'compact',
+              },
+              {
+                trackId: 'drosophila_orthogroups',
+                type: 'MultiWaySyntenyDisplay',
+                rowOrder: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
+                height: 320,
+              },
+            ],
+          },
+        ],
+      },
+    ),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportHeight: 660,
+  },
+
   // The grasses radiation as lanes: the rice window the
   // orthofinder_synteny/grasses_maize_wgd stacked figure reads, over the same
   // five-genome orthogroups track, with a lane per grass carrying its own gene
@@ -1929,6 +2023,104 @@ export const syntenySpecs: ScreenshotSpec[] = [
         dy: 60,
       },
     ],
+  },
+
+  // orthofinder_synteny.md: tomato, potato, pepper, Nicotiana attenuata and
+  // coffee as the outgroup. sameScale makes the row LENGTHS the point here:
+  // the five carry comparable gene counts (25-39k) over 0.38 to 2.9 Gb of
+  // sequence, so pepper's row runs nearly four times tomato's while answering
+  // it gene for gene. N. attenuata's assembly is the one still on scaffolds,
+  // which its band shows and the build's correspondence print measures at 14%.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/solanaceae',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_solanaceae/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'tomato' },
+              { assembly: 'potato' },
+              { assembly: 'pepper' },
+              { assembly: 'tobacco' },
+              { assembly: 'coffee' },
+            ],
+            tracks: [
+              ['solanaceae_orthogroups'],
+              ['solanaceae_orthogroups'],
+              ['solanaceae_orthogroups'],
+              ['solanaceae_orthogroups'],
+            ],
+            colorBy: 'reference',
+            autoDiagonalize: true,
+            sameScale: true,
+            collapseEmptyRows: true,
+            levelHeights: [180, 180, 180, 180],
+            alpha: 0.2,
+            drawCurves: false,
+          },
+        ],
+      },
+    ),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 1000,
+  },
+
+  // orthofinder_synteny.md: five Drosophila genomes, melanogaster out to
+  // virilis at roughly 50 My. Muller's elements are what the stack is for: a
+  // melanogaster arm's orthologs stay on ONE chromosome in each of the four
+  // rows below, which the build's own correspondence print puts at 98% for the
+  // closest pair and 77% for the widest. The gene ORDER inside an element does
+  // not survive that, and the lanes figure above is where that half reads.
+  //
+  // alpha 0.15 rather than the vertebrates figure's 0.3: these five are
+  // one-to-one enough that the links arrive as tight bundles, the same reason
+  // the grasses figure below takes 0.15.
+  {
+    mode: 'url',
+    name: 'orthofinder_synteny/drosophila',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'melanogaster' },
+              { assembly: 'simulans' },
+              { assembly: 'yakuba' },
+              { assembly: 'pseudoobscura' },
+              { assembly: 'virilis' },
+            ],
+            tracks: [
+              ['drosophila_orthogroups'],
+              ['drosophila_orthogroups'],
+              ['drosophila_orthogroups'],
+              ['drosophila_orthogroups'],
+            ],
+            colorBy: 'reference',
+            autoDiagonalize: true,
+            sameScale: true,
+            collapseEmptyRows: true,
+            levelHeights: [180, 180, 180, 180],
+            alpha: 0.15,
+            drawCurves: false,
+          },
+        ],
+      },
+    ),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 1000,
   },
 
   // orthofinder_synteny.md: rice/sorghum/maize/brachypodium/foxtail millet.

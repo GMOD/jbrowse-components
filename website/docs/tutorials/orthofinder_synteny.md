@@ -23,7 +23,8 @@ duplicated gene becomes several rows.
 - `node`, for the [JBrowse CLI](/docs/cli)
 - The
   [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
-  (`datasets` and `dataformat`), for the `wheat` set only
+  (`datasets` and `dataformat`), for the sets that name a genome's chromosomes
+  from a sequence report: `wheat`, `drosophila` and `solanaceae`
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
@@ -36,18 +37,26 @@ the [Apptainer](https://apptainer.org/) version.
 
 ## Where the data comes from
 
-Three OrthoFinder sets built from Ensembl proteomes and annotations: five
-vertebrates (Ensembl release 113), five grasses, and six genomes of the wheat
-lineage (both Ensembl Plants release 63).
+Five OrthoFinder sets built from Ensembl proteomes and annotations: five
+vertebrates (Ensembl release 113), five grasses, six genomes of the wheat
+lineage and five nightshade-family genomes (Ensembl Plants release 63), and five
+_Drosophila_ species (Ensembl Metazoa release 63).
 
 - vertebrates (human, chicken, frog, gar, zebrafish) protein FASTA and GFF3 per
   genome: https://ftp.ensembl.org/pub/release-113/
-- grasses (rice, sorghum, maize, brachypodium, setaria) and the wheat lineage
+- grasses (rice, sorghum, maize, brachypodium, setaria), the wheat lineage
   (_Aegilops tauschii_, bread wheat, durum, wild emmer, _Triticum urartu_, _T.
-  timopheevii_) protein FASTA and GFF3 per genome:
+  timopheevii_) and the nightshades (tomato, potato, pepper, _Nicotiana
+  attenuata_, with coffee as the outgroup) protein FASTA and GFF3 per genome:
   https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/
-- the _T. timopheevii_ assembly its refName aliases are read from:
-  https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/963/921/465/GCA_963921465.1_WRC_timopheevii_genome_with_organelles/
+- flies (_Drosophila melanogaster_, _D. simulans_, _D. yakuba_, _D.
+  pseudoobscura_, _D. virilis_) protein FASTA and GFF3 per genome:
+  https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-63/
+- the six assemblies whose refName aliases are read from an NCBI sequence
+  report, which the datasets CLI fetches by accession rather than by URL: _T.
+  timopheevii_ GCA_963921465.1, tomato GCA_000188115.5, and the four flies other
+  than _D. melanogaster_, GCA_016746395.2, GCA_016746365.2, GCA_009870125.2 and
+  GCA_030788295.1: https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/
 
 ## Orthogroups as a synteny source
 
@@ -132,6 +141,153 @@ the same two-row view with one assembly swapped.
 Urartu's chromosome 4 covers both of the first two blocks, and the distal block
 is on its chromosome 7. Any of the other four assemblies in the track opens the
 same way.
+
+## Chromosome arms that outlast gene order
+
+The `drosophila` set is five fly genomes. _D. simulans_ and _D. yakuba_ sit
+beside _D. melanogaster_; _D. pseudoobscura_ and _D. virilis_ are roughly 25 and
+50 million years out. Flies keep their chromosome arms across that whole range
+(Muller's elements, A through F) and rewrite the order of the genes inside them,
+so the same orthogroup table answers two different questions depending on how
+far you zoom.
+
+The conversion prints the chromosome half as it runs, for each adjacent pair:
+the share of a chromosome's links landing on its single best partner in the row
+below.
+
+```
+chromosome-level correspondence, each row against the next:
+  melanogaster -> simulans     best partner holds  98% of a chromosome's links (5 chromosomes)
+  simulans     -> yakuba       best partner holds  89% of a chromosome's links (5 chromosomes)
+  yakuba       -> pseudoobscura best partner holds  86% of a chromosome's links (5 chromosomes)
+  pseudoobscura -> virilis      best partner holds  77% of a chromosome's links (4 chromosomes)
+```
+
+Stacked, that is a colour per melanogaster arm arriving as one bundle in every
+row, on a chromosome whose name changes as the lineages rename their own.
+
+<Figure caption="Five Drosophila genomes stacked on OrthoFinder orthogroups: melanogaster, simulans, yakuba, pseudoobscura, virilis, on one bp/px. Each melanogaster arm's colour lands on a single chromosome in every row below, and the bundles cross themselves where inversions have accumulated." src="/img/orthofinder_synteny/drosophila.png" />
+
+### One locus, one lane per fly
+
+The gene-order half needs a window, and a
+[multi-way synteny track](/docs/tutorials/multiway_synteny_lgv_track) draws it
+in a single linear view: a lane per fly, each in its own coordinates, with the
+lane's header naming the chromosome that fly keeps these orthologs on.
+
+```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
+{
+  "defaultSession": {
+    "name": "Drosophila multi-way synteny track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "melanogaster",
+          "loc": "3L:5,789,000-5,931,000",
+          "tracks": [
+            {
+              "trackId": "melanogaster_genes",
+              "type": "LinearBasicDisplay",
+              "showOnlyGenes": true,
+              "displayMode": "compact"
+            },
+            {
+              "trackId": "drosophila_orthogroups",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": ["simulans", "yakuba", "pseudoobscura", "virilis"],
+              "height": 320
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+Twenty melanogaster genes on 3L, from _Bre1_ through _S6k_ and _mad2_ to _PXo_,
+and every one of the four other flies keeps all twenty. The two near relatives
+keep them in order too, so their ribbons run parallel. The two distant ones keep
+the block and reverse it, which the header says as `[rev]`.
+
+<Figure caption="A 142 kb window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their own 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane names the X." src="/img/multiway_synteny/drosophila_lanes.png" />
+
+The pseudoobscura lane is the one to read twice. Muller element D is
+melanogaster's 3L, and in the obscura lineage that element is fused to the X, so
+a lane fitted to this window's orthologs sits at 59.8 Mb on a chromosome the
+assembly calls X. Nothing in the table knows that; the lane header is naming the
+chromosome its own placements landed on.
+
+## The same genes over four times the DNA
+
+The `solanaceae` set is tomato, potato and pepper, _Nicotiana attenuata_ as a
+fourth nightshade, and coffee as the outgroup. Their gene counts are within a
+factor of 1.5 of each other, 25,574 for coffee to 39,021 for potato, and their
+genomes are not: 0.38 Gb of coffee against 2.9 Gb of pepper, most of that
+difference being repeat sequence between the genes rather than genes.
+
+Stacked on one bp/px, a row's drawn length is its genome size, so the stack
+states that difference before any ribbon is read.
+
+<Figure caption="Five nightshade-family genomes stacked on OrthoFinder orthogroups: tomato, potato, pepper, Nicotiana attenuata, coffee, all on one bp per pixel. Pepper's row runs nearly four times tomato's while answering it gene for gene, and coffee's is the shortest." src="/img/orthofinder_synteny/solanaceae.png" />
+
+_N. attenuata_ is the assembly still on scaffolds here, and the correspondence
+print says so rather than leaving it to be discovered: its best partner holds
+14% of a chromosome's links, against 77% for tomato to potato. Its own genes are
+spread over thousands of sequences, of which the build keeps the 30 densest, so
+the row draws the share that fell on those.
+
+### One locus, five lanes, five scales
+
+The same table in a
+[multi-way synteny track](/docs/tutorials/multiway_synteny_lgv_track) makes the
+size difference per-gene rather than per-genome. Each lane is fitted to the
+orthologs of the window in that genome's own coordinates and then says what
+scale that took.
+
+```json session config=https://jbrowse.org/demos/orthofinder_solanaceae/config.json
+{
+  "defaultSession": {
+    "name": "Nightshade multi-way synteny track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "tomato",
+          "loc": "SL4.0ch04:62,880,000-63,037,000",
+          "tracks": [
+            {
+              "trackId": "tomato_genes",
+              "type": "LinearBasicDisplay",
+              "showOnlyGenes": true,
+              "displayMode": "compact",
+              "showLabels": "none"
+            },
+            {
+              "trackId": "solanaceae_orthogroups",
+              "type": "MultiWaySyntenyDisplay",
+              "rowOrder": ["potato", "pepper", "tobacco", "coffee"],
+              "height": 320
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+```
+
+A 157 kb window on tomato chromosome 4 whose two dozen genes every one of the
+four other genomes keeps. Potato and coffee draw them at 1.5 times the anchor's
+span; pepper and _N. attenuata_ need 3 times it for the same genes, which is the
+intergenic expansion arriving as a number in a lane header.
+
+<Figure caption="A 157 kb tomato window over potato, pepper, Nicotiana attenuata and coffee lanes from one orthogroups track, each lane in its own coordinates. The potato and coffee lanes hold the block at 1.5x the anchor's span, the pepper and N. attenuata lanes at 3x, with the genes visibly further apart." src="/img/multiway_synteny/solanaceae_lanes.png" />
+
+Every lane's genes stay in the anchor's order, so what changed between them is
+the spacing rather than the arrangement. The coffee lane is `[rev]`, the whole
+block inverted in the outgroup.
 
 ## Producing the blocks table
 
@@ -318,7 +474,7 @@ synteny track and a stacked default session.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_orthofinder_synteny.sh
-bash build_orthofinder_synteny.sh wheat   # or: vertebrates, grasses
+bash build_orthofinder_synteny.sh wheat   # or: vertebrates, grasses, drosophila, solanaceae
 npx --yes serve orthofinder_wheat_build/jbrowse2  # then open the printed URL
 ```
 
@@ -332,6 +488,8 @@ The sets it knows, and what each costs to build:
 | <code>vertebrates</code> | human, chicken, frog, gar, zebrafish | 25 | Ensembl 113 |
 | <code>grasses</code> | rice, sorghum, maize, brachypodium, setaria | 25 | Ensembl Plants 63 |
 | <code>wheat</code> | tauschii, wheat, durum, emmer, urartu, timopheevii | 36 | Ensembl Plants 63 |
+| <code>drosophila</code> | melanogaster, simulans, yakuba, pseudoobscura, virilis | 25 | Ensembl Metazoa 63 |
+| <code>solanaceae</code> | tomato, potato, pepper, tobacco, coffee | 25 | Ensembl Plants 63 |
 
 <!-- ORTHOFINDER_SETS END -->
 
@@ -355,8 +513,9 @@ MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat
 The OrthoFinder step is the long one: it searches every proteome against every
 other, so the DIAMOND count in the table above is the square of the set's size.
 Everything is guarded on its output file, so a re-run picks up where it stopped.
-The `wheat` set is the one that needs the NCBI datasets CLI, to name T.
-timopheevii's chromosomes from its
+Three sets need the NCBI datasets CLI, to name chromosomes their Ensembl GFF3
+gives INSDC accessions instead: T. timopheevii in `wheat`, tomato in
+`solanaceae`, and every fly but melanogaster in `drosophila`, each from its
 [sequence report](/docs/config/ncbisequencereportaliasadapter).
 
 ## See also
