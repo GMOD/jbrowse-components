@@ -11,6 +11,7 @@
 // Run: `pnpm check-release-drafts`, or the root `pnpm check-docs`, which is how
 // CI reaches it. A draft is checked from the day it is committed, which is the
 // point — there is no useful moment to learn this on release day.
+import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -75,6 +76,106 @@ const BANNED = [
 // escape hatch itself never reaches the published post.
 const PRERELEASE_WORDING_OK = '<!-- prerelease-wording-ok -->'
 
+// A draft describes what shipped, and it is written over months while the thing
+// it describes keeps moving -- so its oldest entries name menu labels and APIs
+// that were renamed or folded away before release. Nothing catches that by
+// reading: every such entry is about a feature that IS in the release, under
+// another name, so it reads as correct. The v5.0.0 draft carried nine when this
+// rule was written, including a jbrowse-img modifier spelled `setCompactness`
+// that never existed and an extension-point helper the draft announced two
+// bullets above the API that replaced it.
+//
+// So: every name a draft puts in backticks or quotes has to appear somewhere in
+// the source. It is a spelling check, not a semantic one -- a name that resolves
+// can still be described wrongly -- but a name that resolves nowhere is a reader
+// following the changelog into an error.
+//
+// Four classes, because they fail differently. A backticked or camelCase name is
+// something a reader types (a slot, a modifier, an action); a Capitalized quoted
+// string is a menu label they hunt for; PascalCase is a type or component a
+// plugin author imports.
+const NAME_PATTERNS = [
+  /`([A-Za-z_][A-Za-z0-9_]*)`/g,
+  /"([A-Z][^"]{2,44})"/g,
+  /\b([a-z]+[A-Z][A-Za-z0-9]+)\b/g,
+  /\b([A-Z][a-z]+[A-Z][A-Za-z0-9]+)\b/g,
+]
+
+// A label the source builds from a template ("Apply to N open tracks instead" is
+// `Apply to ${open} open ${pluralize(open, 'track')} instead`) is correct and
+// unfindable by a literal search, and so is a proper noun that happens to be
+// camelCased. `<!-- name-ok: X -->` in the draft exempts one, and the comment
+// never reaches the post.
+const NAME_OK = /<!--\s*name-ok:\s*(.+?)\s*-->/g
+
+// One pass over the tracked source, not one search per name: 6k files and 37 MB,
+// against ~250 names in a draft. Generated files are excluded deliberately --
+// a name that only a `.generated.ts` carries is one the shader codegen minted,
+// not one a reader can look up.
+let sourceIndex: { tokens: Set<string>; text: string } | undefined
+function getSourceIndex() {
+  if (!sourceIndex) {
+    const files = execFileSync(
+      'git',
+      [
+        'ls-files',
+        'plugins/*',
+        'packages/*',
+        'products/*',
+        'website/src/*',
+        'website/scripts/*',
+      ],
+      { cwd: repoRoot, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+    )
+      .split('\n')
+      .filter(f => /\.(ts|tsx|js|jsx|json|slang)$/.test(f))
+      .filter(f => !f.includes('.generated.'))
+    const parts = files.map(f => {
+      try {
+        return readFileSync(join(repoRoot, f), 'utf8')
+      } catch {
+        return ''
+      }
+    })
+    const text = parts.join('\n')
+    // The worst failure mode for this rule is passing vacuously -- a glob that
+    // stops matching leaves an empty index and every name in the draft resolves
+    // against nothing. Cheaper to assert the index is real than to notice later.
+    if (files.length < 1000) {
+      throw new Error(
+        `check-release-drafts: the source scan found ${files.length} files, which is too few to check a draft's names against. Its git ls-files globs have probably gone stale.`,
+      )
+    }
+    sourceIndex = {
+      tokens: new Set(text.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? []),
+      text,
+    }
+  }
+  return sourceIndex
+}
+
+function unresolvedNames(source: string, notes: string) {
+  const exempt = new Set([...source.matchAll(NAME_OK)].map(m => m[1]!.trim()))
+  const names = new Set<string>()
+  for (const re of NAME_PATTERNS) {
+    for (const m of notes.matchAll(re)) {
+      // Prettier wraps the draft, so a two-word label arrives with a newline in
+      // it and the source has it on one line.
+      names.add(m[1]!.replace(/\s+/g, ' ').trim())
+    }
+  }
+  const missing = [...names].filter(n => !exempt.has(n))
+  if (missing.length === 0) {
+    return []
+  }
+  const { tokens, text } = getSourceIndex()
+  return missing
+    .filter(n =>
+      /^[A-Za-z_][A-Za-z0-9_]*$/.test(n) ? !tokens.has(n) : !text.includes(n),
+    )
+    .sort()
+}
+
 const problems: string[] = []
 const drafts = existsSync(DRAFTS)
   ? readdirSync(DRAFTS)
@@ -88,6 +189,11 @@ for (const file of drafts) {
   // thing that can be wrong with it is the heading splitReleaseBody keys on.
   if (CHANGELOG_NAME.test(file)) {
     const body = readFileSync(join(DRAFTS, file), 'utf8').trim()
+    for (const name of unresolvedNames(body, prepareDraftNotes(body))) {
+      flag(
+        `names \`${name}\`, which appears nowhere in the source — it was probably renamed or removed before release. Fix the entry, or add \`<!-- name-ok: ${name} -->\` if the source builds that string from a template`,
+      )
+    }
     if (!CHANGELOG_HEADING.test(body)) {
       flag(
         'must start with a `## Changes since …` heading, or the section is dropped from the GitHub release body and the newsletter',
@@ -150,6 +256,11 @@ for (const file of drafts) {
         `writes \`\${${name}}\`, which no release fills, so it publishes literally. The stats a draft may ask for: ${RELEASE_STAT_NAMES.join(', ')}`,
       )
     }
+  }
+  for (const name of unresolvedNames(source, notes)) {
+    flag(
+      `names \`${name}\`, which appears nowhere in the source — it was probably renamed or removed before release. Fix the entry, or add \`<!-- name-ok: ${name} -->\` if the source builds that string from a template`,
+    )
   }
   for (const [, url] of notes.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)) {
     if (url!.startsWith('/img/')) {
