@@ -223,6 +223,41 @@ Config slots were also renamed. End-user JSON migrates automatically, but plugin
 code that reads a renamed slot directly — `getConf(self, 'color1')` — needs
 updating.
 
+## The LGV viewport is a stored bp window
+
+`LinearGenomeView` persisted its viewport as `offsetPx` and `bpPerPx`. Both are
+functions of the measured width, and the width was never written down, so a
+session authored in a 1000px window reopened at 500px showing half the region
+its author framed. It persists as `windowStartBp` and `windowWidthBp` now, in
+the linearized bp space `displayedRegions` concatenates (ADR-070).
+
+Almost nothing needs changing:
+
+- `offsetPx` and `bpPerPx` are still there under the same names, as derived
+  getters. Reading either is unchanged.
+- `scrollTo(offsetPx)`, `setNewView(bpPerPx, offsetPx)` and `moveTo` keep their
+  signatures.
+- A snapshot, URL spec or `init` naming `bpPerPx`/`offsetPx` is still accepted.
+  `windowStartBp` converts exactly, and the scale rides to the first measure and
+  is adopted at whatever width arrives — bit for bit what v4 did, so an old link
+  keeps its old behavior rather than being reinterpreted. That covers the
+  several places in the tree that build a view from such a snapshot (a synteny
+  row, a split view), so none of them changed.
+
+Two things did change:
+
+- **`zoomTo` lost its third parameter.** It was
+  `zoomTo(bpPerPx, offset, centerAtOffset)`; `centerAtOffset` was unread and is
+  gone. A call passing three arguments now passes one the action does not take.
+- **To frame a specific window, say so in bp.**
+  `setWindow(windowWidthBp, windowStartBp)` is the action, and a snapshot naming
+  `windowWidthBp` is restored as that window at any width. Building one out of
+  `bpPerPx` means inventing a width for the scale to be relative to, which is
+  what the old pair made unavoidable — `buildReadVsRefSpec` and
+  `buildDerivativeVsRefSpec` both computed `bpPerPx: refLen / viewWidth` from a
+  width threaded in from their caller, and both now say `windowWidthBp: refLen`
+  and take no width at all.
+
 ## Extension points changed shape
 
 A point whose `args` are an array is now registered through
