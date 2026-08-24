@@ -439,6 +439,18 @@ export function groupSpanOnRow(
   return a < b ? ([a, b] as const) : ([b, a] as const)
 }
 
+// Every bp position a lane's frame can occupy. The frame always covers
+// [fitMin, fitMax] and its span is fixed by the ladder rung, so the alignment
+// shift can only slide it inside this window — which makes the window itself
+// independent of both the shift and the viewport width. That is what a fetch
+// has to be keyed on: a lane's annotation must not refetch because the browser
+// window was resized, or because one more ortholog moved the alignment median
+// past its quantum.
+export function laneFetchWindow(frame: RowFrame) {
+  const span = frame.max - frame.min
+  return { min: frame.fitMax - span, max: frame.fitMin + span }
+}
+
 interface LanePlacement {
   key: string
   center: number

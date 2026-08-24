@@ -4,6 +4,7 @@ import {
   alignRowFrames,
   computeRowFrame,
   frameTickXs,
+  laneFetchWindow,
   geneGlyphShape,
   groupFeatures,
   groupSpanOnRow,
@@ -702,4 +703,51 @@ test('a lane running against the lane above comes out flipped', () => {
     alignRowFrames(groups, ['peach'], anchorFrame, 1000, 800).get('peach')!
       .flipped,
   ).toBe(true)
+})
+
+// The fetch window has to survive the alignment shift and the viewport width,
+// or a lane refetches its annotation because the browser window was resized.
+test('the lane fetch window covers every position the frame can slide to', () => {
+  const anchorFrame = {
+    refName: 'chr1',
+    min: 0,
+    max: 1000,
+    flipped: false,
+    fitMin: 0,
+    fitMax: 1000,
+  }
+  const groups = groupFeatures(
+    [100, 300, 500].map((start, i) =>
+      pairFeature({
+        uniqueId: `${i}`,
+        name: `g${i}`,
+        start,
+        end: start + 60,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: start + 500000,
+          end: start + 500060,
+          name: `p${i}`,
+        },
+      }),
+    ),
+  )
+  const windows = [400, 800, 1600].map(width => {
+    const frame = alignRowFrames(
+      groups,
+      ['peach'],
+      anchorFrame,
+      1000,
+      width,
+    ).get('peach')!
+    return { frame, reach: laneFetchWindow(frame) }
+  })
+  for (const { reach } of windows) {
+    expect(reach).toEqual(windows[0]!.reach)
+  }
+  for (const { frame } of windows) {
+    expect(frame.min).toBeGreaterThanOrEqual(windows[0]!.reach.min)
+    expect(frame.max).toBeLessThanOrEqual(windows[0]!.reach.max)
+  }
 })

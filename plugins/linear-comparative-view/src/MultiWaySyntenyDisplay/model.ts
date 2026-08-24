@@ -26,6 +26,7 @@ import {
 import {
   alignRowFrames,
   groupFeatures,
+  laneFetchWindow,
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
@@ -432,6 +433,11 @@ export function stateModelFactory(
           for (const [assemblyName, frame] of self.rowFrames) {
             const adapter = adapters.get(assemblyName)
             if (adapter && frame) {
+              // the window every position the frame can slide to, NOT the frame
+              // itself: the frame moves with the alignment shift and therefore
+              // with the viewport width, and keying the fetch on that refetches
+              // a lane's annotation on a window resize
+              const reach = laneFetchWindow(frame)
               specs.push({
                 assemblyName,
                 adapterConfig: adapter,
@@ -439,7 +445,7 @@ export function stateModelFactory(
                   {
                     assemblyName,
                     refName: frame.refName,
-                    ...quantizeSpan(frame.min, frame.max),
+                    ...quantizeSpan(reach.min, reach.max),
                   },
                 ],
               })

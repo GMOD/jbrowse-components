@@ -237,6 +237,7 @@ const MultiWayRows = observer(function MultiWayRows({
     rowFrames,
     visibleGroups,
     laneGenes,
+    laneGeneAdapters,
     laneLinks,
     height,
     ribbonColor,
@@ -466,6 +467,11 @@ const MultiWayRows = observer(function MultiWayRows({
     const genes = laneGenes?.get(assemblyName)
     const drawsGenes =
       !!genes?.length && (rowIndex === 0 || frame !== undefined)
+    // whether the SESSION has an annotation track for this lane, which is what
+    // the header reports. `drawsGenes` is the narrower question of whether this
+    // window has any genes in it — a lane with a gene track over an empty
+    // stretch draws placement boxes, and saying `no annotation` about it would
+    // be a claim about the config that is not true
 
     lanes.push(
       <line
@@ -573,7 +579,11 @@ const MultiWayRows = observer(function MultiWayRows({
         fontSize={10}
         fill={palette.text.primary}
       >
-        {[assemblyName, where, drawsGenes ? undefined : '· no annotation']
+        {[
+          assemblyName,
+          where,
+          laneGeneAdapters.has(assemblyName) ? undefined : '· no annotation',
+        ]
           .filter(part => !!part)
           .join('  ')}
       </text>,
