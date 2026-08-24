@@ -766,14 +766,18 @@ export default function MultiSampleVariantBaseModelF(
            * #action
            */
           setSources(sources: Source[]) {
-            if (deepEqual(sources, self.sourcesVolatile)) {
-              return
-            }
-            self.sourcesVolatile = sources
-            // Apply the colorBy palette and groupBy ordering only when the user
-            // hasn't already arranged the layout themselves.
-            if (self.layout.length === 0) {
-              applyArrangement(self, self.colorBy, self.groupBy)
+            if (!deepEqual(sources, self.sourcesVolatile)) {
+              self.sourcesVolatile = sources
+              // Seeds the configured colorBy palette and groupBy order on
+              // first load, and only then: an empty layout means the user has
+              // not arranged anything yet, and this fires once per adapter.
+              // Every LATER re-seed is its own action's job — setColorBy,
+              // setGroupBy, clearLayout and setPhasedMode each call
+              // `applyArrangement` themselves precisely because this will not
+              // fire again. Widening the guard here does not give them back.
+              if (self.layout.length === 0) {
+                applyArrangement(self, self.colorBy, self.groupBy)
+              }
             }
           },
           /**
