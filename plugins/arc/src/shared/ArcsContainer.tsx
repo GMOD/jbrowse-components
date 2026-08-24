@@ -1,4 +1,5 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
@@ -18,8 +19,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 //
 // A render prop rather than an `Arc` component prop, the same shape
 // `DisplayChrome` uses: the caller keeps its own concrete model type and its own
-// per-glyph props (`semicircle`/`selected` for one, `lineWidth`/`hoverColor` for
-// the other), and this stays ignorant of both.
+// per-glyph props (`semicircle`/`selected` for one, `lineWidth` for the other),
+// and this stays ignorant of both. What it does resolve is what both need and
+// neither should subscribe to per arc: the assembly, the view, and the color a
+// hovered arc takes.
 const ArcsContainer = observer(function ArcsContainer({
   model,
   exportSVG,
@@ -27,17 +30,23 @@ const ArcsContainer = observer(function ArcsContainer({
 }: {
   model: ArcDisplayModel
   exportSVG?: boolean
-  children: (assembly: Assembly, view: LinearGenomeViewModel) => React.ReactNode
+  children: (
+    assembly: Assembly,
+    view: LinearGenomeViewModel,
+    hoverColor: string,
+  ) => React.ReactNode
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const { assemblyManager } = getSession(model)
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
+  // contrasts against the track background in either theme
+  const hoverColor = useTheme().palette.text.primary
 
   if (!assembly) {
     return null
   }
 
-  const arcs = children(assembly, view)
+  const arcs = children(assembly, view, hoverColor)
   return exportSVG ? (
     <>{arcs}</>
   ) : (

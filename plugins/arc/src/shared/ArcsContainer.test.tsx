@@ -1,3 +1,5 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
+import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
 import ArcsContainer from './ArcsContainer.tsx'
@@ -41,4 +43,25 @@ test('on the export path they do not, since the export shell opened one', () => 
   )
   expect(container.querySelector('svg')).toBeNull()
   expect(container.querySelector('path')).not.toBeNull()
+})
+
+// The other thing it resolves for both displays. Per arc this would be one
+// theme-context subscription apiece, and both `Arcs` files had grown their own
+// copy of the lookup — `plugins/arc/src/shared/arcHover.test.tsx` covers what a
+// hovered arc then does with it.
+test('the render prop is handed the color a hovered arc takes', () => {
+  const { display } = createDisplay()
+  const theme = createJBrowseTheme()
+  let handed: string | undefined
+  render(
+    <ThemeProvider theme={theme}>
+      <ArcsContainer model={display}>
+        {(_assembly, _view, hoverColor) => {
+          handed = hoverColor
+          return null
+        }}
+      </ArcsContainer>
+    </ThemeProvider>,
+  )
+  expect(handed).toBe(theme.palette.text.primary)
 })

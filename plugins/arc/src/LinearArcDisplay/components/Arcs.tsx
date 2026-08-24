@@ -1,7 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
 import { getStrokeProps } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ArcsContainer from '../../shared/ArcsContainer.tsx'
@@ -127,12 +126,9 @@ const Arcs = observer(function Arcs({
 }) {
   const { arcStyles, displayMode, selectedFeatureId } = model
   const semicircle = displayMode === 'semicircles'
-  // resolved once here rather than per arc — every <Arc> would otherwise
-  // subscribe to theme context on its own to compute this one color
-  const hoverColor = useTheme().palette.text.primary
   return (
     <ArcsContainer model={model} exportSVG={exportSVG}>
-      {(assembly, view) =>
+      {(assembly, view, hoverColor) =>
         arcStyles?.map(style => (
           <Arc
             key={style.feature.id()}

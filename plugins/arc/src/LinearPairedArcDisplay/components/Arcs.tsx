@@ -1,7 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
 import { getStrokeProps } from '@jbrowse/core/util'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ArcsContainer from '../../shared/ArcsContainer.tsx'
@@ -59,9 +58,9 @@ const Arc = observer(function Arc({
   }
 
   const destY = Math.min(model.height, absrad)
-  // hover emphasis: contrast against the track background in either theme
   const col = mouseOvered ? hoverColor : color
   const events = {
+    style: { cursor: 'pointer' },
     onMouseLeave: () => {
       setMouseOvered(false)
     },
@@ -122,12 +121,9 @@ const Arcs = observer(function Arcs({
   exportSVG?: boolean
 }) {
   const { arcStyles, lineWidth } = model
-  // resolved once here rather than per arc — every <Arc> would otherwise
-  // subscribe to theme context on its own to compute this one color
-  const hoverColor = useTheme().palette.text.primary
   return (
     <ArcsContainer model={model} exportSVG={exportSVG}>
-      {(assembly, view) =>
+      {(assembly, view, hoverColor) =>
         arcStyles?.map(style => (
           <Arc
             key={`${style.feature.id()}-${style.alt ?? ''}`}
