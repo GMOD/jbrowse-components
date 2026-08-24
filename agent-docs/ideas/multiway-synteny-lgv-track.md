@@ -30,6 +30,28 @@ follow-snap-grid refetch entry in [synteny-comparative](synteny-comparative.md)
 for how that cost behaves). Treat it as a fourth backend consumer of the
 synteny GPU stack, not as a change to this display.
 
+**The demo corpus, and what a new one costs now.** As of 2026-08-24 the display
+has a case per kingdom, and every one of them is a table some other pipeline was
+already producing: plants (grape's seven-genome MCScan blocks, the five grasses,
+the five nightshades), animals (five vertebrates over deep time, five flies over
+shallow), humans (an HPRC CFH panel joined by CAT gene name), bacteria (the
+E. coli all-vs-all PAF). The two added that day went in as species tables in
+`build_orthofinder_synteny.sh` — a `case` branch naming Ensembl proteomes plus,
+for a genome whose GFF3 names sequences by INSDC accession, one line of
+`ALIASES` — so a sixth set is a table, an OrthoFinder run and a
+`deploy-demo.sh` loop rather than new code. A `mammals` set (human, mouse, dog,
+cow, pig) was scoped and not built: it sits between the vertebrates set's deep
+time and the flies' shallow time and would say nothing either of them does not,
+which is the bar a new set has to clear now that the display has one of each.
+
+What each new set has to bring is a reading the others cannot: the flies bring
+gene ORDER against chromosome identity (the correspondence print is 98% down to
+77% while a window's rank agreement goes to zero, and the pseudoobscura lane
+names the X because Muller D fused to it), and the nightshades bring SCALE
+(comparable gene counts over 0.38-2.9 Gb, so one window's lanes come back at
+1.5x and 3x rungs). Both are properties the lane headers state and the stacked
+view cannot.
+
 **The selection-scan pairing demo.** The storytelling shape the E. coli figure
 proves — a quantitative signal above, the lanes naming which genomes explain it
 below — has no hosted GWAS/Fst/selection wiggle sitting on the same anchor as a
