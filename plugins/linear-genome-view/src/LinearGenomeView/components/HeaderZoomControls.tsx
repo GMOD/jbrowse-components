@@ -113,14 +113,18 @@ const ZoomSlider = observer(function ZoomSlider({
 
 const HeaderZoomControls = observer(function HeaderZoomControls({
   model,
+  showSlider = true,
 }: {
   model: LinearGenomeViewModel
+  showSlider?: boolean
 }) {
   const { classes } = useStyles()
   return (
     <div className={classes.container}>
       <ZoomButton model={model} direction="out" />
-      <ZoomSlider model={model} />
+      {/* the first control here a narrow header drops: the buttons either side
+      halve and double, and the menu below reaches any factor the drag could */}
+      {showSlider ? <ZoomSlider model={model} /> : null}
       <ZoomButton model={model} direction="in" />
       <CascadingMenuButton menuItems={() => getZoomMenuItems(model)}>
         <MoreVert />

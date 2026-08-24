@@ -1,8 +1,10 @@
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
+import { headerFit } from '../headerFit.ts'
 import HeaderClearHighlightButton from './HeaderClearHighlightButton.tsx'
 import HeaderPanControls from './HeaderPanControls.tsx'
 import HeaderRegionWidth from './HeaderRegionWidth.tsx'
@@ -35,16 +37,25 @@ const Controls = observer(function Controls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
+  // the row itself, not `model.width`: what the pieces below have to fit into
+  // is this box, and the offset between it and the view's measured width
+  // differs between the app's view container, an embedded host and a synteny
+  // row
+  const [ref, { width }] = useMeasure('width')
+  const fit = headerFit(width)
   return (
-    <div className={classes.headerBar}>
-      <HeaderTrackSelectorButton model={model} />
-      <ScrollZoomToggle model={model} />
+    <div className={classes.headerBar} ref={ref}>
+      <HeaderTrackSelectorButton
+        model={model}
+        indent={fit.trackSelectorIndent}
+      />
+      <ScrollZoomToggle model={model} iconOnly={!fit.scrollZoomLabel} />
       <div className={classes.spacer} />
-      <HeaderPanControls model={model} />
+      <HeaderPanControls model={model} compact={!fit.panButtonSpacing} />
       <SearchBox model={model} />
       <HeaderClearHighlightButton model={model} />
-      <HeaderRegionWidth model={model} />
-      <HeaderZoomControls model={model} />
+      {fit.regionWidth ? <HeaderRegionWidth model={model} /> : null}
+      <HeaderZoomControls model={model} showSlider={fit.zoomSlider} />
       <div className={classes.spacer} />
     </div>
   )

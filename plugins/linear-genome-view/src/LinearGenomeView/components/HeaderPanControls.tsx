@@ -14,16 +14,31 @@ const useStyles = makeStyles()(theme => ({
     height: WIDGET_HEIGHT,
     margin: SPACING,
   },
+  // the arrows are the whole button, so MUI's 64px text-button minimum and the
+  // gap either side of it are pure air — the pair gives up 80px of it when the
+  // header can't hold everything
+  compact: {
+    margin: 1,
+    minWidth: 0,
+    padding: theme.spacing(0, 0.5),
+  },
 }))
 
-export default function HeaderPanControls({ model }: { model: LGV }) {
-  const { classes } = useStyles()
+export default function HeaderPanControls({
+  model,
+  compact,
+}: {
+  model: LGV
+  compact?: boolean
+}) {
+  const { classes, cx } = useStyles()
+  const className = cx(classes.panButton, compact && classes.compact)
   return (
     <>
       <Button
         variant="outlined"
         aria-label="Pan left"
-        className={classes.panButton}
+        className={className}
         onClick={() => {
           model.slide(-0.9)
         }}
@@ -33,7 +48,7 @@ export default function HeaderPanControls({ model }: { model: LGV }) {
       <Button
         variant="outlined"
         aria-label="Pan right"
-        className={classes.panButton}
+        className={className}
         onClick={() => {
           model.slide(0.9)
         }}

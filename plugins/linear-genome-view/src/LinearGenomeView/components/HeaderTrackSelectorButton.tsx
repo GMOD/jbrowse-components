@@ -8,6 +8,8 @@ import type { LinearGenomeViewModel } from '../index.ts'
 const useStyles = makeStyles()(theme => ({
   toggleButton: {
     border: 'none',
+  },
+  indent: {
     marginLeft: theme.spacing(4),
   },
   selected: {
@@ -17,8 +19,10 @@ const useStyles = makeStyles()(theme => ({
 
 const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
   model,
+  indent,
 }: {
   model: LinearGenomeViewModel
+  indent?: boolean
 }) {
   const { classes, cx } = useStyles()
   const { isTrackSelectorOpen } = model
@@ -30,6 +34,7 @@ const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
       }}
       className={cx(
         classes.toggleButton,
+        indent && classes.indent,
         isTrackSelectorOpen ? classes.selected : undefined,
       )}
       title={
