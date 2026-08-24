@@ -112,6 +112,7 @@ const fetchKey = self.currentFetchKey
 // Untracked: the values behind that key. Reading them here rather than
 // as deps keeps raw offsetPx/width changes from refiring the fetch,
 // while the worker still sees the current axes.
+// eslint-disable-next-line no-restricted-syntax -- effect input: the worker consumes the axes, fetchKey is the decision
 return untracked(() => ({
   fetchKey,
   // the resolved tier, which is what `currentFetchKey` above carries —
@@ -280,6 +281,7 @@ the fetch:
   // executes in this derivation; `FetchPhases.run` promises those reads are
   // untracked, and unlike the MST flow the LGV side hides behind, nothing
   // here makes it so. Whatever the run needs tracked belongs in `prepare`.
+  // eslint-disable-next-line no-restricted-syntax -- effect input: run's prefix reads are the fetch's, prepare is the trigger list
   untracked(() => {
     void runFetchOnce(self, rotation.begin(), args, {
       run,
