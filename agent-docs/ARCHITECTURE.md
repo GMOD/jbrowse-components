@@ -156,7 +156,7 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-19 registered displays declare 179 config slots, 40 MST properties and 52 volatiles between them — counting what each display's own directory declares.
+20 registered displays declare 185 config slots, 43 MST properties and 58 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
@@ -171,6 +171,7 @@ track-menu setting is a slot.
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
 | `LinearManhattanDisplay` | `plugins/gwas` | 6 | 3 | 0 |
 | `LinearWiggleDisplay` | `plugins/wiggle` | 6 | 2 | 0 |
+| `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 6 |
 | `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 0 |
 | `MultiLinearWiggleDisplay` | `plugins/wiggle` | 5 | 1 | 1 |
 | `ChordVariantDisplay` | `plugins/circular-view` | 4 | 3 | 3 |
@@ -436,7 +437,7 @@ table).
 | Foundation (composed on `BaseDisplay`) | Composes | Displays |
 | --- | --- | --- |
 | `MultiRegionDisplayMixin()` | `RegionTooLargeMixin`, `RenderLifecycleMixin`, `FetchMixin` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearReferenceSequenceDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
-| `GlobalFetchMixin()` | `RegionTooLargeMixin`, `RenderLifecycleMixin`, `FetchMixin` | `LinearArcDisplay`, `LinearHicDisplay`, `LinearPairedArcDisplay`, `SharedLDModel` |
+| `GlobalFetchMixin()` | `RegionTooLargeMixin`, `RenderLifecycleMixin`, `FetchMixin` | `LinearArcDisplay`, `LinearHicDisplay`, `LinearPairedArcDisplay`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
 
 <!-- DISPLAY_FOUNDATION_STACKS END -->
 
@@ -523,7 +524,7 @@ column reports what actually composes what.
 <!-- prettier-ignore -->
 | Mixin | The display supplies | Composed by |
 | --- | --- | --- |
-| `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
+| `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
 | `LegendMixin()` | A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
 | `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
 | `RowHeightMixin()` | The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiSampleVariantBaseModel` |
@@ -576,7 +577,7 @@ nothing declares — `undefined`, read as a boolean, in silence.
 | `regionHasData` | true — nothing checks that a region marked loaded has data behind it, so a display whose commit sites drift from its stores reads the viewport as covered against data nobody holds, and never asks again | `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `maf/LinearMafDisplay` |
 | `rpcProps` | no `SettingsInvalidate` autorun at all, so no user setting ever refetches (correct for `LinearReferenceSequenceDisplay`, indistinguishable from an omission for anyone else) | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gccontent/LinearGCContentDisplay`, `gwas/LinearManhattanDisplay`, `hic/LinearHicDisplay`, `linear-comparative-view/LGVSyntenyDisplay`, `maf/LinearMafDisplay`, `variants/LDDisplay`, `variants/LinearMultiSampleVariantDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
 | `fetchNeeded` | nothing is ever fetched | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay`, `canvas/LinearMultiRowFeatureDisplay`, `gwas/LinearManhattanDisplay`, `maf/LinearMafDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/shared`, `wiggle/LinearWiggleDisplay`, `wiggle/MultiLinearWiggleDisplay` |
-| `viewSignature` | undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census) | `arc/shared`, `hic/LinearHicDisplay`, `variants/LDDisplay` |
+| `viewSignature` | undefined forever, so the display never fetches, `dataCurrent` never goes true and `svgReady` never settles — one track hangs the whole view’s export (fail-hung over fail-stale, deliberately). The comparative displays answer the same freshness question with their own `dataCurrent` compare instead (SVG_EXPORT.md’s signature census) | `arc/shared`, `hic/LinearHicDisplay`, `linear-comparative-view/MultiWaySyntenyDisplay`, `variants/LDDisplay` |
 | `layoutReady` | overlays are dropped rather than pinned to a stale layout | `alignments/LinearAlignmentsDisplay`, `canvas/LinearBasicDisplay` |
 | `fetchInert` | false, the strict answer, and three things go wrong at once — the loading scrim covers a deliberate static placeholder (and a user cancel parks "Loading canceled / Retry" over it permanently), a resting state that never fetches hangs the whole view’s export, and the retry check reports a dead Retry on a display correctly declining to load. On a comparative display it also hangs `displaysSettled` | `breakpoint-split-view/BreakpointSplitView`, `circular-view/ChordVariantDisplay`, `linear-comparative-view/LinearSyntenyDisplay`, `sequence/LinearReferenceSequenceDisplay`, `variants/LDDisplay` |
 | `awaitingPrerequisite` | every decline is judged on the spot by the dev-only retry check, which is right for a display whose fetch answers off its own state — a two-stage one (HiC waits on `CoreGetInfo`, variants on `sourcesBase`) is reported as a dead Retry it does not have, since the run that will fetch is the one after the prerequisite lands. Overriding it DEFERS that verdict, never waives it, so the override has to be strictly narrower than the gate it explains | `hic/LinearHicDisplay`, `variants/shared` |
