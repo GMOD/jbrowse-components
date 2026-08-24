@@ -214,6 +214,49 @@ is frame pacing, not throughput, and the remaining budget is roughly:
 - **React commit**: `react-dom` self time 651ms, `setAttribute` 81ms. Still the
   largest single block, and still the same answer — fewer components per frame.
 
+### The four fixes after that pass, A/B'd
+
+**Measured 2026-08-24**, same harness and session, two production builds per arm
+alternating main / branch, each figure the mean of that arm's two runs.
+
+<!-- BEGIN GENERATED MEASUREMENT zoom-token-churn -->
+
+| one ~7s scroll-zoom gesture         |   main | with the four fixes |
+| ----------------------------------- | -----: | ------------------: |
+| `Blob` construction, self           |   61ms |          **< 29ms** |
+| `postMessage`, self                 |  101ms |            **71ms** |
+| autoscale's two passes, self        |   74ms |            **63ms** |
+| `setTimeout` + `clearTimeout`, self |  173ms |               198ms |
+| timers installed                    |    911 |                 885 |
+| main-thread tasks                   | 11,235 |              10,220 |
+| main busy, total                    | 5679ms |              5684ms |
+
+<!-- END GENERATED MEASUREMENT zoom-token-churn -->
+
+Read the rows, not the last one. Three of the four fixes move the frame they
+aimed at and **none of it reaches total busy** — ~100ms of attributable work off
+a 5.7s gesture is inside this harness's run-to-run spread, so the honest claim is
+per-frame attribution, not a faster gesture.
+
+- **One shared `Blob` behind every token retires the whole `Blob` frame.** The
+  61ms was the constructor, not `createObjectURL`, which is unchanged at ~100ms
+  and is still the substantial cost — the split the 94ms figure above hides.
+- **Guarding the repeat stop cuts `postMessage` by 30%**, and ~1000 main-thread
+  tasks with it: a token was stopped two or three times over and every repeat
+  fanned out to the whole pool.
+- **Clipping autoscale to the visible window is worth ~15%** of its two passes,
+  which matches an isolated A/B of the function (1.15–1.4x, the larger figure at
+  feature counts a screen does not reach).
+- **The `LoadingOverlay` timer rewrite shows nothing either way.** Its
+  `setTimeout` + `clearTimeout` self time came out ~25ms worse across both
+  pairs, which reads like a regression until you count the timers: installs are
+  flat to slightly DOWN (911 → 885), so the extra time is not extra timers. Both
+  frames aggregate every timer in the app, and neither can isolate one hook —
+  the sampled cost is noise at this effect size and the count is the honest
+  read. Keep the rewrite for its pinned semantics, not for a win, and if the
+  per-pulse timer saving is worth proving, it needs a counter around the hook
+  itself rather than a whole-app profile.
+
 ## The stop-token probe, for whoever finds it in a trace next
 
 `probeBlobUrl` (`packages/core/src/util/stopToken.ts`) is a **synchronous XHR**
