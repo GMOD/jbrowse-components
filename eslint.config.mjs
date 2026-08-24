@@ -280,7 +280,7 @@ const noHeightModeComposedFirst = {
 const noUnexplainedUntracked = {
   selector: "CallExpression[callee.name='untracked']",
   message:
-    'Say which ground this `untracked` stands on, as `// eslint-disable-next-line no-restricted-syntax -- <ground>`. There are three: SELF-WRITE (the body writes what it reads, so tracking it re-fires the body off its own write), EFFECT INPUT (no decision branches on the read; only the work the body launches consumes it, and the decision is keyed elsewhere — the values behind a tracked fetch key), INSTRUMENTATION (a dev-only check must not alter the production dependency set). A read the decision branches on is tracked, whatever it costs: the per-region fetch autorun\'s two "perf guards" measured at one idle run and were deleted. See agent-docs/ARCHITECTURE.md §"`untracked` has three grounds".',
+    'Say which ground this `untracked` stands on, as `// eslint-disable-next-line no-restricted-syntax -- <ground>`. There are three: SELF-WRITE (the body writes what it reads, so tracking it re-fires the body off its own write), EFFECT INPUT (no decision branches on the read; only the work the body launches consumes it, and the decision is keyed elsewhere — the values behind a tracked fetch key), INSTRUMENTATION (a dev-only check must not alter the production dependency set). A read the decision branches on is tracked, whatever it costs: the per-region fetch autorun\'s two "perf guards" measured at one idle run and were deleted. See agent-docs/ARCHITECTURE.md §"`untracked` names its ground".',
 }
 
 const sourceRestrictedSyntax = [

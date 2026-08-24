@@ -686,27 +686,28 @@ coverage reads tracked rather than guarded. A read that moves in or out of a bod
 — a trigger dropped under a gate, a guard that stopped being `untracked`, a dev
 check leaking a read — changes the list, whichever observable it was.
 
-**`untracked` has three grounds, and "perf guard" is not one of them.** A
-body may read untracked what its own effect writes (self-write: the
+### `untracked` names its ground, and a perf guard is not one
+
+A body may read untracked what its own effect writes (self-write: the
 viewport-change clear reads `error` / `fetchCanceled` because it clears them,
 and tracking them would re-fire it off `setError` and wipe the flag); a read no
-decision branches on and only the launched work consumes (effect input: the
-axes behind dotplot's tracked `fetchKey`, which the worker culls with — tracked,
+decision branches on and only the launched work consumes (effect input: the axes
+behind dotplot's tracked `fetchKey`, which the worker culls with — tracked,
 every pan would refetch, because a run of that body *is* a fetch); and a
 dev-only check reads untracked so the production dependency set is not a
 development one (instrumentation). The test that sorts a read into tracked or
 not: **does the decision branch on it?** If so it is tracked, whatever the
 idle-run cost. `no-restricted-syntax` fails a bare `untracked(` in source and
 each site names its ground on the disable line. Everything else is a guess about
-cost, and the two the per-region autorun
-carried (`isLoading`, `loadedRegions`, "would re-fire mid-fetch") were measured
-on 2026-08-23 and deleted: tracked, a fetch shorter than the 600 ms debounce
-coalesces the flip into the run `fetchGeneration` already owes, and a longer
-one costs one idle run of the pure plan. Two body runs per fetch cycle either
-way, three past the debounce, and no loop, since the re-run lands on the plan's
-in-flight or covered branch. The better spelling of the self-write case is
-structural: read a signal the write does not move, which is what
-`fetchGeneration` is and why the body never needed `isLoading`.
+cost, and the two the per-region autorun carried (`isLoading`, `loadedRegions`,
+"would re-fire mid-fetch") were measured on 2026-08-23 and deleted: tracked, a
+fetch shorter than the 600 ms debounce coalesces the flip into the run
+`fetchGeneration` already owes, and a longer one costs one idle run of the pure
+plan. Two body runs per fetch cycle either way, three past the debounce, and no
+loop, since the re-run lands on the plan's in-flight or covered branch. The
+better spelling of the self-write case is structural: read a signal the write
+does not move, which is what `fetchGeneration` is and why the body never needed
+`isLoading`.
 
 Why the byte estimate is dropped here: `displayedRegionIndex` is reused across
 chromosomes, so a stale estimate describes the previous chromosome's numbers and
