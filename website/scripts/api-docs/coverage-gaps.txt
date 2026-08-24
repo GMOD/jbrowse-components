@@ -5,13 +5,12 @@
 # Adding a name here is a coverage regression; removing one is the win. Each
 # section names the tag that clears it.
 
-# configs with no #example (7)
+# configs with no #example (6)
 # fix: add an #example to the type’s #config JSDoc
 HierarchicalConfigSchema
 JBrowseConfiguration
 JBrowseRootConfig
 LinearGenomeViewConfigSchema
-LinearScoreDisplay
 PreferencesConfigSchema
 RpcOptions
 

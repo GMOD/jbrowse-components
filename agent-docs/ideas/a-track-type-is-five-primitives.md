@@ -243,6 +243,12 @@ not overruled.
   holds the Material chrome, cannot make.
 - **Step 3** landed as ADR-088: one `installUpload` over `upload(key, data)` /
   `release(key)`, the three installers and their syncs deleted.
+- **Step 4** landed as ADR-089: `defineDisplay(spec)`, and the settings table
+  from step 5 came with it as `params` with `affects`. The gauge: the
+  score-example went from 17 files and 709 lines to four files, the display
+  itself 16 + 196 lines with its GPU pass, no import from the LGV plugin, and
+  it gained SVG export. The typing unknown resolved: one fixed composition
+  inside the factory infers fine.
 
 ## Order, and the gauge
 
@@ -284,3 +290,8 @@ payload type, `fetch`, one `bar` mark, a two-row settings table and the
   library grows or the imperative altitude is the real contract.
 - The single-copy set is guessed at five packages. The measurement in step 1
   may find more, and every one is a peer range this project then owns.
+- `generateConfigDocs.ts` builds a display's config page from a `#config`
+  JSDoc on a `ConfigurationSchema(` call, so a spec-built display has no
+  config page until the generator learns to read the tag on a
+  `defineDisplay(` call or on its `params`. The example's page is the one
+  lost so far.

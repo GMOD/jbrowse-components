@@ -8,19 +8,21 @@ sidebar_label: Plotting features
 ---
 
 **TL;DR:** A custom display that fetches features in a worker and draws them
-with Canvas2D, no shaders required. Right for gene-scale tracks (hundreds to
-thousands of features per frame); move to
+with Canvas2D, no shaders required. You write a spec with four parts, the
+display's settings, its worker fetch, its painter and optionally a shader, and
+`defineDisplay` composes the display type around it. Right for gene-scale tracks
+(hundreds to thousands of features per frame); move to
 [](/docs/developer_guides/creating_gpu_display) only when a profile shows
-Canvas2D can't hold 60fps (roughly ≳100K features per frame). Both paths share
-the same model, fetch chain, and lifecycle.
+Canvas2D can't hold 60fps (roughly ≳100K features per frame). The GPU path is
+the same spec with one more block.
 
 A [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build](/docs/developer_guides/no_build_plugin) one: it bundles
-`@jbrowse/render-core` and composes mixins from
-`@jbrowse/plugin-linear-genome-view`, whose surface is larger and faster-moving
-than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
-versions you develop against. `@jbrowse/render-core` first publishes in the next
-release; until then, build against a `jbrowse-components` checkout.
+`@jbrowse/display-kit` and `@jbrowse/render-core`, whose surfaces are larger and
+faster-moving than
+[`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
+versions you develop against. Both **first publish in the next release** and
+land `@experimental`; until then, build against a `jbrowse-components` checkout.
 
 <Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
@@ -31,69 +33,109 @@ Rendering splits across two threads:
 <Figure caption="The worker fetches and packs, the main thread stores per region and draws. The pure draw function backs both the canvas and SVG export." src="/img/feature_plotting_threads.png" />
 
 The worker returns compact data, never pixels, with all genomic positions
-absolute (not region-relative). The model owns the fetched data (`rpcDataMap`),
-a cheap per-frame `renderState`, and the fetch/draw wiring; mixins supply the
-fetch and draw lifecycles. The renderer paints the visible blocks with an
-ordinary `CanvasRenderingContext2D`, and the same pure draw function backs SVG
-export.
+absolute (not region-relative). The spec's `data` function is the worker half
+and its `paint` function is the main-thread half. The factory stores what `data`
+returns per region (`rpcDataMap`), decides which regions need fetching, and
+calls `paint` with the visible blocks whenever anything on screen changes.
 
 Three terms recur below (the
 [architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
 is fuller):
 
-- **region**: one entry of `view.displayedRegions`. Your worker fetches and
-  stores data one region at a time.
-- **block**: a visible slice of a region with its on-screen pixel span. You draw
-  per block.
+- **region**: one entry of `view.displayedRegions`. `data` runs once per region.
+- **block**: a visible slice of a region with its on-screen pixel span. `paint`
+  draws per block.
 - **`displayedRegionIndex`**: a region's index in `view.displayedRegions`, the
-  join key between `rpcDataMap` and the blocks:
-  `rpcDataMap.get(block.displayedRegionIndex)`.
+  join key between the per-region payloads and the blocks:
+  `regions.get(block.displayedRegionIndex)`.
 
-The simplest complete in-tree reference is
-`plugins/sequence/src/LinearReferenceSequenceDisplay/`, a Canvas2D-only display
-whose renderer is ~30 lines; this guide mirrors its shape.
+## What the factory does for you
+
+`defineDisplay` (`packages/display-kit/src/defineDisplay.tsx`) builds the layers
+an in-tree display spells by hand: the config schema from your `params`, an MST
+model composing `MultiRegionDisplayMixin` and `TrackHeightMixin` with
+`rpcProps`, `renderState` and `fetchNeeded` derived from the spec, an
+`RpcMethodType` subclass that runs `data` in the worker, a
+`Canvas2DPerRegionRenderingBackend` that calls `paint`, the `installUpload`
+render lifecycle, a React component rendering the canvas through
+`DisplayChrome`, and SVG export through `renderDisplaySvg`. Those names are
+where to read when a display outgrows the spec; the
+[architecture spec's display stacks](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
+and
+[GPU_RENDERING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md)
+describe each, and `plugins/gwas/src/LinearManhattanDisplay/` is a display
+written that way.
 
 ## Files to create
 
-`example-plugins/score-example/` is the finished plugin — a standalone package
-CI installs from a packed tarball and asserts renders, so it stays buildable
-against the published packages. It ships both renderers, so the `[GPU only]`
-rows are the ones a Canvas2D display skips:
+`example-plugins/score-example/` is the finished plugin, a standalone package CI
+installs from a packed tarball and asserts renders, so it stays buildable
+against the published packages. The display is one file; the `[GPU only]` row
+and the `gpu` block inside that file are what a Canvas2D display skips:
 
 <!-- EXAMPLE_PLUGIN_TREE START -->
 
 ```
 src/
-  index.ts                       the plugin class; installs the display, the RPC method and the feature panel
-  LinearScoreDisplay/
-    configSchema.ts              config slots (color, scoreColumn)
-    index.ts                     registers the display type
-    model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend
-    components/
-      Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend; the SVG-export path too
-      GpuScoreRenderer.ts        [GPU only] extends GpuPerRegionRenderingBackend; packs instances, writes uniforms
-      ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas
-      ScoreRendererFactory.ts    the factory DisplayChrome calls; picks GPU or Canvas2D
-      drawScore.ts               pure draw function over a Ctx2D
-      scoreTypes.ts              ScoreRenderState and the backend type
-      shaders/
-        score.slang              [GPU only] vertex + fragment for one pass; compiled by gen:shaders
+  index.ts            the plugin class; installs the display and the feature panel
+  scoreDisplay.ts     the whole display: settings, worker fetch, painter, shader passes
   ScoreFeaturePanel/
-    index.tsx                    adds a panel to the feature details widget
-  ScoreRPC/
-    GetScoreData.ts              worker: fetch features from the adapter, then pack
-    buildScoreResult.ts          pure packer, unit-tested without a worker
-    index.ts                     registers the RPC method
-    rpcTypes.ts                  ScoreRegionData and the RPC arg types
+    index.tsx         adds a panel to the feature details widget
+  shaders/
+    score.slang       [GPU only] vertex + fragment for one pass; compiled by gen:shaders
 ```
 
 <!-- EXAMPLE_PLUGIN_TREE END -->
 
-## Step 1: Define the data the worker returns
+## Declare the settings
+
+Every setting the display has goes in `params`. Each entry is an ordinary config
+slot (`type`, `defaultValue`, `description`), so it lands on the display's
+config schema and the user edits it in the track's configuration editor, plus an
+`affects` that says what changing it invalidates:
+
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#params -->
+
+```ts
+// Every setting the display has, and what changing it invalidates: `fetch`
+// re-runs the worker, `frame` only redraws. The factory derives the RPC cache
+// key from the `fetch` set, so a fetch result can never end up in one.
+const params = {
+  color: {
+    type: 'color',
+    defaultValue: '#0068d1',
+    description: 'fill color for every score box',
+    affects: 'frame',
+  },
+  scoreColumn: {
+    type: 'string',
+    defaultValue: 'score',
+    description: 'feature attribute used as the score',
+    affects: 'fetch',
+  },
+} as const
+```
+
+- **`fetch`**: the worker reads it. The factory builds the RPC cache key from
+  this set, so a change refetches every region. Only these params reach `data`.
+- **`frame`**: only `paint` reads it. A change redraws and fetches nothing.
+- **`encode`**: a setting the main-thread buffer packing reads, the third bucket
+  the architecture spec calls
+  [`gpuProps()`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern).
+  This display has none.
+
+Scroll and zoom are never params: they change every frame and arrive through the
+blocks. [The data fetching pipeline](/docs/developer_guides/data_fetching)
+explains the cache key the `fetch` set becomes.
+
+`as const` matters: it is what lets `DataContext` type `params` as the `fetch`
+subset and `paint` see every value with its literal type.
+
+## Define the data the worker returns
 
 Keep it compact and structured-clone-friendly. Use absolute genomic positions.
 
-<!-- include: example-plugins/score-example/src/ScoreRPC/rpcTypes.ts#region-data -->
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#region-data -->
 
 ```ts
 // One region's worth of features packed into parallel typed arrays. Positions
@@ -108,230 +150,99 @@ export interface ScoreRegionData {
 }
 ```
 
-## Step 2: Write the RPC method
+The packer that builds it is a pure function, kept apart from the fetch so
+`scoreDisplay.test.ts` covers it without a worker, an adapter or a plugin
+manager:
 
-The worker fetches from the adapter and packs the result. See
-[](/docs/developer_guides/rpc_workers) for the full `RpcMethodType` contract;
-the shape is:
-
-`ScoreRPC/GetScoreData.ts`:
-
-<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts -->
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#pack -->
 
 ```ts
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+// Pure packer: features -> parallel typed arrays. Kept separate from the fetch
+// so it unit-tests without a worker, an adapter, or a plugin manager. Scores
+// are normalized to 0..1 against the region's own max so the box heights read
+// regardless of the raw score scale.
+export function buildScoreResult(
+  features: Feature[],
+  scoreColumn: string,
+): ScoreRegionData {
+  const scored = features.filter(f => Number.isFinite(f.get(scoreColumn)))
+  const numFeatures = scored.length
+  const starts = new Uint32Array(numFeatures)
+  const ends = new Uint32Array(numFeatures)
+  const scores = new Float32Array(numFeatures)
 
-import { buildScoreResult } from './buildScoreResult.ts'
-
-import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
-import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-
-// Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
-// at every call site: the args are checked and the return type is inferred,
-// instead of both being `any`.
-declare module '@jbrowse/core/rpc/RpcRegistry' {
-  interface RpcRegistry {
-    GetScoreData: {
-      args: GetScoreDataArgs
-      return: ScoreRegionData
-    }
+  let maxScore = 0
+  for (const f of scored) {
+    maxScore = Math.max(maxScore, f.get(scoreColumn) as number)
   }
-}
+  const norm = maxScore || 1
 
-export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
-  name = 'GetScoreData' as const
+  scored.forEach((f, i) => {
+    starts[i] = f.get('start')
+    ends[i] = f.get('end')
+    scores[i] = (f.get(scoreColumn) as number) / norm
+  })
 
-  async execute(args: RpcExecuteArgs<'GetScoreData'>) {
-    const {
-      sessionId,
-      adapterConfig,
-      region,
-      scoreColumn,
-      stopToken,
-      statusCallback,
-    } = args
-    const dataAdapter = await getFeatureAdapterOrThrow({
-      pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-    })
-    // statusCallback arrives as an ordinary function: the caller's never
-    // crossed the boundary, the RPC layer replaced it with a side channel and
-    // rebuilt one here. Hand it to whatever does the slow work rather than only
-    // bracketing that work, so the message tracks the download.
-    statusCallback?.('Fetching features')
-    const features = await dataAdapter.getFeaturesArray(region, {
-      stopToken,
-      statusCallback,
-    })
-    return buildScoreResult(features, scoreColumn)
-  }
+  return { starts, ends, scores, numFeatures }
 }
 ```
 
-## Step 3: The MST model
+## Fetch in the worker
 
-Compose `MultiRegionDisplayMixin` (which brings the fetch autoruns **and** the
-render lifecycle) and `TrackHeightMixin`. You supply four things: a place to
-store fetched data (`rpcDataMap`), a per-frame `renderState`, a `fetchNeeded`
-action, and a `startRenderingBackend` action.
+`data` runs in the worker, once per region. It is handed a `DataContext`: the
+track's `adapter`, already resolved from the track config in the worker, the
+`region`, the `fetch` subset of `params`, and the call's `stopToken` and
+`statusCallback`:
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts -->
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#data -->
 
 ```ts
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView } from '@jbrowse/core/util'
-import MultiRegionDisplayMixin, {
-  fetchEachRegion,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { types } from '@jbrowse/mobx-state-tree'
-import { installUpload } from '@jbrowse/render-core/installUpload'
-import { observable } from 'mobx'
-
-import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
-import type {
-  ScoreRenderState,
-  ScoreRenderingBackend,
-} from './components/scoreTypes.ts'
-import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
-import type { Region } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
-  return types
-    .compose(
-      'LinearScoreDisplay',
-      BaseDisplay,
-      TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
-      types.model({
-        type: types.literal('LinearScoreDisplay'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
-    .volatile(() => ({
-      // fetched data keyed by displayedRegionIndex; the render lifecycle
-      // uploads/draws one region at a time from this map
-      rpcDataMap: observable.map<number, ScoreRegionData>(),
-    }))
-    .views(self => ({
-      get view() {
-        return getContainingView(self) as LinearGenomeViewModel
-      },
-      // fetch inputs watched by SettingsInvalidate; any change refetches. Put
-      // settings that change what the worker computes here; never scroll/zoom
-      // (those change every frame) or the fetch results themselves.
-      rpcProps() {
-        return { scoreColumn: getConf(self, 'scoreColumn') }
-      },
-      // recomputed cheaply every frame without fetching; carries the canvas
-      // dimensions (required) plus whatever the draw path reads
-      get renderState(): ScoreRenderState {
-        return {
-          canvasWidth: self.canvasWidthPx,
-          canvasHeight: self.height,
-          color: getConf(self, 'color'),
-        }
-      },
-    }))
-    .actions(self => ({
-      setRpcData(idx: number, data: ScoreRegionData) {
-        self.rpcDataMap.set(idx, data)
-      },
-      clearDisplaySpecificData() {
-        self.rpcDataMap.clear()
-      },
-    }))
-    .actions(self => ({
-      // called by the fetch autorun for the regions that need loading;
-      // fetchEachRegion handles cancellation, stop tokens and staleness
-      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-        // no `if (!adapterConfig)` guard: the `adapter` slot is a union of the
-        // registered adapter schemas, all of which are creatable from an empty
-        // snapshot, so MST always materializes an object there and the guard
-        // could never fire
-        const { adapterConfig } = self
-        return fetchEachRegion(self, needed, {
-          // `ctx.callRpc`, never `rpcManager.call`: the context injects this
-          // fetch's stop token and its status callback, and forgetting either
-          // is silent — no cancellation for this display, or no progress. The
-          // callback here is this region's own slot in the fan-out, so the N
-          // parallel calls aggregate into one bar instead of overwriting each
-          // other
-          call: (region, ctx) =>
-            ctx.callRpc('GetScoreData', {
-              adapterConfig,
-              region,
-              ...self.rpcProps(),
-            }),
-          onResult: (idx, result) => {
-            self.setRpcData(idx, result)
-          },
-        })
-      },
-      // called once by DisplayChrome when the backend is created. Streams each
-      // region into the backend and draws every frame from renderState. This is
-      // the only part of the model that knows a backend exists, and it is
-      // identical whether that backend is the GPU or the Canvas2D one.
-      startRenderingBackend(backend: ScoreRenderingBackend) {
-        installUpload(self, backend, {
-          cells: () => self.rpcDataMap,
-          render: (b, regions) => {
-            if (regions.size === 0) {
-              return false // keep the loading overlay up until data lands
-            }
-            b.renderBlocks(self.renderBlocks, regions, self.renderState)
-            return true
-          },
-        })
-      },
-    }))
+// Runs in the worker, once per region. `statusCallback` and `stopToken` go to
+// whatever does the slow work rather than only bracketing it, so the progress
+// message tracks the download and a cancel reaches it mid-fetch.
+export async function fetchScoreData({
+  adapter,
+  region,
+  params,
+  stopToken,
+  statusCallback,
+}: DataContext<ScoreParams>) {
+  statusCallback('Fetching features')
+  const features = await adapter.getFeaturesArray(region, {
+    stopToken,
+    statusCallback,
+  })
+  return buildScoreResult(features, params.scoreColumn)
 }
-
-export type LinearScoreDisplayStateModel = ReturnType<typeof modelFactory>
-export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
 ```
 
-`renderBlocks` (the list of visible blocks with their pixel spans) comes from
-`MultiRegionDisplayMixin`, so you don't compute it. The fetch chain
-(`fetchNeeded`, `rpcProps`, cancellation, `regionTooLarge`) is documented in
-full in [the data fetching pipeline](/docs/developer_guides/data_fetching).
+Pass `stopToken` and `statusCallback` through to whatever does the slow work.
+The factory wires them to the display's cancel button and loading bar, and a
+fetch that only brackets its work with them cannot be cancelled mid-download and
+reports no progress. [](/docs/developer_guides/rpc_workers) covers what they are
+on each side of the boundary.
 
-## Step 4: The renderer
+## Paint
 
-The renderer has two parts: a **pure draw function** that paints blocks into any
-2D context, and a thin backend class that the lifecycle drives. Keeping the draw
-logic pure means SVG export reuses it unchanged (see
-[](/docs/developer_guides/svg_export)).
+`paint` is a pure function over any 2D context: `Ctx2D` is
+`CanvasRenderingContext2D | SvgCanvas`, so the same implementation is the
+on-screen Canvas2D renderer and the SVG export. It receives the per-region
+payloads, the visible blocks, and a `DisplayRenderState`: the canvas box plus
+every param, resolved.
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/drawScore.ts -->
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#paint -->
 
 ```ts
-import {
-  bpToScreenPx,
-  forEachClippedBlock,
-} from '@jbrowse/render-core/canvas2dUtils'
-
-import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
-import type { ScoreRenderState } from './scoreTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
 // Pure draw function: paints the visible blocks into any 2D context. Ctx2D =
-// CanvasRenderingContext2D | SvgCanvas, so the same implementation backs both
-// on-screen Canvas2D rendering and SVG export.
-export function drawScoreBlocks(
-  ctx: Ctx2D,
-  regions: ReadonlyMap<number, ScoreRegionData>,
-  blocks: RenderBlock[],
-  state: ScoreRenderState,
-) {
-  const { canvasWidth, canvasHeight, color } = state
-  ctx.fillStyle = color
+// CanvasRenderingContext2D | SvgCanvas, so the same implementation backs the
+// on-screen Canvas2D fallback and SVG export.
+export const drawScoreBlocks: Paint<ScoreRegionData, ScoreParams> = (
+  ctx,
+  regions,
+  blocks,
+  { canvasWidth, canvasHeight, params },
+) => {
+  ctx.fillStyle = params.color
   forEachClippedBlock(
     ctx,
     blocks,
@@ -370,179 +281,94 @@ export function drawScoreBlocks(
 }
 ```
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/Canvas2DScoreRenderer.ts -->
+`forEachClippedBlock` clips to each block's pixel span and hands the draw
+callback whatever your lookup returns for that block, here the payload keyed by
+`displayedRegionIndex`; `bpToScreenPx` maps an absolute position into the block,
+honoring `reversed`. Canvas2D is
+[the floor every display ships](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator):
+SVG export runs this function, and a shader, when one is added, is an
+accelerator layered on top of it.
+
+## Define and install
+
+`defineDisplay` takes the parts. `name` is the display type and the config
+schema's `type`; `trackType` is the track it attaches to:
+
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#define -->
 
 ```ts
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+export const LinearScoreDisplay = defineDisplay({
+  name: 'LinearScoreDisplay',
+  displayName: 'Score display (example)',
+  trackType: 'FeatureTrack',
+  params,
+  data: fetchScoreData,
+  paint: drawScoreBlocks,
+  gpu: scoreGpu,
+})
+```
 
-import { drawScoreBlocks } from './drawScore.ts'
+A Canvas2D-only display leaves `gpu` out. The result carries `install`, which
+registers the display type and the RPC method that runs `data`. Call it from the
+plugin's `install`, which runs on the main thread and in every worker alike;
+that is what puts `data` where the adapter is:
 
-import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
-import type { ScoreRenderState } from './scoreTypes.ts'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+<!-- include: example-plugins/score-example/src/index.ts -->
 
-// The base class owns renderBlocks (DPR-aware canvas sizing, then calls draw);
-// this subclass implements only the pure paint step. Runs both as the WebGPU/
-// WebGL2 fallback and as the SVG-export path.
-export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
-  ScoreRegionData,
-  ScoreRenderState
-> {
-  protected draw(
-    blocks: RenderBlock[],
-    regions: ReadonlyMap<number, ScoreRegionData>,
-    state: ScoreRenderState,
-  ) {
-    drawScoreBlocks(this.ctx, regions, blocks, state)
+```ts
+import Plugin from '@jbrowse/core/Plugin'
+
+import ScoreFeaturePanelF from './ScoreFeaturePanel/index.tsx'
+import { LinearScoreDisplay } from './scoreDisplay.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+
+export default class ScoreExamplePlugin extends Plugin {
+  name = 'ScoreExamplePlugin'
+
+  install(pluginManager: PluginManager) {
+    LinearScoreDisplay.install(pluginManager)
+    ScoreFeaturePanelF(pluginManager)
   }
 }
 ```
 
-Export the factory `DisplayChrome` will call from the same file. A Canvas2D-only
-display returns its backend through `createCanvas2DBackend`, skipping
-`createRenderingBackend`'s WebGPU→WebGL2→Canvas2D ladder, which is the whole
-difference from the GPU path's factory. `plugins/sequence` does exactly this:
-
-<!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/Canvas2DSequenceRenderer.ts#factory -->
-
-```ts
-// A Canvas2D-only display needs no separate factory file and no HAL ladder:
-// createCanvas2DBackend just wraps the backend in the Promise DisplayChrome
-// awaits. Swap in createRenderingBackend (and its createGpuBackend option) only
-// once a profile shows Canvas2D can't hold 60fps.
-export function SequenceRenderer(canvas: HTMLCanvasElement) {
-  return createCanvas2DBackend(canvas, c => new Canvas2DSequenceRenderer(c))
-}
-```
-
-`ScoreRenderState` must include `canvasWidth` and `canvasHeight` (the
-`FrameDimensions` the base class needs to size the backing store); add whatever
-else your draw function reads:
-
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/scoreTypes.ts#render-state -->
-
-```ts
-// Recomputed cheaply every frame without fetching. Carries the canvas
-// dimensions (required by the base class to size the backing store) plus the
-// one setting the draw path reads.
-export interface ScoreRenderState {
-  canvasWidth: number
-  canvasHeight: number
-  color: string
-}
-```
-
-## Step 5: The React component
-
-`DisplayChrome` wraps your canvas with shared status chrome (loading scrim,
-error bar, "region too large" banner) and wires the rendering-backend factory
-and WebGL/WebGPU context-loss recovery. You give it your factory and render the
-`<canvas>` from the `canvasRef` it hands back.
-
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
-
-```tsx
-import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { observer } from 'mobx-react'
-
-import { ScoreRenderer } from './ScoreRendererFactory.ts'
-
-import type { LinearScoreDisplayModel } from '../model.ts'
-
-// DisplayChrome supplies the display's chrome (loading scrim, error bar,
-// region-too-large banner) and WebGL/WebGPU context-loss recovery, and is the
-// only place useRenderingBackend is called. Its render-prop hands back the
-// canvasRef to attach to the <canvas>.
-const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
-  model,
-}: {
-  model: LinearScoreDisplayModel
-}) {
-  return (
-    <DisplayChrome
-      model={model}
-      factory={ScoreRenderer}
-      testid="score-display"
-      style={{ width: '100%', height: model.height }}
-    >
-      {({ canvasRef }) => (
-        <canvas
-          ref={canvasRef}
-          style={{ width: '100%', height: '100%', display: 'block' }}
-        />
-      )}
-    </DisplayChrome>
-  )
-})
-
-export default ScoreDisplayComponent
-```
-
-## Step 6: Register the display
-
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/index.ts -->
-
-```ts
-import { lazy } from 'react'
-
-import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
-
-import { configSchema } from './configSchema.ts'
-import { modelFactory } from './model.ts'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
-
-const ScoreDisplayComponent = lazy(
-  () => import('./components/ScoreDisplayComponent.tsx'),
-)
-
-export default function LinearScoreDisplayF(pluginManager: PluginManager) {
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'LinearScoreDisplay',
-      configSchema,
-      stateModel: modelFactory(configSchema),
-      displayName: 'Score display (example)',
-      trackType: 'FeatureTrack',
-      viewType: 'LinearGenomeView',
-      ReactComponent: ScoreDisplayComponent,
-    })
-  })
-}
-```
-
-Register the RPC method in the same plugin's `install()` with
-`pluginManager.addRpcMethod(() => new GetScoreData(pluginManager))`, and see
-[custom track and display types](/docs/developer_guides/creating_display) for
-how displays attach to a track type.
+See [custom track and display types](/docs/developer_guides/creating_display)
+for how a display attaches to a track type, and
+[](/docs/developer_guides/extension_points) for the feature panel the plugin
+also installs.
 
 ## Hit-testing (clicks and hovers)
 
 Hit-testing is plugin-owned and runs on the main thread, separately from
-rendering. Build a spatial index (e.g.
+rendering, and the spec has no hook for it. A display that answers clicks builds
+a spatial index (e.g.
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
-from `rpcDataMap` in a cached view, and query it from your React mouse handlers
-against the cursor's `(x, y)`. `plugins/gwas`'s `findManhattanHit.ts` is a
-worked example.
+from the per-region payloads in `rpcDataMap` and queries it from its own pointer
+handlers against the cursor's `(x, y)`. `plugins/gwas`'s `findManhattanHit.ts`
+is a worked example over a hand-written model.
 
 ## SVG export
 
-`drawScoreBlocks` takes a `Ctx2D`, so SVG export calls it with an `SvgCanvas`
-and emits vector output from the same code. Add a `renderSvg` action per
-[](/docs/developer_guides/svg_export).
+Nothing to add: `paint` takes a `Ctx2D`, so the factory's `renderSvg` calls it
+with an `SvgCanvas` and emits vector output from the same code.
+[](/docs/developer_guides/svg_export) is the contract it satisfies, for a
+display written without the factory.
 
 ## Moving to the GPU path
 
-Everything above carries over unchanged — model, fetch chain, `renderState`,
-hit-testing, and the Canvas2D renderer, which SVG export keeps using either way.
-You add a `.slang` shader and a GPU renderer, and move the factory from
-`createCanvas2DBackend` to `createRenderingBackend`. See
+Everything above carries over unchanged: `params`, `data`, `paint`, which SVG
+export keeps using either way, and the `defineDisplay` call. You add a `.slang`
+shader and a `gpu` block naming its passes and uniforms. See
 [](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
 
+In-tree displays spell the layers the factory composes by hand, so they are
+where to read when a display needs more than the spec offers:
+
 - `plugins/sequence/src/LinearReferenceSequenceDisplay/` - the simplest
-  Canvas2D-only display (this guide mirrors it)
+  Canvas2D-only display
 - `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display
   (scored scatter) that ships both renderers behind one model, plus hit-testing
   and LD coloring

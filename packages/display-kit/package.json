@@ -42,6 +42,7 @@
     "./TrackHeightIndicator": "./src/TrackHeightIndicator.tsx",
     "./TrackHeightMixin": "./src/TrackHeightMixin.tsx",
     "./configSchema": "./src/configSchema.ts",
+    "./defineDisplay": "./src/defineDisplay.tsx",
     "./const": "./src/const.ts",
     "./displayAutoruns": "./src/displayAutoruns.ts",
     "./fetchEachRegion": "./src/fetchEachRegion.ts",
@@ -171,6 +172,10 @@
       "./configSchema": {
         "types": "./esm/configSchema.d.ts",
         "import": "./esm/configSchema.js"
+      },
+      "./defineDisplay": {
+        "types": "./esm/defineDisplay.d.ts",
+        "import": "./esm/defineDisplay.js"
       },
       "./const": {
         "types": "./esm/const.d.ts",
@@ -330,6 +335,9 @@
         ],
         "configSchema": [
           "esm/configSchema.d.ts"
+        ],
+        "defineDisplay": [
+          "esm/defineDisplay.d.ts"
         ],
         "const": [
           "esm/const.d.ts"

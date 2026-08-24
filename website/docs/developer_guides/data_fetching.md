@@ -64,29 +64,22 @@ whose data goes stale for reasons the bounds can't see.
 `fetchEachRegion`, which runs one RPC per region in parallel over the
 `fetchRegions(needed, work)` primitive and applies both `ctx.isStale()` guards
 for you — forgetting either is a stale-data write, so it is a correctness
-primitive. `LinearScoreDisplay`'s is a whole one, sitting in an
+primitive. `LinearManhattanDisplay`'s is a whole one, sitting in an
 `.actions(self => ({ ... }))` block:
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
+<!-- include: plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts#fetchNeeded -->
 
 ```ts
-// called by the fetch autorun for the regions that need loading;
-// fetchEachRegion handles cancellation, stop tokens and staleness
-fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-  // no `if (!adapterConfig)` guard: the `adapter` slot is a union of the
-  // registered adapter schemas, all of which are creatable from an empty
-  // snapshot, so MST always materializes an object there and the guard
-  // could never fire
+/**
+ * #action
+ */
+fetchNeeded(
+  needed: { region: Region; displayedRegionIndex: number }[],
+) {
   const { adapterConfig } = self
   return fetchEachRegion(self, needed, {
-    // `ctx.callRpc`, never `rpcManager.call`: the context injects this
-    // fetch's stop token and its status callback, and forgetting either
-    // is silent — no cancellation for this display, or no progress. The
-    // callback here is this region's own slot in the fan-out, so the N
-    // parallel calls aggregate into one bar instead of overwriting each
-    // other
     call: (region, ctx) =>
-      ctx.callRpc('GetScoreData', {
+      ctx.callRpc('GetManhattanData', {
         adapterConfig,
         region,
         ...self.rpcProps(),
@@ -215,14 +208,27 @@ Two consequences to design around:
 
 It goes in a `.views()` block, and holds only the settings the worker reads:
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#rpcProps -->
+<!-- include: plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts#rpcProps -->
 
 ```ts
-// fetch inputs watched by SettingsInvalidate; any change refetches. Put
-// settings that change what the worker computes here; never scroll/zoom
-// (those change every frame) or the fetch results themselves.
-rpcProps() {
-  return { scoreColumn: getConf(self, 'scoreColumn') }
+/**
+ * #method
+ * fetch inputs watched by SettingsInvalidate — any change (color, colorBy,
+ * index SNP, LD adapter) triggers a refetch, since the worker bakes
+ * per-feature color into the result
+ */
+rpcProps(): {
+  color: string
+  colorBy: 'normal' | 'ld'
+  indexSnp: string | undefined
+  ldAdapterConfig: Record<string, unknown> | undefined
+} {
+  return {
+    color: self.color,
+    colorBy: self.colorBy,
+    indexSnp: self.indexSnp,
+    ldAdapterConfig: self.ldAdapterConfig,
+  }
 },
 ```
 
@@ -374,8 +380,12 @@ arrives rather than waiving it.
 
 Compose it alongside `BaseDisplay` and `TrackHeightMixin`, then add the
 `rpcDataMap` volatile, the `rpcProps` view and the `setRpcData`/`fetchNeeded`
-actions above. `LinearScoreDisplay` in
-[](/docs/developer_guides/plotting_features) is that model whole and compiling.
+actions above. `LinearManhattanDisplay`
+(`plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts`) is that model
+whole and compiling. The worked example in
+[](/docs/developer_guides/plotting_features) spells none of it: `defineDisplay`
+composes the same mixin and derives `rpcProps` and `fetchNeeded` from the spec's
+`params` and `data`.
 
 ## See also
 

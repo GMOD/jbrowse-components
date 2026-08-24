@@ -317,6 +317,7 @@ export function stateModelFactory(
             normalize: makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR),
           })
         },
+        // #region rpcProps
         /**
          * #method
          * fetch inputs watched by SettingsInvalidate — any change (color, colorBy,
@@ -336,6 +337,7 @@ export function stateModelFactory(
             ldAdapterConfig: self.ldAdapterConfig,
           }
         },
+        // #endregion
         /**
          * #getter
          * render geometry for the inner canvas (between top/bottom YScaleBar label
@@ -659,6 +661,7 @@ export function stateModelFactory(
         },
       }))
       .actions(self => ({
+        // #region fetchNeeded
         /**
          * #action
          */
@@ -678,6 +681,7 @@ export function stateModelFactory(
             },
           })
         },
+        // #endregion
         /**
          * #action
          * identity encode — RPC result is the upload payload

@@ -126,32 +126,43 @@ mirrored into the package's README on npm.
 ### Build-step plugins (template)
 
 Import everything normally. `LinearScoreDisplay`, from the
-[worked example plugin](/docs/developer_guides/plotting_features), imports both
-kinds without distinguishing them:
+[worked example plugin](/docs/developer_guides/plotting_features), imports from
+`@jbrowse/core`, `@jbrowse/display-kit` and `@jbrowse/render-core` the same way:
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#imports -->
+<!-- include: example-plugins/score-example/src/scoreDisplay.ts#imports -->
 
 ```ts
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView } from '@jbrowse/core/util'
-import MultiRegionDisplayMixin, {
-  fetchEachRegion,
-} from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { types } from '@jbrowse/mobx-state-tree'
-import { installUpload } from '@jbrowse/render-core/installUpload'
-import { observable } from 'mobx'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { defineDisplay } from '@jbrowse/display-kit/defineDisplay'
+import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import {
+  bpToScreenPx,
+  forEachClippedBlock,
+} from '@jbrowse/render-core/canvas2dUtils'
+import { slangPass } from '@jbrowse/render-core/slangPass'
+
+import * as shader from './shaders/score.generated.ts'
+
+import type { Feature } from '@jbrowse/core/util'
+import type {
+  DataContext,
+  DisplayRenderState,
+  GpuSpec,
+  Paint,
+} from '@jbrowse/display-kit/defineDisplay'
 ```
 
 The [plugin templates](/docs/developer_guides/simple_plugin) mark the re-export
-list as **external**, so every import above that appears in the table earlier on
-this page resolves to the host's copy at runtime: the `@jbrowse/core` subpaths,
-`@jbrowse/mobx-state-tree`, `mobx`. The other two,
-`@jbrowse/plugin-linear-genome-view` and `@jbrowse/render-core`, are not on the
-list, so they are bundled into the plugin, which is what happens to any
-dependency that isn't — `d3-scale`, say. The build configs read
-`ReExports/list.ts` directly, so you do not maintain this set yourself.
+list as **external**, so an import that appears in the table earlier on this
+page resolves to the host's copy at runtime. `@jbrowse/core/util` is the one
+above, and a type-only import of it, erased at build; a runtime import from a
+listed path is what the externalizing is for. Everything else is bundled into
+the plugin: `@jbrowse/display-kit` and `@jbrowse/render-core`, which are not on
+the list, and `@jbrowse/core/util/colorBits`, a core path off the list, which is
+harmless for a pure helper (the
+[section below](#jbrowsecore-paths-not-in-the-list) says when it is not). Any
+other dependency, `d3-scale` say, is bundled the same way. The build configs
+read `ReExports/list.ts` directly, so you do not maintain this set yourself.
 
 ### No-build plugins
 

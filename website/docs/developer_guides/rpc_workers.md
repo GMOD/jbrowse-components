@@ -23,61 +23,66 @@ stay warm across calls from the same session.
 
 ## Implementing an RPC method
 
-Extend `RpcMethodType` and implement `execute()`. `GetScoreData` from
-[`example-plugins/score-example`](/docs/developer_guides/plotting_features) is a
-complete one — it deserializes, resolves the adapter, fetches, and packs the
-result into typed arrays:
+Extend `RpcMethodType` and implement `execute()`. `MafGetSequences` from
+`plugins/maf` is a complete one: it declares its registry entry, resolves the
+adapter, fetches, and post-processes the result. The base it extends adds region
+renaming and feature filters on top of `RpcMethodType`, covered below. The
+worked example in [](/docs/developer_guides/plotting_features) has no method
+file of its own; `defineDisplay` builds one around the spec's `data` function.
 
-<!-- include: example-plugins/score-example/src/ScoreRPC/GetScoreData.ts -->
+<!-- include: plugins/maf/src/MafGetSequencesRpc/MafGetSequences.ts -->
 
 ```ts
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import { buildScoreResult } from './buildScoreResult.ts'
+import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
-import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
+import type { BaseMafRpcArgs, Sample } from '../types.ts'
+import type { FastaResult } from '../util/processFeaturesToFasta.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 
-// Registering the name here is what types `rpcManager.call(…, 'GetScoreData', …)`
-// at every call site: the args are checked and the return type is inferred,
-// instead of both being `any`.
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
-    GetScoreData: {
-      args: GetScoreDataArgs
-      return: ScoreRegionData
+    MafGetSequences: {
+      args: MafGetSequencesArgs
+      return: FastaResult
     }
   }
 }
 
-export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
-  name = 'GetScoreData' as const
+export interface MafGetSequencesArgs extends BaseMafRpcArgs {
+  samples: Sample[]
+  showAllLetters: boolean
+  includeInsertions?: boolean
+}
 
-  async execute(args: RpcExecuteArgs<'GetScoreData'>) {
+export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRegions<'MafGetSequences'> {
+  name = 'MafGetSequences' as const
+
+  async execute(args: RpcExecuteArgs<'MafGetSequences'>): Promise<FastaResult> {
     const {
-      sessionId,
+      samples,
+      regions,
       adapterConfig,
-      region,
-      scoreColumn,
-      stopToken,
-      statusCallback,
+      sessionId,
+      showAllLetters,
+      includeInsertions,
     } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
     })
-    // statusCallback arrives as an ordinary function: the caller's never
-    // crossed the boundary, the RPC layer replaced it with a side channel and
-    // rebuilt one here. Hand it to whatever does the slow work rather than only
-    // bracketing that work, so the message tracks the download.
-    statusCallback?.('Fetching features')
-    const features = await dataAdapter.getFeaturesArray(region, {
-      stopToken,
-      statusCallback,
+
+    const features = await dataAdapter.getFeaturesArray(regions[0]!, args)
+    return processFeaturesToFasta({
+      features,
+      samples,
+      regions,
+      showAllLetters,
+      includeInsertions,
     })
-    return buildScoreResult(features, scoreColumn)
   }
 }
 ```
@@ -154,39 +159,61 @@ and a bug if the worker keeps it in a cache.
 `addRpcMethod` takes a factory, called once per realm — the main thread and each
 worker construct their own instance:
 
-<!-- include: example-plugins/score-example/src/ScoreRPC/index.ts -->
+<!-- include: plugins/maf/src/MafGetSequencesRpc/index.ts -->
 
 ```ts
-import GetScoreData from './GetScoreData.ts'
+import MafGetSequences from './MafGetSequences.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default function ScoreRPCF(pluginManager: PluginManager) {
-  pluginManager.addRpcMethod(() => new GetScoreData(pluginManager))
+export default function MafGetSequencesF(pluginManager: PluginManager) {
+  pluginManager.addRpcMethod(() => {
+    return new MafGetSequences(pluginManager)
+  })
 }
 ```
 
 Call that from your plugin's `install()`, alongside whatever else the plugin
 registers:
 
-<!-- include: example-plugins/score-example/src/index.ts -->
+<!-- include: plugins/maf/src/index.ts -->
 
 ```ts
 import Plugin from '@jbrowse/core/Plugin'
 
-import LinearScoreDisplayF from './LinearScoreDisplay/index.ts'
-import ScoreFeaturePanelF from './ScoreFeaturePanel/index.tsx'
-import ScoreRPCF from './ScoreRPC/index.ts'
+import BgzipMafAdapterF from './BgzipMafAdapter/index.ts'
+import BgzipTaffyAdapterF from './BgzipTaffyAdapter/index.ts'
+import BigMafAdapterF from './BigMafAdapter/index.ts'
+import LinearMafClusterIdentityMatrixF from './LinearMafClusterIdentityRpc/index.ts'
+import LinearMafDisplayF from './LinearMafDisplay/index.ts'
+import LinearMafGetAlignmentDataF from './LinearMafGetAlignmentDataRpc/index.ts'
+import LinearMafGetAnnotationDataF from './LinearMafGetAnnotationDataRpc/index.ts'
+import LinearMafGetSummaryDataF from './LinearMafGetSummaryDataRpc/index.ts'
+import MafAddTrackWorkflowF from './MafAddTrackWorkflow/index.ts'
+import MafGetSequencesF from './MafGetSequencesRpc/index.ts'
+import MafSequenceWidgetF from './MafSequenceWidget/index.ts'
+import MafTabixAdapterF from './MafTabixAdapter/index.ts'
+import MafTrackF from './MafTrack/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-export default class ScoreExamplePlugin extends Plugin {
-  name = 'ScoreExamplePlugin'
+export default class MafPlugin extends Plugin {
+  name = 'MafPlugin'
 
   install(pluginManager: PluginManager) {
-    LinearScoreDisplayF(pluginManager)
-    ScoreRPCF(pluginManager)
-    ScoreFeaturePanelF(pluginManager)
+    BgzipMafAdapterF(pluginManager)
+    BgzipTaffyAdapterF(pluginManager)
+    BigMafAdapterF(pluginManager)
+    MafTrackF(pluginManager)
+    LinearMafDisplayF(pluginManager)
+    LinearMafClusterIdentityMatrixF(pluginManager)
+    LinearMafGetAlignmentDataF(pluginManager)
+    LinearMafGetAnnotationDataF(pluginManager)
+    LinearMafGetSummaryDataF(pluginManager)
+    MafTabixAdapterF(pluginManager)
+    MafAddTrackWorkflowF(pluginManager)
+    MafGetSequencesF(pluginManager)
+    MafSequenceWidgetF(pluginManager)
   }
 }
 ```
@@ -204,29 +231,22 @@ require or refuse one. `EntriesDeclaringCallLevelFields` in `RpcRegistry.ts`
 fails compilation, naming the entry, if one declares either.
 
 A per-region display does not `await` the call itself. `fetchEachRegion` owns
-cancellation, stop tokens and staleness, so `LinearScoreDisplay` hands it the
-call and a place to put each result:
+cancellation, stop tokens and staleness, so `LinearManhattanDisplay` hands it
+the call and a place to put each result:
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
+<!-- include: plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts#fetchNeeded -->
 
 ```ts
-// called by the fetch autorun for the regions that need loading;
-// fetchEachRegion handles cancellation, stop tokens and staleness
-fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
-  // no `if (!adapterConfig)` guard: the `adapter` slot is a union of the
-  // registered adapter schemas, all of which are creatable from an empty
-  // snapshot, so MST always materializes an object there and the guard
-  // could never fire
+/**
+ * #action
+ */
+fetchNeeded(
+  needed: { region: Region; displayedRegionIndex: number }[],
+) {
   const { adapterConfig } = self
   return fetchEachRegion(self, needed, {
-    // `ctx.callRpc`, never `rpcManager.call`: the context injects this
-    // fetch's stop token and its status callback, and forgetting either
-    // is silent — no cancellation for this display, or no progress. The
-    // callback here is this region's own slot in the fan-out, so the N
-    // parallel calls aggregate into one bar instead of overwriting each
-    // other
     call: (region, ctx) =>
-      ctx.callRpc('GetScoreData', {
+      ctx.callRpc('GetManhattanData', {
         adapterConfig,
         region,
         ...self.rpcProps(),
@@ -239,9 +259,9 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 ```
 
 See [](/docs/developer_guides/data_fetching) for what `fetchEachRegion` does
-with that, and [](/docs/developer_guides/plotting_features) for the rest of the
-model. A one-off call — a dialog, a widget — needs none of it and can
-`await rpcManager.call(...)` directly.
+with that, and `plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts`
+for the rest of the model. A one-off call — a dialog, a widget — needs none of
+it and can `await rpcManager.call(...)` directly.
 
 ## What can cross the worker boundary
 
@@ -271,13 +291,14 @@ callback is that region's slot in the loading UI and the N of them aggregate
 into one bar.
 
 In the worker it arrives deserialized and is called normally. Hand it down to
-whatever does the slow work so the message tracks the download — `GetScoreData`
-above passes it into `getFeaturesArray`.
+whatever does the slow work so the message tracks the download.
+`MafGetSequences` above hands the whole deserialized `args` bag to
+`getFeaturesArray`, so it and the stop token ride along.
 
 ## Type-registering your method
 
 The `declare module '@jbrowse/core/rpc/RpcRegistry'` block at the top of
-`GetScoreData` above is what types `rpcManager.call` at every call site — and
+`MafGetSequences` above is what types `rpcManager.call` at every call site — and
 `ctx.callRpc` with it, which forwards the same registry lookup, so a fetch gets
 per-method arg inference and a typed return without naming the session id.
 Without the registration both overloads fall back to `any`, so a misspelled arg
