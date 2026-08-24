@@ -83,7 +83,7 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
     !namesTemporaryAssembly(session, trackConfig)
 
   // Coerced even though `DraftTrackConfig` types this `string`: `mixinData` is
-  // a plugin extension point and deepmerge lets it write any key, so the
+  // a plugin extension point and the merge lets it write any key, so the
   // declared shape is what the widget builds rather than a guarantee about what
   // survives the merge. Nothing in-tree contributes a `trackId` — the four
   // comparative components and GWAS all contribute `adapter`/`assemblyNames` —

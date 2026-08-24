@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material'
-import deepmerge from 'deepmerge'
 
+import { deepMerge } from '../util/deepMerge.ts'
 import { palettePresets, resolvePalette } from './palette.ts'
 import { DEFAULT_FONT_SIZE, DEFAULT_SPACING } from './styleTheme.ts'
 
@@ -148,10 +148,6 @@ export const defaultThemes = {
     },
   },
 } satisfies ThemeMap
-
-function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
-  return sourceArray
-}
 
 // The default primary (midnight) has poor contrast as a text/control color in
 // dark mode, so fall back to a text-like color there. The extra selectors let
@@ -387,7 +383,7 @@ const baseThemeOptions: ThemeOptions = {
 }
 
 export function createJBrowseBaseTheme(theme: ThemeOptions = {}): ThemeOptions {
-  return deepmerge(baseThemeOptions, theme, { arrayMerge: overwriteArrayMerge })
+  return deepMerge(baseThemeOptions, theme)
 }
 
 // themes carry a display `name` (shown in the theme picker) on top of the
@@ -456,9 +452,7 @@ export function createJBrowseTheme(
   // only the 'default' theme draws from configTheme: the named themes are fixed
   // presets and intentionally ignore config palette/spacing/components
   const merged =
-    themeName === 'default'
-      ? deepmerge(selected, configTheme, { arrayMerge: overwriteArrayMerge })
-      : selected
+    themeName === 'default' ? deepMerge(selected, configTheme) : selected
 
   const theme = createTheme(
     createJBrowseBaseTheme({

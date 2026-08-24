@@ -555,10 +555,11 @@ test('getTrackConfig keeps the view assembly when mixinData contributes none', (
   expect(widget.getTrackConfig(Date.now())?.assemblyNames).toEqual(['hg38'])
 })
 
-// The fields `addTrackFromWidget` reads off the result. `deepmerge` used to
-// erase them — a config the widget fully specifies came back as a bare index
-// signature, so every one of these had to be re-narrowed by hand at the call
-// site and none could be passed to a parameter with a real type.
+// The fields `addTrackFromWidget` reads off the result. The `deepmerge`
+// dependency used to erase them — a config the widget fully specifies came back
+// as a bare index signature, so every one of these had to be re-narrowed by
+// hand at the call site and none could be passed to a parameter with a real
+// type. `deepMerge` returns the base's type, and this holds it there.
 test('getTrackConfig fills the identity fields the add path reads', () => {
   const { widget } = makeHg38Session()
   widget.setTrackData({

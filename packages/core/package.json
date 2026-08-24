@@ -162,6 +162,7 @@
     "./util/copyText": "./src/util/copyText.ts",
     "./util/createStopTokenRotation": "./src/util/createStopTokenRotation.ts",
     "./util/deepEqual": "./src/util/deepEqual.ts",
+    "./util/deepMerge": "./src/util/deepMerge.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
     "./util/eventPoint": "./src/util/eventPoint.ts",
     "./util/fetchContext": "./src/util/fetchContext.ts",
@@ -266,7 +267,6 @@
     "@mui/x-data-grid": "^9.11.0",
     "canvas-sequencer-ts": "^3.1.3",
     "compare-versions": "^6.1.1",
-    "deepmerge": "^4.3.1",
     "dompurify": "^3.4.14",
     "generic-filehandle2": "^2.4.0",
     "idb": "^8.0.3",
@@ -850,6 +850,10 @@
       "./util/deepEqual": {
         "types": "./esm/util/deepEqual.d.ts",
         "import": "./esm/util/deepEqual.js"
+      },
+      "./util/deepMerge": {
+        "types": "./esm/util/deepMerge.d.ts",
+        "import": "./esm/util/deepMerge.js"
       },
       "./util/diagonalizeRegions": {
         "types": "./esm/util/diagonalizeRegions.d.ts",
@@ -1555,6 +1559,9 @@
         ],
         "util/deepEqual": [
           "esm/util/deepEqual.d.ts"
+        ],
+        "util/deepMerge": [
+          "esm/util/deepMerge.d.ts"
         ],
         "util/diagonalizeRegions": [
           "esm/util/diagonalizeRegions.d.ts"

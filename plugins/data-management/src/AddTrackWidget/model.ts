@@ -4,6 +4,7 @@ import {
   isUriLocation,
   makeTrackId,
 } from '@jbrowse/core/util'
+import { deepMerge } from '@jbrowse/core/util/deepMerge'
 import { detectIndexLocation } from '@jbrowse/core/util/indexCandidates'
 import { openLocation, resolveUriLocation } from '@jbrowse/core/util/io'
 import {
@@ -14,7 +15,6 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import deepmerge from 'deepmerge'
 import { autorun } from 'mobx'
 
 import {
@@ -42,19 +42,9 @@ export interface IndexingAttr {
  * fields it always writes, plus whatever a plugin's `mixinData` contributed.
  *
  * A description of what the widget writes, NOT a guarantee about what survives
- * the merge — `mixinData` is a plugin extension point and deepmerge lets it
+ * the merge — `mixinData` is a plugin extension point and the merge lets it
  * write any key, which is deliberate for `assemblyNames` (a multi-genome track
  * replaces the single view assembly) and untested for the rest.
- *
- * Declared, and named as `getTrackConfig`'s return type, because `deepmerge`
- * erases it otherwise. Its first overload is `<T>(x: Partial<T>, y: Partial<T>)
- * => T`, and with `mixinData` typed `Record<string, unknown>` that is the
- * overload that matches — `T` infers to `Record<string, unknown>` and the
- * object literal, which is assignable to `Partial` of it, contributes nothing.
- * So the merge of a fully-known shape came back as an index signature and every
- * field the callers actually need had to be re-narrowed by hand
- * (`String(trackConfig.trackId)`), or, once `doSubmit` passed the result to
- * something with a real parameter type, could not be passed at all.
  */
 export interface DraftTrackConfig extends Record<string, unknown> {
   trackId: string
@@ -484,9 +474,6 @@ export default function f(pluginManager: PluginManager) {
         ) {
           return undefined
         }
-        // Annotated, so the fields `DraftTrackConfig` promises are checked
-        // against the literal that writes them rather than against the merge
-        // result, which `deepmerge` types as `Partial` of whatever it returns.
         const base: DraftTrackConfig = {
           trackId: makeTrackId({
             name,
@@ -497,22 +484,12 @@ export default function f(pluginManager: PluginManager) {
           assemblyNames: [self.assembly],
           adapter: { ...self.trackAdapter },
         }
-        // Explicit type arguments select deepmerge's two-type overload. Left to
-        // infer, `mixinData`'s index signature swallows the whole shape — see
-        // DraftTrackConfig.
-        return deepmerge<DraftTrackConfig, Record<string, unknown>>(
-          base,
-          // Synteny add-track components seed mixinData with the assemblies
-          // the file covers — on the adapter, and on the track itself, since
-          // the track selector only offers a track that lists every assembly
-          // the view displays (filterTracks). Non-synteny tracks leave it
-          // empty so their config isn't polluted with assembly-pair fields.
-          self.mixinData,
-          // a contributed array replaces the base one rather than
-          // concatenating onto it, so a multi-genome track's assemblyNames
-          // doesn't come back as [thisAssembly, ...allAssemblies]
-          { arrayMerge: (_base, contributed: unknown[]) => contributed },
-        )
+        // Synteny add-track components seed mixinData with the assemblies the
+        // file covers — on the adapter, and on the track itself, since the
+        // track selector only offers a track that lists every assembly the
+        // view displays (filterTracks). Non-synteny tracks leave it empty so
+        // their config isn't polluted with assembly-pair fields.
+        return deepMerge(base, self.mixinData)
       },
       /**
        * #getter

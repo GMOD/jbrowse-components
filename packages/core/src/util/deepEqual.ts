@@ -1,6 +1,4 @@
-function isPlainObject(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
+import { isPlainObject } from './objectUtils.ts'
 
 /**
  * Structural equality: identity for primitives, recursive comparison for
