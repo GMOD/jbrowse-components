@@ -64,7 +64,7 @@
         "type": "LinearGenomeView",
         "init": {
           "assembly": "hg38",
-          "loc": "chr1:47,195,000..47,265,000",
+          "loc": "chr1:47,189,833..47,259,832",
           "tracks": ["genes", "tal1_variants"]
         }
       }

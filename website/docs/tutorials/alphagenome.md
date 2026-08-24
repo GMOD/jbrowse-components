@@ -96,6 +96,12 @@ prediction, stores the arrays it gets back, and hands the browser a manifest of
 byte ranges. The public instance is the default; `setApiRoot` points it at your
 own.
 
+The plugin is Apache-2.0, but the model behind it is not ours to relicense:
+AlphaGenome's API is
+[offered as a free service for non-commercial use](https://deepmind.google.com/science/alphagenome/terms),
+so the public instance above — and any instance you point `setApiRoot` at with
+your own key — carries that restriction with it.
+
 ## Ask for a prediction
 
 Open the session below and the locus is already in view, with RefSeq genes and
@@ -111,7 +117,7 @@ the oncogenic _TAL1_ variants above it and no predictions yet.
         "type": "LinearGenomeView",
         "init": {
           "assembly": "hg38",
-          "loc": "chr1:47,195,000..47,265,000",
+          "loc": "chr1:47,189,833..47,259,832",
           "tracks": ["genes", "tal1_variants"]
         }
       }
@@ -137,9 +143,15 @@ into a request:
 
 A wide request over many output types takes minutes, well past what an API
 gateway holds a connection open for, so the request is registered and the
-browser polls for it. Identical requests are keyed by content: asking again for
-what this page already asked for costs nothing and returns at once, which is why
-the prediction behind the figures below is instant.
+browser polls for it. Requests are keyed by content, with the window rounded to
+4 kb before it is hashed, so asking again for what this page already asked for
+costs nothing and returns at once — which is why the prediction behind the
+figures below is instant. The rounding is what makes that true in practice
+rather than in principle: a view's region comes from an integer pixel offset, so
+two browser windows of different widths ask about the same locus in coordinates
+tens of bases apart, and keyed exactly, neither would ever hit the other's
+answer. A hit can therefore return a window up to about 2 kb off the one asked
+for, out of a megabase, and the track list names the interval that came back.
 
 ## Two cell lines on one axis
 
