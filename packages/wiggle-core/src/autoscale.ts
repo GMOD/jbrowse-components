@@ -91,6 +91,58 @@ function boundArrays(summaryScoreMode: string) {
 // the second pass O(n) with a fixed, trivial allocation.
 const NUM_HISTOGRAM_BINS = 1024
 
+// First index whose feature STARTS at or after `bp`. `featurePositions` is
+// sorted by start — the same property `findFeatureAtBp` binary-searches on.
+function lowerBoundByStart(
+  featurePositions: Uint32Array,
+  numFeatures: number,
+  bp: number,
+) {
+  let lo = 0
+  let hi = numFeatures
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (featurePositions[mid * 2]! >= bp) {
+      hi = mid
+    } else {
+      lo = mid + 1
+    }
+  }
+  return lo
+}
+
+/**
+ * The half-open index range that can overlap `[visStart, visEnd)`.
+ *
+ * A fetch covers `bufferedVisibleRegions` — the viewport plus half a screen on
+ * each side — so roughly half of what these passes walk is off-screen, and
+ * `localpercentile` (the default) walks it two or three times over. Both bounds
+ * come from a binary search on the sorted starts instead.
+ *
+ * The upper bound needs nothing but that sortedness: a feature starting at or
+ * after `visEnd` cannot reach back into the window. The lower bound also leans
+ * on wiggle features being non-overlapping bins — bigWig summary levels and
+ * bedGraph both are — walking back over any run that does reach in. The callers
+ * still test `overlaps` per feature inside the range, so a dataset that broke
+ * that assumption could only lose a long early feature, never gain one.
+ */
+function visibleIndexRange(
+  featurePositions: Uint32Array,
+  numFeatures: number,
+  visStart: number | undefined,
+  visEnd: number | undefined,
+) {
+  if (visStart === undefined || visEnd === undefined) {
+    return { from: 0, to: numFeatures }
+  }
+  const to = lowerBoundByStart(featurePositions, numFeatures, visEnd)
+  let from = lowerBoundByStart(featurePositions, numFeatures, visStart)
+  while (from > 0 && featurePositions[(from - 1) * 2 + 1]! > visStart) {
+    from--
+  }
+  return { from, to }
+}
+
 // Min/max/mean/stddev of the visible features for a summary mode, in one pass.
 // Exported (not #api — internal plumbing shared with the wiggle displays) so a
 // caller needing both a domain and the raw extent computes the stats once and
@@ -111,7 +163,13 @@ export function computeScoreStats(
     // per-feature loop.
     const minScores = low(data)
     const maxScores = high(data)
-    for (let i = 0; i < numFeatures; i++) {
+    const { from, to } = visibleIndexRange(
+      featurePositions,
+      numFeatures,
+      visStart,
+      visEnd,
+    )
+    for (let i = from; i < to; i++) {
       if (
         visStart !== undefined &&
         visEnd !== undefined &&
@@ -187,7 +245,13 @@ function sideMagnitudePercentile(
   for (const { data, visStart, visEnd } of datasets) {
     const { featurePositions, numFeatures } = data
     const scores = scoresFor(data)
-    for (let i = 0; i < numFeatures; i++) {
+    const { from, to } = visibleIndexRange(
+      featurePositions,
+      numFeatures,
+      visStart,
+      visEnd,
+    )
+    for (let i = from; i < to; i++) {
       if (
         visStart !== undefined &&
         visEnd !== undefined &&
