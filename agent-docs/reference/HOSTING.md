@@ -189,3 +189,48 @@ and spec comments claiming 10 kb windows for 2 kb data.
 
 Auditing a data tutorial: `curl -o /dev/null -w '%{http_code}' -I` every hosted
 URL it names *and* every URL in its spec, then check the data matches the prose.
+
+## Third-party mirrors, and what a bucket listing does not prove
+
+`website/scripts/third-party-hosts.txt` is the ratchet over which servers we do
+not run a figure sweep pulls from, and removing a line is the win. EBI is where
+the win was cheapest: the 2026-08-23 sweep lost six figures to
+`ftp.1000genomes.ebi.ac.uk` and `ftp.sra.ebi.ac.uk` stalling a connection for
+tens of seconds at a time, which the app reports as "No response … after 30s".
+
+The 1000 Genomes ftp tree is mirrored by the Registry of Open Data at
+`https://1000genomes.s3.amazonaws.com/`, CORS-open and range-capable, and the
+path mapping is worth writing down because it is not a straight prefix swap:
+
+| EBI | mirror |
+| --- | --- |
+| `ftp.1000genomes.ebi.ac.uk/vol1/ftp/phase3/…` | `phase3/…` |
+| `…/vol1/ftp/data_collections/1000G_2504_high_coverage/…` | `1000G_2504_high_coverage/…` (`data_collections/` is dropped) |
+| `ftp.sra.ebi.ac.uk/vol1/run/<ERR3>/<ERR>/<S>.final.cram` | `1000G_2504_high_coverage/{data,additional_698_related/data}/<ERR>/<S>.final.cram` |
+
+NCBI mirrors the same CRAMs at
+`ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/1000G_2504_high_coverage/data/…` and
+nothing else of it — `data_collections/` 404s there, so the SV callsets are not
+on that host at any guessable path.
+
+**A key in the listing is not a file.** 49 keys under
+`1000G_2504_high_coverage/` have size 0, the whole `20201028_3202_phased`
+release among them, and a mapping that only asked whether the key existed
+repointed a working track at an empty object. Read the `<Size>` and require it
+nonzero; `aws s3 ls --no-sign-request --recursive` gives both in one pass, which
+is cheaper and stricter than HEADing each URL. Two `.crai` under `data/` are
+zero too, so this is not confined to one directory.
+
+**What no mirror carries** stays at EBI and is the reason a figure there is
+still on someone else's uptime: `1KG_ONT_VIENNA`, the `20220422` phased
+SNV/INDEL/SV panel, the HGSVC3 calls, and the `20210124.SV_Illumina_Integration`
+directory. We host our own byte-for-byte copy of the one file the figures need
+out of that last one — the 1.75 GB 3202-sample ensemble SV callset, at
+`demos/1000g/`. Its sibling `1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF`
+is another 1.8 GB and no figure reads it, so it was left where it is.
+
+The hosted 1000 Genomes catalog config is `demos/1000g/config.json`, with the
+old `genomes/GRCh38/1000genomes/config_1000genomes.json` still serving the same
+bytes. It has no copy in this repo — it is `~/src/dont_care/1000g_config` on
+Colin's machine, pushed to `cmdcolin/jbrowse1kg`, and that git history is the
+only thing standing in for the bucket's missing versioning.
