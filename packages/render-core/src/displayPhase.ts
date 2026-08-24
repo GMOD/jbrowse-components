@@ -144,10 +144,9 @@ export interface DisplayLoadingInputs {
  * for the whole app on a view the user could not see, and every capture and e2e
  * gate waiting on it burned its full timeout.
  *
- * Callers read it as `bodyMounted !== false`, so only an explicit false counts:
- * a view model that predates the flag, or a duck-typed stand-in that never had
- * it, is treated as mounted. Defaulting the other way would silently excuse the
- * first paint for every such view and let a gate fire over one that had not
+ * It is a required flag on every view and on the duck-typed host contracts, not
+ * an optional one defaulted here: a stand-in that forgot it would silently
+ * excuse the first paint and let a readiness gate fire over a view that had not
  * started.
  *
  * The fetch terms deliberately stay live while unmounted: an off-screen display

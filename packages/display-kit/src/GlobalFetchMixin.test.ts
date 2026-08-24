@@ -16,6 +16,7 @@ function hostView(Display: IAnyModelType, snapshot: Record<string, unknown>) {
       width: 800,
       initialized: true,
       hasVisibleContent: true,
+      bodyMounted: true,
     }))
     .actions(self => ({
       setWidth(n: number) {
