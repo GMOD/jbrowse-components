@@ -135,14 +135,24 @@ const row = (outputType: string, slug: string) => ({
 
 // Add what is ticked, close the panel, and let the view draw it.
 //
-// Escape is safe HERE and nowhere earlier — closing the dialog is the whole
-// intent, rather than the side effect it would be mid-query. The gene track's
-// "Isoforms trimmed to fit" chip is dismissed rather than hidden: dismissing is
-// what a reader does, and it leaves the quiet control behind, where hiding the
-// element takes the whole control out of the figure.
+// The panel is closed by its (×) rather than by Escape, and the close is
+// ASSERTED. MUI delivers Escape through the modal rather than the document, so
+// it needs focus inside the dialog — and clicking "Add selected" leaves focus on
+// the body, because that button disables itself the moment the tick clears. The
+// press then closes nothing, every later action goes on succeeding under the
+// panel, and the run writes a figure of the open dialog: five of the six here,
+// with nothing saying so. The gene track's "Isoforms trimmed to fit" chip is
+// dismissed rather than hidden: dismissing is what a reader does, and it leaves
+// the quiet control behind, where hiding the element takes the whole control out
+// of the figure.
+const CLOSE_DIALOG: ScreenshotAction[] = [
+  { type: 'click', selector: '[data-testid="dialog-close"]' },
+  { type: 'waitForSelector', selector: '.MuiDialog-root', hidden: true },
+]
+
 const addAndSettle = (display: string): ScreenshotAction[] => [
   { type: 'click', selector: '[data-testid="alphagenome-add-selected"]' },
-  { type: 'press', key: 'Escape' },
+  ...CLOSE_DIALOG,
   { type: 'click', selector: '[data-testid="track-control-dismiss"]' },
   {
     type: 'waitForSelector',
@@ -266,7 +276,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       ...pick('contact_maps', 'GM12878'),
       row('contact_maps', 'gm12878-in-situ-hi-c'),
       { type: 'click', selector: '[data-testid="alphagenome-add-selected"]' },
-      { type: 'press', key: 'Escape' },
+      ...CLOSE_DIALOG,
       // dismissed while still at 70 kb, where the chip is known to be up; the
       // display remembers, so it does not come back on the way out
       { type: 'click', selector: '[data-testid="track-control-dismiss"]' },

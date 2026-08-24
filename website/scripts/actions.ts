@@ -183,20 +183,20 @@ async function clickElement(
     })
     if (covered) {
       await el.evaluate((node, btn) => {
-        if (btn === 'right') {
-          const r = node.getBoundingClientRect()
-          node.dispatchEvent(
-            new MouseEvent('contextmenu', {
-              bubbles: true,
-              cancelable: true,
-              clientX: r.left + r.width / 2,
-              clientY: r.top + r.height / 2,
-              button: 2,
-            }),
-          )
-        } else {
-          ;(node as HTMLElement).click()
-        }
+        const r = node.getBoundingClientRect()
+        // Dispatched rather than `node.click()`, which exists only on
+        // HTMLElement: the MUI track control draws its (×) as an <svg>
+        // deleteIcon, so the covered path threw "node.click is not a function"
+        // on the one control every alphagenome spec dismisses.
+        node.dispatchEvent(
+          new MouseEvent(btn === 'right' ? 'contextmenu' : 'click', {
+            bubbles: true,
+            cancelable: true,
+            clientX: r.left + r.width / 2,
+            clientY: r.top + r.height / 2,
+            button: btn === 'right' ? 2 : 0,
+          }),
+        )
       }, button)
     } else {
       await el.click({ button })
