@@ -167,6 +167,24 @@ export default function sharedLDConfigFactory() {
         defaultValue: false,
         advanced: true,
       },
+      /**
+       * #slot
+       * Which LD estimator to compute. 'auto' picks haplotypic LD for a phased
+       * callset and the Weir composite estimate for an unphased one, which is
+       * the most precise statistic each file can support. 'composite' forces
+       * the composite estimate even on phased data — the two are different
+       * statistics that coincide only under Hardy-Weinberg, so forcing it is
+       * how a phased panel is made comparable to an unphased cohort, or to
+       * plink `--r2` output. 'phased' is a preference rather than an
+       * instruction: unphased data carries no gametes to count, so it declines
+       * to composite, and `method` on the result reports what actually ran.
+       */
+      ldMethod: {
+        type: 'stringEnum',
+        model: types.enumeration('LDMethod', ['auto', 'phased', 'composite']),
+        defaultValue: 'auto',
+        advanced: true,
+      },
       // `jexlFilters` is BaseLinearDisplay's slot, inherited. It used to be
       // redeclared here with a description saying the expressions carry the
       // `jexl:` prefix, which is the opposite of what the base slot documents

@@ -219,6 +219,16 @@ export default function sharedModelFactory(
         return getConf(self, 'signedLD')
       },
       /**
+       * #getter
+       * Which estimator the `ldMethod` config slot ASKS for. Named apart from
+       * `ldMethod` below, which is what the RPC actually ran — they differ
+       * whenever the request cannot be honoured ('phased' on unphased data) and
+       * whenever 'auto' resolves.
+       */
+      get configuredLDMethod() {
+        return getConf(self, 'ldMethod')
+      },
+      /**
        * #method
        * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
        * Prefixing on read is what makes a config-declared filter work at all —
@@ -360,7 +370,8 @@ export default function sharedModelFactory(
        * #getter
        * How the loaded LD values were derived: 'phased' (exact haplotypic),
        * 'composite' (Weir estimate from unphased genotypes), or 'precomputed'
-       * (read from a PLINK/ldmat file). Undefined until data loads.
+       * (read from a PLINK/ldmat file). Undefined until data loads. This is
+       * what RAN, which is not always what `configuredLDMethod` asked for.
        */
       get ldMethod(): LDMethod | undefined {
         return self.rpcData?.method
@@ -491,6 +502,7 @@ export default function sharedModelFactory(
           maxVariantSeparation: self.maxVariantSeparation,
           jexlFilters: self.activeFilters(),
           signedLD: self.signedLD,
+          ldMethod: self.configuredLDMethod,
           useGenomicPositions: self.useGenomicPositions,
         }
       },

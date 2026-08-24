@@ -24,3 +24,29 @@ export function phaseSignal(
   }
   return 'unknown'
 }
+
+/**
+ * Which estimator the caller asked for. 'auto' takes the most precise statistic
+ * the file supports; 'precomputed' is not here because it is a property of the
+ * adapter rather than a request.
+ */
+export type LDMethodRequest = 'auto' | 'phased' | 'composite'
+
+/**
+ * Which estimator to run — count gametes ('phased') or correlate dosages
+ * ('composite') — given what the file carries and what was asked for.
+ *
+ * The two directions are not symmetric, which is the whole content of this
+ * function. Composite LD is well defined on a phased callset — collapsing a
+ * haplotype pair to a dosage loses phase and nothing else — so 'composite' is
+ * honoured whatever the file is, and forcing it is how a phased panel is made
+ * comparable to an unphased cohort or to plink `--r2`. Haplotypic LD counts
+ * gametes that an unphased file does not carry, so 'phased' is a preference
+ * that unphased data declines rather than an instruction that can fail.
+ */
+export function resolveLDMethod(
+  detectedPhased: boolean,
+  request: LDMethodRequest,
+) {
+  return detectedPhased && request !== 'composite' ? 'phased' : 'composite'
+}

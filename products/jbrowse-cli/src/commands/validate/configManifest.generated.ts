@@ -4137,6 +4137,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "signedLD",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "ldMethod",
+          "type": "(JexlString | LDMethod)"
         }
       ],
       "stateModelProps": [
@@ -4239,6 +4243,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "signedLD",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "ldMethod",
+          "type": "(JexlString | LDMethod)"
         }
       ],
       "stateModelProps": [

@@ -1,4 +1,4 @@
-import { phaseSignal } from './detectPhased.ts'
+import { phaseSignal, resolveLDMethod } from './detectPhased.ts'
 
 describe('phaseSignal', () => {
   it('detects phased genotypes', () => {
@@ -23,5 +23,24 @@ describe('phaseSignal', () => {
 
   it('reads phase from a partially-missing phased call', () => {
     expect(phaseSignal({ a: '0|.', b: './.' })).toBe('phased')
+  })
+})
+
+describe('resolveLDMethod', () => {
+  it('takes the most precise estimator each file supports under auto', () => {
+    expect(resolveLDMethod(true, 'auto')).toBe('phased')
+    expect(resolveLDMethod(false, 'auto')).toBe('composite')
+  })
+
+  it('honours a composite request on phased data', () => {
+    // The point of the slot: a phased panel computed the way an unphased cohort
+    // is, so the two are comparable.
+    expect(resolveLDMethod(true, 'composite')).toBe('composite')
+  })
+
+  it('declines a phased request on unphased data rather than failing', () => {
+    // There are no gametes to count, so this cannot be honoured; falling back
+    // is what keeps `method` on the result the only thing worth reading.
+    expect(resolveLDMethod(false, 'phased')).toBe('composite')
   })
 })

@@ -15,13 +15,14 @@ import {
 } from '@jbrowse/ld-core'
 
 import { GENOTYPE_SPLITTER as SPLITTER } from '../shared/constants.ts'
-import { phaseSignal } from '../shared/detectPhased.ts'
+import { phaseSignal, resolveLDMethod } from '../shared/detectPhased.ts'
 import {
   computeLDMatrixGPU,
   computeLDMatrixGPUPhased,
 } from './getLDMatrixGPU.ts'
 import { bandCellCount, bandRowFirstColumn, resolveBand } from './ldBand.ts'
 
+import type { LDMethodRequest } from '../shared/detectPhased.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
@@ -167,6 +168,13 @@ export type LDMetric = 'r2' | 'dprime'
  */
 export type LDMethod = 'phased' | 'composite' | 'precomputed'
 
+/**
+ * Which estimator the caller ASKED for, as against {@link LDMethod}, which is
+ * what ran. Declared next to {@link useHaplotypicLD}, which is the rule that
+ * turns one into the other.
+ */
+export type { LDMethodRequest } from '../shared/detectPhased.ts'
+
 export interface FilterStats {
   totalVariants: number
   passedVariants: number
@@ -303,6 +311,7 @@ export async function getLDMatrix({
     jexlFilters?: string[]
     ldMetric?: LDMetric
     signedLD?: boolean
+    ldMethod?: LDMethodRequest
     statusCallback?: StatusCallback
   }
 }): Promise<LDMatrixResult> {
@@ -319,6 +328,7 @@ export async function getLDMatrix({
     stopToken,
     ldMetric = 'r2',
     signedLD = false,
+    ldMethod = 'auto',
     statusCallback,
   } = args
   const stopTokenCheck = createStopTokenChecker(stopToken)
@@ -369,16 +379,21 @@ export async function getLDMatrix({
   // Scan features until one yields a definitive phased/unphased signal. Reading
   // only the first variant's first sample misclassifies a phased file whose
   // leading variants are all no-calls (`./.` carries no phase information).
-  let dataIsPhased = false
+  let detectedPhased = false
   for (const feature of rawFeatures) {
     const signal = phaseSignal(
       feature.get('genotypes') as Record<string, string>,
     )
     if (signal !== 'unknown') {
-      dataIsPhased = signal === 'phased'
+      detectedPhased = signal === 'phased'
       break
     }
   }
+
+  // Reported as `method` on the result, so the UI never has to infer what ran
+  // from what was asked for.
+  const resolvedMethod = resolveLDMethod(detectedPhased, ldMethod)
+  const dataIsPhased = resolvedMethod === 'phased'
 
   const nSamples = samples.length
   // Pre-allocate a flat buffer for all encoded genotypes to avoid per-variant
@@ -517,7 +532,7 @@ export async function getLDMatrix({
     ldValues,
     metric: ldMetric,
     hasDprime: true,
-    method: dataIsPhased ? 'phased' : 'composite',
+    method: resolvedMethod,
     band,
     filterStats,
   }

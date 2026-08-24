@@ -66,7 +66,7 @@ surface.
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span class="slot-group">Inherited from [SharedLDDisplay](../sharedlddisplay)</span> | <span class="slot-group-count">16 slots</span> |
+| <span class="slot-group">Inherited from [SharedLDDisplay](../sharedlddisplay)</span> | <span class="slot-group-count">17 slots</span> |
 | <span id="slot-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | Filter variants by minor allele frequency (0-1). Variants with MAF below this threshold will be hidden<br>_advanced_ |
 | <span id="slot-lengthcutofffilter">**lengthCutoffFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_SAFE_INTEGER</code> | Maximum length of variants to include (in bp)<br>_advanced_ |
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Height of the zone for connecting lines at the top<br>_advanced_ |
@@ -82,6 +82,7 @@ surface.
 | <span id="slot-tickheight">**tickHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6</code> | Height of the vertical tick marks at the genomic position<br>_advanced_ |
 | <span id="slot-usegenomicpositions">**useGenomicPositions**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, draw cells sized according to genomic distance between SNPs rather than uniform squares<br>_advanced_ |
 | <span id="slot-signedld">**signedLD**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1). For R², this shows R (correlation) instead. For D', this preserves the sign.<br>_advanced_ |
+| <span id="slot-ldmethod">**ldMethod**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (auto, phased, composite) = <code>'auto'</code> | Which LD estimator to compute. 'auto' picks haplotypic LD for a phased callset and the Weir composite estimate for an unphased one, which is the most precise statistic each file can support. 'composite' forces the composite estimate even on phased data — the two are different statistics that coincide only under Hardy-Weinberg, so forcing it is how a phased panel is made comparable to an unphased cohort, or to plink `--r2` output. 'phased' is a preference rather than an instruction: unphased data carries no gametes to count, so it declines to composite, and `method` on the result reports what actually ran.<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>400</code> | Starting height in pixels for the LD triangle, excluding the lineZoneHeight band; drag-resizable |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">5 slots</span> |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |
