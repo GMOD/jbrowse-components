@@ -69,6 +69,23 @@ The track type, the adapter and the index path all come from the file itself: a
 
 Full reference in [](/docs/cli).
 
+JBrowse runs that same inference when it loads a config, so an agent writing
+`config.json` itself can leave the type and the adapter out:
+
+```json addtrack
+{
+  "trackId": "sample_bam",
+  "uri": "https://example.org/sample.bam",
+  "assemblyNames": ["hg38"]
+}
+```
+
+`name` defaults to the file name, and `assemblyNames` can go too when the config
+declares one assembly — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track). Write the
+full form for a file whose extension does not decide the format, or for a track
+needing a slot the guess does not set.
+
 What the CLI does not write is what the view opens onto — `defaultSession` and
 the `init` fields under it, which are [](/docs/automating), and which
 `jbrowse set-default-session` takes once composed.

@@ -27,6 +27,12 @@ and an `init` describing the view to open, and the app component takes
 `assemblies`, `tracks`, and a `views` list. Each builds its own view engine. The
 storybook examples per package are copy-pasteable React code.
 
+A `tracks` entry is a track config, and the shortest one is `{ trackId, uri }`:
+the type and adapter come from the file's extension, and `assemblyNames` from
+the single-view components' one `assembly`, or from an app config declaring just
+one (see [the shortest track](/docs/config_guides/tracks#the-shortest-track)).
+The controllers below take a bare URL string as well.
+
 **`@jbrowse/react-app2` also needs its stylesheet**:
 `import '@jbrowse/react-app2/styles.css'`. It is the only one of these packages
 that ships a stylesheet.

@@ -15,24 +15,34 @@ see the [config guide](/docs/config_guide).
 ## The smallest config
 
 A `config.json` needs two things: an assembly to supply the reference sequence,
-and a track to draw on it.
+and a track to draw on it. Both are a name and a file.
 
 ```json
 {
   "assemblies": [{ "name": "volvox", "uri": "volvox.2bit" }],
-  "tracks": [
-    {
-      "type": "FeatureTrack",
-      "trackId": "genes",
-      "name": "Genes",
-      "assemblyNames": ["volvox"],
-      "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" }
-    }
-  ]
+  "tracks": [{ "trackId": "genes", "uri": "volvox.sort.gff3.gz" }]
 }
 ```
 
 That is a complete, working file. Everything else on this page is optional.
+
+JBrowse reads the track type and the adapter off the file's extension, takes
+`name` from the file name, and puts the track on the one assembly the config
+declares. The same track written out, which is what every recipe below starts
+from — each key beside `uri` overrides what the extension implied:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" }
+}
+```
+
+See [the shortest track](/docs/config_guides/tracks#the-shortest-track) for what
+the extension decides and how to override each piece of it.
 
 ## A complete config
 
