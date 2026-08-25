@@ -20,6 +20,11 @@ import type { HeightMode } from './heightMode.ts'
 // silently incomplete track is worse than an ugly one. Dropping features is data
 // loss, so it takes the `warning` tone rather than hiding in the tooltip.
 //
+// `fitNote` is what fit mode gave up to fit — labels dropped, boxes squeezed —
+// worded by the display, since only it knows its ladder. Same reason it rides
+// here: the height caused it and the height relieves it. Not a warning: fit is
+// doing what its label promised, it just does it silently otherwise.
+//
 // What it *looks* like is `TrackControl`'s business, not this file's — that is
 // the seam an embedder swaps to get a corner with no Material UI in it.
 export default function TrackHeightIndicator({
@@ -28,6 +33,7 @@ export default function TrackHeightIndicator({
   scrollZoom,
   noun,
   truncatedCount = 0,
+  fitNote,
   onSetHeightMode,
 }: {
   heightMode: HeightMode
@@ -35,12 +41,14 @@ export default function TrackHeightIndicator({
   scrollZoom: boolean
   noun: string
   truncatedCount?: number
+  fitNote?: string
   onSetHeightMode: (mode: HeightMode) => void
 }) {
   const tooltip = [
     'Track sizing',
-    // ' — ' is already this tooltip's segment separator, so keep the segment
-    // itself free of one.
+    // ' — ' is already this tooltip's segment separator, so keep the segments
+    // themselves free of one.
+    fitNote,
     truncatedCount > 0
       ? `${truncatedCount.toLocaleString()} ${pluralize(truncatedCount, noun)} not shown (past the layout row limit; filter or zoom in)`
       : undefined,

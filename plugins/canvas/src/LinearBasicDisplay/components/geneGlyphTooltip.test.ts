@@ -3,6 +3,7 @@ import { geneGlyphChipLabel, geneGlyphTooltip } from './geneGlyphTooltip.ts'
 const picks = (byTag: Record<string, number>, byLength = 0) => ({
   byTag,
   byLength,
+  byCap: 0,
 })
 
 describe('gene-glyph chip label', () => {
@@ -189,6 +190,28 @@ describe('gene-glyph control tooltip', () => {
       ).toContain(
         "as many as fit this track's height, fewer where genes stack, MANE Select first",
       )
+    })
+
+    // The cap exists only under Auto, so "All transcripts" lifts it, and it is
+    // sized to the track — neither lever is visible from the menu's three
+    // options, and the corner control that changes the height is next door.
+    it('names both levers that admit more', () => {
+      const tooltip = geneGlyphTooltip({
+        mode: 'auto',
+        collapsed: true,
+        maxIsoforms: 7,
+        noticeShowing: true,
+      })
+      expect(tooltip).toContain(
+        'Click to change — a taller track, or All transcripts, shows more; × to minimize',
+      )
+      expect(
+        geneGlyphTooltip({
+          mode: 'longestCoding',
+          collapsed: true,
+          noticeShowing: true,
+        }),
+      ).not.toContain('taller track')
     })
 
     it('singularizes a cap of one', () => {

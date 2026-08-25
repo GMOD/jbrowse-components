@@ -80,12 +80,14 @@ export function inlineRadioGroup<T extends string>(
 interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
-  // Collapsed mode drops every label kind regardless of the chosen rung, so the
+  // Collapsed mode drops every label kind regardless of the chosen rung, and
+  // the fit ladder drops descriptions and names to make the stack fit, so the
   // selected radio can sit there describing text nothing is painting. Read here
   // to say why rather than disabling the group — the choice is still meaningful,
-  // it just isn't reaching the canvas in this display mode. ('auto' hiding at
-  // high density needs no such note: that is the mode doing its advertised job.)
+  // it just isn't reaching the canvas. ('auto' hiding at high density needs no
+  // such note: that is the mode doing its advertised job.)
   displayMode: DisplayMode
+  labelsFitHint: string | undefined
   colorLegend: LegendItem[]
   showLegend: boolean
   showLegendDisplayTypeDefault: Pin
@@ -168,26 +170,33 @@ export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
     // all their feature tracks, pinning `auto` back is the only per-value way to
     // undo it from its own row.
     mode => makePin(self, 'showLabels', mode),
-    collapsedLabelHint(self, self.showLabelsMode),
+    inertLabelHint(self, self.showLabelsMode, self.labelsFitHint),
   )
 }
 
-// The "hidden while collapsed" note, on the selected row of a label group only:
-// collapsed mode paints no label of any kind, so the chosen rung sits there
-// describing text nothing is drawing. Shared by the two label groups (this one
-// and LinearBasicDisplay's "Subfeature labels"), which sit adjacent in the same
-// submenu under the same suppression — one of them saying so and the other not
+// The note on the selected row of a label group, saying why the chosen rung
+// is not reaching the canvas: collapsed mode paints no label of any kind, and
+// the fit ladder drops descriptions, then names, then squeezes the rows
+// subfeature labels sit in. Shared by the two label groups (this one and
+// LinearBasicDisplay's "Subfeature labels"), which sit adjacent in the same
+// submenu under the same suppressions — one of them saying so and the other not
 // read as the two behaving differently.
 //
+// Collapsed wins over the fit note: collapsed mode strips the labels before the
+// ladder ever sees them, so the ladder has nothing of its own to report.
+//
 // 'none' never carries it: that row is already describing the absence.
-export function collapsedLabelHint<T extends string>(
+export function inertLabelHint<T extends string>(
   self: { displayMode: DisplayMode },
   current: T,
+  fitHint: string | undefined,
 ) {
   return (value: T) =>
-    self.displayMode === 'collapsed' && value === current && value !== 'none'
-      ? 'hidden while collapsed'
-      : undefined
+    value !== current || value === 'none'
+      ? undefined
+      : self.displayMode === 'collapsed'
+        ? 'hidden while collapsed'
+        : fitHint
 }
 
 // The "Color by..." radio choices (solid/strand/attribute), shared so subclasses

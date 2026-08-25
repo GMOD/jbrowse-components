@@ -33,7 +33,7 @@ import {
   geneRowCostPx,
   isoformRowBudget,
 } from './isoformBudget.ts'
-import { collapsedLabelHint, inlineRadioGroup } from './trackMenus.ts'
+import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
@@ -443,7 +443,13 @@ export default function stateModelFactory(
                 self.setSubfeatureLabels(mode)
               },
               mode => makePin(self, 'subfeatureLabels', mode),
-              collapsedLabelHint(self, self.subfeatureLabels),
+              inertLabelHint(
+                self,
+                self.subfeatureLabels,
+                self.renderedShowSubfeatureLabels
+                  ? undefined
+                  : 'hidden while squeezed to fit',
+              ),
             ),
           ]
         },

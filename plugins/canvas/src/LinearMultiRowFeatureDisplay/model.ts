@@ -1169,7 +1169,6 @@ export default function stateModelFactory(
       setFitToHeight() {
         setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
         setConf(self, 'rowHeight', 0)
-        self.scrollTop = 0
       },
       /**
        * #action

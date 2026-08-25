@@ -484,6 +484,7 @@ const FeatureBody = observer(function FeatureBody({
           scrollZoom={view.scrollZoom}
           noun={model.featureNoun}
           truncatedCount={model.truncatedFeatureCount}
+          fitNote={model.fitNote}
           onSetHeightMode={mode => {
             model.setHeightMode(mode)
           }}

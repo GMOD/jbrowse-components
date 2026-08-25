@@ -620,6 +620,48 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
   })
 
+  // The ladder gives things up silently, and the "Labels" radio keeps saying
+  // they are on. Both user-facing readouts — the track-sizing control's tooltip
+  // and the note on the selected label row — follow the rung the ladder kept.
+  it('tells the user what each rung gave up', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(10, 10), ctgA)
+    const fullH = maxBottom(display.baseLaidOutDataMap)
+    const labelsH = maxBottom(display.fitLabelsOnlyLayout)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+    const labelRows = () =>
+      display
+        .showSubmenuRadioGroups()
+        .map(item => ('label' in item ? item.label : undefined))
+
+    // fixed mode, and fit at the full rung: nothing to say
+    display.setHeight(fullH)
+    expect(display.fitNote).toBeUndefined()
+    display.setHeightMode('fit')
+    expect(display.fitNote).toBeUndefined()
+    expect(labelRows()).toContain('Auto')
+
+    display.setHeight(Math.round((labelsH + fullH) / 2))
+    expect(display.fitStage.level).toBe('labels')
+    expect(display.fitNote).toBe(
+      'descriptions hidden to fit (a taller track shows more)',
+    )
+    expect(labelRows()).toContain('Auto — descriptions hidden to fit')
+
+    display.setHeight(Math.round(bodiesH / 2))
+    expect(display.fitStage.level).toBe('bodies')
+    expect(display.fitNote).toBe(
+      `names and descriptions hidden, squeezed to ${Math.round(display.fitScale * 100)}% to fit (a taller track shows more)`,
+    )
+    expect(labelRows()).toContain('Auto — hidden to fit')
+
+    // leaving fit mode takes both notes with it
+    display.setHeightMode('fixed')
+    expect(display.fitNote).toBeUndefined()
+    expect(labelRows()).toContain('Auto')
+  })
+
   // Fit never scales a feature body past its normal height: in the default
   // (normal) display mode fitSmallestBoxPx already is the normal height, so the grow
   // scale pins at 1 and a track taller than the content strands whitespace rather

@@ -75,6 +75,7 @@ import {
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
 import { snapFittedContentHeight } from './fitLadder.ts'
 import { fitLadderViews, fitLadderVolatiles } from './fitLadderViews.ts'
+import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import {
   countTruncatedFeatures,
   featureIdsTouchingBlocks,
@@ -906,6 +907,39 @@ export default function baseStateModelFactory(
          */
         get renderedShowSubfeatureLabels() {
           return self.fitStage.scale >= 1
+        },
+        /**
+         * #getter
+         * What the ladder took from the labels the settings reserved, and how
+         * far it squeezed — the one derivation both user-facing notes read.
+         */
+        get fitDrops() {
+          return fitDrops(
+            self.fitStage,
+            self.showLabels,
+            self.effectiveShowDescriptions,
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The track-sizing control's account of what fit mode gave up, or
+         * undefined when nothing. The ladder drops labels silently and the
+         * "Labels" radio keeps saying they are on, so without this a user has
+         * no way to tell a track with no descriptions from one whose
+         * descriptions fit mode hid.
+         */
+        get fitNote() {
+          return fitLadderNote(self.fitDrops)
+        },
+        /**
+         * #getter
+         * The note on the selected "Labels" radio while the ladder is not
+         * honouring it (see `inertLabelHint`).
+         */
+        get labelsFitHint() {
+          return labelsFitHint(self.fitDrops)
         },
       }))
       .views(yMorphViews)

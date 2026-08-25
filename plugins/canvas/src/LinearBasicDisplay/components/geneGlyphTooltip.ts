@@ -91,6 +91,13 @@ export function geneGlyphTooltip({
     mode === 'auto' && collapsed && maxIsoforms === undefined
       ? ' — chosen automatically at this zoom'
       : ''
+  // The cap has two levers and neither is obvious from the menu: it exists
+  // only under Auto, so "All transcripts" lifts it, and it is sized to the
+  // track, so a taller track (or autogrow, next door) admits more.
+  const levers =
+    collapsed && maxIsoforms !== undefined
+      ? ' — a taller track, or All transcripts, shows more'
+      : ''
   const minimize = noticeShowing ? '; × to minimize this notice to an icon' : ''
-  return `${showing}${auto}. Click to change${minimize}.`
+  return `${showing}${auto}. Click to change${levers}${minimize}.`
 }
