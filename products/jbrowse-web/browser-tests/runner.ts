@@ -531,10 +531,19 @@ function killStaleTestBrowsers() {
   // A test browser is a chromium-family process carrying puppeteer's
   // `--enable-automation` token (the user's own Chrome never has it). It's an
   // orphan — its launching `node` died — when its parent is no longer `node`.
+  //
+  // MAIN PROCESSES ONLY. Chrome forwards `--enable-automation` to every
+  // renderer, and a renderer's parent is the zygote (`chrome`), never `node` —
+  // so without the `--type=` test this killed the live renderers of every
+  // browser another agent's run had open, each time a runner started. That
+  // surfaced there as `Target closed` and `Attempted to use detached Frame`
+  // some seconds into a page, with no crash event and nothing naming the cause
+  // (2026-08-25). A main process carries no `--type=`.
   const orphans = procs.filter(
     p =>
       /^(chrome|chromium|headless_shell)/.test(p.comm) &&
       p.argv.includes('--enable-automation') &&
+      !p.argv.some(a => a.startsWith('--type=')) &&
       commByPid.get(p.ppid) !== 'node',
   )
   for (const orphan of orphans) {
