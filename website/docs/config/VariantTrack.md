@@ -24,6 +24,19 @@ plugin.
 }
 ```
 
+`variants.vcf.gz` infers `VcfTabixAdapter` and `VariantTrack` on its own, so the
+same track can be written as an id and a uri. `name` then defaults to the file
+name, and `assemblyNames` is implied for a config holding one assembly — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'my-variants',
+  uri: 'https://example.com/variants.vcf.gz',
+  assemblyNames: ['hg38'],
+}
+```
+
 The same track with appearance settings in place. Rather than writing out the
 full `displays` array, you can list them in a `displayDefaults` object — JBrowse
 works out which display they belong to and applies them for you (here it puts

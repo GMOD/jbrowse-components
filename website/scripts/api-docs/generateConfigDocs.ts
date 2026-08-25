@@ -4,6 +4,10 @@ import slugify from 'slugify'
 import * as ts from 'typescript'
 
 import {
+  matchFormat,
+  trackTypeForAdapter,
+} from '../../../packages/add-track-core/src/index.ts'
+import {
   enumConstantValues,
   numericConstantValue,
   scalarConstantValue,
@@ -450,6 +454,12 @@ function syntenyAssemblyNames(adapterCode: string) {
     : (names?.[1] ?? "['assembly1', 'assembly2']")
 }
 
+function trackAssemblyNames(trackType: string, adapterCode: string) {
+  return trackType === 'SyntenyTrack'
+    ? syntenyAssemblyNames(adapterCode)
+    : "['hg38']"
+}
+
 // The full track config that nests an adapter snapshot, shaped per track type:
 // a reference sequence track has no assemblyNames (it is the assembly's own
 // sequence) and synteny spans two assemblies, while ordinary data tracks take a
@@ -465,10 +475,7 @@ function trackConfigLines(trackType: string, adapterCode: string) {
       '}',
     ]
   }
-  const assemblyNames =
-    trackType === 'SyntenyTrack'
-      ? syntenyAssemblyNames(adapterCode)
-      : "['hg38']"
+  const assemblyNames = trackAssemblyNames(trackType, adapterCode)
   return [
     '{',
     `  type: '${trackType}',`,
@@ -499,6 +506,77 @@ function wrapAdapterExample(content: string, trackType = 'FeatureTrack') {
         : full
     },
   )
+}
+
+const SHORTEST_TRACK = '/docs/config_guides/tracks#the-shortest-track'
+
+// A `#example` fence is JS object literal syntax, not JSON: bare keys and single
+// quotes. Requote both and drop trailing commas, so the loose form is derived
+// from the config a page actually shows rather than from a second copy of it.
+// Anything richer than that — a jexl callback holding a quote, a comment —
+// fails to parse and the page keeps only the form it had.
+function parseFence(content: string) {
+  const inner = /```(?:js|javascript|json)?\n([\s\S]*?)\n```/.exec(content)?.[1]
+  try {
+    return JSON.parse(
+      (inner ?? '')
+        .replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":')
+        .replace(/'([^']*)'/g, '"$1"')
+        .replace(/,(\s*[}\]])/g, '$1'),
+    ) as Record<string, unknown>
+  } catch {
+    return undefined
+  }
+}
+
+// The keys `{ trackId, uri }` carries over on its own. A config naming anything
+// beside them — a `displayDefaults` block, a second adapter slot — loses that
+// key when written loose, so its page keeps only the full form.
+const LOOSE_TOP_KEYS = new Set(['type', 'trackId', 'name', 'assemblyNames'])
+
+// The loose form of the track config a page's example shows, or '' where the
+// file name does not reach it. The formats table is the guess core installs, so
+// ask it whether this file name resolves back to the page's own adapter and
+// track type rather than restating which extension infers what — an adapter
+// reachable only by naming its type then correctly offers nothing.
+export function looseTrackExample(content: string) {
+  const track = parseFence(content)
+  const adapter = (track?.adapter ?? {}) as Record<string, unknown>
+  const uri = typeof adapter.uri === 'string' ? adapter.uri : undefined
+  const file = uri?.split('/').pop()
+  const spec = file ? matchFormat(file)?.spec : undefined
+  const trackType = track?.type
+  if (
+    !track ||
+    !uri ||
+    !file ||
+    !spec ||
+    typeof trackType !== 'string' ||
+    typeof track.trackId !== 'string' ||
+    !Array.isArray(track.assemblyNames) ||
+    Object.keys(track).some(
+      key => !LOOSE_TOP_KEYS.has(key) && key !== 'adapter',
+    )
+  ) {
+    return ''
+  }
+  const adapterType = adapter.type
+  return Object.keys(adapter).length === 2 &&
+    typeof adapterType === 'string' &&
+    'adapterType' in spec &&
+    spec.adapterType === adapterType &&
+    trackTypeForAdapter(adapterType, file) === trackType
+    ? section(
+        `\`${file}\` infers \`${adapterType}\` and \`${trackType}\` on its own, so the same track can be written as an id and a uri. \`name\` then defaults to the file name, and \`assemblyNames\` is implied for a config holding one assembly — see [the shortest track](${SHORTEST_TRACK}).`,
+        codeBlock(
+          '{',
+          `  trackId: '${track.trackId}',`,
+          `  uri: '${uri}',`,
+          `  assemblyNames: [${track.assemblyNames.map(n => `'${n}'`).join(', ')}],`,
+          '}',
+        ),
+      )
+    : ''
 }
 
 // An adapter declares the track type its example is wrapped in via #trackType
@@ -800,13 +878,22 @@ function renderConfig(
     ? 'See the **Config slots** section below for all available configuration fields.'
     : ''
   // On adapter pages, show the full track config a user pastes, not just the
-  // bare adapter snapshot the #example is authored as.
+  // bare adapter snapshot the #example is authored as. Then, on the first
+  // example either kind of page shows that the file name alone reaches, the
+  // same track written loose — once per page, since the note reads the same
+  // under every example that qualifies.
+  let loosened = false
   const examples =
-    category === 'Adapter'
-      ? header.examples.map(ex => ({
-          ...ex,
-          content: wrapAdapterExample(ex.content, header.trackType),
-        }))
+    category === 'Adapter' || category === 'Track'
+      ? header.examples.map(ex => {
+          const content =
+            category === 'Adapter'
+              ? wrapAdapterExample(ex.content, header.trackType)
+              : ex.content
+          const loose = loosened ? '' : looseTrackExample(content)
+          loosened ||= Boolean(loose)
+          return { ...ex, content: section(content, loose) }
+        })
       : header.examples
   const exSection = exampleSection(examples, '## Example usage', slotsNote)
   const docsSection = overviewSection(

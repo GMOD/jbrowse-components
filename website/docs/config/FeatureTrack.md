@@ -27,6 +27,19 @@ at the data file, and the track opens with a `LinearBasicDisplay`:
 }
 ```
 
+`genes.sorted.gff.gz` infers `Gff3TabixAdapter` and `FeatureTrack` on its own,
+so the same track can be written as an id and a uri. `name` then defaults to the
+file name, and `assemblyNames` is implied for a config holding one assembly —
+see [the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'genes',
+  uri: 'https://example.com/genes.sorted.gff.gz',
+  assemblyNames: ['hg38'],
+}
+```
+
 The same track, colored. Rather than writing out the full `displays` array, you
 can put appearance settings in a `displayDefaults` object — JBrowse works out
 which display they belong to and applies them for you (here, the track's

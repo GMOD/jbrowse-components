@@ -23,6 +23,19 @@ A minimal `HicTrack` config. See the
 }
 ```
 
+`contacts.hic` infers `HicAdapter` and `HicTrack` on its own, so the same track
+can be written as an id and a uri. `name` then defaults to the file name, and
+`assemblyNames` is implied for a config holding one assembly — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'hic',
+  uri: 'https://example.com/contacts.hic',
+  assemblyNames: ['hg38'],
+}
+```
+
 With log scale and a coarser resolution (`resolutionBias` nudges the auto-picked
 binsize; negative = finer, positive = coarser). The `displayDefaults` object
 shorthand applies settings to whichever display uses them — equivalent to a full

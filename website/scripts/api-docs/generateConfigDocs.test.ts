@@ -1,5 +1,6 @@
 import {
   exampleObjects,
+  looseTrackExample,
   missingSlotNames,
   unknownExampleKeys,
 } from './generateConfigDocs.ts'
@@ -159,5 +160,81 @@ describe('the keys of one example object', () => {
         'in displayDefaults, and no display of a VariantTrack declares it',
       ],
     ])
+  })
+})
+
+describe('the loose { trackId, uri } form of an example', () => {
+  const fence = (body: string) => ['```js', body, '```'].join('\n')
+  const bam = `{
+  type: 'AlignmentsTrack',
+  trackId: 'ngs-reads',
+  name: 'NGS reads',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'BamAdapter', uri: 'https://example.com/sample.bam' },
+}`
+
+  test("carries the example's own id, uri and assemblies", () => {
+    const loose = looseTrackExample(fence(bam))
+    expect(loose).toContain('`sample.bam` infers `BamAdapter`')
+    expect(loose).toContain("trackId: 'ngs-reads',")
+    expect(loose).toContain("uri: 'https://example.com/sample.bam',")
+    expect(loose).toContain("assemblyNames: ['hg38'],")
+  })
+
+  // The formats table decides, not the page: a name it routes elsewhere gets no
+  // loose form, or the page would promise an inference that lands on another
+  // adapter. `.bed.gz` is BedTabixAdapter's, deliberately left off GWAS.
+  test("needs the file name to reach the page's own adapter", () => {
+    expect(
+      looseTrackExample(fence(bam.replace('sample.bam', 'x.bed.gz'))),
+    ).toBe('')
+    expect(
+      looseTrackExample(
+        fence(
+          bam
+            .replace('AlignmentsTrack', 'GWASTrack')
+            .replace('BamAdapter', 'GWASAdapter')
+            .replace('sample.bam', 'stats.bed.gz'),
+        ),
+      ),
+    ).toBe('')
+  })
+
+  // A `.bedmethyl.gz` and a plain `.bed.gz` share BedTabixAdapter and are drawn
+  // differently, so the file name has to reach the page's track type too — the
+  // loose form of a FeatureTrack over one would open as a MultiQuantitativeTrack.
+  test("needs it to reach the page's track type", () => {
+    const bed = bam
+      .replace('AlignmentsTrack', 'FeatureTrack')
+      .replace('BamAdapter', 'BedTabixAdapter')
+    expect(
+      looseTrackExample(fence(bed.replace('sample.bam', 'x.bed.gz'))),
+    ).not.toBe('')
+    expect(
+      looseTrackExample(fence(bed.replace('sample.bam', 'x.bedmethyl.gz'))),
+    ).toBe('')
+  })
+
+  // Whatever the guessers do not rebuild from the file name is lost by writing
+  // the track loose, so an example holding any of it keeps its full form alone.
+  test('refuses an example whose keys it would drop', () => {
+    expect(
+      looseTrackExample(
+        fence(
+          bam.replace(
+            "  adapter: { type: 'BamAdapter', uri: 'https://example.com/sample.bam' },",
+            "  adapter: { type: 'BamAdapter', uri: 'https://example.com/sample.bam' },\n  displayDefaults: { height: 100 },",
+          ),
+        ),
+      ),
+    ).toBe('')
+    expect(
+      looseTrackExample(
+        fence(bam.replace("sample.bam' }", "sample.bam', csi: true }")),
+      ),
+    ).toBe('')
+    expect(
+      looseTrackExample(fence(bam.replace("  assemblyNames: ['hg38'],\n", ''))),
+    ).toBe('')
   })
 })

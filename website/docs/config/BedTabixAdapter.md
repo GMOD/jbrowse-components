@@ -26,6 +26,19 @@ index instead:
 }
 ```
 
+`features.bed.gz` infers `BedTabixAdapter` and `FeatureTrack` on its own, so the
+same track can be written as an id and a uri. `name` then defaults to the file
+name, and `assemblyNames` is implied for a config holding one assembly — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'my_track',
+  uri: 'https://example.com/features.bed.gz',
+  assemblyNames: ['hg38'],
+}
+```
+
 _See the **Config slots** section below for all available configuration fields._
 
 ## Related links

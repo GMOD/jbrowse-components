@@ -23,6 +23,19 @@ Auto-generated config schema for the current JBrowse release — see the
 }
 ```
 
+`summary_stats.txt.gz` infers `GWASAdapter` and `GWASTrack` on its own, so the
+same track can be written as an id and a uri. `name` then defaults to the file
+name, and `assemblyNames` is implied for a config holding one assembly — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track).
+
+```js
+{
+  trackId: 'my_track',
+  uri: 'https://example.com/summary_stats.txt.gz',
+  assemblyNames: ['hg38'],
+}
+```
+
 Reading a raw p-value column instead, transformed to -log10(p) at load:
 
 ```js
