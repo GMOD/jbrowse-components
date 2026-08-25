@@ -283,6 +283,31 @@ const noUnexplainedUntracked = {
     'Say which ground this `untracked` stands on, as `// eslint-disable-next-line no-restricted-syntax -- <ground>`. There are three: SELF-WRITE (the body writes what it reads, so tracking it re-fires the body off its own write), EFFECT INPUT (no decision branches on the read; only the work the body launches consumes it, and the decision is keyed elsewhere — the values behind a tracked fetch key), INSTRUMENTATION (a dev-only check must not alter the production dependency set). A read the decision branches on is tracked, whatever it costs: the per-region fetch autorun\'s two "perf guards" measured at one idle run and were deleted. See agent-docs/ARCHITECTURE.md §"`untracked` names its ground".',
 }
 
+// React 19.2's dev-only component performance track diffs a changed prop by
+// walking it, and `Object.prototype.toString` puts a typed array on neither the
+// Array nor the plain-object path — so react-dom's `addObjectToProperties`
+// enumerates it with `for...in`, one property row per element, no cap, for the
+// previous value and the next one both. Hic's tooltip took `data={rpcData}`,
+// whose `instances` is `numContacts * 3` floats: a Chrome profile of one pan
+// under the cursor measured 6.8s of "Run console task" and a heap climbing 76MB
+// to 1767MB, against 217ms of actual JBrowse work in the same trace.
+//
+// A payload is a worker result, so it is exactly the object that is all typed
+// arrays, and `rpcData` is what every display in the tree calls it. Pass what
+// the child reads — the two formatted loci and a number, in hic's case — and
+// the walk has nothing to enumerate. The sweep behind the fix found no other
+// site, so this holds a cleared field rather than describing a backlog.
+//
+// What it cannot see is a payload reaching a prop under another name, or via a
+// local bound off one. Both are a level of indirection past syntax; the
+// spelling this matches is the one that shipped.
+const noPayloadThroughAProp = {
+  selector:
+    "JSXAttribute > JSXExpressionContainer > MemberExpression[property.name='rpcData']",
+  message:
+    "Do not hand a whole worker payload to a React prop. React 19.2's dev-only performance track diffs a changed prop by walking it, and it walks a typed array element by element with no cap — `rpcData` is all typed arrays, so this costs one property row per element, twice, on every re-render where the payload changed. Hic's tooltip did exactly this and a single pan with the cursor over the track spent 6.8s and ~1GB. Pass what the child actually reads (the formatted strings, the numbers) instead of the object they came off — plugins/hic/src/LinearHicDisplay/components/ReactComponent.tsx is the worked example.",
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
   noSessionAddTrackConf,
@@ -298,6 +323,7 @@ const sourceRestrictedSyntax = [
   noGateMixinComposedFirst,
   noHeightModeComposedFirst,
   noUnexplainedUntracked,
+  noPayloadThroughAProp,
 ]
 
 export default defineConfig(
