@@ -271,3 +271,84 @@ export const SESSION_AND_PLUGIN_REMOVALS: SurfaceRemovalGroup[] = [
     changed: {},
   },
 ]
+
+// The fourth surface: `@jbrowse/core`'s published `exports` map, which is what a
+// plugin deep-importing `@jbrowse/core/util/QuickLRU` resolves against.
+//
+// It is not written by hand. `packages/core/scripts/generateExports.mjs` derives
+// it by grepping the repo for import specifiers under `@jbrowse/core`, so a
+// subpath is published only while something still imports it that way -- and
+// deleting the last such importer un-publishes it with nothing said anywhere.
+// `configuration/configurationSlot` went that way on 2026-08-24: one file
+// (`defineDisplay.tsx`) imported it, the revert deleted that file, and the
+// subpath left the map in the same commit. It had been added the same day and
+// never shipped, so nothing was harmed, but four of the entries below are
+// modules that still exist in `src/` today and simply stopped being reachable.
+//
+// `abiPreviousRelease.test.ts` is the gate: every subpath `@jbrowse/core@4.3.0`
+// published has to still be published, or be declared here. The other answer is
+// `preservedExports` in `generateExports.mjs`, which keeps a subpath in the map
+// with no importer -- take that one when the promise should stand.
+//
+// Directional on purpose. A NEW subpath never trips the check, so ordinary work
+// that adds an import is silent; only a removal asks for a decision.
+export interface SubpathRemovalGroup {
+  /** How the upgrade guide and the reference doc name this group. */
+  summary: string
+  /** The `exports` key, to what a v4 plugin importing it gets now. */
+  subpaths: Record<string, string>
+}
+
+export const SUBPATH_REMOVALS: SubpathRemovalGroup[] = [
+  {
+    summary:
+      'the renderer registry, whose modules went with the server-side render path',
+    subpaths: {
+      './pluggableElementTypes/GlyphType':
+        'glyphs are drawn by the GPU displays, not registered',
+      './pluggableElementTypes/renderers/RendererType':
+        'renderer registry removed; displays compose RenderLifecycleMixin + DisplayChrome',
+      './pluggableElementTypes/renderers/FeatureRendererType':
+        'renderer registry removed',
+      './pluggableElementTypes/renderers/BoxRendererType':
+        'renderer registry removed',
+      './pluggableElementTypes/renderers/CircularChordRendererType':
+        'renderer registry removed',
+      './pluggableElementTypes/renderers/ServerSideRendererType':
+        'renderer registry removed, core no longer renders on the server',
+      './pluggableElementTypes/renderers/LayoutSession':
+        'the block layout cache the box renderer kept; layout moved onto the GPU packing path',
+      './pluggableElementTypes/renderers/util':
+        'helpers for the classes above, deleted with them',
+    },
+  },
+  {
+    summary: 'modules deleted outright, along with the code that reached them',
+    subpaths: {
+      './data_adapters/BaseAdapter/BaseOptions':
+        'the adapter options bag, folded into `data_adapters/BaseAdapter` itself, which still exports `BaseOptions` and is still a published subpath',
+      './rpc/methods/util':
+        'renderer-era RPC helpers, removed with `CoreRender`',
+      './util/offscreenCanvasUtils':
+        'the server-side canvas helpers behind `renderToAbstractCanvas`',
+      './util/compositeMap': 'dead, with no caller in or out of the tree',
+    },
+  },
+  {
+    summary:
+      'modules that still exist, un-published because the last in-repo deep import went',
+    subpaths: {
+      './rpc/coreRpcMethods':
+        '`packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports it relatively; nothing imports it by subpath any more',
+      './ui/ErrorMessage':
+        'alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel',
+      './util/layouts/BaseLayout':
+        'alive, and re-exported from `@jbrowse/core/util/layouts`, which is a preserved subpath and a `jbrequire` module',
+      './util/mst-reflection':
+        'alive, and still served over `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import path went',
+    },
+  },
+]
+
+export const KNOWN_SUBPATH_REMOVALS: Record<string, string> =
+  Object.fromEntries(SUBPATH_REMOVALS.flatMap(g => Object.entries(g.subpaths)))

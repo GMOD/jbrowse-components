@@ -87,7 +87,8 @@ survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
   and **check its exit code** — a failed compile leaves the stale
   `.generated.ts` and tsc/jest pass off it.
 - `typescript` 6.x lints, `typescript7` typechecks.
-- Removals fail quietly on three plugin surfaces — `ReExports/modules.ts`, the
-  session, and the accumulating extension points:
-  `reference/PLUGIN_ABI_STABILITY.md`.
+- Removals fail quietly on four plugin surfaces — `ReExports/modules.ts`, the
+  session, the accumulating extension points, and core's published `exports`
+  map, which is derived from in-repo import sites and so loses a subpath when
+  its last importer goes: `reference/PLUGIN_ABI_STABILITY.md`.
 - Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).

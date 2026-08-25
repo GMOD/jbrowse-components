@@ -11,6 +11,12 @@
 // .d.ts tree is the closest offline description of that -- tsc has already
 // resolved the `export *` chains that the source spreads over ~40 barrels.
 //
+// Two surfaces come out of the same tarball. `modules` is the `jbrequire`
+// re-export registry, name by name. `subpaths` is the published `exports` map,
+// which is what a plugin deep-importing `@jbrowse/core/util/QuickLRU` resolves
+// against -- a separate promise, generated in this repo from in-repo import
+// sites, so it can lose an entry with nobody deciding to drop it.
+//
 // Type-only exports are dropped, because a plugin importing one gets nothing at
 // runtime and so can't be broken by its removal.
 import { execFileSync } from 'node:child_process'
@@ -137,6 +143,17 @@ const tarball = execFileSync(
 execFileSync('tar', ['xzf', tarball], { cwd: tmp })
 const root = path.join(tmp, 'package', 'esm')
 
+// The published `exports` map, whose keys are the deep-import subpaths an
+// external plugin can resolve. npm swaps `publishConfig.exports` in at publish
+// time, so this is the emitted map and not the workspace one.
+const subpaths = Object.keys(
+  (
+    JSON.parse(
+      fs.readFileSync(path.join(tmp, 'package', 'package.json'), 'utf8'),
+    ) as { exports?: Record<string, unknown> }
+  ).exports ?? {},
+).sort()
+
 const modules: Record<string, string[]> = {}
 const addedSince: string[] = []
 for (const [name, entry] of Object.entries(MODULE_ENTRY)) {
@@ -156,6 +173,7 @@ fs.writeFileSync(
       version,
       addedSinceModules: addedSince.sort(),
       shapeMismatchModules: SHAPE_MISMATCH.sort(),
+      subpaths,
       modules,
     },
     null,
@@ -169,5 +187,5 @@ execFileSync('npx', ['oxfmt', OUT], { stdio: 'inherit' })
 
 const total = Object.values(modules).reduce((a, b) => a + b.length, 0)
 console.log(
-  `wrote ${OUT}: @jbrowse/core@${version}, ${total} names in ${Object.keys(modules).length} modules`,
+  `wrote ${OUT}: @jbrowse/core@${version}, ${total} names in ${Object.keys(modules).length} modules, ${subpaths.length} subpaths`,
 )

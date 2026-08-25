@@ -13,9 +13,9 @@ semver/`api-extractor` discipline as premature for an experimental phase; this
 doc captures the thinking so it's ready when there are stable surfaces to
 protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
-## The three surfaces that exist today, and how to remove from them
+## The four surfaces that exist today, and how to remove from them
 
-Whatever the policy ends up being, these three are already checked:
+Whatever the policy ends up being, these four are already checked:
 
 - **`ReExports/modules.ts`** — the `@jbrowse/core/*` modules external plugins
   resolve against, pinned by `abi.test.ts` against `abiBaseline.json`. A removal
@@ -26,7 +26,24 @@ Whatever the policy ends up being, these three are already checked:
   test failure, just a plugin that stops asking. `pluginFacingSessionApi.test.ts`
   pins what published bundles actually call, and performs the call rather than
   asserting the member exists.
-- **The accumulating extension points, which fail quietest of the three.**
+- **`@jbrowse/core`'s published `exports` map, which nobody writes.**
+  `packages/core/scripts/generateExports.mjs` derives it by grepping
+  `packages plugins products example-plugins` for import specifiers under
+  `@jbrowse/core`, so a deep-import subpath is published only while something in
+  those directories still imports it that way — and deleting the last such
+  importer un-publishes it in the same commit, with nothing said anywhere. That
+  is not hypothetical: `configuration/configurationSlot` left the map on
+  2026-08-24 because `defineDisplay.tsx` was its only importer and the
+  `defineDisplay` revert deleted that file. Nothing shipped in that window, so
+  nothing was harmed, but four modules that still exist in `src/` today have
+  gone the same way and are listed below. `abiPreviousRelease.test.ts` pins the
+  map against the `exports` of the previously published `@jbrowse/core`
+  (`subpaths` in `abiPreviousRelease.json`), removals only — a new subpath never
+  trips it. To drop one, declare it in `SUBPATH_REMOVALS` in
+  `knownRemovals.ts`; to keep the promise with no importer left, add it to
+  `preservedExports` in `generateExports.mjs`, which is what that allowlist is
+  for.
+- **The accumulating extension points, which fail quietest of the four.**
   `addToExtensionPoint` excludes them in its *type*, so a plugin rebuilt against
   v5 gets a compile error naming `contributeToExtensionPoint`. A prebuilt v4
   bundle carries no types: the call reaches `pushExtensionPointCallback`, joins
@@ -38,17 +55,27 @@ Whatever the policy ends up being, these three are already checked:
 duck-typed caller exactly as deleting the member would, so plugin-facing
 arguments may be added **optional** and never made required.
 
-**A fourth surface exists and nothing checks it: the props of an exported
-component.** `e5b39664a6` consolidated eight hand-rolled context menus onto
-`ContextMenu` and dropped `slotProps` from `CascadingMenuProps` — correct for
-the tree, where the last caller had gone. Apollo's three context menus passed
-`slotProps.transition.onExit` to clear their items after the close animation,
-so the removal is a compile error for a plugin rebuilt against v5 and, for a
+**The exemplar plugin's imports are part of that derivation, deliberately.**
+`example-plugins/score-example` is the hand-composed stack an external author
+copies (ADR-030), built against the published subpaths and nothing else, so what
+it imports is exactly what core is promising third parties — which is why
+`generateExports.mjs` scans that directory alongside `packages plugins
+products`. Adding it changed nothing on the day: every subpath `score-example`
+reaches has at least eight in-repo importers besides it, so the exemplar holds
+no subpath up on its own yet. `component_tests` stays out — those six are
+build-integration smoke suites and import no core subpath at all.
+
+**One surface still has no check at all: the props of an exported component.**
+`e5b39664a6` consolidated eight hand-rolled context menus onto `ContextMenu` and
+dropped `slotProps` from `CascadingMenuProps` — correct for the tree, where the
+last caller had gone. Apollo's three context menus passed
+`slotProps.transition.onExit` to clear their items after the close animation, so
+the removal is a compile error for a plugin rebuilt against v5 and, for a
 prebuilt bundle, a prop React silently ignores: the menu still closes, the items
-are never cleared. No baseline covers it, because the checked surfaces are
-export *names*, and the prop never was one. Apollo's `onClose` already cleared
-the same state, so nothing was lost there — the point is that the check would
-not have said so.
+are never cleared. No baseline covers it, because every checked surface is an
+exported name or an exported path, and a prop is neither. Apollo's `onClose`
+already cleared the same state, so nothing was lost there — the point is that
+the check would not have said so.
 
 ## What has already left the re-export surface
 
@@ -71,6 +98,40 @@ version of this list had lost seventeen names.
 
 That is 46 names over 53 entries, since 7 of them were served from two modules each. Every one is recorded with its reason in `REMOVAL_GROUPS` in `packages/core/src/ReExports/knownRemovals.ts`, and checked on every run against the exports of the previously published package.
 <!-- END GENERATED ABI REMOVALS -->
+
+## What has left the published `exports` map
+
+The deep-import surface, where a plugin writes
+`import QuickLRU from '@jbrowse/core/util/QuickLRU'` and a package manager
+resolves it against the `exports` map. A subpath the map no longer serves is a
+resolution error at the plugin's next build, and nothing at all for a bundle
+that already inlined it. These went between 4.3.0 and today, none of them by a
+decision anyone wrote down:
+
+<!-- BEGIN GENERATED SUBPATH REMOVALS -->
+
+- the renderer registry, whose modules went with the server-side render path:
+  - `@jbrowse/core/pluggableElementTypes/GlyphType` — glyphs are drawn by the GPU displays, not registered
+  - `@jbrowse/core/pluggableElementTypes/renderers/RendererType` — renderer registry removed; displays compose RenderLifecycleMixin + DisplayChrome
+  - `@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType` — renderer registry removed
+  - `@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType` — renderer registry removed
+  - `@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType` — renderer registry removed
+  - `@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType` — renderer registry removed, core no longer renders on the server
+  - `@jbrowse/core/pluggableElementTypes/renderers/LayoutSession` — the block layout cache the box renderer kept; layout moved onto the GPU packing path
+  - `@jbrowse/core/pluggableElementTypes/renderers/util` — helpers for the classes above, deleted with them
+- modules deleted outright, along with the code that reached them:
+  - `@jbrowse/core/data_adapters/BaseAdapter/BaseOptions` — the adapter options bag, folded into `data_adapters/BaseAdapter` itself, which still exports `BaseOptions` and is still a published subpath
+  - `@jbrowse/core/rpc/methods/util` — renderer-era RPC helpers, removed with `CoreRender`
+  - `@jbrowse/core/util/offscreenCanvasUtils` — the server-side canvas helpers behind `renderToAbstractCanvas`
+  - `@jbrowse/core/util/compositeMap` — dead, with no caller in or out of the tree
+- modules that still exist, un-published because the last in-repo deep import went:
+  - `@jbrowse/core/rpc/coreRpcMethods` — `packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports it relatively; nothing imports it by subpath any more
+  - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still exports it as `ErrorMessage` — import it from the barrel
+  - `@jbrowse/core/util/layouts/BaseLayout` — alive, and re-exported from `@jbrowse/core/util/layouts`, which is a preserved subpath and a `jbrequire` module
+  - `@jbrowse/core/util/mst-reflection` — alive, and still served over `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import path went
+
+That is 16 subpaths the published `exports` map no longer serves, recorded with their reasons in `SUBPATH_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. The map is generated from in-repo import sites, so a subpath leaves it whenever its last in-repo importer does; `abiPreviousRelease.test.ts` checks the remainder against the exports map of the previously published package, which is what makes the next one a decision rather than an accident.
+<!-- END GENERATED SUBPATH REMOVALS -->
 
 ## What has left the session and the plugin `exports` objects
 
@@ -656,7 +717,10 @@ belong *inside* RFC-001 §7 rather than bolted beside it.
   because in-repo use "comes and goes"). Every module declaring an extension
   point is derivable and belongs in it by construction; so is every module the
   `@public` surface names. Same "enumerations that rot" disease as the docs, and
-  the same cure.
+  the same cure. The *silent* half of this is now gated —
+  `abiPreviousRelease.test.ts` fails a subpath the last release published and
+  this map no longer does — so what is left here is deriving the allowlist
+  rather than discovering it one outage at a time.
 - [ ] **Name the dependencies that cross the boundary.** The largest error class
   in the v5 measurement, and the only one with no mechanism —
   [ideas/a-dependency-bump-is-an-abi-event.md](../ideas/a-dependency-bump-is-an-abi-event.md)

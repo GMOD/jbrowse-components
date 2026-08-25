@@ -8,7 +8,13 @@ const packageRoot = join(__dirname, '..')
 const repoRoot = join(packageRoot, '../..')
 const srcDir = join(packageRoot, 'src')
 
-// Exports to keep even if not used internally (for backwards compatibility)
+// Exports to keep even if not used internally (for backwards compatibility).
+//
+// This is one of the two answers when `abiPreviousRelease.test.ts` reports a
+// subpath the last published `@jbrowse/core` served and this map no longer
+// does. Take this one when the promise should stand; take `SUBPATH_REMOVALS` in
+// `src/ReExports/knownRemovals.ts` when the removal is meant. Entries here were
+// each added after something broke, which is the disease the gate treats.
 const preservedExports = [
   '@jbrowse/core/util/nanoid',
   '@jbrowse/core/ReExports/list',
@@ -42,12 +48,21 @@ const preservedExports = [
   '@jbrowse/core/util/unzip',
 ]
 
+// The directories whose import sites decide what @jbrowse/core publishes.
+// `example-plugins` is here because `score-example` is the exemplar an external
+// plugin author copies -- ADR-030's hand-composed stack, built against the
+// published subpaths and nothing else -- so its imports ARE the third-party
+// surface core is promising, not incidental in-repo use. `component_tests` is
+// not: those six are build-integration smoke suites, and today they import no
+// core subpath at all.
+const scanDirs = 'packages plugins products example-plugins'
+
 // Scan the codebase for all @jbrowse/core imports
 function findAllImports() {
   try {
     // Find static imports: from '@jbrowse/core/...'
     const staticImports = execSync(
-      `grep -roh "from '@jbrowse/core[^']*'" packages plugins products --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
+      `grep -roh "from '@jbrowse/core[^']*'" ${scanDirs} --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
       { cwd: repoRoot, encoding: 'utf8' },
     )
       .trim()
@@ -56,7 +71,7 @@ function findAllImports() {
 
     // Find dynamic imports: import('@jbrowse/core/...')
     const dynamicImports = execSync(
-      `grep -roh "import('@jbrowse/core[^']*')" packages plugins products --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
+      `grep -roh "import('@jbrowse/core[^']*')" ${scanDirs} --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
       { cwd: repoRoot, encoding: 'utf8' },
     )
       .trim()
@@ -70,6 +85,8 @@ function findAllImports() {
     return []
   }
 }
+
+const unresolved = []
 
 // Check if a path is a directory with index file or a file
 function getSourcePath(entry) {
@@ -97,7 +114,12 @@ function getSourcePath(entry) {
     return `/${relativePath}.js`
   }
 
-  console.warn(`Warning: Could not find source file for ${entry}`)
+  // Hard failure, not a warning. The scan is a grep, so any string shaped like
+  // an import specifier is one -- a code COMMENT quoting `@jbrowse/core/...`
+  // scans as a real import site and used to write that literal into the exports
+  // map as a subpath resolving to nothing. Every path a clean tree finds
+  // resolves, so an unresolvable one is always a mistake somewhere.
+  unresolved.push(entry)
   return `/${relativePath}.ts`
 }
 
@@ -158,6 +180,17 @@ for (const entry of imports) {
       `esm${outPath.replace('.js', '.d.ts')}`,
     ]
   }
+}
+
+if (unresolved.length) {
+  console.error(
+    `No source file under packages/core/src for:\n${unresolved
+      .map(e => `  ${e}`)
+      .join(
+        '\n',
+      )}\nEither the import site is a typo, or it is a comment quoting an import specifier, which this grep cannot tell apart from one.`,
+  )
+  process.exit(1)
 }
 
 // Read package.json

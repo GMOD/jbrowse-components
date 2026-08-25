@@ -1,5 +1,8 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 import previous from './abiPreviousRelease.json'
-import { KNOWN_REMOVALS } from './knownRemovals.ts'
+import { KNOWN_REMOVALS, KNOWN_SUBPATH_REMOVALS } from './knownRemovals.ts'
 import libs from './modules.ts'
 
 // abi.test.ts pins the ABI going forward: its baseline was snapshotted from this
@@ -58,6 +61,39 @@ describe('ABI against the previously published release', () => {
       // stale two ways: the name came back, or the previous release never had it
       return (mod && exportName in mod) || !modules[name]?.includes(exportName)
     })
+    expect(stale).toEqual([])
+  })
+})
+
+// The `exports` map is a second promise out of the same release, and a quieter
+// one: `packages/core/scripts/generateExports.mjs` derives it by grepping the
+// repo for import specifiers under `@jbrowse/core`, so deleting the last
+// in-repo importer of a subpath drops it from the published map and nothing
+// fails. Four modules have already left that way while their source stayed put.
+//
+// Removals only, so adding an import never asks for anything. When this goes
+// red the two answers are `preservedExports` in `generateExports.mjs`, which
+// keeps a subpath published with no importer, or `SUBPATH_REMOVALS` in
+// `knownRemovals.ts`, which is where meaning it gets written down.
+describe('the published exports map against that release', () => {
+  const manifest = JSON.parse(
+    readFileSync(join(__dirname, '../../package.json'), 'utf8'),
+  ) as { exports: Record<string, string> }
+  const served = new Set(Object.keys(manifest.exports))
+
+  it(`serves every subpath @jbrowse/core@${previous.version} served`, () => {
+    const undeclared = previous.subpaths.filter(
+      s => !served.has(s) && !(s in KNOWN_SUBPATH_REMOVALS),
+    )
+    expect(undeclared).toEqual([])
+  })
+
+  it('has no stale SUBPATH_REMOVALS entries', () => {
+    const published = new Set(previous.subpaths)
+    // stale two ways: the subpath came back, or the release never served it
+    const stale = Object.keys(KNOWN_SUBPATH_REMOVALS).filter(
+      s => served.has(s) || !published.has(s),
+    )
     expect(stale).toEqual([])
   })
 })

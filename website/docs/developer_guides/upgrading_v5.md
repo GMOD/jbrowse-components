@@ -131,6 +131,66 @@ this build: Apollo, on `BaseTooltip`, `isContainedWithin` and
 `getParentRenderProps`. It declares `jbrowseRange: "*"`, so the store still
 offers it to a v5 user as compatible.
 
+## Subpaths removed from `@jbrowse/core`
+
+The deep-import surface: `import QuickLRU from '@jbrowse/core/util/QuickLRU'`
+resolves through the `exports` map in `@jbrowse/core`'s `package.json`, and a
+subpath that map no longer serves fails to resolve at your next build. A bundle
+you already published inlined the module and keeps working. Where the code
+merely moved, the entry says which import to use instead.
+
+<!-- BEGIN GENERATED SUBPATH REMOVALS -->
+
+- the renderer registry, whose modules went with the server-side render path:
+  - `@jbrowse/core/pluggableElementTypes/GlyphType` — glyphs are drawn by the
+    GPU displays, not registered
+  - `@jbrowse/core/pluggableElementTypes/renderers/RendererType` — renderer
+    registry removed; displays compose RenderLifecycleMixin + DisplayChrome
+  - `@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType` —
+    renderer registry removed
+  - `@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType` — renderer
+    registry removed
+  - `@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType` —
+    renderer registry removed
+  - `@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType` —
+    renderer registry removed, core no longer renders on the server
+  - `@jbrowse/core/pluggableElementTypes/renderers/LayoutSession` — the block
+    layout cache the box renderer kept; layout moved onto the GPU packing path
+  - `@jbrowse/core/pluggableElementTypes/renderers/util` — helpers for the
+    classes above, deleted with them
+- modules deleted outright, along with the code that reached them:
+  - `@jbrowse/core/data_adapters/BaseAdapter/BaseOptions` — the adapter options
+    bag, folded into `data_adapters/BaseAdapter` itself, which still exports
+    `BaseOptions` and is still a published subpath
+  - `@jbrowse/core/rpc/methods/util` — renderer-era RPC helpers, removed with
+    `CoreRender`
+  - `@jbrowse/core/util/offscreenCanvasUtils` — the server-side canvas helpers
+    behind `renderToAbstractCanvas`
+  - `@jbrowse/core/util/compositeMap` — dead, with no caller in or out of the
+    tree
+- modules that still exist, un-published because the last in-repo deep import
+  went:
+  - `@jbrowse/core/rpc/coreRpcMethods` —
+    `packages/core/src/rpc/coreRpcMethods.ts` is alive and `CorePlugin` imports
+    it relatively; nothing imports it by subpath any more
+  - `@jbrowse/core/ui/ErrorMessage` — alive, and `@jbrowse/core/ui` still
+    exports it as `ErrorMessage` — import it from the barrel
+  - `@jbrowse/core/util/layouts/BaseLayout` — alive, and re-exported from
+    `@jbrowse/core/util/layouts`, which is a preserved subpath and a `jbrequire`
+    module
+  - `@jbrowse/core/util/mst-reflection` — alive, and still served over
+    `jbrequire` as `@jbrowse/core/util/mst-reflection`; only the deep-import
+    path went
+
+That is 16 subpaths the published `exports` map no longer serves, recorded with
+their reasons in `SUBPATH_REMOVALS` in
+`packages/core/src/ReExports/knownRemovals.ts`. The map is generated from
+in-repo import sites, so a subpath leaves it whenever its last in-repo importer
+does; `abiPreviousRelease.test.ts` checks the remainder against the exports map
+of the previously published package, which is what makes the next one a decision
+rather than an accident.
+<!-- END GENERATED SUBPATH REMOVALS -->
+
 ## Names removed from the session and from a plugin's `exports`
 
 The surfaces a plugin reaches without importing anything, which is what makes

@@ -1,4 +1,8 @@
-import { REMOVAL_GROUPS, SESSION_AND_PLUGIN_REMOVALS } from './knownRemovals.ts'
+import {
+  REMOVAL_GROUPS,
+  SESSION_AND_PLUGIN_REMOVALS,
+  SUBPATH_REMOVALS,
+} from './knownRemovals.ts'
 import libs from './modules.ts'
 
 // The two arrays in this file are read by different machines, and filing an
@@ -57,5 +61,19 @@ describe('the removal record', () => {
       ),
     )
     expect(keys).toEqual([...new Set(keys)])
+  })
+
+  // `SUBPATH_REMOVALS` is keyed on `exports`-map keys, which start `./`. A
+  // module path written the `@jbrowse/core/x` way resolves to nothing on either
+  // side of the comparison, so abiPreviousRelease's stale test would report it
+  // — but it would say "the release never served it", which names the wrong
+  // mistake.
+  it('keys the subpath array the way the exports map does', () => {
+    const misshapen = SUBPATH_REMOVALS.flatMap(g =>
+      Object.entries(g.subpaths)
+        .filter(([key, reason]) => !key.startsWith('./') || !reason.trim())
+        .map(([key]) => key),
+    )
+    expect(misshapen).toEqual([])
   })
 })

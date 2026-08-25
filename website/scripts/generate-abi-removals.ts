@@ -1,9 +1,11 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-// Renders the grouped `@jbrowse/core/*` re-export removals into the pages that
-// publish them, out of `REMOVAL_GROUPS` in
-// `packages/core/src/ReExports/knownRemovals.ts`.
+// Renders the three removal records in
+// `packages/core/src/ReExports/knownRemovals.ts` into the pages that publish
+// them: `REMOVAL_GROUPS` (the `jbrequire` re-export names),
+// `SESSION_AND_PLUGIN_REMOVALS` (the unobserved surfaces), and
+// `SUBPATH_REMOVALS` (the published `exports` map).
 //
 // The list has one home already -- the escape hatch
 // `abiPreviousRelease.test.ts` checks against -- and two audiences outside it:
@@ -21,6 +23,7 @@ import { join } from 'node:path'
 import {
   REMOVAL_GROUPS,
   SESSION_AND_PLUGIN_REMOVALS,
+  SUBPATH_REMOVALS,
 } from '../../packages/core/src/ReExports/knownRemovals.ts'
 import {
   checkOrWriteAll,
@@ -33,6 +36,7 @@ import type { SurfaceRemovalGroup } from '../../packages/core/src/ReExports/know
 
 const MARKER = 'ABI REMOVALS'
 const SURFACE_MARKER = 'SESSION AND PLUGIN REMOVALS'
+const SUBPATH_MARKER = 'SUBPATH REMOVALS'
 
 // Both pages carry the same block: the internal reference, and the published
 // upgrade guide the release announcement sends plugin authors to.
@@ -104,15 +108,36 @@ const surfaceBody = [
   'Each is recorded with its reason in `SESSION_AND_PLUGIN_REMOVALS` in `packages/core/src/ReExports/knownRemovals.ts`. Unlike the list above, nothing checks these against a published bundle: `abi.test.ts` pins `@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters its findings on that same prefix, so a plugin `exports` object is observed by nothing at all and the session only by the members `pluginFacingSessionApi.test.ts` performs. Reading them here is the check.',
 ]
 
+// The `exports` map, which is a subpath list rather than a name list — so the
+// entry IS the import a plugin wrote, and the reason has to say where the code
+// went. A third of these are modules that still exist and only stopped being
+// reachable, which a bare list of paths would read as deletions.
+const subpathBody = [
+  ...SUBPATH_REMOVALS.flatMap(({ summary, subpaths }) => [
+    `- ${summary}:`,
+    ...Object.entries(subpaths).map(
+      ([subpath, reason]) =>
+        `  - \`@jbrowse/core${subpath.slice(1)}\` — ${reason}`,
+    ),
+  ]),
+  '',
+  `That is ${SUBPATH_REMOVALS.reduce((n, g) => n + Object.keys(g.subpaths).length, 0)} subpaths the published \`exports\` map no longer serves, recorded with their reasons in \`SUBPATH_REMOVALS\` in \`packages/core/src/ReExports/knownRemovals.ts\`. The map is generated from in-repo import sites, so a subpath leaves it whenever its last in-repo importer does; \`abiPreviousRelease.test.ts\` checks the remainder against the exports map of the previously published package, which is what makes the next one a decision rather than an accident.`,
+]
+
 checkOrWriteAll(
   targets.map(path => ({
     path,
     content: formatMarkdown(
       spliceGeneratedBlock({
         path,
-        marker: SURFACE_MARKER,
-        body: surfaceBody,
-        text: spliceGeneratedBlock({ path, marker: MARKER, body }),
+        marker: SUBPATH_MARKER,
+        body: subpathBody,
+        text: spliceGeneratedBlock({
+          path,
+          marker: SURFACE_MARKER,
+          body: surfaceBody,
+          text: spliceGeneratedBlock({ path, marker: MARKER, body }),
+        }),
       }),
       path,
     ),
