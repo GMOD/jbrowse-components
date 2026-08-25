@@ -205,6 +205,49 @@ test('a restored session with the mode on attaches before any width', async () =
   expect(view.views[0]!.maxBpPerPx).toBeCloseTo(view.views[1]!.fitBpPerPx)
 })
 
+// The clamp pass belongs to the shared scale, so with the mode off it must not
+// run at all — not merely not throw. A saved session is where the difference
+// shows: a row restored zoomed out past its own fit is where the user left the
+// view, and with no shared ceiling there is nothing to pull it back in for. The
+// pass ran anyway, because `answered` is true with the mode off — it answers 0
+// without reading a row.
+//
+// Reproduced end to end in `ExportSvgLinearSyntenyView.test.tsx`, where the
+// re-clamp widens ctgA from 499.01 to 527.5 in the exported figure.
+test('a restored row zoomed out past its own fit is left where it was saved', async () => {
+  const session = setup()
+  const view = session.addView('LinearSyntenyView', {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        bpPerPx: 500,
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: SMALL_BP, assemblyName: 'small' },
+        ],
+      },
+      {
+        type: 'LinearGenomeView',
+        bpPerPx: 500,
+        displayedRegions: [
+          { refName: 'ctgA', start: 0, end: LARGE_BP, assemblyName: 'large' },
+        ],
+      },
+    ],
+  }) as LinearSyntenyViewModel
+
+  view.setWidth(800)
+  await when(() => view.views.every(v => v.initialized))
+
+  const [small, large] = view.views
+  expect(view.sameScale).toBe(false)
+  // both saved past their own fit, which is the state a clamp would move
+  expect(small!.fitBpPerPx).toBeLessThan(500)
+  expect(large!.fitBpPerPx).toBeLessThan(500)
+
+  expect(small!.bpPerPx).toBe(500)
+  expect(large!.bpPerPx).toBe(500)
+})
+
 // mode off is `answered` without reading a row, so the clamp loop it guards ran
 // on every restored stack before any row had a width
 test('a restored session with the mode OFF attaches before any width', async () => {
