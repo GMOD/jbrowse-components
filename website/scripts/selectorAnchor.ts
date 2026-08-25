@@ -1,6 +1,16 @@
 import type { AnnotationAnchor } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
+// The testid prefixes a view's own box can carry, either of which scopes a
+// query to that view. Two, because they cover different views: app-core's
+// ViewContainer stamps `view-container-` around each of the session's own
+// views, and `linear-genome-view-` is on the LGV itself — which is the only one
+// a nested view has, since nothing wraps a row of a synteny stack.
+//
+// Read by `locusAnchor.ts` too, for the `band` selector it matches inside a
+// view. Both build the query in the page, where `CSS.escape` is.
+export const VIEW_SCOPE_TESTIDS = ['view-container', 'linear-genome-view']
+
 // The point on an element an action acts at, in viewport CSS px.
 //
 // A callout has resolved `selector` anchors since the overlay was written; an
@@ -33,6 +43,7 @@ export async function selectorPoint(page: Page, anchor: AnnotationAnchor) {
       selector: string,
       alignX: string,
       alignY: string,
+      scopeTestids: string[],
     ) => {
       interface AnchorableView {
         id: string
@@ -47,7 +58,9 @@ export async function selectorPoint(page: Page, anchor: AnnotationAnchor) {
         }
         scope = view
           ? document.querySelector(
-              `[data-testid="view-container-${CSS.escape(view.id)}"]`,
+              scopeTestids
+                .map(t => `[data-testid="${t}-${CSS.escape(view.id)}"]`)
+                .join(', '),
             )
           : null
       }
@@ -75,6 +88,7 @@ export async function selectorPoint(page: Page, anchor: AnnotationAnchor) {
     anchor.selector!,
     anchor.alignX ?? 'center',
     anchor.alignY ?? 'center',
+    VIEW_SCOPE_TESTIDS,
   )
   return point
     ? { x: point.x + (anchor.dx ?? 0), y: point.y + (anchor.dy ?? 0) }

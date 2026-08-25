@@ -116,7 +116,15 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
 
   return (
     <>
+      {/* The only handle a NESTED view has. App-core's ViewContainer stamps
+      `view-container-<id>` around each of the session's own views and nothing
+      wraps a row of a synteny stack or a panel of a breakpoint split view, so
+      the chrome of one — its ruler, its scalebar — could not be reached by
+      anything holding the view: every `rubberband_controls` on the page is
+      indistinguishable, and a figure or a tour picking the second of them is
+      pinned to the row order it was written at. */}
       <div
+        data-testid={`linear-genome-view-${model.id}`}
         className={classes.rel}
         ref={ref}
         onMouseLeave={() => {

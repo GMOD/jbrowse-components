@@ -1,3 +1,5 @@
+import { VIEW_SCOPE_TESTIDS } from './selectorAnchor.ts'
+
 import type { AnnotationAnchor } from './screenshot-specs.ts'
 import type { Page } from 'puppeteer'
 
@@ -39,6 +41,7 @@ export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
       bandSelector: string | undefined,
       want: { refName: string; start: number; end: number },
       fracY: number,
+      scopeTestids: string[],
     ) => {
       interface AnchorableView {
         id: string
@@ -60,10 +63,18 @@ export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
       if (!view) {
         return undefined
       }
+      // Either box the view can carry, since a nested one has only the second
+      // -- see VIEW_SCOPE_TESTIDS. A `band` on a synteny row resolved through
+      // the whole document before this, which is the FIRST row's ruler
+      // whichever row was asked for.
       const inView = (selector: string) =>
-        document.querySelector(
-          `[data-testid="view-container-${CSS.escape(view.id)}"] ${selector}`,
-        )
+        document
+          .querySelector(
+            scopeTestids
+              .map(t => `[data-testid="${t}-${CSS.escape(view.id)}"]`)
+              .join(', '),
+          )
+          ?.querySelector(selector)
       // the track's rendering container when the spec names one (a click has to
       // land in the right track), else the whole tracks area
       const el = trackId
@@ -96,6 +107,7 @@ export async function locusPoint(page: Page, anchor: AnnotationAnchor) {
     anchor.band,
     region,
     anchor.fracY ?? 0.5,
+    VIEW_SCOPE_TESTIDS,
   )
   return point
     ? { x: point.x + (anchor.dx ?? 0), y: point.y + (anchor.dy ?? 0) }
