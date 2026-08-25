@@ -47,7 +47,22 @@ export function hitTestInterbase(
   // No interbase mark is hittable unless coverage is shown and the user has
   // interbase indicators on — the one toggle governs both the triangles and the
   // count bars.
-  if (!showCoverage || !showInterbaseIndicators || canvasY < 0) {
+  //
+  // The band's bottom edge bounds the hover the way it bounds the draw, and
+  // `interbaseHeight` below cannot supply that bound: it scales the FETCHED
+  // block's peak event count against the VISIBLE domain, so a breakpoint far
+  // above a bounded or locally autoscaled domain computes a bar hundreds of px
+  // long. Both backends scissor that to the band (`covClipTop`/`covClipHeight`,
+  // and the GPU's scissor), and with nothing saying so here a ±3bp column ran
+  // the full height of the pileup: `performHitTest` asks this first and returns
+  // on a hit, so every read hover, click and right-click under it answered
+  // interbase. `hitTestCoverage` states the same bound one file over.
+  if (
+    !showCoverage ||
+    !showInterbaseIndicators ||
+    canvasY < 0 ||
+    canvasY > coverageHeight
+  ) {
     return undefined
   }
 

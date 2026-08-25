@@ -746,6 +746,15 @@ describe('interbaseBarHeightPx', () => {
   ])('is 0 when %s', (_name, maxCount, domainMax) => {
     expect(interbaseBarHeightPx(90, maxCount, domainMax)).toBe(0)
   })
+
+  // A 300x breakpoint in the fetched block under a domain bounded to 20. The
+  // overflow is deliberately the DRAW's to scissor: clamping it here would
+  // compress the stack into the band instead, so segments the scissor drops
+  // would reappear squeezed in, painting colours where the band shows one.
+  // `hitTestInterbase` carries its own band gate for that reason.
+  it('overflows the band rather than rescaling when the domain is bounded below the peak', () => {
+    expect(interbaseBarHeightPx(90, 300, 20)).toBe(600)
+  })
 })
 
 // Every bar layer here resolves a bp cell to `bpToX(pos)` + a width. On a

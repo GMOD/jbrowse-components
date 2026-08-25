@@ -182,6 +182,61 @@ describe('hitTestInterbase histogram bars', () => {
   })
 })
 
+// A bar taller than the band it is drawn in. `interbaseMaxCount` is the FETCHED
+// block's peak event count and `domainMax` is the VISIBLE, bounded domain, so a
+// 300x breakpoint under a maxScoreBound of 20 scales to 40 * 300/20 = 600px of
+// bar hanging off a 90px band. Both backends scissor that to the band; the hit
+// test has to stop there too, or a +-3bp column runs the full height of the
+// pileup answering interbase for every read hover, click and right-click under
+// it — `performHitTest` asks this first and returns on a hit.
+describe('hitTestInterbase overflowing bars', () => {
+  const overflowingBarAt1005 = {
+    interbasePackedBuffer: packedInterbaseSegments([
+      { position: 1005, yOffset: 0, height: 1, colorType: 2 },
+    ]),
+    interbaseMaxCount: 300,
+  }
+
+  it('still hits the overflowing bar inside the coverage band', () => {
+    const rpcData = makeRpcData(overflowingBarAt1005)
+    expect(
+      hitTestInterbase(
+        1005,
+        0.5,
+        50,
+        rpcData,
+        true,
+        true,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      ),
+    ).toEqual({
+      type: 'indicator',
+      position: 1005,
+      indicatorType: 'softclip',
+    })
+  })
+
+  it.each([
+    ['just past the band bottom', 200],
+    ['deep in the pileup', 400],
+  ])('misses %s, where nothing is drawn', (_name, canvasY) => {
+    const rpcData = makeRpcData(overflowingBarAt1005)
+    expect(
+      hitTestInterbase(
+        1005,
+        0.5,
+        canvasY,
+        rpcData,
+        true,
+        true,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      ),
+    ).toBeUndefined()
+  })
+})
+
 describe('hitTestInterbase indicator triangles', () => {
   it('hits a triangle in the top strip when indicators are shown', () => {
     const rpcData = makeRpcData({
