@@ -3,10 +3,12 @@ import {
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import {
+  bisectLargestFitting,
   bisectSmallestFitting,
   fitScaleToFill,
   resolveFitLadder,
   snapFittedContentHeight,
+  solveIsoformCount,
   squeezeFloorScale,
 } from './fitLadder.ts'
 
@@ -144,6 +146,52 @@ describe('bisectSmallestFitting', () => {
   })
 })
 
+describe('bisectLargestFitting', () => {
+  // The integer twin, so the bracket closes on its own rather than on a count.
+  it('finds the largest fitting integer', () => {
+    expect(bisectLargestFitting(x => x <= 7, 1, 40)).toBe(7)
+    expect(bisectLargestFitting(x => x <= 1, 1, 40)).toBe(1)
+    expect(bisectLargestFitting(x => x <= 39, 1, 40)).toBe(39)
+  })
+
+  it('probes O(log n) times, not n', () => {
+    let calls = 0
+    bisectLargestFitting(
+      x => {
+        calls++
+        return x <= 17
+      },
+      1,
+      1000,
+    )
+    expect(calls).toBeLessThan(12)
+  })
+})
+
+describe('solveIsoformCount', () => {
+  // 12px a transcript, so a height of h holds floor(h/12) of them.
+  const heightAt = (n: number) => n * 12
+
+  it('answers the largest count that fits', () => {
+    expect(solveIsoformCount(heightAt, 60, 10)).toBe(5)
+  })
+
+  it('answers nothing when the whole stack fits', () => {
+    expect(solveIsoformCount(heightAt, 600, 10)).toBeUndefined()
+  })
+
+  // "Names before isoforms": one per gene is the floor, and the rungs below
+  // inherit it rather than going back to the full stack to save a name.
+  it('answers one when even one per gene overflows', () => {
+    expect(solveIsoformCount(heightAt, 5, 10)).toBe(1)
+  })
+
+  it('answers nothing when no gene has a choice to make', () => {
+    expect(solveIsoformCount(heightAt, 1, 1)).toBeUndefined()
+    expect(solveIsoformCount(heightAt, 1, 0)).toBeUndefined()
+  })
+})
+
 describe('snapFittedContentHeight', () => {
   it('swallows a sub-pixel overflow while squeezing', () => {
     // The multiply-then-measure round-trip that lands a hair over the track.
@@ -168,6 +216,59 @@ describe('snapFittedContentHeight', () => {
 })
 
 describe('resolveFitLadder', () => {
+  // The rung carries the count it packed at, so the chip and the tooltip read
+  // the solve rather than a flag from the worker.
+  it('reports the kept rung’s isoform count', () => {
+    const stage = resolveFitLadder(
+      [
+        { level: 'full', layout: () => layoutOfHeight(300) },
+        { level: 'labels', layout: () => layoutOfHeight(200) },
+        {
+          level: 'isoforms',
+          layout: () => layoutOfHeight(90),
+          maxIsoforms: 5,
+        },
+      ],
+      100,
+      0.2,
+      1,
+    )
+    expect(stage.level).toBe('isoforms')
+    expect(stage.maxIsoforms).toBe(5)
+  })
+
+  it('reports no count on a rung that trimmed nothing', () => {
+    const stage = resolveFitLadder(
+      [{ level: 'full', layout: () => layoutOfHeight(90) }],
+      100,
+      0.2,
+      1,
+    )
+    expect(stage.maxIsoforms).toBeUndefined()
+  })
+
+  // Every isoform goes before any name does, so the two rungs below `isoforms`
+  // pack at the count it failed at — carried on the rung rather than derived
+  // from the level, which cannot tell them apart.
+  it('lets the rungs below inherit the count the trim failed at', () => {
+    const stage = resolveFitLadder(
+      [
+        { level: 'full', layout: () => layoutOfHeight(300) },
+        {
+          level: 'isoforms',
+          layout: () => layoutOfHeight(200),
+          maxIsoforms: 1,
+        },
+        { level: 'bodies', layout: () => layoutOfHeight(80), maxIsoforms: 1 },
+      ],
+      100,
+      0.2,
+      1,
+    )
+    expect(stage.level).toBe('bodies')
+    expect(stage.maxIsoforms).toBe(1)
+  })
+
   it('keeps the least-reduced rung that fills the track, at scale 1', () => {
     const rungs: [FitRung, ...FitRung[]] = [
       { level: 'full', layout: () => layoutOfHeight(100) },

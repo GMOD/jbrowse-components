@@ -143,6 +143,7 @@ export interface StackedGeneSpec {
   endBp: number
   isoforms: number
   name?: string
+  strand?: number
   heightPx?: number
   gapPx?: number
   canonicalTag?: string
@@ -182,7 +183,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
         height: heightPx,
         color: 0xff_80_40_ff,
         colorClass: LITERAL,
-        strand: 0,
+        strand: spec.strand ?? 0,
         flatbushIdx,
         labelRowsAbove: 0,
         childOrdinal: child.ordinal,
@@ -198,6 +199,7 @@ export function packStackedGenes(genes: StackedGeneSpec[]): FeatureDataResult {
         bottomPx: totalPx,
         featureHeightPx: totalPx,
         name: spec.name ?? spec.featureId,
+        strand: spec.strand,
         isoformStack: {
           isoformCount: spec.isoforms,
           canonicalTag: spec.canonicalTag,

@@ -5,6 +5,7 @@ import { autorun } from 'mobx'
 import {
   makeFeatureData,
   makeFlatbushItem,
+  packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { computeLaidOutData, maxBottom, packedContentHeight } from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -1763,5 +1764,83 @@ describe('canvas display scrolls over the visible window', () => {
     expect(display.onScreenFeatureIds).toBeUndefined()
     expect(display.scrollExtentMaxY).toBe(display.maxY)
     expect(display.hasOverflow).toBe(true)
+  })
+})
+
+// Two overlapping genes, one with four transcripts and one with ten — 196px of
+// stack in a 100px track, where the only thing the ladder used to have left to
+// give up was the names. The measured shape that motivated the rung is pinned
+// at the layout level in isoformFitLadder.test.ts; these are the three height
+// modes, end to end through the display.
+const ISOFORM_GENES = packStackedGenes([
+  { featureId: 'gene1', name: 'GENE1', startBp: 100, endBp: 500, isoforms: 4 },
+  { featureId: 'gene2', name: 'GENE2', startBp: 450, endBp: 900, isoforms: 10 },
+])
+
+const namesOnScreen = (display: TestDisplay) =>
+  [...display.laidOutDataMap.values()]
+    .flatMap(data => [...data.floatingLabelsData.values()])
+    .map(label => label.nameLabel?.text)
+    .filter(Boolean)
+    .sort()
+
+describe('the isoform rung across the three height modes', () => {
+  it('fit keeps both names and trims the crowded gene', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    display.setRpcData(0, ISOFORM_GENES, ctgA)
+
+    expect(display.fitStage.level).toBe('isoforms')
+    expect(display.fitStage.maxIsoforms).toBeLessThan(10)
+    expect(display.fitStage.contentHeight).toBeLessThanOrEqual(100)
+    expect(namesOnScreen(display)).toEqual(['GENE1', 'GENE2'])
+  })
+
+  // Fixed height scrolls rather than degrading, but it trims: a gene with 28
+  // transcripts in a 100px lane draws all 28 inside the lane's own scrollbar,
+  // which is the case the worker's cap was built for.
+  it('fixed trims too, and keeps its descriptions', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setRpcData(0, ISOFORM_GENES, ctgA)
+
+    expect(display.heightMode).toBe('fixed')
+    expect(display.fitStage.level).toBe('isoforms')
+    expect(display.fitStage.maxIsoforms).toBeLessThan(10)
+    expect(display.fitStage.scale).toBe(1)
+    expect(namesOnScreen(display)).toEqual(['GENE1', 'GENE2'])
+  })
+
+  // Grow's height IS its content's, so a trim solved against it would shrink
+  // the track it was measured against. It draws every transcript and grows.
+  it('grow never trims', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setHeightMode('grow')
+    display.setRpcData(0, ISOFORM_GENES, ctgA)
+
+    expect(display.fitStage.level).toBe('full')
+    expect(display.fitStage.maxIsoforms).toBeUndefined()
+    expect(display.height).toBeGreaterThan(100)
+  })
+
+  // A gene the user opened is exempt from the count, in every mode.
+  it('leaves an expanded gene whole', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setHeightMode('fit')
+    display.toggleExpandedGene('gene2')
+    display.setRpcData(0, ISOFORM_GENES, ctgA)
+
+    const data = [...display.laidOutDataMap.values()][0]!
+    const idx = data.flatbushItems.findIndex(i => i.featureId === 'gene2')
+    const ordinals = new Set<number>()
+    for (const [i, feature] of data.rectFeatureIndices.entries()) {
+      if (feature === idx) {
+        ordinals.add(data.rectChildOrdinals[i]!)
+      }
+    }
+    expect(ordinals.size).toBe(10)
   })
 })

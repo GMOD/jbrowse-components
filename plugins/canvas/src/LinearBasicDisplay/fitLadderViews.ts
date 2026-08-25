@@ -500,18 +500,21 @@ export function fitLadderViews(self: FitLadderHost) {
                 maxIsoforms: trimmed,
               },
             ]
-          : // Fixed height scrolls rather than degrading, but it trims: a gene
-            // with 28 transcripts in a 100px lane draws all 28 inside the
-            // lane's own scrollbar, which is the case the cap was built for and
-            // the one `grow` deliberately keeps.
-            [
-              { level: 'full', layout: () => base },
-              {
-                level: 'isoforms',
-                layout: () => this.fitIsoformsSolved,
-                maxIsoforms: trimmed,
-              },
-            ],
+          : self.autoHeight
+            ? // Grow's height IS its content's, so it gives nothing up.
+              [{ level: 'full', layout: () => base }]
+            : // Fixed height scrolls rather than degrading, but it trims: a
+              // gene with 28 transcripts in a 100px lane draws all 28 inside
+              // the lane's own scrollbar, which is the case the worker's cap
+              // was built for and the one `grow` deliberately keeps.
+              [
+                { level: 'full', layout: () => base },
+                {
+                  level: 'isoforms',
+                  layout: () => this.fitIsoformsSolved,
+                  maxIsoforms: trimmed,
+                },
+              ],
         self.fitTargetHeight,
         fit ? this.fitMinScale : 1,
         fit ? this.fitMaxScale : 1,
