@@ -664,11 +664,10 @@ connecting the two chromosomes.
 
 <Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
-That chord is one breakend of a larger event. The V0.5 benchmark tags `SV_20`
-with `EVENTTYPE=CHROMOPLEXY` and files it under `EVENT=cluster_3` with its mate
-on chr13 and two further breakends on chr3. Interchromosomal translocations in
-HG008 are frequently complex this way
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
+That chord is one breakend of a larger event, and interchromosomal
+translocations in HG008 are frequently complex this way
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). The next
+walkthrough reads this one three ways.
 
 For the SV inspector workflow itself (filtering the table, search, configuring
 the circular overview), see the
@@ -707,12 +706,12 @@ single base of contig coordinate, with the same orientation flip the reads
 describe. Open it in the synteny or dotplot view against GRCh38 and the junction
 is the point where one contig stops following chr13 and starts following chr3.
 
-Reading the list below the top route is the other half of the exercise. This
-window ends at the chr13 q-terminus, so most of what is offered under the real
-junction is reads mismapped into the terminal repeats of other chromosomes, each
-a confident-looking two-segment route with a real read count behind it. The read
-count ranks the routes. What picks this one out is that the caller and the
-assembly put its two ends in the same two places.
+Back in the reconstruction, reading the list below the top route is the other
+half of the exercise. This window ends at the chr13 q-terminus, so most of what
+is offered under the real junction is reads mismapped into the terminal repeats
+of other chromosomes, each a confident-looking two-segment route with a real
+read count behind it. The read count ranks the routes. What picks this one out
+is that the caller and the assembly put its two ends in the same two places.
 
 The reconstruction is bounded twice by what is loaded. It is assembled from the
 reads in the **displayed regions**, which is why both sides of this junction are
