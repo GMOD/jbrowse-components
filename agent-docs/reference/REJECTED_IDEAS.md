@@ -404,8 +404,14 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   identical for a real parent and for no relationship at all.
 
   **In-tree it would have one user.** `LGVSyntenyDisplay` ←
-  `LinearAlignmentsDisplay` is the only display-extends-display pair in the
-  tree. Everything else composes `BaseDisplay` plus a mixin set directly —
+  `LinearAlignmentsDisplay` is the only pair where a display is built from
+  another *registered* display's state-model factory. Where displays do share a
+  base it is an unregistered one with no name to declare —
+  `linearCanvasBaseDisplayStateModelFactory` under `LinearBasicDisplay` and
+  `LinearVariantDisplay`, `MultiSampleVariantBaseModel` under the two
+  multi-sample variant displays, `SharedLDModel` under `LDDisplay` and
+  `LDTrackDisplay`. Everything else composes `BaseDisplay` plus a mixin set
+  directly —
   `TrackHeightMixin`, `MultiRegionDisplayMixin`, `LegendMixin`,
   `CanvasFeatureGateMixin`, `WiggleCommonMixin`, `TreeSidebarMixin`. The cost it
   was proposed to remove was one duplicated `addDisplayMenuItems` call in
@@ -414,9 +420,9 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
   **And it cannot express the case that motivates it**, which was out-of-tree
   plugins wanting to say "any canvas-family display" instead of naming one.
-  `LinearBasicDisplay` and `LinearVariantDisplay` are both built from
-  `linearCanvasBaseDisplayStateModelFactory`, which is not a registered display
-  type, so `extendsType` has no name to point at. `LinearMultiRowFeatureDisplay`
+  As above, `linearCanvasBaseDisplayStateModelFactory` is not a registered
+  display type, so `extendsType` has no name to point at.
+  `LinearMultiRowFeatureDisplay`
   — the other canvas display showing genes, and the one those plugins actually
   miss — composes the mixins directly and would declare no parent at all. A
   name would not help them even if it existed: that display's `contextMenuInfo`
