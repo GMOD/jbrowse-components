@@ -198,11 +198,11 @@ export interface FeatureDataResult {
   // that mode is zoom-dependent and would otherwise lag a region behind.
   hasMultiIsoformGenes?: boolean
 
-  // What picked the transcript each collapsed gene here is showing, counted per
-  // rule (see IsoformPicks). Empty when nothing was collapsed, which is also how
-  // the main thread knows: it resolves the `longestCoding` collapse itself, but
-  // the height cap fires on the gene's own isoform count, which only the worker
-  // has seen. Undefined in fixtures that predate this field.
+  // What picked the transcript each gene `longestCoding` collapsed here is
+  // showing, counted per rule (see IsoformPicks). Empty when nothing was
+  // collapsed. The fit ladder's own trim adds to this on the main thread, where
+  // it happens (`addTrimmedIsoformPicks`). Undefined in fixtures that predate
+  // this field.
   isoformPicks?: IsoformPicks
 
   // Index-estimated compressed bytes for this region (when the adapter offers a

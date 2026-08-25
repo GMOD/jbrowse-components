@@ -22,8 +22,8 @@ const TRANSCRIPT_PADDING_RATIO = 0.2
 // what makes the gene a Subfeatures container to begin with, and the emitter
 // draws it exactly like an `mRNA`. `transcriptTypes` is a seven-entry list that
 // does NOT name `lnc_RNA`, `misc_RNA`, `ncRNA` or `pseudogenic_transcript`, all
-// of which NCBI hangs off a gene next to its mRNAs, so keying only off it let
-// those isoforms escape the height cap entirely — a gene capped at 2 drew 7 —
+// of which NCBI hangs off a gene next to its mRNAs, so keying only off it left
+// those isoforms out of the ranking entirely — a gene trimmed to 2 drew 7 —
 // and vanish under `longestCoding` while the layout reported nothing collapsed.
 // The type test stays as the fallback for a childless transcript. Matched
 // case-insensitively, like isCDS/isExon and the featureAdmission gate.
@@ -149,8 +149,8 @@ function scoreIsoforms(features: Feature[], config: DisplayConfig) {
 
 type Scores = ReturnType<typeof scoreIsoforms>
 
-// The gene's isoforms, best first: `longestCoding` takes the head, the height
-// cap takes the first n, so the two agree at n = 1 by construction.
+// The gene's isoforms, best first: `longestCoding` takes the head and the fit
+// ladder's trim takes the first n, so the two agree at n = 1 by construction.
 //
 // A tagged isoform outranks everything, because a curated tag is a better
 // answer to "which isoform speaks for this gene" than any measurement of one —

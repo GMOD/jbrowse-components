@@ -235,8 +235,8 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       transcriptTypes: {
         type: 'stringArray',
         // Deliberately NOT the isoform test: keying that off this list left
-        // every `lnc_RNA`/`misc_RNA` isoform NCBI hangs off a gene exempt from
-        // the height cap and dropped by longestCoding (see subfeatures.ts
+        // every `lnc_RNA`/`misc_RNA` isoform NCBI hangs off a gene out of the
+        // ranking and dropped by longestCoding (see subfeatures.ts
         // `isIsoform`), so the list survives only as the childless-transcript
         // fallback there and as the gene-only view's own gate.
         // V/C/D/J_gene_segment are kept so NCBI immunoglobulin/TCR segments are

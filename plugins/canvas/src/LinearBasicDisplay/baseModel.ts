@@ -276,8 +276,8 @@ export default function baseStateModelFactory(
           /**
            * #property
            * Genes the user opened from the isoform badge on their own label:
-           * these draw every isoform whatever `geneGlyphMode` or the height cap
-           * would otherwise collapse them to. A per-GENE override of a
+           * these draw every isoform whatever `geneGlyphMode` or the fit
+           * ladder's isoform rung would otherwise collapse them to. A per-GENE override of a
            * track-wide setting, so the reader can open the one gene they are
            * reading without turning every other gene on screen into a stack.
            *
