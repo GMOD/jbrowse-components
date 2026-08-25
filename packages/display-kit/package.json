@@ -19,7 +19,8 @@
   },
   "author": "JBrowse Team",
   "files": [
-    "esm"
+    "esm",
+    "!esm/chromeTestModel.*"
   ],
   "exports": {
     "./BlockMsg": "./src/BlockMsg.tsx",
