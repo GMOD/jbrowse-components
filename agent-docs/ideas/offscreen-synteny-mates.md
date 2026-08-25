@@ -31,6 +31,17 @@ replays the zoom but not the scroll) and under the reader's `animationMode`.
 The navigate class is not flown and cannot be: `navToLocString` replaces the
 row's regions, so there is no coordinate space the two ends are both in.
 
+**Its open cost, unmeasured.** The arc's whole point is the pull-back, and over
+stacked whole assemblies that is ~15 octaves of zoom each way — traced at
+1500Mb-wide at the apex for a 1.5Gb hop. Synteny's fetch key buckets on
+`floor(log2(bpPerPx))` (`bucketBpPerPx`), so one flight crosses ~30 buckets
+where a pan at constant zoom crosses none; the 500ms leading-edge debounce cuts
+that to a handful of RPCs, for windows nobody stops to look at. Nobody has put
+a number on it against a real file — `demos/grape_peach_cacao` is the one to
+use. The levers, cheapest first: lower `RHO` (flattens the arc, costs no
+coupling, costs readability), or gate the synteny fetch on a flight in progress
+through the `fetchInert` seam it already has. **Measure before either.**
+
 A synteny band draws a ribbon only when **both** ends land on a displayed
 region. When peach chr1 is stacked against grape chr1 and a peach locus is
 syntenic to grape chr5, there is no ribbon and no marker and no count — the view

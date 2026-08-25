@@ -1,5 +1,30 @@
 import { clamp } from '@jbrowse/core/util'
 
+// The zoom-and-pan path below is Van Wijk & Nuij's, not ours:
+//
+//   Jarke J. van Wijk and Wim A. A. Nuij, "Smooth and efficient zooming and
+//   panning", Proc. IEEE Symposium on Information Visualization (InfoVis)
+//   2003, Seattle WA, pp. 15-22. doi:10.1109/INFVIS.2003.1249004
+//   https://vanwijk.win.tue.nl/zoompan.pdf
+//
+// `zoomAndPan` is their equation (9) — section 5, "The optimal path" — in the
+// paper's own notation, so the two can be read against each other: u is the
+// distance travelled along the path, w the width of the window, rho the
+// zoom/pan trade-off, s the arc length and S its total. `zoomInPlace` is the
+// u0 = u1 case they give immediately after it. Equation (9) is a geodesic
+// under their metric, which is what makes it the shortest path whose PERCEIVED
+// rate of change is constant; that property is the whole reason to use it here
+// rather than to interpolate.
+//
+// Written from the paper rather than ported. The same algorithm is
+// d3-interpolate's `interpolateZoom` (Mike Bostock, ISC):
+// https://github.com/d3/d3-interpolate/blob/main/src/zoom.js
+//
+// Two deliberate departures from the published form, both noted where they
+// happen: `Math.asinh` in place of the logarithm (9) writes r_i as, and a
+// duration that is nothing like the paper's. `springAnimate` is the tree's
+// other animation primitive and cites its source the same way.
+
 /**
  * A window of the view's linearized bp space — the space `windowStartBp` is in,
  * so a position here is invariant under zoom and a flight can be planned once
@@ -16,21 +41,39 @@ export interface Flight {
   at: (t: number) => FlightViewport
 }
 
-// Van Wijk & Nuij's rho: how much the path is willing to zoom out to cover
-// distance. sqrt(2) is their measured optimum and d3-interpolateZoom's default.
-// Lower flattens the arc into a pan, higher pulls further back and travels
-// faster, and it is the one knob here worth turning if the zoomed-out apex ever
-// proves too expensive to fetch through.
+// The paper's rho: how much the path is willing to zoom out to cover distance.
+// Their section 6 user experiment measured 1.42 (sd 0.47), and they note that
+// it "suggests that rho = sqrt(2) is possibly an optimal value" without being
+// able to say why; d3-interpolateZoom takes the same sqrt(2). Lower flattens
+// the arc into a pan, higher pulls further back and travels faster, and it is
+// the one knob here worth turning if the zoomed-out apex proves too expensive
+// to fetch through.
+//
+// WHICH IS NOT A HYPOTHETICAL, and is the known open cost of this. A
+// cross-chromosome flight over stacked whole assemblies traces roughly 15
+// octaves of zoom out and 15 back, and synteny's fetch key buckets on
+// `floor(log2(bpPerPx))` — so a flight crosses ~30 fetch buckets where a drag
+// at constant zoom crosses none. The 500ms leading-edge debounce turns that
+// into a handful of RPCs per flight rather than 30, but they are RPCs for
+// windows nobody stops to look at. Unmeasured on a real file; a gate on
+// synteny's existing `fetchInert` is the obvious lever if it bites, and
+// lowering rho is the one that costs no coupling.
 const RHO = Math.sqrt(2)
 
-// The path length `S` comes out in Van Wijk's dimensionless units of perceived
-// motion, and it grows with the LOG of the distance: half a screen scores 0.7,
-// one screen 1.2, a hundred screens 7.5, a whole genome 12. So the three
-// numbers below are a floor for the hops too short to need time, a ceiling for
-// the cross-genome one — whose honest duration is ten seconds, which is a wait
-// rather than a transition — and a rate that puts everything between them on a
-// curve that is nearly flat where the distances are ordinary. Perceived
-// velocity is constant WITHIN a flight either way; this only picks its total.
+// WHERE WE PART COMPANY WITH THE PAPER, and the one number in here that is not
+// theirs. `S` is a path length in their dimensionless units of perceived
+// motion, growing with the LOG of the distance: half a screen scores 0.7, one
+// screen 1.2, a hundred screens 7.5, a whole genome 12. Their section 6
+// measured an animation speed V of 0.90 of those units per second, which would
+// put that whole-genome flight at THIRTEEN SECONDS — a wait, not a transition,
+// and their own scenario (a map of the US) never asks for a path that long.
+//
+// So the duration is clamped instead: a floor for the hops too short to need
+// time, a ceiling for the cross-genome one, and a rate between. At the ceiling
+// that is an effective V around 11, an order of magnitude above what they
+// measured, and it is the deliberate cost of not making the reader wait.
+// Perceived velocity is still constant WITHIN a flight — that is equation (9)'s
+// doing, not this — and this only picks the total.
 const MS_PER_UNIT = 90
 const MIN_MS = 250
 const MAX_MS = 1100
@@ -45,11 +88,10 @@ const STATIONARY = 1e-6
 /**
  * The viewport path from `from` to `to`, and how long to spend on it.
  *
- * Van Wijk & Nuij (2003), "Smooth and efficient zooming and panning" — the same
- * solution d3's `interpolateZoom` implements. It zooms out as it travels and
- * back in as it arrives, along the path that holds the *perceived* velocity
- * constant, so the reader can follow the whole journey rather than watching one
- * blurred smear.
+ * The path is equation (9) of the paper cited at the top of this file: it zooms
+ * out as it travels and back in as it arrives, along the geodesic that holds
+ * the *perceived* velocity constant, so the reader can follow the whole journey
+ * rather than watching one blurred smear.
  *
  * A STRAIGHT PAN IS NOT THE ALTERNATIVE, it is the thing this exists to avoid.
  * The jump that wants animating here is a synteny row showing a whole assembly
@@ -83,9 +125,11 @@ export function planFlight(from: FlightViewport, to: FlightViewport): Flight {
   }
 }
 
-// The general solution. `u` runs along the path in world units from the start,
-// and the two `r` are where the start and end sit on the hyperbolic the path
-// traces.
+// Equation (9), term for term. `u` runs along the path in world units from the
+// start, and the two `r` are where the start and end sit on the ellipse the
+// path traces. The paper's `u1 - u0` is signed; here the caller's sign is
+// carried separately in `direction` and `dist` is its magnitude, so that u0 = 0
+// and the two forms agree.
 function zoomAndPan(
   from: FlightViewport,
   to: FlightViewport,
@@ -98,9 +142,11 @@ function zoomAndPan(
   const rho4 = rho2 * rho2
   const b0 = (w1 * w1 - w0 * w0 + rho4 * dist * dist) / (2 * w0 * rho2 * dist)
   const b1 = (w1 * w1 - w0 * w0 - rho4 * dist * dist) / (2 * w1 * rho2 * dist)
-  // asinh(-b) rather than the paper's log(-b + sqrt(b*b + 1)) it expands to:
-  // the two terms cancel to seven digits at the far end of a cross-genome jump,
-  // where b runs to a thousand, and asinh is the form that does not lose them.
+  // asinh(-b), which is exactly the ln(-b + sqrt(b*b + 1)) equation (9) writes
+  // (and d3 implements literally) — but evaluated without the catastrophic
+  // cancellation those two terms suffer at the far end of a cross-genome jump,
+  // where b runs to a thousand and they agree to seven digits before
+  // subtracting. Same value, better conditioned.
   const r0 = Math.asinh(-b0)
   const r1 = Math.asinh(-b1)
   const S = (r1 - r0) / RHO
@@ -123,8 +169,11 @@ function zoomAndPan(
     : undefined
 }
 
-// The degenerate arm: the endpoints are the same place at different scales, so
-// there is no path to trace and the zoom is exponential in `s` on its own.
+// The paper's u0 = u1 case, given unnumbered just after equation (9): the
+// endpoints are the same place at different scales, so there is no path to
+// trace and the zoom is exponential in `s` on its own. Their `w0 exp(k*rho*s)`
+// over `S = |ln(w1/w0)|/rho` is `w0 * ratio**t` here, which is the same curve
+// with `t = s/S` and their sign `k` folded into the ratio.
 function zoomInPlace(from: FlightViewport, to: FlightViewport) {
   const ratio = to.windowWidthBp / from.windowWidthBp
   const S = Math.abs(Math.log(ratio)) / RHO

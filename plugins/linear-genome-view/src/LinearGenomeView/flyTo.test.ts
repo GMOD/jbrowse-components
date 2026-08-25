@@ -37,6 +37,36 @@ test('a long hop pulls back far enough to hold both ends, then comes back', () =
   expect(seen.at(-1)).toBeCloseTo(FAR.windowWidthBp, 3)
 })
 
+// The claim the citation actually rests on. Equation (9) is a geodesic that is
+// ARC LENGTH PARAMETRIZED under the paper's metric, which is their condition
+// (7): rho^2 * u'^2 + w'^2 / rho^2 = w^2, with the dots taken against `s`. Get
+// the algebra wrong in a way the endpoint assertions cannot see — a dropped
+// cosh, `t` where `rho*s + r0` belongs — and the path still starts and finishes
+// in the right place while the motion through the middle is no longer uniform,
+// which is the entire reason to use their solution over an interpolation.
+//
+// Differentiated against `t` rather than `s`, since `planFlight` does not
+// publish `S`: that scales the left side by S^2, so the test is that the
+// quantity is CONSTANT along the path rather than that it equals any
+// particular number.
+test("the path is the paper's geodesic, not merely its endpoints", () => {
+  const RHO2 = 2
+  const h = 1e-6
+  const flight = planFlight(NEAR, FAR)
+  const speeds = [0.1, 0.25, 0.5, 0.75, 0.9].map(t => {
+    const before = flight.at(t - h)
+    const after = flight.at(t + h)
+    const du = (after.centerBp - before.centerBp) / (2 * h)
+    const dw = (after.windowWidthBp - before.windowWidthBp) / (2 * h)
+    const w = flight.at(t).windowWidthBp
+    return (RHO2 * du * du + (dw * dw) / RHO2) / (w * w)
+  })
+
+  for (const speed of speeds) {
+    expect(speed / speeds[0]!).toBeCloseTo(1, 4)
+  }
+})
+
 test('the pan is monotone, so nothing doubles back on its way', () => {
   const flight = planFlight(NEAR, FAR)
   const centers = Array.from(
