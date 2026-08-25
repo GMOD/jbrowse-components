@@ -398,6 +398,7 @@ exports[`every registered schema slot default 1`] = `
     "growMaxHeight": "number = 800",
     "height": "number = 250",
     "heightMode": "maybeStringEnum promotedBase "fixed" of ["fixed","grow","fit"]",
+    "hideNonCanonicalJunctions": "maybeBoolean promotedBase false",
     "hideSelfAlignments": "boolean = false",
     "jexlFilters": "stringArray = []",
     "largeFeaturesFirst": "boolean = true",
@@ -431,6 +432,7 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiLabels": "maybeBoolean promotedBase false",
     "showSoftClipping": "maybeBoolean promotedBase false",
     "sortedBy": "frozen = null",
+    "splicedReadsFirst": "boolean = false",
     "symlogConstant": "number = 1",
   },
   "display: LinearAlignmentsDisplay": {
@@ -455,6 +457,7 @@ exports[`every registered schema slot default 1`] = `
     "growMaxHeight": "number = 800",
     "height": "number = 250",
     "heightMode": "maybeStringEnum promotedBase "fixed" of ["fixed","grow","fit"]",
+    "hideNonCanonicalJunctions": "maybeBoolean promotedBase false",
     "jexlFilters": "stringArray = []",
     "largeFeaturesFirst": "boolean = false",
     "linkedReads": "maybeStringEnum promotedBase "off" of ["off","normal"]",
@@ -487,6 +490,7 @@ exports[`every registered schema slot default 1`] = `
     "showSashimiLabels": "maybeBoolean promotedBase false",
     "showSoftClipping": "maybeBoolean promotedBase false",
     "sortedBy": "frozen = null",
+    "splicedReadsFirst": "boolean = false",
     "symlogConstant": "number = 1",
   },
   "display: LinearArcDisplay": {

@@ -47,6 +47,7 @@ const KNOWN_UNPINNED: Record<string, string[]> = {
   // only the colour, feature-height and height-mode pins. Everything below is a
   // read-level setting synteny deliberately does not surface.
   LGVSyntenyDisplay: [
+    'hideNonCanonicalJunctions',
     'linkedReads',
     'mismatchAlpha',
     'readConnections',

@@ -49,6 +49,7 @@ test('the chip names the tag that picked the transcripts on screen', async () =>
   expect(display.geneGlyphNotice.picks).toEqual({
     byTag: { 'MANE Select': 2, 'Ensembl canonical': 1 },
     byLength: 1,
+    byCap: 0,
   })
   expect(await screen.findByText('MANE Select', {}, delay)).toBeInTheDocument()
 
