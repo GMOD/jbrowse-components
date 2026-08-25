@@ -50,7 +50,7 @@ the half that rots is the half it covers.
 | [Shoot the multihop chain as counted arcs](todo/shoot-the-multihop-chain-as-counted-arcs-in-one-lgv.md) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | five stale; the lock cannot catch this class |
 | [Rebuild the OrthoFinder demos' chrom.sizes](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all |
-| [Delete or implement the RPC `timeout` option](todo/delete-or-implement-the-rpc-timeout-option.md) | RPC | delete half done; the implement half goes in `RpcHandles` |
+| [A worker that loads but never says `ready`](todo/a-worker-that-loads-but-never-says-ready-hangs-its-boot-forever.md) | RPC | pull the timer half out of `withCallDeadline`; a boot has no token to compose with |
 | [Brand the out-of-request refNames](todo/brand-the-out-of-request-refnames.md) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](todo/give-sessionjbrowse-a-real-type.md) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
 | [Verify the shared rect buffer headed](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
