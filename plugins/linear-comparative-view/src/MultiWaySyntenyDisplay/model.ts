@@ -62,7 +62,7 @@ export interface LaneLinksFetchSpec {
 
 // widen a lane frame outward to a stable grid, so a sub-grid pan reuses the
 // last gene fetch the way the anchor's static blocks do
-function quantizeSpan(min: number, max: number) {
+function quantizeSpan({ min, max }: { min: number; max: number }) {
   const grid = 2 ** Math.ceil(Math.log2(Math.max(max - min, 1)))
   return {
     start: Math.max(0, Math.floor(min / grid) * grid),
@@ -308,39 +308,48 @@ export function stateModelFactory(
         const view = self.lgv
         return view.initialized ? view.width * view.bpPerPx : 0
       },
+    }))
+    .views(self => ({
       /**
        * #getter
-       * the anchor lane's own frame — the widest block the view is showing —
-       * so the anchor lane carries the same header as every other lane. It is
-       * the baseline the lane multiples are read against, and without it the
-       * stack states its scale nowhere the ruler above has not been cropped
+       * where the anchor lane draws each visible group, in canvas px — the
+       * view's own `bpToPx`, which is the only honest answer: it is piecewise
+       * over the displayed regions and no `RowFrame` can stand in for it.
+       *
+       * Read both by the lane-alignment seed and by the anchor lane's own
+       * ribbons, so "the lanes line up against where the anchor actually draws"
+       * holds by construction rather than by two loops agreeing.
        */
-      get anchorFrame() {
+      get anchorSpans(): Map<string, readonly [number, number]> {
         const view = self.lgv
-        return view.initialized
-          ? widestRegion(view.coarseDynamicBlocks)
-          : undefined
+        const assembly = self.anchorAssembly
+        const out = new Map<string, readonly [number, number]>()
+        if (!view.initialized || !assembly) {
+          return out
+        }
+        for (const group of self.visibleGroups) {
+          const refName = assembly.getCanonicalRefName2(group.anchor.refName)
+          const a = view.bpToPx({ refName, coord: group.anchor.start })
+          const b = view.bpToPx({ refName, coord: group.anchor.end })
+          if (a !== undefined && b !== undefined) {
+            const x1 = a.offsetPx - view.offsetPx
+            const x2 = b.offsetPx - view.offsetPx
+            out.set(group.key, x1 < x2 ? [x1, x2] : [x2, x1])
+          }
+        }
+        return out
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * the anchor lane as a `RowFrame`, so the lane-alignment pass can treat
-       * it as the first link in the chain rather than as a special case. It
-       * never slides, hence the zero slack
+       * the first link of the alignment chain: each group's anchor center in
+       * canvas px, which is what every lane below lines up against
        */
-      get anchorRowFrame(): RowFrame | undefined {
-        const frame = self.anchorFrame
-        return frame
-          ? {
-              refName: frame.refName,
-              min: frame.start,
-              max: frame.end,
-              flipped: false,
-              fitMin: frame.start,
-              fitMax: frame.end,
-            }
-          : undefined
+      get anchorSeedX(): Map<string, number> {
+        return new Map(
+          [...self.anchorSpans].map(([key, [x1, x2]]) => [key, (x1 + x2) / 2]),
+        )
       },
     }))
     .views(self => ({
@@ -362,7 +371,7 @@ export function stateModelFactory(
         return alignRowFrames(
           self.visibleGroups,
           self.rowAssemblies,
-          self.anchorRowFrame,
+          self.anchorSeedX,
           self.visibleBpSpan,
           self.canvasWidth,
         )
@@ -445,7 +454,7 @@ export function stateModelFactory(
                   {
                     assemblyName,
                     refName: frame.refName,
-                    ...quantizeSpan(reach.min, reach.max),
+                    ...quantizeSpan(reach),
                   },
                 ],
               })
@@ -505,7 +514,13 @@ export function stateModelFactory(
                 region: {
                   assemblyName: upperAssembly,
                   refName: upper.refName,
-                  ...quantizeSpan(upper.min, upper.max),
+                  // Off the fetch window, not off the frame. The frame slides
+                  // as the alignment pass re-medians, and the seed now moves
+                  // with the pan, so keying on it churns this fetch on a
+                  // gesture that changed no data. `laneFetchWindow` is exactly
+                  // the shift-independent envelope, and is what the lane gene
+                  // fetch already keys on.
+                  ...quantizeSpan(laneFetchWindow(upper)),
                 },
               })
             }

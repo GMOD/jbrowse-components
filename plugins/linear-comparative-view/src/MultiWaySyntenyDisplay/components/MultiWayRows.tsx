@@ -232,7 +232,8 @@ const MultiWayRows = observer(function MultiWayRows({
   const { assemblyManager } = getSession(model)
   const {
     anchorAssemblyName,
-    anchorFrame,
+    anchorSpans,
+    visibleBpSpan,
     rowAssemblies,
     rowFrames,
     visibleGroups,
@@ -257,11 +258,6 @@ const MultiWayRows = observer(function MultiWayRows({
   // sequences by INSDC accession is `CM028642.2` where the reader knows the
   // chromosome as `3L`. The assembly's own alias table closes that, the same
   // call the anchor's bpToPx below makes for the opposite reason.
-  const refNameLabel = (assemblyName: string, refName: string) => {
-    const laneAssembly = assemblyManager.get(assemblyName)
-    return laneAssembly ? laneAssembly.getCanonicalRefName2(refName) : refName
-  }
-
   const anchorX = (refName: string, bp: number) => {
     const px = view.bpToPx({
       refName: assembly.getCanonicalRefName2(refName),
@@ -270,13 +266,9 @@ const MultiWayRows = observer(function MultiWayRows({
     return px === undefined ? undefined : px - view.offsetPx
   }
 
-  const anchorSpans = new Map<string, Span>()
-  for (const group of visibleGroups) {
-    const a = anchorX(group.anchor.refName, group.anchor.start)
-    const b = anchorX(group.anchor.refName, group.anchor.end)
-    if (a !== undefined && b !== undefined) {
-      anchorSpans.set(group.key, a < b ? [a, b] : [b, a])
-    }
+  const refNameLabel = (assemblyName: string, refName: string) => {
+    const laneAssembly = assemblyManager.get(assemblyName)
+    return laneAssembly ? laneAssembly.getCanonicalRefName2(refName) : refName
   }
 
   const rowCount = rowAssemblies.length + 1
@@ -440,28 +432,26 @@ const MultiWayRows = observer(function MultiWayRows({
     }
   }
 
-  const anchorSpanBp = anchorFrame
-    ? anchorFrame.end - anchorFrame.start
-    : undefined
-
   // What a lane's header says on the right: the span, because a range makes
   // the reader subtract two eight-digit numbers to answer "how zoomed is this
   // lane", and the multiple only where it is not 1 — so a stack of lanes at
   // the anchor's own scale says so by staying quiet.
   const scaleLabelOf = (rowIndex: number, frame: RowFrame | undefined) => {
     if (rowIndex === 0) {
-      return anchorSpanBp === undefined
-        ? ''
-        : `${getBpDisplayStr(anchorSpanBp)} · ${getBpDisplayStr(tickIntervalBp)} grid`
+      // The anchor lane's ink is the view's own Gridlines, at the view's
+      // interval — the lane tick loop starts at row 1. Naming `tickIntervalBp`
+      // here claimed a grid this display does not draw.
+      return visibleBpSpan > 0 ? getBpDisplayStr(visibleBpSpan) : ''
     }
     if (frame === undefined) {
       return ''
     }
     const laneSpan = frame.max - frame.min
-    const multiple =
-      anchorSpanBp === undefined || anchorSpanBp <= 0
-        ? 1
-        : laneSpan / anchorSpanBp
+    // Against `visibleBpSpan`, which is the unit `snapFrameToLadder` rounded
+    // the lane's span to. Dividing by an anchor frame's span instead used a
+    // second denominator, so a lane sitting exactly on rung 1 read `1.1x`
+    // while its ticks lined up with the anchor's.
+    const multiple = visibleBpSpan > 0 ? laneSpan / visibleBpSpan : 1
     return multiple > 1.02
       ? `${getBpDisplayStr(laneSpan)}  ${Number(multiple.toFixed(1))}×`
       : getBpDisplayStr(laneSpan)
@@ -578,8 +568,7 @@ const MultiWayRows = observer(function MultiWayRows({
 
     const where =
       rowIndex === 0
-        ? anchorFrame &&
-          `${refNameLabel(assemblyName, anchorFrame.refName)}:${fmt(anchorFrame.start)}`
+        ? view.coarseVisibleLocStrings || view.visibleLocStrings
         : frame &&
           `${refNameLabel(assemblyName, frame.refName)}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
     headers.push(

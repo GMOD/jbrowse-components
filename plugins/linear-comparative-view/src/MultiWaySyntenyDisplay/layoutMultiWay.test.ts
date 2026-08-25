@@ -48,6 +48,29 @@ function pairFeature({
   })
 }
 
+// The seed `alignRowFrames` takes: where the anchor lane actually draws each
+// group, in canvas px. The model builds it from the view's own `bpToPx`; these
+// tests build it from a linear map over `spanBp`, which is what the hand-built
+// anchor `RowFrame` they used to pass was standing in for. Written as a
+// function of the anchor coordinates so a test can say what the anchor lane
+// shows without owning a frame for it.
+function anchorSeed(
+  groups: ReturnType<typeof groupFeatures>,
+  width: number,
+  spanBp = 1000,
+) {
+  return new Map(
+    groups.map(g => [
+      g.key,
+      ((g.anchor.start + g.anchor.end) / 2 / spanBp) * width,
+    ]),
+  )
+}
+
+function anchorSeedX(bp: number, width: number, spanBp = 1000) {
+  return (bp / spanBp) * width
+}
+
 const features = [
   pairFeature({
     uniqueId: '1',
@@ -588,14 +611,6 @@ test('a placement outside the frame does not reach the drawn span', () => {
 // should put every ortholog at the same x as the anchor, and the ribbons
 // between them go vertical.
 test('a lane slides to line its orthologs up with the lane above', () => {
-  const anchorFrame = {
-    refName: 'chr1',
-    min: 0,
-    max: 1000,
-    flipped: false,
-    fitMin: 0,
-    fitMax: 1000,
-  }
   const groups = groupFeatures(
     [100, 300, 500, 700].map((start, i) =>
       pairFeature({
@@ -613,10 +628,16 @@ test('a lane slides to line its orthologs up with the lane above', () => {
       }),
     ),
   )
-  const frames = alignRowFrames(groups, ['peach'], anchorFrame, 1000, 800)
+  const frames = alignRowFrames(
+    groups,
+    ['peach'],
+    anchorSeed(groups, 800),
+    1000,
+    800,
+  )
   const frame = frames.get('peach')!
   const offsets = groups.map(group => {
-    const anchorX = rowFrameX(anchorFrame, group.anchor.start + 30, 800)
+    const anchorX = anchorSeedX(group.anchor.start + 30, 800)
     const laneX = rowFrameX(
       frame,
       group.mates.get('peach')![0]!.start + 30,
@@ -628,14 +649,6 @@ test('a lane slides to line its orthologs up with the lane above', () => {
 })
 
 test('the aligned frame still covers the placements it was fitted to', () => {
-  const anchorFrame = {
-    refName: 'chr1',
-    min: 0,
-    max: 1000,
-    flipped: false,
-    fitMin: 0,
-    fitMax: 1000,
-  }
   const groups = groupFeatures([
     pairFeature({
       uniqueId: '1',
@@ -664,9 +677,13 @@ test('the aligned frame still covers the placements it was fitted to', () => {
       },
     }),
   ])
-  const frame = alignRowFrames(groups, ['peach'], anchorFrame, 1000, 800).get(
-    'peach',
-  )!
+  const frame = alignRowFrames(
+    groups,
+    ['peach'],
+    anchorSeed(groups, 800),
+    1000,
+    800,
+  ).get('peach')!
   expect(frame.min).toBeLessThanOrEqual(500000)
   expect(frame.max).toBeGreaterThanOrEqual(500760)
 })
@@ -674,14 +691,6 @@ test('the aligned frame still covers the placements it was fitted to', () => {
 // A mate lane whose gene order runs backwards against the lane above is
 // mirrored, which is the worst zigzag available: every ribbon crosses.
 test('a lane running against the lane above comes out flipped', () => {
-  const anchorFrame = {
-    refName: 'chr1',
-    min: 0,
-    max: 1000,
-    flipped: false,
-    fitMin: 0,
-    fitMax: 1000,
-  }
   const groups = groupFeatures(
     [100, 300, 500, 700].map((start, i) =>
       pairFeature({
@@ -700,22 +709,15 @@ test('a lane running against the lane above comes out flipped', () => {
     ),
   )
   expect(
-    alignRowFrames(groups, ['peach'], anchorFrame, 1000, 800).get('peach')!
-      .flipped,
+    alignRowFrames(groups, ['peach'], anchorSeed(groups, 800), 1000, 800).get(
+      'peach',
+    )!.flipped,
   ).toBe(true)
 })
 
 // The fetch window has to survive the alignment shift and the viewport width,
 // or a lane refetches its annotation because the browser window was resized.
 test('the lane fetch window covers every position the frame can slide to', () => {
-  const anchorFrame = {
-    refName: 'chr1',
-    min: 0,
-    max: 1000,
-    flipped: false,
-    fitMin: 0,
-    fitMax: 1000,
-  }
   const groups = groupFeatures(
     [100, 300, 500].map((start, i) =>
       pairFeature({
@@ -737,7 +739,7 @@ test('the lane fetch window covers every position the frame can slide to', () =>
     const frame = alignRowFrames(
       groups,
       ['peach'],
-      anchorFrame,
+      anchorSeed(groups, width),
       1000,
       width,
     ).get('peach')!

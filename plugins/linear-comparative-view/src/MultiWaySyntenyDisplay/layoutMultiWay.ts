@@ -437,27 +437,15 @@ interface LanePlacement {
 }
 
 // What one lane offers the lane below it to line up against: a bp center and a
-// length per group the frame shows. The anchor lane's placements come off the
-// groups' own anchor coordinates rather than a mate list.
+// length per group the frame shows.
 function lanePlacements(
   groups: MultiWayGroup[],
-  assemblyName: string | undefined,
+  assemblyName: string,
   frame: RowFrame,
 ): LanePlacement[] {
   const out: LanePlacement[] = []
   for (const group of groups) {
-    const extent =
-      assemblyName === undefined
-        ? group.anchor.refName === frame.refName &&
-          doesIntersect2(
-            frame.min,
-            frame.max,
-            group.anchor.start,
-            group.anchor.end,
-          )
-          ? { min: group.anchor.start, max: group.anchor.end }
-          : undefined
-        : groupExtentOnRow(group, assemblyName, frame)
+    const extent = groupExtentOnRow(group, assemblyName, frame)
     if (extent) {
       out.push({
         key: group.key,
@@ -558,23 +546,26 @@ function alignFrameTo(
 // against the lane above it — the pair its ribbons are actually drawn between.
 // A lane with no frame does not break the chain: the next lane still lines up
 // against the last lane that has one.
+// `anchorSeedX` is where the anchor lane actually draws each group, in screen
+// px — the view's own `bpToPx`, not a `RowFrame` standing in for it.
+//
+// A `RowFrame` is affine by construction: `rowFrameX` is one linear ramp over
+// [min,max]. The view's mapping is not — it is piecewise over displayed
+// regions, with seams, reversed regions and elisions. Fitting one frame to it
+// was wrong by the view's padding in a single-region view (the anchor drew
+// [40,760] of an 800px canvas while the seed spread [0,800] across it, so every
+// lane below was slid to meet positions 40px off and stretched 1.111x) and
+// wrong by WHICH CHROMOSOME in a multi-region one, where the frame took the
+// widest block and the seed then dropped every group on any other refName.
 export function alignRowFrames(
   groups: MultiWayGroup[],
   assemblyNames: string[],
-  anchorFrame: RowFrame | undefined,
+  anchorSeedX: Map<string, number> | undefined,
   minSpanBp: number,
   width: number,
 ) {
   const frames = new Map<string, RowFrame | undefined>()
-  let upperX =
-    anchorFrame && width > 0
-      ? new Map(
-          lanePlacements(groups, undefined, anchorFrame).map(p => [
-            p.key,
-            rowFrameX(anchorFrame, p.center, width),
-          ]),
-        )
-      : undefined
+  let upperX = anchorSeedX && width > 0 ? anchorSeedX : undefined
   for (const assemblyName of assemblyNames) {
     const fitted = computeRowFrame(groups, assemblyName, minSpanBp)
     if (fitted === undefined || upperX === undefined) {
