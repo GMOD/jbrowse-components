@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 import {
   frameTickXs,
   geneGlyphShape,
-  groupSpanOnRow,
+  groupSpansOnRow,
   rowFrameX,
 } from '../layoutMultiWay.ts'
 
@@ -304,14 +304,18 @@ const MultiWayRows = observer(function MultiWayRows({
   const frameOf = (rowIndex: number): RowFrame | undefined =>
     rowIndex === 0 ? undefined : rowFrames.get(rowAssemblies[rowIndex - 1]!)
 
-  const spanOnRow = (group: MultiWayGroup, rowIndex: number) => {
+  // one span per run of placements the row shows, so two hits a lane holds
+  // apart draw as two blocks with two ribbons rather than as one solid block
+  // spanning the gap between them
+  const spansOnRow = (group: MultiWayGroup, rowIndex: number): Span[] => {
     if (rowIndex === 0) {
-      return anchorSpans.get(group.key)
+      const anchor = anchorSpans.get(group.key)
+      return anchor ? [anchor] : []
     }
     const frame = frameOf(rowIndex)
     return frame
-      ? groupSpanOnRow(group, rowAssemblies[rowIndex - 1]!, frame, width)
-      : undefined
+      ? groupSpansOnRow(group, rowAssemblies[rowIndex - 1]!, frame, width)
+      : []
   }
 
   // Every lane below the anchor is drawn in its OWN coordinate frame, and the
@@ -376,26 +380,28 @@ const MultiWayRows = observer(function MultiWayRows({
   const ribbonSpecs: RibbonSpec[] = []
   for (let rowIndex = 0; rowIndex < rowCount - 1; rowIndex++) {
     for (const group of visibleGroups) {
-      const s1 = spanOnRow(group, rowIndex)
-      const s2 = spanOnRow(group, rowIndex + 1)
-      if (
-        s1 &&
-        s2 &&
-        Math.max(Math.abs(s1[1] - s1[0]), Math.abs(s2[1] - s2[0])) >=
-          MIN_RIBBON_PX
-      ) {
-        ribbonSpecs.push({
-          key: `ribbon-${rowIndex}-${group.key}`,
-          groupKey: group.key,
-          name: group.name,
-          d: ribbonPath(
-            s1,
-            glyphTop(rowIndex) + glyphHeight,
-            s2,
-            glyphTop(rowIndex + 1),
-            drawCurves,
-          ),
-        })
+      const uppers = spansOnRow(group, rowIndex)
+      const lowers = spansOnRow(group, rowIndex + 1)
+      for (const [i, s1] of uppers.entries()) {
+        for (const [j, s2] of lowers.entries()) {
+          if (
+            Math.max(Math.abs(s1[1] - s1[0]), Math.abs(s2[1] - s2[0])) >=
+            MIN_RIBBON_PX
+          ) {
+            ribbonSpecs.push({
+              key: `ribbon-${rowIndex}-${group.key}-${i}-${j}`,
+              groupKey: group.key,
+              name: group.name,
+              d: ribbonPath(
+                s1,
+                glyphTop(rowIndex) + glyphHeight,
+                s2,
+                glyphTop(rowIndex + 1),
+                drawCurves,
+              ),
+            })
+          }
+        }
       }
     }
   }
@@ -561,8 +567,7 @@ const MultiWayRows = observer(function MultiWayRows({
       // a real gene model in the same ink, and one flat box across a lane
       // reads as a single enormous gene.
       for (const group of visibleGroups) {
-        const span = spanOnRow(group, rowIndex)
-        if (span) {
+        for (const [i, span] of spansOnRow(group, rowIndex).entries()) {
           // a box, unlike a ribbon, wants the ends the low-to-high way round
           const [boxLeft, boxRight] =
             span[0] <= span[1] ? span : [span[1], span[0]]
@@ -574,7 +579,7 @@ const MultiWayRows = observer(function MultiWayRows({
               })
           lanes.push(
             <rect
-              key={`glyph-${rowIndex}-${group.key}`}
+              key={`glyph-${rowIndex}-${group.key}-${i}`}
               x={boxLeft}
               y={y + 1}
               width={Math.max(1, boxRight - boxLeft)}

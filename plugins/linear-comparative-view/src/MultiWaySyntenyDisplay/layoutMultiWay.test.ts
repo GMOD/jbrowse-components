@@ -7,7 +7,7 @@ import {
   laneFetchWindow,
   geneGlyphShape,
   groupFeatures,
-  groupSpanOnRow,
+  groupSpansOnRow,
   laneGeneFeatures,
   rowAssembliesOf,
   rowFrameX,
@@ -356,9 +356,9 @@ test('a group with nothing on the dominant refName gets no span on that row', ()
   const frame = computeRowFrame(groups, 'peach')!
   expect(frame.refName).toBe('Pp1')
   const g4 = groups.find(g => g.name === 'g4')!
-  expect(groupSpanOnRow(g4, 'peach', frame, 800)).toBeUndefined()
+  expect(groupSpansOnRow(g4, 'peach', frame, 800)).toEqual([])
   const g1 = groups.find(g => g.name === 'g1')!
-  const span = groupSpanOnRow(g1, 'peach', frame, 800)!
+  const span = groupSpansOnRow(g1, 'peach', frame, 800)[0]!
   expect(span[0]).toBeLessThan(span[1])
 })
 
@@ -605,8 +605,10 @@ test('a placement outside the frame does not reach the drawn span', () => {
     }),
   ])
   const frame = computeRowFrame(groups, 'peach', 1000)!
-  const span = groupSpanOnRow(groups[0]!, 'peach', frame, 800)!
-  expect(span[1] - span[0]).toBeLessThan(800)
+  const spans = groupSpansOnRow(groups[0]!, 'peach', frame, 800)
+  // the repeat hit is not a second run either — it is not drawn at all
+  expect(spans).toHaveLength(1)
+  expect(spans[0]![1] - spans[0]![0]).toBeLessThan(800)
 })
 
 // The lane's scale comes off the ladder and its offset comes off the ribbons:
@@ -895,8 +897,8 @@ describe('a reverse-strand block', () => {
     const forward = orientedGroups(1)
     const reverse = orientedGroups(-1)
     const frame = computeRowFrame(forward, 'peach', 1000)!
-    const fwd = groupSpanOnRow(forward[0]!, 'peach', frame, 800)!
-    const rev = groupSpanOnRow(reverse[0]!, 'peach', frame, 800)!
+    const fwd = groupSpansOnRow(forward[0]!, 'peach', frame, 800)[0]!
+    const rev = groupSpansOnRow(reverse[0]!, 'peach', frame, 800)[0]!
     expect(fwd[0]).toBeLessThan(fwd[1])
     expect(rev[0]).toBeGreaterThan(rev[1])
     expect(rev).toEqual([fwd[1], fwd[0]])
@@ -905,7 +907,7 @@ describe('a reverse-strand block', () => {
   test('leaves the forward block beside it untwisted', () => {
     const groups = orientedGroups(-1)
     const frame = computeRowFrame(groups, 'peach', 1000)!
-    const g2 = groupSpanOnRow(groups[1]!, 'peach', frame, 800)!
+    const g2 = groupSpansOnRow(groups[1]!, 'peach', frame, 800)[0]!
     expect(g2[0]).toBeLessThan(g2[1])
   })
 })
@@ -930,63 +932,96 @@ test('a flipped lane reverses the ends of a forward block', () => {
     }),
   ])
   const frame = computeRowFrame(groups, 'peach', 1000)!
-  const upright = groupSpanOnRow(groups[0]!, 'peach', frame, 800)!
-  const mirrored = groupSpanOnRow(
+  const upright = groupSpansOnRow(groups[0]!, 'peach', frame, 800)[0]!
+  const mirrored = groupSpansOnRow(
     groups[0]!,
     'peach',
     { ...frame, flipped: true },
     800,
-  )!
+  )[0]!
   expect(upright[0]).toBeLessThan(upright[1])
   expect(mirrored[0]).toBeGreaterThan(mirrored[1])
 })
 
-// Several placements of one group on one lane vote by length, so a short
-// fragment aligning the other way cannot flip the block that carries the group.
-test('a lane orientation is the length-weighted sign of its placements', () => {
-  const groups = groupFeatures([
-    pairFeature({
-      uniqueId: '1',
-      name: 'g1',
-      start: 100,
-      end: 200,
-      strand: -1,
-      mate: {
-        assemblyName: 'peach',
-        refName: 'Pp1',
-        start: 1000,
-        end: 1600,
-        name: 'p1',
-      },
-    }),
-    pairFeature({
-      uniqueId: '2',
-      name: 'g1',
-      start: 100,
-      end: 200,
-      mate: {
-        assemblyName: 'peach',
-        refName: 'Pp1',
-        start: 1700,
-        end: 1720,
-        name: 'p1b',
-      },
-    }),
-    pairFeature({
-      uniqueId: '3',
-      name: 'g2',
-      start: 300,
-      end: 400,
-      mate: {
-        assemblyName: 'peach',
-        refName: 'Pp1',
-        start: 1800,
-        end: 1900,
-        name: 'p2',
-      },
-    }),
-  ])
-  const frame = computeRowFrame(groups, 'peach', 1000)!
-  const span = groupSpanOnRow(groups[0]!, 'peach', frame, 800)!
-  expect(span[0]).toBeGreaterThan(span[1])
+// Two placements of one anchor gene on one lane — what a blocks table's copy
+// columns produce, and what an `--iter=2` jcvi run writes routinely.
+describe('a group placed twice on one lane', () => {
+  function twiceGroups(secondStart: number, secondStrand = 1) {
+    return groupFeatures([
+      pairFeature({
+        uniqueId: '1',
+        name: 'g1',
+        start: 100,
+        end: 200,
+        strand: -1,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 1000,
+          end: 1600,
+          name: 'p1',
+        },
+      }),
+      pairFeature({
+        uniqueId: '2',
+        name: 'g1',
+        start: 100,
+        end: 200,
+        strand: secondStrand,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: secondStart,
+          end: secondStart + 70,
+          name: 'p1b',
+        },
+      }),
+      pairFeature({
+        uniqueId: '3',
+        name: 'g2',
+        start: 300,
+        end: 400,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 1800,
+          end: 1900,
+          name: 'p2',
+        },
+      }),
+    ])
+  }
+
+  // Min-of-starts to max-of-ends across the pair drew the GAP between them as
+  // syntenic sequence: one block where the truth is two, most of it aligning to
+  // nothing.
+  test('draws its two disjoint hits as two spans, not one over the gap', () => {
+    const groups = twiceGroups(1700)
+    const frame = computeRowFrame(groups, 'peach', 1000)!
+    const spans = groupSpansOnRow(groups[0]!, 'peach', frame, 800)
+    expect(spans).toHaveLength(2)
+    const [first, second] = spans as [
+      readonly [number, number],
+      readonly [number, number],
+    ]
+    const drawn = [first, second].reduce(
+      (sum, [a, b]) => sum + Math.abs(b - a),
+      0,
+    )
+    const ends = [...first, ...second]
+    const merged = Math.max(...ends) - Math.min(...ends)
+    // the 100bp between the two hits, at the frame's 0.8 px/bp, is now unpainted
+    expect(merged - drawn).toBeCloseTo(80, 6)
+  })
+
+  // Placements that really do touch are one block, and the run they form takes
+  // the length-weighted sign: a short fragment aligning the other way cannot
+  // flip the block it sits inside.
+  test('merges the hits that touch, under the length-weighted sign', () => {
+    const groups = twiceGroups(1550)
+    const frame = computeRowFrame(groups, 'peach', 1000)!
+    const spans = groupSpansOnRow(groups[0]!, 'peach', frame, 800)
+    expect(spans).toHaveLength(1)
+    expect(spans[0]![0]).toBeGreaterThan(spans[0]![1])
+  })
 })

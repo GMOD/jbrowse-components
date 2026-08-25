@@ -379,8 +379,16 @@ export function geneGlyphShape(feature: Feature): GeneGlyphShape {
     : { full: mergedExons, thin: [] }
 }
 
-// The group's placements on one row, in bp, restricted to the ones the frame
-// actually shows.
+// The group's placements on one row, in bp, as maximal OVERLAPPING RUNS: two
+// hits the row shows apart from each other stay two spans, and only placements
+// that actually touch merge into one.
+//
+// Taking min-of-starts to max-of-ends across the whole set instead drew the gap
+// between two disjoint hits as syntenic sequence. Measured on placements at
+// 1000-1100 and 1800-1900 inside a [500,2500] frame at 800px: one 360px block
+// where the truth is two 40px ones, 280px of it aligning to nothing. That is
+// not the parked lane-per-region cut, which is about copies far enough apart to
+// need a lane of their own — these two are inside one lane's frame.
 //
 // The frame filter is the load-bearing part. `computeRowFrame` throws out the
 // repeat hit that lands megabases away so it cannot stretch the lane — and
@@ -388,39 +396,61 @@ export function geneGlyphShape(feature: Feature): GeneGlyphShape {
 // span. `rowFrameX` extrapolates, so a mate 900 kb outside an 88 kb frame maps
 // to tens of thousands of pixels: the rect is clipped by the svg and looks
 // fine, while the RIBBON keeps that endpoint and sweeps across the whole page.
+interface PlacementRun {
+  min: number
+  max: number
+  orientation: number
+}
+
+function groupRunsOnRow(
+  group: MultiWayGroup,
+  assemblyName: string,
+  frame: RowFrame,
+): PlacementRun[] {
+  const placements = (group.mates.get(assemblyName) ?? [])
+    .filter(
+      p =>
+        p.refName === frame.refName &&
+        doesIntersect2(frame.min, frame.max, p.start, p.end),
+    )
+    .sort((a, b) => a.start - b.start)
+  // Length-weighted within a run, so a fragment aligning the other way cannot
+  // outvote the block it sits inside.
+  const runs: { min: number; max: number; signed: number }[] = []
+  for (const p of placements) {
+    const weight = p.orientation * Math.max(p.end - p.start, 1)
+    const last = runs.at(-1)
+    if (last && p.start <= last.max) {
+      last.max = Math.max(last.max, p.end)
+      last.signed += weight
+    } else {
+      runs.push({ min: p.start, max: p.end, signed: weight })
+    }
+  }
+  return runs.map(({ min, max, signed }) => ({
+    min,
+    max,
+    orientation: signed < 0 ? -1 : 1,
+  }))
+}
+
+// The whole footprint the group occupies on one row — what the lane-alignment
+// pass lines up against, where a duplicated gene's several copies are one
+// group's worth of evidence rather than several.
 function groupExtentOnRow(
   group: MultiWayGroup,
   assemblyName: string,
   frame: RowFrame,
 ) {
-  const placements = group.mates
-    .get(assemblyName)
-    ?.filter(
-      p =>
-        p.refName === frame.refName &&
-        doesIntersect2(frame.min, frame.max, p.start, p.end),
-    )
-  if (!placements?.length) {
-    return undefined
-  }
-  let min = Number.POSITIVE_INFINITY
-  let max = Number.NEGATIVE_INFINITY
-  // Length-weighted, so a fragment aligning the other way cannot outvote the
-  // block that carries the group.
-  let signed = 0
-  for (const p of placements) {
-    min = Math.min(min, p.start)
-    max = Math.max(max, p.end)
-    signed += p.orientation * Math.max(p.end - p.start, 1)
-  }
-  return { min, max, orientation: signed < 0 ? -1 : 1 }
+  const runs = groupRunsOnRow(group, assemblyName, frame)
+  return runs.length ? { min: runs[0]!.min, max: runs.at(-1)!.max } : undefined
 }
 
 /**
- * The group's px span on one row as an ORDERED pair: the end corresponding to
- * the anchor's start first. `undefined` when the row's frame shows nothing of
- * the group, which is what makes a ribbon skip a row rather than draw to
- * nowhere.
+ * The group's px spans on one row, one per run of placements the row shows, as
+ * ORDERED pairs: the end corresponding to the anchor's start first. Empty when
+ * the row's frame shows nothing of the group, which is what makes a ribbon skip
+ * a row rather than draw to nowhere.
  *
  * Ordered rather than ascending because that is the whole of drawing an
  * inversion. `ribbonPath` joins first end to first end, so a pair reversed here
@@ -433,19 +463,17 @@ function groupExtentOnRow(
  *
  * A caller drawing a BOX wants the two ends the other way round; sort there.
  */
-export function groupSpanOnRow(
+export function groupSpansOnRow(
   group: MultiWayGroup,
   assemblyName: string,
   frame: RowFrame,
   width: number,
 ) {
-  const extent = groupExtentOnRow(group, assemblyName, frame)
-  if (extent === undefined) {
-    return undefined
-  }
-  const a = rowFrameX(frame, extent.min, width)
-  const b = rowFrameX(frame, extent.max, width)
-  return extent.orientation < 0 ? ([b, a] as const) : ([a, b] as const)
+  return groupRunsOnRow(group, assemblyName, frame).map(run => {
+    const a = rowFrameX(frame, run.min, width)
+    const b = rowFrameX(frame, run.max, width)
+    return run.orientation < 0 ? ([b, a] as const) : ([a, b] as const)
+  })
 }
 
 // Every bp position a lane's frame can occupy. The frame always covers
