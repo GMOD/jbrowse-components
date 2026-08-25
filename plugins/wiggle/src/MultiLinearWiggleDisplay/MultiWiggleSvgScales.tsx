@@ -1,5 +1,5 @@
 import { SvgRowLabels } from '@jbrowse/tree-sidebar'
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YScaleBar, resolveSymlogConstant } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import ScoreLegend, { scoreLegendHeight } from '../shared/ScoreLegend.tsx'
@@ -61,6 +61,7 @@ interface ScaleModel extends ScoreLegendModel {
   isOverlay: boolean
   effectiveRowHeight: number
   scaleType: string
+  symlogConstant: number
   ticks?: YScaleTicks
   numSources: number
   numRows: number
@@ -88,6 +89,7 @@ export default observer(function MultiWiggleSvgScales({
     effectiveRowHeight,
     domain,
     scaleType,
+    symlogConstant,
     ticks,
     numSources,
     numRows,
@@ -141,6 +143,11 @@ export default observer(function MultiWiggleSvgScales({
     <ScoreLegend
       domain={domain}
       scaleType={scaleType}
+      symlogConstant={resolveSymlogConstant(
+        domain[0],
+        domain[1],
+        symlogConstant,
+      )}
       canvasWidth={legendRight}
       ramp={scoreRamp}
     />

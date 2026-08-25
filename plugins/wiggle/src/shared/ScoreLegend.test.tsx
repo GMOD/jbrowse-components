@@ -23,7 +23,12 @@ function renderLegend(
 ) {
   return render(
     <svg>
-      <ScoreLegend scaleType="linear" canvasWidth={500} {...props} />
+      <ScoreLegend
+        scaleType="linear"
+        symlogConstant={1}
+        canvasWidth={500}
+        {...props}
+      />
     </svg>,
   )
 }

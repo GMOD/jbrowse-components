@@ -7,6 +7,7 @@ import {
   CrossHatches,
   ScoreRules,
   YScaleBarOverlay,
+  resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -134,6 +135,11 @@ const WiggleBody = observer(function WiggleBody({
           <ScoreLegend
             domain={model.domain}
             scaleType={model.scaleType}
+            symlogConstant={resolveSymlogConstant(
+              model.domain[0],
+              model.domain[1],
+              model.symlogConstant,
+            )}
             canvasWidth={legendWidth}
             ramp={model.scoreRamp}
           />

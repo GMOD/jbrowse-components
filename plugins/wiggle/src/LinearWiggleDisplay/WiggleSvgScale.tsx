@@ -1,4 +1,4 @@
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import { YScaleBar, resolveSymlogConstant } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import ScoreLegend from '../shared/ScoreLegend.tsx'
@@ -15,6 +15,7 @@ interface ScaleModel {
   isDensityMode: boolean
   domain: [number, number] | undefined
   scaleType: string
+  symlogConstant: number
   scoreRamp: ScoreRamp | undefined
 }
 
@@ -31,11 +32,16 @@ export default observer(function WiggleSvgScale({
   legendRight: number
   ticks: YScaleTicks | undefined
 }) {
-  const { isDensityMode, domain, scaleType, scoreRamp } = model
+  const { isDensityMode, domain, scaleType, symlogConstant, scoreRamp } = model
   return !domain ? null : isDensityMode ? (
     <ScoreLegend
       domain={domain}
       scaleType={scaleType}
+      symlogConstant={resolveSymlogConstant(
+        domain[0],
+        domain[1],
+        symlogConstant,
+      )}
       canvasWidth={legendRight}
       ramp={scoreRamp}
     />

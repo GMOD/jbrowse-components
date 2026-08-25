@@ -61,6 +61,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   clusterProvenance?: ClusterProvenance
 
   // read by MultiWiggleSvgScales (row labels, per-row axes, score legend)
+  symlogConstant: number
   sources: {
     name: string
     label?: string

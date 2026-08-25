@@ -32,6 +32,7 @@ function makeModel(args?: {
     numSources: 2,
     numRows: 2,
     scoreRamp: undefined,
+    symlogConstant: 0,
     showRowLabels: args?.showRowLabels ?? true,
   }
 }

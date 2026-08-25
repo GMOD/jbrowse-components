@@ -3,10 +3,7 @@ import { measureLegendText } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { stripAlpha } from '@jbrowse/core/util'
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
-import {
-  resolveSymlogConstant,
-  scaleTypeFromString,
-} from '@jbrowse/wiggle-core'
+import { scaleTypeFromString } from '@jbrowse/wiggle-core'
 
 import { formatScore } from '../util.ts'
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
@@ -235,14 +232,17 @@ function ScoreRampLegend({
 export default function ScoreLegend({
   domain,
   scaleType,
-  symlogConstant = 0,
+  symlogConstant,
   canvasWidth,
   ramp,
 }: {
   domain: [number, number]
   scaleType: string
-  // raw config value; 0 means "derive from the domain"
-  symlogConstant?: number
+  // The resolved constant off `renderState`, not the raw config slot: `0` there
+  // means "derive from the domain", and a legend deriving its own would draw a
+  // different curve from the one the backends were handed. Required, so a new
+  // call site cannot quietly reintroduce that.
+  symlogConstant: number
   canvasWidth: number
   // omitted outside density mode, and when rows carry their own colors (there
   // is then no single ramp to draw)
@@ -257,11 +257,7 @@ export default function ScoreLegend({
       canvasWidth={canvasWidth}
       ramp={ramp}
       scaleType={scaleTypeFromString(scaleType)}
-      symlogConstant={resolveSymlogConstant(
-        domain[0],
-        domain[1],
-        symlogConstant,
-      )}
+      symlogConstant={symlogConstant}
     />
   ) : (
     <ScoreTextLegend

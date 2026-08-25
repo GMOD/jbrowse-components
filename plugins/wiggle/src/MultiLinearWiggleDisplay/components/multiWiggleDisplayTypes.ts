@@ -27,6 +27,9 @@ export interface MultiWiggleDisplayModel
   sourcesWithoutLayout: { name: string }[]
   domain: [number, number] | undefined
   scaleType: string
+  // raw slot; the score legend resolves it so its ramp is painted with the
+  // same constant the backends were handed
+  symlogConstant: number
   // where the plot canvas sits inside the display's height — the same value
   // `ticks` and the SVG export are laid out against
   plotGeometry: WigglePlotGeometry
