@@ -188,6 +188,9 @@ export interface FilterBy {
   // independent quick-filters like HP (haplotype) and RG (read group) coexist
   // instead of clobbering each other.
   tagFilters?: TagFilter[]
+  // Spliced means the CIGAR carries a reference skip (`N`). 'only' keeps just
+  // those reads, 'exclude' drops them; absent keeps both.
+  spliced?: 'only' | 'exclude'
 }
 
 // Legacy sessions stored a single `tagFilter`; fold it into `tagFilters` so

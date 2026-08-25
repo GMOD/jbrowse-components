@@ -8,8 +8,11 @@ import {
   Checkbox,
   DialogActions,
   DialogContent,
+  FormControlLabel,
   Link,
   Paper,
+  Radio,
+  RadioGroup,
   TextField,
   Typography,
 } from '@mui/material'
@@ -185,6 +188,44 @@ function ReadNameFilterSection(props: {
   )
 }
 
+// The three-way choice is a radio group rather than two checkboxes because
+// "only spliced" and "no spliced" cannot both hold, and 'all' is the absent
+// filter rather than a stored value.
+function SplicedFilterSection(props: {
+  spliced: FilterBy['spliced']
+  setSpliced: (arg: FilterBy['spliced']) => void
+}) {
+  const { classes } = useStyles()
+  const { spliced, setSpliced } = props
+  return (
+    <Paper className={classes.paper} variant="outlined">
+      <Typography>
+        Filter by splicing (a reference skip, N, in the CIGAR)
+      </Typography>
+      <RadioGroup
+        row
+        value={spliced ?? 'all'}
+        onChange={event => {
+          const v = event.target.value
+          setSpliced(v === 'only' || v === 'exclude' ? v : undefined)
+        }}
+      >
+        <FormControlLabel value="all" control={<Radio />} label="All reads" />
+        <FormControlLabel
+          value="only"
+          control={<Radio />}
+          label="Only spliced reads"
+        />
+        <FormControlLabel
+          value="exclude"
+          control={<Radio />}
+          label="Only unspliced reads"
+        />
+      </RadioGroup>
+    </Paper>
+  )
+}
+
 const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   model: {
     filterBy: FilterBy
@@ -207,6 +248,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     filterBy.tagFilters?.slice(1) ?? [],
   )
   const [readName, setReadName] = useState(filterBy.readName ?? '')
+  const [spliced, setSpliced] = useState(filterBy.spliced)
   // TagTextField is uncontrolled (seeds from defaultValue on mount), so clearing
   // `tag` state alone leaves its visible text stale. Bump this to remount it.
   const [resetNonce, setResetNonce] = useState(0)
@@ -218,6 +260,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     setTagValue('')
     setOtherTagFilters([])
     setReadName('')
+    setSpliced(undefined)
     setResetNonce(nonce => nonce + 1)
   }
 
@@ -242,6 +285,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
       // would also change `filterBy` identity and trigger a pointless refetch.
       readName: readName === '' ? undefined : readName,
       tagFilters: tagFilters.length > 0 ? tagFilters : undefined,
+      spliced,
     })
     handleClose()
   }
@@ -280,6 +324,7 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
             readName={readName}
             setReadName={setReadName}
           />
+          <SplicedFilterSection spliced={spliced} setSpliced={setSpliced} />
         </DialogContent>
         <DialogActions>
           <Button

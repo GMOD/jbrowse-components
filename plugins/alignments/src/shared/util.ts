@@ -1,6 +1,7 @@
 import { SAM_FLAG_SECOND_IN_PAIR } from '@jbrowse/cigar-utils'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
+import type { FilterBy } from './types.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -110,6 +111,20 @@ export function filterReadFlag(
   flagExclude: number,
 ) {
   return (flags & flagInclude) !== flagInclude || (flags & flagExclude) !== 0
+}
+
+// True when the spliced-read filter drops this read. `hasSkip` is a thunk
+// because answering it means walking the CIGAR, which no read pays for while
+// the filter is off.
+export function filterSpliced(
+  spliced: FilterBy['spliced'],
+  hasSkip: () => boolean,
+) {
+  return spliced === 'only'
+    ? !hasSkip()
+    : spliced === 'exclude'
+      ? hasSkip()
+      : false
 }
 
 export function filterTagValue(readVal: unknown, filterVal?: string) {

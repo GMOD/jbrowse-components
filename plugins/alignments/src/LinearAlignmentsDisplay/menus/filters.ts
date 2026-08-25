@@ -20,14 +20,15 @@ interface FiltersModel {
 // against it rather than against 0), plus one per tag filter and one for a read
 // name.
 function activeFilterCount(filterBy: FilterBy) {
-  const { flagInclude, flagExclude, readName, tagFilters } = filterBy
+  const { flagInclude, flagExclude, readName, tagFilters, spliced } = filterBy
   return (
     (flagInclude === defaultFilterFlags.flagInclude &&
     flagExclude === defaultFilterFlags.flagExclude
       ? 0
       : 1) +
     (readName === undefined || readName === '' ? 0 : 1) +
-    (tagFilters?.length ?? 0)
+    (tagFilters?.length ?? 0) +
+    (spliced === undefined ? 0 : 1)
   )
 }
 

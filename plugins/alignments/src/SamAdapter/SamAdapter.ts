@@ -1,4 +1,5 @@
 import { packReference } from '@gmod/bam'
+import { numericCigarHasSkip } from '@jbrowse/cigar-utils'
 import { createSharedSetup, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
@@ -12,6 +13,7 @@ import { BaseAlignmentsAdapter } from '../shared/BaseAlignmentsAdapter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
 import {
   filterReadFlag,
+  filterSpliced,
   filterTagValue,
   parseSamHeader,
 } from '../shared/util.ts'
@@ -186,11 +188,13 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       flagExclude = 0,
       tagFilters,
       readName,
+      spliced,
     } = filterBy ?? {}
     return (
       filterReadFlag(record.flags, flagInclude, flagExclude) ||
       (readName !== undefined && record.name !== readName) ||
-      !!tagFilters?.some(tf => filterTagValue(record.tags[tf.tag], tf.value))
+      !!tagFilters?.some(tf => filterTagValue(record.tags[tf.tag], tf.value)) ||
+      filterSpliced(spliced, () => numericCigarHasSkip(record.NUMERIC_CIGAR))
     )
   }
 }

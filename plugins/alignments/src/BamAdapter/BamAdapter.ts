@@ -1,4 +1,5 @@
 import { BamFile, packReference } from '@gmod/bam'
+import { numericCigarHasSkip } from '@jbrowse/cigar-utils'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
@@ -11,7 +12,11 @@ import {
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
-import { filterReadFlag, filterTagValue } from '../shared/util.ts'
+import {
+  filterReadFlag,
+  filterSpliced,
+  filterTagValue,
+} from '../shared/util.ts'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
@@ -165,6 +170,7 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
       const {
         readName,
         tagFilters,
+        spliced,
         flagInclude = 0,
         flagExclude = 0,
       } = filterBy ?? {}
@@ -231,6 +237,13 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
             if (
               tagFilters?.some(tf =>
                 filterTagValue(record.getTag(tf.tag), tf.value),
+              )
+            ) {
+              continue
+            }
+            if (
+              filterSpliced(spliced, () =>
+                numericCigarHasSkip(record.NUMERIC_CIGAR),
               )
             ) {
               continue

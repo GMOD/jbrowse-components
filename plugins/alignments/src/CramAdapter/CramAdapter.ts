@@ -10,7 +10,11 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
-import { filterReadFlag, filterTagValue } from '../shared/util.ts'
+import {
+  filterReadFlag,
+  filterSpliced,
+  filterTagValue,
+} from '../shared/util.ts'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
 
 import type { FilterBy } from '../shared/types.ts'
@@ -77,8 +81,20 @@ function shouldFilterRecord(
     flagExclude = 0,
     tagFilters,
     readName,
+    spliced,
   } = filterBy ?? {}
   if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
+    return true
+  }
+  // CRAM has no CIGAR; a skip is an 'N' read feature. `readFeatures` is
+  // rebuilt per access, which the thunk keeps off every read while the filter
+  // is off.
+  if (
+    filterSpliced(
+      spliced,
+      () => record.readFeatures?.some(f => f.code === 'N') ?? false,
+    )
+  ) {
     return true
   }
   // Multiple tag filters are AND-ed: reject the read if any one rejects it.

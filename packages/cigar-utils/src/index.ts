@@ -46,6 +46,7 @@ export {
 export { cigarToMismatches2 } from './cigarToMismatches2.ts'
 export { mdToMismatches2 } from './mdToMismatches2.ts'
 export { getNextRefPos } from './getNextRefPos.ts'
+export { numericCigarHasSkip } from './numericCigarHasSkip.ts'
 export { numericCigarToString } from './numericCigarToString.ts'
 export {
   connectionEndpointBps,

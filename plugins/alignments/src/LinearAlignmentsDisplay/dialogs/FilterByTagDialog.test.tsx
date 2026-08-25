@@ -125,3 +125,22 @@ test('a whole-number bitmask is applied', () => {
     expect.objectContaining({ flagInclude: 3 }),
   )
 })
+
+test('the splicing radios store only/exclude and drop the filter for "all"', () => {
+  const { setFilterBy } = renderDialog()
+  fireEvent.click(screen.getByLabelText('Only spliced reads'))
+  submit()
+  expect(setFilterBy).toHaveBeenCalledWith(
+    expect.objectContaining({ spliced: 'only' }),
+  )
+})
+
+test('resetting clears a stored splicing filter', () => {
+  const { setFilterBy } = renderDialog({ spliced: 'exclude' })
+  expect(screen.getByLabelText('Only unspliced reads').checked).toBe(true)
+  fireEvent.click(screen.getByText('Reset defaults'))
+  submit()
+  expect(setFilterBy).toHaveBeenCalledWith(
+    expect.objectContaining({ spliced: undefined }),
+  )
+})

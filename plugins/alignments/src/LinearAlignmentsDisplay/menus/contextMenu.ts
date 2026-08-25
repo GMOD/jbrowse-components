@@ -234,6 +234,7 @@ function getFilterSubMenu(self: FilterModel, feat: Feature): MenuItem[] {
   }
   const hasReadOrTagFilter =
     self.filterBy.readName !== undefined ||
+    self.filterBy.spliced !== undefined ||
     (self.filterBy.tagFilters?.length ?? 0) > 0
   if (hasReadOrTagFilter) {
     sub.push({

@@ -169,3 +169,45 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
   const f = featuresArray[0]!
   expect(f.get('mismatches')).toMatchSnapshot()
 })
+
+// 1740 of the 2464 reads in spliced.bam carry an N; the two settings partition
+// the fetch, so the sum is the unfiltered count.
+test('the spliced filter partitions reads by a CIGAR skip', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      bamLocation: {
+        localPath: require.resolve('../../../../test_data/volvox/spliced.bam'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath:
+            require.resolve('../../../../test_data/volvox/spliced.bam.bai'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+  const query = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 50000,
+  }
+  const count = async (spliced?: 'only' | 'exclude') =>
+    (
+      await firstValueFrom(
+        adapter
+          .getFeatures(query, {
+            filterBy: { flagInclude: 0, flagExclude: 0, spliced },
+          })
+          .pipe(toArray()),
+      )
+    ).length
+  const all = await count()
+  const only = await count('only')
+  const exclude = await count('exclude')
+  expect(only).toBeGreaterThan(0)
+  expect(exclude).toBeGreaterThan(0)
+  expect(only + exclude).toBe(all)
+})
