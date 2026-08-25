@@ -32,7 +32,6 @@ the half that rots is the half it covers.
 | Item | Area | First move |
 | --- | --- | --- |
 | [A repeat's subpart labels collide in one row](todo/a-repeats-subpart-labels-collide-inside-the-row-they-now-share.md) | canvas | the row is reserved now; decide whether the one-row design survives |
-| [A polyprotein CDS reads as non-coding](todo/a-polyprotein-cds-reads-as-non-coding-and-ranks-last.md) | canvas | fix the two coding helpers, not the ranking comparator |
 | [Let a dotplot click open the alignment it is on](todo/let-a-dotplot-click-open-the-alignment-it-is-on.md) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [A validator gate for the examples sites' configs](todo/decide-whether-the-examples-sites-configs-get-a-validator-gate.md) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [Two spellings of "how tall is the embed"](todo/two-spellings-of-how-tall-is-the-embed.md) | embedded, API | the LGV ships `height`; decide whether the app's CSS variable becomes the same prop |
