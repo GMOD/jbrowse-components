@@ -59,6 +59,27 @@ function Icon({ icon }: { icon: TrackControlIcon }) {
   )
 }
 
+// The ▾ after a label whose press opens a menu. Drawn like the icons, for the
+// same reason; smaller, because it qualifies the label rather than naming it.
+function Caret() {
+  return (
+    <svg
+      viewBox="0 0 8 8"
+      width={8}
+      height={8}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      style={{ flex: 'none', marginLeft: -1 }}
+    >
+      <path d="M1.5 3l2.5 2.5L6.5 3" />
+    </svg>
+  )
+}
+
 function triggerStyle(warning: boolean): React.CSSProperties {
   return {
     font: 'inherit',
@@ -102,11 +123,12 @@ export default function PlainTrackControl({
   label,
   options,
   onClick,
+  onMenuClose,
   onDelete,
   warning,
 }: TrackControlProps) {
   const { open, triggerProps, menuProps, getOptionProps } =
-    useTrackControlMenu()
+    useTrackControlMenu(onMenuClose)
 
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center' }}>
@@ -140,6 +162,7 @@ export default function PlainTrackControl({
         >
           <Icon icon={icon} />
           {label}
+          {label !== undefined && options ? <Caret /> : null}
         </button>
       </Tooltip>
       {onDelete ? (

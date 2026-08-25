@@ -79,11 +79,27 @@ export interface TrackControlMenu {
  * `document.body` — `createPortal` is the caller's to aim, the maths is here.
  * `menuProps.style` carries position only.
  */
-export function useTrackControlMenu(): TrackControlMenu {
+export function useTrackControlMenu(
+  // Runs on every close route — a pick, Escape, an outside press, a scroll —
+  // so a caller acknowledging "the menu was opened" has one place to hear it.
+  onClose?: () => void,
+): TrackControlMenu {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
   const ref = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+  // Mirrors `anchor` so `close` can tell a real close from a repeat — two
+  // routes can fire off one gesture (a scroll and the resize it causes) — and
+  // fire `onClose` once. Not read inside the state updater: React re-runs
+  // updaters to check they are pure, and a side effect there ran twice.
+  const openRef = useRef(false)
+  openRef.current = !!anchor
 
   const close = useCallback(() => {
+    if (openRef.current) {
+      openRef.current = false
+      onCloseRef.current?.()
+    }
     setAnchor(null)
   }, [])
 
@@ -192,7 +208,11 @@ export function useTrackControlMenu(): TrackControlMenu {
       onClick: event => {
         // don't let the click bubble to the track/view (drag-select, deselect)
         event.stopPropagation()
-        setAnchor(anchor ? null : event.currentTarget)
+        if (anchor) {
+          close()
+        } else {
+          setAnchor(event.currentTarget)
+        }
       },
     },
     menuProps: {

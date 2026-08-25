@@ -65,16 +65,16 @@ describe('fitLadderNote', () => {
 
   it('names what went and the lever that brings it back', () => {
     expect(fitLadderNote(fitDrops(stage('labels'), true, true))).toBe(
-      'descriptions hidden to fit (a taller track shows more)',
+      'descriptions hidden (taller track shows more)',
     )
     expect(fitLadderNote(fitDrops(stage('decimated'), true, true))).toBe(
-      'some names and descriptions hidden to fit (a taller track shows more)',
+      'some names + descriptions hidden (taller track shows more)',
     )
     expect(fitLadderNote(fitDrops(stage('bodies', 0.5), true, false))).toBe(
-      'names hidden, squeezed to 50% to fit (a taller track shows more)',
+      'names hidden, squeezed to 50% (taller track shows more)',
     )
     expect(fitLadderNote(fitDrops(stage('bodies', 0.5), false, false))).toBe(
-      'squeezed to 50% to fit (a taller track shows more)',
+      'squeezed to 50% (taller track shows more)',
     )
   })
 })

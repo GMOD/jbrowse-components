@@ -645,14 +645,14 @@ describe('canvas display fit escalation ladder', () => {
     display.setHeight(Math.round((labelsH + fullH) / 2))
     expect(display.fitStage.level).toBe('labels')
     expect(display.fitNote).toBe(
-      'descriptions hidden to fit (a taller track shows more)',
+      'descriptions hidden (taller track shows more)',
     )
     expect(labelRows()).toContain('Auto — descriptions hidden to fit')
 
     display.setHeight(Math.round(bodiesH / 2))
     expect(display.fitStage.level).toBe('bodies')
     expect(display.fitNote).toBe(
-      `names and descriptions hidden, squeezed to ${Math.round(display.fitScale * 100)}% to fit (a taller track shows more)`,
+      `names + descriptions hidden, squeezed to ${Math.round(display.fitScale * 100)}% (taller track shows more)`,
     )
     expect(labelRows()).toContain('Auto — hidden to fit')
 

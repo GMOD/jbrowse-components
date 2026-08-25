@@ -244,7 +244,7 @@ provider rather than render yourself.
 
 ```js
 // type signature
-({ icon, tooltip, label, options, onClick, onDelete, warning, }: TrackControlProps) => Element
+({ icon, tooltip, label, options, onClick, onMenuClose, onDelete, warning, }: TrackControlProps) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackControl/plainTrackControl.tsx)
@@ -424,7 +424,7 @@ carries position only.
 
 ```js
 // type signature
-;() => TrackControlMenu
+(onClose?: (() => void) | undefined) => TrackControlMenu
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackControl/useTrackControlMenu.tsx)

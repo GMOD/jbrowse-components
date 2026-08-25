@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { CascadingMenu, CascadingMenuButton } from '@jbrowse/core/ui'
 import { emphasize } from '@jbrowse/core/util/color'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import CancelIcon from '@mui/icons-material/Cancel'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import HeightIcon from '@mui/icons-material/Height'
@@ -77,6 +78,17 @@ const useStyles = makeStyles()(theme => ({
       background: hoverBackground(theme),
     },
   },
+  // The ▾ after a label whose press opens a menu — the one cue telling that
+  // chip from one whose press acts. Tucked into the label's own padding so the
+  // chip grows by the glyph and not by a second gap.
+  caretLabel: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    '& svg': {
+      fontSize: 16,
+      marginRight: -6,
+    },
+  },
 }))
 
 // These controls sit on the display's bottom edge, so their menu opens upward
@@ -108,6 +120,7 @@ export default function MuiTrackControl({
   label,
   options,
   onClick,
+  onMenuClose,
   onDelete,
   warning,
 }: TrackControlProps) {
@@ -159,7 +172,16 @@ export default function MuiTrackControl({
           className={cx(classes.chip, warning && classes.warning)}
           data-testid={testId}
           icon={<Icon />}
-          label={label}
+          label={
+            options ? (
+              <span className={classes.caretLabel}>
+                {label}
+                <ArrowDropDownIcon />
+              </span>
+            ) : (
+              label
+            )
+          }
           onClick={
             options
               ? event => {
@@ -182,8 +204,11 @@ export default function MuiTrackControl({
           anchorEl={anchorEl}
           anchorOrigin={anchorOrigin}
           transformOrigin={transformOrigin}
+          // CascadingMenu routes a pick through here too (`onCloseRoot`), so
+          // this is every way the menu closes
           onClose={() => {
             setAnchorEl(null)
+            onMenuClose?.()
           }}
           onMenuItemClick={callback => {
             callback()

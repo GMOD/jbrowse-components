@@ -29,7 +29,9 @@ export default function SoloSelectionChip({
   return (
     <TrackControl
       icon="filter"
-      label={applied ? `Showing ${counted}` : `${count} selected`}
+      // the funnel already says "showing only", so the applied label is the
+      // count alone
+      label={applied ? counted : `${count} selected`}
       tooltip={
         applied
           ? `Clear the show-only list to show all ${pluralize(2, featureNoun)} again`

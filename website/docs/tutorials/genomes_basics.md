@@ -69,8 +69,8 @@ RefSeq All draws each transcript of a gene on its own row and writes the gene
 name under the stack, and TP53 has far more transcripts than a track opens tall
 enough to show. The default keeps as many as the height has rows for and says
 what it left out: the gene name reads **TP53 +20 more**, and the circled chip at
-the bottom right says `Isoforms trimmed to fit`. Clicking **+20 more** opens
-that one gene; clicking the chip opens **Auto / All transcripts / Representative
+the bottom right says `Isoforms trimmed`. Clicking **+20 more** opens that one
+gene; clicking the chip opens **Auto / All transcripts / Representative
 transcript**, and picking the last collapses every gene to one transcript, which
 is what the rest of this page uses.
 
@@ -116,9 +116,9 @@ in human cancer: Arg248 reaches into the DNA itself, and the other two hold the
 loop that carries it.
 
 One more click makes it readable: tick **Reference sequence**, which is off by
-default. The isoform control's (×) shrinks the chip to the icon circled below,
-which stays in that corner and opens the same options. At this zoom the default
-draws the codon row once per transcript.
+default. Once its menu has been opened the isoform chip shrinks to the icon
+circled below, which stays in that corner and opens the same options. At this
+zoom the default draws the codon row once per transcript.
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The isoform control on the gene track, circled, with the popover it opens. It carries the same Auto, All transcripts and Representative transcript options as the track menu's Gene glyph radio." />
 

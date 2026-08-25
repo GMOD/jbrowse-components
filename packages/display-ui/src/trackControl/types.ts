@@ -44,10 +44,23 @@ export interface TrackControlProps {
    * a control that is always there and should not shout.
    */
   label?: string
-  /** Pressing opens these as a radio list. Mutually exclusive with `onClick`. */
+  /**
+   * Pressing opens these as a radio list. Mutually exclusive with `onClick`.
+   * A labelled control with options draws a ▾ after its label — the one thing
+   * telling a chip that opens a menu from one that acts (`onClick`), since the
+   * two are otherwise drawn alike.
+   */
   options?: TrackControlOption[]
   /** Pressing does this. Mutually exclusive with `options`. */
   onClick?: () => void
+  /**
+   * The `options` menu closed, by any route — a pick, Escape, a press outside.
+   * A notice that wants opening the menu to count as having been read hangs
+   * its acknowledgement here rather than on a (×) of its own. On close and not
+   * on open: a chip that shrinks while its menu is still up takes the menu's
+   * anchor with it.
+   */
+  onMenuClose?: () => void
   /** Adds a (×). What it means is the caller's business — dismiss, clear, undo. */
   onDelete?: () => void
   /**

@@ -52,6 +52,48 @@ describe.each([
     expect(onSelect).toHaveBeenCalledTimes(1)
   })
 
+  // A chip that opens a menu and a chip that acts are drawn alike, so the ▾ is
+  // the only thing telling them apart — present exactly when there is a menu.
+  it('marks a labelled control that opens a menu, and only that one', () => {
+    const { unmount } = renderControl({
+      icon: 'isoform',
+      tooltip: 'tip',
+      label: 'Longest isoform',
+      options: options(() => {}),
+    })
+    const withMenu = screen.getByTestId('track-control-isoform')
+    expect(withMenu.querySelectorAll('svg')).toHaveLength(2)
+    unmount()
+
+    renderControl({
+      icon: 'filter',
+      tooltip: 'tip',
+      label: '3 selected',
+      onClick: () => {},
+    })
+    expect(
+      screen.getByTestId('track-control-filter').querySelectorAll('svg'),
+    ).toHaveLength(1)
+  })
+
+  // The isoform notice treats the menu having been opened as the notice having
+  // been read, and hears about it here. On close rather than open, because the
+  // chip shrinking while its menu is up takes the menu's anchor with it.
+  it('reports the menu closing after a pick', () => {
+    const onMenuClose = jest.fn()
+    renderControl({
+      icon: 'isoform',
+      tooltip: 'tip',
+      label: 'Longest isoform',
+      onMenuClose,
+      options: options(() => {}),
+    })
+    fireEvent.click(screen.getByText('Longest isoform'))
+    expect(onMenuClose).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByText('All transcripts'))
+    expect(onMenuClose).toHaveBeenCalledTimes(1)
+  })
+
   it('fires onDelete from the (×) without firing the control itself', () => {
     const onDelete = jest.fn()
     const onSelect = jest.fn()

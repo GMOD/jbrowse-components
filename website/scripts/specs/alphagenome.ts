@@ -1,5 +1,7 @@
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
+import { readIsoformNotice } from '../screenshot-spec-helpers.ts'
+
 import type {
   ScreenshotAction,
   ScreenshotSpec,
@@ -141,10 +143,10 @@ const row = (outputType: string, slug: string) => ({
 // the body, because that button disables itself the moment the tick clears. The
 // press then closes nothing, every later action goes on succeeding under the
 // panel, and the run writes a figure of the open dialog: five of the six here,
-// with nothing saying so. The gene track's "Isoforms trimmed to fit" chip is
-// dismissed rather than hidden: dismissing is what a reader does, and it leaves
-// the quiet control behind, where hiding the element takes the whole control out
-// of the figure.
+// with nothing saying so. The gene track's "Isoforms trimmed" chip is read
+// (`readIsoformNotice`) rather than hidden: reading it is what a reader does,
+// and it leaves the quiet control behind, where hiding the element takes the
+// whole control out of the figure.
 const CLOSE_DIALOG: ScreenshotAction[] = [
   { type: 'click', selector: '[data-testid="dialog-close"]' },
   { type: 'waitForSelector', selector: '.MuiDialog-root', hidden: true },
@@ -153,7 +155,7 @@ const CLOSE_DIALOG: ScreenshotAction[] = [
 const addAndSettle = (display: string): ScreenshotAction[] => [
   { type: 'click', selector: '[data-testid="alphagenome-add-selected"]' },
   ...CLOSE_DIALOG,
-  { type: 'click', selector: '[data-testid="track-control-dismiss"]' },
+  ...readIsoformNotice(),
   {
     type: 'waitForSelector',
     selector: displaySettled(display),
@@ -279,7 +281,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       ...CLOSE_DIALOG,
       // dismissed while still at 70 kb, where the chip is known to be up; the
       // display remembers, so it does not come back on the way out
-      { type: 'click', selector: '[data-testid="track-control-dismiss"]' },
+      ...readIsoformNotice(),
       {
         type: 'type',
         selector: 'input[placeholder="Search for location"]',
@@ -315,7 +317,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
     ...common,
     name: 'alphagenome/send_variant_menu',
     actions: [
-      { type: 'click', selector: '[data-testid="track-control-dismiss"]' },
+      ...readIsoformNotice(),
       {
         type: 'rightclick',
         anchor: {

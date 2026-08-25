@@ -43,12 +43,13 @@ function hiddenKinds({ names, descriptions }: FitDrops) {
     descriptions ? 'descriptions' : undefined,
   ]
     .filter(Boolean)
-    .join(' and ')
+    .join(' + ')
 }
 
 // The track-sizing control's account of the ladder, or undefined when it gave
 // nothing up. Names the lever as well as the loss: the user chose fit mode (or
-// inherited it), and "hidden to fit" alone reads as the track having no labels.
+// inherited it), and "hidden" alone reads as the track having no labels. No
+// " — " inside: that is the tooltip's own segment separator.
 export function fitLadderNote(drops: FitDrops) {
   const hidden = hiddenKinds(drops)
   const parts = [
@@ -58,7 +59,7 @@ export function fitLadderNote(drops: FitDrops) {
       : `squeezed to ${drops.squeezePct}%`,
   ].filter(Boolean)
   return parts.length
-    ? `${parts.join(', ')} to fit (a taller track shows more)`
+    ? `${parts.join(', ')} (taller track shows more)`
     : undefined
 }
 

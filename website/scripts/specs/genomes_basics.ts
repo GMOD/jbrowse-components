@@ -3,6 +3,7 @@ import {
   UCSC_HG38_CONFIG,
   cascadeBoxes,
   menuCascade,
+  readIsoformNotice,
   sessionSpec,
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
@@ -534,31 +535,22 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   },
 
   // The isoform control, which the next figure's session sets declaratively and
-  // a reader reaches by clicking. It has two looks one dismissal apart: while
+  // a reader reaches by clicking. It has two looks one reading apart: while
   // transcripts are collapsed it is the loud chip naming the rule that picked
   // them — "Longest isoform" here, since UCSC's bed2gff conversion of RefSeq
-  // carries none of the `tag=MANE Select` that NCBI's own GFF3 does — and its
-  // (x) shrinks it to the quiet icon that is always in that corner afterwards.
+  // carries none of the `tag=MANE Select` that NCBI's own GFF3 does — and once
+  // its menu has been opened it shrinks to the quiet icon that is always in
+  // that corner afterwards.
   //
   // THE ICON IS WHAT THE FIGURE SHOWS (review: "i want the circle on the small
   // icon that launches the popover. also, i dont want it to be showing the
   // 'longest isoform' chip"). The chip is a first-session notice; the icon is
   // the control as a reader will meet it every time after, and it is the harder
-  // one to find unaided, which is what a ring is for. So the capture presses the
-  // (x) before it presses the control.
-  //
-  // `geneGlyphNoticeDismissed` is VOLATILE (LinearBasicDisplay/model.ts) — a
-  // session spec cannot set it, and clicking the (x) is the only way in.
-  // `track-control-dismiss` is the testid both TrackControl implementations put
-  // on that (x) for exactly this reason; MUI draws it as an svg inside the chip
-  // and the plain set as a sibling button, so there is no structural handle that
-  // finds both. `track-control-isoform` is its counterpart on the trigger, added
-  // for this figure: the class names are tss-react hashes and MUI strips its own
-  // icon `data-testid` from production builds, so the built app the generator
-  // serves offered nothing to point at but the tooltip prose.
+  // one to find unaided, which is what a ring is for. So the capture reads the
+  // chip (`readIsoformNotice`, which says how) before it presses the control.
   //
   // `auto` would NOT do for the mode: it resolves to `all` below 100 bp/px, so
-  // at this zoom there is no chip to dismiss and nothing on screen says
+  // at this zoom there is no chip to read and nothing on screen says
   // transcripts could be collapsed at all.
   //
   // A small frame on purpose -- everything a wider one would add is the figure
@@ -583,9 +575,8 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
     viewportHeight: 340,
     diffThreshold: 0.02,
     actions: [
-      // dismiss the chip, leaving the quiet icon this figure is about
-      { type: 'click', selector: '[data-testid="track-control-dismiss"]' },
-      { type: 'delay', ms: 400 },
+      // read the chip, leaving the quiet icon this figure is about
+      ...readIsoformNotice(),
       // then open the popover from the icon itself
       { type: 'click', selector: '[data-testid="track-control-isoform"]' },
       { type: 'waitForText', text: 'Representative transcript' },

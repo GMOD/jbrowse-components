@@ -24,7 +24,7 @@ export function geneGlyphChipLabel(
   picks?: IsoformPicks,
 ) {
   if (maxIsoforms !== undefined && maxIsoforms > 1) {
-    return 'Isoforms trimmed to fit'
+    return 'Isoforms trimmed'
   }
   const tag = dominantIsoformTag(picks)
   if (tag) {
@@ -39,32 +39,26 @@ export function geneGlyphChipLabel(
   return anyIsoformsHidden(picks) ? 'Longest isoform' : 'One isoform'
 }
 
-// What actually chose the transcripts on screen: "the RefSeq Select transcript"
-// when every collapsed gene agrees, else the count under each rule — the chip
-// has room for one of them and this is the only place the mixture is visible.
+// What actually chose the transcripts on screen: "RefSeq Select" when every
+// collapsed gene agrees, else the count under each rule — the chip has room for
+// one of them and this is the only place the mixture is visible.
 function pickPhrase(picks: IsoformPicks | undefined) {
   const entries = isoformPickEntries(picks)
   return entries.length === 1
-    ? `the ${entries[0]![0]} transcript`
+    ? entries[0]![0]
     : entries.length > 1
-      ? entries.map(([rule, n]) => `${n} by ${rule}`).join(', ')
+      ? entries.map(([rule, n]) => `${n} ${rule}`).join(', ')
       : undefined
 }
 
-// The isoform-collapse control's tooltip: what it is currently showing, whether
-// that was the user's choice or the zoom's, and how to dismiss the notice.
-//
-// The minimize clause keys on `noticeShowing` — the same term deciding whether
-// the control gets an `onDelete` — NOT on `dismissed`. The control renders as
-// the bare icon in two situations (dismissed, and transcripts simply not
-// collapsed), and dismissal alone described a × the second never draws. Pure and
-// in its own module so a test can hold the clause and the affordance together.
+// The isoform-collapse control's tooltip: what is on screen, what chose it, and
+// the lever that changes it. Terse on purpose — the chip is the notice, this is
+// its footnote, and the ▾ already says the press opens a menu.
 export function geneGlyphTooltip({
   mode,
   collapsed,
   maxIsoforms,
   picks,
-  noticeShowing,
 }: {
   mode: GeneGlyphMode
   collapsed: boolean
@@ -75,29 +69,21 @@ export function geneGlyphTooltip({
   maxIsoforms?: number
   // what picked each collapsed gene's transcript, counted per rule
   picks?: IsoformPicks
-  noticeShowing: boolean
 }) {
+  if (!collapsed) {
+    return 'All transcripts per gene.'
+  }
+  if (maxIsoforms !== undefined) {
+    // The cap has two levers and neither is visible from the menu: it exists
+    // only under Auto, so All transcripts lifts it, and it is sized to the
+    // track, so a taller track (or autogrow, next door) admits more.
+    const tag = dominantIsoformTag(picks)
+    return `Up to ${maxIsoforms} transcript${maxIsoforms === 1 ? '' : 's'} per gene fit this height${tag ? ` (${tag} first)` : ''}. A taller track or All transcripts shows more.`
+  }
+  // The rule, from the data rather than from the mode's name: an annotation
+  // that names its own representative isoform (RefSeq Select, MANE Select)
+  // decides this, and protein length is only the fallback for one that doesn't.
   const picked = pickPhrase(picks)
-  const tag = dominantIsoformTag(picks)
-  // The rule, from the data rather than from the mode's name: an annotation that
-  // names its own representative isoform (RefSeq Select, MANE Select) decides
-  // this, and protein length is only the fallback for one that doesn't.
-  const showing = !collapsed
-    ? 'Showing all transcripts per gene'
-    : maxIsoforms === undefined
-      ? `Showing one transcript per gene — ${picked ?? "the annotation's representative one where it names one, else the longest coding"}`
-      : `Showing up to ${maxIsoforms} transcript${maxIsoforms === 1 ? '' : 's'} per gene — as many as fit this track's height, fewer where genes stack${tag ? `, ${tag} first` : ''}`
-  const auto =
-    mode === 'auto' && collapsed && maxIsoforms === undefined
-      ? ' — chosen automatically at this zoom'
-      : ''
-  // The cap has two levers and neither is obvious from the menu: it exists
-  // only under Auto, so "All transcripts" lifts it, and it is sized to the
-  // track, so a taller track (or autogrow, next door) admits more.
-  const levers =
-    collapsed && maxIsoforms !== undefined
-      ? ' — a taller track, or All transcripts, shows more'
-      : ''
-  const minimize = noticeShowing ? '; × to minimize this notice to an icon' : ''
-  return `${showing}${auto}. Click to change${levers}${minimize}.`
+  const zoom = mode === 'auto' ? ', chosen by zoom. Zoom in for all' : ''
+  return `One transcript per gene${picked ? ` (${picked})` : ''}${zoom}.`
 }

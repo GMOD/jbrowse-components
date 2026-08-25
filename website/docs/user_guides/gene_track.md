@@ -44,13 +44,14 @@ the chip below already names it. A gene you did open keeps its badge in every
 mode, which is the way back to a collapsed one.
 
 While transcripts are being left out, the track's bottom-right corner says so
-with a chip naming the rule that did it: `Isoforms trimmed to fit` where the
-track's height is the constraint, otherwise the tag that picked most of the
-genes on screen — `RefSeq Select`, `MANE Select`, or `Longest isoform` for an
-annotation that tags nothing. Its tooltip counts the genes under each rule when
-a window holds a mix, which is usual: NCBI tags its protein-coding genes and
-leaves most non-coding ones alone. Clicking the chip opens the same three modes,
-and its (×) shrinks it to the small icon that stays in that corner.
+with a chip naming the rule that did it: `Isoforms trimmed` where the track's
+height is the constraint, otherwise the tag that picked most of the genes on
+screen — `RefSeq Select`, `MANE Select`, or `Longest isoform` for an annotation
+that tags nothing. Its tooltip counts the genes under each rule when a window
+holds a mix, which is usual: NCBI tags its protein-coding genes and leaves most
+non-coding ones alone. Clicking the chip opens the same three modes; once that
+menu has been opened the chip shrinks to the small icon that stays in that
+corner.
 
 ## Collapsing introns
 

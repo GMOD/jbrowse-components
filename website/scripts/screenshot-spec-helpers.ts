@@ -276,6 +276,27 @@ export const PARK_CURSOR: ScreenshotAction = {
   selector: '[aria-label="JBrowse"]',
 }
 
+// Shrink the gene track's isoform notice — the loud "Isoforms trimmed" / "RefSeq
+// Select" chip — to the quiet icon that is always in that corner afterwards.
+// The chip carries no (×): opening its menu is what marks the notice read, so
+// this opens it and closes it again by the backdrop, the same neutral click
+// `dismissMenus` uses. Every step is asserted, because a chip left up moves the
+// corner of every later frame.
+//
+// `geneGlyphNoticeDismissed` is VOLATILE (LinearBasicDisplay/model.ts) — a
+// session spec cannot set it, and this is the only way in. `track-control-isoform`
+// is the testid both TrackControl implementations put on the control, chip and
+// icon alike: the class names are tss-react hashes and MUI strips its own icon
+// `data-testid` from production builds, so the built app the generator serves
+// offers nothing else to point at but the tooltip prose.
+export const readIsoformNotice = (): ScreenshotAction[] => [
+  { type: 'click', selector: '[data-testid="track-control-isoform"]' },
+  { type: 'waitForText', text: 'Representative transcript' },
+  { type: 'click', from: { x: 550, y: 58 } },
+  { type: 'waitForText', text: 'Representative transcript', hidden: true },
+  { type: 'delay', ms: 300 },
+]
+
 // A stage that ends with its submenu open must be fully dismissed before the
 // next stage clicks a different track's menu, or the lingering menu's backdrop
 // swallows that click and it lands on the wrong track. Escape does NOT close

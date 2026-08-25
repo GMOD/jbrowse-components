@@ -13,7 +13,7 @@ describe('gene-glyph chip label', () => {
   // number is per-gene and is now on each gene's own label
   // (`moreIsoformsLabel`), so nothing here restates it.
   it('names the rule, never a count', () => {
-    expect(geneGlyphChipLabel(7)).toBe('Isoforms trimmed to fit')
+    expect(geneGlyphChipLabel(7)).toBe('Isoforms trimmed')
     expect(geneGlyphChipLabel(7)).not.toMatch(/\d/)
   })
 
@@ -61,41 +61,14 @@ describe('gene-glyph chip label', () => {
   })
 })
 
-// GeneGlyphControl draws its (×) only while `noticeShowing` (collapsed AND not
-// dismissed). These pin the tooltip's minimize clause to that same term, which is
-// the whole reason the builder is its own function.
+// The tooltip is the chip's footnote: one sentence for what is on screen, one
+// for the lever. No "click to change" — the ▾ on the chip says that — and no
+// dismissal clause, since opening the menu is the acknowledgement.
 describe('gene-glyph control tooltip', () => {
-  it('offers the × exactly while the loud chip carries one', () => {
-    expect(
-      geneGlyphTooltip({
-        mode: 'longestCoding',
-        collapsed: true,
-        noticeShowing: true,
-      }),
-    ).toContain('× to minimize')
-  })
-
-  it('drops the × clause once the notice has been dismissed', () => {
-    expect(
-      geneGlyphTooltip({
-        mode: 'longestCoding',
-        collapsed: true,
-        noticeShowing: false,
-      }),
-    ).not.toContain('×')
-  })
-
-  // The regression: the control is the bare icon whenever transcripts are not
-  // collapsed, dismissed or not, so a clause keyed on dismissal alone described
-  // an affordance that mode never draws.
-  it('drops the × clause when transcripts are not collapsed, undismissed', () => {
-    const tooltip = geneGlyphTooltip({
-      mode: 'all',
-      collapsed: false,
-      noticeShowing: false,
-    })
-    expect(tooltip).not.toContain('×')
-    expect(tooltip).toBe('Showing all transcripts per gene. Click to change.')
+  it('says only what is on screen when nothing is collapsed', () => {
+    expect(geneGlyphTooltip({ mode: 'all', collapsed: false })).toBe(
+      'All transcripts per gene.',
+    )
   })
 
   // The collapse stopped being "the longest coding transcript" when the ranking
@@ -103,13 +76,26 @@ describe('gene-glyph control tooltip', () => {
   // so the tooltip must not promise a measurement it may not have made. With no
   // data loaded yet it can only state the rule.
   it('describes the collapse as one transcript, not the longest coding', () => {
-    const tooltip = geneGlyphTooltip({
-      mode: 'longestCoding',
-      collapsed: true,
-      noticeShowing: false,
-    })
-    expect(tooltip).toContain('one transcript per gene')
-    expect(tooltip).toContain("annotation's representative one")
+    expect(geneGlyphTooltip({ mode: 'longestCoding', collapsed: true })).toBe(
+      'One transcript per gene.',
+    )
+  })
+
+  it('names one rule when every gene agrees', () => {
+    expect(
+      geneGlyphTooltip({
+        mode: 'longestCoding',
+        collapsed: true,
+        picks: picks({ 'RefSeq Select': 12 }),
+      }),
+    ).toBe('One transcript per gene (RefSeq Select).')
+    expect(
+      geneGlyphTooltip({
+        mode: 'longestCoding',
+        collapsed: true,
+        picks: picks({}, 12),
+      }),
+    ).toBe('One transcript per gene (longest coding).')
   })
 
   // The chip has room for the commonest rule alone, so the mixture is visible
@@ -121,59 +107,33 @@ describe('gene-glyph control tooltip', () => {
         mode: 'longestCoding',
         collapsed: true,
         picks: picks({ 'MANE Select': 42, 'RefSeq Select': 3 }, 6),
-        noticeShowing: false,
       }),
-    ).toContain(
-      'one transcript per gene — 42 by MANE Select, 3 by RefSeq Select, 6 by longest coding',
+    ).toBe(
+      'One transcript per gene (42 MANE Select, 3 RefSeq Select, 6 longest coding).',
     )
   })
 
-  it('names one rule as a phrase when every gene agrees', () => {
+  // The zoom collapse is undone by zooming in, so that is the lever it names;
+  // a mode the user picked names none.
+  it('says when the collapse was the zoom’s decision, and how to undo it', () => {
+    expect(geneGlyphTooltip({ mode: 'auto', collapsed: true })).toBe(
+      'One transcript per gene, chosen by zoom. Zoom in for all.',
+    )
     expect(
-      geneGlyphTooltip({
-        mode: 'longestCoding',
-        collapsed: true,
-        picks: picks({ 'RefSeq Select': 12 }),
-        noticeShowing: false,
-      }),
-    ).toContain('one transcript per gene — the RefSeq Select transcript')
-    expect(
-      geneGlyphTooltip({
-        mode: 'longestCoding',
-        collapsed: true,
-        picks: picks({}, 12),
-        noticeShowing: false,
-      }),
-    ).toContain('one transcript per gene — the longest coding transcript')
+      geneGlyphTooltip({ mode: 'longestCoding', collapsed: true }),
+    ).not.toContain('zoom')
   })
 
-  it('says when the collapse was the zoom’s decision rather than the user’s', () => {
-    expect(
-      geneGlyphTooltip({ mode: 'auto', collapsed: true, noticeShowing: true }),
-    ).toContain('chosen automatically at this zoom')
-    expect(
-      geneGlyphTooltip({
-        mode: 'longestCoding',
-        collapsed: true,
-        noticeShowing: true,
-      }),
-    ).not.toContain('chosen automatically')
-  })
-
-  // The zoom collapse is undone by zooming in and the height cap by making the
-  // track taller, so saying "at this zoom" for both sends a reader to the wrong
-  // control.
+  // The height cap is undone by making the track taller or lifting the cap
+  // (it exists only under Auto), so those are the levers it names — never the
+  // zoom, which sends a reader to the wrong control.
   describe('the height cap', () => {
-    it('names the number kept and what decided it', () => {
-      const tooltip = geneGlyphTooltip({
-        mode: 'auto',
-        collapsed: true,
-        maxIsoforms: 7,
-        noticeShowing: true,
-      })
-      expect(tooltip).toContain('up to 7 transcripts per gene')
-      expect(tooltip).toContain("as many as fit this track's height")
-      expect(tooltip).not.toContain('at this zoom')
+    it('names the number kept and both levers', () => {
+      expect(
+        geneGlyphTooltip({ mode: 'auto', collapsed: true, maxIsoforms: 7 }),
+      ).toBe(
+        'Up to 7 transcripts per gene fit this height. A taller track or All transcripts shows more.',
+      )
     })
 
     // The cap keeps the top n of the same ranking the collapse takes the head
@@ -185,55 +145,21 @@ describe('gene-glyph control tooltip', () => {
           collapsed: true,
           maxIsoforms: 7,
           picks: picks({ 'MANE Select': 9 }, 2),
-          noticeShowing: true,
         }),
-      ).toContain(
-        "as many as fit this track's height, fewer where genes stack, MANE Select first",
-      )
-    })
-
-    // The cap exists only under Auto, so "All transcripts" lifts it, and it is
-    // sized to the track — neither lever is visible from the menu's three
-    // options, and the corner control that changes the height is next door.
-    it('names both levers that admit more', () => {
-      const tooltip = geneGlyphTooltip({
-        mode: 'auto',
-        collapsed: true,
-        maxIsoforms: 7,
-        noticeShowing: true,
-      })
-      expect(tooltip).toContain(
-        'Click to change — a taller track, or All transcripts, shows more; × to minimize',
-      )
-      expect(
-        geneGlyphTooltip({
-          mode: 'longestCoding',
-          collapsed: true,
-          noticeShowing: true,
-        }),
-      ).not.toContain('taller track')
+      ).toContain('fit this height (MANE Select first).')
     })
 
     it('singularizes a cap of one', () => {
       expect(
-        geneGlyphTooltip({
-          mode: 'auto',
-          collapsed: true,
-          maxIsoforms: 1,
-          noticeShowing: false,
-        }),
-      ).toContain('up to 1 transcript per gene')
+        geneGlyphTooltip({ mode: 'auto', collapsed: true, maxIsoforms: 1 }),
+      ).toContain('Up to 1 transcript per gene')
     })
 
     // the model passes `maxIsoforms` only when a gene actually lost isoforms
     it('says nothing about a cap while every gene fits', () => {
-      expect(
-        geneGlyphTooltip({
-          mode: 'auto',
-          collapsed: false,
-          noticeShowing: false,
-        }),
-      ).toBe('Showing all transcripts per gene. Click to change.')
+      expect(geneGlyphTooltip({ mode: 'auto', collapsed: false })).toBe(
+        'All transcripts per gene.',
+      )
     })
   })
 })
