@@ -841,6 +841,16 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Lay out reads whose CIGAR carries a skip in the lowest pileup rows
+         * (tier-2 relayout). Ignored while an explicit `sortedBy` position
+         * sort is active.
+         */
+        get splicedReadsFirst(): boolean {
+          return getConf(self, 'splicedReadsFirst')
+        },
+
+        /**
+         * #getter
          * In-track stacked grouping dimension (undefined = ungrouped). Falls
          * back to the `groupBy` config slot, so a track can be pre-grouped
          * declaratively. Sent to the worker via rpcProps; the worker partitions
@@ -1522,6 +1532,7 @@ export default function stateModelFactory(
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
             largeFeaturesFirst: this.largeFeaturesFirst,
+            splicedReadsFirst: this.splicedReadsFirst,
             regions: self.loadedRegions,
             showLinkedReadLines: self.showLinkedReadLines,
             collapseGroupRows: this.collapseGroupRows,
@@ -3011,9 +3022,9 @@ export default function stateModelFactory(
           /**
            * #action
            * Commit a sort, the single place the `sortedBy` slot is written. Also
-           * drops `largeFeaturesFirst`: the two are peer radios in one group
-           * ("Longest reads first" is the layout-order flag, a sort is the slot),
-           * so exactly one must hold state. Doing it here rather than at the menu
+           * drops the layout-order flags: they are peer radios in one group
+           * ("Longest reads first" and "Spliced reads first" are flags, a sort
+           * is the slot), so exactly one must hold state. Doing it here rather than at the menu
            * means a sort that *doesn't* land — no valid center line, a cancelled
            * tag dialog — leaves the previous ordering intact instead of silently
            * clearing it and unchecking every radio. `computeMultiRegionLayout`
@@ -3028,6 +3039,7 @@ export default function stateModelFactory(
             tag?: string
           }) {
             setConf(self, 'largeFeaturesFirst', false)
+            setConf(self, 'splicedReadsFirst', false)
             setConf(self, 'sortedBy', sortedBy)
           },
 
@@ -3065,6 +3077,13 @@ export default function stateModelFactory(
            */
           setLargeFeaturesFirst(flag: boolean) {
             setConf(self, 'largeFeaturesFirst', flag)
+          },
+
+          /**
+           * #action
+           */
+          setSplicedReadsFirst(flag: boolean) {
+            setConf(self, 'splicedReadsFirst', flag)
           },
 
           /**

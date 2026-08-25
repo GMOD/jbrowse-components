@@ -343,6 +343,17 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * The other layout-order flag, for RNA-seq: reads whose CIGAR carries a
+       * skip take the lowest rows. Ignored while a `sortedBy` position sort is
+       * active; wins over `largeFeaturesFirst` if both are set.
+       */
+      splicedReadsFirst: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Lay out spliced reads first, in the lowest pileup rows',
+      },
+      /**
+       * #slot
        * null = auto: outline is drawn only in chain/linked-read modes. Set
        * true/false to force it on or off regardless of mode.
        */

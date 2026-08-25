@@ -137,7 +137,9 @@ test('the splicing radios store only/exclude and drop the filter for "all"', () 
 
 test('resetting clears a stored splicing filter', () => {
   const { setFilterBy } = renderDialog({ spliced: 'exclude' })
-  expect(screen.getByLabelText('Only unspliced reads').checked).toBe(true)
+  expect(
+    screen.getByLabelText<HTMLInputElement>('Only unspliced reads').checked,
+  ).toBe(true)
   fireEvent.click(screen.getByText('Reset defaults'))
   submit()
   expect(setFilterBy).toHaveBeenCalledWith(

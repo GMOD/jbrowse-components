@@ -9,13 +9,16 @@ import type { SortedBy } from '../../shared/types.ts'
 function makeModel(init?: {
   sortedBy?: SortedBy
   largeFeaturesFirst?: boolean
+  splicedReadsFirst?: boolean
 }) {
   return {
     sortedBy: init?.sortedBy,
     largeFeaturesFirst: init?.largeFeaturesFirst ?? false,
+    splicedReadsFirst: init?.splicedReadsFirst ?? false,
     setSortedBy: jest.fn(),
     clearSortedBy: jest.fn(),
     setLargeFeaturesFirst: jest.fn(),
+    setSplicedReadsFirst: jest.fn(),
   }
 }
 
@@ -38,6 +41,7 @@ function sorted(type: string): SortedBy {
 const LABELS = [
   'Start location',
   'Longest reads first',
+  'Spliced reads first',
   'Read strand',
   'Base pair',
   'Tag...',
@@ -59,6 +63,17 @@ describe('sort menu radio selection', () => {
     expect(checkedLabel(makeModel({ largeFeaturesFirst: true }))).toEqual([
       'Longest reads first',
     ])
+  })
+
+  test('splicedReadsFirst selects Spliced reads first, and wins over largeFeaturesFirst', () => {
+    expect(checkedLabel(makeModel({ splicedReadsFirst: true }))).toEqual([
+      'Spliced reads first',
+    ])
+    expect(
+      checkedLabel(
+        makeModel({ splicedReadsFirst: true, largeFeaturesFirst: true }),
+      ),
+    ).toEqual(['Spliced reads first'])
   })
 
   test.each([
@@ -89,6 +104,7 @@ describe('sort menu radio selection', () => {
     for (const model of [
       makeModel(),
       makeModel({ largeFeaturesFirst: true }),
+      makeModel({ splicedReadsFirst: true }),
       makeModel({ sortedBy: sorted('strand') }),
       makeModel({ sortedBy: sorted('basePair') }),
       makeModel({ sortedBy: sorted('tag') }),
@@ -143,19 +159,29 @@ describe('curated modes', () => {
 })
 
 describe('sort menu keeps the two ordering slots mutually exclusive', () => {
-  test('Start location clears both slots (it is the reset)', () => {
+  test('Start location clears every slot (it is the reset)', () => {
     const model = makeModel({ largeFeaturesFirst: true })
     radio(model, 'Start location').onClick()
     expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(false)
+    expect(model.setSplicedReadsFirst).toHaveBeenCalledWith(false)
     expect(model.clearSortedBy).toHaveBeenCalled()
     expect(model.setSortedBy).not.toHaveBeenCalled()
   })
 
-  test('Longest reads first clears the sort before enabling itself', () => {
+  test('Longest reads first clears the sort and the other flag before enabling itself', () => {
     const model = makeModel({ sortedBy: sorted('basePair') })
     radio(model, 'Longest reads first').onClick()
     expect(model.clearSortedBy).toHaveBeenCalled()
+    expect(model.setSplicedReadsFirst).toHaveBeenCalledWith(false)
     expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(true)
+  })
+
+  test('Spliced reads first clears the sort and the other flag before enabling itself', () => {
+    const model = makeModel({ largeFeaturesFirst: true })
+    radio(model, 'Spliced reads first').onClick()
+    expect(model.clearSortedBy).toHaveBeenCalled()
+    expect(model.setLargeFeaturesFirst).toHaveBeenCalledWith(false)
+    expect(model.setSplicedReadsFirst).toHaveBeenCalledWith(true)
   })
 
   // The sort radios delegate the mutual exclusion to setSortSlot, which drops

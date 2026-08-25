@@ -23,16 +23,19 @@ interface SortByModel {
   clearSortedBy: () => void
   largeFeaturesFirst: boolean
   setLargeFeaturesFirst: (flag: boolean) => void
+  splicedReadsFirst: boolean
+  setSplicedReadsFirst: (flag: boolean) => void
 }
 
 // One ordering at a time, so a single radio group. Most modes write a `sortedBy`
-// type; "Longest reads first" is the `largeFeaturesFirst` layout flag, folded in
-// as a peer radio because it competes for the same ordering. "Start location" is
-// the unsorted default, so it doubles as the reset — no separate "Clear".
+// type; "Longest reads first" and "Spliced reads first" are the
+// `largeFeaturesFirst` / `splicedReadsFirst` layout flags, folded in as peer
+// radios because they compete for the same ordering. "Start location" is the
+// unsorted default, so it doubles as the reset — no separate "Clear".
 //
-// Only the `length` radio clears the other slot here. `setSortSlot` drops
-// `largeFeaturesFirst` as it writes `sortedBy`, so a sort that never lands (no
-// valid center line, a cancelled tag dialog) leaves the ordering alone instead of
+// Only the two flag radios clear the other slots here. `setSortSlot` drops
+// both flags as it writes `sortedBy`, so a sort that never lands (no valid
+// center line, a cancelled tag dialog) leaves the ordering alone instead of
 // unchecking every radio.
 //
 // Strand / base pair / tag anchor on the center-line column, which `setSortedBy`
@@ -46,22 +49,33 @@ interface SortByModel {
 // ("Longest reads first"); rows that lead with it capitalize through
 // `capitalizeFirst`.
 
-export type SortMode = 'position' | 'strand' | 'basePair' | 'tag' | 'length'
+export type SortMode =
+  | 'position'
+  | 'strand'
+  | 'basePair'
+  | 'tag'
+  | 'length'
+  | 'spliced'
 
 const ALL_SORT_MODES: SortMode[] = [
   'position',
   'length',
+  'spliced',
   'strand',
   'basePair',
   'tag',
 ]
 
+// Spliced-first outranks largest-first in the layout too, so a config setting
+// both reads as the one that takes effect.
 function getSortMode(model: SortByModel): SortMode {
   const type = model.sortedBy?.type
   return type === undefined
-    ? model.largeFeaturesFirst
-      ? 'length'
-      : 'position'
+    ? model.splicedReadsFirst
+      ? 'spliced'
+      : model.largeFeaturesFirst
+        ? 'length'
+        : 'position'
     : type === 'strand' || type === 'tag'
       ? type
       : type === 'basePair' || isInterbaseType(type)
@@ -109,11 +123,18 @@ export function getSortByMenuItem(
   const items: Record<SortMode, RadioMenuItem> = {
     position: radio('position', 'Start location', () => {
       model.setLargeFeaturesFirst(false)
+      model.setSplicedReadsFirst(false)
       model.clearSortedBy()
     }),
     length: radio('length', `Longest ${noun}s first`, () => {
       model.clearSortedBy()
+      model.setSplicedReadsFirst(false)
       model.setLargeFeaturesFirst(true)
+    }),
+    spliced: radio('spliced', `Spliced ${noun}s first`, () => {
+      model.clearSortedBy()
+      model.setLargeFeaturesFirst(false)
+      model.setSplicedReadsFirst(true)
     }),
     strand: radio('strand', `${capitalizeFirst(noun)} strand`, () => {
       model.setSortedBy('strand')

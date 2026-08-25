@@ -196,9 +196,10 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 
 ## Layout and draw paths
 
-- Chain layout is handed **neither `sortedBy` nor `largeFeaturesFirst`** — its
-  rows are chains. Every ordering control curates itself out in chain mode; a
-  new one that doesn't is a silent no-op, and a tag sort additionally refetches.
+- Chain layout is handed **neither `sortedBy` nor the layout-order flags
+  (`largeFeaturesFirst`, `splicedReadsFirst`)** — its rows are chains. Every
+  ordering control curates itself out in chain mode; a new one that doesn't is a
+  silent no-op, and a tag sort additionally refetches.
 - `placeRect` cannot use a levels / right-edge-only array: features arrive out
   of start order in both layouts.
 - On-screen and SVG export share `drawAlignmentBlocks`. Sashimi and linked-read

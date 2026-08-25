@@ -39,6 +39,7 @@ function overlappingReadsContext(): GroupLayoutContext {
     sortedBy: undefined,
     showSoftClipping: false,
     largeFeaturesFirst: false,
+    splicedReadsFirst: false,
     regions: new Map([[0, { refName: 'ctgA', start: 0, end: 1000 }]]),
     showLinkedReadLines: false,
     collapseGroupRows: false,

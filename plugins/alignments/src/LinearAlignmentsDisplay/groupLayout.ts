@@ -145,6 +145,7 @@ export interface GroupLayoutContext {
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
   largeFeaturesFirst: boolean
+  splicedReadsFirst: boolean
   // Region bounds by displayed-region index, so multi-region layout can locate
   // the sort position's region and detect the single-refName case.
   regions: ReadonlyMap<number, RegionBounds>
@@ -207,6 +208,7 @@ function layoutOneGroup(
         regions: ctx.regions,
         rowCap: cap,
         largeFeaturesFirst: ctx.largeFeaturesFirst,
+        splicedReadsFirst: ctx.splicedReadsFirst,
       })
   return ctx.showLinkedReadLines ? attachLinkedReadLines(base) : base
 }
@@ -417,6 +419,7 @@ export function layoutGroupRowCounts(
               regions: ctx.regions,
               rowCap: ceilingCap(maxRows),
               largeFeaturesFirst: ctx.largeFeaturesFirst,
+              splicedReadsFirst: ctx.splicedReadsFirst,
             }),
     )
   }

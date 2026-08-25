@@ -4,7 +4,10 @@ import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 import { emptyConnectingLinesUploadData } from '../features/connectingLines/types.ts'
 import { emptyLinkedReadLinesUploadData } from '../features/linkedReads/types.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
-import { GAP_DELETION } from '../shaders/slang/gap.consts.generated.ts'
+import {
+  GAP_DELETION,
+  GAP_SKIP,
+} from '../shaders/slang/gap.consts.generated.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -470,6 +473,33 @@ function buildSoftclipOrder(
 // alignments cluster at the top instead of interleaving with small ones (the
 // LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
 // row-scan rather than the interval-partitioning fast path.
+// 1 for every read whose CIGAR carries a skip, off the gap arrays the worker
+// already ships, so no per-read flag crosses the boundary for this.
+function readSplicedFlags(data: WorkerPileupData, numReads: number) {
+  const { gapTypes, gapReadIndices } = data
+  const spliced = new Uint8Array(numReads)
+  for (let i = 0; i < gapTypes.length; i++) {
+    if (gapTypes[i] === GAP_SKIP) {
+      spliced[gapReadIndices[i]!] = 1
+    }
+  }
+  return spliced
+}
+
+// Spliced reads take the lowest rows, each class in canonical order — so on
+// RNA-seq the junction-spanning reads sit together at the top instead of
+// interleaving with the unspliced majority. Not start-monotone, so the caller
+// takes the row-scan path.
+function buildSplicedFirstOrder(data: WorkerPileupData, numReads: number) {
+  const { readPositions, readKeys } = data
+  const spliced = readSplicedFlags(data, numReads)
+  return Array.from({ length: numReads }, (_, i) => i).sort(
+    (a, b) =>
+      spliced[b]! - spliced[a]! ||
+      compareReadsCanonically(readPositions, readKeys, a, b),
+  )
+}
+
 function buildLargeFirstOrder(
   data: WorkerPileupData,
   ext: ReadExtents,
@@ -557,6 +587,7 @@ export function computeLayout(
   showSoftClipping?: boolean,
   maxRows = Number.POSITIVE_INFINITY,
   largeFeaturesFirst?: boolean,
+  splicedReadsFirst?: boolean,
 ) {
   const numReads = data.readKeys.length
   const expansions = showSoftClipping
@@ -580,13 +611,19 @@ export function computeLayout(
   // is exactly the tie that made layout depend on arrival order, so it has to be
   // resolved by read identity rather than left to the emit order. Still
   // start-monotone, so the interval-partitioning fast path below applies.
-  const order = largeFeaturesFirst
-    ? buildLargeFirstOrder(data, ext!, numReads)
-    : showSoftClipping
-      ? buildSoftclipOrder(data, ext!, numReads)
-      : buildCanonicalOrder(data, numReads)
+  const order = splicedReadsFirst
+    ? buildSplicedFirstOrder(data, numReads)
+    : largeFeaturesFirst
+      ? buildLargeFirstOrder(data, ext!, numReads)
+      : showSoftClipping
+        ? buildSoftclipOrder(data, ext!, numReads)
+        : buildCanonicalOrder(data, numReads)
 
-  if (!largeFeaturesFirst && numReads >= LAYOUT_HEAP_MIN_READS) {
+  if (
+    !largeFeaturesFirst &&
+    !splicedReadsFirst &&
+    numReads >= LAYOUT_HEAP_MIN_READS
+  ) {
     const fast = partitionStartSorted(data, order, expansions, maxRows, readYs)
     if (fast) {
       return { readYs, maxY: fast.maxY, truncated: fast.truncated }
@@ -784,6 +821,7 @@ export function computeMultiRegionLayout({
   showSoftClipping,
   maxRows = Number.POSITIVE_INFINITY,
   largeFeaturesFirst,
+  splicedReadsFirst,
 }: {
   entries: [number, WorkerPileupData][]
   regions?: ReadonlyMap<number, RegionBounds>
@@ -791,6 +829,7 @@ export function computeMultiRegionLayout({
   showSoftClipping?: boolean
   maxRows?: number
   largeFeaturesFirst?: boolean
+  splicedReadsFirst?: boolean
 }) {
   // Union extent per read (keyed by read key) across every region it appears
   // in, including soft-clip expansion — a read spanning a boundary gets one
@@ -798,13 +837,21 @@ export function computeMultiRegionLayout({
   // order and is canonicalized below.
   const extents = new Map<ReadKey, ReadExtent>()
   const orderedIds: ReadKey[] = []
+  // A read is spliced if any region's copy of it carries a skip.
+  const splicedIds = new Set<ReadKey>()
   for (const [idx, data] of entries) {
     const numReads = data.readKeys.length
     const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
     const ext = buildReadExtents(data, exp, numReads)
     const refName = regions?.get(idx)?.refName
+    const spliced = splicedReadsFirst
+      ? readSplicedFlags(data, numReads)
+      : undefined
     for (let i = 0; i < numReads; i++) {
       const id = data.readKeys[i]!
+      if (spliced?.[i]) {
+        splicedIds.add(id)
+      }
       const start = ext.starts[i]!
       const end = ext.ends[i]!
       const cur = extents.get(id)
@@ -870,14 +917,20 @@ export function computeMultiRegionLayout({
     }
   }
 
-  // Largest-first only when no explicit position sort took effect (that sort
-  // wins). Sorts the deduped ids by unioned on-screen extent, descending.
-  if (!sortApplied && largeFeaturesFirst) {
+  // The layout-order flags apply only when no explicit position sort took
+  // effect (that sort wins). Spliced-first partitions the deduped ids; largest-
+  // first sorts them by unioned on-screen extent, descending.
+  if (!sortApplied && (splicedReadsFirst || largeFeaturesFirst)) {
     placementOrder = [...orderedIds].sort((a, b) => {
       const ea = extents.get(a)!
       const eb = extents.get(b)!
       return (
-        compareByExtentDesc(ea.start, ea.end, eb.start, eb.end) ||
+        (splicedReadsFirst
+          ? Number(splicedIds.has(b)) - Number(splicedIds.has(a))
+          : 0) ||
+        (largeFeaturesFirst
+          ? compareByExtentDesc(ea.start, ea.end, eb.start, eb.end)
+          : 0) ||
         compareIdsCanonically(a, b)
       )
     })
@@ -988,6 +1041,7 @@ export interface PileupLayoutArgs {
   // it. Defaults to no cap at all.
   rowCap?: RowCap
   largeFeaturesFirst?: boolean
+  splicedReadsFirst?: boolean
 }
 
 // Per-region Y assignment before cloning: the raw data plus its filled readYs,
@@ -1004,6 +1058,7 @@ function computePileupRowLayout(
     regions,
     rowCap = UNCAPPED,
     largeFeaturesFirst,
+    splicedReadsFirst,
   }: PileupLayoutArgs,
   countOnly: boolean,
 ): {
@@ -1035,7 +1090,13 @@ function computePileupRowLayout(
     const activeSort = sortForRegions(sortedBy, [idx], regions)
     const { readYs, maxY, truncated } = activeSort
       ? computeSortedLayout(data, activeSort, showSoftClipping, maxRows)
-      : computeLayout(data, showSoftClipping, maxRows, largeFeaturesFirst)
+      : computeLayout(
+          data,
+          showSoftClipping,
+          maxRows,
+          largeFeaturesFirst,
+          splicedReadsFirst,
+        )
     return {
       empties,
       laid: countOnly ? [] : [{ idx, data, readYs }],
@@ -1050,6 +1111,7 @@ function computePileupRowLayout(
     showSoftClipping,
     maxRows,
     largeFeaturesFirst,
+    splicedReadsFirst,
   })
   const laid = countOnly
     ? []

@@ -1,3 +1,4 @@
+import { GAP_SKIP } from '../shaders/slang/gap.consts.generated.ts'
 import { namesToBlock } from '../shared/readNameBlock.ts'
 import {
   INTERBASE_HARDCLIP,
@@ -28,6 +29,8 @@ interface Read {
   // `type` says otherwise (left clip when pos <= start). Only soft clips expand
   // a read's layout extent; the other kinds exist here to be sorted on.
   softclip?: { pos: number; length: number; type?: number }
+  // Intron skips, [start, end) each — what marks the read as spliced.
+  skips?: [number, number][]
 }
 
 function makePileupData(opts: {
@@ -95,11 +98,26 @@ function makePileupData(opts: {
     interbaseReadIndices[i] = e.readIdx
   }
 
+  const skipEntries = reads.flatMap((r, i) =>
+    (r.skips ?? []).map(([start, end]) => ({ readIdx: i, start, end })),
+  )
+  const gapPositions = new Uint32Array(skipEntries.length * 2)
+  const gapReadIndices = new Uint32Array(skipEntries.length)
+  for (const [i, e] of skipEntries.entries()) {
+    gapPositions[i * 2] = e.start
+    gapPositions[i * 2 + 1] = e.end
+    gapReadIndices[i] = e.readIdx
+  }
+
   return {
     ...baseWorkerPileupData(numReads),
     readKeys,
     ...namesToBlock(readNames),
     readPositions,
+    gapPositions,
+    gapTypes: new Uint8Array(skipEntries.length).fill(GAP_SKIP),
+    gapReadIndices,
+    gapFrequencies: new Uint8Array(skipEntries.length),
     readStrands: Int8Array.from(reads.map(r => r.strand ?? 0)),
     mismatchPositions,
     mismatchBases,
@@ -316,6 +334,54 @@ describe('computeLayout largeFeaturesFirst', () => {
     expect(readYs[2]).toBe(0) // non-overlapping small fills row 0 gap
     expect(readYs[0]).toBe(1) // overlapping small stacks above
     expect(maxY).toBe(2)
+  })
+})
+
+describe('computeLayout splicedReadsFirst', () => {
+  // An unspliced read starts before a spliced one that overlaps it. Start order
+  // puts the unspliced read in row 0; spliced-first gives that row to the
+  // spliced read and stacks the unspliced one above.
+  const data = () =>
+    makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 50 }, // id0 unspliced
+        { start: 10, end: 200, skips: [[60, 150]] }, // id1 spliced
+        { start: 300, end: 350 }, // id2 unspliced, clear of both
+      ],
+    })
+
+  test('default order places the earlier unspliced read first', () => {
+    const { readYs } = computeLayout(data())
+    expect([...readYs]).toEqual([0, 1, 0])
+  })
+
+  test('spliced-first gives the spliced read the lowest row', () => {
+    const { readYs, maxY } = computeLayout(
+      data(),
+      false,
+      undefined,
+      false,
+      true,
+    )
+    expect([...readYs]).toEqual([1, 0, 0])
+    expect(maxY).toBe(2)
+  })
+
+  test('wins over largeFeaturesFirst when both are set', () => {
+    // The unspliced read is the wider one here, so largest-first alone would
+    // put it in row 0.
+    const d = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 0, end: 500 }, // id0 unspliced, wide
+        { start: 10, end: 100, skips: [[40, 80]] }, // id1 spliced, narrow
+      ],
+    })
+    expect([...computeLayout(d, false, undefined, true).readYs]).toEqual([0, 1])
+    expect([...computeLayout(d, false, undefined, true, true).readYs]).toEqual([
+      1, 0,
+    ])
   })
 })
 
@@ -998,6 +1064,31 @@ describe('computeMultiRegionLayout', () => {
         [1, r2],
       ],
       largeFeaturesFirst: true,
+    })
+    expect(rowMap.get('id0')).toBe(0)
+    expect(rowMap.get('id1')).toBe(1)
+  })
+
+  test("splicedReadsFirst partitions on any region's copy of the read", () => {
+    // id0 spans both regions and only region 1's copy carries the skip; it
+    // still takes the lowest row over the earlier unspliced id1.
+    const r1 = makePileupData({
+      regionStart: 0,
+      reads: [
+        { start: 5, end: 100 }, // id0, spliced in r2
+        { start: 0, end: 20 }, // id1 unspliced, earlier start
+      ],
+    })
+    const r2 = makePileupData({
+      regionStart: 100,
+      reads: [{ start: 100, end: 200, skips: [[120, 180]] }], // id0 again
+    })
+    const { rowMap } = computeMultiRegionLayout({
+      entries: [
+        [0, r1],
+        [1, r2],
+      ],
+      splicedReadsFirst: true,
     })
     expect(rowMap.get('id0')).toBe(0)
     expect(rowMap.get('id1')).toBe(1)
