@@ -197,8 +197,8 @@ megadepth HG008-T.cram --bigwig
 
 ## Structural variants from the published callsets
 
-The benchmark is one of five somatic SV callsets on this pair, and C-GIAB
-publishes the other four. Each is one URL, loaded the way the benchmark was:
+The benchmark is one of the somatic SV callsets on this pair, and C-GIAB
+publishes the rest as one URL each, loaded the way the benchmark was:
 
 | Callset                                                                                                                 | Called from                                    |
 | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
@@ -305,9 +305,9 @@ per record between its two breakends.
 
 ## Copy number from the published callsets
 
-Four groups have called copy number on this pair, and C-GIAB publishes each
-one's output. Every file is small and loads from its FTP URL, so all four
-callsets can share one view:
+Other groups have called copy number on this pair too, and C-GIAB publishes each
+one's output. Every file is small and loads from its FTP URL, so they can share
+one view:
 
 | Callset                                                                                                                                  | Called from                           | Each segment carries                                                        |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
@@ -381,8 +381,7 @@ Clicking a segment then shows its call, its log2 ratio, its cytoband, the focal
 flag, and each Cancer Gene Census gene at its tier.
 
 `HG008-T--HG008-N.bicseq2.txt` is the same segmentation in quantitative form,
-one log2 ratio per segment. It is a 20 KB download and one `awk` away from a
-bedGraph:
+one log2 ratio per segment, and one `awk` away from a bedGraph:
 
 <!-- from: scripts/build_sv_visualization_cgiab.sh -->
 
@@ -557,9 +556,9 @@ the fetch on the raw per-site values at the zoom levels these figures use:
 }
 ```
 
-Raw het sites are cheap here: a whole chromosome is well under two megabytes,
-because the track carries one value per heterozygous site. Whole-genome view
-still falls back to the summary, which is what Wakhan's segments above are for.
+Raw het sites are cheap here, because the track carries one value per germline
+heterozygous site rather than one per base. Whole-genome view still falls back
+to the summary, which is what Wakhan's segments above are for.
 
 **Resolution → Finer** in the track menu is the same control interactively.
 Reach for it whenever a scatter track paints as a filled band.
@@ -791,30 +790,28 @@ up.
 
 ### A tandem-repeat call, sized against the normal
 
-Twenty of the benchmark's records carry `EVENTTYPE=CNV:TR`: somatic size changes
-inside tandem repeats, called by aligning the tumor assembly to the donor's own
-normal assembly rather than to GRCh38. Their `SVLEN` is the difference between
-the germline allele and the tumor's, which is a number GRCh38 does not carry.
+Some benchmark records are sized against the donor's own germline allele:
+`EVENTTYPE=CNV:TR`, a somatic size change inside a tandem repeat, taken from the
+tumor assembly aligned to the normal assembly. Their `SVLEN` is a number GRCh38
+does not carry.
 
 `SV_223` on chr5 is the benchmark's own worked example of one. Open it with both
 samples' PacBio HiFi reads and sort each pileup at the call:
 
 <Figure caption="SV_223 at base level: the benchmark's deletion call over the tumor and matched normal PacBio HiFi pileups, both sorted at the deleted span. The tumor's reads carry a deletion where the normal's carry an insertion at the same repeat, and the called span is wider than the deletion under it." src="/img/sv_cgiab/vntr_tumor_normal.png" />
 
-The two samples differ from GRCh38 in opposite directions here, and the record's
-`SVLEN` is the span between their alleles rather than either one's distance from
-the reference, which is why the called span is wider than the deletion under it.
-The record states itself in the normal assembly's coordinates as well, in
-`CHROM_HG8N6.3`, `POS_HG8N6.3`, `REF_HG8N6.3` and `ALT_HG8N6.3`, so clicking it
-shows the same variant on the yardstick it was called against.
+`SVLEN` here is the span between the two samples' alleles rather than either
+one's distance from the reference. The record states itself in the normal
+assembly's coordinates as well, in `CHROM_HG8N6.3`, `POS_HG8N6.3`, `REF_HG8N6.3`
+and `ALT_HG8N6.3`, so clicking it shows the same variant on the yardstick it was
+called against.
 
 Two more fields under it are worth the click. `SVVIZ_VAF_ALL` is the variant
 allele fraction svviz2 measured across the HG008-T datasets, and
-`SVVIZBYDATASET` breaks it into the four sequencing runs behind it, which at
-this locus disagree from end to end. The field's own description in the VCF
-header says the estimate has known biases at tandem repeats, and the pileup
-shows one of them: reads crossing a repeat spread the same allele over several
-alignments of it.
+`SVVIZBYDATASET` breaks it into the sequencing runs behind it, which are worth
+reading against each other at a repeat. The field's own description in the VCF
+header says the estimate is biased there, and the pileup shows one reason why:
+reads crossing a repeat spread the same allele over several alignments of it.
 
 ### Reading copy number
 
@@ -842,8 +839,7 @@ under https://jbrowse.org/demos/cgiab/, and load as a multi-wiggle track by URL.
 
 Zoom to a region and open the benchmark CNV BED to check the coverage changes
 against the called intervals. Coverage says a level changed; the BAF track in
-the same window says what changed, and chromosome 5 carries three different
-answers, each a different shape in that lane.
+the same window says what changed.
 
 <Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Both menu routes on the coverage track, over chr5: Set min/max score pinning the axis, then Plot type to Overlapping Scatter, which redraws the two stacked rows as one band of points with the normal flat under the tumor's steps." />
 
@@ -928,10 +924,9 @@ The benchmark BED's per-haplotype columns (`hap1_copy_number`,
 The same reading covers the other two loci. _KRAS_ on chr12 sits in a gain
 (`SV_101`, CN 3, 2+1): the assembly resolves it as a 2 Mb tandem duplication
 carrying the G12V-mutated copy, an event associated with advanced disease
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Depth is
-raised over the duplicated span and the BAF moves to 1/3 and 2/3, the partial
-imbalance of a 2+1 gain. The event is a couple of megabases, so zoom to it: at
-whole-chromosome scale it is a handful of pixels wide.
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). The event is
+a couple of megabases, so zoom to it: at whole-chromosome scale it is a handful
+of pixels wide.
 
 <Figure caption="KRAS on chr12: its MANE Select transcript over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication the copy-ratio edges land on the called boundaries and the BAF separates into two bands." src="/img/sv_cgiab/driver_kras_gain.png" />
 
@@ -970,9 +965,8 @@ at base level.
 
 <Figure caption="A synteny view launched from the chr3/chr13 selection in the dotplot: GRCh38 chr3 and chr13 above, the fused chr3_chr13_hap1 scaffold and chr13_hap2 below, at a raised minimum alignment length." src="/img/sv_cgiab/synteny_view.png" />
 
-The chr3/chr13 fusion is one of 16 truncal interchromosomal rearrangements here.
-Seven of the 16 hybrid chromosomes break in or near a centromere and nine
-involve non-reciprocal foldback inversions
+The chr3/chr13 fusion is one of this genome's truncal interchromosomal
+rearrangements, many of which break in or near a centromere
 ([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). A scaffold
 named for two GRCh38 chromosomes is the cue, so the names on the dotplot's y
 axis are a worklist.
@@ -1000,9 +994,7 @@ Two modes sit under that item:
 <Figure caption="Tumor PacBio HiFi reads at the CDKN2B-AS1 end of the CDKN2A locus, over the NCBI RefSeq gene lane, colored by base modification with unmodified cytosines filled in. Neighboring CpG-dense blocks come out in opposite states, one of them at the CDKN2B-AS1 transcription start." src="/img/sv_cgiab/methylation_cdkn2b.png" />
 
 Where the marks thin out to scattered ticks, that is CpG density: the fill draws
-a cytosine only where the reference puts one in context. Inside either block
-every read carries some of both colors and all of them lean the same way, so
-each block reads as one state across the whole pileup.
+a cytosine only where the reference puts one in context.
 
 Most somatic LINE insertions in HG008 come from two hypomethylated non-reference
 germline LINE insertions, so the methylation state of a source element explains
