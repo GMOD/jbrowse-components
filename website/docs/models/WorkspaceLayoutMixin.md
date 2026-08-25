@@ -44,6 +44,7 @@ is `applySnapshot` on this node and nothing else has to be told.
 | <span id="property-children">**children**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>children: types.array( types.late((): typeof LayoutPanel =&gt; Lay…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>children: types.array(&#10;&#160;&#160;&#160;&#160;types.late((): typeof LayoutPanel =&gt; LayoutNode as never),&#10;&#160;&#160;)</code></pre></dialog></span> |  |
 | <span id="property-layout">**layout**</span><br><code>layout: types.optional(LayoutNode, emptyPanel)</code> |  |
 | <span id="property-activepanelid">**activePanelId**</span><br><code>activePanelId: types.maybe(types.string)</code> |  |
+| <span id="property-maximizedpanelid">**maximizedPanelId**</span><br><code>maximizedPanelId: types.maybe(types.string)</code> | Show only this cell, at the size of the whole workspace.<br><br>Deliberately HERE and not a `maximized` flag on `PanelNode`. On the node it would be inside `tree.ts`, the half that carries the risk and is proven by a randomised operation sequence asserting canonical form after every step — and every operation would then have to say what it does to the flag: a split of a maximized panel, a drag of its last tab out, a normalize that collapses it into its parent. Beside `activePanelId` it is the same class of thing as `activePanelId`, including its failure mode, which `livePanelIds` already repairs. |
 
 ## Getters
 
@@ -53,6 +54,7 @@ is `applySnapshot` on this node and nothing else has to be told.
 | <span id="getter-tree">**tree**</span><br><code>LayoutTree</code> | The plain tree the pure functions take.<br><br>`getSnapshot` is a `keepAlive` computed, so this is cached and referentially stable — which also lets MST's reconcile short-circuit on identity when `apply` writes an untouched subtree back.<br><br>Uncast on purpose: the models below and the interfaces in `tree.ts` are two spellings of one shape, and this assignment is the only thing that checks they agree. |
 | <span id="getter-panels">**panels**</span><br><code>PanelNode[]</code> |  |
 | <span id="getter-tabs">**tabs**</span><br><code>TabNode[]</code> |  |
+| <span id="getter-visibletree">**visibleTree**</span><br><code>LayoutTree</code> | What to render: the maximized cell alone, or the whole tree.<br><br>Sized to 1 rather than handed over as it sits. A pane's `size` is its share of its siblings, and CSS distributes free space by grow factor only up to a total of 1 — so a cell that was a third of a row, alone in the workspace with `flexGrow: 0.33`, draws a third of the window and leaves the rest blank. |
 
 ## Methods
 
@@ -72,6 +74,8 @@ is `applySnapshot` on this node and nothing else has to be told.
 | Member | Description |
 | --- | --- |
 | <span id="action-setactivepanelid">**setActivePanelId**</span><br><code>(panelId: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-togglemaximizedpanel">**toggleMaximizedPanel**</span><br><code>(panelId: string) =&gt; void</code> | Show one cell at the size of the workspace, or go back.<br><br>A toggle rather than a pair, because the gesture is a toggle: the strip's double-click and the cell menu's one item both mean "this cell, or not any more". Maximizing a DIFFERENT cell while one is already maximized moves the mode rather than restoring, which is what the menu item on another cell's strip is asking for.<br><br>Mounts no views that were not mounted — it is the same cell showing the same tab — and unmounts every other cell's, so the WebGL2 context ceiling (`agent-docs/reference/GPU_CONTEXT_BUDGET.md`) can only go down. That is the reason it is this and not a `display: none` over a still-mounted workspace. |
+| <span id="action-restorepanels">**restorePanels**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setactivetab">**setActiveTab**</span><br><code>(panelId: string, tabId: string) =&gt; void</code> |  |
 | <span id="action-renametab">**renameTab**</span><br><code>(tabId: string, title: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-splitpanel">**splitPanel**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(panelId: string, direction: "column" &#124; "row", before?: any) =&gt;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(panelId: string, direction: "column" &#124; "row", before?: any) =&gt; PanelNode &#124; undefined</code></pre></dialog></span> | Split a grid cell; the new cell gets one empty tab. |
