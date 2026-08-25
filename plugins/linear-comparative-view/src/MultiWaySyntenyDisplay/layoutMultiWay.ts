@@ -1,5 +1,7 @@
 import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 
+import { OUTLIER_REACH, keepNearMedian } from '../keepNearMedian.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
 export interface MultiWayPlacement {
@@ -138,29 +140,6 @@ function mid(p: MultiWayPlacement) {
   return (p.start + p.end) / 2
 }
 
-// how far, in multiples of the anchor's visible span, a placement may sit
-// from the length-weighted median placement and still shape the lane's frame
-const OUTLIER_REACH = 1.5
-
-function keepPlacementsNearMedian(
-  placements: MultiWayPlacement[],
-  reachBp: number,
-) {
-  const sorted = [...placements].sort((a, b) => mid(a) - mid(b))
-  const total = sorted.reduce((sum, p) => sum + (p.end - p.start), 0)
-  let acc = 0
-  let center = mid(sorted[0]!)
-  for (const p of sorted) {
-    acc += p.end - p.start
-    if (acc >= total / 2) {
-      center = mid(p)
-      break
-    }
-  }
-  const kept = sorted.filter(p => Math.abs(mid(p) - center) <= reachBp)
-  return kept.length ? kept : sorted
-}
-
 // The scales a lane's frame is allowed to sit at, as multiples of the anchor's
 // visible span. Fitting a lane exactly to its placements gives it an arbitrary
 // bp/px that also MOVES: one more ortholog entering the window re-fits the
@@ -251,15 +230,10 @@ export function computeRowFrame(
   if (dominant === undefined) {
     return undefined
   }
-  // Alignment-level sources carry repeat noise: a handful of short records
-  // whose mate lands megabases from the block everything else agrees on, and
-  // a min/max frame over them stretches the lane across the whole genome. The
-  // frame therefore centers on the length-weighted median placement and keeps
-  // only the placements within a window-scaled reach of it — a clean gene
-  // table passes through unchanged, since all its placements agree.
-  const placements = keepPlacementsNearMedian(
+  const placements = keepNearMedian(
     byRef.get(dominant)!,
     minSpanBp > 0 ? minSpanBp * OUTLIER_REACH : Number.POSITIVE_INFINITY,
+    p => p,
   )
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY

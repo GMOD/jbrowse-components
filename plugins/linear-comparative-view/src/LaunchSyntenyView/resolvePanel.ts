@@ -1,5 +1,6 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
 
+import { OUTLIER_REACH, keepNearMedian } from '../keepNearMedian.ts'
 import { getCigar, getMate } from '../syntenyMate.ts'
 import { findPosInCigar } from './findPosInCigar.ts'
 
@@ -138,10 +139,17 @@ function resolveSpans({
  * opened a fraction of what the user selected, on both axes, and dropped the
  * rest with nothing on screen to say so.
  *
- * Two rules keep that union bounded, and both are "a panel opens on one stable
+ * Three rules keep that union bounded. Two are "a panel opens on one stable
  * sequence": the mate CONTIG covering most of the anchor axis wins and the rest
  * are dropped, rather than unioning into a span covering neither; and the panel
- * is reversed only when the minus strand carries most of the alignment.
+ * is reversed only when the minus strand carries most of the alignment. The
+ * third is the multi-way lane's outlier rule, `keepNearMedian`: on the winning
+ * contig, a hit whose mate sits further from the length-weighted median than
+ * `OUTLIER_REACH` regions of interest away is repeat noise, not the panel. One
+ * stray same-contig orthogroup hit otherwise stretched a launched panel to tens
+ * of megabases — brachypodium `1:5,237,628..54,451,482` for a 185 kb rice
+ * window whose lane frame was 185 kb. Without a region there is no unit to
+ * scale the reach by, so the whole-block launch keeps every hit.
  *
  * `undefined` when nothing in `features` has a mate, which is not a panel.
  */
@@ -161,6 +169,16 @@ export function resolvePanel(
     bpByRefName.set(mate.refName, (bpByRefName.get(mate.refName) ?? 0) + bp)
   }
   const refName = [...bpByRefName].sort((a, b) => b[1] - a[1])[0]?.[0]
+  // a reverse-strand walk counts down, so one block's two ends arrive swapped
+  const mateSpan = ({ spans }: (typeof resolved)[number]) => ({
+    start: Math.min(spans.mateStart, spans.mateEnd),
+    end: Math.max(spans.mateStart, spans.mateEnd),
+  })
+  const kept = keepNearMedian(
+    resolved.filter(({ mate }) => mate.refName === refName),
+    region ? (region.end - region.start) * OUTLIER_REACH : Infinity,
+    mateSpan,
+  )
   // ONE LOOP, AND NO SPREAD INTO Math.min. `Math.min(...blocks)` throws
   // `RangeError: Maximum call stack size exceeded` past ~125k arguments, and the
   // mate ends alone are two per block — so ~62k blocks on the winning contig
@@ -176,21 +194,19 @@ export function resolvePanel(
   let mateHi = Number.NEGATIVE_INFINITY
   let minusBp = 0
   let totalBp = 0
-  for (const { feature, mate, spans } of resolved) {
-    if (mate.refName === refName) {
-      const { featStart, featEnd, mateStart, mateEnd } = spans
-      assemblyName ??= mate.assemblyName
-      anchorLo = Math.min(anchorLo, featStart)
-      anchorHi = Math.max(anchorHi, featEnd)
-      // a reverse-strand walk counts down, so one block's two ends arrive
-      // swapped
-      mateLo = Math.min(mateLo, mateStart, mateEnd)
-      mateHi = Math.max(mateHi, mateStart, mateEnd)
-      const bp = featEnd - featStart
-      totalBp += bp
-      if (feature.get('strand') === -1) {
-        minusBp += bp
-      }
+  for (const entry of kept) {
+    const { feature, mate, spans } = entry
+    const { featStart, featEnd } = spans
+    const { start, end } = mateSpan(entry)
+    assemblyName ??= mate.assemblyName
+    anchorLo = Math.min(anchorLo, featStart)
+    anchorHi = Math.max(anchorHi, featEnd)
+    mateLo = Math.min(mateLo, start)
+    mateHi = Math.max(mateHi, end)
+    const bp = featEnd - featStart
+    totalBp += bp
+    if (feature.get('strand') === -1) {
+      minusBp += bp
     }
   }
   // Whole bases, rounded OUTWARD, and here rather than at either of the two
