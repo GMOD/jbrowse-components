@@ -54,6 +54,7 @@ the half that rots is the half it covers.
 | [Brand the out-of-request refNames](todo/brand-the-out-of-request-refnames.md) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](todo/give-sessionjbrowse-a-real-type.md) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
 | [Verify the shared rect buffer headed](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
+| [The graph plugin's 25 tsc errors](todo/the-graph-plugins-25-tsc-errors-and-three-unpushed-commits.md) | graph plugin, out of tree | fix the two adapters' `config` type; one root cause is most of the 25 |
 | [Feet on the interchromosomal ticks](todo/give-the-interchromosomal-ticks-breakend-feet-too.md) | alignments | decide what a coalesced tick's direction is, then the shader |
 | [Bound a breakend foot by its region](todo/bound-a-breakend-foot-by-its-displayed-region.md) | alignments | bound it by the REGION; the partner bound is wrong and was reverted |
 | [One mark per interchromosomal cluster](todo/draw-one-mark-per-interchromosomal-cluster.md) | alignments | a figure-changing decision; pick the position rule first |
