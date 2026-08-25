@@ -1,6 +1,8 @@
 import { assembleLocString } from '@jbrowse/core/util'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type {
   LinearGenomeViewModel,
   NavLocation,
@@ -34,32 +36,54 @@ export interface CenterTarget {
  *
  * A feature with no mate contributes one side rather than a second `navTo` on
  * `undefined`.
+ *
+ * The by-assembly path resolves both sides through the aliases. A feature's
+ * `assemblyName` is the track's `assemblyNames` config text, and
+ * `syntenyTrackRows` already resolves that through the aliases to decide the
+ * track belongs on the level — so a track spelling an assembly differently from
+ * the row it is drawn on is offered, and `===` then matched no row, reporting
+ * both sides unfindable and centering nothing.
  */
 export function syntenyCenterTargets({
   views,
   level,
   feat,
+  assemblyManager,
 }: {
   views: LinearGenomeViewModel[]
   level: number | undefined
   feat: SimpleFeatureSerialized
+  assemblyManager: AssemblyNameResolver
 }) {
+  const loc = feat as NavLocation
   const mate = feat.mate as NavLocation | undefined
   const sides =
     level !== undefined
       ? [
-          { loc: feat as NavLocation, view: views[level] },
+          { loc, view: views[level] },
           { loc: mate, view: views[level + 1] },
         ]
       : [
           {
-            loc: feat as NavLocation,
-            view: views.find(v => v.assemblyNames[0] === feat.assemblyName),
+            loc,
+            view: views.find(v =>
+              isSameAssemblyName(
+                v.assemblyNames[0],
+                loc.assemblyName,
+                assemblyManager,
+              ),
+            ),
           },
           {
             loc: mate,
             view: mate
-              ? views.find(v => v.assemblyNames[0] === mate.assemblyName)
+              ? views.find(v =>
+                  isSameAssemblyName(
+                    v.assemblyNames[0],
+                    mate.assemblyName,
+                    assemblyManager,
+                  ),
+                )
               : undefined,
           },
         ]

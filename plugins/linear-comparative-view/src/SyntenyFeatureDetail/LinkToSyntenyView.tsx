@@ -98,6 +98,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                   views: view.views,
                   level,
                   feat,
+                  assemblyManager: session.assemblyManager,
                 })
                 // Both sides attempted, whichever fails. `navTo` throws for a
                 // row whose displayed regions do not contain the feature — a
