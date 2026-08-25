@@ -152,6 +152,12 @@ export function getSources({
     }
 
     const merged = { ...baseSource, ...row }
+    // The row tint is `labelColor`, the channel tree-sidebar draws. A
+    // `samplesTsv` `color` column, and a session saved when the palette was
+    // written there, both reach the sidebar through this one fallback.
+    if (merged.labelColor === undefined && merged.color !== undefined) {
+      merged.labelColor = merged.color
+    }
 
     // Phased expansion needs sampleInfo to know ploidy. Without it we fall
     // through and return the sample row as-is — matches the `sources` getter

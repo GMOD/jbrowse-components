@@ -1,16 +1,15 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
 import { randomColor } from '@jbrowse/core/util/color'
 
-export type Colored<T> = T & { color: string }
-
 // Pick a color per row by some metadata attribute, index-aligned with
 // `sources`. Most-common values get the first (most visually distinct)
 // `categoricalPalette` entries; when it runs out (>~40 distinct values) fall
 // back to a deterministic random color seeded by the value so repeated
 // palette-bys produce stable results.
 //
-// Returns the colors rather than applying them so callers can target a field
-// other than `color` (the dialog paints whichever color column is active).
+// Returns the colors rather than applying them so callers target whichever
+// color channel they paint — the dialog's active column, a display's row tint
+// (`labelColor`).
 export function paletteColorsByRow<S extends { name: string }>(
   sources: S[],
   attribute: string,
@@ -35,16 +34,4 @@ export function paletteColorsByRow<S extends { name: string }>(
   )
 
   return keys.map(key => colorByValue[key]!)
-}
-
-// Assign a categorical palette to each row's `color`.
-export function applyColorPalette<S extends { name: string; color?: string }>(
-  sources: S[],
-  attribute: string,
-): Colored<S>[] {
-  const colors = paletteColorsByRow(sources, attribute)
-  return sources.map((s, i) => ({
-    ...s,
-    color: colors[i]!,
-  }))
 }

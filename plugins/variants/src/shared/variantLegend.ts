@@ -79,8 +79,8 @@ export function getGenotypeLegendItems({
 
 // Sample-grouping legend (the per-row sidebar coloring): one entry per distinct
 // `colorBy` metadata value (e.g. population), most-common first, reusing the
-// color applyColorPalette already assigned to that group's sources. Empty when
-// colorBy is unset or no sources carry it.
+// `labelColor` the palette already assigned to that group's sources. Empty
+// when colorBy is unset or no sources carry it.
 export function getSampleGroupLegendItems(
   colorBy: string,
   sources: Source[] | undefined,
@@ -93,9 +93,9 @@ export function getSampleGroupLegendItems(
   for (const source of sources) {
     const value = String(source[colorBy] ?? '')
     counts.set(value, (counts.get(value) ?? 0) + 1)
-    const { color } = source
-    if (color !== undefined) {
-      colorByValue.set(value, color)
+    const { labelColor } = source
+    if (labelColor !== undefined) {
+      colorByValue.set(value, labelColor)
     }
   }
   // A single group (whether unset '' or one shared real value) distinguishes

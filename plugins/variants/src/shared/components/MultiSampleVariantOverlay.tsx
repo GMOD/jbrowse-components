@@ -1,27 +1,34 @@
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
-import { RowSeparatorLines, treeSidebarOffset } from '@jbrowse/tree-sidebar'
+import {
+  RowLabelsOverlay,
+  RowSeparatorLines,
+  treeSidebarOffset,
+} from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { SEPARATOR_OPACITY } from '../constants.ts'
-import SvgSampleRowLabelGutter from './SvgSampleRowLabelGutter.tsx'
 
-import type { SampleRowLabelsModel } from './types.ts'
+import type { VariantRowsModel } from './types.ts'
 import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 
-interface VariantOverlayModel extends SampleRowLabelsModel {
+interface VariantOverlayModel extends VariantRowsModel {
   showLegend: boolean
-  showRowSeparators: boolean
-  canvasWidthPx: number
   legendSections(): LegendSection[]
   setShowLegend(s: boolean): void
   dismissLegendSection(id: string): void
 }
 
 // Everything the multi-sample variant displays float over their canvas: the
-// left-hand sample gutter, the row separators and the color key. On-screen
-// counterpart of `SvgVariantOverlay`, which composes the same three for the
-// export — the gutter from the very same component, the key from
-// `SvgVariantLegend` off the same `legendSections()`.
+// row labels, the row separators and the color key. On-screen counterpart of
+// `SvgVariantOverlay`, which composes the same three for the export — the
+// labels through `SvgTreeSidebar`, the key from `SvgVariantLegend` off the same
+// `legendSections()`.
+//
+// The labels are tree-sidebar's `RowLabelsOverlay`, the same one the other
+// three row displays mount, tinted by `labelColor`. These displays used to draw
+// their own gutter, because the palette wrote `color` and the shared labels
+// read `labelColor` — the trap tree-sidebar's CLAUDE.md records MAF falling
+// into too.
 const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
   model,
   top = 0,
@@ -32,6 +39,7 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
   const {
     availableHeight,
     showLegend,
+    showRowLabels,
     showRowSeparators,
     sources,
     effectiveRowHeight,
@@ -40,19 +48,18 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
   } = model
   return (
     <>
-      <svg
-        style={{
-          position: 'absolute',
-          top,
-          left: 0,
-          width: '100%',
-          height: availableHeight,
-          zIndex: 100,
-          pointerEvents: 'none',
-          overflow: 'hidden',
-        }}
-      >
-        {showRowSeparators ? (
+      {showRowSeparators ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top,
+            left: 0,
+            width: canvasWidthPx,
+            height: availableHeight,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}
+        >
           <RowSeparatorLines
             numRows={sources.length}
             rowHeight={effectiveRowHeight}
@@ -61,11 +68,19 @@ const MultiSampleVariantOverlay = observer(function MultiSampleVariantOverlay({
             scrollTop={scrollTop}
             viewportHeight={availableHeight}
           />
-        ) : null}
-        <g transform={`translate(${treeSidebarOffset(model)})`}>
-          <SvgSampleRowLabelGutter model={model} />
-        </g>
-      </svg>
+        </svg>
+      ) : null}
+      <RowLabelsOverlay
+        testId="variant-row-labels"
+        sources={sources}
+        rowHeight={effectiveRowHeight}
+        labelOffset={treeSidebarOffset(model)}
+        width={canvasWidthPx}
+        height={availableHeight}
+        top={top}
+        scrollTop={scrollTop}
+        showLabels={showRowLabels}
+      />
       {showLegend ? (
         <FloatingLegend
           sections={model.legendSections()}

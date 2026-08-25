@@ -39,7 +39,9 @@ describe('multi-sample variant colorBy', () => {
     expect(model.colorBy).toBe('population')
     expect(readConfObject(model.configuration, 'colorBy')).toBe('population')
     // same population => same color, different => different
-    const byName = Object.fromEntries(model.layout.map(s => [s.name, s.color]))
+    const byName = Object.fromEntries(
+      model.layout.map(s => [s.name, s.labelColor]),
+    )
     expect(byName.HG001).toBe(byName.HG003)
     expect(byName.HG001).not.toBe(byName.HG002)
   })
@@ -68,7 +70,7 @@ describe('multi-sample variant colorBy', () => {
 
     expect(model.colorBy).toBe('')
     expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
-    expect(model.layout.some(s => s.color)).toBe(false)
+    expect(model.layout.some(s => s.labelColor)).toBe(false)
   })
 
   it('persists no arrangement at all when there was none to keep', () => {

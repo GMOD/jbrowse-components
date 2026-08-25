@@ -34,7 +34,7 @@ describe('recoloring does not disturb the arrangement', () => {
     expect(display.clusterTree).toBe(CLUSTERED_TREE)
     // the dendrogram still positions, i.e. its leaves are still these rows
     expect(display.hierarchy).toBeDefined()
-    expect(display.sources.every(s => s.color)).toBe(true)
+    expect(display.sources.every(s => s.labelColor)).toBe(true)
   })
 
   it('clearing the coloring strips the palette without resetting the order', () => {
@@ -44,7 +44,7 @@ describe('recoloring does not disturb the arrangement', () => {
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.clusterTree).toBe(CLUSTERED_TREE)
-    expect(display.sources.some(s => s.color)).toBe(false)
+    expect(display.sources.some(s => s.labelColor)).toBe(false)
   })
 
   // Rows are haplotypes after a phased clustering run, while `sourcesVolatile`
@@ -126,9 +126,9 @@ describe('a rendering-mode switch renames the rows', () => {
     display.setPhasedMode('phased')
 
     expect(display.colorBy).toBe('population')
-    expect(display.sources.every(s => s.color)).toBe(true)
+    expect(display.sources.every(s => s.labelColor)).toBe(true)
     const byName = Object.fromEntries(
-      display.layout.map(s => [s.name, s.color]),
+      display.layout.map(s => [s.name, s.labelColor]),
     )
     expect(byName.S0).toBe(byName.S2)
     expect(byName.S0).not.toBe(byName.S1)
@@ -189,17 +189,17 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   it('keeps the colorBy palette through a sort', () => {
     const display = sortableDisplay()
     display.setColorBy('population')
-    const before = new Map(display.sources.map(s => [s.name, s.color]))
+    const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
     expect([...before.values()].every(Boolean)).toBe(true)
 
     display.sortByGenotype('v1')
 
     // hom-alt leads, no-call last — so the order really did change
     expect(rowNames(display)).toEqual(['S2', 'S1', 'S0'])
-    expect(display.sources.every(s => s.color)).toBe(true)
+    expect(display.sources.every(s => s.labelColor)).toBe(true)
     // ...and each row kept ITS colour, not merely some colour
     for (const s of display.sources) {
-      expect(s.color).toBe(before.get(s.name))
+      expect(s.labelColor).toBe(before.get(s.name))
     }
   })
 
@@ -219,16 +219,16 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
       },
     } as unknown as Parameters<typeof display.setCellData>[0])
     display.setColorBy('population')
-    const before = new Map(display.sources.map(s => [s.name, s.color]))
+    const before = new Map(display.sources.map(s => [s.name, s.labelColor]))
     expect(display.sources).toHaveLength(6)
     expect([...before.values()].every(Boolean)).toBe(true)
 
     display.sortByGenotype('v1')
 
     expect(display.sources).toHaveLength(6)
-    expect(display.sources.every(s => s.color)).toBe(true)
+    expect(display.sources.every(s => s.labelColor)).toBe(true)
     for (const s of display.sources) {
-      expect(s.color).toBe(before.get(s.name))
+      expect(s.labelColor).toBe(before.get(s.name))
     }
   })
 

@@ -103,8 +103,7 @@ export {
   moveUp,
   updateRows,
 } from './sourcesGridUtils.ts'
-export { applyColorPalette } from './setColorDialog/applyColorPalette.ts'
-export type { Colored } from './setColorDialog/applyColorPalette.ts'
+export { paletteColorsByRow } from './setColorDialog/applyColorPalette.ts'
 export { default as SetColorDialog } from './setColorDialog/SetColorDialog.tsx'
 export type {
   SetColorDialogProps,

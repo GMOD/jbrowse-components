@@ -3,7 +3,6 @@ import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { SEPARATOR_OPACITY } from '../constants.ts'
-import SvgSampleRowLabelGutter from './SvgSampleRowLabelGutter.tsx'
 import SvgVariantLegend from './SvgVariantLegend.tsx'
 
 import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
@@ -19,15 +18,9 @@ import type React from 'react'
 // shared/variantTopBands.ts); the legend floats over the whole band, as it does
 // on screen.
 //
-// The sidebar labels are `SvgSampleRowLabelGutter`, the very component the
-// on-screen overlay renders, rather than `SvgTreeSidebar`'s default
-// `SvgRowLabels` — which knows only `labelColor` and so dropped the `color`
-// swatch column a "Color by → population" track is read through. Passing it as
-// SvgTreeSidebar's `labels` keeps the tree and the labels sharing one
-// tree-offset gate. It self-gates on `canDisplayLabels` (drawing swatches alone
-// when rows are too short to letter) and on its own source count, so unlike the
-// default path there's no row-count gate here — a single-sample track labels its
-// one row in the export exactly as it does on screen.
+// The sidebar is `SvgTreeSidebar` with its default labels, the same
+// `SvgRowLabels` the other row displays export — tinted by `labelColor`, the
+// channel the on-screen `RowLabelsOverlay` reads too.
 const SvgVariantOverlay = ({
   model,
   idPrefix,
@@ -60,6 +53,7 @@ const SvgVariantOverlay = ({
     hierarchy,
     showTree,
     showLegend,
+    showRowLabels,
     showRowSeparators,
     availableHeight,
     treeAreaWidth,
@@ -91,8 +85,9 @@ const SvgVariantOverlay = ({
           sources={sources}
           rowHeight={rowHeight}
           treeAreaWidth={treeAreaWidth}
+          showLabels={showRowLabels}
           scrollTop={scrollTop}
-          labels={<SvgSampleRowLabelGutter model={model} />}
+          availableHeight={availableHeight}
           clusterProvenance={model.clusterProvenance}
         />
       </g>

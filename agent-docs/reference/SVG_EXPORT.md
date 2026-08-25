@@ -556,7 +556,7 @@ rasterize, drifts from on-screen output, and locks in vector output.
   is "interactive" — these already render as JSX on-screen, so the JSX path *is*
   the on-screen path.
 - **Shared React-SVG overlays** the on-screen view also uses (`VariantLabels`,
-  `LinesConnectingMatrixToGenomicPosition`, `SvgSampleRowLabelGutter`,
+  `LinesConnectingMatrixToGenomicPosition`,
   `SvgRowLabels`/`SvgTreePath` from `@jbrowse/tree-sidebar`). Same component
   renders on-screen + in export via an `exportSVG` prop. The heavy
   raster-friendly fill path (the matrix itself) **must** still go through

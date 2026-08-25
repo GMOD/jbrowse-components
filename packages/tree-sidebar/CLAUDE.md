@@ -117,7 +117,9 @@ swatch below `MIN_TEXT_ROW_HEIGHT`, and because `RowLabelSource` is satisfied
 structurally, a row type carrying the color under any other name type-checks and
 paints nothing. MAF called it `color` and bridged with a `labelSources`
 computed; that is why three adapter schemas advertised a slot reaching no
-renderer at all.
+renderer at all. The multi-sample variant displays called it `color` too and
+bridged with a label gutter of their own, ~350 lines that existed because the
+shared one read the other name.
 
 `treeSidebarConfigSchemaFields` is the matching slot set (`showTree` /
 `showBranchLength` / `showRowLabels`), taking only the per-display descriptions,

@@ -71,10 +71,10 @@ describe('getGenotypeLegendItems', () => {
 
 describe('getSampleGroupLegendItems', () => {
   const sources: Source[] = [
-    { name: 'HG1', population: 'EUR', color: '#a' },
-    { name: 'HG2', population: 'AFR', color: '#b' },
-    { name: 'HG3', population: 'EUR', color: '#a' },
-    { name: 'HG4', population: 'EUR', color: '#a' },
+    { name: 'HG1', population: 'EUR', labelColor: '#a' },
+    { name: 'HG2', population: 'AFR', labelColor: '#b' },
+    { name: 'HG3', population: 'EUR', labelColor: '#a' },
+    { name: 'HG4', population: 'EUR', labelColor: '#a' },
   ]
 
   it('returns [] when colorBy is unset', () => {
@@ -96,8 +96,8 @@ describe('getSampleGroupLegendItems', () => {
 
   it('labels missing values as (unlabeled) and tolerates missing color', () => {
     const mixed: Source[] = [
-      { name: 'a', population: 'EUR', color: '#a' },
-      { name: 'b', color: '#b' }, // no population
+      { name: 'a', population: 'EUR', labelColor: '#a' },
+      { name: 'b', labelColor: '#b' }, // no population
     ]
     const items = getSampleGroupLegendItems('population', mixed)
     expect(items).toContainEqual({ color: '#a', label: 'EUR' })
@@ -106,8 +106,8 @@ describe('getSampleGroupLegendItems', () => {
 
   it('returns [] when colorBy attribute is absent from every source', () => {
     const noPop: Source[] = [
-      { name: 'a', color: '#a' },
-      { name: 'b', color: '#b' },
+      { name: 'a', labelColor: '#a' },
+      { name: 'b', labelColor: '#b' },
     ]
     expect(getSampleGroupLegendItems('population', noPop)).toEqual([])
   })
@@ -115,8 +115,8 @@ describe('getSampleGroupLegendItems', () => {
 
 describe('getVariantLegendSections', () => {
   const sources: Source[] = [
-    { name: 'HG1', population: 'EUR', color: '#a' },
-    { name: 'HG2', population: 'AFR', color: '#b' },
+    { name: 'HG1', population: 'EUR', labelColor: '#a' },
+    { name: 'HG2', population: 'AFR', labelColor: '#b' },
   ]
 
   it('only the genotype section when colorBy is unset', () => {

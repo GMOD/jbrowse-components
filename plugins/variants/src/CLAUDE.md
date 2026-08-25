@@ -96,6 +96,14 @@ colored by a `samplesTsv` column while the menu still showed the palette ticked.
 granularities: in phased mode a fresh order is haplotypes and `layout` is
 sample-level, and nothing matches.
 
+**The row tint is `labelColor`**, the channel tree-sidebar's `RowLabelsOverlay`
+and `SvgRowLabels` draw — the cells are colored by genotype, so a row has no
+`color` of its own to spend. `maybeApplyColorByPalette` writes it there, the
+group legend and the tooltip swatch read it there, and `getSources` folds a
+`samplesTsv` `color` column (or a session saved when the palette wrote `color`)
+onto it. Carrying the tint under `color` is what kept these displays on a label
+gutter of their own until 2026-08.
+
 ## Which display: the matrix is for genotype PATTERN, not spans
 
 The matrix lays columns out by feature **index** at equal widths. **SVs go in

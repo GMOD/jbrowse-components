@@ -31,12 +31,11 @@ import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  applyColorPalette,
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
   loadedRegionIndexAt,
-  rowLabelsCarryText,
+  paletteColorsByRow,
 } from '@jbrowse/tree-sidebar'
 
 import { sortSourcesAroundVariant } from './anchoredHaplotypeSort.ts'
@@ -77,6 +76,11 @@ import type {
 // lack the requested attribute). `colorBy` is the resolved config-slot value so
 // the same palettizing drives both initial load and the interactive "Color
 // samples by" menu.
+//
+// The palette lands on `labelColor`, the channel tree-sidebar tints a row's
+// label with: these displays paint their cells by genotype, so a row has no
+// `color` of its own to spend, and carrying the tint under that name is what
+// once made them the last display drawing its own label component.
 export function maybeApplyColorByPalette(
   colorBy: string,
   sources: Source[],
@@ -85,7 +89,8 @@ export function maybeApplyColorByPalette(
     return undefined
   }
   if (sources.some(source => colorBy in source)) {
-    return applyColorPalette(sources, colorBy)
+    const colors = paletteColorsByRow(sources, colorBy)
+    return sources.map((s, i) => ({ ...s, labelColor: colors[i]! }))
   }
   warnMissingAttribute('colorBy', colorBy, sources)
   return undefined
@@ -235,9 +240,10 @@ function arrangeSources(
 // Drop the palette colors a previous `colorBy` wrote, leaving order and every
 // other per-row override in place. Applied only to layout rows: the adapter
 // sources can carry a color of their own (a `color` column in samplesTsv),
-// which is not ours to strip.
+// which is not ours to strip. `color` as well as `labelColor`, because a
+// session saved before the tint moved channels still holds its palette there.
 function stripPaletteColors(rows: Source[]): Source[] {
-  return rows.map(({ color: _color, ...rest }) => rest)
+  return rows.map(({ color: _color, labelColor: _labelColor, ...rest }) => rest)
 }
 
 // The slice `applyArrangement` drives. Structural so the helper can live beside
@@ -1493,26 +1499,6 @@ export default function MultiSampleVariantBaseModelF(
         }
       })
       .views(self => ({
-        /**
-         * #getter
-         * Whether the sidebar rows draw their sample NAME, as opposed to the
-         * bare color swatch `SvgSampleRowLabels` falls back to (and which stays
-         * drawn either way — below the threshold the tint is the only thing
-         * carrying row identity on a cohort track).
-         *
-         * `rowLabelsCarryText`, not a re-typed `>= 6`: the constant behind it is
-         * exported precisely so each caller does not restate the comparison, and
-         * restating it is how the answer drifts — tree-sidebar records
-         * multi-wiggle doing exactly that. These displays render their own label
-         * component rather than tree-sidebar's `SvgRowLabels`, which is what let
-         * a second copy of the threshold live here at all; the question is still
-         * the one shared question.
-         */
-        get canDisplayLabels() {
-          return (
-            rowLabelsCarryText(self.effectiveRowHeight) && self.showRowLabels
-          )
-        },
         /**
          * #getter
          */
