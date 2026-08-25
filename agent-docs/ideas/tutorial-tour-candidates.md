@@ -158,9 +158,9 @@ comparison figure.
 
 ## The rest, ranked
 
-**The numbers are IDs, not the ranking.** `TUTORIAL_TOURS.md` and
-`tutorial-tours-from-scratch.md` cite these by number, so a filmed entry keeps
-the number it was filmed under and a new one takes the next free number.
+**The numbers are IDs, not the ranking.** `tutorial-tours-from-scratch.md`
+cites these by number, so a filmed entry keeps the number it was filmed under
+and a new one takes the next free number.
 **Still to film, best first: 14, 18, 19**, and all three are blocked — 14 and 18
 on a respine, 19 on the frame. Everything else here is filmed, and says what its
 estimate got wrong.

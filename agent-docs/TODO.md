@@ -48,8 +48,10 @@ the half that rots is the half it covers.
 | [Make the capture scroll-invariant](todo/make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu.md) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Attribute the TIMEOUT mode](todo/attribute-the-60s-displaypainted-selector-wait.md) | browser tests | the census shipped; wrap the two selector waits that throw before it runs |
 | [Shoot the multihop chain as counted arcs](todo/shoot-the-multihop-chain-as-counted-arcs-in-one-lgv.md) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
+| [Capture the junction-BED tutorial figure](todo/capture-a-figure-for-the-junction-bed-tutorial-section.md) | figures, rnaseq | build and host the junction BED first; the capture is ordinary once it exists |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | five stale; the lock cannot catch this class |
 | [Rebuild the OrthoFinder demos' chrom.sizes](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all |
+| [Cover a per-base colour mode in the cross-backend gate](todo/cover-a-per-base-colour-mode-in-the-cross-backend-gate.md) | alignments, browser tests | one scene per mode in the existing gate; pick a zoom where `binBp > 1` |
 | [Brand the out-of-request refNames](todo/brand-the-out-of-request-refnames.md) | synteny, RPC | type-only; brand BOTH ends or the compare still passes |
 | [Give `session.jbrowse` a real type](todo/give-sessionjbrowse-a-real-type.md) | core types, MST | pick one interface or two BEFORE touching any of the 36 sites |
 | [Verify the shared rect buffer headed](todo/verify-the-shared-rectcontinuation-buffer-on-real-hardware.md) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
@@ -66,6 +68,8 @@ the half that rots is the half it covers.
 | [PanSN prefixes in the add-track form](todo/offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form.md) | comparative | the error half shipped; this is the discovery half |
 | [The comparative context menu sits behind no seam](todo/the-comparative-context-menu-sits-behind-no-bring-your-own-seam.md) | synteny, dotplot, embedded | fetch status done, tooltip refused; the context menu needs a shape of its own |
 | [The config-read baseline's remaining 129](todo/the-config-read-baselines-remaining-129-is-mostly-not-display-debt.md) | config, types | 75 of them are track/assembly reads; confirm that before estimating any of it |
+| [Sample the seven remaining random release-validation units](todo/sample-the-seven-remaining-random-release-validation-units.md) | release validation, tests | read `git status` first — a worktree that ran a sweep is dirty until proven otherwise |
+| [Write the one-page spec for two more concepts](todo/write-the-one-page-spec-for-two-more-cross-cutting-concepts.md) | release validation, architecture | name the two concepts before writing either; the plan never did |
 | [Do the plugin `exports` surfaces earn a baseline](todo/do-the-session-and-plugin-exports-surfaces-earn-a-baseline.md) | plugins, ABI | recorded; build the plugin-`exports` baseline, and read the session one's blocker first |
 
 ## Blocked on a visual call
@@ -100,5 +104,7 @@ the half that rots is the half it covers.
 | [Stop rewriting the worker's arrays](todo/stop-rewriting-the-workers-arrays-to-lay-out-features.md) | canvas | measured: skip the row offset, convert the two object arrays to SoA |
 | [The SV inspector rebuilds its chord track per filter](todo/the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter.md) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [One inflate pool and byte cache per session](todo/give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them.md) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
+| [Bench typed columns against the per-base extract](todo/bench-typed-columns-against-the-per-base-extract.md) | alignments, perf | the closest in-tree measurement scores it a LOSS; copy `modExtract.bench.ts` and add an arm |
+| [Watch the per-base refetch on a real BAM](todo/watch-the-per-base-refetch-on-a-real-bam.md) | alignments, RPC | count `RenderAlignmentData` calls over a scripted zoom; don't reason about the throttle |
 | [Time a two-tier PIF to settled](todo/time-a-two-tier-pif-to-settled-in-a-browser.md) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
 

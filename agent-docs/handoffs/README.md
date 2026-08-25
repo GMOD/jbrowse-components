@@ -38,6 +38,26 @@ parked as ideas (`refname-mismatch-warning-visibility`,
 `track-y-offset-cannot-see-the-label-box`) and one measurement in
 [TODO.md](../TODO.md).
 
+**The second commonest is a reference doc wearing a handoff's clothes.** Four
+existed on 2026-08-25 and all four closed, and two of them were mostly settled
+material: `per-base-subpixel-bin` became
+[reference/PER_BASE_SUBPIXEL_BIN.md](../reference/PER_BASE_SUBPIXEL_BIN.md) plus
+one idea and three TODO entries, and `release-validation-by-sampling` became
+[reference/RELEASE_VALIDATION_SAMPLING.md](../reference/RELEASE_VALIDATION_SAMPLING.md)
+plus two. Two signals that a handoff has stopped being one: it **publishes a
+measurement** — `generate-measurement-tables` allows exactly one publisher per
+record, so a handoff holding a table is the permanent home of that record until
+it moves — and it carries a **fixed protocol** someone is meant to follow again,
+which is operating instructions rather than live state.
+
+Two of the four closed by moving nothing at all. `TUTORIAL_TOURS.md`'s three
+"nobody should re-derive this" facts were already in
+[ideas/tutorial-tour-candidates.md](../ideas/tutorial-tour-candidates.md) and
+[ideas/tutorial-tours-from-scratch.md](../ideas/tutorial-tours-from-scratch.md),
+and the state it carried was a coverage count its own text says to re-run rather
+than read. Check what a handoff duplicates before writing anything: the pointers
+it was built from usually absorbed its content while it sat.
+
 The table below is generated from each doc's `description:` frontmatter by
 `website/scripts/generate-doc-indexes.ts`, and `pnpm autogen --check` fails on a
 doc that carries none. Don't edit between the markers; write the doc's
@@ -47,8 +67,4 @@ doc that carries none. Don't edit between the markers; write the doc's
 
 | Doc | What it is waiting on |
 | --- | --- |
-| [per-base-subpixel-bin](per-base-subpixel-bin.md) | The two per-base alignments colour modes built one JS object per aligned base of every read in the worker, unbounded by the viewport; the sub-pixel bin that bounds it has landed, and is measured at 30.5M entries / 2.0 GB down to 59.6k / 6.7 MB on a 1 Mb pacbio pileup. What is still open is the one-octave headroom the 1bp cell leaves (a fast zoom-in stripes the wall until the refetch lands), and whether the per-base extract should write typed columns instead of objects — which the closest in-tree measurement says would be a LOSS. |
-| [release-validation-by-sampling](release-validation-by-sampling.md) | 12,714 commits and 426k lines of source churn since v4.3.0 is past the size where reviewing the change is a plan at all, so confidence has to come from sampling units and extrapolating. The pilot and four units are done, the tooling has a home, and every unit so far came back thin — what is left is seven more random draws and a one-page spec for the top three concepts — the deleted-file walk is done and came back nearly clean. |
-| [rnaseq-deferred-items](rnaseq-deferred-items.md) | What the RNA-seq splice thread deliberately did not build — six deferred or declined items — plus the one thing it left unfinished: the new tutorial section has no figure, and capturing one needs a junction BED hosted first. Delete once the figure exists and the deferred list has moved to TODO.md or been declined outright. |
-| [tutorial-tours-handoff](TUTORIAL_TOURS.md) | Live state of the tutorial video-tour thread — which candidates are filmed, which of the untoured pages are ruled out and why, and the two things about desktop and same-tab navigation that nobody should re-derive. Read before filming a tour; delete when the tutorial list is worked down. |
 <!-- END GENERATED HANDOFFS INDEX -->

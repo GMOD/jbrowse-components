@@ -38,6 +38,11 @@ included: `**Color by... → Modifications**`. Neither `check-menu-paths.ts` nor
 `check-menu-labels.ts` sees the ellipsis. In a **caption** the same path stays
 bare, because a caption describes the frame rather than telling anyone to click.
 
+**Two labels really do differ by an ellipsis.** The FAB menu renders a bare
+`Add track`; the track-menu hamburger renders `Add track...`. Both are correct,
+so a report that a page is missing the ellipsis there is a report about which
+affordance the page describes — check the route before adding one.
+
 ## Don't argue, and don't preach
 
 A tutorial cultivates an air of exploring data. Three shapes to cut: the

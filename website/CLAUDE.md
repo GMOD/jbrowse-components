@@ -56,6 +56,12 @@ the tour was filmed in.
   exactly that. Two figures were retired on 2026-08-21 and restored the same
   day; what a clip can shorten is PROSE, and a candidate that offers to delete a
   figure is offering nothing.
+- **One order works, and no check enforces it**: rebuild `@jbrowse/web`, write
+  the `<Video>` tag (`check-video-specs` fails a spec no page embeds), film,
+  `pnpm figures:push --filter <name>`, commit `media.lock`, then `pnpm autogen`.
+  Running autogen before the push writes a `videoFrames` row for a clip whose
+  poster is not in the store yet, which turns `videoFrames.test.ts` red for a
+  reason that names neither step.
 - **What goes wrong inside a spec's `steps` is in `scripts/videos/CLAUDE.md`**,
   next to the specs: a menu left standing over the payoff frame, a display type
   switched to at the wrong height, an opening frame that is the density gate's

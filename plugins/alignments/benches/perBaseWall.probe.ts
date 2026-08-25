@@ -1,6 +1,6 @@
 // What the per-base wall costs the worker, and what the sub-pixel bin takes off
-// it. The handoff `per-base-subpixel-bin.md` says the motivating number is
-// arithmetic rather than a measurement; this is the measurement.
+// it. `agent-docs/reference/PER_BASE_SUBPIXEL_BIN.md` says the motivating number
+// is arithmetic rather than a measurement; this is the measurement.
 //
 //   node --expose-gc plugins/alignments/benches/perBaseWall.probe.ts --depth=1
 //
