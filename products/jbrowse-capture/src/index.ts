@@ -25,6 +25,7 @@ export {
   LOADING_OVERLAY,
   PENDING_DISPLAYS,
   delay,
+  describePendingDisplaysNow,
   displayById,
   displayPainted,
   displaySettled,
@@ -37,6 +38,7 @@ export {
   waitForLoadingComplete,
   waitForQuiescent,
   waitForQuietPeriod,
+  waitForSelectorAttributed,
   waitForViewPhases,
 } from './waits.ts'
 export {

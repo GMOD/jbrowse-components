@@ -5,6 +5,7 @@ import {
   displayPainted,
   encodeSessionSpec,
   waitForLoadingComplete,
+  waitForSelectorAttributed,
   waitForViewPhases,
 } from '@jbrowse/browser-test-utils'
 
@@ -43,17 +44,17 @@ export function appendGpuParam(url: string) {
 // going, asserted against a page nothing had been clicked on, and passed or
 // failed somewhere unrelated. `waitForSelector` only returns null for a
 // `hidden: true` wait, which neither of these does.
-export async function findByTestId(
+//
+// What they throw is the display census, not puppeteer's bare `TimeoutError`:
+// the commonest reason either one expires is a display that never got there,
+// and its own phase is what separates a slow fetch from a display that says it
+// finished without painting. See `waitForSelectorAttributed`.
+export function findByTestId(
   page: Page,
   testId: string,
   timeout = 30000,
 ): Promise<ElementHandle> {
-  const selector = `[data-testid="${testId}"]`
-  const handle = await page.waitForSelector(selector, { timeout })
-  if (!handle) {
-    throw new Error(`element not found: ${selector}`)
-  }
-  return handle
+  return waitForSelectorAttributed(page, `[data-testid="${testId}"]`, timeout)
 }
 
 /**
@@ -63,17 +64,12 @@ export async function findByTestId(
  * `findByTestId(page, '<base>-done')`: `data-testid` names the type and no
  * longer mutates on paint, so readiness is `data-display-drawn` (ADR-065).
  */
-export async function findDisplayPainted(
+export function findDisplayPainted(
   page: Page,
   testId: string,
   timeout = 30000,
 ): Promise<ElementHandle> {
-  const selector = displayPainted(testId)
-  const handle = await page.waitForSelector(selector, { timeout })
-  if (!handle) {
-    throw new Error(`element not found: ${selector}`)
-  }
-  return handle
+  return waitForSelectorAttributed(page, displayPainted(testId), timeout)
 }
 
 // What the page looked like when a wait gave up. Separates the two failures

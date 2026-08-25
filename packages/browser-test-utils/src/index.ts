@@ -10,6 +10,7 @@ export {
   SANDBOX_CHROME_ARGS,
   delay,
   describePendingDisplays,
+  describePendingDisplaysNow,
   displayById,
   displayPainted,
   displaySettled,
@@ -29,6 +30,7 @@ export {
   waitForLoadingComplete,
   waitForQuiescent,
   waitForQuietPeriod,
+  waitForSelectorAttributed,
   waitForSession,
   waitForViewPhases,
 } from '@jbrowse/capture'

@@ -1,4 +1,9 @@
-import type { Page } from 'puppeteer'
+import {
+  describePendingDisplays,
+  pendingDisplayStatesInPage,
+} from './sessionGate.ts'
+
+import type { ElementHandle, Page } from 'puppeteer'
 
 // Fixed-duration sleep. Shared by the browser-test suites and the website
 // screenshot generator so the helper isn't redefined per consumer.
@@ -130,6 +135,67 @@ export function waitForQuiescent(
 // display painted" and "we gave up waiting" indistinguishable at the call site —
 // and that ambiguity is what makes a blank capture unattributable.
 export const PENDING_DISPLAYS = '[data-display-drawn="false"]'
+
+/**
+ * `page.waitForSelector`, with the display census in the timeout.
+ *
+ * The waits below are best-effort and hand their outcome back as a boolean, so
+ * a caller can say what was still unsettled. A *selector* wait is the opposite
+ * shape — it throws, and it runs FIRST, before any of them: a capture whose
+ * display never paints dies here on puppeteer's `TimeoutError`, which names the
+ * selector and nothing else, and the census that would have named the display
+ * runs later or not at all.
+ *
+ * So the census runs on the way out. It is re-read from the DOM here rather
+ * than taken off a handle the wait held: a handle to an element that has since
+ * re-rendered throws `Node is detached from document`, which is how the first
+ * attempt at this turned four diagnosable timeouts into nine opaque puppeteer
+ * errors (reverted in 28c6ee6d90).
+ *
+ * What it reports is the phase, and that is the part a longer timeout cannot
+ * substitute for: `loading` is a slow fetch, `error` is a display that has
+ * finished badly and is showing a banner, and `ready` is a display claiming it
+ * finished without drawing — a bug in the display rather than in the wait.
+ *
+ * An EMPTY census is the other answer, and `tooLarge` / `renderError` are why it
+ * is not good news. Those two replace the display's subtree outright, so they
+ * publish neither attribute and appear here as nothing at all: a wait on such a
+ * display can never resolve and can never be reported. Nothing pending means
+ * either that, or a selector that was never a display's.
+ */
+export async function waitForSelectorAttributed(
+  page: Page,
+  selector: string,
+  timeoutMs: number,
+): Promise<ElementHandle> {
+  try {
+    const handle = await page.waitForSelector(selector, { timeout: timeoutMs })
+    if (!handle) {
+      throw new Error(`element not found: ${selector}`)
+    }
+    return handle
+  } catch (cause) {
+    throw new Error(
+      `${selector} did not appear within ${timeoutMs}ms — ${await describePendingDisplaysNow(page)}`,
+      { cause },
+    )
+  }
+}
+
+/**
+ * The census as one clause, for a message. Best-effort in its own right: a page
+ * whose execution context is gone cannot be asked, and saying so is the answer.
+ */
+export async function describePendingDisplaysNow(page: Page) {
+  try {
+    const pending = await page.evaluate(pendingDisplayStatesInPage)
+    return pending.length
+      ? `${pending.length} display(s) had not painted: ${describePendingDisplays(pending)}`
+      : 'no display reported itself unpainted, so either the selector was not on a display or the display is in a terminal phase that publishes nothing (tooLarge, renderError)'
+  } catch {
+    return 'the page could not be queried afterwards (context gone)'
+  }
+}
 
 // The composite selectors, so "this display type, painted" is written once.
 //

@@ -45,7 +45,6 @@ the half that rots is the half it covers.
 | [A same-strand hidden junction is still solid](todo/a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md) | alignments | decide which renderer owns a marked junction; `isNormal` sends it to the straight pass |
 | [Give colorNeutralRead a dark variant](todo/give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr.md) | alignments, palette | decide two neutrals or one before editing either |
 | [Make the capture scroll-invariant](todo/make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu.md) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
-| [Attribute the TIMEOUT mode](todo/attribute-the-60s-displaypainted-selector-wait.md) | browser tests | the census shipped; wrap the two selector waits that throw before it runs |
 | [Shoot the multihop chain as counted arcs](todo/shoot-the-multihop-chain-as-counted-arcs-in-one-lgv.md) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Capture the junction-BED tutorial figure](todo/capture-a-figure-for-the-junction-bed-tutorial-section.md) | figures, rnaseq | build and host the junction BED first; the capture is ordinary once it exists |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | five stale; the lock cannot catch this class |

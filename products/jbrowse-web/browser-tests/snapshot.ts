@@ -7,6 +7,7 @@ import {
   pendingDisplayStatesInPage,
   waitForDisplayPhases,
   waitForDisplaysDone,
+  waitForSelectorAttributed,
 } from '@jbrowse/browser-test-utils'
 
 import { waitForAppMounted } from './appMounted.ts'
@@ -483,10 +484,11 @@ export async function canvasSnapshot(
   threshold = 0.05,
   { assertContent = true }: { assertContent?: boolean } = {},
 ) {
-  const el = await page.waitForSelector(selector, { timeout: 60000 })
-  if (!el) {
-    throw new Error(`Canvas element not found: ${selector}`)
-  }
+  // Attributed, because this wait runs BEFORE `waitForCaptureSettled` below and
+  // so before the census that call site reports: a display that never paints
+  // used to die here on puppeteer's `TimeoutError`, naming the selector and
+  // nothing else. See `waitForSelectorAttributed`.
+  const el = await waitForSelectorAttributed(page, selector, 60000)
   const unsettled = await waitForCaptureSettled(page)
 
   // A display can reach `data-display-drawn` before the page has given its
