@@ -1,3 +1,8 @@
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
+} from '@jbrowse/cigar-utils'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
@@ -206,4 +211,51 @@ test('a read split across two lanes is still one read', () => {
   // and the partner segment is a drawn read rather than an SA record, so the row
   // stops saying the path leaves a window both of its ends are in
   expect(byStrand[0]!.extendsOffScreen).toBe(false)
+})
+
+// A paired-end fragment whose read1 is split (chr1 primary, chr7 supplementary)
+// and whose read2 maps plainly nearby. The two mates share a QNAME, so the
+// grouping puts them in one bucket and `resolveReadGroup` has to partition
+// them by pair role before chaining: chained together, read2 would be joined
+// onto read1's chain as a third segment through a junction no molecule has.
+function pairedSplitFragment(name: string, start: number) {
+  return [
+    new SimpleFeature({
+      uniqueId: `${name}/1`,
+      name,
+      refName: 'chr1',
+      start,
+      end: start + 100,
+      strand: 1,
+      CIGAR: '100M50S',
+      flags: SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+      tags: { SA: 'chr7,5000,+,100S50M,60,0;' },
+    }),
+    new SimpleFeature({
+      uniqueId: `${name}/2`,
+      name,
+      refName: 'chr1',
+      start: start + 200,
+      end: start + 300,
+      strand: -1,
+      CIGAR: '100M',
+      flags: SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      tags: {},
+    }),
+  ]
+}
+
+test('a paired read chains each mate on its own', () => {
+  const data = fetchResult([
+    ...pairedSplitFragment('f1', 1000),
+    ...pairedSplitFragment('f2', 1003),
+  ])
+  const chains = computeReadChains([new Map([[0, data]])], regions)
+  expect(chains).toHaveLength(2)
+  for (const chain of chains) {
+    expect(chain.map(s => s.refName)).toEqual(['chr1', 'chr7'])
+  }
+  const candidates = computeDerivativePaths({ chains })
+  expect(candidates).toHaveLength(1)
+  expect(candidates[0]!.readCount).toBe(2)
 })
