@@ -45,6 +45,12 @@ minimumReleaseAgeExclude:
   - 'ixixx'
   - 'gff-nostream'
   - 'electron'
+  # Same publisher and same release train as `electron` above, so the two have
+  # to clear the age gate together: the E2E jobs drive the packaged app through
+  # ChromeDriver, and a driver a major behind refuses the session outright
+  # ("only supports Chrome version 150"). Excluding one and not the other made
+  # every electron major bump break those jobs for a day.
+  - 'electron-chromedriver'
   - 'generic-filehandle2'
   - '@jbrowse/mobx-state-tree'
   - '@jbrowse/jexl'
