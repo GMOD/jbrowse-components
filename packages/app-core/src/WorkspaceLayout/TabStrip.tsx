@@ -194,7 +194,23 @@ export const TabStrip = observer(function TabStrip({
     // the strip is the chrome; the `tablist` inside it is the tabs ALONE,
     // because a tablist's children have to be tabs and the panel actions beside
     // them are not
-    <div data-tab-strip className={classes.strip}>
+    <div
+      data-tab-strip
+      className={classes.strip}
+      // Double-clicking the strip's empty space maximizes the cell and
+      // restores it — the IDE convention, and free here because the strip's
+      // only other `onDoubleClick` is the one on a tab's own label, for rename.
+      //
+      // `target === currentTarget` is what keeps those two apart, and it is the
+      // test rather than a `stopPropagation` in `WorkspaceTab` because it holds
+      // for anything ever put on the strip: a rename double-click bubbles out
+      // of the label to here, and so would a double-click on the `+`.
+      onDoubleClick={event => {
+        if (event.target === event.currentTarget) {
+          layout.toggleMaximizedPanel(panel.id)
+        }
+      }}
+    >
       <div
         role="tablist"
         ref={stripRef}

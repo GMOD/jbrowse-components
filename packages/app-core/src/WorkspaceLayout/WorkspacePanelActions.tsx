@@ -2,8 +2,10 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
 import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit'
+import OpenInFullIcon from '@mui/icons-material/OpenInFull'
 import TabIcon from '@mui/icons-material/Tab'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
@@ -59,6 +61,7 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
 }) {
   const { classes } = useStyles()
   const canClose = session.panels.length > 1
+  const maximized = session.maximizedPanelId === panel.id
   const tile = (mode: TileMode) => {
     session.tileViews(
       mode,
@@ -91,6 +94,21 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
               session.splitPanel(panel.id, 'column')
             },
           },
+          // The strip's double-click is the gesture; this is how anyone finds
+          // it, and the only way to reach it from the keyboard. Gated on there
+          // being another cell to hide, since maximizing the only one is a
+          // no-op with a label promising otherwise.
+          ...(session.panels.length > 1 || maximized
+            ? [
+                {
+                  label: maximized ? 'Restore panel' : 'Maximize panel',
+                  icon: maximized ? CloseFullscreenIcon : OpenInFullIcon,
+                  onClick: () => {
+                    session.toggleMaximizedPanel(panel.id)
+                  },
+                },
+              ]
+            : []),
           // The whole-workspace commands, kept behind the same "Global:" prefix
           // and the same >1-view gate they had on the dockview header, so a
           // returning user finds them where they were and the label still says

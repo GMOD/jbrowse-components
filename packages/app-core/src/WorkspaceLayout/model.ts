@@ -124,6 +124,19 @@ export function WorkspaceLayoutMixin() {
       .model({
         layout: types.optional(LayoutNode, emptyPanel),
         activePanelId: types.maybe(types.string),
+        /**
+         * Show only this cell, at the size of the whole workspace.
+         *
+         * Deliberately HERE and not a `maximized` flag on `PanelNode`. On the
+         * node it would be inside `tree.ts`, the half that carries the risk and
+         * is proven by a randomised operation sequence asserting canonical form
+         * after every step — and every operation would then have to say what it
+         * does to the flag: a split of a maximized panel, a drag of its last tab
+         * out, a normalize that collapses it into its parent. Beside
+         * `activePanelId` it is the same class of thing as `activePanelId`,
+         * including its failure mode, which `livePanelIds` already repairs.
+         */
+        maximizedPanelId: types.maybe(types.string),
       })
       .views(self => ({
         /**
@@ -170,34 +183,85 @@ export function WorkspaceLayoutMixin() {
           const panel = panels(self.tree).find(p => p.id === panelId)
           return panel ? activeTabIn(panel) : undefined
         },
+        /**
+         * What to render: the maximized cell alone, or the whole tree.
+         *
+         * Sized to 1 rather than handed over as it sits. A pane's `size` is its
+         * share of its siblings, and CSS distributes free space by grow factor
+         * only up to a total of 1 — so a cell that was a third of a row, alone
+         * in the workspace with `flexGrow: 0.33`, draws a third of the window
+         * and leaves the rest blank.
+         */
+        get visibleTree(): LayoutTree {
+          const maximized = panels(self.tree).find(
+            p => p.id === self.maximizedPanelId,
+          )
+          return maximized ? { ...maximized, size: 1 } : self.tree
+        },
       }))
       .actions(self => {
-        function apply(next: LayoutTree) {
-          self.layout = cast(normalize(next) as never)
-        }
-
-        function home(tree: LayoutTree, viewIds: string[]) {
-          return homeViews(tree, viewIds, self.activePanelId, () =>
-            nextId('tab'),
-          )
-        }
-
         /**
-         * `activePanelId` must name a cell that exists, whatever just stopped
-         * existing. Homing falls back on it, so a dangling one puts views in a
-         * cell nobody draws.
+         * Both panel ids this model holds outside the tree must name a cell
+         * that exists, whatever just stopped existing. A dangling
+         * `activePanelId` puts homed views in a cell nobody draws; a dangling
+         * `maximizedPanelId` draws nothing at all.
          *
          * Stated as the invariant rather than as "the panel I just closed",
          * because a removal collapses branches on the way out and the cell that
          * disappears is not always the one that was named.
+         *
+         * They fall back differently, and the difference is the whole reason
+         * this is two lines rather than a loop. A workspace always shows some
+         * cell, so `activePanelId` takes the first one; maximize is a mode the
+         * user is IN, so losing its cell leaves the mode rather than picking an
+         * arbitrary cell to hold the user in it.
          */
-        function keepActivePanel() {
+        function livePanelIds() {
           if (
             self.activePanelId !== undefined &&
             !self.hasPanel(self.activePanelId)
           ) {
             self.activePanelId = panels(self.tree)[0]?.id
           }
+          if (
+            self.maximizedPanelId !== undefined &&
+            !self.hasPanel(self.maximizedPanelId)
+          ) {
+            self.maximizedPanelId = undefined
+          }
+        }
+
+        /**
+         * Every write to the tree, and therefore the one place the invariant
+         * above is repaired.
+         *
+         * It used to be a `keepActivePanel()` the two closing actions called,
+         * which was right while a closing action was the only way to retire a
+         * cell. `maximizedPanelId` is not reached that way: BOTH drop gestures
+         * prune their emptied source panel, and `applyLayoutSpec` replaces every
+         * id in the tree at once. That is five call sites for one rule, which is
+         * the shape that ends with one of them missing.
+         */
+        function apply(next: LayoutTree) {
+          const before = panels(self.tree).length
+          self.layout = cast(normalize(next) as never)
+          // A cell appearing where it cannot be seen is the one thing maximize
+          // must not do, so gaining one leaves the mode. Stated as the count
+          // rather than at the three actions that split (`splitPanel`,
+          // `dropTabInNewSplit`, `moveViewToSplitRight`) for the reason above —
+          // and a fourth, `applyLayoutSpec`, arrives at it from the other side:
+          // it replaces every id, so `livePanelIds` was going to clear the mode
+          // regardless. Losing a cell needs nothing here; that IS `livePanelIds`.
+          if (panels(self.tree).length > before) {
+            self.maximizedPanelId = undefined
+          }
+          livePanelIds()
+        }
+
+        function home(tree: LayoutTree, viewIds: string[]) {
+          return homeViews(tree, viewIds, self.activePanelId, () =>
+            nextId('tab'),
+          )
         }
 
         /**
@@ -248,6 +312,34 @@ export function WorkspaceLayoutMixin() {
           setActivePanelId(panelId: string | undefined) {
             self.activePanelId = panelId
           },
+          /**
+           * Show one cell at the size of the workspace, or go back.
+           *
+           * A toggle rather than a pair, because the gesture is a toggle: the
+           * strip's double-click and the cell menu's one item both mean "this
+           * cell, or not any more". Maximizing a DIFFERENT cell while one is
+           * already maximized moves the mode rather than restoring, which is
+           * what the menu item on another cell's strip is asking for.
+           *
+           * Mounts no views that were not mounted — it is the same cell showing
+           * the same tab — and unmounts every other cell's, so the WebGL2
+           * context ceiling (`agent-docs/reference/GPU_CONTEXT_BUDGET.md`) can
+           * only go down. That is the reason it is this and not a `display:
+           * none` over a still-mounted workspace.
+           */
+          toggleMaximizedPanel(panelId: string) {
+            if (!self.hasPanel(panelId)) {
+              return
+            }
+            self.maximizedPanelId =
+              self.maximizedPanelId === panelId ? undefined : panelId
+            if (self.maximizedPanelId !== undefined) {
+              self.activePanelId = panelId
+            }
+          },
+          restorePanels() {
+            self.maximizedPanelId = undefined
+          },
           setActiveTab(panelId: string, tabId: string) {
             apply(setActiveTab(self.tree, panelId, tabId))
             self.activePanelId = panelId
@@ -274,7 +366,6 @@ export function WorkspaceLayoutMixin() {
           },
           closePanel(panelId: string) {
             apply(removePanel(self.tree, panelId))
-            keepActivePanel()
           },
           /** "New empty tab": a tab in an existing cell, showing the launcher. */
           addTab(panelId: string, viewIds: string[] = []) {
@@ -306,7 +397,6 @@ export function WorkspaceLayoutMixin() {
               return
             }
             apply(pruneEmptyPanel(removeTab(self.tree, tabId), panelId))
-            keepActivePanel()
           },
           addViewToTab(tabId: string, viewId: string) {
             apply(addViewToTab(self.tree, tabId, viewId))

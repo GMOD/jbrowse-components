@@ -39,7 +39,7 @@ const Harness = observer(function Harness({
 }) {
   return (
     <LayoutRenderer
-      node={session.tree}
+      node={session.visibleTree}
       layout={session}
       chrome={{
         dragHandlers: noDrag,
@@ -70,6 +70,71 @@ test('each cell shows only its active tab', () => {
   expect(screen.queryByTestId(`content-${first}`)).toBeNull()
   // but both tabs are in the strip
   expect(document.querySelectorAll('[role="tab"]')).toHaveLength(2)
+})
+
+// ---------------------------------------------------------------------------
+// Maximize. The renderer knows nothing about it — `WorkspaceContainer` hands it
+// `visibleTree`, which is the maximized cell or the whole tree — so what is
+// checked here is that the mode reaches the DOM and reverses cleanly.
+// ---------------------------------------------------------------------------
+
+test('a maximized cell is the only one drawn, and restoring brings the rest back', () => {
+  const session = TestSession.create({ name: 't' })
+  const left = session.panels[0]!.id
+  const right = session.splitPanel(left, 'row')!.id
+  const { container } = renderLayout(session)
+  expect(container.querySelectorAll('[data-panel-id]')).toHaveLength(2)
+
+  act(() => {
+    session.toggleMaximizedPanel(right)
+  })
+
+  const drawn = [...container.querySelectorAll('[data-panel-id]')]
+  expect(drawn.map(el => (el as HTMLElement).dataset.panelId)).toEqual([right])
+  // and no boundary to drag, since there is nothing to divide
+  expect(container.querySelectorAll('[data-splitter]')).toHaveLength(0)
+  // it fills: a cell keeps its share of a split in `size`, and a grow factor
+  // under 1 alone in the workspace draws that fraction of the window
+  expect(drawn[0]!.parentElement!.style.flexGrow).toBe('1')
+
+  act(() => {
+    session.restorePanels()
+  })
+
+  expect(container.querySelectorAll('[data-panel-id]')).toHaveLength(2)
+  expect(container.querySelectorAll('[data-splitter]')).toHaveLength(1)
+})
+
+// The gesture. Double-clicking the strip's empty space is the IDE convention
+// and was free — the strip's only other double-click is a tab label's, for
+// rename, and `target === currentTarget` is what keeps the two apart.
+test('double-clicking the strip background maximizes the cell, and again restores', () => {
+  const session = TestSession.create({ name: 't' })
+  const left = session.panels[0]!.id
+  session.splitPanel(left, 'row')
+  const { container } = renderLayout(session)
+  const strip = container.querySelector('[data-tab-strip]')!
+
+  fireEvent.doubleClick(strip)
+  expect(session.maximizedPanelId).toBe(left)
+
+  fireEvent.doubleClick(container.querySelector('[data-tab-strip]')!)
+  expect(session.maximizedPanelId).toBeUndefined()
+})
+
+// A rename double-click bubbles out of the label to the strip, so without the
+// target test renaming a tab would also maximize its cell.
+test('double-clicking a tab does not maximize its cell', () => {
+  const session = TestSession.create({ name: 't' })
+  session.splitPanel(session.panels[0]!.id, 'row')
+  const { container } = renderLayout(session)
+
+  fireEvent.doubleClick(container.querySelector('[role="tab"]')!)
+  expect(session.maximizedPanelId).toBeUndefined()
+
+  // including on the label inside it, which is what a rename is actually on
+  fireEvent.doubleClick(container.querySelector('[role="tab"] span')!)
+  expect(session.maximizedPanelId).toBeUndefined()
 })
 
 test('a splitter sits between each pair of siblings, not at the edges', () => {

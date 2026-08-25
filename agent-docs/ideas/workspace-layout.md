@@ -1,51 +1,15 @@
 ---
 name: workspace-layout
-description: Panel maximize and where its flag must not live, a tab overflow menu and what has to measure for it, and the drag gesture having no keyboard equivalent.
+description: A tab overflow menu and what has to measure for it, and the drag gesture having no keyboard equivalent.
 ---
 
 # Workspace layout (tabs and panels)
 
 `packages/app-core/src/WorkspaceLayout/`, whose CLAUDE.md is the design. These are
 what was left on the table after the strip's drag, keyboard and overflow work, in
-descending order of how much they are worth.
-
-**Panel maximize / restore.** The one real dockview feature the rewrite did not
-carry, and a genuinely useful one here — a genome view is tall, and "make this cell
-the whole window for a minute" is a thing people do constantly in an IDE. The
-design question is not the gesture, it is **where the flag lives**, and the obvious
-answer is the wrong one.
-
-Putting `maximized` on a `PanelNode` puts it inside `tree.ts`, which is the half
-that carries the risk and is proven by a 2000-step randomised operation sequence
-asserting canonical form after every step. Every operation would then have to say
-what it does to the flag — a split of a maximized panel, a drag of its last tab
-out, a normalize that collapses it into its parent — and the randomised test would
-have to grow a new invariant to catch any of that going wrong.
-
-Better: `maximizedPanelId` as a sibling prop on the **mixin**, beside
-`activePanelId`, with `LayoutRenderer` short-circuiting to that panel when it is
-set. `tree.ts` stays untouched, the pure functions keep their current contracts,
-and the flag becomes exactly the same class of thing `activePanelId` already is —
-including its failure mode, which the model already has the pattern for: an id
-naming a panel that has since been closed must fall back rather than render
-nothing. That repair is now one named function, `keepActivePanel`, stating the
-invariant rather than "the panel I just closed" — so this is a line inside it
-and not a third copy of it. Stated as the invariant is the part that matters:
-a removal collapses branches on the way out, so the cell that disappears is not
-always the one that was named.
-
-The gesture is unassigned, and double-clicking the strip background is both the
-IDE convention and free — `TabStrip`'s only `onDoubleClick` is the one on a
-tab's own label, for rename.
-
-Two things to settle before writing it. **Is it session state?** If it is, a shared
-link opens maximized and undo steps through it, which is probably right and is the
-cheap option since the mixin is already persisted. **What does it do to the GPU
-budget?** Nothing, and that is worth checking rather than assuming: maximizing
-mounts no new views (it is the same panel's same tab), so the 16-context ceiling in
-`agent-docs/reference/GPU_CONTEXT_BUDGET.md` is untouched. A version that instead
-_hid_ the other panels with `display: none` while leaving them mounted would be a
-different proposal with a real cost, and is the version to reject.
+descending order of how much they are worth. Panel maximize was the entry above
+these and landed as designed — the flag on the mixin, the strip's double-click,
+and the repair stated as an invariant rather than per gesture.
 
 **A tab overflow menu.** The strip scrolls and hides its scrollbar, so the wheel
 now scrolls it and a tab that becomes current scrolls itself into view — but there

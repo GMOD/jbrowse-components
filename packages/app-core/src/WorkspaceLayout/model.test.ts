@@ -3,6 +3,8 @@ import { autorun } from 'mobx'
 
 import { WorkspaceLayoutMixin } from './model.ts'
 
+import type { PanelNode } from './tree.ts'
+
 const TestSession = types.compose(
   'TestSession',
   types.model({ name: types.string }),
@@ -326,4 +328,160 @@ test('the sugars call the applyLayoutSpec the session actually has', () => {
   session.setPendingMove({ type: 'splitRight', viewId: 'view-1' }, ['view-1'])
 
   expect(calls).toEqual(['override', 'override'])
+})
+
+// ---------------------------------------------------------------------------
+// Maximize. The flag is on the MIXIN, beside activePanelId, and not on
+// PanelNode — on the node every operation in `tree.ts` would have to say what
+// it does to it, and the randomised sequence would need a new invariant to
+// catch any of that going wrong. Beside activePanelId it is the same class of
+// thing, so it shares the same repair.
+// ---------------------------------------------------------------------------
+
+describe('maximize', () => {
+  function twoCells() {
+    const session = createSession()
+    const left = session.panels[0]!.id
+    const right = session.splitPanel(left, 'row')!.id
+    return { session, left, right }
+  }
+
+  test('a toggle maximizes, and toggling the same cell restores', () => {
+    const { session, left } = twoCells()
+
+    session.toggleMaximizedPanel(left)
+    expect(session.maximizedPanelId).toBe(left)
+    expect(session.activePanelId).toBe(left)
+
+    session.toggleMaximizedPanel(left)
+    expect(session.maximizedPanelId).toBeUndefined()
+  })
+
+  // The menu item on another cell's strip asks for THAT cell, not for a
+  // restore, so the mode moves rather than ending.
+  test('maximizing another cell moves the mode', () => {
+    const { session, left, right } = twoCells()
+    session.toggleMaximizedPanel(left)
+
+    session.toggleMaximizedPanel(right)
+
+    expect(session.maximizedPanelId).toBe(right)
+  })
+
+  test('a cell that is not there cannot be maximized', () => {
+    const { session } = twoCells()
+    session.toggleMaximizedPanel('panel-does-not-exist')
+    expect(session.maximizedPanelId).toBeUndefined()
+  })
+
+  // `visibleTree` is what the renderer is handed, and the size matters: CSS
+  // hands out free space by grow factor only up to a total of 1, so a cell that
+  // was a third of a row would draw a third of the window and leave the rest
+  // blank.
+  test('the visible tree is the maximized cell alone, at full size', () => {
+    const { session, right } = twoCells()
+    session.setSizes(
+      (session.layout as unknown as { id: string }).id,
+      [0.7, 0.3],
+    )
+
+    session.toggleMaximizedPanel(right)
+
+    const visible = session.visibleTree as PanelNode
+    expect(visible.id).toBe(right)
+    expect(visible.size).toBe(1)
+    expect('children' in visible).toBe(false)
+  })
+
+  test('with nothing maximized the visible tree is the whole tree', () => {
+    const { session } = twoCells()
+    expect(session.visibleTree).toEqual(session.tree)
+  })
+
+  // Losing the cell leaves the mode rather than picking an arbitrary cell to
+  // hold the user in it — the fallback that differs from activePanelId's, which
+  // takes the first cell because a workspace always shows one.
+  test('closing the maximized cell restores rather than moving the mode', () => {
+    const { session, left, right } = twoCells()
+    session.toggleMaximizedPanel(right)
+
+    session.closePanel(right)
+
+    expect(session.maximizedPanelId).toBeUndefined()
+    expect(session.activePanelId).toBe(left)
+  })
+
+  test('closing the last tab of the maximized cell restores', () => {
+    const { session, right } = twoCells()
+    session.toggleMaximizedPanel(right)
+
+    session.closeTab(session.activeTabOf(right)!.id)
+
+    expect(session.panels).toHaveLength(1)
+    expect(session.maximizedPanelId).toBeUndefined()
+  })
+
+  // A cell appearing where it cannot be seen is the one thing maximize must not
+  // do, so anything that adds one leaves the mode. Three actions split, and
+  // stating it once as the cell COUNT is what keeps the fourth
+  // (`applyLayoutSpec`, which arrives at the same place by replacing every id)
+  // from being a case of its own.
+  test.each([
+    [
+      'a split of the maximized cell',
+      (s: ReturnType<typeof createSession>, id: string) => {
+        s.splitPanel(id, 'row')
+      },
+    ],
+    [
+      'an edge drop that makes a new cell',
+      (s: ReturnType<typeof createSession>, id: string) => {
+        s.dropTabInNewSplit(s.activeTabOf(id)!.id, id, 'column', false)
+      },
+    ],
+    [
+      'moving a view out to a split',
+      (s: ReturnType<typeof createSession>) => {
+        s.moveViewToSplitRight('view-1', ['view-1'])
+      },
+    ],
+    [
+      'a whole-workspace tiling',
+      (s: ReturnType<typeof createSession>) => {
+        s.tileViews('horizontal', ['view-1'])
+      },
+    ],
+  ])('%s leaves the mode', (_name, act) => {
+    const { session, left } = twoCells()
+    session.toggleMaximizedPanel(left)
+
+    act(session, left)
+
+    expect(session.maximizedPanelId).toBeUndefined()
+  })
+
+  // ...but everything reachable INSIDE a maximized cell leaves it alone.
+  test('working inside the maximized cell keeps it maximized', () => {
+    const { session, left } = twoCells()
+    session.toggleMaximizedPanel(left)
+
+    const tab = session.addTab(left)!
+    session.renameTab(tab.id, 'named')
+    session.setActiveTab(left, tab.id)
+    session.addViewToTab(tab.id, 'view-9')
+
+    expect(session.maximizedPanelId).toBe(left)
+  })
+
+  // Session state, so a shared link opens maximized and undo steps through it.
+  test('the mode is in the snapshot, and undo steps through it', () => {
+    const { session, left } = twoCells()
+    const before = getSnapshot(session)
+
+    session.toggleMaximizedPanel(left)
+    expect(getSnapshot(session)).not.toEqual(before)
+
+    applySnapshot(session, before)
+    expect(session.maximizedPanelId).toBeUndefined()
+  })
 })

@@ -68,6 +68,26 @@ rebuilds every `ViewStack`. `drag` is deliberately not in it.
 - **`index` counts the strip the user sees**; `moveTabToPanel` adjusts for its
   own remove-then-insert.
 
+## Maximize
+
+- **`maximizedPanelId` is on the MIXIN, beside `activePanelId`** — never a flag
+  on `PanelNode`. On the node it would be inside `tree.ts`, where every
+  operation would have to say what it does to it and the 2000-step sequence
+  would need a new invariant to catch any of that going wrong.
+- `visibleTree` is what the renderer gets, so `LayoutRenderer` and below know
+  nothing about the mode. **It re-sizes the cell to 1**: CSS hands out free
+  space by grow factor only up to a total of 1, so a cell that was a third of a
+  row would draw a third of the window.
+- **The repair is in `apply`, not at the gestures.** Losing the cell leaves the
+  mode (`livePanelIds`, which also takes `activePanelId` — they fall back
+  DIFFERENTLY); gaining one leaves it too, since a cell appearing where it
+  cannot be seen is the one thing maximize must not do. Both drop gestures
+  prune, and `applyLayoutSpec` replaces every id, so per-gesture would be five
+  call sites for one rule.
+- The gesture is the strip background's `onDoubleClick`, kept off the tab's own
+  rename double-click by `target === currentTarget`. The cell menu's item is how
+  it is discovered and the only way to it from the keyboard.
+
 ## Rendering, keyboard
 
 - **Only the shown tab is mounted** — a display costs a WebGL2 context, ceiling
