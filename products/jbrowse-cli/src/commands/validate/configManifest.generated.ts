@@ -3053,6 +3053,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (boolean | undefined))"
         },
         {
+          "name": "hideNonCanonicalJunctions",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
           "name": "maxHeight",
           "type": "(JexlString | number)"
         },
@@ -3114,6 +3118,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "largeFeaturesFirst",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "splicedReadsFirst",
           "type": "(JexlString | boolean)"
         },
         {
@@ -3363,6 +3371,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | (boolean | undefined))"
         },
         {
+          "name": "hideNonCanonicalJunctions",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
           "name": "maxHeight",
           "type": "(JexlString | number)"
         },
@@ -3424,6 +3436,10 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "largeFeaturesFirst",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "splicedReadsFirst",
           "type": "(JexlString | boolean)"
         },
         {
