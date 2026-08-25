@@ -953,3 +953,34 @@ Embedded components are designed for web developers to build custom systems
 around, so features like sessions and track manipulation can be implemented by
 the embedding application. If your app is Python or R rather than JavaScript,
 [](/docs/jbrowse_anywidget) and [](/docs/jbrowser) wrap the same views.
+
+## Related systems and credit
+
+JBrowse 2 stands on the shoulders of many great scientists that came before us.
+Points of reference:
+
+- Savant genome browser: inspired genome arcs
+- Gap5 genome browser: inspired the read cloud, similar to genome arcs
+- Mummerplots: inspired auto-diagonalization routines for improved synteny
+  figures
+  https://jmonlong.github.io/Hippocamplus/2017/09/19/mummerplots-with-ggplot2/
+- minimap2, and the PAF format: Laid the basis with which we were able to
+  implement synteny visualizations
+- samtools and the hts-specs community: Creates a continued substrate for
+  bioinformatics complex data formats like BAM, CRAM, VCF, and more.
+- Pangenome tool developers, pggb and cactus: For proving pangenomics works!
+- chain2paf, paftools.js, etc. Created an ecosystem around PAF to help our
+  system
+- jcvi/MCScan: Created an easy to use protein alignment based synteny workflow
+  that we standardized around using .anchors and .blocks formats. This has
+  continued to this day, with other programs like OrthoFinder workflow using
+  this system as well
+- ReactJS, TypeScript, mobx-state-tree, and javascript developers and community:
+  it is difficult in some ways to create a bioinformatics ecosystem on the web,
+  since most work is done in other languages.
+- IGV and igv.js: many alignments tracks features are inspired by IGV,
+  particularly their notions of read pairing color schemes, modBAM color
+  schemes, and view as pairs/link supplementary alignments notions.
+- D-GENIES: for establishing a very high quality easy to use Dotplot viewer.
+- All the other genome visualization developers:
+  https://cmdcolin.github.io/awesome-genome-visualization/?latest=true
