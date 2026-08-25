@@ -69,6 +69,7 @@ describe('getBreakendCoveringRegions', () => {
     const feature = createMockFeature({
       ALT: undefined,
       start: 100,
+      end: 150,
       refName: 'chr1',
       mate: {
         refName: 'chr2',
@@ -80,10 +81,76 @@ describe('getBreakendCoveringRegions', () => {
       assembly: createMockAssembly(),
     })
 
-    expect(result.pos).toBe(100)
+    expect(result.pos).toBe(150)
     expect(result.refName).toBe('chr1')
     expect(result.mateRefName).toBe('chr2')
     expect(result.matePos).toBe(200)
+  })
+
+  // The junction-facing edge of each footprint, which is the edge the connector
+  // in `PairedFeatures` actually attaches to. A 6-8 column BEDPE has no strand
+  // columns at all, so `parseStrand` answers 0 for both sides, and 0 has to read
+  // as forward here exactly as `readTrailingBp`/`readLeadingBp` read it -- that
+  // pair keys on `=== -1` so a strandless record cannot make the two ends
+  // disagree about which way they face.
+  test.each([
+    { name: 'strandless (a 6-8 column bedpe)', strand: 0, mateStrand: 0 },
+    { name: 'explicitly forward', strand: 1, mateStrand: 1 },
+  ])('faces the junction when $name', ({ strand, mateStrand }) => {
+    const feature = createMockFeature({
+      ALT: undefined,
+      refName: 'chr1',
+      start: 1000,
+      end: 2000,
+      strand,
+      mate: { refName: 'chr5', start: 50000, end: 51000, strand: mateStrand },
+    })
+    const result = getBreakendCoveringRegions({
+      feature: feature as any,
+      assembly: createMockAssembly(),
+    })
+
+    expect({ pos: result.pos, matePos: result.matePos }).toEqual({
+      pos: 2000,
+      matePos: 50000,
+    })
+  })
+
+  test('a reverse-stranded pair faces the junction from the other edge', () => {
+    const feature = createMockFeature({
+      ALT: undefined,
+      refName: 'chr1',
+      start: 1000,
+      end: 2000,
+      strand: -1,
+      mate: { refName: 'chr5', start: 50000, end: 51000, strand: -1 },
+    })
+    const result = getBreakendCoveringRegions({
+      feature: feature as any,
+      assembly: createMockAssembly(),
+    })
+
+    expect({ pos: result.pos, matePos: result.matePos }).toEqual({
+      pos: 1000,
+      matePos: 51000,
+    })
+  })
+
+  test('a mate without an end column still resolves a position', () => {
+    const feature = createMockFeature({
+      ALT: undefined,
+      refName: 'chr1',
+      start: 1000,
+      end: 2000,
+      strand: -1,
+      mate: { refName: 'chr5', start: 50000, strand: -1 },
+    })
+    const result = getBreakendCoveringRegions({
+      feature: feature as any,
+      assembly: createMockAssembly(),
+    })
+
+    expect(result.matePos).toBe(50000)
   })
 
   test('falls back to feature end for non-breakend features', () => {

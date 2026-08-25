@@ -258,11 +258,16 @@ export function getBreakendCoveringRegions({
       refName: string
     }
     const strand = feature.get('strand') as number | undefined
-    const mateStrand = mate.strand
-    // Forward strand (1): use end position (right side)
-    // Reverse strand (-1): use start position (left side)
-    const pos = strand === 1 ? feature.get('end') : startPos
-    const matePos = mateStrand === 1 ? mate.start : (mate.end ?? mate.start)
+    // The junction-facing edge of each footprint: the same choice
+    // `readTrailingBp`/`readLeadingBp` make in
+    // `@jbrowse/cigar-utils/readEndpoints`, and keyed on `=== -1` for the reason
+    // stated there -- a strandless record reads as forward on both ends, so the
+    // pair cannot disagree about it. Keying on `=== 1` instead put the strand 0
+    // every 6-8 column BEDPE has (`parseStrand` answers 0 with no strand
+    // columns) in the reverse branch on both lines, opening each panel on the
+    // edge facing away from the junction.
+    const pos = strand === -1 ? startPos : feature.get('end')
+    const matePos = mate.strand === -1 ? (mate.end ?? mate.start) : mate.start
     return {
       pos,
       refName: f(refName),
