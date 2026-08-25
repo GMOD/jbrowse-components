@@ -1,6 +1,7 @@
 import { Suspense, lazy, useState } from 'react'
 
 import { getStrokeProps } from '@jbrowse/core/util'
+import { breakendTickPx } from '@jbrowse/sv-core'
 import { observer } from 'mobx-react'
 
 import ArcsContainer from '../../shared/ArcsContainer.tsx'
@@ -36,15 +37,20 @@ const Arc = observer(function Arc({
   const { feature, alt, color, k1, k2 } = style
   const ra1 = assembly.getCanonicalRefName2(k1.refName)
   const ra2 = assembly.getCanonicalRefName2(k2.refName)
-  const r1 = view.bpToPx({ refName: ra1, coord: k1.start })?.offsetPx
-  const r2 = view.bpToPx({ refName: ra2, coord: k2.start })?.offsetPx
+  const p1 = view.bpToPx({ refName: ra1, coord: k1.start })
+  const p2 = view.bpToPx({ refName: ra2, coord: k2.start })
 
-  if (r1 === undefined || r2 === undefined) {
+  if (p1 === undefined || p2 === undefined) {
     return null
   }
 
-  const left = r1 - view.offsetPx
-  const right = r2 - view.offsetPx
+  const left = p1.offsetPx - view.offsetPx
+  const right = p2.offsetPx - view.offsetPx
+  // `mateDirection` is genomic, and these are screen coordinates. Asked per
+  // region rather than off the view, because that is what bpToPx resolved the
+  // endpoint through and a session may reverse one region and not another.
+  const rev1 = !!view.displayedRegions[p1.index]?.reversed
+  const rev2 = !!view.displayedRegions[p2.index]?.reversed
   const absrad = Math.abs((right - left) / 2)
   if (absrad <= 1) {
     return null
@@ -88,7 +94,7 @@ const Arc = observer(function Arc({
           strokeWidth={lineWidth}
           {...events}
           x1={left}
-          x2={left + k1.mateDirection * 20}
+          x2={breakendTickPx(left, k1.mateDirection, rev1)}
           y1={1.5}
           y2={1.5}
         />
@@ -99,7 +105,7 @@ const Arc = observer(function Arc({
           strokeWidth={lineWidth}
           {...events}
           x1={right}
-          x2={right + k2.mateDirection * 20}
+          x2={breakendTickPx(right, k2.mateDirection, rev2)}
           y1={1.5}
           y2={1.5}
         />

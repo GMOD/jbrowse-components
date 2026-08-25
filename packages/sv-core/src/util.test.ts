@@ -1,10 +1,13 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import {
+  breakendKeepsDirections,
+  breakendTickPx,
   getBreakendCoveringRegions,
   getBreakendMateLocString,
   hasBreakpointSplitView,
   parseSvAlt,
+  readTranslocationMate,
   safeParseBreakend,
   splitRegionAtPosition,
 } from './util.ts'
@@ -337,5 +340,83 @@ describe('parseSvAlt with a colon in the mate refName', () => {
       refName: '13',
     })
     expect(parseSvAlt(feature as any, alt)).toBeUndefined()
+  })
+})
+
+// The four ALT forms with, stated independently of the implementation, which
+// screen side each end's tick must point at. `keeps` is VCF 4.3 §5.4: the piece
+// a `t[q[` record keeps runs LEFT from its breakpoint, and its mate's runs
+// RIGHT. On an unflipped view genomic-right is screen-right; a reversed region
+// mirrors the axis, so every expectation below inverts with it — which is the
+// whole content of the claim.
+const TICK_FORMS = [
+  { alt: 'C[2:321682[', thisKeeps: 'left', mateKeeps: 'right' },
+  { alt: 'C]2:321682]', thisKeeps: 'left', mateKeeps: 'left' },
+  { alt: ']2:321682]C', thisKeeps: 'right', mateKeeps: 'left' },
+  { alt: '[2:321682[C', thisKeeps: 'right', mateKeeps: 'right' },
+] as const
+
+describe('breakendTickPx', () => {
+  const X = 100
+
+  // `C[2:321682[` and `]2:321682]C` are the asymmetric forms — their two ends
+  // keep opposite sides. A symmetric-only table would pass an implementation
+  // that negated both ends, since negating a symmetric pair is a no-op.
+  test.each(TICK_FORMS)(
+    '$alt points each end at the side it keeps',
+    ({ alt, thisKeeps, mateKeeps }) => {
+      const bnd = safeParseBreakend(alt)!
+      const { joinDirection, mateDirection } = breakendKeepsDirections(bnd)
+
+      for (const [dir, keeps] of [
+        [joinDirection, thisKeeps],
+        [mateDirection, mateKeeps],
+      ] as const) {
+        expect(breakendTickPx(X, dir, false) - X).toBe(
+          keeps === 'right' ? 20 : -20,
+        )
+        // The same end, on a horizontally flipped view.
+        expect(breakendTickPx(X, dir, true) - X).toBe(
+          keeps === 'right' ? -20 : 20,
+        )
+      }
+    },
+  )
+
+  test('agrees with what parseSvAlt reports for the same record', () => {
+    for (const { alt } of TICK_FORMS) {
+      const feature = createMockFeature({ ALT: [alt], start: 1, refName: '13' })
+      const parsed = parseSvAlt(feature as any, alt)!
+      expect(breakendKeepsDirections(safeParseBreakend(alt)!)).toEqual({
+        joinDirection: parsed.joinDirection,
+        mateDirection: parsed.mateDirection,
+      })
+    }
+  })
+})
+
+// STRANDS names the strand a translocation end is ON; a `+` end keeps the
+// sequence to its left, so the keeps-direction is the negation. Getting this
+// backwards points both ticks at the pieces the record discards.
+describe('readTranslocationMate keeps-directions', () => {
+  test.each([
+    ['+-', -1, 1],
+    ['-+', 1, -1],
+    ['++', -1, -1],
+    ['--', 1, 1],
+  ])('STRANDS %s', (strands, myKeepsDir, mateKeepsDir) => {
+    expect(
+      readTranslocationMate({
+        CHR2: ['chr2'],
+        END: [100],
+        STRANDS: [strands],
+      }),
+    ).toMatchObject({ myKeepsDir, mateKeepsDir })
+  })
+
+  test('an unknown strand char keeps neither side', () => {
+    expect(readTranslocationMate({ CHR2: ['chr2'], END: [100] })).toMatchObject(
+      { myKeepsDir: 0, mateKeepsDir: 0 },
+    )
   })
 })

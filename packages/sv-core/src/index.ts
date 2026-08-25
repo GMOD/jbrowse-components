@@ -2,6 +2,8 @@ export { default as BreakpointSplitViewChoiceDialog } from './BreakpointSplitVie
 export { launchBreakpointSplitView } from './launchBreakpointSplitView.ts'
 export {
   SV_SYMBOLIC_ALLELES,
+  breakendKeepsDirections,
+  breakendTickPx,
   breakpointBpPerPx,
   breakpointSplitViewId,
   getAssemblyName,

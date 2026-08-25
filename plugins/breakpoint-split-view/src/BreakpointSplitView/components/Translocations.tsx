@@ -8,7 +8,6 @@ import {
   buildBreakpointPath,
   buildPairTooltip,
   isLevelPairMinimized,
-  strandToSign,
   tickAtPx,
 } from './overlayUtils.tsx'
 
@@ -78,8 +77,8 @@ export default function Translocations(props: OverlayProps) {
                     y1,
                     x2,
                     y2,
-                    tickAtPx(layouts, level1, x1, strandToSign(mate.myDir)),
-                    tickAtPx(layouts, level2, x2, strandToSign(mate.mateDir)),
+                    tickAtPx(layouts, level1, x1, mate.myKeepsDir),
+                    tickAtPx(layouts, level2, x2, mate.mateKeepsDir),
                   ),
                   tooltip: () =>
                     buildPairTooltip(

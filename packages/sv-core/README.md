@@ -8,6 +8,45 @@ VCF breakend / structural-variant parsing and the shared SV launch helpers
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### breakendKeepsDirections
+
+Which way the sequence each end of a breakend KEEPS runs from its breakpoint, as
+`+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
+`tickDirection` states and the one every producer in the tree emits.
+
+`Join: 'right'` means the mate piece is joined to the RIGHT of the ref base, so
+this end is the one that keeps the sequence to its left; the bracket direction
+says the same thing about the mate. Both are therefore the negation of the
+string they read.
+
+Split out of `parseSvAlt` because a consumer holding an already-parsed
+`Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
+polarity — the shape that produced 78bb7b84f9.
+
+```js
+// type signature
+(bnd: Breakend) => { mateDirection: number; joinDirection: number; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
+### breakendTickPx
+
+Screen-x of the far end of a breakend's direction tick at screen-x `x`.
+
+`keepsDir` is genomic (see `breakendKeepsDirections`) and `reversed` is what
+turns it into a screen direction, so both are required: a caller cannot compile
+without answering the question. A reversed displayed region mirrors the axis, so
+a tick that ignores it points at the side the derivative discards rather than
+the side it keeps.
+
+```js
+// type signature
+(x: number, keepsDir: number, reversed: boolean, lengthPx?: number) => number
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
 ### breakpointBpPerPx
 
 bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view

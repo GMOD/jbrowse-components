@@ -1,3 +1,5 @@
+import { breakendKeepsDirections } from '@jbrowse/sv-core'
+
 import { findMatchingAlt } from './overlayGeometry.ts'
 import {
   VariantOverlay,
@@ -21,18 +23,10 @@ export default function Breakends(props: OverlayProps) {
             if (!relevantAlt) {
               return []
             }
-            const x1Tick = tickAtPx(
-              layouts,
-              level1,
-              x1,
-              relevantAlt.Join === 'left' ? -1 : 1,
-            )
-            const x2Tick = tickAtPx(
-              layouts,
-              level2,
-              x2,
-              relevantAlt.MateDirection === 'left' ? 1 : -1,
-            )
+            const { joinDirection, mateDirection } =
+              breakendKeepsDirections(relevantAlt)
+            const x1Tick = tickAtPx(layouts, level1, x1, joinDirection)
+            const x2Tick = tickAtPx(layouts, level2, x2, mateDirection)
             return [
               {
                 id: f1.id(),
