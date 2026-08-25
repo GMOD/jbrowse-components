@@ -87,6 +87,11 @@ export interface ScreenshotAction {
   //   locus      a genomic coordinate in a linear view (scripts/locusAnchor.ts),
   //              with `track` naming which track to land in and `fracY` how far
   //              down its band (default the middle)
+  //   selector   an element's own rect (scripts/selectorAnchor.ts), with `view`
+  //              scoping the query to one view's container and
+  //              `alignX`/`alignY`/`dx`/`dy` picking the point on it. For the
+  //              strips a model cannot name a coordinate in — a synteny row's
+  //              ruler, whose x is a fraction rather than a locus.
   //
   // Prefer either over `from`. A hand-measured coordinate is correct only for
   // the width, locus and layout it was measured against, and nothing tells you

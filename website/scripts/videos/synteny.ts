@@ -22,11 +22,16 @@ const {
   grassesLanes,
   liftoverBlock,
   liftoverLgv,
+  mafRowSpan,
+  mafRows,
+  mafTrackId,
   multiwayHoverLocus,
   multiwayLanes,
   restackAnchor,
   restackLanes,
   restackSpan,
+  roundTripStart,
+  segmentsTrackId,
   strains,
   unorderedDotplot,
 } = syntenyVideoFixtures
@@ -72,10 +77,15 @@ const LAUNCH_SUBMENU = '[data-testid="cascading-submenu-launch"]'
 const LAUNCH_SYNTENY_VIEW =
   '[data-testid="cascading-menuitem-linear_synteny_view"]'
 
-const MAF_DISPLAY = '[data-testid="maf-display"]'
 // `cascading-menuitem-<label>`, lowercased with whitespace as `_`: the child's
 // label is the strain and its locus, and only the strain half is stable.
 const MAF_NCTC86_ENTRY = '[data-testid^="cascading-menuitem-nctc86_chr"]'
+
+// The MAF display's rows area, below its coverage and conservation bands. As a
+// drag's `band` it is what makes the two `fracY` fractions mean "the top row"
+// and "the bottom row" at any display height -- a fraction of the whole display
+// would have to encode where the bands end, which is a setting.
+const MAF_ROWS = '[data-testid="maf-rows"]'
 
 // One of the launch dialog's reorder arrows. Labelled with the assembly AND its
 // position, because a self-alignment track lists the anchor's assembly twice and
@@ -1127,7 +1137,7 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/ecoli_roundtrip',
     description:
       'One selection on K-12, three views: the Launch menu offering the graph beside the synteny stack, the stack anchored on K-12 with the segments lane on its top row, that lane cutting the graph below, and a drag on the Sakai row re-anchoring the stack on Sakai',
-    url: syntenyVideoFixtures.roundTripStart,
+    url: roundTripStart,
     // Sized to the END state, a five-row stack over the graph pane: the stack
     // measures ~620 (multiway_synteny/ecoli_launch_result) and a launched graph
     // pane lands the app at ~1100 (pangenome/pggb_subgraph_launch). The page
@@ -1146,11 +1156,11 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'drag',
         fromAnchor: {
-          locus: syntenyVideoFixtures.allVsAllSpan.start,
+          locus: allVsAllSpan.start,
           band: RUBBERBAND,
         },
         toAnchor: {
-          locus: syntenyVideoFixtures.allVsAllSpan.end,
+          locus: allVsAllSpan.end,
           band: RUBBERBAND,
         },
         say: 'Drag across the scale bar',
@@ -1173,7 +1183,7 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'waitForText', text: 'Panels, top to bottom' },
       {
         type: 'waitForSelector',
-        selector: panelArrow(syntenyVideoFixtures.allVsAllMoved, 5, 'up'),
+        selector: panelArrow(allVsAllMoved, 5, 'up'),
         timeout: 180000,
       },
       { type: 'delay', ms: 2500, say: 'One panel per strain that aligns' },
@@ -1196,7 +1206,7 @@ export const syntenyVideos: VideoSpec[] = [
       // The graph, from the segments lane the launch carried onto the K-12 row.
       {
         type: 'click',
-        selector: trackMenu(syntenyVideoFixtures.segmentsTrackId),
+        selector: trackMenu(segmentsTrackId),
         say: 'The segments lane: Track menu',
         hold: 700,
       },
@@ -1241,7 +1251,7 @@ export const syntenyVideos: VideoSpec[] = [
       { type: 'waitForText', text: 'Sakai (your selection)' },
       {
         type: 'waitForSelector',
-        selector: panelArrow(syntenyVideoFixtures.allVsAllMoved, 5, 'up'),
+        selector: panelArrow(allVsAllMoved, 5, 'up'),
         timeout: 180000,
       },
       { type: 'delay', ms: 2500, say: 'The same dialog, anchored on Sakai' },
@@ -1269,10 +1279,9 @@ export const syntenyVideos: VideoSpec[] = [
   // THE MAF ROW LAUNCH, which pangenome_ecoli.md's alignment section states in
   // one paragraph: a drag across the rows lists the strains it covers, and the
   // synteny entry opens the reference against one of them with the ribbons cut
-  // from the columns. The drag is a selector anchor inside the MAF display's
-  // own box -- the rows are laid out below the coverage band, so it runs from
-  // the middle of the display to near its bottom edge -- because no locus names
-  // a row.
+  // from the columns. The drag names two loci on the reference for its x and
+  // takes its y from the rows area, top row to bottom, so the menu it raises
+  // lists every strain that aligns in the window rather than a slice of them.
   //
   // The submenu child is picked by its testid prefix rather than by text: the
   // inline "Open NCTC86 ... in new view" entry above it contains the same
@@ -1281,10 +1290,12 @@ export const syntenyVideos: VideoSpec[] = [
     name: 'synteny/maf_row_synteny',
     description:
       "From the pggb alignment's rows to a two-strain synteny view: a drag across the rows, the menu listing the strains it covers, and the synteny view the NCTC86 entry opens",
-    url: syntenyVideoFixtures.mafRows,
-    // The linear view plus the two-row view the launch adds below it, which the
-    // probe that verified the route measured at ~1100 with both on screen.
-    viewportHeight: 1110,
+    url: mafRows,
+    // The linear view plus the two-row view the launch adds below it. The frame
+    // is sized to the end state and the run reports the app's own height there;
+    // the slack over it is the caption chip's strip, which is fixed off the
+    // frame's bottom rather than the app's.
+    viewportHeight: 1260,
     readySelector: displayPainted('maf-display'),
     readyTimeout: 180000,
     settleMs: 8000,
@@ -1294,18 +1305,16 @@ export const syntenyVideos: VideoSpec[] = [
       {
         type: 'drag',
         fromAnchor: {
-          selector: MAF_DISPLAY,
-          alignX: 'center',
-          alignY: 'center',
-          dx: -220,
-          dy: 10,
+          locus: mafRowSpan.start,
+          track: mafTrackId,
+          band: MAF_ROWS,
+          fracY: 0.02,
         },
         toAnchor: {
-          selector: MAF_DISPLAY,
-          alignX: 'center',
-          alignY: 'bottom',
-          dx: 220,
-          dy: -6,
+          locus: mafRowSpan.end,
+          track: mafTrackId,
+          band: MAF_ROWS,
+          fracY: 0.98,
         },
         say: 'Drag across the rows',
         hold: 900,
@@ -1326,6 +1335,25 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       { type: 'waitForAppSettled', timeout: 180000 },
+      // Park in two moves, and the first one is the load-bearing half: the drag
+      // left the pointer inside the MAF display, and the menu that opened over
+      // it is portaled to the body, so the pointer left the display's box while
+      // something else held the browser's hover chain and the display was never
+      // sent a `mouseleave`. Its tracked position is therefore still the drag's
+      // last pixel, and it draws a tooltip over that base for the rest of the
+      // clip -- through the poster -- however far away the real mouse is. A
+      // move back ONTO the rows puts the display back in the hover chain, and
+      // the wordmark after it is then a leave the display sees.
+      {
+        type: 'hover',
+        anchor: {
+          locus: mafRowSpan.start,
+          track: mafTrackId,
+          band: MAF_ROWS,
+          fracY: 0.5,
+        },
+        hold: 0,
+      },
       { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
       {
         type: 'delay',

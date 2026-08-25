@@ -510,9 +510,18 @@ const ECOLI_ROUND_TRIP_START = sessionSpec(
   },
 )
 
-// Where the MAF-row launch starts: the pggb alignment over one operon window
-// on K-12, narrow enough that every strain's row is a run of bases rather than
-// a bar, with the gene lane that names what the rows are aligning.
+// Where the MAF-row launch starts: the pggb alignment over three of its own
+// blocks on K-12, narrow enough that every strain's row is a run of bases
+// rather than a bar, with the gene lane that names what the rows are aligning.
+//
+// THE WINDOW IS BACKBONE, and the tour is about the menu the rows raise, so it
+// has to be. `ecoli_pggb.maf.bed.gz` carries one row per strain that aligns and
+// no row at all for one that does not; a menu is built from the rows the drag
+// covers, so a window inside an accessory island lists one strain and the tour
+// says "one entry per strain the drag covers" over it. chr:1,446,000 is such a
+// window -- the paa island, where two of the three blocks under it carry K-12
+// and NCTC86 alone -- and it is the window this tour was first written at.
+// Every block between 797,952 and 801,145 carries all five.
 const ECOLI_MAF_ROWS = sessionSpec(
   encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json'),
   {
@@ -520,7 +529,7 @@ const ECOLI_MAF_ROWS = sessionSpec(
       {
         type: 'LinearGenomeView',
         assembly: 'K12',
-        loc: 'chr:1,446,000-1,449,000',
+        loc: 'chr:798,300-801,100',
         tracks: [
           {
             trackId: 'K12_genes',
@@ -528,7 +537,15 @@ const ECOLI_MAF_ROWS = sessionSpec(
             showOnlyGenes: true,
             displayMode: 'compact',
           },
-          'ecoli_pggb_maf',
+          // Tall enough that a row is a band a drag can be aimed at: the
+          // display fits its rows to whatever height it is given, and at the
+          // default the five strains and the coverage band share ~80px.
+          {
+            trackId: 'ecoli_pggb_maf',
+            type: 'LinearMafDisplay',
+            showTree: true,
+            height: 150,
+          },
         ],
       },
     ],
@@ -4842,6 +4859,12 @@ export const syntenyVideoFixtures = {
   // The rGFA segments lane's track, which the round trip launches the graph
   // from once it has ridden onto the stack's K-12 row.
   segmentsTrackId: 'ecoli_minigraph_segments',
+  // The alignment lane the MAF tour drags across, and the reference span the
+  // drag covers. The x is named on K-12 because that is the axis the rows are
+  // drawn against; which rows the drag catches is the `fracY` at each end, and
+  // the guide tree sorts NCTC86 last of the five.
+  mafTrackId: 'ecoli_pggb_maf',
+  mafRowSpan: { start: 'chr:798,700', end: 'chr:800,700' },
   // The span the tour rubberbands, which is the span the composite's own drag
   // covers (`launchFromSelectionParts` measures it in pixels; this names it).
   //
