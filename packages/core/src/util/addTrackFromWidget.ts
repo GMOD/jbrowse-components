@@ -1,9 +1,11 @@
 import { namesTemporaryAssembly } from './temporaryAssembly.ts'
+import { isSameAssemblyName } from './tracks.ts'
 import {
   isSessionModelWithWidgets,
   isSessionWithPublishTrackConf,
 } from './types/index.ts'
 
+import type { AssemblyNameResolver } from './tracks.ts'
 import type {
   AbstractSessionModel,
   SessionWithPublishTrackConf,
@@ -14,12 +16,22 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 /**
  * Whether the target track list currently displays any of the track's
  * assemblies, i.e. the track can be shown there after adding it.
+ *
+ * Both sides resolve through the aliases, because the two names meeting here
+ * come from different places: the container holds whatever the session opened
+ * the view on, and the config holds whatever its author wrote. `===` read a
+ * track configured against `hg38` as undisplayable in a view on `GRCh38`, so
+ * the add landed and nothing appeared, under a snackbar naming the assembly the
+ * user was looking at as one this view does not have open.
  */
 export function containerDisplaysAssembly(
   container: { assemblyNames?: readonly string[] } | undefined,
   assemblyNames: readonly (string | undefined)[] | undefined,
+  assemblyManager: AssemblyNameResolver,
 ) {
-  return !!container?.assemblyNames?.some(a => assemblyNames?.includes(a))
+  return !!container?.assemblyNames?.some(a =>
+    assemblyNames?.some(b => isSameAssemblyName(a, b, assemblyManager)),
+  )
 }
 
 /** the slice of the add-track widget every workflow's submit path writes to */
@@ -125,7 +137,13 @@ export function addTrackFromWidget({
   if (!added) {
     return undefined
   }
-  if (containerDisplaysAssembly(trackContainer, conf.assemblyNames)) {
+  if (
+    containerDisplaysAssembly(
+      trackContainer,
+      conf.assemblyNames,
+      session.assemblyManager,
+    )
+  ) {
     trackContainer?.showTrack(conf.trackId)
   } else {
     const assemblies = conf.assemblyNames?.filter(a => !!a) ?? []

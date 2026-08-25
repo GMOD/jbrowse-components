@@ -42,7 +42,13 @@ export function doPasteConfigSubmit({
         // track that wasn't added.
         if (session.publishTrackConf(conf)) {
           added++
-          if (containerDisplaysAssembly(trackContainer, conf.assemblyNames)) {
+          if (
+            containerDisplaysAssembly(
+              trackContainer,
+              conf.assemblyNames,
+              session.assemblyManager,
+            )
+          ) {
             trackContainer?.showTrack(conf.trackId)
           } else {
             notShown.push(conf.name ?? conf.trackId)

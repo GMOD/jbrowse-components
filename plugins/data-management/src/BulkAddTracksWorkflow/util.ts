@@ -177,7 +177,11 @@ export function submitBulkTracks({
     throw new Error("Can't add tracks to this session")
   }
   const { trackContainer } = model
-  const showInView = containerDisplaysAssembly(trackContainer, [assembly])
+  const showInView = containerDisplaysAssembly(
+    trackContainer,
+    [assembly],
+    session.assemblyManager,
+  )
   // Ids are minted here rather than with the preview rows: the preview is
   // rebuilt on every keystroke, but a timestamp held in component state is
   // pinned for the life of the mounted widget, so a second submit (after one

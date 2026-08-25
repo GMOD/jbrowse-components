@@ -276,6 +276,24 @@ describe('JBrowseWebSessionModel', () => {
       ).toEqual(['spec_track'])
     })
 
+    // An alias is a name of the assembly the catalog carries, so a track
+    // naming one is a track the catalog can resolve. Comparing the raw strings
+    // sent it to the session instead and told the admin the config.json does
+    // not carry `vvx` — beside a view that is open on exactly that assembly.
+    it('an admin publishing onto a catalog assembly named by an alias still publishes', () => {
+      const session = createTestSession({
+        adminMode: true,
+        jbrowseConfig: {
+          assemblies: [{ ...withVolvox.assemblies[0], aliases: ['vvx'] }],
+        },
+      })
+      session.publishTrackConf({ ...trackSnap, assemblyNames: ['vvx'] })
+      expect(
+        session.jbrowse.tracks.map((t: AnyConfigurationModel) => t.trackId),
+      ).toEqual(['spec_track'])
+      expect(session.sessionTracks).toHaveLength(0)
+    })
+
     it('a non-admin publishTrackConf writes the session, not the config', () => {
       const session = createTestSession({})
       session.publishTrackConf(trackSnap)

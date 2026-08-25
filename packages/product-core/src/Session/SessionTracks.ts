@@ -71,14 +71,25 @@ function deltaHasChanges(
 // `self.jbrowse.assemblies` is the catalog alone — the session's own
 // `assemblies` getter adds sessionAssemblies to it, which is the opposite of
 // what this asks.
+//
+// An assembly's `aliases` are names of that assembly, so a track naming one
+// names something the catalog carries and publishes like any other. Matching on
+// `name` alone diverted it to the session and told the admin the config.json
+// has no such assembly while they were looking at it. Read off the configs
+// rather than through the assembly manager: the question is what the config.json
+// declares, and the manager also answers for sessionAssemblies, which is the
+// case this exists to catch.
 function assembliesNotInTheCatalog(
   self: { jbrowse: { assemblies: unknown[] } },
   trackConf: AnyConfiguration,
 ) {
   const catalog = new Set(
-    self.jbrowse.assemblies.map(a =>
-      readConfObject(a as AnyConfigurationModel, 'name'),
-    ),
+    self.jbrowse.assemblies.flatMap(a => [
+      readConfObject(a as AnyConfigurationModel, 'name') as string,
+      ...((readConfObject(a as AnyConfigurationModel, 'aliases') as
+        | string[]
+        | undefined) ?? []),
+    ]),
   )
   const names = readConfObject(
     trackConf as AnyConfigurationModel,
