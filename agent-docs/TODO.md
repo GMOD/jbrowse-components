@@ -33,6 +33,7 @@ the half that rots is the half it covers.
 | --- | --- | --- |
 | [Should a track's height be bounded at all](todo/decide-whether-a-tracks-height-should-be-bounded-at-all.md) | GPU, limits | the blank is fixed; what is left is whether the drag should stop, and per display |
 | [A repeat's subpart labels collide in one row](todo/a-repeats-subpart-labels-collide-inside-the-row-they-now-share.md) | canvas | the row is reserved now; decide whether the one-row design survives |
+| [A polyprotein CDS reads as non-coding](todo/a-polyprotein-cds-reads-as-non-coding-and-ranks-last.md) | canvas | fix the two coding helpers, not the ranking comparator |
 | [Put the Manhattan display on `plotGeometry`](todo/put-the-manhattan-display-on-plotgeometry.md) | gwas, wiggle | check Manhattan against the shared views' host type; the frame already defaults for it |
 | [Let a dotplot click open the alignment it is on](todo/let-a-dotplot-click-open-the-alignment-it-is-on.md) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
 | [Import the recipes' remaining copied label tables](todo/import-the-recipes-remaining-copied-label-tables.md) | website, menus | check each registry's module for a React import; a leaf is importable today |

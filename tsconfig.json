@@ -60,6 +60,12 @@
     "**/config/jest/",
     "**/component_tests/",
     "**/examples-site/",
+    // `pnpm typecheck:web` runs this project, so a website/ edit it never
+    // opened still exits 0 -- appending `const x: number = "s"` to
+    // `website/scripts/` proves it. The whole workspace has its own
+    // `website/tsconfig.json` (astro's strict preset plus
+    // `noUncheckedIndexedAccess`) that `astro check` drives; run
+    // `pnpm --filter @jbrowse/website-astro typecheck` after editing there.
     "**/website",
     // Excluded from *this* project because they run in electron/node, not the
     // browser: they need `lib: esnext` (no DOM) and node's globals, so e.g.

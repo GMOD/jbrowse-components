@@ -50,6 +50,10 @@ function onMainThreadRpc(jbrowse: Record<string, unknown>) {
   }
 }
 
+// Admin by default, unlike `createTestSession`. A test about anything the two
+// modes split -- track config deltas, where `publishTrackConf` writes -- takes
+// the admin path unless it says otherwise, and an admin produces no delta at
+// all, so the assertion passes over a case it never exercised.
 export function getPluginManager(
   initialState?: Record<string, unknown>,
   adminMode = true,

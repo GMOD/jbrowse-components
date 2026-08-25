@@ -141,6 +141,15 @@ describe('workspace layering', () => {
     // every plugin. `disallowWorkspaceCycles` in `pnpm-workspace.yaml` fails
     // the install on the next one; this says the same thing to a reader who
     // came here to find out which direction the tiers run.
+    //
+    // When `ERR_PNPM_DISALLOW_WORKSPACE_CYCLES` fires, the fix is almost never
+    // to drop the setting. A plugin that wants another plugin's TYPE takes a
+    // duck-typed interface from `@jbrowse/core` instead
+    // (`AddTrackWorkflowModel`, `AddTrackComponentModel`, `AddTrackWidgetSelf`,
+    // or a local `interface XSelf extends IStateTreeNode`); a plugin that wants
+    // `createTestSession` already resolves it through the root. Verify with the
+    // full `tsc --build`, not `typecheck` -- dropping a workspace dep is
+    // invisible to the latter.
     expect(edges(['devDependencies'], 'plugin', 'product')).toEqual([])
   })
 })

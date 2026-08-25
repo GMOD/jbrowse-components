@@ -585,6 +585,13 @@ export function parsePAFLine(line: string) {
 // was indexed, and the CIGAR is already swapped/flipped for it. This renames
 // parsePAFLine's q*/t* fields to the anchor/mate roles they actually play here,
 // which is why the indexed adapters need no read-time reorientation.
+//
+// Every alignment is written TWICE, once anchored on each side -- a `qchr1` row
+// and a `tchr1` row -- so the file holds 2x the alignment count in rows. An
+// adapter indexes one side per axis and never sees both. A script that strips
+// the prefix to recover the refName instead pools the two genomes' coordinates
+// into one population, and every statistic off it stays plausible: only the row
+// count gives it away. Filter on the prefix, don't strip it.
 export function parsePifLine(line: string) {
   const r = parsePAFLine(line)
   return {

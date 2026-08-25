@@ -35,6 +35,9 @@ export function createTestSession(args?: {
     })),
   ]).createPluggableElements()
 
+  // `jbrowseConfig` supplies every assembly there is: with none passed, the
+  // session has an empty assembly list, so a track naming one is exercising
+  // the unresolvable case rather than the case the test is named for.
   const root = RootModel({
     pluginManager,
     sessionModelFactory,
