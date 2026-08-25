@@ -266,10 +266,17 @@ const MultiWayRows = observer(function MultiWayRows({
     return px === undefined ? undefined : px - view.offsetPx
   }
 
-  const refNameLabel = (assemblyName: string, refName: string) => {
-    const laneAssembly = assemblyManager.get(assemblyName)
-    return laneAssembly ? laneAssembly.getCanonicalRefName2(refName) : refName
-  }
+  // One lane's refNames resolved into that assembly's own canonical spelling.
+  // The lane's two sources of refName are two FILES: the frame's comes from the
+  // synteny table's BED, and a gene's from that assembly's GFF3, which for a
+  // genome whose annotation names sequences by INSDC accession is `CM028642.2`
+  // where the table says `3L`. The RPC resolves each through the alias table on
+  // its way out (`afterAttach`) and `renameRegionsIfNeeded` then rewrites it
+  // into the adapter's own namespace, so what comes back is the FILE's
+  // spelling — never the frame's. Comparing the two raw is the same `===` the
+  // assembly-name rule forbids, one level down, and it drops every gene.
+  const canonicalRefName = (assemblyName: string, refName: string) =>
+    assemblyManager.get(assemblyName)?.getCanonicalRefName2(refName) ?? refName
 
   const rowCount = rowAssemblies.length + 1
   const glyphHeight = Math.max(
@@ -397,6 +404,8 @@ const MultiWayRows = observer(function MultiWayRows({
       if (upper && lower && links) {
         const y1 = glyphTop(i + 1) + glyphHeight
         const y2 = glyphTop(i + 2)
+        const upperRefName = canonicalRefName(upperAssembly, upper.refName)
+        const lowerRefName = canonicalRefName(lowerAssembly, lower.refName)
         for (const link of links) {
           const mate = link.get('mate') as {
             refName: string
@@ -404,8 +413,9 @@ const MultiWayRows = observer(function MultiWayRows({
             end: number
           }
           if (
-            link.get('refName') === upper.refName &&
-            mate.refName === lower.refName
+            canonicalRefName(upperAssembly, link.get('refName')) ===
+              upperRefName &&
+            canonicalRefName(lowerAssembly, mate.refName) === lowerRefName
           ) {
             const a = rowFrameX(upper, link.get('start'), width)
             const b = rowFrameX(upper, link.get('end'), width)
@@ -465,6 +475,7 @@ const MultiWayRows = observer(function MultiWayRows({
     const frame = frameOf(rowIndex)
     const y = glyphTop(rowIndex)
     const genes = laneGenes?.get(assemblyName)
+    const frameRefName = frame && canonicalRefName(assemblyName, frame.refName)
     const drawsGenes =
       !!genes?.length && (rowIndex === 0 || frame !== undefined)
     // whether the SESSION has an annotation track for this lane, which is what
@@ -488,7 +499,8 @@ const MultiWayRows = observer(function MultiWayRows({
       for (const gene of genes) {
         const inFrame =
           rowIndex === 0 ||
-          (gene.get('refName') === frame!.refName &&
+          (canonicalRefName(assemblyName, gene.get('refName')) ===
+            frameRefName &&
             doesIntersect2(
               frame!.min,
               frame!.max,
@@ -570,7 +582,7 @@ const MultiWayRows = observer(function MultiWayRows({
       rowIndex === 0
         ? view.coarseVisibleLocStrings || view.visibleLocStrings
         : frame &&
-          `${refNameLabel(assemblyName, frame.refName)}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
+          `${canonicalRefName(assemblyName, frame.refName)}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
     headers.push(
       <text
         key={`label-${assemblyName}`}

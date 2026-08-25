@@ -1,0 +1,6 @@
+##gff-version 3
+CM000001.1	test	gene	1001	1100	.	+	.	ID=gene-p1;Name=p1
+CM000001.1	test	mRNA	1001	1100	.	+	.	ID=rna-p1;Parent=gene-p1
+CM000001.1	test	exon	1001	1030	.	+	.	ID=exon-p1-1;Parent=rna-p1
+CM000001.1	test	exon	1071	1100	.	+	.	ID=exon-p1-2;Parent=rna-p1
+CM000001.1	test	gene	1201	1300	.	-	.	ID=gene-p2;Name=p2

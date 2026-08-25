@@ -11,6 +11,7 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import GlobalFetchMixin, {
   blockKeySignature,
 } from '@jbrowse/display-kit/GlobalFetchMixin'
@@ -223,9 +224,14 @@ export function stateModelFactory(
        */
       get rowAssemblies() {
         // a paralogy record's mate is the anchor assembly itself; those draw
-        // on the anchor's own axis, not as a lane
+        // on the anchor's own axis, not as a lane. Through the aliases,
+        // because the view holds what the session opened it on while a mate
+        // holds whatever the track config or a PanSN prefix spelled
+        const { assemblyManager } = getSession(self)
+        const anchor = self.lgv.assemblyNames[0]
         return rowAssembliesOf(self.groups, [...self.rowOrder]).filter(
-          assemblyName => assemblyName !== self.lgv.assemblyNames[0],
+          assemblyName =>
+            !isSameAssemblyName(assemblyName, anchor, assemblyManager),
         )
       },
       /**
@@ -398,7 +404,11 @@ export function stateModelFactory(
             )?.type
             return (
               names.length === 1 &&
-              names[0] === assemblyName &&
+              isSameAssemblyName(
+                names[0],
+                assemblyName,
+                session.assemblyManager,
+              ) &&
               !!adapterType?.startsWith('Gff3')
             )
           })
@@ -643,5 +653,4 @@ export function stateModelFactory(
 export type MultiWaySyntenyDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type MultiWaySyntenyDisplayModel =
-  Instance<MultiWaySyntenyDisplayStateModel>
+export interface MultiWaySyntenyDisplayModel extends Instance<MultiWaySyntenyDisplayStateModel> {}
