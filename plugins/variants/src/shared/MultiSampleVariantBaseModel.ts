@@ -111,7 +111,15 @@ type SetSlotFn = (slotName: string, value: unknown) => void
 // Config slots ported onto the *other* variant display's config when the
 // user switches display type via the track menu (see getPortableSettings).
 // `featureColor` is deliberately absent — it is ported separately, raw.
+//
+// `height` and `rowHeight` are config slots too (TrackHeightMixin,
+// RowHeightMixin), so they are ported here and not through the instance
+// snapshot: `height` used to ride in that snapshot, where MST drops a key no
+// prop declares, so a drag-resized track came back at the other display's
+// default on every switch.
 const PORTABLE_CONFIG_KEYS = [
+  'height',
+  'rowHeight',
   'renderingMode',
   'minorAlleleFrequencyFilter',
   'maxMissingnessFilter',
@@ -904,6 +912,30 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
+         * Overrides the mixin's `layout.length > 0`: here a configured
+         * `colorBy` / `groupBy` seeds `layout` on first load, so a non-empty
+         * layout is the ordinary state of a track nobody has rearranged, and
+         * `clearLayout` puts that same arrangement straight back. "Reset row
+         * order" is offered only once the layout has moved away from what the
+         * config alone would produce.
+         */
+        get rowOrderIsCustom(): boolean {
+          const sources = self.sourcesVolatile
+          return (
+            self.layout.length > 0 &&
+            !(
+              sources &&
+              deepEqual(
+                self.layout,
+                arrangeSources(self.colorBy, self.groupBy, sources),
+              )
+            )
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Returns the minor allele frequency filter config slot value
          */
         get minorAlleleFrequencyFilter(): number {
@@ -1038,12 +1070,9 @@ export default function MultiSampleVariantBaseModelF(
          * other sample appended after it. Same reason the other row displays'
          * `editableSources` sit upstream of `filterRowsBySubtree`.
          */
-        get editableSources() {
-          if (!self.sourcesVolatile) {
-            return undefined
-          }
+        get editableSources(): ProcessedSource[] {
           return getSources({
-            sources: self.sourcesVolatile,
+            sources: self.sourcesVolatile ?? [],
             layout: self.layout.length ? self.layout : undefined,
             renderingMode: self.renderingMode,
             sampleInfo: self.sampleInfo,
@@ -1368,7 +1397,7 @@ export default function MultiSampleVariantBaseModelF(
           // blank. Not subtree-filtered, so a hidden row keeps its overrides
           // instead of being dropped from `layout` for good.
           const sources = self.editableSources
-          if (cellData && sources) {
+          if (cellData && sources.length) {
             const { featureIds, genotypeCodesByFeatureId } =
               getOrderedGenotypeCodes(cellData)
             const sorted = sortSourcesAroundVariant({
@@ -1462,6 +1491,11 @@ export default function MultiSampleVariantBaseModelF(
          * display's instance snapshot — hence the `newDisplayId` param. Only
          * genuine display-instance state (not config-backed) is returned for
          * the instance-snapshot spread.
+         *
+         * `clusterProvenance` and `subtreeFilter` travel with `clusterTree`
+         * and `layout`: the tree without its provenance loses the "Clustered
+         * on <locus>" row and the drift chip, and the layout without the
+         * filter un-focuses a clade the reader had narrowed to.
          */
         getPortableSettings(newDisplayId?: string) {
           if (newDisplayId) {
@@ -1483,9 +1517,10 @@ export default function MultiSampleVariantBaseModelF(
           return {
             jexlFiltersSetting: self.jexlFiltersSetting,
             clusterTree: self.clusterTree,
+            clusterProvenance: self.clusterProvenance,
+            subtreeFilter: self.subtreeFilter,
             treeAreaWidth: self.treeAreaWidth,
             layout: self.layout,
-            height: self.height,
           }
         },
       }))

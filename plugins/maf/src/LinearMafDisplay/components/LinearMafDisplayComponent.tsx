@@ -112,7 +112,6 @@ const MafBody = observer(function MafBody({
     effectiveRowHeight,
     showTree,
     sources,
-    samples,
     colorPalette,
   } = model
   const canvasId = useId()
@@ -305,7 +304,7 @@ const MafBody = observer(function MafBody({
         top={rowsTopOffset}
       />
       <MsaHighlightOverlay model={model} view={view} height={height} />
-      {pointer && samples && !contextCoord && !resizeActive ? (
+      {pointer && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>
           <DisplayCrosshairs
             model={model}

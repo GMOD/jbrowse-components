@@ -128,7 +128,7 @@ describe('runMafClustering', () => {
     expect(() =>
       clusteredMafLayout({
         sources: [src('a'), src('b'), src('c')],
-        editableSources: undefined,
+        editableSources: [],
         layout: [],
         order: [0, 1],
       }),

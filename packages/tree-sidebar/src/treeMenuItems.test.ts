@@ -50,7 +50,7 @@ describe('resetRowOrderMenuItems', () => {
   it('offers the reset once a row order has been written', () => {
     const clearLayout = jest.fn()
     const [item] = resetRowOrderMenuItems({
-      layout: [{ name: 'b' }, { name: 'a' }],
+      rowOrderIsCustom: true,
       clearLayout,
     })
 
@@ -66,7 +66,10 @@ describe('resetRowOrderMenuItems', () => {
   // sorts write it with no tree at all, and this is what undoes those too.
   it('contributes nothing while the rows are in discovered order', () => {
     expect(
-      resetRowOrderMenuItems({ layout: [], clearLayout: jest.fn() }),
+      resetRowOrderMenuItems({
+        rowOrderIsCustom: false,
+        clearLayout: jest.fn(),
+      }),
     ).toEqual([])
   })
 })

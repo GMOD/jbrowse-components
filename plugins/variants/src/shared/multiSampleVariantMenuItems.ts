@@ -362,8 +362,10 @@ export function variantContextMenuItems(
             self.selectFeature(feat)
           },
         },
+        // The same label the multi-row painting's menu uses for the same
+        // row, so the two displays don't offer one action under two names
         {
-          label: 'Copy to clipboard',
+          label: 'Copy location',
           icon: ContentCopyIcon,
           onClick: () => {
             const loc = assembleLocString({

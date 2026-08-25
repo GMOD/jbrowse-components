@@ -51,4 +51,36 @@ describe('getPortableSettings', () => {
     expect(display.featureColor).toBe('#ff0000')
     expect(display.colorBy).toBe('population')
   })
+
+  // Both are config slots, so they have to go through the slot copy: `height`
+  // used to be returned in the instance snapshot, where MST drops a key no prop
+  // declares, and a drag-resized track came back at the other display's default.
+  it('ports the track height and a fixed row height as slots', () => {
+    const { display, targetId } = setup('')
+    display.resizeHeight(123)
+    display.setRowHeight(7)
+    const { height, rowHeight } = display
+    const snapshot = display.getPortableSettings(targetId)
+    expect(snapshot).not.toHaveProperty('height')
+    expect(display.height).toBe(height)
+    expect(display.rowHeight).toBe(rowHeight)
+  })
+
+  // The tree's provenance and the subtree filter are the two pieces of
+  // instance state that only mean something beside the tree and the layout they
+  // came with.
+  it('carries the cluster provenance and subtree filter with the tree', () => {
+    const { display, targetId } = setup('')
+    const provenance = {
+      regions: [{ refName: 'chr1', start: 0, end: 100 }],
+      settings: [],
+    }
+    display.setLayoutAndClusterTree([{ name: 'a' }], '(a);', provenance)
+    display.setSubtreeFilter(['a'])
+    expect(display.getPortableSettings(targetId)).toMatchObject({
+      clusterTree: '(a);',
+      clusterProvenance: provenance,
+      subtreeFilter: ['a'],
+    })
+  })
 })

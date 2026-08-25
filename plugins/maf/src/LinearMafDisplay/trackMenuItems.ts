@@ -89,7 +89,8 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   rowHeight: number
   rowProportion: number
   subtreeFilter?: readonly string[]
-  editableSources: MafSource[] | undefined
+  editableSources: MafSource[]
+  sourcesKnown: boolean
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
   setRowProportion: (n: number) => void
@@ -109,6 +110,7 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   // The row order the arrangement dialog writes, and the reset that drops it
   // (`resetRowOrderMenuItems` gates on the first and calls the second).
   layout: readonly MafSource[]
+  rowOrderIsCustom: boolean
   clearLayout: () => void
   // Consumed structurally by SetRowArrangementDialog's TreeLayoutModel<MafSource>
   // prop (model={self}), not directly in this file.
@@ -279,7 +281,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     rowRenderingMenuItem(self),
     ...makeShowSubMenu(showMenuItems(self)),
     rowArrangementMenuItem({
-      ready: !!self.editableSources?.length,
+      ready: !!self.editableSources.length,
       onOpen: () => {
         getDialogHost(self).queueDialog(handleClose => [
           SetRowArrangementDialog,
@@ -303,7 +305,11 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
       {
         label: 'Cluster rows by identity...',
         disabled: self.sources.length < 2,
-        disabledHelpText: 'Loading rows...',
+        // `sources` is the post-filter list, so one row here is as often a
+        // clade focused down to a single species as a track still loading
+        disabledHelpText: self.sourcesKnown
+          ? 'Needs at least two rows to cluster'
+          : 'Loading rows...',
         onClick: () => {
           getDialogHost(self).queueDialog(handleClose => [
             MafClusterDialog,

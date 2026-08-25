@@ -38,6 +38,7 @@ function makeSelf(
     showBranchLength: true,
     treeHasBranchLengths: false,
     layout: [],
+    rowOrderIsCustom: false,
     editableSources: rows,
     sourcesWithoutLayout: rows,
     rowHeight: 0,
@@ -255,7 +256,7 @@ describe('multi-row track menu', () => {
       'Reset row order',
     )
     const reordered = buildMultiRowTrackMenuItems(
-      makeSelf({ layout: [{ name: 'b' }] }),
+      makeSelf({ layout: [{ name: 'b' }], rowOrderIsCustom: true }),
     )
     expect(labels(reordered)).toContain('Reset row order')
     expect(reordered.every(i => 'icon' in i && i.icon)).toBe(true)

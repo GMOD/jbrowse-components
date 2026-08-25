@@ -687,7 +687,8 @@ export default function stateModelFactory(
          * order + label/color overrides, merged over the worker's `sourcesVolatile`
          * by name. Empty `layout` (no customization) passes the worker set through.
          * Not subtree-filtered — this is what the arrangement dialog edits.
-         * Undefined until the first fetch populates the worker set.
+         * Empty until the first fetch populates the worker set; `sourcesKnown`
+         * is the readiness question.
          *
          * The shared `reconcileLayout`, same as multi-row features and
          * multi-wiggle. Its append half matters here: a sample-discovery track
@@ -696,9 +697,8 @@ export default function stateModelFactory(
          * replaced iterated `layout` alone — so with any custom arrangement
          * saved, a species revealed by a later region never got a row at all.
          */
-        get editableSources(): MafSource[] | undefined {
-          const base = self.sourcesVolatile
-          return base.length ? reconcileLayout(base, self.layout) : undefined
+        get editableSources(): MafSource[] {
+          return reconcileLayout(self.sourcesVolatile, self.layout)
         },
       }))
       .views(self => ({
@@ -716,8 +716,7 @@ export default function stateModelFactory(
          * needs its own name rather than a truthiness test on this.
          */
         get sources(): MafSource[] {
-          const base = self.editableSources
-          return base ? filterRowsBySubtree(base, self.subtreeFilter) : []
+          return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
         },
 
         /**
@@ -849,7 +848,7 @@ export default function stateModelFactory(
          * project's canonical `{ id, label, color }` shape). Consumed by
          * MafSequenceWidget, color legend, etc.
          */
-        get samples(): Sample[] | undefined {
+        get samples(): Sample[] {
           return self.sources.map(s => ({
             id: s.name,
             label: s.label ?? s.name,

@@ -21,7 +21,7 @@ export type ClusterIdentityMatrixCaller =
  */
 export interface MafClusterSelf extends IStateTreeNode {
   sources: MafSource[]
-  editableSources: MafSource[] | undefined
+  editableSources: MafSource[]
   layout: readonly MafSource[]
   adapterConfig: Record<string, unknown>
   setLayout: (layout: MafSource[]) => void
@@ -55,7 +55,7 @@ export function clusteredMafLayout({
   order,
 }: {
   sources: MafSource[]
-  editableSources: MafSource[] | undefined
+  editableSources: MafSource[]
   layout: readonly MafSource[]
   order: number[]
 }): MafSource[] {
@@ -64,7 +64,7 @@ export function clusteredMafLayout({
   const clusteredNames = new Set(clustered.map(s => s.name))
   return [
     ...clustered,
-    ...(editableSources ?? []).filter(s => !clusteredNames.has(s.name)),
+    ...editableSources.filter(s => !clusteredNames.has(s.name)),
   ]
 }
 

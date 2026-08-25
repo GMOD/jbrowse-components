@@ -165,6 +165,18 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return !!self.root && maxNodeHeight(self.root) > 0
       },
 
+      /**
+       * #getter
+       * Whether the rows have been arranged away from the order they arrived
+       * in — what "Reset row order" is offered on. A written `layout` here; a
+       * display whose config seeds `layout` on load (the multi-sample variant
+       * displays' `colorBy` / `groupBy`) overrides it to compare against that
+       * seed, so the reset does not appear on a track nobody has touched.
+       */
+      get rowOrderIsCustom(): boolean {
+        return self.layout.length > 0
+      },
+
       // True when persisting `next` would invalidate the cluster tree: the tree
       // was built from the current `layout`, so any membership/order change
       // (with a tree loaded) makes it stale. Single source of truth shared by

@@ -149,16 +149,17 @@ export function clearSubtreeFilterMenuItems(
 }
 
 interface RowOrderMenuModel {
-  layout: readonly unknown[]
+  rowOrderIsCustom: boolean
   clearLayout: () => void
 }
 
 // "Reset row order", or nothing when the rows are still in discovered order —
 // spread, don't insert.
 //
-// Gated on `layout` rather than on `clusterTree`, and so deliberately NOT in the
-// clustering submenu: three things write the order — a clustering run, the
-// colors/arrangement dialog, and the right-click sort — and only the first
+// Gated on `rowOrderIsCustom` (the mixin's "has `layout` moved off what the
+// config alone produces") rather than on `clusterTree`, and so deliberately NOT
+// in the clustering submenu: three things write the order — a clustering run,
+// the colors/arrangement dialog, and the right-click sort — and only the first
 // leaves a tree behind, so an item filed under "Clustering" undoes one of them
 // while looking like it undoes all three. `clearLayout` resets any of them.
 //
@@ -167,7 +168,7 @@ interface RowOrderMenuModel {
 // out per call site it was four copies held together by a comment asserting
 // they were one action.
 export function resetRowOrderMenuItems(self: RowOrderMenuModel): MenuItem[] {
-  return self.layout.length
+  return self.rowOrderIsCustom
     ? [
         {
           label: 'Reset row order',

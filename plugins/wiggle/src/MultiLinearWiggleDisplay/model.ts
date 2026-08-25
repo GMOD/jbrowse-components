@@ -679,8 +679,9 @@ export default function stateModelFactory(
         return [
           // needs rows to reorder, and at least two of them: overlay collapses
           // every source onto one plot, so there is no row axis for a ranking
-          // to be read down
-          ...(!self.isOverlay && self.numSources > 1
+          // to be read down. `editableSources`, the list the sort itself
+          // orders — a clade focused to one row still has rows to sort
+          ...(!self.isOverlay && self.editableSources.length > 1
             ? [
                 {
                   label: 'Sort rows by score here',

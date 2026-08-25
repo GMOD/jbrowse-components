@@ -76,6 +76,7 @@ interface MultiRowMenuSelf
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
   layout: readonly MultiRowSource[]
+  rowOrderIsCustom: boolean
   // narrowed from TreeLayoutModel's optional: `rowArrangementMenuItem` gates on
   // its length, so this menu needs it to be there
   editableSources: MultiRowSource[]

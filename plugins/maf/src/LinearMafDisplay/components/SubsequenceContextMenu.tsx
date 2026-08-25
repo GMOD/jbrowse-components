@@ -30,7 +30,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
 }) {
   const { samples } = model
   const openRows = (rows: typeof samples) => {
-    if (contextCoord && rows) {
+    if (contextCoord) {
       openSubsequenceWidget(
         getSession(model),
         model,
@@ -60,7 +60,7 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
             const { startRow, endRow } = contextCoord
               ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
               : { startRow: 0, endRow: 0 }
-            openRows(samples?.slice(startRow, endRow))
+            openRows(samples.slice(startRow, endRow))
           },
         },
         ...(contextCoord
