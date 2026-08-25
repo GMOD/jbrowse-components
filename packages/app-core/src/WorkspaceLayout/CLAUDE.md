@@ -94,7 +94,9 @@ as public as the name** — add arguments optional, never required.
 
 ## Closing a tab or panel closes its views
 
-`session.removeView`, then drop the tab or cell. `closeTab` is one function with
-two callers (the ⋮ menu and middle-click); spelled twice, one leaks its views.
-`WorkspaceTab` and `TabStrip` take `PanelChrome.onTabClose` rather than building
-one — neither knows what a view is.
+`session.removeView`, then drop the tab or cell. **`WorkspaceContainer` states
+the removal once** (`closeViews`) and both `closeTab` and `closePanel` build on
+it; spelled per gesture, one of the four leaks its views. `WorkspaceTab`,
+`TabStrip` and `WorkspacePanelActions` take a callback rather than building the
+pair — none of them knows what a view is, and that is the property the tests
+pin.

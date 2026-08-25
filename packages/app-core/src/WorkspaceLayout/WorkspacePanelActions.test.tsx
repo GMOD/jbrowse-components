@@ -33,6 +33,7 @@ function setup(viewCount: number) {
     <WorkspacePanelActions
       panel={session.panels[0]!}
       session={session as unknown as WorkspaceSessionType & WorkspaceLayout}
+      onClose={() => {}}
     />,
   )
   return { session, user: userEvent.setup() }
@@ -79,4 +80,41 @@ test('a lone view gets the per-cell items and none of the global ones', async ()
   for (const label of TILINGS) {
     expect(screen.queryByText(label)).toBeNull()
   }
+})
+
+// The cell's × closes the views its tabs held, and this component is not where
+// that happens: `WorkspaceContainer` pairs it with `closeTab`'s removal through
+// one `closeViews`, because the layout tree does not own views and a second
+// spelling of "and also remove the views" is how one comes to be missing it. So
+// the button hands the gesture out and touches the session not at all — which
+// is the seam being pinned, since a component that quietly went back to calling
+// `session.closePanel` itself would pass every other test in this file.
+test('the cell close button delegates rather than closing anything itself', async () => {
+  const closed: string[] = []
+  const session = TestSession.create({
+    name: 't',
+    views: [{ id: 'view-0' }, { id: 'view-1' }],
+  })
+  session.homeUnassignedViews(session.views.map(v => v.id))
+  const panel = session.panels[0]!
+  session.splitPanel(panel.id, 'row')
+
+  render(
+    <WorkspacePanelActions
+      panel={panel}
+      session={session as unknown as WorkspaceSessionType & WorkspaceLayout}
+      onClose={() => {
+        closed.push(panel.id)
+      }}
+    />,
+  )
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: 'Close panel' }))
+
+  expect(closed).toEqual([panel.id])
+  expect(session.panels).toHaveLength(2)
+  expect(session.tabs.flatMap(t => [...t.viewIds])).toEqual([
+    'view-0',
+    'view-1',
+  ])
 })

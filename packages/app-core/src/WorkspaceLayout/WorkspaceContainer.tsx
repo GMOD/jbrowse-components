@@ -66,22 +66,42 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
     [session],
   )
 
-  // The layout does not own views, so closing a tab is explicitly the pair —
-  // and it is ONE function because two callers now need it (the tab's own ⋮
-  // menu, and middle-clicking the tab). Spelled out at each, one of them ends
-  // up dropping the tab and leaving its views in the session forever.
+  // The layout does not own views, so closing anything that holds them is
+  // explicitly the pair. Stated ONCE, here, because every spelling of it is a
+  // chance to drop the node and leave its views in the session forever — and
+  // three gestures want it now: the tab's ⋮ menu, middle-clicking the tab, and
+  // the cell's ×.
+  const closeViews = useCallback(
+    (viewIds: string[]) => {
+      for (const view of viewsOf(session, viewIds)) {
+        session.removeView(view)
+      }
+    },
+    [session],
+  )
+
   const closeTab = useCallback(
     (tabId: string) => {
       const tab = session.findTab(tabId)?.tab
       if (!tab) {
         return
       }
-      for (const view of viewsOf(session, tab.viewIds)) {
-        session.removeView(view)
-      }
+      closeViews(tab.viewIds)
       session.closeTab(tabId)
     },
-    [session],
+    [session, closeViews],
+  )
+
+  const closePanel = useCallback(
+    (panelId: string) => {
+      const panel = session.panels.find(p => p.id === panelId)
+      if (!panel) {
+        return
+      }
+      closeViews(panel.tabs.flatMap(t => t.viewIds))
+      session.closePanel(panelId)
+    },
+    [session, closeViews],
   )
 
   /**
@@ -98,7 +118,13 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
       dragHandlers: handlers,
       onTabClose: closeTab,
       renderPanelActions: panel => (
-        <WorkspacePanelActions panel={panel} session={session} />
+        <WorkspacePanelActions
+          panel={panel}
+          session={session}
+          onClose={() => {
+            closePanel(panel.id)
+          }}
+        />
       ),
       renderTabLabel: tab => (
         <WorkspaceTab
@@ -126,7 +152,7 @@ export const WorkspaceContainer = observer(function WorkspaceContainer({
         )
       },
     }),
-    [session, handlers, closeTab, classes.stack, classes.empty],
+    [session, handlers, closeTab, closePanel, classes.stack, classes.empty],
   )
 
   return (

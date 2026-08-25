@@ -44,9 +44,18 @@ const useStyles = makeStyles()({
 export const WorkspacePanelActions = observer(function WorkspacePanelActions({
   panel,
   session,
+  onClose,
 }: {
   panel: PanelNode
   session: WorkspaceSessionType & WorkspaceLayout
+  /**
+   * Closing a cell closes the views its tabs held, and the layout does not own
+   * views — so the pair is one function at the call site, the same way
+   * `WorkspaceTab` takes its `onClose`. Spelled here as well, this file would
+   * be the third place stating "and also remove the views", which is one more
+   * than the number that can be kept in step.
+   */
+  onClose: () => void
 }) {
   const { classes } = useStyles()
   const canClose = session.panels.length > 1
@@ -126,18 +135,7 @@ export const WorkspacePanelActions = observer(function WorkspacePanelActions({
       </CascadingMenuButton>
       {canClose ? (
         <Tooltip title="Close panel">
-          <IconButton
-            size="small"
-            className={classes.button}
-            onClick={() => {
-              // closing a cell closes the views its tabs held, as before
-              const ids = new Set(panel.tabs.flatMap(t => t.viewIds))
-              for (const view of session.views.filter(v => ids.has(v.id))) {
-                session.removeView(view)
-              }
-              session.closePanel(panel.id)
-            }}
-          >
+          <IconButton size="small" className={classes.button} onClick={onClose}>
             <CloseIcon className={classes.icon} />
           </IconButton>
         </Tooltip>
