@@ -440,9 +440,10 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `isDisplay(elt) { return elt.name === '…' }` — `LinearBasicDisplay` in
   protein3d, msaview, icn3d and graphgenomeview, `LinearAlignmentsDisplay` in
   tview, `LinearVariantDisplay` in both alphagenome plugins — and
-  `addDisplayMenuItems` already answers it. None of them has adopted it because
-  it is not in a release yet (`v4.3.0` has no `addMenuItems.ts`). Adoption is
-  the next move here, not machinery.
+  `addDisplayMenuItems` already answers it. None has adopted it yet, which the
+  release timeline explains without anyone having been asked: `v4.3.0` has no
+  `addMenuItems.ts`, so it is not reachable from a published `@jbrowse/core`.
+  Adoption is the next move here, not machinery.
 
 - **A `legendConfigSchemaFields` helper**, sharing the `showLegend` config slot
   the way `treeSidebarConfigSchemaFields` shares the tree ones — priced
