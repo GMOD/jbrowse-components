@@ -15,7 +15,9 @@ from ENCODE quantifications and gives the track configuration that reads it.
 
 ## Prerequisites
 
-- `curl`, `python3`, `bgzip` and `tabix`
+- `curl`
+- `python3`
+- htslib (`bgzip`, `tabix`)
 - R with satuRn, SummarizedExperiment, edgeR and limma, all Bioconductor
 - to read along without running anything, the finished analysis is hosted at
   [jbrowse.org/demos/dtu](https://jbrowse.org/demos/dtu/)

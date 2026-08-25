@@ -17,7 +17,6 @@ the chain between them, so there is nothing to align.
 
 ## Prerequisites
 
-- nothing to read the figures, which load hosted data
 - to build the config yourself: a JBrowse instance to load it into (the
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop)), plus the
@@ -42,11 +41,15 @@ models built on v1.1.
 ## Loading the assembly and the alignment
 
 The Q100 project serves both the assembly and the alignment between the
-haplotypes, and JBrowse reads each from its published URL.
+haplotypes, and JBrowse reads each from its published URL, so there is nothing
+to download.
 
-Start with the assembly, one entry in `assemblies`. It needs a name and the URL
-of its sequence: the adapter comes from the file extension, and the `.fai` and
-`.gzi` sitting beside the FASTA are found the same way.
+The assembly is one entry under `assemblies`, which you paste into `config.json`
+or write with the CLI tab's command below, and which JBrowse Desktop builds for
+you from **Open new genome** → **Open from a URL** given the same FASTA URL. A
+name and that URL are everything it needs, since JBrowse picks the adapter from
+the file extension and finds the `.fai` and `.gzi` sitting beside the FASTA the
+same way.
 
 ```json addassembly
 {
@@ -56,9 +59,9 @@ of its sequence: the adapter comes from the file extension, and the `.fai` and
 }
 ```
 
-The alignment goes in as a synteny track over the Q100 project's own chain. Both
-of its endpoints are the same assembly, since the two haplotypes are contigs of
-one:
+Then add the alignment as a synteny track over the Q100 project's own chain.
+Both of its endpoints are the same assembly, since the two haplotypes are
+contigs of one:
 
 ```json addtrack
 {

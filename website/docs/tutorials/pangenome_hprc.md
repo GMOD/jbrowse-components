@@ -25,10 +25,13 @@ welcome your [feedback](/contact).
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin), for the tracks that
   use `RgfaTabixAdapter` and `MinigraphBubbleAdapter`; every other track here is
   a URL you can paste
-- to rebuild the hosted files rather than read them: htslib (`bgzip`, `tabix`)
-  and [`gfatools`](https://github.com/lh3/gfatools) for the graph indexes and
-  the bubble file, plus `bedtools` and UCSC's `bedGraphToBigWig` and
-  `bigBedToBed` for the repeat-density lanes
+- to rebuild the hosted files rather than read them: htslib (`bgzip`, `tabix`),
+  for the graph indexes and the bubble file
+- [`gfatools`](https://github.com/lh3/gfatools), for the graph indexes and the
+  bubble file
+- `bedtools`, for the repeat-density lanes
+- UCSC's `bedGraphToBigWig`, for the repeat-density lanes
+- UCSC's `bigBedToBed`, for the repeat-density lanes
 
 Both UCSC binaries are
 [single-binary downloads](https://hgdownload.soe.ucsc.edu/admin/exe/), and

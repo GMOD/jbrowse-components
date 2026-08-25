@@ -15,13 +15,15 @@ JBrowse computes the r² triangle in the browser, straight from a phased VCF.
 
 ## Prerequisites
 
-- nothing to read the figures, which load hosted data
-- for the commands on this page and the
-  [reproduce script](#reproduce-it-end-to-end): `bcftools` built with libcurl,
-  htslib (`tabix`), `curl`, `python3`, and `node` for the
-  [JBrowse CLI](/docs/cli)
-- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/) and
-  [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the Fst
+- `bcftools` built with libcurl, for the commands on this page and the
+  [reproduce script](#reproduce-it-end-to-end)
+- htslib (`tabix`)
+- `curl`
+- `python3`
+- `node`, for the [JBrowse CLI](/docs/cli)
+- [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/), for the Fst
+  lane
+- [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/), for the Fst
   lane[^plink19]
 
 ## Where the data comes from

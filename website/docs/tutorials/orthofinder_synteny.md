@@ -19,7 +19,9 @@ duplicated gene becomes several rows.
 
 - [OrthoFinder](https://github.com/davidemms/OrthoFinder) with
   [DIAMOND](https://github.com/bbuchfink/diamond)
-- `python3`, htslib (`bgzip`, `tabix`), `wget`
+- `python3`
+- htslib (`bgzip`, `tabix`)
+- `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - The
   [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)

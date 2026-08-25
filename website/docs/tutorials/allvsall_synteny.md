@@ -17,7 +17,10 @@ every other.
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- `minimap2`, `samtools`, htslib (`bgzip`, `tabix`), `unzip`
+- `minimap2`
+- `samtools`
+- htslib (`bgzip`, `tabix`)
+- `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
 On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of

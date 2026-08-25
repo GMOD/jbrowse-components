@@ -25,11 +25,17 @@ welcome your [feedback](/contact).
 
 - `docker` or `singularity`, for the cactus image (which carries odgi,
   halSynteny, hal2maf, `vg` and `samtools`)
-- htslib (`bgzip`, `tabix`), `python3`, and `node` for the
-  [JBrowse CLI](/docs/cli), which the fences below run directly
-- additionally, for the [whole build](#reproduce-it-end-to-end): the NCBI
+- htslib (`bgzip`, `tabix`)
+- `python3`
+- `node`, for the [JBrowse CLI](/docs/cli), which the fences below run directly
+- the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip` and `wget`
+  CLI, additionally for the [whole build](#reproduce-it-end-to-end)
+- `bedGraphToBigWig` (UCSC kentUtils), additionally for the
+  [whole build](#reproduce-it-end-to-end)
+- `samtools`, additionally for the [whole build](#reproduce-it-end-to-end)
+- `unzip`, additionally for the [whole build](#reproduce-it-end-to-end)
+- `wget`, additionally for the [whole build](#reproduce-it-end-to-end)
 - the GraphGenomeView plugin, for
   [drawing the graph as a graph](#installing-the-plugin); every other track here
   is a built-in type

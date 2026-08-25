@@ -18,7 +18,10 @@ and read the genotypes across breeds with the wild canids as the control.
 - nothing to read along. Everything below is for building the tracks yourself
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4,
   see the [assemblies guide](/docs/config_guides/assemblies))
-- `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
+- `bcftools` built with libcurl
+- `curl`
+- `python3`
+- htslib (`tabix`)
 - `samtools` built with libcurl, for the build script's CRAM cross-check on the
   copy-number lane, which is not a step on this page
 

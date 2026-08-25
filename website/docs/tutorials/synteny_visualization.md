@@ -19,8 +19,10 @@ minimap2 argument order.
 - a JBrowse 2 instance (see the [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop); the steps below are identical
   on both, and on Desktop the FASTAs and alignments are local files)
-- [minimap2](https://github.com/lh3/minimap2), `samtools`, htslib (`bgzip`,
-  `tabix`), `unzip`
+- [minimap2](https://github.com/lh3/minimap2)
+- `samtools`
+- htslib (`bgzip`, `tabix`)
+- `unzip`
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI, which fetches the three assemblies and their gene annotations

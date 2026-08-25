@@ -19,9 +19,12 @@ recipe, a different class of variant each time.
 - nothing to read along. Everything below is for building the tracks yourself
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4,
   see the [assemblies guide](/docs/config_guides/assemblies))
-- `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
-- `minimap2` and `samtools`, for the
-  [FGF4 synteny half](#the-retrocopy-itself-as-sequence)
+- `bcftools` built with libcurl
+- `curl`
+- `python3`
+- htslib (`tabix`)
+- `minimap2`, for the [FGF4 synteny half](#the-retrocopy-itself-as-sequence)
+- `samtools`, for the [FGF4 synteny half](#the-retrocopy-itself-as-sequence)
 - the UCSC `liftOver` binary for the OMIA lane, which the build script fetches
   itself
 

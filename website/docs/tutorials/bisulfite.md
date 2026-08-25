@@ -19,9 +19,10 @@ CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
   CLI, and `wget`
 - [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
   (with cutadapt)
-- [bwameth](https://github.com/brentp/bwa-meth) and
-  [samtools](http://www.htslib.org/)
-- htslib (`bgzip`, `tabix`), and `node` for the [JBrowse CLI](/docs/cli)
+- [bwameth](https://github.com/brentp/bwa-meth)
+- [samtools](http://www.htslib.org/)
+- htslib (`bgzip`, `tabix`)
+- `node`, for the [JBrowse CLI](/docs/cli)
 - [MethylDackel](https://github.com/dpryan79/MethylDackel), for the
   [conversion-rate check](#check-the-conversion-rate) and the optional aggregate
   track

@@ -15,10 +15,11 @@ jcvi and measures dN and dS on every pair with `kaks_from_pairs.py`.
 
 ## Prerequisites
 
-- [jcvi](https://github.com/tanghaibao/jcvi) and
-  [DIAMOND](https://github.com/bbuchfink/diamond)
+- [jcvi](https://github.com/tanghaibao/jcvi)
+- [DIAMOND](https://github.com/bbuchfink/diamond)
 - python3 with [biopython](https://biopython.org/)
-- htslib (`bgzip`, `tabix`), `wget`
+- htslib (`bgzip`, `tabix`)
+- `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
 jcvi builds C extensions and will not install against every python. If

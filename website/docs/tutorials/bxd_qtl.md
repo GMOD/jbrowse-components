@@ -15,8 +15,10 @@ GeneNetwork QTL scan, so a trait peak sits over the blocks that drive it.
 
 ## Prerequisites
 
-- `curl` and `jq`, to fetch and reshape GeneNetwork's QTL scan
-- `python3` and htslib (`bgzip`, `tabix`), for the painting
+- `curl`, to fetch GeneNetwork's QTL scan
+- `jq`, to reshape it
+- `python3`, for the painting
+- htslib (`bgzip`, `tabix`), for the painting
 - A JBrowse instance to add the tracks to (see the
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop) to add the built files with no

@@ -14,10 +14,13 @@ loads as a structural variant genotyped per mosquito.
 
 ## Prerequisites
 
-- nothing to read the figures, which load hosted data
-- `plink2` (labelled alpha, and has been for years while being the version in
-  general use), htslib (`bgzip`, `tabix`), `samtools`, `curl`, `python3`, and
-  `node` for the [JBrowse CLI](/docs/cli)
+- [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) (`plink2`), labeled alpha
+  for years despite being the version in general use
+- htslib (`bgzip`, `tabix`)
+- `samtools`
+- `curl`
+- `python3`
+- `node`, for the [JBrowse CLI](/docs/cli)
 
 ## Where the data comes from
 

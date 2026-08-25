@@ -21,7 +21,10 @@ class is already in the file, and the display discovers the lanes from it.
   genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), or on any other
   UCSC/GenArk hub config
 - htslib (`bgzip`, `tabix`, `htsfile`), for the check at the end
-- samtools and node, for
+- `samtools`, for
+  [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
+  only
+- `node`, for
   [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
   only
 

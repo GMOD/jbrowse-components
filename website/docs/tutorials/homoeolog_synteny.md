@@ -17,8 +17,8 @@ karyotype.
 
 ## Prerequisites
 
-- [jcvi](https://github.com/tanghaibao/jcvi) and
-  [DIAMOND](https://github.com/bbuchfink/diamond)
+- [jcvi](https://github.com/tanghaibao/jcvi)
+- [DIAMOND](https://github.com/bbuchfink/diamond)
 - python3 with [biopython](https://biopython.org/)
 - `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)

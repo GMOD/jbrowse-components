@@ -16,7 +16,8 @@ each on its own y-axis, and read where the signals line up against genes.
 ## Prerequisites
 
 - nothing to read along. Everything below is for building the tracks yourself
-- `curl`, and `node` for the [JBrowse CLI](/docs/cli)
+- `curl`
+- `node`, for the [JBrowse CLI](/docs/cli)
 - [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
   a VCF
 - [bcftools](https://samtools.github.io/bcftools/) - reading the VCF header and

@@ -23,7 +23,9 @@ per genome mapping gene ids to coordinates.
 - Or, in place of jcvi, an existing
   [MCScanX](https://github.com/wyp1125/MCScanX) run:
   [converting one](#coming-from-mcscanx) needs only python3
-- `samtools`, htslib (`bgzip`, `tabix`), `wget`
+- `samtools`
+- htslib (`bgzip`, `tabix`)
+- `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))

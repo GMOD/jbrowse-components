@@ -18,8 +18,8 @@ against the reference as a synteny view.
 
 - nothing to read along. Everything below is for rebuilding the data
 - [](/docs/cli)
-- [samtools](http://www.htslib.org/) (v1.21 or later) and
-  [minimap2](https://github.com/lh3/minimap2)
+- [samtools](http://www.htslib.org/) (v1.21 or later)
+- [minimap2](https://github.com/lh3/minimap2)
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/)
 - `python3`, for `sv_multihop.py`

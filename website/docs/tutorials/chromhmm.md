@@ -13,7 +13,8 @@ track with one color-coded row per cell type.
 
 ## Prerequisites
 
-- `wget` and htslib (`bgzip`, `tabix`)
+- `wget`
+- htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 - `python3`, for the [127-epigenome build](#reproduce-it-end-to-end) only
 

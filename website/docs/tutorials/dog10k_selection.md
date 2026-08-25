@@ -21,7 +21,10 @@ multi-sample variant track with a sample-metadata TSV, and cluster the rows.
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4;
   its `chrom.sizes` is all this track needs, see the
   [assemblies guide](/docs/config_guides/assemblies))
-- `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
+- `bcftools` built with libcurl
+- `curl`
+- `python3`
+- htslib (`tabix`)
 
 On Debian/Ubuntu, `apt install bcftools tabix curl python3` covers it; the
 packaged `bcftools` is linked against libcurl, so it can read the remote

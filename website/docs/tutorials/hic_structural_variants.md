@@ -18,8 +18,9 @@ and the Philadelphia chromosome in K562.
 
 - nothing to install to read along: every track is a public ENCODE object served
   with CORS and byte ranges
-- for the [scan script](#run-the-scan), `java` and `curl`, which is what
-  `juicer_tools` needs; the script downloads `juicer_tools` itself
+- `java`, which `juicer_tools` needs for the [scan script](#run-the-scan); the
+  script downloads `juicer_tools` itself
+- `curl`, for the same [scan script](#run-the-scan)
 
 ## Where the data comes from
 

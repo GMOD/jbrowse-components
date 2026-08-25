@@ -20,8 +20,10 @@ directly and draw grape, peach and cacao as rows of a single synteny view.
   ([converting one](#from-mcscanx) needs only python3)
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI, and [gffread](https://github.com/gpertea/gffread)
-- `samtools`, htslib (`bgzip`, `tabix`)
+  CLI
+- [gffread](https://github.com/gpertea/gffread)
+- `samtools`
+- htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 
 On Debian/Ubuntu, `apt install samtools tabix last-align gffread` covers the

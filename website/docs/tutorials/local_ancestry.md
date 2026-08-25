@@ -21,8 +21,10 @@ paint the result as one colored row per haplotype.
   its `chrom.sizes` is all these tracks need, see the
   [assemblies guide](/docs/config_guides/assemblies))
 - Java 8+, for FLARE
-- `bcftools` built with libcurl, `curl`, `python3`, and htslib (`bgzip`,
-  `tabix`)
+- `bcftools` built with libcurl
+- `curl`
+- `python3`
+- htslib (`bgzip`, `tabix`)
 
 On Debian/Ubuntu, `apt install bcftools tabix curl python3 default-jre` covers
 all of it, and the packaged `bcftools` is linked against libcurl, so it can

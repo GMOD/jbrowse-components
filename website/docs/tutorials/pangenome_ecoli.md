@@ -23,13 +23,16 @@ welcome your [feedback](/contact).
 ## Prerequisites
 
 - `docker` or `singularity`, for the pggb image, which also carries odgi
-- `samtools`, `bedGraphToBigWig` (UCSC kentUtils)
-- `python3`, htslib (`bgzip`, `tabix`)
+- `samtools`
+- `bedGraphToBigWig` (UCSC kentUtils)
+- `python3`
+- htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
-- to take the [whole build](#reproduce-it-end-to-end) rather than the steps on
-  this page: the NCBI
+- the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
-  CLI and `unzip`, which fetch and unpack the RefSeq genomes
+  CLI, to fetch the RefSeq genomes for the
+  [whole build](#reproduce-it-end-to-end) rather than the steps on this page
+- `unzip`, to unpack them for the same [whole build](#reproduce-it-end-to-end)
 - the GraphGenomeView plugin, for [the graph itself](#installing-the-plugin);
   every other track here is a built-in type
 
