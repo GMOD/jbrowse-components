@@ -415,8 +415,9 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `TrackHeightMixin`, `MultiRegionDisplayMixin`, `LegendMixin`,
   `CanvasFeatureGateMixin`, `WiggleCommonMixin`, `TreeSidebarMixin`. The cost it
   was proposed to remove was one duplicated `addDisplayMenuItems` call in
-  `LinearDerivativeVsRef`, and `97fe6ca243` removed that instead by letting one
-  registration name several types.
+  `LinearDerivativeVsRef`, and "one extension registration can name several
+  element types" removed that instead, by letting `extendDisplayType` and the
+  menu helpers take an array of names.
 
   **And it cannot express the case that motivates it**, which was out-of-tree
   plugins wanting to say "any canvas-family display" instead of naming one.
