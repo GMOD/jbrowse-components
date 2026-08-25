@@ -21,6 +21,8 @@
 // screen-space assignment would decide, and it doesn't flip an arc between bands
 // as regions scroll in and out of view.
 
+import { isNonCanonicalSpliceMotif, SPLICE_MOTIF_UNKNOWN } from './motif.ts'
+
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Sashimi placement, owned here because it selects the assignment algorithm
@@ -53,6 +55,16 @@ export interface MergedJunction {
   end: number
   count: number
   strand: number
+  motif: number
+}
+
+// What the merge drops: junctions under the read-support floor, and — when the
+// display asks — the ones whose splice motif is none of GT-AG / GC-AG / AT-AC.
+// A junction whose motif was never looked up is kept either way; only a known
+// non-canonical motif is evidence against it.
+export interface JunctionFilter {
+  minSashimiScore: number
+  hideNonCanonicalJunctions: boolean
 }
 
 // The sashimi slice of a worker result. Narrowed to what the merge reads so the
@@ -60,7 +72,11 @@ export interface MergedJunction {
 // have to build a whole WorkerPileupData.
 export type SashimiFields = Pick<
   WorkerPileupData,
-  'sashimiX1' | 'sashimiX2' | 'sashimiCounts' | 'sashimiStrands'
+  | 'sashimiX1'
+  | 'sashimiX2'
+  | 'sashimiCounts'
+  | 'sashimiStrands'
+  | 'sashimiMotifs'
 >
 
 export interface RegionJunctions {
@@ -89,14 +105,25 @@ export interface RegionJunctions {
 // a superset of visible, so every drawn junction is one the layout also saw.
 export function mergeJunctions(
   regions: Iterable<RegionJunctions>,
-  minSashimiScore: number,
+  filter: JunctionFilter,
 ) {
+  const { minSashimiScore, hideNonCanonicalJunctions } = filter
   const out = new Map<string, MergedJunction>()
   for (const { refName, data } of regions) {
-    const { sashimiX1, sashimiX2, sashimiCounts, sashimiStrands } = data
+    const {
+      sashimiX1,
+      sashimiX2,
+      sashimiCounts,
+      sashimiStrands,
+      sashimiMotifs,
+    } = data
     for (let i = 0; i < sashimiX1.length; i++) {
       const count = sashimiCounts[i]!
-      if (count < minSashimiScore) {
+      const motif = sashimiMotifs[i]!
+      if (
+        count < minSashimiScore ||
+        (hideNonCanonicalJunctions && isNonCanonicalSpliceMotif(motif))
+      ) {
         continue
       }
       const start = sashimiX1[i]!
@@ -111,10 +138,19 @@ export function mergeJunctions(
           end,
           count,
           strand: sashimiStrands[i]!,
+          motif,
         })
-      } else if (count > prev.count) {
-        prev.count = count
-        prev.strand = sashimiStrands[i]!
+      } else {
+        // The motif is a property of the coordinates, so every copy that
+        // looked it up agrees; a copy whose end fell outside its region's
+        // sequence reports unknown, and any other copy's answer fills that in.
+        if (prev.motif === SPLICE_MOTIF_UNKNOWN) {
+          prev.motif = motif
+        }
+        if (count > prev.count) {
+          prev.count = count
+          prev.strand = sashimiStrands[i]!
+        }
       }
     }
   }

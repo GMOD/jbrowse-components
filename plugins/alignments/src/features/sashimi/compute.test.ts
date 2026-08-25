@@ -1,4 +1,9 @@
 import { computeSashimiJunctions } from './compute.ts'
+import {
+  SPLICE_MOTIF_NON_CANONICAL,
+  SPLICE_MOTIF_UNKNOWN,
+  spliceMotifLabel,
+} from './motif.ts'
 
 import type { CoverageGap } from '@jbrowse/alignments-core'
 
@@ -83,4 +88,70 @@ test('the dominant strand tints a junction whose reads mostly agree', () => {
     skips([...rep(2, 100, 1100, 1), ...rep(9, 100, 1100, -1)]),
   )
   expect([...sashimiStrands]).toEqual([-1])
+})
+
+describe('splice motifs', () => {
+  // A 20 bp reference starting at absolute bp 1000. The intron [1004, 1016)
+  // starts with GT and ends with AG on the plus strand.
+  const plus = { sequence: 'ACCAGTAAGTCCCTAGCCTT', start: 1000 }
+
+  test('reads the donor and acceptor dinucleotides off the reference', () => {
+    const { sashimiMotifs, sashimiStrands } = computeSashimiJunctions(
+      skips(rep(3, 1004, 1016, 0)),
+      plus,
+    )
+    expect([...sashimiMotifs]).toEqual([1])
+    expect(spliceMotifLabel(sashimiMotifs[0]!)).toBe('GT-AG')
+    // untagged reads take the strand the motif implies
+    expect([...sashimiStrands]).toEqual([1])
+  })
+
+  test('a reverse-strand motif is the same label on the other strand', () => {
+    // CT...AC is GT-AG read on the minus strand
+    const minus = { sequence: 'ACCACTAAGTCCCTACCCTT', start: 1000 }
+    const { sashimiMotifs, sashimiStrands } = computeSashimiJunctions(
+      skips(rep(3, 1004, 1016, 0)),
+      minus,
+    )
+    expect([...sashimiMotifs]).toEqual([2])
+    expect(spliceMotifLabel(sashimiMotifs[0]!)).toBe('GT-AG')
+    expect([...sashimiStrands]).toEqual([-1])
+  })
+
+  test('strand tags outvote the motif', () => {
+    const { sashimiStrands } = computeSashimiJunctions(
+      skips(rep(3, 1004, 1016, -1)),
+      plus,
+    )
+    expect([...sashimiStrands]).toEqual([-1])
+  })
+
+  test('anything else is non-canonical, and case does not matter', () => {
+    const { sashimiMotifs } = computeSashimiJunctions(
+      skips(rep(1, 1004, 1016, 0)),
+      { sequence: 'accaggaagtcccttgcctt', start: 1000 },
+    )
+    expect([...sashimiMotifs]).toEqual([SPLICE_MOTIF_NON_CANONICAL])
+    expect(spliceMotifLabel(sashimiMotifs[0]!)).toBe('non-canonical')
+  })
+
+  test('an end outside the fetched sequence leaves the motif unknown', () => {
+    const { sashimiMotifs, sashimiStrands } = computeSashimiJunctions(
+      skips([...rep(1, 1004, 1030, 0), ...rep(1, 990, 1016, 0)]),
+      plus,
+    )
+    expect([...sashimiMotifs]).toEqual([
+      SPLICE_MOTIF_UNKNOWN,
+      SPLICE_MOTIF_UNKNOWN,
+    ])
+    expect([...sashimiStrands]).toEqual([0, 0])
+  })
+
+  test('no reference means every motif is unknown', () => {
+    const { sashimiMotifs } = computeSashimiJunctions(
+      skips(rep(1, 1004, 1016, 0)),
+    )
+    expect([...sashimiMotifs]).toEqual([SPLICE_MOTIF_UNKNOWN])
+    expect(spliceMotifLabel(SPLICE_MOTIF_UNKNOWN)).toBeUndefined()
+  })
 })

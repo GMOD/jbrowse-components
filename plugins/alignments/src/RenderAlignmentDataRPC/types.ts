@@ -281,6 +281,7 @@ export interface WorkerPileupData {
   sashimiX2: Uint32Array // absolute genomic bp (junction end)
   sashimiStrands: Int8Array // dominant strand: +1 forward, -1 reverse, 0 unknown
   sashimiCounts: Uint32Array // supporting reads per junction, all strands
+  sashimiMotifs: Uint8Array // splice-site motif code (features/sashimi/motif.ts)
 
   // All detected modification types in this region (detected during feature processing)
   detectedModifications: string[]

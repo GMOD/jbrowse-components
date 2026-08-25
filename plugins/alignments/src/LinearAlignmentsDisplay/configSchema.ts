@@ -126,6 +126,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      hideNonCanonicalJunctions: {
+        type: 'maybeBoolean',
+        description:
+          'Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays',
+        // Promotable like the sibling sashimi settings: `undefined` inherits,
+        // `promotedBase` is what it resolves to. Read through the resolved
+        // `hideNonCanonicalJunctions` getter (resolveConf), never raw.
+        promotedBase: false,
+      },
+      /**
+       * #slot
+       */
       // NOT the grow ceiling (`growMaxHeight`, above). This caps how much is
       // laid out; that caps how tall `grow` mode sizes the track. Two different
       // limits, don't conflate them.

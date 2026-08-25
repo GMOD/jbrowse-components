@@ -16,6 +16,7 @@ function makeArc(arc: Partial<SashimiArc>): SashimiArc {
     end: 2000,
     strand: 1,
     score: 5,
+    motif: 0,
     d: 'M...',
     stroke: 'red',
     strokeWidth: 2,

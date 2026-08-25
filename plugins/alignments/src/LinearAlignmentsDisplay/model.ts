@@ -721,6 +721,23 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Whether junctions with a non-canonical splice motif are dropped from
+         * the sashimi arcs. Promotable like `showSashimiLabels`.
+         */
+        get hideNonCanonicalJunctions(): boolean {
+          return resolveConf(self, 'hideNonCanonicalJunctions')
+        },
+        /**
+         * #getter
+         * "make the current non-canonical filter state the default for all
+         * tracks" control (pin).
+         */
+        get hideNonCanonicalJunctionsDisplayTypeDefault() {
+          return makePin(self, 'hideNonCanonicalJunctions')
+        },
+
+        /**
+         * #getter
          * Chain name → the ids of the READS in it. The two id spaces are easy to
          * confuse and nothing else in this model crosses them: `chainNames` (the
          * key here) is a chain's own identity, `readIds` (the values) are the
@@ -1326,6 +1343,7 @@ export default function stateModelFactory(
         get sashimiDownKeysByGroup() {
           return buildSashimiDownKeys(self.rpcDataMap, {
             minSashimiScore: self.minSashimiScore,
+            hideNonCanonicalJunctions: this.hideNonCanonicalJunctions,
             mode: self.sashimiArcsMode,
             refNameFor: i => self.loadedRegions.get(i)?.refName ?? `#${i}`,
             hidden: self.hiddenGroupKeys,
@@ -2250,6 +2268,7 @@ export default function stateModelFactory(
             coverageHeight: self.coverageHeight,
             sashimiArcsHeight: self.sashimiArcsHeight,
             minSashimiScore: self.minSashimiScore,
+            hideNonCanonicalJunctions: self.hideNonCanonicalJunctions,
           })
         },
 
@@ -3322,6 +3341,13 @@ export default function stateModelFactory(
            */
           setShowSashimiLabels(show: boolean) {
             setConf(self, 'showSashimiLabels', show)
+          },
+
+          /**
+           * #action
+           */
+          setHideNonCanonicalJunctions(hide: boolean) {
+            setConf(self, 'hideNonCanonicalJunctions', hide)
           },
 
           /**

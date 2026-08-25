@@ -1,5 +1,6 @@
 import { openFeatureWidget } from '@jbrowse/core/util'
 
+import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getCigarTypeLabel } from '../../shared/types.ts'
 import {
@@ -103,6 +104,7 @@ export function openSashimiWidget(
     refName: string
     score: number
     strand: number
+    motif: number
   },
 ) {
   openFeatureWidget(model, {
@@ -121,6 +123,9 @@ export function openSashimiWidget(
     end: arc.end,
     score: arc.score,
     strand: arc.strand,
+    ...(spliceMotifLabel(arc.motif) === undefined
+      ? {}
+      : { splice_motif: spliceMotifLabel(arc.motif) }),
   })
 }
 

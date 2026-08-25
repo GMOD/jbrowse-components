@@ -9,7 +9,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { mergeJunctions } from './junctions.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
-import type { SashimiSide } from './junctions.ts'
+import type { JunctionFilter, SashimiSide } from './junctions.ts'
 
 // Single source of truth for sashimi arc geometry, color, and stroke width.
 // Both the on-screen `SashimiArcsOverlay` (which adds hover/click handlers)
@@ -28,6 +28,8 @@ export interface SashimiArc {
   refName: string
   score: number
   strand: number
+  // Splice-site motif code (motif.ts), for the tooltip and the detail widget.
+  motif: number
   side: SashimiSide
   // Apex of the cubic (Bezier midpoint) where the read-count label sits.
   labelX: number
@@ -36,7 +38,7 @@ export interface SashimiArc {
   showLabel: boolean
 }
 
-export interface ComputeSashimiArcsOpts {
+export interface ComputeSashimiArcsOpts extends JunctionFilter {
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>
   visibleRegions: {
     refName: string
@@ -49,7 +51,6 @@ export interface ComputeSashimiArcsOpts {
   viewWidthPx: number
   coverageHeight: number
   sashimiArcsHeight: number
-  minSashimiScore: number
   // Which junctions draw in the strip below coverage, by `junctionKey`. Decided
   // once per group in `junctions.ts` from the loaded data, so the strip the
   // layout reserved and the arcs drawn into it are the same decision — see that
@@ -240,6 +241,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
     coverageHeight,
     sashimiArcsHeight,
     minSashimiScore,
+    hideNonCanonicalJunctions,
     downJunctionKeys,
   } = opts
   // Up arcs anchor to the coverage histogram's own zero-coverage baseline. The
@@ -269,7 +271,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
         ? [{ refName: region.refName, data }]
         : []
     }),
-    minSashimiScore,
+    { minSashimiScore, hideNonCanonicalJunctions },
   )
 
   // The overlay/export place each side in the matching SVG, so `d` is
@@ -327,6 +329,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
       refName: j.refName,
       score: j.count,
       strand: j.strand,
+      motif: j.motif,
       side,
       showLabel: span.spanPx >= labelSpanPx(j.count),
     })

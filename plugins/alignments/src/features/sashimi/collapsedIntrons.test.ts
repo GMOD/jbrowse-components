@@ -59,6 +59,7 @@ function junctions(specs: [number, number, number][]): PileupDataResult {
     sashimiX2: new Uint32Array(specs.map(s => s[1])),
     sashimiCounts: new Uint32Array(specs.map(s => s[2])),
     sashimiStrands: new Int8Array(specs.length),
+    sashimiMotifs: new Uint8Array(specs.length),
   })
 }
 
@@ -85,6 +86,7 @@ function collapsedOpts(
     coverageHeight: 100,
     sashimiArcsHeight: 40,
     minSashimiScore: 0,
+    hideNonCanonicalJunctions: false,
     downJunctionKeys: new Set<string>(),
     ...overrides,
   }
@@ -97,7 +99,7 @@ function autoDownKeys(perRegion: PileupDataResult[]) {
   return downJunctionKeys(
     mergeJunctions(
       perRegion.map(data => ({ refName: 'chr1', data })),
-      0,
+      { minSashimiScore: 0, hideNonCanonicalJunctions: false },
     ).values(),
     'auto',
   )

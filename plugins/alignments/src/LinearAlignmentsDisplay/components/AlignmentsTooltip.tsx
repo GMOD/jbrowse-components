@@ -407,7 +407,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         </>
       )
     case 'sashimi': {
-      const { start, end, score, strand, refName } = tooltipData
+      const { start, end, score, strand, refName, motif } = tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
@@ -418,6 +418,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             <div>Length: {toLocale(end - start)} bp</div>
             <div>Reads supporting junction: {score}</div>
             <div>Strand: {strand}</div>
+            {motif ? <div>Splice motif: {motif}</div> : null}
           </div>
         </BaseTooltip>
       )

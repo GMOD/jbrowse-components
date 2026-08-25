@@ -481,6 +481,7 @@ function junctionData(junctions: [number, number, number][]): PileupDataResult {
     sashimiX2: new Uint32Array(junctions.map(j => j[1])),
     sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
     sashimiStrands: new Int8Array(junctions.length),
+    sashimiMotifs: new Uint8Array(junctions.length),
   })
 }
 
@@ -499,6 +500,7 @@ function downKeys(
 ) {
   return buildSashimiDownKeys(rpcDataMap, {
     minSashimiScore,
+    hideNonCanonicalJunctions: false,
     mode,
     refNameFor: () => 'chr1',
   })
@@ -615,6 +617,7 @@ test('buildSashimiDownKeys: a hidden lane is never named', () => {
   ])
   const keys = buildSashimiDownKeys(m, {
     minSashimiScore: 0,
+    hideNonCanonicalJunctions: false,
     mode: 'down',
     refNameFor: () => 'chr1',
     hidden: new Set(['self']),

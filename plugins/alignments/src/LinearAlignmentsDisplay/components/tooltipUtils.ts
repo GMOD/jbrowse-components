@@ -13,6 +13,7 @@ import {
 import { toLocale } from '@jbrowse/core/util'
 
 import { ARC_SHAPE_FLAT } from '../../features/arcs/shapes.ts'
+import { spliceMotifLabel } from '../../features/sashimi/motif.ts'
 import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { formatLocationRange } from '../../shared/locStrings.ts'
@@ -82,6 +83,8 @@ export interface SashimiTooltipPayload {
   score: number
   strand: string
   refName: string
+  // 'GT-AG' / 'GC-AG' / 'AT-AC' / 'non-canonical'; absent when never looked up
+  motif?: string
 }
 
 export interface ArcTooltipPayload {
@@ -615,8 +618,9 @@ export function formatSashimiTooltip(arc: {
   score: number
   strand: number
   refName: string
+  motif: number
 }): SashimiTooltipPayload {
-  const { start, end, score, strand, refName } = arc
+  const { start, end, score, strand, refName, motif } = arc
   return {
     type: 'sashimi',
     start,
@@ -624,6 +628,7 @@ export function formatSashimiTooltip(arc: {
     score,
     strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
     refName,
+    motif: spliceMotifLabel(motif),
   }
 }
 

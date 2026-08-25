@@ -54,6 +54,7 @@ export interface SashimiSectionsInput {
   coverageHeight: number
   sashimiArcsHeight: number
   minSashimiScore: number
+  hideNonCanonicalJunctions: boolean
 }
 
 /**

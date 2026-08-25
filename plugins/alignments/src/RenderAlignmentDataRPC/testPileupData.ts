@@ -152,6 +152,7 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
     sashimiX2: new Uint32Array(0),
     sashimiStrands: new Int8Array(0),
     sashimiCounts: new Uint32Array(0),
+    sashimiMotifs: new Uint8Array(0),
     numInsertions: 0,
     numSoftclips: 0,
     numHardclips: 0,

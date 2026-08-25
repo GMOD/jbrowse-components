@@ -1,9 +1,18 @@
 import { downJunctionKeys, junctionKey, mergeJunctions } from './junctions.ts'
+import { SPLICE_MOTIF_NON_CANONICAL, SPLICE_MOTIF_UNKNOWN } from './motif.ts'
 
 import type { RegionJunctions, SashimiArcsMode } from './junctions.ts'
 
-// [start, end, count] per junction, optionally with a strand.
-type Spec = [number, number, number] | [number, number, number, number]
+// [start, end, count] per junction, optionally with a strand and a motif code.
+type Spec =
+  | [number, number, number]
+  | [number, number, number, number]
+  | [number, number, number, number, number]
+
+const keep = (minSashimiScore = 0, hideNonCanonicalJunctions = false) => ({
+  minSashimiScore,
+  hideNonCanonicalJunctions,
+})
 
 function region(refName: string, junctions: Spec[]): RegionJunctions {
   return {
@@ -13,12 +22,13 @@ function region(refName: string, junctions: Spec[]): RegionJunctions {
       sashimiX2: new Uint32Array(junctions.map(j => j[1])),
       sashimiCounts: new Uint32Array(junctions.map(j => j[2])),
       sashimiStrands: new Int8Array(junctions.map(j => j[3] ?? 0)),
+      sashimiMotifs: new Uint8Array(junctions.map(j => j[4] ?? 0)),
     },
   }
 }
 
 function down(regions: RegionJunctions[], mode: SashimiArcsMode, min = 0) {
-  return downJunctionKeys(mergeJunctions(regions, min).values(), mode)
+  return downJunctionKeys(mergeJunctions(regions, keep(min)).values(), mode)
 }
 
 // Two interleaving junctions, the second thinly supported.
@@ -39,7 +49,7 @@ describe('mergeJunctions', () => {
         region('chr1', [[100, 1100, 8, 1]]),
         region('chr1', [[100, 1100, 3, -1]]),
       ],
-      0,
+      keep(),
     )
     expect([...merged.values()]).toEqual([
       {
@@ -49,6 +59,7 @@ describe('mergeJunctions', () => {
         end: 1100,
         count: 8,
         strand: 1,
+        motif: 0,
       },
     ])
   })
@@ -56,7 +67,7 @@ describe('mergeJunctions', () => {
   test('keeps same-coordinate junctions on different chromosomes apart', () => {
     const merged = mergeJunctions(
       [region('chr1', [[100, 500, 4]]), region('chr2', [[100, 500, 9]])],
-      0,
+      keep(),
     )
     expect([...merged.keys()]).toEqual(['chr1:100:500', 'chr2:100:500'])
   })
@@ -69,9 +80,41 @@ describe('mergeJunctions', () => {
           [200, 900, 2],
         ]),
       ],
-      2,
+      keep(2),
     )
     expect([...merged.keys()]).toEqual(['chr1:200:900'])
+  })
+
+  test('hides a non-canonical junction only when asked, never an unread one', () => {
+    const regions = [
+      region('chr1', [
+        [100, 500, 9, 0, SPLICE_MOTIF_NON_CANONICAL],
+        [200, 900, 9, 0, 1],
+        [300, 700, 9, 0, SPLICE_MOTIF_UNKNOWN],
+      ]),
+    ]
+    expect([...mergeJunctions(regions, keep(0, false)).keys()]).toEqual([
+      'chr1:100:500',
+      'chr1:200:900',
+      'chr1:300:700',
+    ])
+    expect([...mergeJunctions(regions, keep(0, true)).keys()]).toEqual([
+      'chr1:200:900',
+      'chr1:300:700',
+    ])
+  })
+
+  test('a copy that read the motif fills in one that could not', () => {
+    // A region whose sequence stops short of the far end reports unknown; the
+    // region holding that end reports the motif. Either order.
+    const read = region('chr1', [[100, 1100, 30, 0, 3]])
+    const unread = region('chr1', [[100, 1100, 1, 0, SPLICE_MOTIF_UNKNOWN]])
+    for (const regions of [
+      [read, unread],
+      [unread, read],
+    ]) {
+      expect([...mergeJunctions(regions, keep()).values()][0]!.motif).toBe(3)
+    }
   })
 
   test('a region reporting only a clipped count cannot lower the merged one', () => {
@@ -83,7 +126,7 @@ describe('mergeJunctions', () => {
       [spanning, clipping],
       [clipping, spanning],
     ]) {
-      expect([...mergeJunctions(regions, 0).values()][0]!.count).toBe(30)
+      expect([...mergeJunctions(regions, keep()).values()][0]!.count).toBe(30)
     }
   })
 })

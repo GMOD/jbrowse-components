@@ -33,6 +33,9 @@ interface SashimiModel {
   sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) => Pin
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
+  hideNonCanonicalJunctions: boolean
+  setHideNonCanonicalJunctions: (hide: boolean) => void
+  hideNonCanonicalJunctionsDisplayTypeDefault: Pin
 }
 
 // All sashimi (splice-junction arc) controls in one place. The labels,
@@ -90,6 +93,18 @@ export function getSashimiMenuItem(model: SashimiModel) {
             onReset: () => {
               model.setMinSashimiScore(DEFAULT_MIN_SASHIMI_SCORE)
             },
+          }),
+          promotableToggleItem({
+            label: 'Hide non-canonical junctions',
+            helpText:
+              'Drop junctions whose intron does not start and end with GT-AG, GC-AG or AT-AC on either strand, read off the reference sequence. On deep RNA-seq the thin arcs are mostly these alignment artefacts, which a read-count floor cannot separate from a real junction at low depth',
+            checked: model.hideNonCanonicalJunctions,
+            onToggle: () => {
+              model.setHideNonCanonicalJunctions(
+                !model.hideNonCanonicalJunctions,
+              )
+            },
+            pin: model.hideNonCanonicalJunctionsDisplayTypeDefault,
           }),
         ]
       : []),

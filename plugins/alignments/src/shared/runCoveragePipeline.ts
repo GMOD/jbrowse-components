@@ -18,6 +18,7 @@ import {
 } from './modTooltipIndex.ts'
 import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
+import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
 import type {
   FeatureData,
@@ -60,6 +61,7 @@ export async function runCoveragePipeline({
   showCoverage,
   trackStrands,
   bisulfite,
+  junctionReference,
   statusCallback,
   stopTokenCheck,
 }: {
@@ -79,6 +81,9 @@ export async function runCoveragePipeline({
   showCoverage: boolean
   trackStrands?: boolean
   bisulfite: boolean
+  // Reference bases for the junctions' splice motifs; fetched by the executor
+  // only when the region carries a skip gap, so DNA-seq never pays for it.
+  junctionReference?: JunctionReference
   statusCallback: StatusCallback | undefined
   stopTokenCheck: StopTokenChecker
 }) {
@@ -130,6 +135,7 @@ export async function runCoveragePipeline({
         regionStart,
         trackStrands,
         bisulfite,
+        junctionReference,
       })
     : emptyCoverageBand()
 
@@ -169,6 +175,7 @@ function computeCoverageBand({
   regionStart,
   trackStrands,
   bisulfite,
+  junctionReference,
 }: {
   coverage: ReturnType<typeof computeCoverage>
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
@@ -183,6 +190,7 @@ function computeCoverageBand({
   regionStart: number
   trackStrands?: boolean
   bisulfite: boolean
+  junctionReference?: JunctionReference
 }) {
   const snpCoverage = computeSNPCoverage(
     mismatchArrays.mismatchPositions,
@@ -217,7 +225,7 @@ function computeCoverageBand({
   const modTooltip =
     buildModTooltipIndex({ modifications, regionStart }) ??
     emptyModTooltipIndex()
-  const sashimi = computeSashimiJunctions(gaps)
+  const sashimi = computeSashimiJunctions(gaps, junctionReference)
 
   const coverageAreaPacked = packCoverageAreaForGpu(
     coverage,
@@ -252,6 +260,7 @@ function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
       sashimiX2: new Uint32Array(0),
       sashimiStrands: new Int8Array(0),
       sashimiCounts: new Uint32Array(0),
+      sashimiMotifs: new Uint8Array(0),
     },
     coverageAreaPacked: {
       coverageBinSize: 1,

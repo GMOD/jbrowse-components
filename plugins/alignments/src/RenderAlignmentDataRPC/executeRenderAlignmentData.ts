@@ -46,6 +46,7 @@ import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import { chainIsSplit } from '../shared/splitAlignment.ts'
 import { getFlags } from '../shared/util.ts'
 
+import type { JunctionReference } from '../features/sashimi/compute.ts'
 import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { ReadKey } from '../shared/readIdentity.ts'
@@ -249,6 +250,9 @@ interface GroupContext {
   // Bisulfite mode splits the coverage bar by C->T-derived methylation level
   // rather than the modBAM base-pileup denominator (see computeModificationCoverage).
   bisulfite: boolean
+  // The region's reference bases, for the junctions' splice motifs. Fetched
+  // once for the whole fetch and only when some group carries a skip gap.
+  junctionReference: JunctionReference | undefined
   detectedSimplexModifications: ReadonlySet<string>
   // Shared insert-size color scale, pooled across every group of the fetch so
   // all stacked sections color long/short inserts on one comparable scale.
@@ -293,6 +297,7 @@ async function buildGroupResult(
     showCoverage,
     trackStrands,
     bisulfite,
+    junctionReference,
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
@@ -377,6 +382,7 @@ async function buildGroupResult(
     showCoverage,
     trackStrands,
     bisulfite,
+    junctionReference,
     statusCallback,
     stopTokenCheck,
   })
@@ -598,6 +604,29 @@ export async function executeRenderAlignmentData({
     !isChain && !!colorBy && isModificationScheme(colorBy.type)
   const bisulfite = !isChain && colorBy?.type === 'bisulfite'
 
+  // Splice motifs need the reference under every junction. A spliced read is
+  // the one signal that this is RNA-seq, so a DNA-seq fetch never reads
+  // sequence here; bisulfite already fetched the same span, so reuse it.
+  if (
+    regionSequence === undefined &&
+    sequenceAdapter &&
+    extractions.some(e => e.gaps.some(g => g.type === 'skip'))
+  ) {
+    const result = await fetchReferenceSequence({
+      pluginManager,
+      sessionId,
+      sequenceAdapter,
+      region,
+      featuresArray: inputFeatures,
+    })
+    regionSequence = result.regionSequence
+    regionSequenceStart = result.regionSequenceStart
+  }
+  const junctionReference =
+    regionSequence === undefined
+      ? undefined
+      : { sequence: regionSequence, start: regionSequenceStart }
+
   const ctx: GroupContext = {
     isChain,
     readIdPrefix,
@@ -606,6 +635,7 @@ export async function executeRenderAlignmentData({
     showCoverage,
     trackStrands,
     bisulfite,
+    junctionReference,
     detectedSimplexModifications,
     insertSizeStats: sharedInsertSizeStats,
     statusCallback,

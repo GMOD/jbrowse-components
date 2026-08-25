@@ -38,6 +38,13 @@ function makeModel() {
       control('sashimiArcsMode', mode),
     minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
+    hideNonCanonicalJunctions: false,
+    setHideNonCanonicalJunctions(v: boolean) {
+      this.hideNonCanonicalJunctions = v
+    },
+    hideNonCanonicalJunctionsDisplayTypeDefault: control(
+      'hideNonCanonicalJunctions',
+    ),
   }
 }
 
@@ -59,7 +66,7 @@ describe('sashimi menu', () => {
     expect(labels(model)).toEqual(['Show sashimi arcs'])
   })
 
-  test('labels, placement, and score filter appear when arcs are on', () => {
+  test('labels, placement, and the two filters appear when arcs are on', () => {
     const model = makeModel()
     model.showSashimiArcs = true
     expect(labels(model)).toEqual([
@@ -67,7 +74,22 @@ describe('sashimi menu', () => {
       'Show labels',
       'Arc placement',
       'Filter by score',
+      'Hide non-canonical junctions',
     ])
+  })
+
+  test('"Hide non-canonical junctions" toggles and carries a pin', () => {
+    const model = makeModel()
+    model.showSashimiArcs = true
+    const row = getSashimiMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === 'Hide non-canonical junctions',
+    )
+    if (!row || !('onClick' in row)) {
+      throw new Error('no non-canonical row')
+    }
+    row.onClick()
+    expect(model.hideNonCanonicalJunctions).toBe(true)
+    expect(defaultForAllOf(row)).toBeDefined()
   })
 
   test('placement submenu checks the active mode and switches on click', () => {

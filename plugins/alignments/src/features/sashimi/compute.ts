@@ -1,20 +1,37 @@
+import {
+  SPLICE_MOTIF_UNKNOWN,
+  spliceMotifAt,
+  spliceMotifStrand,
+} from './motif.ts'
+
 import type { CoverageGap } from '@jbrowse/alignments-core'
 
 // Which strand tints a junction whose reads disagree. Only tagged reads vote:
 // `unknown` is "no strand tag", i.e. an abstention, not a third competing
 // strand — 3 forward-tagged + 3 untagged reads is a forward junction, not an
-// ambiguous one. A junction with no votes at all (fwd === rev === 0) is
-// untagged and stays 0 rather than defaulting to reverse; contradictory votes
-// (fwd === rev > 0, e.g. overlapping antisense genes) are genuinely ambiguous
-// and get the same neutral color.
+// ambiguous one. A junction with no votes at all (fwd === rev === 0) falls back
+// to the strand its splice motif implies, which is what an aligner's XS tag was
+// derived from anyway; contradictory votes (fwd === rev > 0, e.g. overlapping
+// antisense genes) are genuinely ambiguous and stay 0.
 //
 // The result is a plain +1/-1/0 strand — the same vocabulary as
 // `getEffectiveStrand`, `SashimiArc.strand`, the tooltip, and the detail widget
-// — so it crosses the worker boundary as-is. It used to be packed into a
-// separate 0=fwd/1=rev/2=unknown `colorType` enum that the overlay decoded
-// straight back, an encoding no renderer ever consumed.
-function dominantStrand(fwd: number, rev: number) {
-  return fwd > rev ? 1 : rev > fwd ? -1 : 0
+// — so it crosses the worker boundary as-is.
+function junctionStrand(fwd: number, rev: number, motif: number) {
+  return fwd > rev
+    ? 1
+    : rev > fwd
+      ? -1
+      : fwd === 0
+        ? spliceMotifStrand(motif)
+        : 0
+}
+
+// The reference bases the junction motifs are read from, absent when the
+// assembly has no sequence adapter or the fetch was skipped.
+export interface JunctionReference {
+  sequence: string
+  start: number
 }
 
 // Bucket skip-gaps by (start,end) and emit one arc per junction, counting every
@@ -36,7 +53,10 @@ function dominantStrand(fwd: number, rev: number) {
 // Worker-side compute. SVG-overlay geometry (`computeSashimiArcs`) lives in
 // `./computeOverlay.ts` (intentionally SVG-only — see
 // LinearAlignmentsDisplay/CLAUDE.md).
-export function computeSashimiJunctions(gaps: CoverageGap[]) {
+export function computeSashimiJunctions(
+  gaps: CoverageGap[],
+  reference?: JunctionReference,
+) {
   const junctions = new Map<
     string,
     { start: number; end: number; fwd: number; rev: number; total: number }
@@ -68,13 +88,18 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
   const sashimiX2 = new Uint32Array(n)
   const sashimiStrands = new Int8Array(n)
   const sashimiCounts = new Uint32Array(n)
+  const sashimiMotifs = new Uint8Array(n)
 
   let i = 0
   for (const j of junctions.values()) {
+    const motif = reference
+      ? spliceMotifAt(j.start, j.end, reference.sequence, reference.start)
+      : SPLICE_MOTIF_UNKNOWN
     sashimiX1[i] = j.start
     sashimiX2[i] = j.end
-    sashimiStrands[i] = dominantStrand(j.fwd, j.rev)
+    sashimiStrands[i] = junctionStrand(j.fwd, j.rev, motif)
     sashimiCounts[i] = j.total
+    sashimiMotifs[i] = motif
     i++
   }
 
@@ -83,5 +108,6 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
     sashimiX2,
     sashimiStrands,
     sashimiCounts,
+    sashimiMotifs,
   }
 }

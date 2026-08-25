@@ -14,7 +14,10 @@ import type {
   GroupedAlignmentsResult,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
-import type { RegionJunctions } from '../features/sashimi/junctions.ts'
+import type {
+  JunctionFilter,
+  RegionJunctions,
+} from '../features/sashimi/junctions.ts'
 import type { SashimiArcsMode } from './constants.ts'
 
 // The "this display hides no lane" answer, shared so every `hiddenGroupKeys`
@@ -43,8 +46,7 @@ export function* eachGroup(
   }
 }
 
-export interface SashimiSidesOpts {
-  minSashimiScore: number
+export interface SashimiSidesOpts extends JunctionFilter {
   mode: SashimiArcsMode
   // refName of the region each `rpcDataMap` key was fetched from — the display
   // reads it off `loadedRegions`, which is keyed the same way and updates with
@@ -70,7 +72,13 @@ export function buildSashimiDownKeys(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   opts: SashimiSidesOpts,
 ) {
-  const { minSashimiScore, mode, refNameFor, hidden } = opts
+  const {
+    minSashimiScore,
+    hideNonCanonicalJunctions,
+    mode,
+    refNameFor,
+    hidden,
+  } = opts
   const out = new Map<string, ReadonlySet<string>>()
   for (const [key, regions] of sashimiRegionsByGroup(
     rpcDataMap,
@@ -80,7 +88,10 @@ export function buildSashimiDownKeys(
     // 'auto' pools a group's junctions across its regions before assigning
     // sides, so the merge pools the same way — a pair interleaving across two
     // collapsed-intron regions of one group still reserves the strip.
-    const merged = mergeJunctions(regions, minSashimiScore)
+    const merged = mergeJunctions(regions, {
+      minSashimiScore,
+      hideNonCanonicalJunctions,
+    })
     out.set(key, downJunctionKeys(merged.values(), mode))
   }
   return out
