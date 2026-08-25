@@ -570,10 +570,9 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * whether the committed lane genes answer the current lane frames.
-       * Published as `data-lanes-current` on the body, and the finer gate of
-       * the two: `displayPhase` covers only the FIRST lane fetch (see there),
-       * so a capture that pans and then shoots waits on this
+       * whether the committed lane genes answer the current lane frames — the
+       * term `displayPhase` reads to hold at `loading` until the first fetch
+       * lands, and the dependent fetch's own gate through `laneGenesKey`
        */
       get laneGenesCurrent() {
         const { key, specs } = self.laneGenesFetchSpecs
@@ -598,8 +597,16 @@ export function stateModelFactory(
        * 250 ms, so the scrim always won that race. Before the first commit
        * there is nothing on screen to flash over and a capture would shoot
        * placement boxes, which is what this is for; after it, the lanes are an
-       * enhancement over boxes that are already correct, and
-       * `data-lanes-current` is the finer gate for a capture that needs more.
+       * enhancement over boxes that are already correct, and a refetch says so
+       * through the corner progress chip that `ready` gates rather than the
+       * scrim.
+       *
+       * So `displaySettled` — `[data-display-phase="ready"]`, what every figure
+       * spec waits on — covers a load-and-shoot and not a pan-then-shoot. Every
+       * `multiway_synteny/*` spec is the former. A pan-then-shoot one would
+       * need a finer wait, and should add it then: this display published a
+       * `data-lanes-current` attribute for that case which nothing ever read,
+       * and which covered only the genes half of the two fetches.
        */
       get displayPhase(): DisplayStatusPhase {
         const base = foundationDisplayStatusPhase(self, () => true)

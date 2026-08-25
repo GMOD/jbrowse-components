@@ -648,11 +648,7 @@ const MultiWayRows = observer(function MultiWayRows({
   return exportSVG ? (
     body
   ) : (
-    <svg
-      width={width}
-      height={height}
-      data-lanes-current={model.laneGenesCurrent}
-    >
+    <svg width={width} height={height}>
       {body}
     </svg>
   )
