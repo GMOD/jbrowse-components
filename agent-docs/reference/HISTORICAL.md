@@ -120,6 +120,83 @@ actually cross the threshold. The derived canvas approach (a pure function of
 cached stats × current `bpPerPx`) recomputes the same value before and after, so
 `ClearBlockingStateOnViewportChange` is a no-op for it and there's no flicker.
 
+## The region-too-large gate: drifts closed in 2026-08
+
+Each of these is a rule REGION_TOO_LARGE.md now states flatly; this is what the
+code looked like before the rule, kept so the rule reads as a decision.
+
+**Two measurement paths, two opt-ins.** Five displays ran a
+`CoreGetRegionByteEstimate` round trip ahead of their feature fetch — resolve
+the adapter, ask the index, return, and leave the feature RPC to resolve the
+same adapter again — while canvas measured inside its fetch. The opt-in was the
+OR of `measuresBytesPreFlight` and `measuresBytesInFetch`, and the OR existed so
+a contributed opt-in could not race the base on compose order; a
+`no-restricted-syntax` rule forbade a second `get gateEnabled()`. Folding the
+pre-flight into every fetch (`measureRegionBytes` as the first await) retired
+the second path, the OR, the pair of names and the lint rule; the compose-order
+hazard survives and is caught by a different selector. Two of the three
+consumers of the budget also wrote `gateActive ? gateByteLimit : undefined` out
+themselves and were kept equal by hand, which is why `resolvedByteLimit()` is
+now the only spelling.
+
+**Names that claimed an axis.** The shared "may the gate act?" question was
+`byteGateActive` and the exemption `byteGateExempt`, while `densityGateActive`
+was literally `byteGateActive && …` and `byteGateExempt`'s own docstring said
+"on either axis". Two names claiming an axis they had no term from is how a
+reader comes to believe force-load only lifts the byte gate — which the mixin's
+predecessor actually did, one of the four bugs ADR-074's boolean replaced.
+`densityGateEnabled` also defaulted to `true` on the base, putting the five
+byte-only displays permanently in `densityGateActive === true` — inert, because
+their `densityTooLarge` was the base `false`, and the opposite of what was true.
+
+**The budget slots as RPC cache keys (settled 2026-08-21).** `LinearBasicDisplay`
+sent the raw `fetchSizeLimit` / `maxFeatureScreenDensity` slots in a `gateSlots`
+field so a budget edit stayed a refetch, while the multi-row display carried
+none, and which was right stayed open on the worry that a track would strand at
+a budget the user just raised. It does not strand — the verdict is derived from
+tracked `getConf` reads and a refused region is never marked loaded — and the
+only behaviour the field added was a full refetch of loaded, in-budget regions.
+The resolved values had already shipped the same bug once: `maxFeatureDensity`
+in `rpcProps()` made crossing the 20 kb floor a `SettingsInvalidate` blank.
+
+**`fetchRegions` marked what it asked for (closed 2026-08-20).** The loaded-region
+mark was written from the request list once the work callback returned, while
+the display stored from the response — two writers, one fact, disagreeing
+exactly when a fetch stores less than it asked for. A refused region then read
+as covered: invisible on a first fetch, permanent on a region the reader already
+had data for, which is every region they zoomed out from. `ctx.commitRegion`
+moved the mark to whoever writes the data.
+
+**A refusal used to refuse the set.** Alignments refused every region in a
+multi-region view on its largest region's bytes; the per-region helpers now skip
+the refused region and draw its neighbours.
+
+**The density comparison was not shared.** `featuresPerPx` was, so the worker's
+two short-circuits and the banner agreed on the number, but each wrote its own
+`>` — a mutation sweep swapped the main thread's for `>=` and no test went red.
+`overDensityBudget` is the shared comparison.
+
+**Four wires for one clear (closed 2026-08-25).** The chromosome-nav
+`clearByteEstimate()` was spelled in the per-region family's
+`DisplayedRegionsChange` autorun and again in LD's, arc's and MultiWaySynteny's
+`afterAttach`, with HiC — ungated, so harmless — the one `GlobalFetchMixin`
+composer that had none. `RegionTooLargeMixin`'s own `afterAttach` now reads
+`view.displayedRegions` beside `byteGateAdapterKey` in one autorun. The same
+pass folded `commitByteMeasurement` (one caller) into `commitFetchBytes`,
+dropped the test-only `setGateMeasuredViewport`, and folded `measureRegionsBytes`
+into `measureRegionBytes`.
+
+### Three budget gaps
+
+All three came from an adapter inheriting whichever display it landed under:
+`SplitVcfTabixAdapter` gated five times tighter than the single-file VCF beside
+it until it declared its own 5 Mb; `LinearMultiRowFeatureDisplay` and
+`LinearMafDisplay` sat on the base 1 Mb while `LinearBasicDisplay` read the same
+files at 5 Mb — MAF bannering an ordinary hg38 100-way at a gene-sized window,
+found by hand. The budget table was also hand-transcribed and said CRAM 3 Mb for
+as long as it took someone to notice, in two docs at once. `scripts/check-gated-adapter-budgets.ts`
+and the generated table are the answer to both.
+
 ## ADR-025 "GPU canvas stays mounted" is superseded
 
 ADR-025's headline was that the GPU canvas must stay mounted. That's superseded:
