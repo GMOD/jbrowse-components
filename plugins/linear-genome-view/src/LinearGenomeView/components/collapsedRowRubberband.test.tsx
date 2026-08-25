@@ -92,7 +92,12 @@ test('an uncollapsed view has both', async () => {
 test('the view carries its own id in the DOM', async () => {
   const { model, container } = await renderView(true)
 
-  expect(
-    container.querySelector(`[data-testid="linear-genome-view-${model.id}"]`),
-  ).not.toBeNull()
+  // Matched by prefix and read back off the element rather than interpolated
+  // into the selector: `unicorn/require-css-escape` wants `CSS.escape` around
+  // an interpolated value, and jsdom has no global `CSS` to call it on.
+  const box = container.querySelector<HTMLElement>(
+    '[data-testid^="linear-genome-view-"]',
+  )
+
+  expect(box?.dataset.testid).toBe(`linear-genome-view-${model.id}`)
 })
