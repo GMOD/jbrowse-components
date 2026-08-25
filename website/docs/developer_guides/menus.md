@@ -90,6 +90,10 @@ To add items to a menu on a display you do not own, use `addDisplayMenuItems`
 
 - **Resolves the display type by name**, and appends what your callback returns
   to what is already there.
+- **An array of names** contributes the same items to several types from one
+  call. Your callback is then handed the union of their models, so it may only
+  use a menu they all have — a menu only one of them has is a compile error
+  rather than a `self[menu]` that is undefined on the rest.
 - **`group`** collects several plugins' entries into one submenu. Without it,
   each contribution becomes its own top-level row.
 - **`undefined`** from the callback adds nothing, which is how an item scoped to

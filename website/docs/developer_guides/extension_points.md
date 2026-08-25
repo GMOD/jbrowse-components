@@ -561,6 +561,10 @@ with no `as`. The name is checked too: register your view or display in the
 registry beside its state model type, and a typo or a rename becomes a compile
 error instead of an extension that silently stops applying.
 
+Both take an array of names as well as one, which is how a contribution reaches
+a family of displays — a family here is a shared mixin set rather than a chain,
+so there is no parent type to name.
+
 For the commonest reason to reach for these — adding an entry to somebody else's
 menu — go one level higher still and use `addViewMenuItems` /
 `addDisplayMenuItems`, which own the super-capture and the concatenation. See
