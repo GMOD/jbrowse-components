@@ -18,8 +18,14 @@ import { readFileSync } from 'node:fs'
 // repo and ran at the same per-pair-element rate as the synthetic dosages
 // generated here, so the size arguments are the only thing that matters:
 //
-//     node browser-tests/probe-gpu-distance-matrix.ts [N] [V]
+//     node browser-tests/probe-gpu-distance-matrix.ts [N] [V] [--fractional]
 //     node browser-tests/probe-gpu-distance-matrix.ts --matrix=<file.bin> [--skip-cpu]
+//
+// `--fractional` swaps the 0/1/2 dosages for the shape buildIdentityMatrix
+// emits (per-bin identity in [0,1], with dropouts at 0). Integer dosages make
+// the f32 partial sums exact, so the dosage mode cannot see accumulation error
+// at all; the fractional one is what says whether a long V needs compensated
+// summation in the kernel.
 //
 // N=2504 is 1000 Genomes in sample mode, 5008 in phased mode; V=3000 is a
 // 100 kb window at the default MAF filter, 22000 a 1 Mb one. --matrix reads a
@@ -39,6 +45,7 @@ import { clusterMatrix } from '../../../packages/tree-sidebar/src/clusterMatrix.
 const matrixArg = process.argv.find(a => a.startsWith('--matrix='))
 const matrixFile = matrixArg?.slice('--matrix='.length)
 const skipCpu = process.argv.includes('--skip-cpu')
+const fractional = process.argv.includes('--fractional')
 const positional = process.argv.slice(2).filter(a => !a.startsWith('--'))
 const N = Number(positional[0] ?? 2504)
 const V = Number(positional[1] ?? 3000)
@@ -60,14 +67,40 @@ const MAC_CHROME =
 // 0/1/2 dosages at a per-site allele frequency, the shape getGenotypeMatrix
 // emits for a diploid panel with no missing calls. Same generator on both
 // sides so the CPU and GPU runs see one matrix.
-function genotypes(n: number, v: number, seed: number) {
+function genotypes(n: number, v: number, seed: number, fractional: boolean) {
   let s = seed
   const rnd = () => {
     s = (s * 1664525 + 1013904223) >>> 0
     return s / 2 ** 32
   }
-  const freqs = Float32Array.from({ length: v }, () => 0.05 + rnd() * 0.45)
   const out = new Float32Array(n * v)
+  if (fractional) {
+    // buildIdentityMatrix's shape: one row per genome, one column per bin,
+    // valued as the fraction of the bin at which the genome both aligns and
+    // matches the reference. The accumulation this is here to stress depends on
+    // the magnitude of the terms and on V, not on the biology, so the
+    // distribution only has to put the mass where a cohort alignment puts it:
+    // near 1 (conserved), a divergent tail, and exact 0 for the dropouts that
+    // are the strongest signal in the data. Row 0 is the reference, which
+    // self-matches everywhere.
+    const conservation = Float32Array.from(
+      { length: v },
+      () => 0.9 + rnd() * 0.1,
+    )
+    for (let i = 0; i < n; i++) {
+      const divergence = i === 0 ? 0 : rnd() * 0.08
+      for (let j = 0; j < v; j++) {
+        // Dropout runs, not isolated bins: a haplotype stops aligning over a
+        // stretch. 1.5% of bins start one, and it lasts ~20 bins.
+        const drop = i > 0 && rnd() < 0.015
+        out[i * v + j] = drop
+          ? 0
+          : Math.max(0, Math.min(1, conservation[j]! - divergence * rnd()))
+      }
+    }
+    return out
+  }
+  const freqs = Float32Array.from({ length: v }, () => 0.05 + rnd() * 0.45)
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < v; j++) {
       const p = freqs[j]!
@@ -120,6 +153,7 @@ async function gpuDistances(
   v: number,
   kernel: string,
   served: boolean,
+  fractional: boolean,
 ): Promise<GpuResult> {
   const adapter = await navigator.gpu.requestAdapter()
   if (!adapter) {
@@ -140,7 +174,7 @@ async function gpuDistances(
   })
   const data = served
     ? new Float32Array(await (await fetch('/matrix')).arrayBuffer(), 8, n * v)
-    : window.genotypes(n, v, 7)
+    : window.genotypes(n, v, 7, fractional)
   const chunk = Math.max(1, Math.floor((64 << 20) / 4 / n))
   const t0 = performance.now()
   const distBuf = device.createBuffer({
@@ -203,8 +237,14 @@ async function gpuDistances(
 
   let maxRelErr = 0
   let checkedPairs = 0
-  for (let i = 0; i < n; i += 97) {
-    for (let j = i; j < n; j += 101) {
+  // Strides derived from n rather than fixed at 97/101, which sampled 15 pairs
+  // at n=464 and 351 at n=2504 — so the check got weaker exactly as the cohort
+  // got smaller. Coprime-ish odd strides targeting ~40 rows per axis keep the
+  // sampled pairs from collapsing onto one diagonal.
+  const si = Math.max(1, 2 * Math.floor(n / 80) + 1)
+  const sj = si + 2
+  for (let i = 0; i < n; i += si) {
+    for (let j = i; j < n; j += sj) {
       let s = 0
       for (let k = 0; k < v; k++) {
         const d = data[i * v + k]! - data[j * v + k]!
@@ -268,7 +308,17 @@ async function main() {
     headless: false,
     executablePath: findChromeExecutable() ?? MAC_CHROME,
     protocolTimeout: 600_000,
-    args: [...BASE_CHROME_ARGS, '--window-size=400,300'],
+    // `--enable-features=Vulkan` is what gets a WebGPU adapter on Linux.
+    // Without it `navigator.gpu` is present on localhost and
+    // `requestAdapter()` resolves null, logging "No available adapters" —
+    // which reads as hardware with no WebGPU rather than as a missing flag.
+    // Chrome 151, AMD gcn-4. It is a no-op on macOS, where this was first
+    // measured.
+    args: [
+      ...BASE_CHROME_ARGS,
+      '--enable-features=Vulkan',
+      '--window-size=400,300',
+    ],
   })
   try {
     const page = await browser.newPage()
@@ -276,7 +326,14 @@ async function main() {
     await page.addScriptTag({
       content: `window.genotypes = ${genotypes.toString()}`,
     })
-    const gpu = await page.evaluate(gpuDistances, n, v, KERNEL, !!matrixFile)
+    const gpu = await page.evaluate(
+      gpuDistances,
+      n,
+      v,
+      KERNEL,
+      !!matrixFile,
+      fractional,
+    )
     console.log(
       `${matrixFile ?? 'synthetic'}: N=${n} V=${v} (${(((n * n) / 2) * v) / 1e9} G pair-elements)`,
     )
@@ -288,7 +345,11 @@ async function main() {
     server.close()
   }
   if (!skipCpu) {
-    const cpu = await cpuCluster(n, v, matrix?.data ?? genotypes(n, v, 7))
+    const cpu = await cpuCluster(
+      n,
+      v,
+      matrix?.data ?? genotypes(n, v, 7, fractional),
+    )
     console.log(
       `clusterMatrix (hclust wasm): first call ${cpu.first.toFixed(0)} ms, warm ${cpu.warm.toFixed(0)} ms (distance build, merge loop and newick)`,
     )
