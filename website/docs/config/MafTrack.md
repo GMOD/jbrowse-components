@@ -4,16 +4,13 @@ title: MafTrack
 sidebar_label: Track -> MafTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `maf` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/maf/src/MafTrack/configSchema.ts).
 
 ## Example usage
 
 A tabix-indexed MAF, with the aligned species supplied by a Newick tree that
-also orders and labels the rows as a dendrogram (pass a `samples` array instead
-to list them explicitly, in track order):
-
+also orders and labels the rows as a dendrogram (pass a `samples` array
+instead to list them explicitly, in track order):
 ```js
 {
   type: 'MafTrack',
@@ -39,13 +36,11 @@ species with a conservation summary above them
 
 ### MafTrack - Identifier
 
-Every MafTrack has a unique `trackId`, a required top-level field that
-identifies it (not one of the config slots below).
+Every MafTrack has a unique `trackId`, a required top-level field that identifies it (not one of the config slots below).
 
 ## Related links
 
-- **Display:** [LinearMafDisplay](../linearmafdisplay)
-  ([state model](../../models/linearmafdisplay))
+- **Display:** [LinearMafDisplay](../linearmafdisplay) ([state model](../../models/linearmafdisplay))
 - **Adapter:** [BgzipMafAdapter](../bgzipmafadapter)
 - **Adapter:** [BgzipTaffyAdapter](../bgziptaffyadapter)
 - **Adapter:** [BigMafAdapter](../bigmafadapter)
@@ -54,11 +49,7 @@ identifies it (not one of the config slots below).
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

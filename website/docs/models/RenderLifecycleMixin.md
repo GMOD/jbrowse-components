@@ -4,10 +4,7 @@ title: RenderLifecycleMixin
 sidebar_label: Mixin -> RenderLifecycleMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/render-core/src/RenderLifecycleMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/render-core/src/RenderLifecycleMixin.ts).
 
 Owns the GPU draw lifecycle for any display that paints to a canvas.
 
@@ -16,28 +13,29 @@ Plugins compose this mixin (directly or via `MultiRegionDisplayMixin` /
 `self.attachRenderingBackend(backend, () => ({ upload, render }))` from their
 own `startRenderingBackend(backend)` action. **The second argument is a thunk
 because it runs exactly once**, on the first attach: `startRenderingBackend`
-fires again on every context-loss recovery, and the autoruns keep the callbacks
-they were given first. Anything the callbacks close over — an upload sync's memo
-of what it last sent — is built inside it, so it lives as long as the callbacks
-that read it rather than being allocated per recovery and discarded. The mixin
-owns:
+fires again on every context-loss recovery, and the autoruns keep the
+callbacks they were given first. Anything the callbacks close over — an
+upload sync's memo of what it last sent — is built inside it, so it lives as
+long as the callbacks that read it rather than being allocated per recovery
+and discarded. The mixin owns:
 
-- `canvasDrawn` — observable flag read by test-selector `data-testid` attributes
-  to detect first paint.
-- `currentRenderingBackend` — the backend reference, updated on context-loss
-  recovery. Autoruns read it each tick so they re-fire against the new one
-  without being reinstalled.
-- `renderTick` — counter the render autorun observes; bumped by `renderNow()`
-  (tab-visibility restore) and after every upload (ensures render re-fires when
-  an upload happens but renderState identity stays stable).
-- `autorunsInstalled` — guards `attachRenderingBackend` so the autorun pair is
-  spawned once per model instance, not once per backend assignment.
+ - `canvasDrawn` — observable flag read by test-selector `data-testid` attributes to detect first paint.
+ - `currentRenderingBackend` — the backend reference, updated on context-loss
+   recovery. Autoruns read it each tick so they re-fire against the new
+   one without being reinstalled.
+ - `renderTick` — counter the render autorun observes; bumped by
+   `renderNow()` (tab-visibility restore) and after every upload
+   (ensures render re-fires when an upload happens but renderState
+   identity stays stable).
+ - `autorunsInstalled` — guards `attachRenderingBackend` so the autorun
+   pair is spawned once per model instance, not once per backend
+   assignment.
 
-The `upload` callback runs in one autorun, `render` in another. Inside each,
-every observable read is auto-tracked by MobX — no getter-layer indirection, no
-multi-entry config. `render` returns `true` when the backend actually painted
-content (flips `canvasDrawn`), `false` to skip this tick (e.g. `renderState` not
-yet computed or no regions loaded).
+The `upload` callback runs in one autorun, `render` in another. Inside
+each, every observable read is auto-tracked by MobX — no getter-layer
+indirection, no multi-entry config. `render` returns `true` when the
+backend actually painted content (flips `canvasDrawn`), `false` to skip
+this tick (e.g. `renderState` not yet computed or no regions loaded).
 
 ## Volatiles
 

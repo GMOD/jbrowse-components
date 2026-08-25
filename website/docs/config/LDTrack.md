@@ -4,17 +4,13 @@ title: LDTrack
 sidebar_label: Track -> LDTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `variants`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDTrack/configSchema.ts).
 
 ## Example usage
 
-`PlinkLDTabixAdapter` accepts the minimal `uri` shorthand below — it expects a
-sibling `<uri>.tbi` index, equivalent to writing out the full
+`PlinkLDTabixAdapter` accepts the minimal `uri` shorthand below — it expects
+a sibling `<uri>.tbi` index, equivalent to writing out the full
 `ldLocation`/`index.location` slots:
-
 ```js
 {
   type: 'LDTrack',
@@ -30,8 +26,8 @@ sibling `<uri>.tbi` index, equivalent to writing out the full
 
 _See the **Config slots** section below for all available configuration fields._
 
-Track type for displaying pre-computed linkage disequilibrium data (e.g., from
-PLINK --r2 output)
+Track type for displaying pre-computed linkage disequilibrium data
+(e.g., from PLINK --r2 output)
 
 ## Related links
 
@@ -42,11 +38,7 @@ PLINK --r2 output)
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

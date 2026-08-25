@@ -4,19 +4,14 @@ title: LinearManhattanDisplay
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`gwas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts).
 
 GWAS Manhattan-plot display drawing -log10 p-values as a scored scatter along
 the genome, with a feature widget on click.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearmanhattandisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearmanhattandisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

@@ -4,9 +4,7 @@ title: GWASAdapter
 sidebar_label: Adapter -> GWASAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -24,7 +22,6 @@ Auto-generated config schema for the current JBrowse release — see the
 ```
 
 Reading a raw p-value column instead, transformed to -log10(p) at load:
-
 ```js
 {
   type: 'GWASTrack',
@@ -42,9 +39,9 @@ Reading a raw p-value column instead, transformed to -log10(p) at load:
 
 _See the **Config slots** section below for all available configuration fields._
 
-adapter for GWAS results files; a BedTabixAdapter with `scoreColumn` defaulted
-to `neg_log_pvalue` so files load with a sensible Manhattan plot score out of
-the box
+adapter for GWAS results files; a BedTabixAdapter with `scoreColumn`
+defaulted to `neg_log_pvalue` so files load with a sensible Manhattan
+plot score out of the box
 
 ## Related links
 
@@ -54,14 +51,7 @@ the box
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "GWASAdapter", ... }`. It also accepts the
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`,
-`baseUri`, `csi` in place of writing a location slot out. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "GWASAdapter", ... }`. It also accepts the [shorthand](/docs/config_guides/file_types#the-uri-shorthand) keys `uri`, `baseUri`, `csi` in place of writing a location slot out. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

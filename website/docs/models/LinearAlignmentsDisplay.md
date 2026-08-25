@@ -4,10 +4,7 @@ title: LinearAlignmentsDisplay
 sidebar_label: Display -> LinearAlignmentsDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`alignments` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/model.ts).
 
 ## Example usage
 
@@ -15,7 +12,6 @@ The display goes in a track's `displays` array; here are three complete
 `AlignmentsTrack` configs to paste into `tracks`.
 
 Basic BAM, opened taller:
-
 ```js
 {
   type: 'AlignmentsTrack',
@@ -34,7 +30,6 @@ Basic BAM, opened taller:
 ```
 
 CRAM colored by CpG methylation (modBAM MM/ML tags):
-
 ```js
 {
   type: 'AlignmentsTrack',
@@ -53,7 +48,6 @@ CRAM colored by CpG methylation (modBAM MM/ML tags):
 ```
 
 Long reads with soft-clipping shown and split/mate reads connected by arcs:
-
 ```js
 {
   type: 'AlignmentsTrack',
@@ -76,11 +70,9 @@ Long reads with soft-clipping shown and split/mate reads connected by arcs:
 
 State model factory for LinearAlignmentsDisplay
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearalignmentsdisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearalignmentsdisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

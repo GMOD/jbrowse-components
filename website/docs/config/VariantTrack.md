@@ -4,10 +4,7 @@ title: VariantTrack
 sidebar_label: Track -> VariantTrack
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `variants`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantTrack/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/VariantTrack/configSchema.ts).
 
 ## Example usage
 
@@ -25,11 +22,10 @@ plugin.
 ```
 
 The same track with appearance settings in place. Rather than writing out the
-full `displays` array, you can list them in a `displayDefaults` object — JBrowse
-works out which display they belong to and applies them for you (here it puts
-`color` on the `LinearVariantDisplay`), so you don't have to know display names.
-A `jexl:` value works here for per-feature coloring:
-
+full `displays` array, you can list them in a `displayDefaults` object —
+JBrowse works out which display they belong to and applies them for you (here
+it puts `color` on the `LinearVariantDisplay`), so you don't have to know
+display names. A `jexl:` value works here for per-feature coloring:
 ```js
 {
   type: 'VariantTrack',
@@ -51,19 +47,12 @@ and custom feature details in `LinearVariantDisplay`
 
 ## Related links
 
-- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
-  ([state model](../../models/chordvariantdisplay))
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay) ([state model](../../models/chordvariantdisplay))
 - **Display:** [LDDisplay](../lddisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-  ([state model](../../models/linearmultisamplevariantdisplay))
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
-  ([state model](../../models/linearmultisamplevariantmatrixdisplay))
-- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
-  ([state model](../../models/linearpairedarcdisplay))
-- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
-  ([state model](../../models/linearvariantdisplay))
+- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay) ([state model](../../models/linearmultisamplevariantdisplay))
+- **Display:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay) ([state model](../../models/linearmultisamplevariantmatrixdisplay))
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay) ([state model](../../models/linearpairedarcdisplay))
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay) ([state model](../../models/linearvariantdisplay))
 - **Adapter:** [BedpeAdapter](../bedpeadapter)
 - **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
 - **Adapter:** [StarFusionAdapter](../starfusionadapter)
@@ -73,11 +62,7 @@ and custom feature details in `LinearVariantDisplay`
 
 ## Config slots
 
-These slots are top-level fields of the track config, alongside `trackId` and
-`name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the track config, alongside `trackId` and `name`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

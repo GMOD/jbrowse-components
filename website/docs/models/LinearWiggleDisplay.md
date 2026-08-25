@@ -4,17 +4,13 @@ title: LinearWiggleDisplay
 sidebar_label: Display -> LinearWiggleDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`wiggle` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/model.ts).
 
 ## Example usage
 
 A complete `QuantitativeTrack` config to paste into `tracks`. `height` and the
 score-range and rendering options (autoscale, min/max score, renderer) are all
 config slots on the track itself — see the `QuantitativeTrack` config:
-
 ```js
 {
   type: 'QuantitativeTrack',
@@ -34,11 +30,9 @@ config slots on the track itself — see the `QuantitativeTrack` config:
 
 State model factory for the single-source wiggle display.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearwiggledisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearwiggledisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

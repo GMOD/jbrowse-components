@@ -4,18 +4,14 @@ title: LinearPairedArcDisplay
 sidebar_label: Display -> LinearPairedArcDisplay
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
-`arc` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearPairedArcDisplay/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `arc` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/arc/src/LinearPairedArcDisplay/model.ts).
 
 ## Example usage
 
 Selected on a `VariantTrack` of structural variants: each feature draws an arc
 from its position to its mate breakend, even when the mate is on another
-chromosome / displayed region. Short ticks mark each breakend's mate direction;
-clicking an arc opens the variant details:
-
+chromosome / displayed region. Short ticks mark each breakend's mate
+direction; clicking an arc opens the variant details:
 ```js
 {
   type: 'VariantTrack',
@@ -41,11 +37,9 @@ structural variant even across displayed regions / chromosomes; rendered as
 plain SVG on the main thread. For arcs that span a single feature's own
 start–end use [LinearArcDisplay](../lineararcdisplay) instead.
 
-The configuration slots for this model are documented on its
-[config schema page](../../config/linearpairedarcdisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearpairedarcdisplay).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
 

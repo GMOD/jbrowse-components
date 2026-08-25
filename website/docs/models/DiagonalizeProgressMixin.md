@@ -4,20 +4,17 @@ title: DiagonalizeProgressMixin
 sidebar_label: Mixin -> DiagonalizeProgressMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/DiagonalizeProgressMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/DiagonalizeProgressMixin.ts).
 
 The auto-diagonalize lifecycle state shared by the comparative views
 (LinearSyntenyView, DotplotView): the in-flight wait, its live RPC status and
 stop token, and the flag that gates `settled` so a screenshot or browser test
 can't capture a pre-reorder hairball.
 
-`withDiagonalizeProgress` drives the wait and the status/token pair; the gate is
-raised and lowered by the view's own init autorun, which is the only thing that
-knows a reorder was asked for. Composed rather than duplicated so both views
-report progress, cancel, and gate identically.
+`withDiagonalizeProgress` drives the wait and the status/token pair; the gate
+is raised and lowered by the view's own init autorun, which is the only thing
+that knows a reorder was asked for. Composed rather than duplicated so both
+views report progress, cancel, and gate identically.
 
 ## Volatiles
 

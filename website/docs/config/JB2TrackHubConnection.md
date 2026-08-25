@@ -4,10 +4,7 @@ title: JB2TrackHubConnection
 sidebar_label: Connection -> JB2TrackHubConnection
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the
-`data-management` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `data-management` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/JB2TrackHubConnection/configSchema.ts).
 
 ## Example usage
 
@@ -15,7 +12,6 @@ An entry in the config's `connections`, pointing at another JBrowse 2
 `config.json`. Its tracks — and any assemblies it declares that the session
 lacks — are added on connect, so one instance can publish a track set that
 others subscribe to.
-
 ```js
 {
   type: 'JB2TrackHubConnection',
@@ -35,11 +31,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots are top-level fields of the connection's entry in `connections`.
-Slot types (`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
-surface.
+These slots are top-level fields of the connection's entry in `connections`. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

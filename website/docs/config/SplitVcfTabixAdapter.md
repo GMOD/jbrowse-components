@@ -4,10 +4,7 @@ title: SplitVcfTabixAdapter
 sidebar_label: Adapter -> SplitVcfTabixAdapter
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `variants`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/SplitVcfTabixAdapter/configSchema.ts).
 
 ## Example usage
 
@@ -33,30 +30,22 @@ plugin.
 
 _See the **Config slots** section below for all available configuration fields._
 
-reads a set of per-chromosome VCF files, keyed by refName, instead of a single
-combined VCF (useful for large call sets split by chromosome)
+reads a set of per-chromosome VCF files, keyed by refName, instead of a
+single combined VCF (useful for large call sets split by chromosome)
 
 ## Related links
 
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LDDisplay](../lddisplay)
-- **Display:**
-  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
-- **Display:**
-  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots
 
-These slots go inside the track's `adapter`:
-`"adapter": { "type": "SplitVcfTabixAdapter", ... }`. This adapter has no `uri`
-[shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the
-location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go inside the track's `adapter`: `"adapter": { "type": "SplitVcfTabixAdapter", ... }`. This adapter has no `uri` [shorthand](/docs/config_guides/file_types#the-uri-shorthand) — give it the location slots below. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

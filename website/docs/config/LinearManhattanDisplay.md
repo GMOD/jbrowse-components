@@ -4,15 +4,12 @@ title: LinearManhattanDisplay
 sidebar_label: Display -> LinearManhattanDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `gwas` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts).
 
 ## Example usage
 
 Minimal `GWASTrack` config. See the
 [GWAS track guide](/docs/config_guides/gwas_track) for all options:
-
 ```js
 {
   type: 'GWASTrack',
@@ -26,13 +23,12 @@ Minimal `GWASTrack` config. See the
 }
 ```
 
-Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point by its
-r² to the index SNP read from the adapter's `ldAdapter` sub-adapter. The LD data
-is a second source on `GWASAdapter` (mirroring MAF's `annotationAdapter`), so it
-nests under `adapter`, while display-only options like `height`/`colorBy` go in
-`displayDefaults` — see
+Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point by
+its r² to the index SNP read from the adapter's `ldAdapter` sub-adapter. The
+LD data is a second source on `GWASAdapter` (mirroring MAF's
+`annotationAdapter`), so it nests under `adapter`, while display-only options
+like `height`/`colorBy` go in `displayDefaults` — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
-
 ```js
 {
   type: 'GWASTrack',
@@ -66,13 +62,7 @@ configuration for the Manhattan plot display used by GWAS tracks
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearManhattanDisplay", ... }]`, or in the track's
-[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
-is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
-in the [config slot types reference](/docs/config_guides/slot_types). Slots a
-base configuration contributes are listed here too, so this table is the whole
-surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearManhattanDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

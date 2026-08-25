@@ -4,18 +4,14 @@ title: LinearReferenceSequenceDisplay
 sidebar_label: Display -> LinearReferenceSequenceDisplay
 ---
 
-Auto-generated config schema for the current JBrowse release — see the
-[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
-plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/configSchema.ts).
+Auto-generated config schema for the current JBrowse release — see the [config guide](/docs/config_guide) for concepts. Provided by the `sequence` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/LinearReferenceSequenceDisplay/configSchema.ts).
 
 ## Example usage
 
 The display goes in the `displays` array of the assembly's `sequence` track,
-which is where a `ReferenceSequenceTrack` is authored — it names no assembly of
-its own. `showForward`, `showReverse`, and `showTranslation` toggle the strand
-and translation rows:
-
+which is where a `ReferenceSequenceTrack` is authored — it names no assembly
+of its own. `showForward`, `showReverse`, and `showTranslation` toggle the
+strand and translation rows:
 ```js
 sequence: {
   type: 'ReferenceSequenceTrack',
@@ -49,13 +45,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Config slots
 
-These slots go on a display entry:
-`"displays": [{ "type": "LinearReferenceSequenceDisplay", ... }]`, or in the
-track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays)
-when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are
-explained in the [config slot types reference](/docs/config_guides/slot_types).
-Slots a base configuration contributes are listed here too, so this table is the
-whole surface.
+These slots go on a display entry: `"displays": [{ "type": "LinearReferenceSequenceDisplay", ... }]`, or in the track's [`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

@@ -4,27 +4,24 @@ title: WorkspaceLayoutMixin
 sidebar_label: Mixin -> WorkspaceLayoutMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
-see [pluggable elements](/docs/developer_guide/) for concepts. Built into
-JBrowse core.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/WorkspaceLayout/model.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/WorkspaceLayout/model.ts).
 
 The whole workspace, in one MST tree. There is no second owner, so there is
 nothing to reconcile, no event to echo, and no window during which the two
 disagree — which is the entire content of `useDockviewController`.
 
-Four levels, matching what the workspace actually has and what a generic window
-manager cannot quite express:
+Four levels, matching what the workspace actually has and what a generic
+window manager cannot quite express:
 
-branch (a split) > panel (a grid cell) > tab > views (stacked)
+  branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked)
 
 dockview models the first three as branch/group/panel and stops there; the
 vertical stack of views inside a tab is ours, which is why
 `panelViewAssignments` had to exist alongside dockview's own serialized grid.
-Here it is one tree, and a tab simply _contains_ its views.
+Here it is one tree, and a tab simply *contains* its views.
 
-Every action is `tree -> tree` through the pure functions in `tree.ts`, so undo
-is `applySnapshot` on this node and nothing else has to be told.
+Every action is `tree -> tree` through the pure functions in `tree.ts`, so
+undo is `applySnapshot` on this node and nothing else has to be told.
 
 ## Properties
 

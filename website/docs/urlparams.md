@@ -619,14 +619,9 @@ property the state model declares.
 
 <!-- SPEC_KEYS LinearGenomeView START -->
 
-**Launch keys**, resolved once on attach and then discarded, because they have
-no direct representation in the view's state — `assembly`,
-`displayedRegionNames`, `grow`, `highlight`, `loc`, `nav`, `tracklist`. There
-are no others; a key outside this set and the table below is a typo, and the
-launcher names it in a console warning rather than dropping it silently.
+**Launch keys**, resolved once on attach and then discarded, because they have no direct representation in the view's state — `assembly`, `displayedRegionNames`, `grow`, `highlight`, `loc`, `nav`, `tracklist`. There are no others; a key outside this set and the table below is a typo, and the launcher names it in a console warning rather than dropping it silently.
 
-**Properties**, which are whatever the state model declares and the view
-restores natively:
+**Properties**, which are whatever the state model declares and the view restores natively:
 
 <!-- prettier-ignore -->
 | Property | What it does |
@@ -837,8 +832,7 @@ properties:
 
 <!-- SPEC_KEYS CircularView START -->
 
-**Launch keys**, which name something to do on load rather than state the view
-holds:
+**Launch keys**, which name something to do on load rather than state the view holds:
 
 <!-- prettier-ignore -->
 | Launch key | What it does |
@@ -846,8 +840,7 @@ holds:
 | `assembly` | the assembly whose chromosomes the circle draws. Optional because a spec view is untyped user input; without one the view opens on its import form |
 | `displayedRegionNames` | whole chromosomes to draw, in this order; the rest of the assembly's contigs are left off the circle |
 
-**Properties**, which are whatever the state model declares and the view
-restores natively:
+**Properties**, which are whatever the state model declares and the view restores natively:
 
 <!-- prettier-ignore -->
 | Property | What it does |
@@ -927,8 +920,7 @@ The dotplot spec accepts extra top-level fields applied on load:
 
 <!-- SPEC_KEYS DotplotView START -->
 
-**Launch keys**, which name something to do on load rather than state the view
-holds:
+**Launch keys**, which name something to do on load rather than state the view holds:
 
 <!-- prettier-ignore -->
 | Launch key | What it does |
@@ -939,8 +931,7 @@ holds:
 | `minAlignmentLength` | Per-feature alignment-length filter applied at the renderer. Hides chains shorter than this many bp; cuts the genome-scale hairball. |
 | `showColorLegend` | Show the floating color-by legend on load. Set false to hide it (e.g. a curated demo/screenshot where the legend would clutter the figure). |
 
-**Properties**, which are whatever the state model declares and the view
-restores natively:
+**Properties**, which are whatever the state model declares and the view restores natively:
 
 <!-- prettier-ignore -->
 | Property | What it does |
@@ -1069,8 +1060,7 @@ Supported init fields:
 
 <!-- SPEC_KEYS LinearSyntenyView START -->
 
-**Launch keys**, which name something to do on load rather than state the view
-holds:
+**Launch keys**, which name something to do on load rather than state the view holds:
 
 <!-- prettier-ignore -->
 | Launch key | What it does |
@@ -1083,8 +1073,7 @@ holds:
 | `sameScale` | Put every genome row on one bp/px, the coarsest row's, instead of fitting each to the pane width. The largest genome then fills the frame and the rest are drawn shorter in proportion, so a size difference between rows (polyploidy, a genome duplication) is visible as length rather than hidden by the per-row stretch — and orthologs between two rows line up at the same scale on both. Applied last, after any autoDiagonalize pass. |
 | `showColorLegend` | Show the floating color-by legend on load. Set false to hide it (e.g. a curated demo/screenshot where the legend would clutter the figure). |
 
-**Properties**, which are whatever the state model declares and the view
-restores natively:
+**Properties**, which are whatever the state model declares and the view restores natively:
 
 <!-- prettier-ignore -->
 | Property | What it does |
@@ -1205,8 +1194,7 @@ Alongside `views`, the spec accepts every setting the view's menu offers:
 
 <!-- SPEC_KEYS SpreadsheetView START -->
 
-**Launch keys**, which name something to do on load rather than state the view
-holds:
+**Launch keys**, which name something to do on load rather than state the view holds:
 
 <!-- prettier-ignore -->
 | Launch key | What it does |
@@ -1216,8 +1204,7 @@ holds:
 | `filterText` | search-box text, applied once the file is loaded |
 | `uri` | the file to load into the sheet. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
 
-**Properties**, which are whatever the state model declares and the view
-restores natively:
+**Properties**, which are whatever the state model declares and the view restores natively:
 
 <!-- prettier-ignore -->
 | Property | What it does |
@@ -1251,8 +1238,7 @@ The circular half draws the rows the spreadsheet half's filter leaves, so
 
 <!-- SPEC_KEYS SvInspectorView START -->
 
-**Launch keys**, which name something to do on load rather than state the view
-holds:
+**Launch keys**, which name something to do on load rather than state the view holds:
 
 <!-- prettier-ignore -->
 | Launch key | What it does |
@@ -1262,8 +1248,7 @@ holds:
 | `filterText` | search-box text for the spreadsheet half, applied once the file is loaded. The circular half draws the rows it leaves, so this is what makes a chord subset reachable from a link |
 | `uri` | the file to load. A spec view is untyped user input, so this can be absent, and the view then opens on the import form |
 
-**Properties**, which are whatever the state model declares and the view
-restores natively:
+**Properties**, which are whatever the state model declares and the view restores natively:
 
 <!-- prettier-ignore -->
 | Property | What it does |
