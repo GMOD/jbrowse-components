@@ -55,7 +55,7 @@ export function findAssemblyConf(configJson: unknown, assemblyName: string) {
  * `JB2TrackHubConnection` runs it: the fetched config's relative sequence URIs
  * must resolve against the config, not the page.
  */
-async function ensureAssembly(
+export async function ensureAssembly(
   session: AbstractViewContainer & AssemblyHost,
   target: SampleNavigationTarget,
 ) {

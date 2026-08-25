@@ -118,7 +118,36 @@ target assemblies are `volvox.2bit` under a different name with a refName alias
 (`chrA`/`chr_a` → `ctgA`), so the jump also exercises alias resolution without
 adding any test data files.
 
-The stretch version — open a **synteny** view driven by the MAF blocks
-themselves, since the MAF carries both coordinate systems and the alignment, so
-no PAF is needed — is a new adapter shape, not a menu item. It's worth doing,
-but after the LGV jump has proven the mapping.
+## A sample whose id is a loaded assembly
+
+The rule above — the plugin must not guess — is about resolving a name against
+a portal, where `Acinonyx_jubatus` reaches three assemblies and `HLmacFas6`
+reaches none. A different case turned up on the pangenome tutorials
+(2026-08-25): the pggb and Minigraph-Cactus MAFs name their samples by PanSN
+strain (`Sakai`, `CFT073`) and the same config loads those strains as
+assemblies under exactly those names, with no `samples[].assemblyName` written
+anywhere. `rowNavigationTarget` therefore falls back to the sample id when
+`assemblyManager.has(id)` — an assembly present under the exact id is the
+config author's own statement of which genome it is, and nothing is looked up.
+The config mapping still wins where it exists.
+
+## The synteny view, cut from the columns
+
+The stretch version shipped the same day, as a menu item and not an adapter:
+`launchMafRowSynteny.ts`. `buildMafRowSynteny` walks the fetched blocks' gapped
+columns for one row — both bases `M`, a reference gap `I`, a row gap `D` —
+clipped to the selection half-open, with the row's coordinates through the same
+`forwardPos` the hover and the navigation target use, so a `-` row's mate span
+is emitted forward on a minus-strand feature. The features go into a session
+`SyntenyTrack` over a `FromConfigAdapter` (`addSessionTrackConf`, since it is a
+view the user stood up), reference-anchored side only: the band's fetch queries
+the top row's axis and the reference opens on top. Then `addView` with a
+two-row `init`. **`FromConfigAdapter` filters by refName alone**, which is why
+the mate copies read-vs-ref stores are not stored here: on the E. coli
+pangenome every strain's contig is `chr`, so a mate copy would answer the
+reference row's query too.
+
+The all-samples stack is deliberately not offered: a stack's bands join
+adjacent rows, so sample-vs-sample bands would need column-transitive features,
+and a 464-haplotype MAF needs a row picker before a stack is a picture. One
+pair at a time is the item.

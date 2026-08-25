@@ -164,12 +164,25 @@ selection covers, naming that species' locus in its own coordinates; clicking
 one opens a view there.
 
 Only rows with aligned bases in the selection are listed, and only those whose
-sample is configured with an
-[`assemblyName`](/docs/config_guides/maf_track#the-samples-array). If the
-session does not already hold that assembly, JBrowse fetches just that one at
-click time, which is what lets a 26-way or 470-way alignment stay navigable
-without every species' genome being present in the config. Past six species the
-entries move into a submenu.
+sample names a genome the session can open: a sample configured with an
+[`assemblyName`](/docs/config_guides/maf_track#the-samples-array), or one whose
+id is itself an assembly the session already holds, as the strains of a
+[pangenome alignment](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection)
+are. If the session does not already hold a configured assembly, JBrowse fetches
+just that one at click time, which is what lets a 26-way or 470-way alignment
+stay navigable without every species' genome being present in the config. Past
+six species the entries move into a submenu.
+
+## Comparing a species against the reference
+
+The same selection opens as a two-row
+[linear synteny view](/docs/user_guides/linear_synteny_view): **Launch synteny
+view, \<ref\> vs...** lists the same species, and picking one opens the
+reference over that species' genome with the alignment drawn between them as
+ribbons. The ribbons come from the MAF's own columns, so every insertion and
+deletion in the block is where the alignment put it, and no synteny file is
+involved. The reference row carries the tracks this view had open, the MAF
+included; the species row carries its own gene track where the session has one.
 
 ## Row layout and the species tree
 

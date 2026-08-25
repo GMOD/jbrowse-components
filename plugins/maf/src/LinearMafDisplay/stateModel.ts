@@ -1478,16 +1478,27 @@ export default function stateModelFactory(
             rowIndex >= 0 && rowIndex < sources.length
               ? sources[rowIndex]!
               : undefined
-          const region = source?.assemblyName
+          // The config's mapping first. Failing one, a sample whose id IS an
+          // assembly the session already holds — the pangenome MAFs are built
+          // from PanSN-named strains loaded under those same names. This is not
+          // the name resolution MAF_CROSS_VIEW_NAVIGATION.md rules out: nothing
+          // is looked up against a portal, and an assembly present under the
+          // exact id is the config author's own statement of which genome it is.
+          const assemblyName =
+            source?.assemblyName ??
+            (source && getSession(self).assemblyManager.has(source.name)
+              ? source.name
+              : undefined)
+          const region = assemblyName
             ? self.rpcDataMap.get(displayedRegionIndex)
             : undefined
           const span = region
             ? findRowSpan(region, startBp, endBp, rowIndex)
             : undefined
-          return span && source?.assemblyName
+          return span && source && assemblyName
             ? {
                 ...span,
-                assemblyName: source.assemblyName,
+                assemblyName,
                 assemblyConfigLocation: source.assemblyConfigLocation,
                 sampleLabel: source.label ?? source.name,
               }
