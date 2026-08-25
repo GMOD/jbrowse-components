@@ -126,11 +126,3 @@ export function anyIsoformsHidden(picks: IsoformPicks | undefined) {
     (picks.byLength > 0 || Object.keys(picks.byTag).length > 0)
   )
 }
-
-// The fit ladder's isoform rung, specifically, trimmed some gene here — the
-// only evidence the chip may announce a trim on. A region fetched under
-// `longestCoding` reports every multi-isoform gene as collapsed, and a trim
-// gated on that alone went loud on data the ladder never touched.
-export function capHidIsoforms(picks: IsoformPicks | undefined) {
-  return picks !== undefined && picks.byCap > 0
-}

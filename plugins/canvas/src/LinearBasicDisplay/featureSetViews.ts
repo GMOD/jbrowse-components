@@ -32,6 +32,16 @@ export function featureSetViews(self: FeatureSetHost) {
     /**
      * #getter
      */
+    // Genes the user opened from their own badge, as a set the layout can key
+    // on — stable by reference until the array mutates, like
+    // `pinnedFeatureIdSet` above and for the same reason (groupUnchanged).
+    get expandedGeneIdSet(): ReadonlySet<string> {
+      return new Set(self.expandedGeneIds)
+    },
+
+    /**
+     * #getter
+     */
     // Membership set for the "show only these features" collection; drives
     // the overlay highlight and the context-menu toggle labels.
     get soloFeatureIdSet(): ReadonlySet<string> {
@@ -111,10 +121,10 @@ export function featureSetActions(self: FeatureSetHost) {
     /**
      * #action
      * Open or re-collapse one gene's isoforms, from the badge on its own
-     * label. Nothing else has to change: the badge's text comes from the
-     * worker's own `isoformOverflow`, which reports what the collapse WOULD
-     * hide whether or not this gene is in the set — so the badge that
-     * opened a gene is the badge that closes it again.
+     * label. Nothing else has to change: the trim reports what it WOULD hide
+     * for a gene in the set as well as for one out of it (see
+     * `IsoformTrimPlan.expandedHidden`), so the badge that opened a gene is the
+     * badge that closes it again.
      */
     toggleExpandedGene(featureId: string) {
       toggleArrayMember(self.expandedGeneIds, featureId)

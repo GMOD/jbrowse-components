@@ -38,6 +38,66 @@ export function bisectSmallestFitting(
 }
 
 /**
+ * The largest integer x in `[lo, hi]` with `fits(x)`, by bisection.
+ *
+ * The integer twin of `bisectSmallestFitting`, and it owes the same two
+ * preconditions for the same reason: `fits` must be monotone (fewer isoforms
+ * cannot make a stack taller) and the caller must have ALREADY measured
+ * `fits(lo) === true` and `fits(hi) === false`, so the loop only ever narrows a
+ * bracket whose ends are both known and `lo` is a value something measured.
+ *
+ * No iteration count: the bracket is integers, so it closes on its own.
+ */
+export function bisectLargestFitting(
+  fits: (x: number) => boolean,
+  lo: number,
+  hi: number,
+) {
+  while (hi - lo > 1) {
+    const mid = Math.floor((lo + hi) / 2)
+    if (fits(mid)) {
+      lo = mid
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
+
+/**
+ * The most isoforms per gene whose names-kept stack fits `trackHeight`, or
+ * undefined when trimming buys nothing — either no gene on screen has more than
+ * one, or the whole stack already fits.
+ *
+ * Answers 1 rather than undefined when even one isoform per gene overflows:
+ * "names before isoforms" means every isoform goes before any name does, so the
+ * `decimated` and `bodies` rungs below run at that 1 rather than back at the
+ * full stack.
+ *
+ * Takes the probe rather than building one, like `solveLabelRoomFactor`: its
+ * preparation depends on the data and the layout inputs but not on the track
+ * height, so a caller re-solving as the height moves holds one probe across
+ * every solve.
+ */
+export function solveIsoformCount(
+  heightAt: (maxIsoforms: number) => number,
+  trackHeight: number,
+  maxIsoformsOnScreen: number,
+) {
+  if (maxIsoformsOnScreen <= 1) {
+    return undefined
+  }
+  const fits = (maxIsoforms: number) => heightAt(maxIsoforms) <= trackHeight
+  if (fits(maxIsoformsOnScreen)) {
+    return undefined
+  }
+  if (!fits(1)) {
+    return 1
+  }
+  return bisectLargestFitting(fits, 1, maxIsoformsOnScreen)
+}
+
+/**
  * The smallest `labelRoomFactor` whose packed stack fits `trackHeight`, or
  * undefined when even the most aggressive decimation overflows. Smallest = most
  * names kept, and the kept set shrinks monotonically as the factor rises, so the
@@ -71,16 +131,25 @@ export function solveLabelRoomFactor(
 }
 
 // The fit ladder's reservation levels, least to most reduced: `full` reserves
-// names + descriptions, `labels` drops descriptions, `decimated` keeps names
-// only on features wide enough to host them (plus pinned/highlighted), `bodies`
-// drops all names and packs boxes edge-to-edge.
-type FitLevel = 'full' | 'labels' | 'decimated' | 'bodies'
+// names + descriptions, `labels` drops descriptions, `isoforms` trims each
+// gene's transcript stack to the count that fits WITH its names, `decimated`
+// keeps names only on features wide enough to host them (plus
+// pinned/highlighted), `bodies` drops all names and packs boxes edge-to-edge.
+//
+// `isoforms` sits above `decimated` because the policy is names before
+// isoforms: a gene drawn with 5 of its 10 transcripts and its name on it is the
+// picture the reader can use, and one drawn with all 10 and no name is not.
+type FitLevel = 'full' | 'labels' | 'isoforms' | 'decimated' | 'bodies'
 
 // One rung. Lazy so a rung tighter than the one that fits is never laid out — in
 // the common non-overflowing case only `full` is materialized.
 export interface FitRung {
   level: FitLevel
   layout: () => Map<number, FeatureDataResult>
+  // isoforms per gene this rung packs at, undefined for every one the worker
+  // sent. Carried on the rung rather than derived from the level, because the
+  // two rungs BELOW `isoforms` inherit the count it failed at (see fitStage).
+  maxIsoforms?: number
 }
 
 // The resolved outcome, bundled so its parts can't disagree. `scale` is
@@ -94,6 +163,10 @@ export interface FitStage {
   layout: Map<number, FeatureDataResult>
   scale: number
   contentHeight: number
+  // isoforms per gene the kept rung packs at, undefined when nothing was
+  // trimmed. The chip, the tooltip and `isoformPicks.byCap` read the solve from
+  // here rather than from a worker flag.
+  maxIsoforms: number | undefined
 }
 
 // Uniform vertical scale making a `contentHeight` stack fill `trackHeight`,
@@ -209,6 +282,7 @@ export function resolveFitLadder(
         level: rung.level,
         layout,
         contentHeight,
+        maxIsoforms: rung.maxIsoforms,
         scale: fitScaleToFill(contentHeight, trackHeight, minScale, maxScale),
       }
     }

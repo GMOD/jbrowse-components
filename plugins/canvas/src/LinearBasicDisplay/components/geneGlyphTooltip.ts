@@ -62,10 +62,9 @@ export function geneGlyphTooltip({
 }: {
   mode: GeneGlyphMode
   collapsed: boolean
-  // the height cap hiding transcripts, or undefined when none is. An upper
-  // bound rather than a promise: a gene sharing its lane with others is handed
-  // a share of this (laneBudgetRows), and its own label badge names what it
-  // actually left out.
+  // the count the fit ladder trimmed to, or undefined when it trimmed nothing.
+  // A ceiling rather than a promise: a gene with fewer transcripts than this
+  // draws all of them, and each gene's own badge names what it left out.
   maxIsoforms?: number
   // what picked each collapsed gene's transcript, counted per rule
   picks?: IsoformPicks
@@ -74,9 +73,9 @@ export function geneGlyphTooltip({
     return 'All transcripts per gene.'
   }
   if (maxIsoforms !== undefined) {
-    // The cap has two levers and neither is visible from the menu: it exists
-    // only under Auto, so All transcripts lifts it, and it is sized to the
-    // track, so a taller track (or autogrow, next door) admits more.
+    // The trim has two levers and neither is visible from the menu: it exists
+    // only under Auto, so All transcripts lifts it, and it is solved against
+    // the track, so a taller track (or autogrow, next door) admits more.
     const tag = dominantIsoformTag(picks)
     return `Up to ${maxIsoforms} transcript${maxIsoforms === 1 ? '' : 's'} per gene fit this height${tag ? ` (${tag} first)` : ''}. A taller track or All transcripts shows more.`
   }

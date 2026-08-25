@@ -866,14 +866,21 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Descriptions are painted only at the `full` stage (and whenever fit is
-         * off). Every render-time consumer — label draw and the highlight/hit/SVG
-         * label-width reservation — reads this so a box never reserves width for a
-         * description it won't draw.
+         * Descriptions are painted at the `full` stage, and at the `isoforms`
+         * one where a fixed-height track reached it — that ladder is `full →
+         * isoforms` and gives up transcripts rather than labels, so the rung
+         * packs the descriptions the settings asked for and this has to agree.
+         * Fit mode only reaches `isoforms` after `labels` dropped them. Every
+         * render-time consumer — label draw and the highlight/hit/SVG
+         * label-width reservation — reads this so a box never reserves width
+         * for a description it won't draw.
          */
         get renderedShowDescriptions() {
+          const { level } = self.fitStage
           return (
-            self.effectiveShowDescriptions && self.fitStage.level === 'full'
+            self.effectiveShowDescriptions &&
+            (level === 'full' ||
+              (level === 'isoforms' && !self.fitHeightToDisplay))
           )
         },
         /**

@@ -11,15 +11,13 @@ import {
   toggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import { pluralize } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import SegmentIcon from '@mui/icons-material/Segment'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
-import { autorun } from 'mobx'
 
 import { SUBFEATURE_LABEL_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
-import { budgetFeatureHeightPx } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
-  capHidIsoforms,
+  addTrimmedIsoformPicks,
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
@@ -28,22 +26,16 @@ import {
   isGeneLikeType,
 } from './collapseIntronsMenu.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
-import {
-  geneOwnRows,
-  geneRowCostPx,
-  isoformRowBudget,
-} from './isoformBudget.ts'
+import { planIsoformTrims } from './isoformTrim.ts'
 import { inertLabelHint, inlineRadioGroup } from './trackMenus.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { IsoformStack } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export type { Region } from '@jbrowse/core/util'
-
-// How long a track height has to hold still before the isoform cap follows it.
-const HEIGHT_SETTLE_MS = 300
 
 /**
  * #stateModel LinearBasicDisplay
@@ -99,12 +91,6 @@ export default function stateModelFactory(
       // click away); it never changes the collapse itself. Volatile, so a
       // reload is the natural reset boundary.
       geneGlyphNoticeDismissed: false,
-
-      // The track height the isoform cap is computed against, debounced (see
-      // afterAttach). `maxIsoforms` is an RPC cache key and the resize handle
-      // writes the height every drag frame, so reading it live re-runs the
-      // worker pipeline dozens of times per drag. 0 = not measured, no cap.
-      coarseTrackHeight: 0,
     }))
     .views(self => ({
       // Promotable sentinel enum (see baseConfigSchema.ts): getConf walks
@@ -144,71 +130,6 @@ export default function stateModelFactory(
         return this.geneGlyphMode
       },
 
-      // The height the isoform cap is measured against, before the debounce
-      // `coarseTrackHeight` puts on it. `fitTargetHeight` is the raw slot, so
-      // it reads before the view is measured; grow reports 0 (no cap) for the
-      // reason effectiveMaxIsoforms gives.
-      get cappableTrackHeight() {
-        return self.heightMode === 'grow' ? 0 : self.fitTargetHeight
-      },
-
-      /**
-       * #getter
-       * How many isoforms a gene may draw, or undefined for no cap — `auto`'s
-       * second reason to hide transcripts, after zoom: a gene with 28 of them
-       * in a 100px lane draws all 28 inside the lane's own scrollbar.
-       *
-       * Rows, so it is the packer's own arithmetic solved for n rather than
-       * approximated — see `geneRowCostPx` in isoformBudget.ts, which owns the
-       * mirror of `decideLabelReservations` and the test pinning the two
-       * together. This getter is only the display's half: which state turns the
-       * cap on, and which height it is measured against.
-       *
-       * Only while the resolved mode is `all`: under `longestCoding` the worker
-       * ignores it, so leaving it live would put a resize drag into the RPC
-       * cache key for nothing.
-       *
-       * OFF in `grow`, and that gate is load-bearing: grow's height IS its
-       * content's, so a cap read off it would be a fetch-derived value in
-       * `rpcProps()` (the loop trap `makeSettingsLoopGuard` names). Hence
-       * `fitTargetHeight`, the raw slot, rather than `height` (see
-       * `cappableTrackHeight`).
-       */
-      get effectiveMaxIsoforms(): number | undefined {
-        const cost = this.isoformLaneCost
-        return cost ? isoformRowBudget(self.coarseTrackHeight, cost) : undefined
-      },
-
-      // What one gene's own rows cost in `effectiveMaxIsoforms` units, for the
-      // worker to re-spend once per gene stacking in the same lane (see
-      // `laneBudgetRows`). Off the same cost as the budget above and gated on
-      // the same state, so the pair the payload carries can only be both set or
-      // both unset.
-      get effectiveGeneOwnRows(): number | undefined {
-        const cost = this.isoformLaneCost
-        return cost ? geneOwnRows(cost) : undefined
-      },
-
-      // What a lane's rows cost this display, or undefined where no cap
-      // applies: under `longestCoding` the worker ignores it, and in `grow` the
-      // height IS the content's, so a cap read off it would be a fetch-derived
-      // value in `rpcProps()` (the loop trap `makeSettingsLoopGuard` names).
-      // Hence `cappableTrackHeight`, the raw slot, rather than `height`.
-      get isoformLaneCost() {
-        return this.geneGlyphMode !== 'auto' ||
-          this.effectiveGeneGlyphMode !== 'all' ||
-          self.heightMode === 'grow' ||
-          !self.coarseTrackHeight
-          ? undefined
-          : geneRowCostPx({
-              featureHeightPx: budgetFeatureHeightPx(
-                self.configuration.featureHeight,
-              ),
-              displayMode: self.displayMode,
-              subfeatureLabelsBelow: this.subfeatureLabels === 'below',
-            })
-      },
-
       // Gate for the bottom-right isoform-collapse control: the loaded data has
       // a multi-isoform gene, so switching modes is meaningful. Shown in every
       // mode (not just when collapsed) so picking "All transcripts" from the
@@ -229,27 +150,46 @@ export default function stateModelFactory(
        * (`RefSeq Select`) instead of only saying that transcripts are hidden.
        */
       get geneGlyphIsoformPicks() {
-        return mergeIsoformPicks(
-          [...self.rpcDataMap.values()].map(data => data.isoformPicks),
+        return addTrimmedIsoformPicks(
+          mergeIsoformPicks(
+            [...self.rpcDataMap.values()].map(data => data.isoformPicks),
+          ),
+          [...this.geneGlyphTrimmedGenes.values()],
         )
+      },
+
+      // The genes the ladder's isoform rung actually took transcripts off, at
+      // the count it committed to. Re-planned from the stacks rather than read
+      // off the trimmed layout, because a trimmed gene draws exactly like a
+      // gene with that many transcripts — nothing in the arrays says one was
+      // cut. `planIsoformTrims` is the same function the pack ran, so the two
+      // cannot disagree about which genes those are.
+      get geneGlyphTrimmedGenes() {
+        const maxIsoforms = self.fitStage.maxIsoforms
+        const stacks: [string, IsoformStack][] = []
+        const seen = new Set<string>()
+        for (const data of self.rpcDataMap.values()) {
+          for (const item of data.flatbushItems) {
+            if (item.isoformStack && !seen.has(item.featureId)) {
+              seen.add(item.featureId)
+              stacks.push([item.featureId, item.isoformStack])
+            }
+          }
+        }
+        return planIsoformTrims(stacks, maxIsoforms, self.expandedGeneIdSet)
+          .trims
       },
 
       /**
        * #getter
-       * The height cap, only when the cap is what is hiding transcripts — so
-       * `undefined` also covers a cap every gene in view fits inside, which the
-       * control must not announce.
-       *
-       * On the worker's word that the CAP fired (`byCap`), not on anything
-       * being hidden: the cap turns on the moment `auto` crosses back under
-       * its zoom threshold, while the loaded data is still the `longestCoding`
-       * fetch, which reports every multi-isoform gene as collapsed.
+       * The isoform count the fit ladder trimmed to, or undefined when nothing
+       * on screen was trimmed. Read off the solve that did the trimming
+       * (`fitStage.maxIsoforms`) rather than off anything merely being hidden:
+       * a region fetched under `longestCoding` reports every multi-isoform gene
+       * as collapsed and the ladder never touched it.
        */
       get geneGlyphIsoformCap(): number | undefined {
-        const cap = this.effectiveMaxIsoforms
-        return cap !== undefined && capHidIsoforms(this.geneGlyphIsoformPicks)
-          ? cap
-          : undefined
+        return self.fitStage.maxIsoforms
       },
 
       // Transcripts are being left out, so the control shows its loud chip
@@ -275,9 +215,6 @@ export default function stateModelFactory(
               // slots (chevrons, subfeatureLabels) are already resolved by the
               // base rpcProps via getConfigSnapshotWithPromotables.
               geneGlyphMode: self.effectiveGeneGlyphMode,
-              // same reason — not a slot, so pickDisplayConfig reads undefined
-              maxIsoforms: self.effectiveMaxIsoforms,
-              geneOwnRows: self.effectiveGeneOwnRows,
             },
             showOnlyGenes: self.showOnlyGenes,
           }
@@ -297,34 +234,12 @@ export default function stateModelFactory(
         self.geneGlyphNoticeDismissed = true
       },
 
-      setCoarseTrackHeight(height: number) {
-        self.coarseTrackHeight = height
-      },
-
       setShowOnlyGenes(value: boolean) {
         setConf(self, 'showOnlyGenes', value)
       },
 
       setDisplayDirectionalChevrons(value: boolean) {
         setConf(self, 'displayDirectionalChevrons', value)
-      },
-    }))
-    .actions(self => ({
-      // No superAfterAttach(): the fork auto-chains hooks.
-      afterAttach() {
-        // Seeded synchronously: a delayed autorun's first run is delayed too,
-        // which would spend an uncapped round trip on every track load.
-        self.setCoarseTrackHeight(self.cappableTrackHeight)
-        addDisposer(
-          self,
-          autorun(
-            () => {
-              // read here, not in the action — an MST action runs untracked
-              self.setCoarseTrackHeight(self.cappableTrackHeight)
-            },
-            { delay: HEIGHT_SETTLE_MS, name: 'CanvasCoarseTrackHeight' },
-          ),
-        )
       },
     }))
     .views(self => ({

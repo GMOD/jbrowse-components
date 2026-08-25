@@ -18,6 +18,11 @@ import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
 // different generated file. Same property that lets `sharedRendererConstants`
 // read the `.consts.generated.ts` directly rather than through the pass barrel,
 // and for the same reason; see the paragraph there.
+import {
+  applyIsoformTrim,
+  moreIsoformsLabel,
+  planIsoformTrims,
+} from './isoformTrim.ts'
 import { arrowDraws } from './passes/shaders/arrow.js.generated.ts'
 import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
@@ -26,6 +31,7 @@ import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
   FeatureDataResult,
   FeatureLabelData,
+  IsoformStack,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Span } from '../shared/mergeSpans.ts'
 
@@ -267,6 +273,13 @@ export interface LayoutInputs {
   // the track height: 0 keeps every name, higher values keep progressively fewer.
   // See keepFeatureLabel.
   labelRoomFactor?: number
+  // At most this many isoforms per gene, or undefined for every one the worker
+  // sent. The fit ladder's `isoforms` rung solves it against the track height —
+  // names before isoforms, which is why it sits above `decimated` (ADR-076).
+  maxIsoformsPerGene?: number
+  // Genes the user opened from their own badge. Never trimmed, whatever the
+  // count says.
+  expandedGeneIds?: ReadonlySet<string>
 }
 
 // Whether a feature keeps its name under the active decimation policy. `all`
@@ -383,14 +396,11 @@ function renderedLabelWidths(
   labelFontPx: number,
 ): LabelWidths {
   return {
-    // The isoform badge shares the name's row (see `moreIsoformsLabel`), so it
-    // is reserved as part of the name rather than as a kind of its own — one
-    // line, one reservation, and the decimation weighs the row it actually
-    // draws. It renders only where the name does, so `showLabels` covers both.
-    name: showLabels
-      ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx) +
-        paddedLabelWidthPx(labelData.moreIsoformsLabel, labelFontPx)
-      : 0,
+    // The name alone. The isoform badge shares this row (see
+    // `moreIsoformsLabel`) but its text depends on the isoform count being
+    // probed, so `decideLabelReservations` adds its width at that count rather
+    // than baking one width in here.
+    name: showLabels ? paddedLabelWidthPx(labelData.nameLabel, labelFontPx) : 0,
     description: showDescriptions
       ? paddedLabelWidthPx(labelData.descriptionLabel, labelFontPx)
       : 0,
@@ -570,7 +580,7 @@ function layoutRefGroups(
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
   for (const [, regions] of groupRawByRef(rpcDataMap)) {
-    const { layoutMap, layoutHeights, droppedLabelIds, collapsed } =
+    const { layoutMap, layoutHeights, droppedLabelIds, collapsed, trimPlan } =
       packPreparedRef(
         prepareRefPack(regions, inputs, metrics),
         inputs,
@@ -587,6 +597,10 @@ function layoutRefGroups(
     // committed layout pays it.
     for (const [n, raw] of regions) {
       const cloned = cloneMutableFields(raw)
+      // Before the height scale, so the trim's px and its whole label rows are
+      // each spent in the unit the worker counted them in (see
+      // `applyIsoformTrim`).
+      applyIsoformTrim(cloned, trimPlan)
       applyHeightScale(cloned, metrics.heightMultiplier, metrics.labelFontPx)
       applyLayoutToRegion(
         cloned,
@@ -650,25 +664,25 @@ export type LabelRoomFactorFreeInputs = Omit<LayoutInputs, 'labelRoomFactor'>
 // probe and the eventual commit run the identical pack over the identical raw
 // values, the height measured here IS the height the committed layout reports, by
 // construction rather than by two code paths agreeing.
-export function createContentHeightProbe(
+function createPackProbe(
   rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
   inputs: LabelRoomFactorFreeInputs,
-  prevYByFeatureId?: ReadonlyMap<string, number>,
+  prevYByFeatureId: ReadonlyMap<string, number> | undefined,
   // Features the height is measured over (see `maxBottom`). It narrows only the
   // measurement, never the pack: every feature still claims its row, so the
-  // rows the solve's factors are chosen against are the rows that will render.
-  measureIds?: ReadonlySet<string>,
+  // rows the solve's knob is chosen against are the rows that will render.
+  measureIds: ReadonlySet<string> | undefined,
 ) {
   const metrics = displayModeMetrics(inputs.displayMode)
   const preps = [...groupRawByRef(rpcDataMap).values()].map(regions =>
     prepareRefPack(regions, inputs, metrics),
   )
-  return (labelRoomFactor: number) => {
+  return (knob: Partial<LayoutInputs>) => {
     let max = 0
     for (const prep of preps) {
       const { layoutMap, layoutHeights } = packPreparedRef(
         prep,
-        { ...inputs, labelRoomFactor },
+        { ...inputs, ...knob },
         metrics,
         prevYByFeatureId,
       )
@@ -679,6 +693,39 @@ export function createContentHeightProbe(
     }
     return max
   }
+}
+
+export function createContentHeightProbe(
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
+  inputs: LabelRoomFactorFreeInputs,
+  prevYByFeatureId?: ReadonlyMap<string, number>,
+  measureIds?: ReadonlySet<string>,
+) {
+  const probe = createPackProbe(
+    rpcDataMap,
+    inputs,
+    prevYByFeatureId,
+    measureIds,
+  )
+  return (labelRoomFactor: number) => probe({ labelRoomFactor })
+}
+
+// Layout inputs with the isoform solve's knob deliberately absent, the twin of
+// `LabelRoomFactorFreeInputs`: one preparation is valid for every count probed
+// against it, because the trim happens per count in
+// `decideLabelReservations` — the half of a pack that runs per probe.
+export type IsoformCountFreeInputs = Omit<LayoutInputs, 'maxIsoformsPerGene'>
+
+// Measure the content height of many isoform counts against ONE preparation.
+// Same guarantee `createContentHeightProbe` gives: probe and commit run the
+// identical pack over the identical raw values.
+export function createIsoformCountProbe(
+  rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
+  inputs: IsoformCountFreeInputs,
+  measureIds?: ReadonlySet<string>,
+) {
+  const probe = createPackProbe(rpcDataMap, inputs, undefined, measureIds)
+  return (maxIsoformsPerGene: number) => probe({ maxIsoformsPerGene })
 }
 
 // One-shot height for fully-formed inputs — `createContentHeightProbe` for a
@@ -726,6 +773,8 @@ interface GroupCache {
   showDescriptions: boolean
   labelDecimation: LabelDecimation
   labelRoomFactor: number
+  maxIsoformsPerGene: number | undefined
+  expandedGeneIds: ReadonlySet<string> | undefined
   displayMode: DisplayMode
   // The MobX-computed pinned set; a stable reference until pins change, so a
   // reference compare in groupUnchanged detects a pin toggle.
@@ -755,6 +804,8 @@ function groupUnchanged(
     pinnedFeatureIds,
     labelDecimation = 'all',
     labelRoomFactor = 1,
+    maxIsoformsPerGene,
+    expandedGeneIds,
   } = inputs
   const paramsSame =
     prev.bpPerPx === bpPerPx &&
@@ -762,6 +813,8 @@ function groupUnchanged(
     prev.showDescriptions === showDescriptions &&
     prev.labelDecimation === labelDecimation &&
     prev.labelRoomFactor === labelRoomFactor &&
+    prev.maxIsoformsPerGene === maxIsoformsPerGene &&
+    prev.expandedGeneIds === expandedGeneIds &&
     prev.displayMode === displayMode &&
     prev.pinnedFeatureIds === pinnedFeatureIds &&
     prev.members.size === members.size
@@ -887,6 +940,8 @@ export function createIncrementalLayout({
           showDescriptions: inputs.showDescriptions,
           labelDecimation: inputs.labelDecimation ?? 'all',
           labelRoomFactor: inputs.labelRoomFactor ?? 1,
+          maxIsoformsPerGene: inputs.maxIsoformsPerGene,
+          expandedGeneIds: inputs.expandedGeneIds,
           displayMode: inputs.displayMode,
           pinnedFeatureIds: inputs.pinnedFeatureIds,
           members: new Map(members),
@@ -1120,6 +1175,10 @@ interface FeatureGeometry {
   // times `heightMultiplier`, computed here rather than read off an
   // already-scaled clone so packing works straight from the raw data.
   readonly bodyHeightPx: number
+  // The gene's children as the trim sees them, absent on anything that stacks
+  // nothing. `bodyHeightPx` above is this stack UNTRIMMED; a count that bites
+  // re-derives the height from the trim (see decideLabelReservations).
+  readonly stack: IsoformStack | undefined
   readonly strand: number
   readonly densityFade: boolean
   hasReversed: boolean
@@ -1148,6 +1207,10 @@ interface LabelInfo {
 interface PackPrep {
   labelInfoByFeatureId: Map<string, LabelInfo>
   features: Map<string, FeatureGeometry>
+  // Every gene in the group that stacks children, so one preparation serves
+  // every isoform count the fit ladder probes — the trim is per count and the
+  // stacks are not.
+  stacks: [string, IsoformStack][]
   // Per-side whitespace a label may overhang into. Only measured for the
   // `fitWidth` decimation; the default `all` policy keeps every name and never asks.
   overhangRoom: ReturnType<typeof labelOverhangRoomPx> | undefined
@@ -1235,6 +1298,7 @@ function prepareRefPack(
           bodyHeightPx:
             item.featureHeightPx * metrics.heightMultiplier +
             (item.labelRows ?? 0) * metrics.labelFontPx,
+          stack: item.isoformStack,
           strand: item.strand ?? 0,
           hasReversed: reversed,
           hasNonReversed: !reversed,
@@ -1281,9 +1345,17 @@ function prepareRefPack(
     }
   }
 
+  const stacks: [string, IsoformStack][] = []
+  for (const [id, geom] of features) {
+    if (geom.stack) {
+      stacks.push([id, geom.stack])
+    }
+  }
+
   return {
     labelInfoByFeatureId,
     features,
+    stacks,
     overhangRoom:
       labelDecimation === 'fitWidth'
         ? labelOverhangRoomPx(features, bpPerPx)
@@ -1313,8 +1385,13 @@ function decideLabelReservations(
     labelDecimation = 'all',
     labelRoomFactor = 1,
   } = inputs
-  const { labelFontPx, rowPadding } = metrics
+  const { labelFontPx, rowPadding, heightMultiplier } = metrics
   const { labelInfoByFeatureId, features, overhangRoom } = prep
+  const trimPlan = planIsoformTrims(
+    prep.stacks,
+    inputs.maxIsoformsPerGene,
+    inputs.expandedGeneIds,
+  )
   const packed = new Map<string, PackedExtent>()
   // Features whose name was decimated away (`fitWidth`): no row height or overhang
   // is reserved for it here, and applyLayoutToRegion removes the name afterward so
@@ -1323,6 +1400,28 @@ function decideLabelReservations(
 
   for (const [id, geom] of features) {
     const labelInfo = labelInfoByFeatureId.get(id)
+    const trim = trimPlan.trims.get(id)
+    // A trimmed gene is shorter, narrower, and carries a badge after its name —
+    // all three priced at the count being probed, so the stack the solve
+    // measures is the stack the commit draws.
+    const bodyHeightPx = trim
+      ? trim.heightPx * heightMultiplier + trim.labelRows * labelFontPx
+      : geom.bodyHeightPx
+    const startBp = trim ? trim.startBp : geom.startBp
+    const endBp = trim ? trim.endBp : geom.endBp
+    const badgeHidden =
+      trim && trim.hidden > 0
+        ? { hidden: trim.hidden, expanded: false }
+        : trimPlan.expandedHidden.has(id)
+          ? { hidden: trimPlan.expandedHidden.get(id)!, expanded: true }
+          : undefined
+    const badgeWidthPx =
+      badgeHidden && showLabels && labelInfo?.hasName
+        ? paddedLabelWidthPx(
+            moreIsoformsLabel(badgeHidden.hidden, badgeHidden.expanded),
+            labelFontPx,
+          )
+        : 0
     // Whitespace the name overhang can use, on the side(s) this feature points:
     // the min across the sides it occupies so a feature spanning both directions
     // must clear on both. Infinity (no room measured) under the `all` policy.
@@ -1343,12 +1442,13 @@ function decideLabelReservations(
     // feature's widest label — a description or subfeature label being long says
     // nothing about whether the name fits. A dropped name is recorded so it is
     // removed after layout.
+    const nameWidthPx = (labelInfo?.widths.name ?? 0) + badgeWidthPx
     const keepName =
       hasDrawableName &&
       keepFeatureLabel(
         labelDecimation,
         availableRoomPx,
-        labelInfo.widths.name,
+        nameWidthPx,
         pinnedFeatureIds.has(id),
         labelRoomFactor,
       )
@@ -1365,9 +1465,9 @@ function decideLabelReservations(
     // shrink with the smaller text the renderers draw.
     const labelLines = (keepName ? 1 : 0) + (keepDescription ? 1 : 0)
     const ext: PackedExtent = {
-      layoutStartBp: geom.startBp,
-      layoutEndBp: geom.endBp,
-      height: geom.bodyHeightPx + rowPadding + labelLines * labelFontPx,
+      layoutStartBp: startBp,
+      layoutEndBp: endBp,
+      height: bodyHeightPx + rowPadding + labelLines * labelFontPx,
     }
 
     // Widen the layout span by the label overhang so the packer keeps a kept
@@ -1386,20 +1486,24 @@ function decideLabelReservations(
     // and returns 0 when there is no label of any kind, so it is the whole
     // decision.
     const overhangPx = labelInfo
-      ? keptOverhangWidthPx(labelInfo.widths, keepName, keepDescription)
+      ? keptOverhangWidthPx(
+          { ...labelInfo.widths, name: nameWidthPx },
+          keepName,
+          keepDescription,
+        )
       : 0
     if (overhangPx > 0) {
       const labelBp = overhangPx * bpPerPx
       if (geom.hasNonReversed) {
-        ext.layoutEndBp = Math.max(ext.layoutEndBp, geom.startBp + labelBp)
+        ext.layoutEndBp = Math.max(ext.layoutEndBp, startBp + labelBp)
       }
       if (geom.hasReversed) {
-        ext.layoutStartBp = Math.min(ext.layoutStartBp, geom.endBp - labelBp)
+        ext.layoutStartBp = Math.min(ext.layoutStartBp, endBp - labelBp)
       }
     }
     packed.set(id, ext)
   }
-  return { packed, droppedLabelIds }
+  return { packed, droppedLabelIds, trimPlan }
 }
 
 // The prior row of a feature that wasn't in the previous layout. Sorts after
@@ -1427,7 +1531,7 @@ function packPreparedRef(
   const { bpPerPx, pinnedFeatureIds } = inputs
   const { heightMultiplier, singleRow } = metrics
   const { features, solidSpansPx, labeledFeatureIds } = prep
-  const { packed, droppedLabelIds } = decideLabelReservations(
+  const { packed, droppedLabelIds, trimPlan } = decideLabelReservations(
     prep,
     inputs,
     metrics,
@@ -1468,7 +1572,7 @@ function packPreparedRef(
         collapsed.push({ id, startPx, endPx })
       }
     }
-    return { layoutMap, layoutHeights, droppedLabelIds, collapsed }
+    return { layoutMap, layoutHeights, droppedLabelIds, collapsed, trimPlan }
   }
 
   // GranularRectLayout quantizes rows to pitchY (default 10px), so tops snap to
@@ -1560,7 +1664,7 @@ function packPreparedRef(
   // `collapsed` rather than the fade set it implies: the fit solve's height
   // probes pack a ref-group ~10 times and read only the rows, so the sweep runs
   // once, in the committed layout, where its answer is actually rendered.
-  return { layoutMap, layoutHeights, droppedLabelIds, collapsed }
+  return { layoutMap, layoutHeights, droppedLabelIds, collapsed, trimPlan }
 }
 
 // A sub-pixel mark drawn on row 0 — pinned there by the density collapse, or by

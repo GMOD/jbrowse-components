@@ -409,6 +409,9 @@ export interface FeatureLabelData {
   moreIsoformsLabel?: MoreIsoformsLabel
   parentFeatureId?: string
   subfeatureLabel?: LabelItem & { isOverlay: boolean }
+  // which of the root feature's direct children this label belongs to, so the
+  // trim drops the label of an isoform it dropped; see `rectChildOrdinals`
+  childOrdinal?: number
 }
 
 // The isoform badge. `hidden` and `expanded` are what its hover sentence is

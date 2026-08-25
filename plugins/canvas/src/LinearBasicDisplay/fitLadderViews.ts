@@ -2,12 +2,15 @@ import { HEIGHT_MULTIPLIERS } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts
 import {
   MIN_FIT_BOX_PX,
   resolveFitLadder,
+  solveIsoformCount,
   solveLabelRoomFactor,
   squeezeFloorScale,
 } from './fitLadder.ts'
+import { maxIsoformCount } from './isoformTrim.ts'
 import {
   createContentHeightProbe,
   createIncrementalLayout,
+  createIsoformCountProbe,
   minDrawnBoxHeight,
 } from './layout.ts'
 
@@ -16,6 +19,7 @@ import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FitStage } from './fitLadder.ts'
 import type {
   IncrementalLayout,
+  IsoformCountFreeInputs,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
@@ -39,11 +43,15 @@ export interface FitLadderHost {
   displayMode: DisplayMode
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
   fitHeightToDisplay: boolean
+  // grow mode: the track's height IS its content's, so nothing is ever trimmed
+  autoHeight: boolean
+  expandedGeneIdSet: ReadonlySet<string>
   fitTargetHeight: number
   incrementalLayout: IncrementalLayout
   incrementalLayoutLabelsOnly: IncrementalLayout
   incrementalLayoutBodiesOnly: IncrementalLayout
   incrementalLayoutDecimated: IncrementalLayout
+  incrementalLayoutIsoforms: IncrementalLayout
 }
 
 /**
@@ -84,6 +92,18 @@ export function fitLadderVolatiles() {
     // case: every pan settle and every drag-resize frame re-solves, and most
     // of those re-solve to the same factor over the same data.
     incrementalLayoutDecimated: createIncrementalLayout({
+      seedPriorRows: false,
+    }),
+    /**
+     * #volatile
+     */
+    // The `isoforms` rung's memo, unseeded for the same reason its `decimated`
+    // sibling is: the isoform count is chosen by MEASURING candidate packs, so
+    // the commit has to pack the way the probe did. Its job here is to hand
+    // back the same stack by reference when the solve lands on the count it
+    // already committed — every pan settle and every drag-resize frame
+    // re-solves, and most of those land on the same count over the same data.
+    incrementalLayoutIsoforms: createIncrementalLayout({
       seedPriorRows: false,
     }),
   }
@@ -132,6 +152,11 @@ export function fitLadderViews(self: FitLadderHost) {
         showLabels: self.showLabels,
         showDescriptions: false,
         labelDecimation: 'fitWidth',
+        // The rungs below `isoforms` inherit the count that rung failed at —
+        // every isoform goes before any name does, so once the trim has run
+        // out of room there is no going back to the full stack to save a name.
+        maxIsoformsPerGene: this.fitIsoformCount,
+        expandedGeneIds: self.expandedGeneIdSet,
       }
     },
     /**
@@ -175,6 +200,92 @@ export function fitLadderViews(self: FitLadderHost) {
      */
     solveLabelRoomFactor(trackHeight: number) {
       return solveLabelRoomFactor(this.decimatedHeightProbe, trackHeight)
+    },
+    /**
+     * #getter
+     * The `isoforms` rung's layout inputs minus the count itself, typed without
+     * it so the solve's shared preparation provably cannot depend on it. Same
+     * reservation as `labels` — names kept, descriptions dropped — because the
+     * whole point of the rung is that names survive the trim.
+     */
+    get isoformsBaseInputs(): IsoformCountFreeInputs {
+      return {
+        ...self.layoutInputs,
+        showLabels: self.showLabels,
+        // Fit mode reaches this rung only after `labels` overflowed, so
+        // descriptions are already gone. Fixed height never passed through
+        // that rung and keeps whatever the settings asked for: it scrolls
+        // rather than degrading, and trimming is the one thing it does.
+        showDescriptions: self.fitHeightToDisplay
+          ? false
+          : self.effectiveShowDescriptions,
+        expandedGeneIds: self.expandedGeneIdSet,
+      }
+    },
+    /**
+     * #getter
+     * Measures the `isoforms` rung's stack height at any isoform count, against
+     * the features the ladder measures its rungs with.
+     *
+     * A getter for the reason `decimatedHeightProbe` is one: the preparation it
+     * holds depends on the data and the layout inputs but NOT on the track
+     * height, and dragging the resize handle re-solves every frame.
+     */
+    get isoformsHeightProbe(): (maxIsoforms: number) => number {
+      return createIsoformCountProbe(
+        self.rpcDataMap,
+        this.isoformsBaseInputs,
+        self.fitMeasureFeatureIds,
+      )
+    },
+    /**
+     * #getter
+     * The most isoforms any gene ON SCREEN has — the top of the solve's
+     * bracket, and the count above which a trim can take nothing away.
+     */
+    get maxIsoformsOnScreen() {
+      return maxIsoformCount(
+        self.rpcDataMap.values(),
+        self.fitMeasureFeatureIds,
+      )
+    },
+    /**
+     * #getter
+     * The isoform count the `isoforms` rung commits at: the largest whose
+     * names-kept stack fits `fitTargetHeight`, so the most transcripts are kept
+     * without giving up a name. Undefined when nothing is worth trimming; 1
+     * when even one transcript per gene overflows, which the `decimated` and
+     * `bodies` rungs below then inherit.
+     *
+     * Never in `grow`, whose height is its own content's — trimming there would
+     * shrink the track it was measured against.
+     */
+    get fitIsoformCount(): number | undefined {
+      return self.layoutReady && !self.autoHeight
+        ? solveIsoformCount(
+            this.isoformsHeightProbe,
+            self.fitTargetHeight,
+            this.maxIsoformsOnScreen,
+          )
+        : undefined
+    },
+    /**
+     * #getter
+     * The `isoforms` stack: every gene trimmed to `fitIsoformCount`
+     * transcripts, names intact. Falls back to the `labels` stack when there is
+     * nothing to trim.
+     */
+    get fitIsoformsSolved(): Map<number, FeatureDataResult> {
+      const maxIsoformsPerGene = this.fitIsoformCount
+      if (maxIsoformsPerGene === undefined) {
+        return self.fitHeightToDisplay
+          ? this.fitLabelsOnlyLayout
+          : this.baseLaidOutDataMap
+      }
+      return self.incrementalLayoutIsoforms(self.rpcDataMap, {
+        ...this.isoformsBaseInputs,
+        maxIsoformsPerGene,
+      })
     },
     /**
      * #getter
@@ -251,7 +362,13 @@ export function fitLadderViews(self: FitLadderHost) {
     },
     get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
       return self.showLabels
-        ? this.fitLayoutAt(self.incrementalLayoutBodiesOnly, false, false)
+        ? self.incrementalLayoutBodiesOnly(self.rpcDataMap, {
+            ...self.layoutInputs,
+            showLabels: false,
+            showDescriptions: false,
+            maxIsoformsPerGene: this.fitIsoformCount,
+            expandedGeneIds: self.expandedGeneIdSet,
+          })
         : this.fitLabelsOnlyLayout
     },
     /**
@@ -361,15 +478,40 @@ export function fitLadderViews(self: FitLadderHost) {
       // Routing both modes through resolveFitLadder keeps FitStage assembled
       // in one place, so its fields (level/layout/scale/contentHeight) can't
       // drift apart.
+      const trimmed = this.fitIsoformCount
       return resolveFitLadder(
         fit
           ? [
               { level: 'full', layout: () => base },
               { level: 'labels', layout: () => this.fitLabelsOnlyLayout },
-              { level: 'decimated', layout: () => this.fitDecimatedSolved },
-              { level: 'bodies', layout: () => this.fitBodiesOnlyLayout },
+              {
+                level: 'isoforms',
+                layout: () => this.fitIsoformsSolved,
+                maxIsoforms: trimmed,
+              },
+              {
+                level: 'decimated',
+                layout: () => this.fitDecimatedSolved,
+                maxIsoforms: trimmed,
+              },
+              {
+                level: 'bodies',
+                layout: () => this.fitBodiesOnlyLayout,
+                maxIsoforms: trimmed,
+              },
             ]
-          : [{ level: 'full', layout: () => base }],
+          : // Fixed height scrolls rather than degrading, but it trims: a gene
+            // with 28 transcripts in a 100px lane draws all 28 inside the
+            // lane's own scrollbar, which is the case the cap was built for and
+            // the one `grow` deliberately keeps.
+            [
+              { level: 'full', layout: () => base },
+              {
+                level: 'isoforms',
+                layout: () => this.fitIsoformsSolved,
+                maxIsoforms: trimmed,
+              },
+            ],
         self.fitTargetHeight,
         fit ? this.fitMinScale : 1,
         fit ? this.fitMaxScale : 1,
