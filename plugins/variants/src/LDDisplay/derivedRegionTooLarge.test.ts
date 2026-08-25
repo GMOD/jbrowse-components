@@ -184,7 +184,7 @@ describe('LD derived regionTooLarge', () => {
   })
 
   // One RPC carries the whole region set, and the worker measures each region
-  // separately against the same per-region budget (`measureRegionsBytes`) — so
+  // separately against the same per-region budget (`measureRegionBytes`) — so
   // LD reads the budget the way every other display does: what ONE region may
   // cost. One region over refuses the set, because there is one payload
   // covering all of them, and the largest measurement comes back with the
@@ -219,8 +219,8 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
   })
 
-  // afterAttach installs the onDisplayedRegionsChange autorun that drops the
-  // cached estimate on chromosome navigation. Without it, a previous region's
+  // `RegionTooLargeMixin`'s own afterAttach drops the cached estimate on
+  // chromosome navigation. Without it, a previous region's
   // estimate would gate the new region against the wrong stats and, because the
   // fetch autorun gates on !regionTooLarge, wedge the banner permanently.
   it('clears the cached estimate on region navigation so it cannot wedge', async () => {

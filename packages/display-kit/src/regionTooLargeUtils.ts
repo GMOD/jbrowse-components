@@ -103,7 +103,7 @@ export interface GateFetchState {
    * `byteGateAdapterKey` at issue — which *file* the measurement is about, the
    * way `viewport` says which region. A fetch in flight across a tier swap
    * (MAF crossing the summary threshold mid-RPC) otherwise commits the old
-   * tier's bytes right after `ClearByteEstimateOnTierSwap` dropped them, and
+   * tier's bytes right after `ClearByteEstimateOnNavOrTierSwap` dropped them, and
    * the banner quotes megabytes against a summary read. Undefined when the
    * display never gates, so an ungated display's `byteGateAdapterConfig` is
    * never evaluated.
@@ -159,7 +159,7 @@ export type GateEvent =
  * Four rules, each of which used to live at a call site or nowhere:
  *
  * - **a measurement is judged by the tier it was issued against.** A fetch
- *   still in flight when `ClearByteEstimateOnTierSwap` fires would otherwise
+ *   still in flight when `ClearByteEstimateOnNavOrTierSwap` fires would otherwise
  *   re-instate the old tier's bytes right behind the clear, and the banner
  *   would quote them against the new tier's file until the next fetch corrected
  *   it. An `issued.tierKey` of `undefined` means the display never gates, so

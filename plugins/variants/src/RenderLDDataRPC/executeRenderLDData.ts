@@ -1,5 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { measureRegionsBytes } from '@jbrowse/core/rpc/byteBudget'
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 
@@ -97,7 +97,7 @@ export async function executeRenderLDData({
   const measured =
     byteLimit === undefined || isPrecomputed
       ? { bytes: undefined, tooLarge: undefined }
-      : await measureRegionsBytes({
+      : await measureRegionBytes({
           dataAdapter: await getFeatureAdapterOrThrow({
             pluginManager,
             sessionId,

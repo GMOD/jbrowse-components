@@ -1,7 +1,7 @@
 // Fails when something that opts into the region-too-large gate has not made a
 // deliberate decision about the byte budget it is measured against — an adapter
-// implementing `getRegionByteSize`, or a display overriding one of the two
-// `measuresBytes…` hooks. See agent-docs/reference/REGION_TOO_LARGE.md.
+// implementing `getRegionByteSize`, or a display overriding `gateEnabled`. See
+// agent-docs/reference/REGION_TOO_LARGE.md.
 //
 // The budget comes from `resolveByteLimit`: the adapter's own `fetchSizeLimit`
 // slot if it declares one, otherwise whatever the *display* it lands under

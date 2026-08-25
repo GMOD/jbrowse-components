@@ -47,7 +47,6 @@ export interface PerRegionFetchHost extends IStateTreeNode {
   fetchNeeded: (needed: IndexedRegion[]) => void
   setError: (error?: unknown) => void
   clearAllRpcData: () => void
-  clearByteEstimate: () => void
   clearHoveredFeature: () => void
 }
 
@@ -93,27 +92,14 @@ export function installPerRegionFetchAutoruns(self: PerRegionFetchHost) {
   // come to mean something different from theirs. Fires once at mount as a
   // harmless no-op (nothing loaded yet).
   //
-  // The cached byte estimate goes with it. displayedRegionIndex is reused
-  // across chromosomes, so a stale estimate describes the previous
-  // chromosome's numbers, and the banner would quote them at the new region
-  // for the settled cycle it takes to re-measure. Only that long — the new
-  // region moves `gateViewport.key`, so `gateMeasurementStale` lets the fetch
-  // through and the next measurement corrects it. clearAllRpcData deliberately
-  // leaves the estimate alone (no banner flicker on an ordinary
-  // viewport-change clear), which is why the drop lives in this autorun rather
-  // than in that action.
+  // The cached byte estimate is not cleared here: `RegionTooLargeMixin`'s own
+  // `afterAttach` drops it on the same trigger, beside the tier swap.
   //
-  // One of two drops, not the only one: RegionTooLargeMixin's own
-  // ClearByteEstimateOnTierSwap does the same when a display that swaps
-  // adapters by zoom crosses tiers. Same rule on the other axis — the estimate
-  // is about a fetch, and both change which fetch that is.
-  //
-  // #autorun `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — one of the two places the cached byte estimate is dropped (the other is a tier swap)
+  // #autorun `view.displayedRegions` changes | `clearAllRpcData()`
   onDisplayedRegionsChange(
     self,
     () => {
       self.clearAllRpcData()
-      self.clearByteEstimate()
     },
     'DisplayedRegionsChange',
   )

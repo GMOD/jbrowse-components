@@ -1,7 +1,6 @@
 import { dedupe, getSession } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -48,9 +47,6 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     ...fetchPhases(self),
     delay: 1000,
     name: 'MultiWaySyntenyFetch',
-  })
-  onDisplayedRegionsChange(self, () => {
-    self.clearByteEstimate()
   })
 
   // the second, dependent fetch: once the ortholog groups have settled into

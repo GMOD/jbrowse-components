@@ -35,10 +35,9 @@ const baseDefault = join(
 
 // Where the two opt-in getters are declared, as opposed to overridden.
 const gateMixin = join(
-  'plugins',
-  'linear-genome-view',
+  'packages',
+  'display-kit',
   'src',
-  'shared',
   'RegionTooLargeMixin.ts',
 )
 

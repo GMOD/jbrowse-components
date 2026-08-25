@@ -268,13 +268,13 @@ describe('gateMeasurementStale', () => {
 
   it('is false once the current viewport is stamped', () => {
     const { display } = setup({ gateEnabled: true })
-    display.setGateMeasuredViewport(display.gateViewport!)
+    display.commitFetchBytes([undefined], display.gateFetchState())
     expect(display.gateMeasurementStale).toBe(false)
   })
 
   it('goes true again when the viewport moves under it', () => {
     const { display, view } = setup({ gateEnabled: true })
-    display.setGateMeasuredViewport(display.gateViewport!)
+    display.commitFetchBytes([undefined], display.gateFetchState())
     view.scrollTo(view.offsetPx + view.width)
     expect(display.gateMeasurementStale).toBe(true)
   })
@@ -283,7 +283,7 @@ describe('gateMeasurementStale', () => {
   // number: an adapter quoting no estimate still moves it.
   it('is separate from having an estimate', () => {
     const { display } = setup({ gateEnabled: true })
-    display.setGateMeasuredViewport(display.gateViewport!)
+    display.commitFetchBytes([undefined], display.gateFetchState())
     expect(display.estimatedFetchBytes).toBeUndefined()
     expect(display.gateMeasurementStale).toBe(false)
   })

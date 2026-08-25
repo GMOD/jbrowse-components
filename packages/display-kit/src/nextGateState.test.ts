@@ -186,7 +186,7 @@ describe('a seeded walk over event sequences agrees with the rules as stated', (
       }
 
       // A tier swap is the live tier moving AND the clear that fires with it
-      // (`ClearByteEstimateOnTierSwap`), which is what puts a fetch issued
+      // (`ClearByteEstimateOnNavOrTierSwap`), which is what puts a fetch issued
       // against the old one in flight across the boundary.
       const swapping = event.kind === 'invalidated' && rand() < 0.5
       if (swapping) {

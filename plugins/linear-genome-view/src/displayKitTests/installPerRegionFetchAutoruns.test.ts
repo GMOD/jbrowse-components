@@ -253,8 +253,11 @@ describe('blocking states', () => {
 })
 
 describe('DisplayedRegionsChange', () => {
+  // The estimate's own clear is `RegionTooLargeMixin`'s autorun, guarded on the
+  // opt-in — so the gate is on here, as it is on every display that can hold
+  // an estimate.
   it('clears loaded data and the byte estimate on chromosome navigation', async () => {
-    const { display, view } = setup()
+    const { display, view } = setup({ measuresBytes: true })
     await quiet(display)
     display.setByteEstimate({ bytes: 1000, viewport: display.gateViewport! })
     expect(display.estimatedFetchBytes).toBe(1000)

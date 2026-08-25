@@ -11,6 +11,11 @@ Rejected (2026-07). Closes the "move the gate out of the plugin" item from the
 byte-gate simplification passes (that handoff is retired; the gate is documented
 in [REGION_TOO_LARGE.md](../reference/REGION_TOO_LARGE.md)).
 
+The location half is overtaken (2026-08): the gate moved to
+`packages/display-kit` with the rest of the display foundation, and that package
+exports it. The argument against `render-core` stands — the mixin still needs
+`@jbrowse/core` — and display-kit is the package that may depend on it.
+
 ## Context
 
 `RegionTooLargeMixin` + `regionTooLargeUtils` + `AUTO_FORCE_LOAD_BP` read as

@@ -129,7 +129,7 @@ export async function executeMafAlignmentData({
   // one measurement standing between a zoomed-out view and every species' bases.
   const { bytes, tooLarge } = await measureRegionBytes({
     dataAdapter: adapter,
-    region,
+    regions: [region],
     byteLimit,
     stopToken,
     statusCallback,

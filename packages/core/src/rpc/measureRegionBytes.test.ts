@@ -41,7 +41,7 @@ describe('measureRegionBytes', () => {
     const { adapter, calls } = spyAdapter(8_000_000)
     const result = await measureRegionBytes({
       dataAdapter: adapter,
-      region,
+      regions: [region],
       byteLimit: 5_000_000,
     })
     expect(result).toEqual({
@@ -55,7 +55,7 @@ describe('measureRegionBytes', () => {
     const { adapter, calls } = spyAdapter(1_000_000)
     const result = await measureRegionBytes({
       dataAdapter: adapter,
-      region,
+      regions: [region],
       byteLimit: 5_000_000,
     })
     // `bytes` comes back either way — the main-thread gate stores it whether or
@@ -74,7 +74,7 @@ describe('measureRegionBytes', () => {
     expect(
       await measureRegionBytes({
         dataAdapter: adapter,
-        region,
+        regions: [region],
         byteLimit: undefined,
       }),
     ).toEqual({})
@@ -90,7 +90,7 @@ describe('measureRegionBytes', () => {
     expect(
       await measureRegionBytes({
         dataAdapter: adapter,
-        region,
+        regions: [region],
         byteLimit: 5_000_000,
       }),
     ).toEqual({ bytes: undefined })

@@ -1,6 +1,6 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { measureRegionsBytes } from '@jbrowse/core/rpc/byteBudget'
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 
@@ -171,7 +171,7 @@ export async function executeVariantCellData({
   // The gate, and the first thing this fetch awaits on the adapter: the index
   // estimate for the largest region, so an over-budget viewport is refused
   // before a single genotype is downloaded.
-  const { bytes, tooLarge } = await measureRegionsBytes({
+  const { bytes, tooLarge } = await measureRegionBytes({
     dataAdapter: adapter,
     regions,
     byteLimit,

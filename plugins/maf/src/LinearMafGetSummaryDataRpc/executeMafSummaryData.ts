@@ -82,7 +82,7 @@ export async function executeMafSummaryData({
   const { bytes, tooLarge } = summaryAdapter
     ? await measureRegionBytes({
         dataAdapter: summaryAdapter,
-        region,
+        regions: [region],
         byteLimit,
         stopToken,
         statusCallback,

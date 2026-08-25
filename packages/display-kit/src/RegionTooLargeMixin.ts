@@ -1,9 +1,9 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { types } from '@jbrowse/mobx-state-tree'
 
+import { autorunOnReadyView } from './displayAutoruns.ts'
 import {
   AUTO_FORCE_LOAD_BP,
   evaluateRegionTooLarge,
@@ -41,10 +41,6 @@ function applyGateEvent(self: GateState, event: GateEvent) {
   self.forceLoadTrack = next.forceLoadTrack
 }
 
-// The mixin declares no `configuration`, but every display that composes it has
-// one (BaseDisplay via MultiRegionDisplayMixin, or the SVG arc displays
-// directly). Cast once so the config-slot defaults below read it type-safely —
-// the same pattern CanvasFeatureGateMixin uses.
 /** The whole of what `RegionTooLargeMixin` needs a composing display to be. */
 export interface RegionTooLargeHost {
   // The mixin's OWN field table, rather than `AnyConfigurationModel` (which
@@ -62,13 +58,9 @@ function host(self: object) {
 /**
  * Shared mixin owning "region too large" state and force-load UI.
  *
- * Composed by MultiRegionDisplayMixin (canvas/GPU displays like
- * LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay) and
- * directly by the SVG arc displays (LinearArcDisplay, LinearPairedArcDisplay),
- * which do their own byte-estimate gating in arcFetchPhases.
- *
- * Owns the state that TooLargeMessage reads: regionTooLarge,
- * regionTooLargeReason, forceLoad.
+ * Composed by the two fetch foundations, `MultiRegionDisplayMixin` and
+ * `GlobalFetchMixin`. Owns the state that TooLargeMessage reads:
+ * regionTooLarge, regionTooLargeReason, forceLoad.
  *
  * ## Measurement follows the viewport
  *
@@ -118,11 +110,9 @@ function host(self: object) {
  * axis (canvas's feature-density gate); the budget hooks default off the
  * display config.
  *
- * `MultiRegionDisplayMixin` drops the cached estimate on chromosome nav for
- * everything it composes; the two displays outside that family (LD, arc) wire
- * `onDisplayedRegionsChange(self, () => self.clearByteEstimate())` themselves.
- * The estimate intentionally survives viewport-change clears, so only region
- * navigation drops it. Used by canvas/LD/arc/maf/MultiSampleVariant/alignments.
+ * The mixin's own `afterAttach` drops the cached estimate on chromosome
+ * navigation and on a tier swap; it intentionally survives viewport-change
+ * clears. Used by canvas/LD/arc/maf/MultiSampleVariant/alignments.
  *
  * A display that opts into neither axis never gates on size (`regionTooLarge` is
  * a literal false, so the LGV-only `tooLargeStatus` getters aren't evaluated —
@@ -782,31 +772,16 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * Commits a byte measurement together with the viewport it describes.
+       * The bytes half of a measurement alone — `gated: false` stamps no
+       * viewport, `tierKey: undefined` waives the tier guard. Production commits
+       * through `commitFetchBytes`; this is what a test stages a display with.
        * `viewport` must be `gateViewport` read when the measurement was
-       * *requested*, not at commit time — a view that moved during the round trip
-       * would otherwise label the number with a viewport it never covered, and
-       * both readers of that label (`gateMeasurementStale`, `zoomIneffective`) would
-       * answer about the wrong one. Harmless for non-gated displays (they ignore
-       * it).
-       *
-       * Goes through `nextByteEstimate` rather than storing the argument,
-       * because one thing about a measurement is only knowable from the one
-       * before it: whether zooming in moved the number at all. See
-       * `ByteEstimate.zoomIneffective`.
-       *
-       * `bytes` is a number, never `undefined`: a fetch that measured nothing
-       * calls this not at all, so the stored estimate stays whatever the last
-       * real measurement said. `commitByteMeasurement` is the one caller and
-       * skips that write; the type is what keeps another from publishing an
-       * empty one.
+       * requested, not at commit time, or `gateMeasurementStale` and
+       * `zoomIneffective` both answer about a viewport the number never covered.
        */
       setByteEstimate(measurement: { bytes: number; viewport: GateViewport }) {
         applyGateEvent(self, {
           kind: 'measurement',
-          // `gated: false` is what makes this the bytes half alone, and
-          // `tierKey: undefined` waives the tier guard: this is the raw writer,
-          // reached by tests staging a display and by nothing in production
           issued: {
             viewport: measurement.viewport,
             gated: false,
@@ -819,32 +794,9 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
-       * Record that the gate has asked the adapter about this viewport, whatever
-       * it learned. Every gated fetch reaches it through `commitByteMeasurement`,
-       * and it is deliberately **separate**
-       * from `setByteEstimate`, because a fetch can come back having measured
-       * density and no bytes (a dense region short-circuits on the feature count,
-       * and an unmeasurable byte result must not overwrite a good estimate). Both
-       * still asked, and `gateMeasurementStale` is the question "did we ask about
-       * what is on screen now", not "do we have bytes for it".
-       */
-      setGateMeasuredViewport(viewport: GateViewport) {
-        // the mirror of `setByteEstimate` above: gated, so the viewport is
-        // stamped, and no `bytes`, so the stored estimate is left alone
-        applyGateEvent(self, {
-          kind: 'measurement',
-          issued: { viewport, gated: true, tierKey: undefined },
-          currentTierKey: undefined,
-        })
-      },
-
-      /**
-       * #action
-       * Drops the cached estimate. Two callers, and they are the same rule on
-       * two axes — the estimate describes one fetch, and each of them changes
-       * which fetch that is: chromosome navigation (`MultiRegionDisplayMixin`'s
-       * `DisplayedRegionsChange` autorun; LD and arc wire their own), and a tier
-       * swap (`ClearByteEstimateOnTierSwap`, this mixin's own `afterAttach`).
+       * Drops the cached estimate. The estimate describes one fetch, and the
+       * two triggers — chromosome navigation and a tier swap, both read by this
+       * mixin's own `afterAttach` autorun — each change which fetch that is.
        * Not an ordinary viewport change: the estimate intentionally survives
        * `clearAllRpcData` so panning doesn't flicker the banner.
        *
@@ -877,47 +829,8 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * The measurement-commit protocol, held once for every display: the
-       * fan-out helpers reach it through `commitFetchBytes` and the global
-       * runner through the same. Four rules, each of which used to be spelled
-       * at two call sites or nowhere:
-       *
-       * - a measurement is judged by the tier it was *issued* against — a fetch
-       *   still in flight when `ClearByteEstimateOnTierSwap` fires would
-       *   otherwise re-instate the old tier's bytes right behind the clear, and
-       *   the banner would quote them against the new tier's file until the
-       *   next fetch corrected it
-       * - a fetch the gate sat out stamps nothing (`gated: false`), so
-       *   `gateMeasurementStale` keeps asking about the live viewport
-       * - unmeasurable is not a measurement — an undefined `bytes` must not
-       *   wipe the last real estimate
-       * - the estimate commits whatever the budget was, so lowering a budget
-       *   later re-banners from stored numbers with no RPC
-       */
-      commitByteMeasurement({
-        viewport,
-        gated,
-        tierKey,
-        bytes,
-      }: {
-        viewport: GateViewport
-        gated: boolean
-        tierKey: string | undefined
-        bytes?: number
-      }) {
-        applyGateEvent(self, {
-          kind: 'measurement',
-          issued: { viewport, gated, tierKey },
-          currentTierKey: self.byteGateAdapterKey,
-          bytes,
-        })
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
        * The byte axis of a finished fetch, committed from what its results
-       * measured. **The fan-out helpers call this, not the display**: a display
+       * measured. **The fetch runners call this, not the display**: a display
        * opts into the gate by passing `byteLimit: self.resolvedByteLimit()` in
        * its RPC call and nothing else, and every RPC that takes that budget
        * answers `bytes` — in the payload when it was under, in the
@@ -926,22 +839,23 @@ export default function RegionTooLargeMixin() {
        * **Max, not sum**: the budget is what one region may cost, so a batch
        * commits its largest. An empty batch commits nothing, because a fetch
        * with no results asked the adapter nothing and stamping the viewport
-       * would tell `gateMeasurementStale` otherwise.
+       * would tell `gateMeasurementStale` otherwise. An ungated display
+       * measured nothing either, and skipping it here keeps
+       * `byteGateAdapterKey` unevaluated below the opt-in.
        *
-       * The rules about which measurement wins, what an unmeasurable result
-       * leaves alone and which tier a number is about are all
-       * `commitByteMeasurement`'s — this adds only the max and the capture.
+       * Which measurement wins, what an unmeasurable result leaves alone and
+       * which tier a number is about are `nextGateState`'s rules; this adds
+       * only the max and the current tier.
        */
       commitFetchBytes(
         perRegionBytes: (number | undefined)[],
         issued: GateFetchState,
       ) {
-        const { viewport, gated, tierKey } = issued
-        if (perRegionBytes.length > 0 && viewport !== undefined) {
-          self.commitByteMeasurement({
-            viewport,
-            gated,
-            tierKey,
+        if (self.gateEnabled && perRegionBytes.length > 0) {
+          applyGateEvent(self, {
+            kind: 'measurement',
+            issued,
+            currentTierKey: self.byteGateAdapterKey,
             bytes: largestRegionBytes(perRegionBytes),
           })
         }
@@ -964,41 +878,26 @@ export default function RegionTooLargeMixin() {
       // The fork auto-chains afterAttach, so this runs alongside the composing
       // display's own without either calling super.
       afterAttach() {
-        // Drop the cached estimate when the tier it measured stops being the
-        // tier we would fetch. `clearByteEstimate` on chromosome nav already
-        // handles "these bytes are about a different region"; this is the same
-        // rule on the other axis, "these bytes are about a different file", and
-        // it wedges the same way if skipped: MAF captures a 470-way detail
-        // estimate below 20kb, zooms out into the cheap summary tier, and the
-        // detail number — megabytes — banners a summary read that would have
-        // measured ~60 kB. The while-gated re-measure would correct it a beat
-        // later, but only after the banner had already quoted the wrong number
-        // against the wrong file, and only if the viewport kept moving.
-        //
-        // Owned here rather than left to the swapping display, for the reason
-        // CanvasFeatureGateMixin owns its own stale-stat cleanup: overriding
-        // `byteGateAdapterConfig` is the whole opt-in, and a display that has to
-        // remember a second wire is a display that silently mis-gates when it
-        // doesn't. The read is the autorun's own — an MST action runs untracked,
-        // so factoring it into one would leave this with no dependencies and
-        // fire it exactly once.
-        addDisposer(
+        // The estimate describes one fetch, and two things change which fetch
+        // that is: chromosome navigation (`displayedRegionIndex` is reused, so
+        // the old number would gate the new region) and a tier swap (MAF
+        // captures a 470-way detail estimate below 20kb, zooms out into the
+        // cheap summary tier, and megabytes banner a ~60 kB read). Owned here
+        // so composing the mixin, or overriding `byteGateAdapterPath`, is the
+        // whole opt-in and no display has to remember a wire. The reads are the
+        // autorun's own: an MST action runs untracked. Guarded so a display
+        // that never gates never evaluates `byteGateAdapterConfig`.
+        autorunOnReadyView(
           self,
-          autorun(
-            () => {
-              // Guarded so a display that never gates never evaluates
-              // `byteGateAdapterConfig` — that getter reaches through the
-              // `host()` cast for members this mixin doesn't declare, and
-              // "nothing below the opt-in is evaluated" is a property the
-              // ungated composers (wiggle, Manhattan, sequence) rely on.
-              if (!self.gateEnabled) {
-                return
-              }
-              void self.byteGateAdapterKey
-              self.clearByteEstimate()
-            },
-            { name: 'ClearByteEstimateOnTierSwap' },
-          ),
+          view => {
+            if (!self.gateEnabled) {
+              return
+            }
+            void view.displayedRegions
+            void self.byteGateAdapterKey
+            self.clearByteEstimate()
+          },
+          { name: 'ClearByteEstimateOnNavOrTierSwap' },
         )
       },
     }))

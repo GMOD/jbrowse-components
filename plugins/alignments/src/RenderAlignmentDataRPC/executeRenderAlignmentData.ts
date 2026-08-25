@@ -480,7 +480,7 @@ export async function executeRenderAlignmentData({
       adapterConfig,
       sequenceAdapter,
     }),
-    region,
+    regions: [region],
     byteLimit,
     stopToken,
     statusCallback,

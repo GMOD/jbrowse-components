@@ -1,4 +1,3 @@
-import { onDisplayedRegionsChange } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
 
 import { arcFetchPhases } from './fetchArcFeatures.ts'
@@ -16,13 +15,5 @@ export function doAfterAttach(self: ArcDisplayModel) {
     ...arcFetchPhases(self),
     delay: 1000,
     name: 'ArcFetch',
-  })
-
-  // Drop the cached byte estimate on chromosome navigation (mirrors LD). It
-  // intentionally survives viewport changes so the derived banner doesn't
-  // flicker on pan; this is the one path that clears it, so a previous region's
-  // estimate can't gate the new region against the wrong stats.
-  onDisplayedRegionsChange(self, () => {
-    self.clearByteEstimate()
   })
 }

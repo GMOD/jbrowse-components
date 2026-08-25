@@ -55,18 +55,20 @@ density always releases on zoom, by construction. Read that list at the top of
 the golden file before concluding that a new term is needed; most questions
 about the gate are questions about which of the 7 a display is in.
 
-Everything here is plugin-internal but four types: the mixin, the floor and the
-verdict helpers are not exported from `@jbrowse/plugin-linear-genome-view`, and
+The gate lives in `@jbrowse/display-kit`, and `RegionTooLargeMixin`,
+`regionTooLargeUtils` and `regionTooLargeConfigSchemaFields` are subpath exports
+of it: the two fetch foundations compose the mixin, canvas's density mixin names
+`GateFetchState`, and the duck-typed fetch contracts name `GateViewport` — a
+fetch runner snapshots `gateFetchState()` when it issues a fetch and hands it
+back to `commitFetchBytes`.
 [ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)
-is why they live in a plugin rather than a foundation package. The exceptions are
-`GateViewport` and `GateFetchState`, which the duck-typed fetch contracts have
-to name — a fan-out helper snapshots `gateFetchState()` when it issues a fetch
-and hands it back to `commitFetchBytes` — plus `ByteEstimate` and
-`RegionTooLargeStatus`, exported only so the entry index's `.d.ts` can
-serialize. The budget vocabulary is the one piece
-that is deliberately *not* plugin-internal (§ A budget has a scope): three
-callers in three packages make the same comparison, and only `packages/core` is
-reachable from all of them.
+declined `render-core` for it, since that package may not depend on
+`@jbrowse/core` and the mixin reads config, the containing track and the
+containing view; display-kit is the layer that sits between the two, and the
+gate moved there with the rest of the display foundation (2026-08). The budget
+vocabulary is the one piece in `packages/core` (§ A budget has a scope): three
+callers in three packages make the same comparison, and only core is reachable
+from all of them.
 
 The measurement takes a stop token, and it earns it. `getRegionByteSize` bottoms
 out in an index lookup (`bytesForRegions`), which is a set of range reads over
@@ -86,8 +88,8 @@ refusal and the user asked for those bytes by name. Only the *default* differs:
 both budgets prefer the adapter's declared `fetchSizeLimit` through the one
 shared `adapterByteLimit` in `byteBudget.ts`, so "a non-positive declared limit
 means no opinion" has a single spelling. `resolveByteLimit` itself lives in
-`@jbrowse/plugin-linear-genome-view` and is out of `packages/core`'s reach
-([ADR-045](../architecture-decision-records/adr-045-region-too-large-gate-stays-in-lgv-plugin.md)).
+`@jbrowse/display-kit`, which depends on `packages/core` and so is out of its
+reach.
 
 For the wider picture and the five fetch autoruns that consult the verdict, see
 [ARCHITECTURE.md § Data fetching pipeline](../ARCHITECTURE.md#data-fetching-pipeline).
@@ -101,10 +103,9 @@ Four steps and a note, all on `RegionTooLargeMixin`:
 - **The measurement is inside the fetch, and the display's whole part in it is
   two lines**: override `gateEnabled` to true, and pass
   `byteLimit: self.resolvedByteLimit()` in the fetch RPC's args. The RPC runs
-  `measureRegionBytes` (or `measureRegionsBytes`, for one that serves a whole
-  region set) as its first await and answers a `RegionTooLargeResult` in place
-  of its payload when the region is over — carrying `bytes` either way, so the
-  banner has a number on the success path too.
+  `measureRegionBytes` as its first await and answers a `RegionTooLargeResult`
+  in place of its payload when a region is over — carrying `bytes` either way,
+  so the banner has a number on the success path too.
 
   **Committing it is the fetch runners', not the display's.** `fetchEachRegion`,
   `fetchAllRegions` and `fetchRegionsBatched` capture `gateFetchState()` before
@@ -126,22 +127,22 @@ Four steps and a note, all on `RegionTooLargeMixin`:
   then answer wrongly: `gateMeasurementStale` thinks the new viewport was
   measured, `zoomIneffective` reads the zoom as having bought nothing.
   The fan-out helpers read it above the await, so no display has to remember.
-- `setByteEstimate({ bytes, viewport })` and `setGateMeasuredViewport(viewport)`
-  are the two commits, and they are deliberately separate. The first stores the
-  bytes and the span, through `nextByteEstimate`, which is also where
-  `zoomIneffective` is decided from the previous measurement — and it is called
-  only when there are bytes, since `bytes` is a `number` and a fetch that
-  measured none stores nothing. The second records only "we asked about this
-  viewport", which a fetch can honestly report while measuring *no* bytes,
-  because a dense region short-circuits on its feature count and an unmeasurable
-  byte result must not overwrite a good estimate. Folding them would make a
-  density-blocked display refetch forever.
+- A commit has two halves, and `nextGateState` keeps them separate. The bytes
+  half stores the bytes and the span through `nextByteEstimate`, which is also
+  where `zoomIneffective` is decided from the previous measurement — and only
+  when the fetch measured some, since `ByteEstimate.bytes` is a `number` and a
+  fetch that measured none stores nothing. The stamp half records only "the
+  gate asked about this viewport", which a gated fetch can honestly report
+  while measuring *no* bytes, because a dense region short-circuits on its
+  feature count and an unmeasurable byte result must not overwrite a good
+  estimate. Folding them would make a density-blocked display refetch forever.
+  `setByteEstimate` is the bytes half alone, for a test staging a display.
 
-  `commitFetchBytes` reduces a batch to one `commitByteMeasurement` — the
-  per-region **max**, because the budget is what one region may cost — and both
-  of them, `clearByteEstimate` and `setForceLoadTrack` are one-line
-  delegations to **`nextGateState(prev, event)`** (`regionTooLargeUtils.ts`),
-  which is where the whole commit protocol lives. The point of it being pure is
+  `commitFetchBytes` reduces a batch to one measurement event — the per-region
+  **max**, because the budget is what one region may cost — and it,
+  `clearByteEstimate` and `setForceLoadTrack` are one-line delegations to
+  **`nextGateState(prev, event)`** (`regionTooLargeUtils.ts`), which is where
+  the whole commit protocol lives. The point of it being pure is
   the tests: `gateTruthTable.test.ts` is a cross-product of *states* and cannot
   see an order, while every rule in the protocol is about one — which of two
   measurements wins, what a clear leaves behind, what an approval outlives.
@@ -166,19 +167,21 @@ which fetch that is.
 
 - **Chromosome navigation**, since `displayedRegionIndex` values are reused
   across chromosomes and a stale estimate would gate the new region against the
-  previous chromosome's numbers. That drop is `clearByteEstimate()`, fired from
-  `MultiRegionDisplayMixin`'s `DisplayedRegionsChange` autorun — every display in
-  that family gets it without wiring anything. LD and arc run on
-  `GlobalFetchMixin` instead and call it from their own
-  `onDisplayedRegionsChange`.
+  previous chromosome's numbers.
 - **A tier swap** — `byteGateAdapterConfig` changing under a display that reads a
-  different file at different zooms. `RegionTooLargeMixin`'s own `afterAttach`
-  installs `ClearByteEstimateOnTierSwap`, an autorun over `byteGateAdapterKey`
-  (the config, stringified), so overriding `byteGateAdapterPath` stays the
-  whole opt-in and no display has to remember a second wire — the same call
-  `CanvasFeatureGateMixin` makes for its own stale-stat cleanup. Guarded on
-  `gateEnabled`, so a display that never gates still never evaluates the adapter
-  getters below the opt-in.
+  different file at different zooms.
+
+Both are one autorun, `ClearByteEstimateOnNavOrTierSwap`, which
+`RegionTooLargeMixin`'s own `afterAttach` installs over `view.displayedRegions`
+and `byteGateAdapterKey` (the config, stringified) — so composing the mixin, or
+overriding `byteGateAdapterPath`, is the whole opt-in and no display has to
+remember a wire. It used to be four wires: the per-region family's
+`DisplayedRegionsChange` autorun plus LD, arc and MultiWaySynteny each calling
+`onDisplayedRegionsChange` themselves, with HiC — ungated, so harmless — the one
+`GlobalFetchMixin` composer that had not. Guarded on `gateEnabled`, so a display
+that never gates still never evaluates the adapter getters below the opt-in.
+`CanvasFeatureGateMixin` clears its own density stats on navigation the same
+way.
 
   Skipping it shows the wrong number, and MAF is the worked example. It gates at
   every zoom, so it captures a 470-way *detail* estimate inside a gene-sized
@@ -527,10 +530,9 @@ on `BaseFeatureDataAdapter` and overridden by the tabix adapters), and returns
 `{ regionTooLarge, bytes }` in place of its payload when the region is over.
 The shared implementation is `measureRegionBytes` in
 `packages/core/src/rpc/byteBudget.ts` — beside `overByteBudget` and the refusal
-marker, because a second copy is a second answer to the same question.
-`measureRegionsBytes` is the same thing for an RPC handed a whole region set:
-it measures each region separately and judges the largest, since the budget is
-per-region.
+marker, because a second copy is a second answer to the same question. It takes
+a region set, measures each region separately and judges the largest, since the
+budget is per-region; the per-region RPCs hand it a set of one.
 
 That makes the byte gate symmetric with the density gate, which already
 short-circuits inside the RPC and returns `{ regionTooLarge, featureCount }`.
@@ -582,7 +584,7 @@ every test in the tree.
 `gateByteLimit` answers "what may a **single region** cost". Every region is
 checked against it, and a multi-region view where each region individually fits
 must not be blanked by what they add up to — so a region set reduces to one
-comparable number **by max**, worker-side in `measureRegionsBytes` and
+comparable number **by max**, worker-side in `measureRegionBytes` and
 main-thread-side in `commitFetchBytes`. `CoreGetRegionByteEstimate` keeps the
 `scope` argument for the save dialog, which asks the other question.
 
@@ -759,7 +761,7 @@ so the gate is off before the first fetch. `setForceLoadTrack(false)` puts a
 track back under the gate; nothing in the UI calls it, and it exists for tests
 and for a plugin that wants it.
 
-## Shared primitives (`shared/regionTooLargeUtils.ts`)
+## Shared primitives (`packages/display-kit/src/regionTooLargeUtils.ts`)
 
 The derived gate and canvas's in-RPC short-circuit differ only in how they
 measure. The verdict, the threshold, and the banner text live here so the two
@@ -772,7 +774,7 @@ paths can't drift apart.
   below it), MAF's `showSummary` (swap to the summary adapter at it), and
   `gateByteLimit` (multiply the *budget* by `SUB_FLOOR_BYTE_BUDGET_FACTOR` below
   it). Each reads that getter rather than the constant, so the threshold has one
-  spelling. It is not exported from the plugin.
+  spelling; nothing outside `gateTruthTable.test.ts` imports the constant.
 
   MAF's `showSummary` shares the number but is a rendering decision: where a
   summary tier draws the better picture is a different question from where a
@@ -821,10 +823,11 @@ paths can't drift apart.
   found nothing with that axis on that would banner below 20kb
   ([ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) § "The density axis is a
   model with no measurement under it").
-- `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit })` is the one
-  place a *gate* byte budget gets resolved: the adapter's limit, else the display
-  config. Those two arguments are the only inputs — force-load is not a tier
-  here, it bypasses the comparison entirely. A non-positive adapter limit means
+- `resolveByteLimit({ adapterFetchSizeLimit, configFetchSizeLimit, belowForceLoadFloor })`
+  is the one place a *gate* byte budget gets resolved: the adapter's limit, else
+  the display config, times `SUB_FLOOR_BYTE_BUDGET_FACTOR` below the floor.
+  Force-load is not an input — it bypasses the comparison entirely. A
+  non-positive adapter limit means
   "no opinion" and is skipped, guarding both a `0` and a negative sentinel;
   `BaseTrackModel.exportByteLimit` shares that rule through `adapterByteLimit`
   (see the note at the top of this file).

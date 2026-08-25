@@ -1,5 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import { measureRegionsBytes } from '@jbrowse/core/rpc/byteBudget'
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -31,7 +31,7 @@ export async function executeArcGetFeatures({
     sequenceAdapter,
   })
 
-  const { bytes, tooLarge } = await measureRegionsBytes({
+  const { bytes, tooLarge } = await measureRegionBytes({
     dataAdapter,
     regions,
     byteLimit,

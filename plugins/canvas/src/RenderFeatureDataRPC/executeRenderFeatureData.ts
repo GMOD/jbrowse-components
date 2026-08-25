@@ -63,7 +63,7 @@ export async function executeRenderFeatureData({
   // gate below.
   const { bytes, tooLarge: tooManyBytes } = await measureRegionBytes({
     dataAdapter,
-    region,
+    regions: [region],
     byteLimit,
     stopToken,
     statusCallback,

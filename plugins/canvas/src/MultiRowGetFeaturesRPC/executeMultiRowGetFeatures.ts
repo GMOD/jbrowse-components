@@ -44,7 +44,7 @@ export async function executeMultiRowGetFeatures({
   // the display turns the mixin's density axis off, so there is no stage 1.5.
   const { bytes, tooLarge: tooManyBytes } = await measureRegionBytes({
     dataAdapter,
-    region,
+    regions: [region],
     byteLimit,
     stopToken,
     statusCallback,

@@ -1,7 +1,7 @@
 import {
   isRegionRefused,
   largestRegionBytes,
-  measureRegionsBytes,
+  measureRegionBytes,
   measuredBytes,
   overByteBudget,
 } from './byteBudget.ts'
@@ -110,7 +110,7 @@ describe('measuredBytes', () => {
 // call. Every region is measured on its own and the largest is what the budget
 // judges, so a multi-region view where each region individually fits is never
 // refused by what they add up to.
-describe('measureRegionsBytes', () => {
+describe('measureRegionBytes over a region set', () => {
   const region = (refName: string) => ({
     refName,
     start: 0,
@@ -133,7 +133,7 @@ describe('measureRegionsBytes', () => {
 
   it('measures each region separately and judges the largest', async () => {
     const { adapter, asked } = adapterQuoting({ ctgA: 900, ctgB: 300 })
-    const result = await measureRegionsBytes({
+    const result = await measureRegionBytes({
       dataAdapter: adapter,
       regions: [region('ctgA'), region('ctgB')],
       byteLimit: 1000,
@@ -145,7 +145,7 @@ describe('measureRegionsBytes', () => {
 
   it('refuses on the largest region and quotes its bytes', async () => {
     const { adapter } = adapterQuoting({ ctgA: 300, ctgB: 1200 })
-    const result = await measureRegionsBytes({
+    const result = await measureRegionBytes({
       dataAdapter: adapter,
       regions: [region('ctgA'), region('ctgB')],
       byteLimit: 1000,
@@ -159,7 +159,7 @@ describe('measureRegionsBytes', () => {
   it('measures nothing at all without a budget', async () => {
     const { adapter, asked } = adapterQuoting({ ctgA: 9e9 })
     expect(
-      await measureRegionsBytes({
+      await measureRegionBytes({
         dataAdapter: adapter,
         regions: [region('ctgA')],
         byteLimit: undefined,
@@ -171,7 +171,7 @@ describe('measureRegionsBytes', () => {
   it('is unmeasurable, not zero, when the adapter quotes nothing', async () => {
     const { adapter } = adapterQuoting({ ctgA: undefined })
     expect(
-      await measureRegionsBytes({
+      await measureRegionBytes({
         dataAdapter: adapter,
         regions: [region('ctgA')],
         byteLimit: 1000,
