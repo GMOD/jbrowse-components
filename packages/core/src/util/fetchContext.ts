@@ -51,6 +51,15 @@ export interface FetchContext {
  * Build a {@link FetchContext} over a live fetch's primitives. One
  * constructor, so every context — `runFetch`'s, the prerequisite skeleton's —
  * carries the same `callRpc` envelope.
+ *
+ * **`self` has to be somewhere `getRpcSessionId` can find one, which in practice
+ * means a track or something under it.** `rpcSessionId` is declared by
+ * `BaseTrackModel` and by nothing above it, so the walk throws rather than
+ * falling back — and a fetch installed on a VIEW gets a context whose `callRpc`
+ * cannot be called at all. That is not a gap to fix here: the id names the track
+ * whose adapter is being read, and a view fetching for several tracks has a
+ * different one per call. The shape is to fan out and rebuild a context per
+ * track, which is what the breakpoint split view's overlay fetch does.
  */
 export function makeFetchContext(
   self: IStateTreeNode,

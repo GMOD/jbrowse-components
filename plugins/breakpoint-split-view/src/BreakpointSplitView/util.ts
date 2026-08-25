@@ -1,12 +1,10 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import type { LayoutRecord } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { Feature, Region } from '@jbrowse/core/util'
+import type { FetchContext } from '@jbrowse/core/util/fetchContext'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * The one thing a row's assembly is asked for when placing a feature: the total
@@ -55,7 +53,12 @@ interface OpaqueOverlayDisplay extends OverlayDisplayBase {
 // indistinguishable from `false` — i.e. from "no layout", which drops the curve.
 export type OverlayDisplay = SearchableOverlayDisplay | OpaqueOverlayDisplay
 
-export interface OverlayTrack {
+// `IStateTreeNode`, never `IAnyStateTreeNode` — the latter resolves to `any` and
+// would turn off checking for every member below. Duck-typed like the rest of
+// this file, but a node: `getConf` reads its config, and the overlay fetch roots
+// its `FetchContext` here because `rpcSessionId` is a track's and nothing above
+// it declares one.
+export interface OverlayTrack extends IStateTreeNode {
   /** the track-type name, e.g. 'AlignmentsTrack' — how matches are classified */
   type: string
   minimized: boolean
@@ -191,23 +194,23 @@ export function layoutUnknown(track: OverlayTrack) {
  * failing.
  */
 export async function getBlockFeatures(
-  model: { views: LinearGenomeViewModel[] },
   track: OverlayTrack,
   regionsPerView: Region[][],
-  // one fetch, both views: they run concurrently and share the caller's slot,
-  // so a second fan-out here would aggregate a pair that is already one
-  // operation from the chip's point of view
-  opts: { stopToken: StopToken; statusCallback: StatusCallback },
+  // This track's own status slot, from the caller's `fanOutStatus`, and a
+  // context rebuilt on the TRACK — see the caller. Both views run concurrently
+  // on the one slot deliberately: a second fan-out here would aggregate a pair
+  // that is already one operation from the chip's point of view.
+  //
+  // `ctx.callRpc` rather than a hand-threaded `rpcManager.call`, so the stop
+  // token and the status callback cannot be dropped from one of the two calls
+  // — the failure that envelope exists to make inexpressible.
+  ctx: FetchContext,
 ) {
-  const { rpcManager } = getSession(model)
-  const sessionId = getRpcSessionId(track)
-
   return Promise.all(
-    regionsPerView.map(async regions =>
-      rpcManager.call(sessionId, 'BreakpointGetFeatures', {
+    regionsPerView.map(regions =>
+      ctx.callRpc('BreakpointGetFeatures', {
         adapterConfig: getConf(track, ['adapter']),
         regions,
-        ...opts,
       }),
     ),
   )

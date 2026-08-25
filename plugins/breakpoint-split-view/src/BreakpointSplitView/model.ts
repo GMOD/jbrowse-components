@@ -4,13 +4,13 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   avg,
   createStatusChannel,
-  createStatusFanOut,
   getDialogHost,
   getNotificationSink,
   getSession,
   notEmpty,
 } from '@jbrowse/core/util'
 import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { fanOutStatus, makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
@@ -736,21 +736,29 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           },
           // One fan-out slot per track, so the N of them aggregate into one bar
           // rather than the first to finish blanking the label.
+          //
+          // **Each slot is then rebuilt as a context on its own TRACK**, and
+          // that is not decoration: `rpcSessionId` is declared by
+          // `BaseTrackModel` and by nothing above it, so `callRpc` on the
+          // context the skeleton hands a VIEW has no session id to resolve and
+          // throws. A view-level fetch reaching an RPC has to root its context
+          // on the track it is fetching for.
           run: async (
             { tracks, regionsPerView },
             ctx,
           ): Promise<Record<string, Feature[][]>> => {
-            const slot = createStatusFanOut(ctx.statusCallback)
+            const perTrack = fanOutStatus(ctx, tracks.length)
             return Object.fromEntries(
               await Promise.all(
                 tracks.map(
-                  async track =>
+                  async (track, i) =>
                     [
                       track.configuration.trackId,
-                      await getBlockFeatures(self, track, regionsPerView, {
-                        stopToken: ctx.stopToken,
-                        statusCallback: slot(),
-                      }),
+                      await getBlockFeatures(
+                        track,
+                        regionsPerView,
+                        makeFetchContext(track, perTrack[i]!),
+                      ),
                     ] as const,
                 ),
               ),
