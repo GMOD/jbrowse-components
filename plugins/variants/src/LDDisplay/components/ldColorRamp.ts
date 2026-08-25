@@ -83,6 +83,33 @@ export function ldMetricLabel(metric: string, signedLD: boolean) {
 }
 
 /**
+ * The number in a cell as the tooltip should print it.
+ *
+ * A composite D' of exactly ±1 is the one value the display cannot take at face
+ * value. `dprimeFinalize` clamps, and the composite estimator normalizes D by
+ * the allele frequencies alone — which say nothing about the Hardy-Weinberg
+ * departure that inflated the numerator — so the raw ratio runs well past 1 on
+ * ordinary genotypes: 1.6053 against a phased D' of 0.8385 on the same pair, in
+ * `packages/ld-core/src/compositeDprimeClamp.test.ts`. What reaches the cell is
+ * therefore "at or above the maximum", which "≥ 1" states and "1.000" does not.
+ *
+ * Only D', and only composite. Haplotypic D cannot exceed Dmax, so there the
+ * clamp catches float noise and a 1 is a 1; r² is clamped for the same noise
+ * reason and its composite-vs-haplotypic gap stays inside a few percent.
+ */
+export function ldValueText(
+  ldValue: number,
+  metric: string,
+  method: string | undefined,
+) {
+  return metric === 'dprime' &&
+    method === 'composite' &&
+    Math.abs(ldValue) === 1
+    ? `${ldValue < 0 ? '≤ -1' : '≥ 1'} (composite estimate saturated)`
+    : ldValue.toFixed(3)
+}
+
+/**
  * The stops for one metric+sign combination. The 256-entry ramp the cells are
  * painted through and the SVG gradient in the legend are both built from this
  * one call, so the key can't say one thing and the plot another — the legend

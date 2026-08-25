@@ -14,7 +14,7 @@ import LDColorLegend from './LDColorLegend.tsx'
 import LDColumnZone from './LDColumnZone.tsx'
 import { LDRenderer } from './LDRenderer.ts'
 import LDStatusBar from './LDStatusBar.tsx'
-import { ldMetricLabel } from './ldColorRamp.ts'
+import { ldMetricLabel, ldValueText } from './ldColorRamp.ts'
 
 import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'
@@ -38,12 +38,14 @@ function LDTooltip({
   x,
   y,
   ldMetric,
+  ldMethod,
   signedLD,
 }: {
   item: LDFlatbushItem
   x: number
   y: number
   ldMetric: string
+  ldMethod: string | undefined
   signedLD: boolean
 }) {
   const distance = Math.abs(item.snp1.start - item.snp2.start)
@@ -61,7 +63,8 @@ function LDTooltip({
       <SnpRow snp={item.snp1} />
       <SnpRow snp={item.snp2} />
       <div>
-        {ldMetricLabel(ldMetric, signedLD)}: {item.ldValue.toFixed(3)}
+        {ldMetricLabel(ldMetric, signedLD)}:{' '}
+        {ldValueText(item.ldValue, ldMetric, ldMethod)}
         {phase}
       </div>
       <div>Distance: {getBpDisplayStr(distance)}</div>
@@ -105,6 +108,7 @@ const LDCanvas = observer(function LDCanvas({
     // and a range that are not on screen.
     effectiveLdMetric,
     effectiveSignedLD,
+    ldMethod,
     effectiveLineZoneHeight,
     canvasWidth: width,
     canvasHeight,
@@ -192,6 +196,7 @@ const LDCanvas = observer(function LDCanvas({
           x={mouseState.clientX}
           y={mouseState.clientY}
           ldMetric={effectiveLdMetric}
+          ldMethod={ldMethod}
           signedLD={effectiveSignedLD}
         />
       ) : null}

@@ -379,6 +379,26 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * The pair-separation window the LOADED matrix was computed at, in
+       * variants, or undefined when it covers the whole triangle. Read off the
+       * result rather than off `maxVariantSeparation`, for the same reason
+       * `ldMethod` is: the slot is a request, and `resolveBand` clamps it to
+       * `n - 1`, at which point there is no window to report.
+       *
+       * The status bar names it because nothing else on screen can. A pair past
+       * the window is not drawn, and an in-band pair at r² = 0 is painted at the
+       * ramp's white end at full alpha — so against a light theme's background
+       * "not measured" and "no linkage" are the same pixel, and long-range LD,
+       * which is the interesting case, reads as absent rather than as unasked.
+       */
+      get loadedLDWindow(): number | undefined {
+        const data = self.rpcData
+        return data && data.band > 0 && data.band < data.snps.length - 1
+          ? data.band
+          : undefined
+      },
+      /**
+       * #getter
        * Array index of the focal SNP in the current `snps`, or -1 if none is
        * selected or the locus is no longer present after a re-fetch.
        */

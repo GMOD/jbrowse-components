@@ -1,6 +1,7 @@
 import {
   generateLDColorRamp,
   ldMetricLabel,
+  ldValueText,
   mapLDValue,
 } from './ldColorRamp.ts'
 
@@ -90,4 +91,30 @@ test('the label says what the number is', () => {
   expect(ldMetricLabel('r2', true)).toBe('R')
   expect(ldMetricLabel('dprime', false)).toBe("D'")
   expect(ldMetricLabel('dprime', true)).toBe("D'")
+})
+
+// A composite D' of exactly ±1 is the clamp, not a measurement: the raw ratio
+// reaches 1.6053 where the phased estimator reads 0.8385 on the same pair
+// (`packages/ld-core/src/compositeDprimeClamp.test.ts`), so what the cell holds
+// is a bound rather than a value. Nothing else printed here is a bound.
+describe('ldValueText', () => {
+  test('marks a saturated composite D-prime as a bound', () => {
+    expect(ldValueText(1, 'dprime', 'composite')).toBe(
+      '≥ 1 (composite estimate saturated)',
+    )
+    expect(ldValueText(-1, 'dprime', 'composite')).toBe(
+      '≤ -1 (composite estimate saturated)',
+    )
+  })
+
+  test('prints every other value plainly', () => {
+    // haplotypic D cannot exceed Dmax, so there a 1 is a 1
+    expect(ldValueText(1, 'dprime', 'phased')).toBe('1.000')
+    expect(ldValueText(1, 'dprime', 'precomputed')).toBe('1.000')
+    // and r²'s clamp catches float noise, not a saturating estimator
+    expect(ldValueText(1, 'r2', 'composite')).toBe('1.000')
+    expect(ldValueText(0.9999, 'dprime', 'composite')).toBe('1.000')
+    expect(ldValueText(0.123456, 'r2', 'composite')).toBe('0.123')
+    expect(ldValueText(0, 'dprime', 'composite')).toBe('0.000')
+  })
 })

@@ -172,6 +172,45 @@ test('the metric help names how the values were derived', () => {
   expect(helpFor('precomputed')).toContain('pre-computed LD file')
 })
 
+// The note describes the ESTIMATOR, and must not describe the DATA. Since the
+// `ldMethod` slot landed, 'composite' is honoured on a phased callset — putting
+// a phased panel and an unphased cohort on one scale is what it is for — so
+// "estimated from unphased genotypes" was a claim about the file that the file
+// contradicts.
+test('the composite note does not call the data unphased', () => {
+  const r2 = subMenuOf(
+    buildLDTrackMenuItems(makeSelf({ ldMethod: 'composite' })),
+    'LD metric',
+  )![0]!
+  const help = 'helpText' in r2 ? r2.helpText! : ''
+
+  expect(help).not.toMatch(/unphased/i)
+  expect(help).toContain('ignores phase')
+})
+
+// D' is where the composite estimator does more than approximate. It normalizes
+// by the allele frequencies alone, so a Hardy-Weinberg departure inflates the
+// ratio past 1 and `dprimeFinalize` clamps it — see
+// `packages/ld-core/src/compositeDprimeClamp.test.ts`, where the same pair reads
+// 0.8385 haplotypic and exactly 1.0000 composite off a raw ratio of 1.6053.
+// The row used to call that difference "slight".
+test("the D' note says the composite value saturates, not that it differs slightly", () => {
+  const dprimeHelp = (ldMethod: LDMethod) => {
+    const metric = subMenuOf(
+      buildLDTrackMenuItems(makeSelf({ ldMethod })),
+      'LD metric',
+    )!
+    const row = metric.find(i => labelOf(i) === "D' (normalized D)")!
+    return 'helpText' in row ? row.helpText! : ''
+  }
+
+  expect(dprimeHelp('composite')).not.toMatch(/slight/i)
+  expect(dprimeHelp('composite')).toContain('clamped at 1')
+  // and the caveat is about the estimator, so it stays off the other two rows
+  expect(dprimeHelp('phased')).not.toMatch(/clamped/i)
+  expect(dprimeHelp('precomputed')).not.toMatch(/clamped/i)
+})
+
 test('the Show menu carries every visibility and layout toggle', () => {
   expect(
     labels(subMenuOf(buildLDTrackMenuItems(makeSelf()), 'Show...')!),

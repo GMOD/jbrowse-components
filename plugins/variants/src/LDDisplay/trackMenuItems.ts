@@ -59,13 +59,21 @@ export interface LDMenuSelf
 // The metric radios' help text. Both rows state how the numbers on screen were
 // actually derived, from one sentence, so the two can't describe different
 // precision for the same matrix.
+//
+// The sentence names the ESTIMATOR and says nothing about whether the file is
+// phased. It used to say "Estimated from unphased genotypes", which the
+// `ldMethod` slot made false: composite LD is well defined on a phased callset
+// — collapsing a haplotype pair to a dosage loses phase and nothing else — and
+// asking for it there is the whole point of the slot, since it is what plink
+// `--r2` reports and so is the only way to put a phased panel and an unphased
+// cohort on one scale.
 function metricMenuItems(self: LDMenuSelf): MenuItem[] {
   const computeNote =
     self.ldMethod === 'phased'
-      ? 'Computed from phased genotypes as exact haplotypic LD.'
+      ? 'Counted from phased haplotypes as exact haplotypic LD.'
       : self.ldMethod === 'precomputed'
         ? 'Read directly from the pre-computed LD file.'
-        : 'Estimated from unphased genotypes with the composite (Weir) method.'
+        : 'Estimated from genotype dosages with the composite (Weir) method, which ignores phase.'
   const plinkNote = self.isPrecomputedLD
     ? ''
     : ' For authoritative published LD, load PLINK-computed .ld files via the PLINK adapter.'
@@ -87,9 +95,9 @@ function metricMenuItems(self: LDMenuSelf): MenuItem[] {
       disabled: !self.dprimeAvailable,
       helpText: self.dprimeAvailable
         ? `Lewontin's normalized D (0-1). ${computeNote}${
-            self.isPrecomputedLD
-              ? ''
-              : ' The composite estimate from unphased data can differ slightly from EM-based tools like Haploview.'
+            self.ldMethod === 'composite'
+              ? " The composite D' normalizes by the allele frequencies alone, which say nothing about a Hardy-Weinberg departure, so it saturates: it is clamped at 1 and a clamped cell is indistinguishable from perfect linkage. Measured on 200 samples with excess homozygosity, D' read exactly 1.0000 composite where the phased method gave 0.85, while r² on the same pair stayed within 5%. Prefer the phased method, or PLINK, where D' itself matters."
+              : ''
           }${plinkNote}`
         : "This LD file has no D' (DP) column",
       onClick: () => {
