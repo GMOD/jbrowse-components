@@ -1,0 +1,667 @@
+<title>Tiberius Triage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+/>
+
+<style id="css">
+  :root {
+    --ground: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #eaeef4;
+    --ink: #131820;
+    --muted: #5a6474;
+    --line: #dde2ea;
+    --line-strong: #c3cbd8;
+    --accent: #34457f;
+    --accent-soft: #e7ebf7;
+    --keep: #2c7a55;
+    --keep-soft: #e2f2ea;
+    --reject: #b04238;
+    --reject-soft: #fbe8e6;
+    --edit: #96681a;
+    --edit-soft: #f9eed8;
+    --shadow:
+      0 1px 2px rgba(19, 24, 32, 0.06), 0 8px 24px -12px rgba(19, 24, 32, 0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --ground: #10131a;
+      --surface: #181d26;
+      --surface-2: #212733;
+      --ink: #e6eaf2;
+      --muted: #98a2b3;
+      --line: #2b3240;
+      --line-strong: #3a4356;
+      --accent: #93a6ea;
+      --accent-soft: #222a44;
+      --keep: #62bd91;
+      --keep-soft: #17301f;
+      --reject: #e88b80;
+      --reject-soft: #351c1c;
+      --edit: #d9ad5c;
+      --edit-soft: #32270f;
+      --shadow:
+        0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    }
+  }
+  :root[data-theme='dark'] {
+    --ground: #10131a;
+    --surface: #181d26;
+    --surface-2: #212733;
+    --ink: #e6eaf2;
+    --muted: #98a2b3;
+    --line: #2b3240;
+    --line-strong: #3a4356;
+    --accent: #93a6ea;
+    --accent-soft: #222a44;
+    --keep: #62bd91;
+    --keep-soft: #17301f;
+    --reject: #e88b80;
+    --reject-soft: #351c1c;
+    --edit: #d9ad5c;
+    --edit-soft: #32270f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Familjen Grotesk', 'IBM Plex Sans', sans-serif;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .lede {
+    max-width: 66ch;
+    color: var(--muted);
+    font-size: 15.5px;
+    margin: 0;
+  }
+  .lede strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* summary rail */
+  .summary {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 16px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px 26px;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat .n {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 21px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat .k {
+    font-size: 11.5px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .rule {
+    width: 1px;
+    align-self: stretch;
+    background: var(--line);
+  }
+  .progress {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .progress .row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface-2);
+    overflow: hidden;
+    display: flex;
+  }
+  .bar span {
+    display: block;
+    height: 100%;
+    transition: width 0.25s ease;
+  }
+  .bar .b-keep {
+    background: var(--keep);
+  }
+  .bar .b-edit {
+    background: var(--edit);
+  }
+  .bar .b-reject {
+    background: var(--reject);
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  button {
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 7px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 7px 13px;
+    transition:
+      background 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease;
+  }
+  button:hover {
+    background: var(--surface-2);
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  button[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* cards */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .card[data-verdict='keep'] {
+    border-color: var(--keep);
+  }
+  .card[data-verdict='reject'] {
+    border-color: var(--reject);
+  }
+  .card[data-verdict='edit'] {
+    border-color: var(--edit);
+  }
+
+  .card-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    align-items: baseline;
+    padding: 15px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .model {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .genes {
+    font-weight: 600;
+  }
+  .meta {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .why {
+    padding: 12px 18px 0;
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 78ch;
+  }
+  .shot {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-top: 14px;
+    background: #fff;
+  }
+
+  .card-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    align-items: center;
+    padding: 14px 18px;
+  }
+  .verdicts {
+    display: flex;
+    gap: 8px;
+  }
+  .verdicts button[aria-pressed='true'][data-v='keep'] {
+    background: var(--keep-soft);
+    border-color: var(--keep);
+    color: var(--keep);
+    font-weight: 600;
+  }
+  .verdicts button[aria-pressed='true'][data-v='reject'] {
+    background: var(--reject-soft);
+    border-color: var(--reject);
+    color: var(--reject);
+    font-weight: 600;
+  }
+  .verdicts button[aria-pressed='true'][data-v='edit'] {
+    background: var(--edit-soft);
+    border-color: var(--edit);
+    color: var(--edit);
+    font-weight: 600;
+  }
+
+  .next {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .next b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  a.live {
+    margin-left: auto;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--accent);
+    border-radius: 7px;
+    padding: 7px 13px;
+    white-space: nowrap;
+  }
+  a.live:hover {
+    background: var(--accent-soft);
+  }
+  a.live:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .note {
+    font-size: 13px;
+    color: var(--muted);
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    color: var(--muted);
+    font-size: 13.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 76ch;
+  }
+  footer code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 27px;
+    }
+    .meta {
+      margin-left: 0;
+      width: 100%;
+    }
+    a.live {
+      margin-left: 0;
+    }
+  }
+</style>
+
+<div class="wrap" id="wrap"></div>
+
+<script type="application/json" id="data">
+  "__DATA__"
+</script>
+<script type="application/json" id="state">
+  { "verdicts": {} }
+</script>
+
+<script type="text/plain" id="app-src">
+  const DATA = JSON.parse(document.getElementById('data').textContent)
+  let STATE = JSON.parse(document.getElementById('state').textContent)
+  if (!STATE.verdicts) STATE.verdicts = {}
+
+  let readOnly = false
+  let artifactApi = null
+  let publishTimer = null
+
+  const VERDICTS = [
+    { v: 'keep', label: 'Keep' },
+    { v: 'edit', label: 'Needs editing' },
+    { v: 'reject', label: 'Reject' },
+  ]
+
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+
+  const SHELL =
+    '<div class="masthead">' +
+      '<div class="eyebrow" id="eyebrow"></div>' +
+      '<h1>Tiberius predictions that need a human</h1>' +
+      '<p class="lede" id="lede"></p>' +
+    '</div>' +
+    '<div class="summary" id="summary"></div>' +
+    '<div class="cards" id="cards"></div>' +
+    '<footer>' +
+      '<div><b>How this page was built.</b> Every picture is a JBrowse view captured ' +
+      'headlessly at that locus, and every <b>Open in JBrowse</b> link reopens the same ' +
+      'view live in the browser. The candidate list came from an exon-level comparison of ' +
+      'the Tiberius GFF against GENCODE v47, read straight off the hosted files with tabix.</div>' +
+      '<div>The triage is JBrowse\'s half. The edit is Apollo\'s &mdash; <b>Split into two models</b> ' +
+      'is an annotation action, not a viewer action.</div>' +
+    '</footer>'
+
+  function counts() {
+    const c = { keep: 0, edit: 0, reject: 0 }
+    for (const id of Object.keys(STATE.verdicts)) {
+      const v = STATE.verdicts[id]
+      if (c[v] !== undefined) c[v]++
+    }
+    return c
+  }
+
+  function renderEyebrow() {
+    document.getElementById('eyebrow').textContent =
+      DATA.region + ' · ' + DATA.assembly + ' · Tiberius vs GENCODE v47'
+    document.getElementById('lede').innerHTML =
+      'Tiberius predicted <strong>' + DATA.total + '</strong> gene models on ' + DATA.region +
+      '. <strong>' + DATA.agrees + '</strong> of them share splice junctions with a GENCODE gene and need no attention. ' +
+      'The other <strong>' + DATA.flagged + '</strong> disagree with the reference in one of four ways. ' +
+      'Below is one worked example of each kind, with the evidence staged the same way every time.'
+  }
+
+  function renderSummary() {
+    const c = counts()
+    const done = c.keep + c.edit + c.reject
+    const n = DATA.cards.length
+    const pct = x => (n ? (x / n) * 100 : 0) + '%'
+    const el = document.getElementById('summary')
+    el.innerHTML =
+      '<div class="stat"><span class="n">' + DATA.total + '</span><span class="k">models predicted</span></div>' +
+      '<div class="rule"></div>' +
+      '<div class="stat"><span class="n">' + DATA.agrees + '</span><span class="k">agree with GENCODE</span></div>' +
+      '<div class="stat"><span class="n">' + DATA.flagged + '</span><span class="k">flagged for review</span></div>' +
+      '<div class="rule"></div>' +
+      '<div class="progress">' +
+        '<div class="row"><span>' + done + ' of ' + n + ' judged</span><span>' +
+          c.keep + ' keep · ' + c.edit + ' edit · ' + c.reject + ' reject</span></div>' +
+        '<div class="bar">' +
+          '<span class="b-keep" style="width:' + pct(c.keep) + '"></span>' +
+          '<span class="b-edit" style="width:' + pct(c.edit) + '"></span>' +
+          '<span class="b-reject" style="width:' + pct(c.reject) + '"></span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button id="export">Export decisions</button>' +
+        '<button id="clear"' + (done ? '' : ' disabled') + '>Reset</button>' +
+      '</div>'
+
+    document.getElementById('export').addEventListener('click', exportTsv)
+    const clr = document.getElementById('clear')
+    if (clr) clr.addEventListener('click', () => {
+      if (readOnly) return
+      STATE.verdicts = {}
+      render()
+      schedulePublish()
+    })
+  }
+
+  function renderCards() {
+    const host = document.getElementById('cards')
+    host.innerHTML = DATA.cards.map(c => {
+      const meta = DATA.classes[c.cls]
+      const v = STATE.verdicts[c.id] || ''
+      const genes = c.genes && c.genes.length ? c.genes.join(' + ') : 'no reference gene here'
+      const gap = c.gapBp ? ' · ' + c.gapBp.toLocaleString() + ' bp apart' : ''
+      return '<article class="card" data-verdict="' + esc(v) + '">' +
+        '<div class="card-head">' +
+          '<span class="chip">' + esc(meta.label) + '</span>' +
+          '<span class="model">' + esc(c.id) + '</span>' +
+          '<span class="genes">' + esc(genes) + '</span>' +
+          '<span class="meta">' + esc(c.loc) + ' · ' + c.nExons + ' exons · ' + c.spanKb + ' kb · ' +
+            (c.strand === '-' ? 'minus' : 'plus') + ' strand' + gap + '</span>' +
+        '</div>' +
+        '<div class="why">' + esc(meta.why) + '</div>' +
+        '<img class="shot" loading="lazy" alt="JBrowse view of ' + esc(c.id) + ' at ' + esc(c.loc) + '" src="' + c.img + '">' +
+        '<div class="card-foot">' +
+          '<div class="verdicts">' +
+            VERDICTS.map(b =>
+              '<button data-id="' + esc(c.id) + '" data-v="' + b.v + '" aria-pressed="' + (v === b.v) + '"' +
+              (readOnly ? ' disabled' : '') + '>' + b.label + '</button>').join('') +
+          '</div>' +
+          '<span class="next">Annotator action: <b>' + esc(meta.action) + '</b></span>' +
+          '<a class="live" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open in JBrowse</a>' +
+        '</div>' +
+      '</article>'
+    }).join('')
+
+    host.querySelectorAll('.verdicts button').forEach(b => {
+      b.addEventListener('click', () => {
+        if (readOnly) return
+        const id = b.getAttribute('data-id')
+        const v = b.getAttribute('data-v')
+        if (STATE.verdicts[id] === v) delete STATE.verdicts[id]
+        else STATE.verdicts[id] = v
+        render()
+        schedulePublish()
+      })
+    })
+  }
+
+  function render() {
+    if (!document.getElementById('summary')) {
+      document.getElementById('wrap').innerHTML = SHELL
+    }
+    renderEyebrow()
+    renderSummary()
+    renderCards()
+    if (readOnly && !document.getElementById('ro-note')) {
+      const n = document.createElement('div')
+      n.className = 'note'
+      n.id = 'ro-note'
+      n.textContent = 'You are viewing this page read-only, so verdicts are not saved. Export still works.'
+      document.getElementById('summary').after(n)
+    }
+  }
+
+  function tsv() {
+    const head = ['model_id', 'class', 'locus', 'exons', 'strand', 'reference_genes', 'verdict']
+    const lines = [head.join('\t')]
+    for (const c of DATA.cards) {
+      lines.push([
+        c.id, c.cls, c.loc, c.nExons, c.strand,
+        (c.genes || []).join(';'),
+        STATE.verdicts[c.id] || 'unreviewed',
+      ].join('\t'))
+    }
+    return lines.join('\n') + '\n'
+  }
+
+  async function exportTsv() {
+    const text = tsv()
+    const name = 'tiberius-review-' + DATA.region + '.tsv'
+    const downloads = await claudeUse('downloads')
+    if (downloads) {
+      try {
+        await downloads.save({ filename: name, data: text })
+        return
+      } catch (e) { /* viewer declined, fall through to clipboard */ }
+    }
+    try {
+      await navigator.clipboard.writeText(text)
+      flash('Decisions copied to the clipboard as TSV')
+    } catch (e) {
+      flash('Could not export here — select the page text instead')
+    }
+  }
+
+  function flash(msg) {
+    let el = document.getElementById('flash')
+    if (!el) {
+      el = document.createElement('div')
+      el.className = 'note'
+      el.id = 'flash'
+      document.getElementById('summary').after(el)
+    }
+    el.textContent = msg
+    clearTimeout(el.timer)
+    el.timer = setTimeout(() => el.remove(), 4000)
+  }
+
+  async function claudeUse(name) {
+    try {
+      if (!window.claude || !window.claude.use) return null
+      return await window.claude.use(name)
+    } catch (e) {
+      return null
+    }
+  }
+
+  function buildDoc() {
+    const css = document.getElementById('css').textContent
+    const app = document.getElementById('app-src').textContent
+    const data = document.getElementById('data').textContent
+    const head =
+      '<meta charset="utf-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1">' +
+      '<title>Tiberius Triage<\/title>' +
+      '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+      '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+      '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">' +
+      '<style id="css">' + css + '<\/style>'
+    return '<!doctype html><html lang="en"><head>' + head + '<\/head><body>' +
+      '<div class="wrap" id="wrap"><\/div>' +
+      '<script type="application/json" id="data">' + data + '<\/script>' +
+      '<script type="application/json" id="state">' + JSON.stringify(STATE) + '<\/script>' +
+      '<script type="text/plain" id="app-src">' + app + '<\/script>' +
+      '<script>new Function(document.getElementById("app-src").textContent)()<\/script>' +
+      '<\/body><\/html>'
+  }
+
+  function schedulePublish() {
+    clearTimeout(publishTimer)
+    publishTimer = setTimeout(publish, 700)
+  }
+
+  async function publish() {
+    if (readOnly) return
+    if (!artifactApi) artifactApi = await claudeUse('artifact')
+    if (!artifactApi) return
+    try {
+      await artifactApi.publish(buildDoc())
+    } catch (e) {
+      const code = e && e.code
+      if (code === 'not_granted' || code === 'not_writer') {
+        readOnly = true
+        render()
+      }
+      /* a conflict means another viewer published first; every view reloads to it */
+    }
+  }
+
+  window.__buildDoc = buildDoc
+
+  render()
+</script>
+
+<script>
+  new Function(document.getElementById('app-src').textContent)()
+</script>
