@@ -1,6 +1,6 @@
 import { checkboxItem, radioItem, radioItems } from './toggleMenuItems.ts'
 
-import type { Pin } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotablePin.ts'
 import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 import type { RadioOption, SettingRowOptions } from './toggleMenuItems.ts'
 

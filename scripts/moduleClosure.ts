@@ -144,6 +144,9 @@ export const ENTRIES = [
   'packages/core/src/util/installFetch.ts',
   'packages/core/src/util/fetchContext.ts',
   'packages/core/src/util/installInitAutorun.ts',
+  'packages/core/src/ui/MenuTypes.ts',
+  'packages/core/src/ui/menuItems.ts',
+  'packages/core/src/ui/legendSpec.ts',
 ]
 
 if (process.argv[1]?.endsWith('moduleClosure.ts')) {

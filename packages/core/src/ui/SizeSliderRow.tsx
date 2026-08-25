@@ -13,7 +13,7 @@ import SingleSlider from './SingleSlider.tsx'
 import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 import { sliderScale } from './sliderScale.ts'
 
-import type { Pin } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotablePin.ts'
 import type { SliderScale } from './sliderScale.ts'
 
 const useStyles = makeStyles()(theme => ({

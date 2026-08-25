@@ -17,6 +17,13 @@ import { closure } from './moduleClosure.ts'
 // session interface split (`agent-docs/ideas/lightweight-toolkit.md` §2): each
 // of these files reaches its host for one service, and a `getSession` — whose
 // return type is the whole application — is what would put the 370 back.
+//
+// The three `ui/` entries are the same failure one layer up, and they were
+// unguarded until 2026-08-25: `MenuTypes.ts` took `Pin` from
+// `promotableDefaults.ts` and `legendSpec.ts` took `ColorLegendEntry` from the
+// component that draws it, so two files describing plain data measured 374 and
+// 375. `menuItems.ts` is the whole builder family in one closure, and its
+// ceiling is what keeps a builder from taking a type off a module that renders.
 
 const root = join(__dirname, '..')
 
@@ -60,6 +67,12 @@ const CEILINGS = [
     runtime: 10,
     types: 20,
   },
+  // 1 runtime / 2 type
+  { entry: 'packages/core/src/ui/MenuTypes.ts', runtime: 5, types: 10 },
+  // 7 runtime / 8 type
+  { entry: 'packages/core/src/ui/menuItems.ts', runtime: 12, types: 15 },
+  // 1 runtime / 1 type
+  { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 5 },
 ]
 
 test.each(CEILINGS)('$entry stays a leaf', ({ entry, runtime, types }) => {

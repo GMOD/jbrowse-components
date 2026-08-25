@@ -6,7 +6,7 @@ import {
 } from '../configuration/promotableDefaults.ts'
 import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 
-import type { Pin } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotablePin.ts'
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type {
   AnyConfigurationModel,

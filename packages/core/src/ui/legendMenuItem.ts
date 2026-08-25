@@ -1,7 +1,7 @@
 import { promotableToggleItem } from './promotableMenuItems.ts'
 import { checkboxItem } from './toggleMenuItems.ts'
 
-import type { Pin } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotablePin.ts'
 import type { MenuItem } from './MenuTypes.ts'
 
 /**

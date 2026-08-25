@@ -494,7 +494,13 @@ actions, where a toggle destroys the ability to set a known state; nothing here
 stores a value.) ADR-048's requirement is that the flip be _symmetric_ —
 pin-then-unpin discards nothing — not that it be two functions.
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+Lives here, alone and with no imports, rather than beside `makePin` in
+`promotableDefaults.ts`: the menu types describe a pin without building one, and
+`MenuTypes.ts` taking this one interface from that module gave a React-free type
+file a type closure of 374 files. See
+`agent-docs/ideas/barrels-block-extraction.md` and `scripts/moduleClosure.ts`.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
 
 ### readConfObject
 

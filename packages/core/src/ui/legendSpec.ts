@@ -1,4 +1,4 @@
-import type { ColorLegendEntry } from './SvgColorLegend.tsx'
+import type { ReactNode } from 'react'
 
 // How a color is drawn, so a key row can carry the mark it belongs to instead
 // of a square for everything: a filled body (a read, a feature, a bar), a
@@ -14,6 +14,24 @@ export type LegendMark = 'fill' | 'line' | 'curve'
 export interface LegendSwatch {
   color: string
   mark?: LegendMark
+}
+
+export interface ColorLegendEntry {
+  // React key; keep distinct across entries
+  key: string
+  label: string
+  // CSS color for the default square swatch; omit when supplying `marker`
+  color?: string
+  // several marks, or one that isn't a filled square (a connector color drawn as
+  // the line/curve it really is). Takes precedence over `color`; `legendEntries`
+  // sets it only for rows that need it.
+  swatches?: LegendSwatch[]
+  // toggled-off entries render dimmed and struck through
+  hidden?: boolean
+  // custom SVG drawn in the swatch slot instead of the default color square, in
+  // row-local coords (the swatch occupies ~x:2 y:2, LEGEND_SWATCH square). Lets a
+  // row key by line style, shape, gradient, etc. rather than a flat color.
+  marker?: ReactNode
 }
 
 // One swatch of a color vocabulary. `color` is omitted for a row that is text

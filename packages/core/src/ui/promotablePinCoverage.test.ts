@@ -4,7 +4,7 @@ import {
   promotableSlotsWithoutPin,
 } from './promotablePinCoverage.ts'
 
-import type { Pin } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotablePin.ts'
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'
 

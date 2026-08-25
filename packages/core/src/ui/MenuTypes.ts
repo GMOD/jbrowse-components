@@ -1,4 +1,4 @@
-import type { Pin } from '../configuration/promotableDefaults.ts'
+import type { Pin } from '../configuration/promotablePin.ts'
 
 /** #menuItem divider | a horizontal rule; not clickable */
 export interface MenuDivider {

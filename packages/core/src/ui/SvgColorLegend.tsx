@@ -2,26 +2,10 @@
 import { LegendSwatchGlyph } from './LegendSwatchGlyph.tsx'
 import { measureLegendText } from './measureLegendText.ts'
 
-import type { LegendSwatch } from './legendSpec.ts'
+import type { ColorLegendEntry, LegendSwatch } from './legendSpec.ts'
 import type { ReactNode } from 'react'
 
-export interface ColorLegendEntry {
-  // React key; keep distinct across entries
-  key: string
-  label: string
-  // CSS color for the default square swatch; omit when supplying `marker`
-  color?: string
-  // several marks, or one that isn't a filled square (a connector color drawn as
-  // the line/curve it really is). Takes precedence over `color`; `legendEntries`
-  // sets it only for rows that need it.
-  swatches?: LegendSwatch[]
-  // toggled-off entries render dimmed and struck through
-  hidden?: boolean
-  // custom SVG drawn in the swatch slot instead of the default color square, in
-  // row-local coords (the swatch occupies ~x:2 y:2, LEGEND_SWATCH square). Lets a
-  // row key by line style, shape, gradient, etc. rather than a flat color.
-  marker?: ReactNode
-}
+export type { ColorLegendEntry } from './legendSpec.ts'
 
 const FONT_SIZE = 10
 const SWATCH_LEFT = 2
