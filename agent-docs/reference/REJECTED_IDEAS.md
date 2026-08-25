@@ -396,12 +396,12 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   model comes from `factory(configSchema)`, and two calls of a factory share
   nothing that two unrelated factories do not. Measured over the real lineage
   and two controls: `LGVSyntenyDisplay` (79 initializers) against
-  `LinearAlignmentsDisplay` (73), which it is literally built from, shares
-  **1 property (`id`) and 5 initializers**. `LinearBasicDisplay` (103) against
-  either of them shares **the same 1 and the same 5** — they are `BaseDisplay`'s,
-  the one module-level singleton every display composes. The base's
-  initializers are not even a prefix of the derived model's. The signal is
-  identical for a real parent and for no relationship at all.
+  `LinearAlignmentsDisplay` (73), which it is literally built from, shares **1
+  property (`id`) and 5 initializers**. `LinearBasicDisplay` (103) against
+  either of them shares **the same 1 and the same 5** — they are
+  `BaseDisplay`'s, the one module-level singleton every display composes. The
+  base's initializers are not even a prefix of the derived model's. The signal
+  is identical for a real parent and for no relationship at all.
 
   **In-tree it would have one user.** `LGVSyntenyDisplay` ←
   `LinearAlignmentsDisplay` is the only pair where a display is built from
@@ -411,8 +411,7 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   `LinearVariantDisplay`, `MultiSampleVariantBaseModel` under the two
   multi-sample variant displays, `SharedLDModel` under `LDDisplay` and
   `LDTrackDisplay`. Everything else composes `BaseDisplay` plus a mixin set
-  directly —
-  `TrackHeightMixin`, `MultiRegionDisplayMixin`, `LegendMixin`,
+  directly — `TrackHeightMixin`, `MultiRegionDisplayMixin`, `LegendMixin`,
   `CanvasFeatureGateMixin`, `WiggleCommonMixin`, `TreeSidebarMixin`. The cost it
   was proposed to remove was one duplicated `addDisplayMenuItems` call in
   `LinearDerivativeVsRef`, and "one extension registration can name several
@@ -420,16 +419,16 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   menu helpers take an array of names.
 
   **And it cannot express the case that motivates it**, which was out-of-tree
-  plugins wanting to say "any canvas-family display" instead of naming one.
-  As above, `linearCanvasBaseDisplayStateModelFactory` is not a registered
-  display type, so `extendsType` has no name to point at.
-  `LinearMultiRowFeatureDisplay`
-  — the other canvas display showing genes, and the one those plugins actually
-  miss — composes the mixins directly and would declare no parent at all. A
-  name would not help them even if it existed: that display's `contextMenuInfo`
-  is `{clientX, clientY, refName, pos, hit?}` against `LinearBasicDisplay`'s
-  `{item, subfeature, displayedRegionIndex}`, so an extension written against
-  one reads `undefined` on the other. The family they want is a shared
+  plugins wanting to say "any canvas-family display" instead of naming one. The
+  canvas family's shared base, `linearCanvasBaseDisplayStateModelFactory`, is
+  one of the unregistered ones above, so `extendsType` has no name to point at —
+  and `LinearMultiRowFeatureDisplay`, the other canvas display showing genes and
+  the one those plugins actually miss, composes the mixins directly and would
+  declare no parent at all. A name would not help them even if it existed: that
+  display's `contextMenuInfo` is `{clientX, clientY, refName, pos, hit?}`
+  against `LinearBasicDisplay`'s `{item, subfeature, displayedRegionIndex}`, so
+  an extension written against one reads `undefined` on the other. The family
+  they want is a shared
   menu-surface shape, and nothing in the tree declares one.
 
   What the plugins surveyed in `~/src/jb2plugins` hand-roll today is a raw
