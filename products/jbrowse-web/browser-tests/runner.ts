@@ -13,6 +13,7 @@ import { launch } from 'puppeteer'
 
 import {
   CI_GATE_SUITES,
+  clearCaptures,
   enableCrossBackendCollection,
   formatThresholdPct,
   runCrossBackendGate,
@@ -121,6 +122,10 @@ const retries = values.retries ? Number(values.retries) : ciGate ? 1 : 0
 // report. Never folded into the pass count: the whole value of a retry is that
 // it is visible.
 const retriedTests: string[] = []
+// Cross-backend pairs that drifted once and came back clean on a re-render.
+// Never folded into a pass count, for the same reason retriedTests is not: the
+// whole value of a retry is that it stays visible.
+const gateRetriedPairs: string[] = []
 // Auto-enable remote when a filter is specified — no need to also pass
 // --include-remote when targeting a specific suite by name. --ci-gate overrides
 // that: no push should depend on S3/UCSC being up, and CI_GATE_SUITES listing
@@ -640,41 +645,48 @@ async function main() {
       enableCrossBackendCollection()
     }
 
-    let totalPassed = 0
-    let totalFailed = 0
-    const allFailures: {
-      backend: string
-      suite: string
-      test: string
-      error: string
-    }[] = []
+    const renderAllBackends = async () => {
+      let passedTotal = 0
+      let failedTotal = 0
+      const collected: {
+        backend: string
+        suite: string
+        test: string
+        error: string
+      }[] = []
+      for (const backend of backends) {
+        console.log(`\nLaunching browser (headed: ${headed})...`)
+        if (runAuthTests) {
+          console.log('(including auth tests)')
+        }
+        if (filters.length > 0) {
+          console.log(`(filtering by: ${filters.join(', ')})`)
+        }
+        if (testFilter) {
+          console.log(`(test filter: ${testFilter})`)
+        }
+        if (smoke) {
+          console.log('(smoke test: running all suites including remote)')
+        }
+        console.log(`(backend: ${backend}, concurrency: ${CONCURRENCY})`)
 
-    for (const backend of backends) {
-      console.log(`\nLaunching browser (headed: ${headed})...`)
-      if (runAuthTests) {
-        console.log('(including auth tests)')
+        const { passed, failed, failures } = await runWithRenderingBackend(
+          suites,
+          backend,
+        )
+        passedTotal += passed
+        failedTotal += failed
+        for (const f of failures) {
+          collected.push({ backend, ...f })
+        }
       }
-      if (filters.length > 0) {
-        console.log(`(filtering by: ${filters.join(', ')})`)
-      }
-      if (testFilter) {
-        console.log(`(test filter: ${testFilter})`)
-      }
-      if (smoke) {
-        console.log('(smoke test: running all suites including remote)')
-      }
-      console.log(`(backend: ${backend}, concurrency: ${CONCURRENCY})`)
-
-      const { passed, failed, failures } = await runWithRenderingBackend(
-        suites,
-        backend,
-      )
-      totalPassed += passed
-      totalFailed += failed
-      for (const f of failures) {
-        allFailures.push({ backend, ...f })
-      }
+      return { passedTotal, failedTotal, collected }
     }
+
+    let { passedTotal, failedTotal, collected } = await renderAllBackends()
+    let totalPassed = passedTotal
+    let totalFailed = failedTotal
+    const allFailures = collected
 
     console.log(`\n${'─'.repeat(50)}`)
     if (updateSnapshots) {
@@ -732,6 +744,72 @@ async function main() {
     // `pnpm test:browser:compare` for local visual review).
     let crossBackendFailed = false
     if (backends.length > 1) {
+      let gate = runCrossBackendGate()
+      // A capture race does not leave a failing TEST behind for --retries to
+      // catch: the test passes, and the drift is computed here, after every
+      // browser has closed. So the retry that comment promises ("a blocking job
+      // wants the rare capture race not to block a merge") never reached the one
+      // verdict that blocks the merge. Measured on `dotplot-default`: a fixed
+      // 4.26% about one run in thirty, on CI and locally, with the model
+      // byte-identical on both sides and the drawing exonerated — the pixels
+      // come from a frame the compositor was still replacing
+      // (probe-dotplot-drift-state.ts).
+      //
+      // So re-render and require a pair to drift TWICE. The intersection is the
+      // verdict: a pair that fails once is a race, and a DIFFERENT pair failing
+      // on the second pass is also a race, which is why this intersects rather
+      // than trusting the second pass alone. Whole-run re-render, for the
+      // reason clearCaptures states.
+      //
+      // The cost lands only on a run that was already going to be red, so the
+      // green path is unchanged. A real regression takes two passes to report,
+      // which is the same trade --retries makes per test.
+      const gateRetries = retries
+      if (gate.failures.length > 0 && gateRetries > 0) {
+        const firstPass = new Set(gate.failures.map(f => `${f.name}|${f.pair}`))
+        console.log(
+          `\nCross-backend gate: ${firstPass.size} pair(s) over threshold on the ` +
+            'first pass — re-rendering to tell a capture race from a regression.',
+        )
+        for (const f of gate.failures) {
+          console.log(`    ? first pass: ${f.name} [${f.pair}]: ${f.detail}`)
+        }
+        clearCaptures()
+        const again = await renderAllBackends()
+        totalPassed += again.passedTotal
+        totalFailed += again.failedTotal
+        for (const f of again.collected) {
+          allFailures.push(f)
+        }
+        const second = runCrossBackendGate()
+        const confirmed = second.failures.filter(f =>
+          firstPass.has(`${f.name}|${f.pair}`),
+        )
+        for (const f of second.failures) {
+          if (!firstPass.has(`${f.name}|${f.pair}`)) {
+            console.log(
+              `    ? second pass only, so a race too: ${f.name} [${f.pair}]: ${f.detail}`,
+            )
+          }
+        }
+        for (const k of firstPass) {
+          if (!second.failures.some(f => `${f.name}|${f.pair}` === k)) {
+            console.log(`    ↻ cleared on re-render: ${k.replace('|', ' [')}]`)
+            gateRetriedPairs.push(k.replace('|', ' ['))
+          }
+        }
+        gate = { ...second, failures: confirmed }
+        console.log(
+          `  re-render: ${again.passedTotal} passed, ${again.failedTotal} failed; ` +
+            `${confirmed.length} of ${firstPass.size} pair(s) drifted twice`,
+        )
+        if (gateRetriedPairs.length > 0) {
+          console.log(
+            `  cleared on re-render (kept visible, never folded into a pass): ` +
+              `${[...new Set(gateRetriedPairs)].join('], ')}]`,
+          )
+        }
+      }
       const {
         failures,
         drifts,
@@ -740,7 +818,7 @@ async function main() {
         skippedNames,
         excluded,
         diffDir,
-      } = runCrossBackendGate()
+      } = gate
       console.log(
         `Cross-backend gate: ${compared} pair(s) compared, ${failures.length} over threshold${
           skipped > 0 ? `, ${skipped} single-backend (uncompared)` : ''

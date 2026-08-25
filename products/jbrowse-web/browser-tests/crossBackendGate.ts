@@ -51,6 +51,17 @@ export function enableCrossBackendCollection() {
   collecting = true
 }
 
+// Drop every capture so the next pass starts from nothing. The gate's retry
+// re-renders the whole run rather than the implicated tests: with CONCURRENCY
+// tests in flight at once there is no module-global "current test" to key a
+// capture to its producer, and threading that identity from runSuites down
+// through dualSnapshot -> canvasSnapshot -> compareImages to recordCapture is a
+// lot of plumbing for a path that only runs when the gate was going to fail
+// anyway.
+export function clearCaptures() {
+  captures.clear()
+}
+
 export function recordCapture(
   name: string,
   backend: string,
