@@ -25,16 +25,27 @@ const View = types
     },
   }))
 
-const Root = types.model('Root', {
-  view: types.optional(
-    types.compose(
-      'ViewWithDisplay',
-      View,
-      types.model({ display: types.optional(types.model('Display', {}), {}) }),
+// The root stands in for the session: `resolveClusterRunArgs` reaches the RPC
+// host through `isSessionServices`, which duck-types on `rpcManager` and
+// `configuration`, and the session id through the `rpcSessionId` walk.
+const Root = types
+  .model('Root', {
+    view: types.optional(
+      types.compose(
+        'ViewWithDisplay',
+        View,
+        types.model({
+          display: types.optional(types.model('Display', {}), {}),
+        }),
+      ),
+      {},
     ),
-    {},
-  ),
-})
+  })
+  .volatile(() => ({
+    rpcManager: {},
+    configuration: {},
+    rpcSessionId: 'session',
+  }))
 
 function setup(fetchMatrix: ClusterDialogProps['fetchMatrix']) {
   const root = Root.create({})

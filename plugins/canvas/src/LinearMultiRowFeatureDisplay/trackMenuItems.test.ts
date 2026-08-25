@@ -41,6 +41,9 @@ function makeSelf(
     rowOrderIsCustom: false,
     editableSources: rows,
     sourcesWithoutLayout: rows,
+    adapterConfig: {},
+    colorConfig: undefined,
+    setLayoutAndClusterTree: () => {},
     rowHeight: 0,
     setShowTree: () => {},
     setShowLegend: () => {},
@@ -54,7 +57,6 @@ function makeSelf(
     willClearTree: () => false,
     setRowHeight: () => {},
     setFitToHeight: () => {},
-    setRunClustering: () => {},
     ...overrides,
   }
   // Derived rather than defaulted, so a case overriding `hiddenCategories` can't
@@ -143,7 +145,7 @@ describe('multi-row track menu', () => {
       'Tree branch lengths',
     ])
     expect(labels(subMenuOf(items, 'Clustering'))).toEqual([
-      'Cluster rows by similarity',
+      'Cluster rows by similarity...',
     ])
   })
 
@@ -269,7 +271,7 @@ describe('multi-row track menu', () => {
     )[0]!
 
     expect(oneRow).toMatchObject({
-      label: 'Cluster rows by similarity',
+      label: 'Cluster rows by similarity...',
       disabled: true,
       disabledHelpText: 'Needs at least two rows to cluster',
     })

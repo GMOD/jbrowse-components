@@ -262,7 +262,7 @@ bivalent.
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
 
-That config has no `rowOrder`; **Cluster rows by similarity** derives the row
+That config has no `rowOrder`; **Cluster rows by similarity...** derives the row
 order from the data at whatever locus is in view.
 
 At this scale a row is a few pixels tall and carries no text, so the tissue

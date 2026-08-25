@@ -1,16 +1,14 @@
-import { getContainingView, getRpcHost } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ClusterDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { clusteredMafLayout, runMafClustering } from '../runMafClustering.ts'
 
 import type { MafClusterSelf } from '../runMafClustering.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // What "cluster rows by identity" means for a MAF display: per-bin identity to
 // the reference over the rows on screen, where an unaligned bin scores zero.
-// The dialog itself is shared with the wiggle and variant displays.
+// The dialog itself is shared with the other row displays, and `run` is the
+// same function the declarative `runClustering` autorun calls.
 //
 // A MAF track can already have a tree -- the adapter's guide phylogeny -- and
 // running this replaces it for as long as the clustered layout stands. That is
@@ -25,7 +23,6 @@ const MafClusterDialog = observer(function MafClusterDialog({
   model: MafClusterSelf
   handleClose: () => void
 }) {
-  const view = getContainingView(model) as LinearGenomeViewModel
   const sources = model.sources.map(s => s.name)
   return (
     <ClusterDialog
@@ -39,36 +36,16 @@ const MafClusterDialog = observer(function MafClusterDialog({
       // nothing to merge with.
       canRun={sources.length > 1}
       matrixKey={sources.length ? ['identityMatrix', model] : null}
-      run={async ({ stopToken, statusCallback }) => {
-        if (!view.initialized) {
-          throw new Error(
-            'The view is not initialized yet, please wait and try again',
-          )
-        }
-        await runMafClustering({
-          model,
-          rpcManager: getRpcHost(model).rpcManager,
-          sessionId: getRpcSessionId(model),
-          regions: view.dynamicBlocks.contentBlocks,
-          stopToken,
-          statusCallback,
-        })
-      }}
+      run={args => runMafClustering({ model, ...args })}
       // The same rows the auto path clusters. Both have to agree, or an order
       // pasted back would be indexed against a different row set than
       // "Run clustering" would have produced.
-      fetchMatrix={({ stopToken, statusCallback }) =>
-        getRpcHost(model).rpcManager.call(
-          getRpcSessionId(model),
-          'LinearMafGetIdentityMatrix',
-          {
-            regions: view.dynamicBlocks.contentBlocks,
-            sources,
-            adapterConfig: model.adapterConfig,
-            stopToken,
-            statusCallback,
-          },
-        )
+      fetchMatrix={({ rpcManager, sessionId, ...args }) =>
+        rpcManager.call(sessionId, 'LinearMafGetIdentityMatrix', {
+          sources,
+          adapterConfig: model.adapterConfig,
+          ...args,
+        })
       }
       applyOrder={order => {
         model.setLayout(

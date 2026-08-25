@@ -21,6 +21,7 @@ import ClusterProgress from '../ClusterProgress.tsx'
 import { generateClusterRScript, matrixToTsv } from '../clusterRScript.ts'
 import { parseClusterOrder } from '../clusterUtils.ts'
 import ClusterAdvancedOptions from './ClusterAdvancedOptions.tsx'
+import { resolveClusterRunArgs } from './clusterRunArgs.ts'
 
 import type { ClusterDialogProps } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -89,7 +90,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
     // The token makes Cancel — and a pan that re-keys the fetch — stop the
     // worker; the status sink drives the determinate row below.
     (_name, _key, stopToken, statusCallback) =>
-      fetchMatrix({ stopToken, statusCallback }),
+      fetchMatrix(resolveClusterRunArgs(model, { stopToken, statusCallback })),
   )
 
   const script = matrix ? generateClusterRScript(matrix, clusterMethod) : ''

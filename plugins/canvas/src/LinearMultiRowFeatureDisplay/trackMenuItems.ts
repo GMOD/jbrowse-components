@@ -21,6 +21,7 @@ import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
+import type { MultiRowClusterModel } from './runMultiRowClustering.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { Pin } from '@jbrowse/core/configuration'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
@@ -30,6 +31,9 @@ import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
+)
+const MultiRowClusterDialog = lazy(
+  () => import('./components/MultiRowClusterDialog.tsx'),
 )
 
 // Preset pixel row heights for the shared "Row height" menu (the fit sentinel
@@ -46,7 +50,12 @@ const ROW_HEIGHT_PRESETS = [
 // what they have to satisfy. Spelled out locally they were a second copy of it,
 // free to drift from the thing actually type-checking the dialog call.
 interface MultiRowMenuSelf
-  extends IStateTreeNode, TreeLayoutModel<MultiRowSource> {
+  extends
+    IStateTreeNode,
+    TreeLayoutModel<MultiRowSource>,
+    // what the cluster dialog reads and writes, so the menu's `self` satisfies
+    // the dialog's `model` where it hands it over
+    MultiRowClusterModel {
   showTree: boolean
   showLegend: boolean
   showLegendDisplayTypeDefault: Pin
@@ -79,9 +88,7 @@ interface MultiRowMenuSelf
   // narrowed from TreeLayoutModel's optional: `rowArrangementMenuItem` gates on
   // its length, so this menu needs it to be there
   editableSources: MultiRowSource[]
-  sourcesWithoutLayout: MultiRowSource[]
   clusterTree?: string
-  runClustering?: boolean
   rowHeight: number
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
@@ -92,7 +99,6 @@ interface MultiRowMenuSelf
   setSubtreeFilter: (names?: string[]) => void
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
-  setRunClustering: (arg?: boolean) => void
 }
 
 function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
@@ -254,14 +260,17 @@ export function buildMultiRowTrackMenuItems(
     // three things that write `layout` — see resetRowOrderMenuItems
     ...resetRowOrderMenuItems(self),
     clusteringMenuItem(self, {
-      label: 'Cluster rows by similarity',
-      disabled: self.sourcesWithoutLayout.length < 2 || !!self.runClustering,
-      disabledHelpText:
-        self.sourcesWithoutLayout.length < 2
-          ? 'Needs at least two rows to cluster'
-          : 'Clustering…',
+      label: 'Cluster rows by similarity...',
+      // clustering reorders rows, so it needs rows to reorder and at least two
+      // of them — the dialog would otherwise open only to report the same
+      // thing after the user clicks Run
+      disabled: self.sourcesWithoutLayout.length < 2,
+      disabledHelpText: 'Needs at least two rows to cluster',
       onClick: () => {
-        self.setRunClustering(true)
+        getDialogHost(self).queueDialog(handleClose => [
+          MultiRowClusterDialog,
+          { model: self, handleClose },
+        ])
       },
     }),
   ]

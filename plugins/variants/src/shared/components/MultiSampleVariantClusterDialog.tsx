@@ -1,5 +1,3 @@
-import { getContainingView, getRpcHost } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ClusterDialog } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -7,10 +5,10 @@ import { applyClusterOrder } from '../applyClusterOrder.ts'
 import { runGenotypeClustering } from '../runGenotypeClustering.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // What "cluster rows by genotype" means for a multi-sample variant display: the
-// genotype matrix over the rows on screen. The dialog itself is shared.
+// genotype matrix over the rows on screen. The dialog itself is shared, and
+// `run` is the same function the declarative `runClustering` autorun calls.
 const MultiSampleVariantClusterDialog = observer(
   function MultiSampleVariantClusterDialog({
     model,
@@ -19,7 +17,6 @@ const MultiSampleVariantClusterDialog = observer(
     model: ReducedModel
     handleClose: () => void
   }) {
-    const view = getContainingView(model) as LinearGenomeViewModel
     return (
       <ClusterDialog
         model={model}
@@ -37,41 +34,21 @@ const MultiSampleVariantClusterDialog = observer(
         // this RPC fetches its own regions, so it happily succeeds there.
         canRun={model.clusteringReady}
         matrixKey={model.sourcesBase ? ['genotypeMatrix', model] : null}
-        run={async ({ stopToken, statusCallback }) => {
-          if (!view.initialized) {
-            throw new Error(
-              'The view is not initialized yet, please wait and try again',
-            )
-          }
-          await runGenotypeClustering({
-            model,
-            rpcManager: getRpcHost(model).rpcManager,
-            sessionId: getRpcSessionId(model),
-            regions: view.dynamicBlocks.contentBlocks,
-            stopToken,
-            statusCallback,
-          })
-        }}
+        run={args => runGenotypeClustering({ model, ...args })}
         // Same rows the auto path clusters — the ones on screen. Both paths have
         // to agree, or the order pasted back would be indexed against a different
         // sample set than "Run clustering" would have produced.
-        fetchMatrix={({ stopToken, statusCallback }) =>
-          getRpcHost(model).rpcManager.call(
-            getRpcSessionId(model),
-            'MultiSampleVariantGetGenotypeMatrix',
-            {
-              regions: view.dynamicBlocks.contentBlocks,
-              sources: model.sourcesBase ?? [],
-              minorAlleleFrequencyFilter: model.minorAlleleFrequencyFilter,
-              maxMissingnessFilter: model.maxMissingnessFilter,
-              filters: model.filters,
-              adapterConfig: model.adapterConfig,
-              renderingMode: model.renderingMode,
-              sampleInfo: model.sampleInfo,
-              stopToken,
-              statusCallback,
-            },
-          )
+        fetchMatrix={({ rpcManager, sessionId, ...args }) =>
+          rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
+            sources: model.sourcesBase ?? [],
+            minorAlleleFrequencyFilter: model.minorAlleleFrequencyFilter,
+            maxMissingnessFilter: model.maxMissingnessFilter,
+            filters: model.filters,
+            adapterConfig: model.adapterConfig,
+            renderingMode: model.renderingMode,
+            sampleInfo: model.sampleInfo,
+            ...args,
+          })
         }
         applyOrder={order => {
           const { sourcesBase, sampleInfo, renderingMode, layout } = model

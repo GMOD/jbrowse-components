@@ -84,7 +84,7 @@ export function buildMultiRowMatrix({
   regions: { start: number; end: number }[]
   features: MatrixFeature[]
   maxBins?: number
-}): Map<string, Float32Array> {
+}): Map<string, Float32Array<ArrayBuffer>> {
   const totalWidth =
     regions.reduce((a, r) => a + Math.max(0, r.end - r.start), 0) || 1
   const bins: Bin[] = []
@@ -172,7 +172,7 @@ export function buildMultiRowMatrix({
   // matrix, and half the memory a worker holds at once, which is what a cohort
   // painting is actually short of: the categorical path is bins x (colors+1),
   // so a 12-colour painting over 1000 bins is 13k cells a row.
-  const matrix = new Map<string, Float32Array>()
+  const matrix = new Map<string, Float32Array<ArrayBuffer>>()
   // Which feature covers each bin, refilled per row. Written by walking the
   // features onto their own bins rather than scanning every feature at every
   // bin: the scan was bins × features per row, so a dense painting spent

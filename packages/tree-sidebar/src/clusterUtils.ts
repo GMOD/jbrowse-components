@@ -373,7 +373,7 @@ export function reconcileLayout<D extends { name: string }>(
  */
 export function applyLayoutOverrides<S extends { name: string }>(
   ordered: S[],
-  existingLayout: S[],
+  existingLayout: readonly S[],
 ): S[] {
   const existingByName = new Map(existingLayout.map(s => [s.name, s]))
   return ordered.map(source => {
@@ -384,7 +384,7 @@ export function applyLayoutOverrides<S extends { name: string }>(
 
 export function buildClusteredLayout<S extends { name: string }>(
   baseSources: S[],
-  existingLayout: S[],
+  existingLayout: readonly S[],
   order: number[],
 ): S[] {
   return applyLayoutOverrides(

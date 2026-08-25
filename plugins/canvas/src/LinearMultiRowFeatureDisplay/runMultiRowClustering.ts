@@ -14,7 +14,7 @@ type MultiRowClusterCaller = RpcMethodCaller<'MultiRowClusterFeatures'>
 // menu trigger and the declarative autorun call one shared implementation.
 export interface MultiRowClusterModel {
   sourcesWithoutLayout: MultiRowSource[]
-  layout: MultiRowSource[]
+  layout: readonly MultiRowSource[]
   adapterConfig: Record<string, unknown>
   // the resolved one, never the raw slot — the matrix has to bucket each
   // feature into the row the painting drew it in

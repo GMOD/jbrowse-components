@@ -311,7 +311,7 @@ among the three dogs with the longest, most recent wolf tracts
 ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 The order above comes from FLARE's per-sample summary. The track menu's
-**Clustering** → **Cluster rows by similarity** derives the order from the
+**Clustering** → **Cluster rows by similarity...** derives the order from the
 blocks themselves, and on the full 243-animal painting it puts the held-out
 wolves and the wolfdogs on their own branch with no access to the breed names.
 Clustering runs over the region in view, so the chip in the tree's corner names

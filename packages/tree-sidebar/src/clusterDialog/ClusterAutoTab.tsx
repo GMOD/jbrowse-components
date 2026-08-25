@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import ClusterProgress from '../ClusterProgress.tsx'
 import { useClusterRun } from '../useClusterRun.ts'
 import ClusterAdvancedOptions from './ClusterAdvancedOptions.tsx'
+import { resolveClusterRunArgs } from './clusterRunArgs.ts'
 
 import type { ClusterDialogProps } from './types.ts'
 
@@ -22,7 +23,7 @@ const ClusterAutoTab = observer(function ClusterAutoTab({
     onSuccess: () => {
       handleClose()
     },
-    run: runClustering,
+    run: handles => runClustering(resolveClusterRunArgs(model, handles)),
   })
   return (
     <SubmitForm

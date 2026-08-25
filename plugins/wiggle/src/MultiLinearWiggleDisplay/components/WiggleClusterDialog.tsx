@@ -1,5 +1,3 @@
-import { getContainingView, getRpcHost } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   ClusterDialog,
   buildClusteredLayout,
@@ -15,11 +13,11 @@ import {
 } from './clusterOptions.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // What "cluster rows by score" means for a multi-wiggle display: the score matrix
 // over the visible region, binned at the chosen sampling density. The dialog
-// itself is shared.
+// itself is shared, and `run` is the same function the declarative
+// `runClustering` autorun calls.
 const WiggleClusterDialog = observer(function WiggleClusterDialog({
   model,
   handleClose,
@@ -28,7 +26,6 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
   handleClose: () => void
 }) {
   const { samplesPerPixel, setSamplesPerPixel } = useClusterSamplingOptions()
-  const view = getContainingView(model) as LinearGenomeViewModel
   return (
     <ClusterDialog
       model={model}
@@ -43,34 +40,17 @@ const WiggleClusterDialog = observer(function WiggleClusterDialog({
           ? ['scoreMatrix', model, samplesPerPixel]
           : null
       }
-      run={async ({ stopToken, statusCallback }) => {
-        if (!view.initialized) {
-          throw new Error(
-            'The view is not initialized yet, please wait and try again',
-          )
-        }
+      run={async args => {
         if (model.sourcesWithoutLayout.length < 2) {
           throw new Error('Need at least two subtracks to cluster')
         }
-        await runWiggleClustering({
-          model,
-          rpcManager: getRpcHost(model).rpcManager,
-          sessionId: getRpcSessionId(model),
-          samplesPerPixel,
-          stopToken,
-          statusCallback,
-        })
+        await runWiggleClustering({ model, samplesPerPixel, ...args })
       }}
-      fetchMatrix={({ stopToken, statusCallback }) =>
-        getRpcHost(model).rpcManager.call(
-          getRpcSessionId(model),
-          'MultiWiggleGetScoreMatrix',
-          {
-            ...clusterScoreMatrixArgs(model, samplesPerPixel),
-            stopToken,
-            statusCallback,
-          },
-        )
+      fetchMatrix={({ rpcManager, sessionId, regions, ...handles }) =>
+        rpcManager.call(sessionId, 'MultiWiggleGetScoreMatrix', {
+          ...clusterScoreMatrixArgs(model, samplesPerPixel, regions),
+          ...handles,
+        })
       }
       applyOrder={order => {
         validateClusterOrder(order, model.sourcesWithoutLayout.length)

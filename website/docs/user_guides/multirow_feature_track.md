@@ -183,9 +183,9 @@ Rows start in file order. Three ways to change that:
   track's sort-by-base. Rows sharing a value become contiguous blocks, which is
   what turns a QTL painting at its peak into a clean split by allele. **Clear
   row sort** restores the previous order.
-- **Clustering → Cluster rows by similarity** reorders rows so that samples with
-  similar paintings sit together, and draws a dendrogram in the sidebar. It runs
-  without a dialog. See [](/docs/user_guides/clustering).
+- **Clustering → Cluster rows by similarity...** reorders rows so that samples
+  with similar paintings sit together, and draws a dendrogram in the sidebar.
+  See [](/docs/user_guides/clustering).
 
 **Reset row order** appears in the track menu once any of the three has run, and
 returns the rows to file order.

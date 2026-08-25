@@ -1,8 +1,28 @@
 import type { ClusterMatrix } from '../clusterMatrix.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
+import type { Region, RpcCaller, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DialogProps } from '@mui/material'
+
+/**
+ * Everything a clustering run needs to make its RPC call, resolved by the
+ * dialog and handed down — the same object `setupRunClusteringAutorun` hands
+ * its `run`, so a display writes its run ONCE and both entry points call it.
+ *
+ * `regions` is the visible blocks here (the autorun's is the `clusterRegion`
+ * locus when a session named one). `rpcManager` / `sessionId` are resolved here
+ * for the reason the autorun resolves them: every dialog opened with the
+ * identical `getRpcHost(self).rpcManager` + `getRpcSessionId(self)` pair, and
+ * resolving them once means a flavor cannot reach for a different session id
+ * and land its RPC on another worker's adapter cache.
+ */
+export interface ClusterRunArgs {
+  rpcManager: RpcCaller
+  sessionId: string
+  regions: Region[]
+  stopToken: StopToken
+  statusCallback: (arg: RpcStatus) => void
+}
 
 /**
  * Everything a display has to say about clustering its rows. The dialog itself —
@@ -11,8 +31,9 @@ import type { DialogProps } from '@mui/material'
  * clusterable display and lives in `ClusterDialog`.
  */
 export interface ClusterDialogProps {
-  // read only for isAlive (a run whose display went away has no dialog to report
-  // into) and getContainingView (the region/zoom the exported matrix is keyed on)
+  // read for isAlive (a run whose display went away has no dialog to report
+  // into), for getContainingView (the region/zoom the exported matrix is keyed
+  // on, and the blocks a run covers) and for the RPC host
   model: IAnyStateTreeNode
   handleClose: () => void
   title: string
@@ -23,14 +44,11 @@ export interface ClusterDialogProps {
   /** false disables "Run clustering" — the rows aren't loaded yet */
   canRun: boolean
   /**
-   * The in-app clustering RPC, given a stop token and a status sink. Throw for
-   * preconditions (uninitialized view, too few rows) so they land in the same
-   * error state as an RPC failure — see `useClusterRun`.
+   * The in-app clustering RPC. Throw for preconditions (too few rows) so they
+   * land in the same error state as an RPC failure — see `useClusterRun`; an
+   * uninitialized view is thrown for you before this is called.
    */
-  run: (args: {
-    stopToken: StopToken
-    statusCallback: (arg: RpcStatus) => void
-  }) => Promise<void>
+  run: (args: ClusterRunArgs) => Promise<void>
 
   /** e.g. "genotype matrix" — names it in the loading message */
   matrixLabel: string
@@ -43,17 +61,14 @@ export interface ClusterDialogProps {
    */
   matrixKey: readonly unknown[] | null
   /**
-   * The exported matrix, given the same stop token and status sink as `run`:
-   * this is the *same* work the auto tab does, differing only in the clustering
-   * step. Declared here rather than left to the caller because `useFetch`'s
-   * trailing handles are positional, so a zero-parameter fetcher is assignable
-   * and simply never sees them — which is how both plugins lost cancel and
-   * progress on this tab while complying with the interface.
+   * The exported matrix, given the same resolved args as `run`: this is the
+   * *same* work the auto tab does, differing only in the clustering step.
+   * Declared here rather than left to the caller because `useFetch`'s trailing
+   * handles are positional, so a zero-parameter fetcher is assignable and
+   * simply never sees them — which is how both plugins lost cancel and progress
+   * on this tab while complying with the interface.
    */
-  fetchMatrix: (args: {
-    stopToken: StopToken
-    statusCallback: (arg: RpcStatus) => void
-  }) => Promise<ClusterMatrix>
+  fetchMatrix: (args: ClusterRunArgs) => Promise<ClusterMatrix>
   /**
    * Apply a 0-based row order pasted back from R. Throw to reject it — the
    * dialog stays open and reports the message, so the user can fix the paste.
