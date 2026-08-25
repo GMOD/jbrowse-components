@@ -104,19 +104,13 @@ export type RpcArgs<M extends RpcMethodName> = RpcRegistry[M]['args']
 export type RpcReturn<M extends RpcMethodName> = RpcRegistry[M]['return']
 
 /**
- * The caller's handles on an operation: how to stop it, how long to allow it,
- * and where it reports.
+ * The caller's handles on an operation: how to stop it, and where it reports.
  *
  * Deliberately NOT part of any method's `args`. They are properties of the
- * call, not of the payload — every method can be cancelled, every method can be
- * bounded and every method can report — so they are part of {@link RpcCallArgs}
- * instead, accepted for every method whatever its entry says. A registry entry
- * that declares one is stating something it does not get to decide.
- *
- * `timeout` is the odd one of the three in that the worker never sees it:
- * `BaseRpcDriver.call` spends it on this side, minting the token the worker
- * does watch. See {@link withCallDeadline} for why it composes with `stopToken`
- * rather than arriving beside it, and why there is no default.
+ * call, not of the payload — every method can be cancelled and every method can
+ * report — so they are part of {@link RpcCallArgs} instead, accepted for every
+ * method whatever its entry says. A registry entry that declares them is stating
+ * something it does not get to decide.
  *
  * They used to be per-entry, and the cost was not the 82 repeated lines: it was
  * that omitting them made a method silently uncancellable and silent, with the
@@ -134,8 +128,6 @@ export type RpcReturn<M extends RpcMethodName> = RpcRegistry[M]['return']
 export type RpcHandles = {
   stopToken?: StopToken
   statusCallback?: StatusCallback
-  /** ms this call may take before it is stopped and rejected; none by default */
-  timeout?: number
 }
 
 // Like RpcHandles: a property of the call, not of any payload. `rpcManager.call`
@@ -148,12 +140,6 @@ export type RpcSession = {
 // out of one method's `execute` takes that method's `RpcExecuteArgs<'Key'>`
 // instead; this is for the ones with no single key — a body registered under
 // two names, or a method-generic base like RenameRegionsArgs.
-//
-// `timeout` is in here despite being stripped before serialization, and it is
-// the guard below that wants it: `EntriesDeclaringCallLevelFields` forbids an
-// entry from declaring anything spelled here, so omitting it would leave one
-// free to define a second, per-method meaning for the word — the exact
-// repetition the field exists in `RpcHandles` to prevent.
 export type RpcCallContext = RpcSession & RpcHandles
 
 /**

@@ -1,5 +1,4 @@
 import { isStopToken, withStopTokenCheck } from '../util/stopToken.ts'
-import { withCallDeadline } from './callDeadline.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -94,60 +93,19 @@ export default abstract class BaseRpcDriver {
     // fetch.
     const stopToken = isStopToken(args.stopToken) ? args.stopToken : undefined
     const { statusCallback } = args
-
-    // A bound the caller asked for, or nothing — see `withCallDeadline` for why
-    // there is no default. Built before serialization, which is itself a long
-    // await (it resolves the refName map, which downloads the adapter's index),
-    // so a deadline that excluded it would bound the smaller half of the wait.
-    const { timeout } = args
-    const deadline =
-      typeof timeout === 'number' && timeout > 0 && Number.isFinite(timeout)
-        ? withCallDeadline(
-            timeout,
-            stopToken,
-            () =>
-              `${functionName} did not finish within ${timeout / 1000}s and was stopped`,
-          )
-        : undefined
-
-    try {
-      // The deadline's token goes over the wire in place of the caller's, which
-      // is composition and not replacement: a caller stop reaches the worker
-      // through it. `timeout` itself does not go — the worker has nothing to do
-      // with it, and a value it can read is a second place to interpret one.
-      const {
-        statusCallback: _outOfBand,
-        timeout: _spent,
-        ...rest
-      } = await withStopTokenCheck(deadline?.stopToken ?? stopToken, () =>
+    const { statusCallback: _outOfBand, ...serializedArgs } =
+      await withStopTokenCheck(stopToken, () =>
         rpcMethod.serializeArguments(args),
       )
-      const serializedArgs = deadline
-        ? { ...rest, stopToken: deadline.stopToken }
-        : rest
 
-      const result = deadline
-        ? await Promise.race([
-            this.transport(sessionId, rpcMethod, serializedArgs, statusCallback)
-              // the reply is what the clock was waiting for; the body of
-              // `deserializeReturn` below is this realm's own work
-              .then(r => {
-                deadline.settled()
-                return r
-              }),
-            deadline.expiry,
-          ])
-        : await this.transport(
-            sessionId,
-            rpcMethod,
-            serializedArgs,
-            statusCallback,
-          )
+    const result = await this.transport(
+      sessionId,
+      rpcMethod,
+      serializedArgs,
+      statusCallback,
+    )
 
-      return rpcMethod.deserializeReturn(result, args)
-    } finally {
-      deadline?.dispose()
-    }
+    return rpcMethod.deserializeReturn(result, args)
   }
 
   // Dispatch already-serialized args to wherever this driver runs the method
