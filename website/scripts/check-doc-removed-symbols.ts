@@ -70,6 +70,10 @@ const ABSENT_ON_PURPOSE = new Map([
     'BAM_STACK_INTEGRATION names a monotone chunk index as a concept, not a symbol',
   ],
   ['regionStatuses', 'PROGRESS_REPORTING names the implementation it replaced'],
+  [
+    'gateBelowForceLoadFloor',
+    'MAF_LARGE_BLOCKS names the display-side opt-out the sub-floor budget tier retired',
+  ],
   ['setRegionStatus', 'PROGRESS_REPORTING, the same sentence'],
   [
     'TrackRowWithOverlay',

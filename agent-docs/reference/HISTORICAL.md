@@ -125,7 +125,9 @@ cached stats × current `bpPerPx`) recomputes the same value before and after, s
 Each of these is a rule REGION_TOO_LARGE.md now states flatly; this is what the
 code looked like before the rule, kept so the rule reads as a decision.
 
-**Two measurement paths, two opt-ins.** Five displays ran a
+### Two measurement paths, two opt-ins
+
+Five displays ran a
 `CoreGetRegionByteEstimate` round trip ahead of their feature fetch — resolve
 the adapter, ask the index, return, and leave the feature RPC to resolve the
 same adapter again — while canvas measured inside its fetch. The opt-in was the
@@ -139,7 +141,9 @@ consumers of the budget also wrote `gateActive ? gateByteLimit : undefined` out
 themselves and were kept equal by hand, which is why `resolvedByteLimit()` is
 now the only spelling.
 
-**Names that claimed an axis.** The shared "may the gate act?" question was
+### Names that claimed an axis
+
+The shared "may the gate act?" question was
 `byteGateActive` and the exemption `byteGateExempt`, while `densityGateActive`
 was literally `byteGateActive && …` and `byteGateExempt`'s own docstring said
 "on either axis". Two names claiming an axis they had no term from is how a
@@ -149,7 +153,9 @@ predecessor actually did, one of the four bugs ADR-074's boolean replaced.
 byte-only displays permanently in `densityGateActive === true` — inert, because
 their `densityTooLarge` was the base `false`, and the opposite of what was true.
 
-**The budget slots as RPC cache keys (settled 2026-08-21).** `LinearBasicDisplay`
+### The budget slots as RPC cache keys (settled 2026-08-21)
+
+`LinearBasicDisplay`
 sent the raw `fetchSizeLimit` / `maxFeatureScreenDensity` slots in a `gateSlots`
 field so a budget edit stayed a refetch, while the multi-row display carried
 none, and which was right stayed open on the worry that a track would strand at
@@ -159,7 +165,9 @@ only behaviour the field added was a full refetch of loaded, in-budget regions.
 The resolved values had already shipped the same bug once: `maxFeatureDensity`
 in `rpcProps()` made crossing the 20 kb floor a `SettingsInvalidate` blank.
 
-**`fetchRegions` marked what it asked for (closed 2026-08-20).** The loaded-region
+### `fetchRegions` marked what it asked for (closed 2026-08-20)
+
+The loaded-region
 mark was written from the request list once the work callback returned, while
 the display stored from the response — two writers, one fact, disagreeing
 exactly when a fetch stores less than it asked for. A refused region then read
@@ -167,16 +175,22 @@ as covered: invisible on a first fetch, permanent on a region the reader already
 had data for, which is every region they zoomed out from. `ctx.commitRegion`
 moved the mark to whoever writes the data.
 
-**A refusal used to refuse the set.** Alignments refused every region in a
+### A refusal used to refuse the set
+
+Alignments refused every region in a
 multi-region view on its largest region's bytes; the per-region helpers now skip
 the refused region and draw its neighbours.
 
-**The density comparison was not shared.** `featuresPerPx` was, so the worker's
+### The density comparison was not shared
+
+`featuresPerPx` was, so the worker's
 two short-circuits and the banner agreed on the number, but each wrote its own
 `>` — a mutation sweep swapped the main thread's for `>=` and no test went red.
 `overDensityBudget` is the shared comparison.
 
-**Four wires for one clear (closed 2026-08-25).** The chromosome-nav
+### Four wires for one clear (closed 2026-08-25)
+
+The chromosome-nav
 `clearByteEstimate()` was spelled in the per-region family's
 `DisplayedRegionsChange` autorun and again in LD's, arc's and MultiWaySynteny's
 `afterAttach`, with HiC — ungated, so harmless — the one `GlobalFetchMixin`
