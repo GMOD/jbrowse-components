@@ -51,19 +51,26 @@ upload and readback:
 
 <!-- BEGIN GENERATED MEASUREMENT cluster-distance-gpu -->
 
-| window                     |     N |      V | hclust 5.0.0 | hclust 5.1.0 | WebGPU | GPU vs 5.0.0 | GPU vs 5.1.0 |
-| -------------------------- | ----: | -----: | -----------: | -----------: | -----: | -----------: | -----------: |
-| 100 kb, MAF 0, samples     | 2,504 |  3,106 |         5.0s |         2.7s |  0.42s |          12x |           6x |
-| 1 Mb, MAF 0.05, samples    | 2,504 |  2,357 |         4.5s |         2.1s |  0.31s |          15x |           7x |
-| 1 Mb, MAF 0.05, haplotypes | 5,008 |  2,311 |        16.8s |         9.3s |   1.1s |          15x |           8x |
-| 1 Mb, MAF 0, samples       | 2,504 | 22,514 |        38.3s |        23.0s |   2.3s |          17x |          10x |
-| 1 Mb, MAF 0, haplotypes    | 5,008 | 22,383 |       156.9s |        98.0s |   8.2s |          19x |          12x |
+| window                     |     N |      V |     JS | hclust 5.0.0 | hclust 5.1.0 | WebGPU | 5.0.0 vs JS | GPU vs 5.0.0 | GPU vs 5.1.0 |
+| -------------------------- | ----: | -----: | -----: | -----------: | -----------: | -----: | ----------: | -----------: | -----------: |
+| 100 kb, MAF 0, samples     | 2,504 |  3,106 |  22.6s |         5.0s |         2.7s |  0.42s |          5x |          12x |           6x |
+| 1 Mb, MAF 0.05, samples    | 2,504 |  2,357 |  18.2s |         4.5s |         2.1s |  0.31s |          4x |          15x |           7x |
+| 1 Mb, MAF 0.05, haplotypes | 5,008 |  2,311 |  84.8s |        16.8s |         9.3s |   1.1s |          5x |          15x |           8x |
+| 1 Mb, MAF 0, samples       | 2,504 | 22,514 | 196.9s |        38.3s |        23.0s |   2.3s |          5x |          17x |          10x |
+| 1 Mb, MAF 0, haplotypes    | 5,008 | 22,383 | 715.8s |       156.9s |        98.0s |   8.2s |          5x |          19x |          12x |
 
 <!-- END GENERATED MEASUREMENT cluster-distance-gpu -->
 
 The GPU's margin grows with N x V. The 5.0.0 column's first call was 12.6 s on
 the first row (see `reference/CLUSTERING_WORKFLOW.md` for why); 5.1.0's first
 call is within 5% of warm.
+
+The JS column is the pre-wasm baseline: what JBrowse's distance build cost
+before the port to C, at these same shapes. The C port bought a steady 4 to 5x
+on the distance build alone here, consistent with the 4.1x hclust's own history
+records for the equivalent step at V = 20 (`docs/optimizations.md` in that
+repo); the rest of that repo's 446x headline is the later algorithmic work on
+the merge loop, which does not touch this build at all.
 
 The GPU column is a floor: one thread per pair looping over V from global
 memory, no shared-memory tiling, chunked at 64 MB per upload. A tiled kernel is

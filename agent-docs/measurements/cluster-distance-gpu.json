@@ -4,24 +4,26 @@
   "published": false,
   "source": {
     "kind": "hand",
-    "repro": "CPU columns: `pnpm bench:real` in ~/src/gmod/hclust (the 5.0.0 column is the same matrices through the v5.0.0 wasm, warm call). GPU column: `node browser-tests/probe-gpu-distance-matrix.ts N V` in products/jbrowse-web, headed system Chrome, upload and readback included. Idle machine: a run taken under a shared CPU came out 2 to 3x slower across the board and was discarded.",
-    "notes": "1000 Genomes phase 3 chr22:20-21 Mb, 2504 samples, 22,383 phased sites, matrices built the way plugins/variants builds them (one column per ALT allele, 2/called dosage, site-mean imputation, one 0/1 row per haplotype in phased mode). 2019 MacBook Pro, i9-9980HK single threaded for the wasm, Radeon Pro 5300M for the kernel. The kernel is one thread per pair looping over V from global memory with no tiling, so the GPU column is a floor. Its result matched an f64 reference exactly on these integer-dosage matrices. A second GPU pass on the matrices `pnpm bench:real --dump` wrote (byte-identical input to the wasm) reproduced every cell within 8% under a load average of 8; the wasm arms of that same sitting ran 2 to 3.5x slow and were discarded, so the CPU columns remain the idle-machine runs."
+    "repro": "CPU columns: `pnpm bench:real` in ~/src/gmod/hclust (the 5.0.0 column is the same matrices through the v5.0.0 wasm, warm call). GPU column: `node browser-tests/probe-gpu-distance-matrix.ts N V` in products/jbrowse-web, headed system Chrome, upload and readback included. Idle machine: a run taken under a shared CPU came out 2 to 3x slower across the board and was discarded. JS column: the pure-JS implementation JBrowse shipped with before the wasm port, `@greenelab/hclust@0.0.1`'s exported `euclideanDistance` called in the same nested-map pattern its own `clusterData()` runs (src/hclust.js:54-61), timed in isolation so the O(n^3) agglomerative merge that follows it in `clusterData()` never runs -- one node process per (N, V), first call. Same-shape synthetic data (a sine function of the two indices), not the real dosage matrices: `euclideanDistance` is a branchless sum of squared differences with no data-dependent branch, so its cost is set by (N, V) alone.",
+    "notes": "1000 Genomes phase 3 chr22:20-21 Mb, 2504 samples, 22,383 phased sites, matrices built the way plugins/variants builds them (one column per ALT allele, 2/called dosage, site-mean imputation, one 0/1 row per haplotype in phased mode). 2019 MacBook Pro, i9-9980HK single threaded for the wasm, Radeon Pro 5300M for the kernel. The kernel is one thread per pair looping over V from global memory with no tiling, so the GPU column is a floor. Its result matched an f64 reference exactly on these integer-dosage matrices. A second GPU pass on the matrices `pnpm bench:real --dump` wrote (byte-identical input to the wasm) reproduced every cell within 8% under a load average of 8; the wasm arms of that same sitting ran 2 to 3.5x slow and were discarded, so the CPU columns remain the idle-machine runs. The JS column is a different machine (node 24, Linux) and a different day (2026-08-25); it establishes the pre-wasm baseline's order of magnitude, not a fifth arm of the idle-machine sitting above."
   },
   "columns": [
     { "key": "window", "label": "window" },
     { "key": "n", "label": "N", "format": "int", "align": "right" },
     { "key": "v", "label": "V", "format": "int", "align": "right" },
+    { "key": "js", "label": "JS", "format": "s", "align": "right" },
     { "key": "hclust500", "label": "hclust 5.0.0", "format": "s", "align": "right" },
     { "key": "hclustNew", "label": "hclust 5.1.0", "format": "s", "align": "right" },
     { "key": "gpu", "label": "WebGPU", "format": "s", "align": "right" },
+    { "key": "speedupWasm", "label": "5.0.0 vs JS", "format": "x", "precision": 0, "align": "right", "derived": "js / hclust500" },
     { "key": "speedupOld", "label": "GPU vs 5.0.0", "format": "x", "precision": 0, "align": "right", "derived": "hclust500 / gpu" },
     { "key": "speedupNew", "label": "GPU vs 5.1.0", "format": "x", "precision": 0, "align": "right", "derived": "hclustNew / gpu" }
   ],
   "rows": [
-    { "values": { "window": "100 kb, MAF 0, samples", "n": 2504, "v": 3106, "hclust500": 5.0, "hclustNew": 2.7, "gpu": 0.42 } },
-    { "values": { "window": "1 Mb, MAF 0.05, samples", "n": 2504, "v": 2357, "hclust500": 4.5, "hclustNew": 2.1, "gpu": 0.31 } },
-    { "values": { "window": "1 Mb, MAF 0.05, haplotypes", "n": 5008, "v": 2311, "hclust500": 16.8, "hclustNew": 9.3, "gpu": 1.1 } },
-    { "values": { "window": "1 Mb, MAF 0, samples", "n": 2504, "v": 22514, "hclust500": 38.3, "hclustNew": 23.0, "gpu": 2.3 } },
-    { "values": { "window": "1 Mb, MAF 0, haplotypes", "n": 5008, "v": 22383, "hclust500": 156.9, "hclustNew": 98.0, "gpu": 8.2 } }
+    { "values": { "window": "100 kb, MAF 0, samples", "n": 2504, "v": 3106, "js": 22.6, "hclust500": 5.0, "hclustNew": 2.7, "gpu": 0.42 } },
+    { "values": { "window": "1 Mb, MAF 0.05, samples", "n": 2504, "v": 2357, "js": 18.2, "hclust500": 4.5, "hclustNew": 2.1, "gpu": 0.31 } },
+    { "values": { "window": "1 Mb, MAF 0.05, haplotypes", "n": 5008, "v": 2311, "js": 84.8, "hclust500": 16.8, "hclustNew": 9.3, "gpu": 1.1 } },
+    { "values": { "window": "1 Mb, MAF 0, samples", "n": 2504, "v": 22514, "js": 196.9, "hclust500": 38.3, "hclustNew": 23.0, "gpu": 2.3 } },
+    { "values": { "window": "1 Mb, MAF 0, haplotypes", "n": 5008, "v": 22383, "js": 715.8, "hclust500": 156.9, "hclustNew": 98.0, "gpu": 8.2 } }
   ]
 }
