@@ -7,6 +7,7 @@ import {
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
+  MAX_FALLBACK_LOCI,
   resolvePrimaryAlignment,
   supplementaryLoci,
 } from './fetchPrimaryAlignment.ts'
@@ -118,6 +119,25 @@ test('finds the primary when the SA tag does not file it first', async () => {
     [{ refName: 'chr9', start: 499 }],
     [{ refName: 'chr1', start: 1000 }],
   ])
+})
+
+test('the fallback stops after MAX_FALLBACK_LOCI and says how far it looked', async () => {
+  const entries = Array.from(
+    { length: 40 },
+    (_, i) => `chr${(i % 5) + 1},${1000 * (i + 1) + 1},+,40S60M,60,0`,
+  )
+  const supp = read('s', {
+    refName: 'chr9',
+    start: 1,
+    end: 41,
+    flags: SAM_FLAG_SUPPLEMENTARY,
+    SA: `${entries.join(';')};`,
+  })
+  const { calls, fetchAt } = fetcherOver([])
+  await expect(resolvePrimaryAlignment(supp, fetchAt)).rejects.toThrow(
+    `first ${1 + MAX_FALLBACK_LOCI} of the 40 loci`,
+  )
+  expect(calls.map(c => c.length)).toEqual([1, MAX_FALLBACK_LOCI])
 })
 
 test('a supplementary with no SA tag says so rather than searching', async () => {

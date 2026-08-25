@@ -68,10 +68,19 @@ export function pickPrimaryAlignment(
 }
 
 /**
+ * How many SA loci past the first the fallback fetch will try. A record's SA
+ * tag has no ceiling — a real ngmlr-aligned ONT record in COLO829 carries 943
+ * entries — and every locus is its own index query, so past this the search
+ * reports what it did not look at rather than issuing hundreds of fetches for
+ * a primary the aligner did not file where the spec says it should be.
+ */
+export const MAX_FALLBACK_LOCI = 16
+
+/**
  * Resolve a split read to its primary alignment. A non-supplementary record is
  * already that. For a supplementary, the SA tag's first locus is tried first,
- * then every other locus it names in one fetch, so an aligner that does not
- * file the primary first still resolves.
+ * then the next `MAX_FALLBACK_LOCI` it names in one fetch, so an aligner that
+ * does not file the primary first still resolves.
  */
 export async function resolvePrimaryAlignment(
   preFeature: Feature,
@@ -86,13 +95,20 @@ export async function resolvePrimaryAlignment(
       'Supplementary alignment carries no SA tag, so its primary alignment cannot be located',
     )
   }
+  const fallback = rest.slice(0, MAX_FALLBACK_LOCI)
   const result =
     pickPrimaryAlignment(await fetchAt([first]), preFeature) ??
-    (rest.length > 0
-      ? pickPrimaryAlignment(await fetchAt(rest), preFeature)
+    (fallback.length > 0
+      ? pickPrimaryAlignment(await fetchAt(fallback), preFeature)
       : undefined)
   if (!result) {
-    throw new Error('primary feature not found')
+    const searched = 1 + fallback.length
+    const total = 1 + rest.length
+    throw new Error(
+      searched < total
+        ? `primary feature not found at the first ${searched} of the ${total} loci in the SA tag`
+        : 'primary feature not found',
+    )
   }
   return result
 }
@@ -110,13 +126,21 @@ export async function fetchPrimaryAlignment(
   preFeature: Feature,
   opts: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
 ) {
-  return resolvePrimaryAlignment(preFeature, loci => {
-    const { rpcManager } = getSession(track)
+  return resolvePrimaryAlignment(preFeature, async loci => {
+    const { rpcManager, assemblyManager } = getSession(track)
     const [asm] = getConf(track, 'assemblyNames') as string[]
+    // An SA refName is the file's own spelling. The RPC renames a region from
+    // the assembly's canonical name into the adapter's, so it is put into the
+    // canonical namespace first rather than relying on that rename missing.
+    const assembly = asm
+      ? await assemblyManager.waitForAssembly(asm)
+      : undefined
+    const canonical = (refName: string) =>
+      assembly?.getCanonicalRefName2(refName) ?? refName
     return rpcManager.call(getRpcSessionId(track), 'CoreGetFeatures', {
       adapterConfig: getConf(track, 'adapter'),
       regions: loci.map(({ refName, start }) => ({
-        refName,
+        refName: canonical(refName),
         start,
         end: start + 1,
         assemblyName: asm ?? '',
