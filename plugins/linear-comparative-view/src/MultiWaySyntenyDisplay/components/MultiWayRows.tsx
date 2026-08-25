@@ -155,9 +155,9 @@ function GeneGlyph({
     >
       <line x1={left} x2={right} y1={mid} y2={mid} stroke={strokeColor} />
       {chevrons ? <path d={chevrons} stroke={strokeColor} fill="none" /> : null}
-      {thinPx.map(([x1, x2], i) => (
+      {thinPx.map(([x1, x2]) => (
         <rect
-          key={`utr-${i}`}
+          key={`utr-${x1}-${x2}`}
           x={x1}
           y={utrY}
           width={Math.max(1, x2 - x1)}
@@ -165,9 +165,9 @@ function GeneGlyph({
           fill={utrColor}
         />
       ))}
-      {fullPx.map(([x1, x2], i) => (
+      {fullPx.map(([x1, x2]) => (
         <rect
-          key={`cds-${i}`}
+          key={`cds-${x1}-${x2}`}
           x={x1}
           y={y}
           width={Math.max(1, x2 - x1)}

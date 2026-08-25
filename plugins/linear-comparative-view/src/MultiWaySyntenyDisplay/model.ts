@@ -407,11 +407,7 @@ export function stateModelFactory(
             )?.type
             return (
               names.length === 1 &&
-              isSameAssemblyName(
-                names[0],
-                assemblyName,
-                session.assemblyManager,
-              ) &&
+              isSameAssemblyName(names[0], assemblyName, assemblyManager) &&
               !!adapterType?.startsWith('Gff3')
             )
           })
