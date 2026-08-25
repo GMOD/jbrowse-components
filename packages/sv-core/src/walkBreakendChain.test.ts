@@ -160,6 +160,64 @@ describe('nextJunctionFrom', () => {
     ).toBeUndefined()
   })
 
+  // GRIDSS `BEID` / Esvee `ASMID`: the caller assembled one contig across two
+  // junctions, which is the phasing the walk refuses to guess at.
+  describe('with assembly ids', () => {
+    const other = j('x_0', 'x_1', 'chr10', 58_717_600, 'chr7', 1_000_000)
+    const on = (junction: Junction, ...assemblyIds: string[]) => ({
+      ...junction,
+      assemblyIds,
+    })
+
+    it('takes the continuation assembled with the arrival junction', () => {
+      const hop = nextJunctionFrom({
+        stop,
+        arrivedBy: on(R12, 'asm7'),
+        candidates: [R12_MATE, on(R13, 'asm7', 'asm9'), on(other, 'asm2')],
+        visited,
+      })
+      expect(hop?.junction.id).toBe('r_13_0')
+    })
+
+    it('reads the shared contig off either spelling of a reciprocal pair', () => {
+      // the mate record carries the id, the record at the stop does not
+      const hop = nextJunctionFrom({
+        stop,
+        arrivedBy: on(R12, 'asm7'),
+        candidates: [R12_MATE, R13, on(R13_MATE, 'asm7'), other],
+        visited,
+      })
+      expect(hop?.next).toEqual({ refName: 'chr12', pos: 72_273_293 })
+    })
+
+    it('still refuses when both continuations share the contig, or neither', () => {
+      for (const candidates of [
+        [R12_MATE, on(R13, 'asm7'), on(other, 'asm7')],
+        [R12_MATE, on(R13, 'asm1'), on(other, 'asm2')],
+        [R12_MATE, R13, other],
+      ]) {
+        expect(
+          nextJunctionFrom({
+            stop,
+            arrivedBy: on(R12, 'asm7'),
+            candidates,
+            visited,
+          }),
+        ).toBeUndefined()
+      }
+    })
+
+    it('cannot make a lone continuation ambiguous', () => {
+      const hop = nextJunctionFrom({
+        stop,
+        arrivedBy: on(R12, 'asm7'),
+        candidates: [R12_MATE, on(R13, 'asm2')],
+        visited,
+      })
+      expect(hop?.junction.id).toBe('r_13_0')
+    })
+  })
+
   it('is not made ambiguous by a branch that only closes the chain', () => {
     // The closing junction of a triangle sits at the last stop alongside the one
     // genuine continuation. Counting it as a second answer would stop the walk a

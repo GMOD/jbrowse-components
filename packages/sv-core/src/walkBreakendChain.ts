@@ -23,6 +23,13 @@ export interface Junction {
   pos: number
   mateRefName: string
   matePos: number
+  /**
+   * Ids of the caller's assembly contigs supporting this junction — GRIDSS
+   * `BEID`, Esvee `ASMID`. Two junctions sharing one were assembled on one
+   * contig, i.e. the caller phased them cis, which is the one fact the walk
+   * otherwise cannot know at a locus two junctions leave from.
+   */
+  assemblyIds?: string[]
 }
 
 /** A stop on the chain: one panel of the split view. */
@@ -84,10 +91,15 @@ export function junctionFromFeature(
   }
   const info = feature.get('INFO') as Record<string, unknown> | undefined
   const mateId = (info?.MATEID as string[] | undefined)?.[0]
+  const assemblyIds = [
+    ...((info?.BEID as string[] | undefined) ?? []),
+    ...((info?.ASMID as string[] | undefined) ?? []),
+  ]
   const f = toCanonicalRefName(assembly)
   return {
     id: feature.get('name'),
     ...(mateId !== undefined && { mateId }),
+    ...(assemblyIds.length > 0 && { assemblyIds }),
     refName: f(feature.get('refName')),
     pos: feature.get('start'),
     mateRefName: f(parsed.mateRefName),
@@ -153,6 +165,11 @@ function arrivedFrom(
  *   declined to give. A reader who wants that comparison has the reads, via
  *   Reconstruct derivative allele, which ranks routes by how many molecules take
  *   each.
+ *
+ * The exception to the third is a caller that did not decline: when exactly one
+ * of the continuations shares an assembly contig with the junction the walk
+ * arrived by (`assemblyIds`), the caller assembled one contig across both, and
+ * that is the answer taken.
  */
 export function nextJunctionFrom({
   stop,
@@ -225,7 +242,18 @@ export function nextJunctionFrom({
       destinations.push(o)
     }
   }
-  return destinations.length === 1 ? destinations[0] : undefined
+  if (destinations.length === 1) {
+    return destinations[0]
+  }
+  const arrivalContigs = new Set(arrivedBy?.assemblyIds ?? [])
+  const phased = destinations.filter(d =>
+    open.some(
+      o =>
+        sameLocus(o.next, d.next, tolerance) &&
+        (o.junction.assemblyIds ?? []).some(id => arrivalContigs.has(id)),
+    ),
+  )
+  return phased.length === 1 ? phased[0] : undefined
 }
 
 /**
