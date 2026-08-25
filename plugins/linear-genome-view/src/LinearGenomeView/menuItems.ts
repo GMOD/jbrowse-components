@@ -306,8 +306,13 @@ export function buildRubberBandMenuItems(
   const { leftOffset, rightOffset } = self
   const leftRef = leftOffset?.refName ?? ''
   const rightRef = rightOffset?.refName ?? ''
-  const leftCoord = toLocaleRounded((leftOffset?.coord ?? 0) + 1)
-  const rightCoord = toLocaleRounded(rightOffset?.coord ?? 0)
+  // `coord` is already 1-based (`regionCoord` = `regionBase0` + 1), so the left
+  // end needs no increment, and the right end is the exclusive bound — the base
+  // one past the selection. Incrementing the left and taking the right raw
+  // named a range shifted one base right of the one `Zoom to region` navigates
+  // to, from the same two offsets.
+  const leftCoord = toLocaleRounded(leftOffset?.coord ?? 0)
+  const rightCoord = toLocaleRounded((rightOffset?.coord ?? 1) - 1)
   const rangeString =
     leftRef === rightRef
       ? `${leftRef}:${leftCoord}-${rightCoord}`
@@ -373,20 +378,24 @@ export function buildRubberbandClickMenuItems(
   if (coord === undefined || refName === undefined) {
     return []
   }
-  const locString = `${refName}:${toLocaleRounded(coord + 1)}`
+  // `coord` is 1-based, so it is the label as it stands. `centerAt` goes
+  // through `bpToPx`, which takes the 0-based BED-style coord — the two
+  // conventions meet here and nowhere else.
+  const locString = `${refName}:${toLocaleRounded(coord)}`
+  const coord0 = coord - 1
   return [
     {
       label: 'Center view here',
       icon: CenterFocusStrongIcon,
       onClick: () => {
-        self.centerAt(coord, refName)
+        self.centerAt(coord0, refName)
       },
     },
     {
       label: 'Zoom to base level',
       icon: ZoomInIcon,
       onClick: () => {
-        self.centerAt(coord, refName)
+        self.centerAt(coord0, refName)
         self.zoomTo(self.minBpPerPx)
       },
     },
