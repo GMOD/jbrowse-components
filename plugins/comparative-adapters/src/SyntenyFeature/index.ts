@@ -29,11 +29,24 @@ export default class SyntenyFeature extends SimpleFeature {
     if (name === 'mismatches') {
       return getMismatches(this.get('CIGAR') as string | undefined)
     } else if (name === 'clipLengthAtStartOfRead') {
-      // PAF/synteny CIGARs never carry soft/hard clips
-      return 0
+      return this.clipLengthAtStartOfRead
+    } else if (name === 'name') {
+      return super.get('name') ?? this.mate?.refName
     } else {
       return super.get(name)
     }
+  }
+
+  private get mate() {
+    return super.get('mate') as { refName?: string; start?: number } | undefined
+  }
+
+  // The block's offset along the other sequence, i.e. what a soft clip is to a
+  // read: the position the alignments chain builder sorts a name's blocks by,
+  // so a contig's blocks chain in contig order rather than fetch order. A PAF
+  // CIGAR carries no clip of its own.
+  get clipLengthAtStartOfRead() {
+    return this.mate?.start ?? 0
   }
 
   forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {

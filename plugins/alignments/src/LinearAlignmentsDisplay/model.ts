@@ -153,7 +153,10 @@ import type {
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
-import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
+import type {
+  DerivativeCandidate,
+  DerivativePathEvidence,
+} from '../features/derivativePaths/computePaths.ts'
 import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type {
   ArcColorByType,
@@ -1781,6 +1784,18 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * What one chain IS here, which is what the picker counts, floors and
+         * words its rows by. A read pileup chains reads, needs two to call a
+         * route agreed on, and reaches off-screen segments through SA tags.
+         * `LGVSyntenyDisplay` overrides it: a locus carries one or two contigs,
+         * and a PAF block names nothing the view has not fetched.
+         */
+        get derivativePathEvidence(): DerivativePathEvidence {
+          return { noun: 'reads', minReads: 2, namesOffScreenSegments: true }
+        },
+
+        /**
+         * #getter
          * Derivative-allele paths the reads in view describe, most-supported
          * first. Each read's SA chain is already an ordered, oriented list of
          * reference intervals — a derivative path — so the proposal is a
@@ -1818,6 +1833,7 @@ export default function stateModelFactory(
               this.loadedRegionInfos,
               this.canonicalRefName,
             ),
+            minReads: this.derivativePathEvidence.minReads,
           })
         },
       }))

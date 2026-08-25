@@ -40,14 +40,19 @@ export function createDisplay({
   trackAssemblyNames = ['volvox', 'volvox_random'],
   loadedAssemblies = ['volvox', 'volvox_random'],
   getCanonicalAssemblyName = () => undefined,
+  extend,
 }: {
   neighbourAssembly?: string
   trackAssemblyNames?: string[]
   loadedAssemblies?: string[]
   getCanonicalAssemblyName?: (name: string) => string | undefined
+  // Menu-item installers from other plugins, run before the elements are
+  // created so their `Core-extendPluggableElement` hooks reach this display.
+  extend?: (pluginManager: PluginManager) => void
 } = {}) {
   console.warn = jest.fn()
   const pluginManager = new PluginManager()
+  extend?.(pluginManager)
   const configSchema = configSchemaF(pluginManager)
 
   pluginManager.addTrackType(() => {

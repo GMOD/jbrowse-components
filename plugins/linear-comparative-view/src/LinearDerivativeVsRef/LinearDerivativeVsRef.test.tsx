@@ -8,6 +8,9 @@ import { MAX_SPLIT_PANELS } from './buildSplitViewFromPath.ts'
 import type { AbstractTrackModel } from '@jbrowse/core/util'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
 
+// what a read pileup is; `LGVSyntenyDisplay` answers this with contigs
+const READS = { noun: 'reads', minReads: 2, namesOffScreenSegments: true }
+
 // The flank a real candidate carries on the path's two outer edges, so anything
 // rendering one of these meets the same gap between drawn and observed that the
 // picker's row has to get right.
@@ -90,6 +93,7 @@ test('a dead track stops the render before the model is read', () => {
       reads++
       return true
     },
+    derivativePathEvidence: READS,
   }
 
   const { container } = render(
@@ -117,6 +121,7 @@ test('the row sizes what the reads saw, not what the view will open on', () => {
       model={{
         derivativePathCandidates: [route(2)],
         hasReadsForDerivativePaths: true,
+        derivativePathEvidence: READS,
       }}
       track={makeTrack().track}
       handleClose={() => {}}
@@ -137,6 +142,7 @@ describe('the split drawing above the panel cap', () => {
         model={{
           derivativePathCandidates: candidates,
           hasReadsForDerivativePaths: true,
+          derivativePathEvidence: READS,
         }}
         track={makeTrack().track}
         handleClose={() => {}}
@@ -260,6 +266,7 @@ test('the segments config rides on the track, reaching no session list', async (
       model={{
         derivativePathCandidates: [route(2)],
         hasReadsForDerivativePaths: true,
+        derivativePathEvidence: READS,
       }}
       track={Session.view.track as unknown as AbstractTrackModel}
       handleClose={() => {}}

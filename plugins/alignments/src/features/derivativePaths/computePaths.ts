@@ -95,6 +95,19 @@ export interface DerivativeCandidate {
   partOf?: string
 }
 
+/**
+ * What one chain IS on the display the paths are computed for, which decides
+ * how the picker counts, floors and explains them. A read pileup chains reads
+ * and can reach segments off screen through their SA tags; an assembly's
+ * synteny track chains contigs, of which a locus carries one or two, and a PAF
+ * block names nothing the view has not fetched.
+ */
+export interface DerivativePathEvidence {
+  noun: string
+  minReads: number
+  namesOffScreenSegments: boolean
+}
+
 export interface ComputeDerivativePathsOpts {
   chains: SegAln[][]
   /**

@@ -213,6 +213,16 @@ an exclusion — the all-vs-all self-alignment lane is gone from `rawDataByGroup
 outright — so counting its chains would rank paths on reads the track never
 draws.
 
+**And what the evidence IS is a property of the display, not of this file.** The
+same grouping runs over a de novo assembly's contig-vs-reference blocks, where
+one or two contigs cross a locus rather than 28 reads
+([ideas/derivative-allele-from-assembly-contigs](../ideas/derivative-allele-from-assembly-contigs.md)).
+A support floor of 2 then discards a real allele and every row says "1 reads",
+so the floor, the noun and whether the evidence can name off-screen segments
+travel together as `DerivativePathEvidence` and the display answers them. A
+number defended as quality control (rule 8) is the failure this shape avoids
+twice: once for reads, once for a unit that never had the same distribution.
+
 ## 11. A run of a route is not a competing route, and not extra support either
 
 Rule 1 keys a group on the whole junction list, so a read that crosses only the

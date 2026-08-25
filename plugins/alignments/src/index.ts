@@ -81,6 +81,7 @@ export {
 } from './features/derivativePaths/computePaths.ts'
 export type {
   DerivativeCandidate,
+  DerivativePathEvidence,
   DerivativeSegment,
 } from './features/derivativePaths/computePaths.ts'
 export type { IndicatorHitResult } from './features/indicator/types.ts'

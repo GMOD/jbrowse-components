@@ -34,6 +34,7 @@ import {
 } from './buildSplitViewFromPath.ts'
 import { segmentSizeSummary } from './pathStripBlocks.ts'
 
+import type { DerivativePathHost } from './index.ts'
 import type { AbstractTrackModel, AbstractViewModel } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DerivativeCandidate } from '@jbrowse/plugin-alignments'
@@ -168,10 +169,12 @@ function showsOffScreenFlag(candidates: DerivativeCandidate[]) {
 // read-length fragments an aligner split apart.
 function CandidateRow({
   candidate,
+  noun,
   showOffScreen,
   partOfListed,
 }: {
   candidate: DerivativeCandidate
+  noun: string
   showOffScreen: boolean
   // `partOf` names a route above the floor, which is not the same list as the
   // rows drawn: past `MAX_SHOWN` the container may be a row nobody can see.
@@ -191,7 +194,7 @@ function CandidateRow({
       */}
       <DerivativePathStrip segments={candidate.observedSegments} />
       <div className={classes.detail}>
-        {candidate.readCount} reads · {candidate.observedSegments.length}{' '}
+        {candidate.readCount} {noun} · {candidate.observedSegments.length}{' '}
         segments · {segmentSizeSummary(candidate.observedSegments)}
         {showOffScreen && candidate.extendsOffScreen
           ? ' · extends beyond this window'
@@ -212,14 +215,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   track,
   handleClose,
 }: {
-  model: {
-    derivativePathCandidates: DerivativeCandidate[]
-    hasReadsForDerivativePaths: boolean
-  }
+  model: DerivativePathHost
   track: AbstractTrackModel
   handleClose: () => void
 }) {
   const { classes } = useStyles()
+  const { noun, minReads, namesOffScreenSegments } =
+    model.derivativePathEvidence
   // The chosen ROUTE, not a row number. `derivativePathCandidates` is computed
   // from the reads in view, so it re-ranks whenever more of them land -- and
   // this dialog is opened over a pileup that is often still streaming, which is
@@ -473,17 +475,21 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
           // nothing has been fetched, so reporting an absence of paths would
           // send a reader looking for an event that was never read.
           <Typography>
-            This track has not loaded reads for this window, so there is nothing
-            to reconstruct from yet. If the pileup is asking to force load,
-            narrow the window: the reconstruction reads SA tags, so the far side
-            of a junction does not have to be on screen to be reconstructed.
+            This track has not loaded {noun} for this window, so there is
+            nothing to reconstruct from yet. If the pileup is asking to force
+            load, narrow the window
+            {namesOffScreenSegments
+              ? ': the reconstruction reads SA tags, so the far side of a junction does not have to be on screen to be reconstructed.'
+              : '.'}
           </Typography>
         ) : candidates.length === 0 ? (
           <Typography>
-            No rearranged path is supported by more than one read in this
-            window. Reconstruction reads split alignments, so it needs reads
-            whose SA tag places part of them elsewhere: navigate to a
-            breakpoint, and widen the window if the reads are long.
+            {minReads > 1
+              ? `No rearranged path is supported by more than one ${noun.replace(/s$/, '')} in this window.`
+              : `No rearranged path is described by the ${noun} in this window.`}{' '}
+            {namesOffScreenSegments
+              ? 'Reconstruction reads split alignments, so it needs reads whose SA tag places part of them elsewhere: navigate to a breakpoint, and widen the window if the reads are long.'
+              : `Reconstruction chains the blocks on screen, and nothing names a block the view has not fetched: show every side of the junction, one region each.`}
           </Typography>
         ) : (
           <>
@@ -498,14 +504,13 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
             */}
             <Typography>
               {candidates.length === 1
-                ? 'One route through the reference, crossed in the same order and orientation by the reads counted below.'
-                : 'Each route below is one that this many reads cross in the same order and orientation.'}
+                ? `One route through the reference, crossed in the same order and orientation by the ${noun} counted below.`
+                : `Each route below is one that this many ${noun} cross in the same order and orientation.`}
             </Typography>
             <Typography className={classes.caveat}>
-              Read counts rank them; they do not vouch for them. A route whose
-              segments are all about one read long is an aligner splitting a
-              short read rather than an allele, which is what the strip and the
-              sizes beside each row are for.
+              {namesOffScreenSegments
+                ? 'Read counts rank them; they do not vouch for them. A route whose segments are all about one read long is an aligner splitting a short read rather than an allele, which is what the strip and the sizes beside each row are for.'
+                : `Counts rank them; they do not vouch for them. A route is what the assembler joined, and a misassembly across a repeat reads exactly like an allele here.`}
             </Typography>
             {candidates.length === 1 ? (
               <div
@@ -522,6 +527,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                     informational flag has even less claim on the row */}
                 <CandidateRow
                   candidate={candidates[0]!}
+                  noun={noun}
                   showOffScreen={showOffScreen}
                   partOfListed={false}
                 />
@@ -543,6 +549,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                     label={
                       <CandidateRow
                         candidate={candidate}
+                        noun={noun}
                         showOffScreen={showOffScreen}
                         partOfListed={candidates.some(
                           c => c.pathId === candidate.partOf,
@@ -556,8 +563,10 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
             {ranked.length > candidates.length ? (
               <Typography className={classes.caveat}>
                 {ranked.length - candidates.length} further paths are supported
-                by at least two reads and are not listed. A window that produces
-                this many is usually repetitive rather than rearranged.
+                by at least {minReads}{' '}
+                {minReads === 1 ? noun.replace(/s$/, '') : noun} and are not
+                listed. A window that produces this many is usually repetitive
+                rather than rearranged.
               </Typography>
             ) : null}
             <FormControl className={classes.drawAs}>
