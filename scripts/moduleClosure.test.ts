@@ -28,7 +28,7 @@ import { closure } from './moduleClosure.ts'
 const root = join(__dirname, '..')
 
 const CEILINGS = [
-  // 8 runtime / 48 type
+  // 12 runtime / 51 type
   {
     entry: 'packages/display-kit/src/fetchEachRegion.ts',
     runtime: 20,
@@ -47,7 +47,7 @@ const CEILINGS = [
     entry: 'packages/display-kit/src/installPerRegionFetchAutoruns.ts',
     runtime: 60,
   },
-  // 4 runtime / 35 type
+  // 10 runtime / 37 type
   { entry: 'packages/core/src/util/fetchContext.ts', runtime: 15, types: 55 },
   // 14 runtime / 40 type
   { entry: 'packages/core/src/util/installFetch.ts', runtime: 30, types: 60 },

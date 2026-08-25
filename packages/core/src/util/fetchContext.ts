@@ -1,4 +1,5 @@
 import { getRpcSessionId } from './parentWalk.ts'
+import { createStatusFanOut } from './progress.ts'
 import { getRpcHost } from './sessionServices.ts'
 
 import type { RpcCallArgs, RpcCallReturn } from '../rpc/RpcRegistry.ts'
@@ -69,4 +70,38 @@ export function makeFetchContext(
       } as RpcCallArgs<typeof method>)
     },
   }
+}
+
+/**
+ * One context per concurrent operation, each carrying its own status slot, so
+ * the N of them aggregate into a single Σcurrent/Σtotal bar rather than
+ * last-writer-wins on the owner's one status field.
+ *
+ * A copy of the ctx rather than a separate `slot()` on it because a caller
+ * should not have to know which kind of context it holds: the field is called
+ * `statusCallback` in both, and `statusCallback: ctx.statusCallback` at the RPC
+ * call site is correct in the fan-out and in the batched case alike — as is
+ * {@link makeFetchContext}'s `callRpc`, whose `this` parameter rebinds to the
+ * copy, so the envelope injects that operation's slot and not the batch's.
+ * Callers used to reach back to the model for `makeRegionStatusCallback(index)`,
+ * and the whole hazard was that forgetting to looked exactly like remembering
+ * to.
+ *
+ * Here beside `makeFetchContext` rather than in either fetch family, because
+ * both fan out inside one run: the per-region LGV helpers over N regions
+ * (`callEachRegion`), and the shared `installFetch` skeleton over whatever a
+ * display's `run` issues concurrently — the multi-way display's N lanes.
+ *
+ * The fan-out's lifetime is this batch's: slots are never reclaimed, and the
+ * batch is the thing that ends.
+ */
+export function fanOutStatus<C extends FetchContext>(
+  ctx: C,
+  count: number,
+): C[] {
+  const slot = createStatusFanOut(ctx.statusCallback)
+  return Array.from({ length: count }, () => ({
+    ...ctx,
+    statusCallback: slot(),
+  }))
 }

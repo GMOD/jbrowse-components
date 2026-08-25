@@ -1,5 +1,5 @@
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
-import { createStatusFanOut } from '@jbrowse/core/util/progress'
+import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { IndexedRegion } from './planRegionFetch.ts'
@@ -27,29 +27,6 @@ export interface FetchEachRegionModel extends IStateTreeNode {
     perRegionBytes: (number | undefined)[],
     issued: GateFetchState,
   ) => void
-}
-
-/**
- * One context per concurrent region, each carrying its own status slot, so the
- * N of them aggregate into a single Σcurrent/Σtotal bar rather than
- * last-writer-wins on the display's one status field.
- *
- * A copy of the ctx rather than a separate `slot()` on it because a display
- * should not have to know which kind of context it holds: the field is called
- * `statusCallback` in both, and `statusCallback: ctx.statusCallback` at the RPC
- * call site is correct in the fan-out and in the batched case alike. Displays
- * used to reach back to the model for `makeRegionStatusCallback(index)`, and
- * the whole hazard was that forgetting to looked exactly like remembering to.
- *
- * The fan-out's lifetime is this batch's: slots are never reclaimed, and the
- * batch is the thing that ends.
- */
-function fanOutStatus<C extends FetchContext>(ctx: C, count: number): C[] {
-  const slot = createStatusFanOut(ctx.statusCallback)
-  return Array.from({ length: count }, () => ({
-    ...ctx,
-    statusCallback: slot(),
-  }))
 }
 
 /**
