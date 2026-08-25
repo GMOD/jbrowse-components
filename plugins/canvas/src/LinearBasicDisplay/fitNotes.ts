@@ -31,8 +31,7 @@ export function fitDrops(
     names,
     descriptions,
     everyLabel:
-      (names === 'all' || descriptions) &&
-      (names === 'all' || !showLabels) &&
+      (names === 'all' || (descriptions && !showLabels)) &&
       (descriptions || !showDescriptions),
     squeezePct: pct < 100 ? pct : undefined,
   }
