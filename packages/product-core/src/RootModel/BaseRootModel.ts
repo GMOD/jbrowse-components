@@ -149,9 +149,15 @@ export function BaseRootModelFactory({
         if (oldSession) {
           detach(oldSession)
         }
-        self.session = cast(migrated)
-        if (self.session) {
-          try {
+        // The assignment is inside the try because it typechecks: a registered
+        // type carrying a malformed prop is a throw `pruneUnbuildableNodes`
+        // does not and cannot pre-empt, and the detach above has already
+        // emptied `self.session`. MST does not roll an action back, so without
+        // this the root would be left with no session at all and the old tree
+        // detached-and-alive forever.
+        try {
+          self.session = cast(migrated)
+          if (self.session) {
             const unbuildableMessage = describeUnbuildableNodes(unbuildable)
             if (unbuildableMessage) {
               ;(self.session as BaseSession).notify(
@@ -173,12 +179,12 @@ export function BaseRootModelFactory({
                 'warning',
               )
             }
-          } catch (error) {
-            // put it back, and do not schedule the destroy below — this is the
-            // one path where the old session goes on being the live one
-            self.session = oldSession
-            throw error
           }
+        } catch (error) {
+          // put it back, and do not schedule the destroy below — this is the
+          // one path where the old session goes on being the live one
+          self.session = oldSession
+          throw error
         }
         // and it does still get destroyed, once the reaction flush has
         // unwound. `beforeDestroy` is a plugin-facing contract and leaving a
