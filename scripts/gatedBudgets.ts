@@ -134,6 +134,34 @@ export function collectGatedAdapterBudgets(): Record<string, string> {
 const displayOptIn =
   /get gateEnabled\s*\([^)]*\)\s*(?::[^{]+)?\{\s*return true\b/s
 
+const gateHook = /get gateEnabled\s*\(/
+const literalGateHook =
+  /get gateEnabled\s*\([^)]*\)\s*(?::[^{]+)?\{\s*return (?:true|false)\b/s
+
+/**
+ * Every `gateEnabled` override whose body is not a literal `return true` or
+ * `return false`. `RegionTooLargeMixin` reads the hook conditionally — its
+ * `afterAttach` autorun and `commitFetchBytes` both return early on it — which
+ * is safe only while no override depends on an observable. A test environment
+ * reading a fixture flag is the one legitimate exception, and is skipped by
+ * its filename.
+ */
+export function collectNonLiteralGateOverrides(): string[] {
+  const found: string[] = []
+  for (const workspaceDir of workspaceDirs) {
+    for (const file of sourceFiles(join(root, workspaceDir))) {
+      if (/testenv\.ts$/i.test(file)) {
+        continue
+      }
+      const text = readFileSync(file, 'utf8')
+      if (gateHook.test(text) && !literalGateHook.test(text)) {
+        found.push(relative(root, file))
+      }
+    }
+  }
+  return found.sort()
+}
+
 /**
  * Every file that opts a display into the byte gate, as repo-relative paths.
  *

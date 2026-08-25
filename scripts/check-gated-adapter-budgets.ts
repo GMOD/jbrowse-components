@@ -32,6 +32,7 @@ import {
   GATE_OPT_IN_SITES,
   collectGateOptInSites,
   collectGatedAdapterBudgets,
+  collectNonLiteralGateOverrides,
   root,
 } from './gatedBudgets.ts'
 
@@ -74,6 +75,18 @@ if (added.length || removed.length || changed.length) {
     `Gated-adapter byte budgets changed.\n\n${lines.join(
       '\n',
     )}\n\nAn adapter implementing getRegionByteSize is byte-gated, so its budget has to be a\nchoice rather than whatever display it lands under. Decide, then run:\n  node --experimental-strip-types scripts/check-gated-adapter-budgets.ts --write\nSee agent-docs/reference/REGION_TOO_LARGE.md.\n`,
+  )
+  process.exit(1)
+}
+
+const nonLiteral = collectNonLiteralGateOverrides()
+if (nonLiteral.length) {
+  console.error(
+    `\`gateEnabled\` must be overridden with a literal \`return true\` or \`return false\`:\n${nonLiteral
+      .map(s => `  ${s}`)
+      .join(
+        '\n',
+      )}\n\nRegionTooLargeMixin reads the hook conditionally (its afterAttach autorun and\ncommitFetchBytes return early on it), so an override that depends on an observable\nwould drop its tracked reads on the false branch. See agent-docs/reference/REGION_TOO_LARGE.md.\n`,
   )
   process.exit(1)
 }
@@ -125,5 +138,5 @@ if (danglingTier.length) {
 }
 
 console.log(
-  `${Object.keys(sorted).length} gated adapters and ${sites.length} display opt-in sites, all budgets declared`,
+  `${Object.keys(sorted).length} gated adapters and ${sites.length} display opt-in sites, all budgets declared and literal`,
 )

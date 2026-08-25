@@ -19,7 +19,7 @@ export const AUTO_FORCE_LOAD_BP = 20_000
  *
  * A policy dial, not a derived constant: raise it if real tracks keep bannering
  * at a locus, lower it if a tab hangs. What it is sized against, and why a tier
- * rather than the old floor: agent-docs/reference/REGION_TOO_LARGE.md § "The
+ * rather than a floor: agent-docs/reference/REGION_TOO_LARGE.md § "The
  * sub-floor budget tier".
  */
 export const SUB_FLOOR_BYTE_BUDGET_FACTOR = 2
@@ -40,13 +40,12 @@ const ZOOM_EVIDENCE_BYTE_RATIO = 0.9
 
 /**
  * One measurement of what a fetch would cost, taken at the viewport it
- * describes. **There is no second, derived byte number** — there used to be
- * (`estimatedBytesForVisibleSpan`, this one scaled by `visibleBp /
- * measuredSpanBp`) and the scaling was fiction: index estimates are quoted in
- * whole blocks, so they do not follow span, and the model under-reported by up
- * to three orders of magnitude on real files (see {@link AUTO_FORCE_LOAD_BP}).
- * The gate re-measures when the viewport moves under it instead — see
- * `RegionTooLargeMixin` §"Measurement follows the viewport".
+ * describes. **There is no second, derived byte number**: index estimates are
+ * quoted in whole blocks, so they do not follow span, and scaling this one by
+ * span under-reports by up to three orders of magnitude on real files
+ * (HISTORICAL.md § "The byte estimate was a rate"). The gate re-measures when
+ * the viewport moves under it instead — see `RegionTooLargeMixin`
+ * §"Measurement follows the viewport".
  */
 export interface ByteEstimate {
   /**
@@ -57,7 +56,7 @@ export interface ByteEstimate {
   bytes: number
   /**
    * The **visible** span this measurement was taken at, captured before the
-   * round trip. Nothing divides by it any more; it is kept because two
+   * round trip. Nothing divides by it; it is kept because two
    * consecutive measurements at two spans are the only evidence anyone has about
    * whether zooming shrinks this file's fetch ({@link zoomIneffective}).
    *
@@ -152,11 +151,11 @@ export type GateEvent =
  * event *sequences* can reach it. `gateTruthTable.test.ts` enumerates the
  * derived getters exhaustively and says itself that it cannot see an order —
  * yet every rule here is about one: which of two measurements wins, what a
- * clear leaves behind, what an approval outlives. The 2026-08 tier-key bug had
- * exactly that shape, and the example test pinning it could only be written
- * once somebody had thought of the interleaving.
+ * clear leaves behind, what an approval outlives. The tier-key rule below has
+ * exactly that shape, and its example test could only be written once somebody
+ * had thought of the interleaving.
  *
- * Four rules, each of which used to live at a call site or nowhere:
+ * Four rules:
  *
  * - **a measurement is judged by the tier it was issued against.** A fetch
  *   still in flight when `ClearByteEstimateOnNavOrTierSwap` fires would otherwise

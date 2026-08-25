@@ -166,11 +166,9 @@ export default function CanvasFeatureGateMixin() {
        * The density budget passed to the worker and used by the derived verdict:
        * undefined (gate off) when the axis can't gate, otherwise the config.
        * Every term for that — the opt-in, force-load, the `AUTO_FORCE_LOAD_BP`
-       * floor — is inside `densityGateActive`, so approving a track's *size* no
-       * longer half-disables its *density* axis by side effect and none of them
-       * is restated here. It used to ask twice, `!densityGateEnabled ||
-       * !densityGateActive`, because the first hook lived on this mixin where
-       * the second one couldn't see it; both are `RegionTooLargeMixin`'s now.
+       * floor — is inside `densityGateActive`, so approving a track's *size*
+       * does not half-disable its *density* axis by side effect and none of
+       * them is restated here.
        */
       get maxFeatureDensity(): number | undefined {
         return host(self).densityGateActive
@@ -185,9 +183,9 @@ export default function CanvasFeatureGateMixin() {
        * mixin, so byte-only displays never gate on it).
        *
        * The comparison is `overDensityBudget`, the same one the worker's two
-       * short-circuits make — the number was already shared (`featuresPerPx`)
-       * and the comparison was not, which left the banner free to disagree with
-       * the decision that produced it at exactly the boundary.
+       * short-circuits make — sharing the number (`featuresPerPx`) without the
+       * comparison leaves the banner free to disagree with the decision that
+       * produced it at exactly the boundary.
        */
       get densityTooLarge() {
         return overDensityBudget(
