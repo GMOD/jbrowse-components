@@ -34,12 +34,14 @@ export function doPasteConfigSubmit({
     }
     const { trackContainer } = model
     const notShown: string[] = []
+    let added = 0
     transaction(() => {
       for (const conf of confs) {
         // publishTrackConf returns undefined for an invalid config, which it
         // already surfaced as an error snackbar; don't show or warn about a
         // track that wasn't added.
         if (session.publishTrackConf(conf)) {
+          added++
           if (containerDisplaysAssembly(trackContainer, conf.assemblyNames)) {
             trackContainer?.showTrack(conf.trackId)
           } else {
@@ -47,7 +49,14 @@ export function doPasteConfigSubmit({
           }
         }
       }
-      finishAddTrack(model, session)
+      // Only on a paste that landed something. Finishing dismisses the widget
+      // and clears the form, and the pasted JSON lives in the workflow
+      // component's own state, so finishing when every config was rejected
+      // destroys it behind the snackbars explaining why, with nothing to retry
+      // from.
+      if (added > 0) {
+        finishAddTrack(model, session)
+      }
     })
     if (notShown.length) {
       // These tracks were added to the session but can't be shown here because
