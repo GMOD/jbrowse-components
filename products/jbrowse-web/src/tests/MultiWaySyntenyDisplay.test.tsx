@@ -1,3 +1,4 @@
+import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import { waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 
@@ -90,4 +91,51 @@ test('MultiWaySyntenyDisplay fetches and groups a multi-genome blocks track in a
       .trackMenuItems()
       .flatMap(item => ('label' in item ? [item.label] : [])),
   ).toContain('Launch stacked synteny view (visible region)')
+}, 40000)
+
+// `coarseDynamicBlocks` is empty for the 500ms between a view initializing and
+// the coarse autorun's first run, and a restored session reaches that window
+// with regions already in the snapshot, so no placement action flushes it.
+// `visibleGroups` filtered on it, so over an empty array every group dropped
+// and the stack rendered zero lanes while `view.initialized` was already true.
+// a3345aa45b built `settledDynamicBlocks` for exactly this class of consumer.
+test('MultiWaySyntenyDisplay shows its lanes before the coarse blocks settle', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'grape',
+      loc: 'chr1:1-1000',
+      tracks: ['multiway_blocks'],
+    },
+  })
+  view.setWidth(800)
+
+  const display = await waitFor(
+    () => {
+      const d = view.tracks[0]?.displays[0] as
+        | MultiWaySyntenyDisplayModel
+        | undefined
+      expect(d?.groups.length).toBe(4)
+      return d!
+    },
+    { timeout: 30000 },
+  )
+
+  await waitFor(
+    () => {
+      expect(view.coarseDynamicBlocks.length).toBeGreaterThan(0)
+    },
+    { timeout: 30000 },
+  )
+  const settled = display.visibleGroups.length
+  expect(settled).toBeGreaterThan(0)
+
+  // Back to the pre-settle state the restore window leaves the view in.
+  view.setCoarseDynamicBlocks(new BlockSet([]), view.bpPerPx)
+  expect(view.coarseDynamicBlocks).toHaveLength(0)
+  expect(view.dynamicBlocks.contentBlocks.length).toBeGreaterThan(0)
+
+  expect(display.visibleGroups).toHaveLength(settled)
 }, 40000)

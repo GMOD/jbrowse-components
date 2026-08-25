@@ -288,7 +288,7 @@ export function stateModelFactory(
               const refName = assembly.getCanonicalRefName2(
                 group.anchor.refName,
               )
-              return view.coarseDynamicBlocks.some(
+              return view.settledDynamicBlocks.some(
                 block =>
                   block.refName === refName &&
                   doesIntersect2(

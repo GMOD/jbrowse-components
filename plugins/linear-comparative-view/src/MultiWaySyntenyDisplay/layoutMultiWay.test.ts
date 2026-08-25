@@ -751,3 +751,61 @@ test('the lane fetch window covers every position the frame can slide to', () =>
     expect(frame.max).toBeLessThanOrEqual(windows[0]!.reach.max)
   }
 })
+
+// The ladder rounds a lane's span UP and then snaps its center to an eighth of
+// that span, and both moves push `min` down. Near a contig start that took it
+// below zero: the lane header printed `Pp1:-139` and `frameTickXs` walked from
+// a negative bp, so the lane stated a coordinate its contig does not have.
+describe('a lane frame near a contig start', () => {
+  function nearZeroGroups(start: number) {
+    return groupFeatures([
+      pairFeature({
+        uniqueId: '1',
+        name: 'g1',
+        start: 100,
+        end: 200,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start,
+          end: start + 100,
+          name: 'p1',
+        },
+      }),
+      pairFeature({
+        uniqueId: '2',
+        name: 'g2',
+        start: 300,
+        end: 400,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: start + 500,
+          end: start + 600,
+          name: 'p2',
+        },
+      }),
+    ])
+  }
+
+  test.each([0, 60, 100, 500, 5000])(
+    'stays at or above zero with placements from %ibp',
+    start => {
+      const frame = computeRowFrame(nearZeroGroups(start), 'peach', 1000)!
+      expect(frame.min).toBeGreaterThanOrEqual(0)
+      expect(frame.fitMin).toBeGreaterThanOrEqual(0)
+    },
+  )
+
+  test('keeps its ladder rung rather than being squashed against zero', () => {
+    const away = computeRowFrame(nearZeroGroups(50_000), 'peach', 1000)!
+    const atZero = computeRowFrame(nearZeroGroups(0), 'peach', 1000)!
+    expect(atZero.max - atZero.min).toBeCloseTo(away.max - away.min, 6)
+  })
+
+  test('still covers the placements it was fitted to', () => {
+    const frame = computeRowFrame(nearZeroGroups(0), 'peach', 1000)!
+    expect(frame.min).toBe(0)
+    expect(frame.max).toBeGreaterThanOrEqual(600)
+  })
+})

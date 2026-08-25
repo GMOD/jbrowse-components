@@ -163,7 +163,12 @@ function snapFrameToLadder(lo: number, hi: number, unitBp: number) {
     rung === undefined ? Math.ceil(wanted / unitBp) * unitBp : rung * unitBp
   const grid = span / 8
   const center = Math.round((lo + hi) / 2 / grid) * grid
-  return { min: center - span / 2, max: center + span / 2 }
+  // Snapping the center moves it, and near a contig start that puts `min`
+  // below 0 — which the lane header then prints as a coordinate ("Pp1:-139")
+  // and `frameTickXs` walks from. Slide the span back inside instead of
+  // clamping `min` alone, so the lane keeps the rung it was snapped to.
+  const min = Math.max(0, center - span / 2)
+  return { min, max: min + span }
 }
 
 // The one tick interval the whole track draws at, picked off the anchor's
@@ -254,7 +259,7 @@ export function computeRowFrame(
     }
   }
   const pad = Math.max((max - min) * 0.02, 1)
-  const lo = min - pad
+  const lo = Math.max(0, min - pad)
   const hi = max + pad
   const snapped = snapFrameToLadder(lo, hi, minSpanBp)
   return {
