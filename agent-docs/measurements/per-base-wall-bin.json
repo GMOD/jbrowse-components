@@ -1,0 +1,110 @@
+{
+  "id": "per-base-wall-bin",
+  "published": false,
+  "measured": "2026-08-24",
+  "source": {
+    "kind": "bench",
+    "repro": "node --expose-gc plugins/alignments/benches/perBaseWall.probe.ts, on a 16-core machine at load 6.5. Drives the shipped extractPerBaseQuality over plugins/alignments/benches/pacbio_hg002.bam at 9:129,985,800-131,013,572 \u2014 2,296 real PacBio CCS reads, ~1.03 Mb, about 33x depth \u2014 once per zoom tier, at that tier's subPixelBinBp. The region is the fixture's own span, so a 1000px canvas showing it sits at ~1028 bp/px \u2014 the bottom row is the zoom this fixture is actually looked at.",
+    "notes": "Entry counts and heap are deterministic and repeat exactly; ms moves with machine load (the same run at load 14 read 7,332ms on the top row against 2,026ms here), so read the ratio, not the absolute. heapMB is what the entry array RETAINS once built, measured as a heapUsed delta across a forced GC \u2014 the peak is higher, since a growable array pays a doubling copy that holds both stores at once. --depth=8, which repeats the fixture to the ~260x a deep short-read pileup reaches, does not produce a top row at all: binBp=1 OOMs the process before it packs a byte."
+  },
+  "columns": [
+    {
+      "key": "bpPerPx",
+      "label": "bp/px",
+      "format": "int"
+    },
+    {
+      "key": "binBp",
+      "label": "binBp",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "entries",
+      "label": "entries emitted",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "ms",
+      "label": "extract",
+      "format": "ms",
+      "align": "right"
+    },
+    {
+      "key": "heapMB",
+      "label": "retained heap (MB)",
+      "format": "ratio",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "bpPerPx": 2,
+        "binBp": 1,
+        "entries": 30565003,
+        "ms": 2026,
+        "heapMB": 2033.5
+      }
+    },
+    {
+      "values": {
+        "bpPerPx": 4,
+        "binBp": 2,
+        "entries": 15282758,
+        "ms": 1658,
+        "heapMB": 1269.4
+      }
+    },
+    {
+      "values": {
+        "bpPerPx": 8,
+        "binBp": 4,
+        "entries": 7641315,
+        "ms": 489,
+        "heapMB": 680.4
+      }
+    },
+    {
+      "values": {
+        "bpPerPx": 32,
+        "binBp": 16,
+        "entries": 1910260,
+        "ms": 106,
+        "heapMB": 149.1
+      }
+    },
+    {
+      "values": {
+        "bpPerPx": 128,
+        "binBp": 64,
+        "entries": 477700,
+        "ms": 21,
+        "heapMB": 46.0
+      }
+    },
+    {
+      "values": {
+        "bpPerPx": 512,
+        "binBp": 256,
+        "entries": 119303,
+        "ms": 12,
+        "heapMB": 12.6
+      }
+    },
+    {
+      "values": {
+        "bpPerPx": 1024,
+        "binBp": 512,
+        "entries": 59624,
+        "ms": 8,
+        "heapMB": 6.7
+      },
+      "emphasize": [
+        "entries",
+        "heapMB"
+      ]
+    }
+  ]
+}

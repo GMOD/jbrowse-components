@@ -55,6 +55,7 @@ function extracted(colorBy: ColorBy | undefined) {
     colorBy,
     showSoftClipping: false,
     region,
+    perBaseBinBp: 1,
     // lowercased: extractBisulfite compares read bases against a lowercase ref
     regionSequence: 'cgagcgagcgagcgagcgag',
     regionSequenceStart: 100,

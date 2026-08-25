@@ -36,6 +36,7 @@ function run(opts: {
   qual: Uint8Array
   regionStart?: number
   regionEnd?: number
+  binBp?: number
 }) {
   const out: PerBaseQualityEntry[] = []
   extractPerBaseQuality(
@@ -47,6 +48,7 @@ function run(opts: {
       start: opts.regionStart ?? 0,
       end: opts.regionEnd ?? 1000,
     },
+    opts.binBp ?? 1,
     out,
   )
   return out.map(e => [e.position, e.score])
@@ -155,8 +157,84 @@ describe('extractPerBaseQuality', () => {
       feature,
       0,
       { refName: 'ctgA', assemblyName: 'volvox', start: 0, end: 1000 },
+      1,
       out,
     )
     expect(out).toEqual([])
+  })
+})
+
+describe('extractPerBaseQuality binning', () => {
+  test('emits one sample per bin', () => {
+    expect(
+      run({
+        start: 100,
+        cigar: '10M',
+        qual: new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        binBp: 4,
+      }),
+    ).toEqual([
+      [100, 1],
+      [104, 5],
+      [108, 9],
+    ])
+  })
+
+  test('bins are anchored to absolute coordinate, not to the read', () => {
+    // Same bin, a read starting two bases later: it samples 104/108 like the
+    // read above rather than 102/106, which is what keeps the two rows' cells
+    // in the same pixel columns.
+    expect(
+      run({
+        start: 102,
+        cigar: '8M',
+        qual: new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]),
+        binBp: 4,
+      }),
+    ).toEqual([
+      [104, 3],
+      [108, 7],
+    ])
+  })
+
+  test('clips to region bounds within a bin', () => {
+    expect(
+      run({
+        start: 100,
+        cigar: '10M',
+        qual: new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        regionStart: 103,
+        regionEnd: 107,
+        binBp: 4,
+      }),
+    ).toEqual([[104, 5]])
+  })
+
+  test('a deletion does not shift the following bin', () => {
+    expect(
+      run({
+        start: 100,
+        cigar: '2M2D2M',
+        qual: new Uint8Array([10, 20, 30, 40]),
+        binBp: 2,
+      }),
+    ).toEqual([
+      [100, 10],
+      [104, 30],
+    ])
+  })
+
+  test('an aligned run holding no bin boundary emits nothing', () => {
+    // [101,104) contains no multiple of 4. The read is under half a pixel wide
+    // at any zoom this bin is chosen for, and its neighbours' 1px cells cover
+    // the column it would have painted.
+    expect(
+      run({
+        start: 101,
+        cigar: '3M',
+        qual: new Uint8Array([10, 20, 30]),
+        binBp: 4,
+      }),
+    ).toEqual([])
   })
 })

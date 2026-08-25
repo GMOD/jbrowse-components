@@ -35,6 +35,12 @@ export interface ColorSchemeDef {
   // mateAware: first-of-pair strand is paired-only but reads only its own flags,
   // so it is pairedOnly but NOT mateAware.
   pairedOnly?: boolean
+  // The worker emits one entry per ALIGNED BASE of every read for this scheme,
+  // rather than one per event: the two walls this pipeline paints. Every other
+  // scheme's worker output is sparse in the reads' bases, so these are the only
+  // two whose extract is sampled at `subPixelBinBp` (see `perBaseBinBp` on the
+  // display, which is the only reader).
+  perBase?: boolean
   // The worker extracts different DATA for this scheme — per-base arrays,
   // modification marks, per-read tag strings, a reference-sequence fetch. Every
   // other scheme is decided entirely in the shader from arrays the worker always
@@ -74,6 +80,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     // per-base overlay paints colored rects on top of a neutral 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base quality', group: 'basic' },
+    perBase: true,
     workerExtracts: true,
   },
   perBaseLetter: {
@@ -81,6 +88,7 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     // like perBaseQuality: nucleotide quads paint over the 'normal' body
     shaderScheme: 'normal',
     menu: { kind: 'radio', label: 'Per-base lettering', group: 'basic' },
+    perBase: true,
     workerExtracts: true,
   },
   insertSize: {
@@ -177,6 +185,14 @@ export function colorSchemeLabel(type: ColorSchemeType): string {
 // three-way `||` at every consumer.
 export function isModificationScheme(type: ColorSchemeType) {
   return COLOR_SCHEMES[type].shaderScheme === 'modifications'
+}
+
+// True for the two schemes whose worker output is one entry per aligned base of
+// every read — the only fetches that grow with bases x depth rather than with
+// events, and so the only ones the sub-pixel bin applies to. Derived from the
+// registry for the reason `isModificationScheme` is.
+export function isPerBaseScheme(type: ColorSchemeType) {
+  return COLOR_SCHEMES[type].perBase === true
 }
 
 // The part of `colorBy` the RPC worker actually reads, for `rpcProps`. A scheme

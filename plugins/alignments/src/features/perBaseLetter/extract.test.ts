@@ -41,6 +41,7 @@ function run(opts: {
   regionStart?: number
   regionEnd?: number
   numericCigar?: boolean
+  binBp?: number
 }) {
   const out: PerBaseLetterEntry[] = []
   extractPerBaseLetter(
@@ -52,6 +53,7 @@ function run(opts: {
       start: opts.regionStart ?? 0,
       end: opts.regionEnd ?? 1000,
     },
+    opts.binBp ?? 1,
     out,
   )
   // decode base code back to a letter for readable assertions
@@ -162,8 +164,29 @@ describe('extractPerBaseLetter', () => {
       feature,
       0,
       { refName: 'ctgA', assemblyName: 'volvox', start: 0, end: 1000 },
+      1,
       out,
     )
     expect(out).toEqual([])
+  })
+
+  test('binning samples the first base of each window', () => {
+    expect(run({ start: 100, cigar: '8M', seq: 'ACGTACGT', binBp: 4 })).toEqual(
+      [
+        [100, 'A'],
+        [104, 'A'],
+      ],
+    )
+  })
+
+  test('an insertion does not shift the following bin', () => {
+    // The bins stay on absolute coordinates 100/104, and the read offsets
+    // behind them still skip the inserted bases.
+    expect(
+      run({ start: 100, cigar: '4M2I4M', seq: 'ACGTTTACGT', binBp: 4 }),
+    ).toEqual([
+      [100, 'A'],
+      [104, 'A'],
+    ])
   })
 })

@@ -61,6 +61,7 @@ function extract(features: Feature[], colorBy: ColorBy) {
     colorBy,
     showSoftClipping: false,
     region,
+    perBaseBinBp: 1,
   })
 }
 

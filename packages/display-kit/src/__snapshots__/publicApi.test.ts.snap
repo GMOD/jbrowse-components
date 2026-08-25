@@ -43,6 +43,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./renderDisplaySvg",
   "./rpcPropsCacheKey",
   "./squashToHeightMenuItem",
+  "./subPixelBinBp",
   "./triangleTransform",
   "./triangleYScalar",
   "./types",

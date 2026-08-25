@@ -46,6 +46,12 @@ interface ExtractOpts {
   showSoftClipping: boolean
   region: Region
   sortTag?: string
+  // Genomic bp one per-base cell stands for (`subPixelBinBp`, resolved on the
+  // display). 1 emits every aligned base; larger samples one per window. The two
+  // per-base color modes are the only walls this pipeline paints — one entry per
+  // aligned base of every read — so they are the only extracts that read it, and
+  // every sparse mark below still emits at full resolution.
+  perBaseBinBp: number
   // reference for the bisulfite color mode (read-vs-reference C->T comparison)
   regionSequence?: string
   regionSequenceStart?: number
@@ -57,7 +63,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   opts: ExtractOpts,
   report?: ProgressReporter,
 ) {
-  const { colorBy, showSoftClipping, region, sortTag } = opts
+  const { colorBy, showSoftClipping, region, sortTag, perBaseBinBp } = opts
   const { regionSequence, regionSequenceStart } = opts
   const detectedModifications = new Set<string>()
   // Unique (strand, type) pairs across all reads → global simplex resolution.
@@ -234,11 +240,23 @@ export function extractFeatureArrays<T extends FeatureData>(
     }
 
     if (isPerBaseQualityMode) {
-      extractPerBaseQuality(feature, readIndex, region, perBaseQualities)
+      extractPerBaseQuality(
+        feature,
+        readIndex,
+        region,
+        perBaseBinBp,
+        perBaseQualities,
+      )
     }
 
     if (isPerBaseLetterMode) {
-      extractPerBaseLetter(feature, readIndex, region, perBaseLetters)
+      extractPerBaseLetter(
+        feature,
+        readIndex,
+        region,
+        perBaseBinBp,
+        perBaseLetters,
+      )
     }
   }
 

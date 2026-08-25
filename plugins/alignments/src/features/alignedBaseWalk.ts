@@ -35,14 +35,21 @@ export function packedCigarOps(
   return cigar ? parseCigar2Typed(cigar) : undefined
 }
 
-// Walk the packed CIGAR firing `cb` once per ref-aligned base inside the region.
-// `queryOffset` indexes genomic-forward per-base arrays (NUMERIC_QUAL, SEQ)
-// directly. Shared by the perBaseQuality and perBaseLetter extractors, which
-// differ only in the payload they read at each base.
+// Walk the packed CIGAR firing `cb` once per sampled ref-aligned base inside the
+// region. `queryOffset` indexes genomic-forward per-base arrays (NUMERIC_QUAL,
+// SEQ) directly. Shared by the perBaseQuality and perBaseLetter extractors,
+// which differ only in the payload they read at each base.
+//
+// `binBp` is `subPixelBinBp`: 1 visits every base, and anything larger samples
+// one base per window. The windows are anchored to ABSOLUTE genomic coordinate
+// rather than to the op or the read, so every read on screen samples the same
+// columns — anchored per read, the wall these two modes paint would break into
+// per-row stripes offset by each read's start.
 export function forEachAlignedBaseInRegion(
   cigarOps: ArrayLike<number>,
   start: number,
   region: Region,
+  binBp: number,
   cb: (refPos: number, queryOffset: number) => void,
 ) {
   const { start: regionStart, end: regionEnd } = region
@@ -65,7 +72,8 @@ export function forEachAlignedBaseInRegion(
       if (opEnd > regionStart) {
         const visStart = Math.max(0, regionStart - opStart)
         const visEnd = Math.min(len, regionEnd - opStart)
-        for (let m = visStart; m < visEnd; m++) {
+        const first = Math.ceil((opStart + visStart) / binBp) * binBp - opStart
+        for (let m = first; m < visEnd; m += binBp) {
           cb(opStart + m, soffset + m)
         }
       }

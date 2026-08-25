@@ -19,6 +19,7 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
+import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
@@ -116,14 +117,6 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RowSource } from '@jbrowse/tree-sidebar'
-
-/**
- * Zoom at which the GPU encoder stops encoding every base and starts
- * decimating (see `encodeBinBp`). Below it a base is still wide enough that
- * dropping any would be visible; at or above it the first bin is 2bp wide, so
- * nothing that survived the sub-pixel race is lost.
- */
-const MIN_BINNED_BP_PER_PX = 4
 
 /**
  * Per-row metadata stored in `sourcesVolatile`. `name` is the sample id
@@ -1216,25 +1209,18 @@ export default function stateModelFactory(
         // #endregion
         /**
          * #getter
-         * Genomic bp the GPU encoder collapses into one cell. Zoomed in this is
-         * `1` (encode every base). Once a base falls below half a CSS pixel the
-         * per-base quads are individually invisible — a 500kb region across 10
-         * species emits 1.7M of them into a 28MB buffer, all but ~15k of which
-         * lose the sub-pixel race for their pixel — so the encoder decimates to
-         * one sample per bin instead.
-         *
-         * Quantized to a power of two off the *debounced* `coarseBpPerPx` (the
-         * same input `zoomedToBaseLevel` uses) for two reasons: the encode
-         * autorun tracks this getter, so an unquantized read would re-encode
-         * every region on every wheel tick, and a bin that stays put across a
-         * zoom nudge keeps the picture stable. `binBp <= bpPerPx / 2` keeps a
-         * bin under half a CSS pixel at every tier.
+         * Genomic bp the GPU encoder collapses into one cell — `subPixelBinBp`
+         * off the *debounced* `coarseBpPerPx` (the same input
+         * `zoomedToBaseLevel` uses), which the encode autorun tracks. Zoomed in
+         * this is `1` (encode every base). Once a base falls below half a CSS
+         * pixel the per-base quads are individually invisible — a 500kb region
+         * across 10 species emits 1.7M of them into a 28MB buffer, all but ~15k
+         * of which lose the sub-pixel race for their pixel — so the encoder
+         * decimates to one sample per bin instead.
          */
         get encodeBinBp() {
           const view = self.view
-          return view.initialized && view.coarseBpPerPx >= MIN_BINNED_BP_PER_PX
-            ? 2 ** Math.floor(Math.log2(view.coarseBpPerPx / 2))
-            : 1
+          return view.initialized ? subPixelBinBp(view.coarseBpPerPx) : 1
         },
       }))
       .views(self => ({

@@ -470,6 +470,7 @@ export async function executeRenderAlignmentData({
     drawProperPairs = true,
     showOnlySplitAlignments = false,
     byteLimit,
+    perBaseBinBp = 1,
     statusCallback,
     stopToken,
   } = args
@@ -552,6 +553,7 @@ export async function executeRenderAlignmentData({
     showSoftClipping: effShowSoftClipping,
     region,
     sortTag: isChain ? undefined : sortTag,
+    perBaseBinBp,
     regionSequence,
     regionSequenceStart,
   }

@@ -657,6 +657,65 @@ describe('FetchVisibleRegions autorun', () => {
     })
   })
 
+  // The per-base sampling bin is deliberately NOT an rpcProps field: it swings
+  // with zoom, and in the payload every swing is a SettingsInvalidate that drops
+  // all fetched data. It rides the per-region `regionFetchKey` instead, so a bin
+  // flip refetches the regions on screen and nothing else. The zoom here is
+  // INWARD, which leaves the viewport inside the loaded region — so a refetch
+  // can only be the key.
+  it('refetches on a per-base bin flip, and sends the bin with the call', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+    const { display, view } = createDisplay()
+
+    display.setColorScheme({ type: 'perBaseLetter' })
+    view.zoomTo(8)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    expect(display.perBaseBinBp).toBe(4)
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    view.zoomTo(1)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+    expect(display.perBaseBinBp).toBe(1)
+    const lastArgs = mockRpcCall.mock.calls
+      .filter(c => c[1] === 'RenderAlignmentData')
+      .at(-1)![2] as { perBaseBinBp: number }
+    expect(lastArgs.perBaseBinBp).toBe(1)
+  })
+
+  // ...and the same zoom in every other scheme holds one constant key, so the
+  // bin costs no refetch to a mode that never reads it.
+  it('does NOT refetch on zoom when the scheme is not per-base', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
+    const { display, view } = createDisplay()
+
+    view.zoomTo(8)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    expect(display.perBaseBinBp).toBe(1)
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    view.zoomTo(1)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    expect(display.perBaseBinBp).toBe(1)
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+  })
+
   // The shader decides these from arrays every fetch already produces, so
   // switching between them is a repaint. Sending the raw colorBy made each of
   // these hops drop rpcDataMap and re-read the region for identical data.

@@ -98,6 +98,11 @@ export interface FetchFeaturesSelf {
   // `rpcProps()` because it swings at the 20kb span tier and would otherwise be
   // an RPC cache key — see REGION_TOO_LARGE.md §"How the verdict is built".
   resolvedByteLimit: () => number | undefined
+  // The per-base sampling stride, at the call site for the same reason. What
+  // keeps it from being a cache key that never invalidates is that the display
+  // also spells it as its `regionFetchKey`, so a region fetched under one bin is
+  // not read back under another.
+  perBaseBinBp: number
 }
 
 // One RPC for both pileup and chain modes; the worker branches on `linkedReads`
@@ -112,6 +117,7 @@ export function fetchFeaturesForRegion(
     adapterConfig,
     regions: [region],
     byteLimit: self.resolvedByteLimit(),
+    perBaseBinBp: self.perBaseBinBp,
     ...self.rpcProps(),
   })
 }

@@ -63,6 +63,7 @@
     "./renderDisplaySvg": "./src/renderDisplaySvg.tsx",
     "./rpcPropsCacheKey": "./src/rpcPropsCacheKey.ts",
     "./squashToHeightMenuItem": "./src/squashToHeightMenuItem.ts",
+    "./subPixelBinBp": "./src/subPixelBinBp.ts",
     "./triangleTransform": "./src/triangleTransform.ts",
     "./triangleYScalar": "./src/triangleYScalar.ts",
     "./types": "./src/types.ts",
@@ -257,6 +258,10 @@
         "types": "./esm/squashToHeightMenuItem.d.ts",
         "import": "./esm/squashToHeightMenuItem.js"
       },
+      "./subPixelBinBp": {
+        "types": "./esm/subPixelBinBp.d.ts",
+        "import": "./esm/subPixelBinBp.js"
+      },
       "./triangleTransform": {
         "types": "./esm/triangleTransform.d.ts",
         "import": "./esm/triangleTransform.js"
@@ -398,6 +403,9 @@
         ],
         "squashToHeightMenuItem": [
           "esm/squashToHeightMenuItem.d.ts"
+        ],
+        "subPixelBinBp": [
+          "esm/subPixelBinBp.d.ts"
         ],
         "triangleTransform": [
           "esm/triangleTransform.d.ts"

@@ -37,6 +37,7 @@ import MultiRegionDisplayMixin, {
   fetchEachRegion,
 } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -61,6 +62,7 @@ import {
 import {
   COLOR_SCHEMES,
   isModificationScheme,
+  isPerBaseScheme,
   normalizeColorBy,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
@@ -2811,6 +2813,33 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Genomic bp one per-base cell stands for in the worker's extract:
+         * `subPixelBinBp` off the debounced zoom, and `1` in every color mode
+         * that does not paint a wall of them.
+         *
+         * Per-base quality and per-base lettering emit one entry per aligned
+         * base of EVERY read, so their extract grows with bases x depth where
+         * every other pass grows with events — a force-loaded region at the byte
+         * gate's ceiling builds millions of them in the worker before anything
+         * is packed. Sampling one base per sub-pixel window bounds that by the
+         * VIEWPORT rather than by the region, and costs nothing visible:
+         * `subPixelBinBp` is 1 at every zoom where a base is still a pixel wide,
+         * and above that the samples are half a pixel apart while the cells they
+         * paint floor to a whole one, so the wall stays unbroken.
+         *
+         * Not an `rpcProps` field — see `perBaseBinBp` on the RPC args for why a
+         * zoom-swinging value belongs at the call site, and `regionFetchKey`
+         * below for what invalidates on it instead.
+         */
+        get perBaseBinBp() {
+          const view = self.view
+          return isPerBaseScheme(self.colorBy.type) && view.initialized
+            ? subPixelBinBp(view.coarseBpPerPx)
+            : 1
+        },
+
+        /**
+         * #getter
          */
         get hoveredFeature() {
           const featId = self.featureIdUnderMouse
@@ -2831,6 +2860,45 @@ export default function stateModelFactory(
             flags: info.flags,
             score: info.mapq,
             MAPQ: info.mapq,
+          })
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * `MultiRegionDisplayMixin`'s per-region content axis: what a fetch
+         * issued right now would produce. Only the per-base bin moves it, so in
+         * every other color mode this is one constant string and a zoom never
+         * refetches on its account; in the two per-base modes a bin flip
+         * refetches the regions on screen and leaves the rest of the held data
+         * alone, which is the whole reason the bin is not in `rpcProps`.
+         *
+         * Its own views block, after the getter it reads, for the reason
+         * `rpcProps` has one.
+         */
+        get regionFetchKey() {
+          return String(self.perBaseBinBp)
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * `MultiRegionDisplayMixin`'s supersession hook: a region on screen was
+         * fetched under a per-base bin the settled zoom has already moved past,
+         * so `isCacheValid` is about to refetch it.
+         *
+         * `viewportWithinLoadedData` is spatial only, and a zoom INWARD stays
+         * inside the region it holds — so without this the doomed coarse data
+         * reads as current for the debounce-plus-RPC window, and an SVG export
+         * that samples `svgReady` inside it renders a wall sampled for a zoom
+         * four times coarser than the one it is drawn at.
+         */
+        get dataSuperseded(): boolean {
+          return self.view.visibleRegions.some(block => {
+            const loaded = self.loadedRegions.get(block.displayedRegionIndex)
+            return (
+              loaded !== undefined && loaded.fetchKey !== self.regionFetchKey
+            )
           })
         },
       }))
