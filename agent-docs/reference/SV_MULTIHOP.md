@@ -301,6 +301,34 @@ bottom, so a stop added to the FRONT takes over the one it displaced — nothing
 outside the test reads that field, which is the other half of why this went
 unnoticed.
 
+**Walking both ways is only half of it: the query has to answer from both ends
+too, and a coordinate-indexed one cannot.** A tabix index knows one coordinate
+per record, and a BND feature's interval is `start + REF.length` — about 1 bp,
+with `<TRA>` explicitly excluded from the spanning branch
+(`plugins/variants/src/VcfFeature/util.ts`). So a record filed at chr1 naming a
+mate on chr2 is unreachable from any chr2 query, and `makeFindJunctionsNear`
+cannot be widened to find it: matching on the mate coordinate is a scan of the
+whole callset, and it runs against whatever adapter a variant display holds,
+where a somatic SV VCF is a few hundred records and a germline one is tens of
+millions with nothing in an `adapterConfig` to tell them apart. Two things
+supply the missing spelling instead and between them cover every callset in the
+tree — a reciprocal BND pair, which is how VCF 4.x writes a breakend, and an
+adapter that files a row under both contigs (`BedpeAdapter`,
+`StarFusionAdapter`). What has neither, a filtered VCF missing one mate or a
+one-record `<TRA>` naming CHR2, ends the chain early rather than wrongly.
+
+The SV inspector's sheet is the one reader with no such limit, and the SV
+inspector prefers it over the chord track's adapter. `SpreadsheetModel`'s
+`findJunctionsNear` reads `svJunctions`, the whole parsed callset already in
+memory, so matching a window against BOTH ends is one more comparison per
+junction. `nextJunctionFrom` turns a candidate around itself, so a junction
+matched by its mate end needs no flipping. Measured on `chr1 -j1- chr2 -j2-
+chr3 -j3- chr4` written one record per junction: the own-locus-only filter
+returns 2 stops from `j3` and either-end returns all 4, pinned as a pair in
+`SpreadsheetModel.test.ts`. A reciprocal pair now comes back twice for a query
+at either of its loci, which changes nothing — both spellings name the same next
+locus and ambiguity is counted over destinations.
+
 **One more parser trap, the same family as the ALT one above and one layer
 down.** `parseSvAlt` split the mate locstring at its first colon. A refName may
 contain one: GRCh38's full analysis set names its HLA contigs
