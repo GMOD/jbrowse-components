@@ -31,11 +31,13 @@ const DIVERGES = {
     'each page declares its own tracks, start location and return shape',
   trackIds: "the page's own track list",
   featureTrack:
-    'the feature-details page gives the genes track more height, being the only track on it; the search pages must additionally name it `gff3tabix_genes`, the trackId the hosted trix index was built against',
+    'the feature-details page gives the genes track more height, being the only track on it; the search pages must additionally point at the hosted trix-indexed copy of the RefSeq GFF3, whose trackId is `genes`, the id the trix index was built against',
   BrowserView:
     'pages with no session alias the view directly; the rest destructure it',
   TrackColumn:
     'the selector page renders the catalogue in its own order and skips what is hidden; the local-file page renders `view.tracks`, which is the order the files were opened -- nothing there can hide a track, so the order cannot shuffle',
+  conservationTrack:
+    'EveryChromosome stacks it under its own chromosome strip and gives it more height for that layout; every other page uses it as a single quantitative track at the height wiggleTrack used to be',
 }
 
 // The other half of the rule, and the one this file was missing.
@@ -73,9 +75,9 @@ const COPIED = {
   useSiteMode: "ditto — the watchers are this site's, not an embedder's",
   BrowserSession:
     "the page's own alias for what `createViewState` handed back — one line, and naming it is what keeps every component below from re-deriving it",
-  volvox: "the page's own assembly, and bulk data by the fixture rule",
-  wiggleTrack: "the page's own track config: seeing the adapter is the point",
-  alignmentsTrack: 'ditto',
+  hg38: "the page's own assembly, and bulk data by the fixture rule",
+  alignmentsTrack:
+    "the page's own track config: seeing the adapter is the point",
   RegionBoundaries:
     "the geometry moved to `view.paddingSpans`, the same getter PaddingBlocks itself reads; what is left is one absolutely-positioned div per span, which is the reader's to place",
   SPAN_FILL:

@@ -32,36 +32,37 @@ import { observer } from 'mobx-react'
 // this site, so this file runs on its own. The One track example repeats the
 // engine and mounting parts below with the interactivity stripped back out.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
-const wiggleTrack = {
+const conservationTrack = {
   type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_phylop',
+  name: 'phyloP 100-way conservation',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
   displayDefaults: {
     defaultRendering: 'xyplot',
     height: 100,
     color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
   },
 }
 
 function makeView(scrollZoom: boolean) {
   const state = createViewState({
-    assembly: volvox,
-    tracks: [wiggleTrack],
+    assembly: hg38,
+    tracks: [conservationTrack],
     init: {
-      loc: 'ctgA:1..50,000',
-      tracks: ['volvox_microarray'],
+      loc: 'chr17:43,044,295..43,125,364',
+      tracks: ['hg38_phylop'],
     },
   })
   const { view } = state.session
@@ -271,11 +272,11 @@ const PanAndZoom = observer(function PanAndZoom({
             // hold the track's configured height from the first paint, so
             // nothing below it moves when the assembly finishes loading and it
             // appears
-            minHeight: wiggleTrack.displayDefaults.height,
+            minHeight: conservationTrack.displayDefaults.height,
           }}
         >
           {view.status.type === 'ready' ? (
-            <TrackRow view={view} trackId="volvox_microarray" />
+            <TrackRow view={view} trackId="hg38_phylop" />
           ) : (
             <ViewStatus view={view} />
           )}

@@ -35,49 +35,51 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: the engine, mounting and dark-mode parts
 // introduced on earlier pages are repeated rather than imported.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
-const wiggleTrack = {
+const conservationTrack = {
   type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_phylop',
+  name: 'phyloP 100-way conservation',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
   displayDefaults: {
     defaultRendering: 'xyplot',
     height: 100,
     color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
   },
 }
 
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'volvox_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_genes',
+  name: 'RefSeq curated genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+    csi: true,
   },
   displayDefaults: { height: 120 },
 }
 
-const trackIds = ['volvox_microarray', 'volvox_genes']
+const trackIds = ['hg38_phylop', 'hg38_genes']
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
-    tracks: [wiggleTrack, featureTrack],
+    assembly: hg38,
+    tracks: [conservationTrack, featureTrack],
     init: {
-      loc: 'ctgA:5,000..25,000',
+      loc: 'chr17:43,044,295..43,125,364',
       tracks: trackIds,
     },
   })

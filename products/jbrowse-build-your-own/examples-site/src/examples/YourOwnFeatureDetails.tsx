@@ -21,19 +21,23 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'volvox_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_genes',
+  name: 'RefSeq curated genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+    csi: true,
   },
   displayDefaults: { height: 180 },
 }
@@ -42,11 +46,11 @@ const PANEL_WIDTH = 260
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
+    assembly: hg38,
     tracks: [featureTrack],
     init: {
-      loc: 'ctgA:1..20,000',
-      tracks: ['volvox_genes'],
+      loc: 'chr17:43,044,295..43,125,364',
+      tracks: ['hg38_genes'],
     },
   })
   const { view } = state.session
@@ -315,7 +319,7 @@ const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
             style={{ ...viewport, flex: 1, minWidth: 0 }}
           >
             {view.status.type === 'ready' ? (
-              <TrackRow view={view} trackId="volvox_genes" />
+              <TrackRow view={view} trackId="hg38_genes" />
             ) : (
               <ViewStatus view={view} />
             )}

@@ -9,9 +9,9 @@ import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
 // A reader knows the gene, not the coordinates. Give the view an index and the
-// location box you already have takes `EDEN.1` as readily as `ctgA:1,050..9,000`
-// -- `navToLocString` runs the search itself, so this page adds one config key
-// and no new call.
+// location box you already have takes `BRCA1` as readily as
+// `chr17:43,044,295..43,125,364` -- `navToLocString` runs the search itself, so
+// this page adds one config key and no new call.
 //
 // What it does add is a case with nowhere to go. A query that cannot be
 // narrowed to one feature has to ask which you meant, and the way JBrowse asks
@@ -30,26 +30,30 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
-// **`trackId` here has to be the one the index was built against**, and on this
-// page that is `gff3tabix_genes` rather than the `volvox_genes` every other page
-// uses. A trix row carries the id of the track its feature came from, and a hit
-// navigates *and* calls `showTrack` with it, so an index built elsewhere -- by
-// `jbrowse text-index` against a config you have since edited, say -- resolves
-// its locations perfectly and then fails to turn a track on, reporting `Could
-// not resolve identifier` through the session rather than throwing.
+// **`trackId` here has to be the one the index was built against**, and the
+// hosted index below was built with `genes` -- not the `hg38_genes` every other
+// page here uses. A trix row carries the id of the track its feature came from,
+// and a hit navigates *and* calls `showTrack` with it, so an index built
+// elsewhere -- by `jbrowse text-index` against a config you have since edited,
+// say -- resolves its locations perfectly and then fails to turn a track on,
+// reporting `Could not resolve identifier` through the session rather than
+// throwing.
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'gff3tabix_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'genes',
+  name: 'NCBI RefSeq genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
   },
   displayDefaults: { height: 140 },
 }
@@ -65,46 +69,46 @@ const featureTrack = {
 // JBrowse's own UI uses; for a location box you want the aggregate one.
 const trixIndex = {
   type: 'TrixTextSearchAdapter',
-  textSearchAdapterId: 'volvox-index',
-  assemblyNames: ['volvox'],
+  textSearchAdapterId: 'hg38-index',
+  assemblyNames: ['hg38'],
   ixFilePath: {
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/trix/volvox.ix',
+    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
   },
   ixxFilePath: {
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/trix/volvox.ixx',
+    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx',
   },
   metaFilePath: {
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/trix/volvox_meta.json',
+    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz_meta.json',
   },
 }
 
 // What the buttons put in the box. Five inputs, five paths, and the pair in the
-// middle is the one worth clicking twice: `EDEN` and `Apple` both prefix several
+// middle is the one worth clicking twice: `TP53` and `BRC` both prefix several
 // features, and only one of them asks which you meant.
 const QUERIES = [
-  { label: 'ctgB', hint: 'a refName — never reaches the index' },
-  { label: 'EDEN.1', hint: 'one hit — navigates' },
+  { label: 'chr13', hint: 'a refName — never reaches the index' },
+  { label: 'gene15876', hint: 'one hit — navigates' },
   {
-    label: 'EDEN',
-    hint: 'prefixes four features and is exactly one of them — navigates',
+    label: 'TP53',
+    hint: 'prefixes twenty features and is exactly one of them — navigates',
   },
   {
-    label: 'Apple',
-    hint: 'prefixes three and is none of them — asks, via a dialog you do not render',
+    label: 'BRC',
+    hint: 'prefixes five and is none of them — asks, via a dialog you do not render',
   },
-  { label: 'zyzzyva', hint: 'no hits — a typed throw' },
+  { label: 'zzzznotagene', hint: 'no hits — a typed throw' },
 ]
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
+    assembly: hg38,
     tracks: [featureTrack],
     aggregateTextSearchAdapters: [trixIndex],
     init: {
       // `init.loc` is parsed as a locstring and does NOT route through the
       // index -- only `navToLocString` does. A browser that should open on a
       // gene name has to navigate after mount rather than declare it here.
-      loc: 'ctgA',
+      loc: 'chr17:43,044,295..43,125,364',
       tracks: [featureTrack.trackId],
     },
   })
@@ -198,12 +202,12 @@ const TrackRow = observer(function TrackRow({
  *
  * **"One hit" is decided by an exact pass before the prefix one**, and that is
  * the part that surprises. A trix row is exact when *any* indexed attribute --
- * name, id, description -- equals the query, so `EDEN` prefixes four features
- * and still navigates, because one of the four is called exactly that. `Apple`
- * prefixes three and is none of them, the exact pass returns nothing, the retry
- * returns all three, and only then is there a question to ask. Without the exact
- * pass first, every gene whose name is a prefix of its own isoforms would open a
- * picker instead of going where you asked.
+ * name, id -- equals the query, so `TP53` prefixes twenty features (every
+ * `TP53*` relative) and still navigates, because one of the twenty is called
+ * exactly that. `BRC` prefixes five and is none of them, the exact pass
+ * returns nothing, the retry returns all five, and only then is there a
+ * question to ask. Without the exact pass first, every gene whose name is a
+ * prefix of a relative's would open a picker instead of going where you asked.
  *
  * So the two error shapes are worth separating. `SearchResultsNotFoundError` is
  * thrown for a plain word with no hits, and it is a distinct class precisely so
@@ -228,7 +232,7 @@ function NameSearchBox({
   view: BrowserView
   session: BrowserSession
 }) {
-  const [query, setQuery] = useState('EDEN.1')
+  const [query, setQuery] = useState('gene15876')
   const [pending, setPending] = useState(false)
   const [notFound, setNotFound] = useState<string | undefined>(undefined)
   const [error, setError] = useState<unknown>(undefined)
@@ -444,7 +448,7 @@ const SearchByName = observer(function SearchByName() {
         </div>
         <div ref={ref} {...containerProps} style={viewport}>
           {view.status.type === 'ready' ? (
-            <TrackRow view={view} trackId="gff3tabix_genes" />
+            <TrackRow view={view} trackId="genes" />
           ) : (
             <ViewStatus view={view} />
           )}

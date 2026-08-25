@@ -19,49 +19,51 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
-const wiggleTrack = {
+const conservationTrack = {
   type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_phylop',
+  name: 'phyloP 100-way conservation',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
   displayDefaults: {
     defaultRendering: 'xyplot',
     height: 100,
     color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
   },
 }
 
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'volvox_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_genes',
+  name: 'RefSeq curated genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+    csi: true,
   },
   displayDefaults: { height: 120 },
 }
 
 const alignmentsTrack = {
   type: 'AlignmentsTrack',
-  trackId: 'volvox_bam',
-  name: 'Reads',
-  assemblyNames: ['volvox'],
+  trackId: 'na12878_exome',
+  name: 'NA12878 exome reads',
+  assemblyNames: ['hg38'],
   adapter: {
-    type: 'BamAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
+    type: 'CramAdapter',
+    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
   },
   displayDefaults: { height: 150 },
 }
@@ -70,43 +72,47 @@ const alignmentsTrack = {
 // what is *shown* lives on the view (`view.tracks`), and the checkbox state is
 // read back off it below rather than kept in React state.
 const catalogue = [
-  { id: 'volvox_microarray', label: 'Microarray' },
-  { id: 'volvox_genes', label: 'Genes' },
-  { id: 'volvox_bam', label: 'Reads' },
+  { id: 'hg38_phylop', label: 'Conservation' },
+  { id: 'hg38_genes', label: 'Genes' },
+  { id: 'na12878_exome', label: 'Reads' },
 ]
 
 // Somewhere to send the reader that isn't "type a locstring and hope". Real
 // apps usually have this list already -- a gene of interest, a saved view, the
 // row someone clicked in a table next to the browser.
 //
-// Both halves of the two-region entry are on ctgA, and that is not incidental:
-// this assembly's bigWig only covers ctgA, so a second region on ctgB would
-// leave the microarray track blank over half the screen. Two genes on one
-// contig is the usual reason to want two regions anyway.
+// Both halves of the two-region entry stay inside BRCA1, which is not
+// incidental: it keeps the bookmark cheap to fetch, the same reason a real app
+// usually links to a gene rather than an arbitrary span.
 //
-// A locstring takes as many regions as you give it, so `Every contig` is the
-// same call again. On a real assembly it reads `chr1 chr2 ... chrX chrY`, and
-// `view.showAllRegionsInAssembly()` is the same move without spelling them out
-// -- though note that on hg38 that call means 455 regions, not 24, because it
-// takes every sequence in the file including the _alt and _random scaffolds,
-// and all but the chromosomes land sub-pixel.
+// A locstring takes as many regions as you give it, so `Two BRCA genes` reads
+// BRCA1 on chr17 and BRCA2 on chr13 in one call -- both are in the exome
+// capture below, so the reads track has data on either side.
+// `view.showAllRegionsInAssembly()` would be the wrong move for a bookmark
+// like `Every chromosome`: this assembly's FASTA carries 455 sequences,
+// including every `_alt` and `_random` scaffold, and all but the 24 named
+// chromosomes land sub-pixel -- see the Every chromosome page for the list
+// that avoids it.
 const bookmarks = [
-  { label: 'EDEN', loc: 'ctgA:1,050..9,000' },
-  { label: 'A whole contig', loc: 'ctgA' },
+  { label: 'BRCA1', loc: 'chr17:43,044,295..43,125,364' },
+  { label: 'A whole chromosome', loc: 'chr17' },
   {
     label: 'Two regions at once',
-    loc: 'ctgA:1,050..9,000 ctgA:17,400..23,000',
+    loc: 'chr17:43,044,295..43,060,000 chr17:43,100,000..43,125,364',
   },
-  { label: 'Every contig', loc: 'ctgA ctgB' },
+  {
+    label: 'Two BRCA genes',
+    loc: 'chr17:43,044,295..43,125,364 chr13:32,315,474..32,400,266',
+  },
 ]
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
-    tracks: [wiggleTrack, featureTrack, alignmentsTrack],
+    assembly: hg38,
+    tracks: [conservationTrack, featureTrack, alignmentsTrack],
     init: {
-      loc: 'ctgA:1..20,000',
-      tracks: ['volvox_microarray', 'volvox_genes'],
+      loc: 'chr17:43,044,295..43,125,364',
+      tracks: ['hg38_phylop', 'hg38_genes'],
     },
   })
   const { view } = state.session
@@ -285,10 +291,11 @@ const RegionBoundaries = observer(function RegionBoundaries({
 /**
  * A location box.
  *
- * `navToLocString` takes what a user would type -- `ctgA`, `ctgA:1,050..9,000`,
- * two regions separated by a space -- and does the rest: it waits for the
- * assembly, resolves the reference name (including aliases, so `chr1` finds a
- * `1`), replaces `displayedRegions` if the new location needs different ones,
+ * `navToLocString` takes what a user would type -- `chr17`,
+ * `chr17:43,044,295..43,125,364`, two regions separated by a space -- and does
+ * the rest: it waits for the assembly, resolves the reference name (including
+ * aliases, so `chr17` finds a `17`), replaces `displayedRegions` if the new
+ * location needs different ones,
  * and clamps the zoom. It is `async` for the assembly wait, and it **throws**
  * on anything it cannot resolve, so a box that does not catch will look like it
  * silently ignored a typo.
@@ -477,9 +484,9 @@ function Bookmarks({ view }: { view: BrowserView }) {
           type="button"
           onClick={() => {
             if (
-              !view.tracks.some(t => t.configuration.trackId === 'volvox_genes')
+              !view.tracks.some(t => t.configuration.trackId === 'hg38_genes')
             ) {
-              view.showTrack('volvox_genes')
+              view.showTrack('hg38_genes')
             }
             view.navToLocString(loc).catch((e: unknown) => {
               console.error(e)

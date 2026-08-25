@@ -703,11 +703,11 @@ async function localFileOpensAsATrack(page, slug) {
     return ['no "open a BAM" button on the page']
   }
   try {
-    // the fetch is ~400 KB and the pileup then has to lay out, so this is the
-    // long wait on the page
+    // the fetch is a real ~12.6 MB ONT subset trimmed to one gene, and the
+    // pileup then has to lay out, so this is the long wait on the page
     await page.waitForFunction(
       n => document.querySelectorAll('[data-display-id]').length > n,
-      { timeout: 30000 },
+      { timeout: 90000 },
       before,
     )
     // the opened track mounts through the same `TrackRow` as the static one, so
@@ -849,7 +849,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
         `view.ready reports as ready. Demo read:\n${await demoText()}`,
     )
   }
-  if (await clickByText('Show ctgA')) {
+  if (await clickByText('Show chr17')) {
     try {
       await page.waitForFunction(
         () => !!document.querySelector('[data-display-id]'),
@@ -894,26 +894,28 @@ async function viewStatusStatesAreDrawn(page, slug) {
 // stop working without a line of it changing.
 //
 // Scoped to the first `<section>` by id, because the second one's result rows
-// are also buttons and several of them contain the word EDEN. Exact text match
-// on the button for the same reason — `includes('EDEN')` finds `EDEN.1` first,
-// which is a different one of the four paths.
+// are also buttons and several of them contain the word BRCA1. Exact text
+// match on the button for the same reason — a substring match would find
+// `BRCA1P1` for a click aimed at `BRCA1`, which is a different one of the four
+// paths.
 async function searchByNameResolvesNames(page, slug) {
   if (slug !== 'search-by-name') {
     return []
   }
   const out = []
 
-  // No interaction for this one: the dropdown's box starts on `EDEN`, so a
+  // No interaction for this one: the dropdown's box starts on `BRCA1`, so a
   // populated list is the evidence that `fetchResults` reached the hosted index
-  // and parsed it. Both columns are checked — the label proves the query
-  // matched, the trackId proves the row was decoded rather than guessed.
+  // and parsed it. Both columns are checked — `BRCA1P1` (a prefix hit, not the
+  // typed query itself) proves the query matched, `genes` proves the row was
+  // decoded rather than guessed.
   try {
     await page.waitForFunction(
       () => {
         const t =
           document.querySelector('[data-testid="search-results"]')?.innerText ??
           ''
-        return t.includes('EDEN.1') && t.includes('gff3tabix_genes')
+        return t.includes('BRCA1P1') && t.includes('genes')
       },
       { timeout: 30000 },
     )
@@ -924,8 +926,8 @@ async function searchByNameResolvesNames(page, slug) {
         '(no result list rendered)',
     )
     out.push(
-      'the dropdown searched for EDEN and did not list EDEN.1 from ' +
-        `gff3tabix_genes — fetchResults or the hosted trix index is not ` +
+      'the dropdown searched for BRCA1 and did not list BRCA1P1 from ' +
+        `genes — fetchResults or the hosted trix index is not ` +
         `answering. List read:\n${listed}`,
     )
   }
@@ -943,10 +945,10 @@ async function searchByNameResolvesNames(page, slug) {
 
   // The page's sharpest claim: a query with no exact match and several prefix
   // ones cannot navigate, so JBrowse queues a dialog and this host draws none.
-  // `Apple` and not `EDEN` — EDEN prefixes four features and is exactly one of
+  // `BRC` and not `TP53` — TP53 prefixes twenty features and is exactly one of
   // them, so the exact pass wins and it navigates, which is the neighbouring
   // button and the distinction the page is about.
-  if (await clickInFirstSection('Apple')) {
+  if (await clickInFirstSection('BRC')) {
     try {
       await page.waitForFunction(
         () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
@@ -954,16 +956,16 @@ async function searchByNameResolvesNames(page, slug) {
       )
     } catch {
       out.push(
-        'searching the ambiguous name Apple queued no dialog — either the ' +
+        'searching the ambiguous name BRC queued no dialog — either the ' +
           'multi-hit path stopped going through session.queueDialog, or the ' +
           'index stopped returning more than one non-exact hit for it',
       )
     }
   } else {
-    out.push('no exact "Apple" button in the first section')
+    out.push('no exact "BRC" button in the first section')
   }
 
-  // Clear it before the next click, or the EDEN check below reads Apple's
+  // Clear it before the next click, or the TP53 check below reads BRC's
   // notice and reports the opposite of what happened.
   await clickInFirstSection('Dismiss')
   await page.waitForFunction(
@@ -972,27 +974,28 @@ async function searchByNameResolvesNames(page, slug) {
   )
 
   // The other half of that pair, and the reason the one above says "no exact
-  // match" rather than "several hits": EDEN is ambiguous by prefix and still
-  // must not ask. Losing the exact-first pass would make this queue a dialog.
-  if (await clickInFirstSection('EDEN')) {
+  // match" rather than "several hits": TP53 is ambiguous by prefix (twenty
+  // `TP53*` relatives) and still must not ask. Losing the exact-first pass
+  // would make this queue a dialog.
+  if (await clickInFirstSection('TP53')) {
     await new Promise(r => setTimeout(r, 3000))
     const queued = await page.evaluate(
       () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
     )
     if (queued) {
       out.push(
-        'searching EDEN queued a dialog — the exact pass no longer runs ' +
-          'before the prefix one, so a gene that prefixes its own isoforms ' +
+        'searching TP53 queued a dialog — the exact pass no longer runs ' +
+          'before the prefix one, so a gene that prefixes its own relatives ' +
           'now opens a picker instead of navigating',
       )
     }
   } else {
-    out.push('no exact "EDEN" button in the first section')
+    out.push('no exact "TP53" button in the first section')
   }
 
   // And the other absence: a plain word with no hits is a typed throw the page
   // renders as prose, not an error.
-  if (await clickInFirstSection('zyzzyva')) {
+  if (await clickInFirstSection('zzzznotagene')) {
     try {
       await page.waitForFunction(
         () =>
@@ -1003,12 +1006,12 @@ async function searchByNameResolvesNames(page, slug) {
       )
     } catch {
       out.push(
-        'a search for zyzzyva drew no "no results" line — ' +
+        'a search for zzzznotagene drew no "no results" line — ' +
           'SearchResultsNotFoundError is no longer reaching the page',
       )
     }
   } else {
-    out.push('no exact "zyzzyva" button in the first section')
+    out.push('no exact "zzzznotagene" button in the first section')
   }
 
   return out

@@ -1,8 +1,9 @@
-BGZF inflation, BAM record parsing and feature layout are real work, and on the
-main thread every millisecond of it is a millisecond your UI is not repainting.
-Supplying `makeWorkerInstance` moves all of it off: the RPC layer switches its
-default driver, with no `defaultDriver` config to write. The demo is the stack
-of tracks from earlier, and that one line is the only difference in its source.
+Reference-based CRAM decoding, record parsing and feature layout are real work,
+and on the main thread every millisecond of it is a millisecond your UI is not
+repainting. Supplying `makeWorkerInstance` moves all of it off: the RPC layer
+switches its default driver, with no `defaultDriver` config to write. The demo
+is the stack of tracks from earlier, and that one line is the only difference in
+its source.
 
 ## Constructing the worker
 

@@ -24,9 +24,12 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
 // `category` is a `stringArray` on every track config, and it is a path rather
@@ -37,79 +40,79 @@ const volvox = {
 const catalogueTracks = [
   {
     type: 'QuantitativeTrack',
-    trackId: 'volvox_microarray',
-    name: 'Microarray signal',
+    trackId: 'hg38_phylop',
+    name: 'phyloP conservation',
     category: ['Signal'],
-    assemblyNames: ['volvox'],
+    assemblyNames: ['hg38'],
     adapter: {
       type: 'BigWigAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+      uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
     },
     displayDefaults: {
       defaultRendering: 'xyplot',
       height: 80,
       color: '#3a7ca5',
-      minScore: 0,
-      maxScore: 1000,
     },
   },
   {
     type: 'QuantitativeTrack',
-    trackId: 'volvox_sine',
-    name: 'A sine wave',
+    trackId: 'hg38_gnomad_genome_coverage',
+    name: 'gnomAD genome coverage',
     category: ['Signal'],
-    assemblyNames: ['volvox'],
+    assemblyNames: ['hg38'],
     adapter: {
       type: 'BigWigAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_sine.bw',
+      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/gnomAD/coverage/v3-genome/gnomad.coverage.mean.bw',
     },
     displayDefaults: { defaultRendering: 'xyplot', height: 80 },
   },
   {
     type: 'QuantitativeTrack',
-    trackId: 'volvox_read_coverage',
-    name: 'Read coverage',
+    trackId: 'hg38_gnomad_exome_coverage',
+    name: 'gnomAD exome coverage',
     category: ['Signal'],
-    assemblyNames: ['volvox'],
+    assemblyNames: ['hg38'],
     adapter: {
       type: 'BigWigAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam.coverage.bw',
+      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/gnomAD/coverage/v4-exome/gnomad.coverage.mean.bw',
     },
     displayDefaults: { defaultRendering: 'xyplot', height: 80 },
   },
   {
     type: 'FeatureTrack',
-    trackId: 'volvox_genes',
-    name: 'Genes',
+    trackId: 'hg38_genes',
+    name: 'RefSeq curated genes',
     category: ['Annotation'],
-    assemblyNames: ['volvox'],
+    assemblyNames: ['hg38'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+      uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+      csi: true,
     },
     displayDefaults: { height: 120 },
   },
   {
     type: 'FeatureTrack',
-    trackId: 'volvox_bed12',
-    name: 'BED12 features',
+    trackId: 'hg38_segmental_dups',
+    name: 'Segmental duplications',
     category: ['Annotation'],
-    assemblyNames: ['volvox'],
+    assemblyNames: ['hg38'],
     adapter: {
       type: 'BedTabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-bed12.bed.gz',
+      uri: 'https://jbrowse.org/ucsc/hg38/genomicSuperDups.bed.gz',
+      csi: true,
     },
     displayDefaults: { height: 100 },
   },
   {
     type: 'AlignmentsTrack',
-    trackId: 'volvox_bam',
-    name: 'Reads',
+    trackId: 'na12878_exome',
+    name: 'NA12878 exome reads',
     category: ['Alignments'],
-    assemblyNames: ['volvox'],
+    assemblyNames: ['hg38'],
     adapter: {
-      type: 'BamAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
+      type: 'CramAdapter',
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
     },
     displayDefaults: { height: 150 },
   },
@@ -117,12 +120,12 @@ const catalogueTracks = [
   // selector has to have an answer for. It lands under `UNFILED` below.
   {
     type: 'VariantTrack',
-    trackId: 'volvox_filtered_vcf',
-    name: 'Filtered variants',
-    assemblyNames: ['volvox'],
+    trackId: 'thousand_genomes_snvindels',
+    name: '1000 Genomes variants',
+    assemblyNames: ['hg38'],
     adapter: {
       type: 'VcfTabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.filtered.vcf.gz',
+      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
     },
     displayDefaults: { height: 80 },
   },
@@ -132,24 +135,24 @@ const catalogueTracks = [
 // selector shows it without being told.
 const laterTrack = {
   type: 'VariantTrack',
-  trackId: 'volvox_sv_vcf',
+  trackId: 'thousand_genomes_sv',
   name: 'Structural variants',
   category: ['Variants'],
-  assemblyNames: ['volvox'],
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'VcfTabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sv.vcf.gz',
+    uri: 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz',
   },
   displayDefaults: { height: 90 },
 }
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
+    assembly: hg38,
     tracks: catalogueTracks,
     init: {
-      loc: 'ctgA:1..20,000',
-      tracks: ['volvox_microarray', 'volvox_genes'],
+      loc: 'chr17:43,044,295..43,125,364',
+      tracks: ['hg38_phylop', 'hg38_genes'],
     },
   })
   const { view } = state.session

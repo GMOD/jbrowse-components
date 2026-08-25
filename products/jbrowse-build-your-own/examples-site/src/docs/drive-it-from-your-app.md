@@ -2,10 +2,10 @@ Navigating, zooming and showing tracks are four calls and one getter on the view
 model. None is a component, so the toolbar above could be your app's own header,
 three floors up the tree.
 
-`view.navToLocString(input)` takes what a user would type: `ctgA`,
-`ctgA:1,050..9,000`, or several regions separated by spaces. It is async, and
-**throws on anything it cannot resolve**: a box with no `.catch` looks like it
-ignored the typo.
+`view.navToLocString(input)` takes what a user would type: `chr17`,
+`chr17:43,044,295..43,125,364`, or several regions separated by spaces. It is
+async, and **throws on anything it cannot resolve**: a box with no `.catch`
+looks like it ignored the typo.
 
 `view.showTrack(trackId)` instantiates the track and its display from the config
 with that id. `hideTrack` disposes it. Neither touches the config. The

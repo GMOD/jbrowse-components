@@ -39,19 +39,22 @@ import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
 const alignmentsTrack = {
   type: 'AlignmentsTrack',
-  trackId: 'volvox_bam',
-  name: 'Reads',
-  assemblyNames: ['volvox'],
+  trackId: 'na12878_exome',
+  name: 'NA12878 exome reads',
+  assemblyNames: ['hg38'],
   adapter: {
-    type: 'BamAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
+    type: 'CramAdapter',
+    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
   },
   displayDefaults: { height: 150 },
 }
@@ -69,7 +72,7 @@ const alignmentsTrack = {
 //
 // **A key lists the colours actually painted, not every colour the scheme
 // could paint.** It is derived from the reads laid out in the window, so what
-// it says depends on the data in front of you: on this BAM `strand` splits the
+// it says depends on the data in front of you: on this CRAM `strand` splits the
 // pileup in two and `mappingQuality` comes out a three-step ramp, while a
 // scheme whose categories are all absent here collapses to a single row. That
 // is the honest rendering rather than a shortcoming, and switching between
@@ -84,14 +87,15 @@ const COLOR_SCHEMES = pickColorOptions(
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
+    assembly: hg38,
     tracks: [alignmentsTrack],
     init: {
       // Close enough in that reads are individually visible -- a colour scheme
       // you cannot see one read of is not a demo of a colour scheme -- and two
       // regions rather than one, so there is a seam for the legend to have to
-      // paint above. Both on ctgA, which is where this BAM's reads are.
-      loc: 'ctgA:1..8,000 ctgA:12,000..20,000',
+      // paint above. Both inside BRCA1, which is where this exome CRAM's reads
+      // are dense.
+      loc: 'chr17:43,044,295..43,052,295 chr17:43,090,000..43,098,000',
       tracks: [alignmentsTrack.trackId],
     },
   })

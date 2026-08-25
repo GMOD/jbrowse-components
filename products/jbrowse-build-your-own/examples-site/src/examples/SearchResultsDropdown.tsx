@@ -27,47 +27,50 @@ import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
 // see the section above: the id has to match the one the trix index was built
 // against, because a hit turns its own track on
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'gff3tabix_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'genes',
+  name: 'NCBI RefSeq genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
   },
   displayDefaults: { height: 140 },
 }
 
 const trixIndex = {
   type: 'TrixTextSearchAdapter',
-  textSearchAdapterId: 'volvox-index',
-  assemblyNames: ['volvox'],
+  textSearchAdapterId: 'hg38-index',
+  assemblyNames: ['hg38'],
   ixFilePath: {
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/trix/volvox.ix',
+    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
   },
   ixxFilePath: {
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/trix/volvox.ixx',
+    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx',
   },
   metaFilePath: {
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/trix/volvox_meta.json',
+    uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz_meta.json',
   },
 }
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
+    assembly: hg38,
     tracks: [featureTrack],
     aggregateTextSearchAdapters: [trixIndex],
     init: {
-      loc: 'ctgA',
+      loc: 'chr17:43,044,295..43,125,364',
       tracks: [featureTrack.trackId],
     },
   })
@@ -156,7 +159,7 @@ const TrackRow = observer(function TrackRow({
  * `fetchResults` takes the query plus the two things that can answer it, and
  * they are separate on purpose: `textSearchManager` asks every aggregate adapter
  * scoped to the assembly, while `assembly` is scanned for refName matches --
- * aliases resolved, so typing `contigB` returns the canonical `ctgB`. Pass one
+ * aliases resolved, so typing `chr17` returns the canonical `17`. Pass one
  * and you get one kind of hit. The refName hits come back first and are capped
  * well below the list length, so a scaffold-heavy genome cannot fill the
  * dropdown with scaffolds and push the gene hits off the end.
@@ -165,7 +168,7 @@ const TrackRow = observer(function TrackRow({
  * resolve before the scan, because `allRefNames` is a plain getter that returns
  * nothing until the refName aliases have loaded -- reading it early is not an
  * error, it is just an empty answer. And the responses can land out of order:
- * `EDEN` fetched over a slower connection than `EDEN.1` typed after it would
+ * `TP53` fetched over a slower connection than `TP53BP1` typed after it would
  * overwrite the newer list with the older one, which is what `cancelled`
  * prevents. A debounce reduces how often that happens and does not fix it.
  *
@@ -186,11 +189,11 @@ function useSearchResults(session: BrowserSession, query: string) {
     let cancelled = false
     const { assemblyManager, textSearchManager } = session
     assemblyManager
-      .waitForAssembly(volvox.name)
+      .waitForAssembly(hg38.name)
       .then(assembly =>
         fetchResults({
           queryString: debounced,
-          assemblyName: volvox.name,
+          assemblyName: hg38.name,
           textSearchManager,
           assembly,
         }),
@@ -288,7 +291,7 @@ function ResultList({
                 }
                 onChosen()
                 view
-                  .navToLocString(location, volvox.name, 0.2)
+                  .navToLocString(location, hg38.name, 0.2)
                   .then(() => {
                     if (trackId) {
                       view.showTrack(trackId)
@@ -328,7 +331,7 @@ function SearchPanel({
   view: BrowserView
   session: BrowserSession
 }) {
-  const [query, setQuery] = useState('EDEN')
+  const [query, setQuery] = useState('BRCA1')
   const { results, error, searching } = useSearchResults(session, query)
 
   return (
@@ -344,7 +347,7 @@ function SearchPanel({
       <input
         aria-label="Search features"
         value={query}
-        placeholder="EDEN, Apple, Match, ctgB…"
+        placeholder="BRCA1, TP53, BRC, chr17…"
         style={{ font: 'inherit', padding: '2px 4px' }}
         onChange={event => {
           setQuery(event.target.value)
@@ -452,7 +455,7 @@ const SearchResultsDropdown = observer(function SearchResultsDropdown() {
         </div>
         <div ref={ref} {...containerProps} style={viewport}>
           {view.status.type === 'ready' ? (
-            <TrackRow view={view} trackId="gff3tabix_genes" />
+            <TrackRow view={view} trackId="genes" />
           ) : (
             <ViewStatus view={view} />
           )}

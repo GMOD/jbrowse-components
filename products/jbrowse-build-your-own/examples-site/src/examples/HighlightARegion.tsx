@@ -25,19 +25,23 @@ import type { HighlightType } from '@jbrowse/core/util/highlights'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'volvox_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_genes',
+  name: 'RefSeq curated genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+    csi: true,
   },
   displayDefaults: { height: 140 },
 }
@@ -48,44 +52,44 @@ const featureTrack = {
 // explicit alpha survives.
 const HITS: { label: string; loc: string; highlight: HighlightType }[] = [
   {
-    label: 'EDEN',
-    loc: 'ctgA:1,000..9,500',
+    label: 'BRCA1',
+    loc: 'chr17:43,020,000..43,150,000',
     highlight: {
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 1049,
-      end: 9000,
-      label: 'EDEN',
+      assemblyName: 'hg38',
+      refName: 'chr17',
+      start: 43044295,
+      end: 43125364,
+      label: 'BRCA1',
     },
   },
   {
     label: 'A single base',
-    loc: 'ctgA:1..40,000',
+    loc: 'chr17:43,020,000..43,150,000',
     highlight: {
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 20000,
-      end: 20001,
+      assemblyName: 'hg38',
+      refName: 'chr17',
+      start: 43090000,
+      end: 43090001,
       color: 'rgba(217, 119, 6, 0.45)',
-      label: 'one base, 40kb out',
+      label: 'one base, mid-intron',
     },
   },
   {
-    label: 'Off the end of the contig',
-    loc: 'ctgA:45,000..50,001',
+    label: 'Off the end of the chromosome',
+    loc: 'chr17:83,200,000..83,257,441',
     highlight: {
-      assemblyName: 'volvox',
-      refName: 'ctgA',
-      start: 48000,
-      end: 60000,
-      label: 'clipped to the contig',
+      assemblyName: 'hg38',
+      refName: 'chr17',
+      start: 83250000,
+      end: 83300000,
+      label: 'clipped to the chromosome',
     },
   },
 ]
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
+    assembly: hg38,
     tracks: [featureTrack],
     // `location` and `highlight` are top-level options, so a browser can arrive
     // already marked rather than being navigated after it mounts. Both are
@@ -397,7 +401,7 @@ const HighlightARegion = observer(function HighlightARegion() {
            * same gate as the tracks. See the Drive it from your app page. */}
           {view.status.type === 'ready' ? (
             <>
-              <TrackRow view={view} trackId="volvox_genes" />
+              <TrackRow view={view} trackId="hg38_genes" />
               <Highlights view={view} session={session} />
             </>
           ) : (

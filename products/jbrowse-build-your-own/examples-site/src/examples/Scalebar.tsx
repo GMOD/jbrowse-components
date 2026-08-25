@@ -23,54 +23,57 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
-const wiggleTrack = {
+const conservationTrack = {
   type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_phylop',
+  name: 'phyloP 100-way conservation',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
   displayDefaults: {
     defaultRendering: 'xyplot',
     height: 100,
     color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
   },
 }
 
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'volvox_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_genes',
+  name: 'RefSeq curated genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+    csi: true,
   },
   displayDefaults: { height: 120 },
 }
 
-const trackIds = ['volvox_microarray', 'volvox_genes']
+const trackIds = ['hg38_phylop', 'hg38_genes']
 
 const SCALEBAR_HEIGHT = 20
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
-    tracks: [wiggleTrack, featureTrack],
+    assembly: hg38,
+    tracks: [conservationTrack, featureTrack],
     init: {
       // Two regions, so there is a name to keep on screen at each one and a seam
-      // between them. Both are on ctgA because this assembly's bigWig covers only
-      // that contig -- see the Drive it from your app page.
-      loc: 'ctgA:1..15,000 ctgA:17,400..23,000',
+      // between them. Both windows sit inside BRCA1's own span, which keeps the
+      // fetch cheap -- see the Drive it from your app page for when you'd reach
+      // for two different chromosomes instead.
+      loc: 'chr17:43,044,295..43,060,000 chr17:43,100,000..43,125,364',
       tracks: trackIds,
     },
   })

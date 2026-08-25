@@ -32,26 +32,27 @@ import { observer } from 'mobx-react'
 // The other pages repeat these parts rather than importing them, for the same
 // reason.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
-const wiggleTrack = {
+const conservationTrack = {
   type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_phylop',
+  name: 'phyloP 100-way conservation',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
   displayDefaults: {
     defaultRendering: 'xyplot',
     height: 100,
     color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
   },
 }
 
@@ -89,11 +90,11 @@ const wiggleTrack = {
  */
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
-    tracks: [wiggleTrack],
+    assembly: hg38,
+    tracks: [conservationTrack],
     init: {
-      loc: 'ctgA:1..50,000',
-      tracks: ['volvox_microarray'],
+      loc: 'chr17:43,044,295..43,125,364',
+      tracks: ['hg38_phylop'],
     },
   })
   const { view } = state.session
@@ -229,7 +230,7 @@ const OneTrack = observer(function OneTrack() {
          * because this page is the floor, and the floor is allowed to name what
          * it leaves out rather than have it. */}
         {view.status.type === 'ready' ? (
-          <TrackRow view={view} trackId="volvox_microarray" />
+          <TrackRow view={view} trackId="hg38_phylop" />
         ) : null}
       </div>
     </SessionPaletteProvider>

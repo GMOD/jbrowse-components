@@ -42,46 +42,30 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+// A single-file sequence adapter: no index and no aliases to fetch beside it,
+// so its load is something you can watch resolve in one step.
+const hg38TwoBit = {
+  name: 'hg38',
+  uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit',
 }
 
 // The same assembly with one character changed. A 404 on the sequence file is
 // the most ordinary way an embed fails -- a moved bucket, a typo, a signed URL
 // that expired -- and it is indistinguishable from "still loading" unless
 // something reads `view.error`.
-const brokenVolvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/does-not-exist.2bit',
+const brokenHg38TwoBit = {
+  name: 'hg38',
+  uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/does-not-exist.2bit',
 }
 
-// Big enough that its load is something you can watch rather than infer. The
-// `.fa.gz` needs an index and a gzi beside it and `refNameAliases` is a fourth
-// file, so `loadingMessage` has several things to name in turn.
-const hg38 = {
-  name: 'hg38',
+// Slower to open than the 2bit above: the `.fa.gz` needs an index and a gzi
+// beside it and `refNameAliases` is a fourth file, so `loadingMessage` has
+// several things to name in turn.
+const hg38Fasta = {
+  name: 'GRCh38',
   uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
   refNameAliases: {
     uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-  },
-}
-
-const wiggleTrack = {
-  type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
-  adapter: {
-    type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
-  },
-  displayDefaults: {
-    defaultRendering: 'xyplot',
-    height: 100,
-    color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
   },
 }
 
@@ -94,14 +78,20 @@ const conservationTrack = {
     type: 'BigWigAdapter',
     uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
+  displayDefaults: {
+    defaultRendering: 'xyplot',
+    height: 100,
+    color: '#3a7ca5',
+  },
+}
+
+const conservationTrackGRCh38 = {
+  ...conservationTrack,
+  assemblyNames: ['GRCh38'],
   // A bigWig carries precomputed summaries, so a track that would be hopeless
   // at this width as raw values -- 3.1Gb across ~1000px -- is one cheap read
   // per region instead.
-  displayDefaults: {
-    defaultRendering: 'xyplot',
-    height: 120,
-    color: '#3a7ca5',
-  },
+  displayDefaults: { ...conservationTrack.displayDefaults, height: 120 },
 }
 
 // Four engines, one per radio button. Each is a whole `createViewState`, and
@@ -110,28 +100,28 @@ const conservationTrack = {
 // engines, which is what `destroyViewState` below is about.
 const SCENARIOS = {
   ready: {
-    label: 'volvox — loads, then draws',
-    assembly: volvox,
-    track: wiggleTrack,
-    loc: 'ctgA:1..20,000',
+    label: 'hg38 (2bit) — loads, then draws',
+    assembly: hg38TwoBit,
+    track: conservationTrack,
+    loc: 'chr17:43,044,295..43,125,364',
   },
   slow: {
-    label: 'hg38 — two files to fetch first',
-    assembly: hg38,
-    track: conservationTrack,
-    loc: 'chr1:1..2,000,000',
+    label: 'GRCh38 (bgzip FASTA) — four files to fetch first',
+    assembly: hg38Fasta,
+    track: conservationTrackGRCh38,
+    loc: 'chr17:1..2,000,000',
   },
   broken: {
     label: 'a sequence file behind a 404',
-    assembly: brokenVolvox,
-    track: wiggleTrack,
-    loc: 'ctgA:1..20,000',
+    assembly: brokenHg38TwoBit,
+    track: conservationTrack,
+    loc: 'chr17:43,044,295..43,125,364',
   },
   unnavigated: {
     label: 'a view with no location yet',
-    assembly: volvox,
-    track: wiggleTrack,
-    loc: 'ctgA:1..20,000',
+    assembly: hg38TwoBit,
+    track: conservationTrack,
+    loc: 'chr17:43,044,295..43,125,364',
   },
 }
 

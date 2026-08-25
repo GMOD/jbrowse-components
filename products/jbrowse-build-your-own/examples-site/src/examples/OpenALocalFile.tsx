@@ -40,30 +40,37 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'volvox_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_genes',
+  name: 'RefSeq curated genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+    csi: true,
   },
   displayDefaults: { height: 120 },
 }
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
+    assembly: hg38,
     tracks: [featureTrack],
     init: {
-      loc: 'ctgA:1..20,000',
-      tracks: ['volvox_genes'],
+      // CUZD1, so the reads the demo BAM below opens are on screen without
+      // panning: that file is a real somatic-deletion slice trimmed to this
+      // gene (Genome in a Bottle's HG008 tumor sample).
+      loc: 'chr10:122,831,700..122,840,800',
+      tracks: ['hg38_genes'],
     },
   })
   const { view } = state.session
@@ -250,7 +257,7 @@ function openLocalFile({
     trackId,
     type: guessTrackType(adapter.type, view, dataLocation),
     name: data.name,
-    assemblyNames: [volvox.name],
+    assemblyNames: [hg38.name],
     adapter,
   })
   view.showTrack(trackId)
@@ -315,11 +322,17 @@ const controls: React.CSSProperties = {
  *
  * A demo page cannot reach into your Downloads folder, so this stands in for
  * the picker beside it: past this point the two paths are the same code, and a
- * `File` is a `File` however it was made.
+ * `File` is a `File` however it was made. The file itself is a real ONT
+ * long-read subset trimmed to one gene, SNRPN -- the same one the methylation
+ * tutorial uses -- so it is a few megabytes rather than a whole genome's worth
+ * of reads.
  */
 async function demoFiles() {
-  const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox/'
-  const names = ['volvox-sorted.bam', 'volvox-sorted.bam.bai']
+  const base = 'https://jbrowse.org/demos/cgiab/'
+  const names = [
+    'HG008-T_chr10_CUZD1_deletion.bam',
+    'HG008-T_chr10_CUZD1_deletion.bam.bai',
+  ]
   return Promise.all(
     names.map(async name => {
       const response = await fetch(base + name)
@@ -335,15 +348,16 @@ async function demoFiles() {
  * A file from a genome that is not this one, built in the page.
  *
  * BED needs no index, so three lines of text is a complete, openable file --
- * and `chr1` is a name volvox has never heard of, which is the whole point.
- * This is the shape of the mistake: the file is valid, the track loads, the
- * fetch succeeds, and there is nothing to draw.
+ * and `2L` is a Drosophila chromosome arm name this human assembly has never
+ * heard of, which is the whole point. This is the shape of the mistake: the
+ * file is valid, the track loads, the fetch succeeds, and there is nothing to
+ * draw.
  */
 function otherGenomeFile() {
   const lines = [
-    'chr1\t1000\t5000\tACME1',
-    'chr1\t8000\t9000\tACME2',
-    'chr2\t2000\t6000\tACME3',
+    '2L\t1000\t5000\tACME1',
+    '2L\t8000\t9000\tACME2',
+    '2R\t2000\t6000\tACME3',
   ]
   return new File([`${lines.join('\n')}\n`], 'other-genome.bed')
 }

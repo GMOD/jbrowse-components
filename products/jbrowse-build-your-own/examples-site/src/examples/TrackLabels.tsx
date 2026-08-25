@@ -26,57 +26,59 @@ import { observer } from 'mobx-react'
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
 
-const volvox = {
-  name: 'volvox',
-  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+const hg38 = {
+  name: 'hg38',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
-const wiggleTrack = {
+const conservationTrack = {
   type: 'QuantitativeTrack',
-  trackId: 'volvox_microarray',
-  name: 'Microarray signal',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_phylop',
+  name: 'phyloP 100-way conservation',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'BigWigAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+    uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
   },
   displayDefaults: {
     defaultRendering: 'xyplot',
     height: 100,
     color: '#3a7ca5',
-    minScore: 0,
-    maxScore: 1000,
   },
 }
 
 const featureTrack = {
   type: 'FeatureTrack',
-  trackId: 'volvox_genes',
-  name: 'Genes',
-  assemblyNames: ['volvox'],
+  trackId: 'hg38_genes',
+  name: 'RefSeq curated genes',
+  assemblyNames: ['hg38'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
+    csi: true,
   },
   displayDefaults: { height: 120 },
 }
 
 const alignmentsTrack = {
   type: 'AlignmentsTrack',
-  trackId: 'volvox_bam',
-  name: 'Reads',
-  assemblyNames: ['volvox'],
+  trackId: 'na12878_exome',
+  name: 'NA12878 exome reads',
+  assemblyNames: ['hg38'],
   adapter: {
-    type: 'BamAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
+    type: 'CramAdapter',
+    uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
   },
   displayDefaults: { height: 150 },
 }
 
 const tracks = [
-  { id: 'volvox_microarray', label: 'Microarray' },
-  { id: 'volvox_genes', label: 'Genes' },
-  { id: 'volvox_bam', label: 'Reads' },
+  { id: 'hg38_phylop', label: 'Conservation' },
+  { id: 'hg38_genes', label: 'Genes' },
+  { id: 'na12878_exome', label: 'Reads' },
 ]
 const trackIds = tracks.map(t => t.id)
 
@@ -84,10 +86,10 @@ const LABEL_WIDTH = 90
 
 function makeView() {
   const state = createViewState({
-    assembly: volvox,
-    tracks: [wiggleTrack, featureTrack, alignmentsTrack],
+    assembly: hg38,
+    tracks: [conservationTrack, featureTrack, alignmentsTrack],
     init: {
-      loc: 'ctgA:1..20,000',
+      loc: 'chr17:43,044,295..43,125,364',
       tracks: trackIds,
     },
   })

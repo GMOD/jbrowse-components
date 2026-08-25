@@ -14,7 +14,8 @@ Four things live inside it, each a bug that only appears on an awkward input —
 the three buttons above:
 
 - it **clips to the displayed regions**, so a highlight running past the end of
-  a contig is trimmed instead of drawn over the greyed-out end of the genome;
+  a chromosome is trimmed instead of drawn over the greyed-out end of the
+  genome;
 - **width has a 3px floor**, so a one-base hit at 40kb of zoom is still findable
   rather than a hundredth of a pixel;
 - it is **independent of direction**, so a reversed region never renders a band

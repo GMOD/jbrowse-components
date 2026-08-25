@@ -1,4 +1,4 @@
-A BigWig, a Tabix'd GFF3 and a BAM in one column. Every track exposes a
+A BigWig, a Tabix'd GFF3 and a CRAM in one column. Every track exposes a
 `RenderingComponent`, so the mounting code doesn't know which is which and a
 fourth track is one more string in a list of ids.
 
