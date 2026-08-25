@@ -1,0 +1,25 @@
+{
+  "id": "maf-identity-column-cap",
+  "measured": "2026-08-25",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "`node browser-tests/probe-maf-column-cap.ts 464 3` in products/jbrowse-web. Plain node, no browser: it calls `clusterMatrix` -- the same tail the MAF, variant, wiggle and multi-row-feature clustering RPCs all end in -- against @gmod/hclust 5.1.0. One warm-up call per column count discards the wasm instantiation, then three timed calls with the min reported.",
+    "notes": "Synthetic, and the generator is the load-bearing part: ONE per-base truth is drawn at 20,000 columns and every row of the table is that same alignment re-binned by block-averaging, which is what MAX_COLUMNS varies. Drawing a fresh random matrix per column count instead compares different cohorts and reports ~0% adjacency and rho ~0 at every resolution, which is a property of the generator and not of the cap -- that was the first run of this probe and it is wrong. Rows carry a per-row divergence offset plus dropout runs (20-220 columns) so that which haplotype drops out where is real structure. Agreement is scored against the 20,000-column order, so the 100% and 1.000 on that row are by construction, not a result. Adjacency is a strict metric on 464 near-tied rows; read the monotone trend, not any single cell. AMD gcn-4 box, load average under 1. The docstring this replaces claimed 512 -> 5000 was 'minutes of worker time for a tree that comes out the same'; it was written 2026-08-17 against @gmod/hclust 5.0.0, a week before 5.1.0 took a further 2.5x on the distance build."
+  },
+  "columns": [
+    { "key": "columns", "label": "columns", "format": "int", "align": "right" },
+    { "key": "ms", "label": "min ms", "format": "ms", "align": "right" },
+    { "key": "vs512", "label": "vs 512", "format": "x", "precision": 1, "align": "right", "derived": "ms / 16" },
+    { "key": "adjacency", "label": "adjacency vs finest", "format": "percent", "align": "right" },
+    { "key": "rho", "label": "Spearman vs finest", "format": "ratio", "precision": 3, "align": "right" }
+  ],
+  "rows": [
+    { "values": { "columns": 512, "ms": 16, "adjacency": 35, "rho": 0.965 } },
+    { "values": { "columns": 1000, "ms": 26, "adjacency": 43, "rho": 0.979 } },
+    { "values": { "columns": 2000, "ms": 44, "adjacency": 51, "rho": 0.987 } },
+    { "values": { "columns": 5000, "ms": 121, "adjacency": 65, "rho": 0.993 } },
+    { "values": { "columns": 10000, "ms": 273, "adjacency": 72, "rho": 0.995 } },
+    { "values": { "columns": 20000, "ms": 611, "adjacency": 100, "rho": 1.0 } }
+  ]
+}

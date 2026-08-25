@@ -14,12 +14,23 @@ const GAP = 45 // '-'
 /**
  * How many columns the matrix gets, whatever the span. Clustering cost is
  * O(rows^2 x columns) and a cohort alignment is deep, so the bin count is
- * capped rather than derived from bp: at 464 rows the difference between 512
- * columns and 5000 is minutes of worker time for a tree that comes out the
- * same. A region shorter than this bins at one reference base per column and
- * the cap never binds.
+ * capped rather than derived from bp. A region shorter than this bins at one
+ * reference base per column and the cap never binds.
+ *
+ * 5000 is where the return flattens. Clustering one 464-row alignment re-binned
+ * costs 16 ms at 512 columns and 121 ms at 5000, and coarsening loses local
+ * structure well before it loses global: the order 512 produces shares 35% of
+ * its adjacent row pairs with the finest binning against 65% at 5000, while
+ * Spearman against that binning is already 0.965 at 512. So the broad grouping
+ * survives a coarse cap and which haplotype sits beside which does not, which
+ * is the half a clustered display is read for. Doubling again to 10,000 buys
+ * seven more points of adjacency for 273 ms.
+ *
+ * The budget these are spent against is a one-shot user action --
+ * `runClustering` clears its own flag and no viewport move re-runs it -- not a
+ * per-frame pass. measurements/maf-identity-column-cap.json.
  */
-const MAX_COLUMNS = 512
+const MAX_COLUMNS = 5000
 
 /**
  * One row per genome, one column per bin of the reference, valued as the

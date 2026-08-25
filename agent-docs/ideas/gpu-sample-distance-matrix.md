@@ -1,6 +1,6 @@
 ---
 name: gpu-sample-distance-matrix
-description: "Cluster by genotype" on a population panel is almost entirely hclust's sample-by-sample distance build, because the window hands over one column per site and the merge loop is noise beside it. A deliberately naive WebGPU kernel does that build 12 to 19x faster than hclust 5.0.0 and 6 to 12x faster than 5.1.0 on real 1000 Genomes windows, and the same matrix would feed PC1 ordering and compare-to-selected shading for free. What the numbers are, what integrating it takes, the criterion that says which in-browser compute is worth doing at all, and the other candidates that pass it.
+description: "Cluster by genotype" on a population panel is almost entirely hclust's sample-by-sample distance build, because the window hands over one column per site and the merge loop is noise beside it. A deliberately naive WebGPU kernel does that build 12 to 19x faster than hclust 5.0.0 and 6 to 12x faster than 5.1.0 on real 1000 Genomes windows, and the same matrix would feed PC1 ordering and compare-to-selected shading for free. What the numbers are, what integrating it takes, the criterion that says which in-browser compute is worth doing at all, and the other candidates that pass it. Read the MAF section before proposing the obvious second application: at 464 haplotypes the kernel buys 1.7 to 2.2x where it buys 3.6x at 2504 samples, so what was capping that display's resolution was a mispriced bin cap and not the distance build — and the fractional rows it clusters do accumulate f32 error where the integer dosages hid it.
 ---
 
 # A GPU sample distance matrix for clustering
@@ -111,6 +111,54 @@ case.
   needs another kernel.
 - **WebGPU only, by construction.** Storage buffers have no GLSL ES 3.0 target
   (`reference/GPU_RENDERING.md`), so the worker path is not optional.
+
+## Row ordering at MAF scale: the cap, not the kernel
+
+The obvious second application of this kernel is the MAF identity matrix, and
+it does not want it. Worth reading before proposing it again.
+
+Clustering shipped four times over one tail — `clusterMatrix`
+(`packages/tree-sidebar/src/clusterMatrix.ts`) is where the multi-sample
+variant, MAF identity, wiggle score and multi-row feature RPCs all end — and
+`buildIdentityMatrix.ts` is the HPRC-scale one, 464 haplotypes ordered by
+identity over the visible window. It caps its bin count at `MAX_COLUMNS`, and
+that cap was priced wrong: its docstring read "at 464 rows the difference
+between 512 columns and 5000 is minutes of worker time for a tree that comes
+out the same", written 2026-08-17 against @gmod/hclust 5.0.0. Both halves are
+off. Measured on 5.1.0, against one 20,000-column truth re-binned:
+
+<!-- BEGIN GENERATED MEASUREMENT maf-identity-column-cap -->
+
+| columns | min ms | vs 512 | adjacency vs finest | Spearman vs finest |
+| ------: | -----: | -----: | ------------------: | -----------------: |
+|     512 |   16ms |   1.0x |                 35% |              0.965 |
+|   1,000 |   26ms |   1.6x |                 43% |              0.979 |
+|   2,000 |   44ms |   2.8x |                 51% |              0.987 |
+|   5,000 |  121ms |   7.6x |                 65% |              0.993 |
+|  10,000 |  273ms |  17.1x |                 72% |              0.995 |
+|  20,000 |  611ms |  38.2x |                100% |              1.000 |
+
+<!-- END GENERATED MEASUREMENT maf-identity-column-cap -->
+
+512 to 5000 is 105 ms, not minutes, and the tree does not come out the same
+where a clustered display is read: Spearman against the finest binning is
+already 0.965 at 512, so the broad grouping survives coarsening, while only 35%
+of adjacent row pairs do. `MAX_COLUMNS` is now 5000.
+
+**A GPU kernel does not move this.** At 464 rows the naive kernel runs 75 ms
+against the wasm's 126 ms at V = 5000 and 252 ms against 560 ms at V = 20,000 —
+1.7x to 2.2x, where the same probe on the same box gets 3.6x at N = 2504.
+464^2 / 2 is 107k pairs, which does not saturate a GPU and does not amortize the
+~50 ms of fixed dispatch; at V = 512 the kernel loses outright. The win is in N,
+and the MAF path does not have the N. The population panel still does.
+
+**The fractional case does drift, and dosages hid it.** With `--fractional` the
+max relative error against an f64 reference climbs with V — 7.7e-7 at 512,
+6.8e-6 at 5000, 3.6e-5 at 20,000 — where the 0/1/2 dosage matrices come back at
+exactly 0. So the "f32 partial sums are exact" result above is a property of
+integer dosages, not of the kernel, and any caller with fractional rows
+(identity fractions, imputed dosages) needs the promote-every-16 pattern and a
+parity test built on fractional input. All on an AMD gcn-4 box, Chrome 151.
 
 ## The other candidates that pass the criterion
 
