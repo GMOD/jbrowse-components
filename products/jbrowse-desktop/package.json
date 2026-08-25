@@ -102,7 +102,7 @@
     "@electron/packager": "^20.3.0",
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/selenium-webdriver": "^4.35.6",
-    "electron": "^43.4.1",
+    "electron": "^44.0.0",
     "electron-chromedriver": "^43.4.1",
     "esbuild": "^0.28.2",
     "selenium-webdriver": "^4.47.0"
