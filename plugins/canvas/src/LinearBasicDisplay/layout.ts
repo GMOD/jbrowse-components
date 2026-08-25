@@ -275,7 +275,7 @@ export interface LayoutInputs {
   labelRoomFactor?: number
   // At most this many isoforms per gene, or undefined for every one the worker
   // sent. The fit ladder's `isoforms` rung solves it against the track height —
-  // names before isoforms, which is why it sits above `decimated` (ADR-076).
+  // names before isoforms, which is why it sits above `decimated` (ADR-092).
   maxIsoformsPerGene?: number
   // Genes the user opened from their own badge. Never trimmed, whatever the
   // count says.

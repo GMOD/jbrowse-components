@@ -479,7 +479,8 @@ export function fitLadderViews(self: FitLadderHost) {
       // Routing both modes through resolveFitLadder keeps FitStage assembled
       // in one place, so its fields (level/layout/scale/contentHeight) can't
       // drift apart.
-      const trimmed = this.fitIsoformCount
+      // A thunk: the solve packs, and a stack that fits at `full` never asks.
+      const trimmed = () => this.fitIsoformCount
       return resolveFitLadder(
         fit
           ? [

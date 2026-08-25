@@ -738,7 +738,12 @@ function stampChildOrdinal(
     i < collector.subfeatureInfos.length;
     i++
   ) {
-    collector.subfeatureInfos[i]!.childOrdinal = ordinal
+    const info = collector.subfeatureInfos[i]!
+    info.childOrdinal = ordinal
+    const label = collector.floatingLabelsData.get(info.featureId)
+    if (label) {
+      label.childOrdinal = ordinal
+    }
   }
   for (
     let i = mark.aminoAcidOverlay;

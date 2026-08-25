@@ -226,7 +226,7 @@ describe('resolveFitLadder', () => {
         {
           level: 'isoforms',
           layout: () => layoutOfHeight(90),
-          maxIsoforms: 5,
+          maxIsoforms: () => 5,
         },
       ],
       100,
@@ -257,9 +257,13 @@ describe('resolveFitLadder', () => {
         {
           level: 'isoforms',
           layout: () => layoutOfHeight(200),
-          maxIsoforms: 1,
+          maxIsoforms: () => 1,
         },
-        { level: 'bodies', layout: () => layoutOfHeight(80), maxIsoforms: 1 },
+        {
+          level: 'bodies',
+          layout: () => layoutOfHeight(80),
+          maxIsoforms: () => 1,
+        },
       ],
       100,
       0.2,

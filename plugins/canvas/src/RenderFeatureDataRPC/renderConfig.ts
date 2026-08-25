@@ -79,7 +79,7 @@ export interface DisplayConfig {
   // displayMode is NOT sent to the worker — compact/superCompact height scaling
   // is applied on the main thread, so switching modes skips an RPC round-trip.
   // Track height is not sent either: the fit ladder trims isoforms where it can
-  // see the packing (ADR-076).
+  // see the packing (ADR-092).
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   subfeatureLabels: SubfeatureLabels
   transcriptTypes: string[]

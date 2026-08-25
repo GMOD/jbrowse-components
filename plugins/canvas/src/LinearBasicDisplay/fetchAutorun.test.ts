@@ -1495,7 +1495,7 @@ describe('SettingsInvalidate keys on the payload, not the reads', () => {
     ['showLabels', 'none'],
     // Height and its bounds, all four. The isoform trim is the fit ladder's
     // now, so nothing about the track's size reaches the worker at all
-    // (ADR-076) — which is the property the resize handle needs, since it
+    // (ADR-092) — which is the property the resize handle needs, since it
     // writes `height` every drag frame.
     ['height', 600],
     ['heightMode', 'grow'],

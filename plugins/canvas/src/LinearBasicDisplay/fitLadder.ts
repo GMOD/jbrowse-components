@@ -149,7 +149,9 @@ export interface FitRung {
   // isoforms per gene this rung packs at, undefined for every one the worker
   // sent. Carried on the rung rather than derived from the level, because the
   // two rungs BELOW `isoforms` inherit the count it failed at (see fitStage).
-  maxIsoforms?: number
+  // A thunk like `layout`, and for the same reason: the count is a solve that
+  // packs, and a stack that fits at `full` never asks for it.
+  maxIsoforms?: () => number | undefined
 }
 
 // The resolved outcome, bundled so its parts can't disagree. `scale` is
@@ -282,7 +284,7 @@ export function resolveFitLadder(
         level: rung.level,
         layout,
         contentHeight,
-        maxIsoforms: rung.maxIsoforms,
+        maxIsoforms: rung.maxIsoforms?.(),
         scale: fitScaleToFill(contentHeight, trackHeight, minScale, maxScale),
       }
     }

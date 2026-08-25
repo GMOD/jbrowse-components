@@ -529,7 +529,7 @@ describe('the badge in the label layer', () => {
 // `longestCoding` is still the worker's, and an expanded gene has to escape it
 // — so the set reaches the worker as an RPC argument, and a click invalidates
 // the cache the same way hiding or soloing a feature does. The fit ladder's own
-// trim needs no fetch (ADR-076); this is what is left.
+// trim needs no fetch (ADR-092); this is what is left.
 test('an expanded gene reaches the worker as a fetch input', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
