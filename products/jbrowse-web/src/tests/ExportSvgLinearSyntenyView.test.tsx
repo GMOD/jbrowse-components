@@ -235,8 +235,8 @@ test('export svg of synteny bakes in the color-by legend', async () => {
 }, 45000)
 
 // Two volvox rows over volvox_fake_synteny, which pairs ctgA with ctgA and ctgB
-// with ctgB. The lower row shows ctgA alone, so all six ctgB alignments lose
-// their second endpoint and become the class the stubs mark.
+// with ctgB. The lower row shows ctgA alone, so every ctgB alignment loses its
+// second endpoint and becomes the class the stubs mark.
 const offscreenMateSession = {
   ...syntenySession,
   views: [
@@ -343,7 +343,13 @@ test('export svg of synteny bakes in the off-screen mate stubs', async () => {
     // them separately would composite them against each other.
     const strip = /<path d="((?:M[\d.]+,0h[\d.]+v6h-[\d.]+Z)+)"/.exec(svg)
     expect(strip).toBeTruthy()
-    expect(strip![1]!.match(/v6h-/g)).toHaveLength(6)
+    // Seven, one per distinct ctgB endpoint. The file's six ctgB rows hold
+    // four alignments: a self-diagonal, two written from both ends, and
+    // ctgB:0-5929/ctgB:150-6079 written from one. Reading the query column
+    // alone found six endpoints and missed 150-6079, whose row has no mirror
+    // to supply it — see PairwiseAdapterBase.facingSides. Reading both columns
+    // finds it, and createSideDedupe keeps the mirrored pairs at one each.
+    expect(strip![1]!.match(/v6h-/g)).toHaveLength(7)
     expect(svg.match(/stroke-linejoin="round"[^>]*>ctgB</g)).toHaveLength(1)
   })
 }, 45000)

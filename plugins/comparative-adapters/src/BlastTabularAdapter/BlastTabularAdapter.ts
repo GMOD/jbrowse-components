@@ -256,12 +256,12 @@ export default class BlastTabularAdapter extends PairwiseAdapterBase<BlastTabula
     // Resolved before the setup: an assembly this adapter does not carry has
     // the same answer whatever the file says, and reading it first was
     // downloading and parsing the whole table to return [].
-    const side = this.sideFor(opts.assemblyName)
-    if (side === -1) {
+    const sides = this.facingSides(opts.assemblyName)
+    if (sides.length === 0) {
       return []
     }
     const { byRefName } = await this.setup(opts)
-    return [...byRefName[side].keys()]
+    return [...new Set(sides.flatMap(side => [...byRefName[side].keys()]))]
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
@@ -272,48 +272,75 @@ export default class BlastTabularAdapter extends PairwiseAdapterBase<BlastTabula
         start: queryStart,
         end: queryEnd,
       } = query
-      const side = this.sideFor(queryAssemblyName)
-      if (side === -1) {
+      const sides = this.facingSides(queryAssemblyName)
+      if (sides.length === 0) {
         console.warn(`${queryAssemblyName} not found in this adapter`)
         observer.complete()
         return
       }
       const { records, byRefName } = await this.setup(opts)
-      const flip = side === 0
-      const mateAssemblyName = this.mateAssemblyName(side)
+      const notYetEmitted = this.createSideDedupe(sides)
 
-      // Only the hits anchored on the queried contig, walked in ascending
-      // record index so features still arrive in file order.
-      for (const i of byRefName[side].get(queryRefName) ?? []) {
-        const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } =
-          records[i]!
-        const side = flip
-          ? orientBlastSide(qstart, qend)
-          : orientBlastSide(sstart, send)
-        if (doesIntersect2(queryStart, queryEnd, side.start, side.end)) {
-          const mate = flip
-            ? orientBlastSide(sstart, send)
-            : orientBlastSide(qstart, qend)
-          observer.next(
-            new SyntenyFeature({
-              uniqueId: i + queryAssemblyName,
-              assemblyName: queryAssemblyName,
-              start: side.start,
-              end: side.end,
-              type: 'match',
-              refName: flip ? qseqid : sseqid,
-              strand: side.strand * mate.strand,
-              syntenyId: i,
-              identity: blastIdentity(rest.pident),
-              ...rest,
-              mate: {
-                start: mate.start,
-                end: mate.end,
-                refName: flip ? sseqid : qseqid,
-                assemblyName: mateAssemblyName,
-              },
-            }),
-          )
+      // Both sides only for a self-alignment, where a hit's two ends are each
+      // other's mate and the queried contig can be named by either column.
+      for (const side of sides) {
+        const flip = side === 0
+        const mateAssemblyName = this.mateAssemblyName(side)
+
+        // Only the hits anchored on the queried contig, walked in ascending
+        // record index so features still arrive in file order.
+        for (const i of byRefName[side].get(queryRefName) ?? []) {
+          const { qseqid, sseqid, qstart, qend, sstart, send, ...rest } =
+            records[i]!
+          const anchor = flip
+            ? orientBlastSide(qstart, qend)
+            : orientBlastSide(sstart, send)
+          if (doesIntersect2(queryStart, queryEnd, anchor.start, anchor.end)) {
+            const mate = flip
+              ? orientBlastSide(sstart, send)
+              : orientBlastSide(qstart, qend)
+            const refName = flip ? qseqid : sseqid
+            const mateRefName = flip ? sseqid : qseqid
+            const strand = anchor.strand * mate.strand
+            const identity = blastIdentity(rest.pident)
+            if (
+              notYetEmitted({
+                refName,
+                start: anchor.start,
+                end: anchor.end,
+                strand,
+                mateRefName,
+                mateStart: mate.start,
+                mateEnd: mate.end,
+                // tblastx puts a region's two frames on one drawn geometry at
+                // different identities, and both belong on screen
+                identity,
+              })
+            ) {
+              observer.next(
+                new SyntenyFeature({
+                  // the perspective is part of the identity: a self-alignment
+                  // serves one hit from both ends against one assembly name
+                  uniqueId: `${i}-${flip ? 'q' : 's'}-${queryAssemblyName}`,
+                  assemblyName: queryAssemblyName,
+                  start: anchor.start,
+                  end: anchor.end,
+                  type: 'match',
+                  refName,
+                  strand,
+                  syntenyId: i,
+                  identity,
+                  ...rest,
+                  mate: {
+                    start: mate.start,
+                    end: mate.end,
+                    refName: mateRefName,
+                    assemblyName: mateAssemblyName,
+                  },
+                }),
+              )
+            }
+          }
         }
       }
 

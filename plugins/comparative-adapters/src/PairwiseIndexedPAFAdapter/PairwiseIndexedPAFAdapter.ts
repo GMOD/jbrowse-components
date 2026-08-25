@@ -38,15 +38,21 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    const side = this.sideFor(opts.assemblyName)
-    if (side === -1) {
+    const sides = this.facingSides(opts.assemblyName)
+    if (sides.length === 0) {
       return []
     }
     // Only the fine tier here, so a file that also carries the coarse T/Q tier
     // does not report every chrom twice.
-    const letter = side === 0 ? 'q' : 't'
+    const letters = sides.map(side => (side === 0 ? 'q' : 't'))
     const names = await this.pif.refSeqNames(opts)
-    return names.filter(n => n.startsWith(letter)).map(n => n.slice(1))
+    return [
+      ...new Set(
+        names
+          .filter(n => letters.some(letter => n.startsWith(letter)))
+          .map(n => n.slice(1)),
+      ),
+    ]
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
@@ -54,48 +60,69 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
-      const side = this.sideFor(assemblyName)
-      if (side === -1) {
+      const sides = this.facingSides(assemblyName)
+      if (sides.length === 0) {
         console.warn(`${assemblyName} not found in this adapter`)
         observer.complete()
         return
       }
 
-      // flip=true when viewing from query assembly perspective
-      // flip=false when viewing from target assembly perspective
-      const flip = side === 0
+      const hasCoarseTier = await this.pif.hasCoarseTier(opts)
+      const stopTokenCheck = createStopTokenChecker(stopToken)
+      const notYetEmitted = this.createSideDedupe(sides)
 
-      const letter = pickPifPrefix({
-        flip,
-        hasCoarseTier: await this.pif.hasCoarseTier(opts),
-        lodMode: opts.lodMode,
-      })
+      // Both sides only for a self-alignment: PIF files the two perspectives of
+      // a row under separate q/t seqids, so one assembly named on both sides has
+      // its contig indexed under both letters.
+      for (const side of sides) {
+        // flip=true when viewing from query assembly perspective
+        // flip=false when viewing from target assembly perspective
+        const flip = side === 0
 
-      const mateAssemblyName = this.mateAssemblyName(side)
+        const letter = pickPifPrefix({
+          flip,
+          hasCoarseTier,
+          lodMode: opts.lodMode,
+        })
 
-      await this.pif.readLines({
-        seqid: letter + query.refName,
-        start: query.start,
-        end: query.end,
-        statusCallback,
-        stopTokenCheck: createStopTokenChecker(stopToken),
-        lineCallback: (parsed, fileOffset) => {
-          observer.next(
-            makeIndexedSyntenyFeature({
-              line: parsed,
-              fileOffset,
-              assemblyName,
-              refName: parsed.indexedRefName,
-              mate: {
-                start: parsed.mateStart,
-                end: parsed.mateEnd,
-                refName: parsed.mateName,
-                assemblyName: mateAssemblyName,
-              },
-            }),
-          )
-        },
-      })
+        const mateAssemblyName = this.mateAssemblyName(side)
+
+        await this.pif.readLines({
+          seqid: letter + query.refName,
+          start: query.start,
+          end: query.end,
+          statusCallback,
+          stopTokenCheck,
+          lineCallback: (parsed, fileOffset) => {
+            if (
+              notYetEmitted({
+                refName: parsed.indexedRefName,
+                start: parsed.indexedStart,
+                end: parsed.indexedEnd,
+                strand: parsed.strand,
+                mateRefName: parsed.mateName,
+                mateStart: parsed.mateStart,
+                mateEnd: parsed.mateEnd,
+              })
+            ) {
+              observer.next(
+                makeIndexedSyntenyFeature({
+                  line: parsed,
+                  fileOffset,
+                  assemblyName,
+                  refName: parsed.indexedRefName,
+                  mate: {
+                    start: parsed.mateStart,
+                    end: parsed.mateEnd,
+                    refName: parsed.mateName,
+                    assemblyName: mateAssemblyName,
+                  },
+                }),
+              )
+            }
+          },
+        })
+      }
 
       observer.complete()
     })

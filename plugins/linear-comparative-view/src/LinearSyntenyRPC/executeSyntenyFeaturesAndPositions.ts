@@ -162,7 +162,7 @@ export async function executeSyntenyFeaturesAndPositions({
     }),
     // Anchored on v2, so the pair's OTHER assembly is v1's — and the regions
     // carry v2's own assemblyName, which is what tells a pairwise adapter which
-    // side of the file to index (`PairwiseAdapterBase.sideFor`). Every pairwise
+    // side of the file to index (`PairwiseAdapterBase.facingSides`). Every pairwise
     // adapter answers from either side already, orienting the row it returns to
     // the axis asked about, so nothing here has to know which column the file
     // put this genome in.

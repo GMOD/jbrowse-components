@@ -41,7 +41,7 @@ const targetView = {
 
 // Anchored on `refName`, mate on `mateRefName`, in whichever perspective the
 // caller asked about — which is what every pairwise adapter returns for a
-// region query (`PairwiseAdapterBase.sideFor` picks the side, and the row is
+// region query (`PairwiseAdapterBase.facingSides` picks the side, and the row is
 // oriented to it).
 function alignment({
   id,

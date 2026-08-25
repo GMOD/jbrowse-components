@@ -41,12 +41,16 @@ class TestAdapter extends PairwiseAdapterBase {
     })
   }
 
-  side(assemblyName: string | undefined) {
-    return this.sideFor(assemblyName)
+  sides(assemblyName: string | undefined) {
+    return this.facingSides(assemblyName)
   }
 
   mate(side: 0 | 1) {
     return this.mateAssemblyName(side)
+  }
+
+  dedupe(sides: (0 | 1)[]) {
+    return this.createSideDedupe(sides)
   }
 }
 
@@ -55,35 +59,48 @@ function makeAdapter(conf: Record<string, unknown>) {
 }
 
 describe('PairwiseAdapterBase', () => {
-  describe('sideFor', () => {
+  describe('facingSides', () => {
     const adapter = makeAdapter({ assemblyNames: ['query', 'target'] })
 
     it('puts the first assemblyNames entry on side 0, the file query columns', () => {
-      expect(adapter.side('query')).toBe(0)
+      expect(adapter.sides('query')).toEqual([0])
     })
 
     it('puts the second on side 1, the file target columns', () => {
-      expect(adapter.side('target')).toBe(1)
+      expect(adapter.sides('target')).toEqual([1])
     })
 
-    it('answers -1 for an assembly this adapter does not carry', () => {
-      expect(adapter.side('mouse')).toBe(-1)
+    it('answers no side for an assembly this adapter does not carry', () => {
+      expect(adapter.sides('mouse')).toEqual([])
     })
 
     // getRefNames is called with no assemblyName by callers that have not
-    // resolved one yet. -1 is the "not ours" answer, which every pairwise
+    // resolved one yet. No side is the "not ours" answer, which every pairwise
     // adapter turns into [] rather than a throw or a download.
-    it('answers -1 for no assembly name at all', () => {
-      expect(adapter.side(undefined)).toBe(-1)
+    it('answers no side for no assembly name at all', () => {
+      expect(adapter.sides(undefined)).toEqual([])
     })
 
     // A pairwise file has two sides however many names the config lists, so a
     // third entry reads as the target rather than as a side of its own. This is
-    // what the positional indexOf has always done, and it is why the side is a
-    // 0/1 index into a two-element structure and not the raw indexOf.
+    // what the positional lookup has always done, and it is why a side is a 0/1
+    // index into a two-element structure and not a position in the name list.
     it('reads anything past the second name as the target side', () => {
       const three = makeAdapter({ assemblyNames: ['query', 'target', 'extra'] })
-      expect(three.side('extra')).toBe(1)
+      expect(three.sides('extra')).toEqual([1])
+    })
+
+    // The defect this replaced an indexOf for: a whole-genome-duplication PAF
+    // names one assembly twice, the first match answered the query columns for
+    // every query, and every row anchored on the target columns went undrawn.
+    it('faces both sides of a self-alignment', () => {
+      const self = makeAdapter({ assemblyNames: ['vvx', 'vvx'] })
+      expect(self.sides('vvx')).toEqual([0, 1])
+    })
+
+    it('faces both sides of a self-alignment written with the named slots', () => {
+      const self = makeAdapter({ queryAssembly: 'vvx', targetAssembly: 'vvx' })
+      expect(self.sides('vvx')).toEqual([0, 1])
     })
   })
 
@@ -99,6 +116,73 @@ describe('PairwiseAdapterBase', () => {
     })
   })
 
+  // The three cases the side dedupe has to tell apart, stated on the gate
+  // itself: they reach it from three different adapters and each one has a
+  // format's worth of orientation code in between.
+  describe('createSideDedupe', () => {
+    const drawn = {
+      refName: 'ctgA',
+      start: 0,
+      end: 6079,
+      strand: 1,
+      mateRefName: 'ctgB',
+      mateStart: 0,
+      mateEnd: 6079,
+    }
+
+    // A file that writes each alignment from both ends reaches one of them
+    // twice; the ribbon was painted on top of itself.
+    it('lets one drawn alignment through once', () => {
+      const gate = makeAdapter({ assemblyNames: ['vvx', 'vvx'] }).dedupe([0, 1])
+      expect(gate(drawn)).toBe(true)
+      expect(gate(drawn)).toBe(false)
+    })
+
+    // The two ends of a tandem duplication are the same pair of loci read the
+    // other way round, and both have to draw — that is what serving both sides
+    // is for, so the key cannot normalize the anchor and mate together.
+    it('lets both ends of a duplication through', () => {
+      const gate = makeAdapter({ assemblyNames: ['vvx', 'vvx'] }).dedupe([0, 1])
+      const oneEnd = {
+        refName: 'ctgC',
+        start: 0,
+        end: 100,
+        strand: 1,
+        mateRefName: 'ctgC',
+        mateStart: 500,
+        mateEnd: 600,
+      }
+      expect(gate(oneEnd)).toBe(true)
+      expect(
+        gate({
+          ...oneEnd,
+          start: 500,
+          end: 600,
+          mateStart: 0,
+          mateEnd: 100,
+        }),
+      ).toBe(true)
+    })
+
+    // tblastx reports a region's forward and reverse frames as separate hits
+    // over one interval pair, and BLAST's min/max orientation leaves them
+    // indistinguishable by geometry alone.
+    it('lets two hits on one geometry through when they differ in identity', () => {
+      const gate = makeAdapter({ assemblyNames: ['vvx', 'vvx'] }).dedupe([0, 1])
+      expect(gate({ ...drawn, identity: 0.81 })).toBe(true)
+      expect(gate({ ...drawn, identity: 0.6 })).toBe(true)
+      expect(gate({ ...drawn, identity: 0.81 })).toBe(false)
+    })
+
+    // A two-genome track cannot reach one alignment twice, so it neither builds
+    // the set nor hashes into it — the gate is the same call either way.
+    it('never withholds anything on a one-sided query', () => {
+      const gate = makeAdapter({ assemblyNames: ['q', 't'] }).dedupe([0])
+      expect(gate(drawn)).toBe(true)
+      expect(gate(drawn)).toBe(true)
+    })
+  })
+
   // The named slots are the documented alternative to the positional array,
   // whose order is the reverse of the one minimap2 takes its inputs in. The
   // side rule has to read the same either way, or a config written the safe way
@@ -109,8 +193,8 @@ describe('PairwiseAdapterBase', () => {
       targetAssembly: 'hg38',
     })
     expect(adapter.getAssemblyNames()).toEqual(['hg19', 'hg38'])
-    expect(adapter.side('hg19')).toBe(0)
-    expect(adapter.side('hg38')).toBe(1)
+    expect(adapter.sides('hg19')).toEqual([0])
+    expect(adapter.sides('hg38')).toEqual([1])
     expect(adapter.mate(0)).toBe('hg38')
   })
 })

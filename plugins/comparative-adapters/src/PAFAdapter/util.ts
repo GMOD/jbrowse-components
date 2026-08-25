@@ -210,8 +210,12 @@ export function makeSyntenyFeature({
 }) {
   const { numMatches = 0, blockLen = 1, cg, cs } = extra
   const { CIGAR, cs: orientedCs } = orientAlignment({ cg, cs, flip, strand })
+  // The perspective is part of the identity, not just the row: a self-alignment
+  // serves one row from both of its ends against one assembly name, and those
+  // are two features that have to draw — and be picked, and dedupe — apart. The
+  // separators also keep `1` + `2asm` from reading as `12` + `asm`.
   const data: SimpleFeatureSerialized = {
-    uniqueId: syntenyId + assemblyName,
+    uniqueId: `${syntenyId}-${flip ? 'q' : 't'}-${assemblyName}`,
     assemblyName,
     start,
     end,

@@ -9,7 +9,7 @@ import type { Feature } from '@jbrowse/core/util'
  * The same alignment seen from its other end.
  *
  * WHY THE WORKER HAS TO DO THIS. An adapter orients a row to whichever axis was
- * asked about — `PairwiseAdapterBase.sideFor` picks the side off the queried
+ * asked about — `PairwiseAdapterBase.facingSides` picks the side off the queried
  * region's own assembly — so the second, target-axis fetch returns rows anchored
  * on the target row. Everything downstream of here assumes the opposite:
  * `refName`/`start`/`end` on the query axis and `mate` on the target's. One of
@@ -25,8 +25,10 @@ import type { Feature } from '@jbrowse/core/util'
  *
  * The id is kept. A file's two perspectives of one alignment have distinct ids
  * by construction (PIF stores them as separate rows, all-vs-all numbers them
- * apart on purpose), so this cannot collide with the query fetch's own — which
- * is also why nothing here has to join the two fetches on a shared key.
+ * apart on purpose, and the pairwise adapters put the perspective in the id so
+ * a self-alignment's two ends do not share one), so this cannot collide with
+ * the query fetch's own — which is also why nothing here has to join the two
+ * fetches on a shared key.
  */
 export function flipSyntenyFeature(f: Feature): Feature | undefined {
   const mate = getMate(f)

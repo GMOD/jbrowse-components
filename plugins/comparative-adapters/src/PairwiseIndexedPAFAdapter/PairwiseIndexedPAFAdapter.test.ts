@@ -308,6 +308,41 @@ describe('PairwiseIndexedPAFAdapter', () => {
     })
   })
 
+  // A self-alignment names one assembly on both sides, and PIF files the two
+  // perspectives of a row under separate q/t seqids. Picking the side by first
+  // match read the q-lines for every query, so the t-perspective of every row
+  // was never seeked for and half the alignment did not draw.
+  describe('self-alignment', () => {
+    it('reads both the q and t seqids of the queried contig', async () => {
+      const adapter = makeAdapter(pifInsPath, ['volvox', 'volvox'])
+      const features = await firstValueFrom(
+        adapter
+          .getFeatures({
+            refName: 'ctgA',
+            start: 0,
+            end: 60000,
+            assemblyName: 'volvox',
+          })
+          .pipe(toArray()),
+      )
+      expect(features.length).toBe(2)
+      // the q-line's CIGAR carries the 4800bp as a deletion, the t-line's as an
+      // insertion: the same alignment from its two ends
+      expect(features.map(f => f.get('CIGAR')).sort()).toEqual([
+        '31198M4800D18803M',
+        '31198M4800I18803M',
+      ])
+      expect(new Set(features.map(f => f.id())).size).toBe(2)
+    })
+
+    it('reports the contigs of both perspectives, undoubled', async () => {
+      const adapter = makeAdapter(pifInsPath, ['volvox', 'volvox'])
+      expect(await adapter.getRefNames({ assemblyName: 'volvox' })).toEqual([
+        'ctgA',
+      ])
+    })
+  })
+
   describe('getAssemblyNames', () => {
     it('returns assembly names from config', () => {
       const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])

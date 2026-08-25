@@ -236,3 +236,104 @@ test('an id:f: tag becomes identity, not the feature name', async () => {
   expect(f!.get('identity')).toBeCloseTo(0.98)
   expect(f!.get('id')).toBeUndefined()
 })
+
+// A self-alignment names one assembly on both sides — a genome against its own
+// paralogy, which is what a whole-genome-duplication PAF is. Picking the side
+// by first match answered the query columns for every query, so every row
+// anchored on the target columns was dropped and half the alignment never drew.
+function makeSelfAdapter() {
+  const path = join(mkdtempSync(join(tmpdir(), 'paf-self-')), 'self.paf')
+  writeFileSync(
+    path,
+    'ctgA\t1000\t100\t200\t+\tctgB\t2000\t300\t400\t95\t100\t60\n' +
+      'ctgC\t1000\t0\t100\t+\tctgC\t1000\t500\t600\t95\t100\t60\n',
+  )
+  return new Adapter(
+    MyConfigSchema.create({
+      pafLocation: { localPath: path, locationType: 'LocalPathLocation' },
+      assemblyNames: ['vvx', 'vvx'],
+    }),
+  )
+}
+
+test('a self-alignment serves a contig that only the target columns name', async () => {
+  const features = await firstValueFrom(
+    makeSelfAdapter()
+      .getFeatures({
+        refName: 'ctgB',
+        start: 0,
+        end: 2000,
+        assemblyName: 'vvx',
+      })
+      .pipe(toArray()),
+  )
+  expect(features.length).toBe(1)
+  expect(features[0]!.get('refName')).toBe('ctgB')
+  expect(features[0]!.get('start')).toBe(300)
+  expect(features[0]!.get('mate')).toMatchObject({ refName: 'ctgA' })
+})
+
+test('a self-alignment reports both sides of the file as its refNames', async () => {
+  const refNames = await makeSelfAdapter().getRefNames({ assemblyName: 'vvx' })
+  expect([...refNames].sort()).toEqual(['ctgA', 'ctgB', 'ctgC'])
+})
+
+// Both ends of a row within one contig face the query, and each has to draw
+// against the other, so they are two features and cannot share a uniqueId.
+test('a self-alignment draws both ends of a row anchored on one contig', async () => {
+  const features = await firstValueFrom(
+    makeSelfAdapter()
+      .getFeatures({
+        refName: 'ctgC',
+        start: 0,
+        end: 1000,
+        assemblyName: 'vvx',
+      })
+      .pipe(toArray()),
+  )
+  expect(features.map(f => f.get('start')).sort((a, b) => a - b)).toEqual([
+    0, 500,
+  ])
+  expect(new Set(features.map(f => f.id())).size).toBe(2)
+})
+
+// Many PAFs carry each alignment twice, once written from each end — minimap2
+// run both ways, or the volvox_contig_swap fixture below. Serving both sides
+// then reaches one alignment twice, as its own query row and as its mirror's
+// target row, and the view painted the ribbon on top of itself.
+test('a self-alignment written in both directions draws each alignment once', async () => {
+  const adapter = new Adapter(
+    MyConfigSchema.create({
+      pafLocation: {
+        localPath:
+          require.resolve('../../../../test_data/volvox/volvox_contig_swap.paf'),
+        locationType: 'LocalPathLocation',
+      },
+      assemblyNames: ['volvox', 'volvox'],
+    }),
+  )
+  const onCtgA = await firstValueFrom(
+    adapter
+      .getFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 50001,
+        assemblyName: 'volvox',
+      })
+      .pipe(toArray()),
+  )
+  const onCtgB = await firstValueFrom(
+    adapter
+      .getFeatures({
+        refName: 'ctgB',
+        start: 0,
+        end: 6079,
+        assemblyName: 'volvox',
+      })
+      .pipe(toArray()),
+  )
+  expect(onCtgA.length).toBe(1)
+  expect(onCtgB.length).toBe(1)
+  expect(onCtgA[0]!.get('mate')).toMatchObject({ refName: 'ctgB' })
+  expect(onCtgB[0]!.get('mate')).toMatchObject({ refName: 'ctgA' })
+})

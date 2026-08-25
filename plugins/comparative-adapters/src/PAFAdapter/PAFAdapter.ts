@@ -40,56 +40,73 @@ export default class PAFAdapter extends PairwiseAdapterBase {
     // Resolved before the setup: an assembly this adapter does not carry has
     // the same answer whatever the file says, and reading it first was
     // downloading and parsing a whole PAF to return [].
-    const side = this.sideFor(opts.assemblyName)
-    if (side === -1) {
+    const sides = this.facingSides(opts.assemblyName)
+    if (sides.length === 0) {
       return []
     }
     const { byRefName } = await this.setup(opts)
-    return [...byRefName[side].keys()]
+    return [...new Set(sides.flatMap(side => [...byRefName[side].keys()]))]
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
-      const side = this.sideFor(assemblyName)
-      if (side === -1) {
+      const sides = this.facingSides(assemblyName)
+      if (sides.length === 0) {
         console.warn(`${assemblyName} not found in this adapter`)
         observer.complete()
         return
       }
       const { records, byRefName } = await this.setup(opts)
+      const notYetEmitted = this.createSideDedupe(sides)
 
-      // if the getFeatures::query is on the query assembly, flip orientation
-      // of data
-      const flip = side === 0
-      const mateAssemblyName = this.mateAssemblyName(side)
+      // Both sides only for a self-alignment, where each end of a duplicated
+      // block is the other's mate and the queried contig can be named by either
+      // column.
+      for (const side of sides) {
+        // if the getFeatures::query is on the query assembly, flip orientation
+        // of data
+        const flip = side === 0
+        const mateAssemblyName = this.mateAssemblyName(side)
 
-      // Only the rows anchored on the queried contig, rather than the whole
-      // file per region — see indexRecordsByName. Walked in ascending record
-      // index, so features still arrive in file order.
-      for (const i of byRefName[side].get(qref) ?? []) {
-        const record = records[i]!
-        const { refName, start, end, mateRefName, mateStart, mateEnd } =
-          orientPafRecord(record, flip)
-        if (doesIntersect2(qstart, qend, start, end)) {
-          observer.next(
-            makeSyntenyFeature({
-              syntenyId: i,
-              assemblyName,
+        // Only the rows anchored on the queried contig, rather than the whole
+        // file per region — see indexRecordsByName. Walked in ascending record
+        // index, so features still arrive in file order.
+        for (const i of byRefName[side].get(qref) ?? []) {
+          const record = records[i]!
+          const { refName, start, end, mateRefName, mateStart, mateEnd } =
+            orientPafRecord(record, flip)
+          if (
+            doesIntersect2(qstart, qend, start, end) &&
+            notYetEmitted({
               refName,
               start,
               end,
               strand: record.strand,
-              extra: record.extra,
-              flip,
-              mate: {
-                start: mateStart,
-                end: mateEnd,
-                refName: mateRefName,
-                assemblyName: mateAssemblyName,
-              },
-            }),
-          )
+              mateRefName,
+              mateStart,
+              mateEnd,
+            })
+          ) {
+            observer.next(
+              makeSyntenyFeature({
+                syntenyId: i,
+                assemblyName,
+                refName,
+                start,
+                end,
+                strand: record.strand,
+                extra: record.extra,
+                flip,
+                mate: {
+                  start: mateStart,
+                  end: mateEnd,
+                  refName: mateRefName,
+                  assemblyName: mateAssemblyName,
+                },
+              }),
+            )
+          }
         }
       }
 
