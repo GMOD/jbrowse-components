@@ -56,7 +56,7 @@ function writeStatus(self: unknown) {
  * takes a duck-typed node, and booting one would put two plugins between each
  * rule and its assertion.
  */
-function makeHost(opts?: { enabled?: boolean }) {
+function makeHost(opts?: { enabled?: boolean; keyed?: boolean }) {
   const Host = types
     .model('PrerequisiteHost', {})
     .volatile(self => ({
@@ -64,6 +64,9 @@ function makeHost(opts?: { enabled?: boolean }) {
       reloadCounter: 0,
       fetchInert: false,
       enabled: opts?.enabled ?? true,
+      /** `keyed` mode: what `prepare` asks for, and what `commit` has stamped */
+      key: 'a',
+      heldKey: undefined as string | undefined,
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
       statusWindow: createStatusWindow(writeStatus(self)),
@@ -97,6 +100,14 @@ function makeHost(opts?: { enabled?: boolean }) {
       setEnabled(v: boolean) {
         self.enabled = v
       },
+      setKey(v: string) {
+        self.key = v
+      },
+      // an action, because `commit` is a plain closure the skeleton calls and a
+      // bare volatile write from there is the one MST protects against
+      setHeldKey(v: string) {
+        self.heldKey = v
+      },
       reload() {
         self.reloadCounter += 1
       },
@@ -116,15 +127,24 @@ function makeHost(opts?: { enabled?: boolean }) {
           },
           // this fetch's inputs are the host's alone, so its args are empty —
           // `undefined` is reserved for the decline
-          prepare: () => ({}),
+          prepare: () => (opts?.keyed ? { key: self.key } : {}),
+          // declared only in `keyed` mode, so every other test drives the
+          // skeleton with no freshness gate at all — which is the shape all but
+          // one fetch in the tree is in
+          dataCurrent: opts?.keyed
+            ? ({ key }) => key === self.heldKey
+            : undefined,
           run: (_args, ctx) => {
             const d = deferred()
             self.runs.push(d)
             self.contexts.push(ctx)
             return d.promise
           },
-          commit: value => {
+          commit: (value, args) => {
             self.committed.push(value)
+            if (args.key !== undefined) {
+              self.setHeldKey(args.key)
+            }
           },
           setError: e => {
             self.setError(e)
@@ -343,5 +363,88 @@ test('a failed run retires its status slot', async () => {
     setTimeout(r, THROTTLE_SETTLE_MS)
   })
   expect(host.statusMessage).toBeUndefined()
+  spy.mockRestore()
+})
+
+// The freshness gate, and the reload that has to override it. This is
+// ARCHITECTURE.md's law — "a gate on a freshness signal must also be invalidated
+// by `reload()`" — held by the skeleton rather than by each host, because every
+// layer that left it to the host shipped the dead Retry eventually: arc for the
+// global family, and the multi-way synteny display's two dependent fetches,
+// whose `prepare` compared a committed key with no `reload()` override to match.
+
+test('a fetch declines args its own commit has already answered', async () => {
+  const host = makeHost({ keyed: true })
+  await flush()
+  host.runs[0]!.resolve('first')
+  await settleDebounce(() => host.committed.length > 0)
+  expect(host.committed).toEqual(['first'])
+
+  // Force a body re-run through something the gate does NOT read, and assert it
+  // reached the gate and stopped. Waiting on the commit's own re-run would not
+  // do: `dataCurrent` is what reads the committed key, so a skeleton that never
+  // consulted the gate would never track it either, and the body would simply
+  // not re-run — a decline and a dead autorun are indistinguishable from the
+  // outside unless the trigger is independent of the gate.
+  const before = host.probe.bodyRuns
+  host.setEnabled(false)
+  host.setEnabled(true)
+  // one run, not two: the pair of sets lands in a single reaction, and that
+  // run sees `enabled` back to true, so it reaches the freshness gate
+  await settleDebounce(() => host.probe.bodyRuns > before)
+  expect(host.probe.bodyRuns).toBeGreaterThan(before)
+  expect(host.runs).toHaveLength(1)
+})
+
+test('a change in the args reopens the freshness gate', async () => {
+  const host = makeHost({ keyed: true })
+  await flush()
+  host.runs[0]!.resolve('first')
+  await settleDebounce(() => host.committed.length > 0)
+
+  host.setKey('b')
+  await settleDebounce(() => host.runs.length > 1)
+  expect(host.runs).toHaveLength(2)
+})
+
+// The regression, and the whole reason the gate is declared to the skeleton
+// instead of written into `prepare`: after a reload the held data is still
+// current by every measure the host can see, so a gate the host owns declines,
+// and Retry clears the error while nothing refetches.
+test('a reload refetches through a freshness gate that is still satisfied', async () => {
+  const host = makeHost({ keyed: true })
+  await flush()
+  host.runs[0]!.resolve('first')
+  await settleDebounce(() => host.committed.length > 0)
+  expect(host.runs).toHaveLength(1)
+
+  host.reload()
+  await settleDebounce(() => host.runs.length > 1)
+  expect(host.runs).toHaveLength(2)
+
+  // and the override is spent once: the reload does not leave the gate open
+  host.runs[1]!.resolve('second')
+  await settleDebounce(() => host.committed.length > 1)
+  const before = host.probe.bodyRuns
+  host.setEnabled(false)
+  host.setEnabled(true)
+  await settleDebounce(() => host.probe.bodyRuns > before)
+  expect(host.runs).toHaveLength(2)
+})
+
+// A retry is not spent on a fetch that failed: nothing was committed, so the
+// gate is open on its own merits and the next trigger fetches without a second
+// reload.
+test('a failed fetch leaves the freshness gate open', async () => {
+  const spy = silenceErrorLog()
+  const host = makeHost({ keyed: true })
+  await flush()
+  host.runs[0]!.reject(new Error('nope'))
+  await settleDebounce(() => host.error !== undefined)
+  expect(host.committed).toEqual([])
+
+  host.setKey('b')
+  await settleDebounce(() => host.runs.length > 1)
+  expect(host.runs).toHaveLength(2)
   spy.mockRestore()
 })

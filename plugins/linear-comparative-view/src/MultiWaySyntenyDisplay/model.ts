@@ -658,26 +658,6 @@ export function stateModelFactory(
         self.rowOrder.replace(order)
       },
     }))
-    .actions(self => {
-      const superReload = self.reload
-      return {
-        /**
-         * #action
-         * `GlobalFetchMixin.reload()` plus the two dependent fetches' committed
-         * keys, which are their gates: each declines while its key answers the
-         * current specs, and a counter bump alone would re-run both bodies
-         * straight into that decline. Same pairing the mixin makes for
-         * `loadedFetchSignature`, and the same dead Retry button without it —
-         * a lane whose annotation failed degraded to placement boxes and no
-         * Retry could ever ask for it again
-         */
-        reload() {
-          self.laneGenesKey = ''
-          self.laneLinksKey = ''
-          superReload()
-        },
-      }
-    })
     .actions(self => ({
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises

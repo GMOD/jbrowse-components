@@ -1,9 +1,15 @@
 import { createDisplay } from './testEnv.ts'
 
 // The lane genes and lane links are a SECOND fetch, dependent on the ortholog
-// fetch that draws the placement boxes. What that costs the display is three
-// rules, and each of these is one of them going wrong before it was written
-// down.
+// fetch that draws the placement boxes.
+//
+// The retry rule those two used to break is NOT here any more, and that is the
+// point: `laneGenesKey` was compared by hand in `prepare` with no `reload()`
+// override to match, so Retry re-ran both bodies into the same decline forever.
+// It is `installFetch`'s `dataCurrent` now — the skeleton owns the gate and the
+// reload that overrides it — so what pins it is `installFetch.test.ts`, once,
+// for every fetch rather than for this display. What is left here is what stays
+// this display's own.
 
 // A dependent fetch that holds `displayPhase` at `loading` for every refetch
 // puts the striped scrim over lanes that are already drawn: the fetch is
@@ -25,25 +31,6 @@ test('the lane fetch is part of loading only until it first lands', () => {
   display.setLaneGenes('a-key-the-specs-have-moved-off', new Map())
   expect(display.laneGenesCurrent).toBe(false)
   expect(display.displayPhase).toBe('ready')
-})
-
-// `laneGenesKey` is the dependent fetch's gate: `prepare` declines while the
-// committed key answers the current specs. A gate on a freshness signal that
-// `reload()` does not invalidate is a dead Retry button — the counter bump
-// re-runs the body straight into the decline. A lane whose annotation failed
-// commits an empty map, so without this it degraded to placement boxes and no
-// Retry could ever ask for that lane again.
-test('a reload reopens both dependent fetches, not just the ortholog one', () => {
-  const display = createDisplay()
-  display.setLaneGenes('genes-key', new Map())
-  display.setLaneLinks('links-key', new Map())
-
-  display.reload()
-
-  expect(display.laneGenesKey).toBe('')
-  expect(display.laneLinksKey).toBe('')
-  // the mixin's own half still happens: its gate is the loaded signature
-  expect(display.dataCurrent).toBe(false)
 })
 
 // This display's `trackMenuItems` REPLACED the inherited list rather than

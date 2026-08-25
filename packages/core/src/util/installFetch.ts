@@ -176,6 +176,35 @@ export interface InstallFetchOptions<TArgs, TResult>
    */
   gate?: () => boolean
   /**
+   * Whether the data already held answers these args — the freshness gate,
+   * declared here rather than folded into `prepare` because **the skeleton owns
+   * the half of it that keeps being got wrong.**
+   *
+   * The law is ARCHITECTURE.md's: a gate on a freshness signal must also be
+   * invalidated by `reload()`, or Retry re-runs the body straight into the same
+   * decline and the button is dead. Every layer that has one made that pairing
+   * structural in the end — the global family after arc shipped the bug
+   * (`GlobalFetchMixin.reload` drops `loadedFetchSignature` in the same action
+   * as the bump) — and this is that move for the skeleton: a run whose
+   * `reloadCounter` has advanced since the run that last ISSUED a fetch ignores
+   * this gate, so nothing has to remember to clear anything. The multi-way
+   * synteny display's two dependent fetches shipped the same dead Retry from
+   * spelling the comparison in `prepare` with no override to match, which is
+   * what this exists to make unspellable.
+   *
+   * Separate from `prepare` because they answer different questions and only one
+   * of them can strand a display: `prepare` returning `undefined` is "nothing to
+   * fetch" (an empty viewport, no gene track configured), which is a legitimate
+   * decline forever and no amount of retrying should change it. This is "I have
+   * exactly this already", which a retry must be able to override. Read
+   * synchronously in the autorun body like `prepare`, so what it reads is
+   * tracked and a commit re-wakes the run that declined.
+   *
+   * Omit it where the fetch holds no committed state to compare against — most
+   * of them, whose `prepare` returns args unconditionally.
+   */
+  dataCurrent?: (args: TArgs) => boolean
+  /**
    * Install the two dev-only display-contract checks under this name. Omitted
    * by a **secondary** fetch on a host whose primary foundation already
    * installed them: `assertDisplayContract` would report the second install as
@@ -225,6 +254,7 @@ export function installFetch<TArgs, TResult>(
     report,
     gate,
     contract,
+    dataCurrent,
     prepare,
     run,
     commit,
@@ -236,6 +266,11 @@ export function installFetch<TArgs, TResult>(
   const noteFetchAutorunRun =
     contract === undefined ? undefined : installContractChecks(self, contract)
   const rotation = createStopTokenRotation(self, report)
+  // The `reloadCounter` this installation last issued a fetch at. Per
+  // installation and per instance, so a host with several fetches gives each its
+  // own — and a closure rather than model state, because nothing outside reads
+  // it and a volatile would be one more thing a host has to declare.
+  let issuedEpoch: number | undefined
   addDisposer(self, () => {
     rotation.dispose()
   })
@@ -246,7 +281,7 @@ export function installFetch<TArgs, TResult>(
     () => {
       // the pure "go again" signal, read unconditionally above every gate so a
       // Retry click re-runs the body even when nothing else moved
-      void self.reloadCounter
+      const reloadEpoch = self.reloadCounter
       // Tracked in the same breath and for the same reason, but the mirror
       // image: this one CLOSES the gate below, so a run that returned before
       // the counter read would drop the one observable that can reopen it and
@@ -264,6 +299,16 @@ export function installFetch<TArgs, TResult>(
         noteFetchAutorunRun?.('declined')
         return false
       }
+      // The freshness gate, and the reload that overrides it. Stamped at ISSUE
+      // rather than at commit: a fetch that fails leaves nothing current, so
+      // this gate is open anyway on the next run and consuming the retry here
+      // costs nothing — while a reload landing mid-flight is answered by the
+      // re-run the counter read above already guarantees.
+      if (dataCurrent?.(args) === true && reloadEpoch === issuedEpoch) {
+        noteFetchAutorunRun?.('declined')
+        return false
+      }
+      issuedEpoch = reloadEpoch
       noteFetchAutorunRun?.('fetched')
       // `run` is called synchronously, so its prefix down to its first await
       // executes in this derivation; `FetchPhases.run` promises those reads are

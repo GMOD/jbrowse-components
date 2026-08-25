@@ -843,6 +843,22 @@ stale frame stays under the loading overlay instead of blanking). Arc and HiC
 each carried their own copy of that override before the mixin owned it, and the
 copies were the reason the rule had to be remembered.
 
+**The shared skeleton owns the same pairing, for the fetches no check covers.**
+A gate on committed state goes in `installFetch`'s `dataCurrent`, not in
+`prepare`: the skeleton declines on it, and a run whose `reloadCounter` has
+advanced since the run that last *issued* a fetch ignores it, so a reload
+refetches with nothing to clear. The split matters because only one of the two
+declines can strand a display — `prepare` returning `undefined` is "nothing to
+fetch" (an empty viewport, no annotation track configured), a legitimate decline
+forever that no retry should change, while `dataCurrent` is "I have exactly
+this", which a retry must override. This exists because a **secondary** fetch
+passes no `contract` and so installs no `makeRetryContractCheck` (one ledger per
+node, one `lastCounter` per check — two would each demand a fetch from one
+bump), and the multi-way synteny display's two dependent fetches shipped the
+dead Retry in that blind spot: a committed key compared by hand in `prepare`,
+with no `reload()` override to match. Pinned in `installFetch.test.ts`, which is
+where a rule belongs once the skeleton holds it rather than each display.
+
 **The per-region twin: a `fetchNeeded` that declines to fetch must be woken by
 something `FetchVisibleRegions` already tracks.** That autorun tests
 `isBlockCovered(...) && isCacheValid(...)`, and `&&` short-circuits, so on a run

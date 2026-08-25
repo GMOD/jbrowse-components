@@ -36,6 +36,12 @@ export interface FetchPhases<TArgs, TResult, TCtx> {
    * data so it cannot drift from what was fetched even if the view moves again
    * mid-RPC.
    *
+   * **Comparing that key against what is already committed does not belong
+   * here.** This gate is "is there anything to fetch", which a retry must not
+   * override; "do I already have exactly this" is `installFetch`'s `dataCurrent`,
+   * which a retry must. Writing the second one into this one is how a display
+   * gets a dead Retry button — see there.
+   *
    * What it must **not** do is move a trigger read of its own under a bail-out.
    * See ARCHITECTURE.md §"The global-fetch trigger list must be read
    * unconditionally".

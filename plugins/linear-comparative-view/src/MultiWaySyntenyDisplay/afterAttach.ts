@@ -116,8 +116,9 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   // to hand-roll between them: the latest-wins rotation and its `isCurrent`
   // (a key compared by hand says a fetch is current again after the view goes
   // away and comes back, which the rotation does not), the token released
-  // however the run ends, the currency-guarded error rule, and the
-  // unconditional `reloadCounter` read that makes Retry reach them at all.
+  // however the run ends, the currency-guarded error rule, the unconditional
+  // `reloadCounter` read that makes Retry reach them at all, and — through
+  // `dataCurrent` — the reload that has to override their freshness gate.
   //
   // No `contract`: both are SECOND fetches on a display whose global foundation
   // already installed the two dev-only contract checks.
@@ -131,14 +132,15 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     // opening a second writer on the same field.
     report: { statusWindow: self.statusWindow },
     gate: () => !self.isMinimized,
-    // The committed key is the gate, and `reload()` clears it — a gate on a
-    // freshness signal that a reload does not invalidate is a dead Retry
+    // `prepare` answers only "is there anything to fetch" — no gene track for
+    // any lane means no specs, and no retry should change that. Whether the
+    // committed genes already answer these specs is `dataCurrent`, which the
+    // skeleton overrides on a reload so this pair needs no `reload()` of its own
     prepare: () => {
       const { key, specs } = self.laneGenesFetchSpecs
-      return specs.length > 0 && key !== self.laneGenesKey
-        ? { key, specs }
-        : undefined
+      return specs.length > 0 ? { key, specs } : undefined
     },
+    dataCurrent: ({ key }) => key === self.laneGenesKey,
     run: ({ specs }, ctx) =>
       fetchEachLane('MultiWayLaneGenes', specs, ctx, async (spec, laneCtx) => {
         const features = await laneCtx.callRpc('CoreGetFeatures', {
@@ -173,10 +175,9 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
     gate: () => !self.isMinimized,
     prepare: () => {
       const { key, specs } = self.laneLinksFetchSpecs
-      return specs.length > 0 && key !== self.laneLinksKey
-        ? { key, specs }
-        : undefined
+      return specs.length > 0 ? { key, specs } : undefined
     },
+    dataCurrent: ({ key }) => key === self.laneLinksKey,
     run: ({ specs }, ctx) =>
       fetchEachLane('MultiWayLaneLinks', specs, ctx, async (spec, laneCtx) => {
         const features = await laneCtx.callRpc('CoreGetFeatures', {

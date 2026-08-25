@@ -374,7 +374,15 @@ button is present, looks live, and does nothing. Two shapes have failed it:
   `dataCurrent`, so a bare `reloadCounter` bump refires the autorun into a no-op
   unless the loaded signature is dropped too — which is why
   `GlobalFetchMixin.reload()` does both in one action rather than each display
-  overriding it.
+  overriding it. The shared skeleton makes the same pairing for everything else:
+  a gate on committed state is declared as `installFetch`'s `dataCurrent`, and a
+  run whose reload counter has advanced since the last issued fetch ignores it.
+  **That is the one shape this check cannot report**, because a secondary fetch
+  installs no check at all — it passes no `contract`, since the ledger is one per
+  node and a second `lastCounter` would demand a fetch from the same bump. The
+  multi-way display's two dependent fetches shipped a dead Retry there, unseen by
+  everything, which is why the gate moved into the skeleton rather than a better
+  check being written.
 - **Work `reload()` never re-runs.** HiC's normalization/binsize header read was
   a bare `afterAttach` IIFE, so a retry cleared the error and dropped straight
   back onto the permanent scrim — the header was never re-read. It now runs from
