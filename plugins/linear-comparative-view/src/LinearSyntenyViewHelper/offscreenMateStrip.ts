@@ -4,7 +4,7 @@ import {
 } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
 import { offscreenMateMarkColorFor } from './offscreenMateMarkColors.ts'
 
-import type { CulledRibbonMateData } from '../LinearSyntenyDisplay/culledRibbonMates.ts'
+import type { CulledRibbonMates } from '../LinearSyntenyDisplay/culledRibbonMates.ts'
 import type {
   OffscreenMateDataset,
   OffscreenMateLane,
@@ -38,11 +38,12 @@ export interface OffscreenMateSource extends MarkColorSource {
       // view has not asked for one
       targetOffscreenMates?: OffscreenMateData
     }
-    // The alignments whose mate contig the facing row IS displaying and has
+    // The alignments whose facing contig the other row IS displaying and has
     // scrolled off, which is a question about the current transform rather than
-    // about the fetch — see `culledRibbonMates`. Undefined while the setting is
-    // off, so the pass that builds it is not run for a strip nothing draws.
-    culledRibbonMates?: CulledRibbonMateData
+    // about the fetch — see `culledRibbonMates`. One perspective per row, since
+    // an alignment can be off screen on either end. Undefined while the setting
+    // is off, so the pass that builds it is not run for a strip nothing draws.
+    culledRibbonMates?: CulledRibbonMates
     // what the ribbons beside these marks are keyed by, which is what decides
     // whether a mark may be colored by the contig it names
     effectiveColorBy?: SyntenyColorBy
@@ -69,10 +70,10 @@ function laneData(
   display: OffscreenMateSource['linearSyntenyDisplays'][number],
   side: OffscreenMateSide,
 ): (OffscreenMateDataset | undefined)[] {
-  const { featureData } = display
+  const { featureData, culledRibbonMates } = display
   return side === 'top'
-    ? [featureData?.offscreenMates, display.culledRibbonMates]
-    : [featureData?.targetOffscreenMates]
+    ? [featureData?.offscreenMates, culledRibbonMates?.onQueryAxis]
+    : [featureData?.targetOffscreenMates, culledRibbonMates?.onTargetAxis]
 }
 
 // Nothing this dataset holds can be off the facing axis, so the strip need not
@@ -122,10 +123,9 @@ function lane(
  * A synteny level sits between rows `level` and `level + 1`. The query row's
  * off-screen mates have no position on the row below — that is what they are —
  * so they hang off the top edge against `views[level]`; the target row's are the
- * mirror, arriving only from the second fetch, and hang off the bottom against
- * `views[level + 1]`. Reading one against the other's ruler would draw every
- * mark at a plausible-looking wrong offset that nothing else in the view
- * disagrees with.
+ * mirror and hang off the bottom against `views[level + 1]`. Reading one against
+ * the other's ruler would draw every mark at a plausible-looking wrong offset
+ * that nothing else in the view disagrees with.
  */
 export function offscreenMateStrips(
   model: OffscreenMateSource,
@@ -280,7 +280,7 @@ function stripHit<T>(
  * three are "alignments here that go there", which is the sentence the tooltip
  * prints; which of them are drawable is what the mark under the pointer already
  * says. Counting only the currently-hidden ones would be a full walk of the lane
- * per pointer move — 19ms at 100k features, see
+ * per pointer move — 15ms at 100k features, see
  * `agent-docs/measurements/culled-ribbon-mates.json` — to answer a question the
  * mark's presence answers for free.
  *

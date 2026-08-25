@@ -322,11 +322,12 @@ ribbons reaching the visible slice — 125 of 126 instances in the volvox
 reproduction. The one arrangement where "what am I not being shown" is hardest
 to answer was the one arrangement the feature said nothing about.
 
-| class | anchor | mate | why no ribbon | decided |
-| --- | --- | --- | --- | --- |
-| **A** | visible v1 window | contig v2 does not display | no second endpoint | worker, per fetch |
-| **B** | contig v1 does not display | visible v2 window | never requested | worker, per fetch (`bidirectionalFetch`) |
-| **C** | visible v1 window | contig v2 displays and has scrolled off | `overdrawPx` cull | **main thread, per repaint** |
+| class | anchor | mate | why no ribbon | decided | marked on |
+| --- | --- | --- | --- | --- | --- |
+| **A** | visible v1 window | contig v2 does not display | no second endpoint | worker, per fetch | query axis |
+| **B** | contig v1 does not display | visible v2 window | never requested | worker, per fetch (`bidirectionalFetch`) | target axis |
+| **C** | visible v1 window | contig v2 displays and has scrolled off | `overdrawPx` cull | **main thread, per repaint** | query axis |
+| **D** | contig v1 displays and has scrolled off | visible v2 window | `overdrawPx` cull | **main thread, per repaint** | target axis |
 
 **C cannot move into the fetch, and that is the whole of its design.** The facing
 row pans a full `syntenyPanBufferPx` without refetching, so a mark decided when
@@ -334,6 +335,31 @@ the data landed sits beside the ribbon it claims does not exist. It is therefore
 a draw-time question asked against the same band `isRibbonCulled` uses —
 `culledRibbonMates` restates that band in the facing axis's cumBp, and the one
 comparison decides both, so a mark and its ribbon cannot both be drawn.
+
+*2026-08-25:* **D is C read from the other row, and it shipped a strip short.**
+`isRibbonCulled` drops a ribbon when EITHER end leaves its own row's band, so the
+undrawable alignment whose query end is off screen and whose target end is in
+plain sight is as real as C — and it was placed on the query axis alone, at an x
+the layout rejects, so it drew nowhere: no ribbon, no mark, on either strip. What
+made it visible from the menu is that "Mark them, both rows" is the setting that
+goes and FETCHES that class: the second query recovers alignments anchored on the
+lower row whose query end is a pan buffer or more off the top row's edge, which
+is class D by construction. On peach chr1 18-22Mb over the whole of grape chr1
+that is **849 of the 1029 alignments the level holds**, against 74 marks from
+class B — so the second row read as having no marks at all while the first had
+thousands.
+
+`culledRibbonMateData` returns the pair now (`onQueryAxis`, `onTargetAxis`): the
+instance walk resolves both axes already, so the transpose is the two extents and
+one more per-contig tally, +6% on the per-fetch build and nothing per repaint.
+The two cannot double-mark, because being outside a row's band means being more
+than `overdrawPx` off that row's screen — so an alignment culled on one end has
+exactly one axis the layout will place it on.
+
+D does NOT need the second fetch, and is drawn under plain "Mark them" too: the
+fetch window is the visible window plus a pan buffer, so the alignments in that
+margin are held, culled, and have a target-axis position. The setting still gates
+the QUERY, which is the only thing that costs anything.
 
 **Off the instances, not the feature lanes.** `starts`/`ends` are the adapter's
 untrimmed coordinates; a CIGAR-clipped block draws from corners the projection
@@ -353,18 +379,18 @@ every size. The repaint column is the rect-per-mark cost both classes already
 had, and the table above is the same shape. What this change does to it is make
 the ceiling REACHABLE in a state that previously drew nothing at all: query row
 zoomed out, facing row zoomed in. The `covered` column is the other half — it is
-what the extent buys, turning a 19ms walk at 100k features into nothing — and
+what the extent buys, turning a 15ms walk at 100k features into nothing — and
 `build` is the only genuinely new work, once per fetch.
 
 <!-- BEGIN GENERATED MEASUREMENT culled-ribbon-mates -->
 
-| features | instances | build, per fetch |  one repaint | control (no mate lane) | repaint, band covers | hover over ribbons |
-| -------: | --------: | ---------------: | -----------: | ---------------------: | -------------------: | -----------------: |
-|   10,000 |    30,000 |           0.78ms |       1.34ms |                  1.4ms |                  0ms |            0.001ms |
-|   50,000 |   150,000 |           2.95ms |       8.79ms |                  9.9ms |              0.001ms |            0.001ms |
-|  100,000 |   300,000 |           5.61ms |      18.96ms |                18.78ms |                  0ms |            0.001ms |
-|  250,000 |   750,000 |          14.53ms |      54.14ms |                 59.1ms |                  0ms |            0.001ms |
-|  500,000 | 1,500,000 |           28.1ms | **209.99ms** |               213.58ms |                  0ms |            0.001ms |
+| features | instances | build, per fetch | one repaint | control (no mate lane) | repaint, band covers | hover over ribbons |
+| -------: | --------: | ---------------: | ----------: | ---------------------: | -------------------: | -----------------: |
+|   10,000 |    30,000 |           0.51ms |      1.03ms |                 0.93ms |                  0ms |                0ms |
+|   50,000 |   150,000 |            2.9ms |      8.86ms |                 6.97ms |                  0ms |            0.001ms |
+|  100,000 |   300,000 |           4.86ms |     15.04ms |                15.32ms |                  0ms |            0.001ms |
+|  250,000 |   750,000 |          12.38ms |     42.07ms |                47.66ms |                  0ms |            0.001ms |
+|  500,000 | 1,500,000 |          23.27ms | **166.1ms** |               168.39ms |                  0ms |            0.001ms |
 
 <!-- END GENERATED MEASUREMENT culled-ribbon-mates -->
 

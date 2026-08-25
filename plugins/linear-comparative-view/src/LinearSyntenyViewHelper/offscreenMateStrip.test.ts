@@ -292,3 +292,95 @@ test('a click resolves the same strip and row, plus the mate locus', () => {
     locus: { start: 0, end: 500 },
   })
 })
+
+// The class the worker cannot see: the alignment is drawn on BOTH axes, and
+// whether it is a mark is a question about where the facing row currently sits.
+// One perspective per row, since either end can be the one that scrolled off.
+function culled(refName: string, [lo, hi]: [number, number]) {
+  return {
+    ...named(refName),
+    mateAxis: {
+      starts: Float64Array.from([lo]),
+      ends: Float64Array.from([hi]),
+      lo,
+      hi,
+    },
+  }
+}
+
+// Nothing the worker's two lanes hold, and the whole of what the lower strip was
+// missing: a ribbon culled because the row ABOVE scrolled off its query end
+// still has a target-axis position, and the bottom strip is the only surface
+// that can stand in for it. Marked on the query axis alone it landed at an x the
+// layout rejects, so it drew nowhere at all.
+test('the bottom strip marks the ribbons the row above culled', () => {
+  const model = bothSides({
+    linearSyntenyDisplays: [
+      {
+        featureData: {
+          offscreenMates: mates(0),
+          targetOffscreenMates: mates(0),
+        },
+        culledRibbonMates: {
+          onQueryAxis: culled('inBand', [0, 50]),
+          onTargetAxis: culled('scrolledAway', [100_000, 100_050]),
+        },
+      },
+    ],
+  })
+  expect(offscreenMateStrips(model)).toMatchObject([
+    { side: 'bottom', navRow: 0 },
+  ])
+  expect(offscreenMateHit(withBand(model), 1, 99)?.refName).toBe('scrolledAway')
+})
+
+// The same test the top strip's culled lane runs, on the other row's band: an
+// alignment whose query end is still inside the band above is a RIBBON, and
+// marking it would put a mark beside the thing it says is not there.
+test('an alignment the row above is still showing is no mark down there', () => {
+  expect(
+    offscreenMateStrips(
+      bothSides({
+        linearSyntenyDisplays: [
+          {
+            featureData: {
+              offscreenMates: mates(0),
+              targetOffscreenMates: mates(0),
+            },
+            culledRibbonMates: {
+              onQueryAxis: culled('inBand', [0, 50]),
+              onTargetAxis: culled('inBand', [0, 50]),
+            },
+          },
+        ],
+      }),
+    ),
+  ).toEqual([])
+})
+
+// A contig the row above is DISPLAYING and has merely scrolled off is scrolled
+// to, not navigated to — `navToLocString` would replace that row's regions to
+// show a contig it already has. The presence of the mate lane is what says which
+// of the two a mark is, and it has to survive the transpose.
+test('a culled bottom mark clicks through as a contig that row already has', () => {
+  const model = bothSides({
+    linearSyntenyDisplays: [
+      {
+        featureData: {
+          offscreenMates: mates(0),
+          targetOffscreenMates: mates(0),
+        },
+        culledRibbonMates: {
+          onQueryAxis: culled('inBand', [0, 50]),
+          onTargetAxis: culled('scrolledAway', [100_000, 100_050]),
+        },
+      },
+    ],
+  })
+  expect(offscreenMateNavHit(withBand(model), 1, 99)).toMatchObject({
+    refName: 'scrolledAway',
+    navRow: 0,
+    side: 'bottom',
+    displayed: true,
+  })
+})

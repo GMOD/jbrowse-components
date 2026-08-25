@@ -378,9 +378,12 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * Every alignment this display drew geometry for, placed on both axes, so
-       * the strip can mark the ones the band is currently culling — the mate is
-       * on a contig the facing row displays and has scrolled off, which no
-       * fetch-time tally can answer. See `culledRibbonMates`.
+       * either strip can mark the ones the band is currently culling — the
+       * facing end is on a contig that row displays and has scrolled off, which
+       * no fetch-time tally can answer. ONE PER ROW, because culling is
+       * symmetric: an alignment can be undrawable with its query end off screen
+       * and its target end in plain sight, and marking it on the query axis
+       * puts it at an x the layout rejects. See `culledRibbonMates`.
        *
        * LAZY BY CONSTRUCTION rather than gated on the setting:
        * `offscreenMateStrips` reads `showOffscreenMates` before it reads this,

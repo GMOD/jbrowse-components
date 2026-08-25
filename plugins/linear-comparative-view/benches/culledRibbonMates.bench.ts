@@ -14,7 +14,9 @@
 // is on by default, so both need a number rather than an argument.
 //
 // ARMS:
-//   build      one `culledRibbonMateData`, which is the per-FETCH half
+//   build      one `culledRibbonMateData`, which is the per-FETCH half. It
+//              resolves BOTH rows' perspectives in the one pass, so this is the
+//              cost of the pair rather than of one strip.
 //   repaint    one overlay repaint with the facing row scrolled clear of every
 //              mate, so nothing is culled from the walk and every entry is a
 //              mark. The ceiling.
@@ -90,6 +92,12 @@ function features(n: number) {
     (_, i) => `NC_0818${10 + i}.1`,
   )
   return {
+    // one query contig, which is the arrangement these marks arise in: a row
+    // zoomed into one chromosome against a facing row holding twenty
+    refNameDict: ['NC_034009.1'],
+    refNameIds: new Uint32Array(n),
+    starts: Uint32Array.from({ length: n }, (_, i) => i * 10),
+    ends: Uint32Array.from({ length: n }, (_, i) => i * 10 + 500),
     mateRefNameDict,
     mateRefNameIds: Uint32Array.from({ length: n }, (_, i) => i % 20),
     mateStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
@@ -150,7 +158,7 @@ for (const count of [10_000, 50_000, 100_000, 250_000, 500_000]) {
   const build = min(() => {
     culledRibbonMateData(geom, feats)
   })
-  const data = culledRibbonMateData(geom, feats)
+  const { onQueryAxis: data } = culledRibbonMateData(geom, feats)
 
   const clear = { lo: GENOME_BP * 2, hi: GENOME_BP * 2 + 1_000_000 }
   const repaint = min(() => {

@@ -71,6 +71,15 @@ three ways by where the QUERY end lands:
 | on a displayed v1 contig, outside that window | a ribbon no single-axis fetch could return | `flipSyntenyFeature` turns it round and it joins the pile |
 | on a contig v1 is not displaying | no second endpoint exists | `targetOffscreenMates`, marked on the target axis |
 
+**The middle row draws nothing as a ribbon and, until 2026-08-25, nothing at
+all.** Its query end is at least a pan buffer off the top row's edge by
+construction, so `isRibbonCulled` drops it — and the mark that stands in for a
+culled ribbon was placed on the query axis, where that end is off screen. It is
+class D of [offscreen-synteny-mates](offscreen-synteny-mates.md), marked on the
+target axis now, which is the axis it has. On this doc's own grape/peach case
+that row is 453 of the 1029 alignments, and 849 of them end up class D once the
+band test is applied.
+
 The marks are the mirror of
 [offscreen-synteny-mates](offscreen-synteny-mates.md)'s collector, drawn on the
 TARGET axis with a click that navigates the row ABOVE.
@@ -99,11 +108,15 @@ the target axis, all to peach `NC_034012.1`** — the same 74 this doc measured
 offline for the reverse stacking, arrived at down a completely different path.
 The probe reports either lane.
 
-**The adapters already answer from either side.** `PairwiseAdapterBase.sideFor`
-picks the side off the queried region's own `assemblyName`, `orientPafRecord`
-orients the row to it, and `orientAlignment` swaps the indel CIGAR
-(`swapIndelCigar` forward, `flipCigar` reverse). All-vs-all indexes
-`for (const flip of [true, false])`. Nothing in the adapters had to change.
+**The adapters already answer from either side.**
+`PairwiseAdapterBase.facingSides` picks the sides off the queried region's own
+`assemblyName`, an array in file-column order because a self-alignment names one
+assembly on both sides and both of them face it. (The earlier single-side answer
+served the query columns and left every target-anchored row undrawn.)
+`orientPafRecord` orients the row to the side, and `orientAlignment` swaps the
+indel CIGAR (`swapIndelCigar` forward, `flipCigar` reverse). All-vs-all indexes
+`for (const flip of [true, false])`. Nothing in the adapters had to change for
+this.
 
 ## The flip, which is the part that can be wrong quietly
 
