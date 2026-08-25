@@ -27,7 +27,9 @@ import type {
  * literal instead of a live MST tree.
  */
 export type SampleNavigationModel = MafHitTestModel &
-  Pick<LinearMafDisplayModel, 'id' | 'rowNavigationTarget'>
+  Pick<LinearMafDisplayModel, 'id' | 'rowNavigationTarget'> & {
+    view: { assemblyNames: string[] }
+  }
 
 /** Above this many navigable rows the entries move into a submenu. */
 const MAX_INLINE_ITEMS = 6
@@ -64,7 +66,10 @@ export function selectedRowTargets(
       endBp,
       row,
     )
-    if (target) {
+    // The reference's own row leads nowhere this view is not already: a
+    // pangenome MAF carries the reference as a sample, and with its assembly
+    // loaded under that name the row resolves like any other.
+    if (target && !model.view.assemblyNames.includes(target.assemblyName)) {
       targets.push({ ...target, rowIndex: row })
     }
   }

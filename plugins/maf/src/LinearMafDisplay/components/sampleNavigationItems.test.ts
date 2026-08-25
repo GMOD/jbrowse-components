@@ -17,6 +17,7 @@ function model(
   return {
     id: 'display1',
     view: {
+      assemblyNames: ['hg38'],
       bpPerPx: 1,
       pxToBp: px => ({
         index: 0,
