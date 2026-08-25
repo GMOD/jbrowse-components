@@ -1,3 +1,4 @@
+import { ldValueComputed } from '@jbrowse/ld-core'
 import {
   lookupColorRamp,
   makeRampFillStyleLut,
@@ -47,6 +48,13 @@ export function drawLDBlocks(
       const cw = boundaries[j + 1]! - px
       const ldVal = ldValues[k++]!
 
+      // Same test the two shaders' `ldRampColor` makes, from the same generated
+      // function: a cell nothing computed is left as background rather than
+      // painted at the bottom of the ramp, which for r² is an opaque white
+      // diamond claiming linkage equilibrium.
+      if (!ldValueComputed(ldVal)) {
+        continue
+      }
       const t = mapLDValue(ldVal, signedLD)
       const { a } = lookupColorRamp(colorRamp, t)
       if (a < 0.01) {

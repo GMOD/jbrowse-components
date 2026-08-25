@@ -11,7 +11,12 @@ export {
   packDosages,
 } from './calculateLDStatsDosage.ts'
 export type { PackedDosages } from './calculateLDStatsDosage.ts'
-export { bandedCellCount, dprimeFinalize } from './ldStats.generated.ts'
+export {
+  bandedCellCount,
+  dprimeFinalize,
+  ldValueComputed,
+} from './ldStats.generated.ts'
+export { LD_NOT_COMPUTED } from './ldNotComputed.ts'
 export {
   calculateLDStatsPhasedBits,
   packHaplotypesWithCounts,

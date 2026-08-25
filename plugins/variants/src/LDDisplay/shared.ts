@@ -25,6 +25,7 @@ import {
   triangleScreenToData,
 } from '@jbrowse/display-kit/triangleTransform'
 import { computeTriangleYScalar } from '@jbrowse/display-kit/triangleYScalar'
+import { ldValueComputed } from '@jbrowse/ld-core'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
@@ -688,7 +689,10 @@ export default function sharedModelFactory(
           hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n
             ? bandPairIndex(hitI, hitJ, band)
             : -1
-        return ldIdx < 0
+        // A slot the layout has but no estimator filled is unpainted for the
+        // same reason it is untooltipped: `applyDisplayOrder` can put a pair
+        // inside the screen-order band that the source-order band skipped.
+        return ldIdx < 0 || !ldValueComputed(ldValues[ldIdx]!)
           ? undefined
           : {
               i: hitI,

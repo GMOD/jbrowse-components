@@ -113,6 +113,10 @@ export function ldGenotypeAlleleFreq(dosageSum: number, sampleCount: number): nu
   return (dosageSum / (2.0 * sampleCount))
 }
 
+export function ldValueComputed(v: number): boolean {
+  return (v > -1.5)
+}
+
 export function bandedCellCount(numSnps: number, band: number): number {
   let _t0: boolean
   if ((numSnps < 2)) {

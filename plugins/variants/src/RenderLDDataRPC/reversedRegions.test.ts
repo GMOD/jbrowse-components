@@ -1,8 +1,14 @@
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
+import { LD_NOT_COMPUTED, ldValueComputed } from '@jbrowse/ld-core'
 
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
-import { bandPairIndex } from '../VariantRPC/ldBand.ts'
+import {
+  bandCellCount,
+  bandPairIndex,
+  bandRowFirstColumn,
+  resolveBand,
+} from '../VariantRPC/ldBand.ts'
 import { executeRenderLDData } from './executeRenderLDData.ts'
 
 import type { LDMatrixResult, LDSnp } from '../VariantRPC/getLDMatrix.ts'
@@ -41,12 +47,12 @@ function pairValue(a: LDSnp, b: LDSnp) {
   return (Math.min(a.start, b.start) * 1000 + Math.max(a.start, b.start)) / 1e7
 }
 
-function matrix(snps: LDSnp[]): LDMatrixResult {
+function matrix(snps: LDSnp[], band = FULL_BAND): LDMatrixResult {
   const n = snps.length
-  const ldValues = new Float32Array((n * (n - 1)) / 2)
+  const ldValues = new Float32Array(bandCellCount(n, band))
   for (let i = 1; i < n; i++) {
-    for (let j = 0; j < i; j++) {
-      ldValues[bandPairIndex(i, j, FULL_BAND)] = pairValue(snps[i]!, snps[j]!)
+    for (let j = bandRowFirstColumn(i, band); j < i; j++) {
+      ldValues[bandPairIndex(i, j, band)] = pairValue(snps[i]!, snps[j]!)
     }
   }
   return {
@@ -55,7 +61,7 @@ function matrix(snps: LDSnp[]): LDMatrixResult {
     metric: 'r2',
     hasDprime: true,
     method: 'composite',
-    band: FULL_BAND,
+    band,
     filterStats: {
       totalVariants: n,
       passedVariants: n,
@@ -83,8 +89,13 @@ async function run(
   regions: Region[],
   snps: LDSnp[],
   useGenomicPositions: boolean,
+  maxVariantSeparation = 0,
 ) {
-  jest.mocked(getLDMatrix).mockResolvedValue(matrix(snps))
+  jest
+    .mocked(getLDMatrix)
+    .mockResolvedValue(
+      matrix(snps, resolveBand(snps.length, maxVariantSeparation)),
+    )
   // the envelope `deserializeReturn` takes off for the real caller: the four
   // Float32Arrays are transferred rather than cloned
   return payload(
@@ -103,7 +114,7 @@ async function run(
           lengthCutoffFilter: 0,
           hweFilterThreshold: 0,
           callRateFilter: 0,
-          maxVariantSeparation: 0,
+          maxVariantSeparation,
           jexlFilters: [],
           signedLD: false,
           useGenomicPositions,
@@ -233,5 +244,74 @@ describe('reversed LD regions', () => {
         .map(s => s.start)
         .reverse(),
     )
+  })
+})
+
+// Two blocks laid end to end, listed in the reverse of their genomic order, at
+// a window narrow enough that the reorder outruns it. Every other test in this
+// file runs at the full band, where the remap can never miss a pair: a full band
+// holds all of them, so `bandPairIndex` never returns -1 and the branch below it
+// never runs.
+describe('a screen-order pair the source band never computed', () => {
+  const BAND = 5
+  const BLOCK = 20
+  const N = BLOCK * 2
+  // listed second-block-first, so screen order is the 5000s then the 1000s
+  const REGIONS = [region('chr1', false, 5000), region('chr1', false, 1000)]
+  const BLOCKS = [
+    ...Array.from({ length: BLOCK }, (_, i) => snp('chr1', 1000 + i * 10)),
+    ...Array.from({ length: BLOCK }, (_, i) => snp('chr1', 5000 + i * 10)),
+  ]
+
+  // (i, j) of each drawn cell, in the slot order both renderers consume.
+  function bandCells(n: number, band: number) {
+    const cells: [number, number][] = []
+    for (let i = 1; i < n; i++) {
+      for (let j = bandRowFirstColumn(i, band); j < i; j++) {
+        cells.push([i, j])
+      }
+    }
+    return cells
+  }
+
+  test('is marked not-computed rather than filled with 0', async () => {
+    const out = await run(REGIONS, BLOCKS, false, BAND)
+
+    expect(out.ldValues).toHaveLength(bandCellCount(N, BAND))
+    expect(out.ldValues).toHaveLength(185)
+    const missing = bandCells(N, BAND).filter(
+      (_, slot) => !ldValueComputed(out.ldValues[slot]!),
+    )
+    // k(k+1)/2 cells straddle the seam: rows 20..24 reaching back across it
+    expect(missing).toHaveLength((BAND * (BAND + 1)) / 2)
+    expect(missing).toHaveLength(15)
+    expect(
+      missing.every(([i, j]) => i >= BLOCK && j < BLOCK && i - j <= BAND),
+    ).toBe(true)
+    for (const [i, j] of missing) {
+      expect(out.ldValues[bandPairIndex(i, j, BAND)]).toBe(LD_NOT_COMPUTED)
+    }
+  })
+
+  test('every other drawn cell still carries its own pair value', async () => {
+    const out = await run(REGIONS, BLOCKS, false, BAND)
+
+    for (const [slot, [i, j]] of bandCells(N, BAND).entries()) {
+      const value = out.ldValues[slot]!
+      if (ldValueComputed(value)) {
+        expect(value).toBeCloseTo(pairValue(out.snps[i]!, out.snps[j]!), 6)
+      }
+    }
+    // no pair in the fixture is worth 0, so a fabricated cell cannot pass for a
+    // computed one
+    expect(pairValue(BLOCKS[0]!, BLOCKS[1]!)).toBeGreaterThan(0)
+  })
+
+  test('the full band computes every pair, so nothing is missing', async () => {
+    const out = await run(REGIONS, BLOCKS, false, 0)
+
+    expect(out.ldValues).toHaveLength((N * (N - 1)) / 2)
+    expect(out.ldValues).toHaveLength(780)
+    expect([...out.ldValues].filter(v => !ldValueComputed(v))).toHaveLength(0)
   })
 })

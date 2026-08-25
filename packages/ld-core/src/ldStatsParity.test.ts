@@ -1,3 +1,4 @@
+import { LD_NOT_COMPUTED } from './ldNotComputed.ts'
 import {
   dprimeFinalize,
   ldEnoughGametes,
@@ -8,6 +9,7 @@ import {
   ldHaplotypeCorrelation,
   ldLociPolymorphic,
   ldRSquared,
+  ldValueComputed,
 } from './ldStats.generated.ts'
 
 // The retirement gate for ldUniforms.slang's `//! js-export` (adr-051).
@@ -196,12 +198,61 @@ test('r² is clamped, since a composite estimator can overshoot 1', () => {
 })
 
 test('D’ is clamped into range rather than overflowing', () => {
-  // D cannot exceed Dmax for real data, but a composite estimator on unphased
-  // genotypes can overshoot slightly; the clamp is what keeps the color ramp in
-  // its domain on both backends.
+  // Haplotypic D cannot exceed Dmax, so on phased data the clamp is a guard
+  // against float noise. The COMPOSITE D' is a different statistic and the
+  // clamp is load-bearing there: it normalizes by allele frequencies alone,
+  // which say nothing about the Hardy-Weinberg departure that inflated the
+  // numerator, so D/Dmax runs past 1 by a wide margin on real genotypes —
+  // 1.6053 in `compositeDprimeClamp.test.ts`, not a rounding step. The clamp
+  // is what keeps the color ramp in its domain on both backends; what it hides
+  // is that test's subject.
   expect(dprimeFinalize(0.9, 0.5, 0.5, false)).toBe(1)
   expect(dprimeFinalize(-0.9, 0.5, 0.5, true)).toBe(-1)
   expect(dprimeFinalize(-0.9, 0.5, 0.5, false)).toBe(1)
+})
+
+// `LD_NOT_COMPUTED` is a value, not a flag beside the buffer, so what makes it
+// safe is that it lands outside every value an estimator can produce — and both
+// renderers, the two shaders through this same generated function, ask
+// `ldValueComputed` before painting.
+describe('the not-computed sentinel', () => {
+  // Feasible (pA, pB, D) only — D past its Lewontin bound describes gamete
+  // counts no callset can produce, and `ldHaplotypeCorrelation` divides rather
+  // than clamps, so feeding it one says nothing about what a cell can hold.
+  test('no metric any estimator returns reads as not-computed', () => {
+    for (const pA of FREQS.filter(p => p > 0 && p < 1)) {
+      for (const pB of FREQS.filter(p => p > 0 && p < 1)) {
+        const dmax = Math.min(pA * (1 - pB), (1 - pA) * pB)
+        const dmin = -Math.min(pA * pB, (1 - pA) * (1 - pB))
+        for (const t of [-1, -0.5, -0.001, 0, 0.001, 0.5, 1]) {
+          const D = t < 0 ? -t * dmin : t * dmax
+          const r = ldHaplotypeCorrelation(D, pA, pB)
+          expect(ldValueComputed(r)).toBe(true)
+          expect(ldValueComputed(ldRSquared(r))).toBe(true)
+          for (const signed of [false, true]) {
+            expect(ldValueComputed(dprimeFinalize(D, pA, pB, signed))).toBe(
+              true,
+            )
+          }
+        }
+      }
+    }
+  })
+
+  // Signed r is the one metric that reaches a buffer unclamped, so a perfect -1
+  // can arrive a few ulps low. The test has to sit clear of that.
+  test('a correlation of -1 stays computed even a few ulps below', () => {
+    for (const v of [-1, -1.0000001, -1.001, -1.4]) {
+      expect(ldValueComputed(v)).toBe(true)
+    }
+  })
+
+  test('survives the Float32Array the matrix travels in', () => {
+    const buf = new Float32Array([LD_NOT_COMPUTED, 0, -1, 1])
+    expect(ldValueComputed(buf[0]!)).toBe(false)
+    expect(buf[0]).toBe(LD_NOT_COMPUTED)
+    expect([...buf].slice(1).every(v => ldValueComputed(v))).toBe(true)
+  })
 })
 
 // The degenerate-input gates, lifted after the estimators above them were. They

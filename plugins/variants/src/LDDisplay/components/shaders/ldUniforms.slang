@@ -2,7 +2,7 @@
 // uniform-grid). The genomic variant ignores `uniformW`; keeping the struct
 // identical lets both shaders share a single UBO byte layout so the renderer
 // writes one uniform buffer per frame regardless of which pass draws.
-//! js-export: dprimeFinalize, ldRSquared, ldGenotypeD, ldGenotypeCorrelation, ldHaplotypeCorrelation, ldEnoughGenotypes, ldEnoughGametes, ldLociPolymorphic, ldGenotypeAlleleFreq, bandedCellCount
+//! js-export: dprimeFinalize, ldRSquared, ldGenotypeD, ldGenotypeCorrelation, ldHaplotypeCorrelation, ldEnoughGenotypes, ldEnoughGametes, ldLociPolymorphic, ldGenotypeAlleleFreq, ldValueComputed, bandedCellCount
 //! js-export-out: packages/ld-core/src/ldStats.generated.ts
 //! js-skip: ldFinalize — picks one metric for the heatmap; the CPU path returns r2 AND dprime because the tooltip shows both, so it has no single value to pick. Everything ldFinalize dispatches to is exported
 //! js-skip: ldGenotypeCovariance — reached as a private helper inside the generated ldGenotypeD and ldGenotypeCorrelation, so it is already shared without being public
@@ -32,9 +32,32 @@ public float4 ldCellToClip(float2 pos, Uniforms u) {
     pos, u.canvasSize, u.viewScale, u.viewOffsetX, u.yScalar);
 }
 
+// Whether a cell holds a value an estimator actually produced. Every metric
+// lands in [-1, 1] (unsigned ones in [0, 1]), so -2 — `LD_NOT_COMPUTED` in
+// @jbrowse/ld-core — is outside all of them, and `applyDisplayOrder` writes one
+// to mark a cell whose pair nothing computed. The distinction is the user's,
+// not the renderer's: an in-band cell painted at r² = 0 says the two variants
+// are in linkage equilibrium, which is a measurement, and a pair the band
+// skipped has no measurement to report.
+//
+// The test sits halfway to the sentinel rather than on the metrics' floor,
+// because signed r is the one value that reaches a buffer unclamped —
+// `ldFinalize` returns the correlation itself, and `ldGenotypeCorrelation` and
+// `ldHaplotypeCorrelation` divide rather than clamp, so float error can put a
+// perfect -1 a few ulps below it. Half a unit of slack costs nothing; a
+// boundary at -1 exactly would erase that cell.
+public bool ldValueComputed(float v) {
+  return v > -1.5;
+}
+
 // Sample the color ramp by `ldValue`, remapping signed [-1,1] -> [0,1] when
-// signedLd is set. Returns premultiplied-alpha color.
+// signedLd is set. Returns premultiplied-alpha color. A cell nothing computed
+// is transparent, which under premultiplied blending leaves the background
+// exactly as an out-of-band cell — never emitted — leaves it.
 public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
+  if (!ldValueComputed(ldValue)) {
+    return float4(0.0, 0.0, 0.0, 0.0);
+  }
   float t = (u.signedLd == 1u) ? (ldValue + 1.0) * 0.5 : ldValue;
   t = clamp(t, 0.0, 1.0);
   float4 c = ramp.SampleLevel(float2(t, 0.5), 0.0);

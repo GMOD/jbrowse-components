@@ -1,3 +1,5 @@
+import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
+
 import { bandCellCount, bandPairIndex } from '../../VariantRPC/ldBand.ts'
 import { Canvas2DLDRenderer, drawLDBlocks } from './Canvas2DLDRenderer.ts'
 
@@ -377,5 +379,83 @@ describe('drawLDBlocks over a real band', () => {
     drawn.forEach(({ i, j }, slot) => {
       expect(bandPairIndex(i, j, N - 1)).toBe(slot)
     })
+  })
+})
+
+// A cell holding `LD_NOT_COMPUTED` has no value to show, so it is left as
+// background — the same thing an out-of-band cell already looks like, since the
+// walk never reaches one. Painting it instead maps the sentinel through
+// `mapLDValue`'s clamp to t = 0, which for r² is the ramp's white end at alpha
+// 255: an opaque diamond claiming linkage equilibrium for a pair nothing
+// measured.
+describe('drawLDBlocks over a cell nothing computed', () => {
+  const N = 4
+  const BAND = N - 1
+  const CELL = 10
+
+  function drawWith(ldValues: Float32Array) {
+    const boundaries = new Float32Array(N + 1)
+    for (let i = 0; i <= N; i++) {
+      boundaries[i] = i * CELL
+    }
+    const moveTos: [number, number][] = []
+    const ctx = {
+      beginPath: jest.fn(),
+      moveTo: jest.fn((x: number, y: number) => moveTos.push([x, y])),
+      lineTo: jest.fn(),
+      closePath: jest.fn(),
+      fill: jest.fn(),
+      fillStyle: '',
+    } as unknown as Parameters<typeof drawLDBlocks>[0]
+
+    drawLDBlocks(
+      ctx,
+      {
+        boundaries,
+        ldValues,
+        numCells: ldValues.length,
+        band: BAND,
+        signedLD: false,
+        uniformW: CELL,
+      },
+      makeColorRamp(),
+      makeRenderState({ viewScale: 1, yScalar: 1, viewOffsetX: 0 }),
+    )
+
+    const s = COS45
+    return moveTos.map(([x0, y0]) => ({
+      i: Math.round((x0 / s + y0 / s) / 2 / CELL),
+      j: Math.round((x0 / s - y0 / s) / 2 / CELL),
+    }))
+  }
+
+  const numCells = bandCellCount(N, BAND)
+  // (2, 0) — a cell in the interior of the walk, so skipping it also has to
+  // leave every later cell on its own coordinates
+  const skipped = bandPairIndex(2, 0, BAND)
+
+  test('leaves it unpainted, and paints every other cell', () => {
+    const values = new Float32Array(numCells).fill(0.5)
+    values[skipped] = LD_NOT_COMPUTED
+    const drawn = drawWith(values)
+
+    expect(drawn).toHaveLength(numCells - 1)
+    expect(drawn).not.toContainEqual({ i: 2, j: 0 })
+    // and the cells after it did not slide up into the vacated slot
+    for (const { i, j } of drawn) {
+      expect(bandPairIndex(i, j, BAND)).not.toBe(skipped)
+    }
+    expect(new Set(drawn.map(({ i, j }) => `${i},${j}`)).size).toBe(
+      numCells - 1,
+    )
+  })
+
+  test('paints a real 0 in that same cell', () => {
+    const values = new Float32Array(numCells).fill(0.5)
+    values[skipped] = 0
+    const drawn = drawWith(values)
+
+    expect(drawn).toHaveLength(numCells)
+    expect(drawn).toContainEqual({ i: 2, j: 0 })
   })
 })

@@ -1,3 +1,5 @@
+import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
+
 import {
   bandCellCount,
   bandPairIndex,
@@ -65,9 +67,13 @@ export function getDisplayOrder(snps: LDSnp[], regions: Region[]) {
  *
  * A pair adjacent on screen need not have been adjacent in the source order —
  * a reversal preserves separation, but two blocks laid end to end do not — so a
- * screen-order pair can name a source pair the band never computed. That reads
- * as 0, the same "no value for this pair" convention the pre-computed adapter
- * uses for a pair its file never mentions, rather than as an out-of-range slot.
+ * screen-order pair can name a source pair the band never computed. Those cells
+ * carry `LD_NOT_COMPUTED` and both renderers leave them unpainted, which is what
+ * an out-of-band cell already looks like. They are not 0: the cell is inside the
+ * drawn band, so 0 there is an opaque diamond at the bottom of the ramp saying
+ * the two variants are in linkage equilibrium — a claim about a pair nothing
+ * measured. Two blocks laid end to end at k = 5 fabricate exactly the k(k+1)/2
+ * cells straddling the seam, which is 15 of the 185 drawn at n = 40.
  */
 export function applyDisplayOrder(
   data: {
@@ -84,7 +90,7 @@ export function applyDisplayOrder(
   for (let i = 1; i < n; i++) {
     for (let j = bandRowFirstColumn(i, band); j < i; j++) {
       const src = bandPairIndex(order[i]!, order[j]!, band)
-      ldValues[idx++] = src < 0 ? 0 : data.ldValues[src]!
+      ldValues[idx++] = src < 0 ? LD_NOT_COMPUTED : data.ldValues[src]!
     }
   }
   return { snps, ldValues }

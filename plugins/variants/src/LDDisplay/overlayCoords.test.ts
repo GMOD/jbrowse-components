@@ -1,3 +1,6 @@
+import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
+
+import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
@@ -156,6 +159,30 @@ describe('cellToScreen and screenToCell are inverses', () => {
     expect(hit!.snp1.id).toBe('rs2')
     expect(hit!.snp2.id).toBe('rs1')
   })
+})
+
+// The tooltip is the one surface that was already honest about the band —
+// `bandPairIndex` returns -1 outside it and no tooltip appears. A cell the
+// layout HOLDS but nothing computed has to read the same way: `applyDisplayOrder`
+// can place a pair inside the screen-order band that the source-order band
+// skipped, and a tooltip there would put a number on a pair nothing measured.
+test('a cell nothing computed has no tooltip', () => {
+  const { display } = loadedDisplay()
+  const values = Float32Array.from(display.rpcData!.ldValues)
+  values[bandPairIndex(2, 1, display.rpcData!.band)] = LD_NOT_COMPUTED
+  display.setRpcData({ ...display.rpcData!, ldValues: values })
+
+  const { boundaries } = display.rpcData!
+  const center = (k: number) => (boundaries[k]! + boundaries[k + 1]!) / 2
+  const at = (i: number, j: number) => {
+    const { x, y } = display.cellToScreen(center(j), center(i))
+    return display.hitTest(x, y)
+  }
+
+  expect(at(2, 1)).toBeUndefined()
+  // its neighbours still resolve, so this is the cell and not the geometry
+  expect(at(3, 1)).toBeDefined()
+  expect(at(2, 0)).toBeDefined()
 })
 
 // `columnX` is the x half of `cellToScreen` written a second time — the point on
