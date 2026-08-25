@@ -15,8 +15,7 @@ import {
   rowHeightMenuItem,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
-  showTreeSidebarMenuItem,
-  treeBranchLengthMenuItem,
+  treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import TableRowsIcon from '@mui/icons-material/TableRows'
@@ -96,13 +95,9 @@ interface MultiRowMenuSelf
   setRunClustering: (arg?: boolean) => void
 }
 
-// The sidebar toggle shows row labels with or without a tree, so it lives here
-// rather than under "Clustering" (which opts out of both its tree controls —
-// see the treeApplies: false below), and the branch-length toggle follows it so
-// the two tree controls sit together.
 function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   return [
-    showTreeSidebarMenuItem(self),
+    ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
     // Both keys, because `showLegend` governs both and the legend's own "×"
     // writes it: the row-group key draws on a track whose `colorLegend` is
@@ -137,7 +132,6 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
           ),
         ]
       : []),
-    treeBranchLengthMenuItem(self),
   ]
 }
 
@@ -259,23 +253,16 @@ export function buildMultiRowTrackMenuItems(
     // top-level rather than nested under "Clustering", which is only one of the
     // three things that write `layout` — see resetRowOrderMenuItems
     ...resetRowOrderMenuItems(self),
-    clusteringMenuItem(
-      self,
-      {
-        label: 'Cluster rows by similarity',
-        disabled: self.sourcesWithoutLayout.length < 2 || !!self.runClustering,
-        disabledHelpText:
-          self.sourcesWithoutLayout.length < 2
-            ? 'Needs at least two rows to cluster'
-            : 'Clustering…',
-        onClick: () => {
-          self.setRunClustering(true)
-        },
+    clusteringMenuItem(self, {
+      label: 'Cluster rows by similarity',
+      disabled: self.sourcesWithoutLayout.length < 2 || !!self.runClustering,
+      disabledHelpText:
+        self.sourcesWithoutLayout.length < 2
+          ? 'Needs at least two rows to cluster'
+          : 'Clustering…',
+      onClick: () => {
+        self.setRunClustering(true)
       },
-      // Both tree controls (show the tree, branch lengths) live under
-      // "Show..." for this display, so Clustering contributes neither —
-      // showTreeToggle alone left "Tree branch lengths" in both submenus.
-      { treeApplies: false },
-    ),
+    }),
   ]
 }

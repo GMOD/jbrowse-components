@@ -1,6 +1,7 @@
-import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
+import { ContextMenu } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { FloatingSvgOverlay } from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
@@ -18,32 +19,7 @@ import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
 import type React from 'react'
-
-// The guides and the tooltip, in their own component so that following the
-// pointer re-renders these two and nothing else. Read in the component that
-// binds the handlers instead, this would re-render `DisplayChrome`, its status
-// container and all three overlays on every mousemove — see `useMouseTracking`.
-function PointerLayer({
-  model,
-  mouseTracker,
-}: {
-  model: LinearMultiRowFeatureDisplayModel
-  mouseTracker: MouseTracker
-}) {
-  const mouseState = useMouseState(mouseTracker)
-  return mouseState ? (
-    <>
-      <DisplayCrosshairs
-        model={model}
-        mouseX={mouseState.x}
-        mouseY={mouseState.y}
-      />
-      <MultiRowTooltip model={model} mouseState={mouseState} />
-    </>
-  ) : null
-}
 
 const MultiRowCanvas = observer(function MultiRowCanvas({
   model,
@@ -210,7 +186,20 @@ const LinearMultiRowFeatureDisplayComponent = observer(
         {({ canvasRef, mouseTracker }) => (
           <>
             <MultiRowCanvas model={model} canvasRef={canvasRef} />
-            <PointerLayer model={model} mouseTracker={mouseTracker} />
+            <PointerLayer mouseTracker={mouseTracker}>
+              {mouseState =>
+                mouseState ? (
+                  <>
+                    <DisplayCrosshairs
+                      model={model}
+                      mouseX={mouseState.x}
+                      mouseY={mouseState.y}
+                    />
+                    <MultiRowTooltip model={model} mouseState={mouseState} />
+                  </>
+                ) : null
+              }
+            </PointerLayer>
           </>
         )}
       </DisplayChrome>

@@ -126,8 +126,11 @@ over those slots**, so a display composes both halves or neither — it used to
 hand-write six `getConf` / `setConf` one-liners while this package's own code
 read them, which is how the labels toggle came to be spelled `showSidebarLabels`
 on one display and silently ignore its config. `showRowLabelsMenuItem` is the
-row; `requiresTree` is its one real per-display difference (MAF mounts its label
-overlay only under `showTree`).
+row, and `treeSidebarShowMenuItems` the two tree toggles beside it — all three
+under "Show..." on every display, with `RowLabelsOverlay` mounted whether or not
+a tree is showing. The tree toggles used to sit under "Clustering" on two
+displays and under "Show..." on the other two, and a display that mounted its
+labels only under `showTree` needed a `requiresTree` gate on the labels row.
 
 ## Two row-height arguments, and neither is the display height
 

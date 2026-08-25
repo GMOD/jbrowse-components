@@ -63,14 +63,19 @@ function itemIn(items: MenuItem[], label: string) {
 }
 
 describe('multi-wiggle Clustering submenu', () => {
-  it('offers the run item and both tree controls in a row mode', () => {
+  it('offers the run item, and the tree toggles sit under Show... in a row mode', () => {
     const { display } = makeDisplay({ renderingType: 'multirowxy' })
-    const subMenu = subMenuOf(display.trackMenuItems(), 'Clustering')
+    const items = display.trackMenuItems()
 
-    expect(labels(subMenu)).toEqual([
+    expect(labels(subMenuOf(items, 'Clustering'))).toEqual([
       'Cluster rows by score...',
+    ])
+    expect(labels(subMenuOf(items, 'Show...'))).toEqual([
       'Show tree',
       'Tree branch lengths',
+      'Show row separators',
+      'Show row labels',
+      'Show cross hatches',
     ])
   })
 
@@ -83,9 +88,9 @@ describe('multi-wiggle Clustering submenu', () => {
     // the tree is hidden because overlay collapses every source onto one row —
     // `hierarchy` is the gate, and these controls follow it
     expect(display.hierarchy).toBeUndefined()
-    expect(labels(subMenuOf(display.trackMenuItems(), 'Clustering'))).toEqual([
-      'Cluster rows by score...',
-    ])
+    expect(
+      labels(subMenuOf(display.trackMenuItems(), 'Show...')),
+    ).not.toContain('Show tree')
     // the reset stays reachable: it resets the row order, which still matters
     // for the row mode the user will switch back to
     expect(labels(display.trackMenuItems())).toContain('Reset row order')
@@ -99,7 +104,7 @@ describe('multi-wiggle Clustering submenu', () => {
     display.setRenderingType('multirowxy')
 
     expect(display.hierarchy).toBeDefined()
-    expect(labels(subMenuOf(display.trackMenuItems(), 'Clustering'))).toContain(
+    expect(labels(subMenuOf(display.trackMenuItems(), 'Show...'))).toContain(
       'Show tree',
     )
   })

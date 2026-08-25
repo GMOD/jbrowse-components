@@ -370,17 +370,16 @@ const POINT_SIZE_MENUS: Record<string, string> = {
   LinearManhattanDisplay: 'Point size',
 }
 
-// `showTree` is one config name over two genuinely different controls, so the
-// label is not shared even though the sidebar is. On the multi-wiggle display it
-// reveals the dendrogram alone and lives inside the Clustering submenu; on the
-// multi-row and MAF displays it gates the whole sidebar — dendrogram and row
-// labels together — which is useful with no clustering run at all, so those keep
-// it top-level under a fuller name. treeMenuItems.ts spells out the split, and
-// the multi-row display opts out of the Clustering copy for exactly this reason.
-const TREE_SIDEBAR_TOGGLE = 'Show sidebar with tree and labels'
+// One toggle, one place, on every display with a dendrogram sidebar
+// (tree-sidebar's `treeSidebarShowMenuItems`): it reveals the dendrogram alone
+// and the row labels have their own row beneath it.
+const TREE_SIDEBAR_TOGGLE = 'Show tree'
 const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMafDisplay',
   'LinearMultiRowFeatureDisplay',
+  'LinearMultiSampleVariantDisplay',
+  'LinearMultiSampleVariantMatrixDisplay',
+  'MultiLinearWiggleDisplay',
 ])
 
 // The synteny view's CIGAR modes, imported. Its row is in the header's settings
@@ -1099,16 +1098,13 @@ export const trackFields: Record<string, FieldRecipe> = {
       return undefined
     }
     const state = value ? 'checked' : 'unchecked'
-    if (displayType === 'MultiLinearWiggleDisplay') {
-      return {
-        path: `${TRACK_MENU} → Clustering → Show tree (${state})`,
-        note: 'On by default. The item is disabled until clustering has been run, and drops out entirely in the overlay plot types, which collapse every source onto one row for a dendrogram to align to.',
-      }
-    }
     return TREE_SIDEBAR_DISPLAYS.has(displayType)
       ? {
-          path: `${TRACK_MENU} → ${TREE_SIDEBAR_TOGGLE} (${state})`,
-          note: 'This one toggle covers the dendrogram and the row labels together; the labels have their own toggle beneath it once the sidebar is on.',
+          path: `${TRACK_MENU} → Show... → ${TREE_SIDEBAR_TOGGLE} (${state})`,
+          note:
+            displayType === 'MultiLinearWiggleDisplay'
+              ? 'On by default. The item is disabled until there is a tree to show, and drops out entirely in the overlay plot types, which collapse every source onto one row for a dendrogram to align to.'
+              : 'On by default. The item is disabled until there is a tree to show — a clustering run, or a MAF track’s guide tree; the row labels have their own toggle beneath it.',
         }
       : undefined
   },

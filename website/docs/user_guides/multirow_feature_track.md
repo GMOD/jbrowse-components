@@ -190,9 +190,9 @@ Rows start in file order. Three ways to change that:
 **Reset row order** appears in the track menu once any of the three has run, and
 returns the rows to file order.
 
-**Show... → Show sidebar with tree and labels** toggles the row labels and the
-dendrogram. It sits with the other visibility toggles, since the row labels are
-useful with no clustering run.
+**Show... → Show tree** toggles the dendrogram once one has been computed, and
+**Show... → Show row labels** the labels beside it, which are useful with no
+clustering run.
 
 **Show... → Color row labels by row color** tints each label with the color that
 row's blocks are painted in, so a row can be found by color rather than by

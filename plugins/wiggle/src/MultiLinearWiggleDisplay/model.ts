@@ -31,6 +31,7 @@ import {
   setupTreeDrawingAutorun,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
+  treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import { makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -589,11 +590,18 @@ export default function stateModelFactory(
     .views(self => ({
       trackMenuItems() {
         const showItems: MenuItem[] = [
-          // row separators and row labels only render in multi-row modes, not
-          // overlays — an overlay is one row and names itself by the track name
+          // the tree, row separators and row labels only render in multi-row
+          // modes, not overlays — an overlay is one row and names itself by
+          // the track name, and draws no dendrogram (see `hierarchy`). A
+          // persisted `showTree` is left untouched, so it comes back on
+          // return to a row mode
           ...(self.isOverlay
             ? []
-            : [showRowSeparatorsMenuItem(self), showRowLabelsMenuItem(self)]),
+            : [
+                ...treeSidebarShowMenuItems(self),
+                showRowSeparatorsMenuItem(self),
+                showRowLabelsMenuItem(self),
+              ]),
           // the color key only renders as an overlay of >1 source
           ...(self.overlayLegendApplies
             ? [
@@ -613,33 +621,25 @@ export default function stateModelFactory(
         ]
         return [
           makeGroupedRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERING_GROUPS),
-          clusteringMenuItem(
-            self,
-            {
-              label: 'Cluster rows by score...',
-              // clustering reorders rows, so it needs rows to reorder and at
-              // least two of them — the dialog would otherwise open only to
-              // report the same thing after the user clicks Run
-              disabled: self.isOverlay || self.sourcesWithoutLayout.length < 2,
-              disabledHelpText: self.isOverlay
-                ? 'Only available for multi-row rendering types'
-                : 'Needs at least two subtracks to cluster',
-              onClick: () => {
-                getDialogHost(self).queueDialog(handleClose => [
-                  WiggleClusterDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
+          clusteringMenuItem(self, {
+            label: 'Cluster rows by score...',
+            // clustering reorders rows, so it needs rows to reorder and at
+            // least two of them — the dialog would otherwise open only to
+            // report the same thing after the user clicks Run
+            disabled: self.isOverlay || self.sourcesWithoutLayout.length < 2,
+            disabledHelpText: self.isOverlay
+              ? 'Only available for multi-row rendering types'
+              : 'Needs at least two subtracks to cluster',
+            onClick: () => {
+              getDialogHost(self).queueDialog(handleClose => [
+                WiggleClusterDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
             },
-            {
-              // overlay draws no dendrogram (see the `hierarchy` getter), so
-              // neither tree-display control has a subject there
-              treeApplies: !self.isOverlay,
-            },
-          ),
+          }),
           // top-level rather than inside the Clustering submenu, where it used
           // to sit as "Clear clustering" — see resetRowOrderMenuItems
           ...resetRowOrderMenuItems(self),

@@ -43,6 +43,9 @@ export const TestChromeModel = types
     rendersCanvas: true,
     statusMessage: types.maybe(types.string),
     statusProgress: types.maybe(types.number),
+    // stands in for a sidebar display's positioned dendrogram, which the chrome
+    // publishes as `data-clustered`
+    hierarchy: types.maybe(types.frozen<object>()),
   })
   .volatile(
     (): {
@@ -104,5 +107,8 @@ export const TestChromeModel = types
     setStatus(message?: string, progress?: number) {
       self.statusMessage = message
       self.statusProgress = progress
+    },
+    setHierarchy(hierarchy?: object) {
+      self.hierarchy = hierarchy
     },
   }))

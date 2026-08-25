@@ -62,6 +62,9 @@ export { useTooltip } from './tooltip/useTooltip.tsx'
 export type { TooltipTrigger } from './tooltip/useTooltip.tsx'
 export type { TooltipPlacement } from '@jbrowse/core/ui/BaseTooltip'
 
+// What follows the pointer, in a leaf that re-renders alone.
+export { PointerLayer } from './PointerLayer.tsx'
+
 // The per-track overlay layer: the node floating chrome escapes into, and the
 // host's half of that portal.
 export { TrackOverlayContext } from './trackOverlay/TrackOverlayContext.ts'

@@ -714,6 +714,21 @@ describe('the pointer measurement drops when the container is replaced', () => {
   })
 })
 
+// A clustered figure with the sidebar hidden has no DOM evidence the run
+// finished except this attribute, so it is the chrome's to publish rather than
+// each sidebar display's — two of the four forgot.
+test('the chrome publishes data-clustered off the positioned tree', async () => {
+  const model = TestChromeModel.create({})
+  const { findByTestId } = renderChrome(model, 'chrome')
+
+  const el = await findByTestId('chrome')
+  expect(el.dataset.clustered).toBe('false')
+  act(() => {
+    model.setHierarchy({})
+  })
+  expect(el.dataset.clustered).toBe('true')
+})
+
 // One element carries the display's whole identity. Three testid shapes and a
 // second wrapper element used to split this across two nodes, which is what
 // forced `PENDING_DISPLAYS` into a three-way union and `displayReady()` into a

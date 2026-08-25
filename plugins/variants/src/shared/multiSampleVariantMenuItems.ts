@@ -11,6 +11,7 @@ import {
   rowArrangementMenuItem,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
+  treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -37,12 +38,12 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // Items for the "Show..." submenu — the toggles both displays share. Extended
 // by subclasses via super-capture (the regular display adds "Show reference
-// alleles"); the clustering tree and subtree filter have their own entries via
-// `clusteringMenuItem`.
+// alleles"); the subtree filter has its own entry via `clusteringMenuItem`.
 export function variantShowSubmenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
   return [
+    ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
     showLegendCheckboxItem(
       self.showLegend,

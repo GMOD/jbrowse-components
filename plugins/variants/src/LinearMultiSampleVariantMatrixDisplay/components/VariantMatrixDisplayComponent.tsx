@@ -1,7 +1,7 @@
 import { useId } from 'react'
 
-import { useMouseState } from '@jbrowse/core/ui'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -13,57 +13,7 @@ import VariantMatrixBody from './VariantMatrixComponent.tsx'
 import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
 import type { ReactNode } from 'react'
-
-// Both pointer-driven pieces below read the tracker themselves, so a mousemove
-// re-renders them alone rather than `DisplayChrome` and every overlay under it
-// — see `useMouseTracking`. They share one definition of "the cursor is in the
-// matrix rather than in the bands above it"; `rowsTopOffset` arrives as a prop
-// because these are plain components, and the observer above already tracks it.
-//
-// `rowsTopOffset` and not `lineZoneHeight`: the connector zone is the only band
-// this display currently stacks, so the two are equal here — but the offset the
-// rows actually begin at is the total, and reaching for one band's height as if
-// it were that total is what `shared/variantTopBands.ts` exists to stop.
-function useMatrixMouseState(
-  mouseTracker: MouseTracker,
-  rowsTopOffset: number,
-) {
-  const mouseState = useMouseState(mouseTracker)
-  return mouseState && mouseState.y > rowsTopOffset ? mouseState : undefined
-}
-
-function MatrixConnectingLines({
-  model,
-  mouseTracker,
-  rowsTopOffset,
-}: {
-  model: LinearMultiSampleVariantMatrixDisplayModel
-  mouseTracker: MouseTracker
-  rowsTopOffset: number
-}) {
-  const inMatrix = useMatrixMouseState(mouseTracker, rowsTopOffset)
-  return (
-    <LinesConnectingMatrixToGenomicPosition
-      model={model}
-      crosshairX={inMatrix?.x}
-    />
-  )
-}
-
-function MatrixCrosshairLayer({
-  model,
-  mouseTracker,
-  rowsTopOffset,
-}: {
-  model: LinearMultiSampleVariantMatrixDisplayModel
-  mouseTracker: MouseTracker
-  rowsTopOffset: number
-}) {
-  const inMatrix = useMatrixMouseState(mouseTracker, rowsTopOffset)
-  return inMatrix ? <Crosshair mouseState={inMatrix} model={model} /> : null
-}
 
 // The matrix's own box, offset past the bands above the rows and clamped to the
 // viewport's left edge.
@@ -117,11 +67,24 @@ const VariantMatrixDisplayComponent = observer(
       >
         {({ canvasRef, canvas, mouseTracker }) => (
           <>
-            <MatrixConnectingLines
-              model={model}
+            {/* Both pointer-driven pieces share one definition of "the cursor
+                is in the matrix rather than in the bands above it".
+                `rowsTopOffset` and not `lineZoneHeight`: the connector zone is
+                the only band this display currently stacks, so the two are
+                equal here — but the offset the rows actually begin at is the
+                total, and reaching for one band's height as if it were that
+                total is what `shared/variantTopBands.ts` exists to stop. */}
+            <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}
-            />
+            >
+              {(mouseState, inMatrix) => (
+                <LinesConnectingMatrixToGenomicPosition
+                  model={model}
+                  crosshairX={inMatrix ? mouseState?.x : undefined}
+                />
+              )}
+            </PointerLayer>
             <MatrixBodyOffset model={model} top={rowsTopOffset}>
               <VariantMatrixBody
                 model={model}
@@ -142,11 +105,16 @@ const VariantMatrixDisplayComponent = observer(
             <VariantScrollbar model={model} controlsId={canvasId} />
             <VariantOverlay model={model} top={rowsTopOffset} />
             <TreeSidebar model={model} />
-            <MatrixCrosshairLayer
-              model={model}
+            <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}
-            />
+            >
+              {(mouseState, inMatrix) =>
+                mouseState && inMatrix ? (
+                  <Crosshair mouseState={mouseState} model={model} />
+                ) : null
+              }
+            </PointerLayer>
           </>
         )}
       </DisplayChrome>

@@ -189,8 +189,8 @@ included; the species row carries its own gene track where the session has one.
 The sidebar at the left shows the species labels, drawn as a dendrogram when the
 track is configured with a Newick guide tree.
 
-- **Show sidebar with tree and labels** toggles the sidebar, and branch lengths
-  can be drawn from the track menu.
+- **Show... → Show tree** toggles the dendrogram and **Show row labels** the
+  species names, and **Tree branch lengths** draws the tree to scale.
 - **Edit row arrangement...** reorders or hand-picks rows.
 - **Row height** offers squeeze-to-fit, normal, compact, and custom row heights.
 

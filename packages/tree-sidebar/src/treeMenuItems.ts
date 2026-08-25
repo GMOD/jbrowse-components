@@ -8,9 +8,9 @@ import { describeClusterProvenance } from './clusterProvenance.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The sidebar toggle's label. Exported because the website's figure recipes
-// name it in a click path and must not re-spell it.
-export const TREE_SIDEBAR_LABEL = 'Show sidebar with tree and labels'
+// The tree toggle's label. Exported because the website's figure recipes name
+// it in a click path and must not re-spell it.
+export const TREE_SIDEBAR_LABEL = 'Show tree'
 
 interface BranchLengthMenuModel {
   showTree: boolean
@@ -40,7 +40,6 @@ export function treeBranchLengthMenuItem(
 }
 
 interface RowLabelsMenuModel {
-  showTree: boolean
   showRowLabels: boolean
   setShowRowLabels: (arg: boolean) => void
 }
@@ -53,24 +52,16 @@ interface RowLabelsMenuModel {
  * them (`SvgRowLabels` falls back to a `labelColor`
  * stripe below `MIN_TEXT_ROW_HEIGHT` whoever is drawing).
  *
- * `requiresTree` is a real difference rather than more drift: MAF mounts its
- * label overlay only under `showTree`, so with the tree off the toggle has
- * nothing to toggle, while canvas and multi-wiggle draw labels over the plot
- * with no gutter reserved and no tree needed. Disabled rather than dropped, so
- * the setting stays discoverable — a row that vanishes teaches the reader it
- * does not exist.
+ * The labels draw with or without a tree on every display: `RowLabelsOverlay`
+ * is mounted unconditionally and takes a zero offset when no dendrogram is
+ * showing, so this toggle always has something to toggle.
  */
-export function showRowLabelsMenuItem(
-  self: RowLabelsMenuModel,
-  { requiresTree = false }: { requiresTree?: boolean } = {},
-): MenuItem {
+export function showRowLabelsMenuItem(self: RowLabelsMenuModel): MenuItem {
   return toggleItem(
     'Show row labels',
     self.showRowLabels,
     self.setShowRowLabels,
     {
-      disabled: requiresTree && !self.showTree,
-      disabledHelpText: 'Show the tree first',
       helpText:
         'below the height a name fits in, these become a column of color swatches — worth keeping when the colors are a grouping, worth turning off when they are per-row identity',
     },
@@ -108,17 +99,38 @@ export function showRowSeparatorsMenuItem(
   )
 }
 
-interface TreeSidebarMenuModel {
-  showTree: boolean
+interface TreeSidebarMenuModel extends BranchLengthMenuModel {
+  clusterTree?: string
   setShowTree: (arg: boolean) => void
 }
 
-// Shared "Show sidebar with tree and labels" toggle — the row every
-// tree-sidebar consumer opens its sidebar group with, and the row
-// `showRowLabelsMenuItem` and `treeBranchLengthMenuItem` both gate off. One
-// label, so the three read as one group wherever they are assembled.
+// Shared "Show tree" toggle. Disabled until there is a tree to show — a
+// clustering run's, or the guide phylogeny a MAF adapter supplies — so it is
+// never a no-op: `treeIsShowing` gates the gutter on the positioned tree, and
+// with no `clusterTree` flipping `showTree` draws nothing either way.
 export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
-  return toggleItem(TREE_SIDEBAR_LABEL, self.showTree, self.setShowTree)
+  return toggleItem(TREE_SIDEBAR_LABEL, self.showTree, self.setShowTree, {
+    disabled: !self.clusterTree,
+    disabledHelpText: 'Run clustering first',
+  })
+}
+
+/**
+ * The two tree-display controls, as one group every row display opens its
+ * "Show..." submenu with. They used to be split between that submenu and the
+ * Clustering one, differently per display: a reader who found "Show tree"
+ * under Clustering on a variant track looked there on a MAF track and found
+ * nothing. Both are visibility toggles, and "Show..." is where those live;
+ * Clustering is the operation.
+ *
+ * Spread into the submenu rather than returned as one item, so a display with
+ * a rendering mode that has no row axis (multi-wiggle's overlays) can leave
+ * them out along with its other row-only toggles.
+ */
+export function treeSidebarShowMenuItems(
+  self: TreeSidebarMenuModel,
+): MenuItem[] {
+  return [showTreeSidebarMenuItem(self), treeBranchLengthMenuItem(self)]
 }
 
 interface SubtreeFilterMenuModel {
@@ -132,7 +144,7 @@ interface SubtreeFilterMenuModel {
 // rows after a reorder has invalidated the dendrogram whose node-click set it,
 // and the tree's own context menu is gone with the tree. Returned as a list so
 // the one label and the one gate are single-sourced across the clustering
-// submenu and the displays (maf) that have no clustering submenu to put it in.
+// submenu and any display that has no clustering submenu to put it in.
 export function clearSubtreeFilterMenuItems(
   self: SubtreeFilterMenuModel,
 ): MenuItem[] {
@@ -216,51 +228,24 @@ export function clusterProvenanceMenuItems(
 }
 
 interface ClusteringMenuModel
-  extends
-    BranchLengthMenuModel,
-    ClusterProvenanceMenuModel,
-    SubtreeFilterMenuModel {
-  clusterTree?: string
-  setShowTree: (arg: boolean) => void
-}
+  extends ClusterProvenanceMenuModel, SubtreeFilterMenuModel {}
 
-// One "Clustering" submenu shape for every display that clusters its rows
-// (multi-row features, multi-sample variants, multi-wiggle). Each display's own
-// run item differs — it names what is being clustered, and only some open a
-// dialog — so it's passed in; everything downstream of a run (the tree toggle,
-// branch lengths, clearing the subtree filter) is identical and lives here, so
-// the three menus can't drift into three different layouts for one concept.
+// One "Clustering" submenu shape for every display that clusters its rows. Each
+// display's own run item differs — it names what is being clustered — so it's
+// passed in; what follows a run (the provenance, clearing the subtree filter)
+// is identical and lives here, so the four menus can't drift into four
+// layouts for one concept.
 //
-// Undoing a run is deliberately NOT here. A display that clusters also writes
-// its row order from an arrangement dialog and (multi-row features, multi-
-// wiggle) a right-click sort, and only a run leaves a `clusterTree` — so a
-// reset filed under "Clustering" and gated on that tree undoes one of the three
-// and looks like it undoes all of them. It belongs top-level, gated on `layout`
-// (`clearLayout` resets any of them), which is where both of those displays
-// keep theirs.
-//
-// `showTreeToggle` is opt-out because `showTree` does not mean the same thing
-// everywhere: on variants and wiggle it reveals only the dendrogram, so it
-// belongs here, but on the multi-row display it gates the whole sidebar
-// (dendrogram AND row labels), which is useful with no clustering run at all.
-// Filing that toggle under "Clustering" would bury it, so that display keeps it
-// top-level and opts out.
-//
-// `treeApplies` is false when the display's current rendering mode has no row
-// axis for a dendrogram to align to (multi-wiggle's overlay modes collapse every
-// source onto one row). Both tree-display controls then drop out entirely rather
-// than sitting there as no-ops — a persisted `showTree` is left untouched, so it
-// comes back on return to a row mode.
+// The tree-display toggles are deliberately NOT here: they are visibility
+// settings and sit in "Show..." with the rest (`treeSidebarShowMenuItems`).
+// Nor is undoing a run. A display that clusters also writes its row order from
+// an arrangement dialog and a right-click sort, and only a run leaves a
+// `clusterTree` — so a reset filed under "Clustering" and gated on that tree
+// undoes one of the three and looks like it undoes all of them. It belongs
+// top-level, gated on `rowOrderIsCustom` (`resetRowOrderMenuItems`).
 export function clusteringMenuItem(
   self: ClusteringMenuModel,
   runItem: MenuItem,
-  {
-    showTreeToggle = true,
-    treeApplies = true,
-  }: {
-    showTreeToggle?: boolean
-    treeApplies?: boolean
-  } = {},
 ): MenuItem {
   return {
     label: 'Clustering',
@@ -269,15 +254,6 @@ export function clusteringMenuItem(
     subMenu: [
       runItem,
       ...clusterProvenanceMenuItems(self),
-      ...(showTreeToggle && treeApplies
-        ? [
-            toggleItem('Show tree', self.showTree, self.setShowTree, {
-              disabled: !self.clusterTree,
-              disabledHelpText: 'Run clustering first',
-            }),
-          ]
-        : []),
-      ...(treeApplies ? [treeBranchLengthMenuItem(self)] : []),
       ...clearSubtreeFilterMenuItems(self),
     ],
   }

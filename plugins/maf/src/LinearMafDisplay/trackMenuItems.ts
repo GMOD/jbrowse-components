@@ -13,8 +13,7 @@ import {
   rowArrangementMenuItem,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
-  showTreeSidebarMenuItem,
-  treeBranchLengthMenuItem,
+  treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import PaletteIcon from '@mui/icons-material/Palette'
 
@@ -59,6 +58,7 @@ interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
   mismatchRendering: boolean
   showAsUpperCase: boolean
   showTree: boolean
+  clusterTree?: string
   showRowLabels: boolean
   setShowRowLabels: (arg: boolean) => void
   showBranchLength: boolean
@@ -225,11 +225,8 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       self.showAsUpperCase,
       self.setShowAsUpperCase,
     ),
-    showTreeSidebarMenuItem(self),
-    // gated: this display mounts its label overlay only under `showTree`, so
-    // with the tree off the toggle would change nothing
-    showRowLabelsMenuItem(self, { requiresTree: true }),
-    treeBranchLengthMenuItem(self),
+    ...treeSidebarShowMenuItems(self),
+    showRowLabelsMenuItem(self),
     toggleItem(
       withHint(
         'Show coverage',
@@ -295,30 +292,21 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     // the reference over the drawn rows — so the submenu is where it and the
     // "Clustered on <locus>" provenance belong, and the filter item moves inside
     // with them.
-    //
-    // `showTreeToggle`/`treeApplies` off: the sidebar toggle and the
-    // branch-length radio are already in this display's Show submenu, where they
-    // were before a run existed and where they still belong, since a supplied
-    // guide tree draws with no clustering at all.
-    clusteringMenuItem(
-      self,
-      {
-        label: 'Cluster rows by identity...',
-        disabled: self.sources.length < 2,
-        // `sources` is the post-filter list, so one row here is as often a
-        // clade focused down to a single species as a track still loading
-        disabledHelpText: self.sourcesKnown
-          ? 'Needs at least two rows to cluster'
-          : 'Loading rows...',
-        onClick: () => {
-          getDialogHost(self).queueDialog(handleClose => [
-            MafClusterDialog,
-            { model: self, handleClose },
-          ])
-        },
+    clusteringMenuItem(self, {
+      label: 'Cluster rows by identity...',
+      disabled: self.sources.length < 2,
+      // `sources` is the post-filter list, so one row here is as often a
+      // clade focused down to a single species as a track still loading
+      disabledHelpText: self.sourcesKnown
+        ? 'Needs at least two rows to cluster'
+        : 'Loading rows...',
+      onClick: () => {
+        getDialogHost(self).queueDialog(handleClose => [
+          MafClusterDialog,
+          { model: self, handleClose },
+        ])
       },
-      { showTreeToggle: false, treeApplies: false },
-    ),
+    }),
     // The way back from a drag-reorder in the arrangement dialog and from a
     // clustering run alike: both write `layout`, and `clearLayout` also restores
     // the guide tree the run replaced.

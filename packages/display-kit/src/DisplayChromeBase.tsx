@@ -31,6 +31,11 @@ export type ChromeModel = {
   // triangle off) has finished, and the raw flag can never say so. See
   // `RenderLifecycleMixin.painted`.
   painted: boolean
+  // The positioned dendrogram of a display with a tree sidebar, published as
+  // `data-clustered` — see the attribute below. Declared here so the chrome
+  // reads a member of its own type; a display without a sidebar leaves it
+  // undeclared and publishes nothing.
+  hierarchy?: unknown
 } & StatusChromeModel
 
 export interface CanvasHandle {
@@ -205,6 +210,16 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
   return (
     <DisplayStatusChromeBase
       {...chromeProps}
+      // Whether a tree is positioned against the drawn rows, for a display
+      // with a dendrogram sidebar. A figure that clusters with the sidebar
+      // hidden has no other DOM evidence the run finished — the tree canvas is
+      // what the sidebar toggle removes — so the capture gates wait on this.
+      // Published here off the one getter every sidebar display answers, so a
+      // display cannot forget to; two of the four used to, and each carried
+      // its own copy of this sentence.
+      data-clustered={
+        'hierarchy' in model ? String(!!model.hierarchy) : undefined
+      }
       // Composed, never replacing: a caller still binding its own pointer
       // handlers (maf's drag-selection, which owns a rubberband rect and a
       // window-level drag) would otherwise be silently overridden by the

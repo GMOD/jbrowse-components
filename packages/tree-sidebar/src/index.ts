@@ -81,6 +81,7 @@ export {
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
   showTreeSidebarMenuItem,
+  treeSidebarShowMenuItems,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
 export { treeSidebarConfigSchemaFields } from './treeSidebarConfigSchemaFields.ts'

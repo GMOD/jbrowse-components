@@ -75,12 +75,10 @@ treated as continuous, and rows painted similar shades land closer together.
 After a run, rows are reordered so similar rows sit together and a dendrogram is
 drawn in the sidebar.
 
-- **Show tree** toggles the dendrogram. It stays disabled until clustering has
-  been run. The multi-row feature display's sidebar carries the row labels as
-  well as the tree, useful with no clustering run, so it has **Show... → Show
-  sidebar with tree and labels** instead.
-- The **Clustering** submenu can also draw the tree with **branch lengths**, so
-  the horizontal extent of each branch reflects distance.
+- **Show... → Show tree** toggles the dendrogram. It stays disabled until
+  clustering has been run; the row labels have their own toggle beside it.
+- **Show... → Tree branch lengths** draws the tree with branch lengths, so the
+  horizontal extent of each branch reflects distance.
 - Click any internal node to filter the track down to that subtree. Click it
   again to clear, or use **Clear subtree filter**.
 - A chip at the top of the sidebar names the locus the tree was computed from.

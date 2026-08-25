@@ -102,11 +102,11 @@ describe('multi-row track menu', () => {
     ])
     expect(items.every(i => 'icon' in i && i.icon)).toBe(true)
     expect(labels(subMenuOf(items, 'Show...'))).toEqual([
-      'Show sidebar with tree and labels',
+      'Show tree',
+      'Tree branch lengths',
       'Show row labels',
       'Show row separators',
       'Color row labels by row color',
-      'Tree branch lengths',
     ])
   })
 
@@ -138,9 +138,7 @@ describe('multi-row track menu', () => {
       makeSelf({ treeHasBranchLengths: true }),
     )
 
-    // "Tree branch lengths" moved into "Show..." alongside the sidebar toggle;
-    // Clustering also emitted its own copy for as long as it only opted out of
-    // the tree toggle
+    // both tree toggles live in "Show..." and Clustering emits neither
     expect(allLabels(items).filter(l => l === 'Tree branch lengths')).toEqual([
       'Tree branch lengths',
     ])
