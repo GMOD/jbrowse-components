@@ -31,16 +31,29 @@ replays the zoom but not the scroll) and under the reader's `animationMode`.
 The navigate class is not flown and cannot be: `navToLocString` replaces the
 row's regions, so there is no coordinate space the two ends are both in.
 
-**Its open cost, unmeasured.** The arc's whole point is the pull-back, and over
-stacked whole assemblies that is ~15 octaves of zoom each way — traced at
-1500Mb-wide at the apex for a 1.5Gb hop. Synteny's fetch key buckets on
-`floor(log2(bpPerPx))` (`bucketBpPerPx`), so one flight crosses ~30 buckets
-where a pan at constant zoom crosses none; the 500ms leading-edge debounce cuts
-that to a handful of RPCs, for windows nobody stops to look at. Nobody has put
-a number on it against a real file — `demos/grape_peach_cacao` is the one to
-use. The levers, cheapest first: lower `RHO` (flattens the arc, costs no
-coupling, costs readability), or gate the synteny fetch on a flight in progress
-through the `fetchInert` seam it already has. **Measure before either.**
+**What it costs, measured.** The arc's whole point is the pull-back, and over
+stacked whole assemblies that is ~15 octaves of zoom each way — a 0.4Mb window
+opening to 210Mb at the apex and back, landing at 992ms. Synteny's fetch key
+buckets on `floor(log2(bpPerPx))` (`bucketBpPerPx`), so one flight crosses ~30
+fetch buckets where a pan at constant zoom crosses none, and that looked like it
+had to cost a burst of thrown-away RPCs. **It costs one.** Against
+`demos/grape_peach_cacao` the flight issues 2 `SyntenyGetFeaturesAndPositions`
+where the instant jump issues 1, over the same window from the same viewport:
+the 500ms leading-edge debounce absorbs the entire excursion. The bucket count
+is real and irrelevant, and the levers nobody needs yet (lower `RHO`, a gate on
+the `fetchInert` seam) should stay unused until a heavier file says otherwise.
+The run, the sampled path and the frames are in the record below; the one thing
+no number in it settles is that at the apex a whole-genome band is a dense
+hairball, and the arc flashes it for ~200ms.
+
+<!-- BEGIN GENERATED MEASUREMENT synteny-mate-flight -->
+
+| arm                     | synteny RPCs, same 3.4s window | widest window reached | ms to land |
+| ----------------------- | -----------------------------: | --------------------: | ---------: |
+| instant jump (centerAt) |                              1 |          0.4Mb (none) |          0 |
+| flight (flyToCenter)    |                              2 |               210.7Mb |        992 |
+
+<!-- END GENERATED MEASUREMENT synteny-mate-flight -->
 
 A synteny band draws a ribbon only when **both** ends land on a displayed
 region. When peach chr1 is stacked against grape chr1 and a peach locus is

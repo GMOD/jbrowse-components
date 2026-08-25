@@ -1,0 +1,54 @@
+{
+  "id": "synteny-mate-flight",
+  "measured": "2026-08-25",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "Local jbrowse-web dev build, Puppeteer, headless Chromium at 1400x900. demos/grape_peach_cacao config (the hosted one), LinearSyntenyView with grape over peach, showAllRegionsInAssembly on both rows, offscreenMateMode 'query', the MCScan blocks track. Peach row parked at a 400kb window, then `showOffscreenMateContig(<a 22.6Mb peach chromosome>, 1, locus, true)` - the scroll branch, which is what a mark click reaches. session.rpcManager.call wrapped to count; the viewport sampled every rAF. The control arm is `row.centerAt(...)` to the same place, counted over the SAME 3.4s window from the same starting viewport.",
+    "notes": "THE QUESTION: the flight's whole point is that it zooms out to cover distance, and synteny's fetch key buckets on floor(log2(bpPerPx)) (`bucketBpPerPx`). A whole-genome arc traces ~15 octaves out and ~15 back, so it crosses ~30 fetch buckets where a pan at constant zoom crosses none - which looked like it had to cost a burst of discarded RPCs.\n\nIT DOES NOT. The flight costs exactly ONE extra `SyntenyGetFeaturesAndPositions` over the instant jump, because the 500ms leading-edge debounce absorbs the entire excursion: one fetch as the arc leaves, one when it settles. The bucket-crossing count is real and irrelevant. No lever is needed, and the ones named in the code (lower RHO, a gate on `fetchInert`) should stay unused until something measures otherwise on a heavier file.\n\nWHAT THE ARC ACTUALLY DID, sampled: 0.40Mb window -> 210.7Mb at the apex (t=0.45, 441ms) -> 0.40Mb, landing at 992ms, inside the 1100ms ceiling. The apex is `both ends on screen`, as the path is meant to produce, and `maxBpPerPx` was never reached (the peach row's fit is 252Mb against a 210Mb apex) so no clamp flattened it. Landing verified exact: asked for NC_034016.1:11,286,990, got a 400kb window centred on 11,287,490, ribbons drawn, snackbar and Undo matching.\n\nFRAME RATE: 46 samples in the first second, so ~46fps, in SOFTWARE rasterization with a 16,865-anchor band redrawing each frame. Real hardware is not measured and will be better; this is the floor, not the number to quote.\n\nTHE ONE THING A HUMAN SHOULD LOOK AT, which no number here settles: at the apex a whole-genome grape/peach band is a dense hairball, and the arc flashes it for roughly 200ms. It reads as `here is the whole relationship`, and it is also a large swing in ink. Frames captured at t = 0, .18, .32, .45, .55, .70, .85, 1."
+  },
+  "columns": [
+    {
+      "key": "arm",
+      "label": "arm",
+      "format": "text",
+      "align": "left"
+    },
+    {
+      "key": "rpcs",
+      "label": "synteny RPCs, same 3.4s window",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "apexMb",
+      "label": "widest window reached",
+      "format": "text",
+      "align": "right"
+    },
+    {
+      "key": "settledMs",
+      "label": "ms to land",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "arm": "instant jump (centerAt)",
+        "rpcs": 1,
+        "apexMb": "0.4Mb (none)",
+        "settledMs": 0
+      }
+    },
+    {
+      "values": {
+        "arm": "flight (flyToCenter)",
+        "rpcs": 2,
+        "apexMb": "210.7Mb",
+        "settledMs": 992
+      }
+    }
+  ]
+}

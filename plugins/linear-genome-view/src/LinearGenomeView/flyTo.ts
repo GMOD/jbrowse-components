@@ -46,18 +46,18 @@ export interface Flight {
 // it "suggests that rho = sqrt(2) is possibly an optimal value" without being
 // able to say why; d3-interpolateZoom takes the same sqrt(2). Lower flattens
 // the arc into a pan, higher pulls further back and travels faster, and it is
-// the one knob here worth turning if the zoomed-out apex proves too expensive
-// to fetch through.
+// the one knob to reach for if the zoomed-out apex ever proves too expensive to
+// fetch through.
 //
-// WHICH IS NOT A HYPOTHETICAL, and is the known open cost of this. A
-// cross-chromosome flight over stacked whole assemblies traces roughly 15
-// octaves of zoom out and 15 back, and synteny's fetch key buckets on
-// `floor(log2(bpPerPx))` — so a flight crosses ~30 fetch buckets where a drag
-// at constant zoom crosses none. The 500ms leading-edge debounce turns that
-// into a handful of RPCs per flight rather than 30, but they are RPCs for
-// windows nobody stops to look at. Unmeasured on a real file; a gate on
-// synteny's existing `fetchInert` is the obvious lever if it bites, and
-// lowering rho is the one that costs no coupling.
+// IT DOES NOT TODAY, and the arithmetic that says it should is worth
+// contradicting explicitly. A cross-chromosome flight over stacked whole
+// assemblies traces ~15 octaves of zoom out and ~15 back, and synteny's fetch
+// key buckets on `floor(log2(bpPerPx))` — so a flight crosses ~30 fetch buckets
+// where a pan at constant zoom crosses none. Measured against
+// `demos/grape_peach_cacao` it costs exactly ONE extra RPC over the instant
+// jump (2 against 1), because the 500ms leading-edge debounce absorbs the whole
+// excursion: one fetch leaving, one on landing.
+// `agent-docs/measurements/synteny-mate-flight.json`.
 const RHO = Math.sqrt(2)
 
 // WHERE WE PART COMPANY WITH THE PAPER, and the one number in here that is not
