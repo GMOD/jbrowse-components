@@ -44,13 +44,18 @@ export function getMethBins(
     probabilities,
     cigarOps,
     isReverse,
-    ({ type, positions }, ref, idx, prob) => {
+    ({ type, strand, positions }, ref, idx, prob) => {
       const isMeth = type === 'm' || type === 'h'
       if (
         isMeth &&
         ref >= 0 &&
         ref < flen &&
-        matchesCytosineContext(seq, positions[idx]!, isReverse, context)
+        matchesCytosineContext(
+          seq,
+          positions[idx]!,
+          isReverse !== (strand === '-'),
+          context,
+        )
       ) {
         if (type === 'm') {
           methBins[ref] = 1
@@ -69,9 +74,14 @@ export function getMethBins(
   // Additionally, per SAMtags the '?' flag means the status of bases not listed
   // in the MM tag is unknown, so we must NOT assume them unmethylated; only the
   // '.'/absent flag (low probability for skipped bases) lets us fill them in.
-  const hasMeth = modifications.some(m => m.type === 'm')
+  const methMods = modifications.filter(m => m.type === 'm')
   const fillUnmethylated =
-    hasMeth && !modifications.some(m => m.type === 'm' && m.unknownSkip)
+    methMods.length > 0 && !methMods.some(m => m.unknownSkip)
+
+  // A '-' MM group assays the cytosines of the strand OPPOSITE the read, so a
+  // both-strand modBAM ('C+m;G-m') has its uncalled sites in both directions.
+  const fillForward = methMods.some(m => isReverse === (m.strand === '-'))
+  const fillReverse = methMods.some(m => isReverse !== (m.strand === '-'))
 
   // Scan the full read sequence for every cytosine in `context` and mark any not
   // already detected from the MM tag as unmethylated (prob=0).
@@ -92,10 +102,11 @@ export function getMethBins(
           const rp = readPos + j
           const rf = refPos + j
           if (
-            matchesCytosineContext(seq, rp, isReverse, context) &&
             rf >= 0 &&
             rf < flen &&
-            !methBins[rf]
+            !methBins[rf] &&
+            ((fillForward && matchesCytosineContext(seq, rp, false, context)) ||
+              (fillReverse && matchesCytosineContext(seq, rp, true, context)))
           ) {
             methBins[rf] = 1
             methProbs[rf] = 0

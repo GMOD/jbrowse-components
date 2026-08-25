@@ -161,6 +161,32 @@ describe('getMethBins CpG filtering', () => {
     expect(bins('CAGT', 'C+m,0;', [200], -1).methBins[2]).toBeUndefined()
   })
 
+  test('both-strand modBAM: the - MM group is binned as well as the + group', () => {
+    // dorado writing both strands: C+m calls the forward cytosine of the CpG at
+    // read offset 2, G-m the reverse-strand cytosine opposite the G at offset 3.
+    // The - group's context runs the other way down the read, so scoring it with
+    // the READ's direction drops every reverse-strand call of every CpG.
+    const { methBins } = bins('AACGAA', 'C+m?,0;G-m?,0', [200, 200])
+    expect(methBins[2]).toBe(1)
+    expect(methBins[3]).toBe(1)
+  })
+
+  test('fill scan covers both orientations when a - group is present', () => {
+    // CpGs at read offsets 2/3 and 6/7. The tag calls both forward cytosines and
+    // only the first reverse-strand one, so the unmethylated fill has to paint
+    // offset 7 — which it reaches only by scanning the reverse orientation too.
+    const { methBins, methProbs } = bins(
+      'AACGATCGAA',
+      'C+m,0,0;G-m,0',
+      [230, 50, 240],
+    )
+    expect(methProbs[2]).toBeCloseTo(230 / 255, 5)
+    expect(methProbs[3]).toBeCloseTo(240 / 255, 5)
+    expect(methProbs[6]).toBeCloseTo(50 / 255, 5)
+    expect(methBins[7]).toBe(1)
+    expect(methProbs[7]).toBe(0)
+  })
+
   test('two CpGs on reverse strand read both stored', () => {
     // seq TTCGATCGTT → revcom AACGATCGAA: CpGs at revcom indices 2 and 6
     // pos values: 10-3=7 and 10-7=3 → ref offsets 3 and 7 via 10M CIGAR
