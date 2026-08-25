@@ -14,9 +14,19 @@ function widen<T>(extend: (stateModel: T) => IAnyModelType) {
   return extend as unknown as (stateModel: IAnyModelType) => IAnyModelType
 }
 
+// Built once per registration rather than per element: the point fires for
+// every pluggable element there is, and every callback registered on it runs
+// for each one.
+function namesOf(name: string | readonly string[]) {
+  return new Set(typeof name === 'string' ? [name] : name)
+}
+
 /**
  * Replace a view type's state model with an extended one, e.g. to add a menu
- * item to `LinearGenomeView`.
+ * item to `LinearGenomeView`. Pass an array to extend several at once, which is
+ * how a contribution reaches a family: the tree spells a display family as a
+ * shared mixin set rather than a chain, so there is no parent to name — see
+ * `reference/REJECTED_IDEAS.md`, "Give a pluggable element an `extendsType`".
  *
  * `Core-extendPluggableElement` fires for every pluggable element there is —
  * adapters, widgets, RPC methods, all of them — so a callback written against
@@ -34,13 +44,14 @@ function widen<T>(extend: (stateModel: T) => IAnyModelType) {
  */
 export function extendViewType<N extends ViewTypeName>(
   pluginManager: PluginManager,
-  name: N,
+  name: N | readonly N[],
   extend: (stateModel: ViewTypeRegistry[N]) => IAnyModelType,
 ) {
+  const names = namesOf(name)
   pluginManager.addToExtensionPoint(
     'Core-extendPluggableElement',
     (element, props) => {
-      if (props.group === 'view' && element.name === name) {
+      if (props.group === 'view' && names.has(element.name)) {
         // The group check established this element is a ViewType, and the
         // registry says which one, so the read is proven. The body still works
         // in `IAnyModelType`: `ViewTypeRegistry` is declared empty here and
@@ -65,13 +76,14 @@ export function extendViewType<N extends ViewTypeName>(
  */
 export function extendDisplayType<N extends DisplayTypeName>(
   pluginManager: PluginManager,
-  name: N,
+  name: N | readonly N[],
   extend: (stateModel: DisplayTypeRegistry[N]) => IAnyModelType,
 ) {
+  const names = namesOf(name)
   pluginManager.addToExtensionPoint(
     'Core-extendPluggableElement',
     (element, props) => {
-      if (props.group === 'display' && element.name === name) {
+      if (props.group === 'display' && names.has(element.name)) {
         // widened for the reason in extendViewType
         const display = element as { stateModel: IAnyModelType }
         display.stateModel = widen(extend)(display.stateModel)

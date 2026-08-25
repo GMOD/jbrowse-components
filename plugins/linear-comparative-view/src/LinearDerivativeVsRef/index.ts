@@ -55,12 +55,7 @@ export default function LinearDerivativeVsRefMenuItemF(pm: PluginManager) {
       ])
     },
   })
-  addDisplayMenuItems(pm, 'LinearAlignmentsDisplay', {
-    menu: 'trackMenuItems',
-    group: LAUNCH_VIEW_LABEL,
-    items,
-  })
-  addDisplayMenuItems(pm, 'LGVSyntenyDisplay', {
+  addDisplayMenuItems(pm, ['LinearAlignmentsDisplay', 'LGVSyntenyDisplay'], {
     menu: 'trackMenuItems',
     group: LAUNCH_VIEW_LABEL,
     items,

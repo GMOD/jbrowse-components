@@ -24,15 +24,35 @@ const baseModel = types
     },
   }))
 
+// A second type sharing `menuItems` and nothing else, so a contribution named
+// against both is held to what they have in common.
+const otherModel = types
+  .model('TestOtherView', {
+    id: types.optional(types.identifier, 'v'),
+    type: types.string,
+  })
+  .views(() => ({
+    menuItems(): MenuItem[] {
+      return [{ label: 'other base', onClick: () => {} }]
+    },
+  }))
+
 declare module '../PluginManager.ts' {
   interface ViewTypeRegistry {
     TestMenuView: typeof baseModel
+    TestOtherView: typeof otherModel
+    TestUnnamedView: typeof otherModel
   }
 }
 
 const ReactComponent = (() => null) as unknown as AnyReactComponentType
 
-function makeView(pm: PluginManager) {
+interface TestMenus {
+  menuItems: () => MenuItem[]
+  highlightMenuItems: (highlight: { name: string }) => MenuItem[]
+}
+
+function makeViews(pm: PluginManager) {
   pm.addViewType(
     () =>
       new ViewType({
@@ -41,13 +61,25 @@ function makeView(pm: PluginManager) {
         ReactComponent,
       }),
   )
-  pm.createPluggableElements()
-  return pm
-    .getViewType('TestMenuView')
-    .stateModel.create({ type: 'TestMenuView' }) as unknown as {
-    menuItems: () => MenuItem[]
-    highlightMenuItems: (highlight: { name: string }) => MenuItem[]
+  for (const name of ['TestOtherView', 'TestUnnamedView'] as const) {
+    pm.addViewType(
+      () => new ViewType({ name, stateModel: otherModel, ReactComponent }),
+    )
   }
+  pm.createPluggableElements()
+  const make = (name: string) =>
+    pm
+      .getViewType(name)
+      .stateModel.create({ type: name }) as unknown as TestMenus
+  return {
+    view: make('TestMenuView'),
+    other: make('TestOtherView'),
+    unnamed: make('TestUnnamedView'),
+  }
+}
+
+function makeView(pm: PluginManager) {
+  return makeViews(pm).view
 }
 
 // a divider has no label, and none of these menus contain one
@@ -156,6 +188,37 @@ test('a method the model does not have is a compile error', () => {
   addViewMenuItems(pm, 'TestMenuView', {
     // @ts-expect-error no such menu method on this view type
     menu: 'trackMenuItems',
+    items: () => undefined,
+  })
+  expect(pm.extensionPointCallbackCount('Core-extendPluggableElement')).toBe(1)
+})
+
+// One registration, several types: the shape a contribution belonging to a
+// family takes, since the tree spells a family as a shared mixin set rather
+// than a chain there is no parent to name — `reference/REJECTED_IDEAS.md`,
+// "Give a pluggable element an `extendsType`".
+test('one call naming several types reaches each of them and nothing else', () => {
+  const pm = new PluginManager([])
+  addViewMenuItems(pm, ['TestMenuView', 'TestOtherView'], {
+    menu: 'menuItems',
+    items: () => ({ label: 'mine', onClick: () => {} }),
+  })
+  const { view, other, unnamed } = makeViews(pm)
+  expect(labels(view.menuItems())).toEqual(['base', 'mine'])
+  expect(labels(other.menuItems())).toEqual(['other base', 'mine'])
+  expect(labels(unnamed.menuItems())).toEqual(['other base'])
+})
+
+// typecheck-only, like the single-name case above. Naming several types hands
+// the contributor a union, so `keyof` is what they share: a menu only one of
+// them has would otherwise reach the others as a `self[menu]` that is
+// undefined, which throws when that menu is opened rather than where it is
+// written.
+test('a menu only one of the named types has is a compile error', () => {
+  const pm = new PluginManager([])
+  addViewMenuItems(pm, ['TestMenuView', 'TestOtherView'], {
+    // @ts-expect-error TestOtherView has no highlightMenuItems
+    menu: 'highlightMenuItems',
     items: () => undefined,
   })
   expect(pm.extensionPointCallbackCount('Core-extendPluggableElement')).toBe(1)

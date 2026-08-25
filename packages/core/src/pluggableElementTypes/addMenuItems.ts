@@ -31,6 +31,10 @@ type ModelOf<T> = T extends IAnyType ? Instance<T> : never
  * `rubberBandLaunchMenuItems`, `highlightMenuItems`), they are a convention
  * rather than one declared interface, and a contribution to a name the model no
  * longer has is otherwise silent.
+ *
+ * Given several names, `M` arrives as the union of their models and `keyof M`
+ * is what they share, so a menu only one of them has is a compile error rather
+ * than a `self[menu]` that is undefined on the others.
  */
 type MenuMethodName<M> = {
   [K in keyof M]: M[K] extends (...args: never[]) => MenuItem[] ? K : never
@@ -104,7 +108,8 @@ function menuExtension(
 
 /**
  * Add items to a menu on a view type belonging to another plugin, e.g. an "open
- * a synteny view on this locus" entry on the linear genome view.
+ * a synteny view on this locus" entry on the linear genome view. Pass an array
+ * to contribute the same items to several types at once.
  *
  * Prefer this to extending the state model by hand. The model is the right seam
  * — `menuItems()` is called from seven pieces of view chrome, and only the model
@@ -129,7 +134,7 @@ export function addViewMenuItems<
   K extends MenuMethodName<ModelOf<ViewTypeRegistry[N]>>,
 >(
   pluginManager: PluginManager,
-  name: N,
+  name: N | readonly N[],
   options: MenuItemsOptions<ModelOf<ViewTypeRegistry[N]>, K>,
 ) {
   const { menu, group, items } = options
@@ -162,7 +167,7 @@ export function addDisplayMenuItems<
   K extends MenuMethodName<ModelOf<DisplayTypeRegistry[N]>>,
 >(
   pluginManager: PluginManager,
-  name: N,
+  name: N | readonly N[],
   options: MenuItemsOptions<ModelOf<DisplayTypeRegistry[N]>, K>,
 ) {
   const { menu, group, items } = options
