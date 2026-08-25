@@ -432,6 +432,63 @@ describe('computeDerivativePaths', () => {
   })
 })
 
+describe('a route contained in a longer one', () => {
+  const full = () => [der3Chain(), der3Chain(3), der3Chain(-2)]
+
+  it('is marked as part of it and leaves its support alone', () => {
+    const prefix = der3Chain().slice(0, 2)
+    const candidates = computeDerivativePaths({
+      chains: [...full(), prefix, prefix],
+    })
+    expect(candidates.map(c => c.segments.length)).toEqual([4, 2])
+    expect(candidates[0]!.readCount).toBe(3)
+    expect(candidates[0]!.partOf).toBeUndefined()
+    expect(candidates[1]!.partOf).toBe(candidates[0]!.pathId)
+  })
+
+  it('is recognised when its reads crossed the allele from the other end', () => {
+    const suffixReversed = der3Chain()
+      .slice(2)
+      .reverse()
+      .map(s => ({ ...s, strand: -s.strand }))
+    const candidates = computeDerivativePaths({
+      chains: [...full(), suffixReversed, suffixReversed],
+    })
+    expect(candidates).toHaveLength(2)
+    expect(candidates[1]!.partOf).toBe(candidates[0]!.pathId)
+  })
+
+  it('is not confused with a route that diverges at a junction', () => {
+    // chr3 -> chr10 -> chr3, skipping the chr12 insert: its second junction is
+    // one the four-segment allele does not have, so it is a dissent, not a part
+    const skip = [
+      seg('chr3', 25_326_821, 25_359_568, 1, 0),
+      seg('chr10', 58_717_463, 58_717_662, 1, 32_732),
+      seg('chr3', 25_352_683, 25_359_111, -1, 32_932),
+    ]
+    const candidates = computeDerivativePaths({
+      chains: [...full(), skip, skip],
+    })
+    expect(candidates).toHaveLength(2)
+    expect(candidates.map(c => c.partOf)).toEqual([undefined, undefined])
+  })
+
+  it('names the most-supported route that contains it', () => {
+    const prefix = der3Chain().slice(0, 2)
+    const three = der3Chain().slice(0, 3)
+    const candidates = computeDerivativePaths({
+      chains: [...full(), three, three, three, three, prefix, prefix],
+    })
+    expect(candidates.map(c => [c.segments.length, c.readCount])).toEqual([
+      [3, 4],
+      [4, 3],
+      [2, 2],
+    ])
+    expect(candidates[0]!.partOf).toBe(candidates[1]!.pathId)
+    expect(candidates[2]!.partOf).toBe(candidates[0]!.pathId)
+  })
+})
+
 describe('derivativeLocString', () => {
   it('round-trips through the location box unformatted', () => {
     // no thousand separators: this string is parsed, not read, and the

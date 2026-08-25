@@ -212,6 +212,28 @@ an exclusion — the all-vs-all self-alignment lane is gone from `rawDataByGroup
 outright — so counting its chains would rank paths on reads the track never
 draws.
 
+## 11. A run of a route is not a competing route, and not extra support either
+
+Rule 1 keys a group on the whole junction list, so a read that crosses only the
+first junction of a three-junction allele forms a group of its own. Two such
+reads make a row, and the picker's caption presents every row as a route the
+reads cross "in the same order and orientation" — which reads as a second
+allele, when the shorter route is consistent with the longer one and cannot tell
+it from a simpler event.
+
+Neither obvious repair holds. Crediting the shorter route's reads to the longer
+one overstates it: they say nothing about the junctions they did not cross, and
+a plain translocation and the first hop of a chain look identical to them.
+Hiding the row loses the count, which rule 8 says is evidence about the window.
+
+So the relation is named and nothing is moved. `computeDerivativePaths` marks a
+candidate whose junctions are a contiguous run of another's — in either reading,
+since the shorter route's reads may have crossed the allele from the other end —
+with `partOf`, the `pathId` of the most-supported route that contains it, and
+the picker prints "part of a longer route in this list" beside the row. A route
+that diverges at any junction, such as COLO829's three-segment path that skips
+the chr12 insert, shares no run and stays the dissent it is.
+
 ## Depth lives elsewhere
 
 - Every measurement behind rules 1 through 6, the offline `sv_multihop.py` that

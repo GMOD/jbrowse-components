@@ -82,6 +82,17 @@ export interface DerivativeCandidate {
   // SA tag, i.e. the path leaves what is currently displayed. Purely
   // informational: it is the normal case for an interchromosomal event.
   extendsOffScreen: boolean
+  /**
+   * `pathId` of the most-supported candidate whose junctions contain this one's
+   * as a contiguous run, read from either end. A read crossing only the first
+   * junction of a three-junction allele describes a route of its own here, and
+   * that route is not a competing allele: it is consistent with the longer one
+   * and cannot tell it from a simpler event. Its reads stay uncredited to the
+   * longer route, since they say nothing about the junctions they did not
+   * cross, so this names the relation for the picker to show instead. Absent
+   * when no candidate above the floor contains it.
+   */
+  partOf?: string
 }
 
 export interface ComputeDerivativePathsOpts {
@@ -275,7 +286,7 @@ function buildClusterOf(chains: SegAln[][], tolerance: number): ClusterOf {
 // crossing the same rearrangement agree on where the pieces join and disagree on
 // where each read happens to start and stop, so folding the outer edges in would
 // give every read its own signature and every candidate a support of 1.
-function pathSignature(chain: SegAln[], clusterOf: ClusterOf) {
+function junctionParts(chain: SegAln[], clusterOf: ClusterOf) {
   const parts: string[] = []
   for (let i = 0; i < chain.length - 1; i++) {
     const a = chain[i]!
@@ -286,7 +297,23 @@ function pathSignature(chain: SegAln[], clusterOf: ClusterOf) {
       }:${clusterOf(b.refName, segmentEntryBp(b))}:${b.strand}`,
     )
   }
-  return parts.join('|')
+  return parts
+}
+
+function pathSignature(chain: SegAln[], clusterOf: ClusterOf) {
+  return junctionParts(chain, clusterOf).join('|')
+}
+
+function isContiguousRun(sub: string[], sup: string[]) {
+  if (sub.length >= sup.length) {
+    return false
+  }
+  for (let offset = 0; offset + sub.length <= sup.length; offset++) {
+    if (sub.every((part, i) => part === sup[offset + i])) {
+      return true
+    }
+  }
+  return false
 }
 
 function totalSpan(chain: SegAln[]) {
@@ -430,7 +457,7 @@ export function computeDerivativePaths(
     getOrCreate(groups, signature, () => []).push(oriented)
   }
 
-  const candidates: DerivativeCandidate[] = []
+  const entries: { candidate: DerivativeCandidate; readings: string[][] }[] = []
   for (const [signature, group] of groups) {
     if (group.length < minReads) {
       continue
@@ -445,19 +472,25 @@ export function computeDerivativePaths(
     )
     const oriented = orientForDisplay(representative)
     const segments = segmentsFromChain(oriented, flank)
-    candidates.push({
-      segments,
-      observedSegments: segmentsFromChain(oriented, 0),
-      pathId: signature,
-      readCount: group.length,
-      locString: derivativeLocString(segments),
-      refNames: [...new Set(segments.map(seg => seg.refName))],
-      extendsOffScreen: oriented.some(seg => !seg.onScreen),
+    entries.push({
+      candidate: {
+        segments,
+        observedSegments: segmentsFromChain(oriented, 0),
+        pathId: signature,
+        readCount: group.length,
+        locString: derivativeLocString(segments),
+        refNames: [...new Set(segments.map(seg => seg.refName))],
+        extendsOffScreen: oriented.some(seg => !seg.onScreen),
+      },
+      readings: [
+        junctionParts(oriented, clusterOf),
+        junctionParts(reverseComplementChain(oriented), clusterOf),
+      ],
     })
   }
 
-  return candidates.sort(
-    (a, b) =>
+  entries.sort(
+    ({ candidate: a }, { candidate: b }) =>
       // Support first, then the segment count, then the path id — and the LAST
       // of the three is what actually makes the order deterministic. The other
       // two are not a total order: two routes can agree on both, which is the
@@ -485,4 +518,16 @@ export function computeDerivativePaths(
       b.segments.length - a.segments.length ||
       (a.pathId < b.pathId ? -1 : 1),
   )
+
+  for (const entry of entries) {
+    const container = entries.find(
+      other =>
+        other !== entry &&
+        other.readings.some(sup => isContiguousRun(entry.readings[0]!, sup)),
+    )
+    if (container) {
+      entry.candidate.partOf = container.candidate.pathId
+    }
+  }
+  return entries.map(entry => entry.candidate)
 }

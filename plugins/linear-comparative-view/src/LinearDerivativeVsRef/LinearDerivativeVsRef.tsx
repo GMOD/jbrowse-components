@@ -169,9 +169,13 @@ function showsOffScreenFlag(candidates: DerivativeCandidate[]) {
 function CandidateRow({
   candidate,
   showOffScreen,
+  partOfListed,
 }: {
   candidate: DerivativeCandidate
   showOffScreen: boolean
+  // `partOf` names a route above the floor, which is not the same list as the
+  // rows drawn: past `MAX_SHOWN` the container may be a row nobody can see.
+  partOfListed: boolean
 }) {
   const { classes } = useStyles()
   return (
@@ -192,6 +196,7 @@ function CandidateRow({
         {showOffScreen && candidate.extendsOffScreen
           ? ' · extends beyond this window'
           : ''}
+        {partOfListed ? ' · part of a longer route in this list' : ''}
       </div>
     </div>
   )
@@ -518,6 +523,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 <CandidateRow
                   candidate={candidates[0]!}
                   showOffScreen={showOffScreen}
+                  partOfListed={false}
                 />
               </div>
             ) : (
@@ -538,6 +544,9 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                       <CandidateRow
                         candidate={candidate}
                         showOffScreen={showOffScreen}
+                        partOfListed={candidates.some(
+                          c => c.pathId === candidate.partOf,
+                        )}
                       />
                     }
                   />
