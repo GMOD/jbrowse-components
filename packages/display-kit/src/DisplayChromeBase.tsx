@@ -2,7 +2,10 @@ import { Fragment, useEffect } from 'react'
 
 // deep subpath, never the `@jbrowse/core/ui` barrel: this file is the
 // toolkit-free half of the chrome and the barrel pulls in MUI
-import { useMouseTracking } from '@jbrowse/core/ui/useMouseTracking'
+import {
+  ClearTrackedPointerProvider,
+  useMouseTracking,
+} from '@jbrowse/core/ui/useMouseTracking'
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
@@ -255,9 +258,18 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
           overlays deliberately sit OUTSIDE the key: remounting the loading
           scrim would reset its 250ms anti-flash timer (see
           DisplayStatusChromeBase). */}
-      <Fragment key={canvasKey}>
-        {children({ canvasRef, canvas, mouseTracker })}
-      </Fragment>
+      {/* A menu portalled to the body opens under the cursor without a mouse
+          event and takes the hover chain with it when it closes, so the
+          container below never gets the `mouseleave` that would drop the
+          tracked pointer — its overlays stay drawn at the coordinate the menu
+          opened on, however far the pointer then goes. `ContextMenu` is the one
+          menu every display raises, so it calls this on close and each display
+          is spared knowing about it. See `ClearTrackedPointerProvider`. */}
+      <ClearTrackedPointerProvider value={handleMouseLeave}>
+        <Fragment key={canvasKey}>
+          {children({ canvasRef, canvas, mouseTracker })}
+        </Fragment>
+      </ClearTrackedPointerProvider>
     </DisplayStatusChromeBase>
   )
 }

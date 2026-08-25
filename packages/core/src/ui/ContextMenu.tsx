@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react'
 
 import Menu from './CascadingMenu.tsx'
+import { useClearTrackedPointer } from './useMouseTracking.ts'
 import { CONTEXT_MENU_Z_INDEX } from './zIndexes.ts'
 
 import type { MenuItemsGetter } from './MenuTypes.ts'
@@ -45,6 +46,11 @@ const DEFAULT_OFFSET = { x: 12, y: 0 }
  * `closeAfterItemClick` default already fires it ahead of the clicked item's
  * callback, so an item's `onClick` must not read state that closing clears
  * (capture it when the items are built).
+ *
+ * Being the single close path is also why the display's tracked pointer is
+ * dropped here rather than by each display: this menu is portalled, so the
+ * display under it is never sent the `mouseleave` its overlays clear on. See
+ * `useClearTrackedPointer`.
  */
 const ContextMenu = observer(function ContextMenu({
   anchor,
@@ -57,6 +63,7 @@ const ContextMenu = observer(function ContextMenu({
   onClose: () => void
   offset?: { x: number; y: number }
 }) {
+  const clearTrackedPointer = useClearTrackedPointer()
   if (!anchor) {
     return null
   }
@@ -67,7 +74,10 @@ const ContextMenu = observer(function ContextMenu({
       onMenuItemClick={callback => {
         callback()
       }}
-      onClose={onClose}
+      onClose={() => {
+        clearTrackedPointer()
+        onClose()
+      }}
       anchorReference="anchorPosition"
       anchorPosition={{
         top: anchor.clientY + offset.y,

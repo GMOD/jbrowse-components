@@ -1338,15 +1338,14 @@ export const syntenyVideos: VideoSpec[] = [
         timeout: 180000,
       },
       { type: 'waitForAppSettled', timeout: 180000 },
-      // Park in two moves, and the first one is the load-bearing half: the drag
-      // left the pointer inside the MAF display, and the menu that opened over
-      // it is portaled to the body, so the pointer left the display's box while
-      // something else held the browser's hover chain and the display was never
-      // sent a `mouseleave`. Its tracked position is therefore still the drag's
-      // last pixel, and it draws a tooltip over that base for the rest of the
-      // clip -- through the poster -- however far away the real mouse is. A
-      // move back ONTO the rows puts the display back in the hover chain, and
-      // the wordmark after it is then a leave the display sees.
+      // Park in two moves. The first used to be load-bearing: the drag left the
+      // pointer inside the MAF display, the menu that opened over it is portaled
+      // to the body, and closing it detached the hover chain -- so the display
+      // was never sent a `mouseleave` and drew a tooltip on the drag's last base
+      // for the rest of the clip, through the poster. `ContextMenu` now drops
+      // the display's tracked pointer on close (see `useClearTrackedPointer`),
+      // so this is just a park; it stays because the shipped clip is filmed with
+      // it, and the next re-film can drop it.
       {
         type: 'hover',
         anchor: {

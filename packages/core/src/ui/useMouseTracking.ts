@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from 'react'
 
 export interface MouseState {
   x: number
@@ -49,6 +56,28 @@ function createMouseStore(): MouseStore {
 }
 
 const getServerSnapshot = () => undefined
+
+/**
+ * Drop the tracked pointer, published by whoever bound the handlers.
+ *
+ * `mouseleave` reports the pointer leaving an element, and the browser decides
+ * that by comparing the hover chain before a move to the chain after it. A menu
+ * portalled to the body opens under the cursor with no move at all, and closing
+ * it detaches the chain's nodes — so hover restarts at `body` and the display
+ * the menu covered is never told anything again. Its overlays then keep drawing
+ * at the coordinate the pointer had when the menu opened, wherever the pointer
+ * has since gone.
+ *
+ * `ContextMenu` calls this on close, which is why the default is a no-op: a menu
+ * raised outside a display's chrome has no tracked pointer to drop.
+ */
+const ClearTrackedPointerContext = createContext<() => void>(() => {})
+
+export const ClearTrackedPointerProvider = ClearTrackedPointerContext.Provider
+
+export function useClearTrackedPointer() {
+  return use(ClearTrackedPointerContext)
+}
 
 /**
  * Container-relative mouse position for the overlays that follow the pointer
@@ -102,9 +131,11 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   /**
    * Drop the published position and tell `onMove` the pointer is gone.
    *
-   * Bound as the container's `onMouseLeave` — and called directly when the
-   * container is *removed* rather than left, which `mouseleave` cannot report.
-   * See its call in `DisplayChromeBase`. Identity-stable for that second caller.
+   * Bound as the container's `onMouseLeave` — and called directly for the two
+   * cases `mouseleave` cannot report: the container being *removed* rather than
+   * left, and a portalled menu closing over it. `DisplayChromeBase` makes both
+   * calls, the second by publishing this on `ClearTrackedPointerProvider`.
+   * Identity-stable for both.
    */
   const handleMouseLeave = useCallback(() => {
     if (rafRef.current) {
