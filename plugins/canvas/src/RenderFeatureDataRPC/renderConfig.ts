@@ -77,26 +77,10 @@ export const THEME_DERIVED_COLOR = '#f0f'
 // confined to the readConfigValue wrapper above.
 export interface DisplayConfig {
   // displayMode is NOT sent to the worker — compact/superCompact height scaling
-  // is applied on the main thread. That is what lets switching modes skip an RPC
-  // round-trip, but only while `maxIsoforms` below is undefined: a compact row is
-  // shorter, so the lane holds more isoforms, and the cap is derived from the
-  // mode. Under `auto` glyph mode at close zoom the switch therefore does refetch
-  // — deliberately, and pinned by fetchAutorun.test.ts.
+  // is applied on the main thread, so switching modes skips an RPC round-trip.
+  // Track height is not sent either: the fit ladder trims isoforms where it can
+  // see the packing (ADR-076).
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
-  // At most this many isoforms per gene, or undefined for no cap. Not a config
-  // slot — the display derives it from its track height (`effectiveMaxIsoforms`)
-  // and substitutes it into the payload the way `geneGlyphMode` is substituted.
-  maxIsoforms: number | undefined
-  // What a gene's own rows — padding and label lines — cost in `maxIsoforms`
-  // units. Rows and not pixels because the worker knows neither the display mode
-  // nor the label font, and both price them.
-  //
-  // Travels with `maxIsoforms` and is undefined exactly when it is: they are one
-  // budget, substituted together by the same `rpcProps()`. `maxIsoforms` is
-  // already net of ONE of these, for the single gene it sizes; a lane several
-  // genes stack in owes one apiece, which is what `laneBudgetRows` spends this
-  // on.
-  geneOwnRows: number | undefined
   subfeatureLabels: SubfeatureLabels
   transcriptTypes: string[]
   // the attribute an isoform's curated "represents the gene" tag rides in, and
@@ -149,8 +133,6 @@ export interface DisplayConfig {
 // only reason it is safe for it to exist at all.
 const WORKER_READS: Record<keyof DisplayConfig, true> = {
   geneGlyphMode: true,
-  maxIsoforms: true,
-  geneOwnRows: true,
   subfeatureLabels: true,
   transcriptTypes: true,
   canonicalTranscriptField: true,

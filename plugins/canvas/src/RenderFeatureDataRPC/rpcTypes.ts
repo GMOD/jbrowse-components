@@ -122,6 +122,11 @@ export interface FeatureDataResult {
   // worker is mode-agnostic; see FeatureLayout.labelRowsAbove for why the row
   // cannot simply be baked into the Y the worker emits.
   rectLabelRows: Uint8Array
+  // Which of the ROOT feature's direct children each rect belongs to, or LENGTH
+  // ZERO when this region stacks no gene (the same idiom as `rectLabelRows`).
+  // `ROOT_CHILD_ORDINAL` marks the root feature's own primitives, which no trim
+  // may drop. The main-thread isoform trim filters on it — see `IsoformStack`.
+  rectChildOrdinals: Uint16Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
@@ -133,6 +138,7 @@ export interface FeatureDataResult {
   lineDirections: Int8Array // strand direction: -1, 0, or 1
   lineColorClasses: Uint8Array
   lineLabelRows: Uint8Array
+  lineChildOrdinals: Uint16Array
 
   // Strand arrows (at feature ends)
   arrowXs: Uint32Array
@@ -151,6 +157,7 @@ export interface FeatureDataResult {
   arrowColors: Uint32Array
   arrowColorClasses: Uint8Array
   arrowLabelRows: Uint8Array
+  arrowChildOrdinals: Uint16Array
 
   // Hit detection
   flatbushItems: FlatbushItem[]
@@ -241,7 +248,10 @@ export type RegionRenderData = Pick<
   FeatureDataResult,
   | Exclude<
       PrimitiveArrayKey,
-      `${string}FeatureIndices` | `${string}LabelRows` | `${string}ColorClasses`
+      | `${string}FeatureIndices`
+      | `${string}LabelRows`
+      | `${string}ColorClasses`
+      | `${string}ChildOrdinals`
     >
   | 'outlineColor'
 >
@@ -257,6 +267,7 @@ export type RenderFeatureDataResult = FeatureDataResult | RegionTooLargeResult
 
 export interface AminoAcidOverlayItem {
   labelRowsAbove?: number
+  childOrdinal?: number
   startBp: number
   endBp: number
   aminoAcid: string
@@ -309,6 +320,54 @@ export interface FlatbushItem extends HitItemBase {
   // Whole-feature box glyph (variants, plain BED); packRef collapses sub-pixel
   // ones onto one row and the shader fades them into a density texture.
   densityFade: boolean
+  // Present on a gene stacking more than one child. What the fit ladder's
+  // isoform rung trims against.
+  isoformStack?: IsoformStack
+}
+
+// The ordinal of the root feature's own primitives — never an isoform slot, so
+// a trim always keeps them. 0xFFFF because the ordinals ship as a Uint16Array;
+// a gene with 65535 children clamps, and a gene with that many is unreadable
+// long before it matters.
+export const ROOT_CHILD_ORDINAL = 0xffff
+
+// One child of a gene, in the order the worker drew it.
+export interface IsoformStackChild {
+  featureId: string
+  // index among the root feature's direct children, i.e. the `*ChildOrdinals`
+  // value its primitives carry
+  ordinal: number
+  // false for a decoration beside the isoforms (an NCBI source record, a
+  // `biological_region`), which a trim always keeps
+  isoform: boolean
+  // position in the gene's ranking (curated tag, coding, protein length);
+  // Infinity for a decoration. The trim keeps the best by RANK, which is not
+  // the drawn order — the stack sorts by (canonical, coding) alone.
+  rank: number
+  // gene-local, in the worker's own units — before the main thread's compact
+  // scale and before its label rows are spent
+  yPx: number
+  heightPx: number
+  // `below` label rows this child spends, its own included
+  labelRows: number
+  startBp: number
+  endBp: number
+}
+
+// What a gene's stack costs and what it is made of, so the fit ladder can price
+// the gene at any isoform count without re-running the worker's layout. The
+// gap after each child is `heightPx × TRANSCRIPT_PADDING_RATIO` of the GENE's
+// own height, which is `gapPx` here rather than a ratio the main thread would
+// have to re-derive.
+export interface IsoformStack {
+  // every isoform the gene HAS, whatever was emitted — a `longestCoding` gene
+  // ships one child and counts them all here, so the badge reads the same way
+  // from either source
+  isoformCount: number
+  // what put the head of the ranking first, for the chip
+  canonicalTag?: string
+  gapPx: number
+  children: IsoformStackChild[]
 }
 
 export interface SubfeatureInfo extends HitItemBase {
@@ -319,6 +378,9 @@ export interface SubfeatureInfo extends HitItemBase {
   ownsLabelRow?: boolean
   parentFeatureId: string
   displayLabel?: string
+  // which of the root feature's direct children this belongs to; see
+  // `rectChildOrdinals`
+  childOrdinal?: number
 }
 
 export interface FeatureLabelData {
@@ -336,9 +398,9 @@ export interface FeatureLabelData {
   nameLabel?: LabelItem
   descriptionLabel?: LabelItem
   // The isoform badge, drawn immediately after the name on the same row: "+3
-  // more" on a gene the mode collapsed, "show fewer" on one the user opened from
-  // this badge (`expanded`). Present only where the collapse actually leaves
-  // isoforms out, so a gene drawing all of its own carries none.
+  // more" on a gene the fit ladder trimmed, "show fewer" on one the user opened
+  // from this badge (`expanded`). Written by the main-thread trim, which is the
+  // side that knows what was left out; present only where something was.
   //
   // A label of its own rather than text folded into `nameLabel`, because it is
   // a control: it needs its own color, its own hit target, and — for the packer
@@ -350,8 +412,8 @@ export interface FeatureLabelData {
 }
 
 // The isoform badge. `hidden` and `expanded` are what its hover sentence is
-// written from, and both are always there — the worker emits the badge only
-// where the collapse left an isoform out (see createMoreIsoformsLabel).
+// written from, and both are always there — the trim emits the badge only where
+// it left an isoform out (see createMoreIsoformsLabel).
 export type MoreIsoformsLabel = LabelItem & {
   hidden: number
   expanded: boolean

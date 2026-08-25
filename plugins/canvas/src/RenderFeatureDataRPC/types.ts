@@ -1,4 +1,5 @@
 import type { DisplayConfig } from './renderConfig.ts'
+import type { IsoformStack } from './rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -36,12 +37,10 @@ export interface FeatureLayout {
   labelRows?: number
   // this layout reserves a `below` label row of its own, under its body
   ownsLabelRow?: boolean
-  // set when geneGlyphMode === 'longestCoding' collapsed a multi-isoform gene
-  // down to its single representative transcript (layoutSubfeatures)
+  // set when the worker's own `longestCoding` collapse dropped isoforms from a
+  // multi-isoform gene (layoutSubfeatures). The fit ladder's trim happens on the
+  // main thread and never sets this.
   isoformsCollapsed?: boolean
-  // on a collapsed gene, whether the height cap (`maxIsoforms`) did it rather
-  // than the `longestCoding` mode — the chip announces the cap only off this
-  isoformsCappedByHeight?: boolean
   // on a collapsed gene, the `canonicalTranscriptTags` entry that put the
   // surviving transcript first — absent when the annotation tagged none of them
   // and protein length decided it. Summarized per region into `isoformPicks`,
@@ -51,14 +50,10 @@ export interface FeatureLayout {
   // drives the always-visible gene-glyph control (which only makes sense when
   // there's actually a choice among isoforms to make)
   hasMultipleIsoforms?: boolean
-  // How many isoforms the current mode's collapse leaves out of this gene, and
-  // whether the user has already opened it (`expandedGeneIds`). Absent when the
-  // gene draws every isoform it has anyway.
-  //
-  // `hidden` counts what the collapse WOULD hide, so it stays put once the gene
-  // is expanded — that is what lets the badge on the gene's label offer the way
-  // back instead of vanishing the moment it is clicked.
-  isoformOverflow?: { hidden: number; expanded: boolean }
+  // Every child this gene drew, in drawn order, with what the main thread needs
+  // to drop the losers: rank, gene-local geometry, and how many isoforms the
+  // gene HAS. Only on a gene stacking more than one child; see `IsoformStack`.
+  isoformStack?: IsoformStack
 }
 
 // `bpPerPx` is intentionally NOT part of LayoutArgs — feature widths and
@@ -78,26 +73,6 @@ export interface LayoutArgs {
   // whatever the mode's collapse says. A per-GENE override of a track-wide
   // setting, so it rides beside the config rather than in it.
   expandedGeneIds?: ReadonlySet<string>
-  // How busy the lane is where this gene sits, so the isoform cap can hand it a
-  // share rather than the whole track (see laneBudgetRows). Per-GENE and
-  // measured over its neighbours, so it rides beside the config like
-  // `expandedGeneIds`. Absent for a caller with no neighbourhood to sweep,
-  // which reads as the whole lane.
-  laneShare?: LaneShare
-}
-
-// How many multi-isoform genes stack at the busiest point of one gene's span,
-// itself included — the divisor the isoform budget is split by.
-//
-// Genes ONLY. Charging single-row neighbours too was tried and reverted: a
-// volvox gene overlapped by a `contig 1-50001` backdrop, a `BAC`, and a dozen
-// `match` rows was floored to one transcript, including at heights where its
-// name was already drawn. Those rows do consume the lane, so the arithmetic was
-// right and the behaviour was still wrong — a gene must not lose transcripts to
-// a backdrop annotation nobody is reading. A second MULTI-ISOFORM gene is the
-// case that actually doubles the stack, and it is the one this divides for.
-export interface LaneShare {
-  genes: number
 }
 
 export type GlyphType =

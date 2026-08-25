@@ -1,21 +1,18 @@
 import { reservesBelowLabelRow } from '../labelUtils.ts'
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
-import {
-  budgetFeatureHeightPx,
-  featureHeightPx,
-  isCodingFeature,
-} from './glyphUtils.ts'
-import { WHOLE_LANE, laneBudgetRows } from './isoformLanes.ts'
+import { featureHeightPx, isCodingFeature } from './glyphUtils.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
-import type { FeatureLayout, LaneShare, LayoutArgs } from '../types.ts'
+import type { IsoformStack } from '../rpcTypes.ts'
+import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Expressed as a fraction of heightPx so the entire within-gene layout scales
 // linearly — main-thread compact scaling (multiplier × all y values) is exact.
-// Exported for `effectiveMaxIsoforms`, which spends the same gap.
-export const TRANSCRIPT_PADDING_RATIO = 0.2
+// The gap it produces ships on `IsoformStack.gapPx` so the trim spends the same
+// number rather than re-deriving it.
+const TRANSCRIPT_PADDING_RATIO = 0.2
 
 // Is this child of a gene one of the isoforms it is choosing among — i.e. a
 // transcript-shaped thing that takes a row of its own — rather than a
@@ -39,26 +36,6 @@ function isIsoform(sub: Feature, transcriptTypes: ReadonlySet<string>) {
 
 function transcriptTypeSet(config: DisplayConfig) {
   return new Set(config.transcriptTypes.map(t => t.toLowerCase()))
-}
-
-// Is this a gene the isoform cap has something to divide? The gene-level glyph
-// is the only one that stacks its children on rows of their own, and one
-// isoform is not a choice — a transcript's exons are subfeatures too, and
-// answer `getIsoforms` just as readily.
-//
-// The pair `layoutSubfeatures` asks of itself below (`hasMultipleIsoforms`),
-// hoisted so the lane sweep can ask it of every feature in the region BEFORE
-// any of them is laid out. Takes the dispatch answer rather than finding it,
-// because the caller sweeping a whole region already has one per feature.
-export function stacksMultipleIsoforms(
-  feature: Feature,
-  config: DisplayConfig,
-  glyph: (args: LayoutArgs) => FeatureLayout,
-) {
-  return (
-    glyph === layoutSubfeatures &&
-    getIsoforms(getSubfeatures(feature), transcriptTypeSet(config)).length > 1
-  )
 }
 
 // The isoforms a gene is choosing among: its isoform-shaped children when
@@ -212,76 +189,8 @@ function rankIsoforms(isoforms: Feature[], scores: Scores): Feature[] {
     .map(s => s.feature)
 }
 
-// `heightPx * TRANSCRIPT_PADDING_RATIO` is inexact in binary (24 × 0.2 =
-// 4.800000000000001), so a stack that exactly fills its budget must not lose to
-// the last bit.
-const BUDGET_EPSILON_PX = 1e-9
-
 function totalLabelRows(layout: FeatureLayout) {
   return (layout.labelRows ?? 0) + (layout.ownsLabelRow ? 1 : 0)
-}
-
-// How many of `candidates`, in the order given, still fit a lane of
-// `budgetRows` isoform-sized rows once the decorations beside them are charged.
-//
-// Counting isoforms is wrong on two shapes that both take real rows out of the
-// lane: a gene hangs decorations next to its isoforms (an NCBI source record, a
-// `biological_region`) which the cap deliberately keeps, and an isoform can be
-// taller than one row (a polyprotein CDS draws one per cleavage product).
-// `effectiveMaxIsoforms` runs on the main thread before the fetch, off config
-// and track height alone, so it sees neither — this is the only place the whole
-// child list and every child's measured height are visible.
-//
-// Each child costs its own height plus the gap after it, and each budgeted row
-// costs a body plus a gap, so the one gap the last child never spends cancels on
-// both sides and the budget is `isoformRowBudget`'s exactly.
-//
-// `below` label rows are a SECOND budget rather than a term folded into the
-// first, because a label row's height is the display mode's label font size and
-// only the main thread knows it (see FeatureLayout.labelRowsAbove). Two budgets
-// can only under-admit, which is the direction the cap wants (see
-// MAX_FEATURE_LABEL_LINES).
-//
-// The floor is one isoform, like `isoformRowBudget`'s own — so a lone isoform
-// taller than the whole lane still overflows, which no arithmetic over a child
-// list can fix.
-function isoformsWithinBudget({
-  candidates,
-  decorations,
-  budgetRows,
-  rowPx,
-  subfeatureLabelsBelow,
-  layoutOf,
-}: {
-  candidates: Feature[]
-  decorations: Feature[]
-  budgetRows: number
-  rowPx: number
-  subfeatureLabelsBelow: boolean
-  layoutOf: (child: Feature) => FeatureLayout
-}) {
-  const gapPx = rowPx * TRANSCRIPT_PADDING_RATIO
-  const budgetPx = budgetRows * (rowPx + gapPx) + BUDGET_EPSILON_PX
-  const budgetLabelRows = subfeatureLabelsBelow ? budgetRows : 0
-  let spentPx = 0
-  let spentLabelRows = 0
-  const charge = (child: Feature) => {
-    const layout = layoutOf(child)
-    spentPx += layout.height + gapPx
-    spentLabelRows += totalLabelRows(layout)
-  }
-  for (const decoration of decorations) {
-    charge(decoration)
-  }
-  let kept = 0
-  for (const candidate of candidates) {
-    charge(candidate)
-    if (kept > 0 && (spentPx > budgetPx || spentLabelRows > budgetLabelRows)) {
-      break
-    }
-    kept++
-  }
-  return kept
 }
 
 // The best `kept` of a ranked isoform list, and the curated tag that put the
@@ -292,79 +201,36 @@ function isoformsWithinBudget({
 // The survivors are a Set, so the caller's filter keeps them in the caller's
 // order and a gene under the cap lays out identically with it on and off.
 //
-// `cappedByHeight` says which rule did the collapsing. The two look identical
-// from the kept set, and the chip has to tell them apart: it announces the cap
-// off the display's CURRENT height while the loaded data may be the previous
-// mode's, so "something is hidden" is not evidence that the cap hid it.
 function keepRanked(
   ranked: Feature[],
   kept: number,
   scores: Scores,
   config: DisplayConfig,
-  cappedByHeight: boolean,
 ) {
   return {
     keep: new Set(ranked.slice(0, kept).map(f => f.id())),
     canonicalTag:
       config.canonicalTranscriptTags[scores.get(ranked[0]!.id())!.canonical],
-    // Reported rather than re-derived: under the height cap this is what
-    // `isoformsWithinBudget` MEASURED, not `maxIsoforms`, so the badge's
-    // "+N more" has no other way to know it.
-    kept,
-    cappedByHeight,
   }
 }
 
 // Which isoforms this gene draws, or undefined when it draws all of them.
 //
-// `longestCoding` is the user's own pick and takes the head of the ranking
-// whatever it costs. The height cap is a promise about the lane instead, so it
-// measures — but only after the cheap count test, so a gene comfortably under
-// the cap never pays for `rankIsoforms`, which walks every isoform's subtree.
-// A gene over the count skips straight to the ranking and stops charging at the
-// first isoform that does not fit, so the cap still lays out no loser.
+// `longestCoding` is the only collapse left in the worker. It is the user's own
+// pick and it is also the payload gate at whole-chromosome zoom, where shipping
+// every isoform of every gene was never measured (ADR-076). Everything else the
+// display gives up it gives up on the main thread, where it can see the pack.
 function collapseIsoforms({
   isoforms,
-  decorations,
   scores,
   config,
-  laneShare,
-  layoutOf,
 }: {
   isoforms: Feature[]
-  decorations: Feature[]
   scores: Scores
   config: DisplayConfig
-  laneShare: LaneShare
-  layoutOf: (child: Feature) => FeatureLayout
 }) {
-  const { geneGlyphMode, maxIsoforms, geneOwnRows } = config
-  if (geneGlyphMode === 'longestCoding') {
-    return isoforms.length > 1
-      ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config, false)
-      : undefined
-  }
-  if (maxIsoforms === undefined) {
-    return undefined
-  }
-  const budget = {
-    decorations,
-    budgetRows: laneBudgetRows(maxIsoforms, geneOwnRows, laneShare),
-    rowPx: budgetFeatureHeightPx(config.featureHeight),
-    subfeatureLabelsBelow: config.subfeatureLabels === 'below',
-    layoutOf,
-  }
-  if (
-    isoforms.length <= budget.budgetRows &&
-    isoformsWithinBudget({ ...budget, candidates: isoforms }) ===
-      isoforms.length
-  ) {
-    return undefined
-  }
-  const ranked = rankIsoforms(isoforms, scores)
-  const kept = isoformsWithinBudget({ ...budget, candidates: ranked })
-  return kept < isoforms.length
-    ? keepRanked(ranked, kept, scores, config, true)
+  return config.geneGlyphMode === 'longestCoding' && isoforms.length > 1
+    ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config)
     : undefined
 }
 
@@ -398,6 +264,56 @@ function memoizeChildLayouts(args: LayoutArgs) {
   }
 }
 
+// The gene's children as the main-thread trim sees them: drawn order, with the
+// rank that decides which ones a smaller `k` keeps. `rank` is deliberately not
+// the drawn position — the stack sorts by (canonical, coding) alone while the
+// ranking also weighs protein length, so "drop a suffix" would keep a different
+// set than the worker's own `longestCoding` does at k = 1.
+function buildIsoformStack({
+  drawn,
+  children,
+  isoformSet,
+  isoformCount,
+  scores,
+  gapPx,
+  canonicalTag,
+}: {
+  drawn: Feature[]
+  children: FeatureLayout[]
+  isoformSet: ReadonlySet<Feature>
+  isoformCount: number
+  scores: Scores
+  gapPx: number
+  canonicalTag: string | undefined
+}): IsoformStack {
+  const rankById = new Map(
+    rankIsoforms(
+      drawn.filter(f => isoformSet.has(f)),
+      scores,
+    ).map((f, i) => [f.id(), i]),
+  )
+  return {
+    isoformCount,
+    canonicalTag,
+    gapPx,
+    children: drawn.map((child, ordinal) => {
+      const layout = children[ordinal]!
+      const isoform = isoformSet.has(child)
+      return {
+        featureId: child.id(),
+        ordinal,
+        isoform,
+        rank: isoform ? rankById.get(child.id())! : Infinity,
+        yPx: layout.y,
+        heightPx: layout.height,
+        labelRows: totalLabelRows(layout),
+        startBp: child.get('start'),
+        endBp: child.get('end'),
+      }
+    }),
+  }
+}
+
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { geneGlyphMode } = config
@@ -420,25 +336,19 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   const layoutOf = memoizeChildLayouts(args)
 
-  // Which isoforms survive, or undefined when none are being dropped.
-  //
+  // Which isoforms survive `longestCoding`, or undefined when none are dropped.
   // Ranked BEFORE the stack sort below, which is in place and over an array
   // `isoforms` can BE — getIsoforms falls back to the raw subfeatures for a
   // gene with no isoform-shaped children. Ranking after it would rank a
-  // reordered list, and rankIsoforms breaks a tie by index, so the cap at n = 1
-  // would have kept a different isoform than the longestCoding collapse does.
-  const collapse = collapseIsoforms({
-    isoforms,
-    decorations: subfeatures.filter(sub => !isoformSet.has(sub)),
-    scores,
-    config,
-    laneShare: args.laneShare ?? WHOLE_LANE,
-    layoutOf,
-  })
-  // An expanded gene still ASKS what the collapse would do — the badge on its
-  // label spends that count to offer the way back — but does not act on it.
+  // reordered list, and rankIsoforms breaks a tie by index.
+  //
+  // An expanded gene draws every isoform whatever the mode says. The badge that
+  // offers the way back is the main thread's, off `isoformCount` (see
+  // `IsoformStack`).
   const expanded = args.expandedGeneIds?.has(feature.id()) ?? false
-  const collapsed = expanded ? undefined : collapse
+  const collapsed = expanded
+    ? undefined
+    : collapseIsoforms({ isoforms, scores, config })
 
   // Drop the isoforms that lost, leaving the decorations alongside them alone —
   // an NCBI source record, a `biological_region`. `longestCoding` used to
@@ -508,25 +418,19 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     // probe and the committed pack read
     labelRows,
     isoformsCollapsed: collapsed !== undefined,
-    isoformsCappedByHeight: collapsed?.cappedByHeight,
     canonicalTag: collapsed?.canonicalTag,
     hasMultipleIsoforms,
-    // The badge exists to report a collapse the reader did not ask for and
-    // cannot see the extent of: the HEIGHT CAP, which fires per gene on however
-    // many isoforms that gene happens to have, and whose whole symptom is a gene
-    // drawn shorter than it is. `longestCoding` is a track-wide mode the user
-    // picked and the corner chip already names, so a badge under every gene
-    // there is one sentence repeated once per label — noise on exactly the
-    // zoomed-out view the mode exists to keep readable.
-    //
-    // An EXPANDED gene keeps its badge whichever rule would have collapsed it,
-    // because that badge is the only way back: a gene opened under the cap and
-    // then met by a mode switch would otherwise stand fully stacked among
-    // collapsed ones with no visible control (the track menu's
-    // "Collapse N expanded genes" is the other way, and is not on the gene).
-    isoformOverflow:
-      collapse !== undefined && (geneGlyphMode !== 'longestCoding' || expanded)
-        ? { hidden: isoforms.length - collapse.kept, expanded }
+    isoformStack:
+      hasMultipleIsoforms || subfeatures.length > 1
+        ? buildIsoformStack({
+            drawn: subfeatures,
+            children,
+            isoformSet,
+            isoformCount: isoforms.length,
+            scores,
+            gapPx: heightPx * TRANSCRIPT_PADDING_RATIO,
+            canonicalTag: collapsed?.canonicalTag,
+          })
         : undefined,
   }
 }

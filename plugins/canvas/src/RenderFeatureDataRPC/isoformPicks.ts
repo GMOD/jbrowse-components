@@ -12,10 +12,11 @@ import type { FeatureLayout } from './types.ts'
 export interface IsoformPicks {
   byTag: Record<string, number>
   byLength: number
-  // Genes the height cap trimmed, whatever rule ranked their survivors. The
-  // chip announces the cap off the display's current height, and the loaded
-  // data may still be the previous mode's — so it needs the worker's word that
-  // the cap fired, not just that something is hidden.
+  // Genes the fit ladder's isoform rung trimmed, whatever rule ranked their
+  // survivors. Always 0 from the worker: the trim is the main thread's, and the
+  // chip announces it off the solve rather than off anything being hidden — a
+  // region fetched under `longestCoding` reports every multi-isoform gene as
+  // collapsed and the ladder never touched it.
   byCap: number
 }
 
@@ -31,12 +32,7 @@ function tagRule(tag: string) {
 export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
   const byTag: Record<string, number> = {}
   let byLength = 0
-  let byCap = 0
-  for (const {
-    isoformsCollapsed,
-    isoformsCappedByHeight,
-    canonicalTag,
-  } of layouts) {
+  for (const { isoformsCollapsed, canonicalTag } of layouts) {
     if (!isoformsCollapsed) {
       continue
     }
@@ -46,11 +42,36 @@ export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
       const rule = tagRule(canonicalTag)
       byTag[rule] = (byTag[rule] ?? 0) + 1
     }
-    if (isoformsCappedByHeight) {
-      byCap++
+  }
+  return { byTag, byLength, byCap: 0 }
+}
+
+// The worker's picks plus the genes the main-thread trim took isoforms off:
+// each counts under the rule that ranked its survivors, exactly as a
+// worker-side collapse does, and under `byCap` — the chip's one piece of
+// evidence that the ladder is what is hiding transcripts here.
+//
+// The two sets never overlap. `longestCoding` leaves each gene one child, and
+// the trim's smallest k is 1, so a gene the worker collapsed is never trimmed
+// again.
+export function addTrimmedIsoformPicks(
+  picks: IsoformPicks,
+  trimmed: { canonicalTag?: string }[],
+): IsoformPicks {
+  if (trimmed.length === 0) {
+    return picks
+  }
+  const byTag = { ...picks.byTag }
+  let byLength = picks.byLength
+  for (const { canonicalTag } of trimmed) {
+    if (canonicalTag === undefined) {
+      byLength++
+    } else {
+      const rule = tagRule(canonicalTag)
+      byTag[rule] = (byTag[rule] ?? 0) + 1
     }
   }
-  return { byTag, byLength, byCap }
+  return { byTag, byLength, byCap: picks.byCap + trimmed.length }
 }
 
 // One summary over every loaded region, since the chip speaks for the whole
@@ -106,10 +127,10 @@ export function anyIsoformsHidden(picks: IsoformPicks | undefined) {
   )
 }
 
-// The height cap, specifically, trimmed some gene here — the only evidence the
-// chip may announce a cap on. A region fetched under `longestCoding` reports
-// every multi-isoform gene as collapsed, and a cap read off the current height
-// gated on that alone went loud for a whole fetch on data the cap never saw.
+// The fit ladder's isoform rung, specifically, trimmed some gene here — the
+// only evidence the chip may announce a trim on. A region fetched under
+// `longestCoding` reports every multi-isoform gene as collapsed, and a trim
+// gated on that alone went loud on data the ladder never touched.
 export function capHidIsoforms(picks: IsoformPicks | undefined) {
   return picks !== undefined && picks.byCap > 0
 }

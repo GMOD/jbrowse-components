@@ -1,10 +1,7 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { LITERAL } from '../colorClasses.ts'
-import {
-  createFeatureFloatingLabels,
-  createMoreIsoformsLabel,
-} from '../floatingLabels.ts'
+import { createFeatureFloatingLabels } from '../floatingLabels.ts'
 import { PAM_LABEL, findPamSubfeature } from '../glyphs/crisprGuide.ts'
 import { collectPolyproteinCDS } from '../glyphs/matureProteinRegion.ts'
 import { transcriptCoords } from '../glyphs/transcriptCoords.ts'
@@ -678,7 +675,8 @@ function emitSubfeaturesGlyph(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  for (const child of layout.children) {
+  for (const [ordinal, child] of layout.children.entries()) {
+    const mark = place.isRoot ? markCollector(collector) : undefined
     emitGlyph(
       child,
       {
@@ -691,6 +689,63 @@ function emitSubfeaturesGlyph(
       ctx,
       collector,
     )
+    if (mark) {
+      stampChildOrdinal(collector, mark, ordinal)
+    }
+  }
+}
+
+// Where each of the collector's append-only lists stood before one stack child
+// was emitted.
+type CollectorMark = ReturnType<typeof markCollector>
+
+function markCollector(collector: Collector) {
+  return {
+    rects: collector.rects.length,
+    lines: collector.lines.length,
+    arrows: collector.arrows.length,
+    subfeatureInfos: collector.subfeatureInfos.length,
+    aminoAcidOverlay: collector.aminoAcidOverlay.length,
+  }
+}
+
+// Attribute everything one direct child of the root pushed to that child's
+// ordinal, so the main-thread trim can drop an isoform's primitives out of the
+// packed arrays (see `IsoformStack`).
+//
+// Stamped over the emitted RANGE rather than threaded through every emitter,
+// which is what makes it hold at depth for free: a polyprotein's cleavage
+// products and a nested container's grandchildren land inside their root
+// child's range whatever `parentFeatureId` they register under — and that
+// linkage, which aliases every depth to the root, is precisely what cannot
+// answer "the direct children of gene X" (ADR-075 §"What is actually missing").
+function stampChildOrdinal(
+  collector: Collector,
+  mark: CollectorMark,
+  ordinal: number,
+) {
+  for (let i = mark.rects; i < collector.rects.length; i++) {
+    collector.rects[i]!.childOrdinal = ordinal
+  }
+  for (let i = mark.lines; i < collector.lines.length; i++) {
+    collector.lines[i]!.childOrdinal = ordinal
+  }
+  for (let i = mark.arrows; i < collector.arrows.length; i++) {
+    collector.arrows[i]!.childOrdinal = ordinal
+  }
+  for (
+    let i = mark.subfeatureInfos;
+    i < collector.subfeatureInfos.length;
+    i++
+  ) {
+    collector.subfeatureInfos[i]!.childOrdinal = ordinal
+  }
+  for (
+    let i = mark.aminoAcidOverlay;
+    i < collector.aminoAcidOverlay.length;
+    i++
+  ) {
+    collector.aminoAcidOverlay[i]!.childOrdinal = ordinal
   }
 }
 
@@ -741,11 +796,11 @@ export function processFeatureRecord(
   collector: Collector,
 ) {
   const { feature } = layout
-  // A gene that dropped isoforms — collapsed to one by `longestCoding`, or
-  // truncated to the rows the track has by the height cap — still carries its
-  // own start/end spanning every hidden one. Anchor the label + hit box to what
+  // A gene `longestCoding` collapsed to one transcript still carries its own
+  // start/end spanning every hidden one. Anchor the label + hit box to what
   // actually drew, so the name doesn't float left of the visible glyph over
-  // empty track.
+  // empty track. The fit ladder's trim re-anchors the same way, on the side
+  // that dropped them (`applyIsoformTrim`).
   const drawn = layout.isoformsCollapsed ? layout.children : undefined
   const featureStart = drawn
     ? Math.min(...drawn.map(c => c.feature.get('start')))
@@ -761,15 +816,6 @@ export function processFeatureRecord(
     description,
   })
 
-  // Only beside a name, because the badge sits ON the name row and is read as
-  // part of it — a gene the annotation never named has no label for it to
-  // qualify, and floating one alone under the glyph would read as a transcript
-  // label rather than as this gene's own missing count.
-  const moreIsoformsLabel =
-    nameLabel && layout.isoformOverflow
-      ? createMoreIsoformsLabel({ overflow: layout.isoformOverflow })
-      : undefined
-
   if (nameLabel || descriptionLabel) {
     collector.floatingLabelsData.set(feature.id(), {
       featureId: feature.id(),
@@ -780,7 +826,6 @@ export function processFeatureRecord(
       labelRows: layout.labelRows,
       nameLabel,
       descriptionLabel,
-      moreIsoformsLabel,
     })
   }
 
@@ -804,6 +849,7 @@ export function processFeatureRecord(
     // per-rect decision is layout's alone. The worker writes no rect-level flag.
     densityFade: layout.glyphType === 'Box',
     labelRows: layout.labelRows,
+    isoformStack: layout.isoformStack,
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 

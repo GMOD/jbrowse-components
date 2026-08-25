@@ -1,4 +1,5 @@
 import { LITERAL } from './colorClasses.ts'
+import { ROOT_CHILD_ORDINAL } from './rpcTypes.ts'
 
 import type { PackedPrimitives } from './rpcTypes.ts'
 
@@ -6,6 +7,11 @@ export interface RectData {
   // `below` label rows above this primitive inside its gene; the main thread
   // spends them at the display mode's label font size (see GlyphPlacement)
   labelRowsAbove: number
+  // Which of the root feature's direct children this belongs to, stamped by
+  // `emitSubfeaturesGlyph` after that child's subtree is emitted. Absent on a
+  // primitive of a feature that stacks nothing, which reads as
+  // `ROOT_CHILD_ORDINAL`.
+  childOrdinal?: number
   // `LITERAL` when `color` above is the color; otherwise the theme class the
   // main-thread encode resolves it from (see colorClasses.ts)
   colorClass: number
@@ -22,6 +28,11 @@ export interface LineData {
   // `below` label rows above this primitive inside its gene; the main thread
   // spends them at the display mode's label font size (see GlyphPlacement)
   labelRowsAbove: number
+  // Which of the root feature's direct children this belongs to, stamped by
+  // `emitSubfeaturesGlyph` after that child's subtree is emitted. Absent on a
+  // primitive of a feature that stacks nothing, which reads as
+  // `ROOT_CHILD_ORDINAL`.
+  childOrdinal?: number
   // `LITERAL` when `color` above is the color; otherwise the theme class the
   // main-thread encode resolves it from (see colorClasses.ts)
   colorClass: number
@@ -40,6 +51,11 @@ export interface ArrowData {
   // `below` label rows above this primitive inside its gene; the main thread
   // spends them at the display mode's label font size (see GlyphPlacement)
   labelRowsAbove: number
+  // Which of the root feature's direct children this belongs to, stamped by
+  // `emitSubfeaturesGlyph` after that child's subtree is emitted. Absent on a
+  // primitive of a feature that stacks nothing, which reads as
+  // `ROOT_CHILD_ORDINAL`.
+  childOrdinal?: number
   // `LITERAL` when `color` above is the color; otherwise the theme class the
   // main-thread encode resolves it from (see colorClasses.ts)
   colorClass: number
@@ -90,6 +106,20 @@ function labelRowArray(items: { labelRowsAbove: number }[]) {
     : new Uint8Array(0)
 }
 
+// Which stack child each primitive belongs to, or LENGTH ZERO when this region
+// stacks no gene — the same idiom as `labelRowArray` above. `ROOT_CHILD_ORDINAL`
+// for the root feature's own primitives, which no trim may drop.
+function childOrdinalArray(items: { childOrdinal?: number }[]) {
+  if (!items.some(i => i.childOrdinal !== undefined)) {
+    return new Uint16Array(0)
+  }
+  const out = new Uint16Array(items.length)
+  for (const [i, item] of items.entries()) {
+    out[i] = item.childOrdinal ?? ROOT_CHILD_ORDINAL
+  }
+  return out
+}
+
 // Theme classes for one primitive kind, or LENGTH ZERO when every primitive in
 // it resolved to a literal color — the same length-zero idiom as
 // `labelRowArray` above, and the common case: only a CDS painted by reading
@@ -138,6 +168,7 @@ export function packRenderArrays(
   const rectColorClasses = colorClassArray(visibleRects)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
   const rectLabelRows = labelRowArray(visibleRects)
+  const rectChildOrdinals = childOrdinalArray(visibleRects)
 
   for (const [i, rect] of visibleRects.entries()) {
     rectPositions[i * 2] = rect.start
@@ -163,6 +194,7 @@ export function packRenderArrays(
   const lineColorClasses = colorClassArray(visibleLines)
   const lineFeatureIndices = new Uint32Array(visibleLines.length)
   const lineLabelRows = labelRowArray(visibleLines)
+  const lineChildOrdinals = childOrdinalArray(visibleLines)
 
   for (const [i, line] of visibleLines.entries()) {
     linePositions[i * 2] = line.start
@@ -189,6 +221,7 @@ export function packRenderArrays(
   const arrowColorClasses = colorClassArray(visibleArrows)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
   const arrowLabelRows = labelRowArray(visibleArrows)
+  const arrowChildOrdinals = childOrdinalArray(visibleArrows)
 
   for (const [i, arrow] of visibleArrows.entries()) {
     arrowXs[i] = arrow.x
@@ -216,6 +249,7 @@ export function packRenderArrays(
     rectColorClasses,
     rectFeatureIndices,
     rectLabelRows,
+    rectChildOrdinals,
     linePositions,
     lineYs,
     lineHeights,
@@ -224,6 +258,7 @@ export function packRenderArrays(
     lineColorClasses,
     lineFeatureIndices,
     lineLabelRows,
+    lineChildOrdinals,
     arrowXs,
     arrowYs,
     arrowHeights,
@@ -233,5 +268,6 @@ export function packRenderArrays(
     arrowColorClasses,
     arrowFeatureIndices,
     arrowLabelRows,
+    arrowChildOrdinals,
   }
 }
