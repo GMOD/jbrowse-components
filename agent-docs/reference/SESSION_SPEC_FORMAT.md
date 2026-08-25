@@ -1,0 +1,286 @@
+---
+name: session-spec-format
+audience: internal
+description: What the session spec is (a view's launch keys plus track entries that carry display config slots inline), a census of what the 330-figure corpus actually writes into it, and the assessment against Gosling and GenomeSpy that follows — keep the flat format-typed form, publish one JSON Schema from the manifest generator, decline an encoding block, scale objects and view combinators, and why a grammar is not a mechanism for this codebase's complexity.
+---
+
+# The session spec, measured, and the grammar-of-graphics question
+
+Two questions kept coming back while the v5 manuscript was being written: is
+the JSON the figure corpus is built from a good format, and would a
+grammar-of-graphics form — the shape Gosling and GenomeSpy publish — be a
+better one, either for readers or as a way to hold the codebase's complexity
+down. This doc answers both from a census of the corpus rather than from taste.
+[ideas/session-spec-grammar](../ideas/session-spec-grammar.md) is the parked
+proposal it assesses; ADR-089 through ADR-091 are the in-tree experiment with
+marks that the codebase half of the question already ran.
+
+## What the format is
+
+A session spec is a session with its views written as **launch arguments**
+rather than as state snapshots: `views[]` carries each view's launch keys flat
+(`assembly`, `loc`, `tracks`, and per-view settings such as `colorBy` on a
+synteny view), and nesting views (`views`, `levels`) is how a synteny or
+breakpoint-split layout composes linear views. The URL form is
+`&session=spec-{json}`, `defaultSession` puts the same keys under `init`, and
+[urlparams](../../website/docs/urlparams.md) renders each view type's keys from
+the launcher's own declaration (`SPEC_KEYS` blocks, generated).
+
+A track entry is one of three shapes: a bare `trackId`, a one-element tuple
+(the synteny levels form), or an object whose non-`trackId` keys are display
+settings written inline —
+
+```json
+{ "trackId": "hg002_ont", "type": "LinearAlignmentsDisplay", "colorBy": { "type": "tag", "tag": "HP" }, "height": 400 }
+```
+
+`normalizeTrackInit` folds those keys into the display snapshot, and
+`showTrackGeneric` routes every one that is a real config slot onto the
+display's config through `preProcessSlotValues` and `setSlot`
+(`packages/core/src/util/tracks.ts`). So the vocabulary of a track entry IS the
+display's config slot table — the same names the track menu writes, the config
+pages document, and `jbrowse validate` checks from
+`configManifest.generated.ts`. A key that is neither a slot nor a state-model
+property is dropped silently, which is the one property of the format the
+validator exists for.
+
+The same document has three front ends — the URL param, `defaultSession`, and
+the jb2export CLI's `color:tag:HP height:400` modifiers — and the CLI is a
+separate parser (`products/jbrowse-img/src/applyTrackOpts.ts`) rather than a
+lowering onto the slot names. That is the one structural drift the parked idea
+names correctly and this doc does not close.
+
+## What the corpus writes
+
+`website/scripts/spec-key-census.ts` decodes every `session=` in the figure
+specs and tallies the keys; `--write` refreshes the two records below.
+
+<!-- BEGIN GENERATED MEASUREMENT session-spec-corpus -->
+
+|                                        | value |
+| -------------------------------------- | ----: |
+| session specs                          |   330 |
+| views, nested ones included            |   526 |
+| session tracks carried inline          |   177 |
+| track entries: bare id                 |    83 |
+| track entries: tuple                   |    83 |
+| track entries: object                  |   521 |
+| explicit display types named           |    17 |
+| distinct keys on object entries        |    95 |
+| keys on two or more display types      |    29 |
+| keys used exactly once                 |    26 |
+| keys per object entry, median          |     2 |
+| keys per object entry, 90th percentile |     5 |
+| keys per object entry, max             |    12 |
+
+<!-- END GENERATED MEASUREMENT session-spec-corpus -->
+
+The keys that at least two explicit display types carry:
+
+<!-- BEGIN GENERATED MEASUREMENT session-spec-vocabulary -->
+
+| key                 | entries | display types |
+| ------------------- | ------: | ------------: |
+| height              |     391 |            16 |
+| displayMode         |      79 |             3 |
+| showLabels          |      67 |             2 |
+| heightMode          |      51 |             3 |
+| forceLoad           |      51 |             7 |
+| featureHeight       |      49 |             2 |
+| minScore            |      45 |             4 |
+| maxScore            |      45 |             4 |
+| color               |      43 |             3 |
+| defaultRendering    |      42 |             2 |
+| colorBy             |      30 |             3 |
+| scatterPointSize    |      18 |             3 |
+| jexlFiltersSetting  |      16 |             2 |
+| groupBy             |      15 |             2 |
+| summaryScoreMode    |      15 |             2 |
+| runClustering       |      13 |             5 |
+| displayCrossHatches |      13 |             2 |
+| showLegend          |      12 |             2 |
+| resolution          |      11 |             2 |
+| showTree            |      10 |             3 |
+| layout              |      10 |             2 |
+| subtreeFilter       |       8 |             2 |
+| autoscale           |       6 |             3 |
+| jexlFilters         |       6 |             2 |
+| renderingMode       |       5 |             2 |
+| featureHighlights   |       4 |             2 |
+| scaleType           |       3 |             2 |
+| showTranslation     |       3 |             2 |
+| numStdDev           |       2 |             2 |
+
+<!-- END GENERATED MEASUREMENT session-spec-vocabulary -->
+
+Three things to read off it.
+
+**An entry is small.** Half the object entries set two keys or fewer, and the
+90th percentile is five. The largest entries in the corpus are alignments
+displays stacking read connections, coverage and a legend (12 keys), and those
+are the figures whose point is the stack. Nothing here is fighting the format
+for room.
+
+**The shared vocabulary already reads as channels.** Of the distinct keys the
+corpus writes, about a third appear on two or more display types, and that
+third is exactly the set a grammar would call encoding and scale: `height`,
+`color`, `colorBy`, `groupBy`, a y-scale spelled `minScore` / `maxScore` /
+`scaleType` / `autoscale`, a mark spelled `defaultRendering`, a filter spelled
+`jexlFilters`, and row order spelled `runClustering` / `sortRowsBy` /
+`rowOrder`. The names are flat and per-display, but the concepts are shared and
+the census shows authors using them as shared.
+
+**The long tail names mechanisms, not aesthetics.** The keys used on one
+display type — `readConnections`, `showSoftClipping`, `rowIdentityMode`,
+`hideSelfAlignments`, `maxMissingnessFilter`, `partitionField` — each name
+something no other display has. A grammar has no channel to put them in; it
+would carry them as mark-specific options under a different key, which is the
+same tail with an extra level of nesting.
+
+Two pairs that look like drift are not: `jexlFilters` is the config slot and
+`jexlFiltersSetting` the display's session override (`core/util/jexlFilters.ts`
+says which wins), and `color` versus `featureColor` on the multi-sample variant
+display is a real distinction (row color versus the per-variant override). The
+pairs that are just two spellings — `sortedBy` / `sortRowsBy` / `rowOrder`
+for a row ordering, `showTree` / `showRowLabels` for sidebar chrome — are a
+naming sweep through `legacyKeys` in a `preProcessSnapshot`, which the manifest
+already reports as stale rather than wrong. That is a rename, and it needs no
+grammar to carry it.
+
+## What the grammars do, precisely
+
+Both competitors are Vega-Lite descendants and both put the genomics into
+**transforms over rows already in memory**:
+
+- **Gosling** — eight marks (`point`, `line`, `area`, `bar`, `rect`, `text`,
+  `link`, `triangle`), channels `x` / `xe` / `y` / `ye` / `row` / `color` /
+  `size` / `stroke` / `opacity` / `text`, data types `bam` / `vcf` / `bed` /
+  `gff` / `bigwig` / `multivec` / `csv` / `json`, and transforms `filter`,
+  `displace` (the pileup, `method: pile`), `coverage`, `exonSplit`, `log`,
+  `concat`, `replace`, `subjson`. Views compose by `views` with `arrangement`
+  and `alignment`, in `layout: linear` or `circular`.
+- **GenomeSpy** — seven marks (`rect`, `point`, `rule`, `tick`, `text`, `link`,
+  `arrow`), `encoding` + `scales` + `transform`, view composition by `layer` /
+  `vconcat` / `hconcat`, lazy genomic sources (`bam`, `vcf`, `bigwig`, indexed
+  fasta), and among some thirty transforms `pileup`, `coverage`,
+  `flattenCigar`, `alignmentMismatches`. It publishes
+  `@genome-spy/core/dist/schema.json`, generated from its TypeScript spec types
+  with `ts-json-schema-generator`, and every example starts with `$schema`.
+
+So the earlier claim in
+[ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md) that
+GenomeSpy "has no pileup" is wrong as stated; it has one as a per-view
+transform. What it does not have is the part that costs this codebase its
+lines: a layout that is stable across region boundaries under pan, a
+level-of-detail tier that changes what is fetched, and the worker-side packing
+those need. GenomeSpy's own BAM example
+(`~/src/vendor/genome-spy/examples/docs/examples/genomic-data/bam-read-alignments.json`)
+is what authoring an alignments track from marks costs: 532 lines, 21 views,
+13 marks, 26 transforms, with the fetch window as a spec parameter. Reusing
+it is cheap — `genome-browser.json` beside it pulls that file in by URL and is
+40 lines — so the fair comparison is authoring against authoring and reuse
+against reuse: a track type is authored once there, in spec, and once here, in
+code (`LinearAlignmentsDisplay`), and a reader reusing one writes about 40
+lines there and 16 here (`variant_with_pileup`).
+
+## The assessment
+
+**A grammar is not a mechanism for this codebase's complexity.** A grammar of
+graphics controls complexity where a picture is datum × channel × mark and the
+marks are few and interchangeable. ADR-091 measured where this codebase's cost
+sits and it is not there: a declaration table across four display models
+eliminated zero getters, because what the getters hold is layout, tiering,
+fetch shape and per-display meaning — alignments' `colorBy` is a six-variant
+union carrying a six-field `modifications` object, and no channel table holds
+that without a nested escape hatch. ADR-091 measured the declaration half only.
+The transform half is an inference from where the lines sit — the census in
+[ideas/a-display-declares-itself](../ideas/a-display-declares-itself.md) puts
+`sortLayout.ts` at 1,096 lines and `layout.ts` at 1,741 — and a rewrite as
+marks plus transforms would move that layout into named `pileup`, `coverage`
+and `flattenCigar` transforms, which is where GenomeSpy keeps its own. The
+paper's framing is the one
+[mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md) already
+states: every track type runs one decision sequence — the too-large gate, the
+fetch tier, layout, height, the backend ladder, the layer lists, the overlays —
+and what differs between plugins is what a **row** means and what a **colour**
+means. That is a pipeline with two pluggable nouns, and a grammar is a different
+thing.
+
+**For the spec a reader writes, the flat form is the right one, and the reason
+is the unit.** Gosling and GenomeSpy are mark-typed: a track is a mark plus
+channels, and a genomic file is data the reader wires into it. JBrowse is
+format-typed: a track is a file format, and the display pairs the mark, the
+layout and the fetch strategy that format wants. The reader never picks a mark,
+so a channel grammar's headline benefit — any channel on any mark — has nothing
+to attach to, and the authoring cost above is paid in code here, where the
+reader does not see it. What survives from the grammar at the reader's level is the vocabulary
+observation: `height`, `color`, `colorBy`, `groupBy` and the score scale
+should keep spelling the same across displays, and the census says they
+largely do.
+
+**What the grammars have that this format lacks is one published schema.** The
+manifest is a schema in everything but format: 169 KB of generated TypeScript
+read out of the live `ConfigurationSchema` objects, with slot names, MST types,
+shorthand keys, legacy keys and each display's state-model properties, and 119
+generated config pages carry the descriptions and defaults. A reader's editor
+cannot use either. Emitting a JSON Schema from the same generator is the change
+worth making:
+
+- `scripts/generateConfigManifest.ts` already boots the plugin manager, but
+  the manifest stores MST type names as strings (`"(JexlString | number)"`),
+  so the emitter is a second walk of the same live schemas rather than a
+  second output of the first. Each type becomes a `$defs` entry discriminated
+  on `type`; a slot's `description`, `defaultValue` and enum members go in
+  directly; every slot admits the `jexl:` string form as an alternative. The
+  slot types in `core/configuration/configurationSlot.ts` all map — the
+  location slots to the four-location union the manifest already spells —
+  except `frozen` and `maybeFrozen`, which validate nothing: alignments'
+  `colorBy` is one, so the schema documents its shape as prose and the
+  validator keeps checking it. The schema is then a second shipped artifact
+  beside the manifest the CLI bundles, and the two have to move together.
+- Adapters add their `shorthandKeys` (`uri` beside `bamLocation`), tracks add
+  `displayDefaults` and `displays[]`, and displays add `stateModelProps` so a
+  `defaultSession` display node validates too.
+- A session spec's `views[]` takes each view type's launch keys, which
+  `generateSpecKeyDocs.ts` already resolves from the `LaunchView-<type>`
+  registrations; a track entry is `trackId` plus that view's displays' slots.
+- Serve it at a versioned URL and put `$schema` in every cookbook fence. The
+  URL is also the format version the parked idea asks for.
+
+`jbrowse validate` keeps the checks a schema cannot express — a `trackId` a
+session names that no track defines, an assembly a track names that no
+assembly defines — and the schema takes the rest into the editor.
+
+**Declined, with the evidence each rests on:**
+
+- *A uniform `encoding` block.* Cross-display channels exist and are flat; the
+  per-display keys are mechanisms with no channel to sit in. The block would
+  nest the first set and leave the second where it is.
+- *First-class `Scale` objects.* One consumer set (`scaleType` / `minScore` /
+  `maxScore` / `autoscale`) is already shared by the wiggle, Manhattan,
+  alignments-coverage and MAF-coverage displays through `@jbrowse/wiggle-core`,
+  and a session spec sets it in three keys. An object form would be the same three
+  keys one level down.
+- *View combinators (`layer`, `concat`).* A JBrowse view composes tracks, a
+  session composes views, and `views` / `levels` nesting is the combinator every
+  synteny and breakpoint figure in the corpus uses. Layering inside a track is a display's own business —
+  coverage over pileup is one display — and exposing it as a spec operation is
+  the mark-typed design again.
+- *Marks as a published unit.* Run and reversed: ADR-090 accepted, ADR-091
+  rejected with measurements. "What would reopen this" there still stands.
+
+**Still open from the parked idea:** lowering the jb2export modifiers onto the
+slot names so `color:tag:HP` and `"colorBy": {"type": "tag", "tag": "HP"}`
+parse to one object. It removes a dialect rather than adding a layer, and it is
+the reason the corpus's one `cli` spec and its 322 `url` specs exercise two
+parsers today.
+
+## What the manuscript can say
+
+The claim the census supports: the session spec is a launch document, format-
+typed, in which a track entry is a trackId plus the display's own config slots
+inline; a figure's spec is typically under twenty lines; and 330 of the site's
+figures are rendered from such documents and linked back to them. Against the
+grammar-based browsers the difference is where the pileup lives — in the
+reader's spec as a transform there, in the display type here — and the parity
+item to close is a published JSON Schema, which both of them have.

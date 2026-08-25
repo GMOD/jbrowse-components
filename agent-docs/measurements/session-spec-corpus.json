@@ -1,0 +1,102 @@
+{
+  "id": "session-spec-corpus",
+  "measured": "2026-08-25",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --experimental-strip-types website/scripts/spec-key-census.ts --write",
+    "notes": "Every url-mode spec in website/scripts/screenshot-specs.ts whose session= carries a spec-… JSON. A track entry is a bare trackId, a one-element tuple (the synteny levels form) or an object; key counts are over the objects, excluding trackId, type and the two escape-hatch snapshots."
+  },
+  "columns": [
+    {
+      "key": "metric",
+      "label": ""
+    },
+    {
+      "key": "value",
+      "label": "value",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "metric": "session specs",
+        "value": 330
+      }
+    },
+    {
+      "values": {
+        "metric": "views, nested ones included",
+        "value": 526
+      }
+    },
+    {
+      "values": {
+        "metric": "session tracks carried inline",
+        "value": 177
+      }
+    },
+    {
+      "values": {
+        "metric": "track entries: bare id",
+        "value": 83
+      }
+    },
+    {
+      "values": {
+        "metric": "track entries: tuple",
+        "value": 83
+      }
+    },
+    {
+      "values": {
+        "metric": "track entries: object",
+        "value": 521
+      }
+    },
+    {
+      "values": {
+        "metric": "explicit display types named",
+        "value": 17
+      }
+    },
+    {
+      "values": {
+        "metric": "distinct keys on object entries",
+        "value": 95
+      }
+    },
+    {
+      "values": {
+        "metric": "keys on two or more display types",
+        "value": 29
+      }
+    },
+    {
+      "values": {
+        "metric": "keys used exactly once",
+        "value": 26
+      }
+    },
+    {
+      "values": {
+        "metric": "keys per object entry, median",
+        "value": 2
+      }
+    },
+    {
+      "values": {
+        "metric": "keys per object entry, 90th percentile",
+        "value": 5
+      }
+    },
+    {
+      "values": {
+        "metric": "keys per object entry, max",
+        "value": 12
+      }
+    }
+  ]
+}

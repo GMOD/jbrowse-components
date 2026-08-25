@@ -1,7 +1,11 @@
 ---
 name: session-spec-grammar
-description: A Vega-Lite-style channel grammar for the session spec, in six parts: versioning the format, a uniform encoding block, reusable scales, collapsing three dialects to one canonical form, view combinators, and no sentinels in the public form. Plus the two config-layer proposals that outlived the note this grew out of.
+description: A Vega-Lite-style channel grammar for the session spec, in six parts: versioning the format, a uniform encoding block, reusable scales, collapsing three dialects to one canonical form, view combinators, and no sentinels in the public form. Assessed 2026-08-25 against a census of the figure corpus in reference/SESSION_SPEC_FORMAT.md, which declines the encoding block, the scale objects and the combinators, takes versioning as a published JSON Schema URL, and leaves the dialect collapse open.
 ---
+
+> Assessed against the corpus on 2026-08-25:
+> [reference/SESSION_SPEC_FORMAT.md](../reference/SESSION_SPEC_FORMAT.md). Of
+> the six, the dialect collapse is the one still worth doing.
 
 # Session-spec expressiveness: a Vega-Lite-style channel grammar
 

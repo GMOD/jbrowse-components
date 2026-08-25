@@ -1,0 +1,233 @@
+{
+  "id": "session-spec-vocabulary",
+  "measured": "2026-08-25",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --experimental-strip-types website/scripts/spec-key-census.ts --write",
+    "notes": "The keys at least two explicit display types carry, over the same corpus as session-spec-corpus. A key an entry sets without naming a display type is counted in uses but not toward the display-type count."
+  },
+  "columns": [
+    {
+      "key": "key",
+      "label": "key"
+    },
+    {
+      "key": "uses",
+      "label": "entries",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "displays",
+      "label": "display types",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "key": "height",
+        "uses": 391,
+        "displays": 16
+      }
+    },
+    {
+      "values": {
+        "key": "displayMode",
+        "uses": 79,
+        "displays": 3
+      }
+    },
+    {
+      "values": {
+        "key": "showLabels",
+        "uses": 67,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "heightMode",
+        "uses": 51,
+        "displays": 3
+      }
+    },
+    {
+      "values": {
+        "key": "forceLoad",
+        "uses": 51,
+        "displays": 7
+      }
+    },
+    {
+      "values": {
+        "key": "featureHeight",
+        "uses": 49,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "minScore",
+        "uses": 45,
+        "displays": 4
+      }
+    },
+    {
+      "values": {
+        "key": "maxScore",
+        "uses": 45,
+        "displays": 4
+      }
+    },
+    {
+      "values": {
+        "key": "color",
+        "uses": 43,
+        "displays": 3
+      }
+    },
+    {
+      "values": {
+        "key": "defaultRendering",
+        "uses": 42,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "colorBy",
+        "uses": 30,
+        "displays": 3
+      }
+    },
+    {
+      "values": {
+        "key": "scatterPointSize",
+        "uses": 18,
+        "displays": 3
+      }
+    },
+    {
+      "values": {
+        "key": "jexlFiltersSetting",
+        "uses": 16,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "groupBy",
+        "uses": 15,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "summaryScoreMode",
+        "uses": 15,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "runClustering",
+        "uses": 13,
+        "displays": 5
+      }
+    },
+    {
+      "values": {
+        "key": "displayCrossHatches",
+        "uses": 13,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "showLegend",
+        "uses": 12,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "resolution",
+        "uses": 11,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "showTree",
+        "uses": 10,
+        "displays": 3
+      }
+    },
+    {
+      "values": {
+        "key": "layout",
+        "uses": 10,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "subtreeFilter",
+        "uses": 8,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "autoscale",
+        "uses": 6,
+        "displays": 3
+      }
+    },
+    {
+      "values": {
+        "key": "jexlFilters",
+        "uses": 6,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "renderingMode",
+        "uses": 5,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "featureHighlights",
+        "uses": 4,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "scaleType",
+        "uses": 3,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "showTranslation",
+        "uses": 3,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "numStdDev",
+        "uses": 2,
+        "displays": 2
+      }
+    }
+  ]
+}
