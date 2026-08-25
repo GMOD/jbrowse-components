@@ -290,3 +290,40 @@ test('a tiling leaves every view somewhere, and homing after it is a no-op', () 
     expect(session.tabContainingView(id)).toBeDefined()
   }
 })
+
+// `setPendingMove` and `tileViews` are sugar over `applyLayoutSpec`, and they
+// have to reach it through `self` rather than sideways with `this`. The fork's
+// `instantiateActions` does `fn.bind(actions)`, so a `this.` hop resolves
+// against the literal its own block returned and is pinned to that block's
+// implementation for good — a later block, or a plugin's `extendStateModel`,
+// replaces the action on the instance and the hop goes on calling the one it
+// replaced, with no error and no type complaint.
+//
+// Overriding is the only way to see the difference: both spellings behave
+// identically until something replaces the callee.
+test('the sugars call the applyLayoutSpec the session actually has', () => {
+  const calls: string[] = []
+  const Overridden = types
+    .compose(
+      'Overridden',
+      types.model({ name: types.string }),
+      WorkspaceLayoutMixin(),
+    )
+    .actions(self => {
+      const base = self.applyLayoutSpec
+      return {
+        applyLayoutSpec(spec: Parameters<typeof base>[0]) {
+          calls.push('override')
+          return base(spec)
+        },
+      }
+    })
+
+  const session = Overridden.create({ name: 'test' })
+  session.addViewToTab(session.tabs[0]!.id, 'view-1')
+
+  session.tileViews('grid', ['view-1'])
+  session.setPendingMove({ type: 'splitRight', viewId: 'view-1' }, ['view-1'])
+
+  expect(calls).toEqual(['override', 'override'])
+})
