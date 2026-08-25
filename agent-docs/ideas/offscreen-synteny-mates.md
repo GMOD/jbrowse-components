@@ -341,10 +341,10 @@ comparison decides both, so a mark and its ribbon cannot both be drawn.
 undrawable alignment whose query end is off screen and whose target end is in
 plain sight is as real as C — and it was placed on the query axis alone, at an x
 the layout rejects, so it drew nowhere: no ribbon, no mark, on either strip. What
-made it visible from the menu is that "Mark them, both rows" is the setting that
-goes and FETCHES that class: the second query recovers alignments anchored on the
-lower row whose query end is a pan buffer or more off the top row's edge, which
-is class D by construction. On peach chr1 18-22Mb over the whole of grape chr1
+made it visible from the menu is that the last step — "Mark them, both rows" as
+it was then labelled — is the setting that goes and FETCHES that class: the
+second query recovers alignments anchored on the lower row whose query end is a
+pan buffer or more off the top row's edge, which is class D by construction. On peach chr1 18-22Mb over the whole of grape chr1
 that is **849 of the 1029 alignments the level holds**, against 74 marks from
 class B — so the second row read as having no marks at all while the first had
 thousands.
@@ -356,10 +356,15 @@ The two cannot double-mark, because being outside a row's band means being more
 than `overdrawPx` off that row's screen — so an alignment culled on one end has
 exactly one axis the layout will place it on.
 
-D does NOT need the second fetch, and is drawn under plain "Mark them" too: the
-fetch window is the visible window plus a pan buffer, so the alignments in that
-margin are held, culled, and have a target-axis position. The setting still gates
-the QUERY, which is the only thing that costs anything.
+D does NOT need the second fetch, and is drawn at the middle step too: the fetch
+window is the visible window plus a pan buffer, so the alignments in that margin
+are held, culled, and have a target-axis position. On the grape/peach figure
+zoomed to 4Mb that is not a sliver — the lower strip paints 8,004 device px at
+the middle step against the upper strip's 3,984, and 18,024 with the second
+query. So the setting gates the QUERY, which is the only thing that costs
+anything, and the labels were rewritten to say so: the middle step names the
+panels it marks ("Mark them on both panels") and the last names what it
+queries ("Mark them, and query the lower panel for more").
 
 **Off the instances, not the feature lanes.** `starts`/`ends` are the adapter's
 untrimmed coordinates; a CIGAR-clipped block draws from corners the projection

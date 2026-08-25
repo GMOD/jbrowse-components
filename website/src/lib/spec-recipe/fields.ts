@@ -23,6 +23,7 @@ import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arc
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
 import { COLOR_MODES } from '../../../../packages/synteny-core/src/colorModes.ts'
+import { OFFSCREEN_MATE_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/offscreenMateModes.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
@@ -387,6 +388,14 @@ const TREE_SIDEBAR_DISPLAYS = new Set([
 // on config.
 const CIGAR_MODES: Record<string, string> = Object.fromEntries(
   CIGAR_MODE_OPTIONS.map(o => [o.value, o.label]),
+)
+
+// The same, for the off-screen mate steps. Imported rather than retyped for the
+// reason the leaf module exists: these labels say which panels are marked and
+// what is queried, and a recipe repeating them by hand is a click path that
+// stops matching the menu the first time either sentence is reworded.
+const OFFSCREEN_MATE_STEPS: Record<string, string> = Object.fromEntries(
+  OFFSCREEN_MATE_MODE_OPTIONS.map(o => [o.value, o.label]),
 )
 
 // The two wiggle displays each open their own color editor from their own menu
@@ -1554,7 +1563,7 @@ export const viewFields: Record<string, FieldRecipe> = {
     const path = settingsPath(viewType, 'Off-screen mates')
     return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${path} → ${value ? 'Mark them' : 'Off'}`,
+          path: `${path} → ${OFFSCREEN_MATE_STEPS[value ? 'query' : 'off']}`,
           note: 'On by default. A locus syntenic to a contig the facing row is not displaying draws no ribbon, so without the marks it looks exactly like a locus syntenic to nothing.',
         }
       : undefined
@@ -1567,8 +1576,8 @@ export const viewFields: Record<string, FieldRecipe> = {
     const path = settingsPath(viewType, 'Off-screen mates')
     return typeof value === 'boolean' && path && viewType === 'LinearSyntenyView'
       ? {
-          path: `${path} → ${value ? 'Mark them, both rows' : 'Mark them'}`,
-          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair.',
+          path: `${path} → ${OFFSCREEN_MATE_STEPS[value ? 'both' : 'query']}`,
+          note: 'Off by default. A synteny track is queried from the upper row of each pair, so an alignment anchored on a lower-row contig whose other end is somewhere the upper row is not showing is never requested — which is why the same two genomes report differently depending on which one is on top. This step costs a second query per row pair. It is not what marks the lower row: that strip is drawn at the step before, for every alignment the upper row has scrolled off.',
         }
       : undefined
   },
