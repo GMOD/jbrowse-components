@@ -66,12 +66,104 @@ displays cannot drift on `MIN_BINNED_BP_PER_PX`.
 - It rides to the worker as a **call-site RPC argument**, the way `byteLimit`
   does, not as an `rpcProps` field — a zoom-swinging value in the payload is a
   `SettingsInvalidate` that drops every fetched region
-  (REGION_TOO_LARGE.md §"Neither worker budget may be an RPC cache key").
+  ("Neither worker budget may be an RPC cache key",
+  REGION_TOO_LARGE.md §"How the verdict is built").
   `regionFetchKey` carries the per-region half, and `dataSuperseded` keeps an
   SVG export from sampling data the settled zoom has already moved past.
 
 Bounded by the viewport now: `4-8 x canvasWidthPx x depth`, since the fetch span
 is twice the viewport and `binBp` is within a factor of two of `bpPerPx / 2`.
+
+## The appearance claim was false, and lettering is where it shows
+
+The commit that landed this said "nothing visible changes", reasoning from
+`binBp <= bpPerPx / 2` against a 1 CSS px cell floor. Coverage does survive that
+arithmetic. The blend does not, and nobody had looked.
+
+`products/jbrowse-web/browser-tests/probe-per-base-bin.ts` captures both arms
+from two builds — the before arm is `perBaseBinBp` forced to `1` — and diffs
+them.
+
+<!-- BEGIN GENERATED MEASUREMENT per-base-bin-appearance -->
+
+| scene                                 | binBp | px differing | ink delta | colour TV | saturated px before |     after |
+| ------------------------------------- | ----: | -----------: | --------: | --------: | ------------------: | --------: |
+| lettering, 37.9 bp/px                 |    16 |        28.30 |     -1.40 |     0.737 |           **31.90** | **57.50** |
+| lettering, 6.3 bp/px                  |     2 |        23.10 |     -0.50 |     0.537 |               40.20 |     50.30 |
+| quality, 37.9 bp/px                   |    16 |        27.60 |     -1.70 |     0.368 |               88.00 |     82.80 |
+| quality, 6.3 bp/px                    |     2 |        20.40 |     -0.50 |     0.105 |               85.00 |     83.90 |
+| colour-by normal, 6.3 bp/px (control) |     1 |         0.00 |      0.00 |      0.00 |                2.50 |      2.50 |
+| quality, 0.8 bp/px (control)          |     1 |         0.00 |      0.00 |      0.00 |               80.30 |     80.30 |
+
+<!-- END GENERATED MEASUREMENT per-base-bin-appearance -->
+
+Both controls are byte-identical, so the capture is stable and the rest is the
+bin. **`perBaseQuality` is visually equivalent** at every zoom captured, mismatch
+columns included. **`perBaseLetter` is not**: the wall goes from muddy olive to
+vivid stripes and the saturated share nearly doubles.
+
+**The mechanism, which is the part that generalizes.** Both backends floor a
+cell to 1 CSS px while samples sit `binBp` apart, so the number of cells
+compositing into one pixel is `bpPerPx / binBp` — about 38 before the bin at
+37.9 bp/px and about 2.4 after. A pixel under N blended cells reports roughly
+their mean. `perBaseQuality`'s colours are a narrow ramp, so a single draw is
+close to the mean and the change is invisible; base letters are four widely
+separated hues, so 38 of them average to mud and 2 of them do not.
+
+That falsifies the sentence the design rested on — that the skipped bases had
+already lost the sub-pixel race, so the survivor was arbitrary either way. True
+under last-writer-wins, false under blending, and both backends blend.
+`subPixelBinBp`'s JSDoc now says so.
+
+**A second thing the numbers say.** `binBp` sits in `(bpPerPx/4, bpPerPx/2]`, so
+the surviving overdraw is a CONSTANT 2-4x at every zoom, by construction. The
+bin caps the compositing depth; it never removes it. So the wall still reads as
+sub-pixel after the change, just less so — which is what a reader notices first,
+and what none of the arithmetic above predicts.
+
+## Open: what a per-base wall should look like at wide zoom
+
+Four candidates. Nothing here is built, and this is the live question.
+
+- **Ship as is, document the trade.** Cheapest. The cost is that wide-zoom
+  lettering over-states confidence: a vivid base colour where the honest answer
+  is "mixed", which `ideas/maf-subpixel-cells.md` argues against for tiling
+  cells in as many words.
+- **Bin `perBaseQuality` only.** One predicate in `isPerBaseScheme`. The bin is
+  provably invisible there, and quality is the more used of the two. But
+  lettering then has no bound at all, and force-load is what OOMs.
+- **Stop painting lettering above a zoom threshold**, falling back to the normal
+  read body. Bounds the heap absolutely rather than proportionally, and retires
+  the appearance question instead of answering it. The cost is a mode that
+  visibly switches off as the user zooms out.
+- **Per-window base histogram, blended in a dedicated shader, cell spanning the
+  bin.** Four unorm8 ACGT lanes per (read, window) from k sub-samples, +3 bytes
+  on ~60k entries. Keeps the base-weighted blend the before arm had — but
+  deterministically, and identically on both backends, where the before arm's
+  was an emergent compositing accident no test ever pinned. The span also
+  retires the headroom octave below. Two things make it cheaper than it sounds:
+  the letter pass ALREADY neutralizes both fades of the shader it borrows
+  (`perBaseLetter/packGpu.ts` writes `frequency=1` and the `QUAL_UNAVAILABLE`
+  sentinel), so a dedicated shader removes code rather than adding coupling; and
+  it touches neither `mismatch.slang` nor `packedColorQuad.slang`, so the five
+  shared packers stay out of it.
+
+  **Blend shader-side, not at pack time.** `syncRegion` re-uploads instance
+  buffers only on a data identity change, so an ABGR baked into the instance
+  goes stale on a theme change and on the show-modifications grey-mute, both of
+  which work today by rewriting the UBO. GPU-only, and silent.
+
+  **k matters and is unmeasured.** Sub-sampling k per window keeps the pass
+  `O(viewport)`; a full visit does not — benched at ~350-500ms on the pacbio
+  fixture *regardless of `binBp`*, which resurrects exactly the
+  viewport-independent work this change killed. k=4 benched at ~1.5-2x the
+  shipped extract with entry counts unchanged. Whether k=4 *looks* right is not
+  known, and needs a third arm through the probe.
+
+**No cross-backend test covers a per-base mode at any zoom** — `grep perBase`
+over `products/jbrowse-web/browser-tests/` finds only the probe. Whatever gets
+decided, that gap is why this shipped believing a claim nothing could have
+failed.
 
 ## Open: the 1bp cell leaves exactly one octave of headroom
 

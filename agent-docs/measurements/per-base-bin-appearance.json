@@ -1,0 +1,30 @@
+{
+  "id": "per-base-bin-appearance",
+  "published": false,
+  "measured": "2026-08-25",
+  "source": {
+    "kind": "bench",
+    "repro": "products/jbrowse-web: node browser-tests/probe-per-base-bin.ts --out=<dir> against two builds of jbrowse-web, then --diff <before> <after>. The before arm is `perBaseBinBp` in plugins/alignments/src/LinearAlignmentsDisplay/model.ts edited to return 1; it is flipped locally, rebuilt, captured, and put back, and nothing in the tree carries a changed value. Headless Chrome on SwiftShader at a pinned 1280x800 viewport (so dpr is 1), volvox ctgA, volvox_alignments, capturing the pileup display's canvas.",
+    "notes": "Read the two control rows first: colour-by-normal never reaches the per-base extract, and per-base quality at 0.8 bp/px is the same colour mode at a zoom where subPixelBinBp returns 1 in BOTH arms. Both come back byte-identical, so the capture is stable and every other row is the bin. `differing` counts any pixel whose max per-channel delta is nonzero and overstates what is visible; `colourTV` is total-variation distance between the two arms' colour histograms over inked pixels, and `saturatedAfter` minus `saturatedBefore` is the finding — the share of inked pixels with HSV saturation above 0.55. `inkDelta` is the change in inked-pixel count, i.e. whether the wall lost coverage; it does not. Mechanism: both backends floor a per-base cell to 1 CSS px, so ~38 cells composite into each pixel at 37.9 bp/px before the bin and ~2.4 after. A narrow colour ramp survives that; four separated hues do not."
+  },
+  "columns": [
+    { "key": "scene", "label": "scene" },
+    { "key": "binBp", "label": "binBp", "format": "int", "align": "right" },
+    { "key": "differing", "label": "px differing", "format": "ratio", "align": "right" },
+    { "key": "inkDelta", "label": "ink delta", "format": "ratio", "align": "right" },
+    { "key": "colourTV", "label": "colour TV", "format": "ratio", "align": "right" },
+    { "key": "saturatedBefore", "label": "saturated px before", "format": "ratio", "align": "right" },
+    { "key": "saturatedAfter", "label": "after", "format": "ratio", "align": "right" }
+  ],
+  "rows": [
+    {
+      "values": { "scene": "lettering, 37.9 bp/px", "binBp": 16, "differing": 28.3, "inkDelta": -1.4, "colourTV": 0.737, "saturatedBefore": 31.9, "saturatedAfter": 57.5 },
+      "emphasize": ["saturatedBefore", "saturatedAfter"]
+    },
+    { "values": { "scene": "lettering, 6.3 bp/px", "binBp": 2, "differing": 23.1, "inkDelta": -0.5, "colourTV": 0.537, "saturatedBefore": 40.2, "saturatedAfter": 50.3 } },
+    { "values": { "scene": "quality, 37.9 bp/px", "binBp": 16, "differing": 27.6, "inkDelta": -1.7, "colourTV": 0.368, "saturatedBefore": 88.0, "saturatedAfter": 82.8 } },
+    { "values": { "scene": "quality, 6.3 bp/px", "binBp": 2, "differing": 20.4, "inkDelta": -0.5, "colourTV": 0.105, "saturatedBefore": 85.0, "saturatedAfter": 83.9 } },
+    { "values": { "scene": "colour-by normal, 6.3 bp/px (control)", "binBp": 1, "differing": 0, "inkDelta": 0, "colourTV": 0, "saturatedBefore": 2.5, "saturatedAfter": 2.5 } },
+    { "values": { "scene": "quality, 0.8 bp/px (control)", "binBp": 1, "differing": 0, "inkDelta": 0, "colourTV": 0, "saturatedBefore": 80.3, "saturatedAfter": 80.3 } }
+  ]
+}

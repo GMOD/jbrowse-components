@@ -138,6 +138,28 @@ Two distinct idioms — keep them separate:
   These aren't partitions of depth — they belong in a thin signal lane (mean ± band),
   not a stacked bar (which would mislead).
 
+**What makes a signal lane affordable is that it accumulates rather than emits.**
+`perBaseQuality` as a COLOUR mode emits one entry per aligned base of every read
+— `region span x depth`, measured at 30,565,003 entries and 2.0 GB on a 1 Mb
+pacbio pileup (`measurements/per-base-wall-bin.json`). The same input summed into
+a per-reference-position accumulator is two arrays over the region span, a
+running sum and a count: `O(span)`, independent of depth, and the shape
+`sweepDepths` and `downsampleStatsBins` already use for the depth axis. A mean
+never needs its samples kept, only added.
+
+That also says which quality a lane should carry. **MAPQ is free** — one value
+per read, already extracted, so a MAPQ lane needs no per-base walk at all. Mean
+BASE quality needs the CIGAR walk, and the walk is the cost, not the storage.
+The two answer different questions: MAPQ is whether the reads are in the right
+place, base quality is whether the letters are right.
+
+**Do not reach for `subPixelBinBp` to bound a lane.** Its own doc says so and
+this is the case it warns about: sampling one base per sub-pixel window suits a
+mark that already lost the sub-pixel race, and is wrong for anything painting a
+MEAN, which needs its whole sample. At 333 bp/px the rule picks a 128 bp window,
+which would average about 2.6 bases per pixel instead of 333 and turn a smooth
+quality ramp into noise.
+
 Highest scientific value (ranked): MAPQ/MAPQ0-fraction decomposition (instantly flags
 repetitive/CNV/segdup regions — bigly's spirit); discordancy (improper pairs — surfaces
 SV breakpoints far better than per-read coloring, where signal is diluted); HP-tag
