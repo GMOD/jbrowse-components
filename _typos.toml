@@ -86,6 +86,7 @@ HSA = "HSA"
 hsa = "hsa"
 alls = "alls"
 Hieght = "Hieght"
+planed = "planed"
 
 [files]
 extend-exclude = [
