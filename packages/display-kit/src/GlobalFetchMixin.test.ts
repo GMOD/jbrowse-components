@@ -17,6 +17,9 @@ function hostView(Display: IAnyModelType, snapshot: Record<string, unknown>) {
       initialized: true,
       hasVisibleContent: true,
       bodyMounted: true,
+      // what the phase reads: the raw flag folded together with every view this
+      // one is nested inside (BaseViewModel)
+      effectiveBodyMounted: true,
     }))
     .actions(self => ({
       setWidth(n: number) {

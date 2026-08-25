@@ -17,9 +17,10 @@ export interface ParentViewDuck extends IStateTreeNode {
   overdrawPx: number
   initPending: boolean
   pendingAutoDiagonalize: boolean
-  // whether the container mounted this view's body; a view below the fold has
-  // no canvas, so it will never paint (see ComparativeSurface.hostMounted)
-  bodyMounted: boolean
+  // whether the container mounted this view's body, counting any view this one
+  // is nested inside; a view below the fold has no canvas, so it will never
+  // paint (see ComparativeSurface.hostMounted)
+  effectiveBodyMounted: boolean
   // paint the marks for alignments whose mate is on a contig the facing row is
   // not displaying — a repaint, never a refetch
   showOffscreenMates: boolean

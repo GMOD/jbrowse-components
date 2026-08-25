@@ -1,9 +1,30 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { getParent, hasParent, types } from '@jbrowse/mobx-state-tree'
 
+import { isViewModel } from '../../util/types/index.ts'
 import { ElementId, Region } from '../../util/types/mst.ts'
 
 import type { MenuItem } from '../../ui/index.ts'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+
+/**
+ * The view a view is nested in, if it is nested in one at all — a synteny row
+ * inside its stack, a breakpoint panel inside its split view. `undefined` for
+ * the ordinary case of a view sitting directly in the session, and for a view
+ * not yet attached to a tree.
+ *
+ * `getContainingView` cannot answer this: it throws when there is no such
+ * ancestor, which here is the common case rather than an error.
+ */
+function containingViewOf(node: IAnyStateTreeNode) {
+  let current = node
+  while (hasParent(current)) {
+    current = getParent<IAnyStateTreeNode>(current)
+    if (isViewModel(current)) {
+      return current
+    }
+  }
+  return undefined
+}
 
 /**
  * #stateModel BaseViewModel
@@ -47,10 +68,37 @@ const BaseViewModel = types
      * Defaults true so the containers that always mount a body — embedded
      * views, workspace panels, and any test rendering a display directly — are
      * unaffected and need not set it.
+     *
+     * The raw flag, written by this view's own container. A display asks
+     * `effectiveBodyMounted` instead, because a nested view has no container of
+     * its own.
      */
     bodyMounted: true,
   }))
-  .views(() => ({
+  .views(self => ({
+    /**
+     * #getter
+     * Whether this view's body is in the DOM, counting the views it is nested
+     * inside — which is the question a display's phase actually asks.
+     *
+     * `bodyMounted` alone answers it only for a view a container renders
+     * directly. A view nested in another view (a synteny row, a breakpoint
+     * panel) has no container writing its flag, so it reads `true` forever
+     * while its whole subtree is out of the DOM, and every display in it waits
+     * for a first paint that nothing will make — the hang this flag exists to
+     * prevent, one level down.
+     *
+     * An ancestor that does not carry the flag at all leaves the answer alone
+     * rather than excusing the paint: only an explicit `false` unmounts, so a
+     * duck-typed stand-in that forgot it keeps waiting, which is the failure
+     * that shows up as a slow test rather than as a picture of an empty view.
+     */
+    get effectiveBodyMounted(): boolean {
+      return (
+        self.bodyMounted &&
+        containingViewOf(self)?.effectiveBodyMounted !== false
+      )
+    },
     /**
      * #method
      */

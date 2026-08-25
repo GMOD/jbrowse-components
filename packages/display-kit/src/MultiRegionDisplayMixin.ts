@@ -233,11 +233,11 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #getter
          * Overridable hook (default false): the held data is loaded and covers
-         * the viewport, but a fetch input this display has *already settled on*
-         * has moved past it — so the data is about to be cleared and refetched.
-         * A display says so here rather than overriding `dataCurrent`, for the
-         * reason `FetchMixin.fetchInert` is a hook: an override has to restate
-         * the freshness terms and then misses the next one added.
+         * the viewport, but a fetch input has moved past it, so the data is
+         * about to be cleared and refetched. A display says so here rather than
+         * overriding `dataCurrent`, for the reason `FetchMixin.fetchInert` is a
+         * hook: an override has to restate the freshness terms and then misses
+         * the next one added.
          *
          * On screen this window is invisible (the clear lands a tick later and
          * the loading scrim covers it), which is exactly why it needs saying:
@@ -247,6 +247,19 @@ export default function MultiRegionDisplayMixin() {
          * auto-index is the case: adopting the top hit as the index SNP is an
          * `rpcProps` change, so the very load that produced the top hit is what
          * it invalidates.
+         *
+         * **The input need not have settled yet.** Alignments counts the
+         * debounce window ahead of its per-base bin, where the bin the data was
+         * fetched under has not moved and the clear is inevitable rather than
+         * committed. That is the half of the window an export lands in, since a
+         * reader zooms and then reaches for the menu. What may NOT go in is a
+         * change that could still be taken back: this fails hung, not stale.
+         *
+         * So state the live-vs-settled half as a **value** compare and leave
+         * key strings to `regionFetchKey`. A second derivation of the key's
+         * vocabulary reads `"16|fine"` against a live `"16"` the day the key
+         * grows an axis, latches this true, and every export of the display
+         * then waits out `awaitSvgReady`'s backstop instead of failing.
          */
         get dataSuperseded(): boolean {
           return false
@@ -369,7 +382,7 @@ export default function MultiRegionDisplayMixin() {
           return foundationDisplayPhase(
             self,
             () => self.viewportWithinLoadedData,
-            () => self.host.bodyMounted,
+            () => self.host.effectiveBodyMounted,
           )
         },
       }))

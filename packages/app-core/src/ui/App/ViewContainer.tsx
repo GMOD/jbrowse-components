@@ -149,6 +149,26 @@ const ViewContainer = observer(function ViewContainer({
     }
   }, [view, showBody])
 
+  // ...and tell it when this container goes away entirely, which is the case
+  // the effect above cannot see: React unmounts without running it again, so a
+  // view whose container left the DOM went on claiming a mounted body. The
+  // workspace does that on every tab switch — only the tab being shown is
+  // mounted (`WorkspaceLayout/CLAUDE.md`) — and the view it switched away from
+  // parked the app's readiness marker at `loading` for the rest of the session.
+  //
+  // Its own effect, depending on the view alone, so it fires on an actual
+  // unmount and not between the two writes of a `showBody` change: those writes
+  // are MST actions, so a false the container did not mean would reach every
+  // display's phase before the true landed.
+  useEffect(
+    () => () => {
+      if (isAlive(view)) {
+        view.setBodyMounted(false)
+      }
+    },
+    [view],
+  )
+
   // Only this container tracks focus now, not its header: with the arrow icon
   // in its own observer (ViewFocusIndicator) the header's props are unchanged
   // for every view but the two the focus moved between, so mobx-react's memo

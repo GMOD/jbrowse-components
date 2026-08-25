@@ -204,7 +204,7 @@ export default function GlobalFetchMixin() {
         return foundationDisplayPhase(
           self,
           () => true,
-          () => self.host.bodyMounted,
+          () => self.host.effectiveBodyMounted,
         )
       },
     }))
