@@ -165,6 +165,7 @@ so the mixins cannot be chained on one at a time the way `.views()` and
   MultiRegionDisplayMixin(),
   RowHeightMixin(),
   TreeSidebarMixin<MafSource>(),
+  ContextMenuMixin<MafContextMenuInfo>(),
   types.model({
     /**
      * #property
@@ -247,9 +248,9 @@ Use `types.frozen()` for data that is:
 
 ```ts
 // `RowSortSpec`, not a second spelling of it: the autorun that consumes
-// this and `setSortRowsBy` are both typed on tree-sidebar's, so an
-// inline shape here is a copy that can only ever drift away from the one
-// doing the checking. Multi-wiggle's twin already reads it from there.
+// this and `setSortRowsBy` are both typed on it, so an inline shape here
+// is a copy that can only ever drift away from the one doing the
+// checking.
 sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
 ```
 
@@ -428,20 +429,6 @@ prefersOffset: true,
  * instantiate a volatile over one.
  */
 hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
-/**
- * #volatile
- * Right-click context menu anchor + the genomic position clicked (and the
- * feature there, if any). Undefined when the menu is closed.
- */
-contextMenuInfo: undefined as
-  | {
-      clientX: number
-      clientY: number
-      refName: string
-      pos: number
-      hit?: MultiRowHit
-    }
-  | undefined,
 ```
 
 `undefined as T | undefined` is the idiom for a volatile whose type MST cannot

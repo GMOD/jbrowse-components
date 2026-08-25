@@ -132,7 +132,7 @@ row, and `treeSidebarShowMenuItems` the two tree toggles beside it — all three
 under "Show..." on every display, with `RowLabelsOverlay` mounted whether or not
 a tree is showing. The tree toggles used to sit under "Clustering" on two
 displays and under "Show..." on the other two, and a display that mounted its
-labels only under `showTree` needed a `requiresTree` gate on the labels row.
+labels only under `showTree` needed a gate on the labels row.
 
 ## Two row-height arguments, and neither is the display height
 

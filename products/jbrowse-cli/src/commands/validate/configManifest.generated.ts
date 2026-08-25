@@ -2993,8 +2993,8 @@ export const configManifest: ConfigManifest = {
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
-        "configuration",
         "sortRowsBy",
+        "configuration",
         "hiddenCategories"
       ]
     },
@@ -3887,6 +3887,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "showRowSeparators",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "renderingMode",
           "type": "(JexlString | RenderingMode)"
         },
@@ -3948,6 +3952,7 @@ export const configManifest: ConfigManifest = {
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
+        "sortRowsBy",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4011,6 +4016,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | boolean)"
         },
         {
+          "name": "showRowSeparators",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "renderingMode",
           "type": "(JexlString | RenderingMode)"
         },
@@ -4056,6 +4065,7 @@ export const configManifest: ConfigManifest = {
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
+        "sortRowsBy",
         "configuration",
         "jexlFiltersSetting"
       ]
@@ -4504,8 +4514,8 @@ export const configManifest: ConfigManifest = {
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
-        "configuration",
-        "sortRowsBy"
+        "sortRowsBy",
+        "configuration"
       ]
     },
     "LinearGCContentDisplay": {
@@ -4877,6 +4887,7 @@ export const configManifest: ConfigManifest = {
         "subtreeFilter",
         "runClustering",
         "clusterRegion",
+        "sortRowsBy",
         "configuration"
       ]
     },

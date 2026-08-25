@@ -156,7 +156,7 @@ track-menu setting is a slot.
 <!-- BEGIN GENERATED DISPLAY_STATE_CENSUS -->
 
 
-20 registered displays declare 188 config slots, 43 MST properties and 58 volatiles between them — counting what each display's own directory declares.
+20 registered displays declare 188 config slots, 41 MST properties and 56 volatiles between them — counting what each display's own directory declares.
 
 <!-- prettier-ignore -->
 | Display | Plugin | `#slot` | `#property` | `#volatile` |
@@ -165,7 +165,7 @@ track-menu setting is a slot.
 | `LinearBasicDisplay` | `plugins/canvas` | 26 | 8 | 12 |
 | `LinearMafDisplay` | `plugins/maf` | 18 | 2 | 8 |
 | `LDDisplay` | `plugins/variants` | 17 | 1 | 2 |
-| `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 12 | 4 | 2 |
+| `LinearMultiRowFeatureDisplay` | `plugins/canvas` | 12 | 3 | 1 |
 | `LinearHicDisplay` | `plugins/hic` | 9 | 2 | 3 |
 | `LinearArcDisplay` | `plugins/arc` | 7 | 2 | 0 |
 | `LGVSyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 0 |
@@ -173,7 +173,7 @@ track-menu setting is a slot.
 | `LinearWiggleDisplay` | `plugins/wiggle` | 6 | 2 | 0 |
 | `MultiWaySyntenyDisplay` | `plugins/linear-comparative-view` | 6 | 3 | 6 |
 | `LinearMultiSampleVariantDisplay` | `plugins/variants` | 5 | 0 | 0 |
-| `MultiLinearWiggleDisplay` | `plugins/wiggle` | 5 | 1 | 1 |
+| `MultiLinearWiggleDisplay` | `plugins/wiggle` | 5 | 0 | 0 |
 | `ChordVariantDisplay` | `plugins/circular-view` | 4 | 3 | 3 |
 | `LinearReferenceSequenceDisplay` | `plugins/sequence` | 4 | 2 | 0 |
 | `LinearGCContentDisplay` | `plugins/gccontent` | 3 | 0 | 0 |
@@ -526,7 +526,8 @@ column reports what actually composes what.
 | --- | --- | --- |
 | `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
 | `LegendMixin()` | A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin `showLegendCheckboxItem` takes, and `setShowLegend` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
-| `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
+| `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
+| `ContextMenuMixin()` | The right-click state of a display whose menu acts on a | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay` |
 | `RowHeightMixin()` | The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiSampleVariantBaseModel` |
 | `HeightModeMixin()` | Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay` |
 | `ScoreScaleMixin()` | Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume | `LinearAlignmentsDisplay`, `WiggleScoreConfigMixin` |

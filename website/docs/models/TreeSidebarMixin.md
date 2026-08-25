@@ -11,15 +11,16 @@ JBrowse core.
 
 #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display
 rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run`
-callback naming its own clustering RPC. Brings `layout` / `clusterTree` /
-`clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` /
-`showBranchLength` / `showRowLabels` getters and setters over those slots, the
-`runClustering` / `clusterRegion` declarative launch pair
-`setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters,
-and the tree-hover and canvas-ref volatiles the shared sidebar draws through
-Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
-tree, sidebar width and subtree filter, plus the hover/canvas volatile state
-used while drawing the tree.
+callback naming its own clustering RPC and the `sortRows` callback naming what a
+row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` /
+`treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` /
+`showRowLabels` getters and setters over those slots, the `runClustering` /
+`clusterRegion` and `sortRowsBy` declarative launch specs
+`setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and
+`rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the
+shared sidebar draws through Adds a dendrogram sidebar to a display: stores the
+leaf layout, newick cluster tree, sidebar width and subtree filter, plus the
+hover/canvas volatile state used while drawing the tree.
 
 **The three toggles are declared here because this package reads them.**
 `treeSidebarGeometry` reads `showTree`, `treeMenuItems` reads all three and
@@ -44,6 +45,7 @@ silence. Slots and accessors now move together.
 | <span id="property-subtreefilter">**subtreeFilter**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>subtreeFilter: types.stripDefault( types.maybe(types.array(type…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>subtreeFilter: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.array(types.string)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 | <span id="property-runclustering">**runClustering**</span><br><code>runClustering: types.maybe(types.boolean)</code> | Transient declarative launch spec, the same idea as `LinearGenomeView`'s `init`: a session or config sets this true and the real clustering RPC runs once automatically, with no dialog, as soon as the display reports itself ready. `setupRunClusteringAutorun` clears it afterwards, so a saved session never re-triggers.<br><br>Lives here rather than on each display because it is the trigger for a run whose *output* — `clusterTree`, `clusterProvenance`, `layout` — is this mixin's state. Three displays declared it identically, each with its own wrapper module that existed to code-split the clustering code and, along the way, hand-wrote the same six-member duck type of the display. Splitting inside the `run` callback does the same job and loads on a run rather than on every attach. What each run actually *is* stays per display, in that callback. |
 | <span id="property-clusterregion">**clusterRegion**</span><br><code>clusterRegion: types.maybe(types.string)</code> | Where that run reads from, as a locstring (whitespace-separated for several). Clustering is region-scoped, so running it over the visible window feeds the estimator whatever happens to be on screen; naming the locus instead lets a session cluster on the signal and then show it against its context — otherwise a zoom the user has to perform in the right order. Cleared with `runClustering`, since it is that flag's argument and a locus left standing describes a run that is not coming. |
+| <span id="property-sortrowsby">**sortRowsBy**</span><br><code>sortRowsBy: types.maybe(types.frozen&lt;RowSortSpec&gt;())</code> | Transient declarative launch spec, the same idea as `runClustering`: set `{refName, pos}` to order the rows once by the value each carries at that genomic column — the session-expressible form of the right-click "Sort rows by ... here". `setupRowSortAutorun` applies it once the region containing it has loaded and then clears it, so the resulting `layout` persists but a saved session never re-sorts.<br><br>Where clustering orders rows by the whole region in view and `layout` states an order outright, only this one says "rank them here", which is what lets a figure open a cohort ranked at a candidate locus with the surrounding context still on screen. What the value at the column *is* stays per display, in its `sortRows` callback. |
 
 ## Volatiles
 
@@ -65,6 +67,7 @@ silence. Slots and accessors now move together.
 | <span id="getter-parsedtree">**parsedTree**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
 | <span id="getter-root">**root**</span><br><code>HierarchyNode&lt;NewickNode&gt; &#124; undefined</code> |  |
 | <span id="getter-treehasbranchlengths">**treeHasBranchLengths**</span><br><code>boolean</code> |  |
+| <span id="getter-roworderiscustom">**rowOrderIsCustom**</span><br><code>boolean</code> | Whether the rows have been arranged away from the order they arrived in — what "Reset row order" is offered on. A written `layout` here; a display whose config seeds `layout` on load (the multi-sample variant displays' `colorBy` / `groupBy`) overrides it to compare against that seed, so the reset does not appear on a track nobody has touched. |
 
 ## Methods
 
@@ -89,6 +92,7 @@ silence. Slots and accessors now move together.
 | <span id="action-setsubtreefilter">**setSubtreeFilter**</span><br><code>(names?: string[] &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setrunclustering">**setRunClustering**</span><br><code>(arg?: boolean &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setclusterregion">**setClusterRegion**</span><br><code>(arg?: string &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setsortrowsby">**setSortRowsBy**</span><br><code>(arg?: RowSortSpec &#124; undefined) =&gt; void</code> | Trigger (or clear) a one-shot declarative row sort; consumed and reset by `setupRowSortAutorun`. A display's right-click item calls its own sort directly (instant, the data is already loaded); this is the session-level entry point. |
 | <span id="action-sethoveredtreenode">**setHoveredTreeNode**</span><br><code>(node?: HoveredTreeNode &#124; undefined) =&gt; void</code> |  |
 | <span id="action-settreecanvasref">**setTreeCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |
 | <span id="action-setmouseovercanvasref">**setMouseoverCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |

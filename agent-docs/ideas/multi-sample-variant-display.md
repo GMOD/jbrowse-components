@@ -64,13 +64,13 @@ give the "which sites matter" read that's missing. `mostFrequentAlt`'s AF is alr
 computed for the MAF filter (`shared/minorAlleleFrequencyUtils.ts`) and then discarded —
 surfacing it is mostly a rendering task.
 
-**Filter & sort samples by metadata attribute.** Today you can *color* rows by a
-metadata column but not *show only cases* / *only one population*, and sort is limited to
-one anchor variant (right-click → Sort by genotype, which ranks by genotype there and
-breaks ties by flanking agreement — `shared/anchoredHaplotypeSort.ts`). A
-metadata-based sample filter is a natural extension of the existing `subtreeFilter`
-mechanism; a metadata sort extends `sortByGenotype`. Core cohort operations that are
-currently missing.
+**Filter & sort samples by metadata attribute.** Since 2026-08-25 a `colorBy`
+group's legend swatch focuses that group (`focusGroup`, over `subtreeFilter`),
+and the genotype sort has a column-anchored form a session can name
+(`sortRowsByGenotypeAt` / `sortRowsBy`). What is still missing is a predicate
+over `samplesTsv` columns — *cases only, in EUR* — and a metadata SORT (order
+by a column, not by a genotype); `row-display-followups.md` prices the filter
+dialog and why it wants a slot of its own rather than the name set.
 
 **Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
 asks for one distance over the whole window, but a haplotype is a mosaic of segments

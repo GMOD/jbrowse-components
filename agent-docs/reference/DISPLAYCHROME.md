@@ -143,9 +143,10 @@ hold. It survived as a copied comment in eight of the nine displays that used to
 call `useMouseTracking`, one of which had already dropped `onMouseLeave`.
 
 - **Read it in the body**, with `useMouseState(mouseTracker)`, in the smallest
-  component that draws the cursor-following thing. That is what the per-display
-  `CrosshairLayer`/`PointerLayer` components are for; passing the tracker down is
-  free, passing the position down is the bug.
+  component that draws the cursor-following thing. That is what display-ui's
+  `PointerLayer` is for — it takes the tracker and renders its child from the
+  position; passing the tracker down is free, passing the position down is the
+  bug.
 - **No display holds a pointer position in React state.** The two that did were
   canvas (a `clientXY` `useState`) and maf (`useDragSelection`'s `mouse`, which
   lived in the component rendering the chrome, so a hover re-ran
