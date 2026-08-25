@@ -135,7 +135,9 @@ for (let i = 0; i < seconds; i++) {
     return {
       hits,
       visibleHits: hits.filter(h => h.visible).length,
-      phase: document.querySelector('[data-app-phase]')?.dataset.appPhase,
+      phase:
+        document.querySelector<HTMLElement>('[data-app-phase]')?.dataset
+          .appPhase,
       drawn: document.querySelectorAll('[data-display-drawn="true"]').length,
       displays: document.querySelectorAll('[data-testid^="display-"]').length,
     }
