@@ -31,18 +31,18 @@ const AlignmentConnections = observer(function AlignmentConnections({
   yOffsetsOverride,
   domYOffsets,
 }: OverlayProps) {
-  const { interactiveOverlay, showIntraviewLinks, assembly } = model
+  const { interactiveOverlay, showIntraviewLinks, assemblies } = model
   const theme = useTheme()
   const { getPairedOrientation, getLongReadOrientation } = useOrientationColor()
   const { session, mouseoverElt, setMouseoverElt, match, overlayData } =
     useOverlayState({ model, trackId, yOffsetsOverride, domYOffsets })
-  if (!assembly || !match) {
+  if (!match) {
     return null
   }
   const { tracks, levels, layouts, getX, getY } = overlayData
   const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
-  const connections = [...resolvedPairs({ match, assembly, tracks })].flatMap(
+  const connections = [...resolvedPairs({ match, assemblies, tracks })].flatMap(
     ({
       f1,
       f2,
@@ -153,7 +153,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   const highlightRects = hoveredConnection
     ? chainHighlightRects({
         chunk: layoutMatches[hoveredConnection.chunkIndex]!,
-        assembly,
+        assemblies,
         tracks,
         levels,
         layouts,

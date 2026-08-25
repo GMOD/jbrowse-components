@@ -272,13 +272,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * One assembly per row, index-aligned with `views`.
+       *
+       * Per row and not one for the view, because the rows are independently
+       * assembly-picked (the import form has an assembly selector per row, and
+       * `init` carries one per entry). Resolving every row's refNames through
+       * row 0's assembly is right only while they all name the same one: on a
+       * genuinely cross-assembly view the strict resolver answers `undefined`
+       * for every contig belonging to any other row, and the overlay drew NO
+       * connectors at all.
+       *
+       * A row whose assembly has not loaded is `undefined` rather than a hole,
+       * so a level index stays a level index; its features drop, which is what
+       * an unresolvable refName does anyway.
        */
-      get assembly() {
-        const name = self.views[0]?.assemblyNames[0]
-        if (name) {
-          return getSession(self).assemblyManager.get(name)
-        }
-        return undefined
+      get assemblies() {
+        const { assemblyManager } = getSession(self)
+        return self.views.map(view => {
+          const name = view.assemblyNames[0]
+          return name ? assemblyManager.get(name) : undefined
+        })
       },
     }))
     .views(self => ({
@@ -434,14 +447,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               // the bottom edge. NOT the maxHeight case — see makeOffscreenLayout.
               const start = feature.get('start')
               // bpToPx matches displayedRegions by exact refName, so the raw
-              // adapter refName has to be canonicalized first or an aliased
-              // one (bedpe 'A' vs the view's 'ctgA') resolves to no level and
-              // the feature is dropped. The drawing side canonicalizes too,
-              // via getCanonicalRefPair.
+              // adapter refName is canonicalized per level — against that row's
+              // own assembly — or an aliased one (bedpe 'A' vs the view's
+              // 'ctgA') resolves to no level and the feature is dropped. The
+              // drawing side canonicalizes the same way, via
+              // getCanonicalRefPair.
               const level = findFeatureViewLevel(
                 views,
-                self.assembly?.getCanonicalRefName2(feature.get('refName')) ??
-                  feature.get('refName'),
+                self.assemblies,
+                feature.get('refName'),
                 start,
               )
               return level === undefined || tracks.some(layoutUnknown)

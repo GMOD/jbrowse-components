@@ -145,16 +145,28 @@ export function computeOverlayRect({
 // Mirrors findFeatureViewLevel in ../util.ts: which row (level) of the split
 // view a feature belongs to, by which view's displayedRegions contain it.
 // Region membership, NOT scroll/zoom — the feature may still be horizontally
-// off-screen within the chosen level.
+// off-screen within the chosen level. Duplicated on purpose; see
+// eagerBoundary.test.ts for what importing ../util.ts from here costs.
+//
+// `refName` arrives in the file's spelling and is resolved once per level
+// against THAT row's assembly: the rows are independently assembly-picked, and
+// one shared resolver answers for one of them and drops every contig belonging
+// to the rest.
 export function findFeatureViewLevel(
   views: {
     bpToPx: (a: { refName: string; coord: number }) => unknown
   }[],
+  assemblies: (
+    | { getCanonicalRefName2: (refName: string) => string }
+    | undefined
+  )[],
   refName: string,
   coord: number,
 ) {
   for (let level = 0; level < views.length; level++) {
-    if (views[level]!.bpToPx({ refName, coord })) {
+    const canonical =
+      assemblies[level]?.getCanonicalRefName2(refName) ?? refName
+    if (views[level]!.bpToPx({ refName: canonical, coord })) {
       return level
     }
   }

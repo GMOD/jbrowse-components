@@ -187,17 +187,32 @@ export function getTestId(trackId: string, hasMatches: boolean) {
   return hasMatches ? `${trackId}-loaded` : trackId
 }
 
+/**
+ * The assembly of each row, index-aligned with `views` — `model.assemblies`.
+ * A row still loading its assembly is `undefined`, which drops that row's
+ * features the same way an unresolvable refName does.
+ */
+export type RowAssemblies = (Assembly | undefined)[]
+
+// Each endpoint resolves against the assembly of the ROW IT IS DRAWN ON, not
+// against one assembly for the view: the rows are independently assembly-picked
+// and a cross-assembly view resolved every endpoint through row 0, which
+// answered undefined for every contig of every other row and left the overlay
+// with no connectors at all.
+//
 // The strict resolver rather than getCanonicalRefName2, because a name the
 // assembly does not know means drop the connection rather than draw it
 // somewhere. Its throw is out of reach here: the refNames come off fetched
 // features, and there are none until the assembly has loaded.
 export function getCanonicalRefPair(
-  assembly: Assembly,
+  assemblies: RowAssemblies,
+  level1: number,
   f1RefName: string,
+  level2: number,
   f2RefName: string,
 ) {
-  const f1ref = assembly.getCanonicalRefName(f1RefName)
-  const f2ref = assembly.getCanonicalRefName(f2RefName)
+  const f1ref = assemblies[level1]?.getCanonicalRefName(f1RefName)
+  const f2ref = assemblies[level2]?.getCanonicalRefName(f2RefName)
   if (!f1ref || !f2ref) {
     return undefined
   }
@@ -296,7 +311,7 @@ export interface PathSpec {
 
 export interface VariantOverlayContext {
   match: OverlayMatch
-  assembly: Assembly
+  assemblies: RowAssemblies
   views: BreakpointViewModel['views']
   tracks: ReturnType<BreakpointViewModel['getTrackOverlayData']>['tracks']
   layouts: ReturnType<BreakpointViewModel['getTrackOverlayData']>['layouts']
@@ -317,14 +332,14 @@ export const VariantOverlay = observer(function VariantOverlay({
   pathTestId,
   render,
 }: VariantOverlayProps) {
-  const { interactiveOverlay, views, assembly } = model
+  const { interactiveOverlay, views, assemblies } = model
   const theme = useTheme()
   const { session, mouseoverElt, setMouseoverElt, match, overlayData } =
     useOverlayState({ model, trackId, yOffsetsOverride, domYOffsets })
-  if (!assembly || !match) {
+  if (!match) {
     return null
   }
-  const specs = render({ match, assembly, views, ...overlayData })
+  const specs = render({ match, assemblies, views, ...overlayData })
   const hoveredSpec = specs.find(spec => spec.id === mouseoverElt)
   return (
     <g
@@ -389,11 +404,11 @@ export interface ResolvedPair {
 // than duplicating the walk.
 export function* resolvedPairs({
   match,
-  assembly,
+  assemblies,
   tracks,
 }: {
   match: Pick<OverlayMatch, 'layoutMatches'>
-  assembly: Assembly
+  assemblies: RowAssemblies
   tracks: MinimizableTrack[]
 }): Generator<ResolvedPair> {
   for (const [chunkIndex, chunk] of match.layoutMatches.entries()) {
@@ -409,8 +424,10 @@ export function* resolvedPairs({
         continue
       }
       const refs = getCanonicalRefPair(
-        assembly,
+        assemblies,
+        level1,
         f1.get('refName'),
+        level2,
         f2.get('refName'),
       )
       if (refs) {
@@ -451,22 +468,25 @@ export interface HighlightRect {
 // middle of the highlighted read.
 export function chainHighlightRects({
   chunk,
-  assembly,
+  assemblies,
   tracks,
   levels,
   layouts,
 }: {
   chunk: LayoutMatch[]
-  assembly: Assembly
+  assemblies: RowAssemblies
   tracks: MinimizableTrack[]
   levels: OverlayLevel[]
   layouts: ViewLayout[]
 }) {
   const rects: HighlightRect[] = []
   for (const { feature, layout, level } of chunk) {
-    // strict resolver for the reason getCanonicalRefPair gives: a name the
-    // assembly does not know means draw nothing rather than draw it somewhere
-    const refName = assembly.getCanonicalRefName(feature.get('refName'))
+    // that row's own assembly, and the strict resolver for the reason
+    // getCanonicalRefPair gives: a name the assembly does not know means draw
+    // nothing rather than draw it somewhere
+    const refName = assemblies[level]?.getCanonicalRefName(
+      feature.get('refName'),
+    )
     if (refName && !tracks[level]?.minimized) {
       const rect = computeOverlayRect({
         level: levels[level]!,

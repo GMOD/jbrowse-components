@@ -133,20 +133,36 @@ describe('findFeatureViewLevel', () => {
     bpToPx: ({ refName }: { refName: string; coord: number }) =>
       refs.includes(refName) ? { offsetPx: 0 } : undefined,
   })
+  // rows that spell contigs the way the file does
+  const noAliases = [undefined, undefined]
 
   test('returns the first level whose view contains the feature refName', () => {
     const views = [make(['chr1']), make(['chr2'])]
-    expect(findFeatureViewLevel(views, 'chr2', 500)).toBe(1)
+    expect(findFeatureViewLevel(views, noAliases, 'chr2', 500)).toBe(1)
   })
 
   test('returns the lower index when both views contain the refName', () => {
     const views = [make(['chr1', 'chr2']), make(['chr2'])]
-    expect(findFeatureViewLevel(views, 'chr2', 500)).toBe(0)
+    expect(findFeatureViewLevel(views, noAliases, 'chr2', 500)).toBe(0)
   })
 
   test('returns undefined when no view contains the refName', () => {
     const views = [make(['chr1']), make(['chr2'])]
-    expect(findFeatureViewLevel(views, 'chrUn', 0)).toBeUndefined()
+    expect(findFeatureViewLevel(views, noAliases, 'chrUn', 0)).toBeUndefined()
+  })
+
+  // The rows are independently assembly-picked, so the file's spelling resolves
+  // differently on each. One shared resolver — row 0's, which is what this used
+  // to be handed — renames the name into row 0's namespace and then asks every
+  // other row about a contig it has never heard of.
+  test('each level resolves the refName against its own assembly', () => {
+    const views = [make(['chr1']), make(['sampleCtg'])]
+    const assemblies = [
+      { getCanonicalRefName2: (r: string) => (r === '1' ? 'chr1' : r) },
+      { getCanonicalRefName2: (r: string) => (r === '1' ? 'sampleCtg' : r) },
+    ]
+    expect(findFeatureViewLevel([views[1]!], [assemblies[1]!], '1', 0)).toBe(0)
+    expect(findFeatureViewLevel(views, assemblies, '1', 0)).toBe(0)
   })
 })
 

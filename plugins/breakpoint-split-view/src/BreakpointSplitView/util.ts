@@ -8,6 +8,15 @@ import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * The one thing a row's assembly is asked for when placing a feature: the total
+ * refName resolver. Structural so the per-row array can be built from anything
+ * and so a test does not need an assembly model.
+ */
+export interface RefNameCanonicalizer {
+  getCanonicalRefName2: (refName: string) => string
+}
+
 // The subset of a track/display the overlays actually read. The LGV's `tracks`
 // array is an MST pluggable union, which TS widens to `any`, so naming the
 // shape here is what makes these field reads checked at all — see the
@@ -117,15 +126,23 @@ export function computeOverlayY({
 // falls inside one of that view's displayedRegions — i.e., the level is
 // determined by region membership, NOT by current scroll/zoom. The feature
 // may still be horizontally off-screen within the chosen level.
+//
+// `refName` arrives in the file's spelling and `displayedRegions` holds the
+// assembly's, so it is resolved once per level against THAT row's assembly:
+// the rows are independently assembly-picked, and one shared resolver answers
+// for one of them and drops every contig belonging to the rest.
 export function findFeatureViewLevel(
   views: {
     bpToPx: (a: { refName: string; coord: number }) => unknown
   }[],
+  assemblies: (RefNameCanonicalizer | undefined)[],
   refName: string,
   coord: number,
 ) {
   for (let level = 0; level < views.length; level++) {
-    if (views[level]!.bpToPx({ refName, coord })) {
+    const canonical =
+      assemblies[level]?.getCanonicalRefName2(refName) ?? refName
+    if (views[level]!.bpToPx({ refName: canonical, coord })) {
       return level
     }
   }

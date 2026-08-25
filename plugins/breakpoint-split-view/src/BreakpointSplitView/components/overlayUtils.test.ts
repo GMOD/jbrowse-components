@@ -53,30 +53,70 @@ describe('resolvedPairs', () => {
   const entry = (
     refName: string,
     hiddenSegmentsBefore?: string[],
+    level = 0,
   ): LayoutMatch => ({
     feature: feat(refName),
     layout: [0, 0, 0, 0],
-    level: 0,
+    level,
     clipLengthAtStartOfRead: 0,
     hiddenSegmentsBefore,
   })
-  const assembly = {
-    getCanonicalRefName: (r: string) => r,
-  } as unknown as Assembly
+  const knows = (...refNames: string[]) =>
+    ({
+      getCanonicalRefName: (r: string) =>
+        refNames.includes(r) ? r : undefined,
+    }) as unknown as Assembly
+  const assemblies = [
+    { getCanonicalRefName: (r: string) => r } as unknown as Assembly,
+  ]
   const tracks = [{ minimized: false }]
 
   test("carries the second entry's hiddenSegmentsBefore onto the pair", () => {
     const match = {
       layoutMatches: [[entry('chr1'), entry('chr2', ['chrX:500..549'])]],
     }
-    const [pair] = [...resolvedPairs({ match, assembly, tracks })]
+    const [pair] = [...resolvedPairs({ match, assemblies, tracks })]
     expect(pair?.hiddenSegmentsBetween).toEqual(['chrX:500..549'])
   })
 
   test('leaves hiddenSegmentsBetween undefined for truly-consecutive segments', () => {
     const match = { layoutMatches: [[entry('chr1'), entry('chr2')]] }
-    const [pair] = [...resolvedPairs({ match, assembly, tracks })]
+    const [pair] = [...resolvedPairs({ match, assemblies, tracks })]
     expect(pair?.hiddenSegmentsBetween).toBeUndefined()
+  })
+
+  // The rows are independently assembly-picked, so a connector's two endpoints
+  // can belong to two different assemblies. Resolving both through row 0's —
+  // which is what a single `assembly` was — answers undefined for every contig
+  // of every other row, and the overlay drew nothing at all.
+  test('a cross-assembly pair resolves each endpoint against its own row', () => {
+    const match = {
+      layoutMatches: [[entry('chr1'), entry('sampleCtg', undefined, 1)]],
+    }
+    const [pair] = [
+      ...resolvedPairs({
+        match,
+        assemblies: [knows('chr1'), knows('sampleCtg')],
+        tracks: [{ minimized: false }, { minimized: false }],
+      }),
+    ]
+    expect(pair?.f1ref).toBe('chr1')
+    expect(pair?.f2ref).toBe('sampleCtg')
+  })
+
+  // and the drop is still a drop: a name the row's OWN assembly does not know
+  // means no connector, rather than one drawn somewhere
+  test('an endpoint its own row cannot resolve is still dropped', () => {
+    const match = {
+      layoutMatches: [[entry('chr1'), entry('chrUn', undefined, 1)]],
+    }
+    expect([
+      ...resolvedPairs({
+        match,
+        assemblies: [knows('chr1'), knows('sampleCtg')],
+        tracks: [{ minimized: false }, { minimized: false }],
+      }),
+    ]).toEqual([])
   })
 
   // What lets a hover on one hop name the rest of the read's route
@@ -88,7 +128,7 @@ describe('resolvedPairs', () => {
       ],
     }
     expect(
-      [...resolvedPairs({ match, assembly, tracks })].map(p => p.chunkIndex),
+      [...resolvedPairs({ match, assemblies, tracks })].map(p => p.chunkIndex),
     ).toEqual([0, 0, 1])
   })
 })
@@ -110,7 +150,7 @@ describe('chainHighlightRects', () => {
     level,
     clipLengthAtStartOfRead: 0,
   })
-  const assembly = {
+  const anyRef = {
     getCanonicalRefName: (r: string) => (r === 'unknown' ? undefined : r),
   } as unknown as Assembly
   const level = (yOffset: number): OverlayLevel => ({
@@ -131,7 +171,7 @@ describe('chainHighlightRects', () => {
     minimumBlockWidth: 3,
   })
   const ctx = {
-    assembly,
+    assemblies: [anyRef, anyRef, anyRef],
     tracks: [{ minimized: false }, { minimized: false }, { minimized: false }],
     levels: [level(0), level(200), level(400)],
     layouts: [layout('chr1'), layout('chr2'), layout('chr3')],
@@ -174,6 +214,25 @@ describe('chainHighlightRects', () => {
       ],
     })
     expect(rects.map(r => r.key)).toEqual(['0-a'])
+  })
+
+  // one box per row, each resolved on the row it is drawn on: a chain crossing
+  // into a second assembly used to lose every box past the first row
+  test('each hop resolves against the assembly of its own row', () => {
+    const only = (refName: string) =>
+      ({
+        getCanonicalRefName: (r: string) => (r === refName ? r : undefined),
+      }) as unknown as Assembly
+    const rects = chainHighlightRects({
+      ...ctx,
+      assemblies: [only('chr1'), only('chr2'), only('chr3')],
+      chunk: [
+        entry('a', 'chr1', 0, [10, 5, 60, 15]),
+        entry('b', 'chr2', 1, [20, 5, 70, 15]),
+        entry('c', 'chr3', 2, [30, 5, 80, 15]),
+      ],
+    })
+    expect(rects.map(r => r.key)).toEqual(['0-a', '1-b', '2-c'])
   })
 
   test('an off-display segment is left to its bottom-edge connector', () => {

@@ -21,16 +21,19 @@ export default function Translocations(props: OverlayProps) {
   return (
     <VariantOverlay
       {...props}
-      render={({ match, views, tracks, layouts, getX, getY, assembly }) => {
+      render={({ match, views, tracks, layouts, getX, getY, assemblies }) => {
         if (views.length < 2) {
           return []
         }
         // bpToPx matches displayedRegions by exact refName, so both the mate's
         // INFO.CHR2 and f1's refName have to be canonicalized first or an
         // aliased one (VCF 'chr2' vs the view's '2') resolves to no level/px and
-        // the connection is silently dropped. Matches getMatchedFeaturesInLayout
-        // and getCanonicalRefPair.
-        const canon = (r: string) => assembly.getCanonicalRefName2(r)
+        // the connection is silently dropped. Per ROW, because the rows are
+        // independently assembly-picked and one shared resolver renames every
+        // contig into row 0's namespace. Matches getMatchedFeaturesInLayout and
+        // getCanonicalRefPair.
+        const canon = (level: number, r: string) =>
+          assemblies[level]?.getCanonicalRefName2(r) ?? r
         return match.layoutMatches.flatMap(chunk =>
           chunk.flatMap<PathSpec>(
             ({ layout: c1, feature: f1, level: level1 }) => {
@@ -47,14 +50,19 @@ export default function Translocations(props: OverlayProps) {
               // mate.pos is the raw VCF INFO.END (1-based); convert to 0-based
               // for bpToPx, matching getBreakendCoveringRegions
               const matePos = mate.pos - 1
-              const mateChr = canon(mate.chr)
-              const level2 = findFeatureViewLevel(views, mateChr, matePos)
+              const level2 = findFeatureViewLevel(
+                views,
+                assemblies,
+                mate.chr,
+                matePos,
+              )
               if (
                 level2 === undefined ||
                 isLevelPairMinimized(tracks, level1, level2)
               ) {
                 return []
               }
+              const mateChr = canon(level2, mate.chr)
               const x2 = getX(level2, mateChr, matePos)
               if (x2 == null) {
                 return []
@@ -63,7 +71,11 @@ export default function Translocations(props: OverlayProps) {
               // pileup layout so both are 0 (snaps to the track top). x2 comes
               // from getX above, not from this record.
               const c2: LayoutRecord = [0, 0, 0, 0]
-              const x1 = getX(level1, canon(f1.get('refName')), c1[LEFT])
+              const x1 = getX(
+                level1,
+                canon(level1, f1.get('refName')),
+                c1[LEFT],
+              )
               if (x1 == null) {
                 return []
               }
