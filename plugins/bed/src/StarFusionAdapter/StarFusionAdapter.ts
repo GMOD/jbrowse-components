@@ -12,12 +12,25 @@ import type { StarFusionAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, IntervalTree, Region } from '@jbrowse/core/util'
 
+/**
+ * A STAR-Fusion `refName:pos:strand` breakpoint, read from the RIGHT: a refName
+ * may contain colons. GRCh38's full analysis set names its HLA contigs
+ * `HLA-A*01:01:01:01`, so a breakpoint on one arrives as
+ * `HLA-A*01:01:01:01:5000:+` and splitting at the first colon read the contig as
+ * `HLA-A*01`, the position as 1 and the strand as absent. Same rule
+ * `parseSvAlt` applies to a BND mate locstring, one field further along.
+ *
+ * A string with fewer than three fields keeps what it always parsed to, so a
+ * truncated or strandless row is no worse off than before.
+ */
 function parseBreakpoint(str: string) {
-  const [refName, pos, strandStr] = str.split(':')
+  const parts = str.split(':')
+  const strandStr = parts.length >= 3 ? parts.pop() : undefined
+  const pos = parts.length >= 2 ? +parts.pop()! : Number.NaN
   return {
-    refName: refName!,
-    start: +pos!,
-    end: +pos! + 1,
+    refName: parts.join(':'),
+    start: pos,
+    end: pos + 1,
     strand: strandStr === '+' ? 1 : strandStr === '-' ? -1 : undefined,
   }
 }
@@ -69,8 +82,13 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusion
           rightIdx = columnNames.indexOf('RightBreakpoint')
         } else if (leftIdx >= 0 && rightIdx >= 0) {
           const cols = line.split('\t')
-          const leftRef = cols[leftIdx]?.split(':', 1)[0]
-          const rightRef = cols[rightIdx]?.split(':', 1)[0]
+          const left = cols[leftIdx]
+          const right = cols[rightIdx]
+          // through parseBreakpoint, so the bucket a row is filed under is the
+          // refName its feature will report -- a colon-bearing contig split two
+          // ways puts the row in a bucket no query can reach
+          const leftRef = left ? parseBreakpoint(left).refName : undefined
+          const rightRef = right ? parseBreakpoint(right).refName : undefined
           if (leftRef && rightRef) {
             ;(feats1[leftRef] ??= []).push(line)
             ;(feats2[rightRef] ??= []).push(line)

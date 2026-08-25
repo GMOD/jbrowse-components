@@ -18,7 +18,42 @@ function makeAdapter() {
 test('returns correct ref names', async () => {
   const adapter = makeAdapter()
   const refNames = await adapter.getRefNames()
-  expect(new Set(refNames)).toEqual(new Set(['chr1', 'chr2', 'chr3']))
+  expect(new Set(refNames)).toEqual(
+    new Set(['chr1', 'chr2', 'chr3', 'HLA-A*01:01:01:01', 'HLA-B*07:02:01:01']),
+  )
+})
+
+// GRCh38's full analysis set names its HLA contigs `HLA-A*01:01:01:01`, so a
+// STAR-Fusion breakpoint on one is `HLA-A*01:01:01:01:5000:+` -- six
+// colon-separated fields for a three-field format. Read left to right it gave
+// contig `HLA-A*01`, position 1 (the `01` after it) and no strand at all, which
+// is a feature at the start of a contig that does not exist.
+test('reads a breakpoint on a colon-bearing contig', async () => {
+  const adapter = makeAdapter()
+  const features = await firstValueFrom(
+    adapter
+      .getFeatures({
+        assemblyName: 'test',
+        refName: 'HLA-A*01:01:01:01',
+        start: 0,
+        end: 10000,
+      })
+      .pipe(toArray()),
+  )
+
+  const feat = features.find(f => f.get('name') === 'GENE7--GENE8')!
+  expect(feat).toBeDefined()
+  expect(feat.get('refName')).toBe('HLA-A*01:01:01:01')
+  expect(feat.get('start')).toBe(5000)
+  expect(feat.get('end')).toBe(5001)
+  expect(feat.get('strand')).toBe(1)
+  expect(feat.get('mate')).toEqual({
+    refName: 'HLA-B*07:02:01:01',
+    start: 6000,
+    end: 6001,
+    strand: -1,
+    mateDirection: -1,
+  })
 })
 
 test('returns features on left-breakpoint ref', async () => {
