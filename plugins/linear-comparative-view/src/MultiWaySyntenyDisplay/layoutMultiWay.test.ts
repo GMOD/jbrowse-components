@@ -693,6 +693,63 @@ test('the aligned frame still covers the placements it was fitted to', () => {
   expect(frame.max).toBeGreaterThanOrEqual(500760)
 })
 
+// The center snap can move a frame by half a grid step, which is more than the
+// rung leaves over a fit that nearly fills it. A frame that misses its own fit
+// misses it silently: the placement at that edge stops being drawn, the ribbon
+// skips the lane, and `laneFetchWindow` stops asking for the genes there.
+test('a fit that nearly fills its rung is still covered by the snapped frame', () => {
+  const mateLane = (mateStart: number, mateEnd: number) =>
+    groupFeatures([
+      pairFeature({
+        uniqueId: '1',
+        name: 'g1',
+        start: 100,
+        end: 160,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: mateStart,
+          end: mateStart + 60,
+          name: 'p1',
+        },
+      }),
+      pairFeature({
+        uniqueId: '2',
+        name: 'g2',
+        start: 900,
+        end: 960,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: mateEnd - 60,
+          end: mateEnd,
+          name: 'p2',
+        },
+      }),
+    ])
+
+  const frame = computeRowFrame(mateLane(500000, 500913), 'peach', 1000)!
+  expect(frame.max - frame.min).toBe(1000)
+  expect(frame.min).toBeLessThanOrEqual(frame.fitMin)
+  expect(frame.max).toBeGreaterThanOrEqual(frame.fitMax)
+
+  for (const width of [913, 950, 990, 1450, 1950, 2900, 4900, 7900]) {
+    for (const offset of [0, 37, 62, 88, 121]) {
+      const start = 500000 + offset
+      const lane = computeRowFrame(
+        mateLane(start, start + width),
+        'peach',
+        1000,
+      )!
+      expect(lane.min).toBeLessThanOrEqual(lane.fitMin)
+      expect(lane.max).toBeGreaterThanOrEqual(lane.fitMax)
+      const window = laneFetchWindow(lane)
+      expect(window.min).toBeLessThanOrEqual(lane.min)
+      expect(window.max).toBeGreaterThanOrEqual(lane.max)
+    }
+  }
+})
+
 // A mate lane whose gene order runs backwards against the lane above is
 // mirrored, which is the worst zigzag available: every ribbon crosses.
 test('a lane running against the lane above comes out flipped', () => {

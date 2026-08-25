@@ -103,9 +103,11 @@ export function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * lanes to pin to the top, in order; lanes it does not name follow in
-         * first-appearance order. A declared property, so it is authorable
-         * from a session spec or a config defaultSession
+         * lanes to pin to the top, in order; lanes it does not name follow
+         * densest-first, so the chain a ribbon draws through adjacent lanes is
+         * cut as late as possible and most stacks need no order authored at
+         * all. A declared property, so it is authorable from a session spec or
+         * a config defaultSession
          */
         rowOrder: types.array(types.string),
       }),
@@ -219,8 +221,8 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * mate assemblies in first-appearance order, one lane each below the
-       * anchor lane
+       * mate assemblies densest-first, one lane each below the anchor lane,
+       * with any `rowOrder` lanes pinned above them
        */
       get rowAssemblies() {
         // a paralogy record's mate is the anchor assembly itself; those draw
@@ -392,6 +394,7 @@ export function stateModelFactory(
        */
       get laneGeneAdapters() {
         const session = getSession(self)
+        const { assemblyManager } = session
         const out = new Map<string, Record<string, unknown>>()
         for (const assemblyName of [
           self.anchorAssemblyName,
@@ -518,6 +521,11 @@ export function stateModelFactory(
             const upper = self.rowFrames.get(upperAssembly)
             const lower = self.rowFrames.get(lowerAssembly)
             if (upper && lower) {
+              // the window the upper frame can slide in, NOT the frame — the
+              // same key the lane-genes fetch uses and for the same reason: the
+              // frame moves with the alignment shift and the viewport width, so
+              // keying on it refetches every pair on a window resize
+              const reach = laneFetchWindow(upper)
               specs.push({
                 upperAssembly,
                 lowerAssembly,
@@ -530,7 +538,7 @@ export function stateModelFactory(
                   // gesture that changed no data. `laneFetchWindow` is exactly
                   // the shift-independent envelope, and is what the lane gene
                   // fetch already keys on.
-                  ...quantizeSpan(laneFetchWindow(upper)),
+                  ...quantizeSpan(reach),
                 },
               })
             }
@@ -563,9 +571,9 @@ export function stateModelFactory(
       /**
        * #getter
        * whether the committed lane genes answer the current lane frames.
-       * Published as `data-lanes-current` on the body so a capture can wait on
-       * the dependent fetch — `displayPhase` deliberately does not cover it,
-       * since the lanes are an enhancement over the placement boxes
+       * Published as `data-lanes-current` on the body, and the finer gate of
+       * the two: `displayPhase` covers only the FIRST lane fetch (see there),
+       * so a capture that pans and then shoots waits on this
        */
       get laneGenesCurrent() {
         const { key, specs } = self.laneGenesFetchSpecs
@@ -578,39 +586,57 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the dependent lane-genes fetch is part of loading, so an export or a
-       * capture never lands between the ortholog fetch and the gene models
-       * that fill the lanes. A failed lane fetch commits an empty result
-       * rather than hanging this at loading (see afterAttach)
+       * the dependent fetches are part of loading until they first land, so an
+       * export or a capture never lands between the ortholog fetch and the
+       * gene models that fill the lanes. A failed lane fetch commits an empty
+       * result rather than hanging this at loading (see afterAttach).
+       *
+       * **Until they first land, not for good.** Holding the phase at loading
+       * for every subsequent refetch put the striped loading scrim over lanes
+       * that were already drawn on any pan that moved a quantized lane window:
+       * the fetch is debounced 500 ms and the overlay's anti-flash delay is
+       * 250 ms, so the scrim always won that race. Before the first commit
+       * there is nothing on screen to flash over and a capture would shoot
+       * placement boxes, which is what this is for; after it, the lanes are an
+       * enhancement over boxes that are already correct, and
+       * `data-lanes-current` is the finer gate for a capture that needs more.
        */
       get displayPhase(): DisplayStatusPhase {
         const base = foundationDisplayStatusPhase(self, () => true)
-        return base === 'ready' &&
-          (!self.laneGenesCurrent || !self.laneLinksCurrent)
-          ? 'loading'
-          : base
+        const firstFetchPending =
+          (self.laneGenes === undefined && !self.laneGenesCurrent) ||
+          (self.laneLinks === undefined && !self.laneLinksCurrent)
+        return base === 'ready' && firstFetchPending ? 'loading' : base
       },
     }))
-    .views(self => ({
-      /**
-       * #method
-       * the same multi-panel launch the view menu and the rubberband offer,
-       * from the track that is already showing the lanes: every genome
-       * aligning to the visible window gets a full row of its own in a
-       * stacked linear synteny view, cut from this track's dataset
-       */
-      trackMenuItems(): MenuItem[] {
-        const view = self.lgv
-        return syntenyRegionMenuItems({
-          label: 'Launch stacked synteny view (visible region)',
-          region: widestRegion(view.dynamicBlocks.contentBlocks),
-          session: getSession(self),
-          openTracks: [self.parentTrack.configuration],
-          anchorTracks: anchorPanelTracks(view.tracks),
-          sourceView: view,
-        })
-      },
-    }))
+    .views(self => {
+      const superMenuItems = self.trackMenuItems
+      return {
+        /**
+         * #method
+         * the same multi-panel launch the view menu and the rubberband offer,
+         * from the track that is already showing the lanes: every genome
+         * aligning to the visible window gets a full row of its own in a
+         * stacked linear synteny view, cut from this track's dataset.
+         * Appended to the inherited items rather than replacing them, so a
+         * mixin's item is not dropped by being composed under this one
+         */
+        trackMenuItems(): MenuItem[] {
+          const view = self.lgv
+          return [
+            ...superMenuItems(),
+            ...syntenyRegionMenuItems({
+              label: 'Launch stacked synteny view (visible region)',
+              region: widestRegion(view.dynamicBlocks.contentBlocks),
+              session: getSession(self),
+              openTracks: [self.parentTrack.configuration],
+              anchorTracks: anchorPanelTracks(view.tracks),
+              sourceView: view,
+            }),
+          ]
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

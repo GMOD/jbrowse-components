@@ -1,11 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import {
-  doesIntersect2,
-  getBpDisplayStr,
-  getContainingView,
-  getSession,
-} from '@jbrowse/core/util'
+import { doesIntersect2, getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import {
@@ -18,7 +13,6 @@ import {
 import type { MultiWayGroup, RowFrame } from '../layoutMultiWay.ts'
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type Span = readonly [number, number]
 
@@ -161,9 +155,9 @@ function GeneGlyph({
     >
       <line x1={left} x2={right} y1={mid} y2={mid} stroke={strokeColor} />
       {chevrons ? <path d={chevrons} stroke={strokeColor} fill="none" /> : null}
-      {thinPx.map(([x1, x2]) => (
+      {thinPx.map(([x1, x2], i) => (
         <rect
-          key={`utr-${x1}-${x2}`}
+          key={`utr-${i}`}
           x={x1}
           y={utrY}
           width={Math.max(1, x2 - x1)}
@@ -171,9 +165,9 @@ function GeneGlyph({
           fill={utrColor}
         />
       ))}
-      {fullPx.map(([x1, x2]) => (
+      {fullPx.map(([x1, x2], i) => (
         <rect
-          key={`cds-${x1}-${x2}`}
+          key={`cds-${i}`}
           x={x1}
           y={y}
           width={Math.max(1, x2 - x1)}
@@ -232,7 +226,7 @@ const MultiWayRows = observer(function MultiWayRows({
   exportSVG?: boolean
 }) {
   const palette = usePalette()
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = model.lgv
   const { assemblyManager } = getSession(model)
   const {
     anchorAssemblyName,
@@ -495,14 +489,32 @@ const MultiWayRows = observer(function MultiWayRows({
     const y = glyphTop(rowIndex)
     const genes = laneGenes?.get(assemblyName)
     const frameRefName = frame && canonicalRefName(assemblyName, frame.refName)
-    const drawsGenes =
-      !!genes?.length && (rowIndex === 0 || frame !== undefined)
-    // whether the SESSION has an annotation track for this lane, which is what
-    // the header reports. `drawsGenes` is the narrower question of whether this
-    // window has any genes in it — a lane with a gene track over an empty
-    // stretch draws placement boxes, and saying `no annotation` about it would
-    // be a claim about the config that is not true
-
+    // How this lane draws a gene, or `undefined` for a lane that cannot: the
+    // anchor lane maps bp through the view and shows everything the view
+    // fetched, every other lane maps through its own frame and shows what that
+    // frame reaches. Derived here so the frame is narrowed once rather than
+    // asserted at each of the three places below that read it.
+    const geneDrawing =
+      rowIndex === 0
+        ? {
+            shows: () => true,
+            xOf: (gene: Feature) => (bp: number) =>
+              anchorX(gene.get('refName'), bp),
+          }
+        : frame === undefined
+          ? undefined
+          : {
+              shows: (gene: Feature) =>
+                canonicalRefName(assemblyName, gene.get('refName')) ===
+                  frameRefName &&
+                doesIntersect2(
+                  frame.min,
+                  frame.max,
+                  gene.get('start'),
+                  gene.get('end'),
+                ),
+              xOf: () => (bp: number) => rowFrameX(frame, bp, width),
+            }
     lanes.push(
       <line
         key={`baseline-${assemblyName}`}
@@ -514,29 +526,15 @@ const MultiWayRows = observer(function MultiWayRows({
       />,
     )
 
-    if (drawsGenes) {
+    if (genes?.length && geneDrawing) {
       for (const gene of genes) {
-        const inFrame =
-          rowIndex === 0 ||
-          (canonicalRefName(assemblyName, gene.get('refName')) ===
-            frameRefName &&
-            doesIntersect2(
-              frame!.min,
-              frame!.max,
-              gene.get('start'),
-              gene.get('end'),
-            ))
-        if (inFrame) {
+        if (geneDrawing.shows(gene)) {
           const selected = selectedFeatureId === gene.id()
           lanes.push(
             <GeneGlyph
               key={`gene-${assemblyName}-${gene.id()}`}
               feature={gene}
-              xOf={
-                rowIndex === 0
-                  ? bp => anchorX(gene.get('refName'), bp)
-                  : bp => rowFrameX(frame!, bp, width)
-              }
+              xOf={geneDrawing.xOf(gene)}
               y={y}
               glyphHeight={glyphHeight}
               strokeColor={palette.text.primary}
@@ -604,6 +602,10 @@ const MultiWayRows = observer(function MultiWayRows({
         ? view.coarseVisibleLocStrings || view.visibleLocStrings
         : frame &&
           `${canonicalRefName(assemblyName, frame.refName)}:${fmt(frame.min)}${frame.flipped ? ' [rev]' : ''}`
+    // `no annotation` is a claim about the SESSION, so it asks whether a track
+    // exists rather than whether this window drew any genes: a lane with a gene
+    // track over an empty stretch draws placement boxes, and calling that `no
+    // annotation` would be a claim about the config that is not true
     headers.push(
       <text
         key={`label-${assemblyName}`}

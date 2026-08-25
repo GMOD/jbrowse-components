@@ -8,7 +8,6 @@ export interface MultiWayPlacement {
   refName: string
   start: number
   end: number
-  name: string
 }
 
 /**
@@ -85,7 +84,6 @@ export function groupFeatures(features: Feature[]) {
           refName: feature.get('refName'),
           start: feature.get('start'),
           end: feature.get('end'),
-          name,
         },
         mates: new Map(),
         feature,
@@ -106,7 +104,6 @@ export function groupFeatures(features: Feature[]) {
         start: mate.start,
         end: mate.end,
         orientation: feature.get('strand') === -1 ? -1 : 1,
-        name: mate.name,
       })
     }
   }
@@ -163,8 +160,15 @@ function mid(p: MultiWayPlacement) {
 const SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]
 
 // The frame's span rounded up to a ladder rung and its center snapped to an
-// eighth of that span. `unitBp` of 0 means the caller has no anchor span to
-// scale against (the layout unit tests), and the fitted frame passes through.
+// eighth of that span, held to the centers that still cover [lo, hi]. The snap
+// moves the center by up to half a grid step and the rung only leaves
+// `span - (hi - lo)` of slack, so a fit filling more than seven eighths of its
+// rung can be snapped off its own edge — and everything downstream reads the
+// frame as covering the fit: `groupExtentOnRow` drops a placement outside it,
+// `alignFrameTo` clamps against slack it assumes is there, and
+// `laneFetchWindow` stops fetching the sliver. `unitBp` of 0 means the caller
+// has no anchor span to scale against (the layout unit tests), and the fitted
+// frame passes through.
 function snapFrameToLadder(lo: number, hi: number, unitBp: number) {
   if (unitBp <= 0) {
     return { min: lo, max: hi }
@@ -174,12 +178,17 @@ function snapFrameToLadder(lo: number, hi: number, unitBp: number) {
   const span =
     rung === undefined ? Math.ceil(wanted / unitBp) * unitBp : rung * unitBp
   const grid = span / 8
-  const center = Math.round((lo + hi) / 2 / grid) * grid
+  const half = span / 2
+  const center = clamp(
+    Math.round((lo + hi) / 2 / grid) * grid,
+    hi - half,
+    lo + half,
+  )
   // Snapping the center moves it, and near a contig start that puts `min`
   // below 0 — which the lane header then prints as a coordinate ("Pp1:-139")
   // and `frameTickXs` walks from. Slide the span back inside instead of
   // clamping `min` alone, so the lane keeps the rung it was snapped to.
-  const min = Math.max(0, center - span / 2)
+  const min = Math.max(0, center - half)
   return { min, max: min + span }
 }
 
@@ -630,13 +639,13 @@ export function alignRowFrames(
       frames.set(assemblyName, fitted)
       continue
     }
-    const backwards = readsBackwards(
-      upperX,
-      lanePlacements(groups, assemblyName, fitted),
-    )
+    // one list for both steps: flipping a frame changes which END of the lane a
+    // bp lands on, not which placements the frame shows, so re-deriving these
+    // against `oriented` returns the same list
+    const placements = lanePlacements(groups, assemblyName, fitted)
+    const backwards = readsBackwards(upperX, placements)
     const oriented =
       backwards === undefined ? fitted : { ...fitted, flipped: backwards }
-    const placements = lanePlacements(groups, assemblyName, oriented)
     const frame = alignFrameTo(upperX, placements, oriented, width)
     frames.set(assemblyName, frame)
     upperX = new Map(
