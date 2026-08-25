@@ -14,10 +14,15 @@ Which way the sequence each end of a breakend KEEPS runs from its breakpoint, as
 `+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
 `tickDirection` states and the one every producer in the tree emits.
 
-`Join: 'right'` means the mate piece is joined to the RIGHT of the ref base, so
-this end is the one that keeps the sequence to its left; the bracket direction
-says the same thing about the mate. Both are therefore the negation of the
-string they read.
+The two halves read their strings with OPPOSITE polarity, which is the whole
+reason to state them together. `Join: 'right'` says the mate piece is joined to
+the RIGHT of the ref base, so this end keeps the sequence to its left: negated.
+`MateDirection: 'right'` says the mate's own piece extends to the right of the
+mate position, which is already the direction it keeps: taken as read. So
+`N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that is the
+same pair `StarFusionAdapter` emits for the fusion it describes — the donor
+keeps the sequence below its breakpoint (-1) and the acceptor the sequence above
+its own (+1).
 
 Split out of `parseSvAlt` because a consumer holding an already-parsed
 `Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
@@ -26,6 +31,29 @@ polarity — the shape that produced 78bb7b84f9.
 ```js
 // type signature
 (bnd: Breakend) => { mateDirection: number; joinDirection: number; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
+
+### breakendLocKey
+
+A breakend locstring reduced to the form two spellings of one locus compare
+equal in.
+
+Case, because that is what the two halves of one record disagree about:
+nanomonsv writes CHROM `chr3` and spells the same contig `CHR3` inside the ALT
+bracket, and all 66 BND records of the COLO829 callset the cancer_sv demo serves
+do it. Case is also the whole of the fallback `getCanonicalRefName` makes,
+through `lowerCaseRefNameAliases`.
+
+For grouping two ends of one junction, not for navigation: `chr10` against `10`
+still needs an assembly, and the callers here — the overlay's alt matching and
+its breakend bucketing — hold features and no assembly. A producer that has one
+resolves properly instead, through `toCanonicalRefName`.
+
+```js
+// type signature
+(locString: string) => string
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)

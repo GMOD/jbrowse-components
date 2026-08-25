@@ -126,10 +126,15 @@ export function parseSvAlt(
  * as `+1 = right` / `-1 = left` — the convention `StarFusionAdapter`'s
  * `tickDirection` states and the one every producer in the tree emits.
  *
- * `Join: 'right'` means the mate piece is joined to the RIGHT of the ref base,
- * so this end is the one that keeps the sequence to its left; the bracket
- * direction says the same thing about the mate. Both are therefore the negation
- * of the string they read.
+ * The two halves read their strings with OPPOSITE polarity, which is the whole
+ * reason to state them together. `Join: 'right'` says the mate piece is joined
+ * to the RIGHT of the ref base, so this end keeps the sequence to its left:
+ * negated. `MateDirection: 'right'` says the mate's own piece extends to the
+ * right of the mate position, which is already the direction it keeps: taken as
+ * read. So `N[chr2:2000[` is `{ joinDirection: -1, mateDirection: 1 }`, and that
+ * is the same pair `StarFusionAdapter` emits for the fusion it describes — the
+ * donor keeps the sequence below its breakpoint (-1) and the acceptor the
+ * sequence above its own (+1).
  *
  * Split out of `parseSvAlt` because a consumer holding an already-parsed
  * `Breakend` was re-deriving it by hand, in two adjacent ternaries of opposite
