@@ -16,6 +16,38 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **Put `LinearManhattanDisplay` on the wiggle family's `plotGeometry` and
+  shared views** — proposed as backlog work, checked 2026-08-25 and declined:
+  the duplication it names is either deliberate or not duplication. Of the four
+  members `wiggleDisplayViews` states, `ticks` is the only candidate, and
+  Manhattan pins `scaleType: 'linear'` and ignores `symlogConstant` by design
+  (its scores are pre-transformed -log10 p values) where the shared getter
+  passes both through, so sharing it means a scaleType override existing for one
+  caller. `renderState` is a different type — `ManhattanRenderState` is
+  `{domainY, canvasWidth, canvasHeight, pointDiameterPx}` against
+  `WiggleGPURenderState`'s scaleType, symlogConstant, renderingType, numRows,
+  lineWidth and origin. `scoreRamp` needs a density mode Manhattan has not, and
+  `sharedRpcProps`/`sharedGpuProps` name fetch keys it does not fetch on. The
+  duplicated `minimalTicks` slot is deliberate and says so at
+  `WiggleCommonMixin.ts`'s `wiggleCommonExtraSlots`: "declared per display
+  because the shared field table is spread by `LinearManhattanDisplay` too,
+  which owns its own axis." And `plotGeometry` collapses for Manhattan to
+  `axisPlotBox(height)` with `numRows: 1`, which it already calls directly on
+  both sides — its ticks and its render canvas agree, so there is no drift to
+  close.
+
+- **Bound a track's drag height at `maxCanvasCssPx()`** — declined 2026-08-25.
+  The blank it was opened for is fixed: past `MAX_CANVAS_DIM_PX` a display draws
+  at reduced resolution rather than asking for a viewport its target cannot hold
+  (ARCHITECTURAL_LIMITS.md §"A canvas past `MAX_CANVAS_DIM_PX` renders wrong,
+  not smaller"). What is left is a resolution falloff above ~4096 CSS px on a
+  retina panel and ~8192 at dpr 1, which is invisible in practice. A clamp in
+  `TrackHeightMixin` is the wrong shape anyway — MAF scrolls its overflow into a
+  viewport and the multi-row painting divides the cap across rows — so the
+  honest version is a per-display-type decision repeated across displays, for a
+  handle that stops at a different place on every monitor. Reopen only if the
+  falloff is reported.
+
 - **`defineDisplay`: a track type as a spec, a mark as a shape plus channels, and a
   declared settings table under them** (ADR-089, ADR-090, and the branch that
   tried the table; also `ideas/a-track-type-is-five-primitives`, the proposal
@@ -578,6 +610,20 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   comparative path, which is doing nothing wrong.
 
 ## Performance and measurement
+
+- **Raise the RPC worker ceiling so a sixth alignments track gets a sixth
+  worker** — declined 2026-08-25: the contention it would relieve was measured
+  not to exist. `WebWorkerRpcDriver` sizes its pool
+  `clamp(detectHardwareConcurrency() - 1, 1, 5)` and `rpcSessionId` is
+  per-track, so a six-track session puts two tracks on one worker — but tracks
+  do not serialise there, and every RPC worker profiles 100% idle through a
+  six-track pan, so there is no queue for a sixth worker to drain. The cost side
+  is real and one-directional: each worker holds its own BAM chunk caches and
+  its own bgzf pool, so a sixth is a sixth copy of both (see
+  `give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them`, which
+  is where the memory question lives). A reader who wants more workers already
+  has the lever — the `workerCount` config slot overrides the hardware default —
+  so nothing is owed but the default, and the default is right.
 
 - **A one-pass binary-search partition for `aminoAcidsInRange`** — proposed
   2026-08-20 and declined, because the disjointness it needs is not true of the
@@ -1872,6 +1918,40 @@ re-attempt without genuinely new data.
     inverted duplication would be a claim the picture does not support.
 
 ## Tooling, tests and docs
+
+- **A `preserveDrawingBuffer` override to make the webgl blank verdict
+  conclusive** — declined 2026-08-25, because the flag that discriminates
+  already ships. Half the browser-suite blank captures are unattributable on a
+  volatile drawing buffer, and `canvasSelfReport`
+  (`products/jbrowse-web/browser-tests/snapshot.ts`) now says so outright and
+  names the remedy: re-run that one test with `--real-gpu` (`runner.ts`), which
+  a SwiftShader compositing blank does not survive and a render one does. The
+  override would be a `getContext` monkey-patch through
+  `evaluateOnNewDocument` — a build modification that must not be left on, run
+  once, verified against a plain canvas first — to answer what a shipped flag
+  answers with none of that. CROSS_BACKEND_GATE.md already refutes it as a
+  *fix*; this closes it as a diagnostic too.
+
+- **Sweep the unused exports with knip** — run 2026-08-25 and closed on its own
+  terms: the answer is "there is no exports problem here", not "nobody has
+  looked". knip 6.32.2, configured per workspace with `src/index.ts` as each
+  package's entry and tests and benches excluded, reports **99 unused value
+  exports** on a clean tree. Roughly 85 of them fall in four classes that are
+  all correct code: `*.generated.ts` shader interfaces, where `pnpm gen:shaders`
+  emits a full getter/setter pair per instance field whether or not a pass reads
+  it (~60 of the 99); `packages/core/src/ReExports/publicUtil.ts`, whose several
+  hundred names are the published `coreUtil` ABI by construction; the vendored
+  `color-bits` and `react-colorful` shims; and compile-time assertion types
+  (`_AssertSessionModel` and friends), which appearing once is what they are
+  for. The residue is about 14 names — `WorkspaceContainer`/`LayoutRenderer`/
+  `useLayoutDrag`, `Dotplot1DView`, `getPropertyType`, `panSNSample`,
+  `LABEL_FONT_SIZE`, `INSERTION_SERIF_MIN_PX_PER_BP`, two pass-through
+  re-exports in `RenderFeatureDataRPC/renderConfig.ts` — none of which is a bug,
+  and most of which are published subpaths where removal is an ABI break
+  (PLUGIN_ABI_STABILITY.md). **Do not add knip to `pnpm check-docs`**: a gate
+  reporting 99 findings on a clean tree teaches everyone to skip it, and
+  suppressing the four classes means maintaining an ignore list longer than the
+  signal.
 
 - **MobX's `reactionRequiresObservable` as a jest gate**, so an autorun whose
   run read no observable — one nothing will ever re-run — fails the test.

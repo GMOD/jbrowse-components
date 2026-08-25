@@ -283,9 +283,11 @@ level below assumes the factory can hold a real display. Nothing has tested that
 **The move.** Port `LinearManhattanDisplay` (2,180 lines, 24 files, 6 slots, 3
 properties, 0 volatiles) to `defineDisplay`. It is the smallest display that has
 all of: a real scale, a real hit test, a legend, a tooltip, a hand-written
-shader, and a `renderSvg`. The todo
-[put-the-manhattan-display-on-plotgeometry](../todo/put-the-manhattan-display-on-plotgeometry.md)
-is the same complaint arriving from the wiggle side.
+shader, and a `renderSvg`. The same complaint arrived once from the wiggle side
+— put Manhattan on `plotGeometry` and the shared `wiggleDisplayViews` — and was
+declined on inspection: see
+[REJECTED_IDEAS.md](../reference/REJECTED_IDEAS.md) §"Rendering and displays"
+for why each of the four shared members refuses Manhattan.
 
 **Fix the denominator before porting, or the gauge proves nothing.** "2,180
 lines, 24 files" reproduces exactly, but only as `LinearManhattanDisplay/`

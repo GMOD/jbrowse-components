@@ -31,12 +31,9 @@ the half that rots is the half it covers.
 
 | Item | Area | First move |
 | --- | --- | --- |
-| [Should a track's height be bounded at all](todo/decide-whether-a-tracks-height-should-be-bounded-at-all.md) | GPU, limits | the blank is fixed; what is left is whether the drag should stop, and per display |
 | [A repeat's subpart labels collide in one row](todo/a-repeats-subpart-labels-collide-inside-the-row-they-now-share.md) | canvas | the row is reserved now; decide whether the one-row design survives |
 | [A polyprotein CDS reads as non-coding](todo/a-polyprotein-cds-reads-as-non-coding-and-ranks-last.md) | canvas | fix the two coding helpers, not the ranking comparator |
-| [Put the Manhattan display on `plotGeometry`](todo/put-the-manhattan-display-on-plotgeometry.md) | gwas, wiggle | check Manhattan against the shared views' host type; the frame already defaults for it |
 | [Let a dotplot click open the alignment it is on](todo/let-a-dotplot-click-open-the-alignment-it-is-on.md) | dotplot | the pick already answers; decide ship-ids vs resolve-on-demand first |
-| [Import the recipes' remaining copied label tables](todo/import-the-recipes-remaining-copied-label-tables.md) | website, menus | check each registry's module for a React import; a leaf is importable today |
 | [A validator gate for the examples sites' configs](todo/decide-whether-the-examples-sites-configs-get-a-validator-gate.md) | embedded, config | the file is fixed; what is open is the copy and where a gate lives |
 | [Two spellings of "how tall is the embed"](todo/two-spellings-of-how-tall-is-the-embed.md) | embedded, API | the LGV ships `height`; decide whether the app's CSS variable becomes the same prop |
 | [An arc's right-click offers nothing](todo/give-an-arcs-right-click-something-to-offer.md) | alignments, arcs | decide the item set; the hit already resolves coordinates and support |
@@ -51,7 +48,6 @@ the half that rots is the half it covers.
 | [Re-film the protein launch tour](todo/re-film-the-protein-launch-tour-once-protein3d-ships-the-a3m-removal.md) | figures, protein3d | waits on a protein3d release; the a3m is gone for good |
 | [Make the capture scroll-invariant](todo/make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu.md) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Attribute the TIMEOUT mode](todo/attribute-the-60s-displaypainted-selector-wait.md) | browser tests | the census shipped; wrap the two selector waits that throw before it runs |
-| [Make the webgl blank verdict conclusive](todo/make-the-webgl-blank-verdict-conclusive.md) | browser tests | `--real-gpu` already discriminates; decide whether the override is still worth a run |
 | [Shoot the multihop chain as counted arcs](todo/shoot-the-multihop-chain-as-counted-arcs-in-one-lgv.md) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |
 | [Re-render the settings-menu figures](todo/re-render-the-five-figures-the-settings-menu-refactor-outran.md) | figures, synteny | five stale; the lock cannot catch this class |
 | [Rebuild the OrthoFinder demos' chrom.sizes](todo/rebuild-the-three-orthofinder-demos-chromsizes.md) | figures, synteny | rerun the script into `demos/`, then re-render three; raise alpha only uniformly, if at all |
@@ -98,7 +94,6 @@ the half that rots is the half it covers.
 | [Cut WebGL2 contexts per display](todo/cut-webgl2-contexts-per-display.md) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [Split the arc band's uniforms off the pileup struct](todo/split-the-arc-bands-uniforms-off-the-pileup-struct.md) | alignments, GPU, limits | the 4 -> 2 MiB was arithmetic on a slot that is not arc-only; it is 4 -> 3, so measure the ring before spending the regen |
 | [Produce and host the HPRC summary tier](todo/produce-and-host-the-hprc-summary-tier.md) | MAF, pangenome | built and hosted; report the overlap collapse upstream, then decide span vs cost |
-| [Does a sixth track want a sixth RPC worker](todo/does-a-sixth-alignments-track-want-a-sixth-rpc-worker.md) | RPC, limits | one `workerCount` line to try; the answer is a memory measurement, not a stopwatch |
 | [Cross-region arc count at 300x](todo/read-the-cross-region-arc-count-at-300x-which-the-arc-cap-is-sized-from.md) | alignments, arcs | one `crossRegion.length` read; the cap's input is an estimate |
 | [Does a quality floor still buy anything on the band](todo/does-a-base-quality-floor-still-buy-anything-on-the-coverage-band.md) | alignments | measure the sub-Q20 share that SURVIVES the frequency floor |
 | [Walk the CIGAR once per MM tag](todo/walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group.md) | alignments, perf | the same-base half shipped; what is left is worth ~1.1x and is Fiber-seq only |
@@ -106,6 +101,5 @@ the half that rots is the half it covers.
 | [Stop rewriting the worker's arrays](todo/stop-rewriting-the-workers-arrays-to-lay-out-features.md) | canvas | measured: skip the row offset, convert the two object arrays to SoA |
 | [The SV inspector rebuilds its chord track per filter](todo/the-sv-inspector-rebuilds-its-chord-track-from-the-whole-callset-per-filter.md) | SV inspector | time it on a callset in the thousands, not the 44-row table |
 | [One inflate pool and byte cache per session](todo/give-the-rpc-workers-one-inflate-pool-and-one-byte-cache-between-them.md) | bgzf, RPC, limits | the speed premise is measured out; weigh the wasm memory, or close it |
-| [Sweep the unused exports, or close the question](todo/sweep-the-unused-exports-with-a-real-tool-or-close-the-question.md) | tooling, CI | configure knip per package; a grep returns hundreds of names and almost none are dead |
 | [Time a two-tier PIF to settled](todo/time-a-two-tier-pif-to-settled-in-a-browser.md) | synteny, PIF | bytes are measured; what is left wants the app and the ready gate |
 
