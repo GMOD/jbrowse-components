@@ -88,8 +88,12 @@ assembly in the config the track is on it; with several, write `assemblyNames`.
 Any other key sits beside `uri` and wins over the guess — `name`, `category`,
 `displayDefaults`, `index` for an index that is not at the derived location, or
 `type` to pick a track type the extension would not. `jbrowse validate` accepts
-the form, and the same entry works in a session's `sessionTracks` and in
-`createViewState`'s `tracks`.
+the form.
+
+The same entry works in `createViewState`'s `tracks`, where the component stamps
+on the assembly it was given, and in a session's `sessionTracks`, where nothing
+implies one: a session track written without `assemblyNames` gets an empty list
+and belongs to no assembly, so name it there.
 
 ## Configuring displays
 

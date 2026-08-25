@@ -196,6 +196,17 @@ added by `&sessionTracks=` can be named here too.
 `FromConfigAdapter` track, specifying features inline as JSON — BLAST hits from
 the URL bar, say.
 
+A track over a data file is three keys, since the type and the adapter come from
+the extension:
+
+```
+&sessionTracks=[{"trackId":"reads","uri":"https://example.com/sample.bam","assemblyNames":["hg38"]}]
+```
+
+Nothing implies the assembly for a session track, so name it — see
+[the shortest track](/docs/config_guides/tracks#the-shortest-track). The full
+form below is what a track with no data file needs.
+
 ```
 https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
 ```

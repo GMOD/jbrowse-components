@@ -97,6 +97,11 @@ view, rather than nested under `init`. Top-level keys:
 config has never heard of — the route for showing someone your own file on a
 public JBrowse instance.
 
+A `sessionTracks` entry takes the loose `{ "trackId", "uri" }` form, which keeps
+the link short. Give it `assemblyNames` as well: the implied assembly comes from
+a config file's own `assemblies`, and a session track with none gets an empty
+list and belongs to no assembly.
+
 Encoding is `spec-` + `encodeURIComponent(JSON.stringify(session))`.
 
 ## Door 3 — desktop, from a link
