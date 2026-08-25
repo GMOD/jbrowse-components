@@ -97,9 +97,17 @@ export function DiagonalizeProgressMixin() {
        * #action
        * Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally
        * clears the wait flag, revealing the (undiagonalized) view.
+       *
+       * Lowers the gate too. The abort reaches the caller as a throw, which
+       * skips its `finishAutoDiagonalize()` — right for a reorder that failed
+       * on its own (`settled` stays false and a capture times out loudly rather
+       * than committing a hairball), wrong for one the user stopped: cancelling
+       * IS the user settling for this view, and a gate nothing will lower again
+       * leaves `settled` false forever.
        */
       cancelAutoDiagonalize() {
         stopStopToken(self.diagonalizeStopToken)
+        self.pendingAutoDiagonalize = false
       },
     }))
 }
