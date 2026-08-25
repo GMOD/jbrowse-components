@@ -799,6 +799,34 @@ up.
 For background on SV signals in the alignments track, see the
 [SV visualization guide](/docs/user_guides/sv_visualization).
 
+### A tandem-repeat call, sized against the normal
+
+Twenty of the benchmark's records carry `EVENTTYPE=CNV:TR`: somatic size changes
+inside tandem repeats, called by aligning the tumor assembly to the donor's own
+normal assembly rather than to GRCh38. Their `SVLEN` is the difference between
+the germline allele and the tumor's, which is a number GRCh38 does not carry.
+
+`SV_223` on chr5 is the benchmark's own worked example of one. Open it with both
+samples' PacBio HiFi reads and sort each pileup at the call:
+
+<Figure caption="SV_223 at base level: the benchmark's deletion call over the tumor and matched normal PacBio HiFi pileups, both sorted at the deleted span. The tumor's reads carry a deletion where the normal's carry an insertion at the same repeat, and the called span is wider than the deletion under it." src="/img/sv_cgiab/vntr_tumor_normal.png" />
+
+Both samples differ from GRCh38 here, in opposite directions: the normal's reads
+carry an insertion, the tumor's a deletion, and the record's `SVLEN` is the span
+between those two alleles rather than either one's distance from the reference.
+The record states itself in the normal assembly's coordinates as well —
+`CHROM_HG8N6.3`, `POS_HG8N6.3`, `REF_HG8N6.3`, `ALT_HG8N6.3` — so clicking it
+shows the same variant on the yardstick it was called against.
+
+Two more fields under it are worth the click. `SVVIZ_VAF_ALL` is the variant
+allele fraction svviz2 measured across the HG008-T datasets, and
+`SVVIZBYDATASET` breaks it into the four sequencing runs behind it, which at
+this locus disagree from end to end. The field's own description in the VCF
+header says the estimate has known biases at tandem repeats, and the pileup
+shows the mechanism: reads crossing a repeat spread the same allele over several
+alignments of it, so what counts as a supporting read depends on the aligner as
+much as on the molecule.
+
 ### Reading copy number
 
 The quickest copy-number check is the tumor and normal coverage bigWigs as one

@@ -34,6 +34,12 @@ export const HG008_T_PACBIO_BAM =
 const CGIAB_FTP_ANALYSIS =
   'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis'
 
+// Where the Revio run itself is published, tumour and matched normal. The demo
+// config already reads the normal straight from here; the tandem-repeat figure
+// reads both from here, since its window is 400 bp.
+const CGIAB_FTP_READS =
+  'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125'
+
 // HG008-T (CGIAB) copy-number session tracks reused across the sv_cgiab CNV
 // figures: HiFiCNV's depth track, and B-allele frequency. Both hosted BigWigs on
 // jbrowse.org/demos/cgiab (see the tutorial's "Add copy-number tracks" section /
@@ -1948,6 +1954,115 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr10',
     readyTimeout: 60000,
     settleMs: 20000,
+  },
+
+  // SV_223, the benchmark's worked example of a somatic tandem-repeat call, at
+  // base level in both samples. The V0.5 README picks this locus to explain what
+  // an EVENTTYPE=CNV:TR record MEANS: the size change between the germline
+  // sequence and the somatic one, which on GRCh38 is an insertion in the normal
+  // and a deletion in the tumour rather than one allele against the reference.
+  //
+  // Both halves are in the reads, and were counted before this figure was framed
+  // (samtools over the two published BAMs, chr5:165,755,113-165,755,183): 12 of
+  // the normal's 38 reads carry a 42 bp insertion, 38 of the tumour's 42 carry a
+  // 28 bp deletion, and neither sample carries the other's allele. 42 + 28 is the
+  // record's SVLEN of -70.
+  //
+  // THE PUBLISHED BAMs, not HG008_T_PACBIO_BAM. The demo slice covers the
+  // translocation and CDKN2A windows and has no read here (`samtools view -c`
+  // returns 0), and the reason that slice exists — a 26 MB BAI on every capture —
+  // costs 3.3 s measured against ftp-trace, which one 400 bp window can pay.
+  // Re-cutting a slice six other figures load, to add a fourth region, is the
+  // larger risk of the two.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/vntr_tumor_normal',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg008t_pacbio_full',
+          name: 'HG008-T PacBio HiFi (116x, published BAM)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: `${CGIAB_FTP_READS}/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam`,
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: `${CGIAB_FTP_READS}/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam.bai`,
+                locationType: 'UriLocation',
+              },
+              indexType: 'BAI',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          // 240 bp centred on the sort column below. Wide enough that the
+          // repeat is drawn as sequence rather than named in a caption, narrow
+          // enough that the normal's insertion markers carry their own length.
+          loc: 'chr5:165,755,030-165,755,270',
+          // No center line: the sort column is where the tumour's reads
+          // separate, which the block of deletions marks better than a rule
+          // does — and the rule's coordinate chip draws over the normal's
+          // pileup, which is the half a reader has to look at twice.
+          tracks: [
+            'GRCh38_GIABv3-ReferenceSequenceTrack',
+            {
+              trackId:
+                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+              height: 60,
+            },
+            // Both pileups sorted at the same column, which is inside the
+            // deleted span: the tumour's reads then separate into the ones
+            // carrying the deletion and the ones that do not, and the normal's
+            // do not separate there at all.
+            {
+              trackId: 'hg008t_pacbio_full',
+              type: 'LinearAlignmentsDisplay',
+              height: 260,
+              featureHeight: 5,
+              forceLoad: true,
+              sortedBy: {
+                type: 'basePair',
+                pos: 165755150,
+                refName: 'chr5',
+                assemblyName: 'GRCh38_GIABv3',
+              },
+            },
+            {
+              trackId: 'HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3',
+              // Named because the recipe generator reads it: this track comes
+              // from the hosted config, so a bare height has nothing to say
+              // which menu row sets it.
+              type: 'LinearAlignmentsDisplay',
+              height: 260,
+              featureHeight: 5,
+              forceLoad: true,
+              sortedBy: {
+                type: 'basePair',
+                pos: 165755150,
+                refName: 'chr5',
+                assemblyName: 'GRCh38_GIABv3',
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr5',
+    // Two whole-genome BAMs off ftp-trace, whose indexes are 26 MB and 12 MB.
+    readyTimeout: 180000,
+    // Sequence + the call + two 260px pileups, off the run's own
+    // below-the-fold report at the 800px default.
+    viewportHeight: 1020,
+    settleMs: 25000,
   },
 
   {
