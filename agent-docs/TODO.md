@@ -45,7 +45,6 @@ the half that rots is the half it covers.
 | [Group the methylation path's CIGAR walk](todo/group-the-methylation-paths-cigar-walk-the-way-the-marks-path-now-is.md) | alignments, perf | decide whether the exported callback's order is a contract |
 | [A same-strand hidden junction is still solid](todo/a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md) | alignments | decide which renderer owns a marked junction; `isNormal` sends it to the straight pass |
 | [Give colorNeutralRead a dark variant](todo/give-colorneutralread-a-dark-variant-or-fold-it-into-colorpairlr.md) | alignments, palette | decide two neutrals or one before editing either |
-| [Re-film the protein launch tour](todo/re-film-the-protein-launch-tour-once-protein3d-ships-the-a3m-removal.md) | figures, protein3d | waits on a protein3d release; the a3m is gone for good |
 | [Make the capture scroll-invariant](todo/make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu.md) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Attribute the TIMEOUT mode](todo/attribute-the-60s-displaypainted-selector-wait.md) | browser tests | the census shipped; wrap the two selector waits that throw before it runs |
 | [Shoot the multihop chain as counted arcs](todo/shoot-the-multihop-chain-as-counted-arcs-in-one-lgv.md) | figures, alignments | take the partner windows from the nanomonsv VCF, not the picture |

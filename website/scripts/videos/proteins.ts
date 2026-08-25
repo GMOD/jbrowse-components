@@ -237,10 +237,12 @@ export const proteinVideos: VideoSpec[] = [
   // filming rather than describing — the view arrives in one state and the
   // figure shows another, and a still can only hold the second.
   //
-  // The menu is the other half. The page describes four destinations behind an
-  // arrow beside Launch, and a screenshot of an open cascade is a picture of a
-  // menu; here the menu is what the section is about, so the film is where it
-  // can be read.
+  // The menu is the other half. The page describes what the dialog can build
+  // behind an arrow beside Launch, and a screenshot of an open cascade is a
+  // picture of a menu; here the menu is what the section is about, so the film
+  // is where it can be read. Two rows since protein3d 0.9.0 dropped the two a3m
+  // MSA launches — see the note beside `PROTEIN_LAUNCH_SESSION` in
+  // `specs/features.ts` for why they went.
   //
   // Filmed against the LOCAL build, unlike genomes_protein_launch above it. The
   // config is still genomes.jbrowse.org's own hg38 — that is where the launcher
@@ -283,13 +285,14 @@ export const proteinVideos: VideoSpec[] = [
         cut: true,
       },
       { type: 'delay', ms: 2500 },
-      // Held long enough to read all four destinations, which is the whole
-      // reason this step is filmed.
+      // Held long enough to read both destinations, which is the whole reason
+      // this step is filmed. It was 4000 for the four rows the menu carried
+      // before protein3d 0.9.0.
       {
         type: 'click',
         selector: 'button[aria-label="More launch options"]',
         say: 'More launch options',
-        hold: 4000,
+        hold: 2500,
       },
       {
         type: 'click',

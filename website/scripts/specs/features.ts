@@ -92,11 +92,14 @@ const PROTEIN_LAUNCH_ANCHOR = {
 // which films this same route: the one thing the still cannot say is that the
 // launch opens the view with none of its tracks on.
 //
-// The split button had two more destinations until protein3d removed them, both
+// The split button had two more destinations until protein3d 0.9.0 removed them
+// (`Launch MSA view (AlphaFold a3m)` and `Launch 3D structure + MSA view`), both
 // reading the a3m AlphaFold advertises as `msaUrl` for the entry. That file is
 // unfetchable — the whole `/files/msa/` path answers 403 at Google's edge — so
 // neither ever built anything, and the figure of all three connected views that
-// would have gone on this page has no route to it.
+// would have gone on this page has no route to it. The hosted `latest/` bundle
+// serves 0.9.0 as of 2026-08-25, so the menu here is two rows: Launch 3D protein
+// structure view and Launch 1D protein annotation view.
 const PROTEIN_LAUNCH_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
   views: [
     {
@@ -133,8 +136,8 @@ const OPEN_PROTEIN_LAUNCH_MENU: ScreenshotAction[] = [
     timeout: 120000,
   },
   // The arrow beside Launch. `More launch options` is the button's own
-  // aria-label; the menu it opens is where the three other destinations live,
-  // and none of them carries a test id.
+  // aria-label; the menu it opens is where the other destination lives, and it
+  // carries no test id.
   { type: 'click', selector: 'button[aria-label="More launch options"]' },
 ]
 
