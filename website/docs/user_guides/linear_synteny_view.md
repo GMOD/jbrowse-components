@@ -91,6 +91,16 @@ configured but closed is what the import form above is for.
 - The same **Linear synteny view (visible region)** entry sits in the view's
   hamburger menu under **Launch view**, for when the region you want is the
   whole view and there is nothing to select.
+- **A row of a synteny view launches too.** Drag-select on any row's scale bar
+  and the same **Launch → Linear synteny view** reads the bands' datasets, so
+  the dialog opens anchored on that row's genome with a panel for every assembly
+  aligning to it there. **Replace current view** then swaps the stack for one
+  anchored on that row, which is how a stack is re-anchored on any of its
+  genomes.
+- **A row of a [MAF track](/docs/user_guides/maf_track)** opens as a synteny
+  view too: drag-select across the rows and pick **Launch synteny view, \<ref\>
+  vs...**, then the sample. The ribbons are cut from the alignment's own
+  columns, so no synteny file is involved.
 
 Both dialogs offer a **window size** (padding added to every panel) and a
 **horizontally flip inverted targets** checkbox. Without flipping, an inverted

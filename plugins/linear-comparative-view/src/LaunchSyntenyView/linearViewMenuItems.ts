@@ -2,11 +2,13 @@ import { addViewMenuItems } from '@jbrowse/core/pluggableElementTypes'
 import { LAUNCH_VIEW_LABEL } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
+import { containingPanelStack } from '../LGVSyntenyDisplay/matePanelNavigation.ts'
 import { anchorPanelTracks } from './anchorPanelTracks.ts'
 import {
   syntenyRegionMenuItems,
   widestRegion,
 } from './regionLaunchMenuItems.ts'
+import { launchableTrackConfs } from './stackSyntenyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
@@ -19,9 +21,15 @@ const SELECTION_LABEL = 'Linear synteny view'
 // everything else about the offer is the view's current state, resolved at menu
 // time so it is what is open as of the launch rather than as of registration.
 // The open tracks are read twice over, for two different purposes: the synteny
-// ones among them are the datasets the dialog offers to cut panels from (see
-// launchableTracks), and the rest are what the launched view's panel for this
-// assembly opens with.
+// ones among them — and the bands' tracks, when this view is a row of a stack
+// (see launchableTrackConfs) — are the datasets the dialog offers to cut panels
+// from, and the rest are what the launched view's panel for this assembly opens
+// with.
+//
+// A ROW OFFERS TO REPLACE ITS STACK, not itself. The launched view is a stack
+// anchored on this row's genome, so the one it can stand in for is the stack
+// the row came from — a row has no slot of its own in the session, and offering
+// it would offer nothing.
 function menuItemsFor(
   self: LinearGenomeViewModel,
   label: string,
@@ -31,9 +39,9 @@ function menuItemsFor(
     label,
     region,
     session: getSession(self),
-    openTracks: self.tracks.map(track => track.configuration),
+    openTracks: launchableTrackConfs(self),
     anchorTracks: anchorPanelTracks(self.tracks),
-    sourceView: self,
+    sourceView: containingPanelStack(self) ?? self,
   })
 }
 

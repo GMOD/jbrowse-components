@@ -13,20 +13,28 @@ import { getCigar } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/resolvePanel.ts'
 import type { ResolvedSpan } from '../LinearSyntenyRPC/resolveAlignmentSpan.ts'
-import type { Feature, NotificationSink } from '@jbrowse/core/util'
-import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
-  IAnyStateTreeNode,
-  IStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+  AbstractViewModel,
+  Feature,
+  NotificationSink,
+} from '@jbrowse/core/util'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // A stack of genome panels, one above the next: LinearSyntenyView,
 // LinearComparativeView and BreakpointSplitView are each one. Duck-typed rather
 // than imported, because what reaches this file is a display inside one of the
-// panels and a panel has no idea which kind of stack it is in.
-export interface PanelStack extends IStateTreeNode {
+// panels and a panel has no idea which kind of stack it is in. A view model,
+// not merely a node with a `views` array: `containingPanelStack` tests
+// `isViewModel`, which is what lets a launch offer to replace the stack.
+export interface PanelStack extends AbstractViewModel {
   views: LinearGenomeViewModel[]
+  // The synteny bands between adjacent panels, each with its own tracks —
+  // present on a LinearSyntenyView and a LinearComparativeView, absent on a
+  // BreakpointSplitView, whose panels are joined by nothing a launch reads.
+  levels?: { tracks: { configuration: AnyConfigurationModel }[] }[]
   // The follow state, OPTIONAL because only two of the three stacks have it: a
   // LinearSyntenyView and a LinearComparativeView can be following,
   // BreakpointSplitView has no such mode.

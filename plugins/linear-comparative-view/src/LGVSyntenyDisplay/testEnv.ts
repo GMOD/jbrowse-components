@@ -190,7 +190,13 @@ export function createDisplay({
  * report the session as the standalone view's stack, and offer to move whatever
  * unrelated views the user has open.
  */
-export function createPanelStack() {
+export function createPanelStack({
+  levelTracks = [],
+}: {
+  // the band tracks between the two panels, as the bare `configuration`
+  // objects a launch reads off them
+  levelTracks?: { configuration: unknown }[]
+} = {}) {
   const pluginManager = new PluginManager()
   pluginManager.createPluggableElements()
   pluginManager.configure()
@@ -203,6 +209,9 @@ export function createPanelStack() {
       id: types.optional(types.identifier, 'stack1'),
       type: types.literal('TestPanelStack'),
       views: types.array(LinearGenomeModel),
+      levels: types.array(
+        types.model({ tracks: types.array(types.frozen<unknown>()) }),
+      ),
     })
     .volatile(() => ({ width: 800 }))
     .actions(self => ({
@@ -230,6 +239,7 @@ export function createPanelStack() {
         {
           type: 'TestPanelStack',
           views: [{ type: 'LinearGenomeView' }, { type: 'LinearGenomeView' }],
+          levels: [{ tracks: levelTracks }],
         },
         { type: 'LinearGenomeView' },
       ],

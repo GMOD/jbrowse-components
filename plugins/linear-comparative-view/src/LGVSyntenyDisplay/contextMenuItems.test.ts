@@ -2,9 +2,12 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { createDisplay } from './testEnv.ts'
 
+// Clickable items only: the heading over the launch group is asserted on its
+// own below, and every other case is about what can be clicked.
 function labels(display: ReturnType<typeof createDisplay>) {
   return display
     .contextMenuItems()
+    .filter((i: unknown) => (i as { type?: string }).type !== 'subHeader')
     .map((i: unknown) => (i as { label?: string }).label)
 }
 
@@ -162,6 +165,28 @@ test('a mate outside the track assemblies can still move a panel already on it',
   )
   expect(labelled).not.toContain(LAUNCH)
   expect(labelled).toContain(MOVE)
+})
+
+// The three ways out into another view read alike back to back, so they sit
+// under one heading — and the heading is absent when none of them is offered.
+test('the launch items sit under one heading, the move outside it', () => {
+  const display = createDisplay({ neighbourAssembly: 'volvox_random' })
+  rightClick(display, makeFeature('volvox_random', '100M'))
+  const items = display.contextMenuItems() as {
+    type?: string
+    label?: string
+  }[]
+  const heading = items.findIndex(i => i.type === 'subHeader')
+  expect(items[heading]?.label).toBe('Launch view')
+  expect(items[heading + 1]?.label).toBe(LAUNCH)
+  expect(items.at(-1)?.label).toBe(MOVE)
+  const noLaunch = createDisplay({ neighbourAssembly: 'HG002#1' })
+  rightClick(noLaunch, makeFeature('HG002#1', '100M'))
+  expect(
+    (noLaunch.contextMenuItems() as { type?: string }[]).some(
+      i => i.type === 'subHeader',
+    ),
+  ).toBe(false)
 })
 
 const LAUNCH_ALL = 'Launch synteny view for all assemblies here'

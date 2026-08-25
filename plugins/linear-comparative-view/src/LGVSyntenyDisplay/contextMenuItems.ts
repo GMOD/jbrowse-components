@@ -303,11 +303,18 @@ export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
   // Snapshotted here rather than read in an onClick because closeContextMenu
   // nulls it first.
   const block = self.contextMenuHit?.block
-  return [
-    ...featureDetailItems(self, featureId, feature),
+  // The three ways out into another view read alike back to back, so they sit
+  // under one heading; the move stays outside it, since it changes this view.
+  const launches = [
     ...launchSyntenyItem(self, feature, block),
     ...launchAllAssembliesItem(self, block),
     ...openMateItem(self, feature, block),
+  ]
+  return [
+    ...featureDetailItems(self, featureId, feature),
+    ...(launches.length
+      ? [{ type: 'subHeader' as const, label: 'Launch view' }, ...launches]
+      : []),
     ...movePanelItem(self, feature, block),
   ]
 }

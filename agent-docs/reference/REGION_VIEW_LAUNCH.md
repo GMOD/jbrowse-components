@@ -108,7 +108,7 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
 | what persists | `loadedTrackId` + `loadedRegion` view props | resolved locstrings in `init` |
 | size guard | `MAX_GRAPH_REGION_BP = 100_000`, disabled item + `disabledHelpText` | none |
 | source linkage | `connectedViewId` → hover sync | none |
-| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband, MultiWaySyntenyDisplay track menu, alignment context menu (pairwise, multi-panel on a track declaring 3+ assemblies, and the mate assembly alone in an LGV), feature-detail links (the same three) |
+| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband (a synteny row's included — it reads the bands' tracks, `launchableTrackConfs`, and offers to replace the stack), MultiWaySyntenyDisplay track menu, alignment context menu (pairwise, multi-panel on a track declaring 3+ assemblies, and the mate assembly alone in an LGV), feature-detail links (the same three), a MAF row's drag-selection menu (`launchMafRowSynteny`, ribbons cut from the columns) |
 
 **The dialog split is real, not an oversight.** A subgraph is fully determined
 by `(region, trackId)`, so there is nothing to ask. A synteny launch is not: the
@@ -180,17 +180,11 @@ no synteny track is open, with the dataset select empty and required, restores
 the "browsing genes, want to compare" route the graph launcher has without
 deciding a panel list the user cannot judge. A product call.
 
-**MAF rows as a synteny launch.** `openSampleInNewView` (plugins/maf) opens a
-plain LGV on the sample's genome. A MAF row over the selection is already a
-gapped pairwise alignment — `AlignmentRecord` carries `chr`, `start`, `strand`
-and the gapped `seq` — so "anchor vs this sample" is derivable with no adapter:
-build synteny features with a CIGAR from the gapped columns, put them in a
-`FromConfigAdapter` synteny track and open `LinearSyntenyView` the way
-`buildReadVsRefSpec` does for a read. Where `source.assemblyName` is loaded the
-bottom panel is the real genome; otherwise the read-vs-ref synthetic-assembly
-path applies. The all-rows variant is a stack with the anchor on top; sample-vs-
-sample bands would need column-transitive features, a second step. Parked in
-[maf-row-synteny-launch](../ideas/maf-row-synteny-launch.md).
+**MAF rows as a synteny launch — shipped**, pairwise, as
+`launchMafRowSynteny` (plugins/maf): the ribbons are cut from the MAF's own
+columns and no adapter is involved. [MAF_CROSS_VIEW_NAVIGATION.md](MAF_CROSS_VIEW_NAVIGATION.md)
+has the design, including why the all-samples stack is not offered and why the
+`FromConfigAdapter` store holds the reference-anchored side only.
 
 ## Gotchas
 
