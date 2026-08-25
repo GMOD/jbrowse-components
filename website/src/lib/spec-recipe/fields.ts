@@ -22,6 +22,7 @@ import { DEFAULT_AUTOSCALE_OPTIONS } from '../../../../packages/wiggle-core/src/
 import { ARC_COLOR_OPTIONS } from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from '../../../../plugins/arc/src/LinearArcDisplay/displayModes.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
+import { COLOR_MODES } from '../../../../packages/synteny-core/src/colorModes.ts'
 import { SETTINGS_SURFACE_LABELS } from '../../../../packages/synteny-core/src/settingsSurfaces.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/geneGlyphMode.ts'
 import { SHOW_LABELS_OPTIONS } from '../../../../plugins/canvas/src/LinearBasicDisplay/showLabelsMode.ts'
@@ -250,24 +251,13 @@ function groupByStep(value: unknown): FieldStep | undefined {
 }
 
 // The synteny view's colour control is a palette button in the view header
-// (ColorBySelector), not a menu entry, and its radios come from COLOR_MODES in
-// synteny-core's colorByMenuItems.tsx. That module is .tsx and unimportable
-// here, so the labels are verified by hand — and they had to be, because the
-// neighbouring `colorByShortLabel` in the same package looks like the same
-// table and is not: it titles the floating legend, where these read 'Query
-// name' and 'Reference name'.
-const SYNTENY_COLOR_MODES: Record<string, string> = {
-  default: 'Default',
-  strand: 'Strand',
-  track: 'Distinct color per track',
-  query: 'Query',
-  target: 'Target',
-  reference: 'Reference',
-  identity: 'Identity',
-  meanQueryIdentity: 'Mean query identity',
-  mappingQuality: 'Mapping quality',
-  dnds: 'dN/dS',
-}
+// (ColorBySelector), not a menu entry, and its radios come from COLOR_MODES,
+// imported. Note the neighbouring `colorByShortLabel` in the same package looks
+// like the same table and is not: it titles the floating legend, where these
+// read 'Query name' and 'Reference name'.
+const SYNTENY_COLOR_MODES: Record<string, string> = Object.fromEntries(
+  COLOR_MODES.map(m => [m.value, m.label]),
+)
 
 // `attribute:<column>` is the open arm of the mode list: a track's declared
 // numeric columns are each offered under the column's own name, below the
