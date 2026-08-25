@@ -142,8 +142,8 @@ Under singularity,
 wrapper body and every call after it is unchanged. The
 [build script](#reproduce-it-end-to-end) picks the runtime off `PATH`.
 
-Now build the graph. `--reference K12` makes K12 the minigraph backbone, and the
-path every projection is decomposed against:
+The graph build takes `--reference K12`, which makes K12 the minigraph backbone,
+and the path every projection is decomposed against:
 
 <!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
@@ -195,9 +195,9 @@ Index the combined PAF so a range query fetches only the region in view:
 jbrowse make-pif ecoli_cactus_ava.paf   # -> ecoli_cactus_ava.pif.gz (+ .tbi)
 ```
 
-Then load it with an
-[`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter). The PanSN
-`sample#` prefix on every record is how the adapter maps a record to its strain:
+Load it with an
+[`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter), whose
+PanSN `sample#` prefix on every record is how it maps a record to its strain:
 
 ```json addtrack
 {

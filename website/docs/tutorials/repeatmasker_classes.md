@@ -73,9 +73,10 @@ fetch:
 
 ## Pinning the lanes in a track config
 
-Set it in the track config to have it open that way. `sampleColorMap` is keyed
-by the class, so a lane keeps its color as the window's class list changes, and
-`rowOrder` fixes the lane order the same way.
+A track config makes the partitioned view the track's default instead of a menu
+pick, and two more slots come with it: `sampleColorMap` is keyed by the class,
+so a lane keeps its color as the window's class list changes, and `rowOrder`
+fixes the lane order the same way.
 
 ```json addtrack
 {

@@ -1145,6 +1145,9 @@ that only wants the table cheap.
 
 ### Reading it
 
+The session below opens the CFH cluster at chr1:196,640,000-196,900,000, one
+lane per haplotype:
+
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
   "defaultSession": {

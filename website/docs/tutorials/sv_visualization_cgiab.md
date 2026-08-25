@@ -127,7 +127,8 @@ masked regions, and it is also the reference the CRAM conversion below writes
 against.
 
 [Reproduce it end to end](#reproduce-it-end-to-end) fetches that reference and
-every file below in one script. What follows is the track config.
+every file below in one script; the sections below give the track config for
+each file.
 
 ## The benchmark SV and CNV calls
 

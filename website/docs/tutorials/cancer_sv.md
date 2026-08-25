@@ -440,8 +440,9 @@ on the minus strand and the flip runs both halves of a molecule the same way.
 
 <Figure caption="NUP214--XKR3 as two regions of one view with reads linked, opened from its row in the SV inspector. The breakpoints are banded green and each line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_fusion_inspector_reads.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
-That is the `NUP214--XKR3` side of the pair. The `BCR--ABL1` side gets the rest
-of this section, in the same layout.
+That is the `NUP214--XKR3` side of the pair, and `BCR--ABL1` takes the rest of
+the section in the same layout, off the STAR-Fusion calls the build script adds
+as this track:
 
 ```json
 {

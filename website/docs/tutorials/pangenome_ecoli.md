@@ -108,7 +108,7 @@ pggb takes one FASTA of all the genomes,
 whose query and target share the prefix before the last `#`, which stops a
 genome being aligned to itself, and `-V` reads the same prefix to assign each
 VCF sample and phase. Concatenate the five strains (haplotype `1`, these being
-haploid bacterial assemblies) and index the result. Chromosomes only, so no
+haploid bacterial assemblies) and index the result, chromosomes only, so no
 plasmid reaches the graph:
 
 ```bash
@@ -119,7 +119,7 @@ bgzip all.fa
 samtools faidx all.fa.gz
 ```
 
-Then run pggb. The image pins all five tools the pipeline is made of at once;
+Run pggb next: the image pins all five tools the pipeline is made of at once;
 pggb's
 [installation docs](https://pggb.readthedocs.io/en/latest/rst/installation.html)
 cover the alternatives. `-V K12:10000` decomposes the graph into a VCF against
@@ -334,6 +334,8 @@ python3 untangle_to_bed.py ecoli_pggb_untangle.paf chr > ecoli_pggb_untangle_row
 jbrowse sort-bed ecoli_pggb_untangle_rows.bed | bgzip > ecoli_pggb_untangle_rows.bed.gz
 tabix -p bed ecoli_pggb_untangle_rows.bed.gz
 ```
+
+Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
 
 ```json addtrack
 {

@@ -58,9 +58,8 @@ The finished tracks also render inline in a notebook through the
 R. This tutorial builds its tracks on the command line.
 
 Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
-"Add track" workflow. The
-[variant track guide](/docs/config_guides/variant_track) covers both. That
-gives:
+"Add track" workflow, both covered in the
+[variant track guide](/docs/config_guides/variant_track).
 
 <Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
 

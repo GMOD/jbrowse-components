@@ -59,10 +59,10 @@ map. One request can carry all of them, and the answer is per biosample, so
 asking about K562 and GM12878 in the same call gives two cell types to read
 against each other.
 
-That is what makes the second half of the page possible. The model takes
-sequence, so it will answer for sequence that does not exist: change one base,
-ask again, and the difference between the two answers is the variant's predicted
-effect.
+The model takes sequence, so it will answer just as readily for sequence that
+does not exist, which is what makes the second half of the page possible: change
+one base, ask again, and the difference between the two answers is the variant's
+predicted effect.
 
 The window here is a megabase centered on _TAL1_ on chr1, a transcription factor
 whose misexpression drives T-cell acute lymphoblastic leukemia. It is on in

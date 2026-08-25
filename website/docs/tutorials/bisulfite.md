@@ -194,8 +194,8 @@ tabix -p gff tair10.gff.gz
 jbrowse add-track tair10.gff.gz --name "TAIR10 genes" --load copy
 ```
 
-Then add the alignments track. `displayDefaults` decides which context the track
-opens on, and the track menu switches it afterwards:
+The alignments track's `displayDefaults` decides which context it opens on, and
+the track menu switches it afterwards:
 
 ```json addtrack
 {

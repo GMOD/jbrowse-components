@@ -85,7 +85,8 @@ jbrowse add-assembly https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz 
   --out $OUT
 ```
 
-Then add the track:
+The track goes in as JSON rather than a second command line, since `add-track`'s
+flags do not reach inside a display:
 
 ```json
 {

@@ -388,7 +388,9 @@ held a duplicated gene and became several rows.
 ## Loading the orthogroups in JBrowse
 
 One track backs every band of the stack, the same as the
-[MCScan blocks track](/docs/tutorials/multiway_synteny_grape_peach_cacao#loading-it-in-jbrowse-with-mcscanblocksadapter):
+[MCScan blocks track](/docs/tutorials/multiway_synteny_grape_peach_cacao#loading-it-in-jbrowse-with-mcscanblocksadapter),
+and `jbrowse add-track-json` takes it as written, since neither
+`blockAssemblies` nor `bedLocations` has an `add-track` flag:
 
 ```json
 {
