@@ -108,7 +108,7 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
 | what persists | `loadedTrackId` + `loadedRegion` view props | resolved locstrings in `init` |
 | size guard | `MAX_GRAPH_REGION_BP = 100_000`, disabled item + `disabledHelpText` | none |
 | source linkage | `connectedViewId` → hover sync | none |
-| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband, MultiWaySyntenyDisplay track menu, alignment context menu (pairwise, and multi-panel on a track declaring 3+ assemblies), feature-detail link (pairwise) |
+| entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband, MultiWaySyntenyDisplay track menu, alignment context menu (pairwise, multi-panel on a track declaring 3+ assemblies, and the mate assembly alone in an LGV), feature-detail links (the same three) |
 
 **The dialog split is real, not an oversight.** A subgraph is fully determined
 by `(region, trackId)`, so there is nothing to ask. A synteny launch is not: the
@@ -126,16 +126,23 @@ view resolve would align them and move the picker into the view.
 
 ## Open ideas, roughly by value
 
-**Pair the two launches on one selection.** An all-vs-all PAF and a pangenome
-graph are two representations of the same alignment; the docs already pair them
-by hand (`website/scripts/specs/pangenome.ts` → `pangenome/local_subgraph`,
-`pangenome/rgfa_subgraph_launch`). One rubberband could offer both. The blocker
-is data, not code: the hosted `jbrowse.org/demos/ecoli_pangenome/config.json`
-carries `ecoli_ava` (PAF) but **no rGFA track**, while
-`ecoli_minigraph{,.tbi}` sits at that same demo path and the gallery item
-injects it as a `sessionTracks` entry. Adding it to the hosted config makes both
-offers appear in one session. That config is hand-uploaded and never
-regenerated — audit by `curl`-ing it, don't assume the repo matches.
+**Pair the two launches on one selection — the data half is done.** An
+all-vs-all PAF and a pangenome graph are two representations of the same
+alignment, and both plugins extend `rubberBandLaunchMenuItems()`, so a view
+with `ecoli_ava` and a segments track open offers both from one drag. The
+hosted `jbrowse.org/demos/ecoli_pangenome/config.json` carried no rGFA track
+when this was first written; as of 2026-08-25 it carries
+`ecoli_minigraph_segments` and `ecoli_pggb_segments` beside `ecoli_ava` (curl
+it — it is hand-uploaded and never regenerated). `pangenome_ecoli.md` says so
+under "Browsing the whole graph by locus"; what is missing is a figure of the
+paired menu, which no spec films.
+
+**The graph's `connectedViewId` cannot name a synteny row.** A graph launched
+from a row's rubberband records the row's id, and the plugin's
+`linearViewTarget` / `graphViewHighlights` read `session.views` only — a row is
+not in it. Hover highlights still land (the row asks with its own id), but
+"Open in K12" from a node opens a new pane instead of scrolling the row.
+Cross-repo; the fix is a walk into `views[]` of any view in the session.
 
 **Drop the graph plugin's inline count-branching copy** in favor of
 `launchTargetsMenuItem`, now that the helper lives in `@jbrowse/core/ui` beside
@@ -165,17 +172,6 @@ from a locus could highlight back into the LGV it came from.
 **Synteny track menu entry.** The graph plugin offers "(this region)" from the
 graph track's own menu; `MultiWaySyntenyDisplay` has one, `LGVSyntenyDisplay`
 reaches the same dialog from a block's right-click instead.
-
-**An outlier filter before the union.** `resolvePanel` keeps every block on the
-winning contig, so one stray same-contig hit stretches a launched panel to tens
-of megabases — brachypodium came back `1:5,237,628..54,451,482` for a 185 kb
-rice window whose lane frame was 185 kb
-([multiway-synteny-lgv-track](../ideas/multiway-synteny-lgv-track.md)). The
-dialog prints the span so a reader can untick the row; the fix is
-`computeRowFrame`'s length-weighted median-reach filter applied before the
-union. It is shared launch machinery (rubberband, view menu, right-click,
-feature widget), so it wants its own pass with an MCScan table, an HSP table
-and a split PAF in hand.
 
 **The closed-track case, honestly.** `launchableTracks` went open-tracks-only
 because a session-wide list preselected the first dataset in config order. The
@@ -219,10 +215,16 @@ sample bands would need column-transitive features, a second step. Parked in
   PAF splits at every structural difference. Keeping the widest framed that
   panel — and, through the anchor row's union of what the panels resolved to,
   the whole launched view — on one block: `ctgA:1,001..5,000` launched as
-  `ctgA:3,001..5,000`, silently. Two rules keep the union from running away, and
-  both belong to "a panel opens on one stable sequence": the mate **contig**
+  `ctgA:3,001..5,000`, silently. Three rules keep the union from running away.
+  Two belong to "a panel opens on one stable sequence": the mate **contig**
   covering most of the region wins and the others are dropped, and the panel
-  opens reversed only when the minus strand carries most of the alignment.
+  opens reversed only when the minus strand carries most of the alignment. The
+  third is `keepNearMedian`, shared with the multi-way lane frame: on the
+  winning contig a hit further than 1.5 regions from the length-weighted median
+  is repeat noise and is dropped — one stray orthogroup hit otherwise stretched
+  brachypodium to `1:5,237,628..54,451,482` for a 185 kb rice window. The
+  whole-block launch (no region) has no unit to scale the reach by and keeps
+  every hit.
 - **The coordinates are resolved in the worker, and only the coordinates cross
   the RPC.** `SyntenyDiscoverMates` returns `ResolvedPanel[]` — six numbers and
   two names per mate assembly — rather than the alignments behind them. The

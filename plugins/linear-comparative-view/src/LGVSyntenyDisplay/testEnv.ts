@@ -31,17 +31,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * region" exists for, and the one the standalone default cannot reach.
  *
  * `trackAssemblyNames` is what the track declares (two names by default, so a
- * three-name all-vs-all track is opt-in), and `getCanonicalAssemblyName` is
- * the alias table, which knows nothing by default so every comparison degrades
- * to the raw name.
+ * three-name all-vs-all track is opt-in), `loadedAssemblies` what the session
+ * can open a view on, and `getCanonicalAssemblyName` is the alias table, which
+ * knows nothing by default so every comparison degrades to the raw name.
  */
 export function createDisplay({
   neighbourAssembly,
   trackAssemblyNames = ['volvox', 'volvox_random'],
+  loadedAssemblies = ['volvox', 'volvox_random'],
   getCanonicalAssemblyName = () => undefined,
 }: {
   neighbourAssembly?: string
   trackAssemblyNames?: string[]
+  loadedAssemblies?: string[]
   getCanonicalAssemblyName?: (name: string) => string | undefined
 } = {}) {
   console.warn = jest.fn()
@@ -126,6 +128,7 @@ export function createDisplay({
               (getCanonicalAssemblyName(name) ?? name) === 'volvox',
           }),
           getCanonicalAssemblyName,
+          has: (name: string) => loadedAssemblies.includes(name),
         },
         getTrackById: (id: string) =>
           id === 'test_track' ? trackConfig : undefined,

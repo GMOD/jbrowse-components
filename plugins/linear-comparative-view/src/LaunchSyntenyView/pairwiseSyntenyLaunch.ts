@@ -5,7 +5,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getMate } from '../syntenyMate.ts'
 import { anchorPanelTracks } from './anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from './canLaunchSyntenyForMate.ts'
-import { visibleSpanOnRefName } from './visibleSpanOnRefName.ts'
+import { visibleSpanOnFeature } from './visibleSpanOnRefName.ts'
 
 import type { RegionOfInterest } from './resolvePanel.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -70,19 +70,10 @@ export function pairwiseSyntenyLaunch({
     return undefined
   }
   return () => {
-    // the feature's refName is the adapter's spelling and the blocks carry
-    // the view's, so the two meet on the canonical name
-    const assembly = host.assemblyManager.get(anchorAssembly)
-    const refName = feature.get('refName')
     host.queueDialog(handleClose => [
       LaunchSyntenyViewDialog,
       {
-        region:
-          region ??
-          visibleSpanOnRefName(
-            anchorView,
-            assembly?.getCanonicalRefName2(refName) ?? refName,
-          ),
+        region: region ?? visibleSpanOnFeature(host, anchorView, feature),
         trackId: readConfObject(track, 'trackId') as string,
         handleClose,
         session: host,

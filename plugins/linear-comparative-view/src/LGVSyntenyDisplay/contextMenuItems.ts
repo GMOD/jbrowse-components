@@ -10,10 +10,15 @@ import {
 } from '@jbrowse/plugin-alignments'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import LineStyleIcon from '@mui/icons-material/LineStyle'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
+import {
+  openMateInLinearView,
+  openMateLabel,
+} from '../LaunchSyntenyView/openMateInLinearView.ts'
 import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { syntenyRegionMenuItems } from '../LaunchSyntenyView/regionLaunchMenuItems.ts'
 import { getCigar, getMate } from '../syntenyMate.ts'
@@ -180,6 +185,39 @@ function launchAllAssembliesItem(
 }
 
 /**
+ * The mate assembly on its own, at the matching region — a jump rather than a
+ * comparison, the way a MAF row and a graph node open a strain. Offered for any
+ * loaded assembly, declared by the track or not.
+ */
+function openMateItem(
+  self: SyntenyContextMenuModel,
+  feature: Feature,
+  block: ClickedBlock | undefined,
+): MenuItem[] {
+  const mate = openMateInLinearView({
+    host: getSession(self),
+    feature,
+    anchorView: self.view,
+    region: block
+      ? { start: block.bpRange[0], end: block.bpRange[1] }
+      : undefined,
+  })
+  return mate
+    ? [
+        {
+          label: openMateLabel(mate.assemblyName),
+          icon: LineStyleIcon,
+          onClick: () => {
+            mate.open().catch((e: unknown) => {
+              getNotificationSink(self).notifyError(`${e}`, e)
+            })
+          },
+        },
+      ]
+    : []
+}
+
+/**
  * The in-place twin of the launch: same alignment, same region of interest, but
  * instead of building a new view it moves the panel next to this one to the
  * region the alignment says corresponds.
@@ -269,6 +307,7 @@ export function featureMenuItems(self: SyntenyContextMenuModel): MenuItem[] {
     ...featureDetailItems(self, featureId, feature),
     ...launchSyntenyItem(self, feature, block),
     ...launchAllAssembliesItem(self, block),
+    ...openMateItem(self, feature, block),
     ...movePanelItem(self, feature, block),
   ]
 }

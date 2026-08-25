@@ -403,7 +403,11 @@ assemblies loaded, the graph's **Launch view** menu gains two ways out:
 
 Only loaded assemblies are offered, and a location goes into the linear view
 already beside the graph. A launched view carries the session's annotation for
-the assembly it opens on, so a strain arrives with its own genes.
+the assembly it opens on, so a strain arrives with its own genes. An alignment
+in a
+[synteny track](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at)
+offers the same jump from its right-click menu, **Open \<strain\> at the
+matching region**, so a strain reads the same way out of either view.
 
 <Figure caption="Top: the graph's Launch view menu over a 50 kb K12 window. Each strain's entry names the locus it contributes on its own coordinates. Bottom: the synteny entry clicked, which opens one panel per strain already framed on that locus." src="/img/pangenome/rgfa_launch_out_menu.png" />
 

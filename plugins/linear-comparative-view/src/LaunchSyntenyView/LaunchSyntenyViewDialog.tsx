@@ -7,10 +7,10 @@ import { getCigar } from '../syntenyMate.ts'
 import { SpanLocus } from './PanelList.tsx'
 import SyntenyLaunchDialog from './SyntenyLaunchDialog.tsx'
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
+import { DEFAULT_WINDOW_SIZE } from './launchDefaults.ts'
 import {
   ClipToRegionCheckbox,
   CopySourceTracksCheckbox,
-  DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
   WindowSizeField,
 } from './launchOptionFields.tsx'

@@ -825,7 +825,14 @@ ids are a row of overlapping integers.
 Now the segments draw as an ordinary track on K12, and **Track menu → Launch
 view → Graph genome view (this region)** cuts a subgraph from the index with no
 `odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
-(this selection)** does the same for a window you drag.
+(this selection)** does the same for a window you drag. With the
+[all-vs-all alignment](/docs/tutorials/allvsall_synteny) open in the same view,
+that **Launch** submenu carries **Linear synteny view** beside it, so one drag
+offers both readings of a locus: the graph, and a row per strain with the
+alignment drawn between neighbours. Each view reaches the other again. A synteny
+row is a linear view with the same ruler, and the
+[graph's own menu](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
+opens the strains as a stack.
 
 The clip below takes that from the beginning: a K12 session carrying the plugin
 and its gene track, the block above pasted in through **Open track...**, and the

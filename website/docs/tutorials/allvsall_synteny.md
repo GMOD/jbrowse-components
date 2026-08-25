@@ -405,9 +405,15 @@ bottom, and lets you reorder them before launching. Ribbons are drawn between
 neighbouring rows only, so the order determines which comparisons the view can
 show. That is why IAI39 sits directly below K-12 in the figure above.
 
-Clicking a single alignment instead of selecting a region still offers **Launch
-synteny view for this position**, which opens the one pair that alignment
-describes.
+Right-clicking a single alignment instead of selecting a region offers three
+ways out of it. **Launch synteny view for this position** opens the one pair
+that alignment describes. **Launch synteny view for all assemblies here** is the
+same multi-strain dialog as the selection route, cut from this track at the
+block you clicked in. **Open Sakai at the matching region** (or whichever strain
+the alignment names) opens that strain on its own coordinates, with its gene
+track, at the stretch the alignment maps your window to, which is also what a
+[graph node](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
+offers for its strain.
 
 A launched view is a few kilobases wide, which is where the alignment's own
 CIGAR starts to matter. `minimap2 -c` wrote one for every record in this PAF, so

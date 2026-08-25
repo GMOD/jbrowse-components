@@ -9,6 +9,8 @@ import {
   Typography,
 } from '@mui/material'
 
+import { DEFAULT_WINDOW_SIZE } from './launchDefaults.ts'
+
 import type { ReactNode } from 'react'
 
 // The option fields the launch dialogs carry: the pairwise launch (one clicked
@@ -16,7 +18,6 @@ import type { ReactNode } from 'react'
 // same questions, so they ask them in the same words. The panel-collapse box is
 // only offered by the region launch, where a stack of rows is what makes the
 // per-row empty-state block expensive.
-export const DEFAULT_WINDOW_SIZE = 1000
 
 const useStyles = makeStyles()(theme => ({
   formControl: {

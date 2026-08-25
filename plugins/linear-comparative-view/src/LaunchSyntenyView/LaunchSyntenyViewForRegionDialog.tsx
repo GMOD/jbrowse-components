@@ -19,11 +19,11 @@ import {
 import PanelList from './PanelList.tsx'
 import SyntenyLaunchDialog from './SyntenyLaunchDialog.tsx'
 import { launchSyntenyViewForPanels } from './buildSyntenyViewSpec.ts'
+import { DEFAULT_WINDOW_SIZE } from './launchDefaults.ts'
 import {
   AdvancedLaunchOptions,
   CollapsePanelsCheckbox,
   CopySourceTracksCheckbox,
-  DEFAULT_WINDOW_SIZE,
   FlipInvertedTargetsCheckbox,
   WindowSizeField,
 } from './launchOptionFields.tsx'

@@ -5,6 +5,10 @@ import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
+import {
+  openMateInLinearView,
+  openMateLabel,
+} from '../LaunchSyntenyView/openMateInLinearView.ts'
 import { pairwiseSyntenyLaunch } from '../LaunchSyntenyView/pairwiseSyntenyLaunch.ts'
 import { syntenyCenterTargets } from './centerOnFeature.ts'
 
@@ -53,11 +57,15 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
   const session = getSession(model)
   const row = anchorRow(model)
   const track = findTrack(session, trackId)
+  const feature = new SimpleFeature(feat)
+  const mate = row
+    ? openMateInLinearView({ host: session, feature, anchorView: row })
+    : undefined
   const launch =
     row && track
       ? pairwiseSyntenyLaunch({
           host: session,
-          feature: new SimpleFeature(feat),
+          feature,
           anchorView: row,
           track,
           // The view this widget was opened from, so the dialog can offer to
@@ -76,7 +84,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
   // track opened inside a plain LGV has no rows to center, and a mate whose
   // assembly the track does not declare cannot launch a view either — which
   // left the panel showing a heading over an empty list.
-  if (!canCenter && !launch) {
+  if (!canCenter && !launch && !mate) {
     return null
   }
   return (
@@ -117,6 +125,19 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
           <li>
             <ActionLink onClick={launch}>
               Launch linear synteny view on this feature
+            </ActionLink>
+          </li>
+        ) : null}
+        {mate ? (
+          <li>
+            <ActionLink
+              onClick={() => {
+                mate.open().catch((e: unknown) => {
+                  session.notifyError(`${e}`, e)
+                })
+              }}
+            >
+              {openMateLabel(mate.assemblyName)}
             </ActionLink>
           </li>
         ) : null}

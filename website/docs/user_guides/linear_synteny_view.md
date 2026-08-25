@@ -83,9 +83,11 @@ configured but closed is what the import form above is for.
   already drawn as. Worked through in [](/docs/tutorials/genomes_synteny). On a
   track declaring three or more assemblies the same menu also offers **Launch
   synteny view for all assemblies here**, the multi-panel dialog above cut from
-  this track at the block you clicked in. The same pairwise launch is the
-  **Launch linear synteny view on this feature** link in the feature's details
-  panel, clipped to the panel's visible window.
+  this track at the block you clicked in. **Open \<assembly\> at the matching
+  region** is the jump rather than the comparison: it opens the mate assembly on
+  its own, with the session's gene track for it, at the stretch the alignment
+  maps your window to, for any mate the session has loaded. The same three are
+  links in the feature's details panel, clipped to the panel's visible window.
 - The same **Linear synteny view (visible region)** entry sits in the view's
   hamburger menu under **Launch view**, for when the region you want is the
   whole view and there is nothing to select.

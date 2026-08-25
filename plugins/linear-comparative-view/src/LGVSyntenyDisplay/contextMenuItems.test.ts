@@ -69,7 +69,20 @@ test('a launchable mate appends the synteny item when the feature lands', () => 
     'Open feature details',
     'Copy info to clipboard',
     'Launch synteny view for this position',
+    'Open volvox_random at the matching region',
   ])
+})
+
+// The jump, as distinct from the comparison: a mate the session holds as an
+// assembly can be opened on its own whether or not the track declares it,
+// which is the loaded-PanSN-sample case the launch has to refuse.
+test('a loaded mate the track does not declare can still be opened on its own', () => {
+  const labelled = rightClick(
+    createDisplay({ loadedAssemblies: ['volvox', 'HG002#1'] }),
+    makeFeature('HG002#1'),
+  )
+  expect(labelled).not.toContain(LAUNCH)
+  expect(labelled).toContain('Open HG002#1 at the matching region')
 })
 
 // A one-vs-all mate can be a PanSN sample that is no declared assembly of the
