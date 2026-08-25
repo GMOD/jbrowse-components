@@ -9,6 +9,12 @@
 // reports what moved. A run against a build that binds the wheel to the whole
 // view shows the gutter collapsed to the view title bar alone.
 //
+// A probe, not a suite: nothing runs it, and it is not what holds the binding.
+// That is `LinearGenomeView/components/wheelBinding.test.tsx` — which element
+// carries the listener is a DOM fact jsdom can see. What only a real layout can
+// answer is how many pixels wide the band ends up, and that is what this
+// measures, by hand.
+//
 // Run against a dev server or a built preview.
 //
 //     node browser-tests/probe-scroll-gutter.ts

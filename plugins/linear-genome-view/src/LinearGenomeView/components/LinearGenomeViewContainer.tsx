@@ -84,8 +84,11 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   // history navigation.
   //
   // Nothing is lost by it: a wheel over the toolbar used to zoom the view from
-  // a point that shows none of it. `browser-tests/probe-scroll-gutter.ts`
-  // measures the band.
+  // a point that shows none of it. `wheelBinding.test.tsx` is the pin — which
+  // element the listener is on is a DOM fact, so jsdom sees it exactly;
+  // `browser-tests/probe-scroll-gutter.ts` measures how many pixels wide the
+  // resulting band is, which is the part that needs a real layout and runs by
+  // hand.
   const tracksRef = useRef<HTMLDivElement>(null)
   useWheelZoom(tracksRef, model)
   useEffect(() => {
