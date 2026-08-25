@@ -41,6 +41,17 @@ export default function sharedVariantConfigFactory() {
       }),
       /**
        * #slot
+       * Draw a hairline between adjacent sample rows. Off by default, and only
+       * drawn once rows are at least 4px tall — below that the line is as
+       * thick as the row it borders.
+       */
+      showRowSeparators: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'draw separator lines between sample rows',
+      },
+      /**
+       * #slot
        */
       renderingMode: {
         type: 'stringEnum',

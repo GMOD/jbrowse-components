@@ -1,9 +1,9 @@
-import { ContextMenu } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { FloatingSvgOverlay } from '@jbrowse/plugin-linear-genome-view'
 import {
+  DisplayContextMenu,
   DisplayCrosshairs,
   RowLabelsOverlay,
   RowSeparatorLines,
@@ -119,13 +119,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         </FloatingSvgOverlay>
       ) : null}
       <TreeSidebar model={model} />
-      <ContextMenu
-        anchor={model.contextMenuInfo}
-        menuItems={() => model.contextMenuItems()}
-        onClose={() => {
-          model.closeContextMenu()
-        }}
-      />
+      <DisplayContextMenu model={model} />
     </>
   )
 })

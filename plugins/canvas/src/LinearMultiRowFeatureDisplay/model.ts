@@ -28,6 +28,7 @@ import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
+  ContextMenuMixin,
   RowHeightMixin,
   TreeSidebarMixin,
   buildSpatialIndex,
@@ -37,16 +38,14 @@ import {
   reconcileLayout,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
-  setupRowSortAutorun,
-  setupRunClusteringAutorun,
-  setupTreeDrawingAutorun,
+  setupTreeSidebarAutoruns,
+  sortRowsHereMenuItem,
   treeDescribesRows,
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
@@ -81,12 +80,11 @@ import type {
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource, RowGroup } from './sourcesLogic.ts'
-import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { RowSortSpec } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
 export interface MultiRowHit {
@@ -102,6 +100,15 @@ export interface MultiRowHit {
   refName: string
   start: number
   end: number
+}
+
+// What a right-click resolves to: the genomic column the menu's
+// position-scoped rows act on, and the feature there when the click landed on
+// one.
+export interface MultiRowContextMenuInfo extends ContextMenuAnchor {
+  refName: string
+  pos: number
+  hit?: MultiRowHit
 }
 
 /**
@@ -127,6 +134,7 @@ export default function stateModelFactory(
       LegendMixin(),
       RowHeightMixin(),
       TreeSidebarMixin<MultiRowSource>(),
+      ContextMenuMixin<MultiRowContextMenuInfo>(),
       types.model({
         /**
          * #property
@@ -136,24 +144,10 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
-        // trigger a run whose output is that mixin's state.
-        /**
-         * #property
-         * Transient declarative launch spec (like `runClustering`): set
-         * `{refName, pos}` to sort the rows once by the value each carries at
-         * that genomic position — the in-app, session-expressible equivalent of a
-         * hand-computed `rowOrder`. tree-sidebar's `setupRowSortAutorun` applies
-         * it (once the region is loaded) and clears it, so the resulting
-         * `layout` persists but the trigger never re-fires.
-         */
-        // #region frozenProp
-        // `RowSortSpec`, not a second spelling of it: the autorun that consumes
-        // this and `setSortRowsBy` are both typed on tree-sidebar's, so an
-        // inline shape here is a copy that can only ever drift away from the one
-        // doing the checking. Multi-wiggle's twin already reads it from there.
-        sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
-        // #endregion
+        // `runClustering` / `clusterRegion` / `sortRowsBy` are
+        // TreeSidebarMixin's — they trigger a run whose output is that mixin's
+        // state. `sortRowsBy` here is the in-app, session-expressible
+        // equivalent of a hand-computed `rowOrder`.
         /**
          * #property
          * Legend categories toggled off (by label). Features painted in a hidden
@@ -178,20 +172,6 @@ export default function stateModelFactory(
        * instantiate a volatile over one.
        */
       hoveredMultiRowFeature: undefined as MultiRowHit | undefined,
-      /**
-       * #volatile
-       * Right-click context menu anchor + the genomic position clicked (and the
-       * feature there, if any). Undefined when the menu is closed.
-       */
-      contextMenuInfo: undefined as
-        | {
-            clientX: number
-            clientY: number
-            refName: string
-            pos: number
-            hit?: MultiRowHit
-          }
-        | undefined,
       // #endregion
     }))
     .views(self => ({
@@ -1014,16 +994,6 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Trigger (or clear) a one-shot declarative row sort; consumed and reset
-       * by `setupRowSortAutorun`. The right-click menu calls `sortRowsByValueAt`
-       * directly (instant, data already loaded); this prop is the session-level
-       * entry point.
-       */
-      setSortRowsBy(arg?: RowSortSpec) {
-        self.sortRowsBy = arg
-      },
-      /**
-       * #action
        * Reorder the rows by the value each carries at (refName, pos) — the
        * feature covering that position on each row. Reads the already-loaded
        * region data (no refetch/RPC) and writes the new order via `layout`.
@@ -1059,18 +1029,6 @@ export default function stateModelFactory(
         // clade doesn't persist itself as the whole row order and drop
         // everything it was hiding.
         self.setLayout(rowOrderByValueAt(self.editableSources, region, pos))
-      },
-      /**
-       * #action
-       */
-      openContextMenu(info: NonNullable<typeof self.contextMenuInfo>) {
-        self.contextMenuInfo = info
-      },
-      /**
-       * #action
-       */
-      closeContextMenu() {
-        self.contextMenuInfo = undefined
       },
       /**
        * #action
@@ -1262,40 +1220,21 @@ export default function stateModelFactory(
           // then describe a block that has scrolled away. The component's
           // handlers cover only the cases where the *pointer* moves.
 
-          // Both are mobx-only glue and the barrel is a static import above, so
-          // they install synchronously. The tree drawing one came through
-          // `await import('@jbrowse/tree-sidebar')` until it was measured: a
-          // dynamic import of a barrel this file already imports statically
-          // deferred one 4KB module and dragged the rest of the barrel into an
-          // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
-          setupRowSortAutorun(self, {
-            name: 'MultiRowFeatureSortRows',
+          setupTreeSidebarAutoruns(self, {
+            name: 'MultiRowFeature',
             sortRows: (refName, pos) => {
               self.sortRowsByValueAt(refName, pos)
             },
-          })
-          setupTreeDrawingAutorun(self)
-
-          // The "Cluster rows by similarity" flavor of the shared declarative-
-          // clustering autorun: fires once when `runClustering` flips true
-          // (from the track menu or a saved session) and runs the real
-          // feature-matrix RPC over whatever the installer resolved -- the
-          // `clusterRegion` locus if the session named one, the visible blocks
-          // if not -- then clears the flag.
-          //
-          // Installed synchronously; the heavy half is code-split inside `run`,
-          // so the clustering module loads when a run actually starts rather
-          // than on every attach. This used to be a wrapper module imported for
-          // that split, which also carried a hand-written duck type of the six
-          // members the installer needs -- three copies of it, one per flavor,
-          // now that those members are declared on TreeSidebarMixin.
-          setupRunClusteringAutorun(self, {
-            name: 'AutoRunMultiRowClustering',
-            ready: () => self.sourcesWithoutLayout.length > 1,
-            run: async args => {
-              const { runMultiRowClustering } =
-                await import('./runMultiRowClustering.ts')
-              await runMultiRowClustering({ model: self, ...args })
+            // "Cluster rows by similarity": the feature-matrix RPC over the
+            // `clusterRegion` locus if the session named one, the visible
+            // blocks if not
+            clustering: {
+              ready: () => self.sourcesWithoutLayout.length > 1,
+              run: async args => {
+                const { runMultiRowClustering } =
+                  await import('./runMultiRowClustering.ts')
+                await runMultiRowClustering({ model: self, ...args })
+              },
             },
           })
         },
@@ -1315,19 +1254,13 @@ export default function stateModelFactory(
         }
         const { hit } = info
         return [
-          {
+          sortRowsHereMenuItem({
             label: 'Sort rows by color here',
-            icon: SwapVertIcon,
-            // Says so rather than declining silently, and matches the threshold
-            // "Cluster rows by similarity" states in the track menu. The rows
-            // are discovered from loaded data, so this is the ordinary state of
-            // a track panned off its features — not a defensive branch.
-            disabled: self.editableSources.length < 2,
-            disabledHelpText: 'Needs at least two rows to sort',
+            rowCount: self.editableSources.length,
             onClick: () => {
               self.sortRowsByValueAt(info.refName, info.pos)
             },
-          },
+          }),
           ...(hit
             ? [
                 {

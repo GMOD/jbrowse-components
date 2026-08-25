@@ -92,12 +92,18 @@ export function forwardPos(row: MafAlignedRow, baseOffset: number) {
     : row.start + baseOffset
 }
 
-function cellHitInRow(
+/**
+ * The aligned byte a row carries in the reference column at `targetBp` — a
+ * base, or `DASH`/`SPACE` where the row has a gap there — plus how many of the
+ * row's own bases precede it. Undefined when the block's reference never
+ * reaches that column. The one walk of a block's columns, shared by the hover
+ * and by "Sort rows by base here".
+ */
+export function alignedColumnAt(
   block: MafBlock,
   row: MafAlignedRow,
   targetBp: number,
-  showAsUpperCase: boolean,
-): CellHit | undefined {
+): { code: number; baseOffset: number } | undefined {
   const ref = block.refSeqBytes
   const aln = row.alignmentBytes
   const len = Math.min(ref.length, aln.length)
@@ -107,18 +113,7 @@ function cellHitInRow(
     const code = aln[i]!
     const refIsBase = ref[i] !== DASH
     if (refIsBase && block.startBp + genomicOffset === targetBp) {
-      return code === DASH || code === SPACE
-        ? undefined
-        : {
-            kind: 'cell',
-            base: String.fromCharCode(
-              showAsUpperCase ? code & ~LOWER_BIT : code,
-            ),
-            chr: row.chr,
-            pos: forwardPos(row, baseOffset),
-            strand: row.strand,
-            context: row.context,
-          }
+      return { code, baseOffset }
     }
     if (code !== DASH && code !== SPACE) {
       baseOffset++
@@ -128,6 +123,27 @@ function cellHitInRow(
     }
   }
   return undefined
+}
+
+function cellHitInRow(
+  block: MafBlock,
+  row: MafAlignedRow,
+  targetBp: number,
+  showAsUpperCase: boolean,
+): CellHit | undefined {
+  const column = alignedColumnAt(block, row, targetBp)
+  if (!column || column.code === DASH || column.code === SPACE) {
+    return undefined
+  }
+  const { code, baseOffset } = column
+  return {
+    kind: 'cell',
+    base: String.fromCharCode(showAsUpperCase ? code & ~LOWER_BIT : code),
+    chr: row.chr,
+    pos: forwardPos(row, baseOffset),
+    strand: row.strand,
+    context: row.context,
+  }
 }
 
 // Resolve an insertion marker under the cursor. Insertions are interbase (the

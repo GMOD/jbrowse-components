@@ -6,6 +6,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
+  canonicalizeViewRefName,
   getContainingTrack,
   getContainingView,
   getNotificationSink,
@@ -34,6 +35,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  loadedRegionIndexAt,
   rowLabelsCarryText,
 } from '@jbrowse/tree-sidebar'
 
@@ -124,6 +126,7 @@ const PORTABLE_CONFIG_KEYS = [
   'minorAlleleFrequencyFilter',
   'maxMissingnessFilter',
   'showRowLabels',
+  'showRowSeparators',
   'showTree',
   'showBranchLength',
   'referenceDrawingMode',
@@ -649,6 +652,13 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
+         */
+        get showRowSeparators(): boolean {
+          return getConf(self, 'showRowSeparators')
+        },
+
+        /**
+         * #getter
          * The effective sample-grouping attribute (config default or runtime
          * override). Drives the sidebar row coloring and the legend's group
          * section; '' means no grouping.
@@ -880,6 +890,12 @@ export default function MultiSampleVariantBaseModelF(
            */
           setReferenceDrawingMode(arg: string) {
             setConf(self, 'referenceDrawingMode', arg)
+          },
+          /**
+           * #action
+           */
+          setShowRowSeparators(arg: boolean) {
+            setConf(self, 'showRowSeparators', arg)
           },
           /**
            * #action
@@ -1412,6 +1428,42 @@ export default function MultiSampleVariantBaseModelF(
             if (sorted) {
               self.setLayout(sorted)
             }
+          }
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * `sortByGenotype` at a genomic column rather than a record: the
+         * declarative `sortRowsBy` entry point, for a session that wants a
+         * cohort to open sorted at a locus. The variant is the loaded record
+         * covering the column; a column no record covers leaves the rows
+         * alone, the rule every "sort rows here" shares (`rowSortColumn.ts`).
+         *
+         * `refName` arrives canonical — the autorun normalizes it — while a
+         * record's refName is whatever the file spelled, so the comparison
+         * canonicalizes the record's side.
+         */
+        sortRowsByGenotypeAt(refName: string, pos: number) {
+          const features = self.cellData?.simplifiedFeatures
+          if (
+            !features ||
+            loadedRegionIndexAt(self.loadedRegions, refName, pos) === undefined
+          ) {
+            return
+          }
+          const hit = features.find(({ data }) => {
+            const { start, end } = data
+            return (
+              typeof start === 'number' &&
+              typeof end === 'number' &&
+              start <= pos &&
+              pos < end &&
+              canonicalizeViewRefName(self, String(data.refName)) === refName
+            )
+          })
+          if (hit) {
+            self.sortByGenotype(hit.id)
           }
         },
       }))

@@ -5,8 +5,10 @@ import {
   VerticalScrollbar,
   useMouseState,
 } from '@jbrowse/core/ui'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
+  DisplayContextMenu,
   DisplayCrosshairs,
   RowLabelsOverlay,
   TreeSidebar,
@@ -34,12 +36,13 @@ import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import { resolveMafPointerHit } from './mafHitTest.ts'
+import { mafPointerAt, resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
 import { useMafVirtualScroll } from './useMafVirtualScroll.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
+import type React from 'react'
 
 // Thin outer: owns the DisplayChrome + the drag-selection hook, which needs a
 // ref to the chrome container (so it can't live in the body). The drag object
@@ -55,6 +58,26 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       openInsertionWidgetOnClick(model, x, y)
     },
   })
+  // preventDefault only when a menu actually opens, so a right-click over the
+  // bands, the sidebar (which owns its own node menu) or the inter-region
+  // gutter falls through to the browser's menu instead of being a dead zone
+  function onContextMenu(e: React.MouseEvent<HTMLDivElement>) {
+    const { x, y } = eventPoint(e)
+    if (x < treeSidebarRightEdge(model)) {
+      return
+    }
+    const { pos, baseBp, inBands } = mafPointerAt(model, x, y)
+    if (pos.oob || inBands) {
+      return
+    }
+    e.preventDefault()
+    model.openContextMenu({
+      clientX: e.clientX,
+      clientY: e.clientY,
+      refName: pos.refName,
+      pos: baseBp,
+    })
+  }
   return (
     <DisplayChrome
       model={model}
@@ -65,6 +88,7 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       onMouseDown={drag.handleMouseDown}
       onMouseMove={drag.handleMouseMove}
       onMouseUp={drag.handleMouseUp}
+      onContextMenu={onContextMenu}
       onDoubleClick={() => {
         if (drag.showSelectionBox) {
           drag.clearSelectionBox()
@@ -314,6 +338,7 @@ const MafBody = observer(function MafBody({
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}
       />
+      <DisplayContextMenu model={model} />
     </>
   )
 })

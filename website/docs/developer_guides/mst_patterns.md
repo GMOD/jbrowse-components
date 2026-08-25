@@ -243,7 +243,7 @@ Use `types.frozen()` for data that is:
 - Stored as a plain JSON value and hydrated lazily into MST nodes on first
   access
 
-<!-- include: plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts#frozenProp -->
+<!-- include: packages/tree-sidebar/src/TreeSidebarMixin.ts#frozenProp -->
 
 ```ts
 // `RowSortSpec`, not a second spelling of it: the autorun that consumes

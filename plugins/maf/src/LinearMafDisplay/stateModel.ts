@@ -26,14 +26,17 @@ import { coverageBandBuffers } from '@jbrowse/render-core/coverageBandBuffers'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
 import {
+  ContextMenuMixin,
   RowHeightMixin,
   TreeSidebarMixin,
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  loadedRegionIndexAt,
   reconcileLayout,
-  setupRunClusteringAutorun,
-  setupTreeDrawingAutorun,
+  resetRowOrderMenuItems,
+  setupTreeSidebarAutoruns,
+  sortRowsHereMenuItem,
 } from '@jbrowse/tree-sidebar'
 import { visibleStatsDomain } from '@jbrowse/wiggle-core'
 import { autorun } from 'mobx'
@@ -77,6 +80,7 @@ import { findRowSpan } from './components/findRowSpan.ts'
 import { coverageInsertionAt, coverageSnpSnap } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
+import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
 import { isRowIdentityMode } from './rowIdentityModes.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
@@ -111,7 +115,7 @@ import type {
   RowIdentityModeWithOff,
 } from './rowIdentityModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
-import type { LegendItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region, UriLocation } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -141,6 +145,13 @@ export interface MafSource extends RowSource {
   assemblyName?: string
   /** config to load that assembly from, when the session lacks it */
   assemblyConfigLocation?: UriLocation
+}
+
+// What a right-click on the rows resolves to: the reference column the menu's
+// sort acts on.
+export interface MafContextMenuInfo extends ContextMenuAnchor {
+  refName: string
+  pos: number
 }
 
 /**
@@ -203,6 +214,7 @@ export default function stateModelFactory(
         MultiRegionDisplayMixin(),
         RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
+        ContextMenuMixin<MafContextMenuInfo>(),
         types.model({
           /**
            * #property
@@ -1190,6 +1202,62 @@ export default function stateModelFactory(
       .views(self => ({
         get spatialIndex() {
           return buildSpatialIndex(self.hierarchy)
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Reorder the rows by the base each species carries in the reference
+         * column at (refName, pos) — the MAF analogue of the multi-row
+         * painting's "sort rows by color here". Reads the placed region data
+         * already in hand, no refetch, and writes the order through `layout`,
+         * the channel clustering and the arrangement dialog write, so "Reset
+         * row order" undoes all three.
+         *
+         * Declines with fewer than two rows, and at a column no loaded region
+         * covers, for the reasons the other two displays' twins state: the
+         * empty write is not a no-op (`setLayout` drops the tree — here the
+         * guide phylogeny — whenever the row set changes), and every row
+         * reading "no base" writes back the order it already had.
+         */
+        sortRowsByBaseAt(refName: string, pos: number) {
+          const index = loadedRegionIndexAt(self.loadedRegions, refName, pos)
+          const region =
+            index === undefined ? undefined : self.rpcDataMap.get(index)
+          if (region && self.editableSources.length > 1) {
+            self.setLayout(
+              orderMafRowsByBaseAt(
+                self.editableSources,
+                self.sources,
+                region,
+                pos,
+              ),
+            )
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * Items for the right-click menu, built from the column the click
+         * landed on. The position is captured when the menu opens rather than
+         * read inside the onClick, because `closeContextMenu` runs first when
+         * an item is clicked.
+         */
+        contextMenuItems(): MenuItem[] {
+          const info = self.contextMenuInfo
+          return info
+            ? [
+                sortRowsHereMenuItem({
+                  label: 'Sort rows by base here',
+                  rowCount: self.editableSources.length,
+                  onClick: () => {
+                    self.sortRowsByBaseAt(info.refName, info.pos)
+                  },
+                }),
+                ...resetRowOrderMenuItems(self),
+              ]
+            : []
         },
       }))
       .views(self => ({
@@ -2399,26 +2467,21 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
         // the mixin's fetch autoruns.
         afterAttach() {
-          // mobx-only glue and the barrel is a static import above, so it
-          // installs synchronously. This came through
-          // `await import('@jbrowse/tree-sidebar')` until it was measured: a
-          // dynamic import of a barrel this file already imports statically
-          // deferred one 4KB module and dragged the rest of the barrel into an
-          // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
-          setupTreeDrawingAutorun(self)
-          // The declarative half of "Cluster rows by identity": a session or a
-          // figure spec sets `runClustering: true` and the run happens once the
-          // rows have arrived. Two rows minimum, matching the menu's gate --
-          // one row has no structure to find and hclust has nothing to merge.
-          //
-          // Installed synchronously; the heavy half is code-split inside `run`,
-          // so the clustering module loads on a run rather than on every attach.
-          setupRunClusteringAutorun(self, {
-            name: 'AutoRunMafClustering',
-            ready: () => self.sources.length > 1,
-            run: async args => {
-              const { runMafClustering } = await import('./runMafClustering.ts')
-              await runMafClustering({ model: self, ...args })
+          setupTreeSidebarAutoruns(self, {
+            name: 'Maf',
+            sortRows: (refName, pos) => {
+              self.sortRowsByBaseAt(refName, pos)
+            },
+            // "Cluster rows by identity": two rows minimum, matching the
+            // menu's gate — one row has no structure to find and hclust has
+            // nothing to merge
+            clustering: {
+              ready: () => self.sources.length > 1,
+              run: async args => {
+                const { runMafClustering } =
+                  await import('./runMafClustering.ts')
+                await runMafClustering({ model: self, ...args })
+              },
             },
           })
         },

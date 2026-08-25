@@ -1,7 +1,8 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
+import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
+import { SEPARATOR_OPACITY } from '../constants.ts'
 import SvgSampleRowLabelGutter from './SvgSampleRowLabelGutter.tsx'
 import SvgVariantLegend from './SvgVariantLegend.tsx'
 
@@ -59,6 +60,8 @@ const SvgVariantOverlay = ({
     hierarchy,
     showTree,
     showLegend,
+    showRowSeparators,
+    availableHeight,
     treeAreaWidth,
     rowsTopOffset,
   } = model
@@ -72,6 +75,16 @@ const SvgVariantOverlay = ({
       {lineZone}
       <g transform={`translate(0 ${rowsTopOffset})`}>
         {children}
+        {showRowSeparators ? (
+          <RowSeparatorLines
+            numRows={sources.length}
+            rowHeight={rowHeight}
+            width={width}
+            opacity={SEPARATOR_OPACITY}
+            scrollTop={scrollTop}
+            viewportHeight={availableHeight}
+          />
+        ) : null}
         <SvgTreeSidebar
           showTree={showTree}
           hierarchy={hierarchy}

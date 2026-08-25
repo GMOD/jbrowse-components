@@ -18,6 +18,7 @@ export interface RenderSvgBaseModel
   rowsTopOffset: number
   topBands: VariantTopBands
   showLegend: boolean
+  showRowSeparators: boolean
   // `insertionColor` overrides the marker swatch so it can follow the export
   // theme's palette, which is what the exported glyphs are painted with.
   legendSections(insertionColor?: string): LegendSection[]

@@ -17,6 +17,7 @@ import MultiRegionDisplayMixin, {
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  ContextMenuMixin,
   TreeSidebarMixin,
   buildSpatialIndex,
   clusteringMenuItem,
@@ -26,15 +27,13 @@ import {
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   rowLabelsCarryText,
-  setupRowSortAutorun,
-  setupRunClusteringAutorun,
-  setupTreeDrawingAutorun,
+  setupTreeSidebarAutoruns,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
+  sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import { makeCrossHatchItem } from '@jbrowse/wiggle-core'
-import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { compareStructural, computed } from 'mobx'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -66,7 +65,6 @@ import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { RowSortSpec } from '@jbrowse/tree-sidebar'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
@@ -129,41 +127,17 @@ export default function stateModelFactory(
       WiggleCommonMixin(),
       LegendMixin(),
       TreeSidebarMixin<Source>(),
+      ContextMenuMixin<ContextMenuAnchor & MultiWiggleContextHit>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
-        // `runClustering` / `clusterRegion` are TreeSidebarMixin's. The one
-        // thing specific to this display: naming a `clusterRegion` also moves
-        // where the sampling density comes from, since the matrix columns are
-        // pixel bins over the span rather than over the view's zoom
-        // (clusterScoreMatrixArgs).
-        /**
-         * #property
-         * Transient declarative launch spec, the same idea as `runClustering`:
-         * set `{refName, pos}` to rank the rows once by the score each subtrack
-         * carries at that base — the session-expressible form of the right-click
-         * "Sort rows by score here". `setupRowSortAutorun` applies it once the
-         * region containing it has loaded and then clears it, so the row order
-         * persists but a saved session never re-sorts.
-         *
-         * This is what lets a figure show a cohort ranked at a candidate CNV:
-         * clustering orders rows by the whole region in view, `layout` states an
-         * order outright, and only this one says "rank them here".
-         */
-        sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
+        // `runClustering` / `clusterRegion` / `sortRowsBy` are
+        // TreeSidebarMixin's. The one thing specific to this display: naming a
+        // `clusterRegion` also moves where the sampling density comes from,
+        // since the matrix columns are pixel bins over the span rather than
+        // over the view's zoom (clusterScoreMatrixArgs).
       }),
     )
-    .volatile(() => ({
-      /**
-       * #volatile
-       * Where the right-click menu opens (viewport coords) plus the genomic
-       * column it was opened over, as one value — the menu's open-ness and the
-       * position its items act on can't disagree. Undefined = closed.
-       */
-      contextMenuInfo: undefined as
-        | (ContextMenuAnchor & MultiWiggleContextHit)
-        | undefined,
-    }))
     .views(self => ({
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
       // showCrossHatches / effectiveSummaryScoreMode getters key on
@@ -482,31 +456,6 @@ export default function stateModelFactory(
           self.setLayout(sortSourcesByScoreAt(self.editableSources, data, pos))
         }
       },
-
-      /**
-       * #action
-       * Trigger (or clear) a one-shot declarative row sort; consumed and reset
-       * by `setupRowSortAutorun`. The right-click menu calls
-       * `sortRowsByScoreAt` directly (instant, the data is already loaded);
-       * this prop is the session-level entry point.
-       */
-      setSortRowsBy(arg?: RowSortSpec) {
-        self.sortRowsBy = arg
-      },
-
-      /**
-       * #action
-       */
-      openContextMenu(info: ContextMenuAnchor & MultiWiggleContextHit) {
-        self.contextMenuInfo = info
-      },
-
-      /**
-       * #action
-       */
-      closeContextMenu() {
-        self.contextMenuInfo = undefined
-      },
     }))
     .actions(self => ({
       fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
@@ -544,45 +493,30 @@ export default function stateModelFactory(
       // afterAttachAutoChain.test.ts). An explicit call would double-install
       // its fetch autoruns.
       afterAttach() {
-        // Both are mobx-only glue and the barrel is a static import above, so
-        // they install synchronously. The tree drawing one came through
-        // `await import('@jbrowse/tree-sidebar')` until it was measured: a
-        // dynamic import of a barrel this file already imports statically
-        // deferred one 4KB module and dragged the rest of the barrel into an
-        // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
-        setupRowSortAutorun(self, {
-          name: 'MultiWiggleSortRows',
+        setupTreeSidebarAutoruns(self, {
+          name: 'MultiWiggle',
           sortRows: (refName, pos) => {
             self.sortRowsByScoreAt(refName, pos)
           },
-        })
-        setupTreeDrawingAutorun(self)
-
-        // The "Cluster columns" flavor of the shared declarative-clustering
-        // autorun: fires once on `runClustering: true` and runs the real
-        // score-matrix RPC over the `clusterRegion` locus if the session
-        // named one and the visible blocks if not. Refuses a single row,
-        // matching the track menu's gate.
-        //
-        // Installed synchronously; the heavy half is code-split inside `run`,
-        // so the clustering module loads when a run starts rather than on
-        // every attach.
-        setupRunClusteringAutorun(self, {
-          name: 'AutoRunMultiWiggleClustering',
-          ready: () => self.sourcesWithoutLayout.length > 1,
-          run: async args => {
-            const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
-              await Promise.all([
-                import('./runWiggleClustering.ts'),
-                import('./components/clusterOptions.ts'),
-              ])
-            await runWiggleClustering({
-              model: self,
-              // the default density, not the dialog's persisted preference —
-              // see DEFAULT_SAMPLES_PER_PIXEL for why this path ignores it
-              samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
-              ...args,
-            })
+          // "Cluster rows by score": the score-matrix RPC over the
+          // `clusterRegion` locus if the session named one and the visible
+          // blocks if not. Refuses a single row, matching the track menu's gate
+          clustering: {
+            ready: () => self.sourcesWithoutLayout.length > 1,
+            run: async args => {
+              const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
+                await Promise.all([
+                  import('./runWiggleClustering.ts'),
+                  import('./components/clusterOptions.ts'),
+                ])
+              await runWiggleClustering({
+                model: self,
+                // the default density, not the dialog's persisted preference —
+                // see DEFAULT_SAMPLES_PER_PIXEL for why this path ignores it
+                samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
+                ...args,
+              })
+            },
           },
         })
       },
@@ -677,21 +611,19 @@ export default function stateModelFactory(
           return []
         }
         return [
-          // needs rows to reorder, and at least two of them: overlay collapses
-          // every source onto one plot, so there is no row axis for a ranking
-          // to be read down. `editableSources`, the list the sort itself
-          // orders — a clade focused to one row still has rows to sort
-          ...(!self.isOverlay && self.editableSources.length > 1
-            ? [
-                {
+          // overlay collapses every source onto one plot, so there is no row
+          // axis for a ranking to be read down
+          ...(self.isOverlay
+            ? []
+            : [
+                sortRowsHereMenuItem({
                   label: 'Sort rows by score here',
-                  icon: SwapVertIcon,
+                  rowCount: self.editableSources.length,
                   onClick: () => {
                     self.sortRowsByScoreAt(info.refName, info.bp)
                   },
-                },
-              ]
-            : []),
+                }),
+              ]),
           // stays in an overlay mode, where the sort doesn't: an order set in a
           // row mode is still what that display comes back to
           ...resetRowOrderMenuItems(self),

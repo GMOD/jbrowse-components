@@ -5,6 +5,7 @@ import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
 import { maxNodeHeight } from './hierarchy.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
+import type { RowSortSpec } from './rowSortAutorun.ts'
 import type { TreeSidebarConfigModel } from './treeSidebarConfigSchemaFields.ts'
 import type { HoveredTreeNode, RowSource } from './types.ts'
 
@@ -28,7 +29,7 @@ const confNode = (self: object) => self as TreeSidebarHost
 /**
  * #stateModel TreeSidebarMixin
  * #category display
- * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+ * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
  * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
  * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
  * used while drawing the tree.
@@ -95,6 +96,28 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * argument and a locus left standing describes a run that is not coming.
        */
       clusterRegion: types.maybe(types.string),
+      /**
+       * #property
+       * Transient declarative launch spec, the same idea as `runClustering`:
+       * set `{refName, pos}` to order the rows once by the value each carries
+       * at that genomic column — the session-expressible form of the
+       * right-click "Sort rows by ... here". `setupRowSortAutorun` applies it
+       * once the region containing it has loaded and then clears it, so the
+       * resulting `layout` persists but a saved session never re-sorts.
+       *
+       * Where clustering orders rows by the whole region in view and `layout`
+       * states an order outright, only this one says "rank them here", which
+       * is what lets a figure open a cohort ranked at a candidate locus with
+       * the surrounding context still on screen. What the value at the column
+       * *is* stays per display, in its `sortRows` callback.
+       */
+      // #region frozenProp
+      // `RowSortSpec`, not a second spelling of it: the autorun that consumes
+      // this and `setSortRowsBy` are both typed on it, so an inline shape here
+      // is a copy that can only ever drift away from the one doing the
+      // checking.
+      sortRowsBy: types.maybe(types.frozen<RowSortSpec>()),
+      // #endregion
     })
     .volatile(() => ({
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
@@ -264,6 +287,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         },
         setClusterRegion(arg?: string) {
           self.clusterRegion = arg
+        },
+        /**
+         * #action
+         * Trigger (or clear) a one-shot declarative row sort; consumed and
+         * reset by `setupRowSortAutorun`. A display's right-click item calls
+         * its own sort directly (instant, the data is already loaded); this is
+         * the session-level entry point.
+         */
+        setSortRowsBy(arg?: RowSortSpec) {
+          self.sortRowsBy = arg
         },
         setHoveredTreeNode(node?: HoveredTreeNode) {
           self.hoveredTreeNode = node

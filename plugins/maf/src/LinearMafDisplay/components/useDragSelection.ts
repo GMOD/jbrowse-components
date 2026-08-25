@@ -66,8 +66,13 @@ export function useDragSelection(
     // Don't start a selection when the press lands on a control that claimed it
     // (a resize handle, say): the container owns this invariant, so controls
     // dropped into the chrome are non-selectable without each one needing to
-    // stopPropagation.
-    if (e.shiftKey || (e.target as Element).closest('[data-gesture-owner]')) {
+    // stopPropagation. Nor on a right button, whose release opens the context
+    // menu rather than clicking whatever is under it.
+    if (
+      e.button > 0 ||
+      e.shiftKey ||
+      (e.target as Element).closest('[data-gesture-owner]')
+    ) {
       return
     }
     const { x, y } = relativeXY(ref, e)

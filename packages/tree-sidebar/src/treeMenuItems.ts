@@ -1,6 +1,7 @@
 import { toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { MIN_SEPARATOR_ROW_PX } from './RowSeparatorLines.tsx'
 import { describeClusterProvenance } from './clusterProvenance.ts'
@@ -191,6 +192,35 @@ export function resetRowOrderMenuItems(self: RowOrderMenuModel): MenuItem[] {
         },
       ]
     : []
+}
+
+/**
+ * The right-click "Sort rows by ... here" row: the interactive twin of the
+ * declarative `sortRowsBy`. The label names what the display reads at the
+ * column (the color painted there, the score, the base, the genotype) and
+ * `onClick` is the display's own sort; what is shared is the gate and its
+ * wording. Disabled rather than dropped below two rows, and says so — the rows
+ * are discovered from loaded data on two of these displays, so a track panned
+ * off its features is an ordinary state, not a defensive branch.
+ */
+export function sortRowsHereMenuItem({
+  label,
+  rowCount,
+  onClick,
+}: {
+  label: string
+  // `editableSources.length`: the list the sort orders, unfiltered by the
+  // subtree, so a clade focused to one row still has rows to sort
+  rowCount: number
+  onClick: () => void
+}): MenuItem {
+  return {
+    label,
+    icon: SwapVertIcon,
+    disabled: rowCount < 2,
+    disabledHelpText: 'Needs at least two rows to sort',
+    onClick,
+  }
 }
 
 interface ClusterProvenanceMenuModel {

@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
-import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
+import { useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import {
+  DisplayContextMenu,
   DisplayCrosshairs,
   TreeSidebar,
   treeSidebarOffset,
@@ -214,17 +215,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
         />
       ) : null}
       <WiggleTooltip model={model} mouseState={mouseState} />
-
-      {/* here rather than beside the handler that opens it: reading
-          `contextMenuInfo` in the outer component would attribute it to the
-          chrome's observer, re-rendering the whole subtree on every open */}
-      <ContextMenu
-        anchor={model.contextMenuInfo}
-        menuItems={() => model.contextMenuItems()}
-        onClose={() => {
-          model.closeContextMenu()
-        }}
-      />
+      <DisplayContextMenu model={model} />
     </>
   )
 })

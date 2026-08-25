@@ -41,6 +41,10 @@ export const HIDDEN_ROW = 0x00ffffff
 
 // Variant rendering colors
 export const REFERENCE_COLOR = '#ccc'
+// The row-separator hairline's alpha over the theme divider: the cells fill
+// their rows edge to edge, so the line needs the same weight the multi-row
+// painting gives it
+export const SEPARATOR_OPACITY = 0.4
 export const NO_CALL_COLOR = 'hsl(50,50%,50%)'
 export const UNPHASED_COLOR = 'black'
 

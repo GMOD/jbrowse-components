@@ -11,6 +11,7 @@ import {
   rowArrangementMenuItem,
   rowHeightMenuItem,
   showRowLabelsMenuItem,
+  showRowSeparatorsMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -45,6 +46,7 @@ export function variantShowSubmenuItems(
   return [
     ...treeSidebarShowMenuItems(self),
     showRowLabelsMenuItem(self),
+    showRowSeparatorsMenuItem(self),
     showLegendCheckboxItem(
       self.showLegend,
       () => {

@@ -41,6 +41,7 @@ export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 export { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
 export { setupRowSortAutorun } from './rowSortAutorun.ts'
+export { setupTreeSidebarAutoruns } from './setupTreeSidebarAutoruns.ts'
 export type { RowSortSpec } from './rowSortAutorun.ts'
 export {
   loadedRegionIndexAt,
@@ -72,6 +73,8 @@ export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { default as ClusterProgress } from './ClusterProgress.tsx'
 export { useClusterRun } from './useClusterRun.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+export { ContextMenuMixin } from './ContextMenuMixin.ts'
+export { DisplayContextMenu } from './DisplayContextMenu.tsx'
 export {
   TREE_SIDEBAR_LABEL,
   clearSubtreeFilterMenuItems,
@@ -81,6 +84,7 @@ export {
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
   showTreeSidebarMenuItem,
+  sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
