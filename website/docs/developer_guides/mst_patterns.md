@@ -274,7 +274,7 @@ the fetch:
 () => {
   // the pure "go again" signal, read unconditionally above every gate so a
   // Retry click re-runs the body even when nothing else moved
-  void self.reloadCounter
+  const reloadEpoch = self.reloadCounter
   // Tracked in the same breath and for the same reason, but the mirror
   // image: this one CLOSES the gate below, so a run that returned before
   // the counter read would drop the one observable that can reopen it and
@@ -292,6 +292,16 @@ the fetch:
     noteFetchAutorunRun?.('declined')
     return false
   }
+  // The freshness gate, and the reload that overrides it. Stamped at ISSUE
+  // rather than at commit: a fetch that fails leaves nothing current, so
+  // this gate is open anyway on the next run and consuming the retry here
+  // costs nothing — while a reload landing mid-flight is answered by the
+  // re-run the counter read above already guarantees.
+  if (dataCurrent?.(args) === true && reloadEpoch === issuedEpoch) {
+    noteFetchAutorunRun?.('declined')
+    return false
+  }
+  issuedEpoch = reloadEpoch
   noteFetchAutorunRun?.('fetched')
   // `run` is called synchronously, so its prefix down to its first await
   // executes in this derivation; `FetchPhases.run` promises those reads are

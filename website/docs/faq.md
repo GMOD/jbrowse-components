@@ -982,5 +982,6 @@ Points of reference:
   particularly their notions of read pairing color schemes, modBAM color
   schemes, and view as pairs/link supplementary alignments notions.
 - D-GENIES: for establishing a very high quality easy to use Dotplot viewer.
+- GenomeSpy and HiGlass/Gosling for proving WebGL powered browsers
 - All the other genome visualization developers:
   https://cmdcolin.github.io/awesome-genome-visualization/?latest=true
