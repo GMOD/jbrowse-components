@@ -1,4 +1,5 @@
-import { Canvas2DLDRenderer } from './Canvas2DLDRenderer.ts'
+import { bandCellCount, bandPairIndex } from '../../VariantRPC/ldBand.ts'
+import { Canvas2DLDRenderer, drawLDBlocks } from './Canvas2DLDRenderer.ts'
 
 import type { LDRenderState, LDUploadData } from './ldRenderingBackendTypes.ts'
 
@@ -297,5 +298,84 @@ describe('Canvas2DLDRenderer paint reporting', () => {
     renderer.render(null, makeRenderState())
 
     expect(ctx.clearRect).toHaveBeenCalled()
+  })
+})
+
+// The band walk consumes `ldValues` with a running `k++`, so the order cells
+// come out in IS the slot order. `bandPairIndex` computes a slot from (i, j)
+// independently, which makes it an oracle for the walk rather than a restatement
+// of it: if the two disagree, every cell from the disagreement onward is painted
+// with another pair's value.
+//
+// Every other test in this family passes a band wide enough to collapse to the
+// full triangle, where `bandRowFirstColumn` is 0 everywhere and the walk's band
+// arithmetic never runs.
+describe('drawLDBlocks over a real band', () => {
+  const N = 12
+  const BAND = 5
+  const CELL = 10
+
+  function drawBanded(band: number) {
+    const boundaries = new Float32Array(N + 1)
+    for (let i = 0; i <= N; i++) {
+      boundaries[i] = i * CELL
+    }
+    const numCells = bandCellCount(N, band)
+    const moveTos: [number, number][] = []
+    const ctx = {
+      beginPath: jest.fn(),
+      moveTo: jest.fn((x: number, y: number) => moveTos.push([x, y])),
+      lineTo: jest.fn(),
+      closePath: jest.fn(),
+      fill: jest.fn(),
+      fillStyle: '',
+    } as unknown as Parameters<typeof drawLDBlocks>[0]
+
+    drawLDBlocks(
+      ctx,
+      {
+        boundaries,
+        ldValues: new Float32Array(numCells).fill(0.5),
+        numCells,
+        band,
+        signedLD: false,
+        uniformW: CELL,
+      },
+      makeColorRamp(),
+      makeRenderState({ viewScale: 1, yScalar: 1, viewOffsetX: 0 }),
+    )
+
+    // Invert the rotation the draw applies: x0 = (px+py)*s, y0 = (py-px)*s.
+    const s = COS45
+    return moveTos.map(([x0, y0]) => ({
+      i: Math.round((x0 / s + y0 / s) / 2 / CELL),
+      j: Math.round((x0 / s - y0 / s) / 2 / CELL),
+    }))
+  }
+
+  test('paints each slot at the cell bandPairIndex assigns it', () => {
+    const drawn = drawBanded(BAND)
+
+    expect(drawn).toHaveLength(bandCellCount(N, BAND))
+    // Compared as a triple so a failure names the cell that drifted, not just
+    // the slot number it drifted to.
+    drawn.forEach(({ i, j }, slot) => {
+      expect([i, j, bandPairIndex(i, j, BAND)]).toEqual([i, j, slot])
+    })
+  })
+
+  test('paints nothing outside the band', () => {
+    for (const { i, j } of drawBanded(BAND)) {
+      expect(i - j).toBeLessThanOrEqual(BAND)
+      expect(i - j).toBeGreaterThan(0)
+    }
+  })
+
+  test('collapses to the full triangle at band >= n - 1', () => {
+    const drawn = drawBanded(N - 1)
+    expect(drawn).toHaveLength((N * (N - 1)) / 2)
+    drawn.forEach(({ i, j }, slot) => {
+      expect(bandPairIndex(i, j, N - 1)).toBe(slot)
+    })
   })
 })
