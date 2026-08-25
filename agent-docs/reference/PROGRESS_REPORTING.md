@@ -274,21 +274,30 @@ one holds the label is ADR-072's rule unchanged — only a phase's own slots are
 summable, so the phase the owner reached first wins and the rest are charged
 below it.
 
-On the main thread nobody calls it directly, because the fan-out helpers own it:
-`callEachRegion` — and `fetchEachRegion` through it — hands each region a copy of
-the `FetchContext` whose `statusCallback` is that region's slot. So a display
-writes `statusCallback: ctx.statusCallback` and is correct in both cases: a
-per-region slot in a fan-out, the whole fetch's channel in a batched call. It is
-the same field name either way, deliberately — there is no per-display variant to
-pick, and no index to remember.
+On the main thread nobody calls it directly, because `fanOutStatus(ctx, n)`
+(`@jbrowse/core/util/fetchContext`, beside `makeFetchContext`) owns it: it
+returns N copies of a `FetchContext`, each `statusCallback` its own slot. So a
+caller writes `statusCallback: ctx.statusCallback` and is correct in both cases —
+a per-operation slot in a fan-out, the whole fetch's channel in a batched call.
+Same field name either way, deliberately: no per-display variant to pick and no
+index to remember. `callRpc` rides along, since its `this` parameter rebinds to
+the copy, so the envelope injects that operation's slot rather than the batch's.
 
-Inside the worker, and in the main-thread paths that fan out by hand, reach for
-`createStatusFanOut` yourself: `BaseFeatureDataAdapter`'s multi-region `merge`, a
-`Promise.all` over sidecar files, MAF's two concurrent branches — which is the
-last main-thread one, the canvas basic display's own `Promise.all` having gone
-back to `fetchEachRegion`. The tell that it is missing: the first operation to
-finish writes the `''` that every phase helper clears with, and the label blanks
-while the rest are still running.
+It sits in core rather than in either fetch family because both fan out inside
+one run: `callEachRegion` (and `fetchEachRegion` through it) over N regions, and
+a display's own `run` under the shared `installFetch` — the multi-way synteny
+display's N lanes, one `CoreGetFeatures` per lane assembly.
+
+Inside the worker, and in the main-thread paths that still fan out by hand,
+reach for `createStatusFanOut` yourself: `BaseFeatureDataAdapter`'s multi-region
+`merge`, a `Promise.all` over sidecar files, MAF's two concurrent branches. Two
+main-thread ones are left and both are `installFetch` runs that predate the
+shared helper — the circular view's chord fetch (features ‖ refName map) and the
+breakpoint split view's overlay fetch (N matched tracks); both should take
+`fanOutStatus`, and chord's half that bypasses `ctx.callRpc` should take that
+too. The tell that a fan-out is missing: the first operation to finish writes the
+`''` that every phase helper clears with, and the label blanks while the rest are
+still running.
 
 This replaced a second implementation on the model —
 `regionStatuses` + `setRegionStatus` + `makeRegionStatusCallback`, a volatile Map

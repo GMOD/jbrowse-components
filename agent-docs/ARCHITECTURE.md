@@ -1269,7 +1269,8 @@ display's autoruns: `installPerRegionFetchAutoruns` for the per-region family,
 for the comparative one, and the shared `installFetch` for everything else —
 which is what finally got it onto chord and the breakpoint overlay fetch. A
 **secondary** fetch on a display whose foundation already installed the checks
-passes no `contract` and skips both: a second `assertDisplayContract` would
+passes no `contract` and skips both (the multi-way synteny display's two
+dependent fetches are that case: its global foundation installed them): a second `assertDisplayContract` would
 report the double-attach it exists to catch, and a second retry check would eat
 the same `reloadCounter` bumps as the first. So a new skeleton owes the same
 call, beside the pure "go again" signal [the trigger
