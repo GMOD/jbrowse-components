@@ -104,24 +104,13 @@ function resolvedAnchorSpan(rows: PanelRow[], region: Region) {
 // as a locstring alone is four digits nobody subtracts and as a size is the
 // thing the row is worth opening for. It is also what makes an outlier one — a
 // span far past its neighbours' is a paralog, and unchecking it is a click.
-function PanelLocus({
-  row,
-  anchorSpan,
+export function SpanLocus({
+  span,
   className,
 }: {
-  row: PanelRow
-  anchorSpan: ReturnType<typeof resolvedAnchorSpan>
+  span: { refName: string; start: number; end: number; reversed: boolean }
   className?: string
 }) {
-  const span =
-    row.kind === 'anchor'
-      ? anchorSpan
-      : {
-          refName: row.refName,
-          start: row.mateStart,
-          end: row.mateEnd,
-          reversed: row.reversed,
-        }
   return (
     <Typography variant="body2" className={className}>
       {assembleLocString({
@@ -131,6 +120,32 @@ function PanelLocus({
       })}
       {span.reversed ? ' (-)' : ''} ({getBpDisplayStr(span.end - span.start)})
     </Typography>
+  )
+}
+
+function PanelLocus({
+  row,
+  anchorSpan,
+  className,
+}: {
+  row: PanelRow
+  anchorSpan: ReturnType<typeof resolvedAnchorSpan>
+  className?: string
+}) {
+  return (
+    <SpanLocus
+      className={className}
+      span={
+        row.kind === 'anchor'
+          ? anchorSpan
+          : {
+              refName: row.refName,
+              start: row.mateStart,
+              end: row.mateEnd,
+              reversed: row.reversed,
+            }
+      }
+    />
   )
 }
 
