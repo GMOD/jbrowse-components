@@ -1,0 +1,35 @@
+{
+  "id": "eager-spec-closure",
+  "measured": "2026-08-25",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node --experimental-strip-types scripts/eager-import-closure.ts packages/display-kit/src/defineDisplay.tsx --minus plugins/gwas/src/LinearManhattanDisplay/stateModelFactory.ts --rev f0d8cf4e39 — the total row is the run's own last line, and the area rows group its file list by directory.",
+    "notes": "f0d8cf4e39 is the last commit with `defineDisplay` alive; the revert 6c6f998a15 came four hours later, so this cannot be re-derived from HEAD. The arms are the two ways of standing a display up at that commit: the factory, which names its chrome and its drawing by value from a module a plugin's install path imports, against `LinearManhattanDisplay/stateModelFactory.ts`, which keeps its component behind React `lazy` — so the difference is what the spec form loads and the hand-composed one does not. Source bytes, not bundled bytes: exactly reproducible from a commit, and the comparison is between two arms measured the same way. ADR-091 states 40 modules / ~240 KB, taken on a branch that no longer exists, against a real port of Manhattan onto the factory rather than against the factory alone."
+  },
+  "columns": [
+    { "key": "area", "label": "" },
+    { "key": "modules", "label": "modules", "format": "int", "align": "right" },
+    {
+      "key": "bytes",
+      "label": "source bytes",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    { "values": { "area": "GPU HAL", "modules": 10, "bytes": 93668 } },
+    {
+      "values": { "area": "rendering backends", "modules": 9, "bytes": 49386 }
+    },
+    { "values": { "area": "display chrome", "modules": 9, "bytes": 39622 } },
+    {
+      "values": { "area": "bar mark and shader", "modules": 4, "bytes": 16556 }
+    },
+    { "values": { "area": "the factory itself", "modules": 2, "bytes": 17715 } },
+    {
+      "values": { "area": "total", "modules": 34, "bytes": 216947 },
+      "emphasize": ["modules", "bytes"]
+    }
+  ]
+}

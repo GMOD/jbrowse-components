@@ -25,14 +25,17 @@ says so and points here). Read this first; it changes what several of the levels
 are worth.
 
 **Level 0's port happened, and then came back off.** `LinearManhattanDisplay`
-was ported to `defineDisplay` and scored against a pre-committed budget
-(the commit range on the unlanded `worktree-manhattan-lazy-spike` branch;
+was ported to `defineDisplay` and scored against a pre-committed budget, on a
+branch called `worktree-manhattan-lazy-spike` that no longer exists anywhere —
+so every figure below taken there is unre-derivable, and
 [ADR-091](../architecture-decision-records/adr-091-a-displays-settings-are-a-declaration.md)
-records the decision not to land it). The port fit. What it cost was measured afterwards and was not in the budget: 40
-modules and ~240 KB of source moved onto the gwas plugin's startup path,
-because a state model is eager and everything a spec names by value is eager
-with it; four generated censuses lost the display, two silently; and two of the
-port's structural claims did not hold as written.
+says which. The port fit. What it cost was measured afterwards and was not in
+the budget: a spec's chrome and drawing moved onto the gwas plugin's startup
+path, because a state model is eager and everything a spec names by value is
+eager with it; four generated censuses lost the display, two silently; and two
+of the port's structural claims did not hold as written. The branch reported 40
+modules and ~240 KB for that; the closure re-derived from the commits that did
+land is the table in ADR-091's Context.
 
 So the reusable half moved BELOW the factory. `packages/display-kit/src/params.ts`
 is a settings declaration — data that builds the schema and carries what each

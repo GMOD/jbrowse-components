@@ -24,6 +24,7 @@ Config for the worked-example score display. Attaches to any `FeatureTrack`.
 - **Adapter:** [NCListAdapter](../nclistadapter)
 - **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **Adapter:** [SPARQLAdapter](../sparqladapter)
+- **State model:** [runtime API](../../models/linearscoredisplay)
 
 ## Config slots
 

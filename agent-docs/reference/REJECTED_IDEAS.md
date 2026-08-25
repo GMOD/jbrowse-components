@@ -57,15 +57,19 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   layout, one mark) and then tested on an in-tree display: `LinearManhattanDisplay`
   fit only through six spec fields that were each an override hook with one
   consumer, a ~478-line imperative `extend` and an RPC serialization the spec
-  could not hold, and it put 40 modules and ~240 KB onto the gwas plugin's
-  startup path because a state model is eager. The data-only settings table left
-  behind eliminated 0 of 60 declarable getters, derived a correct fetch payload
-  on 1 display in 6, and gave every shared setting a second owner. A spec that
-  holds a display's wiring and nothing else is not worth keeping for third
-  parties either: they get the same hand-composed stack the in-tree displays use,
-  through the published subpaths, which is what `score-example` shows again.
-  The branch `worktree-manhattan-lazy-spike` stays as the record; its four
-  config-read fixes were salvaged onto main.
+  could not hold, and it put a spec's chrome and drawing onto the gwas plugin's
+  startup path because a state model is eager — 34 modules and 216,947 bytes of
+  source, re-derived in ADR-091's Context from the commits that landed. The
+  data-only settings table left behind eliminated 0 of 60 declarable getters,
+  derived a correct fetch payload on 1 display in 6, and gave every shared
+  setting a second owner. A spec that holds a display's wiring and nothing else
+  is not worth keeping for third parties either: they get the same hand-composed
+  stack the in-tree displays use, through the published subpaths, which is what
+  `score-example` shows again. Its four config-read fixes were salvaged onto
+  main. The port and the table were measured on a branch called
+  `worktree-manhattan-lazy-spike`, which this file and ADR-091 both cited as
+  "the record" and which exists nowhere — so every figure above except the
+  closure is unre-derivable, and ADR-091 marks each one.
 
 - **A query language for the SV inspector's search** — proposed as
   `ideas/sv-search-language.md`, and closed 2026-08-16 by giving the grid two

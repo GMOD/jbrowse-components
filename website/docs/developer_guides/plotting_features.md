@@ -179,7 +179,7 @@ action, and a `startRenderingBackend` action.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts -->
 
-```ts
+````ts
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
@@ -201,6 +201,36 @@ import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * #stateModel LinearScoreDisplay
+ * #displayFoundation MultiRegionDisplayMixin
+ * The worked-example score display: one value per feature, drawn as a scatter
+ * along the genome. The developer guides walk through this model.
+ *
+ * #example
+ * The display attaches to any `FeatureTrack`, so a track naming it in
+ * `displays` gets it in place of the stock linear one:
+ * ```js
+ * {
+ *   type: 'FeatureTrack',
+ *   trackId: 'genes_with_scores',
+ *   name: 'Genes (scored)',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'BedTabixAdapter',
+ *     bedGzLocation: { uri: 'https://example.com/genes.bed.gz' },
+ *     index: { location: { uri: 'https://example.com/genes.bed.gz.tbi' } },
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearScoreDisplay',
+ *       displayId: 'genes_with_scores-LinearScoreDisplay',
+ *       scoreColumn: 'score',
+ *     },
+ *   ],
+ * }
+ * ```
+ */
 export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
   return types
     .compose(
@@ -294,7 +324,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
 
 export type LinearScoreDisplayStateModel = ReturnType<typeof modelFactory>
 export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
-```
+````
 
 `renderBlocks` (the list of visible blocks with their pixel spans) comes from
 `MultiRegionDisplayMixin`, so you don't compute it. The fetch chain
