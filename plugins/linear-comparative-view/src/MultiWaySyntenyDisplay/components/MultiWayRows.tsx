@@ -35,6 +35,10 @@ interface RibbonSpec {
   d: string
 }
 
+// The two spans are ORDERED pairs, not intervals: `s1[0]` joins `s2[0]` and
+// `s1[1]` joins `s2[1]`. A reverse-strand block hands its lower end reversed
+// and the parallelogram comes out crossed, which is the whole of drawing an
+// inversion.
 function ribbonPath(
   s1: Span,
   y1: number,
@@ -374,7 +378,12 @@ const MultiWayRows = observer(function MultiWayRows({
     for (const group of visibleGroups) {
       const s1 = spanOnRow(group, rowIndex)
       const s2 = spanOnRow(group, rowIndex + 1)
-      if (s1 && s2 && Math.max(s1[1] - s1[0], s2[1] - s2[0]) >= MIN_RIBBON_PX) {
+      if (
+        s1 &&
+        s2 &&
+        Math.max(Math.abs(s1[1] - s1[0]), Math.abs(s2[1] - s2[0])) >=
+          MIN_RIBBON_PX
+      ) {
         ribbonSpecs.push({
           key: `ribbon-${rowIndex}-${group.key}`,
           groupKey: group.key,
@@ -412,6 +421,10 @@ const MultiWayRows = observer(function MultiWayRows({
             start: number
             end: number
           }
+          // the alignment record's own strand, which the pairwise renderer
+          // reads for the same reason: -1 means the record's two ends
+          // correspond crosswise
+          const reversed = link.get('strand') === -1
           if (
             canonicalRefName(upperAssembly, link.get('refName')) ===
               upperRefName &&
@@ -426,9 +439,9 @@ const MultiWayRows = observer(function MultiWayRows({
                 <path
                   key={`link-${i}-${link.id()}`}
                   d={ribbonPath(
-                    a < b ? [a, b] : [b, a],
+                    [a, b],
                     y1,
-                    c < d ? [c, d] : [d, c],
+                    reversed ? [d, c] : [c, d],
                     y2,
                     drawCurves,
                   )}
@@ -550,6 +563,9 @@ const MultiWayRows = observer(function MultiWayRows({
       for (const group of visibleGroups) {
         const span = spanOnRow(group, rowIndex)
         if (span) {
+          // a box, unlike a ribbon, wants the ends the low-to-high way round
+          const [boxLeft, boxRight] =
+            span[0] <= span[1] ? span : [span[1], span[0]]
           const selected = selectedFeatureId === group.feature.id()
           const color = selected
             ? palette.highlight.main
@@ -559,9 +575,9 @@ const MultiWayRows = observer(function MultiWayRows({
           lanes.push(
             <rect
               key={`glyph-${rowIndex}-${group.key}`}
-              x={span[0]}
+              x={boxLeft}
               y={y + 1}
-              width={Math.max(1, span[1] - span[0])}
+              width={Math.max(1, boxRight - boxLeft)}
               height={Math.max(1, glyphHeight - 2)}
               fill={color}
               fillOpacity={0.25}

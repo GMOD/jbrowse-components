@@ -8,15 +8,28 @@ export interface MultiWayPlacement {
   refName: string
   start: number
   end: number
-  strand: number
   name: string
+}
+
+/**
+ * A mate placement plus how it runs against the anchor.
+ *
+ * `orientation` is the PAIRWISE FEATURE's own `strand` — for PAF the alignment
+ * strand, for an MCScan row the product of the two BED strands — and not the
+ * `strand` the adapters put inside the `mate` object, which PAF never sets and
+ * the MCScan blocks adapter fills with the mate gene's transcription strand.
+ * -1 means the two ends of the pair correspond crosswise, which is what makes
+ * an inversion's ribbon twist.
+ */
+export interface MatePlacement extends MultiWayPlacement {
+  orientation: number
 }
 
 export interface MultiWayGroup {
   key: string
   name: string
   anchor: MultiWayPlacement
-  mates: Map<string, MultiWayPlacement[]>
+  mates: Map<string, MatePlacement[]>
   feature: Feature
 }
 
@@ -32,12 +45,12 @@ export interface RowFrame {
   fitMax: number
 }
 
-interface MatePlacement extends MultiWayPlacement {
+interface FeatureMate extends MultiWayPlacement {
   assemblyName: string
 }
 
 function mateOf(feature: Feature) {
-  return feature.get('mate') as MatePlacement
+  return feature.get('mate') as FeatureMate
 }
 
 // The cross-assembly identity the placements group on: the gene name, falling
@@ -72,7 +85,6 @@ export function groupFeatures(features: Feature[]) {
           refName: feature.get('refName'),
           start: feature.get('start'),
           end: feature.get('end'),
-          strand: feature.get('strand') ?? 0,
           name,
         },
         mates: new Map(),
@@ -93,7 +105,7 @@ export function groupFeatures(features: Feature[]) {
         refName: mate.refName,
         start: mate.start,
         end: mate.end,
-        strand: mate.strand,
+        orientation: feature.get('strand') === -1 ? -1 : 1,
         name: mate.name,
       })
     }
@@ -393,16 +405,34 @@ function groupExtentOnRow(
   }
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY
+  // Length-weighted, so a fragment aligning the other way cannot outvote the
+  // block that carries the group.
+  let signed = 0
   for (const p of placements) {
     min = Math.min(min, p.start)
     max = Math.max(max, p.end)
+    signed += p.orientation * Math.max(p.end - p.start, 1)
   }
-  return { min, max }
+  return { min, max, orientation: signed < 0 ? -1 : 1 }
 }
 
-// The group's merged [x1, x2] px span on one row, or undefined when the row's
-// frame shows nothing of it — which is what makes a ribbon skip a row rather
-// than draw to nowhere
+/**
+ * The group's px span on one row as an ORDERED pair: the end corresponding to
+ * the anchor's start first. `undefined` when the row's frame shows nothing of
+ * the group, which is what makes a ribbon skip a row rather than draw to
+ * nowhere.
+ *
+ * Ordered rather than ascending because that is the whole of drawing an
+ * inversion. `ribbonPath` joins first end to first end, so a pair reversed here
+ * draws the crossed parallelogram a reverse-strand block IS, and two lanes both
+ * reversed against the anchor draw an untwisted ribbon between themselves —
+ * relative orientation composes without anyone multiplying it out. `flipped`
+ * rides along for free: `rowFrameX` already mirrors a flipped lane, so a
+ * forward block on a lane the layout mirrored comes back reversed, which is
+ * exactly the ribbon that lane's `[rev]` header calls for.
+ *
+ * A caller drawing a BOX wants the two ends the other way round; sort there.
+ */
 export function groupSpanOnRow(
   group: MultiWayGroup,
   assemblyName: string,
@@ -415,7 +445,7 @@ export function groupSpanOnRow(
   }
   const a = rowFrameX(frame, extent.min, width)
   const b = rowFrameX(frame, extent.max, width)
-  return a < b ? ([a, b] as const) : ([b, a] as const)
+  return extent.orientation < 0 ? ([b, a] as const) : ([a, b] as const)
 }
 
 // Every bp position a lane's frame can occupy. The frame always covers

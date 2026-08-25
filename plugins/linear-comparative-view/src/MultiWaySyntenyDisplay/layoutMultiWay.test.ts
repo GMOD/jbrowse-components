@@ -32,10 +32,13 @@ function pairFeature({
     refName: string
     start: number
     end: number
-    strand?: number
     name: string
   }
 }) {
+  // No `strand` inside `mate`: the PAF adapters never write one, and the
+  // MCScan blocks adapter writes the mate gene's TRANSCRIPTION strand there.
+  // The pair's orientation is the feature's own top-level `strand`, which both
+  // adapters do emit — so that is the only one a fixture may state.
   return new SimpleFeature({
     uniqueId,
     refName: 'chr1',
@@ -44,7 +47,7 @@ function pairFeature({
     strand,
     name,
     assemblyName: 'anchor',
-    mate: { strand: 1, ...mate },
+    mate,
   })
 }
 
@@ -810,4 +813,180 @@ describe('a lane frame near a contig start', () => {
     expect(frame.min).toBe(0)
     expect(frame.max).toBeGreaterThanOrEqual(600)
   })
+})
+
+// The pair's orientation is the pairwise feature's own strand. `mate.strand` is
+// a different quantity where it exists at all — the MCScan blocks adapter fills
+// it with the mate gene's transcription strand, and the PAF adapters never
+// write it — so reading it read a field with two meanings or none.
+test('a placement takes its orientation from the feature, not from the mate', () => {
+  const groups = groupFeatures([
+    pairFeature({
+      uniqueId: '1',
+      name: 'g1',
+      start: 100,
+      end: 200,
+      strand: -1,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1000,
+        end: 1100,
+        name: 'p1',
+      },
+    }),
+    pairFeature({
+      uniqueId: '2',
+      name: 'g2',
+      start: 300,
+      end: 400,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1200,
+        end: 1300,
+        name: 'p2',
+      },
+    }),
+  ])
+  expect(groups.map(g => g.mates.get('peach')![0]!.orientation)).toEqual([
+    -1, 1,
+  ])
+})
+
+// A reverse-strand block's two ends correspond crosswise, so the span it hands
+// the ribbon comes back reversed and the parallelogram drawn from it crosses.
+// Nothing in the tree exercised this: the MCScan blocks format carries no CIGAR
+// and volvox_all_vs_all.paf is three `+` records.
+describe('a reverse-strand block', () => {
+  function orientedGroups(strand: number) {
+    return groupFeatures([
+      pairFeature({
+        uniqueId: '1',
+        name: 'g1',
+        start: 100,
+        end: 200,
+        strand,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 1000,
+          end: 1100,
+          name: 'p1',
+        },
+      }),
+      pairFeature({
+        uniqueId: '2',
+        name: 'g2',
+        start: 300,
+        end: 400,
+        mate: {
+          assemblyName: 'peach',
+          refName: 'Pp1',
+          start: 1200,
+          end: 1300,
+          name: 'p2',
+        },
+      }),
+    ])
+  }
+
+  test('hands the ribbon its ends the other way round', () => {
+    const forward = orientedGroups(1)
+    const reverse = orientedGroups(-1)
+    const frame = computeRowFrame(forward, 'peach', 1000)!
+    const fwd = groupSpanOnRow(forward[0]!, 'peach', frame, 800)!
+    const rev = groupSpanOnRow(reverse[0]!, 'peach', frame, 800)!
+    expect(fwd[0]).toBeLessThan(fwd[1])
+    expect(rev[0]).toBeGreaterThan(rev[1])
+    expect(rev).toEqual([fwd[1], fwd[0]])
+  })
+
+  test('leaves the forward block beside it untwisted', () => {
+    const groups = orientedGroups(-1)
+    const frame = computeRowFrame(groups, 'peach', 1000)!
+    const g2 = groupSpanOnRow(groups[1]!, 'peach', frame, 800)!
+    expect(g2[0]).toBeLessThan(g2[1])
+  })
+})
+
+// A lane the layout mirrored draws a forward block reversed, because the
+// mirroring is what a ribbon reaching it has to cross. The lane-level `[rev]`
+// tag states the mirroring; the ribbon states the block.
+test('a flipped lane reverses the ends of a forward block', () => {
+  const groups = groupFeatures([
+    pairFeature({
+      uniqueId: '1',
+      name: 'g1',
+      start: 100,
+      end: 200,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1000,
+        end: 1100,
+        name: 'p1',
+      },
+    }),
+  ])
+  const frame = computeRowFrame(groups, 'peach', 1000)!
+  const upright = groupSpanOnRow(groups[0]!, 'peach', frame, 800)!
+  const mirrored = groupSpanOnRow(
+    groups[0]!,
+    'peach',
+    { ...frame, flipped: true },
+    800,
+  )!
+  expect(upright[0]).toBeLessThan(upright[1])
+  expect(mirrored[0]).toBeGreaterThan(mirrored[1])
+})
+
+// Several placements of one group on one lane vote by length, so a short
+// fragment aligning the other way cannot flip the block that carries the group.
+test('a lane orientation is the length-weighted sign of its placements', () => {
+  const groups = groupFeatures([
+    pairFeature({
+      uniqueId: '1',
+      name: 'g1',
+      start: 100,
+      end: 200,
+      strand: -1,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1000,
+        end: 1600,
+        name: 'p1',
+      },
+    }),
+    pairFeature({
+      uniqueId: '2',
+      name: 'g1',
+      start: 100,
+      end: 200,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1700,
+        end: 1720,
+        name: 'p1b',
+      },
+    }),
+    pairFeature({
+      uniqueId: '3',
+      name: 'g2',
+      start: 300,
+      end: 400,
+      mate: {
+        assemblyName: 'peach',
+        refName: 'Pp1',
+        start: 1800,
+        end: 1900,
+        name: 'p2',
+      },
+    }),
+  ])
+  const frame = computeRowFrame(groups, 'peach', 1000)!
+  const span = groupSpanOnRow(groups[0]!, 'peach', frame, 800)!
+  expect(span[0]).toBeGreaterThan(span[1])
 })
