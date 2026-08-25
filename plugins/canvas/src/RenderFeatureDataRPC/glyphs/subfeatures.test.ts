@@ -272,6 +272,7 @@ describe('layoutSubfeatures layout', () => {
       })
       const layout = layoutSubfeatures({ feature: gene, config })
       expect(layout.isoformsCollapsed).toBe(true)
+      expect(layout.isoformsCappedByHeight).toBe(false)
       expect(layout.children.map(c => c.feature.get('name'))).toEqual([
         'mRNA-2',
         'promoter',
@@ -323,6 +324,8 @@ describe('layoutSubfeatures layout', () => {
       expect(layout.children).toHaveLength(2)
       // the flag longestCoding sets: the label and hit box anchor to what drew
       expect(layout.isoformsCollapsed).toBe(true)
+      // and the one it does not: the chip announces the cap off this alone
+      expect(layout.isoformsCappedByHeight).toBe(true)
       expect(layout.hasMultipleIsoforms).toBe(true)
     })
 

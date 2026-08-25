@@ -39,6 +39,9 @@ export interface FeatureLayout {
   // set when geneGlyphMode === 'longestCoding' collapsed a multi-isoform gene
   // down to its single representative transcript (layoutSubfeatures)
   isoformsCollapsed?: boolean
+  // on a collapsed gene, whether the height cap (`maxIsoforms`) did it rather
+  // than the `longestCoding` mode — the chip announces the cap only off this
+  isoformsCappedByHeight?: boolean
   // on a collapsed gene, the `canonicalTranscriptTags` entry that put the
   // surviving transcript first — absent when the annotation tagged none of them
   // and protein length decided it. Summarized per region into `isoformPicks`,

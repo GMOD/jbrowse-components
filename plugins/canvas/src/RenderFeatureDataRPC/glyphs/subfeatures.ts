@@ -291,11 +291,17 @@ function isoformsWithinBudget({
 //
 // The survivors are a Set, so the caller's filter keeps them in the caller's
 // order and a gene under the cap lays out identically with it on and off.
+//
+// `cappedByHeight` says which rule did the collapsing. The two look identical
+// from the kept set, and the chip has to tell them apart: it announces the cap
+// off the display's CURRENT height while the loaded data may be the previous
+// mode's, so "something is hidden" is not evidence that the cap hid it.
 function keepRanked(
   ranked: Feature[],
   kept: number,
   scores: Scores,
   config: DisplayConfig,
+  cappedByHeight: boolean,
 ) {
   return {
     keep: new Set(ranked.slice(0, kept).map(f => f.id())),
@@ -305,6 +311,7 @@ function keepRanked(
     // `isoformsWithinBudget` MEASURED, not `maxIsoforms`, so the badge's
     // "+N more" has no other way to know it.
     kept,
+    cappedByHeight,
   }
 }
 
@@ -334,7 +341,7 @@ function collapseIsoforms({
   const { geneGlyphMode, maxIsoforms, geneOwnRows } = config
   if (geneGlyphMode === 'longestCoding') {
     return isoforms.length > 1
-      ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config)
+      ? keepRanked(rankIsoforms(isoforms, scores), 1, scores, config, false)
       : undefined
   }
   if (maxIsoforms === undefined) {
@@ -357,7 +364,7 @@ function collapseIsoforms({
   const ranked = rankIsoforms(isoforms, scores)
   const kept = isoformsWithinBudget({ ...budget, candidates: ranked })
   return kept < isoforms.length
-    ? keepRanked(ranked, kept, scores, config)
+    ? keepRanked(ranked, kept, scores, config, true)
     : undefined
 }
 
@@ -501,6 +508,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     // probe and the committed pack read
     labelRows,
     isoformsCollapsed: collapsed !== undefined,
+    isoformsCappedByHeight: collapsed?.cappedByHeight,
     canonicalTag: collapsed?.canonicalTag,
     hasMultipleIsoforms,
     // The badge exists to report a collapse the reader did not ask for and

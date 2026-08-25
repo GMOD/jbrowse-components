@@ -19,7 +19,7 @@ import { autorun } from 'mobx'
 import { SUBFEATURE_LABEL_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import { budgetFeatureHeightPx } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
-  anyIsoformsHidden,
+  capHidIsoforms,
   mergeIsoformPicks,
 } from '../RenderFeatureDataRPC/isoformPicks.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
@@ -239,11 +239,15 @@ export default function stateModelFactory(
        * The height cap, only when the cap is what is hiding transcripts — so
        * `undefined` also covers a cap every gene in view fits inside, which the
        * control must not announce.
+       *
+       * On the worker's word that the CAP fired (`byCap`), not on anything
+       * being hidden: the cap turns on the moment `auto` crosses back under
+       * its zoom threshold, while the loaded data is still the `longestCoding`
+       * fetch, which reports every multi-isoform gene as collapsed.
        */
       get geneGlyphIsoformCap(): number | undefined {
         const cap = this.effectiveMaxIsoforms
-        return cap !== undefined &&
-          anyIsoformsHidden(this.geneGlyphIsoformPicks)
+        return cap !== undefined && capHidIsoforms(this.geneGlyphIsoformPicks)
           ? cap
           : undefined
       },

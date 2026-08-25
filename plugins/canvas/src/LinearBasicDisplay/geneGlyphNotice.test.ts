@@ -93,7 +93,7 @@ describe('gene-glyph collapse notice', () => {
       collapsed: true,
       dismissed: false,
       mode: 'longestCoding',
-      picks: { byTag: {}, byLength: 0 },
+      picks: { byTag: {}, byLength: 0, byCap: 0 },
       setMode: expect.any(Function),
       dismiss: expect.any(Function),
     })
@@ -123,7 +123,7 @@ describe('gene-glyph collapse notice', () => {
         num,
         makeFeatureData({
           hasMultiIsoformGenes: true,
-          isoformPicks: { byTag, byLength: 1 },
+          isoformPicks: { byTag, byLength: 1, byCap: 0 },
         }),
         { ...region, start: num * 100, end: num * 100 + 100 },
       )
@@ -132,6 +132,7 @@ describe('gene-glyph collapse notice', () => {
     expect(display.geneGlyphNotice!.picks).toEqual({
       byTag: { 'RefSeq Select': 5, 'MANE Select': 1 },
       byLength: 2,
+      byCap: 0,
     })
   })
 
@@ -158,11 +159,34 @@ describe('gene-glyph collapse notice', () => {
       0,
       makeFeatureData({
         hasMultiIsoformGenes: true,
-        isoformPicks: { byTag: {}, byLength: 1 },
+        isoformPicks: { byTag: {}, byLength: 1, byCap: 1 },
       }),
       region,
     )
     expect(display.geneGlyphIsoformCap).toBe(cap)
     expect(display.geneGlyphCollapsed).toBe(true)
+  })
+
+  // Zooming in past `auto`'s threshold turns the cap on at once, while the
+  // loaded data is still the `longestCoding` fetch — which reports every
+  // multi-isoform gene as collapsed. Gated on "something is hidden", the chip
+  // announced the cap for that whole fetch, on data the cap never touched.
+  it('does not announce the cap on data the collapse mode hid', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setGeneGlyphMode('auto')
+    display.setCoarseTrackHeight(100)
+    expect(display.effectiveMaxIsoforms).toBeDefined()
+
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        hasMultiIsoformGenes: true,
+        isoformPicks: { byTag: { 'MANE Select': 4 }, byLength: 2, byCap: 0 },
+      }),
+      region,
+    )
+    expect(display.geneGlyphIsoformCap).toBeUndefined()
+    expect(display.geneGlyphCollapsed).toBe(false)
   })
 })

@@ -12,6 +12,11 @@ import type { FeatureLayout } from './types.ts'
 export interface IsoformPicks {
   byTag: Record<string, number>
   byLength: number
+  // Genes the height cap trimmed, whatever rule ranked their survivors. The
+  // chip announces the cap off the display's current height, and the loaded
+  // data may still be the previous mode's — so it needs the worker's word that
+  // the cap fired, not just that something is hidden.
+  byCap: number
 }
 
 // One tag, two spellings: NCBI's GFF3 writes `tag=MANE Select` and GENCODE's
@@ -26,7 +31,12 @@ function tagRule(tag: string) {
 export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
   const byTag: Record<string, number> = {}
   let byLength = 0
-  for (const { isoformsCollapsed, canonicalTag } of layouts) {
+  let byCap = 0
+  for (const {
+    isoformsCollapsed,
+    isoformsCappedByHeight,
+    canonicalTag,
+  } of layouts) {
     if (!isoformsCollapsed) {
       continue
     }
@@ -36,8 +46,11 @@ export function summarizeIsoformPicks(layouts: FeatureLayout[]): IsoformPicks {
       const rule = tagRule(canonicalTag)
       byTag[rule] = (byTag[rule] ?? 0) + 1
     }
+    if (isoformsCappedByHeight) {
+      byCap++
+    }
   }
-  return { byTag, byLength }
+  return { byTag, byLength, byCap }
 }
 
 // One summary over every loaded region, since the chip speaks for the whole
@@ -47,15 +60,17 @@ export function mergeIsoformPicks(
 ): IsoformPicks {
   const byTag: Record<string, number> = {}
   let byLength = 0
+  let byCap = 0
   for (const pick of picks) {
     if (pick) {
       for (const [tag, n] of Object.entries(pick.byTag)) {
         byTag[tag] = (byTag[tag] ?? 0) + n
       }
       byLength += pick.byLength
+      byCap += pick.byCap
     }
   }
-  return { byTag, byLength }
+  return { byTag, byLength, byCap }
 }
 
 // Commonest first; ties break by name so panning between two equally common tags
@@ -89,4 +104,12 @@ export function anyIsoformsHidden(picks: IsoformPicks | undefined) {
     picks !== undefined &&
     (picks.byLength > 0 || Object.keys(picks.byTag).length > 0)
   )
+}
+
+// The height cap, specifically, trimmed some gene here — the only evidence the
+// chip may announce a cap on. A region fetched under `longestCoding` reports
+// every multi-isoform gene as collapsed, and a cap read off the current height
+// gated on that alone went loud for a whole fetch on data the cap never saw.
+export function capHidIsoforms(picks: IsoformPicks | undefined) {
+  return picks !== undefined && picks.byCap > 0
 }
