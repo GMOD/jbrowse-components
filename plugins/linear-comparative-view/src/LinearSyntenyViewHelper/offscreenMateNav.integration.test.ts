@@ -241,6 +241,132 @@ test('a navigation that fails does not keep the anchor it took', async () => {
   expect(view.followAnchorIndex).toBe(0)
 }, 20000)
 
+// The other class of mark, and the one with no coverage here until this: the
+// facing row DISPLAYS the contig and has merely scrolled off it, so the click
+// scrolls to the mate instead of replacing what the row is showing. It is also
+// the class that dominates, because stacked whole assemblies are what produce
+// these marks in the first place (`culledRibbonMates`).
+async function scrollableSetup() {
+  const { session, view, level } = await setup()
+  const row = view.views[1]!
+  row.showAllRegionsInAssembly()
+  // a 40kb window parked at the start of ctgA, so the mate is 600kb away —
+  // fifteen screens, which is a flight with a middle rather than a nudge
+  row.setWindow(40_000, 0)
+  return { session, view, level, row }
+}
+
+// The linearized bp of ctgB:200,500 — ctgA runs first and is BP long
+const MATE_CENTER_BP = BP + 200_500
+
+test('a contig the row already displays is scrolled to, not navigated to', async () => {
+  const { view, level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig(
+    'ctgB',
+    1,
+    { start: 200_000, end: 201_000 },
+    true,
+  )
+  await when(
+    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  // the whole point of the branch: every other contig of the row survives the
+  // click, where `navToLocString` would have discarded them
+  expect(refNames(view, 1)).toEqual(['ctgA', 'ctgB'])
+  // and it arrives at the zoom it left on, however far the arc pulled back
+  expect(row.windowWidthBp).toBe(40_000)
+})
+
+// Flown, not jumped — so the row is somewhere else on the way and the reader
+// can see the distance being crossed. Asserted on the zoom rather than the
+// position, since the pull-back is the half a jump could not produce.
+test('the row travels to it rather than appearing there', async () => {
+  const { level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig(
+    'ctgB',
+    1,
+    { start: 200_000, end: 201_000 },
+    true,
+  )
+  await when(() => row.windowWidthBp > 40_000, { timeout: 5000 })
+  await when(
+    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  expect(row.windowWidthBp).toBe(40_000)
+})
+
+// A reader who has turned motion off gets the destination and nothing else —
+// and gets it in the click, not a frame later.
+test('with animation off the row is simply placed there', async () => {
+  const { session, level, row } = await scrollableSetup()
+  session.setPreferenceOverride('animationMode', 'disabled')
+
+  level.showOffscreenMateContig(
+    'ctgB',
+    1,
+    { start: 200_000, end: 201_000 },
+    true,
+  )
+
+  expect(row.windowStartBp).toBe(MATE_CENTER_BP - 40_000 / 2)
+})
+
+// The click TAKES the anchor when the follow is on, so the flight then runs on
+// the row every other row is being re-placed against, sixty times a second. The
+// follow moves the non-anchor rows only — if it ever re-asserted the anchor's
+// own window the flight would read the interference back and stop one frame in,
+// leaving the row wherever the arc had got to.
+test('the flight survives the follow it just became the anchor of', async () => {
+  const { view, level, row } = await scrollableSetup()
+  view.setRowSyncMode('follow')
+  expect(view.followAnchorIndex).toBe(0)
+
+  level.showOffscreenMateContig(
+    'ctgB',
+    1,
+    { start: 200_000, end: 201_000 },
+    true,
+  )
+  await when(
+    () => row.windowStartBp === MATE_CENTER_BP - row.windowWidthBp / 2,
+    { timeout: 5000 },
+  )
+
+  expect(view.followAnchorIndex).toBe(1)
+  expect(row.windowWidthBp).toBe(40_000)
+}, 20000)
+
+// The Undo the click posts writes the pre-click window, and the flight reads
+// back what it wrote — so pressing it mid-flight ends the flight rather than
+// being overwritten by its next frame. Without that the row would spring
+// straight back to the mate and the Undo would look broken.
+test('the undo wins against a flight still in the air', async () => {
+  const { session, level, row } = await scrollableSetup()
+
+  level.showOffscreenMateContig(
+    'ctgB',
+    1,
+    { start: 200_000, end: 201_000 },
+    true,
+  )
+  await when(() => session.snackbarMessages.length > 0, { timeout: 5000 })
+  await when(() => row.windowStartBp !== 0, { timeout: 5000 })
+  const [action] = session.snackbarMessages[0]!.actions!
+  action!.onClick()
+
+  const restored = { start: row.windowStartBp, width: row.windowWidthBp }
+  await new Promise(resolve => setTimeout(resolve, 1500))
+  expect(row.windowStartBp).toBe(restored.start)
+  expect(row.windowWidthBp).toBe(restored.width)
+  expect(restored.start).toBe(0)
+}, 20000)
+
 // The floor is a WIDTH, and a locus near the origin has nowhere to put half of
 // it. Padded symmetrically and then clipped at zero, a mate a few hundred bp
 // into its contig framed half the minimum window — at the one place that states

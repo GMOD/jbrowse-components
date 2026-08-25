@@ -2,6 +2,7 @@ import { destroy, types } from '@jbrowse/mobx-state-tree'
 
 import {
   OFFSCREEN_MATE_NAV_MIN_BP,
+  mateFlightAllowed,
   navLocString,
   takeFollowAnchor,
 } from './offscreenMateNav.ts'
@@ -44,6 +45,26 @@ describe('navLocString', () => {
       expect(Number(loc.split(':')[1]!.split('-')[0])).toBeGreaterThanOrEqual(1)
       expect(width(loc)).toBe(OFFSCREEN_MATE_NAV_MIN_BP)
     }
+  })
+})
+
+// The two halves of the click's flight decision that are not about the mark:
+// what the reader asked for, and the one arrangement of the stack where the arc
+// would tear it apart.
+describe('mateFlightAllowed', () => {
+  it('flies when the reader wants motion and the rows are their own', () => {
+    expect(mateFlightAllowed({ linkViews: false }, 'enabled')).toBe(true)
+  })
+
+  it('jumps when the reader has turned motion off', () => {
+    expect(mateFlightAllowed({ linkViews: false }, 'disabled')).toBe(false)
+  })
+
+  // `installLinkedViewSync` replays a row's zoomTo onto every other row and its
+  // scroll onto none of them, so the arc's pull-back would land on the whole
+  // stack while only the clicked row travelled.
+  it('jumps when the rows are locked together in pixels', () => {
+    expect(mateFlightAllowed({ linkViews: true }, 'enabled')).toBe(false)
   })
 })
 

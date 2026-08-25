@@ -17,6 +17,7 @@ import { runInAction } from 'mobx'
 
 import {
   captureStackViewports,
+  mateFlightAllowed,
   navLocString,
   takeFollowAnchor,
 } from './offscreenMateNav.ts'
@@ -439,7 +440,25 @@ export function linearSyntenyViewHelperModelFactory(
           // row it was pointing at.
           if (displayed && locus) {
             const center = Math.round((locus.start + locus.end) / 2)
-            view.centerAt(center, refName)
+            // FLOWN, not jumped, when the reader wants motion. The scroll class
+            // arises where a row displays whole assemblies, so this is a jump of
+            // a chromosome or more: landed instantly, the reader is somewhere
+            // else with no way to tell what they passed over, and the marks that
+            // became ribbons are just a different picture. The arc pulls back
+            // far enough to hold both ends, travels, and drops in — and with the
+            // follow on, the whole stack comes with it, since the follow's frame
+            // pass is already the thing that tracks a row through a drag.
+            //
+            // The destination is the same either way, which is what leaves the
+            // snackbar, the Undo and the anchor take below untouched: the Undo
+            // writes the pre-click window, and the flight reads back what it
+            // wrote each frame, so pressing it mid-flight ends the flight rather
+            // than being overwritten by its next frame.
+            if (mateFlightAllowed(parentView, getSession(self).animationMode)) {
+              view.flyToCenter(center, refName)
+            } else {
+              view.centerAt(center, refName)
+            }
             getSession(self).notify(
               anchor.taken
                 ? `Showing ${refName}:${center.toLocaleString()}, and following this row`

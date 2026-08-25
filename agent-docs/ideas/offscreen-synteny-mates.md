@@ -1,6 +1,6 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show the mate LOCUS (with an Undo, since the navigation replaces the row's regions), and carried into an SVG export. Class B shipped the same day behind `bidirectionalFetch` (two-axis-synteny-fetch.md), on the terms this file settled: its marks hang off the target axis and its click navigates the row above.
+description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show the mate LOCUS (with an Undo, since the navigation replaces the row's regions), and carried into an SVG export. Its click FLIES to the mate rather than jumping, from 2026-08-25, wherever the row already displays the contig. Class B shipped the same day behind `bidirectionalFetch` (two-axis-synteny-fetch.md), on the terms this file settled: its marks hang off the target axis and its click navigates the row above.
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
@@ -16,6 +16,20 @@ the facing row, undoably. An SVG export carries the same marks. The
 rest of this file is the case for it and the reasoning the implementation
 followed — kept because it is the reasoning class B was then built on, the same
 day and to the terms set out at the bottom of this file.
+
+**The scroll class is FLOWN, since 2026-08-25.** A mark whose contig the facing
+row already displays — which is every mark once whole assemblies are stacked,
+see `culledRibbonMates` — is scrolled to rather than navigated to, and the
+scroll is a jump of a chromosome or more. `LinearGenomeView.flyTo` plays the
+Van Wijk arc to it instead: pulled back far enough to hold both ends, travelled,
+dropped in, over 250-1100ms (`flyTo.ts`). The DESTINATION is unchanged, which is
+what leaves the snackbar, its Undo and the follow-anchor take exactly as they
+were — the flight reads back what it wrote each frame, so the Undo, a wheel
+zoom or a drag ends it rather than being overwritten by its next frame. Off
+under `linkViews` (the rows are locked in pixels and `installLinkedViewSync`
+replays the zoom but not the scroll) and under the reader's `animationMode`.
+The navigate class is not flown and cannot be: `navToLocString` replaces the
+row's regions, so there is no coordinate space the two ends are both in.
 
 A synteny band draws a ribbon only when **both** ends land on a displayed
 region. When peach chr1 is stacked against grape chr1 and a peach locus is

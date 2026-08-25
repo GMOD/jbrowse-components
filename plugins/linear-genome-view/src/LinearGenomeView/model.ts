@@ -20,6 +20,7 @@ import {
   sum,
 } from '@jbrowse/core/util'
 import {
+  bpToLinearBp,
   bpToPx,
   computeMoveToLayout,
   createOverviewLayout,
@@ -61,6 +62,7 @@ import {
   TRACK_OUTLINE_BORDER,
   TRACK_TOP_GAP,
 } from './consts.ts'
+import { planFlight } from './flyTo.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
 import {
   buildMenuItems,
@@ -82,6 +84,7 @@ import {
   tickLabelWidth,
 } from './util.ts'
 
+import type { FlightViewport } from './flyTo.ts'
 import type {
   BpOffset,
   ExportSvgOptions,
@@ -2479,11 +2482,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * hold is not restorable however it was spelled.
        */
       setWindow(windowWidthBp: number, windowStartBp: number) {
+        this.setWindowFrame(windowWidthBp, windowStartBp)
+        self.settleCoarseBlocks()
+      },
+
+      /**
+       * #action
+       * `setWindow` without the settle, for a writer that runs per animation
+       * frame. Flushing the coarse blocks sixty times a second is the one thing
+       * such a writer must not do: they are a 500ms throttle that a synteny
+       * follow pass and two autoscale domains hang off, and settling each frame
+       * turns each of those into per-frame work — `positionViewOnSpans` states
+       * the same rule for the same reason.
+       */
+      setWindowFrame(windowWidthBp: number, windowStartBp: number) {
         // via zoomTo (not a bare assignment) for its clamp; `width` cancels, so
         // the bp width in is the bp width out at whatever width is current
         self.zoomTo(windowWidthBp / self.width)
         self.scrollToBp(windowStartBp)
-        self.settleCoarseBlocks()
       },
 
       /**
@@ -2990,6 +3006,123 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return []
       },
     }))
+    .actions(self => {
+      let cancelLastFlight = () => {}
+      // Where a flight in progress is going, and nothing while none is. A
+      // flight's frames are presentation: the viewport the view has COMMITTED
+      // to is the destination, and a reader that wants "the zoom this view is
+      // on" wants that rather than whatever the arc is passing through. Without
+      // it a second click landing mid-flight framed its mate at the apex's
+      // zoom, which is a whole chromosome wide for no reason the reader can see.
+      let heading: FlightViewport | undefined
+
+      /**
+       * #action
+       * Travel to a window rather than appear in it: the Van Wijk arc from
+       * where the view is to where it is going, played over its own duration.
+       *
+       * WHAT LANDS IS WHAT `setWindow` WOULD HAVE LANDED — only the path in
+       * between is new. That is what lets a caller offer an Undo, a snackbar or
+       * a follow anchor around this exactly as it did around the instant move.
+       *
+       * It YIELDS to anything else that moves the view, by reading back what it
+       * wrote and stopping the moment the view holds something else: a wheel
+       * zoom, a drag, a locstring nav, or the Undo on the very snackbar the
+       * flight was launched with. Compared against what was WRITTEN rather than
+       * what was asked for, because the write clamps — an arc that pulls back
+       * past `maxBpPerPx` reads its own clamped result back, and treating that
+       * as interference would end the flight one frame in. `springAnimate`
+       * defends the same value the same way.
+       */
+      function flyTo(centerBp: number, windowWidthBp: number) {
+        cancelLastFlight()
+        cancelLastFlight = () => {}
+        const flight = planFlight(
+          {
+            centerBp: self.windowStartBp + self.windowWidthBp / 2,
+            windowWidthBp: self.windowWidthBp,
+          },
+          { centerBp, windowWidthBp },
+        )
+        if (flight.durationMs > 0 && self.width > 0) {
+          heading = { centerBp, windowWidthBp }
+          const startedAt = performance.now()
+          let frameId: number | undefined
+          let written: { widthBp: number; startBp: number } | undefined
+          cancelLastFlight = () => {
+            if (frameId !== undefined) {
+              cancelAnimationFrame(frameId)
+            }
+          }
+          function place(t: number) {
+            const at = flight.at(t)
+            self.setWindowFrame(
+              at.windowWidthBp,
+              at.centerBp - at.windowWidthBp / 2,
+            )
+            written = {
+              widthBp: self.windowWidthBp,
+              startBp: self.windowStartBp,
+            }
+          }
+          function frame() {
+            // Liveness before any read: a row can be removed mid-flight — the
+            // level holding it closed, the track detached — and every read
+            // below throws on a dead node, in a callback with nobody to catch
+            // it.
+            if (isAlive(self)) {
+              const moved =
+                written !== undefined &&
+                (self.windowWidthBp !== written.widthBp ||
+                  self.windowStartBp !== written.startBp)
+              if (!moved) {
+                const t = (performance.now() - startedAt) / flight.durationMs
+                if (t < 1) {
+                  place(t)
+                  frameId = requestAnimationFrame(frame)
+                } else {
+                  place(1)
+                  self.settleCoarseBlocks()
+                  heading = undefined
+                }
+              } else {
+                heading = undefined
+              }
+            }
+          }
+          frame()
+        } else {
+          heading = undefined
+          self.setWindow(windowWidthBp, centerBp - windowWidthBp / 2)
+        }
+      }
+
+      return {
+        flyTo,
+
+        /**
+         * #action
+         * `centerAt`'s animated twin: the same destination, reached along the
+         * arc instead of jumped to, at the zoom the view is already on.
+         */
+        flyToCenter(coord: number, refName: string) {
+          // `bpToLinearBp` rather than `bpToPx`, which rounds to a whole pixel
+          // at the current zoom: mid-flight that zoom is a point on somebody
+          // else's arc, and a destination quantized against it moves with it.
+          const centerBp = bpToLinearBp({
+            refName,
+            coord,
+            displayedRegions: self.displayedRegions,
+          })
+          if (centerBp !== undefined) {
+            flyTo(
+              centerBp,
+              heading ? heading.windowWidthBp : self.windowWidthBp,
+            )
+          }
+        },
+      }
+    })
     .actions(self => ({
       afterCreate() {
         setupKeyboardHandler(self as LinearGenomeViewModel)

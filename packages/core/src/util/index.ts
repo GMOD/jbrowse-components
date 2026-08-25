@@ -234,6 +234,7 @@ export {
   mergeIntervals,
 } from './intervals.ts'
 export { clampToContig } from './clampToContig.ts'
+export { animationAllowed } from './animationAllowed.ts'
 export { springAnimate } from './springAnimate.ts'
 export {
   localStorageAvailable,

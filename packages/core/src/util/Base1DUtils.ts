@@ -329,6 +329,38 @@ export function bpToOffset({
 }
 
 /**
+ * Where a 0-based genomic coord sits in the LINEARIZED bp space — the
+ * concatenation of `displayedRegions`, which is the space `windowStartBp`
+ * indexes and the one a viewport is stored in.
+ *
+ * `bpToPx`'s answer in those units, and without its rounding, which is the
+ * reason to reach for this one: `bpToPx` quantizes to a whole pixel at the
+ * CURRENT `bpPerPx`, so a caller computing a destination while the view is
+ * mid-zoom — an animated flight planning its next leg — gets a destination
+ * that shifts with whatever zoom it happened to ask at.
+ *
+ * `undefined` when no displayed region holds the coord, exactly as `bpToPx`
+ * answers: a refName the view is not showing has no place on its screen.
+ */
+export function bpToLinearBp({
+  refName,
+  coord,
+  displayedRegions,
+}: {
+  refName: string
+  coord: number
+  displayedRegions: {
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }[]
+}) {
+  const at = bpToOffset({ refName, coord, displayedRegions })
+  return at ? cumulativeBp(displayedRegions, at.index, at.offset) : undefined
+}
+
+/**
  * Screen order of two {@link BpOffset}s: negative when `a` is to the left of
  * `b`. `moveTo` takes its arguments left-to-right and computes a negative
  * bpPerPx from a backwards pair, so a caller deriving the two from data that

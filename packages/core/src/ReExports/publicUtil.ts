@@ -50,6 +50,7 @@ export {
   addTrackTypeGuesser,
   aesDecrypt,
   aesEncrypt,
+  animationAllowed,
   applyOrderWithin,
   applyZoomAccum,
   assembleLocString,

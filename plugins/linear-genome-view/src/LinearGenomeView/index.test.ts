@@ -3260,6 +3260,144 @@ describe('a jump settles the coarse blocks', () => {
   })
 })
 
+// The one jump that takes time, so it cannot join the table above: it writes
+// per frame through `setWindowFrame` and settles on the last of them. Which
+// makes it both — a continuous path while it runs and a jump when it lands —
+// and the two halves are what these assert. The path itself is `flyTo.test.ts`.
+describe('flyTo', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  // A 2kb window at the left end, so `flyToCenter(40_000)` is a twenty-screen
+  // hop — long enough to have a middle worth asserting about, and to outlast
+  // the 100ms the mid-flight assertions advance by.
+  function makeView() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        displayedRegions: volvoxDisplayedRegions,
+      }),
+    )
+    model.setWidth(800)
+    model.setWindow(2000, 0)
+    model.setCoarseDynamicBlocks(model.dynamicBlocks, model.bpPerPx)
+    return model
+  }
+
+  const keys = (blocks: { key: string }[]) => blocks.map(b => b.key)
+
+  // Within a pixel of `centerAt` rather than equal to it: `centerAt` rounds its
+  // scroll to a whole pixel, from when pixels were what the viewport was stored
+  // as. Landing under the clamp and at the requested width is the part that has
+  // to hold, since a caller's Undo and snackbar were written around the jump.
+  test('lands where the jump would have landed', () => {
+    const model = makeView()
+    const jumped = makeView()
+    jumped.centerAt(40_000, 'ctgA')
+
+    model.flyToCenter(40_000, 'ctgA')
+    jest.advanceTimersByTime(5000)
+
+    expect(model.windowWidthBp).toBe(jumped.windowWidthBp)
+    expect(Math.abs(model.windowStartBp - jumped.windowStartBp)).toBeLessThan(
+      model.bpPerPx,
+    )
+  })
+
+  test('settles the coarse blocks once it arrives', () => {
+    const model = makeView()
+
+    model.flyToCenter(40_000, 'ctgA')
+    jest.advanceTimersByTime(5000)
+
+    expect(keys(model.coarseDynamicBlocks)).toEqual(
+      keys(model.dynamicBlocks.contentBlocks),
+    )
+  })
+
+  // The other half of the same rule, and the reason `setWindowFrame` exists:
+  // settling per frame would wake every coarse consumer sixty times a second —
+  // the synteny follow's exact pass into an RPC each frame, two autoscale
+  // domains into a full per-bp rescan.
+  test('leaves them alone while it is still travelling', () => {
+    const model = makeView()
+    const settled = model.coarseDynamicBlocks
+
+    model.flyToCenter(40_000, 'ctgA')
+    jest.advanceTimersByTime(100)
+
+    // the CENTER, not the left edge: the arc widens the window as it goes, so
+    // the edge it is measured from runs backwards over the first half
+    expect(model.windowStartBp + model.windowWidthBp / 2).toBeGreaterThan(1000)
+    expect(model.coarseDynamicBlocks).toBe(settled)
+  })
+
+  // It pulls back to cover the distance and comes back in, so the middle of a
+  // twenty-screen hop is nowhere near either end's zoom.
+  test('is zoomed out in the middle and back in at the end', () => {
+    const model = makeView()
+
+    model.flyToCenter(40_000, 'ctgA')
+    jest.advanceTimersByTime(200)
+    const midFlight = model.windowWidthBp
+    jest.advanceTimersByTime(5000)
+
+    expect(midFlight).toBeGreaterThan(2000)
+    expect(model.windowWidthBp).toBe(2000)
+  })
+
+  // Anything else moving the view owns it from that moment: a wheel zoom, a
+  // drag, or the Undo on the snackbar the flight was launched with. Without
+  // this the next frame writes straight over it.
+  test('yields the moment something else moves the view', () => {
+    const model = makeView()
+
+    model.flyToCenter(40_000, 'ctgA')
+    jest.advanceTimersByTime(100)
+    model.setWindow(2000, 0)
+    jest.advanceTimersByTime(5000)
+
+    expect(model.windowStartBp).toBe(0)
+    expect(model.windowWidthBp).toBe(2000)
+  })
+
+  // Two clicks in a row, where the second's first frame could land on exactly
+  // what the first wrote — so the yield above cannot be what stops the first,
+  // and both would drive the view frame about frame. It also has to inherit the
+  // zoom the FIRST was heading for: read off the arc it interrupted, the second
+  // click frames its destination at whatever width the pull-back had reached.
+  test('a second flight takes over from the first', () => {
+    const model = makeView()
+
+    model.flyToCenter(40_000, 'ctgA')
+    jest.advanceTimersByTime(100)
+    model.flyToCenter(10_000, 'ctgA')
+    jest.advanceTimersByTime(5000)
+
+    const jumped = makeView()
+    jumped.centerAt(10_000, 'ctgA')
+    expect(Math.abs(model.windowStartBp - jumped.windowStartBp)).toBeLessThan(
+      model.bpPerPx,
+    )
+  })
+
+  // A destination the view is already at has no path to fly, and must still
+  // arrive — synchronously, since there are no frames to arrive on.
+  test('a destination already on screen is placed outright', () => {
+    const model = makeView()
+    model.setWindow(2000, 39_000)
+
+    model.flyToCenter(40_000, 'ctgA')
+
+    expect(model.windowStartBp).toBe(39_000)
+  })
+})
+
 describe('scalebar coordinate labels', () => {
   function makeView(regions: { refName: string; end: number }[]) {
     const { Session, LinearGenomeModel } = initialize()

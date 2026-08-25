@@ -39,6 +39,11 @@ const WRITES = [
   'self.zoomTo(',
   'this.zoomTo(',
   'moveTo(self,',
+  // `setWindow` places through `setWindowFrame` rather than writing the pair
+  // itself, so without this line the delegation would quietly drop it — and
+  // `flyTo` with it — out of the scan the two tests below run.
+  'self.setWindowFrame(',
+  'this.setWindowFrame(',
 ]
 
 // The paths a gesture writes through per animation frame, where settling would
@@ -52,6 +57,7 @@ const CONTINUOUS = {
   horizontalScroll: 'a wheel notch or a drag frame',
   slide: 'spring frames, through scrollTo',
   zoom: 'spring frames, through zoomTo',
+  setWindowFrame: 'setWindow per animation frame, for flyTo',
 }
 
 function bodyFrom(source: string, open: number) {
@@ -114,6 +120,9 @@ test('the scan finds the placers it is about', () => {
     'horizontallyFlip',
     'clearView',
     'centerAt',
+    // a jump that takes a second is still a jump: the flight settles once, at
+    // the end, and the per-frame writes go through `setWindowFrame` above
+    'flyTo',
   ]) {
     expect(names).toContain(expected)
   }

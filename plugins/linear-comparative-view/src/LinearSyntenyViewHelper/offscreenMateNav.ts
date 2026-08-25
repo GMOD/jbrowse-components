@@ -1,7 +1,8 @@
+import { animationAllowed } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { OffscreenMateLocus } from '../LinearSyntenyDisplay/drawOffscreenMates.ts'
-import type { Region } from '@jbrowse/core/util'
+import type { AnimationMode, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -120,6 +121,30 @@ export function takeFollowAnchor(
       }
     },
   }
+}
+
+/**
+ * Whether a mark's click may FLY to a contig the row already displays rather
+ * than jump to it.
+ *
+ * Only the scroll class can be flown at all — the other one replaces the row's
+ * displayed regions, and there is no path through a coordinate space the
+ * destination is not in. This is the second half: whether flying that path is
+ * the right thing here.
+ *
+ * The reader's own answer first (`animationAllowed` — the session preference
+ * and, under 'system', the OS reduced-motion setting), and then the one thing
+ * about this stack that makes the arc wrong: `linkViews` holds the rows
+ * together in PIXELS, and `installLinkedViewSync` replays a row's `zoomTo` onto
+ * the others but not its scroll. So a flight there pulls every row back to the
+ * arc's apex and drops them all in again while one of them travels — a picture
+ * of the stack coming apart. The jump is what those rows keep.
+ */
+export function mateFlightAllowed(
+  host: { linkViews: boolean },
+  mode: AnimationMode,
+) {
+  return animationAllowed(mode) && !host.linkViews
 }
 
 /**

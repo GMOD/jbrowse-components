@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { animationAllowed, getSession } from '@jbrowse/core/util'
 import { autorunOnReadyView } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import { untracked } from 'mobx'
 
@@ -8,7 +8,6 @@ import {
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
-  morphAllowed,
   morphClockMs,
   morphOffset,
   rowGeometrySignature,
@@ -290,7 +289,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       // snap without a row morph.
       if (
         scaleUnchanged &&
-        morphAllowed(getSession(self).animationMode) &&
+        animationAllowed(getSession(self).animationMode) &&
         canMorph(fromTops, current)
       ) {
         self.beginYMorph(fromTops, fromMaxY)

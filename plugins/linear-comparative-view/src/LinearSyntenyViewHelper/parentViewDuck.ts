@@ -36,6 +36,11 @@ export interface ParentViewDuck extends IStateTreeNode {
   followSynteny: boolean
   followAnchorIndex: number
   setFollowAnchorIndex: (idx: number) => void
+  // Also read by that click, to decide whether it may FLY to the contig rather
+  // than jump: with the rows locked in pixels, the flight's zoom-out arc is
+  // replayed onto every row by `installLinkedViewSync` while its pan is not, so
+  // the whole stack would pull back and only one row would travel.
+  linkViews: boolean
 }
 
 // One level of the stack, as seen from a synteny display nested inside it. Same
