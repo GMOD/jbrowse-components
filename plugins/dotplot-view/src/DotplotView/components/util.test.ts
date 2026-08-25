@@ -237,6 +237,30 @@ describe('axisBorderPx', () => {
     expect(withContig).toBe(chr1Only)
   })
 
+  // The test above sits 24x clear of the cutoff (0.5px against 12px), so it
+  // pins that a far-too-small region is excluded and says nothing about WHERE
+  // the filter switches. Straddle it instead: one contig, two zooms either side
+  // of exactly LABEL_PX, and the margin has to step. A step here is also the
+  // step that makes the margin zoom-dependent at all, which is the edge
+  // axisBorderPx's own comment is about.
+  test('the LABEL_PX cutoff is where the border steps', () => {
+    const SPAN = 1_200_000
+    // A refName wider than any tick this span renders, so crossing the cutoff
+    // changes the max rather than being masked by an equal-width tick — every
+    // digit shares one advance in measureText's table, so a tick-vs-tick swap
+    // measures identical and would hide the step.
+    const contig = region('chr9_KI270717v1_random', SPAN, 0)
+    const anchor = region('chr1', 240_000_000)
+    // 12px exactly is included (>=), so nudge either side of SPAN / LABEL_PX.
+    const justIn = SPAN / 12 - 1
+    const justOut = SPAN / 12 + 1
+    expect(border([anchor, contig], justIn)).toBeGreaterThan(
+      border([anchor, contig], justOut),
+    )
+    // and the excluded side matches dropping the contig outright
+    expect(border([anchor, contig], justOut)).toBe(border([anchor], justOut))
+  })
+
   test('bpPerPx changes tick-label precision and so the border', () => {
     // "1,234,567" (bpPerPx=1) is a wider tick than "1.23M" (bpPerPx=1000);
     // both spans stay above LABEL_PX so the filter keeps them

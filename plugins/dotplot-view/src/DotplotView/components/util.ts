@@ -169,9 +169,18 @@ const LABEL_PX = 12
 // (truncated) refName or its exact end-coordinate tick. Only regions at least
 // LABEL_PX tall on screen count: smaller ones (unplaced *_random contigs at
 // whole-genome zoom) are collision-hidden and must not inflate the margin. A
-// contig you zoom into grows past LABEL_PX and reclaims its space. Depends only
-// on regions + zoom, never viewport width, so it stays acyclic (viewWidth =
-// width - border).
+// contig you zoom into grows past LABEL_PX and reclaims its space.
+//
+// Reads regions + zoom and never viewport width, which makes the SAME-AXIS edge
+// acyclic (viewWidth = width - borderX). It does not make the margin acyclic:
+// borderX reads vview.bpPerPx, a fit-to-view vertical zoom comes off
+// viewHeight = height - borderY, and borderY reads hview.bpPerPx off
+// viewWidth = width - borderX, so the loop closes across the two axes.
+// `showAllRegions` is what resolves it — two hand-rolled passes in one action,
+// which model.ts states — and nothing re-triggers them, since no autorun
+// observes a border or either viewWidth/viewHeight. So the fit converges and
+// stops rather than oscillating; for grape-vs-peach it converges after the first
+// pass, with the nearest LABEL_PX crossing 1.43x away in zoom.
 //
 // `labels` is the very map the axis component draws from
 // (model.h/vRefNameLabels), passed in rather than rebuilt here: a margin sized
