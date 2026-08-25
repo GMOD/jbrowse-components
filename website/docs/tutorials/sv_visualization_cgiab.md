@@ -197,7 +197,7 @@ megadepth HG008-T.cram --bigwig
 
 ## Structural variants from the published callsets
 
-The benchmark is one of the somatic SV callsets on this pair, and C-GIAB
+The benchmark is one of five somatic SV callsets on this pair, and C-GIAB
 publishes the rest as one URL each, loaded the way the benchmark was:
 
 | Callset                                                                                                                 | Called from                                    |
@@ -305,7 +305,7 @@ per record between its two breakends.
 
 ## Copy number from the published callsets
 
-Other groups have called copy number on this pair too, and C-GIAB publishes each
+Four groups have called copy number on this pair, and C-GIAB publishes each
 one's output. Every file is small and loads from its FTP URL, so they can share
 one view:
 
