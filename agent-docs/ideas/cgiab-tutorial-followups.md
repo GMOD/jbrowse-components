@@ -9,11 +9,29 @@ Deferred from the figure-accuracy pass, verified against the V0.5 benchmark
 files + the data paper (McDaniel et al. 2025, _Sci Data_ 12:1195, DOI
 10.1038/s41597-025-05438-2).
 
-**Unused V0.5 fields.** VNTR/TR SVs and the `svviz2` per-dataset VAF fields are
-loaded but never shown; either could carry a figure. When writing about
-chromoplexy, note that the benchmark's `EVENT=cluster_3` (chr3/chr13, cited in
-the translocation walkthrough) is **not** the chromoplexy example in Wagner et
-al. 2026, which is a chr3/6/7/11 series forming three hybrid chromosomes.
+**Unused V0.5 fields — done.** Both went in together, under the tutorial's "A
+tandem-repeat call, sized against the normal": `sv_cgiab/vntr_tumor_normal` is
+SV_223, the V0.5 README's own worked example of an `EVENTTYPE=CNV:TR` record, at
+base level over both published BAMs, and the section spends `SVVIZ_VAF_ALL` and
+`SVVIZBYDATASET` beside it. The pairing is what made it worth a section rather
+than two: the four datasets' VAFs disagree end to end at that locus, the field's
+header says TRs are where it is biased, and the pileup shows the mechanism.
+
+The reads were counted before the figure was framed
+(chr5:165,755,113-165,755,183): normal 12/38 reads carry a 42 bp insertion,
+tumour 38/42 carry a 28 bp deletion, neither sample carries the other's allele.
+That the called span is *wider* than the deletion under it is the point of the
+figure, not a mis-framing — `SVLEN` is the germline-to-tumour distance.
+
+The figure reads the published FTP BAMs rather than `HG008_T_PACBIO_BAM`: the
+demo slice has no read there, and the 26 MB BAI that slice exists to avoid costs
+3.3 s measured, which one 400 bp window can pay. A fourth region cut into a
+slice six other figures load is the larger risk.
+
+**Still open on the same file.** When writing about chromoplexy, note that the
+benchmark's `EVENT=cluster_3` (chr3/chr13, cited in the translocation
+walkthrough) is **not** the chromoplexy example in Wagner et al. 2026, which is
+a chr3/6/7/11 series forming three hybrid chromosomes.
 
 **Single-cell WGS section.** C-GIAB publishes single-cell WGS for HG008-T via
 BioSkryb ResolveDNA (PTA): 119 per-cell CRAMs (Ultima UG100, GRCh38, barcode in
