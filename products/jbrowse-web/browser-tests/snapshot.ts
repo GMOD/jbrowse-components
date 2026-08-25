@@ -489,6 +489,28 @@ export async function canvasSnapshot(
   }
   const unsettled = await waitForCaptureSettled(page)
 
+  // A display can reach `data-display-drawn` before the page has given its
+  // element a layout box: measured on the dotplot at 0x0@0,0 with a correctly
+  // sized 1210x542 backing store, via probe-dotplot-drift-state.ts. Capturing
+  // there returns plausible-looking bytes for a box that was never on screen,
+  // because `el.screenshot()` serves composited layers — a silently wrong image
+  // rather than an error, and one this function's blank check does not catch
+  // (the composite is not blank, just of nothing that was laid out).
+  //
+  // NOT the cause of the gate's 4.26% `dotplot-default` drift — waiting on
+  // phase=ready instead leaves that unchanged, measured over 45 runs. This
+  // guard is for the class, not that bug.
+  const box = await el.boundingBox()
+  if (!box || box.width < 1 || box.height < 1) {
+    throw new Error(
+      `${name} (${selector}) has no layout box (${
+        box ? `${box.width}x${box.height}` : 'not visible'
+      }) — the element reported ready before the page laid it out. Wait on ` +
+        `displaySettled(testid) (phase=ready) rather than displayPainted(testid) ` +
+        `(first paint).`,
+    )
+  }
+
   const screenshot = await el.screenshot({ type: 'png' })
   if (assertContent) {
     const analysis = analyzeCanvasPng(screenshot)
