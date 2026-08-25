@@ -18,9 +18,9 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - **Never `git stash`** — the stack is repo-global and takes other agents' work.
   Use `git diff main -- <path>`.
 - **Never merge a `*.generated.ts` conflict** — regenerate it.
-- **A branch lands as a fast-forward.** `git rebase main` in the worktree, then
-  `git merge --ff-only`. `merge.ff = only` and `.githooks/pre-merge-commit`
-  refuse the merge commit main did not need, `--no-ff` included.
+- **A branch lands as a fast-forward**: `git rebase main` in the worktree, then
+  `git merge --ff-only`. `.githooks/pre-merge-commit` refuses the merge commit
+  main did not need, `--no-ff` included.
 - Worktree install, figures, base-ref drift: `reference/TOOLCHAIN.md`.
 
 ## MST
@@ -29,9 +29,8 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 - Keep the main model chain in one file.
 - Write config with `setConf`, not `configuration.setSlot`. Promotable slots
   resolve only via `resolveConf`.
-- **A mixin casting to reach its host names a concrete schema** — see
-  `HostChecksSlotNames`, which fails the build for the widened spellings and
-  says why.
+- **A mixin casting to reach its host names a concrete schema** —
+  `HostChecksSlotNames` fails the build for the widened spellings and says why.
 - A bare getter returns a resolved value, never `undefined` — a sentinel prop
   gets a distinct resolved getter (`effectiveRowHeight`).
 - In React, `autorun` inside `useEffect`, not `reaction`.
@@ -50,15 +49,15 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 
 ## Tracks
 
-- **`addSessionTrackConf` is the default destination.** A track a feature stands
-  up on the user's behalf — a search result, a computed consensus, a
-  reconstruction's labels — is not a catalog entry. `publishTrackConf` is the
-  Add-track workflows only, where an admin means to add it for the whole site.
-  Gate on the matching `isSessionWithAddSessionTrack` /
-  `isSessionWithPublishTrackConf`.
-- `session.addTrackConf` and `isSessionWithAddTracks` survive only for prebuilt
-  plugin bundles and mean the session now — `no-restricted-syntax` fails a call
-  and says why.
+**`addSessionTrackConf` is the default destination.** A track a feature stands
+up on the user's behalf — a search result, a computed consensus, a
+reconstruction's labels — is not a catalog entry. `publishTrackConf` is the
+Add-track workflows only, where an admin means to add it for the whole site.
+Gate on the matching `isSessionWithAddSessionTrack` /
+`isSessionWithPublishTrackConf`.
+
+`session.addTrackConf` and `isSessionWithAddTracks` mean the session now and
+survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
 
 ## Names
 
