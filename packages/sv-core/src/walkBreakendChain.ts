@@ -1,4 +1,4 @@
-import { parseSvAlt, toCanonicalRefName } from './util.ts'
+import { svMateLocus, toCanonicalRefName } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -68,8 +68,17 @@ export type FindJunctionsNear = (region: {
 export const BREAKEND_COLOCATION_BP = 1000
 
 /**
- * The junction a VCF SV/BND feature describes, or undefined when it names no
- * mate position (a single breakend, or a symbolic ALT with no END).
+ * The junction an SV record describes, or undefined when it names no other end
+ * (a single breakend, a symbolic ALT with no END, a plain SNV).
+ *
+ * Through `svMateLocus`, so a record's other end is read the same way here as
+ * everywhere else in this package — off a BND bracket, off a symbolic allele's
+ * CHR2/END, or off the explicit `mate` field a paired adapter writes. Reading
+ * only the ALT was what made the whole chain walk a no-op on bedpe and
+ * STAR-Fusion: `BedpeAdapter` and `StarFusionAdapter` file each row under BOTH
+ * of its contigs and hand back a feature anchored at whichever end was queried,
+ * with `mate` naming the other — the very both-ends answer the walk needs — and
+ * this dropped every one of them for having no parseable ALT.
  *
  * The assembly is what makes this the single place a `Junction` can come from.
  * Neither refName reaching here is canonical: the mate's is whatever text the
@@ -84,9 +93,8 @@ export function junctionFromFeature(
   feature: Feature,
   assembly: Assembly,
 ): Junction | undefined {
-  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const parsed = parseSvAlt(feature, alt)
-  if (!parsed) {
+  const mate = svMateLocus(feature)
+  if (!mate) {
     return undefined
   }
   const info = feature.get('INFO') as Record<string, unknown> | undefined
@@ -102,10 +110,8 @@ export function junctionFromFeature(
     ...(assemblyIds.length > 0 && { assemblyIds }),
     refName: f(feature.get('refName')),
     pos: feature.get('start'),
-    mateRefName: f(parsed.mateRefName),
-    // parseSvAlt reports the VCF 1-based coordinate; every position here is
-    // 0-based, the way getBreakendCoveringRegions hands them to the panels.
-    matePos: parsed.matePos - 1,
+    mateRefName: f(mate.refName),
+    matePos: mate.pos,
   }
 }
 
@@ -277,6 +283,19 @@ export function nextJunctionFrom({
  *
  * Forward first, so the budget below is spent the way it always was whenever
  * the forward walk alone can fill it.
+ *
+ * **Going both ways is only as good as what `findJunctionsNear` answers with.**
+ * A hop needs a record with an END at the stop, and a coordinate-indexed query
+ * hands back the records filed AT it — so a callset that writes each junction
+ * once, at one of its two ends, extends only as far as it happens to have filed
+ * records at loci the walk has already reached. Measured on a four-locus chain
+ * written one record per junction: 4 stops from the first record, 3 from the
+ * second, 2 from the third. What supplies the missing spelling is a reciprocal
+ * BND pair (which is how VCF 4.x writes a breakend, and what every caller in
+ * the tree emits) or an adapter that files a row under both of its contigs
+ * (`BedpeAdapter`, `StarFusionAdapter`). What has neither is a filtered VCF
+ * missing one mate, or a single-record `<TRA>` naming CHR2 — see
+ * `makeFindJunctionsNear` for why no query can rescue those.
  *
  * Bounded by `maxStops` because the input is somebody's VCF: a callset dense in
  * breakends within a kilobase of each other (an amplicon, a chromothriptic

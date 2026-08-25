@@ -1,6 +1,13 @@
-import { nextJunctionFrom, walkBreakendChain } from './walkBreakendChain.ts'
+import { SimpleFeature } from '@jbrowse/core/util'
+
+import {
+  junctionFromFeature,
+  nextJunctionFrom,
+  walkBreakendChain,
+} from './walkBreakendChain.ts'
 
 import type { Junction } from './walkBreakendChain.ts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // The COLO829 der(3), verbatim from the nanomonsv calls the cancer_sv demo
 // serves (`COLO829.somatic-sv.vcf.gz`, INFO reduced to SVTYPE/MATEID):
@@ -353,5 +360,112 @@ describe('walkBreakendChain over a linear chain', () => {
       maxStops: 3,
     })
     expect(stops.map(s => s.refName)).toEqual(['chr2', 'chr3', 'chr4'])
+  })
+
+  // `nearby` above answers on EITHER end, which is more than a region query can
+  // do: a tabix index knows one coordinate per record, so a query about chr2
+  // returns the records filed AT chr2 and nothing that merely points there.
+  // Modelled honestly, a chain written one record per junction shows how much of
+  // itself depends on which record was clicked.
+  function ownLocusOnly(region: {
+    refName: string
+    start: number
+    end: number
+  }) {
+    return Promise.resolve(
+      CHAIN.filter(
+        x =>
+          x.refName === region.refName &&
+          x.pos >= region.start &&
+          x.pos <= region.end,
+      ),
+    )
+  }
+
+  it('reaches only the loci it has records at when the query is own-locus', async () => {
+    // Each record here is filed at the LEFT end of its junction, so the forward
+    // walk always finds the next one and the backward walk never finds the
+    // previous one. 4 stops, then 3, then 2, with nothing saying the short
+    // answers were short. A filtered VCF missing one mate reads like this, and
+    // so does a `<TRA>` callset naming CHR2 on a single record.
+    const counts = []
+    for (const start of CHAIN) {
+      const stops = await walkBreakendChain({
+        start,
+        findJunctionsNear: ownLocusOnly,
+      })
+      counts.push(stops.length)
+    }
+    expect(counts).toEqual([4, 3, 2])
+  })
+})
+
+// A bedpe or STAR-Fusion row is ONE record per junction -- there is no
+// reciprocal spelling in the file, which is what the fixtures above cannot
+// express. The adapters make up for it: each files a row under both of its
+// contigs and hands back a feature anchored at whichever end was queried, with
+// `mate` naming the other. That is exactly the both-ends answer the walk needs,
+// and junctionFromFeature dropped every one of them for having no parseable ALT
+// -- so the chain walk was not merely one-directional on these callsets, it
+// never found a single junction.
+describe('walkBreakendChain over a paired-feature chain', () => {
+  const assembly = { getCanonicalRefName2: (r: string) => r } as Assembly
+
+  // chr1 -row1- chr2 -row2- chr3 -row3- chr4, one row per junction
+  const ROWS = [
+    ['chr1', 1000, 'chr2', 2000],
+    ['chr2', 2100, 'chr3', 3000],
+    ['chr3', 3100, 'chr4', 4000],
+  ] as const
+
+  // what buildPairedIntervalTree inserts: two features per row, one per contig
+  const FEATURES = ROWS.flatMap(([r1, p1, r2, p2], i) =>
+    [
+      [r1, p1, r2, p2, 'r1'],
+      [r2, p2, r1, p1, 'r2'],
+    ].map(
+      ([refName, start, mateRef, matePos, half]) =>
+        new SimpleFeature({
+          uniqueId: `row${i}-${half}`,
+          refName: refName as string,
+          start: start as number,
+          end: (start as number) + 1,
+          type: 'paired_feature',
+          mate: {
+            refName: mateRef as string,
+            start: matePos as number,
+            end: (matePos as number) + 1,
+          },
+        }),
+    ),
+  )
+
+  // and a region query answers with the features filed AT the window, nothing
+  // more -- the same own-locus rule an RPC region query obeys
+  function nearby(region: { refName: string; start: number; end: number }) {
+    return Promise.resolve(
+      FEATURES.filter(
+        f =>
+          f.get('refName') === region.refName &&
+          f.get('start') >= region.start &&
+          f.get('start') <= region.end,
+      )
+        .map(f => junctionFromFeature(f, assembly))
+        .filter((x): x is Junction => x !== undefined),
+    )
+  }
+
+  it('shows the whole chain from either half of any row', async () => {
+    for (const f of FEATURES) {
+      const start = junctionFromFeature(f, assembly)
+      expect(start).toBeDefined()
+      const stops = await walkBreakendChain({
+        start: start!,
+        findJunctionsNear: nearby,
+      })
+      expect(new Set(stops.map(s => s.refName))).toEqual(
+        new Set(['chr1', 'chr2', 'chr3', 'chr4']),
+      )
+    }
   })
 })

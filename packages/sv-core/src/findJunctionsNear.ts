@@ -25,6 +25,25 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * Symbolic SVs come back as junctions too, since `parseSvAlt` reads CHR2/END, so
  * a chain running through a `<DEL>` or `<DUP>` record is followed the same way a
  * BND one is.
+ *
+ * **It answers with the records filed AT the window, which is not the same as
+ * every record with an end there.** A tabix index knows one coordinate per
+ * record, so a BND filed at chr1 naming a mate on chr2 is unreachable from any
+ * query about chr2 — and that is the record the walk needs to extend backward
+ * past its starting locus. Two things supply it instead, and between them cover
+ * every callset in the tree: a reciprocal BND pair, which is how VCF 4.x writes
+ * a breakend and what every caller here emits, and an adapter that files a row
+ * under both of its contigs and hands back a feature anchored at whichever end
+ * was queried (`BedpeAdapter`, `StarFusionAdapter`).
+ *
+ * What neither covers — a filtered VCF that dropped one mate, a one-record
+ * `<TRA>` naming CHR2 — cannot be fixed here. Finding a record by its MATE
+ * coordinate is a scan of the whole callset, and this runs against whatever
+ * adapter a variant display holds: a somatic SV VCF is a few hundred records
+ * and a germline one is tens of millions, with nothing in an `adapterConfig` to
+ * tell them apart. A chain through such a record ends early rather than
+ * wrongly, which is the behaviour to keep if the alternative is reading a file
+ * that size to draw four panels.
  */
 export function makeFindJunctionsNear(
   self: IStateTreeNode & { adapterConfig: Record<string, unknown> },
